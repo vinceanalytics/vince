@@ -14,7 +14,8 @@ func TestParseBot(t *testing.T) {
 		producerName: "Google Inc.",
 		producerURL:  "http://www.google.com",
 	}
-	if !reflect.DeepEqual(parseBotUA(ua), expect) {
+	got := parseBotUA(ua)
+	if !reflect.DeepEqual(got, expect) {
 		t.Error("failed expectation")
 	}
 }
