@@ -1,6 +1,9 @@
 package ua
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+)
 
 const meta = "\\.+*?()|[]{}^$#"
 
@@ -18,4 +21,10 @@ func Clean(re string) string {
 
 	// only match if useragent begins with given regex or there is no letter before it
 	return `(?:^|[^A-Z0-9-_]|[^A-Z0-9-]_|sprd-)(?:` + rg + ")"
+}
+
+func IsStdRe(s string) bool {
+	r := Clean(s)
+	_, err := regexp.Compile(r)
+	return err == nil
 }
