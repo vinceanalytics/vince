@@ -16,7 +16,7 @@ import (
 //go:embed referrer.json
 var refererJSON string
 
-var index = map[string]Medium{}
+var index = map[string]bool{}
 
 func main() {
 	m := make(map[string]interface{})
@@ -25,7 +25,7 @@ func main() {
 	var minLen = 6
 
 	var b bytes.Buffer
-	var hosts []string
+	var hosts []*Medium
 	for mTyp, mData := range m {
 		for refName, refConfig := range mData.(map[string]interface{}) {
 			var params []string
@@ -35,7 +35,7 @@ func main() {
 				}
 			}
 			for _, domain := range refConfig.(map[string]interface{})["domains"].([]interface{}) {
-				med := Medium{
+				med := &Medium{
 					Type:       mTyp,
 					Name:       refName,
 					Parameters: params,
@@ -52,11 +52,12 @@ func main() {
 				if len(parts) < minLen {
 					minLen = len(parts)
 				}
-				if _, ok := index[host]; ok {
+				if index[host] {
 					continue
 				}
-				hosts = append(hosts, host)
-				index[host] = med
+				hosts = append(hosts, med)
+				med.Host = host
+				index[host] = true
 			}
 		}
 	}
@@ -71,10 +72,9 @@ func main() {
 	}
 	`)
 	fmt.Fprintln(&b, "var refList=map[string]*Medium{")
-	sort.Sort(sort.StringSlice(hosts))
-	for _, h := range hosts {
-		m := index[h]
-		fmt.Fprintf(&b, "%q:{Type:%q,Name:%q},\n", h, m.Type, m.Name)
+	sort.Sort(MedSLice(hosts))
+	for _, m := range hosts {
+		fmt.Fprintf(&b, "%q:{Type:%q,Name:%q},\n", m.Host, m.Type, m.Name)
 	}
 	fmt.Fprintln(&b, "}")
 
@@ -92,7 +92,14 @@ func (x StringSlice) Less(i, j int) bool { return i < j }
 func (x StringSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 
 type Medium struct {
+	Host       string
 	Type       string
 	Name       string
 	Parameters []string
 }
+
+type MedSLice []*Medium
+
+func (x MedSLice) Len() int           { return len(x) }
+func (x MedSLice) Less(i, j int) bool { return x[i].Host < x[j].Host }
+func (x MedSLice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
