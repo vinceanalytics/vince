@@ -100,6 +100,10 @@ type Medium struct {
 
 type MedSLice []*Medium
 
-func (x MedSLice) Len() int           { return len(x) }
-func (x MedSLice) Less(i, j int) bool { return x[i].Host < x[j].Host }
-func (x MedSLice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+func (x MedSLice) Len() int { return len(x) }
+func (x MedSLice) Less(i, j int) bool {
+	a := x[i]
+	b := x[j]
+	return (a.Host + a.Type + a.Name) < (b.Host + b.Type + b.Name)
+}
+func (x MedSLice) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
