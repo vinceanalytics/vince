@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	regexp2 "github.com/dlclark/regexp2"
+	"github.com/gernest/vince/ua"
 	"gopkg.in/yaml.v2"
 )
 
@@ -57,12 +58,12 @@ func genBot() error {
 	var re2 []*Bot
 
 	for _, x := range r {
-		if isRe(x.Regex) {
-			_, err = syntax.Parse(cleanRegexString(x.Regex), syntax.Perl)
+		if ua.IsRe(x.Regex) {
+			_, err = syntax.Parse(ua.Clean(x.Regex), syntax.Perl)
 			if err == nil {
 				reStandard = append(reStandard, x)
 			} else {
-				_ = regexp2.MustCompile(cleanRegexString(x.Regex), regexp2.IgnoreCase)
+				_ = regexp2.MustCompile(ua.Clean(x.Regex), regexp2.IgnoreCase)
 				re2 = append(re2, x)
 			}
 		} else {
@@ -91,7 +92,7 @@ func genBot() error {
 		s.WriteString(x.Regex)
 	}
 
-	fmt.Fprintf(&buf, " var allBotsReStandardMatch= regexp.MustCompile(`%s`)\n", cleanRegexString(s.String()))
+	fmt.Fprintf(&buf, " var allBotsReStandardMatch= regexp.MustCompile(`%s`)\n", ua.Clean(s.String()))
 	s.Reset()
 	for i, x := range re2 {
 		if i != 0 {
@@ -100,7 +101,7 @@ func genBot() error {
 		s.WriteString(x.Regex)
 	}
 
-	fmt.Fprintf(&buf, " var allBotsRe2Match= re2.MustCompile(`%s`,re2.IgnoreCase)\n", cleanRegexString(s.String()))
+	fmt.Fprintf(&buf, " var allBotsRe2Match= re2.MustCompile(`%s`,re2.IgnoreCase)\n", ua.Clean(s.String()))
 	fmt.Fprintln(&buf, `
 	type botRe struct{
 		re *regexp.Regexp
@@ -129,14 +130,14 @@ func genBot() error {
 	fmt.Fprintln(&buf, "var botsReList=[]*botRe{")
 	for _, m := range reStandard {
 		fmt.Fprintf(&buf, "{re:regexp.MustCompile(`%s`), name:%q,category:%q,url:%q,producerName:%q,producerURL:%q, },\n",
-			cleanRegexString(m.Regex), m.Name, m.Category, m.Url, m.Producer.Name, m.Producer.Url,
+			ua.Clean(m.Regex), m.Name, m.Category, m.Url, m.Producer.Name, m.Producer.Url,
 		)
 	}
 	fmt.Fprintln(&buf, "}")
 	fmt.Fprintln(&buf, "var botsRe2List=[]*botRe2{")
 	for _, m := range re2 {
 		fmt.Fprintf(&buf, "{re:re2.MustCompile(`%s`,re2.IgnoreCase), name:%q,category:%q,url:%q,producerName:%q,producerURL:%q, },\n",
-			cleanRegexString(m.Regex), m.Name, m.Category, m.Url, m.Producer.Name, m.Producer.Url,
+			ua.Clean(m.Regex), m.Name, m.Category, m.Url, m.Producer.Name, m.Producer.Url,
 		)
 	}
 	fmt.Fprintln(&buf, "}")
@@ -153,23 +154,4 @@ func genBot() error {
 		return err
 	}
 	return os.WriteFile("ua_bots.go", f, 0600)
-}
-
-const meta = "\\.+*?()|[]{}^$#"
-
-func isRe(s string) bool {
-	return strings.ContainsAny(s, meta)
-}
-
-// Make some adjustments for a different regex engine than upstream matomo
-func cleanRegexString(re string) string {
-	rg := strings.Replace(re, `/`, `\/`, -1)
-	rg = strings.Replace(rg, `++`, `+`, -1)
-	rg = strings.Replace(rg, `\_`, `_`, -1)
-	// if we find `\_` again, the original was `\\_`,
-	// so restore that so the regex engine does not attempt to escape `_`
-	rg = strings.Replace(rg, `\_`, `\\_`, -1)
-
-	// only match if useragent begins with given regex or there is no letter before it
-	return `(?:^|[^A-Z0-9-_]|[^A-Z0-9-]_|sprd-)(?:` + rg + ")"
 }
