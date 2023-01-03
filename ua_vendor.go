@@ -9,7 +9,7 @@ type vendorResult struct {
 	name string
 }
 
-var vendorAllRe = MustCompile(`(?:^|[^A-Z0-9-_]|[^A-Z0-9-]_|sprd-)(?:MAAR(JS)?||MAAUNP0[26789]ASJBASU2(JS)?||CPDTDFCPNTDF(JS?)CMNTDF(JS)?CMDTDF(JS)?||MDDR(JS)?MDDC(JS)?MDDS(JS)?||MAFS(JS)?FSJB||MAGW(JS)?||HPCMHPHPNTDF(JS)?HPDTDF(JS)?||MANM(JS)?||MALC(JS)?MALE(JS)?MALN(JS)?LCJBLEN2||MAMI(JS)?MAM3||MAMD||Ordissimowebissimo3||MASM(JS)?SMJB||MASE(JS)?MASP(JS)?MASA(JS)?||MATM(JS)?MATB(JS)?MATP(JS)?TNJBTAJB)`)
+var vendorAllRe = MatchRe(`(?:^|[^A-Z0-9-_]|[^A-Z0-9-]_|sprd-)(?:MAAR(JS)?||MAAUNP0[26789]ASJBASU2(JS)?||CPDTDFCPNTDF(JS?)CMNTDF(JS)?CMDTDF(JS)?||MDDR(JS)?MDDC(JS)?MDDS(JS)?||MAFS(JS)?FSJB||MAGW(JS)?||HPCMHPHPNTDF(JS)?HPDTDF(JS)?||MANM(JS)?||MALC(JS)?MALE(JS)?MALN(JS)?LCJBLEN2||MAMI(JS)?MAM3||MAMD||Ordissimowebissimo3||MASM(JS)?SMJB||MASE(JS)?MASP(JS)?MASA(JS)?||MATM(JS)?MATB(JS)?MATP(JS)?TNJBTAJB)`)
 var vendorAll = []*vendorRe{
 	{re: MatchRe(`(?:^|[^A-Z0-9-_]|[^A-Z0-9-]_|sprd-)(?:MAAR(JS)?)`), name: "Acer"},
 	{re: MatchRe(`(?:^|[^A-Z0-9-_]|[^A-Z0-9-]_|sprd-)(?:MAAU|NP0[26789]|ASJB|ASU2(JS)?)`), name: "Asus"},

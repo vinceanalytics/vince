@@ -24,6 +24,17 @@ func parseBotUA(ua string) *botMatch {
 	return nil
 }
 
+func parseVendorUA(s string) string {
+	if vendorAllRe.MatchString(s) {
+		for _, r := range vendorAll {
+			if r.re.MatchString(s) {
+				return r.name
+			}
+		}
+	}
+	return ""
+}
+
 func MustCompile(s string) ReFunc {
 	var r *regexp.Regexp
 	return func() *regexp.Regexp {

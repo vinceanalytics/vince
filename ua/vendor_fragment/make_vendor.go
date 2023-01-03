@@ -80,9 +80,9 @@ func generate(b *bytes.Buffer, path string) error {
 		}
 	}
 	if ua.IsStdRe(s.String()) {
-		fmt.Fprintf(b, " var vendorAllRe= MustCompile(`%s`)\n", ua.Clean(s.String()))
+		fmt.Fprintf(b, " var vendorAllRe= MatchRe(`%s`)\n", ua.Clean(s.String()))
 	} else {
-		fmt.Fprintf(b, " var vendorAllRe= MustCompile2(`%s`)\n", ua.Clean(s.String()))
+		fmt.Fprintf(b, " var vendorAllRe= MatchRe2(`%s`)\n", ua.Clean(s.String()))
 	}
 	fmt.Fprintf(b, "var vendorAll=[]*vendorRe{\n")
 	var buf bytes.Buffer
