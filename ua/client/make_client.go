@@ -20,8 +20,7 @@ func main() {
 	fmt.Fprintln(&b, `
 
 type clientRe struct{
-	re ReFunc
-	re2 Re2Func
+	re *ReMatch
 	name        string  
 	version        string  
 	kind        string  
@@ -138,9 +137,9 @@ func generic(b *bytes.Buffer, name string, path string) error {
 		buf.Reset()
 		r := ua.Clean(d.Regex)
 		if ua.IsStdRe(d.Regex) {
-			fmt.Fprintf(&buf, "re:MustCompile(`%s`)", r)
+			fmt.Fprintf(&buf, "re:MatchRe(`%s`)", r)
 		} else {
-			fmt.Fprintf(&buf, "re2: MustCompile2(`%s`)", r)
+			fmt.Fprintf(&buf, "re: MatchRe2(`%s`)", r)
 		}
 		fmt.Fprintf(b, "{%s,name:%q", &buf, d.Name)
 		if d.Version != "" {

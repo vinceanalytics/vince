@@ -9,7 +9,7 @@ import (
 func parseBotUA(ua string) *botMatch {
 	if ok, _ := allBotsReStandardMatch().MatchString(ua); ok {
 		for _, m := range botsReList {
-			if m.match(ua) {
+			if m.re.MatchString(ua) {
 				return &botMatch{
 					name:         m.name,
 					category:     m.category,
@@ -22,14 +22,6 @@ func parseBotUA(ua string) *botMatch {
 		return nil
 	}
 	return nil
-}
-
-func (b *botRe) match(s string) bool {
-	if b.re != nil {
-		return b.re().MatchString(s)
-	}
-	ok, _ := b.re2().MatchString(s)
-	return ok
 }
 
 func MustCompile(s string) ReFunc {
@@ -55,4 +47,25 @@ func MustCompile2(s string) Re2Func {
 		r = re2.MustCompile(s, re2.IgnoreCase)
 		return r
 	}
+}
+
+type ReMatch struct {
+	re  ReFunc
+	re2 Re2Func
+}
+
+func (r *ReMatch) MatchString(s string) bool {
+	if r.re != nil {
+		return r.re().MatchString(s)
+	}
+	ok, _ := r.re2().MatchString(s)
+	return ok
+}
+
+func MatchRe(s string) *ReMatch {
+	return &ReMatch{re: MustCompile(s)}
+}
+
+func MatchRe2(s string) *ReMatch {
+	return &ReMatch{re2: MustCompile2(s)}
 }

@@ -20,8 +20,7 @@ func main() {
 	fmt.Fprintln(&b, `
 
 type deviceRe struct{
-	re ReFunc
-	re2 Re2Func
+	re *ReMatch
 	model        string  
 	device       string 
 	company      string   
@@ -29,8 +28,7 @@ type deviceRe struct{
 }
 
 type deviceModel struct {
-	re ReFunc
-	re2 Re2Func
+	re *ReMatch
 	model  string
 	exact string
 }
@@ -168,9 +166,9 @@ func generic(b *bytes.Buffer, name string, path string) error {
 		buf.Reset()
 		r := ua.Clean(d.Regex)
 		if ua.IsStdRe(d.Regex) {
-			fmt.Fprintf(&buf, "re:MustCompile(`%s`)", r)
+			fmt.Fprintf(&buf, "re:MatchRe(`%s`)", r)
 		} else {
-			fmt.Fprintf(&buf, "re2: MustCompile2(`%s`)", r)
+			fmt.Fprintf(&buf, "re: MatchRe2(`%s`)", r)
 		}
 		fmt.Fprintf(b, "{%s,company:%q, ", &buf, d.Manufacturer)
 		if d.Model != "" {
@@ -185,9 +183,9 @@ func generic(b *bytes.Buffer, name string, path string) error {
 						buf.Reset()
 						r = ua.Clean(m.Regex)
 						if ua.IsStdRe(m.Regex) {
-							fmt.Fprintf(&buf, "re:MustCompile(`%s`)", r)
+							fmt.Fprintf(&buf, "re:MatchRe(`%s`)", r)
 						} else {
-							fmt.Fprintf(&buf, "re2: MustCompile2(`%s`)", r)
+							fmt.Fprintf(&buf, "re: MatchRe2(`%s`)", r)
 						}
 						fmt.Fprintf(b, "%s},\n", &buf)
 					} else {

@@ -56,8 +56,7 @@ func genBot() error {
 	}
 	fmt.Fprintln(&buf, `
 	type botRe struct{
-		re ReFunc
-		re2 Re2Func
+		re *ReMatch
 		name     string   
 		category string   
 		url      string 
@@ -76,9 +75,9 @@ func genBot() error {
 	for _, m := range r {
 		s.Reset()
 		if ua.IsStdRe(m.Regex) {
-			fmt.Fprintf(&s, "re:MustCompile(`%s`)", ua.Clean(m.Regex))
+			fmt.Fprintf(&s, "re:MatchRe(`%s`)", ua.Clean(m.Regex))
 		} else {
-			fmt.Fprintf(&s, "re2:MustCompile2(`%s`)", ua.Clean(m.Regex))
+			fmt.Fprintf(&s, "re:MatchRe2(`%s`)", ua.Clean(m.Regex))
 		}
 		fmt.Fprintf(&buf, "{%s, name:%q,category:%q,url:%q,producerName:%q,producerURL:%q, },\n",
 			&s, m.Name, m.Category, m.Url, m.Producer.Name, m.Producer.Url,
