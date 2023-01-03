@@ -7,7 +7,7 @@ import (
 
 func TestParseBot(t *testing.T) {
 	ua := `Googlebot/2.1 (http://www.googlebot.com/bot.html)`
-	expect := &botMatch{
+	expect := &botResult{
 		name:         "Googlebot",
 		category:     "Search bot",
 		url:          "http://www.google.com/bot.html",
