@@ -60,9 +60,9 @@ func generate(b *bytes.Buffer, path string) error {
 		s.WriteString(d.Regex)
 	}
 	if ua.IsStdRe(s.String()) {
-		fmt.Fprintf(b, " var osAllRe= MustCompile(`%s`)\n", ua.Clean(s.String()))
+		fmt.Fprintf(b, " var osAllRe= MatchRe(`%s`)\n", ua.Clean(s.String()))
 	} else {
-		fmt.Fprintf(b, " var osAllRe= MustCompile2(`%s`)\n", ua.Clean(s.String()))
+		fmt.Fprintf(b, " var osAllRe= MatchRe2(`%s`)\n", ua.Clean(s.String()))
 	}
 	fmt.Fprintf(b, "var osAll=[]*clientRe{\n")
 	var buf bytes.Buffer

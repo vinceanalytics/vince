@@ -43,3 +43,23 @@ func Benchmark_parseVendor(b *testing.B) {
 		_ = parseVendorUA(ua)
 	}
 }
+
+func TestParseOsUA(t *testing.T) {
+	ua := "Mozilla/5.0 (AmigaOS; U; AmigaOS 1.3; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15"
+	got := parseOsUA(ua)
+	want := &osResult{
+		name:    "AmigaOS",
+		version: "1.3",
+	}
+	if !reflect.DeepEqual(want, got) {
+		t.Error("failed expectations")
+	}
+}
+
+func Benchmark_parseOsUA(b *testing.B) {
+	b.ReportAllocs()
+	ua := "Mozilla/5.0 (AmigaOS; U; AmigaOS 1.3; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15"
+	for i := 0; i < b.N; i++ {
+		_ = parseOsUA(ua)
+	}
+}

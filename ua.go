@@ -2,6 +2,7 @@ package vince
 
 import (
 	"regexp"
+	"strings"
 
 	re2 "github.com/dlclark/regexp2"
 )
@@ -33,6 +34,31 @@ func parseVendorUA(s string) string {
 		}
 	}
 	return ""
+}
+
+func parseOsUA(s string) *osResult {
+	if osAllRe.MatchString(s) {
+		for _, e := range osAll {
+			if e.re.MatchString(s) {
+				var version string
+				if e.version != "" {
+					if strings.HasPrefix(e.version, "$") {
+						sub := e.re.re().FindStringSubmatch(s)
+						if len(sub) > 1 {
+							version = sub[1]
+						}
+					} else {
+						version = e.version
+					}
+				}
+				return &osResult{
+					name:    e.name,
+					version: version,
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func MustCompile(s string) ReFunc {
