@@ -84,3 +84,20 @@ func Benchmark_parseDeviceUA(b *testing.B) {
 		_ = parseDeviceUA(ua)
 	}
 }
+
+func TestParseCLientUA(t *testing.T) {
+	ua := "FeedDemon/4.5 (http://www.feeddemon.com/; Microsoft Windows)"
+	got := parseClientUA(ua)
+	want := &clientResult{kind: "Feed Reader", name: "FeedDemon", version: "4.5"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("expect %#v got %#v", want, got)
+	}
+}
+
+func Benchmark_parseClientUA(b *testing.B) {
+	b.ReportAllocs()
+	ua := "FeedDemon/4.5 (http://www.feeddemon.com/; Microsoft Windows)"
+	for i := 0; i < b.N; i++ {
+		_ = parseClientUA(ua)
+	}
+}

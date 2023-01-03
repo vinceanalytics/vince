@@ -34,6 +34,7 @@ type clientEngine struct {
 }
 
 type clientResult struct {
+	kind        string  
 	name        string  
 	version        string  
 }
@@ -121,15 +122,19 @@ func generic(b *bytes.Buffer, name string, path string) error {
 	}
 	var s strings.Builder
 	for i, d := range items {
+		// set kind
+		if d.Type == "" {
+			d.Type = name
+		}
 		if i != 0 {
 			s.WriteByte('|')
 		}
 		s.WriteString(d.Regex)
 	}
 	if ua.IsStdRe(s.String()) {
-		fmt.Fprintf(b, " var client%sAllRe= MustCompile(`%s`)\n", name, ua.Clean(s.String()))
+		fmt.Fprintf(b, " var client%sAllRe= MatchRe(`%s`)\n", name, ua.Clean(s.String()))
 	} else {
-		fmt.Fprintf(b, " var client%sAllRe= MustCompile2(`%s`)\n", name, ua.Clean(s.String()))
+		fmt.Fprintf(b, " var client%sAllRe= MatchRe2(`%s`)\n", name, ua.Clean(s.String()))
 	}
 	fmt.Fprintf(b, "var client%sAll=[]*clientRe{\n", name)
 	var buf bytes.Buffer

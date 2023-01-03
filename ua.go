@@ -136,6 +136,62 @@ func parseDeviceBase(s string, ls []*deviceRe) *deviceResult {
 	}
 	return nil
 }
+
+func parseClientUA(s string) *clientResult {
+	{
+		// find browsers
+		if clientBrowserAllRe.MatchString(s) {
+			return parseClientBase(s, clientBrowserAll)
+		}
+	}
+	{
+		// find feed readers
+		if clientFeedReaderAllRe.MatchString(s) {
+			return parseClientBase(s, clientFeedReaderAll)
+		}
+	}
+	{
+		// find libraries
+		if clientLibraryAllRe.MatchString(s) {
+			return parseClientBase(s, clientLibraryAll)
+		}
+	}
+	{
+		// find media players
+		if clientMediaPlayerAllRe.MatchString(s) {
+			return parseClientBase(s, clientMediaPlayerAll)
+		}
+	}
+	{
+		// find mobile apps
+		if clientMobileAppAllRe.MatchString(s) {
+			return parseClientBase(s, clientMobileAppAll)
+		}
+	}
+	{
+		if clientPimAllRe.MatchString(s) {
+			return parseClientBase(s, clientPimAll)
+		}
+	}
+	return nil
+}
+
+func parseClientBase(s string, ls []*clientRe) *clientResult {
+	for _, e := range ls {
+		if e.re.MatchString(s) {
+			d := &clientResult{
+				kind:    e.kind,
+				name:    e.name,
+				version: e.version,
+			}
+			if strings.Contains(d.version, "$1") {
+				d.version = strings.Replace(d.version, "$1", e.re.FirstSubmatch(s), -1)
+			}
+			return d
+		}
+	}
+	return nil
+}
 func MustCompile(s string) ReFunc {
 	var r *regexp.Regexp
 	return func() *regexp.Regexp {
