@@ -41,10 +41,6 @@ func main() {
 					Parameters: params,
 				}
 				dm := domain.(string)
-				med.sort = dm
-				for _, p := range params {
-					med.sort += p
-				}
 				u, _ := url.Parse("http://" + dm)
 				host := strings.TrimPrefix(u.Host, "www.")
 				parts := strings.Split(host, ".")
@@ -96,7 +92,6 @@ func (x StringSlice) Less(i, j int) bool { return i < j }
 func (x StringSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 
 type Medium struct {
-	sort       string
 	Host       string
 	Type       string
 	Name       string
@@ -105,10 +100,6 @@ type Medium struct {
 
 type MedSLice []*Medium
 
-func (x MedSLice) Len() int { return len(x) }
-func (x MedSLice) Less(i, j int) bool {
-	a := x[i]
-	b := x[j]
-	return (a.sort + a.Host + a.Type + a.Name) < (b.sort + b.Host + b.Type + b.Name)
-}
-func (x MedSLice) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
+func (x MedSLice) Len() int           { return len(x) }
+func (x MedSLice) Less(i, j int) bool { return x[i].Host < x[j].Host }
+func (x MedSLice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
