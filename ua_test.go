@@ -63,3 +63,24 @@ func Benchmark_parseOsUA(b *testing.B) {
 		_ = parseOsUA(ua)
 	}
 }
+
+func TestParseDevice_camera(t *testing.T) {
+	ua := `Mozilla/5.0 (Linux; U; Android 4.0; de-DE; EK-GC100 Build/IMM76D) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30`
+	got := parseDeviceUA(ua)
+	want := &deviceResult{
+		model:   "Galaxy Camera 100",
+		device:  "camera",
+		company: "Samsung",
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("expected %#v got %#v", want, got)
+	}
+}
+
+func Benchmark_parseDeviceUA(b *testing.B) {
+	b.ReportAllocs()
+	ua := `Mozilla/5.0 (Linux; U; Android 4.0; de-DE; EK-GC100 Build/IMM76D) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30`
+	for i := 0; i < b.N; i++ {
+		_ = parseDeviceUA(ua)
+	}
+}

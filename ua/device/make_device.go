@@ -30,7 +30,6 @@ type deviceRe struct{
 type deviceModel struct {
 	re *ReMatch
 	model  string
-	exact string
 }
 
 type deviceResult struct {
@@ -139,7 +138,7 @@ func genPortableMediaPlayer(b *bytes.Buffer) error {
 
 func genShell(b *bytes.Buffer) error {
 	fmt.Fprintln(b)
-	fmt.Fprintf(b, " var deviceShellRe= MustCompile(`%s`)\n", ua.Clean(`[a-z]+[ _]Shell[ _]\w{6}`))
+	fmt.Fprintf(b, " var deviceIsShellTV= MustCompile(`%s`)\n", ua.Clean(`[a-z]+[ _]Shell[ _]\w{6}`))
 	return generic(b, "Shell", "device/shell_tv.yml")
 }
 func generic(b *bytes.Buffer, name string, path string) error {
@@ -157,9 +156,9 @@ func generic(b *bytes.Buffer, name string, path string) error {
 	var buf bytes.Buffer
 
 	if ua.IsStdRe(s.String()) {
-		fmt.Fprintf(b, " var device%sAllRe= MustCompile(`%s`)\n", name, ua.Clean(s.String()))
+		fmt.Fprintf(b, " var device%sAllRe= MatchRe(`%s`)\n", name, ua.Clean(s.String()))
 	} else {
-		fmt.Fprintf(b, " var device%sAllRe= MustCompile2(`%s`)\n", name, ua.Clean(s.String()))
+		fmt.Fprintf(b, " var device%sAllRe= MatchRe2(`%s`)\n", name, ua.Clean(s.String()))
 	}
 	fmt.Fprintf(b, "var device%sAll=[]*deviceRe{\n", name)
 	for _, d := range items {
@@ -170,7 +169,7 @@ func generic(b *bytes.Buffer, name string, path string) error {
 		} else {
 			fmt.Fprintf(&buf, "re: MatchRe2(`%s`)", r)
 		}
-		fmt.Fprintf(b, "{%s,company:%q, ", &buf, d.Manufacturer)
+		fmt.Fprintf(b, "{%s,company:%q,device:%q, ", &buf, d.Manufacturer, d.Device)
 		if d.Model != "" {
 			fmt.Fprintf(b, "model:%q},\n", d.Model)
 		} else {
@@ -179,18 +178,14 @@ func generic(b *bytes.Buffer, name string, path string) error {
 				for _, m := range d.Models {
 
 					fmt.Fprintf(b, "{model:%q,", m.Model)
-					if ua.IsRe(m.Regex) {
-						buf.Reset()
-						r = ua.Clean(m.Regex)
-						if ua.IsStdRe(m.Regex) {
-							fmt.Fprintf(&buf, "re:MatchRe(`%s`)", r)
-						} else {
-							fmt.Fprintf(&buf, "re: MatchRe2(`%s`)", r)
-						}
-						fmt.Fprintf(b, "%s},\n", &buf)
+					buf.Reset()
+					r = ua.Clean(m.Regex)
+					if ua.IsStdRe(m.Regex) {
+						fmt.Fprintf(&buf, "re:MatchRe(`%s`)", r)
 					} else {
-						fmt.Fprintf(b, "exact:%q},\n", m.Regex)
+						fmt.Fprintf(&buf, "re: MatchRe2(`%s`)", r)
 					}
+					fmt.Fprintf(b, "%s},\n", &buf)
 				}
 				fmt.Fprintf(b, "},")
 			}

@@ -61,6 +61,81 @@ func parseOsUA(s string) *osResult {
 	return nil
 }
 
+func parseDeviceUA(s string) *deviceResult {
+	{
+		// find cameras
+		if deviceCameraAllRe.MatchString(s) {
+			return parseDeviceBase(s, deviceCameraAll)
+		}
+	}
+	{
+		// find car browsers
+		if deviceCarAllRe.MatchString(s) {
+			return parseDeviceBase(s, deviceCarAll)
+		}
+	}
+	{
+		// find consoles
+		if deviceConsoleAllRe.MatchString(s) {
+			return parseDeviceBase(s, deviceConsoleAll)
+		}
+	}
+	{
+		// find mobiles
+		if deviceMobileAllRe.MatchString(s) {
+			return parseDeviceBase(s, deviceMobileAll)
+		}
+	}
+	{
+		// find notebooks
+		if deviceNotebookAllRe.MatchString(s) {
+			return parseDeviceBase(s, deviceNotebookAll)
+		}
+	}
+	{
+		// find portable media player
+		if devicePortableMediaPlayerAllRe.MatchString(s) {
+			return parseDeviceBase(s, devicePortableMediaPlayerAll)
+		}
+	}
+	{
+		// find shell tv
+		if deviceIsShellTV().MatchString(s) {
+			return parseDeviceBase(s, deviceShellAll)
+		}
+	}
+	{
+		// find tv
+		if deviceIsTVRe().MatchString(s) {
+			return parseDeviceBase(s, deviceTVAll)
+		}
+	}
+	return nil
+}
+
+func parseDeviceBase(s string, ls []*deviceRe) *deviceResult {
+	for _, e := range ls {
+		if e.re.MatchString(s) {
+			d := &deviceResult{
+				model:   e.model,
+				company: e.company,
+				device:  e.device,
+			}
+			if len(e.models) > 0 {
+				for _, m := range e.models {
+					if m.re.MatchString(s) {
+						d.model = m.model
+						if strings.Contains(d.model, "$1") {
+							d.model = strings.Replace(d.model, "$1", m.re.FirstSubmatch(s), -1)
+						}
+					}
+				}
+			}
+			return d
+		}
+	}
+	return nil
+}
 func MustCompile(s string) ReFunc {
 	var r *regexp.Regexp
 	return func() *regexp.Regexp {
@@ -97,6 +172,16 @@ func (r *ReMatch) MatchString(s string) bool {
 	}
 	ok, _ := r.re2().MatchString(s)
 	return ok
+}
+
+func (r *ReMatch) FirstSubmatch(s string) string {
+	if r.re != nil {
+		sub := r.re().FindStringSubmatch(s)
+		if len(sub) > 1 {
+			return sub[1]
+		}
+	}
+	return ""
 }
 
 func MatchRe(s string) *ReMatch {
