@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/gernest/vince/ua"
-	"gopkg.in/yaml.v2"
 )
 
 func main() {
@@ -107,43 +106,43 @@ func (x DeviceRegSlice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 
 func genCamera(b *bytes.Buffer) error {
 	fmt.Fprintln(b)
-	return generic(b, "Camera", "ua/data/device/cameras.yml")
+	return generic(b, "Camera", "device/cameras.yml")
 }
 
 func genCar(b *bytes.Buffer) error {
 	fmt.Fprintln(b)
-	return generic(b, "Car", "ua/data/device/car_browsers.yml")
+	return generic(b, "Car", "device/car_browsers.yml")
 }
 
 func genConsole(b *bytes.Buffer) error {
 	fmt.Fprintln(b)
-	return generic(b, "Console", "ua/data/device/consoles.yml")
+	return generic(b, "Console", "device/consoles.yml")
 }
 
 func genTV(b *bytes.Buffer) error {
 	fmt.Fprintln(b)
 	fmt.Fprintf(b, " var deviceIsTVRe= MustCompile(`%s`)\n", ua.Clean(`HbbTV/([1-9]{1}(?:.[0-9]{1}){1,2})`))
-	return generic(b, "TV", "ua/data/device/televisions.yml")
+	return generic(b, "TV", "device/televisions.yml")
 }
 
 func genMobile(b *bytes.Buffer) error {
 	fmt.Fprintln(b)
-	return generic(b, "Mobile", "ua/data/device/mobiles.yml")
+	return generic(b, "Mobile", "device/mobiles.yml")
 }
 
 func genNotebook(b *bytes.Buffer) error {
 	fmt.Fprintln(b)
-	return generic(b, "Notebook", "ua/data/device/notebooks.yml")
+	return generic(b, "Notebook", "device/notebooks.yml")
 }
 func genPortableMediaPlayer(b *bytes.Buffer) error {
 	fmt.Fprintln(b)
-	return generic(b, "PortableMediaPlayer", "ua/data/device/portable_media_player.yml")
+	return generic(b, "PortableMediaPlayer", "device/portable_media_player.yml")
 }
 
 func genShell(b *bytes.Buffer) error {
 	fmt.Fprintln(b)
 	fmt.Fprintf(b, " var deviceShellRe= MustCompile(`%s`)\n", ua.Clean(`[a-z]+[ _]Shell[ _]\w{6}`))
-	return generic(b, "Shell", "ua/data/device/shell_tv.yml")
+	return generic(b, "Shell", "device/shell_tv.yml")
 }
 func generic(b *bytes.Buffer, name string, path string) error {
 	items, err := loadDevice(path)
@@ -207,12 +206,8 @@ func generic(b *bytes.Buffer, name string, path string) error {
 }
 
 func loadDevice(path string) ([]*DeviceReg, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
 	var v map[string]*DeviceReg
-	err = yaml.Unmarshal(b, &v)
+	err := ua.Read(path, &v)
 	if err != nil {
 		return nil, err
 	}

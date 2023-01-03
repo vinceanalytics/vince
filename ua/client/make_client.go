@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/gernest/vince/ua"
-	"gopkg.in/yaml.v2"
 )
 
 func main() {
@@ -76,10 +75,6 @@ type clientResult struct {
 	os.WriteFile("ua_client.go", r, 0600)
 }
 
-func genBrowserEngine(b *bytes.Buffer) error {
-	return generic(b, "BrowserEngine", "ua/data/client/browser_engine.yml")
-}
-
 type ClientReg struct {
 	Regex   string  `yaml:"regex" json:"regex"`
 	Name    string  `yaml:"name" json:"name"`
@@ -94,34 +89,34 @@ type Engine struct {
 	Versions map[string]string `yaml:"versions" json:"versions"`
 }
 
+func genBrowserEngine(b *bytes.Buffer) error {
+	return generic(b, "BrowserEngine", "client/browser_engine.yml")
+}
+
 func genBrowser(b *bytes.Buffer) error {
-	return generic(b, "Browser", "ua/data/client/browsers.yml")
+	return generic(b, "Browser", "client/browsers.yml")
 }
 func genFeedReader(b *bytes.Buffer) error {
-	return generic(b, "FeedReader", "ua/data/client/feed_readers.yml")
+	return generic(b, "FeedReader", "client/feed_readers.yml")
 }
 
 func genLibraries(b *bytes.Buffer) error {
-	return generic(b, "Library", "ua/data/client/libraries.yml")
+	return generic(b, "Library", "client/libraries.yml")
 }
 
 func genMediaPlayers(b *bytes.Buffer) error {
-	return generic(b, "MediaPlayer", "ua/data/client/mediaplayers.yml")
+	return generic(b, "MediaPlayer", "client/mediaplayers.yml")
 }
 func genMobileApps(b *bytes.Buffer) error {
-	return generic(b, "MobileApp", "ua/data/client/mobile_apps.yml")
+	return generic(b, "MobileApp", "client/mobile_apps.yml")
 }
 func genPim(b *bytes.Buffer) error {
-	return generic(b, "Pim", "ua/data/client/pim.yml")
+	return generic(b, "Pim", "client/pim.yml")
 }
 
 func generic(b *bytes.Buffer, name string, path string) error {
-	f, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
 	var items []*ClientReg
-	err = yaml.Unmarshal(f, &items)
+	err := ua.Read(path, &items)
 	if err != nil {
 		return err
 	}

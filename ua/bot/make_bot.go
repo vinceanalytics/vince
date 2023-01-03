@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/gernest/vince/ua"
-	"gopkg.in/yaml.v2"
 )
 
 func main() {
@@ -33,12 +32,7 @@ type Bot struct {
 
 func genBot() error {
 	var r []*Bot
-	b, err := os.ReadFile("ua/data/bots.yml")
-	if err != nil {
-		// do nothing if we can't find data file
-		return nil
-	}
-	err = yaml.Unmarshal(b, &r)
+	err := ua.Read("bots.yml", &r)
 	if err != nil {
 		return err
 	}

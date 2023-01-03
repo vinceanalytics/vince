@@ -1,8 +1,12 @@
 package ua
 
 import (
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 const meta = "\\.+*?()|[]{}^$#"
@@ -27,4 +31,13 @@ func IsStdRe(s string) bool {
 	r := Clean(s)
 	_, err := regexp.Compile(r)
 	return err == nil
+}
+
+func Read(name string, out any) error {
+	path := filepath.Join(os.Getenv("UA_ROOT"), name)
+	f, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	return yaml.Unmarshal(f, out)
 }
