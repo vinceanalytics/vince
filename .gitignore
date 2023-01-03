@@ -1,3 +1,7 @@
 *.sql
 *.db
 **/*.yml
+npm-debug.log
+tracker/node_modules/
+assets/tracker/
+
