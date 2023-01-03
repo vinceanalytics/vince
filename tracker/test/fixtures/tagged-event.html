@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>vince Playwright tests</title>
+
+  <script defer src="/tracker/js/vince.local.manual.tagged-events.js"></script>
+</head>
+
+<body>
+  <a id="link"
+    class="vince-event-name=Payment+Complete should ignore-this vince-event-amount=100 vince-event-method=Credit+Card"
+    href="https://awesome.website.com/payment/">tagged link</a>
+
+  <form class="vince-event-name=Signup vince-event-type=Newsletter"
+    action="https://awesome.website.com/register" method="post">
+    <input type="text" id='form-text-input' />
+    <input id="form-submit" type="submit" value="Submit" />
+  </form>
+
+  <button id="button" class="vince-event-name=Custom+Event vince-event-foo=bar">
+    Button
+  </button>
+
+  <span id="span" class="vince-event-name=Custom+Event vince-event-foo=bar">
+    Span
+  </span>
+
+  <div id="div" class="vince-event-name=Custom+Event vince-event-foo=bar">
+    <a id="link-with-div-parent" href="https://awesome.website.com/payment/">Div child</a>
+  </div>
+
+  <a class="vince-event-name=Custom+Event vince-event-foo=bar" href="https://awesome.website.com/payment/">
+    <h2 id="h2-with-link-parent">Link child</h2>
+  </a>
+
+  <div class="vince-event-name=Form+Submit">
+    <form action="https://awesome.website.com/register" method="post">
+      <input type="text" value="Form" />
+      <input id="submit-form-with-tagged-parent" type="submit" value="Submit" />
+    </form>
+  </div>
+
+  <a id="not-tracked-link" class="vince-event-amount=100 vince-event-method=Credit+Card"
+    href="https://awesome.website.com/payment/">
+    Link (without vince-event-name class)
+  </a>
+
+  <button id="not-tracked-button" class="im not tracked">
+    Button (without vince-event-name class)
+  </button>
+
+  <span id="not-tracked-span" class="vince-event-name= still not tracked">
+    Span (without vince-event-name class)
+  </span>
+
+
+  <script>
+    // Dynamically add a tagged element to DOM after one second
+    setTimeout(function () {
+      let taggedElement = document.createElement('button')
+      taggedElement.id = 'dynamic-tagged-button'
+      taggedElement.classList.add('vince-event-name=Custom+Event')
+      taggedElement.innerHTML += 'Dynamic tagged button'
+      document.body.appendChild(taggedElement)
+    }, 1000)
+  </script>
+
+  <form id="form" class="vince-event-name=Signup vince-event-type=Newsletter"
+    action="https://awesome.website.com/register" method="post">
+    <input type="text" id='form-input' />
+    <div id="form-div">div in a form</div>
+    <input type="submit" value="Submit" />
+  </form>
+</body>
+
+</html>
