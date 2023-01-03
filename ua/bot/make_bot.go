@@ -63,7 +63,7 @@ func genBot() error {
 		producerName string  
 		producerURL string  
 	}
-	type botMatch struct {
+	type botResult struct {
 		name     string   
 		category string   
 		url      string 

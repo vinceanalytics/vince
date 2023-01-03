@@ -7,11 +7,41 @@ import (
 	re2 "github.com/dlclark/regexp2"
 )
 
-func parseBotUA(ua string) *botMatch {
+type deviceInfo struct {
+	ua     string
+	device *deviceResult
+	client *clientResult
+	os     *osResult
+	bot    *botResult
+}
+
+func parseUA(s string) *deviceInfo {
+	if !containsLetter(s) {
+		return nil
+	}
+	return &deviceInfo{
+		ua:     s,
+		device: parseDeviceUA(s),
+		client: parseClientUA(s),
+		os:     parseOsUA(s),
+		bot:    parseBotUA(s),
+	}
+}
+
+func containsLetter(ua string) bool {
+	for _, c := range ua {
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') {
+			return true
+		}
+	}
+	return false
+}
+
+func parseBotUA(ua string) *botResult {
 	if ok, _ := allBotsReStandardMatch().MatchString(ua); ok {
 		for _, m := range botsReList {
 			if m.re.MatchString(ua) {
-				return &botMatch{
+				return &botResult{
 					name:         m.name,
 					category:     m.category,
 					url:          m.url,
