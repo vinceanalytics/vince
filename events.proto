@@ -22,16 +22,15 @@ message Event {
   string utm_medium = 13;
   string utm_source = 14;
   string utm_campaign = 15;
-  map<string, string> meta = 16;
-  string browser_version = 17;
-  string operating_system_version = 18;
-  string subdivision1_code = 19;
-  string subdivision2_code = 20;
-  uint32 city_geoname_id = 21;
-  string utm_content = 22;
-  string utm_term = 23;
-  string transferred_from = 24;
-  google.protobuf.Timestamp timestamp = 25;
+  string browser_version = 16;
+  string operating_system_version = 17;
+  string subdivision1_code = 18;
+  string subdivision2_code = 19;
+  uint32 city_geoname_id = 20;
+  string utm_content = 21;
+  string utm_term = 22;
+  string transferred_from = 23;
+  google.protobuf.Timestamp timestamp = 24;
 }
 
 message Session {
@@ -63,8 +62,7 @@ message Session {
   string utm_term = 27;
   string transferred_from = 28;
   google.protobuf.Timestamp start = 29;
-  map<string, string> entry_meta = 30;
-  google.protobuf.Timestamp timestamp = 31;
+  google.protobuf.Timestamp timestamp = 30;
 }
 
 message ImportedVisitor {
@@ -91,7 +89,7 @@ message ImportedSources {
   uint32 bounces = 11;
 }
 
-message ImortedPages {
+message ImportedPages {
   uint64 site_id = 1;
   google.protobuf.Timestamp date = 2;
   string hostname = 3;
