@@ -63,11 +63,7 @@ func createSchema(b *bytes.Buffer, d *desc.MessageDescriptor) {
 		n := f.GetName()
 		switch t {
 		case descriptorpb.FieldDescriptorProto_TYPE_STRING:
-			if f.IsRepeated() {
-				fmt.Fprintf(b, stringArrayFmt, n)
-			} else {
-				fmt.Fprintf(b, stringFmt, n)
-			}
+			fmt.Fprintf(b, stringFmt, n)
 		case descriptorpb.FieldDescriptorProto_TYPE_UINT64,
 			descriptorpb.FieldDescriptorProto_TYPE_UINT32,
 			descriptorpb.FieldDescriptorProto_TYPE_INT32:
@@ -81,6 +77,8 @@ func createSchema(b *bytes.Buffer, d *desc.MessageDescriptor) {
 				fmt.Fprintf(b, timestampFmt, n)
 			case "Duration":
 				fmt.Fprintf(b, durationFmt, n)
+			case "Label":
+				fmt.Fprint(b, stringArrayFmt)
 			}
 		default:
 			println(t)
@@ -113,15 +111,12 @@ const stringFmt = `{
 	},
 },
 `
-const stringArrayFmt = `{
-	Type: &schemav2pb.Node_Leaf{
-		Leaf: &schemav2pb.Leaf{
-			Name: %q,
-			StorageLayout: &schemav2pb.StorageLayout{
-				Type:        schemav2pb.StorageLayout_TYPE_STRING,
-				Repeated: true,
-				Nullable: true,
-			},
+const stringArrayFmt = `
+{
+	Type: &schemav2pb.Node_Group{
+		Group: &schemav2pb.Group{
+			Name:  "labels",
+			Nodes: []*schemav2pb.Node{},
 		},
 	},
 },

@@ -74,12 +74,7 @@ func (e *Event) NewSession() *Session {
 	s.OperatingSystemVersion = e.OperatingSystemVersion
 	s.Browser = e.Browser
 	s.Timestamp = e.Timestamp
-	for _, v := range e.MetaKey {
-		s.MetaKey = append(s.MetaKey, v)
-	}
-	for _, v := range e.MetaValue {
-		s.MetaValue = append(s.MetaValue, v)
-	}
+	s.Labels = append(s.Labels, e.Labels...)
 	return s
 }
 

@@ -7,6 +7,7 @@ import (
 
 const EventTable = "event"
 const SessionTable = "session"
+const LabelTable = "label"
 const ImportedVisitorTable = "imported_visitor"
 const ImportedSourcesTable = "imported_sources"
 const ImportedPagesTable = "imported_pages"
@@ -251,27 +252,12 @@ var EventSchema = &schemav2pb.Schema{
 					},
 				},
 			},
+
 			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
-						Name: "meta_key",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type:     schemav2pb.StorageLayout_TYPE_STRING,
-							Repeated: true,
-							Nullable: true,
-						},
-					},
-				},
-			},
-			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
-						Name: "meta_value",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type:     schemav2pb.StorageLayout_TYPE_STRING,
-							Repeated: true,
-							Nullable: true,
-						},
+				Type: &schemav2pb.Node_Group{
+					Group: &schemav2pb.Group{
+						Name:  "labels",
+						Nodes: []*schemav2pb.Node{},
 					},
 				},
 			},
@@ -575,27 +561,12 @@ var SessionSchema = &schemav2pb.Schema{
 					},
 				},
 			},
+
 			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
-						Name: "meta_key",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type:     schemav2pb.StorageLayout_TYPE_STRING,
-							Repeated: true,
-							Nullable: true,
-						},
-					},
-				},
-			},
-			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
-						Name: "meta_value",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type:     schemav2pb.StorageLayout_TYPE_STRING,
-							Repeated: true,
-							Nullable: true,
-						},
+				Type: &schemav2pb.Node_Group{
+					Group: &schemav2pb.Group{
+						Name:  "labels",
+						Nodes: []*schemav2pb.Node{},
 					},
 				},
 			},
@@ -619,6 +590,33 @@ var SessionSchema = &schemav2pb.Schema{
 							Type:        schemav2pb.StorageLayout_TYPE_INT64,
 							Encoding:    schemav2pb.StorageLayout_ENCODING_DELTA_BINARY_PACKED,
 							Compression: schemav2pb.StorageLayout_COMPRESSION_ZSTD,
+						},
+					},
+				},
+			},
+		},
+	},
+}
+var LabelSchema = &schemav2pb.Schema{
+	Root: &schemav2pb.Group{
+		Name: "label",
+		Nodes: []*schemav2pb.Node{
+			{
+				Type: &schemav2pb.Node_Leaf{
+					Leaf: &schemav2pb.Leaf{
+						Name: "name",
+						StorageLayout: &schemav2pb.StorageLayout{
+							Type: schemav2pb.StorageLayout_TYPE_STRING,
+						},
+					},
+				},
+			},
+			{
+				Type: &schemav2pb.Node_Leaf{
+					Leaf: &schemav2pb.Leaf{
+						Name: "value",
+						StorageLayout: &schemav2pb.StorageLayout{
+							Type: schemav2pb.StorageLayout_TYPE_STRING,
 						},
 					},
 				},
