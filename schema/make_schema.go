@@ -65,7 +65,8 @@ func createSchema(b *bytes.Buffer, d *desc.MessageDescriptor) {
 		case descriptorpb.FieldDescriptorProto_TYPE_STRING:
 			fmt.Fprintf(b, stringFmt, n)
 		case descriptorpb.FieldDescriptorProto_TYPE_UINT64,
-			descriptorpb.FieldDescriptorProto_TYPE_UINT32:
+			descriptorpb.FieldDescriptorProto_TYPE_UINT32,
+			descriptorpb.FieldDescriptorProto_TYPE_INT32:
 			fmt.Fprintf(b, intFmt, n)
 		case descriptorpb.FieldDescriptorProto_TYPE_BOOL:
 			fmt.Fprintf(b, boolFmt, n)

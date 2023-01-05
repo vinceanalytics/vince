@@ -313,7 +313,7 @@ var SessionSchema = &schemav2pb.Schema{
 			{
 				Type: &schemav2pb.Node_Leaf{
 					Leaf: &schemav2pb.Leaf{
-						Name: "host_name",
+						Name: "hostname",
 						StorageLayout: &schemav2pb.StorageLayout{
 							Type: schemav2pb.StorageLayout_TYPE_STRING,
 						},
@@ -535,6 +535,16 @@ var SessionSchema = &schemav2pb.Schema{
 				Type: &schemav2pb.Node_Leaf{
 					Leaf: &schemav2pb.Leaf{
 						Name: "transferred_from",
+						StorageLayout: &schemav2pb.StorageLayout{
+							Type: schemav2pb.StorageLayout_TYPE_STRING,
+						},
+					},
+				},
+			},
+			{
+				Type: &schemav2pb.Node_Leaf{
+					Leaf: &schemav2pb.Leaf{
+						Name: "screen_size",
 						StorageLayout: &schemav2pb.StorageLayout{
 							Type: schemav2pb.StorageLayout_TYPE_STRING,
 						},

@@ -35,10 +35,10 @@ message Event {
 
 message Session {
   uint64 session_id = 1;
-  uint32 sign = 2;
+  int32 sign = 2;
   string domain = 4;
   uint64 user_id = 5;
-  string host_name = 6;
+  string hostname = 6;
   bool is_bounce = 7;
   string entry_page = 8;
   string exit_page = 9;
@@ -61,8 +61,9 @@ message Session {
   string utm_content = 26;
   string utm_term = 27;
   string transferred_from = 28;
-  google.protobuf.Timestamp start = 29;
-  google.protobuf.Timestamp timestamp = 30;
+  string screen_size=29;
+  google.protobuf.Timestamp start = 30;
+  google.protobuf.Timestamp timestamp = 31;
 }
 
 message ImportedVisitor {
