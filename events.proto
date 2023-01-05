@@ -30,7 +30,9 @@ message Event {
   string utm_content = 21;
   string utm_term = 22;
   string transferred_from = 23;
-  google.protobuf.Timestamp timestamp = 24;
+  repeated string meta_key=24;
+  repeated string meta_value=25;
+  google.protobuf.Timestamp timestamp = 26;
 }
 
 message Session {
@@ -62,8 +64,10 @@ message Session {
   string utm_term = 27;
   string transferred_from = 28;
   string screen_size=29;
-  google.protobuf.Timestamp start = 30;
-  google.protobuf.Timestamp timestamp = 31;
+  repeated string meta_key=30;
+  repeated string meta_value=31;
+  google.protobuf.Timestamp start = 32;
+  google.protobuf.Timestamp timestamp = 33;
 }
 
 message ImportedVisitor {

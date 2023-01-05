@@ -254,6 +254,26 @@ var EventSchema = &schemav2pb.Schema{
 			{
 				Type: &schemav2pb.Node_Leaf{
 					Leaf: &schemav2pb.Leaf{
+						Name: "meta_key",
+						StorageLayout: &schemav2pb.StorageLayout{
+							Type: schemav2pb.StorageLayout_TYPE_STRING,
+						},
+					},
+				},
+			},
+			{
+				Type: &schemav2pb.Node_Leaf{
+					Leaf: &schemav2pb.Leaf{
+						Name: "meta_value",
+						StorageLayout: &schemav2pb.StorageLayout{
+							Type: schemav2pb.StorageLayout_TYPE_STRING,
+						},
+					},
+				},
+			},
+			{
+				Type: &schemav2pb.Node_Leaf{
+					Leaf: &schemav2pb.Leaf{
 						Name: "timestamp",
 						StorageLayout: &schemav2pb.StorageLayout{
 							Type:        schemav2pb.StorageLayout_TYPE_INT64,
@@ -545,6 +565,26 @@ var SessionSchema = &schemav2pb.Schema{
 				Type: &schemav2pb.Node_Leaf{
 					Leaf: &schemav2pb.Leaf{
 						Name: "screen_size",
+						StorageLayout: &schemav2pb.StorageLayout{
+							Type: schemav2pb.StorageLayout_TYPE_STRING,
+						},
+					},
+				},
+			},
+			{
+				Type: &schemav2pb.Node_Leaf{
+					Leaf: &schemav2pb.Leaf{
+						Name: "meta_key",
+						StorageLayout: &schemav2pb.StorageLayout{
+							Type: schemav2pb.StorageLayout_TYPE_STRING,
+						},
+					},
+				},
+			},
+			{
+				Type: &schemav2pb.Node_Leaf{
+					Leaf: &schemav2pb.Leaf{
+						Name: "meta_value",
 						StorageLayout: &schemav2pb.StorageLayout{
 							Type: schemav2pb.StorageLayout_TYPE_STRING,
 						},
