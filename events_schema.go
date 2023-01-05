@@ -256,7 +256,9 @@ var EventSchema = &schemav2pb.Schema{
 					Leaf: &schemav2pb.Leaf{
 						Name: "meta_key",
 						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
+							Type:     schemav2pb.StorageLayout_TYPE_STRING,
+							Repeated: true,
+							Nullable: true,
 						},
 					},
 				},
@@ -266,7 +268,9 @@ var EventSchema = &schemav2pb.Schema{
 					Leaf: &schemav2pb.Leaf{
 						Name: "meta_value",
 						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
+							Type:     schemav2pb.StorageLayout_TYPE_STRING,
+							Repeated: true,
+							Nullable: true,
 						},
 					},
 				},
@@ -576,7 +580,9 @@ var SessionSchema = &schemav2pb.Schema{
 					Leaf: &schemav2pb.Leaf{
 						Name: "meta_key",
 						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
+							Type:     schemav2pb.StorageLayout_TYPE_STRING,
+							Repeated: true,
+							Nullable: true,
 						},
 					},
 				},
@@ -586,7 +592,9 @@ var SessionSchema = &schemav2pb.Schema{
 					Leaf: &schemav2pb.Leaf{
 						Name: "meta_value",
 						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
+							Type:     schemav2pb.StorageLayout_TYPE_STRING,
+							Repeated: true,
+							Nullable: true,
 						},
 					},
 				},
