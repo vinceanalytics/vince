@@ -27,7 +27,9 @@ func main() {
 	fmt.Fprintln(&b, " package vince")
 	fmt.Fprintln(&b, `
 	import (
+		"sort"
 		schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
+		"github.com/segmentio/parquet-go"
 	)
 	`)
 
@@ -35,9 +37,18 @@ func main() {
 
 	for _, d := range messages {
 		n := d.GetName()
+		if n == "Label" {
+			continue
+		}
 		fmt.Fprintf(&b, "const %sTable=%q\n", n, tableName(n))
+		fmt.Fprintf(&b, "type %sList []*%s\n", n, n)
 	}
 	for _, d := range messages {
+		n := d.GetName()
+		if n == "Label" {
+			continue
+		}
+		createToRow(&b, d)
 		createSchema(&b, d)
 	}
 	r, err := format.Source(b.Bytes())
@@ -46,10 +57,6 @@ func main() {
 	}
 	os.WriteFile("events_schema.go", r, 0600)
 }
-
-const group = "&schemav2pb.Group{"
-const node = "*schemav2pb.Node"
-const nodeGroup = "chemav2pb.Node_Group"
 
 func createSchema(b *bytes.Buffer, d *desc.MessageDescriptor) {
 	fmt.Fprintln(b)
@@ -87,6 +94,40 @@ func createSchema(b *bytes.Buffer, d *desc.MessageDescriptor) {
 	fmt.Fprintf(b, "                               },\n")
 	fmt.Fprintf(b, "                       },\n")
 	fmt.Fprintf(b, "              }")
+}
+
+func createToRow(b *bytes.Buffer, d *desc.MessageDescriptor) {
+	fmt.Fprintln(b)
+	n := d.GetName()
+	r := strings.ToLower(n[:1])
+	hasLabel := n == "Event" || n == "Session"
+	fmt.Fprintf(b, "func (%s %sList)Rows()[]parquet.Row{\n", r, n)
+	if hasLabel {
+		fmt.Fprintf(b, labelName, r)
+	}
+	fmt.Fprintf(b, "    rows:=make([]parquet.Row,len(%s))\n", r)
+	fmt.Fprintf(b, "    for _,value:=range %s{\n", r)
+	if hasLabel {
+		fmt.Fprintf(b, "    row:= make(parquet.Row, 0, nameNumber+%d)\n", len(d.GetFields())-1)
+		fmt.Fprintln(b, labelWrite)
+	} else {
+		fmt.Fprintf(b, "    row:= make(parquet.Row, 0, %d)\n", len(d.GetFields()))
+	}
+	for i, f := range d.GetFields() {
+		fn := f.GetName()
+		if fn == "labels" {
+			continue
+		}
+		if hasLabel {
+			fmt.Fprintf(b, " row =append(row,parquet.ValueOf(value.%s).Level(0, 0, nameNumber+%d))\n", camelCase(fn), i+1)
+		} else {
+			fmt.Fprintf(b, " row =append(row,parquet.ValueOf(value.%s).Level(0, 0, %d))\n", camelCase(fn), i)
+		}
+	}
+	fmt.Fprintln(b, "    rows = append(rows, row)")
+	fmt.Fprintln(b, "   }")
+	fmt.Fprintln(b, "  return rows")
+	fmt.Fprintln(b, "}")
 }
 
 func tableName(s string) string {
@@ -169,3 +210,58 @@ const boolFmt = `{
 	},
 },
 `
+
+const labelName = `names := []string{}
+seen := map[string]struct{}{}
+for _, lb := range %s {
+	for _, label := range lb.Labels {
+		if _, ok := seen[label.Name]; !ok {
+			names = append(names, label.Name)
+			seen[label.Name] = struct{}{}
+		}
+	}
+}
+sort.Strings(names)
+labelIndex:=map[string]int{}
+for idx,name:=range names{
+	labelIndex[name]=idx
+}
+nameNumber:=len(names)
+`
+
+const labelWrite = `
+lbI, lbJ := 0, 0
+for lbI < nameNumber {
+	if names[lbI] == value.Labels[lbJ].Name {
+		row = append(row, parquet.ValueOf(value.Labels[lbJ].Value).Level(0, 1, lbI+1))
+		lbI++
+		lbJ++
+		if lbJ >= len(value.Labels) {
+			for ; lbI < nameNumber; lbI++ {
+				row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+			}
+			break
+		}
+	} else {
+		row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+		lbI++
+	}
+}`
+
+func camelCase(s string) string {
+	var b strings.Builder
+	up := true
+	for _, x := range s {
+		if x == '_' {
+			up = true
+			continue
+		}
+		if up {
+			b.WriteRune(unicode.ToUpper(x))
+			up = false
+			continue
+		}
+		b.WriteRune(x)
+	}
+	return b.String()
+}

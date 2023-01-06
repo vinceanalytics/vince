@@ -3,20 +3,120 @@ package vince
 
 import (
 	schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
+	"github.com/segmentio/parquet-go"
+	"sort"
 )
 
 const EventTable = "event"
+
+type EventList []*Event
+
 const SessionTable = "session"
-const LabelTable = "label"
+
+type SessionList []*Session
+
 const ImportedVisitorTable = "imported_visitor"
+
+type ImportedVisitorList []*ImportedVisitor
+
 const ImportedSourcesTable = "imported_sources"
+
+type ImportedSourcesList []*ImportedSources
+
 const ImportedPagesTable = "imported_pages"
+
+type ImportedPagesList []*ImportedPages
+
 const ImportedEntryPagesTable = "imported_entry_pages"
+
+type ImportedEntryPagesList []*ImportedEntryPages
+
 const ImportedExitPagesTable = "imported_exit_pages"
+
+type ImportedExitPagesList []*ImportedExitPages
+
 const ImportedLocationsTable = "imported_locations"
+
+type ImportedLocationsList []*ImportedLocations
+
 const ImportedDevicesTable = "imported_devices"
+
+type ImportedDevicesList []*ImportedDevices
+
 const ImportedBrowserTable = "imported_browser"
+
+type ImportedBrowserList []*ImportedBrowser
+
 const ImportedOperatingSystemTable = "imported_operating_system"
+
+type ImportedOperatingSystemList []*ImportedOperatingSystem
+
+func (e EventList) Rows() []parquet.Row {
+	names := []string{}
+	seen := map[string]struct{}{}
+	for _, lb := range e {
+		for _, label := range lb.Labels {
+			if _, ok := seen[label.Name]; !ok {
+				names = append(names, label.Name)
+				seen[label.Name] = struct{}{}
+			}
+		}
+	}
+	sort.Strings(names)
+	labelIndex := map[string]int{}
+	for idx, name := range names {
+		labelIndex[name] = idx
+	}
+	nameNumber := len(names)
+	rows := make([]parquet.Row, len(e))
+	for _, value := range e {
+		row := make(parquet.Row, 0, nameNumber+24)
+
+		lbI, lbJ := 0, 0
+		for lbI < nameNumber {
+			if names[lbI] == value.Labels[lbJ].Name {
+				row = append(row, parquet.ValueOf(value.Labels[lbJ].Value).Level(0, 1, lbI+1))
+				lbI++
+				lbJ++
+				if lbJ >= len(value.Labels) {
+					for ; lbI < nameNumber; lbI++ {
+						row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+					}
+					break
+				}
+			} else {
+				row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+				lbI++
+			}
+		}
+		row = append(row, parquet.ValueOf(value.Name).Level(0, 0, nameNumber+1))
+		row = append(row, parquet.ValueOf(value.Domain).Level(0, 0, nameNumber+2))
+		row = append(row, parquet.ValueOf(value.UserId).Level(0, 0, nameNumber+3))
+		row = append(row, parquet.ValueOf(value.SessionId).Level(0, 0, nameNumber+4))
+		row = append(row, parquet.ValueOf(value.Hostname).Level(0, 0, nameNumber+5))
+		row = append(row, parquet.ValueOf(value.Pathname).Level(0, 0, nameNumber+6))
+		row = append(row, parquet.ValueOf(value.Referrer).Level(0, 0, nameNumber+7))
+		row = append(row, parquet.ValueOf(value.ReferrerSource).Level(0, 0, nameNumber+8))
+		row = append(row, parquet.ValueOf(value.CountryCode).Level(0, 0, nameNumber+9))
+		row = append(row, parquet.ValueOf(value.ScreenSize).Level(0, 0, nameNumber+10))
+		row = append(row, parquet.ValueOf(value.OperatingSystem).Level(0, 0, nameNumber+11))
+		row = append(row, parquet.ValueOf(value.Browser).Level(0, 0, nameNumber+12))
+		row = append(row, parquet.ValueOf(value.UtmMedium).Level(0, 0, nameNumber+13))
+		row = append(row, parquet.ValueOf(value.UtmSource).Level(0, 0, nameNumber+14))
+		row = append(row, parquet.ValueOf(value.UtmCampaign).Level(0, 0, nameNumber+15))
+		row = append(row, parquet.ValueOf(value.BrowserVersion).Level(0, 0, nameNumber+16))
+		row = append(row, parquet.ValueOf(value.OperatingSystemVersion).Level(0, 0, nameNumber+17))
+		row = append(row, parquet.ValueOf(value.Subdivision1Code).Level(0, 0, nameNumber+18))
+		row = append(row, parquet.ValueOf(value.Subdivision2Code).Level(0, 0, nameNumber+19))
+		row = append(row, parquet.ValueOf(value.CityGeonameId).Level(0, 0, nameNumber+20))
+		row = append(row, parquet.ValueOf(value.UtmContent).Level(0, 0, nameNumber+21))
+		row = append(row, parquet.ValueOf(value.UtmTerm).Level(0, 0, nameNumber+22))
+		row = append(row, parquet.ValueOf(value.TransferredFrom).Level(0, 0, nameNumber+23))
+		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+25))
+		rows = append(rows, row)
+	}
+	return rows
+}
 
 var EventSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
@@ -276,6 +376,80 @@ var EventSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+func (s SessionList) Rows() []parquet.Row {
+	names := []string{}
+	seen := map[string]struct{}{}
+	for _, lb := range s {
+		for _, label := range lb.Labels {
+			if _, ok := seen[label.Name]; !ok {
+				names = append(names, label.Name)
+				seen[label.Name] = struct{}{}
+			}
+		}
+	}
+	sort.Strings(names)
+	labelIndex := map[string]int{}
+	for idx, name := range names {
+		labelIndex[name] = idx
+	}
+	nameNumber := len(names)
+	rows := make([]parquet.Row, len(s))
+	for _, value := range s {
+		row := make(parquet.Row, 0, nameNumber+30)
+
+		lbI, lbJ := 0, 0
+		for lbI < nameNumber {
+			if names[lbI] == value.Labels[lbJ].Name {
+				row = append(row, parquet.ValueOf(value.Labels[lbJ].Value).Level(0, 1, lbI+1))
+				lbI++
+				lbJ++
+				if lbJ >= len(value.Labels) {
+					for ; lbI < nameNumber; lbI++ {
+						row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+					}
+					break
+				}
+			} else {
+				row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+				lbI++
+			}
+		}
+		row = append(row, parquet.ValueOf(value.SessionId).Level(0, 0, nameNumber+1))
+		row = append(row, parquet.ValueOf(value.Sign).Level(0, 0, nameNumber+2))
+		row = append(row, parquet.ValueOf(value.Domain).Level(0, 0, nameNumber+3))
+		row = append(row, parquet.ValueOf(value.UserId).Level(0, 0, nameNumber+4))
+		row = append(row, parquet.ValueOf(value.Hostname).Level(0, 0, nameNumber+5))
+		row = append(row, parquet.ValueOf(value.IsBounce).Level(0, 0, nameNumber+6))
+		row = append(row, parquet.ValueOf(value.EntryPage).Level(0, 0, nameNumber+7))
+		row = append(row, parquet.ValueOf(value.ExitPage).Level(0, 0, nameNumber+8))
+		row = append(row, parquet.ValueOf(value.PageViews).Level(0, 0, nameNumber+9))
+		row = append(row, parquet.ValueOf(value.Events).Level(0, 0, nameNumber+10))
+		row = append(row, parquet.ValueOf(value.Duration).Level(0, 0, nameNumber+11))
+		row = append(row, parquet.ValueOf(value.Referrer).Level(0, 0, nameNumber+12))
+		row = append(row, parquet.ValueOf(value.ReferrerSource).Level(0, 0, nameNumber+13))
+		row = append(row, parquet.ValueOf(value.CountryCode).Level(0, 0, nameNumber+14))
+		row = append(row, parquet.ValueOf(value.OperatingSystem).Level(0, 0, nameNumber+15))
+		row = append(row, parquet.ValueOf(value.Browser).Level(0, 0, nameNumber+16))
+		row = append(row, parquet.ValueOf(value.UtmMedium).Level(0, 0, nameNumber+17))
+		row = append(row, parquet.ValueOf(value.UtmSource).Level(0, 0, nameNumber+18))
+		row = append(row, parquet.ValueOf(value.UtmCampaign).Level(0, 0, nameNumber+19))
+		row = append(row, parquet.ValueOf(value.BrowserVersion).Level(0, 0, nameNumber+20))
+		row = append(row, parquet.ValueOf(value.OperatingSystemVersion).Level(0, 0, nameNumber+21))
+		row = append(row, parquet.ValueOf(value.Subdivision1Code).Level(0, 0, nameNumber+22))
+		row = append(row, parquet.ValueOf(value.Subdivision2Code).Level(0, 0, nameNumber+23))
+		row = append(row, parquet.ValueOf(value.CityGeonameId).Level(0, 0, nameNumber+24))
+		row = append(row, parquet.ValueOf(value.UtmContent).Level(0, 0, nameNumber+25))
+		row = append(row, parquet.ValueOf(value.UtmTerm).Level(0, 0, nameNumber+26))
+		row = append(row, parquet.ValueOf(value.TransferredFrom).Level(0, 0, nameNumber+27))
+		row = append(row, parquet.ValueOf(value.ScreenSize).Level(0, 0, nameNumber+28))
+		row = append(row, parquet.ValueOf(value.Start).Level(0, 0, nameNumber+30))
+		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+31))
+		rows = append(rows, row)
+	}
+	return rows
+}
+
 var SessionSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "session",
@@ -597,33 +771,23 @@ var SessionSchema = &schemav2pb.Schema{
 		},
 	},
 }
-var LabelSchema = &schemav2pb.Schema{
-	Root: &schemav2pb.Group{
-		Name: "label",
-		Nodes: []*schemav2pb.Node{
-			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
-						Name: "name",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
-						},
-					},
-				},
-			},
-			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
-						Name: "value",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
-						},
-					},
-				},
-			},
-		},
-	},
+
+func (i ImportedVisitorList) Rows() []parquet.Row {
+	rows := make([]parquet.Row, len(i))
+	for _, value := range i {
+		row := make(parquet.Row, 0, 7)
+		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
+		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 2))
+		row = append(row, parquet.ValueOf(value.Pageviews).Level(0, 0, 3))
+		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 4))
+		row = append(row, parquet.ValueOf(value.Visits).Level(0, 0, 5))
+		row = append(row, parquet.ValueOf(value.VisitDuration).Level(0, 0, 6))
+		rows = append(rows, row)
+	}
+	return rows
 }
+
 var ImportedVisitorSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "imported_visitor",
@@ -703,6 +867,27 @@ var ImportedVisitorSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+func (i ImportedSourcesList) Rows() []parquet.Row {
+	rows := make([]parquet.Row, len(i))
+	for _, value := range i {
+		row := make(parquet.Row, 0, 11)
+		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
+		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Source).Level(0, 0, 2))
+		row = append(row, parquet.ValueOf(value.UtmMedium).Level(0, 0, 3))
+		row = append(row, parquet.ValueOf(value.UtmCampaign).Level(0, 0, 4))
+		row = append(row, parquet.ValueOf(value.UtmContent).Level(0, 0, 5))
+		row = append(row, parquet.ValueOf(value.UtmTerm).Level(0, 0, 6))
+		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 7))
+		row = append(row, parquet.ValueOf(value.Visits).Level(0, 0, 8))
+		row = append(row, parquet.ValueOf(value.VisitDuration).Level(0, 0, 9))
+		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 10))
+		rows = append(rows, row)
+	}
+	return rows
+}
+
 var ImportedSourcesSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "imported_sources",
@@ -822,6 +1007,24 @@ var ImportedSourcesSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+func (i ImportedPagesList) Rows() []parquet.Row {
+	rows := make([]parquet.Row, len(i))
+	for _, value := range i {
+		row := make(parquet.Row, 0, 8)
+		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
+		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Hostname).Level(0, 0, 2))
+		row = append(row, parquet.ValueOf(value.Page).Level(0, 0, 3))
+		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 4))
+		row = append(row, parquet.ValueOf(value.Pagevies).Level(0, 0, 5))
+		row = append(row, parquet.ValueOf(value.Exits).Level(0, 0, 6))
+		row = append(row, parquet.ValueOf(value.TimeOnPage).Level(0, 0, 7))
+		rows = append(rows, row)
+	}
+	return rows
+}
+
 var ImportedPagesSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "imported_pages",
@@ -911,6 +1114,23 @@ var ImportedPagesSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+func (i ImportedEntryPagesList) Rows() []parquet.Row {
+	rows := make([]parquet.Row, len(i))
+	for _, value := range i {
+		row := make(parquet.Row, 0, 7)
+		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
+		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.EntryPage).Level(0, 0, 2))
+		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
+		row = append(row, parquet.ValueOf(value.Entrances).Level(0, 0, 4))
+		row = append(row, parquet.ValueOf(value.VisitDuration).Level(0, 0, 5))
+		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
+		rows = append(rows, row)
+	}
+	return rows
+}
+
 var ImportedEntryPagesSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "imported_entry_pages",
@@ -990,6 +1210,21 @@ var ImportedEntryPagesSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+func (i ImportedExitPagesList) Rows() []parquet.Row {
+	rows := make([]parquet.Row, len(i))
+	for _, value := range i {
+		row := make(parquet.Row, 0, 5)
+		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
+		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.ExitPage).Level(0, 0, 2))
+		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
+		row = append(row, parquet.ValueOf(value.Exits).Level(0, 0, 4))
+		rows = append(rows, row)
+	}
+	return rows
+}
+
 var ImportedExitPagesSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "imported_exit_pages",
@@ -1049,6 +1284,25 @@ var ImportedExitPagesSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+func (i ImportedLocationsList) Rows() []parquet.Row {
+	rows := make([]parquet.Row, len(i))
+	for _, value := range i {
+		row := make(parquet.Row, 0, 9)
+		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
+		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Country).Level(0, 0, 2))
+		row = append(row, parquet.ValueOf(value.Region).Level(0, 0, 3))
+		row = append(row, parquet.ValueOf(value.City).Level(0, 0, 4))
+		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 5))
+		row = append(row, parquet.ValueOf(value.Visits).Level(0, 0, 6))
+		row = append(row, parquet.ValueOf(value.VisitDuration).Level(0, 0, 7))
+		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 8))
+		rows = append(rows, row)
+	}
+	return rows
+}
+
 var ImportedLocationsSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "imported_locations",
@@ -1148,6 +1402,23 @@ var ImportedLocationsSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+func (i ImportedDevicesList) Rows() []parquet.Row {
+	rows := make([]parquet.Row, len(i))
+	for _, value := range i {
+		row := make(parquet.Row, 0, 7)
+		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
+		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Devise).Level(0, 0, 2))
+		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
+		row = append(row, parquet.ValueOf(value.Visits).Level(0, 0, 4))
+		row = append(row, parquet.ValueOf(value.VisitDuration).Level(0, 0, 5))
+		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
+		rows = append(rows, row)
+	}
+	return rows
+}
+
 var ImportedDevicesSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "imported_devices",
@@ -1227,6 +1498,23 @@ var ImportedDevicesSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+func (i ImportedBrowserList) Rows() []parquet.Row {
+	rows := make([]parquet.Row, len(i))
+	for _, value := range i {
+		row := make(parquet.Row, 0, 7)
+		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
+		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Browser).Level(0, 0, 2))
+		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
+		row = append(row, parquet.ValueOf(value.Visits).Level(0, 0, 4))
+		row = append(row, parquet.ValueOf(value.VisitDuration).Level(0, 0, 5))
+		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
+		rows = append(rows, row)
+	}
+	return rows
+}
+
 var ImportedBrowserSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "imported_browser",
@@ -1306,6 +1594,23 @@ var ImportedBrowserSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+func (i ImportedOperatingSystemList) Rows() []parquet.Row {
+	rows := make([]parquet.Row, len(i))
+	for _, value := range i {
+		row := make(parquet.Row, 0, 7)
+		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
+		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Browser).Level(0, 0, 2))
+		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
+		row = append(row, parquet.ValueOf(value.Visits).Level(0, 0, 4))
+		row = append(row, parquet.ValueOf(value.VisitDuration).Level(0, 0, 5))
+		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
+		rows = append(rows, row)
+	}
+	return rows
+}
+
 var ImportedOperatingSystemSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
 		Name: "imported_operating_system",
