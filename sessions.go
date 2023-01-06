@@ -78,45 +78,45 @@ func (e *Event) NewSession() *Session {
 	return s
 }
 
-func (self *Session) Update(e *Event) *Session {
-	s := proto.Clone(self).(*Session)
-	s.UserId = e.UserId
-	s.Timestamp = e.Timestamp
-	s.ExitPage = e.Pathname
-	s.IsBounce = false
-	s.Duration = durationpb.New(e.Timestamp.AsTime().Sub(s.Start.AsTime()))
+func (s *Session) Update(e *Event) *Session {
+	ss := proto.Clone(s).(*Session)
+	ss.UserId = e.UserId
+	ss.Timestamp = e.Timestamp
+	ss.ExitPage = e.Pathname
+	ss.IsBounce = false
+	ss.Duration = durationpb.New(e.Timestamp.AsTime().Sub(ss.Start.AsTime()))
 	if e.Name == "pageview" {
-		s.PageViews++
+		ss.PageViews++
 	}
-	if s.CountryCode == "" {
-		s.CountryCode = e.CountryCode
+	if ss.CountryCode == "" {
+		ss.CountryCode = e.CountryCode
 	}
-	if s.Subdivision1Code == "" {
-		s.Subdivision1Code = e.Subdivision1Code
+	if ss.Subdivision1Code == "" {
+		ss.Subdivision1Code = e.Subdivision1Code
 	}
-	if s.Subdivision2Code == "" {
-		s.Subdivision2Code = e.Subdivision2Code
+	if ss.Subdivision2Code == "" {
+		ss.Subdivision2Code = e.Subdivision2Code
 	}
-	if s.CityGeonameId == 0 {
-		s.CityGeonameId = e.CityGeonameId
+	if ss.CityGeonameId == 0 {
+		ss.CityGeonameId = e.CityGeonameId
 	}
-	if s.OperatingSystem == "" {
-		s.OperatingSystem = e.OperatingSystem
+	if ss.OperatingSystem == "" {
+		ss.OperatingSystem = e.OperatingSystem
 	}
-	if s.OperatingSystemVersion == "" {
-		s.OperatingSystemVersion = e.OperatingSystemVersion
+	if ss.OperatingSystemVersion == "" {
+		ss.OperatingSystemVersion = e.OperatingSystemVersion
 	}
-	if s.Browser == "" {
-		s.Browser = e.Browser
+	if ss.Browser == "" {
+		ss.Browser = e.Browser
 	}
-	if s.BrowserVersion == "" {
-		s.BrowserVersion = e.BrowserVersion
+	if ss.BrowserVersion == "" {
+		ss.BrowserVersion = e.BrowserVersion
 	}
-	if s.ScreenSize == "" {
-		s.ScreenSize = e.ScreenSize
+	if ss.ScreenSize == "" {
+		ss.ScreenSize = e.ScreenSize
 	}
-	s.Events += 1
-	return s
+	ss.Events += 1
+	return ss
 }
 
 var buffPool = &sync.Pool{
