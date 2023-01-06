@@ -11,46 +11,6 @@ const EventTable = "event"
 
 type EventList []*Event
 
-const SessionTable = "session"
-
-type SessionList []*Session
-
-const ImportedVisitorTable = "imported_visitor"
-
-type ImportedVisitorList []*ImportedVisitor
-
-const ImportedSourcesTable = "imported_sources"
-
-type ImportedSourcesList []*ImportedSources
-
-const ImportedPagesTable = "imported_pages"
-
-type ImportedPagesList []*ImportedPages
-
-const ImportedEntryPagesTable = "imported_entry_pages"
-
-type ImportedEntryPagesList []*ImportedEntryPages
-
-const ImportedExitPagesTable = "imported_exit_pages"
-
-type ImportedExitPagesList []*ImportedExitPages
-
-const ImportedLocationsTable = "imported_locations"
-
-type ImportedLocationsList []*ImportedLocations
-
-const ImportedDevicesTable = "imported_devices"
-
-type ImportedDevicesList []*ImportedDevices
-
-const ImportedBrowserTable = "imported_browser"
-
-type ImportedBrowserList []*ImportedBrowser
-
-const ImportedOperatingSystemTable = "imported_operating_system"
-
-type ImportedOperatingSystemList []*ImportedOperatingSystem
-
 func (e EventList) Rows() []parquet.Row {
 	names := []string{}
 	seen := map[string]struct{}{}
@@ -376,6 +336,10 @@ var EventSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+const SessionTable = "session"
+
+type SessionList []*Session
 
 func (s SessionList) Rows() []parquet.Row {
 	names := []string{}
@@ -772,6 +736,10 @@ var SessionSchema = &schemav2pb.Schema{
 	},
 }
 
+const ImportedVisitorTable = "imported_visitor"
+
+type ImportedVisitorList []*ImportedVisitor
+
 func (i ImportedVisitorList) Rows() []parquet.Row {
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -867,6 +835,10 @@ var ImportedVisitorSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+const ImportedSourcesTable = "imported_sources"
+
+type ImportedSourcesList []*ImportedSources
 
 func (i ImportedSourcesList) Rows() []parquet.Row {
 	rows := make([]parquet.Row, len(i))
@@ -1008,6 +980,10 @@ var ImportedSourcesSchema = &schemav2pb.Schema{
 	},
 }
 
+const ImportedPagesTable = "imported_pages"
+
+type ImportedPagesList []*ImportedPages
+
 func (i ImportedPagesList) Rows() []parquet.Row {
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1115,6 +1091,10 @@ var ImportedPagesSchema = &schemav2pb.Schema{
 	},
 }
 
+const ImportedEntryPagesTable = "imported_entry_pages"
+
+type ImportedEntryPagesList []*ImportedEntryPages
+
 func (i ImportedEntryPagesList) Rows() []parquet.Row {
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1211,6 +1191,10 @@ var ImportedEntryPagesSchema = &schemav2pb.Schema{
 	},
 }
 
+const ImportedExitPagesTable = "imported_exit_pages"
+
+type ImportedExitPagesList []*ImportedExitPages
+
 func (i ImportedExitPagesList) Rows() []parquet.Row {
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1284,6 +1268,10 @@ var ImportedExitPagesSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+const ImportedLocationsTable = "imported_locations"
+
+type ImportedLocationsList []*ImportedLocations
 
 func (i ImportedLocationsList) Rows() []parquet.Row {
 	rows := make([]parquet.Row, len(i))
@@ -1403,6 +1391,10 @@ var ImportedLocationsSchema = &schemav2pb.Schema{
 	},
 }
 
+const ImportedDevicesTable = "imported_devices"
+
+type ImportedDevicesList []*ImportedDevices
+
 func (i ImportedDevicesList) Rows() []parquet.Row {
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1499,6 +1491,10 @@ var ImportedDevicesSchema = &schemav2pb.Schema{
 	},
 }
 
+const ImportedBrowserTable = "imported_browser"
+
+type ImportedBrowserList []*ImportedBrowser
+
 func (i ImportedBrowserList) Rows() []parquet.Row {
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1594,6 +1590,10 @@ var ImportedBrowserSchema = &schemav2pb.Schema{
 		},
 	},
 }
+
+const ImportedOperatingSystemTable = "imported_operating_system"
+
+type ImportedOperatingSystemList []*ImportedOperatingSystem
 
 func (i ImportedOperatingSystemList) Rows() []parquet.Row {
 	rows := make([]parquet.Row, len(i))

@@ -36,18 +36,14 @@ func main() {
 	messages := descp[0].GetMessageTypes()
 
 	for _, d := range messages {
+
 		n := d.GetName()
 		if n == "Label" {
 			continue
 		}
+		fmt.Fprintln(&b)
 		fmt.Fprintf(&b, "const %sTable=%q\n", n, tableName(n))
 		fmt.Fprintf(&b, "type %sList []*%s\n", n, n)
-	}
-	for _, d := range messages {
-		n := d.GetName()
-		if n == "Label" {
-			continue
-		}
 		createToRow(&b, d)
 		createSchema(&b, d)
 	}
