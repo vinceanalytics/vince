@@ -28,6 +28,8 @@ func main() {
 	fmt.Fprintln(&b, `
 	import (
 		"sort"
+
+		"github.com/polarsignals/frostdb/dynparquet"
 		schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 		"github.com/segmentio/parquet-go"
 	)
@@ -47,6 +49,7 @@ func main() {
 		createToRow(&b, d)
 		createSchema(&b, d)
 	}
+	fmt.Fprintln(&b, labelColumn)
 	r, err := format.Source(b.Bytes())
 	if err != nil {
 		log.Fatal(err)
@@ -97,9 +100,14 @@ func createToRow(b *bytes.Buffer, d *desc.MessageDescriptor) {
 	n := d.GetName()
 	r := strings.ToLower(n[:1])
 	hasLabel := n == "Event" || n == "Session"
-	fmt.Fprintf(b, "func (%s %sList)Rows()[]parquet.Row{\n", r, n)
+	fmt.Fprintf(b, "func (%s %sList)Rows(schema *dynparquet.Schema)(*dynparquet.Buffer, error){\n", r, n)
 	if hasLabel {
 		fmt.Fprintf(b, labelName, r)
+	} else {
+		fmt.Fprintln(b, `	buf, err := schema.NewBufferV2()
+		if err != nil {
+			return nil, err
+		}`)
 	}
 	fmt.Fprintf(b, "    rows:=make([]parquet.Row,len(%s))\n", r)
 	fmt.Fprintf(b, "    for _,value:=range %s{\n", r)
@@ -122,7 +130,11 @@ func createToRow(b *bytes.Buffer, d *desc.MessageDescriptor) {
 	}
 	fmt.Fprintln(b, "    rows = append(rows, row)")
 	fmt.Fprintln(b, "   }")
-	fmt.Fprintln(b, "  return rows")
+	fmt.Fprintln(b, `	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err`)
 	fmt.Fprintln(b, "}")
 }
 
@@ -223,6 +235,14 @@ for idx,name:=range names{
 	labelIndex[name]=idx
 }
 nameNumber:=len(names)
+tl := make([]*schemav2pb.Node, len(names))
+for _, n := range names {
+	tl = append(tl, LabelColumn(n))
+}
+buf, err := schema.NewBufferV2(tl...)
+if err != nil {
+	return nil, err
+}
 `
 
 const labelWrite = `
@@ -234,13 +254,38 @@ for lbI < nameNumber {
 		lbJ++
 		if lbJ >= len(value.Labels) {
 			for ; lbI < nameNumber; lbI++ {
-				row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+				row = append(row, parquet.ValueOf(nil).Level(0, 1, lbI+1))
 			}
 			break
 		}
 	} else {
-		row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+		row = append(row, parquet.ValueOf(nil).Level(0, 1, lbI+1))
 		lbI++
+	}
+}`
+
+const labelColumn = `
+func LabelColumn(name string) *schemav2pb.Node {
+	return &schemav2pb.Node{
+		Type: &schemav2pb.Node_Group{
+			Group: &schemav2pb.Group{
+				Name: "labels",
+				Nodes: []*schemav2pb.Node{
+					{
+						Type: &schemav2pb.Node_Leaf{
+							Leaf: &schemav2pb.Leaf{
+								Name: name,
+								StorageLayout: &schemav2pb.StorageLayout{
+									Type:     schemav2pb.StorageLayout_TYPE_STRING,
+									Nullable: true,
+									Encoding: schemav2pb.StorageLayout_ENCODING_RLE_DICTIONARY,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 }`
 

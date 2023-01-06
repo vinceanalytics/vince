@@ -2,16 +2,18 @@
 package vince
 
 import (
+	"sort"
+
+	"github.com/polarsignals/frostdb/dynparquet"
 	schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 	"github.com/segmentio/parquet-go"
-	"sort"
 )
 
 const EventTable = "event"
 
 type EventList []*Event
 
-func (e EventList) Rows() []parquet.Row {
+func (e EventList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
 	names := []string{}
 	seen := map[string]struct{}{}
 	for _, lb := range e {
@@ -28,6 +30,14 @@ func (e EventList) Rows() []parquet.Row {
 		labelIndex[name] = idx
 	}
 	nameNumber := len(names)
+	tl := make([]*schemav2pb.Node, len(names))
+	for _, n := range names {
+		tl = append(tl, LabelColumn(n))
+	}
+	buf, err := schema.NewBufferV2(tl...)
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(e))
 	for _, value := range e {
 		row := make(parquet.Row, 0, nameNumber+24)
@@ -40,12 +50,12 @@ func (e EventList) Rows() []parquet.Row {
 				lbJ++
 				if lbJ >= len(value.Labels) {
 					for ; lbI < nameNumber; lbI++ {
-						row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+						row = append(row, parquet.ValueOf(nil).Level(0, 1, lbI+1))
 					}
 					break
 				}
 			} else {
-				row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+				row = append(row, parquet.ValueOf(nil).Level(0, 1, lbI+1))
 				lbI++
 			}
 		}
@@ -75,7 +85,11 @@ func (e EventList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+25))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var EventSchema = &schemav2pb.Schema{
@@ -341,7 +355,7 @@ const SessionTable = "session"
 
 type SessionList []*Session
 
-func (s SessionList) Rows() []parquet.Row {
+func (s SessionList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
 	names := []string{}
 	seen := map[string]struct{}{}
 	for _, lb := range s {
@@ -358,6 +372,14 @@ func (s SessionList) Rows() []parquet.Row {
 		labelIndex[name] = idx
 	}
 	nameNumber := len(names)
+	tl := make([]*schemav2pb.Node, len(names))
+	for _, n := range names {
+		tl = append(tl, LabelColumn(n))
+	}
+	buf, err := schema.NewBufferV2(tl...)
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(s))
 	for _, value := range s {
 		row := make(parquet.Row, 0, nameNumber+30)
@@ -370,12 +392,12 @@ func (s SessionList) Rows() []parquet.Row {
 				lbJ++
 				if lbJ >= len(value.Labels) {
 					for ; lbI < nameNumber; lbI++ {
-						row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+						row = append(row, parquet.ValueOf(nil).Level(0, 1, lbI+1))
 					}
 					break
 				}
 			} else {
-				row = append(row, parquet.ValueOf(nil).Level(0, 0, lbI+1))
+				row = append(row, parquet.ValueOf(nil).Level(0, 1, lbI+1))
 				lbI++
 			}
 		}
@@ -411,7 +433,11 @@ func (s SessionList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+31))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var SessionSchema = &schemav2pb.Schema{
@@ -740,7 +766,11 @@ const ImportedVisitorTable = "imported_visitor"
 
 type ImportedVisitorList []*ImportedVisitor
 
-func (i ImportedVisitorList) Rows() []parquet.Row {
+func (i ImportedVisitorList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+	buf, err := schema.NewBufferV2()
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
@@ -753,7 +783,11 @@ func (i ImportedVisitorList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.VisitDuration).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var ImportedVisitorSchema = &schemav2pb.Schema{
@@ -840,7 +874,11 @@ const ImportedSourcesTable = "imported_sources"
 
 type ImportedSourcesList []*ImportedSources
 
-func (i ImportedSourcesList) Rows() []parquet.Row {
+func (i ImportedSourcesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+	buf, err := schema.NewBufferV2()
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
 		row := make(parquet.Row, 0, 11)
@@ -857,7 +895,11 @@ func (i ImportedSourcesList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 10))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var ImportedSourcesSchema = &schemav2pb.Schema{
@@ -984,7 +1026,11 @@ const ImportedPagesTable = "imported_pages"
 
 type ImportedPagesList []*ImportedPages
 
-func (i ImportedPagesList) Rows() []parquet.Row {
+func (i ImportedPagesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+	buf, err := schema.NewBufferV2()
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
 		row := make(parquet.Row, 0, 8)
@@ -998,7 +1044,11 @@ func (i ImportedPagesList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.TimeOnPage).Level(0, 0, 7))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var ImportedPagesSchema = &schemav2pb.Schema{
@@ -1095,7 +1145,11 @@ const ImportedEntryPagesTable = "imported_entry_pages"
 
 type ImportedEntryPagesList []*ImportedEntryPages
 
-func (i ImportedEntryPagesList) Rows() []parquet.Row {
+func (i ImportedEntryPagesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+	buf, err := schema.NewBufferV2()
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
@@ -1108,7 +1162,11 @@ func (i ImportedEntryPagesList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var ImportedEntryPagesSchema = &schemav2pb.Schema{
@@ -1195,7 +1253,11 @@ const ImportedExitPagesTable = "imported_exit_pages"
 
 type ImportedExitPagesList []*ImportedExitPages
 
-func (i ImportedExitPagesList) Rows() []parquet.Row {
+func (i ImportedExitPagesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+	buf, err := schema.NewBufferV2()
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
 		row := make(parquet.Row, 0, 5)
@@ -1206,7 +1268,11 @@ func (i ImportedExitPagesList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.Exits).Level(0, 0, 4))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var ImportedExitPagesSchema = &schemav2pb.Schema{
@@ -1273,7 +1339,11 @@ const ImportedLocationsTable = "imported_locations"
 
 type ImportedLocationsList []*ImportedLocations
 
-func (i ImportedLocationsList) Rows() []parquet.Row {
+func (i ImportedLocationsList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+	buf, err := schema.NewBufferV2()
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
 		row := make(parquet.Row, 0, 9)
@@ -1288,7 +1358,11 @@ func (i ImportedLocationsList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 8))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var ImportedLocationsSchema = &schemav2pb.Schema{
@@ -1395,7 +1469,11 @@ const ImportedDevicesTable = "imported_devices"
 
 type ImportedDevicesList []*ImportedDevices
 
-func (i ImportedDevicesList) Rows() []parquet.Row {
+func (i ImportedDevicesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+	buf, err := schema.NewBufferV2()
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
@@ -1408,7 +1486,11 @@ func (i ImportedDevicesList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var ImportedDevicesSchema = &schemav2pb.Schema{
@@ -1495,7 +1577,11 @@ const ImportedBrowserTable = "imported_browser"
 
 type ImportedBrowserList []*ImportedBrowser
 
-func (i ImportedBrowserList) Rows() []parquet.Row {
+func (i ImportedBrowserList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+	buf, err := schema.NewBufferV2()
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
@@ -1508,7 +1594,11 @@ func (i ImportedBrowserList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var ImportedBrowserSchema = &schemav2pb.Schema{
@@ -1595,7 +1685,11 @@ const ImportedOperatingSystemTable = "imported_operating_system"
 
 type ImportedOperatingSystemList []*ImportedOperatingSystem
 
-func (i ImportedOperatingSystemList) Rows() []parquet.Row {
+func (i ImportedOperatingSystemList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+	buf, err := schema.NewBufferV2()
+	if err != nil {
+		return nil, err
+	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
@@ -1608,7 +1702,11 @@ func (i ImportedOperatingSystemList) Rows() []parquet.Row {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
-	return rows
+	_, err = buf.WriteRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	return buf, err
 }
 
 var ImportedOperatingSystemSchema = &schemav2pb.Schema{
@@ -1689,4 +1787,28 @@ var ImportedOperatingSystemSchema = &schemav2pb.Schema{
 			},
 		},
 	},
+}
+
+func LabelColumn(name string) *schemav2pb.Node {
+	return &schemav2pb.Node{
+		Type: &schemav2pb.Node_Group{
+			Group: &schemav2pb.Group{
+				Name: "labels",
+				Nodes: []*schemav2pb.Node{
+					{
+						Type: &schemav2pb.Node_Leaf{
+							Leaf: &schemav2pb.Leaf{
+								Name: name,
+								StorageLayout: &schemav2pb.StorageLayout{
+									Type:     schemav2pb.StorageLayout_TYPE_STRING,
+									Nullable: true,
+									Encoding: schemav2pb.StorageLayout_ENCODING_RLE_DICTIONARY,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }
