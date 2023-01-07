@@ -7,3 +7,4 @@ package vince
 //go:generate go run ua/os/make_os.go
 //go:generate go run ua/vendor_fragment/make_vendor.go
 //go:generate go run schema/make_schema.go
+//go:generate go run referrer/make_referrer.go
