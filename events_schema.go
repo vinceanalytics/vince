@@ -42,7 +42,8 @@ func PutEvents(value EventList) {
 	for _, item := range value {
 		PutEvent(item)
 	}
-	eventsPool.Put(value[:0])
+	value = value[:0]
+	eventsPool.Put(value)
 }
 
 func (e EventList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -423,7 +424,8 @@ func PutSessions(value SessionList) {
 	for _, item := range value {
 		PutSession(item)
 	}
-	sessionsPool.Put(value[:0])
+	value = value[:0]
+	sessionsPool.Put(value)
 }
 
 func (s SessionList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -873,7 +875,8 @@ func PutImportedVisitors(value ImportedVisitorList) {
 	for _, item := range value {
 		PutImportedVisitor(item)
 	}
-	importedVisitorsPool.Put(value[:0])
+	value = value[:0]
+	importedVisitorsPool.Put(value)
 }
 
 func (i ImportedVisitorList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -1020,7 +1023,8 @@ func PutImportedSources(value ImportedSourceList) {
 	for _, item := range value {
 		PutImportedSource(item)
 	}
-	importedSourcesPool.Put(value[:0])
+	value = value[:0]
+	importedSourcesPool.Put(value)
 }
 
 func (i ImportedSourceList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -1211,7 +1215,8 @@ func PutImportedPages(value ImportedPageList) {
 	for _, item := range value {
 		PutImportedPage(item)
 	}
-	importedPagesPool.Put(value[:0])
+	value = value[:0]
+	importedPagesPool.Put(value)
 }
 
 func (i ImportedPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -1369,7 +1374,8 @@ func PutImportedEntryPages(value ImportedEntryPageList) {
 	for _, item := range value {
 		PutImportedEntryPage(item)
 	}
-	importedEntryPagesPool.Put(value[:0])
+	value = value[:0]
+	importedEntryPagesPool.Put(value)
 }
 
 func (i ImportedEntryPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -1516,7 +1522,8 @@ func PutImportedExitPages(value ImportedExitPageList) {
 	for _, item := range value {
 		PutImportedExitPage(item)
 	}
-	importedExitPagesPool.Put(value[:0])
+	value = value[:0]
+	importedExitPagesPool.Put(value)
 }
 
 func (i ImportedExitPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -1641,7 +1648,8 @@ func PutImportedLocations(value ImportedLocationList) {
 	for _, item := range value {
 		PutImportedLocation(item)
 	}
-	importedLocationsPool.Put(value[:0])
+	value = value[:0]
+	importedLocationsPool.Put(value)
 }
 
 func (i ImportedLocationList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -1810,7 +1818,8 @@ func PutImportedDevices(value ImportedDeviceList) {
 	for _, item := range value {
 		PutImportedDevice(item)
 	}
-	importedDevicesPool.Put(value[:0])
+	value = value[:0]
+	importedDevicesPool.Put(value)
 }
 
 func (i ImportedDeviceList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -1957,7 +1966,8 @@ func PutImportedBrowsers(value ImportedBrowserList) {
 	for _, item := range value {
 		PutImportedBrowser(item)
 	}
-	importedBrowsersPool.Put(value[:0])
+	value = value[:0]
+	importedBrowsersPool.Put(value)
 }
 
 func (i ImportedBrowserList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
@@ -2104,7 +2114,8 @@ func PutImportedOperatingSystems(value ImportedOperatingSystemList) {
 	for _, item := range value {
 		PutImportedOperatingSystem(item)
 	}
-	importedOperatingSystemsPool.Put(value[:0])
+	value = value[:0]
+	importedOperatingSystemsPool.Put(value)
 }
 
 func (i ImportedOperatingSystemList) Rows(tables *Tables) (*dynparquet.Buffer, error) {

@@ -363,7 +363,8 @@ func Put%ss(value %sList) {
 	for _, item := range value {
 		Put%s(item)
 	}
-	%ssPool.Put(value[:0])
+	value=value[:0]
+	%ssPool.Put(value)
 }
 `
 
