@@ -73,7 +73,6 @@ func main() {
 		}, nil
 	}
 	`, &tables, &tablesBody, &tablesResult)
-	fmt.Println(&b)
 	fmt.Fprintln(&b, labelColumn)
 	r, err := format.Source(b.Bytes())
 	if err != nil {
