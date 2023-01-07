@@ -12,12 +12,6 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
-var sessionPool = &sync.Pool{
-	New: func() any {
-		return &Session{}
-	},
-}
-
 const MAX_BUFFER_SIZE = 4098
 
 // Buffers Sessions before they are processed. After processing call Reset to

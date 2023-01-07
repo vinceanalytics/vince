@@ -3,6 +3,7 @@ package vince
 
 import (
 	"sort"
+	"sync"
 
 	"github.com/polarsignals/frostdb"
 	"github.com/polarsignals/frostdb/dynparquet"
@@ -13,6 +14,36 @@ import (
 const EventTable = "event"
 
 type EventList []*Event
+
+var eventPool = &sync.Pool{
+	New: func() any {
+		return &Event{}
+	},
+}
+
+func GetEvent() *Event {
+	return eventPool.Get().(*Event)
+}
+func PutEvent(value *Event) {
+	value.Reset()
+	eventPool.Put(value)
+}
+
+var eventsPool = &sync.Pool{
+	New: func() any {
+		return make(EventList, 1024)
+	},
+}
+
+func GetEvents() EventList {
+	return eventsPool.Get().(EventList)
+}
+func PutEvents(value EventList) {
+	for _, item := range value {
+		PutEvent(item)
+	}
+	eventsPool.Put(value[:0])
+}
 
 func (e EventList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	names := []string{}
@@ -364,6 +395,36 @@ var EventSchema = &schemav2pb.Schema{
 const SessionTable = "session"
 
 type SessionList []*Session
+
+var sessionPool = &sync.Pool{
+	New: func() any {
+		return &Session{}
+	},
+}
+
+func GetSession() *Session {
+	return sessionPool.Get().(*Session)
+}
+func PutSession(value *Session) {
+	value.Reset()
+	sessionPool.Put(value)
+}
+
+var sessionsPool = &sync.Pool{
+	New: func() any {
+		return make(SessionList, 1024)
+	},
+}
+
+func GetSessions() SessionList {
+	return sessionsPool.Get().(SessionList)
+}
+func PutSessions(value SessionList) {
+	for _, item := range value {
+		PutSession(item)
+	}
+	sessionsPool.Put(value[:0])
+}
 
 func (s SessionList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	names := []string{}
@@ -785,6 +846,36 @@ const ImportedVisitorTable = "imported_visitor"
 
 type ImportedVisitorList []*ImportedVisitor
 
+var importedVisitorPool = &sync.Pool{
+	New: func() any {
+		return &ImportedVisitor{}
+	},
+}
+
+func GetImportedVisitor() *ImportedVisitor {
+	return importedVisitorPool.Get().(*ImportedVisitor)
+}
+func PutImportedVisitor(value *ImportedVisitor) {
+	value.Reset()
+	importedVisitorPool.Put(value)
+}
+
+var importedVisitorsPool = &sync.Pool{
+	New: func() any {
+		return make(ImportedVisitorList, 1024)
+	},
+}
+
+func GetImportedVisitors() ImportedVisitorList {
+	return importedVisitorsPool.Get().(ImportedVisitorList)
+}
+func PutImportedVisitors(value ImportedVisitorList) {
+	for _, item := range value {
+		PutImportedVisitor(item)
+	}
+	importedVisitorsPool.Put(value[:0])
+}
+
 func (i ImportedVisitorList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	buf, err := tables.ImportedVisitors.Schema().NewBufferV2()
 	if err != nil {
@@ -898,11 +989,41 @@ var ImportedVisitorSchema = &schemav2pb.Schema{
 	},
 }
 
-const ImportedSourcesTable = "imported_sources"
+const ImportedSourceTable = "imported_source"
 
-type ImportedSourcesList []*ImportedSources
+type ImportedSourceList []*ImportedSource
 
-func (i ImportedSourcesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+var importedSourcePool = &sync.Pool{
+	New: func() any {
+		return &ImportedSource{}
+	},
+}
+
+func GetImportedSource() *ImportedSource {
+	return importedSourcePool.Get().(*ImportedSource)
+}
+func PutImportedSource(value *ImportedSource) {
+	value.Reset()
+	importedSourcePool.Put(value)
+}
+
+var importedSourcesPool = &sync.Pool{
+	New: func() any {
+		return make(ImportedSourceList, 1024)
+	},
+}
+
+func GetImportedSources() ImportedSourceList {
+	return importedSourcesPool.Get().(ImportedSourceList)
+}
+func PutImportedSources(value ImportedSourceList) {
+	for _, item := range value {
+		PutImportedSource(item)
+	}
+	importedSourcesPool.Put(value[:0])
+}
+
+func (i ImportedSourceList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	buf, err := tables.ImportedSources.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
@@ -929,19 +1050,19 @@ func (i ImportedSourcesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	}
 	return buf, err
 }
-func CreateImportedSourcesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
-	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedSourcesSchema)
+func CreateImportedSourceTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedSourceSchema)
 	if err != nil {
 		return nil, err
 	}
-	return db.Table(ImportedSourcesTable, frostdb.NewTableConfig(
+	return db.Table(ImportedSourceTable, frostdb.NewTableConfig(
 		tableSchema, opts...,
 	))
 }
 
-var ImportedSourcesSchema = &schemav2pb.Schema{
+var ImportedSourceSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
-		Name: "imported_sources",
+		Name: "imported_source",
 		Nodes: []*schemav2pb.Node{
 			{
 				Type: &schemav2pb.Node_Leaf{
@@ -1059,11 +1180,41 @@ var ImportedSourcesSchema = &schemav2pb.Schema{
 	},
 }
 
-const ImportedPagesTable = "imported_pages"
+const ImportedPageTable = "imported_page"
 
-type ImportedPagesList []*ImportedPages
+type ImportedPageList []*ImportedPage
 
-func (i ImportedPagesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+var importedPagePool = &sync.Pool{
+	New: func() any {
+		return &ImportedPage{}
+	},
+}
+
+func GetImportedPage() *ImportedPage {
+	return importedPagePool.Get().(*ImportedPage)
+}
+func PutImportedPage(value *ImportedPage) {
+	value.Reset()
+	importedPagePool.Put(value)
+}
+
+var importedPagesPool = &sync.Pool{
+	New: func() any {
+		return make(ImportedPageList, 1024)
+	},
+}
+
+func GetImportedPages() ImportedPageList {
+	return importedPagesPool.Get().(ImportedPageList)
+}
+func PutImportedPages(value ImportedPageList) {
+	for _, item := range value {
+		PutImportedPage(item)
+	}
+	importedPagesPool.Put(value[:0])
+}
+
+func (i ImportedPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	buf, err := tables.ImportedPages.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
@@ -1087,19 +1238,19 @@ func (i ImportedPagesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	}
 	return buf, err
 }
-func CreateImportedPagesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
-	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedPagesSchema)
+func CreateImportedPageTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedPageSchema)
 	if err != nil {
 		return nil, err
 	}
-	return db.Table(ImportedPagesTable, frostdb.NewTableConfig(
+	return db.Table(ImportedPageTable, frostdb.NewTableConfig(
 		tableSchema, opts...,
 	))
 }
 
-var ImportedPagesSchema = &schemav2pb.Schema{
+var ImportedPageSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
-		Name: "imported_pages",
+		Name: "imported_page",
 		Nodes: []*schemav2pb.Node{
 			{
 				Type: &schemav2pb.Node_Leaf{
@@ -1187,11 +1338,41 @@ var ImportedPagesSchema = &schemav2pb.Schema{
 	},
 }
 
-const ImportedEntryPagesTable = "imported_entry_pages"
+const ImportedEntryPageTable = "imported_entry_page"
 
-type ImportedEntryPagesList []*ImportedEntryPages
+type ImportedEntryPageList []*ImportedEntryPage
 
-func (i ImportedEntryPagesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+var importedEntryPagePool = &sync.Pool{
+	New: func() any {
+		return &ImportedEntryPage{}
+	},
+}
+
+func GetImportedEntryPage() *ImportedEntryPage {
+	return importedEntryPagePool.Get().(*ImportedEntryPage)
+}
+func PutImportedEntryPage(value *ImportedEntryPage) {
+	value.Reset()
+	importedEntryPagePool.Put(value)
+}
+
+var importedEntryPagesPool = &sync.Pool{
+	New: func() any {
+		return make(ImportedEntryPageList, 1024)
+	},
+}
+
+func GetImportedEntryPages() ImportedEntryPageList {
+	return importedEntryPagesPool.Get().(ImportedEntryPageList)
+}
+func PutImportedEntryPages(value ImportedEntryPageList) {
+	for _, item := range value {
+		PutImportedEntryPage(item)
+	}
+	importedEntryPagesPool.Put(value[:0])
+}
+
+func (i ImportedEntryPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	buf, err := tables.ImportedEntryPages.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
@@ -1214,19 +1395,19 @@ func (i ImportedEntryPagesList) Rows(tables *Tables) (*dynparquet.Buffer, error)
 	}
 	return buf, err
 }
-func CreateImportedEntryPagesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
-	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedEntryPagesSchema)
+func CreateImportedEntryPageTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedEntryPageSchema)
 	if err != nil {
 		return nil, err
 	}
-	return db.Table(ImportedEntryPagesTable, frostdb.NewTableConfig(
+	return db.Table(ImportedEntryPageTable, frostdb.NewTableConfig(
 		tableSchema, opts...,
 	))
 }
 
-var ImportedEntryPagesSchema = &schemav2pb.Schema{
+var ImportedEntryPageSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
-		Name: "imported_entry_pages",
+		Name: "imported_entry_page",
 		Nodes: []*schemav2pb.Node{
 			{
 				Type: &schemav2pb.Node_Leaf{
@@ -1304,11 +1485,41 @@ var ImportedEntryPagesSchema = &schemav2pb.Schema{
 	},
 }
 
-const ImportedExitPagesTable = "imported_exit_pages"
+const ImportedExitPageTable = "imported_exit_page"
 
-type ImportedExitPagesList []*ImportedExitPages
+type ImportedExitPageList []*ImportedExitPage
 
-func (i ImportedExitPagesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+var importedExitPagePool = &sync.Pool{
+	New: func() any {
+		return &ImportedExitPage{}
+	},
+}
+
+func GetImportedExitPage() *ImportedExitPage {
+	return importedExitPagePool.Get().(*ImportedExitPage)
+}
+func PutImportedExitPage(value *ImportedExitPage) {
+	value.Reset()
+	importedExitPagePool.Put(value)
+}
+
+var importedExitPagesPool = &sync.Pool{
+	New: func() any {
+		return make(ImportedExitPageList, 1024)
+	},
+}
+
+func GetImportedExitPages() ImportedExitPageList {
+	return importedExitPagesPool.Get().(ImportedExitPageList)
+}
+func PutImportedExitPages(value ImportedExitPageList) {
+	for _, item := range value {
+		PutImportedExitPage(item)
+	}
+	importedExitPagesPool.Put(value[:0])
+}
+
+func (i ImportedExitPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	buf, err := tables.ImportedExitPages.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
@@ -1329,19 +1540,19 @@ func (i ImportedExitPagesList) Rows(tables *Tables) (*dynparquet.Buffer, error) 
 	}
 	return buf, err
 }
-func CreateImportedExitPagesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
-	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedExitPagesSchema)
+func CreateImportedExitPageTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedExitPageSchema)
 	if err != nil {
 		return nil, err
 	}
-	return db.Table(ImportedExitPagesTable, frostdb.NewTableConfig(
+	return db.Table(ImportedExitPageTable, frostdb.NewTableConfig(
 		tableSchema, opts...,
 	))
 }
 
-var ImportedExitPagesSchema = &schemav2pb.Schema{
+var ImportedExitPageSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
-		Name: "imported_exit_pages",
+		Name: "imported_exit_page",
 		Nodes: []*schemav2pb.Node{
 			{
 				Type: &schemav2pb.Node_Leaf{
@@ -1399,11 +1610,41 @@ var ImportedExitPagesSchema = &schemav2pb.Schema{
 	},
 }
 
-const ImportedLocationsTable = "imported_locations"
+const ImportedLocationTable = "imported_location"
 
-type ImportedLocationsList []*ImportedLocations
+type ImportedLocationList []*ImportedLocation
 
-func (i ImportedLocationsList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+var importedLocationPool = &sync.Pool{
+	New: func() any {
+		return &ImportedLocation{}
+	},
+}
+
+func GetImportedLocation() *ImportedLocation {
+	return importedLocationPool.Get().(*ImportedLocation)
+}
+func PutImportedLocation(value *ImportedLocation) {
+	value.Reset()
+	importedLocationPool.Put(value)
+}
+
+var importedLocationsPool = &sync.Pool{
+	New: func() any {
+		return make(ImportedLocationList, 1024)
+	},
+}
+
+func GetImportedLocations() ImportedLocationList {
+	return importedLocationsPool.Get().(ImportedLocationList)
+}
+func PutImportedLocations(value ImportedLocationList) {
+	for _, item := range value {
+		PutImportedLocation(item)
+	}
+	importedLocationsPool.Put(value[:0])
+}
+
+func (i ImportedLocationList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	buf, err := tables.ImportedLocations.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
@@ -1428,19 +1669,19 @@ func (i ImportedLocationsList) Rows(tables *Tables) (*dynparquet.Buffer, error) 
 	}
 	return buf, err
 }
-func CreateImportedLocationsTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
-	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedLocationsSchema)
+func CreateImportedLocationTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedLocationSchema)
 	if err != nil {
 		return nil, err
 	}
-	return db.Table(ImportedLocationsTable, frostdb.NewTableConfig(
+	return db.Table(ImportedLocationTable, frostdb.NewTableConfig(
 		tableSchema, opts...,
 	))
 }
 
-var ImportedLocationsSchema = &schemav2pb.Schema{
+var ImportedLocationSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
-		Name: "imported_locations",
+		Name: "imported_location",
 		Nodes: []*schemav2pb.Node{
 			{
 				Type: &schemav2pb.Node_Leaf{
@@ -1538,11 +1779,41 @@ var ImportedLocationsSchema = &schemav2pb.Schema{
 	},
 }
 
-const ImportedDevicesTable = "imported_devices"
+const ImportedDeviceTable = "imported_device"
 
-type ImportedDevicesList []*ImportedDevices
+type ImportedDeviceList []*ImportedDevice
 
-func (i ImportedDevicesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+var importedDevicePool = &sync.Pool{
+	New: func() any {
+		return &ImportedDevice{}
+	},
+}
+
+func GetImportedDevice() *ImportedDevice {
+	return importedDevicePool.Get().(*ImportedDevice)
+}
+func PutImportedDevice(value *ImportedDevice) {
+	value.Reset()
+	importedDevicePool.Put(value)
+}
+
+var importedDevicesPool = &sync.Pool{
+	New: func() any {
+		return make(ImportedDeviceList, 1024)
+	},
+}
+
+func GetImportedDevices() ImportedDeviceList {
+	return importedDevicesPool.Get().(ImportedDeviceList)
+}
+func PutImportedDevices(value ImportedDeviceList) {
+	for _, item := range value {
+		PutImportedDevice(item)
+	}
+	importedDevicesPool.Put(value[:0])
+}
+
+func (i ImportedDeviceList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	buf, err := tables.ImportedDevices.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
@@ -1565,19 +1836,19 @@ func (i ImportedDevicesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	}
 	return buf, err
 }
-func CreateImportedDevicesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
-	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedDevicesSchema)
+func CreateImportedDeviceTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedDeviceSchema)
 	if err != nil {
 		return nil, err
 	}
-	return db.Table(ImportedDevicesTable, frostdb.NewTableConfig(
+	return db.Table(ImportedDeviceTable, frostdb.NewTableConfig(
 		tableSchema, opts...,
 	))
 }
 
-var ImportedDevicesSchema = &schemav2pb.Schema{
+var ImportedDeviceSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
-		Name: "imported_devices",
+		Name: "imported_device",
 		Nodes: []*schemav2pb.Node{
 			{
 				Type: &schemav2pb.Node_Leaf{
@@ -1658,6 +1929,36 @@ var ImportedDevicesSchema = &schemav2pb.Schema{
 const ImportedBrowserTable = "imported_browser"
 
 type ImportedBrowserList []*ImportedBrowser
+
+var importedBrowserPool = &sync.Pool{
+	New: func() any {
+		return &ImportedBrowser{}
+	},
+}
+
+func GetImportedBrowser() *ImportedBrowser {
+	return importedBrowserPool.Get().(*ImportedBrowser)
+}
+func PutImportedBrowser(value *ImportedBrowser) {
+	value.Reset()
+	importedBrowserPool.Put(value)
+}
+
+var importedBrowsersPool = &sync.Pool{
+	New: func() any {
+		return make(ImportedBrowserList, 1024)
+	},
+}
+
+func GetImportedBrowsers() ImportedBrowserList {
+	return importedBrowsersPool.Get().(ImportedBrowserList)
+}
+func PutImportedBrowsers(value ImportedBrowserList) {
+	for _, item := range value {
+		PutImportedBrowser(item)
+	}
+	importedBrowsersPool.Put(value[:0])
+}
 
 func (i ImportedBrowserList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	buf, err := tables.ImportedBrowsers.Schema().NewBufferV2()
@@ -1775,6 +2076,36 @@ var ImportedBrowserSchema = &schemav2pb.Schema{
 const ImportedOperatingSystemTable = "imported_operating_system"
 
 type ImportedOperatingSystemList []*ImportedOperatingSystem
+
+var importedOperatingSystemPool = &sync.Pool{
+	New: func() any {
+		return &ImportedOperatingSystem{}
+	},
+}
+
+func GetImportedOperatingSystem() *ImportedOperatingSystem {
+	return importedOperatingSystemPool.Get().(*ImportedOperatingSystem)
+}
+func PutImportedOperatingSystem(value *ImportedOperatingSystem) {
+	value.Reset()
+	importedOperatingSystemPool.Put(value)
+}
+
+var importedOperatingSystemsPool = &sync.Pool{
+	New: func() any {
+		return make(ImportedOperatingSystemList, 1024)
+	},
+}
+
+func GetImportedOperatingSystems() ImportedOperatingSystemList {
+	return importedOperatingSystemsPool.Get().(ImportedOperatingSystemList)
+}
+func PutImportedOperatingSystems(value ImportedOperatingSystemList) {
+	for _, item := range value {
+		PutImportedOperatingSystem(item)
+	}
+	importedOperatingSystemsPool.Put(value[:0])
+}
 
 func (i ImportedOperatingSystemList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	buf, err := tables.ImportedOperatingSystems.Schema().NewBufferV2()
@@ -1916,27 +2247,27 @@ func NewTables(db *frostdb.DB, opts ...frostdb.TableOption) (*Tables, error) {
 	if err != nil {
 		return nil, err
 	}
-	importedSources, err := CreateImportedSourcesTable(db, opts...)
+	importedSource, err := CreateImportedSourceTable(db, opts...)
 	if err != nil {
 		return nil, err
 	}
-	importedPages, err := CreateImportedPagesTable(db, opts...)
+	importedPage, err := CreateImportedPageTable(db, opts...)
 	if err != nil {
 		return nil, err
 	}
-	importedEntryPages, err := CreateImportedEntryPagesTable(db, opts...)
+	importedEntryPage, err := CreateImportedEntryPageTable(db, opts...)
 	if err != nil {
 		return nil, err
 	}
-	importedExitPages, err := CreateImportedExitPagesTable(db, opts...)
+	importedExitPage, err := CreateImportedExitPageTable(db, opts...)
 	if err != nil {
 		return nil, err
 	}
-	importedLocations, err := CreateImportedLocationsTable(db, opts...)
+	importedLocation, err := CreateImportedLocationTable(db, opts...)
 	if err != nil {
 		return nil, err
 	}
-	importedDevices, err := CreateImportedDevicesTable(db, opts...)
+	importedDevice, err := CreateImportedDeviceTable(db, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1953,12 +2284,12 @@ func NewTables(db *frostdb.DB, opts ...frostdb.TableOption) (*Tables, error) {
 		Events:                   event,
 		Sessions:                 session,
 		ImportedVisitors:         importedVisitor,
-		ImportedSources:          importedSources,
-		ImportedPages:            importedPages,
-		ImportedEntryPages:       importedEntryPages,
-		ImportedExitPages:        importedExitPages,
-		ImportedLocations:        importedLocations,
-		ImportedDevices:          importedDevices,
+		ImportedSources:          importedSource,
+		ImportedPages:            importedPage,
+		ImportedEntryPages:       importedEntryPage,
+		ImportedExitPages:        importedExitPage,
+		ImportedLocations:        importedLocation,
+		ImportedDevices:          importedDevice,
 		ImportedBrowsers:         importedBrowser,
 		ImportedOperatingSystems: importedOperatingSystem,
 	}, nil

@@ -83,7 +83,7 @@ message ImportedVisitor {
   uint64 visit_duration = 8;
 }
 
-message ImportedSources {
+message ImportedSource {
   uint64 site_id = 1;
   google.protobuf.Timestamp date = 2;
   string source = 3;
@@ -97,7 +97,7 @@ message ImportedSources {
   uint32 bounces = 11;
 }
 
-message ImportedPages {
+message ImportedPage {
   uint64 site_id = 1;
   google.protobuf.Timestamp date = 2;
   string hostname = 3;
@@ -108,7 +108,7 @@ message ImportedPages {
   uint64 time_on_page = 8;
 }
 
-message ImportedEntryPages {
+message ImportedEntryPage {
   uint64 site_id = 1;
   google.protobuf.Timestamp date = 2;
   string entry_page = 3;
@@ -118,7 +118,7 @@ message ImportedEntryPages {
   uint32 bounces = 7;
 }
 
-message ImportedExitPages {
+message ImportedExitPage {
   uint64 site_id = 1;
   google.protobuf.Timestamp date = 2;
   string exit_page = 3;
@@ -126,7 +126,7 @@ message ImportedExitPages {
   uint64 exits = 5;
 }
 
-message ImportedLocations {
+message ImportedLocation {
   uint64 site_id = 1;
   google.protobuf.Timestamp date = 2;
   string country = 3;
@@ -138,7 +138,7 @@ message ImportedLocations {
   uint32 bounces = 9;
 }
 
-message ImportedDevices {
+message ImportedDevice {
   uint64 site_id = 1;
   google.protobuf.Timestamp date = 2;
   string devise = 3;

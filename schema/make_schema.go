@@ -28,6 +28,7 @@ func main() {
 	fmt.Fprintln(&b, `
 	import (
 		"sort"
+		"sync"
 
 		"github.com/polarsignals/frostdb"
 		"github.com/polarsignals/frostdb/dynparquet"
@@ -59,6 +60,12 @@ func main() {
 		`, variableCase(n), n)
 		fmt.Fprintf(&tablesResult, "%s: %s,\n", fieldCase(n), variableCase(n))
 		fmt.Fprintf(&b, "type %sList []*%s\n", n, n)
+		fmt.Fprintf(&b, createPool, variableCase(n), n)
+		fmt.Fprintf(&b, getItem, n, n, variableCase(n), n)
+		fmt.Fprintf(&b, putItem, n, n, variableCase(n))
+		fmt.Fprintf(&b, createPoolList, fieldCase(variableCase(n)), n)
+		fmt.Fprintf(&b, getItems, n, n, variableCase(n), n)
+		fmt.Fprintf(&b, putItems, n, n, n, variableCase(n))
 		createToRow(&b, d)
 		fmt.Fprintf(&b, createTable, n, n, n)
 		createSchema(&b, d)
@@ -322,6 +329,41 @@ const createTable = `func Create%sTable(db *frostdb.DB, opts ...frostdb.TableOpt
 	return db.Table(%sTable, frostdb.NewTableConfig(
 		tableSchema, opts...,
 	))
+}
+`
+
+const createPoolList = `
+var %sPool = &sync.Pool{
+	New: func() any {
+		return make(%sList, 1024)
+	},
+}`
+const createPool = `
+var %sPool = &sync.Pool{
+	New: func() any {
+		return &%s{}
+	},
+}`
+const getItem = `
+func Get%s() *%s {
+	return %sPool.Get().(*%s)
+}`
+const getItems = `
+func Get%ss() %sList{
+	return %ssPool.Get().(%sList)
+}`
+const putItem = `
+func Put%s(value *%s) {
+	value.Reset()
+	%sPool.Put(value)
+}
+`
+const putItems = `
+func Put%ss(value %sList) {
+	for _, item := range value {
+		Put%s(item)
+	}
+	%ssPool.Put(value[:0])
 }
 `
 
