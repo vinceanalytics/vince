@@ -124,14 +124,15 @@ func createToRow(b *bytes.Buffer, d *desc.MessageDescriptor) {
 	n := d.GetName()
 	r := strings.ToLower(n[:1])
 	hasLabel := n == "Event" || n == "Session"
-	fmt.Fprintf(b, "func (%s %sList)Rows(schema *dynparquet.Schema)(*dynparquet.Buffer, error){\n", r, n)
+	fmt.Fprintf(b, "func (%s %sList)Rows(tables *Tables)(*dynparquet.Buffer, error){\n", r, n)
 	if hasLabel {
-		fmt.Fprintf(b, labelName, r)
+		fmt.Fprintf(b, labelName, r, fieldCase(n))
 	} else {
-		fmt.Fprintln(b, `	buf, err := schema.NewBufferV2()
+		fmt.Fprintf(b, `	buf, err := tables.%s.Schema().NewBufferV2()
 		if err != nil {
 			return nil, err
-		}`)
+		}
+		`, fieldCase(n))
 	}
 	fmt.Fprintf(b, "    rows:=make([]parquet.Row,len(%s))\n", r)
 	fmt.Fprintf(b, "    for _,value:=range %s{\n", r)
@@ -263,7 +264,7 @@ tl := make([]*schemav2pb.Node, len(names))
 for _, n := range names {
 	tl = append(tl, LabelColumn(n))
 }
-buf, err := schema.NewBufferV2(tl...)
+buf, err := tables.%s.Schema().NewBufferV2(tl...)
 if err != nil {
 	return nil, err
 }

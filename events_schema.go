@@ -14,7 +14,7 @@ const EventTable = "event"
 
 type EventList []*Event
 
-func (e EventList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+func (e EventList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	names := []string{}
 	seen := map[string]struct{}{}
 	for _, lb := range e {
@@ -35,7 +35,7 @@ func (e EventList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
 	for _, n := range names {
 		tl = append(tl, LabelColumn(n))
 	}
-	buf, err := schema.NewBufferV2(tl...)
+	buf, err := tables.Events.Schema().NewBufferV2(tl...)
 	if err != nil {
 		return nil, err
 	}
@@ -365,7 +365,7 @@ const SessionTable = "session"
 
 type SessionList []*Session
 
-func (s SessionList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
+func (s SessionList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	names := []string{}
 	seen := map[string]struct{}{}
 	for _, lb := range s {
@@ -386,7 +386,7 @@ func (s SessionList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error)
 	for _, n := range names {
 		tl = append(tl, LabelColumn(n))
 	}
-	buf, err := schema.NewBufferV2(tl...)
+	buf, err := tables.Sessions.Schema().NewBufferV2(tl...)
 	if err != nil {
 		return nil, err
 	}
@@ -785,8 +785,8 @@ const ImportedVisitorTable = "imported_visitor"
 
 type ImportedVisitorList []*ImportedVisitor
 
-func (i ImportedVisitorList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
-	buf, err := schema.NewBufferV2()
+func (i ImportedVisitorList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+	buf, err := tables.ImportedVisitors.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
 	}
@@ -902,8 +902,8 @@ const ImportedSourcesTable = "imported_sources"
 
 type ImportedSourcesList []*ImportedSources
 
-func (i ImportedSourcesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
-	buf, err := schema.NewBufferV2()
+func (i ImportedSourcesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+	buf, err := tables.ImportedSources.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
 	}
@@ -1063,8 +1063,8 @@ const ImportedPagesTable = "imported_pages"
 
 type ImportedPagesList []*ImportedPages
 
-func (i ImportedPagesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
-	buf, err := schema.NewBufferV2()
+func (i ImportedPagesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+	buf, err := tables.ImportedPages.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
 	}
@@ -1191,8 +1191,8 @@ const ImportedEntryPagesTable = "imported_entry_pages"
 
 type ImportedEntryPagesList []*ImportedEntryPages
 
-func (i ImportedEntryPagesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
-	buf, err := schema.NewBufferV2()
+func (i ImportedEntryPagesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+	buf, err := tables.ImportedEntryPages.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
 	}
@@ -1308,8 +1308,8 @@ const ImportedExitPagesTable = "imported_exit_pages"
 
 type ImportedExitPagesList []*ImportedExitPages
 
-func (i ImportedExitPagesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
-	buf, err := schema.NewBufferV2()
+func (i ImportedExitPagesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+	buf, err := tables.ImportedExitPages.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
 	}
@@ -1403,8 +1403,8 @@ const ImportedLocationsTable = "imported_locations"
 
 type ImportedLocationsList []*ImportedLocations
 
-func (i ImportedLocationsList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
-	buf, err := schema.NewBufferV2()
+func (i ImportedLocationsList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+	buf, err := tables.ImportedLocations.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
 	}
@@ -1542,8 +1542,8 @@ const ImportedDevicesTable = "imported_devices"
 
 type ImportedDevicesList []*ImportedDevices
 
-func (i ImportedDevicesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
-	buf, err := schema.NewBufferV2()
+func (i ImportedDevicesList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+	buf, err := tables.ImportedDevices.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
 	}
@@ -1659,8 +1659,8 @@ const ImportedBrowserTable = "imported_browser"
 
 type ImportedBrowserList []*ImportedBrowser
 
-func (i ImportedBrowserList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
-	buf, err := schema.NewBufferV2()
+func (i ImportedBrowserList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+	buf, err := tables.ImportedBrowsers.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
 	}
@@ -1776,8 +1776,8 @@ const ImportedOperatingSystemTable = "imported_operating_system"
 
 type ImportedOperatingSystemList []*ImportedOperatingSystem
 
-func (i ImportedOperatingSystemList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
-	buf, err := schema.NewBufferV2()
+func (i ImportedOperatingSystemList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+	buf, err := tables.ImportedOperatingSystems.Schema().NewBufferV2()
 	if err != nil {
 		return nil, err
 	}
