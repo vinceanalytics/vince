@@ -3,6 +3,7 @@ module github.com/gernest/vince
 go 1.19
 
 require (
+	github.com/dchest/siphash v1.2.3
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/jhump/protoreflect v1.14.0
