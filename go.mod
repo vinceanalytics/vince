@@ -10,6 +10,7 @@ require (
 	github.com/klauspost/compress v1.15.14
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/polarsignals/frostdb v0.0.0-20230104152515-cbce8509f8bd
+	github.com/rs/zerolog v1.21.0
 	github.com/segmentio/parquet-go v0.0.0-20221209161419-3f277a904e0e
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
