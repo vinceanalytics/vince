@@ -31,6 +31,7 @@ func main() {
 		"context"
 		"sort"
 		"sync"
+		"testing"
 
 		"github.com/polarsignals/frostdb"
 		"github.com/polarsignals/frostdb/dynparquet"
@@ -38,6 +39,28 @@ func main() {
 		"github.com/segmentio/parquet-go"
 	)
 
+	func NewTestDB(t *testing.T) *Tables {
+		t.Helper()
+		store, err := frostdb.New(
+			frostdb.WithStoragePath(t.TempDir()),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() {
+			store.Close()
+		})
+		db, err := store.DB(context.TODO(), "vince")
+		if err != nil {
+			t.Fatal(err)
+		}
+		tbl, err := NewTables(db)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return tbl
+	}
+	
 	var buffPool = &sync.Pool{
 		New: func() any {
 			return &bytes.Buffer{}
