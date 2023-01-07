@@ -1,7 +1,6 @@
 package vince
 
 import (
-	"bytes"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -91,12 +90,6 @@ func (s *Session) Update(e *Event) *Session {
 	return ss
 }
 
-var buffPool = &sync.Pool{
-	New: func() any {
-		return &bytes.Buffer{}
-	},
-}
-
 type SessionCache struct {
 	cache    *ristretto.Cache
 	process  func(SessionList)
@@ -141,11 +134,8 @@ func (c *SessionCache) OnEvent(e *Event, prevUserId uint64) uint64 {
 }
 
 func (c *SessionCache) Find(e *Event, userId uint64) *Session {
-	b := buffPool.Get().(*bytes.Buffer)
-	defer func() {
-		b.Reset()
-		buffPool.Put(b)
-	}()
+	b := getBuff()
+	defer putBuff(b)
 	fmt.Fprintf(b, "%s-%d", e.Domain, userId)
 	v, _ := c.cache.Get(b.String())
 	if v != nil {
@@ -155,11 +145,8 @@ func (c *SessionCache) Find(e *Event, userId uint64) *Session {
 }
 
 func (c *SessionCache) Persist(s *Session) uint64 {
-	b := buffPool.Get().(*bytes.Buffer)
-	defer func() {
-		b.Reset()
-		buffPool.Put(b)
-	}()
+	b := getBuff()
+	defer putBuff(b)
 	fmt.Fprintf(b, "%s-%d", s.Domain, s.UserId)
 	c.cache.SetWithTTL(b.String(), s, 1, 30*time.Minute)
 	return s.SessionId

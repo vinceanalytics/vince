@@ -2,6 +2,8 @@
 package vince
 
 import (
+	"bytes"
+	"context"
 	"sort"
 	"sync"
 
@@ -10,6 +12,21 @@ import (
 	schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 	"github.com/segmentio/parquet-go"
 )
+
+var buffPool = &sync.Pool{
+	New: func() any {
+		return &bytes.Buffer{}
+	},
+}
+
+func getBuff() *bytes.Buffer {
+	return buffPool.Get().(*bytes.Buffer)
+}
+
+func putBuff(b *bytes.Buffer) {
+	b.Reset()
+	buffPool.Put(b)
+}
 
 const EventTable = "event"
 
@@ -46,7 +63,8 @@ func PutEvents(value EventList) {
 	eventsPool.Put(value)
 }
 
-func (e EventList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (e EventList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutEvents(e)
 	names := []string{}
 	seen := map[string]struct{}{}
 	for _, lb := range e {
@@ -69,7 +87,7 @@ func (e EventList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	}
 	buf, err := tables.Events.Schema().NewBufferV2(tl...)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(e))
 	for _, value := range e {
@@ -118,11 +136,18 @@ func (e EventList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+25))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.Events.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.Events.Insert(ctx, b.Bytes())
 }
 func CreateEventTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(EventSchema)
@@ -428,7 +453,8 @@ func PutSessions(value SessionList) {
 	sessionsPool.Put(value)
 }
 
-func (s SessionList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (s SessionList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutSessions(s)
 	names := []string{}
 	seen := map[string]struct{}{}
 	for _, lb := range s {
@@ -451,7 +477,7 @@ func (s SessionList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 	}
 	buf, err := tables.Sessions.Schema().NewBufferV2(tl...)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(s))
 	for _, value := range s {
@@ -506,11 +532,18 @@ func (s SessionList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+31))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.Sessions.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.Sessions.Insert(ctx, b.Bytes())
 }
 func CreateSessionTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(SessionSchema)
@@ -879,10 +912,11 @@ func PutImportedVisitors(value ImportedVisitorList) {
 	importedVisitorsPool.Put(value)
 }
 
-func (i ImportedVisitorList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (i ImportedVisitorList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutImportedVisitors(i)
 	buf, err := tables.ImportedVisitors.Schema().NewBufferV2()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -896,11 +930,18 @@ func (i ImportedVisitorList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 		row = append(row, parquet.ValueOf(value.VisitDuration).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.ImportedVisitors.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.ImportedVisitors.Insert(ctx, b.Bytes())
 }
 func CreateImportedVisitorTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedVisitorSchema)
@@ -1027,10 +1068,11 @@ func PutImportedSources(value ImportedSourceList) {
 	importedSourcesPool.Put(value)
 }
 
-func (i ImportedSourceList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (i ImportedSourceList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutImportedSources(i)
 	buf, err := tables.ImportedSources.Schema().NewBufferV2()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1048,11 +1090,18 @@ func (i ImportedSourceList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 10))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.ImportedSources.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.ImportedSources.Insert(ctx, b.Bytes())
 }
 func CreateImportedSourceTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedSourceSchema)
@@ -1219,10 +1268,11 @@ func PutImportedPages(value ImportedPageList) {
 	importedPagesPool.Put(value)
 }
 
-func (i ImportedPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (i ImportedPageList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutImportedPages(i)
 	buf, err := tables.ImportedPages.Schema().NewBufferV2()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1237,11 +1287,18 @@ func (i ImportedPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 		row = append(row, parquet.ValueOf(value.TimeOnPage).Level(0, 0, 7))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.ImportedPages.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.ImportedPages.Insert(ctx, b.Bytes())
 }
 func CreateImportedPageTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedPageSchema)
@@ -1378,10 +1435,11 @@ func PutImportedEntryPages(value ImportedEntryPageList) {
 	importedEntryPagesPool.Put(value)
 }
 
-func (i ImportedEntryPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (i ImportedEntryPageList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutImportedEntryPages(i)
 	buf, err := tables.ImportedEntryPages.Schema().NewBufferV2()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1395,11 +1453,18 @@ func (i ImportedEntryPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) 
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.ImportedEntryPages.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.ImportedEntryPages.Insert(ctx, b.Bytes())
 }
 func CreateImportedEntryPageTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedEntryPageSchema)
@@ -1526,10 +1591,11 @@ func PutImportedExitPages(value ImportedExitPageList) {
 	importedExitPagesPool.Put(value)
 }
 
-func (i ImportedExitPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (i ImportedExitPageList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutImportedExitPages(i)
 	buf, err := tables.ImportedExitPages.Schema().NewBufferV2()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1541,11 +1607,18 @@ func (i ImportedExitPageList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 		row = append(row, parquet.ValueOf(value.Exits).Level(0, 0, 4))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.ImportedExitPages.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.ImportedExitPages.Insert(ctx, b.Bytes())
 }
 func CreateImportedExitPageTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedExitPageSchema)
@@ -1652,10 +1725,11 @@ func PutImportedLocations(value ImportedLocationList) {
 	importedLocationsPool.Put(value)
 }
 
-func (i ImportedLocationList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (i ImportedLocationList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutImportedLocations(i)
 	buf, err := tables.ImportedLocations.Schema().NewBufferV2()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1671,11 +1745,18 @@ func (i ImportedLocationList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 8))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.ImportedLocations.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.ImportedLocations.Insert(ctx, b.Bytes())
 }
 func CreateImportedLocationTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedLocationSchema)
@@ -1822,10 +1903,11 @@ func PutImportedDevices(value ImportedDeviceList) {
 	importedDevicesPool.Put(value)
 }
 
-func (i ImportedDeviceList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (i ImportedDeviceList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutImportedDevices(i)
 	buf, err := tables.ImportedDevices.Schema().NewBufferV2()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1839,11 +1921,18 @@ func (i ImportedDeviceList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.ImportedDevices.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.ImportedDevices.Insert(ctx, b.Bytes())
 }
 func CreateImportedDeviceTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedDeviceSchema)
@@ -1970,10 +2059,11 @@ func PutImportedBrowsers(value ImportedBrowserList) {
 	importedBrowsersPool.Put(value)
 }
 
-func (i ImportedBrowserList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (i ImportedBrowserList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutImportedBrowsers(i)
 	buf, err := tables.ImportedBrowsers.Schema().NewBufferV2()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -1987,11 +2077,18 @@ func (i ImportedBrowserList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.ImportedBrowsers.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.ImportedBrowsers.Insert(ctx, b.Bytes())
 }
 func CreateImportedBrowserTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedBrowserSchema)
@@ -2118,10 +2215,11 @@ func PutImportedOperatingSystems(value ImportedOperatingSystemList) {
 	importedOperatingSystemsPool.Put(value)
 }
 
-func (i ImportedOperatingSystemList) Rows(tables *Tables) (*dynparquet.Buffer, error) {
+func (i ImportedOperatingSystemList) Save(ctx context.Context, tables *Tables) (uint64, error) {
+	defer PutImportedOperatingSystems(i)
 	buf, err := tables.ImportedOperatingSystems.Schema().NewBufferV2()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	rows := make([]parquet.Row, len(i))
 	for _, value := range i {
@@ -2135,11 +2233,18 @@ func (i ImportedOperatingSystemList) Rows(tables *Tables) (*dynparquet.Buffer, e
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 6))
 		rows = append(rows, row)
 	}
+
 	_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.ImportedOperatingSystems.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.ImportedOperatingSystems.Insert(ctx, b.Bytes())
 }
 func CreateImportedOperatingSystemTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
 	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedOperatingSystemSchema)

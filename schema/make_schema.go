@@ -27,6 +27,8 @@ func main() {
 	fmt.Fprintln(&b, " package vince")
 	fmt.Fprintln(&b, `
 	import (
+		"bytes"
+		"context"
 		"sort"
 		"sync"
 
@@ -35,6 +37,21 @@ func main() {
 		schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 		"github.com/segmentio/parquet-go"
 	)
+
+	var buffPool = &sync.Pool{
+		New: func() any {
+			return &bytes.Buffer{}
+		},
+	}
+	
+	func getBuff() *bytes.Buffer {
+		return buffPool.Get().(*bytes.Buffer)
+	}
+	
+	func putBuff(b *bytes.Buffer) {
+		b.Reset()
+		buffPool.Put(b)
+	}
 	`)
 
 	messages := descp[0].GetMessageTypes()
@@ -131,13 +148,16 @@ func createToRow(b *bytes.Buffer, d *desc.MessageDescriptor) {
 	n := d.GetName()
 	r := strings.ToLower(n[:1])
 	hasLabel := n == "Event" || n == "Session"
-	fmt.Fprintf(b, "func (%s %sList)Rows(tables *Tables)(*dynparquet.Buffer, error){\n", r, n)
+	fmt.Fprintf(b, `
+	func (%s %sList)Save(ctx context.Context, tables *Tables)(uint64, error){
+		defer Put%ss(%s)
+		`, r, n, n, r)
 	if hasLabel {
 		fmt.Fprintf(b, labelName, r, fieldCase(n))
 	} else {
 		fmt.Fprintf(b, `	buf, err := tables.%s.Schema().NewBufferV2()
 		if err != nil {
-			return nil, err
+			return 0, err
 		}
 		`, fieldCase(n))
 	}
@@ -162,11 +182,19 @@ func createToRow(b *bytes.Buffer, d *desc.MessageDescriptor) {
 	}
 	fmt.Fprintln(b, "    rows = append(rows, row)")
 	fmt.Fprintln(b, "   }")
-	fmt.Fprintln(b, `	_, err = buf.WriteRows(rows)
+	fmt.Fprintf(b, `
+		_, err = buf.WriteRows(rows)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return buf, err`)
+	b := getBuff()
+	defer putBuff(b)
+	err = tables.%s.Schema().SerializeBuffer(b, buf)
+	if err != nil {
+		return 0, err
+	}
+	return tables.%s.Insert(ctx, b.Bytes())
+	`, fieldCase(n), fieldCase(n))
 	fmt.Fprintln(b, "}")
 }
 
@@ -273,7 +301,7 @@ for _, n := range names {
 }
 buf, err := tables.%s.Schema().NewBufferV2(tl...)
 if err != nil {
-	return nil, err
+	return 0, err
 }
 `
 
