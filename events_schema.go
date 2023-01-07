@@ -4,6 +4,7 @@ package vince
 import (
 	"sort"
 
+	"github.com/polarsignals/frostdb"
 	"github.com/polarsignals/frostdb/dynparquet"
 	schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 	"github.com/segmentio/parquet-go"
@@ -90,6 +91,15 @@ func (e EventList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error) {
 		return nil, err
 	}
 	return buf, err
+}
+func CreateEventTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(EventSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(EventTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
 }
 
 var EventSchema = &schemav2pb.Schema{
@@ -438,6 +448,15 @@ func (s SessionList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, error)
 		return nil, err
 	}
 	return buf, err
+}
+func CreateSessionTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(SessionSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(SessionTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
 }
 
 var SessionSchema = &schemav2pb.Schema{
@@ -789,6 +808,15 @@ func (i ImportedVisitorList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer
 	}
 	return buf, err
 }
+func CreateImportedVisitorTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedVisitorSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(ImportedVisitorTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
+}
 
 var ImportedVisitorSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
@@ -900,6 +928,15 @@ func (i ImportedSourcesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer
 		return nil, err
 	}
 	return buf, err
+}
+func CreateImportedSourcesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedSourcesSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(ImportedSourcesTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
 }
 
 var ImportedSourcesSchema = &schemav2pb.Schema{
@@ -1050,6 +1087,15 @@ func (i ImportedPagesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer, 
 	}
 	return buf, err
 }
+func CreateImportedPagesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedPagesSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(ImportedPagesTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
+}
 
 var ImportedPagesSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
@@ -1168,6 +1214,15 @@ func (i ImportedEntryPagesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buf
 	}
 	return buf, err
 }
+func CreateImportedEntryPagesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedEntryPagesSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(ImportedEntryPagesTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
+}
 
 var ImportedEntryPagesSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
@@ -1274,6 +1329,15 @@ func (i ImportedExitPagesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buff
 	}
 	return buf, err
 }
+func CreateImportedExitPagesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedExitPagesSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(ImportedExitPagesTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
+}
 
 var ImportedExitPagesSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
@@ -1363,6 +1427,15 @@ func (i ImportedLocationsList) Rows(schema *dynparquet.Schema) (*dynparquet.Buff
 		return nil, err
 	}
 	return buf, err
+}
+func CreateImportedLocationsTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedLocationsSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(ImportedLocationsTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
 }
 
 var ImportedLocationsSchema = &schemav2pb.Schema{
@@ -1492,6 +1565,15 @@ func (i ImportedDevicesList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer
 	}
 	return buf, err
 }
+func CreateImportedDevicesTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedDevicesSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(ImportedDevicesTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
+}
 
 var ImportedDevicesSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
@@ -1599,6 +1681,15 @@ func (i ImportedBrowserList) Rows(schema *dynparquet.Schema) (*dynparquet.Buffer
 		return nil, err
 	}
 	return buf, err
+}
+func CreateImportedBrowserTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedBrowserSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(ImportedBrowserTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
 }
 
 var ImportedBrowserSchema = &schemav2pb.Schema{
@@ -1708,6 +1799,15 @@ func (i ImportedOperatingSystemList) Rows(schema *dynparquet.Schema) (*dynparque
 	}
 	return buf, err
 }
+func CreateImportedOperatingSystemTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(ImportedOperatingSystemSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(ImportedOperatingSystemTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
+}
 
 var ImportedOperatingSystemSchema = &schemav2pb.Schema{
 	Root: &schemav2pb.Group{
@@ -1787,6 +1887,81 @@ var ImportedOperatingSystemSchema = &schemav2pb.Schema{
 			},
 		},
 	},
+}
+
+type Tables struct {
+	Events                   *frostdb.Table
+	Sessions                 *frostdb.Table
+	ImportedVisitors         *frostdb.Table
+	ImportedSources          *frostdb.Table
+	ImportedPages            *frostdb.Table
+	ImportedEntryPages       *frostdb.Table
+	ImportedExitPages        *frostdb.Table
+	ImportedLocations        *frostdb.Table
+	ImportedDevices          *frostdb.Table
+	ImportedBrowsers         *frostdb.Table
+	ImportedOperatingSystems *frostdb.Table
+}
+
+func NewTables(db *frostdb.DB, opts ...frostdb.TableOption) (*Tables, error) {
+	event, err := CreateEventTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	session, err := CreateSessionTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	importedVisitor, err := CreateImportedVisitorTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	importedSources, err := CreateImportedSourcesTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	importedPages, err := CreateImportedPagesTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	importedEntryPages, err := CreateImportedEntryPagesTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	importedExitPages, err := CreateImportedExitPagesTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	importedLocations, err := CreateImportedLocationsTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	importedDevices, err := CreateImportedDevicesTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	importedBrowser, err := CreateImportedBrowserTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+	importedOperatingSystem, err := CreateImportedOperatingSystemTable(db, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Tables{
+		Events:                   event,
+		Sessions:                 session,
+		ImportedVisitors:         importedVisitor,
+		ImportedSources:          importedSources,
+		ImportedPages:            importedPages,
+		ImportedEntryPages:       importedEntryPages,
+		ImportedExitPages:        importedExitPages,
+		ImportedLocations:        importedLocations,
+		ImportedDevices:          importedDevices,
+		ImportedBrowsers:         importedBrowser,
+		ImportedOperatingSystems: importedOperatingSystem,
+	}, nil
 }
 
 func LabelColumn(name string) *schemav2pb.Node {

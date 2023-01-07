@@ -29,6 +29,7 @@ func main() {
 	import (
 		"sort"
 
+		"github.com/polarsignals/frostdb"
 		"github.com/polarsignals/frostdb/dynparquet"
 		schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 		"github.com/segmentio/parquet-go"
@@ -37,18 +38,42 @@ func main() {
 
 	messages := descp[0].GetMessageTypes()
 
-	for _, d := range messages {
+	var tables bytes.Buffer
+	var tablesBody bytes.Buffer
+	var tablesResult bytes.Buffer
 
+	tables.WriteString("type Tables struct{\n")
+	tablesResult.WriteString("return &Tables{\n")
+	for _, d := range messages {
 		n := d.GetName()
 		if n == "Label" {
 			continue
 		}
 		fmt.Fprintln(&b)
 		fmt.Fprintf(&b, "const %sTable=%q\n", n, tableName(n))
+		fmt.Fprintf(&tables, "%s *frostdb.Table\n", fieldCase(n))
+		fmt.Fprintf(&tablesBody, `	%s, err := Create%sTable(db, opts...)
+		if err != nil {
+			return nil, err
+		}
+		`, variableCase(n), n)
+		fmt.Fprintf(&tablesResult, "%s: %s,\n", fieldCase(n), variableCase(n))
 		fmt.Fprintf(&b, "type %sList []*%s\n", n, n)
 		createToRow(&b, d)
+		fmt.Fprintf(&b, createTable, n, n, n)
 		createSchema(&b, d)
 	}
+	tables.WriteString("}")
+	fmt.Fprintf(&b, `
+	%s 
+
+	func NewTables(db *frostdb.DB, opts ...frostdb.TableOption) (*Tables, error) {
+		%s
+		%s
+		}, nil
+	}
+	`, &tables, &tablesBody, &tablesResult)
+	fmt.Println(&b)
 	fmt.Fprintln(&b, labelColumn)
 	r, err := format.Source(b.Bytes())
 	if err != nil {
@@ -289,6 +314,17 @@ func LabelColumn(name string) *schemav2pb.Node {
 	}
 }`
 
+const createTable = `func Create%sTable(db *frostdb.DB, opts ...frostdb.TableOption) (*frostdb.Table, error) {
+	tableSchema, err := dynparquet.SchemaFromDefinition(%sSchema)
+	if err != nil {
+		return nil, err
+	}
+	return db.Table(%sTable, frostdb.NewTableConfig(
+		tableSchema, opts...,
+	))
+}
+`
+
 func camelCase(s string) string {
 	var b strings.Builder
 	up := true
@@ -305,4 +341,22 @@ func camelCase(s string) string {
 		b.WriteRune(x)
 	}
 	return b.String()
+}
+
+func variableCase(s string) string {
+	var b strings.Builder
+	for i, x := range s {
+		if i == 0 {
+			b.WriteRune(unicode.ToLower(x))
+			continue
+		}
+		b.WriteRune(x)
+	}
+	return b.String()
+}
+func fieldCase(s string) string {
+	if s[len(s)-1] == 's' {
+		return s
+	}
+	return s + "s"
 }
