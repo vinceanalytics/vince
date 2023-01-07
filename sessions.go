@@ -14,30 +14,8 @@ import (
 
 const MAX_BUFFER_SIZE = 4098
 
-// Buffers Sessions before they are processed. After processing call Reset to
-// recycle the buffer.
-type SessionBuffer struct {
-	sessions []*Session
-}
-
-func (s *SessionBuffer) Reset() {
-	s.sessions = s.sessions[:0]
-	sessionBufferPool.Put(s)
-}
-
-func (s *SessionBuffer) Insert(sess ...*Session) bool {
-	s.sessions = append(s.sessions, sess...)
-	return len(s.sessions) >= MAX_BUFFER_SIZE
-}
-
-var sessionBufferPool = &sync.Pool{
-	New: func() any {
-		return &SessionBuffer{}
-	},
-}
-
 func (e *Event) NewSession() *Session {
-	s := sessionPool.Get().(*Session)
+	s := GetSession()
 	s.Sign = 1
 	s.SessionId = rand.Uint64()
 	s.Hostname = e.Hostname
@@ -120,17 +98,17 @@ var buffPool = &sync.Pool{
 }
 
 type SessionCache struct {
-	cache   *ristretto.Cache
-	process func(*SessionBuffer)
-	buf     *SessionBuffer
-	mu      sync.Mutex
+	cache    *ristretto.Cache
+	process  func(SessionList)
+	sessions SessionList
+	mu       sync.Mutex
 }
 
-func NewSessionCache(cache *ristretto.Cache, process func(*SessionBuffer)) *SessionCache {
+func NewSessionCache(cache *ristretto.Cache, process func(SessionList)) *SessionCache {
 	return &SessionCache{
-		cache:   cache,
-		process: process,
-		buf:     sessionBufferPool.Get().(*SessionBuffer),
+		cache:    cache,
+		process:  process,
+		sessions: GetSessions(),
 	}
 }
 
@@ -146,20 +124,18 @@ func (c *SessionCache) OnEvent(e *Event, prevUserId uint64) uint64 {
 		updated := s.Update(e)
 		updated.Sign = 1
 		s.Sign = -1
-		if c.buf.Insert(updated, s) {
-			if c.process != nil {
-				c.process(c.buf)
-			}
-			c.buf = sessionBufferPool.Get().(*SessionBuffer)
+		c.sessions = append(c.sessions, updated, s)
+		if len(c.sessions) >= MAX_BUFFER_SIZE {
+			c.process(c.sessions)
+			c.sessions = GetSessions()
 		}
 		return c.Persist(updated)
 	}
 	newSession := e.NewSession()
-	if c.buf.Insert(newSession) {
-		if c.process != nil {
-			c.process(c.buf)
-		}
-		c.buf = sessionBufferPool.Get().(*SessionBuffer)
+	c.sessions = append(c.sessions, newSession)
+	if len(c.sessions) >= MAX_BUFFER_SIZE {
+		c.process(c.sessions)
+		c.sessions = GetSessions()
 	}
 	return c.Persist(newSession)
 }
