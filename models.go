@@ -2,6 +2,8 @@ package vince
 
 import (
 	"database/sql"
+	"path/filepath"
+	"testing"
 	"time"
 
 	"gorm.io/driver/sqlite"
@@ -244,4 +246,17 @@ func open(path string) (*gorm.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func OpenTest(t *testing.T) *gorm.DB {
+	t.Helper()
+	db, err := open(filepath.Join(t.TempDir(), "vince.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		r, _ := db.DB()
+		r.Close()
+	})
+	return db
 }
