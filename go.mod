@@ -13,6 +13,7 @@ require (
 	github.com/rs/zerolog v1.21.0
 	github.com/segmentio/parquet-go v0.0.0-20221209161419-3f277a904e0e
 	github.com/sourcegraph/conc v0.1.0
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/sqlite v1.4.4

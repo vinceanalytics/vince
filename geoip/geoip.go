@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"io"
+	"net"
 	"sync"
 
 	"github.com/klauspost/compress/zstd"
@@ -38,4 +39,8 @@ func Get() *geoip2.Reader {
 		}
 	})
 	return mmdb
+}
+
+func Lookup(ip net.IP) (*geoip2.City, error) {
+	return Get().City(ip)
 }

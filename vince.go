@@ -2,6 +2,7 @@ package vince
 
 import (
 	"context"
+	"sync"
 
 	"github.com/dgraph-io/ristretto"
 	"github.com/polarsignals/frostdb"
@@ -19,6 +20,9 @@ type Vince struct {
 	db      *frostdb.DB
 	ts      *Tables
 	session *SessionCache
+
+	eventsMu sync.Mutex
+	events   EventList
 }
 
 func New(ctx context.Context, o *Config) (*Vince, error) {
@@ -46,9 +50,10 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		return nil, err
 	}
 	v := &Vince{
-		store: store,
-		db:    db,
-		ts:    tbl,
+		store:  store,
+		db:     db,
+		ts:     tbl,
+		events: GetEvents(),
 	}
 	v.session = NewSessionCache(cache, v.ProcessSessions)
 	return v, nil
@@ -67,6 +72,27 @@ func (v *Vince) ProcessSessions(sl SessionList) {
 func (v *Vince) saveSession(sl SessionList) func(context.Context) error {
 	return func(ctx context.Context) error {
 		_, err := sl.Save(ctx, v.ts)
+		return err
+	}
+}
+
+func (v *Vince) ProcessEvent(e *Event) {
+	v.eventsMu.Lock()
+	defer v.eventsMu.Unlock()
+	v.events = append(v.events, e)
+	if len(v.events) >= MAX_BUFFER_SIZE {
+		v.ProcessEvents(v.events)
+		v.events = GetEvents()
+	}
+}
+
+func (v *Vince) ProcessEvents(el EventList) {
+	v.pool.Go(v.saveEvent(el))
+}
+
+func (v *Vince) saveEvent(el EventList) func(context.Context) error {
+	return func(ctx context.Context) error {
+		_, err := el.Save(ctx, v.ts)
 		return err
 	}
 }

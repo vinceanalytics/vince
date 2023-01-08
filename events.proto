@@ -24,8 +24,8 @@ message Event {
   string utm_campaign = 15;
   string browser_version = 16;
   string operating_system_version = 17;
-  string subdivision1_code = 18;
-  string subdivision2_code = 19;
+  // string subdivision1_code = 18;
+  // string subdivision2_code = 19;
   uint32 city_geoname_id = 20;
   string utm_content = 21;
   string utm_term = 22;
@@ -56,8 +56,8 @@ message Session {
   string utm_campaign = 20;
   string browser_version = 21;
   string operating_system_version = 22;
-  string subdivision1_code = 23;
-  string subdivision2_code = 24;
+  // string subdivision1_code = 23;
+  // string subdivision2_code = 24;
   uint32 city_geoname_id = 25;
   string utm_content = 26;
   string utm_term = 27;

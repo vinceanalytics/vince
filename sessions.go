@@ -37,8 +37,6 @@ func (e *Event) NewSession() *Session {
 	s.UtmContent = e.UtmContent
 	s.UtmTerm = e.UtmTerm
 	s.CountryCode = e.CountryCode
-	s.Subdivision1Code = e.Subdivision1Code
-	s.Subdivision2Code = e.Subdivision2Code
 	s.CityGeonameId = e.CityGeonameId
 	s.ScreenSize = e.ScreenSize
 	s.OperatingSystem = e.OperatingSystem
@@ -61,12 +59,6 @@ func (s *Session) Update(e *Event) *Session {
 	}
 	if ss.CountryCode == "" {
 		ss.CountryCode = e.CountryCode
-	}
-	if ss.Subdivision1Code == "" {
-		ss.Subdivision1Code = e.Subdivision1Code
-	}
-	if ss.Subdivision2Code == "" {
-		ss.Subdivision2Code = e.Subdivision2Code
 	}
 	if ss.CityGeonameId == 0 {
 		ss.CityGeonameId = e.CityGeonameId

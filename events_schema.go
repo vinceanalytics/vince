@@ -114,7 +114,7 @@ func (e EventList) Save(ctx context.Context, tables *Tables) (uint64, error) {
 	}
 	rows := make([]parquet.Row, len(e))
 	for _, value := range e {
-		row := make(parquet.Row, 0, nameNumber+24)
+		row := make(parquet.Row, 0, nameNumber+22)
 
 		lbI, lbJ := 0, 0
 		for lbI < nameNumber {
@@ -150,13 +150,11 @@ func (e EventList) Save(ctx context.Context, tables *Tables) (uint64, error) {
 		row = append(row, parquet.ValueOf(value.UtmCampaign).Level(0, 0, nameNumber+15))
 		row = append(row, parquet.ValueOf(value.BrowserVersion).Level(0, 0, nameNumber+16))
 		row = append(row, parquet.ValueOf(value.OperatingSystemVersion).Level(0, 0, nameNumber+17))
-		row = append(row, parquet.ValueOf(value.Subdivision1Code).Level(0, 0, nameNumber+18))
-		row = append(row, parquet.ValueOf(value.Subdivision2Code).Level(0, 0, nameNumber+19))
-		row = append(row, parquet.ValueOf(value.CityGeonameId).Level(0, 0, nameNumber+20))
-		row = append(row, parquet.ValueOf(value.UtmContent).Level(0, 0, nameNumber+21))
-		row = append(row, parquet.ValueOf(value.UtmTerm).Level(0, 0, nameNumber+22))
-		row = append(row, parquet.ValueOf(value.TransferredFrom).Level(0, 0, nameNumber+23))
-		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+25))
+		row = append(row, parquet.ValueOf(value.CityGeonameId).Level(0, 0, nameNumber+18))
+		row = append(row, parquet.ValueOf(value.UtmContent).Level(0, 0, nameNumber+19))
+		row = append(row, parquet.ValueOf(value.UtmTerm).Level(0, 0, nameNumber+20))
+		row = append(row, parquet.ValueOf(value.TransferredFrom).Level(0, 0, nameNumber+21))
+		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+23))
 		rows = append(rows, row)
 	}
 
@@ -359,26 +357,6 @@ var EventSchema = &schemav2pb.Schema{
 			{
 				Type: &schemav2pb.Node_Leaf{
 					Leaf: &schemav2pb.Leaf{
-						Name: "subdivision1_code",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
-						},
-					},
-				},
-			},
-			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
-						Name: "subdivision2_code",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
-						},
-					},
-				},
-			},
-			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
 						Name: "city_geoname_id",
 						StorageLayout: &schemav2pb.StorageLayout{
 							Type: schemav2pb.StorageLayout_TYPE_INT64,
@@ -504,7 +482,7 @@ func (s SessionList) Save(ctx context.Context, tables *Tables) (uint64, error) {
 	}
 	rows := make([]parquet.Row, len(s))
 	for _, value := range s {
-		row := make(parquet.Row, 0, nameNumber+30)
+		row := make(parquet.Row, 0, nameNumber+28)
 
 		lbI, lbJ := 0, 0
 		for lbI < nameNumber {
@@ -544,15 +522,13 @@ func (s SessionList) Save(ctx context.Context, tables *Tables) (uint64, error) {
 		row = append(row, parquet.ValueOf(value.UtmCampaign).Level(0, 0, nameNumber+19))
 		row = append(row, parquet.ValueOf(value.BrowserVersion).Level(0, 0, nameNumber+20))
 		row = append(row, parquet.ValueOf(value.OperatingSystemVersion).Level(0, 0, nameNumber+21))
-		row = append(row, parquet.ValueOf(value.Subdivision1Code).Level(0, 0, nameNumber+22))
-		row = append(row, parquet.ValueOf(value.Subdivision2Code).Level(0, 0, nameNumber+23))
-		row = append(row, parquet.ValueOf(value.CityGeonameId).Level(0, 0, nameNumber+24))
-		row = append(row, parquet.ValueOf(value.UtmContent).Level(0, 0, nameNumber+25))
-		row = append(row, parquet.ValueOf(value.UtmTerm).Level(0, 0, nameNumber+26))
-		row = append(row, parquet.ValueOf(value.TransferredFrom).Level(0, 0, nameNumber+27))
-		row = append(row, parquet.ValueOf(value.ScreenSize).Level(0, 0, nameNumber+28))
-		row = append(row, parquet.ValueOf(value.Start).Level(0, 0, nameNumber+30))
-		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+31))
+		row = append(row, parquet.ValueOf(value.CityGeonameId).Level(0, 0, nameNumber+22))
+		row = append(row, parquet.ValueOf(value.UtmContent).Level(0, 0, nameNumber+23))
+		row = append(row, parquet.ValueOf(value.UtmTerm).Level(0, 0, nameNumber+24))
+		row = append(row, parquet.ValueOf(value.TransferredFrom).Level(0, 0, nameNumber+25))
+		row = append(row, parquet.ValueOf(value.ScreenSize).Level(0, 0, nameNumber+26))
+		row = append(row, parquet.ValueOf(value.Start).Level(0, 0, nameNumber+28))
+		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+29))
 		rows = append(rows, row)
 	}
 
@@ -787,26 +763,6 @@ var SessionSchema = &schemav2pb.Schema{
 				Type: &schemav2pb.Node_Leaf{
 					Leaf: &schemav2pb.Leaf{
 						Name: "operating_system_version",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
-						},
-					},
-				},
-			},
-			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
-						Name: "subdivision1_code",
-						StorageLayout: &schemav2pb.StorageLayout{
-							Type: schemav2pb.StorageLayout_TYPE_STRING,
-						},
-					},
-				},
-			},
-			{
-				Type: &schemav2pb.Node_Leaf{
-					Leaf: &schemav2pb.Leaf{
-						Name: "subdivision2_code",
 						StorageLayout: &schemav2pb.StorageLayout{
 							Type: schemav2pb.StorageLayout_TYPE_STRING,
 						},
