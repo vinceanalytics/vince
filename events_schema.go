@@ -69,25 +69,7 @@ func PutEvent(value *Event) {
 	eventPool.Put(value)
 }
 
-var eventsPool = &sync.Pool{
-	New: func() any {
-		return make(EventList, 1024)
-	},
-}
-
-func GetEvents() EventList {
-	return eventsPool.Get().(EventList)
-}
-func PutEvents(value EventList) {
-	for _, item := range value {
-		PutEvent(item)
-	}
-	value = value[:0]
-	eventsPool.Put(value)
-}
-
 func (e EventList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutEvents(e)
 	names := []string{}
 	seen := map[string]struct{}{}
 	for _, lb := range e {
@@ -437,25 +419,7 @@ func PutSession(value *Session) {
 	sessionPool.Put(value)
 }
 
-var sessionsPool = &sync.Pool{
-	New: func() any {
-		return make(SessionList, 1024)
-	},
-}
-
-func GetSessions() SessionList {
-	return sessionsPool.Get().(SessionList)
-}
-func PutSessions(value SessionList) {
-	for _, item := range value {
-		PutSession(item)
-	}
-	value = value[:0]
-	sessionsPool.Put(value)
-}
-
 func (s SessionList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutSessions(s)
 	names := []string{}
 	seen := map[string]struct{}{}
 	for _, lb := range s {
@@ -874,25 +838,7 @@ func PutImportedVisitor(value *ImportedVisitor) {
 	importedVisitorPool.Put(value)
 }
 
-var importedVisitorsPool = &sync.Pool{
-	New: func() any {
-		return make(ImportedVisitorList, 1024)
-	},
-}
-
-func GetImportedVisitors() ImportedVisitorList {
-	return importedVisitorsPool.Get().(ImportedVisitorList)
-}
-func PutImportedVisitors(value ImportedVisitorList) {
-	for _, item := range value {
-		PutImportedVisitor(item)
-	}
-	value = value[:0]
-	importedVisitorsPool.Put(value)
-}
-
 func (i ImportedVisitorList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutImportedVisitors(i)
 	buf, err := tables.ImportedVisitors.Schema().NewBufferV2()
 	if err != nil {
 		return 0, err
@@ -1030,25 +976,7 @@ func PutImportedSource(value *ImportedSource) {
 	importedSourcePool.Put(value)
 }
 
-var importedSourcesPool = &sync.Pool{
-	New: func() any {
-		return make(ImportedSourceList, 1024)
-	},
-}
-
-func GetImportedSources() ImportedSourceList {
-	return importedSourcesPool.Get().(ImportedSourceList)
-}
-func PutImportedSources(value ImportedSourceList) {
-	for _, item := range value {
-		PutImportedSource(item)
-	}
-	value = value[:0]
-	importedSourcesPool.Put(value)
-}
-
 func (i ImportedSourceList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutImportedSources(i)
 	buf, err := tables.ImportedSources.Schema().NewBufferV2()
 	if err != nil {
 		return 0, err
@@ -1230,25 +1158,7 @@ func PutImportedPage(value *ImportedPage) {
 	importedPagePool.Put(value)
 }
 
-var importedPagesPool = &sync.Pool{
-	New: func() any {
-		return make(ImportedPageList, 1024)
-	},
-}
-
-func GetImportedPages() ImportedPageList {
-	return importedPagesPool.Get().(ImportedPageList)
-}
-func PutImportedPages(value ImportedPageList) {
-	for _, item := range value {
-		PutImportedPage(item)
-	}
-	value = value[:0]
-	importedPagesPool.Put(value)
-}
-
 func (i ImportedPageList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutImportedPages(i)
 	buf, err := tables.ImportedPages.Schema().NewBufferV2()
 	if err != nil {
 		return 0, err
@@ -1397,25 +1307,7 @@ func PutImportedEntryPage(value *ImportedEntryPage) {
 	importedEntryPagePool.Put(value)
 }
 
-var importedEntryPagesPool = &sync.Pool{
-	New: func() any {
-		return make(ImportedEntryPageList, 1024)
-	},
-}
-
-func GetImportedEntryPages() ImportedEntryPageList {
-	return importedEntryPagesPool.Get().(ImportedEntryPageList)
-}
-func PutImportedEntryPages(value ImportedEntryPageList) {
-	for _, item := range value {
-		PutImportedEntryPage(item)
-	}
-	value = value[:0]
-	importedEntryPagesPool.Put(value)
-}
-
 func (i ImportedEntryPageList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutImportedEntryPages(i)
 	buf, err := tables.ImportedEntryPages.Schema().NewBufferV2()
 	if err != nil {
 		return 0, err
@@ -1553,25 +1445,7 @@ func PutImportedExitPage(value *ImportedExitPage) {
 	importedExitPagePool.Put(value)
 }
 
-var importedExitPagesPool = &sync.Pool{
-	New: func() any {
-		return make(ImportedExitPageList, 1024)
-	},
-}
-
-func GetImportedExitPages() ImportedExitPageList {
-	return importedExitPagesPool.Get().(ImportedExitPageList)
-}
-func PutImportedExitPages(value ImportedExitPageList) {
-	for _, item := range value {
-		PutImportedExitPage(item)
-	}
-	value = value[:0]
-	importedExitPagesPool.Put(value)
-}
-
 func (i ImportedExitPageList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutImportedExitPages(i)
 	buf, err := tables.ImportedExitPages.Schema().NewBufferV2()
 	if err != nil {
 		return 0, err
@@ -1687,25 +1561,7 @@ func PutImportedLocation(value *ImportedLocation) {
 	importedLocationPool.Put(value)
 }
 
-var importedLocationsPool = &sync.Pool{
-	New: func() any {
-		return make(ImportedLocationList, 1024)
-	},
-}
-
-func GetImportedLocations() ImportedLocationList {
-	return importedLocationsPool.Get().(ImportedLocationList)
-}
-func PutImportedLocations(value ImportedLocationList) {
-	for _, item := range value {
-		PutImportedLocation(item)
-	}
-	value = value[:0]
-	importedLocationsPool.Put(value)
-}
-
 func (i ImportedLocationList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutImportedLocations(i)
 	buf, err := tables.ImportedLocations.Schema().NewBufferV2()
 	if err != nil {
 		return 0, err
@@ -1865,25 +1721,7 @@ func PutImportedDevice(value *ImportedDevice) {
 	importedDevicePool.Put(value)
 }
 
-var importedDevicesPool = &sync.Pool{
-	New: func() any {
-		return make(ImportedDeviceList, 1024)
-	},
-}
-
-func GetImportedDevices() ImportedDeviceList {
-	return importedDevicesPool.Get().(ImportedDeviceList)
-}
-func PutImportedDevices(value ImportedDeviceList) {
-	for _, item := range value {
-		PutImportedDevice(item)
-	}
-	value = value[:0]
-	importedDevicesPool.Put(value)
-}
-
 func (i ImportedDeviceList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutImportedDevices(i)
 	buf, err := tables.ImportedDevices.Schema().NewBufferV2()
 	if err != nil {
 		return 0, err
@@ -2021,25 +1859,7 @@ func PutImportedBrowser(value *ImportedBrowser) {
 	importedBrowserPool.Put(value)
 }
 
-var importedBrowsersPool = &sync.Pool{
-	New: func() any {
-		return make(ImportedBrowserList, 1024)
-	},
-}
-
-func GetImportedBrowsers() ImportedBrowserList {
-	return importedBrowsersPool.Get().(ImportedBrowserList)
-}
-func PutImportedBrowsers(value ImportedBrowserList) {
-	for _, item := range value {
-		PutImportedBrowser(item)
-	}
-	value = value[:0]
-	importedBrowsersPool.Put(value)
-}
-
 func (i ImportedBrowserList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutImportedBrowsers(i)
 	buf, err := tables.ImportedBrowsers.Schema().NewBufferV2()
 	if err != nil {
 		return 0, err
@@ -2177,25 +1997,7 @@ func PutImportedOperatingSystem(value *ImportedOperatingSystem) {
 	importedOperatingSystemPool.Put(value)
 }
 
-var importedOperatingSystemsPool = &sync.Pool{
-	New: func() any {
-		return make(ImportedOperatingSystemList, 1024)
-	},
-}
-
-func GetImportedOperatingSystems() ImportedOperatingSystemList {
-	return importedOperatingSystemsPool.Get().(ImportedOperatingSystemList)
-}
-func PutImportedOperatingSystems(value ImportedOperatingSystemList) {
-	for _, item := range value {
-		PutImportedOperatingSystem(item)
-	}
-	value = value[:0]
-	importedOperatingSystemsPool.Put(value)
-}
-
 func (i ImportedOperatingSystemList) Save(ctx context.Context, tables *Tables) (uint64, error) {
-	defer PutImportedOperatingSystems(i)
 	buf, err := tables.ImportedOperatingSystems.Schema().NewBufferV2()
 	if err != nil {
 		return 0, err

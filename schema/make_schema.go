@@ -103,9 +103,6 @@ func main() {
 		fmt.Fprintf(&b, createPool, variableCase(n), n)
 		fmt.Fprintf(&b, getItem, n, n, variableCase(n), n)
 		fmt.Fprintf(&b, putItem, n, n, variableCase(n))
-		fmt.Fprintf(&b, createPoolList, fieldCase(variableCase(n)), n)
-		fmt.Fprintf(&b, getItems, n, n, variableCase(n), n)
-		fmt.Fprintf(&b, putItems, n, n, n, variableCase(n))
 		createToRow(&b, d)
 		fmt.Fprintf(&b, createTable, n, n, n)
 		createSchema(&b, d)
@@ -173,8 +170,7 @@ func createToRow(b *bytes.Buffer, d *desc.MessageDescriptor) {
 	hasLabel := n == "Event" || n == "Session"
 	fmt.Fprintf(b, `
 	func (%s %sList)Save(ctx context.Context, tables *Tables)(uint64, error){
-		defer Put%ss(%s)
-		`, r, n, n, r)
+		`, r, n)
 	if hasLabel {
 		fmt.Fprintf(b, labelName, r, fieldCase(n))
 	} else {
@@ -383,12 +379,6 @@ const createTable = `func Create%sTable(db *frostdb.DB, opts ...frostdb.TableOpt
 }
 `
 
-const createPoolList = `
-var %sPool = &sync.Pool{
-	New: func() any {
-		return make(%sList, 1024)
-	},
-}`
 const createPool = `
 var %sPool = &sync.Pool{
 	New: func() any {
@@ -399,23 +389,11 @@ const getItem = `
 func Get%s() *%s {
 	return %sPool.Get().(*%s)
 }`
-const getItems = `
-func Get%ss() %sList{
-	return %ssPool.Get().(%sList)
-}`
+
 const putItem = `
 func Put%s(value *%s) {
 	value.Reset()
 	%sPool.Put(value)
-}
-`
-const putItems = `
-func Put%ss(value %sList) {
-	for _, item := range value {
-		Put%s(item)
-	}
-	value=value[:0]
-	%ssPool.Put(value)
 }
 `
 

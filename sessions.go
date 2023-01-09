@@ -3,15 +3,13 @@ package vince
 import (
 	"fmt"
 	"math/rand"
-	"sync"
+	"reflect"
 	"time"
 
 	"github.com/dgraph-io/ristretto"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
-
-const MAX_BUFFER_SIZE = 4098
 
 func (e *Event) NewSession() *Session {
 	s := GetSession()
@@ -83,23 +81,18 @@ func (s *Session) Update(e *Event) *Session {
 }
 
 type SessionCache struct {
-	cache    *ristretto.Cache
-	process  func(SessionList)
-	sessions SessionList
-	mu       sync.Mutex
+	cache   *ristretto.Cache
+	process chan<- *Session
 }
 
-func NewSessionCache(cache *ristretto.Cache, process func(SessionList)) *SessionCache {
+func NewSessionCache(cache *ristretto.Cache, process chan<- *Session) *SessionCache {
 	return &SessionCache{
-		cache:    cache,
-		process:  process,
-		sessions: GetSessions(),
+		cache:   cache,
+		process: process,
 	}
 }
 
-func (c *SessionCache) OnEvent(e *Event, prevUserId uint64) uint64 {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+func (c *SessionCache) RegisterSession(e *Event, prevUserId uint64) uint64 {
 	var s *Session
 	s = c.Find(e, e.UserId)
 	if s == nil {
@@ -109,19 +102,12 @@ func (c *SessionCache) OnEvent(e *Event, prevUserId uint64) uint64 {
 		updated := s.Update(e)
 		updated.Sign = 1
 		s.Sign = -1
-		c.sessions = append(c.sessions, updated, s)
-		if len(c.sessions) >= MAX_BUFFER_SIZE {
-			c.process(c.sessions)
-			c.sessions = GetSessions()
-		}
+		c.process <- updated
+		c.process <- s
 		return c.Persist(updated)
 	}
 	newSession := e.NewSession()
-	c.sessions = append(c.sessions, newSession)
-	if len(c.sessions) >= MAX_BUFFER_SIZE {
-		c.process(c.sessions)
-		c.sessions = GetSessions()
-	}
+	c.process <- newSession
 	return c.Persist(newSession)
 }
 
@@ -136,10 +122,13 @@ func (c *SessionCache) Find(e *Event, userId uint64) *Session {
 	return nil
 }
 
+// const of storing a session in cache
+var sessionSize = reflect.TypeOf(Session{}).Size()
+
 func (c *SessionCache) Persist(s *Session) uint64 {
 	b := getBuff()
 	defer putBuff(b)
 	fmt.Fprintf(b, "%s-%d", s.Domain, s.UserId)
-	c.cache.SetWithTTL(b.String(), s, 1, 30*time.Minute)
+	c.cache.SetWithTTL(b.String(), s, int64(sessionSize), 30*time.Minute)
 	return s.SessionId
 }

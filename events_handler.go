@@ -22,14 +22,14 @@ type Request struct {
 	Meta        map[string]string `json:"m"`
 }
 
-func EventsEndpoint(w http.ResponseWriter, r *http.Request) {
-	if !processEvent(r) {
+func (v *Vince) EventsEndpoint(w http.ResponseWriter, r *http.Request) {
+	if !v.processEvent(r) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
 
-func processEvent(r *http.Request) bool {
+func (v *Vince) processEvent(r *http.Request) bool {
 	var req Request
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -147,7 +147,6 @@ func processEvent(r *http.Request) bool {
 			Name: k, Value: v,
 		})
 	}
-	v := From(r.Context())
 
 	for _, domain := range domains {
 		userID := seedID.Gen(remoteIp, userAgent, domain, host)
@@ -174,8 +173,8 @@ func processEvent(r *http.Request) bool {
 		e.Labels = labels
 		e.Timestamp = timestamppb.New(now)
 		previousUUserID := seedID.GenPrevious(remoteIp, userAgent, domain, host)
-		e.SessionId = v.session.OnEvent(e, previousUUserID)
-		v.ProcessEvent(e)
+		e.SessionId = v.session.RegisterSession(e, previousUUserID)
+		v.events <- e
 	}
 	return true
 }
