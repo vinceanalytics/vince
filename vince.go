@@ -2,14 +2,18 @@ package vince
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/dgraph-io/ristretto"
 	"github.com/polarsignals/frostdb"
 	"github.com/sourcegraph/conc/pool"
+	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
 
@@ -32,12 +36,37 @@ type Vince struct {
 	sessions chan *Session
 }
 
-func New(ctx context.Context, o *Config) (*Vince, error) {
-	sqlPath := filepath.Join(o.DataPath, "sql")
-	err := os.MkdirAll(sqlPath, 0755)
-	if err != nil {
-		return nil, err
+func ServeCMD() *cli.Command {
+	return &cli.Command{
+		Name:  "serve",
+		Usage: "starts a server",
+		Flags: []cli.Flag{
+			&cli.IntFlag{
+				Name:  "port",
+				Usage: "port to listen on",
+				Value: 8080,
+			},
+			&cli.PathFlag{
+				Name:  "data",
+				Usage: "path to data directory",
+				Value: ".vince",
+			},
+		},
+		Action: func(ctx *cli.Context) error {
+			goCtx := context.Background()
+			svr, err := New(goCtx, &Config{DataPath: ctx.Path("path")})
+			if err != nil {
+				return err
+			}
+			defer svr.Close()
+			return svr.Serve(goCtx, ctx.Int("port"))
+		},
 	}
+}
+
+func New(ctx context.Context, o *Config) (*Vince, error) {
+	os.MkdirAll(o.DataPath, 0755)
+	sqlPath := filepath.Join(o.DataPath, "vince.db")
 	sqlDb, err := open(sqlPath)
 	if err != nil {
 		return nil, err
@@ -75,6 +104,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		return nil, err
 	}
 	v := &Vince{
+		pool:     pool.New().WithContext(ctx),
 		store:    store,
 		db:       db,
 		sql:      sqlDb,
@@ -87,6 +117,31 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 	return v, nil
 }
 
+func (v *Vince) Serve(ctx context.Context, port int) error {
+	v.Start()
+	svr := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: v,
+	}
+	c := make(chan os.Signal, 1)
+	go func() {
+		err := svr.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			xlg.Err(err).Msg("Exited server")
+			c <- os.Interrupt
+		}
+	}()
+	xlg.Info().Msgf("started serving traffic from %s", svr.Addr)
+	signal.Notify(c, os.Interrupt)
+	sig := <-c
+	xlg.Info().Msgf("received signal %s shutting down the server", sig)
+	err := svr.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
+	return svr.Close()
+}
+
 func (v *Vince) Start() {
 	v.pool.Go(v.loopEvent)
 	v.pool.Go(v.loopSessions)
@@ -96,9 +151,10 @@ func (v *Vince) Close() {
 	v.cancel()
 	v.pool.Wait()
 	closeDB(v.sql)
-	v.db.Close()
 	v.store.Close()
-	v.session.cache.Clear()
+	v.session.cache.Close()
+	close(v.events)
+	close(v.sessions)
 }
 
 func (v *Vince) loopEvent(ctx context.Context) error {
@@ -150,6 +206,13 @@ func (v *Vince) loopSessions(ctx context.Context) error {
 }
 
 var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)
+
+func (v *Vince) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if strings.HasPrefix(r.URL.Path, "/api") {
+		v.serveAPI(w, r)
+		return
+	}
+}
 
 func (v *Vince) serveAPI(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

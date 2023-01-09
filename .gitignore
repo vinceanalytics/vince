@@ -8,3 +8,5 @@ assets/tracker/js/*.js
 geoip/*.mmdb
 geoip/*.gz
 geoip/*.zstd
+.vince/
+vincento
