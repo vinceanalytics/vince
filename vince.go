@@ -151,7 +151,7 @@ func (v *Vince) loopSessions(ctx context.Context) error {
 
 var domainStatusRe = regexp.MustCompile(`^/(?:[a-zA-Z]([a-zA-Z0-9\-]+[\.]?)*[a-zA-Z0-9])/status$`)
 
-func (v *Vince) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (v *Vince) serveAPI(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		switch r.URL.Path {
