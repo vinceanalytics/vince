@@ -248,6 +248,11 @@ func open(path string) (*gorm.DB, error) {
 	return db, nil
 }
 
+func closeDB(db *gorm.DB) {
+	x, _ := db.DB()
+	x.Close()
+}
+
 func OpenTest(t *testing.T) *gorm.DB {
 	t.Helper()
 	db, err := open(filepath.Join(t.TempDir(), "vince.db"))

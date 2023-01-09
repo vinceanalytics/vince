@@ -3,11 +3,14 @@ package vince
 import (
 	"context"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 
 	"github.com/dgraph-io/ristretto"
 	"github.com/polarsignals/frostdb"
 	"github.com/sourcegraph/conc/pool"
+	"gorm.io/gorm"
 )
 
 const MAX_BUFFER_SIZE = 4098
@@ -20,27 +23,42 @@ type Vince struct {
 	pool    *pool.ContextPool
 	store   *frostdb.ColumnStore
 	db      *frostdb.DB
+	sql     *gorm.DB
 	ts      *Tables
 	session *SessionCache
+	cancel  context.CancelFunc
 
 	events   chan *Event
 	sessions chan *Session
 }
 
 func New(ctx context.Context, o *Config) (*Vince, error) {
+	sqlPath := filepath.Join(o.DataPath, "sql")
+	err := os.MkdirAll(sqlPath, 0755)
+	if err != nil {
+		return nil, err
+	}
+	sqlDb, err := open(sqlPath)
+	if err != nil {
+		return nil, err
+	}
 	store, err := frostdb.New(
 		frostdb.WithStoragePath(o.DataPath),
 	)
 	if err != nil {
+		closeDB(sqlDb)
 		return nil, err
 	}
-	db, err := store.DB(context.TODO(), "vince")
+	ctx, cancel := context.WithCancel(ctx)
+	db, err := store.DB(ctx, "vince")
 	if err != nil {
+		closeDB(sqlDb)
 		store.Close()
 		return nil, err
 	}
 	tbl, err := NewTables(db)
 	if err != nil {
+		closeDB(sqlDb)
 		store.Close()
 		db.Close()
 		return nil, err
@@ -51,6 +69,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		BufferItems: 64,
 	})
 	if err != nil {
+		closeDB(sqlDb)
 		store.Close()
 		db.Close()
 		return nil, err
@@ -58,7 +77,9 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 	v := &Vince{
 		store:    store,
 		db:       db,
+		sql:      sqlDb,
 		ts:       tbl,
+		cancel:   cancel,
 		events:   make(chan *Event, 1024),
 		sessions: make(chan *Session, 1024),
 	}
@@ -69,6 +90,15 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 func (v *Vince) Start() {
 	v.pool.Go(v.loopEvent)
 	v.pool.Go(v.loopSessions)
+}
+
+func (v *Vince) Close() {
+	v.cancel()
+	v.pool.Wait()
+	closeDB(v.sql)
+	v.db.Close()
+	v.store.Close()
+	v.session.cache.Clear()
 }
 
 func (v *Vince) loopEvent(ctx context.Context) error {
