@@ -149,7 +149,7 @@ func (v *Vince) loopSessions(ctx context.Context) error {
 	}
 }
 
-var domainStatusRe = regexp.MustCompile(`^/(?:[a-zA-Z]([a-zA-Z0-9\-]+[\.]?)*[a-zA-Z0-9])/status$`)
+var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)
 
 func (v *Vince) serveAPI(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -174,7 +174,9 @@ func (v *Vince) serveAPI(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 			return
 		default:
-			if domainStatusRe.Match([]byte(r.URL.Path)) {
+			if domainStatusRe.MatchString(r.URL.Path) {
+				domain := domainStatusRe.FindStringSubmatch(r.URL.Path)[1]
+				_ = domain
 				http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 				return
 			}
