@@ -227,14 +227,14 @@ func (v *Vince) serveAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	case http.MethodGet:
 		switch r.URL.Path {
-		case "/error":
+		case "/api/error":
 			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 			return
-		case "/health":
+		case "/api/health":
 			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 			return
-		case "/system":
-			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+		case "/api/system":
+			v.info(w, r)
 			return
 		default:
 			if domainStatusRe.MatchString(r.URL.Path) {
