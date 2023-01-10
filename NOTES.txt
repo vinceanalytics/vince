@@ -2,3 +2,5 @@
     github.com/sourcegraph/conc
 * Inspiration for traffick viewer
     https://github.com/kubeshark/front
+* Admin inspiration 
+    https://github.com/pocketbase/pocketbase
