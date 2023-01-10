@@ -1,0 +1,12 @@
+package vince
+
+import "net/http"
+
+func WriteSecureBrowserHeaders(w http.ResponseWriter) {
+	w.Header().Set("x-frame-options", "SAMEORIGIN")
+	w.Header().Set("x-xss-protection", "1; mode=block")
+	w.Header().Set("x-content-type-options", "nosniff")
+	w.Header().Set("x-download-options", "noopen")
+	w.Header().Set("x-permitted-cross-domain-policies", "none")
+	w.Header().Set("cross-origin-window-policy", "deny")
+}
