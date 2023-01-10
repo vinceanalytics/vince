@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/dgraph-io/ristretto"
+	"github.com/gernest/vince/assets"
 	"github.com/polarsignals/frostdb"
 	"github.com/sourcegraph/conc/pool"
 	"github.com/urfave/cli/v2"
@@ -121,7 +122,7 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	v.Start()
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: v,
+		Handler: v.Handle(),
 	}
 	c := make(chan os.Signal, 1)
 	go func() {
@@ -207,11 +208,18 @@ func (v *Vince) loopSessions(ctx context.Context) error {
 
 var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)
 
-func (v *Vince) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if strings.HasPrefix(r.URL.Path, "/api") {
-		v.serveAPI(w, r)
-		return
-	}
+func (v *Vince) Handle() http.Handler {
+	assetsHandler := assets.Serve()
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if assets.Match(r.URL.Path) {
+			assetsHandler.ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/api") {
+			v.serveAPI(w, r)
+			return
+		}
+	})
 }
 
 func (v *Vince) serveAPI(w http.ResponseWriter, r *http.Request) {

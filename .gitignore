@@ -4,6 +4,7 @@
 npm-debug.log
 tracker/node_modules/
 assets/tracker/js/*.js
+assets/tracker/js/*.js
 
 geoip/*.mmdb
 geoip/*.gz
