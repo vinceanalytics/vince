@@ -210,6 +210,7 @@ var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)
 
 func (v *Vince) Handle() http.Handler {
 	asset := assets.Serve()
+	csrf := CSRF()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if assets.Match(r.URL.Path) {
 			asset.ServeHTTP(w, r)
@@ -221,7 +222,9 @@ func (v *Vince) Handle() http.Handler {
 		}
 		if isAdminPath(r.URL.Path, r.Method) {
 			WriteSecureBrowserHeaders(w)
-			v.admin(w, r)
+			if csrf(w, r) {
+				v.admin(w, r)
+			}
 			return
 		}
 	})
