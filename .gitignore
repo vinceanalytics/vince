@@ -6,6 +6,9 @@ tracker/node_modules/
 assets/tracker/js/*.js
 assets/tracker/js/*.js
 
+# This file is about 50 mb
+cmd/load/ip_list.go
+
 geoip/*.mmdb
 geoip/*.gz
 geoip/*.zstd

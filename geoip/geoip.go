@@ -9,6 +9,7 @@ import (
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/oschwald/geoip2-golang"
+	"github.com/oschwald/maxminddb-golang"
 )
 
 // compressed with the command
@@ -39,6 +40,22 @@ func Get() *geoip2.Reader {
 		}
 	})
 	return mmdb
+}
+
+func Reader() *maxminddb.Reader {
+	r, err := zstd.NewReader(bytes.NewReader(data))
+	if err != nil {
+		panic(err.Error())
+	}
+	b, err := io.ReadAll(r)
+	if err != nil {
+		panic(err.Error())
+	}
+	reader, err := maxminddb.FromBytes(b)
+	if err != nil {
+		panic(err.Error())
+	}
+	return reader
 }
 
 func Lookup(ip net.IP) (*geoip2.City, error) {
