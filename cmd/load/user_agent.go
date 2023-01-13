@@ -13,22 +13,9 @@ import (
 var uaZip []byte
 
 type UserAgent struct {
-	AppName    string `json:"appName"`
-	Connection struct {
-		Downlink      float64 `json:"downlink"`
-		EffectiveType string  `json:"effectiveType"`
-		RTT           int     `json:"rtt"`
-	} `json:"connection"`
-	Platform       string  `json:"platform"`
-	PluginsLength  int     `json:"pluginsLength"`
-	Vendor         string  `json:"vendor"`
-	UserAgent      string  `json:"userAgent"`
-	ViewportHeight int     `json:"viewportHeight"`
-	ViewportWidth  int     `json:"viewportWidth"`
-	DeviceCategory string  `json:"deviceCategory"`
-	ScreenHeight   int     `json:"screenHeight"`
-	ScreenWidth    int     `json:"screenWidth"`
-	Weight         float64 `json:"weight"`
+	UserAgent   string  `json:"userAgent"`
+	Weight      float64 `json:"weight"`
+	ScreenWidth int     `json:"screenWidth"`
 }
 
 var userAgents []UserAgent

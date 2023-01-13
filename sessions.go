@@ -40,6 +40,7 @@ func (e *Event) NewSession() *Session {
 	s.OperatingSystem = e.OperatingSystem
 	s.OperatingSystemVersion = e.OperatingSystemVersion
 	s.Browser = e.Browser
+	s.Start = e.Timestamp
 	s.Timestamp = e.Timestamp
 	s.Labels = append(s.Labels, e.Labels...)
 	return s

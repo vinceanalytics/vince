@@ -17,7 +17,7 @@ type Request struct {
 	URI         string            `json:"url"`
 	Referrer    string            `json:"r"`
 	Domain      string            `json:"d"`
-	ScreenWidth uint              `json:"w"`
+	ScreenWidth int               `json:"w"`
 	HashMode    bool              `json:"h"`
 	Meta        map[string]string `json:"m"`
 }

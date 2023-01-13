@@ -193,11 +193,25 @@ func createToRow(b *bytes.Buffer, d *desc.MessageDescriptor) {
 		if fn == "labels" {
 			continue
 		}
-		if hasLabel {
-			fmt.Fprintf(b, " row =append(row,parquet.ValueOf(value.%s).Level(0, 0, nameNumber+%d))\n", camelCase(fn), i+1)
-		} else {
-			fmt.Fprintf(b, " row =append(row,parquet.ValueOf(value.%s).Level(0, 0, %d))\n", camelCase(fn), i)
+		switch f.GetType() {
+		case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE:
+			msg := f.GetMessageType()
+			switch msg.GetName() {
+			case "Timestamp", "Duration":
+				if hasLabel {
+					fmt.Fprintf(b, " row =append(row,parquet.ValueOf(value.%s.Seconds).Level(0, 0, nameNumber+%d))\n", camelCase(fn), i+1)
+				} else {
+					fmt.Fprintf(b, " row =append(row,parquet.ValueOf(value.%s.Seconds).Level(0, 0, %d))\n", camelCase(fn), i)
+				}
+			}
+		default:
+			if hasLabel {
+				fmt.Fprintf(b, " row =append(row,parquet.ValueOf(value.%s).Level(0, 0, nameNumber+%d))\n", camelCase(fn), i+1)
+			} else {
+				fmt.Fprintf(b, " row =append(row,parquet.ValueOf(value.%s).Level(0, 0, %d))\n", camelCase(fn), i)
+			}
 		}
+
 	}
 	fmt.Fprintln(b, "    rows = append(rows, row)")
 	fmt.Fprintln(b, "   }")

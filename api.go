@@ -6,7 +6,7 @@ func (v *Vince) api(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		switch r.URL.Path {
-		case "/api/events":
+		case "/api/event":
 			v.EventsEndpoint(w, r)
 			return
 		case "/subscription/webhook":

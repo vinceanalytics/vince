@@ -72,13 +72,9 @@ func parseOsUA(s string) *osResult {
 			if e.re.MatchString(s) {
 				var version string
 				if e.version != "" {
+					version = e.version
 					if strings.HasPrefix(e.version, "$") {
-						sub := e.re.re().FindStringSubmatch(s)
-						if len(sub) > 1 {
-							version = sub[1]
-						}
-					} else {
-						version = e.version
+						version = e.re.FirstSubmatch(s)
 					}
 				}
 				return &osResult{

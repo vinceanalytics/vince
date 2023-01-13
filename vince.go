@@ -9,11 +9,12 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
 	"github.com/polarsignals/frostdb"
-	"github.com/sourcegraph/conc/pool"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
@@ -25,13 +26,11 @@ type Config struct {
 }
 
 type Vince struct {
-	pool    *pool.ContextPool
 	store   *frostdb.ColumnStore
 	db      *frostdb.DB
 	sql     *gorm.DB
 	ts      *Tables
 	session *SessionCache
-	cancel  context.CancelFunc
 
 	events   chan *Event
 	sessions chan *Session
@@ -59,7 +58,6 @@ func ServeCMD() *cli.Command {
 			if err != nil {
 				return err
 			}
-			defer svr.Close()
 			return svr.Serve(goCtx, ctx.Int("port"))
 		},
 	}
@@ -74,12 +72,12 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 	}
 	store, err := frostdb.New(
 		frostdb.WithStoragePath(o.DataPath),
+		frostdb.WithLogger(GoKit{}),
 	)
 	if err != nil {
 		closeDB(sqlDb)
 		return nil, err
 	}
-	ctx, cancel := context.WithCancel(ctx)
 	db, err := store.DB(ctx, "vince")
 	if err != nil {
 		closeDB(sqlDb)
@@ -105,21 +103,29 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		return nil, err
 	}
 	v := &Vince{
-		pool:     pool.New().WithContext(ctx),
 		store:    store,
 		db:       db,
 		sql:      sqlDb,
 		ts:       tbl,
-		cancel:   cancel,
-		events:   make(chan *Event, 1024),
-		sessions: make(chan *Session, 1024),
+		events:   make(chan *Event, MAX_BUFFER_SIZE),
+		sessions: make(chan *Session, MAX_BUFFER_SIZE),
 	}
 	v.session = NewSessionCache(cache, v.sessions)
 	return v, nil
 }
 
 func (v *Vince) Serve(ctx context.Context, port int) error {
-	v.Start()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	var wg sync.WaitGroup
+	{
+		// add all workers
+		wg.Add(2)
+		go v.loopEvent(ctx, &wg)
+		go v.loopSessions(ctx, &wg)
+	}
+
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: v.Handle(),
@@ -136,71 +142,96 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	signal.Notify(c, os.Interrupt)
 	sig := <-c
 	xlg.Info().Msgf("received signal %s shutting down the server", sig)
+
 	err := svr.Shutdown(ctx)
 	if err != nil {
 		return err
 	}
-	return svr.Close()
-}
+	err = svr.Close()
+	if err != nil {
+		return err
+	}
+	cancel()
+	wg.Wait()
 
-func (v *Vince) Start() {
-	v.pool.Go(v.loopEvent)
-	v.pool.Go(v.loopSessions)
-}
-
-func (v *Vince) Close() {
-	v.cancel()
-	v.pool.Wait()
 	closeDB(v.sql)
 	v.store.Close()
 	v.session.cache.Close()
 	close(v.events)
 	close(v.sessions)
+	return nil
 }
 
-func (v *Vince) loopEvent(ctx context.Context) error {
+func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
 	events := make(EventList, MAX_BUFFER_SIZE)
+	events = events[:0]
+	flush := func() {
+		count := len(events)
+		if count == 0 {
+			return
+		}
+		xlg.Debug().Int("count", count).Msg("Saving events")
+		n, err := events.Save(ctx, v.ts)
+		if err != nil {
+			xlg.Err(err).Msg("Failed to save events")
+		} else {
+			xlg.Trace().Uint64("size", n).Msg("saved events")
+		}
+		for _, ev := range events {
+			PutEvent(ev)
+		}
+		events = events[:0]
+	}
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return
+		case <-ticker.C:
+			flush()
 		case e := <-v.events:
 			events = append(events, e)
-			if len(events) >= MAX_BUFFER_SIZE {
-				n, err := events.Save(ctx, v.ts)
-				if err != nil {
-					xlg.Err(err).Msg("Failed to save events")
-				} else {
-					xlg.Trace().Uint64("size", n).Msg("saved events")
-				}
-				for _, ev := range events {
-					PutEvent(ev)
-				}
-				events = events[:0]
+			if len(events) == MAX_BUFFER_SIZE {
+				flush()
 			}
 		}
 	}
 }
 
-func (v *Vince) loopSessions(ctx context.Context) error {
+func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
 	sessions := make(SessionList, MAX_BUFFER_SIZE)
+	sessions = sessions[:0]
+	flush := func() {
+		count := len(sessions)
+		if count == 0 {
+			return
+		}
+		xlg.Debug().Int("count", count).Msg("saving sessions")
+		n, err := sessions.Save(ctx, v.ts)
+		if err != nil {
+			xlg.Err(err).Msg("failed to save sessions")
+		} else {
+			xlg.Trace().Uint64("size", n).Msg("saved sessions")
+		}
+		for _, s := range sessions {
+			PutSession(s)
+		}
+		sessions = sessions[:0]
+	}
+	ticker := time.NewTicker(time.Second)
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return
+		case <-ticker.C:
+			flush()
 		case sess := <-v.sessions:
 			sessions = append(sessions, sess)
-			if len(sessions) >= MAX_BUFFER_SIZE {
-				n, err := sessions.Save(ctx, v.ts)
-				if err != nil {
-					xlg.Err(err).Msg("Failed to save sessions")
-				} else {
-					xlg.Trace().Uint64("size", n).Msg("saved sessions")
-				}
-				for _, s := range sessions {
-					PutSession(s)
-				}
-				sessions = sessions[:0]
+			if len(sessions) == MAX_BUFFER_SIZE {
+				flush()
 			}
 		}
 	}
@@ -228,4 +259,11 @@ func (v *Vince) Handle() http.Handler {
 			return
 		}
 	})
+}
+
+type GoKit struct{}
+
+func (GoKit) Log(kv ...interface{}) error {
+	fmt.Println(kv...)
+	return nil
 }

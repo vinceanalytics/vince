@@ -136,7 +136,7 @@ func (e EventList) Save(ctx context.Context, tables *Tables) (uint64, error) {
 		row = append(row, parquet.ValueOf(value.UtmContent).Level(0, 0, nameNumber+19))
 		row = append(row, parquet.ValueOf(value.UtmTerm).Level(0, 0, nameNumber+20))
 		row = append(row, parquet.ValueOf(value.TransferredFrom).Level(0, 0, nameNumber+21))
-		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+23))
+		row = append(row, parquet.ValueOf(value.Timestamp.Seconds).Level(0, 0, nameNumber+23))
 		rows = append(rows, row)
 	}
 
@@ -475,7 +475,7 @@ func (s SessionList) Save(ctx context.Context, tables *Tables) (uint64, error) {
 		row = append(row, parquet.ValueOf(value.ExitPage).Level(0, 0, nameNumber+8))
 		row = append(row, parquet.ValueOf(value.PageViews).Level(0, 0, nameNumber+9))
 		row = append(row, parquet.ValueOf(value.Events).Level(0, 0, nameNumber+10))
-		row = append(row, parquet.ValueOf(value.Duration).Level(0, 0, nameNumber+11))
+		row = append(row, parquet.ValueOf(value.Duration.Seconds).Level(0, 0, nameNumber+11))
 		row = append(row, parquet.ValueOf(value.Referrer).Level(0, 0, nameNumber+12))
 		row = append(row, parquet.ValueOf(value.ReferrerSource).Level(0, 0, nameNumber+13))
 		row = append(row, parquet.ValueOf(value.CountryCode).Level(0, 0, nameNumber+14))
@@ -491,8 +491,8 @@ func (s SessionList) Save(ctx context.Context, tables *Tables) (uint64, error) {
 		row = append(row, parquet.ValueOf(value.UtmTerm).Level(0, 0, nameNumber+24))
 		row = append(row, parquet.ValueOf(value.TransferredFrom).Level(0, 0, nameNumber+25))
 		row = append(row, parquet.ValueOf(value.ScreenSize).Level(0, 0, nameNumber+26))
-		row = append(row, parquet.ValueOf(value.Start).Level(0, 0, nameNumber+28))
-		row = append(row, parquet.ValueOf(value.Timestamp).Level(0, 0, nameNumber+29))
+		row = append(row, parquet.ValueOf(value.Start.Seconds).Level(0, 0, nameNumber+28))
+		row = append(row, parquet.ValueOf(value.Timestamp.Seconds).Level(0, 0, nameNumber+29))
 		rows = append(rows, row)
 	}
 
@@ -847,7 +847,7 @@ func (i ImportedVisitorList) Save(ctx context.Context, tables *Tables) (uint64, 
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
 		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
-		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Date.Seconds).Level(0, 0, 1))
 		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 2))
 		row = append(row, parquet.ValueOf(value.Pageviews).Level(0, 0, 3))
 		row = append(row, parquet.ValueOf(value.Bounces).Level(0, 0, 4))
@@ -985,7 +985,7 @@ func (i ImportedSourceList) Save(ctx context.Context, tables *Tables) (uint64, e
 	for _, value := range i {
 		row := make(parquet.Row, 0, 11)
 		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
-		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Date.Seconds).Level(0, 0, 1))
 		row = append(row, parquet.ValueOf(value.Source).Level(0, 0, 2))
 		row = append(row, parquet.ValueOf(value.UtmMedium).Level(0, 0, 3))
 		row = append(row, parquet.ValueOf(value.UtmCampaign).Level(0, 0, 4))
@@ -1167,7 +1167,7 @@ func (i ImportedPageList) Save(ctx context.Context, tables *Tables) (uint64, err
 	for _, value := range i {
 		row := make(parquet.Row, 0, 8)
 		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
-		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Date.Seconds).Level(0, 0, 1))
 		row = append(row, parquet.ValueOf(value.Hostname).Level(0, 0, 2))
 		row = append(row, parquet.ValueOf(value.Page).Level(0, 0, 3))
 		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 4))
@@ -1316,7 +1316,7 @@ func (i ImportedEntryPageList) Save(ctx context.Context, tables *Tables) (uint64
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
 		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
-		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Date.Seconds).Level(0, 0, 1))
 		row = append(row, parquet.ValueOf(value.EntryPage).Level(0, 0, 2))
 		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
 		row = append(row, parquet.ValueOf(value.Entrances).Level(0, 0, 4))
@@ -1454,7 +1454,7 @@ func (i ImportedExitPageList) Save(ctx context.Context, tables *Tables) (uint64,
 	for _, value := range i {
 		row := make(parquet.Row, 0, 5)
 		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
-		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Date.Seconds).Level(0, 0, 1))
 		row = append(row, parquet.ValueOf(value.ExitPage).Level(0, 0, 2))
 		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
 		row = append(row, parquet.ValueOf(value.Exits).Level(0, 0, 4))
@@ -1570,7 +1570,7 @@ func (i ImportedLocationList) Save(ctx context.Context, tables *Tables) (uint64,
 	for _, value := range i {
 		row := make(parquet.Row, 0, 9)
 		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
-		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Date.Seconds).Level(0, 0, 1))
 		row = append(row, parquet.ValueOf(value.Country).Level(0, 0, 2))
 		row = append(row, parquet.ValueOf(value.Region).Level(0, 0, 3))
 		row = append(row, parquet.ValueOf(value.City).Level(0, 0, 4))
@@ -1730,7 +1730,7 @@ func (i ImportedDeviceList) Save(ctx context.Context, tables *Tables) (uint64, e
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
 		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
-		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Date.Seconds).Level(0, 0, 1))
 		row = append(row, parquet.ValueOf(value.Devise).Level(0, 0, 2))
 		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
 		row = append(row, parquet.ValueOf(value.Visits).Level(0, 0, 4))
@@ -1868,7 +1868,7 @@ func (i ImportedBrowserList) Save(ctx context.Context, tables *Tables) (uint64, 
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
 		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
-		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Date.Seconds).Level(0, 0, 1))
 		row = append(row, parquet.ValueOf(value.Browser).Level(0, 0, 2))
 		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
 		row = append(row, parquet.ValueOf(value.Visits).Level(0, 0, 4))
@@ -2006,7 +2006,7 @@ func (i ImportedOperatingSystemList) Save(ctx context.Context, tables *Tables) (
 	for _, value := range i {
 		row := make(parquet.Row, 0, 7)
 		row = append(row, parquet.ValueOf(value.SiteId).Level(0, 0, 0))
-		row = append(row, parquet.ValueOf(value.Date).Level(0, 0, 1))
+		row = append(row, parquet.ValueOf(value.Date.Seconds).Level(0, 0, 1))
 		row = append(row, parquet.ValueOf(value.Browser).Level(0, 0, 2))
 		row = append(row, parquet.ValueOf(value.Visitors).Level(0, 0, 3))
 		row = append(row, parquet.ValueOf(value.Visits).Level(0, 0, 4))
