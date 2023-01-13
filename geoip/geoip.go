@@ -30,6 +30,7 @@ func Get() *geoip2.Reader {
 		if err != nil {
 			panic(err.Error())
 		}
+		defer r.Close()
 		b, err := io.ReadAll(r)
 		if err != nil {
 			panic(err.Error())
