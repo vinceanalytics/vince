@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gernest/vince/geoip"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"github.com/gernest/vince/timeseries"
 )
 
 type Request struct {
@@ -138,19 +138,19 @@ func (v *Vince) processEvent(r *http.Request) bool {
 	case req.ScreenWidth >= 1440:
 		screenSize = "Desktop"
 	}
-	var labels []*Label
+	var labels []*timeseries.Label
 	for k, v := range req.Meta {
 		if k == "" || v == "" {
 			continue
 		}
-		labels = append(labels, &Label{
+		labels = append(labels, &timeseries.Label{
 			Name: k, Value: v,
 		})
 	}
 
 	for _, domain := range domains {
 		userID := seedID.Gen(remoteIp, userAgent, domain, host)
-		e := GetEvent()
+		e := timeseries.GetEvent()
 		e.UserId = userID
 		e.Name = req.EventName
 		e.Hostname = host
@@ -168,10 +168,10 @@ func (v *Vince) processEvent(r *http.Request) bool {
 		e.ReferrerSource = source
 		e.Referrer = referrer
 		e.CountryCode = countryCode
-		e.CityGeonameId = cityGeonameId
+		e.CityGeoNameID = cityGeonameId
 		e.ScreenSize = screenSize
 		e.Labels = labels
-		e.Timestamp = timestamppb.New(now)
+		e.Timestamp = now
 		previousUUserID := seedID.GenPrevious(remoteIp, userAgent, domain, host)
 		e.SessionId = v.session.RegisterSession(e, previousUUserID)
 		v.events <- e

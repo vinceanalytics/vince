@@ -14,7 +14,7 @@ import (
 
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
-	"github.com/polarsignals/frostdb"
+	"github.com/gernest/vince/timeseries"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
@@ -26,14 +26,11 @@ type Config struct {
 }
 
 type Vince struct {
-	store   *frostdb.ColumnStore
-	db      *frostdb.DB
 	sql     *gorm.DB
-	ts      *Tables
-	session *SessionCache
+	session *timeseries.SessionCache
 
-	events   chan *Event
-	sessions chan *Session
+	events   chan *timeseries.Event
+	sessions chan *timeseries.Session
 }
 
 func ServeCMD() *cli.Command {
@@ -70,47 +67,25 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 	if err != nil {
 		return nil, err
 	}
-	store, err := frostdb.New(
-		frostdb.WithStoragePath(o.DataPath),
-		frostdb.WithLogger(GoKit{}),
-	)
 	if err != nil {
 		closeDB(sqlDb)
 		return nil, err
 	}
-	db, err := store.DB(ctx, "vince")
-	if err != nil {
-		closeDB(sqlDb)
-		store.Close()
-		return nil, err
-	}
-	tbl, err := NewTables(db)
-	if err != nil {
-		closeDB(sqlDb)
-		store.Close()
-		db.Close()
-		return nil, err
-	}
+
 	cache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1e7,
 		MaxCost:     1 << 30,
 		BufferItems: 64,
 	})
 	if err != nil {
-		closeDB(sqlDb)
-		store.Close()
-		db.Close()
 		return nil, err
 	}
 	v := &Vince{
-		store:    store,
-		db:       db,
 		sql:      sqlDb,
-		ts:       tbl,
-		events:   make(chan *Event, MAX_BUFFER_SIZE),
-		sessions: make(chan *Session, MAX_BUFFER_SIZE),
+		events:   make(chan *timeseries.Event, MAX_BUFFER_SIZE),
+		sessions: make(chan *timeseries.Session, MAX_BUFFER_SIZE),
 	}
-	v.session = NewSessionCache(cache, v.sessions)
+	v.session = timeseries.NewSessionCache(cache, v.sessions)
 	return v, nil
 }
 
@@ -155,8 +130,7 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	wg.Wait()
 
 	closeDB(v.sql)
-	v.store.Close()
-	v.session.cache.Close()
+	v.session.Close()
 	close(v.events)
 	close(v.sessions)
 	return nil
@@ -166,7 +140,7 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	events := make(EventList, MAX_BUFFER_SIZE)
+	events := make([]*timeseries.Event, MAX_BUFFER_SIZE)
 	events = events[:0]
 	flush := func() {
 		count := len(events)
@@ -174,14 +148,8 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		}
 		xlg.Debug().Int("count", count).Msg("Saving events")
-		n, err := events.Save(ctx, v.ts)
-		if err != nil {
-			xlg.Err(err).Msg("Failed to save events")
-		} else {
-			xlg.Trace().Uint64("size", n).Msg("saved events")
-		}
 		for _, ev := range events {
-			PutEvent(ev)
+			ev.Reset()
 		}
 		events = events[:0]
 	}
@@ -202,7 +170,7 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 
 func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	sessions := make(SessionList, MAX_BUFFER_SIZE)
+	sessions := make([]*timeseries.Session, MAX_BUFFER_SIZE)
 	sessions = sessions[:0]
 	flush := func() {
 		count := len(sessions)
@@ -210,14 +178,8 @@ func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		}
 		xlg.Debug().Int("count", count).Msg("saving sessions")
-		n, err := sessions.Save(ctx, v.ts)
-		if err != nil {
-			xlg.Err(err).Msg("failed to save sessions")
-		} else {
-			xlg.Trace().Uint64("size", n).Msg("saved sessions")
-		}
 		for _, s := range sessions {
-			PutSession(s)
+			s.Reset()
 		}
 		sessions = sessions[:0]
 	}

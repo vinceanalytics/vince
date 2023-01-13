@@ -67,6 +67,11 @@ func (e *Event) NewSession() *Session {
 	return s
 }
 
+func (e *Event) Reset() {
+	*e = Event{}
+	EventPool.Put(e)
+}
+
 type Label struct {
 	Name  string
 	Value string
@@ -149,4 +154,14 @@ var SessionPool = &sync.Pool{
 	New: func() any {
 		return &Session{}
 	},
+}
+
+var EventPool = &sync.Pool{
+	New: func() any {
+		return &Event{}
+	},
+}
+
+func GetEvent() *Event {
+	return EventPool.Get().(*Event)
 }
