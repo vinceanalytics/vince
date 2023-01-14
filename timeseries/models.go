@@ -8,29 +8,29 @@ import (
 )
 
 type Event struct {
-	Name                   string
-	Domain                 string
-	UserId                 uint64
-	SessionId              uuid.UUID
-	Hostname               string
-	Pathname               string
-	Referrer               string
-	ReferrerSource         string
-	CountryCode            string
-	ScreenSize             string
-	OperatingSystem        string
-	Browser                string
-	UtmMedium              string
-	UtmSource              string
-	UtmCampaign            string
-	BrowserVersion         string
-	OperatingSystemVersion string
-	CityGeoNameID          uint32
-	UtmContent             string
-	UtmTerm                string
-	TransferredFrom        string
-	Labels                 []*Label
-	Timestamp              time.Time
+	Name                   string    `parquet:"name"`
+	Domain                 string    `parquet:"domain"`
+	UserId                 uint64    `parquet:"user_id"`
+	SessionId              uuid.UUID `parquet:"session_id"`
+	Hostname               string    `parquet:"hostname"`
+	Pathname               string    `parquet:"path"`
+	Referrer               string    `parquet:"referrer"`
+	ReferrerSource         string    `parquet:"referrer_source"`
+	CountryCode            string    `parquet:"country_code"`
+	ScreenSize             string    `parquet:"screen_size"`
+	OperatingSystem        string    `parquet:"operating_system"`
+	Browser                string    `parquet:"browser"`
+	UtmMedium              string    `parquet:"utm_medium"`
+	UtmSource              string    `parquet:"utm_source"`
+	UtmCampaign            string    `parquet:"utm_campaign"`
+	BrowserVersion         string    `parquet:"browser_version"`
+	OperatingSystemVersion string    `parquet:"operating_system_version"`
+	CityGeoNameID          uint32    `parquet:"city_geo_name_id"`
+	UtmContent             string    `parquet:"utm_content"`
+	UtmTerm                string    `parquet:"utm_term"`
+	TransferredFrom        string    `parquet:"transferred_from"`
+	Labels                 []Label   `parquet:"labels"`
+	Timestamp              time.Time `parquet:"timestamp"`
 }
 
 func (e *Event) NewSession() *Session {
@@ -78,35 +78,35 @@ type Label struct {
 }
 
 type Session struct {
-	ID                     uuid.UUID
-	Sign                   int32
-	Domain                 string
-	UserId                 uint64
-	Hostname               string
-	IsBounce               bool
-	EntryPage              string
-	ExitPage               string
-	PageViews              uint64
-	Events                 uint64
-	Duration               time.Duration
-	Referrer               string
-	ReferrerSource         string
-	CountryCode            string
-	OperatingSystem        string
-	Browser                string
-	UtmMedium              string
-	UtmSource              string
-	UtmCampaign            string
-	BrowserVersion         string
-	OperatingSystemVersion string
-	CityGeoNameId          uint32
-	UtmContent             string
-	UtmTerm                string
-	TransferredFrom        string
-	ScreenSize             string
-	Labels                 []*Label
-	Start                  time.Time
-	Timestamp              time.Time
+	ID                     uuid.UUID     `parquet:"id"`
+	Sign                   int32         `parquet:"sign"`
+	Domain                 string        `parquet:"domain"`
+	UserId                 uint64        `parquet:"user_id"`
+	Hostname               string        `parquet:"hostname"`
+	IsBounce               bool          `parquet:"is_bounce"`
+	EntryPage              string        `parquet:"entry_page"`
+	ExitPage               string        `parquet:"exit_page"`
+	PageViews              uint64        `parquet:"pageviews"`
+	Events                 uint64        `parquet:"events"`
+	Duration               time.Duration `parquet:"duration"`
+	Referrer               string        `parquet:"referrer"`
+	ReferrerSource         string        `parquet:"referrer_source"`
+	CountryCode            string        `parquet:"country_code"`
+	OperatingSystem        string        `parquet:"operating_system"`
+	Browser                string        `parquet:"browser"`
+	UtmMedium              string        `parquet:"utm_medium"`
+	UtmSource              string        `parquet:"utm_source"`
+	UtmCampaign            string        `parquet:"UtmCampaign"`
+	BrowserVersion         string        `parquet:"browser_version"`
+	OperatingSystemVersion string        `parquet:"operating_system_version"`
+	CityGeoNameId          uint32        `parquet:"city_geo_name_id"`
+	UtmContent             string        `parquet:"utm_content"`
+	UtmTerm                string        `parquet:"utm_term"`
+	TransferredFrom        string        `parquet:"transferred_from"`
+	ScreenSize             string        `parquet:"screen_size"`
+	Labels                 []Label       `parquet:"labels"`
+	Start                  time.Time     `parquet:"start"`
+	Timestamp              time.Time     `parquet:"timestamp"`
 }
 
 func (s *Session) Reset() {
