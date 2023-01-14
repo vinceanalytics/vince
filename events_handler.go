@@ -138,12 +138,12 @@ func (v *Vince) processEvent(r *http.Request) bool {
 	case req.ScreenWidth >= 1440:
 		screenSize = "Desktop"
 	}
-	var labels []*timeseries.Label
+	var labels []timeseries.Label
 	for k, v := range req.Meta {
 		if k == "" || v == "" {
 			continue
 		}
-		labels = append(labels, &timeseries.Label{
+		labels = append(labels, timeseries.Label{
 			Name: k, Value: v,
 		})
 	}
