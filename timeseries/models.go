@@ -1,40 +1,42 @@
 package timeseries
 
 import (
-	"sync"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/segmentio/parquet-go"
 )
 
 type Event struct {
-	Name                   string    `parquet:"name"`
-	Domain                 string    `parquet:"domain"`
+	Name                   string    `parquet:"name,zstd"`
+	Domain                 string    `parquet:"domain,zstd"`
 	UserId                 uint64    `parquet:"user_id"`
-	SessionId              uuid.UUID `parquet:"session_id"`
-	Hostname               string    `parquet:"hostname"`
-	Pathname               string    `parquet:"path"`
-	Referrer               string    `parquet:"referrer"`
-	ReferrerSource         string    `parquet:"referrer_source"`
-	CountryCode            string    `parquet:"country_code"`
-	ScreenSize             string    `parquet:"screen_size"`
-	OperatingSystem        string    `parquet:"operating_system"`
-	Browser                string    `parquet:"browser"`
-	UtmMedium              string    `parquet:"utm_medium"`
-	UtmSource              string    `parquet:"utm_source"`
-	UtmCampaign            string    `parquet:"utm_campaign"`
-	BrowserVersion         string    `parquet:"browser_version"`
-	OperatingSystemVersion string    `parquet:"operating_system_version"`
-	CityGeoNameID          uint32    `parquet:"city_geo_name_id"`
-	UtmContent             string    `parquet:"utm_content"`
-	UtmTerm                string    `parquet:"utm_term"`
-	TransferredFrom        string    `parquet:"transferred_from"`
+	SessionId              uuid.UUID `parquet:"session_id,zstd"`
+	Hostname               string    `parquet:"hostname,zstd"`
+	Pathname               string    `parquet:"path,zstd"`
+	Referrer               string    `parquet:"referrer,zstd"`
+	ReferrerSource         string    `parquet:"referrer_source,zstd"`
+	CountryCode            string    `parquet:"country_code,zstd"`
+	ScreenSize             string    `parquet:"screen_size,zstd"`
+	OperatingSystem        string    `parquet:"operating_system,zstd"`
+	Browser                string    `parquet:"browser,zstd"`
+	UtmMedium              string    `parquet:"utm_medium,zstd"`
+	UtmSource              string    `parquet:"utm_source,zstd"`
+	UtmCampaign            string    `parquet:"utm_campaign,zstd"`
+	BrowserVersion         string    `parquet:"browser_version,zstd"`
+	OperatingSystemVersion string    `parquet:"operating_system_version,zstd"`
+	CityGeoNameID          uint32    `parquet:"city_geo_name_id,zstd"`
+	UtmContent             string    `parquet:"utm_content,zstd"`
+	UtmTerm                string    `parquet:"utm_term,zstd"`
+	TransferredFrom        string    `parquet:"transferred_from,zstd"`
 	Labels                 []Label   `parquet:"labels"`
 	Timestamp              time.Time `parquet:"timestamp"`
 }
 
 func (e *Event) NewSession() *Session {
-	s := SessionPool.Get().(*Session)
+	s := new(Session)
 	s.Sign = 1
 	s.ID = uuid.New()
 	s.Hostname = e.Hostname
@@ -67,55 +69,45 @@ func (e *Event) NewSession() *Session {
 	return s
 }
 
-func (e *Event) Reset() {
-	*e = Event{}
-	EventPool.Put(e)
-}
-
 type Label struct {
-	Name  string
-	Value string
+	Name  string `parquet:"name,zstd"`
+	Value string `parquet:"value,zstd"`
 }
 
 type Session struct {
-	ID                     uuid.UUID     `parquet:"id"`
-	Sign                   int32         `parquet:"sign"`
-	Domain                 string        `parquet:"domain"`
-	UserId                 uint64        `parquet:"user_id"`
-	Hostname               string        `parquet:"hostname"`
-	IsBounce               bool          `parquet:"is_bounce"`
-	EntryPage              string        `parquet:"entry_page"`
-	ExitPage               string        `parquet:"exit_page"`
-	PageViews              uint64        `parquet:"pageviews"`
-	Events                 uint64        `parquet:"events"`
-	Duration               time.Duration `parquet:"duration"`
-	Referrer               string        `parquet:"referrer"`
-	ReferrerSource         string        `parquet:"referrer_source"`
-	CountryCode            string        `parquet:"country_code"`
-	OperatingSystem        string        `parquet:"operating_system"`
-	Browser                string        `parquet:"browser"`
-	UtmMedium              string        `parquet:"utm_medium"`
-	UtmSource              string        `parquet:"utm_source"`
-	UtmCampaign            string        `parquet:"UtmCampaign"`
-	BrowserVersion         string        `parquet:"browser_version"`
-	OperatingSystemVersion string        `parquet:"operating_system_version"`
-	CityGeoNameId          uint32        `parquet:"city_geo_name_id"`
-	UtmContent             string        `parquet:"utm_content"`
-	UtmTerm                string        `parquet:"utm_term"`
-	TransferredFrom        string        `parquet:"transferred_from"`
-	ScreenSize             string        `parquet:"screen_size"`
+	ID                     uuid.UUID     `parquet:"id,zstd"`
+	Sign                   int32         `parquet:"sign,zstd"`
+	Domain                 string        `parquet:"domain,zstd"`
+	UserId                 uint64        `parquet:"user_id,zstd"`
+	Hostname               string        `parquet:"hostname,zstd"`
+	IsBounce               bool          `parquet:"is_bounce,zstd"`
+	EntryPage              string        `parquet:"entry_page,zstd"`
+	ExitPage               string        `parquet:"exit_page,zstd"`
+	PageViews              uint64        `parquet:"pageviews,zstd"`
+	Events                 uint64        `parquet:"events,zstd"`
+	Duration               time.Duration `parquet:"duration,zstd"`
+	Referrer               string        `parquet:"referrer,zstd"`
+	ReferrerSource         string        `parquet:"referrer_source,zstd"`
+	CountryCode            string        `parquet:"country_code,zstd"`
+	OperatingSystem        string        `parquet:"operating_system,zstd"`
+	Browser                string        `parquet:"browser,zstd"`
+	UtmMedium              string        `parquet:"utm_medium,zstd"`
+	UtmSource              string        `parquet:"utm_source,zstd"`
+	UtmCampaign            string        `parquet:"UtmCampaign,zstd"`
+	BrowserVersion         string        `parquet:"browser_version,zstd"`
+	OperatingSystemVersion string        `parquet:"operating_system_version,zstd"`
+	CityGeoNameId          uint32        `parquet:"city_geo_name_id,zstd"`
+	UtmContent             string        `parquet:"utm_content,zstd"`
+	UtmTerm                string        `parquet:"utm_term,zstd"`
+	TransferredFrom        string        `parquet:"transferred_from,zstd"`
+	ScreenSize             string        `parquet:"screen_size,zstd"`
 	Labels                 []Label       `parquet:"labels"`
 	Start                  time.Time     `parquet:"start"`
 	Timestamp              time.Time     `parquet:"timestamp"`
 }
 
-func (s *Session) Reset() {
-	*s = Session{}
-	SessionPool.Put(s)
-}
-
 func (s *Session) Update(e *Event) *Session {
-	ss := SessionPool.Get().(*Session)
+	ss := new(Session)
 	*ss = *s
 	ss.UserId = e.UserId
 	ss.Timestamp = e.Timestamp
@@ -150,18 +142,88 @@ func (s *Session) Update(e *Event) *Session {
 	return ss
 }
 
-var SessionPool = &sync.Pool{
-	New: func() any {
-		return &Session{}
-	},
+type Tables struct {
+	eventsFile     *os.File
+	sessionsFile   *os.File
+	eventsWriter   *parquet.SortingWriter[*Event]
+	sessionsWriter *parquet.SortingWriter[*Session]
 }
 
-var EventPool = &sync.Pool{
-	New: func() any {
-		return &Event{}
-	},
+func Open(dir string) (*Tables, error) {
+	base := filepath.Join(dir, "ts")
+	os.MkdirAll(base, 0755)
+	eventsDBPath := filepath.Join(base, "events.parquet")
+	e, err := os.OpenFile(eventsDBPath, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
+	sessionsDBPath := filepath.Join(base, "sessions.parquet")
+	s, err := os.OpenFile(sessionsDBPath, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
+	t := &Tables{
+		eventsFile:   e,
+		sessionsFile: s,
+	}
+	t.setWriters()
+	return t, nil
 }
 
-func GetEvent() *Event {
-	return EventPool.Get().(*Event)
+func (t *Tables) setWriters() {
+	t.eventsWriter = parquet.NewSortingWriter[*Event](
+		t.eventsFile,
+		4098,
+		parquet.SortingWriterConfig(
+			parquet.SortingColumns(
+				parquet.Ascending("domain"),
+				parquet.Ascending("timestamp"),
+				parquet.Ascending("user_id"),
+			),
+		),
+	)
+	t.sessionsWriter = parquet.NewSortingWriter[*Session](
+		t.sessionsFile,
+		4098,
+		parquet.SortingWriterConfig(
+			parquet.SortingColumns(
+				parquet.Ascending("domain"),
+				parquet.Ascending("timestamp"),
+				parquet.Ascending("user_id"),
+				parquet.Ascending("id"),
+			),
+		),
+	)
+}
+
+func (t *Tables) WriteEvents(events []*Event) (int, error) {
+	return t.eventsWriter.Write(events)
+}
+
+func (t *Tables) WriteSessions(sessions []*Session) (int, error) {
+	return t.sessionsWriter.Write(sessions)
+}
+
+func (t *Tables) FlushEvents() error {
+	return t.eventsWriter.Flush()
+}
+
+func (t *Tables) FlushSessions() error {
+	return t.sessionsWriter.Flush()
+}
+
+func (t *Tables) Close() (err error) {
+	if err = t.eventsWriter.Close(); err != nil {
+		return
+	}
+	if err = t.sessionsWriter.Close(); err != nil {
+		return
+	}
+	if err = t.eventsFile.Close(); err != nil {
+		return
+	}
+	if err = t.sessionsFile.Close(); err != nil {
+		return
+	}
+	return
 }

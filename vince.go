@@ -26,11 +26,13 @@ type Config struct {
 }
 
 type Vince struct {
+	ts      *timeseries.Tables
 	sql     *gorm.DB
 	session *timeseries.SessionCache
 
 	events   chan *timeseries.Event
 	sessions chan *timeseries.Session
+	abort    chan os.Signal
 }
 
 func ServeCMD() *cli.Command {
@@ -51,7 +53,7 @@ func ServeCMD() *cli.Command {
 		},
 		Action: func(ctx *cli.Context) error {
 			goCtx := context.Background()
-			svr, err := New(goCtx, &Config{DataPath: ctx.Path("path")})
+			svr, err := New(goCtx, &Config{DataPath: ctx.Path("data")})
 			if err != nil {
 				return err
 			}
@@ -62,11 +64,13 @@ func ServeCMD() *cli.Command {
 
 func New(ctx context.Context, o *Config) (*Vince, error) {
 	os.MkdirAll(o.DataPath, 0755)
+
 	sqlPath := filepath.Join(o.DataPath, "vince.db")
 	sqlDb, err := open(sqlPath)
 	if err != nil {
 		return nil, err
 	}
+	ts, err := timeseries.Open(o.DataPath)
 	if err != nil {
 		closeDB(sqlDb)
 		return nil, err
@@ -78,12 +82,16 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		BufferItems: 64,
 	})
 	if err != nil {
+		closeDB(sqlDb)
+		ts.Close()
 		return nil, err
 	}
 	v := &Vince{
+		ts:       ts,
 		sql:      sqlDb,
 		events:   make(chan *timeseries.Event, MAX_BUFFER_SIZE),
 		sessions: make(chan *timeseries.Session, MAX_BUFFER_SIZE),
+		abort:    make(chan os.Signal, 1),
 	}
 	v.session = timeseries.NewSessionCache(cache, v.sessions)
 	return v, nil
@@ -96,26 +104,26 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	var wg sync.WaitGroup
 	{
 		// add all workers
-		wg.Add(2)
+		wg.Add(3)
 		go v.loopEvent(ctx, &wg)
 		go v.loopSessions(ctx, &wg)
+		go v.flushSeries(ctx, &wg)
 	}
 
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: v.Handle(),
 	}
-	c := make(chan os.Signal, 1)
 	go func() {
 		err := svr.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			xlg.Err(err).Msg("Exited server")
-			c <- os.Interrupt
+			v.exit()
 		}
 	}()
 	xlg.Info().Msgf("started serving traffic from %s", svr.Addr)
-	signal.Notify(c, os.Interrupt)
-	sig := <-c
+	signal.Notify(v.abort, os.Interrupt)
+	sig := <-v.abort
 	xlg.Info().Msgf("received signal %s shutting down the server", sig)
 
 	err := svr.Shutdown(ctx)
@@ -130,14 +138,20 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	wg.Wait()
 
 	closeDB(v.sql)
+	v.ts.Close()
 	v.session.Close()
 	close(v.events)
 	close(v.sessions)
+	close(v.abort)
 	return nil
 }
 
 func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
-	defer wg.Done()
+	xlg.Debug().Str("worker", "event_writer").Msg("start")
+	defer func() {
+		xlg.Debug().Str("worker", "event_writer").Msg("exit")
+		defer wg.Done()
+	}()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	events := make([]*timeseries.Event, MAX_BUFFER_SIZE)
@@ -147,10 +161,12 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 		if count == 0 {
 			return
 		}
-		xlg.Debug().Int("count", count).Msg("Saving events")
-		for _, ev := range events {
-			ev.Reset()
+		xlg.Debug().Str("worker", "event_writer").Int("count", count).Msg("saving events")
+		n, err := v.ts.WriteEvents(events)
+		if err != nil {
+			xlg.Err(err).Str("worker", "event_writer").Msg("saving events")
 		}
+		xlg.Debug().Str("worker", "event_writer").Int("count", n).Msg("saved events")
 		events = events[:0]
 	}
 	for {
@@ -169,7 +185,11 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
-	defer wg.Done()
+	xlg.Debug().Str("worker", "session_writer").Msg("start")
+	defer func() {
+		xlg.Debug().Str("worker", "session_writer").Msg("exit")
+		defer wg.Done()
+	}()
 	sessions := make([]*timeseries.Session, MAX_BUFFER_SIZE)
 	sessions = sessions[:0]
 	flush := func() {
@@ -177,10 +197,14 @@ func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
 		if count == 0 {
 			return
 		}
-		xlg.Debug().Int("count", count).Msg("saving sessions")
-		for _, s := range sessions {
-			s.Reset()
+		xlg.Debug().Str("worker", "session_writer").Int("count", count).Msg("saving sessions")
+		n, err := v.ts.WriteSessions(sessions)
+		if err != nil {
+			xlg.Err(err).Str("worker", "session_writer").Msg("saving sessions")
+			v.exit()
+			return
 		}
+		xlg.Debug().Str("worker", "session_writer").Int("count", n).Msg("saved sessions")
 		sessions = sessions[:0]
 	}
 	ticker := time.NewTicker(time.Second)
@@ -197,6 +221,42 @@ func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
 			}
 		}
 	}
+}
+
+func (v *Vince) flushSeries(ctx context.Context, wg *sync.WaitGroup) {
+	xlg.Debug().Str("worker", "series_flush").Msg("start")
+	defer func() {
+		xlg.Debug().Str("worker", "series_flush").Msg("exit")
+		defer wg.Done()
+	}()
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			xlg.Debug().Str("worker", "series_flush").Msg("flushing events")
+			err := v.ts.FlushEvents()
+			if err != nil {
+				xlg.Err(err).Str("worker", "series_flush").Msg("failed flushing events")
+				v.exit()
+				return
+			}
+			xlg.Debug().Str("worker", "series_flush").Msg("flushing sessions")
+			err = v.ts.FlushSessions()
+			if err != nil {
+				xlg.Err(err).Str("worker", "series_flush").Msg("failed flushing sessions")
+				v.exit()
+				return
+			}
+		}
+	}
+
+}
+
+func (v *Vince) exit() {
+	v.abort <- os.Interrupt
 }
 
 var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)

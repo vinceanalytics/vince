@@ -150,7 +150,7 @@ func (v *Vince) processEvent(r *http.Request) bool {
 
 	for _, domain := range domains {
 		userID := seedID.Gen(remoteIp, userAgent, domain, host)
-		e := timeseries.GetEvent()
+		e := new(timeseries.Event)
 		e.UserId = userID
 		e.Name = req.EventName
 		e.Hostname = host
