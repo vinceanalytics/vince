@@ -6,13 +6,26 @@ import (
 )
 
 type Health struct {
+	DB      bool         `json:"sqlite"`
 	Workers WorkerHealth `json:"workers"`
 }
 
 func (v *Vince) health(w http.ResponseWriter, r *http.Request) {
-	ServeJSON(w, Health{
+	var sqliteHealth bool
+	if db, err := v.sql.DB(); err == nil {
+		if _, err := db.Query("SELECT 1"); err == nil {
+			sqliteHealth = true
+		}
+	}
+	h := Health{
+		DB:      sqliteHealth,
 		Workers: v.hs.Check(),
-	})
+	}
+	code := http.StatusOK
+	if !h.DB || !h.Workers.EventWriter || !h.Workers.SessionWriter || !h.Workers.SeriesFlush {
+		code = http.StatusInternalServerError
+	}
+	ServeJSON(w, code, h)
 }
 
 type WorkerHealthChannels struct {

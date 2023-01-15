@@ -6,7 +6,7 @@ import (
 )
 
 func (v *Vince) info(w http.ResponseWriter, r *http.Request) {
-	ServeJSON(w, GetBuildInfo())
+	ServeJSON(w, http.StatusOK, GetBuildInfo())
 }
 
 type BuildInfo struct {
