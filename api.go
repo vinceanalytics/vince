@@ -19,7 +19,7 @@ func (v *Vince) api(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 			return
 		case "/api/health":
-			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+			v.health(w, r)
 			return
 		case "/api/system":
 			v.info(w, r)

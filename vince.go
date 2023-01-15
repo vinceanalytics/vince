@@ -33,6 +33,7 @@ type Vince struct {
 	events   chan *timeseries.Event
 	sessions chan *timeseries.Session
 	abort    chan os.Signal
+	hs       *WorkerHealthChannels
 }
 
 func ServeCMD() *cli.Command {
@@ -92,6 +93,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		events:   make(chan *timeseries.Event, MAX_BUFFER_SIZE),
 		sessions: make(chan *timeseries.Session, MAX_BUFFER_SIZE),
 		abort:    make(chan os.Signal, 1),
+		hs:       newWorkerHealth(),
 	}
 	v.session = timeseries.NewSessionCache(cache, v.sessions)
 	return v, nil
@@ -143,6 +145,7 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	close(v.events)
 	close(v.sessions)
 	close(v.abort)
+	v.hs.Close()
 	return nil
 }
 
@@ -175,6 +178,8 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		case <-ticker.C:
 			flush()
+		case ch := <-v.hs.eventWriter:
+			ch <- struct{}{}
 		case e := <-v.events:
 			events = append(events, e)
 			if len(events) == MAX_BUFFER_SIZE {
@@ -214,6 +219,8 @@ func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		case <-ticker.C:
 			flush()
+		case ch := <-v.hs.sessionWriter:
+			ch <- struct{}{}
 		case sess := <-v.sessions:
 			sessions = append(sessions, sess)
 			if len(sessions) == MAX_BUFFER_SIZE {
@@ -235,6 +242,8 @@ func (v *Vince) flushSeries(ctx context.Context, wg *sync.WaitGroup) {
 		select {
 		case <-ctx.Done():
 			return
+		case ch := <-v.hs.seriesFlush:
+			ch <- struct{}{}
 		case <-ticker.C:
 			xlg.Debug().Str("worker", "series_flush").Msg("flushing events")
 			err := v.ts.FlushEvents()
