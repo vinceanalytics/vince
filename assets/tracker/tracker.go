@@ -2,7 +2,6 @@ package tracker
 
 import (
 	"embed"
-	"io/fs"
 	"net/http"
 	"strings"
 )
@@ -15,8 +14,7 @@ func Match(s string) bool {
 }
 
 func Serve() http.HandlerFunc {
-	sub, _ := fs.Sub(files, "js")
-	h := http.StripPrefix("/js", http.FileServer(http.FS(sub)))
+	h := http.FileServer(http.FS(files))
 	return func(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTP(w, r)
 	}

@@ -1,0 +1,84 @@
+/*!******************************************************************************
+ *     ___                  _   ____  ____
+ *    / _ \ _   _  ___  ___| |_|  _ \| __ )
+ *   | | | | | | |/ _ \/ __| __| | | |  _ \
+ *   | |_| | |_| |  __/\__ \ |_| |_| | |_) |
+ *    \__\_\\__,_|\___||___/\__|____/|____/
+ *
+ *  Copyright (c) 2014-2019 Appsicle
+ *  Copyright (c) 2019-2022 QuestDB
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+$fa-font-path: "./font-awesome/webfonts";
+
+@import "./font-awesome/scss/fontawesome.scss";
+
+@font-face {
+  font-family: "Font Awesome 5 Free";
+  font-style: normal;
+  font-weight: 900;
+  font-display: $fa-font-display;
+  src: url("#{$fa-font-path}/fa-solid-900.woff") format("woff");
+}
+
+.fa,
+.fas {
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+}
+
+@import "./bootstrap/scss/functions";
+@import "./bootstrap/scss/variables";
+@import "./bootstrap/scss/mixins";
+@import "./bootstrap/scss/reboot";
+@import "./bootstrap/scss/_type";
+@import "./bootstrap/scss/_buttons";
+
+@import "./animate/_base.css";
+
+$height: 3rem !default;
+$white: #44475a !default;
+$font-color: #f8f8f2 !default;
+$font-placeholder-color: #bbb !default;
+$font-disabled-color: #dedede !default;
+$primary-color: #8be9fd !default;
+$border-color: transparent !default;
+$search-highlight-color: #fffb8c !default;
+$border-radius: 4px !default;
+$spacing-l: 8px !default;
+$spacing-m: 6px !default;
+$spacing-s: 4px !default;
+
+
+@import "variables";
+@import "typography";
+@import "navigation";
+@import "buttons";
+@import "base";
+@import "media";
+
+@import "editor";
+@import "import";
+@import "import-detail";
+@import "settings";
+@import "grid";
+@import "splitter";
+@import "visualisation";
+@import "quick-vis";
+
+.btn:disabled {
+  cursor: default;
+}

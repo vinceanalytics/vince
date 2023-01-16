@@ -1,11 +1,13 @@
 package assets
 
 import (
+	"io/fs"
 	"net/http"
 	"strings"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/gernest/vince/assets/tracker"
+	"github.com/gernest/vince/assets/ui"
 )
 
 func Match(path string) bool {
@@ -23,11 +25,13 @@ func Serve() http.Handler {
 
 func serve() http.Handler {
 	track := tracker.Serve()
+	rest, _ := fs.Sub(ui.UI, "app")
+	h := http.FileServer(http.FS(rest))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if tracker.Match(r.URL.Path) {
 			track.ServeHTTP(w, r)
 			return
 		}
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		h.ServeHTTP(w, r)
 	})
 }

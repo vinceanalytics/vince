@@ -51,9 +51,17 @@ func ServeCMD() *cli.Command {
 				Usage: "path to data directory",
 				Value: ".vince",
 			},
+			&cli.BoolFlag{
+				Name:    "debug",
+				Aliases: []string{"d"},
+				Usage:   "sets log level to debug",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			goCtx := context.Background()
+			if ctx.Bool("debug") {
+				setDebug()
+			}
 			svr, err := New(goCtx, &Config{DataPath: ctx.Path("data")})
 			if err != nil {
 				return err
@@ -290,11 +298,4 @@ func (v *Vince) Handle() http.Handler {
 			return
 		}
 	})
-}
-
-type GoKit struct{}
-
-func (GoKit) Log(kv ...interface{}) error {
-	fmt.Println(kv...)
-	return nil
 }
