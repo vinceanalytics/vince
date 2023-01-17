@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -13,7 +12,6 @@ func CSRF() func(w http.ResponseWriter, r *http.Request) bool {
 	headerName := "X-CSRF-Token"
 	return func(w http.ResponseWriter, r *http.Request) bool {
 		session := ss.Load(r)
-		fmt.Printf("%#v\n", session.Data)
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
 		default:
