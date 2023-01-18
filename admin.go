@@ -37,6 +37,8 @@ func isAdminPath(path, method string) bool {
 	}
 }
 
-func (v *Vince) admin(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+func (v *Vince) admin() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	})
 }

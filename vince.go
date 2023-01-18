@@ -30,10 +30,11 @@ type Vince struct {
 	sql     *gorm.DB
 	session *timeseries.SessionCache
 
-	events   chan *timeseries.Event
-	sessions chan *timeseries.Session
-	abort    chan os.Signal
-	hs       *WorkerHealthChannels
+	events        chan *timeseries.Event
+	sessions      chan *timeseries.Session
+	abort         chan os.Signal
+	hs            *WorkerHealthChannels
+	clientSession *Session
 }
 
 func ServeCMD() *cli.Command {
@@ -96,12 +97,13 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		return nil, err
 	}
 	v := &Vince{
-		ts:       ts,
-		sql:      sqlDb,
-		events:   make(chan *timeseries.Event, MAX_BUFFER_SIZE),
-		sessions: make(chan *timeseries.Session, MAX_BUFFER_SIZE),
-		abort:    make(chan os.Signal, 1),
-		hs:       newWorkerHealth(),
+		ts:            ts,
+		sql:           sqlDb,
+		events:        make(chan *timeseries.Event, MAX_BUFFER_SIZE),
+		sessions:      make(chan *timeseries.Session, MAX_BUFFER_SIZE),
+		abort:         make(chan os.Signal, 1),
+		hs:            newWorkerHealth(),
+		clientSession: NewSession("vince"),
 	}
 	v.session = timeseries.NewSessionCache(cache, v.sessions)
 	return v, nil
@@ -280,8 +282,11 @@ var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)
 
 func (v *Vince) Handle() http.Handler {
 	asset := assets.Serve()
-	csrf := CSRF()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" && r.Method == http.MethodGet {
+			v.home().ServeHTTP(w, r)
+			return
+		}
 		if assets.Match(r.URL.Path) {
 			asset.ServeHTTP(w, r)
 			return
@@ -291,10 +296,9 @@ func (v *Vince) Handle() http.Handler {
 			return
 		}
 		if isAdminPath(r.URL.Path, r.Method) {
-			WriteSecureBrowserHeaders(w)
-			if csrf(w, r) {
-				v.admin(w, r)
-			}
+			secureBrowser(
+				v.csrf(v.admin()),
+			).ServeHTTP(w, r)
 			return
 		}
 	})

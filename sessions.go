@@ -2,6 +2,7 @@ package vince
 
 import (
 	"bytes"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
@@ -83,25 +84,29 @@ type SessionContext struct {
 	s    *Session
 }
 
-func (s *Session) Load(r *http.Request) *SessionContext {
-	cookie, err := r.Cookie(s.name)
-	if err != nil {
-		return &SessionContext{
-			Data: map[string]any{},
-			s:    s,
-		}
+type sessionContextKey struct{}
+
+func (s *Session) Load(r *http.Request) (*SessionContext, *http.Request) {
+	if c, ok := r.Context().Value(sessionContextKey{}).(*SessionContext); ok {
+		return c, r
 	}
 	rs := &SessionContext{
 		Data: map[string]any{},
 		s:    s,
 	}
+	r = r.WithContext(context.WithValue(r.Context(), sessionContextKey{}, rs))
+	cookie, err := r.Cookie(s.name)
+	if err != nil {
+		return rs, r
+	}
+
 	if g := s.Get(cookie.Value); g != nil {
 		err := json.Unmarshal(g, &rs.Data)
 		if err != nil {
 			xlg.Err(err).Msg("failed to decode session value")
 		}
 	}
-	return rs
+	return rs, r
 }
 
 func (s *Session) Get(value string) []byte {
