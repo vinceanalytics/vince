@@ -1,6 +1,6 @@
 @import '../../node_modules/@primer/css/support';
 @import '../../node_modules/@primer/primitives/dist/scss/colors/light_colorblind';
 
-@include color-mode-theme(light, true) {
+@include color-mode-theme(light_colorblind) {
     @include primer-colors-light_colorblind;
 }

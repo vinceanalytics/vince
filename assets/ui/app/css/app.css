@@ -1333,14 +1333,8 @@
     --color-scale-coral-9: #510901;
   }
 }
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
-  /*! */
-}
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
+[data-color-mode=light][data-light-theme=light_colorblind],
+[data-color-mode=dark][data-dark-theme=light_colorblind] {
   --color-canvas-default-transparent: rgba(255,255,255,0);
   --color-page-header-bg: #f6f8fa;
   --color-marketing-icon-primary: #218bff;
@@ -1783,7 +1777,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  [data-color-mode=auto][data-light-theme=light] {
+  [data-color-mode=auto][data-light-theme=light_colorblind] {
     --color-canvas-default-transparent: rgba(255,255,255,0);
     --color-page-header-bg: #f6f8fa;
     --color-marketing-icon-primary: #218bff;
@@ -2226,7 +2220,7 @@
   }
 }
 @media (prefers-color-scheme: dark) {
-  [data-color-mode=auto][data-dark-theme=light] {
+  [data-color-mode=auto][data-dark-theme=light_colorblind] {
     --color-canvas-default-transparent: rgba(255,255,255,0);
     --color-page-header-bg: #f6f8fa;
     --color-marketing-icon-primary: #218bff;
@@ -2668,14 +2662,8 @@
     --color-scale-coral-9: #510901;
   }
 }
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
-  /*! */
-}
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
+[data-color-mode=light][data-light-theme=light_high_contrast],
+[data-color-mode=dark][data-dark-theme=light_high_contrast] {
   --color-canvas-default-transparent: rgba(255,255,255,0);
   --color-page-header-bg: #ffffff;
   --color-marketing-icon-primary: #1168e3;
@@ -3118,7 +3106,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  [data-color-mode=auto][data-light-theme=light] {
+  [data-color-mode=auto][data-light-theme=light_high_contrast] {
     --color-canvas-default-transparent: rgba(255,255,255,0);
     --color-page-header-bg: #ffffff;
     --color-marketing-icon-primary: #1168e3;
@@ -3561,7 +3549,7 @@
   }
 }
 @media (prefers-color-scheme: dark) {
-  [data-color-mode=auto][data-dark-theme=light] {
+  [data-color-mode=auto][data-dark-theme=light_high_contrast] {
     --color-canvas-default-transparent: rgba(255,255,255,0);
     --color-page-header-bg: #ffffff;
     --color-marketing-icon-primary: #1168e3;
@@ -4003,14 +3991,8 @@
     --color-scale-coral-9: #430200;
   }
 }
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
-  /*! */
-}
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
+[data-color-mode=light][data-light-theme=light_tritanopia],
+[data-color-mode=dark][data-dark-theme=light_tritanopia] {
   --color-canvas-default-transparent: rgba(255,255,255,0);
   --color-page-header-bg: #f6f8fa;
   --color-marketing-icon-primary: #218bff;
@@ -4453,7 +4435,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  [data-color-mode=auto][data-light-theme=light] {
+  [data-color-mode=auto][data-light-theme=light_tritanopia] {
     --color-canvas-default-transparent: rgba(255,255,255,0);
     --color-page-header-bg: #f6f8fa;
     --color-marketing-icon-primary: #218bff;
@@ -4896,7 +4878,7 @@
   }
 }
 @media (prefers-color-scheme: dark) {
-  [data-color-mode=auto][data-dark-theme=light] {
+  [data-color-mode=auto][data-dark-theme=light_tritanopia] {
     --color-canvas-default-transparent: rgba(255,255,255,0);
     --color-page-header-bg: #f6f8fa;
     --color-marketing-icon-primary: #218bff;
@@ -5338,14 +5320,8 @@
     --color-scale-coral-9: #510901;
   }
 }
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
-  /*! */
-}
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
+[data-color-mode=light][data-light-theme=dark],
+[data-color-mode=dark][data-dark-theme=dark] {
   --color-canvas-default-transparent: rgba(13,17,23,0);
   --color-page-header-bg: #0d1117;
   --color-marketing-icon-primary: #79c0ff;
@@ -5788,7 +5764,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  [data-color-mode=auto][data-light-theme=light] {
+  [data-color-mode=auto][data-light-theme=dark] {
     --color-canvas-default-transparent: rgba(13,17,23,0);
     --color-page-header-bg: #0d1117;
     --color-marketing-icon-primary: #79c0ff;
@@ -6231,7 +6207,7 @@
   }
 }
 @media (prefers-color-scheme: dark) {
-  [data-color-mode=auto][data-dark-theme=light] {
+  [data-color-mode=auto][data-dark-theme=dark] {
     --color-canvas-default-transparent: rgba(13,17,23,0);
     --color-page-header-bg: #0d1117;
     --color-marketing-icon-primary: #79c0ff;
@@ -6673,14 +6649,8 @@
     --color-scale-coral-9: #460701;
   }
 }
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
-  /*! */
-}
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
+[data-color-mode=light][data-light-theme=dark_dimmed],
+[data-color-mode=dark][data-dark-theme=dark_dimmed] {
   --color-canvas-default-transparent: rgba(34,39,46,0);
   --color-page-header-bg: #22272e;
   --color-marketing-icon-primary: #6cb6ff;
@@ -7123,7 +7093,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  [data-color-mode=auto][data-light-theme=light] {
+  [data-color-mode=auto][data-light-theme=dark_dimmed] {
     --color-canvas-default-transparent: rgba(34,39,46,0);
     --color-page-header-bg: #22272e;
     --color-marketing-icon-primary: #6cb6ff;
@@ -7566,7 +7536,7 @@
   }
 }
 @media (prefers-color-scheme: dark) {
-  [data-color-mode=auto][data-dark-theme=light] {
+  [data-color-mode=auto][data-dark-theme=dark_dimmed] {
     --color-canvas-default-transparent: rgba(34,39,46,0);
     --color-page-header-bg: #22272e;
     --color-marketing-icon-primary: #6cb6ff;
@@ -8008,14 +7978,8 @@
     --color-scale-coral-9: #5d1008;
   }
 }
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
-  /*! */
-}
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
+[data-color-mode=light][data-light-theme=dark_high_contrast],
+[data-color-mode=dark][data-dark-theme=dark_high_contrast] {
   --color-canvas-default-transparent: rgba(10,12,16,0);
   --color-page-header-bg: #0a0c10;
   --color-marketing-icon-primary: #91cbff;
@@ -8458,7 +8422,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  [data-color-mode=auto][data-light-theme=light] {
+  [data-color-mode=auto][data-light-theme=dark_high_contrast] {
     --color-canvas-default-transparent: rgba(10,12,16,0);
     --color-page-header-bg: #0a0c10;
     --color-marketing-icon-primary: #91cbff;
@@ -8901,7 +8865,7 @@
   }
 }
 @media (prefers-color-scheme: dark) {
-  [data-color-mode=auto][data-dark-theme=light] {
+  [data-color-mode=auto][data-dark-theme=dark_high_contrast] {
     --color-canvas-default-transparent: rgba(10,12,16,0);
     --color-page-header-bg: #0a0c10;
     --color-marketing-icon-primary: #91cbff;
@@ -9343,14 +9307,8 @@
     --color-scale-coral-9: #a91500;
   }
 }
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
-  /*! */
-}
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
+[data-color-mode=light][data-light-theme=dark_colorblind],
+[data-color-mode=dark][data-dark-theme=dark_colorblind] {
   --color-canvas-default-transparent: rgba(13,17,23,0);
   --color-page-header-bg: #0d1117;
   --color-marketing-icon-primary: #79c0ff;
@@ -9793,7 +9751,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  [data-color-mode=auto][data-light-theme=light] {
+  [data-color-mode=auto][data-light-theme=dark_colorblind] {
     --color-canvas-default-transparent: rgba(13,17,23,0);
     --color-page-header-bg: #0d1117;
     --color-marketing-icon-primary: #79c0ff;
@@ -10236,7 +10194,7 @@
   }
 }
 @media (prefers-color-scheme: dark) {
-  [data-color-mode=auto][data-dark-theme=light] {
+  [data-color-mode=auto][data-dark-theme=dark_colorblind] {
     --color-canvas-default-transparent: rgba(13,17,23,0);
     --color-page-header-bg: #0d1117;
     --color-marketing-icon-primary: #79c0ff;
@@ -10678,14 +10636,8 @@
     --color-scale-coral-9: #460701;
   }
 }
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
-  /*! */
-}
-:root,
-[data-color-mode=light][data-light-theme=light],
-[data-color-mode=dark][data-dark-theme=light] {
+[data-color-mode=light][data-light-theme=dark_tritanopia],
+[data-color-mode=dark][data-dark-theme=dark_tritanopia] {
   --color-canvas-default-transparent: rgba(13,17,23,0);
   --color-page-header-bg: #0d1117;
   --color-marketing-icon-primary: #79c0ff;
@@ -11128,7 +11080,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  [data-color-mode=auto][data-light-theme=light] {
+  [data-color-mode=auto][data-light-theme=dark_tritanopia] {
     --color-canvas-default-transparent: rgba(13,17,23,0);
     --color-page-header-bg: #0d1117;
     --color-marketing-icon-primary: #79c0ff;
@@ -11571,7 +11523,7 @@
   }
 }
 @media (prefers-color-scheme: dark) {
-  [data-color-mode=auto][data-dark-theme=light] {
+  [data-color-mode=auto][data-dark-theme=dark_tritanopia] {
     --color-canvas-default-transparent: rgba(13,17,23,0);
     --color-page-header-bg: #0d1117;
     --color-marketing-icon-primary: #79c0ff;

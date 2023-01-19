@@ -1,0 +1,28 @@
+{{define "content"}}
+<div>
+    <h1>Register your account</h1>
+</div>
+<div>
+    <form action="/register" method="post">
+        <h2>Enter your details</h2>
+        <div>
+            <label for="name">name</label>
+            <input class="form-control" type="text" name="name" id="name" placeholder="John Doe">
+        </div>
+        <div>
+            <label for="email">email</label>
+            <input class="form-control" type="email" name="email" id="email" placeholder="example@email.com">
+        </div>
+        <div>
+            <label for="password">password</label>
+            <input class="form-control" type="password" name="password" id="password">
+        </div>
+        <div>
+            <label for="password_confirmation">Confirm password</label>
+            <input class="form-control" type="password" name="password_confirmation" id="password_confirmation">
+        </div>
+        <button type="submit" class="btn">Create my account →</button>
+        <p>Already have an account? <a href="/login">Log in</a></p>
+    </form>
+</div>
+{{end}}

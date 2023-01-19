@@ -6,8 +6,8 @@ import (
 	"github.com/gernest/vince/assets/ui/templates"
 )
 
-func (v *Vince) loginForm() http.Handler {
+func (v *Vince) registerForm() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ServeHTML(w, templates.Login, http.StatusOK, map[string]any{})
+		ServeHTML(w, templates.Register, http.StatusOK, map[string]any{})
 	})
 }

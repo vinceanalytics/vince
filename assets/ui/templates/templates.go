@@ -15,3 +15,7 @@ var Layouts = template.Must(template.ParseFS(files,
 var Login = template.Must(
 	Layouts.Lookup("focus.html").ParseFS(files, "auth/login_form.html"),
 )
+
+var Register = template.Must(
+	Layouts.Lookup("focus.html").ParseFS(files, "auth/register_form.html"),
+)
