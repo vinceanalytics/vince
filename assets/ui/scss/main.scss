@@ -1,16 +1,9 @@
-// Global requirements
-@import '../node_modules/@primer/css/support/index.scss';
-
-// Color modes
-
-// Core modules
-@import '../node_modules/@primer/css/actionlist/index.scss';
-@import '../node_modules/@primer/css/base/index.scss';
-
+@import './color_modes';
+@import '../node_modules/@primer/css/support';
+@import '../node_modules/@primer/css/actionlist';
+@import '../node_modules/@primer/css/base';
 @import "./box";
 @import "./breadcrumbs";
-
-
 @import '../node_modules/@primer/css/buttons/index.scss';
 @import '../node_modules/@primer/css/table-object/index.scss';
 @import './forms';
@@ -21,8 +14,8 @@
 @import '../node_modules/@primer/css/tooltips/index.scss';
 @import './truncate';
 @import './overlay';
+@import './product';
+@import './marketing';
 
 // Utilities always go last so that they can override components
 @import '../node_modules/@primer/css/utilities/index.scss';
-
-@import './product';

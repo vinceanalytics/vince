@@ -1,0 +1,10 @@
+@import './themes/light.scss';
+@import './themes/light_color_blind';
+@import './themes/light_high_contrast';
+@import './themes/light_tritanopia';
+@import './themes/dark';
+@import './themes/dark_dimmed';
+@import './themes/dark_high_contrast';
+@import './themes/dark_color_blind';
+@import './themes/dark_tritanopia';
+@import '../node_modules/@primer/css/color-modes/native.scss';
