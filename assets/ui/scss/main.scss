@@ -24,3 +24,5 @@
 
 // Utilities always go last so that they can override components
 @import '../node_modules/@primer/css/utilities/index.scss';
+
+@import './product';
