@@ -38,7 +38,15 @@ func isAdminPath(path, method string) bool {
 }
 
 func (v *Vince) admin() http.Handler {
+	login := v.login()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/login":
+			if r.Method == http.MethodGet {
+				login.ServeHTTP(w, r)
+				return
+			}
+		}
 		http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 	})
 }

@@ -282,9 +282,13 @@ var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)
 
 func (v *Vince) Handle() http.Handler {
 	asset := assets.Serve()
+	admin := secureBrowser(
+		v.csrf(v.admin()),
+	)
+	home := v.home()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" && r.Method == http.MethodGet {
-			v.home().ServeHTTP(w, r)
+			home.ServeHTTP(w, r)
 			return
 		}
 		if assets.Match(r.URL.Path) {
@@ -295,10 +299,9 @@ func (v *Vince) Handle() http.Handler {
 			v.api(w, r)
 			return
 		}
+
 		if isAdminPath(r.URL.Path, r.Method) {
-			secureBrowser(
-				v.csrf(v.admin()),
-			).ServeHTTP(w, r)
+			admin.ServeHTTP(w, r)
 			return
 		}
 	})

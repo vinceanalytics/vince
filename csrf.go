@@ -59,5 +59,6 @@ func (v *Vince) csrf(h http.Handler) http.Handler {
 		cookie := session.Save(w)
 		w.Header().Set("Vary", "Cookie")
 		w.Header().Set(csrfHeaderName, cookie)
+		h.ServeHTTP(w, r)
 	})
 }
