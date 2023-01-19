@@ -14,8 +14,6 @@
 @import '../node_modules/@primer/css/tooltips/index.scss';
 @import './truncate';
 @import './overlay';
+@import '../node_modules/@primer/css/utilities/index.scss';
 @import './product';
 @import './marketing';
-
-// Utilities always go last so that they can override components
-@import '../node_modules/@primer/css/utilities/index.scss';
