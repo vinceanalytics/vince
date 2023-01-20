@@ -5,7 +5,7 @@ import (
 	"html/template"
 )
 
-//go:embed layouts auth
+//go:embed layouts auth error
 var files embed.FS
 
 var Layouts = template.Must(template.ParseFS(files,
@@ -19,3 +19,7 @@ var Login = template.Must(
 var Register = template.Must(
 	Layouts.Lookup("focus.html").ParseFS(files, "auth/register_form.html"),
 )
+
+var Error = template.Must(template.ParseFS(files,
+	"error/error.html",
+))
