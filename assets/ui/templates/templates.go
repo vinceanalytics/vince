@@ -8,7 +8,7 @@ import (
 //go:embed layouts auth error
 var files embed.FS
 
-var Layouts = template.Must(template.ParseFS(files,
+var Layouts = template.Must(template.New("vince").Funcs(funcs()).ParseFS(files,
 	"layouts/*.html",
 ))
 
@@ -23,3 +23,15 @@ var Register = template.Must(
 var Error = template.Must(template.ParseFS(files,
 	"error/error.html",
 ))
+
+func steps() []string {
+	return []string{
+		"Register", "Activate account", "Add site info", "Install snippet",
+	}
+}
+
+func funcs() template.FuncMap {
+	return template.FuncMap{
+		"steps": steps,
+	}
+}
