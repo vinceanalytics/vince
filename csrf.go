@@ -1,14 +1,22 @@
 package vince
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/json"
+	"fmt"
+	"html/template"
 	"net/http"
 )
 
-const csrfHeaderName = "X-CSRF-Token"
 const csrfTokenKey = "_csrf"
+
+type csrfTokenCtxKey struct{}
+
+func getCsrf(ctx context.Context) template.HTML {
+	return ctx.Value(csrfTokenCtxKey{}).(template.HTML)
+}
 
 func (v *Vince) csrf(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -16,15 +24,18 @@ func (v *Vince) csrf(h http.Handler) http.Handler {
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
 		default:
+			r.ParseForm()
 			old, ok := session.Data[csrfTokenKey]
 			if !ok {
 				// the request didn't have the csrf token we reject it
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			value := r.Header.Get(csrfHeaderName)
+			value := r.Form.Get(csrfTokenKey)
 			current := session.s.Get(value)
 			if current == nil {
+				// our cookie value is secure, we failed to decrypt/decode. reject
+				// this request
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
@@ -55,10 +66,13 @@ func (v *Vince) csrf(h http.Handler) http.Handler {
 		}
 		token := make([]byte, 32)
 		rand.Read(token)
-		session.Data["token"] = string(token)
+		session.Data[csrfTokenKey] = string(token)
 		cookie := session.Save(w)
 		w.Header().Set("Vary", "Cookie")
-		w.Header().Set(csrfHeaderName, cookie)
+		r = r.WithContext(context.WithValue(r.Context(), csrfTokenCtxKey{}, template.HTML(
+			fmt.Sprintf(`<input type="hidden" name="%s" value="%s">`,
+				csrfTokenKey, cookie)),
+		))
 		h.ServeHTTP(w, r)
 	})
 }

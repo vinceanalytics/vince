@@ -21,6 +21,7 @@
             <label for="password_confirmation">Confirm password</label>
             <input class="form-control" type="password" name="password_confirmation" id="password_confirmation">
         </div>
+        {{.csrf}}
         <button type="submit" class="btn">Create my account →</button>
         <p>Already have an account? <a href="/login">Log in</a></p>
     </form>

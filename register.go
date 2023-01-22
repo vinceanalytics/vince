@@ -8,6 +8,8 @@ import (
 
 func (v *Vince) registerForm() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ServeHTML(w, templates.Register, http.StatusOK, map[string]any{})
+		ServeHTML(w, templates.Register, http.StatusOK, map[string]any{
+			"csrf": getCsrf(r.Context()),
+		})
 	})
 }
