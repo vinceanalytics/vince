@@ -1,9 +1,18 @@
 {{define "content"}}
 <form action="/login" method="post">
     <h1>Enter your email and password</h1>
-    <div class="m-4 mt-8">
+    <div>
         <label for="email">email</label>
         <input class="form-control" type="email" name="email" id="email" placeholder="user@example.com">
     </div>
+    <div>
+        <label for="password">password</label>
+        <input type="password" name="password" id="password">
+        <p>Forgot password? <a href="/password/request-reset">Click here</a> to reset it</p>
+    </div>
+    <button type="submit">Login →</button>
+    <p>
+        Don't have an account? <a href="/register"> Register</a> instead
+    </p>
 </form>
 {{end}}

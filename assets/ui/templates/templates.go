@@ -8,16 +8,18 @@ import (
 //go:embed layouts auth error
 var files embed.FS
 
-var Layouts = template.Must(template.New("vince").Funcs(funcs()).ParseFS(files,
-	"layouts/*.html",
-))
-
 var Login = template.Must(
-	Layouts.Lookup("focus.html").ParseFS(files, "auth/login_form.html"),
+	template.ParseFS(files,
+		"layouts/focus.html",
+		"auth/login_form.html",
+	),
 )
 
 var Register = template.Must(
-	Layouts.Lookup("focus.html").ParseFS(files, "auth/register_form.html"),
+	template.ParseFS(files,
+		"layouts/focus.html",
+		"auth/register_form.html",
+	),
 )
 
 var Error = template.Must(template.ParseFS(files,
