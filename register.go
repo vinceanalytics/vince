@@ -13,3 +13,19 @@ func (v *Vince) registerForm() http.Handler {
 		})
 	})
 }
+
+func (v *Vince) register() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		u := new(User)
+		m := v.DecodeRegistrationForm(u, r)
+		if len(m) > 0 {
+			// render the registration form with errors
+			ServeHTML(w, templates.Register, http.StatusOK, map[string]any{
+				"csrf":   getCsrf(r.Context()),
+				"Errors": m,
+			})
+			return
+		}
+	})
+}

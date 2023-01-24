@@ -61,6 +61,10 @@ func (v *Vince) csrf(h http.Handler) http.Handler {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
+			r = r.WithContext(context.WithValue(r.Context(), csrfTokenCtxKey{}, template.HTML(
+				fmt.Sprintf(`<input type="hidden" name="%s" value="%s">`,
+					csrfTokenKey, value)),
+			))
 			h.ServeHTTP(w, r)
 			return
 		}

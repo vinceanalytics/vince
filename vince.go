@@ -101,7 +101,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		sql:           sqlDb,
 		events:        make(chan *timeseries.Event, MAX_BUFFER_SIZE),
 		sessions:      make(chan *timeseries.Session, MAX_BUFFER_SIZE),
-		abort:         make(chan os.Signal, 1),
+		abort:         make(chan os.Signal),
 		hs:            newWorkerHealth(),
 		clientSession: NewSession("vince"),
 	}
@@ -304,5 +304,6 @@ func (v *Vince) Handle() http.Handler {
 			admin.ServeHTTP(w, r)
 			return
 		}
+		ServeError(w, http.StatusNotFound)
 	})
 }
