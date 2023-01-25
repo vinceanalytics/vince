@@ -4,3 +4,5 @@
     https://github.com/kubeshark/front
 * Admin inspiration 
     https://github.com/pocketbase/pocketbase
+* Landing page and docs
+    https://github.com/metalbear-co/metalbear.co
