@@ -1,26 +1,36 @@
 {{define "content"}}
-<div>
-    <h1>Register your account</h1>
+<div class="mx-auto mt-6 text-center">
+    <div>
+        <h1>Register your account</h1>
+    </div>
 </div>
-<div>
-    <form action="/register" method="post">
+<div class="width-full container-md  mt-4 mx-auto  flex">
+    <form action="/register" method="post" class="FormControl  width-full container-md  mx-auto">
         <h2>Enter your details</h2>
-        <div>
-            <label for="name">name</label>
-            <input class="form-control" type="text" name="name" id="name" placeholder="John Doe">
+        <div class="FormControl-input-wrap FormControl-medium">
+            <label for="name" class="FormControl-label">name</label>
+            <input {{if .Errors}}invalid="true" {{end}} class="FormControl-input" type="text" name="name" id="name"
+                placeholder="John Doe">
         </div>
-        <div>
-            <label for="email">email</label>
-            <input class="form-control" type="email" name="email" id="email" placeholder="example@email.com">
+        {{fieldError "name" .Errors}}
+        <div class="FormControl-input-wrap FormControl-medium">
+            <label for="email" class="FormControl-label">email</label>
+            <input {{if .Errors}}invalid="true" {{end}} class="FormControl-input" type="email" name="email" id="email"
+                placeholder="example@email.com">
         </div>
-        <div>
-            <label for="password">password</label>
-            <input class="form-control" type="password" name="password" id="password">
+        {{fieldError "email" .Errors}}
+        <div class="FormControl-input-wrap FormControl-medium">
+            <label for="password" class="FormControl-label">password</label>
+            <input {{if .Errors}}invalid="true" {{end}} class="FormControl-input" type="password" name="password"
+                id="password">
         </div>
-        <div>
-            <label for="password_confirmation">Confirm password</label>
-            <input class="form-control" type="password" name="password_confirmation" id="password_confirmation">
+        {{fieldError "password" .Errors}}
+        <div class="FormControl-input-wrap FormControl-medium">
+            <label for="password_confirmation" class="FormControl-label">Confirm password</label>
+            <input {{if .Errors}}invalid="true" {{end}} class="FormControl-input" type="password"
+                name="password_confirmation" id="password_confirmation">
         </div>
+        {{fieldError "password_confirmation" .Errors}}
         {{.csrf}}
         <button type="submit" class="btn">Create my account →</button>
         <p>Already have an account? <a href="/login">Log in</a></p>

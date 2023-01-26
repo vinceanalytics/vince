@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
+	github.com/belak/octicon v0.0.0-20220531043918-8d81fefac757
 	github.com/dchest/siphash v1.2.3
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dlclark/regexp2 v1.7.0
