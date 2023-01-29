@@ -5,11 +5,13 @@ go 1.19
 require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/belak/octicon v0.0.0-20220531043918-8d81fefac757
+	github.com/dchest/captcha v1.0.0
 	github.com/dchest/siphash v1.2.3
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/google/uuid v1.3.0
 	github.com/klauspost/compress v1.15.14
+	github.com/lestrrat-go/dataurl v0.0.0-20220721131304-b60017625013
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/oschwald/maxminddb-golang v1.10.0
 	github.com/rs/zerolog v1.21.0
@@ -32,6 +34,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
+	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect

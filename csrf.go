@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/subtle"
+	"encoding/base32"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -61,22 +62,36 @@ func (v *Vince) csrf(h http.Handler) http.Handler {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			r = r.WithContext(context.WithValue(r.Context(), csrfTokenCtxKey{}, template.HTML(
-				fmt.Sprintf(`<input type="hidden" name="%s" value="%s">`,
-					csrfTokenKey, value)),
-			))
-			h.ServeHTTP(w, r)
+			h.ServeHTTP(w, saveCsrf(session, w, r))
 			return
 		}
 		token := make([]byte, 32)
 		rand.Read(token)
 		session.Data[csrfTokenKey] = string(token)
-		cookie := session.Save(w)
-		w.Header().Set("Vary", "Cookie")
-		r = r.WithContext(context.WithValue(r.Context(), csrfTokenCtxKey{}, template.HTML(
-			fmt.Sprintf(`<input type="hidden" name="%s" value="%s">`,
-				csrfTokenKey, cookie)),
-		))
-		h.ServeHTTP(w, r)
+		h.ServeHTTP(w, saveCsrf(session, w, r))
 	})
+}
+
+func saveCsrf(session *SessionContext, w http.ResponseWriter, r *http.Request) *http.Request {
+	solution, data, err := createCaptcha()
+	if err != nil {
+		xlg.Fatal().Msgf("failed to generate captcha %v", err)
+	}
+	session.Data[captchaKey] = base32.StdEncoding.EncodeToString(solution)
+	cookie := session.Save(w)
+	w.Header().Set("Vary", "Cookie")
+	return r.WithContext(context.WithValue(r.Context(), csrfTokenCtxKey{}, template.HTML(
+		csrfTemplate(
+			string(data),
+			cookie)),
+	))
+}
+
+func csrfTemplate(data string, cookie string) string {
+	return fmt.Sprintf(`
+			<img src="%s" class="img-responsive" />
+			<input type="text" name ="captcha" class="FormControl-input" placeholder="write thr number displayed above">
+			<input type="hidden" name="%s" value="%s">`,
+		data,
+		csrfTokenKey, cookie)
 }
