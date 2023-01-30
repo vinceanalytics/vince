@@ -9,7 +9,8 @@ import (
 func (v *Vince) loginForm() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ServeHTML(w, templates.Login, http.StatusOK, map[string]any{
-			"csrf": getCsrf(r.Context()),
+			"csrf":    getCsrf(r.Context()),
+			"captcha": getCaptcha(r.Context()),
 		})
 	})
 }

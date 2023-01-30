@@ -19,6 +19,12 @@ func getCsrf(ctx context.Context) template.HTML {
 	return ctx.Value(csrfTokenCtxKey{}).(template.HTML)
 }
 
+type captchaTokenKey struct{}
+
+func getCaptcha(ctx context.Context) template.HTML {
+	return ctx.Value(captchaTokenKey{}).(template.HTML)
+}
+
 func (v *Vince) csrf(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := v.clientSession.Load(r)
@@ -80,18 +86,7 @@ func saveCsrf(session *SessionContext, w http.ResponseWriter, r *http.Request) *
 	session.Data[captchaKey] = base32.StdEncoding.EncodeToString(solution)
 	cookie := session.Save(w)
 	w.Header().Set("Vary", "Cookie")
-	return r.WithContext(context.WithValue(r.Context(), csrfTokenCtxKey{}, template.HTML(
-		csrfTemplate(
-			string(data),
-			cookie)),
-	))
-}
-
-func csrfTemplate(data string, cookie string) string {
-	return fmt.Sprintf(`
-			<img src="%s" class="img-responsive" />
-			<input type="text" name ="captcha" class="FormControl-input" placeholder="write thr number displayed above">
-			<input type="hidden" name="%s" value="%s">`,
-		data,
-		csrfTokenKey, cookie)
+	ctx := context.WithValue(r.Context(), csrfTokenCtxKey{}, template.HTML(cookie))
+	ctx = context.WithValue(ctx, captchaTokenKey{}, template.HTML(fmt.Sprintf(`<img src="%s" class="img-responsive"/>`, string(data))))
+	return r.WithContext(ctx)
 }

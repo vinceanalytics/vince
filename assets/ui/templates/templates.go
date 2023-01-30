@@ -2,7 +2,6 @@ package templates
 
 import (
 	"embed"
-	"fmt"
 	"html/template"
 
 	"github.com/belak/octicon"
@@ -31,22 +30,12 @@ var Error = template.Must(template.ParseFS(files,
 ))
 
 var funcs = template.FuncMap{
-	"fieldError": formError,
+	"oAlertFill": wrap(octicon.AlertFill),
 }
 
-func formError(field string, ctx any) template.HTML {
-	a, ok := ctx.(map[string]string)
-	if !ok {
-		return template.HTML("")
+func wrap(f func(int, ...string) (string, bool)) func(int) template.HTML {
+	return func(i int) template.HTML {
+		v, _ := f(i)
+		return template.HTML(v)
 	}
-	v, ok := a[field]
-	if !ok {
-		return template.HTML("")
-	}
-	errorTpl := `<div class="FormControl-inlineValidation">
-	        %s
-            <span>%s</span>
-        </div>`
-	fill, _ := octicon.AlertFill(12)
-	return template.HTML(fmt.Sprintf(errorTpl, fill, v))
 }
