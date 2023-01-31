@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/apache/arrow/go/v10/arrow"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go"
 )
@@ -147,6 +148,8 @@ type Tables struct {
 	sessionsFile   *os.File
 	eventsWriter   *parquet.SortingWriter[*Event]
 	sessionsWriter *parquet.SortingWriter[*Session]
+	eventsSchema   *arrow.Schema
+	sessionsSchema *arrow.Schema
 }
 
 func Open(dir string) (*Tables, error) {
@@ -160,6 +163,8 @@ func Open(dir string) (*Tables, error) {
 	sessionsDBPath := filepath.Join(base, "sessions.parquet")
 	s, err := os.OpenFile(sessionsDBPath, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
+		e.Close()
+		s.Close()
 		return nil, err
 	}
 	t := &Tables{
@@ -167,6 +172,10 @@ func Open(dir string) (*Tables, error) {
 		sessionsFile: s,
 	}
 	t.setWriters()
+	if err = t.setArrow(); err != nil {
+		t.Close()
+		return nil, err
+	}
 	return t, nil
 }
 
@@ -189,6 +198,28 @@ func (t *Tables) setWriters() {
 			),
 		),
 	)
+}
+
+func (t *Tables) setArrow() error {
+	var ea []arrow.Field
+	for _, f := range parquet.SchemaOf(&Event{}).Fields() {
+		af, err := ParquetFieldToArrowField(f)
+		if err != nil {
+			return err
+		}
+		ea = append(ea, af)
+	}
+	t.eventsSchema = arrow.NewSchema(ea, nil)
+	var sa []arrow.Field
+	for _, f := range parquet.SchemaOf(&Session{}).Fields() {
+		af, err := ParquetFieldToArrowField(f)
+		if err != nil {
+			return err
+		}
+		sa = append(sa, af)
+	}
+	t.sessionsSchema = arrow.NewSchema(sa, nil)
+	return nil
 }
 
 func (t *Tables) WriteEvents(events []*Event) (int, error) {
