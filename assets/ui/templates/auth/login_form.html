@@ -1,17 +1,19 @@
 {{define "content"}}
-<form action="/login" method="post">
+<form action="/login" method="post" class="FormControl width-full container-md mx-auto px-8 py-6 mt-8">
     <h1>Enter your email and password</h1>
-    <div>
-        <label for="email">email</label>
-        <input class="form-control" type="email" name="email" id="email" placeholder="user@example.com">
+    <div class="FormControl-input-wrap FormControl-medium">
+        <label for="email" class="FormControl-label">email</label>
+        <input {{if .errors.email}} invalid="true" {{end}} {{with .form.email}}value="{{index . 0}}" {{end}}
+            class="FormControl-input" type="email" name="email" id="email" placeholder="example@email.com">
     </div>
-    <div>
-        <label for="password">password</label>
-        <input type="password" name="password" id="password">
+    <div class="FormControl-input-wrap FormControl-medium">
+        <label for="password" class="FormControl-label">password</label>
+        <input {{if .errors.password}}invalid="true" {{end}} class="FormControl-input" type="password" name="password"
+            id="password">
         <p>Forgot password? <a href="/password/request-reset">Click here</a> to reset it</p>
     </div>
     {{template "secure" .}}
-    <button type="submit">Login →</button>
+    <button type="submit" class="btn">Login →</button>
     <p>
         Don't have an account? <a href="/register"> Register</a> instead
     </p>
