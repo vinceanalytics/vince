@@ -12,11 +12,13 @@
     <link rel="stylesheet" href="/css/app.css" />
 </head>
 
-<body>
-    <div>
-        <h1>{{.Status}}</h1>
-        <div>{{.Text}}</div>
-        <a href="/">Go home</a>
+<body class="d-flex flex-column height-full ">
+    <div class="blankslate">
+        <h1 class="blankslate-heading">{{.Status}}</h1>
+        <p>{{.Text}}</p>
+        <div class="blankslate-action">
+            <a href="/" class="btn btn-primary">Go home</a>
+        </div>
     </div>
 </body>
 
