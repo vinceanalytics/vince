@@ -176,9 +176,7 @@ func (t *Tables) setWriters() {
 		4098,
 		parquet.SortingWriterConfig(
 			parquet.SortingColumns(
-				parquet.Ascending("domain"),
 				parquet.Ascending("timestamp"),
-				parquet.Ascending("user_id"),
 			),
 		),
 	)
@@ -187,10 +185,7 @@ func (t *Tables) setWriters() {
 		4098,
 		parquet.SortingWriterConfig(
 			parquet.SortingColumns(
-				parquet.Ascending("domain"),
 				parquet.Ascending("timestamp"),
-				parquet.Ascending("user_id"),
-				parquet.Ascending("id"),
 			),
 		),
 	)
