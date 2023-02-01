@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/apache/arrow/go/v10/arrow"
+	"github.com/apache/arrow/go/v10/arrow/memory"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go"
 )
@@ -150,6 +151,7 @@ type Tables struct {
 	sessionsWriter *parquet.SortingWriter[*Session]
 	eventsSchema   *arrow.Schema
 	sessionsSchema *arrow.Schema
+	pool           memory.Allocator
 }
 
 func Open(dir string) (*Tables, error) {
@@ -170,6 +172,7 @@ func Open(dir string) (*Tables, error) {
 	t := &Tables{
 		eventsFile:   e,
 		sessionsFile: s,
+		pool:         memory.NewGoAllocator(),
 	}
 	t.setWriters()
 	if err = t.setArrow(); err != nil {
