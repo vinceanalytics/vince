@@ -15,6 +15,7 @@ import (
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/timeseries"
+	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
@@ -110,7 +111,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		sql:           sqlDb,
 		events:        make(chan *timeseries.Event, MAX_BUFFER_SIZE),
 		sessions:      make(chan *timeseries.Session, MAX_BUFFER_SIZE),
-		abort:         make(chan os.Signal),
+		abort:         make(chan os.Signal, 1),
 		hs:            newWorkerHealth(),
 		clientSession: NewSession("vince"),
 		flushInterval: o.FlushInterval,
@@ -170,10 +171,12 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 }
 
 func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
-	ev := xlg.Debug().Str("worker", "event_writer")
-	ev.Msg("start")
+	ev := func() *zerolog.Event {
+		return xlg.Debug().Str("worker", "event_writer")
+	}
+	ev().Msg("start")
 	defer func() {
-		ev.Msg("exit")
+		ev().Msg("exit")
 		defer wg.Done()
 	}()
 	ticker := time.NewTicker(time.Second)
@@ -185,12 +188,12 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 		if count == 0 {
 			return
 		}
-		ev.Int("count", count).Msg("saving events")
-		n, err := v.ts.WriteEvents(events)
+		_, err := v.ts.WriteEvents(events)
 		if err != nil {
-			ev.Msg("saving events")
+			ev().Err(err).Msg("saving events")
+			v.exit()
+			return
 		}
-		ev.Int("count", n).Msg("saved events")
 		events = events[:0]
 	}
 	for {
@@ -211,10 +214,12 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
-	ev := xlg.Debug().Str("worker", "session_writer")
-	ev.Msg("start")
+	ev := func() *zerolog.Event {
+		return xlg.Debug().Str("worker", "session_writer")
+	}
+	ev().Msg("start")
 	defer func() {
-		ev.Msg("exit")
+		ev().Msg("exit")
 		defer wg.Done()
 	}()
 	sessions := make([]*timeseries.Session, MAX_BUFFER_SIZE)
@@ -224,14 +229,12 @@ func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
 		if count == 0 {
 			return
 		}
-		ev.Int("count", count).Msg("saving sessions")
-		n, err := v.ts.WriteSessions(sessions)
+		_, err := v.ts.WriteSessions(sessions)
 		if err != nil {
-			ev.Msg("saving sessions")
+			ev().Err(err).Msg("saving sessions")
 			v.exit()
 			return
 		}
-		ev.Int("count", n).Msg("saved sessions")
 		sessions = sessions[:0]
 	}
 	ticker := time.NewTicker(time.Second)
@@ -253,10 +256,12 @@ func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (v *Vince) seriesArchive(ctx context.Context, wg *sync.WaitGroup) {
-	ev := xlg.Debug().Str("worker", "series_archive")
-	ev.Dur("interval", v.flushInterval).Msg("start")
+	ev := func() *zerolog.Event {
+		return xlg.Debug().Str("worker", "series_archive")
+	}
+	ev().Dur("interval", v.flushInterval).Msg("start")
 	defer func() {
-		ev.Msg("exit")
+		ev().Msg("exit")
 		defer wg.Done()
 	}()
 	ticker := time.NewTicker(v.flushInterval)
@@ -268,20 +273,20 @@ func (v *Vince) seriesArchive(ctx context.Context, wg *sync.WaitGroup) {
 		case ch := <-v.hs.seriesFlush:
 			ch <- struct{}{}
 		case <-ticker.C:
-			ev.Msg("flushing events")
-			err := v.ts.ArchiveEvents()
+			n, err := v.ts.ArchiveEvents()
 			if err != nil {
-				ev.Msg("failed flushing events")
+				ev().Msg("failed archiving events")
 				v.exit()
 				return
 			}
-			ev.Msg("flushing sessions")
-			err = v.ts.ArchiveSessions()
+			ev().Int64("size", n).Msg("archiving events")
+			n, err = v.ts.ArchiveSessions()
 			if err != nil {
-				ev.Msg("failed flushing sessions")
+				ev().Err(err).Msg("failed archiving sessions")
 				v.exit()
 				return
 			}
+			ev().Int64("size", n).Msg("archiving sessions")
 		}
 	}
 

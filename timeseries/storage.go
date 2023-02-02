@@ -72,51 +72,53 @@ func (s *Storage[T]) Write(rows []T) (int, error) {
 	return s.writer.Write(rows)
 }
 
-func (s *Storage[T]) Archive() error {
+func (s *Storage[T]) Archive() (int64, error) {
 	return s.archive(true)
 }
 
-func (s *Storage[T]) archive(openActive bool) error {
+func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	err := s.writer.Close()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	id := ulid.Make()
 	ap := filepath.Join(s.path, BucketPath, id.String())
 	f, err := os.Create(ap)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	_, err = f.ReadFrom(s.activeFile)
+	s.activeFile.Seek(0, os.SEEK_SET)
+	n, err := f.ReadFrom(s.activeFile)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	err = f.Close()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	err = s.meta.Update(func(txn *badger.Txn) error {
 		return txn.Set(id.Bytes(), []byte{})
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if openActive {
 		a := filepath.Join(s.path, ActiveFileName)
 		s.activeFile.Close()
 		af, err := os.Create(a)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		s.activeFile = af
+		s.writer.Reset(af)
 	}
-	return nil
+	return n, nil
 }
 
 func (s *Storage[T]) Close() error {
-	err := s.archive(false)
+	_, err := s.archive(false)
 	if err != nil {
 		return err
 	}

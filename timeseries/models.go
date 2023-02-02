@@ -171,12 +171,12 @@ func (t *Tables) WriteSessions(sessions []*Session) (int, error) {
 	return t.sessions.Write(sessions)
 }
 
-func (t *Tables) ArchiveEvents() error {
+func (t *Tables) ArchiveEvents() (int64, error) {
 	return t.events.Archive()
 }
 
-func (t *Tables) ArchiveSessions() error {
-	return t.events.Archive()
+func (t *Tables) ArchiveSessions() (int64, error) {
+	return t.sessions.Archive()
 }
 
 func (t *Tables) Close() (err error) {
