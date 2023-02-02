@@ -93,6 +93,10 @@ func (s *Storage[T]) archive(openActive bool) error {
 	if err != nil {
 		return err
 	}
+	err = f.Close()
+	if err != nil {
+		return err
+	}
 	err = s.meta.Update(func(txn *badger.Txn) error {
 		return txn.Set(id.Bytes(), []byte{})
 	})
