@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/apache/arrow/go/v10/arrow"
-	"github.com/polarsignals/frostdb/pqarrow/writer"
 	"github.com/segmentio/parquet-go"
 	"github.com/segmentio/parquet-go/format"
 )
@@ -106,51 +105,6 @@ func ParquetNodeToType(n parquet.Node) (arrow.DataType, error) {
 	}
 
 	return dt, nil
-}
-
-// GetWriter create a value writer from a parquet node.
-func GetWriter(offset int, n parquet.Node) (writer.NewWriterFunc, error) {
-	dt, err := ParquetNodeToType(n)
-	if err != nil {
-		return nil, err
-	}
-
-	list := false
-	if typ, ok := dt.(*arrow.ListType); ok {
-		// Unwrap the list type.
-		list = true
-		dt = typ.Elem()
-	}
-
-	var wr writer.NewWriterFunc
-	switch dt.(type) {
-	case *arrow.BinaryType:
-		wr = writer.NewBinaryValueWriter
-	case *arrow.Int64Type:
-		wr = writer.NewInt64ValueWriter
-	case *arrow.Uint64Type:
-		wr = writer.NewUint64ValueWriter
-	case *arrow.MapType:
-		wr = writer.NewMapWriter
-	case *arrow.StructType:
-		wr = writer.NewStructWriterFromOffset(offset)
-	case *arrow.BooleanType:
-		wr = writer.NewBooleanValueWriter
-	case *arrow.Float64Type:
-		wr = writer.NewFloat64ValueWriter
-	case *arrow.DictionaryType:
-		wr = writer.NewDictionaryValueWriter
-	default:
-		return nil, errors.New("unsupported type: " + n.Type().String())
-	}
-
-	if n.Repeated() || list {
-		// TODO(asubiotto): We should use arrow.ListOfNonNullable if
-		// n.Optional(). The problem is that it doesn't seem like the arrow
-		// builder stores the nullability (NewArray always uses ListOf).
-		return writer.NewListValueWriter(wr), nil
-	}
-	return wr, nil
 }
 
 // https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#maps

@@ -22,7 +22,8 @@ import (
 const MAX_BUFFER_SIZE = 4098
 
 type Config struct {
-	DataPath string
+	DataPath      string
+	FlushInterval time.Duration
 }
 
 type Vince struct {
@@ -35,6 +36,7 @@ type Vince struct {
 	abort         chan os.Signal
 	hs            *WorkerHealthChannels
 	clientSession *Session
+	flushInterval time.Duration
 }
 
 func ServeCMD() *cli.Command {
@@ -57,13 +59,20 @@ func ServeCMD() *cli.Command {
 				Aliases: []string{"d"},
 				Usage:   "sets log level to debug",
 			},
+			&cli.DurationFlag{
+				Name:  "flush-interval",
+				Value: 30 * time.Minute,
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			goCtx := context.Background()
 			if ctx.Bool("debug") {
 				setDebug()
 			}
-			svr, err := New(goCtx, &Config{DataPath: ctx.Path("data")})
+			svr, err := New(goCtx, &Config{
+				DataPath:      ctx.Path("data"),
+				FlushInterval: ctx.Duration("flush-interval"),
+			})
 			if err != nil {
 				return err
 			}
@@ -104,6 +113,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		abort:         make(chan os.Signal),
 		hs:            newWorkerHealth(),
 		clientSession: NewSession("vince"),
+		flushInterval: o.FlushInterval,
 	}
 	v.session = timeseries.NewSessionCache(cache, v.sessions)
 	return v, nil
@@ -118,8 +128,8 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 		// add all workers
 		wg.Add(3)
 		go v.loopEvent(ctx, &wg)
-		go v.loopSessions(ctx, &wg)
-		go v.flushSeries(ctx, &wg)
+		go v.sessionWriter(ctx, &wg)
+		go v.seriesArchive(ctx, &wg)
 	}
 
 	svr := &http.Server{
@@ -160,9 +170,10 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 }
 
 func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
-	xlg.Debug().Str("worker", "event_writer").Msg("start")
+	ev := xlg.Debug().Str("worker", "event_writer")
+	ev.Msg("start")
 	defer func() {
-		xlg.Debug().Str("worker", "event_writer").Msg("exit")
+		ev.Msg("exit")
 		defer wg.Done()
 	}()
 	ticker := time.NewTicker(time.Second)
@@ -174,12 +185,12 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 		if count == 0 {
 			return
 		}
-		xlg.Debug().Str("worker", "event_writer").Int("count", count).Msg("saving events")
+		ev.Int("count", count).Msg("saving events")
 		n, err := v.ts.WriteEvents(events)
 		if err != nil {
-			xlg.Err(err).Str("worker", "event_writer").Msg("saving events")
+			ev.Msg("saving events")
 		}
-		xlg.Debug().Str("worker", "event_writer").Int("count", n).Msg("saved events")
+		ev.Int("count", n).Msg("saved events")
 		events = events[:0]
 	}
 	for {
@@ -199,10 +210,11 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
-	xlg.Debug().Str("worker", "session_writer").Msg("start")
+func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
+	ev := xlg.Debug().Str("worker", "session_writer")
+	ev.Msg("start")
 	defer func() {
-		xlg.Debug().Str("worker", "session_writer").Msg("exit")
+		ev.Msg("exit")
 		defer wg.Done()
 	}()
 	sessions := make([]*timeseries.Session, MAX_BUFFER_SIZE)
@@ -212,14 +224,14 @@ func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
 		if count == 0 {
 			return
 		}
-		xlg.Debug().Str("worker", "session_writer").Int("count", count).Msg("saving sessions")
+		ev.Int("count", count).Msg("saving sessions")
 		n, err := v.ts.WriteSessions(sessions)
 		if err != nil {
-			xlg.Err(err).Str("worker", "session_writer").Msg("saving sessions")
+			ev.Msg("saving sessions")
 			v.exit()
 			return
 		}
-		xlg.Debug().Str("worker", "session_writer").Int("count", n).Msg("saved sessions")
+		ev.Int("count", n).Msg("saved sessions")
 		sessions = sessions[:0]
 	}
 	ticker := time.NewTicker(time.Second)
@@ -240,13 +252,14 @@ func (v *Vince) loopSessions(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (v *Vince) flushSeries(ctx context.Context, wg *sync.WaitGroup) {
-	xlg.Debug().Str("worker", "series_flush").Msg("start")
+func (v *Vince) seriesArchive(ctx context.Context, wg *sync.WaitGroup) {
+	ev := xlg.Debug().Str("worker", "series_archive")
+	ev.Dur("interval", v.flushInterval).Msg("start")
 	defer func() {
-		xlg.Debug().Str("worker", "series_flush").Msg("exit")
+		ev.Msg("exit")
 		defer wg.Done()
 	}()
-	ticker := time.NewTicker(time.Minute)
+	ticker := time.NewTicker(v.flushInterval)
 	defer ticker.Stop()
 	for {
 		select {
@@ -255,17 +268,17 @@ func (v *Vince) flushSeries(ctx context.Context, wg *sync.WaitGroup) {
 		case ch := <-v.hs.seriesFlush:
 			ch <- struct{}{}
 		case <-ticker.C:
-			xlg.Debug().Str("worker", "series_flush").Msg("flushing events")
-			err := v.ts.FlushEvents()
+			ev.Msg("flushing events")
+			err := v.ts.ArchiveEvents()
 			if err != nil {
-				xlg.Err(err).Str("worker", "series_flush").Msg("failed flushing events")
+				ev.Msg("failed flushing events")
 				v.exit()
 				return
 			}
-			xlg.Debug().Str("worker", "series_flush").Msg("flushing sessions")
-			err = v.ts.FlushSessions()
+			ev.Msg("flushing sessions")
+			err = v.ts.ArchiveSessions()
 			if err != nil {
-				xlg.Err(err).Str("worker", "series_flush").Msg("failed flushing sessions")
+				ev.Msg("failed flushing sessions")
 				v.exit()
 				return
 			}
@@ -286,6 +299,7 @@ func (v *Vince) Handle() http.Handler {
 		v.csrf(v.admin()),
 	)
 	home := v.home()
+	v1Stats := v.v1Stats()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" && r.Method == http.MethodGet {
 			home.ServeHTTP(w, r)
@@ -293,6 +307,10 @@ func (v *Vince) Handle() http.Handler {
 		}
 		if assets.Match(r.URL.Path) {
 			asset.ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/api/v1/stats") {
+			v1Stats.ServeHTTP(w, r)
 			return
 		}
 		if strings.HasPrefix(r.URL.Path, "/api") {
