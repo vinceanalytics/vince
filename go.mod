@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/apache/arrow/go/v10 v10.0.1
+	github.com/apache/arrow/go/v12 v12.0.0-20230202173645-b0e103795ef1
 	github.com/belak/octicon v0.0.0-20220531043918-8d81fefac757
 	github.com/dchest/captcha v1.0.0
 	github.com/dchest/siphash v1.2.3

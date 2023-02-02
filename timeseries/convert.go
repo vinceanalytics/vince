@@ -3,7 +3,7 @@ package timeseries
 import (
 	"errors"
 
-	"github.com/apache/arrow/go/v10/arrow"
+	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/segmentio/parquet-go"
 	"github.com/segmentio/parquet-go/format"
 )
