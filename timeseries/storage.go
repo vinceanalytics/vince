@@ -3,6 +3,7 @@ package timeseries
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -17,11 +18,12 @@ import (
 )
 
 const (
-	BucketPath      = "buckets"
-	BucketMergePath = "merge"
-	MetaPath        = "meta"
-	ActiveFileName  = "active.parquet"
-	SortRowCount    = int64(4089)
+	BucketPath       = "buckets"
+	BucketMergePath  = "merge"
+	MetaPath         = "meta"
+	ActiveFileName   = "active.parquet"
+	RealTimeFileName = "realtime.parquet"
+	SortRowCount     = int64(4089)
 )
 
 var ErrNoRows = errors.New("no rows")
@@ -84,17 +86,12 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 		return 0, err
 	}
 	id := ulid.Make()
-	ap := filepath.Join(s.path, BucketPath, id.String())
-	f, err := os.Create(ap)
+
+	n, err := createFile(filepath.Join(s.path, BucketPath, id.String()), s.activeFile)
 	if err != nil {
 		return 0, err
 	}
-	s.activeFile.Seek(0, os.SEEK_SET)
-	n, err := f.ReadFrom(s.activeFile)
-	if err != nil {
-		return 0, err
-	}
-	err = f.Close()
+	_, err = createFile(filepath.Join(s.path, RealTimeFileName), s.activeFile)
 	if err != nil {
 		return 0, err
 	}
@@ -115,6 +112,16 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 		s.writer.Reset(af)
 	}
 	return n, nil
+}
+
+func createFile(out string, src *os.File) (int64, error) {
+	f, err := os.Create(out)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	src.Seek(0, io.SeekStart)
+	return f.ReadFrom(src)
 }
 
 func (s *Storage[T]) Close() error {
