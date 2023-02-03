@@ -2,7 +2,6 @@ package timeseries
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -16,6 +15,8 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/segmentio/parquet-go"
 )
+
+//go:generate protoc -I=. --go_out=paths=source_relative:. storage_schema.proto
 
 const (
 	BucketPath       = "buckets"
@@ -33,9 +34,11 @@ type Storage[T any] struct {
 	activeFile *os.File
 	writer     *parquet.SortingWriter[T]
 	mu         sync.Mutex
-	meta       *badger.DB
+	meta       *meta
 	pool       *sync.Pool
 	allocator  memory.Allocator
+	start      time.Time
+	end        time.Time
 }
 
 func NewStorage[T any](path string) (*Storage[T], error) {
@@ -51,6 +54,7 @@ func NewStorage[T any](path string) (*Storage[T], error) {
 	if err != nil {
 		return nil, err
 	}
+	now := time.Now()
 	s := &Storage[T]{
 		path:       path,
 		activeFile: f,
@@ -59,8 +63,10 @@ func NewStorage[T any](path string) (*Storage[T], error) {
 				parquet.Ascending("timestamp"),
 			),
 		)),
-		meta:      db,
+		meta:      &meta{db: db},
 		allocator: memory.DefaultAllocator,
+		start:     now,
+		end:       now,
 	}
 	s.pool = &sync.Pool{
 		New: func() any {
@@ -70,7 +76,8 @@ func NewStorage[T any](path string) (*Storage[T], error) {
 	return s, nil
 }
 
-func (s *Storage[T]) Write(rows []T) (int, error) {
+func (s *Storage[T]) Write(lastTimestamp time.Time, rows []T) (int, error) {
+
 	return s.writer.Write(rows)
 }
 
@@ -95,12 +102,12 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	err = s.meta.Update(func(txn *badger.Txn) error {
-		return txn.Set(id.Bytes(), []byte{})
-	})
+	err = s.meta.SaveBucket(id, s.start, s.end)
 	if err != nil {
 		return 0, err
 	}
+	s.start = s.end
+	s.end = s.start
 	if openActive {
 		a := filepath.Join(s.path, ActiveFileName)
 		s.activeFile.Close()
@@ -133,7 +140,7 @@ func (s *Storage[T]) Close() error {
 }
 
 func (s *Storage[T]) Query(from time.Time, to time.Time) error {
-	ids, err := s.buckets(from, to)
+	ids, err := s.meta.Buckets(from, to)
 	if err != nil {
 		return err
 	}
@@ -156,26 +163,6 @@ func (s *Storage[T]) get() *StoreBuilder[T] {
 
 func (s *Storage[T]) put(b *StoreBuilder[T]) {
 	s.pool.Put(b)
-}
-
-// returns all buckets which might contain series between from and to
-func (s *Storage[T]) buckets(from time.Time, to time.Time) (ids []string, err error) {
-	min := ulid.Timestamp(from)
-	max := ulid.Timestamp(to)
-	err = s.meta.View(func(txn *badger.Txn) error {
-		it := txn.NewIterator(badger.DefaultIteratorOptions)
-		for it.Rewind(); it.Valid(); it.Next() {
-			key := it.Item().Key()
-			var id ulid.ULID
-			copy(id[:], key)
-			ts := id.Time()
-			if min <= ts && ts <= max {
-				ids = append(ids, string(key))
-			}
-		}
-		return nil
-	})
-	return
 }
 
 func (s *Storage[T]) build() *StoreBuilder[T] {
@@ -205,6 +192,16 @@ type Writer struct {
 	name  string
 }
 
+func (w *Writer) Append(values []parquet.Value) {
+	switch b := w.build.(type) {
+	case *array.Int64Builder:
+		b.Reserve(len(values))
+		for i := 0; i < len(values); i += 1 {
+			b.Append(values[i].Int64())
+		}
+	}
+}
+
 type StoreBuilder[T any] struct {
 	store   *Storage[T]
 	writers []*Writer
@@ -224,31 +221,76 @@ func (b *StoreBuilder[T]) processBucket(id string, from time.Time, to time.Time)
 	if err != nil {
 		return err
 	}
+	start := from.UnixNano()
+	end := to.UnixNano()
 	for _, rg := range file.RowGroups() {
-		if !b.take(rg) {
-			continue
+		err = b.RowGroup(start, end, rg)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-func (b *StoreBuilder[T]) take(rg parquet.RowGroup) bool {
-	ts := rg.ColumnChunks()[0]
+func (b *StoreBuilder[T]) RowGroup(start, end int64, rg parquet.RowGroup) error {
+	chunks := rg.ColumnChunks()
+	ts := chunks[0]
+
 	pages := ts.Pages()
 	defer pages.Close()
+	var ls []*PageIndex
+	var i int
 	for {
-		pg, err := pages.ReadPage()
+		p, err := pages.ReadPage()
 		if err != nil {
-			return false
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
 		}
-		min, max, ok := pg.Bounds()
+		min, max, ok := p.Bounds()
 		if !ok {
-			return false
+			break
 		}
-		fmt.Printf("%#v %#v\n", min, max)
-		return true
+		minValue := min.Int64()
+		maxValue := max.Int64()
+		if start <= minValue && end <= maxValue {
+			ls = append(ls, &PageIndex{
+				Page:  p,
+				Index: i,
+			})
+		} else if end <= maxValue {
+			ls = append(ls, &PageIndex{
+				Page:    p,
+				Index:   i,
+				Partial: PartialMax,
+			})
+		} else if start <= minValue {
+			ls = append(ls, &PageIndex{
+				Page:    p,
+				Index:   i,
+				Partial: PartialMin,
+			})
+		}
+		i += 1
 	}
+	println("pages of interest ", len(ls))
+	return nil
 }
+
+type PageIndex struct {
+	Page    parquet.Page
+	Index   int
+	Partial PageIndexState
+}
+
+type PageIndexState uint
+
+const (
+	Full PageIndexState = iota
+	PartialMax
+	PartialMin
+)
 
 func (b *StoreBuilder[T]) selectFields(names ...string) *StoreBuilder[T] {
 	for _, w := range b.writers[1:] {

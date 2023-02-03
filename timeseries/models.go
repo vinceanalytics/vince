@@ -164,11 +164,11 @@ func Open(dir string) (*Tables, error) {
 }
 
 func (t *Tables) WriteEvents(events []*Event) (int, error) {
-	return t.events.Write(events)
+	return t.events.Write(events[len(events)-1].Timestamp, events)
 }
 
 func (t *Tables) WriteSessions(sessions []*Session) (int, error) {
-	return t.sessions.Write(sessions)
+	return t.sessions.Write(sessions[len(sessions)-1].Timestamp, sessions)
 }
 
 func (t *Tables) ArchiveEvents() (int64, error) {
@@ -177,6 +177,10 @@ func (t *Tables) ArchiveEvents() (int64, error) {
 
 func (t *Tables) ArchiveSessions() (int64, error) {
 	return t.sessions.Archive()
+}
+
+func (t *Tables) QueryEvents(start, end time.Time) error {
+	return t.events.Query(start, end)
 }
 
 func (t *Tables) Close() (err error) {

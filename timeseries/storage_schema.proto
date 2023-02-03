@@ -1,0 +1,23 @@
+syntax = "proto3";
+package timeseries;
+
+import "google/protobuf/timestamp.proto";
+option go_package = "github.com/gernest/vince/timeseries";
+
+message Series {
+
+  message Sheet {
+    repeated Bucket buckets = 1;
+    Range range = 2;
+  }
+
+  message Bucket {
+    bytes id = 1;
+    Range range = 2;
+  }
+
+  message Range {
+    google.protobuf.Timestamp start = 1;
+    google.protobuf.Timestamp end = 2;
+  }
+}
