@@ -167,7 +167,7 @@ func (s *Storage[T]) Query(query Query) (*Record, error) {
 			return nil, err
 		}
 	}
-	return b.record(), nil
+	return b.record()
 }
 
 func (s *Storage[T]) get() *StoreBuilder[T] {
@@ -177,6 +177,10 @@ func (s *Storage[T]) get() *StoreBuilder[T] {
 func (s *Storage[T]) put(b *StoreBuilder[T]) {
 	b.active = b.active[:0]
 	b.active = append(b.active, b.writers[0])
+	for _, a := range b.results {
+		a.Release()
+	}
+	b.results = b.results[:0]
 	s.pool.Put(b)
 }
 
@@ -228,6 +232,7 @@ type StoreBuilder[T any] struct {
 	store   *Storage[T]
 	writers []*Writer
 	active  []*Writer
+	results []arrow.Array
 }
 
 type Query struct {
@@ -269,6 +274,7 @@ func HasString(field, fieldValue string) *Filter {
 		},
 	}
 }
+
 func (b *StoreBuilder[T]) processBucket(id string, query Query) error {
 	f, err := os.Open(filepath.Join(b.store.path, BucketPath, id))
 	if err != nil {
@@ -338,24 +344,36 @@ func (b *StoreBuilder[T]) RowGroup(rg parquet.RowGroup, query Query) error {
 		}
 		i += 1
 	}
-skip_page:
 	for _, pages := range ls {
-		filter := make([]bool, pages[0].Page.NumValues())
-		for i, p := range pages[1:] {
-			a := b.active[i+1]
-			for _, f := range query.Filters {
-				if a.name == f.Field {
-					if f.F != nil {
-						if !f.F(filter, a.index, rg, p.Page) {
-							continue skip_page
-						}
+		b.processPages(rg, pages, query)
+	}
+	return nil
+}
+
+func (b *StoreBuilder[T]) processPages(rg parquet.RowGroup, pages []*PageIndex, query Query) {
+	filter := make([]bool, pages[0].Page.NumValues())
+	if !b.filterPages(rg, pages, filter, query) {
+		// if any filter decided we should skip this page we skip it right away
+		return
+	}
+	b.active[0].WritePage(pages[0].Page, filter)
+	b.results = append(b.results, b.active[0].build.NewArray())
+}
+
+func (b *StoreBuilder[T]) filterPages(rg parquet.RowGroup, pages []*PageIndex, filter []bool, query Query) bool {
+	for i, p := range pages[1:] {
+		a := b.active[i+1]
+		for _, f := range query.Filters {
+			if a.name == f.Field {
+				if f.F != nil {
+					if !f.F(filter, a.index, rg, p.Page) {
+						return false
 					}
 				}
 			}
 		}
-		b.active[0].WritePage(pages[0].Page, filter)
 	}
-	return nil
+	return true
 }
 
 func addPageIndex(page parquet.Page, start, end, min, max int64) *PageIndex {
@@ -396,8 +414,12 @@ type Record struct {
 	Timestamps arrow.Array       `json:"timestamps"`
 }
 
-func (b *StoreBuilder[T]) record() *Record {
-	return &Record{
-		Timestamps: b.active[0].build.NewArray(),
+func (b *StoreBuilder[T]) record() (*Record, error) {
+	ts, err := array.Concatenate(b.results, b.store.allocator)
+	if err != nil {
+		return nil, err
 	}
+	return &Record{
+		Timestamps: ts,
+	}, nil
 }
