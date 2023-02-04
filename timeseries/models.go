@@ -9,24 +9,24 @@ import (
 
 type Event struct {
 	Timestamp              time.Time         `parquet:"timestamp"`
-	Name                   string            `parquet:"name,zstd"`
-	Domain                 string            `parquet:"domain,zstd"`
+	Name                   string            `parquet:"name,dict,zstd"`
+	Domain                 string            `parquet:"domain,dict,zstd"`
 	UserId                 uint64            `parquet:"user_id"`
 	SessionId              uuid.UUID         `parquet:"session_id,zstd"`
 	Hostname               string            `parquet:"hostname,zstd"`
 	Pathname               string            `parquet:"path,zstd"`
 	Referrer               string            `parquet:"referrer,zstd"`
 	ReferrerSource         string            `parquet:"referrer_source,zstd"`
-	CountryCode            string            `parquet:"country_code,zstd"`
-	ScreenSize             string            `parquet:"screen_size,zstd"`
-	OperatingSystem        string            `parquet:"operating_system,zstd"`
-	Browser                string            `parquet:"browser,zstd"`
+	CountryCode            string            `parquet:"country_code,dict,zstd"`
+	ScreenSize             string            `parquet:"screen_size,dict,zstd"`
+	OperatingSystem        string            `parquet:"operating_system,dict,zstd"`
+	Browser                string            `parquet:"browser,dict,zstd"`
 	UtmMedium              string            `parquet:"utm_medium,zstd"`
 	UtmSource              string            `parquet:"utm_source,zstd"`
 	UtmCampaign            string            `parquet:"utm_campaign,zstd"`
-	BrowserVersion         string            `parquet:"browser_version,zstd"`
-	OperatingSystemVersion string            `parquet:"operating_system_version,zstd"`
-	CityGeoNameID          uint32            `parquet:"city_geo_name_id,zstd"`
+	BrowserVersion         string            `parquet:"browser_version,dict,zstd"`
+	OperatingSystemVersion string            `parquet:"operating_system_version,dict,zstd"`
+	CityGeoNameID          uint32            `parquet:"city_geo_name_id,dict,zstd"`
 	UtmContent             string            `parquet:"utm_content,zstd"`
 	UtmTerm                string            `parquet:"utm_term,zstd"`
 	TransferredFrom        string            `parquet:"transferred_from,zstd"`
@@ -179,8 +179,14 @@ func (t *Tables) ArchiveSessions() (int64, error) {
 	return t.sessions.Archive()
 }
 
-func (t *Tables) QueryEvents(start, end time.Time) error {
-	return t.events.Query(start, end)
+func (t *Tables) QueryEvents(start, end time.Time) (*Record, error) {
+	return t.events.Query(Query{
+		Start: start,
+		End:   end,
+		Filters: []*Filter{
+			HasString("name", "pageview"),
+		},
+	})
 }
 
 func (t *Tables) Close() (err error) {

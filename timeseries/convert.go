@@ -88,7 +88,7 @@ func ParquetNodeToType(n parquet.Node) (arrow.DataType, error) {
 				ByteWidth: 16,
 			}
 		case lt.Timestamp != nil:
-			dt = &arrow.TimestampType{}
+			dt = &arrow.Int64Type{}
 		default:
 			return nil, errors.New("unsupported logical type: " + n.Type().String())
 		}

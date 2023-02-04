@@ -30,11 +30,13 @@ func (v *Vince) v1Stats() http.Handler {
 func (v *Vince) v1StatsRealtimeVisitors(w http.ResponseWriter, r *http.Request) {
 	end := time.Now()
 	start := end.Truncate(24 * time.Hour)
-	err := v.ts.QueryEvents(start, end)
-	if err != nil {
+	if r, err := v.ts.QueryEvents(start, end); err != nil {
 		xlg.Err(err).Msg("failed to query events")
+	} else {
+		ServeJSON(w, http.StatusOK, r)
 	}
 }
+
 func (v *Vince) v1StatsAggregate(w http.ResponseWriter, r *http.Request) {
 }
 func (v *Vince) v1StatsBreakdown(w http.ResponseWriter, r *http.Request) {
