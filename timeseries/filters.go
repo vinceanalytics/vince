@@ -1,0 +1,130 @@
+package timeseries
+
+import (
+	"encoding/json"
+	"sort"
+	"strings"
+)
+
+type Filters map[string]any
+
+func parseFilters(f string) (o Filters) {
+	o = make(Filters)
+	if err := json.Unmarshal([]byte(f), &o); err != nil {
+		parts := strings.Split(f, ";")
+		for _, p := range parts {
+			p = strings.TrimSpace(p)
+			var kv []string
+			var isNegated bool
+			if strings.Contains(p, "==") {
+				kv = strings.Split(p, "==")
+			} else if strings.Contains(p, "!=") {
+				kv = strings.Split(p, "!=")
+				isNegated = true
+			} else {
+				continue
+			}
+			kv[0] = strings.TrimSpace(kv[0])
+			kv[1] = strings.TrimSpace(kv[1])
+			ls, isList := parseMemberList(kv[1])
+			isWildcard := strings.Contains(kv[1], "*")
+			finalValue := strings.ReplaceAll(kv[1], "\\|", "|")
+			switch {
+			case kv[0] == "event:goal":
+			case isWildcard && isNegated:
+				o[kv[0]] = &filterExpr{
+					op:    filterWildNeq,
+					value: kv[1],
+				}
+			case isWildcard:
+				o[kv[0]] = &filterExpr{
+					op:    filterWildEq,
+					value: kv[1],
+				}
+			case isList:
+				for i := 0; i < len(ls); i += 1 {
+					ls[i] = strings.ReplaceAll(ls[i], "\\|", "|")
+				}
+				o[kv[0]] = ls
+			case isNegated:
+				o[kv[0]] = &filterExpr{
+					op:    filterNeq,
+					value: finalValue,
+				}
+			default:
+				o[kv[0]] = &filterExpr{
+					op:    filterEq,
+					value: finalValue,
+				}
+			}
+		}
+	}
+	return
+}
+
+func parseMemberList(s string) (ls []string, ok bool) {
+	if !strings.Contains(s, "|") {
+		return
+	}
+	var begin int
+	for i, v := range s {
+		if v == '|' && i > 0 && s[i-1] != '\\' {
+			ls = append(ls, s[begin:i])
+			begin = i + 1
+		}
+	}
+	if len(ls) > 0 {
+		ls = append(ls, s[begin:])
+	}
+	ok = len(ls) > 0
+	return
+}
+
+func (f Filters) String() string {
+	var s strings.Builder
+	var keys []string
+	for k := range f {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for i, k := range keys {
+		if i != 0 {
+			s.WriteByte('\n')
+		}
+		s.WriteString(k)
+		switch e := f[k].(type) {
+		case *filterExpr:
+			switch e.op {
+			case filterEq, filterWildEq:
+				s.WriteString(" == ")
+			case filterNeq, filterWildNeq:
+				s.WriteString(" != ")
+			}
+			s.WriteString(e.value)
+		case []string:
+			s.WriteString(" [ ")
+			for x, v := range e {
+				if x != 0 {
+					s.WriteString(", ")
+				}
+				s.WriteString(v)
+			}
+			s.WriteString(" ]")
+		}
+	}
+	return s.String()
+}
+
+type filterExpr struct {
+	op    filterOp
+	value string
+}
+
+type filterOp uint
+
+const (
+	filterEq filterOp = iota
+	filterNeq
+	filterWildEq
+	filterWildNeq
+)
