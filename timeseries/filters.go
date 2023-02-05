@@ -2,6 +2,7 @@ package timeseries
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strings"
 )
@@ -31,6 +32,7 @@ func parseFilters(f string) (o Filters) {
 			finalValue := strings.ReplaceAll(kv[1], "\\|", "|")
 			switch {
 			case kv[0] == "event:goal":
+				o[kv[0]] = parseGoal(finalValue)
 			case isWildcard && isNegated:
 				o[kv[0]] = &filterExpr{
 					op:    filterWildNeq,
@@ -60,6 +62,20 @@ func parseFilters(f string) (o Filters) {
 		}
 	}
 	return
+}
+
+func parseGoal(s string) *filterGoal {
+	if strings.HasPrefix(s, "Visit ") {
+		page := strings.TrimPrefix(s, "Visit ")
+		return &filterGoal{
+			key:   "page",
+			value: page,
+		}
+	}
+	return &filterGoal{
+		key:   "event",
+		value: s,
+	}
 }
 
 func parseMemberList(s string) (ls []string, ok bool) {
@@ -93,12 +109,18 @@ func (f Filters) String() string {
 		}
 		s.WriteString(k)
 		switch e := f[k].(type) {
+		case *filterGoal:
+			s.WriteString(e.String())
 		case *filterExpr:
 			switch e.op {
-			case filterEq, filterWildEq:
-				s.WriteString(" == ")
-			case filterNeq, filterWildNeq:
-				s.WriteString(" != ")
+			case filterEq:
+				s.WriteString(" is ")
+			case filterNeq:
+				s.WriteString(" is_not ")
+			case filterWildEq:
+				s.WriteString(" matches ")
+			case filterWildNeq:
+				s.WriteString(" matches_not ")
 			}
 			s.WriteString(e.value)
 		case []string:
@@ -113,6 +135,15 @@ func (f Filters) String() string {
 		}
 	}
 	return s.String()
+}
+
+type filterGoal struct {
+	key   string
+	value string
+}
+
+func (f *filterGoal) String() string {
+	return fmt.Sprintf("[:is :%s %q]", f.key, f.value)
 }
 
 type filterExpr struct {
