@@ -2,6 +2,9 @@ package vince
 
 import (
 	"net/http"
+	"net/url"
+
+	"github.com/gernest/vince/timeseries"
 )
 
 func (v *Vince) v1Stats() http.Handler {
@@ -27,8 +30,9 @@ func (v *Vince) v1Stats() http.Handler {
 }
 
 func (v *Vince) v1StatsRealtimeVisitors(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query()
-	if r, err := v.ts.QueryEvents(query); err != nil {
+	query := make(url.Values)
+	query.Set("period", "realtime")
+	if r, err := v.ts.CurrentVisitors(r.Context(), timeseries.QueryFrom(query)); err != nil {
 		xlg.Err(err).Msg("failed to query events")
 	} else {
 		ServeJSON(w, http.StatusOK, r)
