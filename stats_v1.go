@@ -2,7 +2,6 @@ package vince
 
 import (
 	"net/http"
-	"time"
 )
 
 func (v *Vince) v1Stats() http.Handler {
@@ -28,9 +27,8 @@ func (v *Vince) v1Stats() http.Handler {
 }
 
 func (v *Vince) v1StatsRealtimeVisitors(w http.ResponseWriter, r *http.Request) {
-	end := time.Now()
-	start := end.Truncate(24 * time.Hour)
-	if r, err := v.ts.QueryEvents(start, end); err != nil {
+	query := r.URL.Query()
+	if r, err := v.ts.QueryEvents(query); err != nil {
 		xlg.Err(err).Msg("failed to query events")
 	} else {
 		ServeJSON(w, http.StatusOK, r)

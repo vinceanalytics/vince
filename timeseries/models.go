@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"net/url"
 	"path/filepath"
 	"time"
 
@@ -179,14 +180,12 @@ func (t *Tables) ArchiveSessions() (int64, error) {
 	return t.sessions.Archive()
 }
 
-func (t *Tables) QueryEvents(start, end time.Time) (*Record, error) {
-	return t.events.Query(Query{
-		Start: start,
-		End:   end,
-		Filters: []*Filter{
-			HasString("name", "pageview"),
-		},
-	})
+func (t *Tables) QueryEvents(params url.Values) (*Record, error) {
+	query := QueryFrom(params)
+	if query.start.IsZero() {
+		return &Record{}, nil
+	}
+	return t.events.Query(query)
 }
 
 func (t *Tables) Close() (err error) {

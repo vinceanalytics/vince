@@ -140,7 +140,7 @@ func (s *Storage[T]) Close() error {
 }
 
 func (s *Storage[T]) Query(query Query) (*Record, error) {
-	ids, err := s.meta.Buckets(query.Start, query.End)
+	ids, err := s.meta.Buckets(query.start, query.end)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func (s *Storage[T]) Query(query Query) (*Record, error) {
 	defer s.put(b)
 	names := make(map[string]struct{})
 	for _, f := range query.Filters {
-		names[f.Field] = struct{}{}
+		names[f.field] = struct{}{}
 	}
 	for n := range names {
 		for _, w := range b.writers {
@@ -235,46 +235,6 @@ type StoreBuilder[T any] struct {
 	results []arrow.Array
 }
 
-type Query struct {
-	Start   time.Time
-	End     time.Time
-	Filters []*Filter
-}
-
-type Filter struct {
-	Field string
-	F     func(o []bool, index int, rowGroup parquet.RowGroup, page parquet.Page) bool
-}
-
-func HasString(field, fieldValue string) *Filter {
-	return &Filter{
-		Field: field,
-		F: func(o []bool, index int, rowGroup parquet.RowGroup, page parquet.Page) bool {
-			dict := page.Dictionary()
-			value := parquet.ValueOf(fieldValue)
-			ok := false
-			for i := 0; i < dict.Len(); i += 1 {
-				if parquet.Equal(value, dict.Index(int32(i))) {
-					ok = true
-					break
-				}
-			}
-			if !ok {
-				// skip this page
-				return false
-			}
-			values := make([]parquet.Value, page.NumValues())
-			if _, err := page.Values().ReadValues(values); err != nil && !errors.Is(err, io.EOF) {
-				panic("unexpected error while reading values " + err.Error())
-			}
-			for i := 0; i < int(page.NumValues()); i += 1 {
-				o[i] = parquet.Equal(values[i], value)
-			}
-			return true
-		},
-	}
-}
-
 func (b *StoreBuilder[T]) processBucket(id string, query Query) error {
 	f, err := os.Open(filepath.Join(b.store.path, BucketPath, id))
 	if err != nil {
@@ -298,8 +258,8 @@ func (b *StoreBuilder[T]) processBucket(id string, query Query) error {
 }
 
 func (b *StoreBuilder[T]) RowGroup(rg parquet.RowGroup, query Query) error {
-	start := query.Start.UnixNano()
-	end := query.End.UnixNano()
+	start := query.start.UnixNano()
+	end := query.end.UnixNano()
 	chunks := rg.ColumnChunks()
 	cs := make([]parquet.Pages, len(b.active))
 	for i, w := range b.active {
@@ -364,9 +324,9 @@ func (b *StoreBuilder[T]) filterPages(rg parquet.RowGroup, pages []*PageIndex, f
 	for i, p := range pages[1:] {
 		a := b.active[i+1]
 		for _, f := range query.Filters {
-			if a.name == f.Field {
-				if f.F != nil {
-					if !f.F(filter, a.index, rg, p.Page) {
+			if a.name == f.field {
+				if f.h != nil {
+					if !f.h(filter, a.index, rg, p.Page) {
 						return false
 					}
 				}
@@ -411,7 +371,7 @@ const (
 
 type Record struct {
 	Labels     map[string]string `json:"labels,omitempty"`
-	Timestamps arrow.Array       `json:"timestamps"`
+	Timestamps arrow.Array       `json:"timestamps,omitempty"`
 }
 
 func (b *StoreBuilder[T]) record() (*Record, error) {

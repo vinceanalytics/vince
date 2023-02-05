@@ -10,6 +10,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const ISO8601 = "2006-01-02"
+
 type meta struct {
 	db *badger.DB
 }
@@ -131,6 +133,7 @@ func (m *meta) Close() error {
 	return m.db.Close()
 }
 
+// returns ts formatted as date
 func formatKeyTime(ts time.Time) string {
-	return ts.Format("2006-01")
+	return ts.Format(ISO8601)
 }
