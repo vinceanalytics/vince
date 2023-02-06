@@ -3,6 +3,7 @@ package vince
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/timeseries"
@@ -38,6 +40,7 @@ type Vince struct {
 	hs            *WorkerHealthChannels
 	clientSession *Session
 	flushInterval time.Duration
+	computeCtx    compute.ExecCtx
 }
 
 func ServeCMD() *cli.Command {
@@ -115,6 +118,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		hs:            newWorkerHealth(),
 		clientSession: NewSession("vince"),
 		flushInterval: o.FlushInterval,
+		computeCtx:    compute.DefaultExecCtx(),
 	}
 	v.session = timeseries.NewSessionCache(cache, v.sessions)
 	return v, nil
@@ -136,6 +140,9 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: v.Handle(),
+		BaseContext: func(l net.Listener) context.Context {
+			return compute.SetExecCtx(context.Background(), v.computeCtx)
+		},
 	}
 	go func() {
 		err := svr.ListenAndServe()
