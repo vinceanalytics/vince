@@ -1,12 +1,10 @@
 package timeseries
 
 import (
-	"errors"
-	"io"
+	"context"
+	"fmt"
 	"net/url"
-	"path"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/segmentio/parquet-go"
@@ -24,6 +22,14 @@ type Query struct {
 
 func (q Query) Select(fields ...string) Query {
 	q.selected = append(q.selected, fields...)
+	return q
+}
+
+func (q Query) Filter(field string, h MatchFunc) Query {
+	q.filters = append(q.filters, &filterHand{
+		field: field,
+		h:     h,
+	})
 	return q
 }
 
@@ -198,102 +204,14 @@ func defaultIntervalForPeriod(period string) string {
 
 type filterHand struct {
 	field string
-	h     matchFunc
+	h     MatchFunc
 }
 
-type matchFunc func(o []bool, index int, rowGroup parquet.RowGroup, page parquet.Page) bool
+type MatchFunc func(ctx context.Context, page parquet.Page) bool
 
-func matchDictBasicMembers(name string, values []string) *filterHand {
-	str := strings.Join(values, "")
-	f := func(v parquet.Value) bool {
-		return strings.Contains(str, v.String())
-	}
-	return &filterHand{
-		field: name,
-		h:     basicDictFilterMatch(f),
-	}
-}
-
-func matchDictField(op filterOp, value string) func(parquet.Value) bool {
-	x := parquet.ValueOf(value)
-	var f func(parquet.Value) bool
-	switch op {
-	case filterEq:
-		f = func(v parquet.Value) bool {
-			return parquet.Equal(x, v)
-		}
-	case filterNeq:
-		f = func(v parquet.Value) bool {
-			return !parquet.Equal(x, v)
-		}
-	case filterWildEq:
-		f = func(v parquet.Value) bool {
-			ok, _ := path.Match(value, v.String())
-			return ok
-		}
-	case filterWildNeq:
-		f = func(v parquet.Value) bool {
-			ok, _ := path.Match(value, v.String())
-			return !ok
-		}
-	}
-	return func(v parquet.Value) bool {
-		if f != nil {
-			return f(v)
-		}
-		return false
-	}
-}
-func basicDictFilterMatch(match func(parquet.Value) bool) matchFunc {
-	return func(o []bool, index int, rowGroup parquet.RowGroup, page parquet.Page) bool {
-		dict := page.Dictionary()
-		ok := false
-		for i := 0; i < dict.Len(); i += 1 {
-			if match(dict.Index(int32(i))) {
-				ok = true
-				break
-			}
-		}
-		if !ok {
-			// skip this page
-			return false
-		}
-		values := make([]parquet.Value, page.NumValues())
-		if _, err := page.Values().ReadValues(values); err != nil && !errors.Is(err, io.EOF) {
-			panic("unexpected error while reading values " + err.Error())
-		}
-		for i := 0; i < int(page.NumValues()); i += 1 {
-			o[i] = match(values[i])
-		}
+func Eq(value string) MatchFunc {
+	return func(ctx context.Context, page parquet.Page) bool {
+		fmt.Printf("==> %#T\n", page)
 		return true
-	}
-}
-
-func HasString(field, fieldValue string) *filterHand {
-	return &filterHand{
-		field: field,
-		h: func(o []bool, index int, rowGroup parquet.RowGroup, page parquet.Page) bool {
-			dict := page.Dictionary()
-			value := parquet.ValueOf(fieldValue)
-			ok := false
-			for i := 0; i < dict.Len(); i += 1 {
-				if parquet.Equal(value, dict.Index(int32(i))) {
-					ok = true
-					break
-				}
-			}
-			if !ok {
-				// skip this page
-				return false
-			}
-			values := make([]parquet.Value, page.NumValues())
-			if _, err := page.Values().ReadValues(values); err != nil && !errors.Is(err, io.EOF) {
-				panic("unexpected error while reading values " + err.Error())
-			}
-			for i := 0; i < int(page.NumValues()); i += 1 {
-				o[i] = parquet.Equal(values[i], value)
-			}
-			return true
-		},
 	}
 }

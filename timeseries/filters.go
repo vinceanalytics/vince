@@ -156,21 +156,15 @@ func (f Filters) build() (ls filterHandList) {
 			if strings.Contains(e.value, "*") {
 				op = filterWildEq
 			}
+			_ = op
 			ls = append(ls, &filterHand{
 				field: name,
-				h: basicDictFilterMatch(
-					matchDictField(op, e.value),
-				),
 			})
 		case *filterExpr:
 			ls = append(ls, &filterHand{
 				field: key,
-				h: basicDictFilterMatch(
-					matchDictField(e.op, e.value),
-				),
 			})
 		case []string:
-			ls = append(ls, matchDictBasicMembers(key, e))
 		}
 	}
 	for _, h := range ls {

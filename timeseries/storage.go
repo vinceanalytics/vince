@@ -206,7 +206,7 @@ func (s *Storage[T]) query(ctx context.Context, query Query, files ...string) (*
 		}
 	}
 	for _, file := range files {
-		err := b.processFile(file, query)
+		err := b.processFile(ctx, file, query)
 		if err != nil {
 			return nil, err
 		}
@@ -280,7 +280,7 @@ func (b *StoreBuilder[T]) reset() {
 	b.selected = b.selected[:0]
 }
 
-func (b *StoreBuilder[T]) processFile(filePath string, query Query) error {
+func (b *StoreBuilder[T]) processFile(ctx context.Context, filePath string, query Query) error {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -294,7 +294,7 @@ func (b *StoreBuilder[T]) processFile(filePath string, query Query) error {
 		return err
 	}
 	for _, rg := range file.RowGroups() {
-		err = b.RowGroup(rg, query)
+		err = b.RowGroup(ctx, rg, query)
 		if err != nil {
 			return err
 		}
@@ -302,7 +302,7 @@ func (b *StoreBuilder[T]) processFile(filePath string, query Query) error {
 	return nil
 }
 
-func (b *StoreBuilder[T]) RowGroup(rg parquet.RowGroup, query Query) error {
+func (b *StoreBuilder[T]) RowGroup(ctx context.Context, rg parquet.RowGroup, query Query) error {
 	start := query.start.UnixNano()
 	end := query.end.UnixNano()
 	chunks := rg.ColumnChunks()
@@ -345,14 +345,14 @@ func (b *StoreBuilder[T]) RowGroup(rg parquet.RowGroup, query Query) error {
 		}
 	}
 	for _, pages := range ls {
-		b.processPages(rg, pages, query)
+		b.processPages(ctx, pages, query)
 	}
 	return nil
 }
 
-func (b *StoreBuilder[T]) processPages(rg parquet.RowGroup, pages []parquet.Page, query Query) {
+func (b *StoreBuilder[T]) processPages(ctx context.Context, pages []parquet.Page, query Query) {
 	filter := make([]bool, pages[0].NumValues())
-	if !b.filterPages(rg, pages, filter, query) {
+	if !b.filterPages(ctx, pages, filter, query) {
 		// if any filter decided we should skip this page we skip it right away
 		return
 	}
@@ -363,13 +363,13 @@ func (b *StoreBuilder[T]) processPages(rg parquet.RowGroup, pages []parquet.Page
 	}
 }
 
-func (b *StoreBuilder[T]) filterPages(rg parquet.RowGroup, pages []parquet.Page, filter []bool, query Query) bool {
+func (b *StoreBuilder[T]) filterPages(ctx context.Context, pages []parquet.Page, filter []bool, query Query) bool {
 	for i, p := range pages[1:] {
 		a := b.active[i+1]
 		for _, f := range query.filters {
 			if a.name == f.field {
 				if f.h != nil {
-					if !f.h(filter, a.index, rg, p) {
+					if !f.h(ctx, p) {
 						return false
 					}
 				}
