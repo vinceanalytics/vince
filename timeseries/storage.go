@@ -209,7 +209,7 @@ func (s *Storage[T]) query(query Query, files ...string) (*Record, error) {
 			return nil, err
 		}
 	}
-	return b.record()
+	return b.record(), nil
 }
 
 func (s *Storage[T]) get() *StoreBuilder[T] {
@@ -268,17 +268,12 @@ type StoreBuilder[T any] struct {
 	writers  []*Writer
 	active   []*Writer
 	selected []*Writer
-	results  []arrow.Array
 }
 
 func (b *StoreBuilder[T]) reset() {
 	b.active = b.active[:0]
 	b.active = append(b.active, b.writers[0])
 	b.selected = b.selected[:0]
-	for _, a := range b.results {
-		a.Release()
-	}
-	b.results = b.results[:0]
 }
 
 func (b *StoreBuilder[T]) processFile(filePath string, query Query) error {
@@ -360,7 +355,6 @@ func (b *StoreBuilder[T]) processPages(rg parquet.RowGroup, pages []parquet.Page
 	for i, s := range b.selected {
 		// selected fields starts from index 1 of active fields
 		s.WritePage(pages[i+1], filter)
-		b.results = append(b.results, s.build.NewArray())
 	}
 }
 
@@ -381,16 +375,22 @@ func (b *StoreBuilder[T]) filterPages(rg parquet.RowGroup, pages []parquet.Page,
 }
 
 type Record struct {
-	Labels     map[string]string `json:"labels,omitempty"`
-	Timestamps arrow.Array       `json:"timestamps,omitempty"`
+	Labels map[string]string `json:"labels,omitempty"`
+	Fields []*Field          `json:"fields,omitempty"`
 }
 
-func (b *StoreBuilder[T]) record() (*Record, error) {
-	ts, err := array.Concatenate(b.results, b.store.allocator)
-	if err != nil {
-		return nil, err
+type Field struct {
+	Name  string      `json:"name"`
+	Value arrow.Array `json:"value"`
+}
+
+func (b *StoreBuilder[T]) record() *Record {
+	r := &Record{}
+	for _, s := range b.selected {
+		r.Fields = append(r.Fields, &Field{
+			Name:  s.name,
+			Value: s.build.NewArray(),
+		})
 	}
-	return &Record{
-		Timestamps: ts,
-	}, nil
+	return r
 }
