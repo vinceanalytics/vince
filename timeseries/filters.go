@@ -137,6 +137,53 @@ func (f Filters) String() string {
 	return s.String()
 }
 
+type filterHandList []*filterHand
+
+func (f Filters) build(modify ...func(string) string) (ls filterHandList) {
+	for key, v := range f {
+		switch e := v.(type) {
+		case *filterGoal:
+			var name string
+			switch e.key {
+			case "event":
+				name = "name"
+			case "page":
+				name = "path"
+			default:
+				return nil
+			}
+			op := filterEq
+			if strings.Contains(e.value, "*") {
+				op = filterWildEq
+			}
+			ls = append(ls, &filterHand{
+				field: name,
+				h: basicDictFilterMatch(
+					matchDictField(op, e.value),
+				),
+			})
+		case *filterExpr:
+			ls = append(ls, &filterHand{
+				field: key,
+				h: basicDictFilterMatch(
+					matchDictField(e.op, e.value),
+				),
+			})
+		case []string:
+			ls = append(ls, matchDictBasicMembers(key, e))
+		}
+	}
+	if len(modify) > 0 {
+		for _, h := range ls {
+			h.field = modify[0](h.field)
+		}
+	}
+	sort.Slice(ls, func(i, j int) bool {
+		return ls[i].field < ls[j].field
+	})
+	return
+}
+
 type filterGoal struct {
 	key   string
 	value string
@@ -159,49 +206,3 @@ const (
 	filterWildEq
 	filterWildNeq
 )
-
-func (f Filters) Handle(key string, m ...func(string) string) *filterHand {
-	v, ok := f[key]
-	if !ok {
-		return nil
-	}
-	switch e := v.(type) {
-	case *filterGoal:
-		var name string
-		switch e.key {
-		case "event":
-			name = "name"
-		case "page":
-			name = "path"
-		default:
-			return nil
-		}
-		op := filterEq
-		if strings.Contains(e.value, "*") {
-			op = filterWildEq
-		}
-		return &filterHand{
-			field: name,
-			h: basicDictFilterMatch(
-				matchDictField(op, e.value),
-			),
-		}
-	case *filterExpr:
-		if len(m) > 0 {
-			key = m[0](key)
-		}
-		return &filterHand{
-			field: key,
-			h: basicDictFilterMatch(
-				matchDictField(e.op, e.value),
-			),
-		}
-	case []string:
-		if len(m) > 0 {
-			key = m[0](key)
-		}
-		return matchDictBasicMembers(key, e)
-	default:
-		return nil
-	}
-}

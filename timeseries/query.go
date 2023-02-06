@@ -18,8 +18,7 @@ type Query struct {
 	period          string
 	interval        string
 	sampleThreshold int
-	filters         Filters
-	Filters         []*filterHand
+	filters         filterHandList
 }
 
 func QueryFrom(params url.Values) Query {
@@ -42,7 +41,7 @@ func QueryFrom(params url.Values) Query {
 			interval:        interval,
 			start:           date,
 			end:             date,
-			filters:         parseFilters(params.Get("filters")),
+			filters:         parseFilters(params.Get("filters")).build(),
 			sampleThreshold: sampleThreshold,
 		}
 	case "day":
@@ -52,7 +51,7 @@ func QueryFrom(params url.Values) Query {
 			interval:        interval,
 			start:           date,
 			end:             date,
-			filters:         parseFilters(params.Get("filters")),
+			filters:         parseFilters(params.Get("filters")).build(),
 			sampleThreshold: sampleThreshold,
 		}
 	case "7d":
@@ -63,7 +62,7 @@ func QueryFrom(params url.Values) Query {
 			interval:        interval,
 			start:           startDate,
 			end:             endDate,
-			filters:         parseFilters(params.Get("filters")),
+			filters:         parseFilters(params.Get("filters")).build(),
 			sampleThreshold: sampleThreshold,
 		}
 	case "30d":
@@ -74,7 +73,7 @@ func QueryFrom(params url.Values) Query {
 			interval:        interval,
 			start:           startDate,
 			end:             endDate,
-			filters:         parseFilters(params.Get("filters")),
+			filters:         parseFilters(params.Get("filters")).build(),
 			sampleThreshold: sampleThreshold,
 		}
 	case "month":
@@ -86,7 +85,7 @@ func QueryFrom(params url.Values) Query {
 			interval:        interval,
 			start:           startDate,
 			end:             endDate,
-			filters:         parseFilters(params.Get("filters")),
+			filters:         parseFilters(params.Get("filters")).build(),
 			sampleThreshold: sampleThreshold,
 		}
 	case "6mo":
@@ -97,7 +96,7 @@ func QueryFrom(params url.Values) Query {
 			interval:        interval,
 			start:           startDate,
 			end:             endDate,
-			filters:         parseFilters(params.Get("filters")),
+			filters:         parseFilters(params.Get("filters")).build(),
 			sampleThreshold: sampleThreshold,
 		}
 	case "12mo":
@@ -108,7 +107,7 @@ func QueryFrom(params url.Values) Query {
 			interval:        interval,
 			start:           startDate,
 			end:             endDate,
-			filters:         parseFilters(params.Get("filters")),
+			filters:         parseFilters(params.Get("filters")).build(),
 			sampleThreshold: sampleThreshold,
 		}
 	case "year":
@@ -119,7 +118,7 @@ func QueryFrom(params url.Values) Query {
 			interval:        interval,
 			start:           startDate,
 			end:             endDate,
-			filters:         parseFilters(params.Get("filters")),
+			filters:         parseFilters(params.Get("filters")).build(),
 			sampleThreshold: sampleThreshold,
 		}
 	case "custom":
@@ -130,7 +129,7 @@ func QueryFrom(params url.Values) Query {
 			interval:        interval,
 			start:           startDate,
 			end:             endDate,
-			filters:         parseFilters(params.Get("filters")),
+			filters:         parseFilters(params.Get("filters")).build(),
 			sampleThreshold: sampleThreshold,
 		}
 	}

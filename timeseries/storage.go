@@ -149,13 +149,9 @@ func (s *Storage[T]) Query(query Query) (*Record, error) {
 	}
 	b := s.get()
 	defer s.put(b)
-	names := make(map[string]struct{})
-	for _, f := range query.Filters {
-		names[f.field] = struct{}{}
-	}
-	for n := range names {
+	for _, f := range query.filters {
 		for _, w := range b.writers {
-			if w.name == n {
+			if w.name == f.field {
 				b.active = append(b.active, w)
 				break
 			}
@@ -323,7 +319,7 @@ func (b *StoreBuilder[T]) processPages(rg parquet.RowGroup, pages []*PageIndex, 
 func (b *StoreBuilder[T]) filterPages(rg parquet.RowGroup, pages []*PageIndex, filter []bool, query Query) bool {
 	for i, p := range pages[1:] {
 		a := b.active[i+1]
-		for _, f := range query.Filters {
+		for _, f := range query.filters {
 			if a.name == f.field {
 				if f.h != nil {
 					if !f.h(filter, a.index, rg, p.Page) {
