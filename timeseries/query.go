@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/apache/arrow/go/v12/arrow/array"
 	"github.com/segmentio/parquet-go"
 )
 
@@ -214,4 +215,9 @@ func Eq(value string) MatchFunc {
 		fmt.Printf("==> %#T\n", page)
 		return true
 	}
+}
+
+type Builders struct {
+	Int64  *array.Int64Builder
+	String *array.StringBuilder
 }

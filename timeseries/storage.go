@@ -12,7 +12,6 @@ import (
 
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/apache/arrow/go/v12/arrow/array"
-	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/oklog/ulid/v2"
@@ -31,6 +30,7 @@ const (
 )
 
 var ErrNoRows = errors.New("no rows")
+var ErrSkipPage = errors.New("skip page")
 
 type Storage[T any] struct {
 	path       string
@@ -205,6 +205,10 @@ func (s *Storage[T]) query(ctx context.Context, query Query, files ...string) (*
 			b.active = append(b.active, w)
 		}
 	}
+	if cap(b.results) < len(b.selected) {
+		b.results = make([][]arrow.Array, len(b.selected))
+	}
+	b.results = b.results[0:len(b.selected)]
 	for _, file := range files {
 		err := b.processFile(ctx, file, query)
 		if err != nil {
@@ -228,7 +232,10 @@ func (s *Storage[T]) build() *StoreBuilder[T] {
 	b := &StoreBuilder[T]{
 		store:   s,
 		writers: make([]*Writer, len(fields)),
-		filter:  array.NewBooleanBuilder(s.allocator),
+		builders: &Builders{
+			Int64:  array.NewInt64Builder(s.allocator),
+			String: array.NewStringBuilder(s.allocator),
+		},
 	}
 	for i, f := range fields {
 		dt, err := ParquetNodeToType(f)
@@ -261,7 +268,17 @@ func (w *Writer) WritePage(p parquet.Page) error {
 		} else {
 			b.AppendValues(a, nil)
 		}
+	case *array.StringBuilder:
+		a := make([]parquet.Value, p.NumValues())
+		if _, err := p.Values().ReadValues(a); err != nil && !errors.Is(err, io.EOF) {
+			return err
+		} else {
+			for i := 0; i < int(p.NumValues()); i += 1 {
+				b.Append(a[i].String())
+			}
+		}
 	default:
+
 	}
 	return nil
 }
@@ -271,13 +288,20 @@ type StoreBuilder[T any] struct {
 	writers  []*Writer
 	active   []*Writer
 	selected []*Writer
-	filter   *array.BooleanBuilder
+	results  [][]arrow.Array
+	builders *Builders
 }
 
 func (b *StoreBuilder[T]) reset() {
 	b.active = b.active[:0]
 	b.active = append(b.active, b.writers[0])
 	b.selected = b.selected[:0]
+	for _, r := range b.results {
+		for _, a := range r {
+			a.Release()
+		}
+	}
+	b.results = b.results[:0]
 }
 
 func (b *StoreBuilder[T]) processFile(ctx context.Context, filePath string, query Query) error {
@@ -350,57 +374,60 @@ func (b *StoreBuilder[T]) RowGroup(ctx context.Context, rg parquet.RowGroup, que
 	return nil
 }
 
-func (b *StoreBuilder[T]) processPages(ctx context.Context, pages []parquet.Page, query Query) {
-	filter := make([]bool, pages[0].NumValues())
-	if !b.filterPages(ctx, pages, filter, query) {
-		// if any filter decided we should skip this page we skip it right away
-		return
+func (b *StoreBuilder[T]) processPages(ctx context.Context, pages []parquet.Page, query Query) error {
+	err := b.filterPages(ctx, pages, query)
+	if err != nil {
+		if errors.Is(err, ErrSkipPage) {
+			return nil
+		}
+		return err
 	}
-	b.filter.AppendValues(filter, nil)
-	for i, s := range b.selected {
-		// selected fields starts from index 1 of active fields
-		s.WritePage(pages[i+1])
-	}
+	return nil
 }
 
-func (b *StoreBuilder[T]) filterPages(ctx context.Context, pages []parquet.Page, filter []bool, query Query) bool {
+func (b *StoreBuilder[T]) filterPages(ctx context.Context, pages []parquet.Page, query Query) error {
+	a := make([]arrow.Array, len(b.selected))
+	for i, s := range b.selected {
+		index := i + 1
+		err := s.WritePage(pages[index])
+		if err != nil {
+			return err
+		}
+		a[i] = s.build.NewArray()
+	}
 	for i, p := range pages[1:] {
 		a := b.active[i+1]
 		for _, f := range query.filters {
 			if a.name == f.field {
 				if f.h != nil {
 					if !f.h(ctx, p) {
-						return false
+						return ErrSkipPage
 					}
 				}
 			}
 		}
 	}
-	return true
+	for i := range a {
+		b.results[i] = append(b.results[i], a[i])
+	}
+	return nil
 }
 
 type Record struct {
-	Labels map[string]string `json:"labels,omitempty"`
-	Fields []*Field          `json:"fields,omitempty"`
-}
-
-type Field struct {
-	Name  string      `json:"name"`
-	Value arrow.Array `json:"value"`
+	Labels  map[string]string `json:"labels,omitempty"`
+	Columns []string          `json:"columns,omitempty"`
+	Values  []arrow.Array     `json:"values,omitempty"`
 }
 
 func (b *StoreBuilder[T]) record(ctx context.Context) (*Record, error) {
 	r := &Record{}
-	filter := b.filter.NewArray()
-	for _, s := range b.selected {
-		a, err := compute.FilterArray(ctx, s.build.NewArray(), filter, *compute.DefaultFilterOptions())
+	for i, s := range b.selected {
+		a, err := array.Concatenate(b.results[i], b.store.allocator)
 		if err != nil {
 			return nil, err
 		}
-		r.Fields = append(r.Fields, &Field{
-			Name:  s.name,
-			Value: a,
-		})
+		r.Columns = append(r.Columns, s.name)
+		r.Values = append(r.Values, a)
 	}
 	return r, nil
 }

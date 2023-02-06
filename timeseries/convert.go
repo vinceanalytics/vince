@@ -5,7 +5,6 @@ import (
 
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/segmentio/parquet-go"
-	"github.com/segmentio/parquet-go/format"
 )
 
 func ParquetFieldToArrowField(pf parquet.Field) (arrow.Field, error) {
@@ -49,23 +48,7 @@ func ParquetNodeToType(n parquet.Node) (arrow.DataType, error) {
 	case lt != nil:
 		switch {
 		case lt.UTF8 != nil:
-			enc := n.Encoding()
-			switch enc {
-			case nil:
-				dt = &arrow.BinaryType{}
-			default:
-				switch enc.Encoding() {
-				case format.PlainDictionary:
-					fallthrough
-				case format.RLEDictionary:
-					dt = &arrow.DictionaryType{
-						IndexType: &arrow.Int16Type{}, // TODO: do we need more width?
-						ValueType: &arrow.BinaryType{},
-					}
-				default:
-					dt = &arrow.BinaryType{}
-				}
-			}
+			dt = &arrow.StringType{}
 		case lt.Integer != nil:
 			switch lt.Integer.BitWidth {
 			case 64:
