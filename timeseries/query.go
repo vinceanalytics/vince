@@ -18,7 +18,13 @@ type Query struct {
 	period          string
 	interval        string
 	sampleThreshold int
+	selected        []string
 	filters         filterHandList
+}
+
+func (q Query) Select(fields ...string) Query {
+	q.selected = append(q.selected, fields...)
+	return q
 }
 
 func QueryFrom(params url.Values) Query {

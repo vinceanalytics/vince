@@ -78,6 +78,9 @@ func NewStorage[T any](path string) (*Storage[T], error) {
 }
 
 func (s *Storage[T]) Write(lastTimestamp time.Time, rows []T) (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.end = lastTimestamp
 	return s.writer.Write(rows)
 }
 
@@ -88,6 +91,9 @@ func (s *Storage[T]) Archive() (int64, error) {
 func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if s.start.Equal(s.end) {
+		return 0, nil
+	}
 	err := s.writer.Close()
 	if err != nil {
 		return 0, err
@@ -182,12 +188,18 @@ func (s *Storage[T]) QueryRealtime(query Query) (*Record, error) {
 func (s *Storage[T]) query(query Query, files ...string) (*Record, error) {
 	b := s.get()
 	defer s.put(b)
+	m := make(map[string]*Writer)
+	for _, w := range b.writers {
+		m[w.name] = w
+	}
+	for _, n := range query.selected {
+		if w, ok := m[n]; ok {
+			b.active = append(b.active, w)
+		}
+	}
 	for _, f := range query.filters {
-		for _, w := range b.writers {
-			if w.name == f.field {
-				b.active = append(b.active, w)
-				break
-			}
+		if w, ok := m[f.field]; ok {
+			b.active = append(b.active, w)
 		}
 	}
 	for _, file := range files {
@@ -204,12 +216,7 @@ func (s *Storage[T]) get() *StoreBuilder[T] {
 }
 
 func (s *Storage[T]) put(b *StoreBuilder[T]) {
-	b.active = b.active[:0]
-	b.active = append(b.active, b.writers[0])
-	for _, a := range b.results {
-		a.Release()
-	}
-	b.results = b.results[:0]
+	b.reset()
 	s.pool.Put(b)
 }
 
@@ -256,10 +263,21 @@ func (w *Writer) WritePage(p parquet.Page, valid []bool) error {
 }
 
 type StoreBuilder[T any] struct {
-	store   *Storage[T]
-	writers []*Writer
-	active  []*Writer
-	results []arrow.Array
+	store    *Storage[T]
+	writers  []*Writer
+	active   []*Writer
+	selected []*Writer
+	results  []arrow.Array
+}
+
+func (b *StoreBuilder[T]) reset() {
+	b.active = b.active[:0]
+	b.active = append(b.active, b.writers[0])
+	b.selected = b.selected[:0]
+	for _, a := range b.results {
+		a.Release()
+	}
+	b.results = b.results[:0]
 }
 
 func (b *StoreBuilder[T]) processFile(filePath string, query Query) error {
@@ -288,19 +306,19 @@ func (b *StoreBuilder[T]) RowGroup(rg parquet.RowGroup, query Query) error {
 	start := query.start.UnixNano()
 	end := query.end.UnixNano()
 	chunks := rg.ColumnChunks()
-	cs := make([]parquet.Pages, len(b.active))
-	for i, w := range b.active {
-		cs[i] = chunks[w.index].Pages()
+	cs := make(map[string]parquet.Pages)
+
+	for _, w := range b.active {
+		cs[w.name] = chunks[w.index].Pages()
 	}
 	defer func() {
 		for _, p := range cs {
 			p.Close()
 		}
 	}()
-	var ls [][]*PageIndex
-	var i int
+	var ls [][]parquet.Page
 	for {
-		p, err := cs[0].ReadPage()
+		p, err := cs[b.active[0].name].ReadPage()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
@@ -313,23 +331,18 @@ func (b *StoreBuilder[T]) RowGroup(rg parquet.RowGroup, query Query) error {
 		}
 		minValue := min.Int64()
 		maxValue := max.Int64()
-		pg := addPageIndex(p, start, end, minValue, maxValue)
-		if pg != nil {
-			pls := make([]*PageIndex, len(b.active))
-			pls[0] = pg
-			for i, np := range cs[1:] {
-				px, err := np.ReadPage()
+		if start <= minValue && end <= maxValue {
+			pls := make([]parquet.Page, len(b.active))
+			pls[0] = p
+			for i, w := range b.active[1:] {
+				px, err := cs[w.name].ReadPage()
 				if err != nil {
 					return err
 				}
-				pls[i+1] = &PageIndex{
-					Page:    px,
-					Partial: pg.Partial,
-				}
+				pls[i+1] = px
 			}
 			ls = append(ls, pls)
 		}
-		i += 1
 	}
 	for _, pages := range ls {
 		b.processPages(rg, pages, query)
@@ -337,23 +350,26 @@ func (b *StoreBuilder[T]) RowGroup(rg parquet.RowGroup, query Query) error {
 	return nil
 }
 
-func (b *StoreBuilder[T]) processPages(rg parquet.RowGroup, pages []*PageIndex, query Query) {
-	filter := make([]bool, pages[0].Page.NumValues())
+func (b *StoreBuilder[T]) processPages(rg parquet.RowGroup, pages []parquet.Page, query Query) {
+	filter := make([]bool, pages[0].NumValues())
 	if !b.filterPages(rg, pages, filter, query) {
 		// if any filter decided we should skip this page we skip it right away
 		return
 	}
-	b.active[0].WritePage(pages[0].Page, filter)
-	b.results = append(b.results, b.active[0].build.NewArray())
+	for i, s := range b.selected {
+		// selected fields starts from index 1 of active fields
+		s.WritePage(pages[i+1], filter)
+		b.results = append(b.results, s.build.NewArray())
+	}
 }
 
-func (b *StoreBuilder[T]) filterPages(rg parquet.RowGroup, pages []*PageIndex, filter []bool, query Query) bool {
+func (b *StoreBuilder[T]) filterPages(rg parquet.RowGroup, pages []parquet.Page, filter []bool, query Query) bool {
 	for i, p := range pages[1:] {
 		a := b.active[i+1]
 		for _, f := range query.filters {
 			if a.name == f.field {
 				if f.h != nil {
-					if !f.h(filter, a.index, rg, p.Page) {
+					if !f.h(filter, a.index, rg, p) {
 						return false
 					}
 				}
@@ -362,39 +378,6 @@ func (b *StoreBuilder[T]) filterPages(rg parquet.RowGroup, pages []*PageIndex, f
 	}
 	return true
 }
-
-func addPageIndex(page parquet.Page, start, end, min, max int64) *PageIndex {
-	if start <= min && end <= max {
-		return &PageIndex{
-			Page: page,
-		}
-	} else if end <= max {
-		return &PageIndex{
-			Page:    page,
-			Partial: PartialMax,
-		}
-	} else if start <= min {
-		return &PageIndex{
-			Page:    page,
-			Partial: PartialMin,
-		}
-	}
-	return nil
-}
-
-type PageIndex struct {
-	Page    parquet.Page
-	Index   int
-	Partial PageIndexState
-}
-
-type PageIndexState uint
-
-const (
-	Full PageIndexState = iota
-	PartialMax
-	PartialMin
-)
 
 type Record struct {
 	Labels     map[string]string `json:"labels,omitempty"`
