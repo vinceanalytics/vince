@@ -139,7 +139,7 @@ func (f Filters) String() string {
 
 type filterHandList []*filterHand
 
-func (f Filters) build(modify ...func(string) string) (ls filterHandList) {
+func (f Filters) build() (ls filterHandList) {
 	for key, v := range f {
 		switch e := v.(type) {
 		case *filterGoal:
@@ -173,9 +173,14 @@ func (f Filters) build(modify ...func(string) string) (ls filterHandList) {
 			ls = append(ls, matchDictBasicMembers(key, e))
 		}
 	}
-	if len(modify) > 0 {
-		for _, h := range ls {
-			h.field = modify[0](h.field)
+	for _, h := range ls {
+		switch h.field {
+		case "screen":
+			h.field = "screen_size"
+		case "os":
+			h.field = "operating_system"
+		case "country":
+			h.field = "country_code"
 		}
 	}
 	sort.Slice(ls, func(i, j int) bool {
