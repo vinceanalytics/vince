@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/apache/arrow/go/v12/arrow/compute"
+	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/timeseries"
@@ -41,6 +42,7 @@ type Vince struct {
 	clientSession *Session
 	flushInterval time.Duration
 	computeCtx    compute.ExecCtx
+	allocator     memory.Allocator
 }
 
 func ServeCMD() *cli.Command {
@@ -93,7 +95,8 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 	if err != nil {
 		return nil, err
 	}
-	ts, err := timeseries.Open(o.DataPath)
+	alloc := memory.DefaultAllocator
+	ts, err := timeseries.Open(alloc, o.DataPath)
 	if err != nil {
 		closeDB(sqlDb)
 		return nil, err
@@ -119,6 +122,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		clientSession: NewSession("vince"),
 		flushInterval: o.FlushInterval,
 		computeCtx:    compute.DefaultExecCtx(),
+		allocator:     alloc,
 	}
 	v.session = timeseries.NewSessionCache(cache, v.sessions)
 	return v, nil
@@ -141,7 +145,10 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: v.Handle(),
 		BaseContext: func(l net.Listener) context.Context {
-			return compute.SetExecCtx(context.Background(), v.computeCtx)
+			return compute.WithAllocator(
+				compute.SetExecCtx(context.Background(), v.computeCtx),
+				v.allocator,
+			)
 		},
 	}
 	go func() {

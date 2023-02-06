@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"context"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/apache/arrow/go/v12/arrow/array"
+	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/oklog/ulid/v2"
@@ -42,7 +44,7 @@ type Storage[T any] struct {
 	end        time.Time
 }
 
-func NewStorage[T any](path string) (*Storage[T], error) {
+func NewStorage[T any](allocator memory.Allocator, path string) (*Storage[T], error) {
 	dirs := []string{BucketPath, BucketMergePath, MetaPath}
 	for _, p := range dirs {
 		os.MkdirAll(filepath.Join(path, p), 0755)
@@ -65,7 +67,7 @@ func NewStorage[T any](path string) (*Storage[T], error) {
 			),
 		)),
 		meta:      &meta{db: db},
-		allocator: memory.DefaultAllocator,
+		allocator: allocator,
 		start:     now,
 		end:       now,
 	}
@@ -166,7 +168,7 @@ func (s *Storage[T]) Close() error {
 	return s.meta.Close()
 }
 
-func (s *Storage[T]) Query(query Query) (*Record, error) {
+func (s *Storage[T]) Query(ctx context.Context, query Query) (*Record, error) {
 	ids, err := s.meta.Buckets(query.start, query.end)
 	if err != nil {
 		return nil, err
@@ -178,14 +180,14 @@ func (s *Storage[T]) Query(query Query) (*Record, error) {
 	for i := range ids {
 		files[i] = filepath.Join(s.path, BucketPath, ids[i])
 	}
-	return s.query(query, files...)
+	return s.query(ctx, query, files...)
 }
 
-func (s *Storage[T]) QueryRealtime(query Query) (*Record, error) {
-	return s.query(query, filepath.Join(s.path, RealTimeFileName))
+func (s *Storage[T]) QueryRealtime(ctx context.Context, query Query) (*Record, error) {
+	return s.query(ctx, query, filepath.Join(s.path, RealTimeFileName))
 }
 
-func (s *Storage[T]) query(query Query, files ...string) (*Record, error) {
+func (s *Storage[T]) query(ctx context.Context, query Query, files ...string) (*Record, error) {
 	b := s.get()
 	defer s.put(b)
 	m := make(map[string]*Writer)
@@ -209,7 +211,7 @@ func (s *Storage[T]) query(query Query, files ...string) (*Record, error) {
 			return nil, err
 		}
 	}
-	return b.record(), nil
+	return b.record(ctx)
 }
 
 func (s *Storage[T]) get() *StoreBuilder[T] {
@@ -226,6 +228,7 @@ func (s *Storage[T]) build() *StoreBuilder[T] {
 	b := &StoreBuilder[T]{
 		store:   s,
 		writers: make([]*Writer, len(fields)),
+		filter:  array.NewBooleanBuilder(s.allocator),
 	}
 	for i, f := range fields {
 		dt, err := ParquetNodeToType(f)
@@ -248,7 +251,7 @@ type Writer struct {
 	name  string
 }
 
-func (w *Writer) WritePage(p parquet.Page, valid []bool) error {
+func (w *Writer) WritePage(p parquet.Page) error {
 	switch b := w.build.(type) {
 	case *array.Int64Builder:
 		r := p.Values().(parquet.Int64Reader)
@@ -256,7 +259,7 @@ func (w *Writer) WritePage(p parquet.Page, valid []bool) error {
 		if _, err := r.ReadInt64s(a); err != nil && !errors.Is(err, io.EOF) {
 			return err
 		} else {
-			b.AppendValues(a, valid)
+			b.AppendValues(a, nil)
 		}
 	default:
 	}
@@ -268,6 +271,7 @@ type StoreBuilder[T any] struct {
 	writers  []*Writer
 	active   []*Writer
 	selected []*Writer
+	filter   *array.BooleanBuilder
 }
 
 func (b *StoreBuilder[T]) reset() {
@@ -352,9 +356,10 @@ func (b *StoreBuilder[T]) processPages(rg parquet.RowGroup, pages []parquet.Page
 		// if any filter decided we should skip this page we skip it right away
 		return
 	}
+	b.filter.AppendValues(filter, nil)
 	for i, s := range b.selected {
 		// selected fields starts from index 1 of active fields
-		s.WritePage(pages[i+1], filter)
+		s.WritePage(pages[i+1])
 	}
 }
 
@@ -384,13 +389,18 @@ type Field struct {
 	Value arrow.Array `json:"value"`
 }
 
-func (b *StoreBuilder[T]) record() *Record {
+func (b *StoreBuilder[T]) record(ctx context.Context) (*Record, error) {
 	r := &Record{}
+	filter := b.filter.NewArray()
 	for _, s := range b.selected {
+		a, err := compute.FilterArray(ctx, s.build.NewArray(), filter, *compute.DefaultFilterOptions())
+		if err != nil {
+			return nil, err
+		}
 		r.Fields = append(r.Fields, &Field{
 			Name:  s.name,
-			Value: s.build.NewArray(),
+			Value: a,
 		})
 	}
-	return r
+	return r, nil
 }

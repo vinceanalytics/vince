@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/google/uuid"
 )
 
@@ -150,13 +151,13 @@ type Tables struct {
 	sessions *Storage[*Session]
 }
 
-func Open(dir string) (*Tables, error) {
+func Open(allocator memory.Allocator, dir string) (*Tables, error) {
 	base := filepath.Join(dir, "ts")
-	events, err := NewStorage[*Event](filepath.Join(base, "events"))
+	events, err := NewStorage[*Event](allocator, filepath.Join(base, "events"))
 	if err != nil {
 		return nil, err
 	}
-	sessions, err := NewStorage[*Session](filepath.Join(base, "sessions"))
+	sessions, err := NewStorage[*Session](allocator, filepath.Join(base, "sessions"))
 	if err != nil {
 		return nil, err
 	}
