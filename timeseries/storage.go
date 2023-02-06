@@ -36,7 +36,6 @@ type Storage[T any] struct {
 	activeFile *os.File
 	writer     *parquet.SortingWriter[T]
 	mu         sync.Mutex
-	realtimeMu sync.Mutex
 	meta       *meta
 	pool       *sync.Pool
 	allocator  memory.Allocator
