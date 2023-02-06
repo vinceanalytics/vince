@@ -195,6 +195,7 @@ func (s *Storage[T]) query(query Query, files ...string) (*Record, error) {
 	for _, n := range query.selected {
 		if w, ok := m[n]; ok {
 			b.active = append(b.active, w)
+			b.selected = append(b.selected, w)
 		}
 	}
 	for _, f := range query.filters {
