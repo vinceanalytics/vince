@@ -2,7 +2,6 @@ package timeseries
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -169,6 +168,18 @@ func (s *Storage[T]) Query(query Query) (*Record, error) {
 	if len(ids) == 0 {
 		return nil, ErrNoRows
 	}
+	files := make([]string, len(ids))
+	for i := range ids {
+		files[i] = filepath.Join(s.path, BucketPath, ids[i])
+	}
+	return s.query(query, files...)
+}
+
+func (s *Storage[T]) QueryRealtime(query Query) (*Record, error) {
+	return s.query(query, filepath.Join(s.path, RealTimeFileName))
+}
+
+func (s *Storage[T]) query(query Query, files ...string) (*Record, error) {
 	b := s.get()
 	defer s.put(b)
 	for _, f := range query.filters {
@@ -179,8 +190,8 @@ func (s *Storage[T]) Query(query Query) (*Record, error) {
 			}
 		}
 	}
-	for _, id := range ids {
-		err := b.processBucket(id, query)
+	for _, file := range files {
+		err := b.processFile(file, query)
 		if err != nil {
 			return nil, err
 		}
@@ -239,9 +250,7 @@ func (w *Writer) WritePage(p parquet.Page, valid []bool) error {
 		} else {
 			b.AppendValues(a, valid)
 		}
-	case *array.BinaryDictionaryBuilder:
 	default:
-		fmt.Printf("%#T %#T\n", w.build, p.Values())
 	}
 	return nil
 }
@@ -253,8 +262,8 @@ type StoreBuilder[T any] struct {
 	results []arrow.Array
 }
 
-func (b *StoreBuilder[T]) processBucket(id string, query Query) error {
-	f, err := os.Open(filepath.Join(b.store.path, BucketPath, id))
+func (b *StoreBuilder[T]) processFile(filePath string, query Query) error {
+	f, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
