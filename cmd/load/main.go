@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -19,12 +20,14 @@ func main() {
 	flag.Parse()
 	ctx, _ := context.WithTimeout(context.Background(), *duration)
 	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go runSession(ctx, wg, BasicSession(), *host)
+	for i := 0; i < runtime.NumCPU(); i += 1 {
+		wg.Add(1)
+		go runSession(ctx, wg, *host)
+	}
 	wg.Wait()
 }
 
-func runSession(ctx context.Context, wg *sync.WaitGroup, s Session, host string) {
+func runSession(ctx context.Context, wg *sync.WaitGroup, host string) {
 	log.Println("starting session runner ")
 	defer log.Println("done session running")
 	defer wg.Done()
@@ -33,6 +36,7 @@ func runSession(ctx context.Context, wg *sync.WaitGroup, s Session, host string)
 		case <-ctx.Done():
 			return
 		default:
+			s := BasicSession()
 			err := s.Execute(ctx, host)
 			if err != nil {
 				log.Println(err)
