@@ -11,7 +11,7 @@ type Event struct {
 	Timestamp              time.Time         `parquet:"timestamp"`
 	Name                   string            `parquet:"name,dict,zstd"`
 	Domain                 string            `parquet:"domain,dict,zstd"`
-	UserId                 uint64            `parquet:"user_id"`
+	UserId                 int64             `parquet:"user_id"`
 	SessionId              uuid.UUID         `parquet:"session_id,zstd"`
 	Hostname               string            `parquet:"hostname,zstd"`
 	Pathname               string            `parquet:"path,zstd"`
@@ -82,13 +82,13 @@ type Session struct {
 	ID                     uuid.UUID         `parquet:"id,zstd"`
 	Sign                   int32             `parquet:"sign,zstd"`
 	Domain                 string            `parquet:"domain,zstd"`
-	UserId                 uint64            `parquet:"user_id,zstd"`
+	UserId                 int64             `parquet:"user_id,zstd"`
 	Hostname               string            `parquet:"hostname,zstd"`
 	IsBounce               bool              `parquet:"is_bounce,zstd"`
 	EntryPage              string            `parquet:"entry_page,zstd"`
 	ExitPage               string            `parquet:"exit_page,zstd"`
-	PageViews              uint64            `parquet:"pageviews,zstd"`
-	Events                 uint64            `parquet:"events,zstd"`
+	PageViews              int64             `parquet:"pageviews,zstd"`
+	Events                 int64             `parquet:"events,zstd"`
 	Duration               time.Duration     `parquet:"duration,zstd"`
 	Referrer               string            `parquet:"referrer,zstd"`
 	ReferrerSource         string            `parquet:"referrer_source,zstd"`

@@ -140,7 +140,7 @@ func (v *Vince) processEvent(r *http.Request) bool {
 	}
 
 	for _, domain := range domains {
-		userID := seedID.Gen(remoteIp, userAgent, domain, host)
+		userID := int64(seedID.Gen(remoteIp, userAgent, domain, host))
 		e := new(timeseries.Event)
 		e.UserId = userID
 		e.Name = req.EventName
@@ -163,7 +163,7 @@ func (v *Vince) processEvent(r *http.Request) bool {
 		e.ScreenSize = screenSize
 		e.Labels = req.Meta
 		e.Timestamp = now
-		previousUUserID := seedID.GenPrevious(remoteIp, userAgent, domain, host)
+		previousUUserID := int64(seedID.GenPrevious(remoteIp, userAgent, domain, host))
 		e.SessionId = v.session.RegisterSession(e, previousUUserID)
 		v.events <- e
 	}

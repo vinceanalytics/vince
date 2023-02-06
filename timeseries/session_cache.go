@@ -23,7 +23,7 @@ func NewSessionCache(cache *ristretto.Cache, process chan<- *Session) *SessionCa
 	}
 }
 
-func (c *SessionCache) RegisterSession(e *Event, prevUserId uint64) uuid.UUID {
+func (c *SessionCache) RegisterSession(e *Event, prevUserId int64) uuid.UUID {
 	var s *Session
 	s = c.Find(e, e.UserId)
 	if s == nil {
@@ -42,7 +42,7 @@ func (c *SessionCache) RegisterSession(e *Event, prevUserId uint64) uuid.UUID {
 	return c.Persist(newSession)
 }
 
-func (c *SessionCache) Find(e *Event, userId uint64) *Session {
+func (c *SessionCache) Find(e *Event, userId int64) *Session {
 	v, _ := c.cache.Get(key(e.Domain, userId))
 	if v != nil {
 		return v.(*Session)
@@ -53,7 +53,7 @@ func (c *SessionCache) Find(e *Event, userId uint64) *Session {
 // const of storing a session in cache
 var sessionSize = reflect.TypeOf(Session{}).Size()
 
-func key(domain string, userId uint64) string {
+func key(domain string, userId int64) string {
 	b := bufPool.Get().(*bytes.Buffer)
 	defer bufPool.Put(b)
 	b.Reset()
