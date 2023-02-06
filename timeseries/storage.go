@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -35,6 +36,7 @@ type Storage[T any] struct {
 	activeFile *os.File
 	writer     *parquet.SortingWriter[T]
 	mu         sync.Mutex
+	realtimeMu sync.Mutex
 	meta       *meta
 	pool       *sync.Pool
 	allocator  memory.Allocator
@@ -98,7 +100,7 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	_, err = createFile(filepath.Join(s.path, RealTimeFileName), s.activeFile)
+	_, err = createAtomicFile(filepath.Join(s.path, RealTimeFileName), s.activeFile)
 	if err != nil {
 		return 0, err
 	}
@@ -129,6 +131,27 @@ func createFile(out string, src *os.File) (int64, error) {
 	defer f.Close()
 	src.Seek(0, io.SeekStart)
 	return f.ReadFrom(src)
+}
+
+func createAtomicFile(out string, src *os.File) (n int64, err error) {
+	f, err := ioutil.TempFile(filepath.Dir(out), filepath.Base(out))
+	if err != nil {
+		return 0, err
+	}
+	defer func() {
+		os.Remove(f.Name())
+	}()
+	src.Seek(0, io.SeekStart)
+	n, err = f.ReadFrom(src)
+	if err != nil {
+		return
+	}
+	err = f.Close()
+	if err != nil {
+		return
+	}
+	err = os.Rename(f.Name(), out)
+	return
 }
 
 func (s *Storage[T]) Close() error {
