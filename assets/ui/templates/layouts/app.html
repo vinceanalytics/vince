@@ -14,11 +14,93 @@
         {{end}}
     </title>
     <link rel="stylesheet" href="/css/app.css" />
+    {{template "tracking" .}}
     <script type="text/javascript" src="/js/html.js"></script>
 </head>
 
-<body>
-
+<body class="d-flex flex-column">
+    {{if not .embedded}}
+    {{template "header" .}}
+    {{template "notice" .}}
+    {{end}}
+    <main class="flex-1">
+        {{block "content" .}}{{end}}
+    </main>
+    {{if .embedded}}
+    <div data-iframe-height></div>
+    <script type="text/javascript" src="/js/embed.content.js"></script>
+    {{else}}
+    {{template "footer" .}}
+    {{end}}
+    <script type="text/javascript" src="/js/app.js"></script>
 </body>
 
 </html>
+
+{{define "header"}}
+<nav class="position-relative z-20 py-8">
+    <div class="container">
+        <nav
+            class="position-relative d-flex flex-items-center flex-justify-between height-sm-10 flex-justify-center-md">
+            <div class="d-flex flex-items-center flex-1 position-absolute-md inset-md-y-0 left-md-0">
+                <div class="d-flex flex-items-center flex-justify-between">
+                    <a href="<%= home_dest(@conn) %>">
+                        <!-- TODO add vince logo here  -->
+                        Home
+                    </a>
+                </div>
+            </div>
+            <div
+                class="possition-absolute inset-y-0 right-0 d-flex flex-items-center flex-justify-end wwidth-2/3 wwidth-sm-auto">
+                {{if .current_user}}
+                <ul class="flex w-full sm:w-auto">
+                    <li class="hidden mr-6 sm:block">
+                        <a href="http://github.com/vinceanalytics/vince">
+                            Repo
+                        </a>
+                    </li>
+                    <li class="hidden mr-6 sm:block">
+                        <a href="/docs">Docs</a>
+                    </li>
+                    <li class="w-full sm:w-auto">
+                        <div class="relative font-bold rounded">
+                            <div>
+                                <span>{{.current_user.UserName}}</span>
+                            </div>
+                            <div>
+                                <a href="/settings">Settings</a>
+                                <a href="/logout">Log out</a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                {{else}}
+                <ul>
+                    <li>
+                        <a href="/login">
+                            Log in
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/register">
+                            Register
+                        </a>
+                    </li>
+                </ul>
+                {{end}}
+            </div>
+        </nav>
+    </div>
+</nav>
+{{end}}
+
+{{define "notice"}}
+{{end}}
+
+{{define "footer"}}
+{{end}}
+
+{{define "tracking"}}
+<script defer event-logged_in="{{not .current_user}}" src="/js/vince.local.dimensions.js""></script>
+<script>window.vince = window.vince || function () { (window.vince.q = window.vince.q || []).push(arguments) }</script>
+{{end}}
