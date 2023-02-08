@@ -9,13 +9,13 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
-	"encoding/base32"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"hash"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -86,28 +86,14 @@ type SessionContext struct {
 }
 
 func (s *SessionContext) VerifyCaptchaSolution(digits string) bool {
+	digits = strings.TrimSpace(digits)
 	if digits == "" {
 		return false
 	}
 	if x, ok := s.Data[captchaKey]; ok {
-		b, err := base32.StdEncoding.DecodeString(x.(string))
-		if err != nil {
-			return false
-		}
-
-		ns := make([]byte, len(digits))
-		for i := range ns {
-			d := digits[i]
-			switch {
-			case '0' <= d && d <= '9':
-				ns[i] = d - '0'
-			case d == ' ' || d == ',':
-				// ignore
-			default:
-				return false
-			}
-		}
-		return bytes.Equal(ns, b)
+		b := x.(string)
+		xlg.Info().Str("given", digits).Str("want", b).Msg("==============")
+		return digits == b
 	}
 	return false
 }

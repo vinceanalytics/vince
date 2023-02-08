@@ -3,11 +3,12 @@ package vince
 import (
 	"crypto/rand"
 	"crypto/subtle"
-	"encoding/base32"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gernest/vince/assets/ui/templates"
 )
@@ -72,7 +73,7 @@ func saveCsrf(session *SessionContext, w http.ResponseWriter, r *http.Request) *
 	if err != nil {
 		xlg.Fatal().Msgf("failed to generate captcha %v", err)
 	}
-	session.Data[captchaKey] = base32.StdEncoding.EncodeToString(solution)
+	session.Data[captchaKey] = formatCaptchaSolution(solution)
 	cookie := session.Save(w)
 	w.Header().Set("Vary", "Cookie")
 	return r.WithContext(
@@ -81,4 +82,13 @@ func saveCsrf(session *SessionContext, w http.ResponseWriter, r *http.Request) *
 			template.HTML(fmt.Sprintf(`<img src="%s" class="img-responsive"/>`, string(data))),
 		),
 	)
+}
+
+func formatCaptchaSolution(sol []byte) string {
+	var s strings.Builder
+	s.Grow(len(sol))
+	for _, b := range sol {
+		s.WriteString(strconv.FormatInt(int64(b), 10))
+	}
+	return s.String()
 }
