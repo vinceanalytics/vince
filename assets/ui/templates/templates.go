@@ -33,14 +33,7 @@ var Error = template.Must(template.ParseFS(files,
 ))
 
 var funcs = template.FuncMap{
-	"oAlertFill": wrap(octicon.AlertFill),
-}
-
-func wrap(f func(int, ...string) (string, bool)) func(int) template.HTML {
-	return func(i int) template.HTML {
-		v, _ := f(i)
-		return template.HTML(v)
-	}
+	"octicon": octicon.IconTemplateFunc,
 }
 
 type Context struct {
