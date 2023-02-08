@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/gernest/vince/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,7 +20,7 @@ func validate(field, value, reason string, m map[string]string, f func(string) b
 	return
 }
 
-func (v *Vince) DecodeRegistrationForm(u *User, r *http.Request) map[string]string {
+func (v *Vince) DecodeRegistrationForm(u *models.User, r *http.Request) map[string]string {
 	u.Name = r.Form.Get("name")
 	u.Email = r.Form.Get("email")
 	password := r.Form.Get("password")

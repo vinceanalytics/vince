@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/models"
 )
 
 func (v *Vince) registerForm() http.Handler {
@@ -18,7 +19,7 @@ func (v *Vince) registerForm() http.Handler {
 func (v *Vince) register() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
-		u := new(User)
+		u := new(models.User)
 		m := v.DecodeRegistrationForm(u, r)
 		ctx := r.Context()
 		if len(m) > 0 {

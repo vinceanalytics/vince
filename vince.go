@@ -17,6 +17,7 @@ import (
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
+	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/timeseries"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
@@ -91,14 +92,14 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 	os.MkdirAll(o.DataPath, 0755)
 
 	sqlPath := filepath.Join(o.DataPath, "vince.db")
-	sqlDb, err := open(sqlPath)
+	sqlDb, err := models.Open(sqlPath)
 	if err != nil {
 		return nil, err
 	}
 	alloc := memory.DefaultAllocator
 	ts, err := timeseries.Open(alloc, o.DataPath)
 	if err != nil {
-		closeDB(sqlDb)
+		models.CloseDB(sqlDb)
 		return nil, err
 	}
 
@@ -108,7 +109,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		BufferItems: 64,
 	})
 	if err != nil {
-		closeDB(sqlDb)
+		models.CloseDB(sqlDb)
 		ts.Close()
 		return nil, err
 	}
@@ -174,7 +175,7 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	cancel()
 	wg.Wait()
 
-	closeDB(v.sql)
+	models.CloseDB(v.sql)
 	v.ts.Close()
 	v.session.Close()
 	close(v.events)

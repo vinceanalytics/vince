@@ -1,4 +1,4 @@
-package vince
+package models
 
 import (
 	"database/sql"
@@ -213,7 +213,7 @@ type Model struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
-func open(path string) (*gorm.DB, error) {
+func Open(path string) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{})
 	if err != nil {
 		return nil, err
@@ -248,14 +248,14 @@ func open(path string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func closeDB(db *gorm.DB) {
+func CloseDB(db *gorm.DB) {
 	x, _ := db.DB()
 	x.Close()
 }
 
 func OpenTest(t *testing.T) *gorm.DB {
 	t.Helper()
-	db, err := open(filepath.Join(t.TempDir(), "vince.db"))
+	db, err := Open(filepath.Join(t.TempDir(), "vince.db"))
 	if err != nil {
 		t.Fatal(err)
 	}
