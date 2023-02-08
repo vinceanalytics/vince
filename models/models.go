@@ -10,6 +10,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const CurrentUserID = "_current_user_id"
+
 type User struct {
 	Model
 	Name         string

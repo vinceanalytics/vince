@@ -32,6 +32,14 @@ func (v *Vince) register() http.Handler {
 			))
 			return
 		}
-
+		if err := v.sql.Save(u).Error; err != nil {
+			xlg.Err(err).Msg("failed saving new user")
+			ServeError(w, http.StatusInternalServerError)
+			return
+		}
+		session.Data[models.CurrentUserID] = u.ID
+		session.Data["logged_in"] = true
+		_ = session.Save(w)
+		http.Redirect(w, r, "/login", http.StatusFound)
 	})
 }

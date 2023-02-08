@@ -97,6 +97,13 @@ func (s *SessionContext) VerifyCaptchaSolution(digits string) bool {
 	return false
 }
 
+func (s *SessionContext) IsLoggedIn() bool {
+	if x, ok := s.Data["logged_in"]; ok {
+		return x.(bool)
+	}
+	return false
+}
+
 type sessionContextKey struct{}
 
 func (s *Session) Load(r *http.Request) (*SessionContext, *http.Request) {
