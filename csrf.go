@@ -58,7 +58,7 @@ func (v *Vince) csrf(h http.Handler) http.Handler {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			h.ServeHTTP(w, saveCsrf(session, w, r))
+			h.ServeHTTP(w, r)
 			return
 		}
 		token := make([]byte, 32)

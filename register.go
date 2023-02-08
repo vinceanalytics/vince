@@ -22,6 +22,7 @@ func (v *Vince) register() http.Handler {
 		ctx := r.Context()
 		validCaptcha := session.VerifyCaptchaSolution(r.Form.Get(captchaKey))
 		if len(m) > 0 || !validCaptcha {
+			r = saveCsrf(session, w, r)
 			ServeHTML(w, templates.Register, http.StatusOK, templates.New(
 				ctx,
 				func(c *templates.Context) {

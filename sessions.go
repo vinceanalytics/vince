@@ -92,7 +92,6 @@ func (s *SessionContext) VerifyCaptchaSolution(digits string) bool {
 	}
 	if x, ok := s.Data[captchaKey]; ok {
 		b := x.(string)
-		xlg.Info().Str("given", digits).Str("want", b).Msg("==============")
 		return digits == b
 	}
 	return false
