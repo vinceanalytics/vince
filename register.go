@@ -15,11 +15,13 @@ func (v *Vince) registerForm() http.Handler {
 
 func (v *Vince) register() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, r := v.clientSession.Load(r)
 		r.ParseForm()
 		u := new(models.User)
 		m := v.DecodeRegistrationForm(u, r)
 		ctx := r.Context()
-		if len(m) > 0 {
+		validCaptcha := session.VerifyCaptchaSolution(r.Form.Get(captchaKey))
+		if len(m) > 0 || !validCaptcha {
 			ServeHTML(w, templates.Register, http.StatusOK, templates.New(
 				ctx,
 				func(c *templates.Context) {
@@ -29,5 +31,6 @@ func (v *Vince) register() http.Handler {
 			))
 			return
 		}
+
 	})
 }

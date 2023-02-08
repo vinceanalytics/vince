@@ -9,6 +9,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
+	"encoding/base32"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -82,6 +83,33 @@ func (s *Session) decode(value []byte) []byte {
 type SessionContext struct {
 	Data map[string]any
 	s    *Session
+}
+
+func (s *SessionContext) VerifyCaptchaSolution(digits string) bool {
+	if digits == "" {
+		return false
+	}
+	if x, ok := s.Data[captchaKey]; ok {
+		b, err := base32.StdEncoding.DecodeString(x.(string))
+		if err != nil {
+			return false
+		}
+
+		ns := make([]byte, len(digits))
+		for i := range ns {
+			d := digits[i]
+			switch {
+			case '0' <= d && d <= '9':
+				ns[i] = d - '0'
+			case d == ' ' || d == ',':
+				// ignore
+			default:
+				return false
+			}
+		}
+		return bytes.Equal(ns, b)
+	}
+	return false
 }
 
 type sessionContextKey struct{}
