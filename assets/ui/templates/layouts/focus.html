@@ -25,8 +25,8 @@
 </html>
 
 {{define "secure"}}
-{{with .csrf}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
-{{with .captcha}}
+{{with .CSRF}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
+{{with .Captcha}}
 {{.}}
 <input type="text" name="captcha" class="FormControl-input" placeholder="write the number displayed above">
 {{end}}

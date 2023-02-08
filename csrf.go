@@ -1,7 +1,6 @@
 package vince
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base32"
@@ -9,21 +8,11 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+
+	"github.com/gernest/vince/assets/ui/templates"
 )
 
 const csrfTokenKey = "_csrf"
-
-type csrfTokenCtxKey struct{}
-
-func getCsrf(ctx context.Context) template.HTML {
-	return ctx.Value(csrfTokenCtxKey{}).(template.HTML)
-}
-
-type captchaTokenKey struct{}
-
-func getCaptcha(ctx context.Context) template.HTML {
-	return ctx.Value(captchaTokenKey{}).(template.HTML)
-}
 
 func (v *Vince) csrf(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -86,7 +75,10 @@ func saveCsrf(session *SessionContext, w http.ResponseWriter, r *http.Request) *
 	session.Data[captchaKey] = base32.StdEncoding.EncodeToString(solution)
 	cookie := session.Save(w)
 	w.Header().Set("Vary", "Cookie")
-	ctx := context.WithValue(r.Context(), csrfTokenCtxKey{}, template.HTML(cookie))
-	ctx = context.WithValue(ctx, captchaTokenKey{}, template.HTML(fmt.Sprintf(`<img src="%s" class="img-responsive"/>`, string(data))))
-	return r.WithContext(ctx)
+	return r.WithContext(
+		templates.SecureForm(r.Context(),
+			template.HTML(cookie),
+			template.HTML(fmt.Sprintf(`<img src="%s" class="img-responsive"/>`, string(data))),
+		),
+	)
 }

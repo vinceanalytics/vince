@@ -16,34 +16,34 @@
         <h2>Enter your details</h2>
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="name" class="FormControl-label">name</label>
-            <input {{if .errors.name}} invalid="true" {{end}} {{with .form.name}}value="{{index . 0}}" {{end}}
+            <input {{if .Errors.name}} invalid="true" {{end}} {{with .Form.name}}value="{{index . 0}}" {{end}}
                 class="FormControl-input" type="text" name="name" id="name" placeholder="John Doe">
         </div>
-        {{with .errors.name}}
+        {{with .Errors.name}}
         {{template "validation" .}}
         {{end}}
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="email" class="FormControl-label">email</label>
-            <input {{if .errors.email}} invalid="true" {{end}} {{with .form.email}}value="{{index . 0}}" {{end}}
+            <input {{if .Errors.email}} invalid="true" {{end}} {{with .Form.email}}value="{{index . 0}}" {{end}}
                 class="FormControl-input" type="email" name="email" id="email" placeholder="example@email.com">
         </div>
-        {{with .errors.email}}
+        {{with .Errors.email}}
         {{template "validation" .}}
         {{end}}
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="password" class="FormControl-label">password</label>
-            <input {{if .errors.password}}invalid="true" {{end}} class="FormControl-input" type="password"
+            <input {{if .Errors.password}}invalid="true" {{end}} class="FormControl-input" type="password"
                 name="password" id="password">
         </div>
-        {{with .errors.password}}
+        {{with .Errors.password}}
         {{template "validation" .}}
         {{end}}
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="password_confirmation" class="FormControl-label">Confirm password</label>
-            <input {{if .errors.password_confirmation}}invalid="true" {{end}} class="FormControl-input" type="password"
+            <input {{if .Errors.password_confirmation}}invalid="true" {{end}} class="FormControl-input" type="password"
                 name="password_confirmation" id="password_confirmation">
         </div>
-        {{with .errors.password_confirmation}}
+        {{with .Errors.password_confirmation}}
         {{template "validation" .}}
         {{end}}
         {{template "secure" .}}

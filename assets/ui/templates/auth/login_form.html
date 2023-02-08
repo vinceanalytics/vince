@@ -3,12 +3,12 @@
     <h1>Enter your email and password</h1>
     <div class="FormControl-input-wrap FormControl-medium">
         <label for="email" class="FormControl-label">email</label>
-        <input {{if .errors.email}} invalid="true" {{end}} {{with .form.email}}value="{{index . 0}}" {{end}}
+        <input {{if .Errors.email}} invalid="true" {{end}} {{with .Form.email}}value="{{index . 0}}" {{end}}
             class="FormControl-input" type="email" name="email" id="email" placeholder="example@email.com">
     </div>
     <div class="FormControl-input-wrap FormControl-medium">
         <label for="password" class="FormControl-label">password</label>
-        <input {{if .errors.password}}invalid="true" {{end}} class="FormControl-input" type="password" name="password"
+        <input {{if .Errors.password}}invalid="true" {{end}} class="FormControl-input" type="password" name="password"
             id="password">
         <p>Forgot password? <a href="/password/request-reset">Click here</a> to reset it</p>
     </div>

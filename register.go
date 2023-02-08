@@ -9,10 +9,7 @@ import (
 
 func (v *Vince) registerForm() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ServeHTML(w, templates.Register, http.StatusOK, map[string]any{
-			"csrf":    getCsrf(r.Context()),
-			"captcha": getCaptcha(r.Context()),
-		})
+		ServeHTML(w, templates.Register, http.StatusOK, templates.New(r.Context()))
 	})
 }
 
@@ -23,13 +20,13 @@ func (v *Vince) register() http.Handler {
 		m := v.DecodeRegistrationForm(u, r)
 		ctx := r.Context()
 		if len(m) > 0 {
-			// render the registration form with errors
-			ServeHTML(w, templates.Register, http.StatusOK, map[string]any{
-				"csrf":    getCsrf(ctx),
-				"captcha": getCaptcha(ctx),
-				"errors":  m,
-				"form":    r.Form,
-			})
+			ServeHTML(w, templates.Register, http.StatusOK, templates.New(
+				ctx,
+				func(c *templates.Context) {
+					c.Errors = m
+					c.Form = r.Form
+				},
+			))
 			return
 		}
 	})
