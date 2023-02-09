@@ -3,14 +3,16 @@ package templates
 import (
 	"context"
 	"embed"
+	"fmt"
 	"html/template"
 	"net/url"
+	"strings"
 
 	"github.com/belak/octicon"
 	"github.com/gernest/vince/models"
 )
 
-//go:embed layouts auth error
+//go:embed layouts auth error email
 var files embed.FS
 
 var Login = template.Must(
@@ -93,4 +95,30 @@ func SecureForm(ctx context.Context, csrf, captcha template.HTML) context.Contex
 
 func (t *Context) VinceURL() template.HTML {
 	return template.HTML("http://localhost:8080")
+}
+
+func (t *Context) Validate(name string) template.HTML {
+	if t.Errors != nil {
+		o, _ := octicon.Icon("alert-fill", 12)
+		if v, ok := t.Errors[name]; ok {
+			return template.HTML(fmt.Sprintf(`
+<div class="FormControl-inlineValidation">
+    %s
+    <span>%s</span>
+</div>
+		`, o, v))
+		}
+	}
+	return template.HTML("")
+}
+
+func (t *Context) InputField(name string) template.HTMLAttr {
+	var s strings.Builder
+	if t.Errors != nil && t.Errors[name] != "" {
+		s.WriteString(`invalid="true"`)
+	}
+	if t.Form != nil && t.Form.Get(name) != "" {
+		s.WriteString(fmt.Sprintf("value=%q", t.Form.Get(name)))
+	}
+	return template.HTMLAttr(s.String())
 }

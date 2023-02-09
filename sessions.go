@@ -166,7 +166,7 @@ func (s *Session) Get(value string) []byte {
 	return s.decrypt(b)
 }
 
-func (s *SessionContext) Save(w http.ResponseWriter) string {
+func (s *SessionContext) Save(w http.ResponseWriter) {
 	b, _ := json.Marshal(s.Data)
 	value := s.s.Create(b)
 	cookie := &http.Cookie{
@@ -175,7 +175,6 @@ func (s *SessionContext) Save(w http.ResponseWriter) string {
 		Expires: time.Now().Add(time.Duration(s.s.maxAge) * time.Second),
 	}
 	http.SetCookie(w, cookie)
-	return value
 }
 
 func (s *Session) Create(b []byte) string {

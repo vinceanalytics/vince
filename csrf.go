@@ -3,7 +3,7 @@ package vince
 import (
 	"crypto/rand"
 	"crypto/subtle"
-	"encoding/json"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -22,39 +22,9 @@ func (v *Vince) csrf(h http.Handler) http.Handler {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
 		default:
 			r.ParseForm()
-			old, ok := session.Data[csrfTokenKey]
-			if !ok {
-				// the request didn't have the csrf token we reject it
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
 			value := r.Form.Get(csrfTokenKey)
-			current := session.s.Get(value)
-			if current == nil {
-				// our cookie value is secure, we failed to decrypt/decode. reject
-				// this request
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-			data := map[string]any{}
-			err := json.Unmarshal(current, &data)
-			if err != nil {
-				xlg.Err(err).Msg("failed to decode cookie value")
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-			activeToken, ok := data[csrfTokenKey]
-			if !ok {
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-			os, ok1 := old.(string)
-			as, ok2 := activeToken.(string)
-			if !ok1 || !ok2 {
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-			if subtle.ConstantTimeCompare([]byte(os), []byte(as)) == 0 {
+			saved, ok := session.Data[csrfTokenKey]
+			if !ok || subtle.ConstantTimeCompare([]byte(value), []byte(saved.(string))) == 0 {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
@@ -63,7 +33,7 @@ func (v *Vince) csrf(h http.Handler) http.Handler {
 		}
 		token := make([]byte, 32)
 		rand.Read(token)
-		session.Data[csrfTokenKey] = string(token)
+		session.Data[csrfTokenKey] = base64.StdEncoding.EncodeToString(token)
 		h.ServeHTTP(w, saveCsrf(session, w, r))
 	})
 }
@@ -74,11 +44,11 @@ func saveCsrf(session *SessionContext, w http.ResponseWriter, r *http.Request) *
 		xlg.Fatal().Msgf("failed to generate captcha %v", err)
 	}
 	session.Data[captchaKey] = formatCaptchaSolution(solution)
-	cookie := session.Save(w)
+	session.Save(w)
 	w.Header().Set("Vary", "Cookie")
 	return r.WithContext(
 		templates.SecureForm(r.Context(),
-			template.HTML(cookie),
+			template.HTML(session.Data[csrfTokenKey].(string)),
 			template.HTML(fmt.Sprintf(`<img src="%s" class="img-responsive"/>`, string(data))),
 		),
 	)

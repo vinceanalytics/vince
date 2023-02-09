@@ -1,10 +1,3 @@
-{{define "validation"}}
-<div class="FormControl-inlineValidation">
-    {{octicon "alert-fill" 12}}
-    <span>{{.}}</span>
-</div>
-{{end}}
-
 {{define "content"}}
 <div class="mx-auto mt-6 text-center">
     <div>
@@ -16,36 +9,27 @@
         <h2>Enter your details</h2>
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="name" class="FormControl-label">name</label>
-            <input {{if .Errors.name}} invalid="true" {{end}} {{with .Form.name}}value="{{index . 0}}" {{end}}
-                class="FormControl-input" type="text" name="name" id="name" placeholder="John Doe">
+            <input {{.InputField "name" }} class="FormControl-input" type="text" name="name" id="name"
+                placeholder="John Doe">
         </div>
-        {{with .Errors.name}}
-        {{template "validation" .}}
-        {{end}}
+        {{.Validate "name"}}
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="email" class="FormControl-label">email</label>
-            <input {{if .Errors.email}} invalid="true" {{end}} {{with .Form.email}}value="{{index . 0}}" {{end}}
-                class="FormControl-input" type="email" name="email" id="email" placeholder="example@email.com">
+            <input {{.InputField "email" }} class="FormControl-input" type="email" name="email" id="email"
+                placeholder="example@email.com">
         </div>
-        {{with .Errors.email}}
-        {{template "validation" .}}
-        {{end}}
+        {{.Validate "email"}}
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="password" class="FormControl-label">password</label>
-            <input {{if .Errors.password}}invalid="true" {{end}} class="FormControl-input" type="password"
-                name="password" id="password">
+            <input {{.InputField "password" }} class="FormControl-input" type="password" name="password" id="password">
         </div>
-        {{with .Errors.password}}
-        {{template "validation" .}}
-        {{end}}
+        {{.Validate "password"}}
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="password_confirmation" class="FormControl-label">Confirm password</label>
-            <input {{if .Errors.password_confirmation}}invalid="true" {{end}} class="FormControl-input" type="password"
+            <input {{.InputField "password_confirmation" }} class="FormControl-input" type="password"
                 name="password_confirmation" id="password_confirmation">
         </div>
-        {{with .Errors.password_confirmation}}
-        {{template "validation" .}}
-        {{end}}
+        {{.Validate "password_confirmation"}}
         {{template "secure" .}}
         <button type="submit" class="btn">Create my account →</button>
         <p>Already have an account? <a href="/login">Log in</a></p>
