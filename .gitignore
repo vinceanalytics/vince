@@ -12,3 +12,4 @@ geoip/*.zstd
 .vince/
 vincento
 loadgen
+tmp
