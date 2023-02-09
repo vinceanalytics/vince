@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/belak/octicon"
+	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/models"
 )
 
@@ -49,6 +50,7 @@ type Context struct {
 	Errors      map[string]string
 	Form        url.Values
 	Code        string
+	Config      *config.Config
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
@@ -57,6 +59,7 @@ func New(ctx context.Context, f ...func(c *Context)) *Context {
 		CSRF:        getCsrf(ctx),
 		Captcha:     getCaptcha(ctx),
 		CurrentUser: models.GetCurrentUser(ctx),
+		Config:      config.Get(ctx),
 	}
 	if len(f) > 0 {
 		f[0](c)

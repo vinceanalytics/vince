@@ -17,6 +17,7 @@ import (
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
+	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/timeseries"
@@ -37,6 +38,7 @@ type Vince struct {
 	sql     *gorm.DB
 	session *timeseries.SessionCache
 	mailer  email.Mailer
+	config  config.Config
 
 	events        chan *timeseries.Event
 	sessions      chan *timeseries.Session
@@ -155,10 +157,10 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: v.Handle(),
 		BaseContext: func(l net.Listener) context.Context {
-			return compute.WithAllocator(
-				compute.SetExecCtx(context.Background(), v.computeCtx),
-				v.allocator,
-			)
+			ctx := config.Set(ctx, &v.config)
+			ctx = compute.SetExecCtx(ctx, v.computeCtx)
+			ctx = compute.WithAllocator(ctx, v.allocator)
+			return ctx
 		},
 	}
 	go func() {
