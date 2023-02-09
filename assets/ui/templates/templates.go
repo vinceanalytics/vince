@@ -23,9 +23,8 @@ var Login = template.Must(
 )
 
 var Register = template.Must(
-	template.Must(template.ParseFS(files,
+	template.ParseFS(files,
 		"layouts/focus.html",
-	)).Funcs(funcs).ParseFS(files,
 		"auth/register_form.html",
 	),
 )
@@ -35,16 +34,11 @@ var Error = template.Must(template.ParseFS(files,
 ))
 
 var ActivationEmail = template.Must(
-	template.Must(template.ParseFS(files,
-		"layouts/email.html",
-	)).Funcs(funcs).ParseFS(files,
+	template.ParseFS(files,
+		"layouts/focus.html",
 		"email/activation_code.html",
 	),
 )
-
-var funcs = template.FuncMap{
-	"octicon": octicon.IconTemplateFunc,
-}
 
 type Context struct {
 	Title       string
