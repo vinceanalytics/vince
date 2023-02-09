@@ -1,0 +1,12 @@
+Hey {{.CurrentUser.Recipient}},
+<br /><br />
+{{block "content" .}}
+{{with .Data.email}}
+{{.}}
+{{end}}
+{{end}}
+<br /><br />
+
+--
+<br /><br />
+<a href="{{.VinceURL}}">{{.VinceURL}}</a>

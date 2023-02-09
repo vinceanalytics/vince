@@ -1,8 +1,11 @@
 package models
 
 import (
+	"context"
 	"database/sql"
+	"net/mail"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,6 +14,8 @@ import (
 )
 
 const CurrentUserID = "_current_user_id"
+
+type currentUserKey struct{}
 
 type User struct {
 	Model
@@ -34,6 +39,28 @@ type User struct {
 	TrialExpiryDate         sql.NullTime
 	EmailVerified           bool   `gorm:"not null;default:false"`
 	Theme                   string `gorm:"not null;default:system"`
+}
+
+func (u *User) Recipient() string {
+	return strings.Split(u.Name, " ")[0]
+}
+
+func (u *User) Address() *mail.Address {
+	return &mail.Address{
+		Name:    u.Name,
+		Address: u.Email,
+	}
+}
+
+func SetCurrentUser(ctx context.Context, usr *User) context.Context {
+	return context.WithValue(ctx, currentUserKey{}, usr)
+}
+
+func GetCurrentUser(ctx context.Context) *User {
+	if u := ctx.Value(currentUserKey{}); u != nil {
+		return u.(*User)
+	}
+	return nil
 }
 
 type Site struct {
