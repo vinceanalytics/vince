@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"github.com/emersion/go-message/mail"
+	"github.com/emersion/go-smtp"
 	"github.com/gernest/vince/assets/ui/templates"
 )
-
-type Send func(from string, to []string, msg io.Reader) error
 
 func compose(out io.Writer, tpl *template.Template, ctx *templates.Context, from *mail.Address, subject string) error {
 	var h mail.Header
@@ -35,4 +34,23 @@ func compose(out io.Writer, tpl *template.Template, ctx *templates.Context, from
 	w.Close()
 	mw.Close()
 	return nil
+}
+
+type Mailer interface {
+	SendMail(from string, to []string, msg io.Reader) error
+	io.Closer
+}
+
+var _ Mailer = (*MailHog)(nil)
+
+type MailHog struct {
+	*smtp.Client
+}
+
+func NewMailHog() (*MailHog, error) {
+	x, err := smtp.Dial("localhost:1025")
+	if err != nil {
+		return nil, err
+	}
+	return &MailHog{Client: x}, nil
 }

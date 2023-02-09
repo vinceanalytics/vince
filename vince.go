@@ -17,6 +17,7 @@ import (
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
+	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/timeseries"
 	"github.com/rs/zerolog"
@@ -35,6 +36,7 @@ type Vince struct {
 	ts      *timeseries.Tables
 	sql     *gorm.DB
 	session *timeseries.SessionCache
+	mailer  email.Mailer
 
 	events        chan *timeseries.Event
 	sessions      chan *timeseries.Session
@@ -113,9 +115,16 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		ts.Close()
 		return nil, err
 	}
+	mailer, err := email.NewMailHog()
+	if err != nil {
+		models.CloseDB(sqlDb)
+		ts.Close()
+		return nil, err
+	}
 	v := &Vince{
 		ts:            ts,
 		sql:           sqlDb,
+		mailer:        mailer,
 		events:        make(chan *timeseries.Event, MAX_BUFFER_SIZE),
 		sessions:      make(chan *timeseries.Session, MAX_BUFFER_SIZE),
 		abort:         make(chan os.Signal, 1),
@@ -177,6 +186,7 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 
 	models.CloseDB(v.sql)
 	v.ts.Close()
+	v.mailer.Close()
 	v.session.Close()
 	close(v.events)
 	close(v.sessions)
