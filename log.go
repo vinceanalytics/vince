@@ -12,7 +12,3 @@ func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 }
-
-func setDebug() {
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
-}

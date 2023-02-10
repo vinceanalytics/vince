@@ -28,6 +28,7 @@ func Flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    "config",
 			Usage:   "configuration file in json format",
+			Value:   "vince.json",
 			EnvVars: []string{"VINCE_CONFIG"},
 		},
 		&cli.IntFlag{
@@ -123,12 +124,13 @@ func Flags() []cli.Flag {
 }
 
 func Load(ctx *cli.Context) (*Config, error) {
+	base := fromCli(ctx)
 	conf, err := fromFile(ctx)
 	if err != nil {
 		return nil, err
 	}
-	proto.Merge(conf, fromCli(ctx))
-	return conf, nil
+	proto.Merge(base, conf)
+	return base, nil
 }
 
 func fromFile(ctx *cli.Context) (*Config, error) {
@@ -232,4 +234,12 @@ func fromCli(ctx *cli.Context) *Config {
 		x.Mailer.Smtp.Auth = &Config_Mailer_Smtp_OauthBearer{OauthBearer: oauth}
 	}
 	return x
+}
+
+func (c *Config) WriteToFile(name string) error {
+	b, err := protojson.Marshal(c)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(name, b, 0600)
 }

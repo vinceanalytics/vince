@@ -48,27 +48,7 @@ func ServeCMD() *cli.Command {
 	return &cli.Command{
 		Name:  "serve",
 		Usage: "starts a server",
-		Flags: []cli.Flag{
-			&cli.IntFlag{
-				Name:  "port",
-				Usage: "port to listen on",
-				Value: 8080,
-			},
-			&cli.PathFlag{
-				Name:  "data",
-				Usage: "path to data directory",
-				Value: ".vince",
-			},
-			&cli.BoolFlag{
-				Name:    "debug",
-				Aliases: []string{"d"},
-				Usage:   "sets log level to debug",
-			},
-			&cli.DurationFlag{
-				Name:  "flush-interval",
-				Value: 30 * time.Minute,
-			},
-		},
+		Flags: config.Flags(),
 		Action: func(ctx *cli.Context) error {
 			conf, err := config.Load(ctx)
 			if err != nil {
@@ -78,7 +58,11 @@ func ServeCMD() *cli.Command {
 			defer cancel()
 
 			if conf.Env == config.Config_DEVELOPMENT {
-				setDebug()
+				zerolog.SetGlobalLevel(zerolog.DebugLevel)
+			}
+			err = conf.WriteToFile(filepath.Join(conf.DataPath, "config.json"))
+			if err != nil {
+				return err
 			}
 			svr, err := New(goCtx, conf)
 			if err != nil {
@@ -114,7 +98,7 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 		ts.Close()
 		return nil, err
 	}
-	mailer, err := email.NewMailHog()
+	mailer, err := email.FromConfig(o)
 	if err != nil {
 		models.CloseDB(sqlDb)
 		ts.Close()

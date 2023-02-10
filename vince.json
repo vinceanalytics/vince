@@ -1,0 +1,15 @@
+{
+    "port": 8080,
+    "mailer": {
+        "address": {
+            "name": "vincent from vince",
+            "email": "vince@mailhog.example"
+        },
+        "smtp": {
+            "host": "localhost",
+            "port": 1025
+        }
+    },
+    "dataPath": ".vince",
+    "flushInterval": "10s"
+}
