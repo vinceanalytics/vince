@@ -1,0 +1,53 @@
+syntax = "proto3";
+package config;
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/gernest/vince/config";
+
+message Config {
+  int32 port = 1;
+  Env env = 2;
+  string url = 3;
+  Mailer mailer = 4;
+  string data_path = 5;
+  google.protobuf.Duration flush_interval = 6;
+
+  message Mailer {
+    Address address = 1;
+    Smtp smtp = 2;
+
+    message Smtp {
+      string host = 1;
+      int32 port = 2;
+      oneof auth {
+        Anonymous anonymous = 3;
+        Plain plain = 4;
+        OauthBearer oauth_bearer = 5;
+      }
+    }
+    message Anonymous { string trace = 1; }
+
+    message Plain {
+      string identity = 1;
+      string username = 2;
+      string password = 3;
+    }
+
+    message OauthBearer {
+      string username = 1;
+      string token = 2;
+      string host = 3;
+      int32 port = 4;
+    }
+  }
+  message Address {
+    string name = 1;
+    string email = 2;
+  }
+
+  enum Env {
+    DEVELOPMENT = 0;
+    STAGING = 1;
+    PRODUCTION = 2;
+  }
+}

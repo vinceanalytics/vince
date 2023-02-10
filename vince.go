@@ -28,24 +28,18 @@ import (
 
 const MAX_BUFFER_SIZE = 4098
 
-type Config struct {
-	DataPath      string
-	FlushInterval time.Duration
-}
-
 type Vince struct {
 	ts      *timeseries.Tables
 	sql     *gorm.DB
 	session *timeseries.SessionCache
 	mailer  email.Mailer
-	config  config.Config
+	config  *config.Config
 
 	events        chan *timeseries.Event
 	sessions      chan *timeseries.Session
 	abort         chan os.Signal
 	hs            *WorkerHealthChannels
 	clientSession *Session
-	flushInterval time.Duration
 	computeCtx    compute.ExecCtx
 	allocator     memory.Allocator
 }
@@ -76,23 +70,26 @@ func ServeCMD() *cli.Command {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			goCtx := context.Background()
-			if ctx.Bool("debug") {
-				setDebug()
-			}
-			svr, err := New(goCtx, &Config{
-				DataPath:      ctx.Path("data"),
-				FlushInterval: ctx.Duration("flush-interval"),
-			})
+			conf, err := config.Load(ctx)
 			if err != nil {
 				return err
 			}
-			return svr.Serve(goCtx, ctx.Int("port"))
+			goCtx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			if conf.Env == config.Config_DEVELOPMENT {
+				setDebug()
+			}
+			svr, err := New(goCtx, conf)
+			if err != nil {
+				return err
+			}
+			return svr.Serve(goCtx)
 		},
 	}
 }
 
-func New(ctx context.Context, o *Config) (*Vince, error) {
+func New(ctx context.Context, o *config.Config) (*Vince, error) {
 	os.MkdirAll(o.DataPath, 0755)
 
 	sqlPath := filepath.Join(o.DataPath, "vince.db")
@@ -127,12 +124,12 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 		ts:            ts,
 		sql:           sqlDb,
 		mailer:        mailer,
+		config:        o,
 		events:        make(chan *timeseries.Event, MAX_BUFFER_SIZE),
 		sessions:      make(chan *timeseries.Session, MAX_BUFFER_SIZE),
 		abort:         make(chan os.Signal, 1),
 		hs:            newWorkerHealth(),
 		clientSession: NewSession("vince"),
-		flushInterval: o.FlushInterval,
 		computeCtx:    compute.DefaultExecCtx(),
 		allocator:     alloc,
 	}
@@ -140,7 +137,7 @@ func New(ctx context.Context, o *Config) (*Vince, error) {
 	return v, nil
 }
 
-func (v *Vince) Serve(ctx context.Context, port int) error {
+func (v *Vince) Serve(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -148,16 +145,16 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	{
 		// add all workers
 		wg.Add(3)
-		go v.loopEvent(ctx, &wg)
+		go v.eventWriter(ctx, &wg)
 		go v.sessionWriter(ctx, &wg)
 		go v.seriesArchive(ctx, &wg)
 	}
 
 	svr := &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
+		Addr:    fmt.Sprintf(":%d", v.config.Port),
 		Handler: v.Handle(),
 		BaseContext: func(l net.Listener) context.Context {
-			ctx := config.Set(ctx, &v.config)
+			ctx := config.Set(ctx, v.config)
 			ctx = compute.SetExecCtx(ctx, v.computeCtx)
 			ctx = compute.WithAllocator(ctx, v.allocator)
 			return ctx
@@ -197,7 +194,7 @@ func (v *Vince) Serve(ctx context.Context, port int) error {
 	return nil
 }
 
-func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
+func (v *Vince) eventWriter(ctx context.Context, wg *sync.WaitGroup) {
 	ev := func() *zerolog.Event {
 		return xlg.Debug().Str("worker", "event_writer")
 	}
@@ -208,8 +205,7 @@ func (v *Vince) loopEvent(ctx context.Context, wg *sync.WaitGroup) {
 	}()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	events := make([]*timeseries.Event, MAX_BUFFER_SIZE)
-	events = events[:0]
+	events := make([]*timeseries.Event, 0, MAX_BUFFER_SIZE)
 	flush := func() {
 		count := len(events)
 		if count == 0 {
@@ -249,8 +245,7 @@ func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
 		ev().Msg("exit")
 		defer wg.Done()
 	}()
-	sessions := make([]*timeseries.Session, MAX_BUFFER_SIZE)
-	sessions = sessions[:0]
+	sessions := make([]*timeseries.Session, 0, MAX_BUFFER_SIZE)
 	flush := func() {
 		count := len(sessions)
 		if count == 0 {
@@ -286,12 +281,13 @@ func (v *Vince) seriesArchive(ctx context.Context, wg *sync.WaitGroup) {
 	ev := func() *zerolog.Event {
 		return xlg.Debug().Str("worker", "series_archive")
 	}
-	ev().Dur("interval", v.flushInterval).Msg("start")
+	interval := v.config.FlushInterval.AsDuration()
+	ev().Dur("interval", interval).Msg("start")
 	defer func() {
 		ev().Msg("exit")
 		defer wg.Done()
 	}()
-	ticker := time.NewTicker(v.flushInterval)
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {
 		select {
