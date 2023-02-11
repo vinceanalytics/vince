@@ -60,6 +60,12 @@ func ServeCMD() *cli.Command {
 			if conf.Env == config.Config_DEVELOPMENT {
 				zerolog.SetGlobalLevel(zerolog.DebugLevel)
 			}
+			if _, err = os.Stat(conf.DataPath); err != nil && os.IsNotExist(err) {
+				err = os.MkdirAll(conf.DataPath, 0755)
+				if err != nil {
+					return err
+				}
+			}
 			err = conf.WriteToFile(filepath.Join(conf.DataPath, "config.json"))
 			if err != nil {
 				return err
@@ -74,8 +80,6 @@ func ServeCMD() *cli.Command {
 }
 
 func New(ctx context.Context, o *config.Config) (*Vince, error) {
-	os.MkdirAll(o.DataPath, 0755)
-
 	sqlPath := filepath.Join(o.DataPath, "vince.db")
 	sqlDb, err := models.Open(sqlPath)
 	if err != nil {
@@ -94,12 +98,14 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 		BufferItems: 64,
 	})
 	if err != nil {
+		xlg.Err(err).Msg("failed creating timeseries session cache")
 		models.CloseDB(sqlDb)
 		ts.Close()
 		return nil, err
 	}
 	mailer, err := email.FromConfig(o)
 	if err != nil {
+		xlg.Err(err).Msg("failed creating mailer")
 		models.CloseDB(sqlDb)
 		ts.Close()
 		return nil, err

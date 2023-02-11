@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"math/rand"
 	"net/mail"
 	"path/filepath"
 	"strings"
@@ -112,7 +113,7 @@ type CheckStatEmail struct {
 type EmailVerificationCode struct {
 	Model
 	Code   uint64
-	UserID uint64
+	UserID sql.NullInt64
 }
 
 type SpikeNotification struct {
@@ -273,6 +274,31 @@ func Open(path string) (*gorm.DB, error) {
 	)
 	if err != nil {
 		return nil, err
+	}
+	// fill verification codes
+	var codes int64
+	if err = db.Model(&EmailVerificationCode{}).Count(&codes).Error; err != nil {
+		return nil, err
+	}
+	if codes == 0 {
+		// We generate end-start rows on email_verification_codes table with random
+		// code between start and end. user_id is set to null.
+		start := 1000
+		end := 9999
+		batch := make([]*EmailVerificationCode, 0, end-start)
+		for i := start; i < end; i += 1 {
+			batch = append(batch, &EmailVerificationCode{
+				Code: uint64(i),
+			})
+		}
+		rand.Shuffle(len(batch), func(i, j int) {
+			batch[i], batch[j] = batch[j], batch[i]
+		})
+		err = db.CreateInBatches(batch, 100).Error
+		if err != nil {
+			return nil, err
+		}
+
 	}
 	return db, nil
 }

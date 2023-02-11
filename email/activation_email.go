@@ -3,16 +3,17 @@ package email
 import (
 	"bytes"
 	"context"
+	"fmt"
 
-	"github.com/emersion/go-message/mail"
 	"github.com/gernest/vince/assets/ui/templates"
 )
 
-func SendActivation(ctx context.Context, mailer Mailer, from *mail.Address) error {
+func SendActivation(ctx context.Context, mailer Mailer) error {
+	from := mailer.From()
 	rCtx := templates.New(ctx)
 	var b bytes.Buffer
 	err := compose(&b, templates.ActivationEmail, rCtx, from,
-		rCtx.Code+" is your Vince email verification code",
+		fmt.Sprintf("%d is your Vince email verification code", rCtx.Code),
 	)
 	if err != nil {
 		return err

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/belak/octicon"
+	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/models"
 )
@@ -49,7 +50,7 @@ type Context struct {
 	Captcha     template.HTML
 	Errors      map[string]string
 	Form        url.Values
-	Code        string
+	Code        uint64
 	Config      *config.Config
 }
 
@@ -60,6 +61,7 @@ func New(ctx context.Context, f ...func(c *Context)) *Context {
 		Captcha:     getCaptcha(ctx),
 		CurrentUser: models.GetCurrentUser(ctx),
 		Config:      config.Get(ctx),
+		Code:        auth.GetActivationCode(ctx),
 	}
 	if len(f) > 0 {
 		f[0](c)

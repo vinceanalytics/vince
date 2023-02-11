@@ -1,10 +1,13 @@
 package vince
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/auth"
+	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/models"
 )
 
@@ -56,9 +59,27 @@ func (v *Vince) register() http.Handler {
 			ServeError(w, http.StatusInternalServerError)
 			return
 		}
+		ctx := models.SetCurrentUser(r.Context(), u)
 		session.Data[models.CurrentUserID] = u.ID
 		session.Data["logged_in"] = true
 		session.Save(w)
-		http.Redirect(w, r, "/login", http.StatusFound)
+		if u.EmailVerified {
+			http.Redirect(w, r, "/new", http.StatusFound)
+		} else {
+			err := v.sendVerificationEmail(ctx, u)
+			if err != nil {
+				xlg.Err(err).Msg("failed sending email message")
+			}
+			http.Redirect(w, r, "/activate", http.StatusFound)
+		}
 	})
+}
+
+func (v *Vince) sendVerificationEmail(ctx context.Context, usr *models.User) error {
+	code, err := auth.IssueEmailVerification(v.sql, usr)
+	if err != nil {
+		return err
+	}
+	ctx = auth.SetActivationCode(ctx, code)
+	return email.SendActivation(ctx, v.mailer)
 }

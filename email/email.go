@@ -41,6 +41,7 @@ func compose(out io.Writer, tpl *template.Template, ctx *templates.Context, from
 
 type Mailer interface {
 	SendMail(from string, to []string, msg io.Reader) error
+	From() *mail.Address
 	io.Closer
 }
 
@@ -49,6 +50,7 @@ var _ Mailer = (*SMTP)(nil)
 type SMTP struct {
 	auth    sasl.Client
 	address string
+	from    *mail.Address
 }
 
 func (s *SMTP) SendMail(from string, to []string, msg io.Reader) error {
@@ -58,10 +60,20 @@ func (s *SMTP) SendMail(from string, to []string, msg io.Reader) error {
 func (s *SMTP) Close() error {
 	return nil
 }
+func (s *SMTP) From() *mail.Address {
+	return &mail.Address{
+		Name:    s.from.Name,
+		Address: s.from.Address,
+	}
+}
 
-func FromConfig(conf *config.Config) (*SMTP, error) {
+func FromConfig(conf *config.Config) (Mailer, error) {
 	s := &SMTP{
 		address: fmt.Sprintf("%s:%d", conf.Mailer.Smtp.Host, conf.Mailer.Smtp.Port),
+		from: &mail.Address{
+			Name:    conf.Mailer.Address.Name,
+			Address: conf.Mailer.Address.Email,
+		},
 	}
 	c, err := smtp.Dial(s.address)
 	if err != nil {
@@ -85,5 +97,21 @@ func FromConfig(conf *config.Config) (*SMTP, error) {
 			)
 		}
 	}
+	if conf.Env == config.Config_DEVELOPMENT {
+		return &MailHog{SMTP: s}, nil
+	}
 	return s, nil
+}
+
+type MailHog struct {
+	*SMTP
+}
+
+func (m *MailHog) SendMail(from string, to []string, msg io.Reader) error {
+	client, err := smtp.Dial(m.address)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+	return client.SendMail(from, to, msg)
 }
