@@ -8,12 +8,13 @@ import (
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/email"
+	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 )
 
 func (v *Vince) registerForm() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ServeHTML(w, templates.Register, http.StatusOK, templates.New(r.Context()))
+		ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(r.Context()))
 	})
 }
 
@@ -23,8 +24,8 @@ func (v *Vince) register() http.Handler {
 		r.ParseForm()
 		u, m, err := auth.NewUser(r)
 		if err != nil {
-			xlg.Err(err).Msg("Failed decoding new user from")
-			ServeError(w, http.StatusInternalServerError)
+			log.Get(r.Context()).Err(err).Msg("Failed decoding new user from")
+			ServeError(r.Context(), w, http.StatusInternalServerError)
 			return
 		}
 		validCaptcha := session.VerifyCaptchaSolution(r.Form.Get(captchaKey))
@@ -37,7 +38,7 @@ func (v *Vince) register() http.Handler {
 				}
 				m["captcha"] = "Please complete the captcha to register"
 			}
-			ServeHTML(w, templates.Register, http.StatusOK, templates.New(
+			ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(
 				r.Context(),
 				func(c *templates.Context) {
 					c.Errors = m
@@ -47,11 +48,11 @@ func (v *Vince) register() http.Handler {
 			return
 		}
 		if err := v.sql.Save(u).Error; err != nil {
-			xlg.Err(err).Msg("failed saving new user")
+			log.Get(r.Context()).Err(err).Msg("failed saving new user")
 			if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 				r = saveCsrf(w, r, session)
 				r = saveCaptcha(w, r, session)
-				ServeHTML(w, templates.Register, http.StatusOK, templates.New(
+				ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(
 					r.Context(),
 					func(c *templates.Context) {
 						c.Errors = map[string]string{
@@ -62,7 +63,7 @@ func (v *Vince) register() http.Handler {
 				))
 				return
 			}
-			ServeError(w, http.StatusInternalServerError)
+			ServeError(r.Context(), w, http.StatusInternalServerError)
 			return
 		}
 		ctx := models.SetCurrentUser(r.Context(), u)
@@ -74,7 +75,7 @@ func (v *Vince) register() http.Handler {
 		} else {
 			err := v.sendVerificationEmail(ctx, u)
 			if err != nil {
-				xlg.Err(err).Msg("failed sending email message")
+				log.Get(r.Context()).Err(err).Msg("failed sending email message")
 			}
 			http.Redirect(w, r, "/activate", http.StatusFound)
 		}

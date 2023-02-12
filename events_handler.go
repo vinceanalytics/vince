@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gernest/vince/geoip"
+	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/timeseries"
 )
 
@@ -30,6 +31,7 @@ func (v *Vince) EventsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func (v *Vince) processEvent(r *http.Request) bool {
+	xlg := log.Get(r.Context())
 	var req Request
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {

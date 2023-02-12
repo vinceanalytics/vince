@@ -13,6 +13,7 @@ message Config {
   google.protobuf.Duration flush_interval = 6;
   bool enable_email_verification = 7;
   bool is_self_host = 8;
+  LogLevel log_level = 9;
 
   message Mailer {
     Address address = 1;
@@ -51,5 +52,20 @@ message Config {
     DEVELOPMENT = 0;
     STAGING = 1;
     PRODUCTION = 2;
+  }
+
+  enum LogLevel {
+    debug = 0;
+    info = 1;
+    warn = 2;
+    error = 3;
+    fatal = 4;
+    panic = 6;
+    // NoLevel defines an absent log level.
+    no = 7;
+    // Disabled disables the logger.
+    disabled = 8;
+    // TraceLevel defines trace log level.
+    trace = -1;
   }
 }

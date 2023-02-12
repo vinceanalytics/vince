@@ -18,6 +18,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gernest/vince/log"
 )
 
 type Session struct {
@@ -70,11 +72,11 @@ func (s *Session) encode(value []byte) []byte {
 	return encoded
 }
 
-func (s *Session) decode(value []byte) []byte {
+func (s *Session) decode(ctx context.Context, value []byte) []byte {
 	decoded := make([]byte, base64.URLEncoding.DecodedLen(len(value)))
 	b, err := base64.URLEncoding.Decode(decoded, value)
 	if err != nil {
-		xlg.Err(err).Msg("failed to decode cookie value")
+		log.Get(ctx).Err(err).Msg("failed to decode cookie value")
 		return nil
 	}
 	return decoded[:b]
@@ -120,26 +122,26 @@ func (s *Session) Load(r *http.Request) (*SessionContext, *http.Request) {
 		return rs, r
 	}
 
-	if g := s.Get(cookie.Value); g != nil {
+	if g := s.Get(r.Context(), cookie.Value); g != nil {
 		err := json.Unmarshal(g, &rs.Data)
 		if err != nil {
-			xlg.Err(err).Msg("failed to decode session value")
+			log.Get(r.Context()).Err(err).Msg("failed to decode session value")
 		}
 	}
 	return rs, r
 }
 
-func (s *Session) Get(value string) []byte {
+func (s *Session) Get(ctx context.Context, value string) []byte {
 	if value == "" {
 		return nil
 	}
-	b := s.decode([]byte(value))
+	b := s.decode(ctx, []byte(value))
 	if b == nil {
 		return nil
 	}
 	parts := bytes.SplitN(b, []byte("|"), 3)
 	if len(parts) != 3 {
-		xlg.Error().Msg("invalid hmac")
+		log.Get(ctx).Error().Msg("invalid hmac")
 		return nil
 	}
 	b = append([]byte(s.name+"|"), b[:len(b)-len(parts[2])-1]...)
@@ -160,7 +162,7 @@ func (s *Session) Get(value string) []byte {
 	if t1 < t2-int64(s.maxAge) {
 		return nil
 	}
-	if b = s.decode(parts[1]); b == nil {
+	if b = s.decode(ctx, parts[1]); b == nil {
 		return nil
 	}
 	return s.decrypt(b)

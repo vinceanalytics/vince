@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/timeseries"
 )
 
@@ -32,11 +33,11 @@ func (v *Vince) v1Stats() http.Handler {
 func (v *Vince) v1StatsRealtimeVisitors(w http.ResponseWriter, r *http.Request) {
 	query := make(url.Values)
 	query.Set("period", "realtime")
-	if r, err := v.ts.CurrentVisitors(r.Context(), timeseries.QueryFrom(query)); err != nil {
-		xlg.Err(err).Msg("failed to query events")
+	if res, err := v.ts.CurrentVisitors(r.Context(), timeseries.QueryFrom(query)); err != nil {
+		log.Get(r.Context()).Err(err).Msg("failed to query events")
 		ServeJSON(w, http.StatusInternalServerError, timeseries.Record{})
 	} else {
-		ServeJSON(w, http.StatusOK, r)
+		ServeJSON(w, http.StatusOK, res)
 	}
 }
 

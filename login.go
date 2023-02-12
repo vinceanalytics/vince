@@ -8,6 +8,6 @@ import (
 
 func (v *Vince) loginForm() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ServeHTML(w, templates.Login, http.StatusOK, templates.New(r.Context()))
+		ServeHTML(r.Context(), w, templates.Login, http.StatusOK, templates.New(r.Context()))
 	})
 }

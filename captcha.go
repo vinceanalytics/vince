@@ -8,6 +8,7 @@ import (
 
 	"github.com/dchest/captcha"
 	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/log"
 	"github.com/lestrrat-go/dataurl"
 )
 
@@ -20,7 +21,7 @@ func saveCaptcha(w http.ResponseWriter, r *http.Request, session *SessionContext
 	img.WriteTo(&b)
 	data, err := dataurl.Encode(b.Bytes(), dataurl.WithBase64Encoding(true), dataurl.WithMediaType("image/png"))
 	if err != nil {
-		xlg.Err(err).Msg("failed to encode captcha image")
+		log.Get(r.Context()).Err(err).Msg("failed to encode captcha image")
 		return r
 	}
 	session.Data[captchaKey] = formatCaptchaSolution(solution)

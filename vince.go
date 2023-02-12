@@ -19,6 +19,7 @@ import (
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
+	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/timeseries"
 	"github.com/rs/zerolog"
@@ -50,22 +51,22 @@ func ServeCMD() *cli.Command {
 		Usage: "starts a server",
 		Flags: config.Flags(),
 		Action: func(ctx *cli.Context) error {
+			xlg := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
 			conf, err := config.Load(ctx)
 			if err != nil {
 				return err
 			}
 			goCtx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-
-			if conf.Env == config.Config_DEVELOPMENT {
-				zerolog.SetGlobalLevel(zerolog.DebugLevel)
-			}
+			xlg = xlg.Level(zerolog.Level(conf.LogLevel))
+			goCtx = log.Set(goCtx, &xlg)
 			if _, err = os.Stat(conf.DataPath); err != nil && os.IsNotExist(err) {
 				err = os.MkdirAll(conf.DataPath, 0755)
 				if err != nil {
 					return err
 				}
 			}
+			conf.LogLevel = config.Config_info
 			err = conf.WriteToFile(filepath.Join(conf.DataPath, "config.json"))
 			if err != nil {
 				return err
@@ -98,14 +99,14 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 		BufferItems: 64,
 	})
 	if err != nil {
-		xlg.Err(err).Msg("failed creating timeseries session cache")
+		log.Get(ctx).Err(err).Msg("failed creating timeseries session cache")
 		models.CloseDB(sqlDb)
 		ts.Close()
 		return nil, err
 	}
 	mailer, err := email.FromConfig(o)
 	if err != nil {
-		xlg.Err(err).Msg("failed creating mailer")
+		log.Get(ctx).Err(err).Msg("failed creating mailer")
 		models.CloseDB(sqlDb)
 		ts.Close()
 		return nil, err
@@ -153,14 +154,14 @@ func (v *Vince) Serve(ctx context.Context) error {
 	go func() {
 		err := svr.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			xlg.Err(err).Msg("Exited server")
+			log.Get(ctx).Err(err).Msg("Exited server")
 			v.exit()
 		}
 	}()
-	xlg.Info().Msgf("started serving traffic from %s", svr.Addr)
+	log.Get(ctx).Info().Msgf("started serving traffic from %s", svr.Addr)
 	signal.Notify(v.abort, os.Interrupt)
 	sig := <-v.abort
-	xlg.Info().Msgf("received signal %s shutting down the server", sig)
+	log.Get(ctx).Info().Msgf("received signal %s shutting down the server", sig)
 
 	err := svr.Shutdown(ctx)
 	if err != nil {
@@ -186,7 +187,7 @@ func (v *Vince) Serve(ctx context.Context) error {
 
 func (v *Vince) eventWriter(ctx context.Context, wg *sync.WaitGroup) {
 	ev := func() *zerolog.Event {
-		return xlg.Debug().Str("worker", "event_writer")
+		return log.Get(ctx).Debug().Str("worker", "event_writer")
 	}
 	ev().Msg("start")
 	defer func() {
@@ -228,7 +229,7 @@ func (v *Vince) eventWriter(ctx context.Context, wg *sync.WaitGroup) {
 
 func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
 	ev := func() *zerolog.Event {
-		return xlg.Debug().Str("worker", "session_writer")
+		return log.Get(ctx).Debug().Str("worker", "session_writer")
 	}
 	ev().Msg("start")
 	defer func() {
@@ -269,7 +270,7 @@ func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
 
 func (v *Vince) seriesArchive(ctx context.Context, wg *sync.WaitGroup) {
 	ev := func() *zerolog.Event {
-		return xlg.Debug().Str("worker", "series_archive")
+		return log.Get(ctx).Debug().Str("worker", "series_archive")
 	}
 	interval := v.config.FlushInterval.AsDuration()
 	ev().Dur("interval", interval).Msg("start")
@@ -346,6 +347,6 @@ func (v *Vince) Handle() http.Handler {
 			admin.ServeHTTP(w, r)
 			return
 		}
-		ServeError(w, http.StatusNotFound)
+		ServeError(r.Context(), w, http.StatusNotFound)
 	})
 }

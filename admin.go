@@ -58,6 +58,6 @@ func (v *Vince) admin() http.Handler {
 				return
 			}
 		}
-		ServeError(w, http.StatusNotImplemented)
+		ServeError(r.Context(), w, http.StatusNotImplemented)
 	})
 }
