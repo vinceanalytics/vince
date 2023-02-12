@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	"github.com/gernest/vince/models"
 	"gorm.io/gorm"
@@ -15,13 +14,13 @@ func IssueEmailVerification(db *gorm.DB, usr *models.User) (uint64, error) {
 		return 0, err
 	}
 	var code models.EmailVerificationCode
-	err = db.Where("user_id=?", nil).First(&code).Error
+	err = db.Where("user_id is null").First(&code).Error
 	if err != nil {
 		return 0, err
 	}
-	code.UpdatedAt = time.Now()
 	code.UserID = sql.NullInt64{
 		Int64: int64(usr.ID),
+		Valid: true,
 	}
 	err = db.Save(&code).Error
 	if err != nil {
