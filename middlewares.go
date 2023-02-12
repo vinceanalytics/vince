@@ -1,14 +1,9 @@
 package vince
 
 import (
-	"crypto/rand"
-	"crypto/subtle"
-	"encoding/base64"
-	"html/template"
 	"net/http"
 	"time"
 
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/sessions"
@@ -128,30 +123,17 @@ func (v *Vince) captcha(h http.Handler) http.Handler {
 
 func (v *Vince) csrf(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := sessions.Load(r)
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
 		default:
-			r.ParseForm()
-			value := r.Form.Get("_csrf")
-			saved, ok := session.Data["_csrf"]
-			if !ok || subtle.ConstantTimeCompare([]byte(value), []byte(saved.(string))) == 0 {
+			if !sessions.IsValidCSRF(r) {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
 			h.ServeHTTP(w, r)
 			return
 		}
-		r = saveCsrf(w, r, session)
+		r = sessions.SaveCsrf(w, r)
 		h.ServeHTTP(w, r)
 	})
-}
-
-func saveCsrf(w http.ResponseWriter, r *http.Request, session *sessions.SessionContext) *http.Request {
-	token := make([]byte, 32)
-	rand.Read(token)
-	csrf := base64.StdEncoding.EncodeToString(token)
-	session.Data["_csrf"] = csrf
-	session.Save(w)
-	return r.WithContext(templates.SetCSRF(r.Context(), template.HTML(csrf)))
 }

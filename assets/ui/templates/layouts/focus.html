@@ -30,6 +30,6 @@
 <img {{.Captcha}} class="img-responsive" />
 <input {{if .Errors.captcha}} invalid="true" {{end}} type="text" name="_captcha" class="FormControl-input"
     placeholder="write the number displayed above" required>
-{{.Validate "captcha"}}
+{{.Validate "_captcha"}}
 {{end}}
 {{end}}

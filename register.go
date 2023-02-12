@@ -7,7 +7,6 @@ import (
 
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/auth"
-	"github.com/gernest/vince/captcha"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
@@ -31,15 +30,15 @@ func (v *Vince) register() http.Handler {
 			return
 		}
 
-		validCaptcha := session.VerifyCaptchaSolution(r.Form.Get(captcha.Key))
+		validCaptcha := session.VerifyCaptchaSolution(r)
 		if len(m) > 0 || !validCaptcha {
-			r = saveCsrf(w, r, session)
+			r = sessions.SaveCsrf(w, r)
 			r = sessions.SaveCaptcha(w, r)
 			if !validCaptcha {
 				if m == nil {
 					m = make(map[string]string)
 				}
-				m["captcha"] = "Please complete the captcha to register"
+				m["_captcha"] = "Please complete the captcha to register"
 			}
 			ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(
 				r.Context(),
@@ -53,7 +52,7 @@ func (v *Vince) register() http.Handler {
 		if err := v.sql.Save(u).Error; err != nil {
 			log.Get(r.Context()).Err(err).Msg("failed saving new user")
 			if strings.Contains(err.Error(), "UNIQUE constraint failed") {
-				r = saveCsrf(w, r, session)
+				r = sessions.SaveCsrf(w, r)
 				r = sessions.SaveCaptcha(w, r)
 				ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(
 					r.Context(),

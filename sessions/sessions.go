@@ -20,9 +20,8 @@ import (
 	"sync"
 	"time"
 
-	ocaptcha "github.com/dchest/captcha"
+	"github.com/dchest/captcha"
 	"github.com/gernest/vince/assets/ui/templates"
-	"github.com/gernest/vince/captcha"
 	"github.com/gernest/vince/log"
 	"github.com/lestrrat-go/dataurl"
 )
@@ -102,12 +101,14 @@ type SessionContext struct {
 	s    *Session
 }
 
-func (s *SessionContext) VerifyCaptchaSolution(digits string) bool {
+func (s *SessionContext) VerifyCaptchaSolution(r *http.Request) bool {
+	r.ParseForm()
+	digits := r.Form.Get("_captcha")
 	digits = strings.TrimSpace(digits)
 	if digits == "" {
 		return false
 	}
-	if x, ok := s.Data[captcha.Key]; ok {
+	if x, ok := s.Data["_captcha"]; ok {
 		b := x.(string)
 		return digits == b
 	}
@@ -213,8 +214,8 @@ func (s *Session) Create(b []byte) string {
 
 func SaveCaptcha(w http.ResponseWriter, r *http.Request) *http.Request {
 	session, r := Load(r)
-	solution := ocaptcha.RandomDigits(ocaptcha.DefaultLen)
-	img := ocaptcha.NewImage("", solution, ocaptcha.StdWidth, ocaptcha.StdHeight)
+	solution := captcha.RandomDigits(captcha.DefaultLen)
+	img := captcha.NewImage("", solution, captcha.StdWidth, captcha.StdHeight)
 	var b bytes.Buffer
 	img.WriteTo(&b)
 	data, err := dataurl.Encode(b.Bytes(), dataurl.WithBase64Encoding(true), dataurl.WithMediaType("image/png"))
@@ -222,9 +223,39 @@ func SaveCaptcha(w http.ResponseWriter, r *http.Request) *http.Request {
 		log.Get(r.Context()).Err(err).Msg("failed to encode captcha image")
 		return r
 	}
-	session.Data[captcha.Key] = captcha.FormatCaptchaSolution(solution)
+	session.Data["_captcha"] = formatCaptchaSolution(solution)
 	session.Save(w)
 	return r.WithContext(templates.SetCaptcha(r.Context(),
 		template.HTMLAttr(fmt.Sprintf("src=%q", string(data))),
 	))
+}
+
+func SaveCsrf(w http.ResponseWriter, r *http.Request) *http.Request {
+	session, r := Load(r)
+	token := make([]byte, 32)
+	rand.Read(token)
+	csrf := base64.StdEncoding.EncodeToString(token)
+	session.Data["_csrf"] = csrf
+	session.Save(w)
+	return r.WithContext(templates.SetCSRF(r.Context(), template.HTML(csrf)))
+}
+
+func IsValidCSRF(r *http.Request) bool {
+	r.ParseForm()
+	session, _ := Load(r)
+	value := r.Form.Get("_csrf")
+	var token string
+	if saved, ok := session.Data["_csrf"]; ok {
+		token = saved.(string)
+	}
+	return subtle.ConstantTimeCompare([]byte(value), []byte(token)) == 1
+}
+
+func formatCaptchaSolution(sol []byte) string {
+	var s strings.Builder
+	s.Grow(len(sol))
+	for _, b := range sol {
+		s.WriteString(strconv.FormatInt(int64(b), 10))
+	}
+	return s.String()
 }
