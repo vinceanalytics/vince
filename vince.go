@@ -21,6 +21,7 @@ import (
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/timeseries"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
@@ -36,13 +37,12 @@ type Vince struct {
 	mailer  email.Mailer
 	config  *config.Config
 
-	events        chan *timeseries.Event
-	sessions      chan *timeseries.Session
-	abort         chan os.Signal
-	hs            *WorkerHealthChannels
-	clientSession *Session
-	computeCtx    compute.ExecCtx
-	allocator     memory.Allocator
+	events     chan *timeseries.Event
+	sessions   chan *timeseries.Session
+	abort      chan os.Signal
+	hs         *WorkerHealthChannels
+	computeCtx compute.ExecCtx
+	allocator  memory.Allocator
 }
 
 func ServeCMD() *cli.Command {
@@ -112,17 +112,16 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 		return nil, err
 	}
 	v := &Vince{
-		ts:            ts,
-		sql:           sqlDb,
-		mailer:        mailer,
-		config:        o,
-		events:        make(chan *timeseries.Event, MAX_BUFFER_SIZE),
-		sessions:      make(chan *timeseries.Session, MAX_BUFFER_SIZE),
-		abort:         make(chan os.Signal, 1),
-		hs:            newWorkerHealth(),
-		clientSession: NewSession("vince"),
-		computeCtx:    compute.DefaultExecCtx(),
-		allocator:     alloc,
+		ts:         ts,
+		sql:        sqlDb,
+		mailer:     mailer,
+		config:     o,
+		events:     make(chan *timeseries.Event, MAX_BUFFER_SIZE),
+		sessions:   make(chan *timeseries.Session, MAX_BUFFER_SIZE),
+		abort:      make(chan os.Signal, 1),
+		hs:         newWorkerHealth(),
+		computeCtx: compute.DefaultExecCtx(),
+		allocator:  alloc,
 	}
 	v.session = timeseries.NewSessionCache(cache, v.sessions)
 	return v, nil
@@ -131,7 +130,8 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 func (v *Vince) Serve(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
+	session := sessions.NewSession("vince")
+	ctx = sessions.Set(ctx, session)
 	var wg sync.WaitGroup
 	{
 		// add all workers

@@ -6,13 +6,12 @@ import (
 	"encoding/base64"
 	"html/template"
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/sessions"
 )
 
 type middleware func(http.Handler) http.Handler
@@ -36,14 +35,14 @@ func (v *Vince) secureForm() []middleware {
 
 func (v *Vince) fetchSession(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, r = v.clientSession.Load(r)
+		_, r = sessions.Load(r)
 		h.ServeHTTP(w, r)
 	})
 }
 
 func (v *Vince) sessionTimeout(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := v.clientSession.Load(r)
+		session, r := sessions.Load(r)
 		var timeoutAt time.Time
 		if v, ok := session.Data["session_timeout_at"]; ok {
 			timeoutAt = time.Unix(v.(int64), 0)
@@ -65,7 +64,7 @@ func (v *Vince) sessionTimeout(h http.Handler) http.Handler {
 
 func (v *Vince) auth(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := v.clientSession.Load(r)
+		session, r := sessions.Load(r)
 		if userId, ok := session.Data[models.CurrentUserID]; ok {
 			usr := &models.User{}
 			if err := v.sql.First(usr, uint64(userId.(int64))).Error; err != nil {
@@ -80,7 +79,7 @@ func (v *Vince) auth(h http.Handler) http.Handler {
 
 func (v *Vince) lastSeen(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := v.clientSession.Load(r)
+		session, r := sessions.Load(r)
 		usr := models.GetCurrentUser(r.Context())
 		var lastSeen time.Time
 		if v, ok := session.Data["last_seen"]; ok {
@@ -118,10 +117,9 @@ func putSecureBrowserHeaders(h http.Handler) http.Handler {
 
 func (v *Vince) captcha(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := v.clientSession.Load(r)
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
-			r = saveCaptcha(w, r, session)
+			r = sessions.SaveCaptcha(w, r)
 		default:
 		}
 		h.ServeHTTP(w, r)
@@ -130,7 +128,7 @@ func (v *Vince) captcha(h http.Handler) http.Handler {
 
 func (v *Vince) csrf(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := v.clientSession.Load(r)
+		session, r := sessions.Load(r)
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
 		default:
@@ -149,20 +147,11 @@ func (v *Vince) csrf(h http.Handler) http.Handler {
 	})
 }
 
-func saveCsrf(w http.ResponseWriter, r *http.Request, session *SessionContext) *http.Request {
+func saveCsrf(w http.ResponseWriter, r *http.Request, session *sessions.SessionContext) *http.Request {
 	token := make([]byte, 32)
 	rand.Read(token)
 	csrf := base64.StdEncoding.EncodeToString(token)
 	session.Data["_csrf"] = csrf
 	session.Save(w)
 	return r.WithContext(templates.SetCSRF(r.Context(), template.HTML(csrf)))
-}
-
-func formatCaptchaSolution(sol []byte) string {
-	var s strings.Builder
-	s.Grow(len(sol))
-	for _, b := range sol {
-		s.WriteString(strconv.FormatInt(int64(b), 10))
-	}
-	return s.String()
 }

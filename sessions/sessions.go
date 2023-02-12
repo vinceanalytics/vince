@@ -1,4 +1,4 @@
-package vince
+package sessions
 
 import (
 	"bytes"
@@ -13,13 +13,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash"
+	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	ocaptcha "github.com/dchest/captcha"
+	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/captcha"
 	"github.com/gernest/vince/log"
+	"github.com/lestrrat-go/dataurl"
 )
 
 type Session struct {
@@ -29,6 +34,16 @@ type Session struct {
 	block    cipher.Block
 	macPool  *sync.Pool
 	maxAge   int
+}
+
+type sessionsKey struct{}
+
+func Set(ctx context.Context, s *Session) context.Context {
+	return context.WithValue(ctx, sessionsKey{}, s)
+}
+
+func Get(ctx context.Context) *Session {
+	return ctx.Value(sessionsKey{}).(*Session)
 }
 
 func NewSession(name string) *Session {
@@ -92,7 +107,7 @@ func (s *SessionContext) VerifyCaptchaSolution(digits string) bool {
 	if digits == "" {
 		return false
 	}
-	if x, ok := s.Data[captchaKey]; ok {
+	if x, ok := s.Data[captcha.Key]; ok {
 		b := x.(string)
 		return digits == b
 	}
@@ -107,6 +122,10 @@ func (s *SessionContext) IsLoggedIn() bool {
 }
 
 type sessionContextKey struct{}
+
+func Load(r *http.Request) (*SessionContext, *http.Request) {
+	return Get(r.Context()).Load(r)
+}
 
 func (s *Session) Load(r *http.Request) (*SessionContext, *http.Request) {
 	if c, ok := r.Context().Value(sessionContextKey{}).(*SessionContext); ok {
@@ -190,4 +209,22 @@ func (s *Session) Create(b []byte) string {
 	b = append(b, mac.Sum(nil)...)[len(s.name)+1:]
 	b = s.encode(b)
 	return string(b)
+}
+
+func SaveCaptcha(w http.ResponseWriter, r *http.Request) *http.Request {
+	session, r := Load(r)
+	solution := ocaptcha.RandomDigits(ocaptcha.DefaultLen)
+	img := ocaptcha.NewImage("", solution, ocaptcha.StdWidth, ocaptcha.StdHeight)
+	var b bytes.Buffer
+	img.WriteTo(&b)
+	data, err := dataurl.Encode(b.Bytes(), dataurl.WithBase64Encoding(true), dataurl.WithMediaType("image/png"))
+	if err != nil {
+		log.Get(r.Context()).Err(err).Msg("failed to encode captcha image")
+		return r
+	}
+	session.Data[captcha.Key] = captcha.FormatCaptchaSolution(solution)
+	session.Save(w)
+	return r.WithContext(templates.SetCaptcha(r.Context(),
+		template.HTMLAttr(fmt.Sprintf("src=%q", string(data))),
+	))
 }

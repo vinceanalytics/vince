@@ -7,9 +7,11 @@ import (
 
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/auth"
+	"github.com/gernest/vince/captcha"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/sessions"
 )
 
 func (v *Vince) registerForm() http.Handler {
@@ -20,7 +22,7 @@ func (v *Vince) registerForm() http.Handler {
 
 func (v *Vince) register() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := v.clientSession.Load(r)
+		session, r := sessions.Load(r)
 		r.ParseForm()
 		u, m, err := auth.NewUser(r)
 		if err != nil {
@@ -28,10 +30,11 @@ func (v *Vince) register() http.Handler {
 			ServeError(r.Context(), w, http.StatusInternalServerError)
 			return
 		}
-		validCaptcha := session.VerifyCaptchaSolution(r.Form.Get(captchaKey))
+
+		validCaptcha := session.VerifyCaptchaSolution(r.Form.Get(captcha.Key))
 		if len(m) > 0 || !validCaptcha {
 			r = saveCsrf(w, r, session)
-			r = saveCaptcha(w, r, session)
+			r = sessions.SaveCaptcha(w, r)
 			if !validCaptcha {
 				if m == nil {
 					m = make(map[string]string)
@@ -51,7 +54,7 @@ func (v *Vince) register() http.Handler {
 			log.Get(r.Context()).Err(err).Msg("failed saving new user")
 			if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 				r = saveCsrf(w, r, session)
-				r = saveCaptcha(w, r, session)
+				r = sessions.SaveCaptcha(w, r)
 				ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(
 					r.Context(),
 					func(c *templates.Context) {
