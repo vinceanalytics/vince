@@ -71,5 +71,5 @@ func genBot() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile("ua/ua_bots.go", f, 0600)
+	return os.WriteFile("ua_bots.go", f, 0600)
 }

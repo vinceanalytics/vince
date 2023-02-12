@@ -10,6 +10,12 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+//go:generate go run bot/make_bot.go
+//go:generate go run device/make_device.go
+//go:generate go run client/make_client.go
+//go:generate go run os/make_os.go
+//go:generate go run vendor_fragment/make_vendor.go
+
 type botRe struct {
 	re           *ReMatch
 	name         string

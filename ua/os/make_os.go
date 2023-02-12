@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.WriteFile("ua/ua_os.go", r, 0600)
+	os.WriteFile("ua_os.go", r, 0600)
 }
 
 type OsReg struct {

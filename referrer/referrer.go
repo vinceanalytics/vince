@@ -1,9 +1,11 @@
-package vince
+package referrer
 
 import (
 	"sort"
 	"strings"
 )
+
+//go:generate go run gen/make_referrer.go
 
 func ParseReferrer(host string) *Medium {
 	host = strings.TrimPrefix(host, "www.")

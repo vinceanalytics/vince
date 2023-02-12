@@ -10,6 +10,7 @@ import (
 
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/referrer"
 	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/ua"
 )
@@ -57,8 +58,8 @@ func (v *Vince) processEvent(r *http.Request) bool {
 	host := sanitizeHost(uri.Host)
 	userAgent := r.UserAgent()
 
-	referrer := req.Referrer
-	refUrl, err := url.Parse(referrer)
+	reqReferrer := req.Referrer
+	refUrl, err := url.Parse(reqReferrer)
 	if err != nil {
 		xlg.Err(err).Msg("Failed parsing referrer url")
 		return false
@@ -88,7 +89,7 @@ func (v *Vince) processEvent(r *http.Request) bool {
 	now := time.Now()
 	agent := ua.Parse(userAgent)
 	// handle referrer
-	ref := ParseReferrer(req.Referrer)
+	ref := referrer.ParseReferrer(req.Referrer)
 	source := query.Get("utm_source")
 	if source == "" {
 		source = query.Get("source")
@@ -105,7 +106,7 @@ func (v *Vince) processEvent(r *http.Request) bool {
 			}
 		}
 	}
-	referrer = cleanReferrer(referrer)
+	reqReferrer = cleanReferrer(reqReferrer)
 
 	var countryCode string
 	var cityGeonameId uint32
@@ -147,7 +148,7 @@ func (v *Vince) processEvent(r *http.Request) bool {
 		e.Browser = agent.Browser
 		e.BrowserVersion = agent.BrowserVersion
 		e.ReferrerSource = source
-		e.Referrer = referrer
+		e.Referrer = reqReferrer
 		e.CountryCode = countryCode
 		e.CityGeoNameID = cityGeonameId
 		e.ScreenSize = screenSize

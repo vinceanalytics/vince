@@ -55,7 +55,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.WriteFile("ua/ua_device.go", r, 0600)
+	os.WriteFile("ua_device.go", r, 0600)
 }
 
 type Model struct {

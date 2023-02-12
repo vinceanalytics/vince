@@ -49,7 +49,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.WriteFile("ua/ua_client.go", r, 0600)
+	os.WriteFile("ua_client.go", r, 0600)
 }
 
 type ClientReg struct {
