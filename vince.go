@@ -148,6 +148,7 @@ func (v *Vince) Serve(ctx context.Context) error {
 			ctx := config.Set(ctx, v.config)
 			ctx = compute.SetExecCtx(ctx, v.computeCtx)
 			ctx = compute.WithAllocator(ctx, v.allocator)
+			ctx = models.Set(ctx, v.sql)
 			return ctx
 		},
 	}

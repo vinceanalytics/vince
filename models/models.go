@@ -320,3 +320,13 @@ func OpenTest(t *testing.T) *gorm.DB {
 	})
 	return db
 }
+
+type dbKey struct{}
+
+func Set(ctx context.Context, db *gorm.DB) context.Context {
+	return context.WithValue(ctx, dbKey{}, db)
+}
+
+func Get(ctx context.Context) *gorm.DB {
+	return ctx.Value(dbKey{}).(*gorm.DB)
+}

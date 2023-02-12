@@ -62,7 +62,7 @@ func (v *Vince) auth(h http.Handler) http.Handler {
 		session, r := sessions.Load(r)
 		if userId, ok := session.Data[models.CurrentUserID]; ok {
 			usr := &models.User{}
-			if err := v.sql.First(usr, uint64(userId.(int64))).Error; err != nil {
+			if err := models.Get(r.Context()).First(usr, uint64(userId.(int64))).Error; err != nil {
 				log.Get(r.Context()).Err(err).Msg("failed fetching current user")
 			} else {
 				r = r.WithContext(models.SetCurrentUser(r.Context(), usr))
@@ -84,7 +84,7 @@ func (v *Vince) lastSeen(h http.Handler) http.Handler {
 		switch {
 		case usr != nil && !lastSeen.IsZero() && now.Add(-4*time.Hour).After(lastSeen):
 			usr.LastSeen = now
-			err := v.sql.Model(usr).Update("last_seen", now).Error
+			err := models.Get(r.Context()).Model(usr).Update("last_seen", now).Error
 			if err != nil {
 				log.Get(r.Context()).Err(err).Msg("failed to update last_seen")
 			}
