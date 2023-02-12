@@ -11,6 +11,7 @@ import (
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/timeseries"
+	"github.com/gernest/vince/ua"
 )
 
 type Request struct {
@@ -85,20 +86,7 @@ func (v *Vince) processEvent(r *http.Request) bool {
 
 	query := r.URL.Query()
 	now := time.Now()
-	var operatingSystem string
-	var operatingSystemVersion string
-	var browser string
-	var browserVersion string
-	if ua := parseUA(userAgent); ua != nil {
-		if ua.os != nil {
-			operatingSystem = ua.os.name
-			operatingSystemVersion = ua.os.version
-		}
-		if ua.client != nil {
-			browser = ua.client.name
-			browserVersion = ua.client.version
-		}
-	}
+	agent := ua.Parse(userAgent)
 	// handle referrer
 	ref := ParseReferrer(req.Referrer)
 	source := query.Get("utm_source")
@@ -154,10 +142,10 @@ func (v *Vince) processEvent(r *http.Request) bool {
 		e.UtmCampaign = query.Get("utm_campaign")
 		e.UtmContent = query.Get("utm_content")
 		e.UtmTerm = query.Get("utm_content")
-		e.OperatingSystem = operatingSystem
-		e.OperatingSystemVersion = operatingSystemVersion
-		e.Browser = browser
-		e.BrowserVersion = browserVersion
+		e.OperatingSystem = agent.Os
+		e.OperatingSystemVersion = agent.OsVersion
+		e.Browser = agent.Browser
+		e.BrowserVersion = agent.BrowserVersion
 		e.ReferrerSource = source
 		e.Referrer = referrer
 		e.CountryCode = countryCode
