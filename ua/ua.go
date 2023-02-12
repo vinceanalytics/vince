@@ -10,6 +10,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// to run go generate you need to set UA_ROOT which is the path to regex directory
+// from device-detector repo
+// eg
+//	UA_ROOT=../../device-detector/regexes/ go generate ./ua
+
 //go:generate go run bot/make_bot.go
 //go:generate go run device/make_device.go
 //go:generate go run client/make_client.go
