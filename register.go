@@ -21,11 +21,16 @@ func (v *Vince) register() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := v.clientSession.Load(r)
 		r.ParseForm()
-		u := new(models.User)
-		m := v.DecodeRegistrationForm(u, r)
+		u, m, err := auth.NewUser(r)
+		if err != nil {
+			xlg.Err(err).Msg("Failed decoding new user from")
+			ServeError(w, http.StatusInternalServerError)
+			return
+		}
 		validCaptcha := session.VerifyCaptchaSolution(r.Form.Get(captchaKey))
 		if len(m) > 0 || !validCaptcha {
-			r = saveCsrf(session, w, r)
+			r = saveCsrf(w, r, session)
+			r = saveCaptcha(w, r, session)
 			if !validCaptcha {
 				if m == nil {
 					m = make(map[string]string)
@@ -44,7 +49,8 @@ func (v *Vince) register() http.Handler {
 		if err := v.sql.Save(u).Error; err != nil {
 			xlg.Err(err).Msg("failed saving new user")
 			if strings.Contains(err.Error(), "UNIQUE constraint failed") {
-				r = saveCsrf(session, w, r)
+				r = saveCsrf(w, r, session)
+				r = saveCaptcha(w, r, session)
 				ServeHTML(w, templates.Register, http.StatusOK, templates.New(
 					r.Context(),
 					func(c *templates.Context) {

@@ -66,6 +66,12 @@ func Flags() []cli.Flag {
 			Value:   true,
 			EnvVars: []string{"VINCE_ENABLE_EMAIL_VERIFICATION"},
 		},
+		&cli.BoolFlag{
+			Name:    "self-host",
+			Usage:   "self hosted version",
+			Value:   true,
+			EnvVars: []string{"VINCE_SELF_HOST"},
+		},
 		&cli.StringFlag{
 			Name:    "mailer-address",
 			Usage:   "email address used for the sender of outgoing emails ",
@@ -163,6 +169,7 @@ func fromCli(ctx *cli.Context) *Config {
 		DataPath:                ctx.String("data"),
 		FlushInterval:           durationpb.New(ctx.Duration("flush-interval")),
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
+		IsSelfHost:              ctx.Bool("self-host"),
 		Mailer: &Config_Mailer{
 			Address: &Config_Address{
 				Name:  ctx.String("mailer-address-name"),

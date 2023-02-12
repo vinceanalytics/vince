@@ -27,9 +27,9 @@
 {{define "secure"}}
 {{with .CSRF}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
 {{if .Captcha}}
-{{.Captcha}}
+<img {{.Captcha}} class="img-responsive" />
 <input {{if .Errors.captcha}} invalid="true" {{end}} type="text" name="_captcha" class="FormControl-input"
-    placeholder="write the number displayed above">
+    placeholder="write the number displayed above" required>
 {{.Validate "captcha"}}
 {{end}}
 {{end}}

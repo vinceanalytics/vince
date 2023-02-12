@@ -1,9 +1,12 @@
-package vince
+package auth
 
 import (
+	"database/sql"
 	"net/http"
 	"regexp"
+	"time"
 
+	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/models"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -17,43 +20,61 @@ func validate(field, value, reason string, m map[string]string, f func(string) b
 		return
 	}
 	m[field] = reason
-	return
 }
 
-func (v *Vince) DecodeRegistrationForm(u *models.User, r *http.Request) map[string]string {
+func NewUser(r *http.Request) (u *models.User, validation map[string]string, err error) {
+	conf := config.Get(r.Context())
+	u = &models.User{}
 	u.Name = r.Form.Get("name")
 	u.Email = r.Form.Get("email")
 	password := r.Form.Get("password")
 	passwordConfirm := r.Form.Get("password_confirmation")
-	m := make(map[string]string)
-	validate("name", u.Name, "required", m, func(s string) bool {
+	validation = make(map[string]string)
+	validate("name", u.Name, "required", validation, func(s string) bool {
 		return s != ""
 	})
-	validate("email", u.Email, "required", m, func(s string) bool {
+	validate("email", u.Email, "required", validation, func(s string) bool {
 		return s != ""
 	})
-	validate("email", u.Email, "invalid email", m, func(s string) bool {
+	validate("email", u.Email, "invalid email", validation, func(s string) bool {
 		return emailRRe.MatchString(s)
 	})
-	validate("password", password, "required", m, func(s string) bool {
+	validate("password", password, "required", validation, func(s string) bool {
 		return s != ""
 	})
-	validate("password_confirmation", passwordConfirm, "required", m, func(s string) bool {
+	validate("password", password, "has to be at least 6 characters", validation, func(s string) bool {
+		return len(s) >= 6
+	})
+	validate("password", password, "cannot be longer than 64 characters", validation, func(s string) bool {
+		return len(s) <= 64
+	})
+	validate("password_confirmation", passwordConfirm, "required", validation, func(s string) bool {
 		return s != ""
 	})
-	validate("password_confirmation", passwordConfirm, "must match password", m, func(s string) bool {
+	validate("password_confirmation", passwordConfirm, "must match password", validation, func(s string) bool {
 		return s == password
 	})
-	if len(m) != 0 {
-		return m
+	if len(validation) != 0 {
+		return
 	}
 	b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		// It is critical error if we can't hash passwords we exit the program
-		// gracefully.
-		xlg.Err(err).Msg("failed hashing password")
-		v.exit()
+		return nil, nil, err
 	}
 	u.PasswordHash = string(b)
-	return nil
+	if conf.IsSelfHost {
+		u.TrialExpiryDate = sql.NullTime{
+			Time:  time.Now().AddDate(100, 0, 0),
+			Valid: true,
+		}
+	} else {
+		u.TrialExpiryDate = sql.NullTime{
+			Time:  time.Now().AddDate(0, 0, 30),
+			Valid: true,
+		}
+	}
+	if !conf.EnableEmailVerification {
+		u.EmailVerified = true
+	}
+	return
 }

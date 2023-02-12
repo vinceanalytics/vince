@@ -10,24 +10,25 @@
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="name" class="FormControl-label">name</label>
             <input {{.InputField "name" }} class="FormControl-input" type="text" name="name" id="name"
-                placeholder="John Doe">
+                placeholder="John Doe" required>
         </div>
         {{.Validate "name"}}
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="email" class="FormControl-label">email</label>
             <input {{.InputField "email" }} class="FormControl-input" type="email" name="email" id="email"
-                placeholder="example@email.com">
+                placeholder="example@email.com" required>
         </div>
         {{.Validate "email"}}
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="password" class="FormControl-label">password</label>
-            <input {{.InputField "password" }} class="FormControl-input" type="password" name="password" id="password">
+            <input {{.InputField "password" }} maxlength="64" minlength="6" class="FormControl-input" type="password"
+                name="password" id="password" required>
         </div>
         {{.Validate "password"}}
         <div class="FormControl-input-wrap FormControl-medium">
             <label for="password_confirmation" class="FormControl-label">Confirm password</label>
             <input {{.InputField "password_confirmation" }} class="FormControl-input" type="password"
-                name="password_confirmation" id="password_confirmation">
+                name="password_confirmation" id="password_confirmation" required>
         </div>
         {{.Validate "password_confirmation"}}
         {{template "secure" .}}

@@ -311,11 +311,17 @@ func (v *Vince) exit() {
 
 var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)
 
+func chain(h http.Handler, plugs ...middleware) http.Handler {
+	for i := range plugs {
+		h = plugs[len(plugs)-1-i](h)
+	}
+	return h
+}
+
 func (v *Vince) Handle() http.Handler {
 	asset := assets.Serve()
-	admin := secureBrowser(
-		v.csrf(v.admin()),
-	)
+
+	admin := chain(v.admin(), append(v.browser(), v.secureForm()...)...)
 	home := v.home()
 	v1Stats := v.v1Stats()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

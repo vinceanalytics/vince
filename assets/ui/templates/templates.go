@@ -47,7 +47,7 @@ type Context struct {
 	CurrentUser *models.User
 	Data        map[string]any
 	CSRF        template.HTML
-	Captcha     template.HTML
+	Captcha     template.HTMLAttr
 	Errors      map[string]string
 	Form        url.Values
 	Code        uint64
@@ -80,16 +80,19 @@ func getCsrf(ctx context.Context) template.HTML {
 
 type captchaTokenKey struct{}
 
-func getCaptcha(ctx context.Context) template.HTML {
-	if c := ctx.Value(captchaTokenKey{}); c != nil {
-		return c.(template.HTML)
-	}
-	return template.HTML("")
+func SetCaptcha(ctx context.Context, x template.HTMLAttr) context.Context {
+	return context.WithValue(ctx, captchaTokenKey{}, x)
 }
 
-func SecureForm(ctx context.Context, csrf, captcha template.HTML) context.Context {
-	ctx = context.WithValue(ctx, csrfTokenCtxKey{}, csrf)
-	return context.WithValue(ctx, captchaTokenKey{}, captcha)
+func SetCSRF(ctx context.Context, x template.HTML) context.Context {
+	return context.WithValue(ctx, csrfTokenCtxKey{}, x)
+}
+
+func getCaptcha(ctx context.Context) template.HTMLAttr {
+	if c := ctx.Value(captchaTokenKey{}); c != nil {
+		return c.(template.HTMLAttr)
+	}
+	return template.HTMLAttr("")
 }
 
 func (t *Context) VinceURL() template.HTML {
