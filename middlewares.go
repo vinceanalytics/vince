@@ -38,19 +38,13 @@ func (v *Vince) fetchSession(h http.Handler) http.Handler {
 func (v *Vince) sessionTimeout(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
-		var timeoutAt time.Time
-		if v, ok := session.Data["session_timeout_at"]; ok {
-			timeoutAt = time.Unix(v.(int64), 0)
-		}
-		_, userID := session.Data[models.CurrentUserID]
+
 		now := time.Now()
 		switch {
-		case userID && now.After(timeoutAt):
-			for k := range session.Data {
-				delete(session.Data, k)
-			}
-		case userID:
-			session.Data["session_timeout_at"] = now.Add(24 * 7 * 2 * time.Hour)
+		case session.Data.CurrentUserID != 0 && now.After(session.Data.TimeoutAt):
+			session.Data = sessions.Data{}
+		case session.Data.CurrentUserID != 0:
+			session.Data.TimeoutAt = now.Add(24 * 7 * 2 * time.Hour)
 			session.Save(w)
 		}
 		h.ServeHTTP(w, r)
@@ -60,9 +54,9 @@ func (v *Vince) sessionTimeout(h http.Handler) http.Handler {
 func (v *Vince) auth(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
-		if userId, ok := session.Data[models.CurrentUserID]; ok {
+		if session.Data.CurrentUserID != 0 {
 			usr := &models.User{}
-			if err := models.Get(r.Context()).First(usr, uint64(userId.(int64))).Error; err != nil {
+			if err := models.Get(r.Context()).First(usr, session.Data.CurrentUserID).Error; err != nil {
 				log.Get(r.Context()).Err(err).Msg("failed fetching current user")
 			} else {
 				r = r.WithContext(models.SetCurrentUser(r.Context(), usr))
@@ -76,22 +70,18 @@ func (v *Vince) lastSeen(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
 		usr := models.GetCurrentUser(r.Context())
-		var lastSeen time.Time
-		if v, ok := session.Data["last_seen"]; ok {
-			lastSeen = time.Unix(v.(int64), 0)
-		}
 		now := time.Now()
 		switch {
-		case usr != nil && !lastSeen.IsZero() && now.Add(-4*time.Hour).After(lastSeen):
+		case usr != nil && !session.Data.LastSeen.IsZero() && now.Add(-4*time.Hour).After(session.Data.LastSeen):
 			usr.LastSeen = now
 			err := models.Get(r.Context()).Model(usr).Update("last_seen", now).Error
 			if err != nil {
 				log.Get(r.Context()).Err(err).Msg("failed to update last_seen")
 			}
-			session.Data["last_seen"] = now.Unix()
+			session.Data.LastSeen = now
 			session.Save(w)
-		case usr != nil && lastSeen.IsZero():
-			session.Data["last_seen"] = now.Unix()
+		case usr != nil && session.Data.LastSeen.IsZero():
+			session.Data.LastSeen = now
 			session.Save(w)
 		}
 		h.ServeHTTP(w, r)

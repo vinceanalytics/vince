@@ -69,8 +69,8 @@ func (v *Vince) register() http.Handler {
 			return
 		}
 		ctx := models.SetCurrentUser(r.Context(), u)
-		session.Data[models.CurrentUserID] = u.ID
-		session.Data["logged_in"] = true
+		session.Data.CurrentUserID = u.ID
+		session.Data.LoggedIn = true
 		session.Save(w)
 		if u.EmailVerified {
 			http.Redirect(w, r, "/new", http.StatusFound)

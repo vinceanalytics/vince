@@ -97,8 +97,18 @@ func (s *Session) decode(ctx context.Context, value []byte) []byte {
 }
 
 type SessionContext struct {
-	Data map[string]any
+	Data Data
 	s    *Session
+}
+
+type Data struct {
+	TimeoutAt     time.Time `json:",omitempty"`
+	CurrentUserID uint64    `json:",omitempty"`
+	LastSeen      time.Time `json:",omitempty"`
+	LoggedIn      bool      `json:",omitempty"`
+	Captcha       string    `json:",omitempty"`
+	Csrf          string    `json:",omitempty"`
+	LoginDest     string    `json:",omitempty"`
 }
 
 func (s *SessionContext) VerifyCaptchaSolution(r *http.Request) bool {
@@ -108,18 +118,7 @@ func (s *SessionContext) VerifyCaptchaSolution(r *http.Request) bool {
 	if digits == "" {
 		return false
 	}
-	if x, ok := s.Data["_captcha"]; ok {
-		b := x.(string)
-		return digits == b
-	}
-	return false
-}
-
-func (s *SessionContext) IsLoggedIn() bool {
-	if x, ok := s.Data["logged_in"]; ok {
-		return x.(bool)
-	}
-	return false
+	return subtle.ConstantTimeCompare([]byte(digits), []byte(s.Data.Captcha)) == 1
 }
 
 type sessionContextKey struct{}
@@ -132,10 +131,7 @@ func (s *Session) Load(r *http.Request) (*SessionContext, *http.Request) {
 	if c, ok := r.Context().Value(sessionContextKey{}).(*SessionContext); ok {
 		return c, r
 	}
-	rs := &SessionContext{
-		Data: map[string]any{},
-		s:    s,
-	}
+	rs := &SessionContext{s: s}
 	r = r.WithContext(context.WithValue(r.Context(), sessionContextKey{}, rs))
 	cookie, err := r.Cookie(s.name)
 	if err != nil {
@@ -223,7 +219,7 @@ func SaveCaptcha(w http.ResponseWriter, r *http.Request) *http.Request {
 		log.Get(r.Context()).Err(err).Msg("failed to encode captcha image")
 		return r
 	}
-	session.Data["_captcha"] = formatCaptchaSolution(solution)
+	session.Data.Captcha = formatCaptchaSolution(solution)
 	session.Save(w)
 	return r.WithContext(templates.SetCaptcha(r.Context(),
 		template.HTMLAttr(fmt.Sprintf("src=%q", string(data))),
@@ -235,7 +231,7 @@ func SaveCsrf(w http.ResponseWriter, r *http.Request) *http.Request {
 	token := make([]byte, 32)
 	rand.Read(token)
 	csrf := base64.StdEncoding.EncodeToString(token)
-	session.Data["_csrf"] = csrf
+	session.Data.Csrf = csrf
 	session.Save(w)
 	return r.WithContext(templates.SetCSRF(r.Context(), template.HTML(csrf)))
 }
@@ -244,11 +240,7 @@ func IsValidCSRF(r *http.Request) bool {
 	r.ParseForm()
 	session, _ := Load(r)
 	value := r.Form.Get("_csrf")
-	var token string
-	if saved, ok := session.Data["_csrf"]; ok {
-		token = saved.(string)
-	}
-	return subtle.ConstantTimeCompare([]byte(value), []byte(token)) == 1
+	return subtle.ConstantTimeCompare([]byte(value), []byte(session.Data.Csrf)) == 1
 }
 
 func formatCaptchaSolution(sol []byte) string {
