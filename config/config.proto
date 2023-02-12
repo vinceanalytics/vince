@@ -11,6 +11,7 @@ message Config {
   Mailer mailer = 4;
   string data_path = 5;
   google.protobuf.Duration flush_interval = 6;
+  bool enable_email_verification = 7;
 
   message Mailer {
     Address address = 1;

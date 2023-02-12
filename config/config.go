@@ -60,6 +60,12 @@ func Flags() []cli.Flag {
 			Value:   "dev",
 			EnvVars: []string{"VINCE_URL"},
 		},
+		&cli.BoolFlag{
+			Name:    "enable-email-verification",
+			Usage:   "send emails for account verification",
+			Value:   true,
+			EnvVars: []string{"VINCE_ENABLE_EMAIL_VERIFICATION"},
+		},
 		&cli.StringFlag{
 			Name:    "mailer-address",
 			Usage:   "email address used for the sender of outgoing emails ",
@@ -152,10 +158,11 @@ func fromFile(ctx *cli.Context) (*Config, error) {
 
 func fromCli(ctx *cli.Context) *Config {
 	x := &Config{
-		Port:          int32(ctx.Int("port")),
-		Url:           ctx.String("url"),
-		DataPath:      ctx.String("data"),
-		FlushInterval: durationpb.New(ctx.Duration("flush-interval")),
+		Port:                    int32(ctx.Int("port")),
+		Url:                     ctx.String("url"),
+		DataPath:                ctx.String("data"),
+		FlushInterval:           durationpb.New(ctx.Duration("flush-interval")),
+		EnableEmailVerification: ctx.Bool("enable-email-verification"),
 		Mailer: &Config_Mailer{
 			Address: &Config_Address{
 				Name:  ctx.String("mailer-address-name"),
