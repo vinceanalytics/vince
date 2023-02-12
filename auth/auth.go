@@ -15,7 +15,7 @@ func IssueEmailVerification(db *gorm.DB, usr *models.User) (uint64, error) {
 		return 0, err
 	}
 	var code models.EmailVerificationCode
-	err = db.Model(&models.EmailVerificationCode{}).First(&code).Error
+	err = db.Where("user_id=?", nil).First(&code).Error
 	if err != nil {
 		return 0, err
 	}
