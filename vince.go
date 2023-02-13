@@ -149,6 +149,7 @@ func (v *Vince) Serve(ctx context.Context) error {
 			ctx = compute.SetExecCtx(ctx, v.computeCtx)
 			ctx = compute.WithAllocator(ctx, v.allocator)
 			ctx = models.Set(ctx, v.sql)
+			ctx = email.Set(ctx, v.mailer)
 			return ctx
 		},
 	}
@@ -323,7 +324,7 @@ func chain(h http.Handler, plugs ...middleware) http.Handler {
 func (v *Vince) Handle() http.Handler {
 	asset := assets.Serve()
 
-	admin := chain(v.admin(), append(v.browser(), v.secureForm()...)...)
+	admin := chain(Admin(), append(v.browser(), v.secureForm()...)...)
 	home := v.home()
 	v1Stats := v.v1Stats()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

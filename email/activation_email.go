@@ -8,7 +8,8 @@ import (
 	"github.com/gernest/vince/assets/ui/templates"
 )
 
-func SendActivation(ctx context.Context, mailer Mailer) error {
+func SendActivation(ctx context.Context) error {
+	mailer := Get(ctx)
 	from := mailer.From()
 	rCtx := templates.New(ctx)
 	var b bytes.Buffer

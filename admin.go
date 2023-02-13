@@ -37,24 +37,21 @@ func isAdminPath(path, method string) bool {
 	}
 }
 
-func (v *Vince) admin() http.Handler {
-	loginForm := v.loginForm()
-	registerForm := v.registerForm()
-	register := v.register()
+func Admin() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/login":
 			if r.Method == http.MethodGet {
-				loginForm.ServeHTTP(w, r)
+				LoginForm(w, r)
 				return
 			}
 		case "/register":
 			if r.Method == http.MethodGet {
-				registerForm.ServeHTTP(w, r)
+				RegisterForm(w, r)
 				return
 			}
 			if r.Method == http.MethodPost {
-				register.ServeHTTP(w, r)
+				Register(w, r)
 				return
 			}
 		case "/activate":

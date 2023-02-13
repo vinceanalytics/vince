@@ -1,6 +1,7 @@
 package email
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"io"
@@ -114,4 +115,14 @@ func (m *MailHog) SendMail(from string, to []string, msg io.Reader) error {
 	}
 	defer client.Close()
 	return client.SendMail(from, to, msg)
+}
+
+type mailerKey struct{}
+
+func Set(ctx context.Context, m Mailer) context.Context {
+	return context.WithValue(ctx, mailerKey{}, m)
+}
+
+func Get(ctx context.Context) Mailer {
+	return ctx.Value(mailerKey{}).(Mailer)
 }

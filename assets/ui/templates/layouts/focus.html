@@ -35,13 +35,13 @@
 {{end}}
 
 
-{{template "onboarding_steps"}}
+{{define "onboarding_steps"}}
 {{$current_step:=.CurrentStep}}
 {{$steps := .Steps}}
 <div>
     <nav>
         <ol>
-            {{range $index, $element := $steps }}
+            {{range $index, $step := $steps }}
             {{if lt $index $current_step}}
             <li>
                 <span>{{$step}}</span>
@@ -60,7 +60,6 @@
                     {{$step}}
                 </span>
             </li>
-            {{end}}
             {{end}}
             {{end}}
         </ol>

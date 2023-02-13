@@ -5,10 +5,10 @@ import (
 	"database/sql"
 
 	"github.com/gernest/vince/models"
-	"gorm.io/gorm"
 )
 
-func IssueEmailVerification(db *gorm.DB, usr *models.User) (uint64, error) {
+func IssueEmailVerification(ctx context.Context, usr *models.User) (uint64, error) {
+	db := models.Get(ctx)
 	err := db.Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).Update("user_id", nil).Error
 	if err != nil {
 		return 0, err
