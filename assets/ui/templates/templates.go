@@ -42,16 +42,25 @@ var ActivationEmail = template.Must(
 	),
 )
 
+var Activate = template.Must(
+	template.ParseFS(files,
+		"layouts/focus.html",
+		"auth/activate.html",
+	),
+)
+
 type Context struct {
-	Title       string
-	CurrentUser *models.User
-	Data        map[string]any
-	CSRF        template.HTML
-	Captcha     template.HTMLAttr
-	Errors      map[string]string
-	Form        url.Values
-	Code        uint64
-	Config      *config.Config
+	Title         string
+	CurrentUser   *models.User
+	Data          map[string]any
+	CSRF          template.HTML
+	Captcha       template.HTMLAttr
+	Errors        map[string]string
+	Form          url.Values
+	Code          uint64
+	Config        *config.Config
+	HasInvitation bool
+	CurrentStep   int
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
@@ -123,4 +132,18 @@ func (t *Context) InputField(name string) template.HTMLAttr {
 		s.WriteString(fmt.Sprintf("value=%q", t.Form.Get(name)))
 	}
 	return template.HTMLAttr(s.String())
+}
+
+func (t *Context) HasPin() bool {
+	return t.Code != 0
+}
+
+func (t *Context) SetStep(n int) {
+	t.CurrentStep = n
+}
+
+func (t *Context) Steps() []string {
+	return []string{
+		"Register", "Activate account", "Add site info", "Install snippet",
+	}
 }

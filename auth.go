@@ -92,3 +92,26 @@ func (v *Vince) sendVerificationEmail(ctx context.Context, usr *models.User) err
 	ctx = auth.SetActivationCode(ctx, code)
 	return email.SendActivation(ctx, v.mailer)
 }
+
+func ActivateForm(w http.ResponseWriter, r *http.Request) {
+	usr := models.GetCurrentUser(r.Context())
+	var count int64
+	err := models.Get(r.Context()).Model(&models.Invitation{}).Where("email=?", usr.Email).Count(&count).Error
+	if err != nil {
+		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
+		ServeError(r.Context(), w, http.StatusInternalServerError)
+		return
+	}
+	hasInvitation := count != 0
+	var code models.EmailVerificationCode
+	err = models.Get(r.Context()).Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).First(&code).Error
+	if err != nil {
+		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
+		ServeError(r.Context(), w, http.StatusInternalServerError)
+		return
+	}
+	ctx := auth.SetActivationCode(r.Context(), code.Code)
+	ServeHTML(r.Context(), w, templates.Activate, http.StatusOK, templates.New(ctx, func(c *templates.Context) {
+		c.HasInvitation = hasInvitation
+	}))
+}

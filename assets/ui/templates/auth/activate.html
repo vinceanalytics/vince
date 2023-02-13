@@ -40,7 +40,8 @@
     {{end}}
     {{if not .HasInvitation}}
     <div>
-        {{template "onboarding_steps.html" 1}}
+        {{.SetStep 1}}
+        {{template "onboarding_steps" .}}
     </div>
     {{end}}
 </div>

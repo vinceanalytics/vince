@@ -57,6 +57,11 @@ func (v *Vince) admin() http.Handler {
 				register.ServeHTTP(w, r)
 				return
 			}
+		case "/activate":
+			if r.Method == http.MethodGet {
+				ActivateForm(w, r)
+				return
+			}
 		}
 		ServeError(r.Context(), w, http.StatusNotImplemented)
 	})

@@ -33,3 +33,37 @@
 {{.Validate "_captcha"}}
 {{end}}
 {{end}}
+
+
+{{template "onboarding_steps"}}
+{{$current_step:=.CurrentStep}}
+{{$steps := .Steps}}
+<div>
+    <nav>
+        <ol>
+            {{range $index, $element := $steps }}
+            {{if lt $index $current_step}}
+            <li>
+                <span>{{$step}}</span>
+            </li>
+            {{end}}
+            {{if eq $index $current_step}}
+            <li>
+                <span>
+                    {{$step}}
+                </span>
+            </li>
+            {{end}}
+            {{if gt $index $current_step}}
+            <li>
+                <span>
+                    {{$step}}
+                </span>
+            </li>
+            {{end}}
+            {{end}}
+            {{end}}
+        </ol>
+    </nav>
+</div>
+{{end}}

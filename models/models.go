@@ -14,8 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const CurrentUserID = "_current_user_id"
-
 type currentUserKey struct{}
 
 type User struct {
