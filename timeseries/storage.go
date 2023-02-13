@@ -12,8 +12,10 @@ import (
 
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/apache/arrow/go/v12/arrow/array"
+	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/badger/v3"
+	"github.com/gernest/vince/log"
 	"github.com/oklog/ulid/v2"
 	"github.com/segmentio/parquet-go"
 )
@@ -191,6 +193,7 @@ func (s *Storage[T]) query(ctx context.Context, query Query, files ...string) (*
 	b := s.get()
 	defer s.put(b)
 	m := make(map[string]*Writer)
+	set := make(map[string]bool)
 	for _, w := range b.writers {
 		m[w.name] = w
 	}
@@ -198,11 +201,13 @@ func (s *Storage[T]) query(ctx context.Context, query Query, files ...string) (*
 		if w, ok := m[n]; ok {
 			b.active = append(b.active, w)
 			b.selected = append(b.selected, w)
+			set[n] = true
 		}
 	}
 	for _, f := range query.filters {
-		if w, ok := m[f.field]; ok {
+		if w, ok := m[f.field]; ok && !set[f.field] {
 			b.active = append(b.active, w)
+			set[f.field] = true
 		}
 	}
 	if cap(b.results) < len(b.selected) {
@@ -235,6 +240,7 @@ func (s *Storage[T]) build() *StoreBuilder[T] {
 		builders: &Builders{
 			Int64:  array.NewInt64Builder(s.allocator),
 			String: array.NewStringBuilder(s.allocator),
+			Bool:   array.NewBooleanBuilder(s.allocator),
 		},
 	}
 	for i, f := range fields {
@@ -278,7 +284,6 @@ func (w *Writer) WritePage(p parquet.Page) error {
 			}
 		}
 	default:
-
 	}
 	return nil
 }
@@ -340,7 +345,7 @@ func (b *StoreBuilder[T]) RowGroup(ctx context.Context, rg parquet.RowGroup, que
 			p.Close()
 		}
 	}()
-	var ls [][]parquet.Page
+	var ls []map[string]parquet.Page
 	for {
 		p, err := cs[b.active[0].name].ReadPage()
 		if err != nil {
@@ -356,14 +361,14 @@ func (b *StoreBuilder[T]) RowGroup(ctx context.Context, rg parquet.RowGroup, que
 		minValue := min.Int64()
 		maxValue := max.Int64()
 		if start <= minValue && end <= maxValue {
-			pls := make([]parquet.Page, len(b.active))
-			pls[0] = p
-			for i, w := range b.active[1:] {
+			pls := make(map[string]parquet.Page)
+			pls[b.active[0].name] = p
+			for _, w := range b.active[1:] {
 				px, err := cs[w.name].ReadPage()
 				if err != nil {
 					return err
 				}
-				pls[i+1] = px
+				pls[w.name] = px
 			}
 			ls = append(ls, pls)
 		}
@@ -374,7 +379,7 @@ func (b *StoreBuilder[T]) RowGroup(ctx context.Context, rg parquet.RowGroup, que
 	return nil
 }
 
-func (b *StoreBuilder[T]) processPages(ctx context.Context, pages []parquet.Page, query Query) error {
+func (b *StoreBuilder[T]) processPages(ctx context.Context, pages map[string]parquet.Page, query Query) error {
 	err := b.filterPages(ctx, pages, query)
 	if err != nil {
 		if errors.Is(err, ErrSkipPage) {
@@ -385,30 +390,54 @@ func (b *StoreBuilder[T]) processPages(ctx context.Context, pages []parquet.Page
 	return nil
 }
 
-func (b *StoreBuilder[T]) filterPages(ctx context.Context, pages []parquet.Page, query Query) error {
-	a := make([]arrow.Array, len(b.selected))
+func (b *StoreBuilder[T]) filterPages(ctx context.Context, pages map[string]parquet.Page, query Query) error {
+	a := make([]compute.Datum, len(b.selected))
 	for i, s := range b.selected {
-		index := i + 1
-		err := s.WritePage(pages[index])
+		err := s.WritePage(pages[s.name])
 		if err != nil {
 			return err
 		}
-		a[i] = s.build.NewArray()
+		a[i] = compute.NewDatum(s.build.NewArray())
 	}
-	for i, p := range pages[1:] {
-		a := b.active[i+1]
-		for _, f := range query.filters {
-			if a.name == f.field {
-				if f.h != nil {
-					if !f.h(ctx, p) {
-						return ErrSkipPage
-					}
+	defer func() {
+		for i := range a {
+			a[i].Release()
+		}
+	}()
+	size := pages[b.active[0].name].NumValues()
+	ls := make([]bool, size)
+	values := make([]parquet.Value, size)
+	active := make(map[string]struct{})
+	for _, w := range b.active[1:] {
+		active[w.name] = struct{}{}
+	}
+
+	for _, f := range query.filters {
+		if _, ok := active[f.field]; ok {
+			if f.h != nil {
+				if !f.h(ctx, values, ls, pages[f.field]) {
+					return ErrSkipPage
 				}
 			}
 		}
 	}
+
+	b.builders.Bool.AppendValues(ls, nil)
+	f := compute.NewDatum(b.builders.Bool.NewArray())
+	// ls contains booleans indicating which row to choose. This means it  applies the
+	// same for all columns.
+	for j := range a {
+		r, err := compute.Filter(ctx, a[j], f, compute.FilterOptions{})
+		if err != nil {
+			f.Release()
+			log.Get(ctx).Err(err).Msg("failed to apply filter")
+			return err
+		}
+		a[j].Release()
+		a[j] = r
+	}
 	for i := range a {
-		b.results[i] = append(b.results[i], a[i])
+		b.results[i] = append(b.results[i], a[i].(*compute.ArrayDatum).MakeArray())
 	}
 	return nil
 }

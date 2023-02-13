@@ -2,12 +2,14 @@ package timeseries
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"io"
 	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/apache/arrow/go/v12/arrow/array"
+	"github.com/gernest/vince/log"
 	"github.com/segmentio/parquet-go"
 )
 
@@ -208,11 +210,29 @@ type filterHand struct {
 	h     MatchFunc
 }
 
-type MatchFunc func(ctx context.Context, page parquet.Page) bool
+type MatchFunc func(ctx context.Context, values []parquet.Value, b []bool, page parquet.Page) bool
 
 func Eq(value string) MatchFunc {
-	return func(ctx context.Context, page parquet.Page) bool {
-		fmt.Printf("==> %#T\n", page)
+	x := parquet.ValueOf(value)
+	return func(ctx context.Context, values []parquet.Value, b []bool, page parquet.Page) bool {
+		dict := page.Dictionary()
+		var ok bool
+		for i := 0; i < dict.Len(); i += 1 {
+			if ok = parquet.Equal(dict.Index(int32(i)), x); ok {
+				break
+			}
+		}
+		if !ok {
+			return false
+		}
+		_, err := page.Values().ReadValues(values)
+		if err != nil && !errors.Is(err, io.EOF) {
+			log.Get(ctx).Err(err).Msg("failed to get pages values")
+			return false
+		}
+		for i := range values {
+			b[i] = parquet.Equal(x, values[i])
+		}
 		return true
 	}
 }
@@ -220,4 +240,5 @@ func Eq(value string) MatchFunc {
 type Builders struct {
 	Int64  *array.Int64Builder
 	String *array.StringBuilder
+	Bool   *array.BooleanBuilder
 }
