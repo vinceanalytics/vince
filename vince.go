@@ -21,6 +21,7 @@ import (
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/timeseries"
 	"github.com/rs/zerolog"
@@ -314,17 +315,9 @@ func (v *Vince) exit() {
 
 var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)
 
-func chain(h http.Handler, plugs ...middleware) http.Handler {
-	for i := range plugs {
-		h = plugs[len(plugs)-1-i](h)
-	}
-	return h
-}
-
 func (v *Vince) Handle() http.Handler {
 	asset := assets.Serve()
-
-	admin := chain(Admin(), append(v.browser(), v.secureForm()...)...)
+	admin := plug.Chain(Admin(), append(plug.Browser(), plug.SecureForm()...)...)
 	home := v.home()
 	v1Stats := v.v1Stats()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

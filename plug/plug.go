@@ -1,4 +1,4 @@
-package vince
+package plug
 
 import (
 	"net/http"
@@ -9,33 +9,40 @@ import (
 	"github.com/gernest/vince/sessions"
 )
 
-type middleware func(http.Handler) http.Handler
+type Plug func(http.Handler) http.Handler
 
-func (v *Vince) browser() []middleware {
-	return []middleware{
-		v.fetchSession,
-		putSecureBrowserHeaders,
-		v.sessionTimeout,
-		v.auth,
-		v.lastSeen,
+func Chain(h http.Handler, plugs ...Plug) http.Handler {
+	for i := range plugs {
+		h = plugs[len(plugs)-1-i](h)
+	}
+	return h
+}
+
+func Browser() []Plug {
+	return []Plug{
+		FetchSession,
+		PutSecureBrowserHeaders,
+		SessionTimeout,
+		Auth,
+		LastSeen,
 	}
 }
 
-func (v *Vince) secureForm() []middleware {
-	return []middleware{
-		v.captcha,
-		v.csrf,
+func SecureForm() []Plug {
+	return []Plug{
+		Captcha,
+		CSRF,
 	}
 }
 
-func (v *Vince) fetchSession(h http.Handler) http.Handler {
+func FetchSession(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, r = sessions.Load(r)
 		h.ServeHTTP(w, r)
 	})
 }
 
-func (v *Vince) sessionTimeout(h http.Handler) http.Handler {
+func SessionTimeout(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
 
@@ -51,7 +58,7 @@ func (v *Vince) sessionTimeout(h http.Handler) http.Handler {
 	})
 }
 
-func (v *Vince) auth(h http.Handler) http.Handler {
+func Auth(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
 		if session.Data.CurrentUserID != 0 {
@@ -66,7 +73,7 @@ func (v *Vince) auth(h http.Handler) http.Handler {
 	})
 }
 
-func (v *Vince) lastSeen(h http.Handler) http.Handler {
+func LastSeen(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
 		usr := models.GetCurrentUser(r.Context())
@@ -88,7 +95,7 @@ func (v *Vince) lastSeen(h http.Handler) http.Handler {
 	})
 }
 
-func putSecureBrowserHeaders(h http.Handler) http.Handler {
+func PutSecureBrowserHeaders(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("x-frame-options", "SAMEORIGIN")
 		w.Header().Set("x-xss-protection", "1; mode=block")
@@ -100,7 +107,7 @@ func putSecureBrowserHeaders(h http.Handler) http.Handler {
 	})
 }
 
-func (v *Vince) captcha(h http.Handler) http.Handler {
+func Captcha(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
@@ -111,7 +118,7 @@ func (v *Vince) captcha(h http.Handler) http.Handler {
 	})
 }
 
-func (v *Vince) csrf(h http.Handler) http.Handler {
+func CSRF(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
