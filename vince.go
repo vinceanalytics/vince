@@ -206,7 +206,7 @@ func (v *Vince) Handle() http.Handler {
 	asset := assets.Serve()
 	admin := plug.Chain(Admin(), append(plug.Browser(), plug.SecureForm()...)...)
 	home := v.home()
-	v1Stats := v.v1Stats()
+	v1Stats := v1Stats()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" && r.Method == http.MethodGet {
 			home.ServeHTTP(w, r)
