@@ -29825,3 +29825,8 @@ a.branch-name .octicon {
 .z-n2 {
   z-index: -2 !important;
 }
+
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}

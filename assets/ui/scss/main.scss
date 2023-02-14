@@ -17,3 +17,8 @@
 @import '../node_modules/@primer/css/utilities/index.scss';
 @import './product';
 @import './marketing';
+
+.text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+}

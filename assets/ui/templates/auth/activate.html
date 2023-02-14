@@ -2,39 +2,39 @@
 <div class="width-full d-flex container-xl mt-4 mx-auto">
     {{if .HasPin}}
     <form action="/activate" method="post" class="width-full container-lg mx-auto  rounded px-8 py-6 mb-4 mt-8">
-        <h2>Activate your account<< /h2>
-                <div class="mt-2 text-small">
-                    Please enter the 4-digit code we sent to <b>
-                        {{.CurrentUser.Email}}
-                    </b>
-                </div>
-                <div class="mt-12 d-flex flex-items-stretch flex-grow">
-                    <div>
-                        <input type="text" name="code" id="code"
-                            oninput="this.value=this.value.replace(/[^0-9]/g, ''); if (this.value.length >= 4) document.getElementById('submit').focus()"
-                            onclick="this.select();" placeholder="••••" maxlength="4">
-                    </div>
-                    <button type="submit" id="submit" class="btn"> Activate &rarr;</button>
-                </div>
-                <div class="mt-16 text-small">
-                    Didn't receive an email?
-                </div>
-                <ol>
-                    <li>Check your spam folder</li>
-                    <li><a href="/activate/request-code" data-method="post">Send a new code</a></li>
-                    <li>Entered the wrong email address?</li>
-                </ol>
-                <ul>
-                    <li>
-                        <a href="/me?redirect=/register" data-method="delete">Delete this account</a>
-                    </li>
-                </ul>
+        <h2>Activate your account </h2>
+        <div class="mt-2 text-small">
+            Please enter the 4-digit code we sent to <b>
+                {{.CurrentUser.Email}}
+            </b>
+        </div>
+        <div class="mt-12 d-flex flex-items-stretch flex-grow">
+            <input type="text" name="code" id="code" class="FormControl-input px-8" style="width: 9rem;"
+                oninput="this.value=this.value.replace(/[^0-9]/g, ''); if (this.value.length >= 4) document.getElementById('submit').focus()"
+                onclick="this.select();" placeholder="••••" maxlength="4">
+            <button type="submit" id="submit" class="btn"> Activate &rarr;</button>
+        </div>
+        <div class="mt-16 text-small">
+            Didn't receive an email?
+        </div>
+        <ol class="text-small">
+            <li>Check your spam folder</li>
+            <li><a href="/activate/request-code" data-method="post">Send a new code</a></li>
+        </ol>
+        <div class="mt-4 text-small">
+            Entered the wrong email address?
+        </div>
+        <ul class="text-xs mt-1">
+            <li>
+                <a href="/me?redirect=/register" data-method="delete" class="underline">Delete this account</a>
+            </li>
+        </ul>
     </form>
     {{else}}
     <div>
-        <form action="/activate/request-code" method="post">
+        <form action="/activate/request-code" method="post" class="width-full  mx-auto   px-8 py-6 mb-4 mt-8">
             <h2>Activate your account</h2>
-            <div>
+            <div class="mt-2 text-small">
                 A 4-digit activation code will be sent to <b>{{.CurrentIndex.Email}}</b>
             </div>
             <button type="submit">Request activation code</button>
