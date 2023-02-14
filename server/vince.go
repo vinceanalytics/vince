@@ -1,4 +1,4 @@
-package vince
+package server
 
 import (
 	"context"

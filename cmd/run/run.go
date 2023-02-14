@@ -1,20 +1,20 @@
-package main
+package run
 
 import (
 	"log"
 	"os"
 
-	"github.com/gernest/vince"
+	"github.com/gernest/vince/server"
 	"github.com/urfave/cli/v2"
 )
 
-func main() {
+func Main() {
 	app := &cli.App{
 		Name:        "vince",
 		Usage:       "simple web analytics platform",
 		Description: description,
 		Commands: []*cli.Command{
-			vince.ServeCMD(),
+			server.ServeCMD(),
 		},
 	}
 	err := app.Run(os.Args)
