@@ -46,40 +46,33 @@ type Vince struct {
 	allocator  memory.Allocator
 }
 
-func ServeCMD() *cli.Command {
-	return &cli.Command{
-		Name:  "serve",
-		Usage: "starts a server",
-		Flags: config.Flags(),
-		Action: func(ctx *cli.Context) error {
-			xlg := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
-			conf, err := config.Load(ctx)
-			if err != nil {
-				return err
-			}
-			goCtx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-			xlg = xlg.Level(zerolog.Level(conf.LogLevel))
-			goCtx = log.Set(goCtx, &xlg)
-			if _, err = os.Stat(conf.DataPath); err != nil && os.IsNotExist(err) {
-				err = os.MkdirAll(conf.DataPath, 0755)
-				if err != nil {
-					return err
-				}
-			}
-			conf.LogLevel = config.Config_info
-			err = conf.WriteToFile(filepath.Join(conf.DataPath, "config.json"))
-			if err != nil {
-				return err
-			}
-			goCtx = config.Set(goCtx, conf)
-			svr, err := New(goCtx, conf)
-			if err != nil {
-				return err
-			}
-			return svr.Serve(goCtx)
-		},
+func Serve(ctx *cli.Context) error {
+	xlg := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
+	conf, err := config.Load(ctx)
+	if err != nil {
+		return err
 	}
+	goCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	xlg = xlg.Level(zerolog.Level(conf.LogLevel))
+	goCtx = log.Set(goCtx, &xlg)
+	if _, err = os.Stat(conf.DataPath); err != nil && os.IsNotExist(err) {
+		err = os.MkdirAll(conf.DataPath, 0755)
+		if err != nil {
+			return err
+		}
+	}
+	conf.LogLevel = config.Config_info
+	err = conf.WriteToFile(filepath.Join(conf.DataPath, "config.json"))
+	if err != nil {
+		return err
+	}
+	goCtx = config.Set(goCtx, conf)
+	svr, err := New(goCtx, conf)
+	if err != nil {
+		return err
+	}
+	return svr.Serve(goCtx)
 }
 
 func New(ctx context.Context, o *config.Config) (*Vince, error) {
