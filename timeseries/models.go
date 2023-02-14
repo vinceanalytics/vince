@@ -153,13 +153,13 @@ type Tables struct {
 	Cache    *SessionCache
 }
 
-func Open(allocator memory.Allocator, dir string) (*Tables, error) {
+func Open(ctx context.Context, allocator memory.Allocator, dir string) (*Tables, error) {
 	base := filepath.Join(dir, "ts")
-	events, err := NewStorage[*Event](allocator, filepath.Join(base, "events"))
+	events, err := NewStorage[*Event](ctx, allocator, filepath.Join(base, "events"))
 	if err != nil {
 		return nil, err
 	}
-	sessions, err := NewStorage[*Session](allocator, filepath.Join(base, "sessions"))
+	sessions, err := NewStorage[*Session](ctx, allocator, filepath.Join(base, "sessions"))
 	if err != nil {
 		return nil, err
 	}

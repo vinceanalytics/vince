@@ -46,12 +46,14 @@ type Storage[T any] struct {
 	end        time.Time
 }
 
-func NewStorage[T any](allocator memory.Allocator, path string) (*Storage[T], error) {
+func NewStorage[T any](ctx context.Context, allocator memory.Allocator, path string) (*Storage[T], error) {
 	dirs := []string{BucketPath, BucketMergePath, MetaPath}
 	for _, p := range dirs {
 		os.MkdirAll(filepath.Join(path, p), 0755)
 	}
-	db, err := badger.Open(badger.DefaultOptions(filepath.Join(path, MetaPath)))
+	o := badger.DefaultOptions(filepath.Join(path, MetaPath))
+	o.Logger = log.Badger(ctx)
+	db, err := badger.Open(o)
 	if err != nil {
 		return nil, err
 	}
