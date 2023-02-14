@@ -187,7 +187,9 @@ func (t *Tables) Close() (err error) {
 		return
 	}
 	err = t.Sessions.Close()
-	t.Cache.Close()
+	if t.Cache != nil {
+		t.Cache.Close()
+	}
 	return
 }
 
