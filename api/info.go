@@ -1,12 +1,14 @@
-package vince
+package api
 
 import (
 	"net/http"
 	"runtime/debug"
+
+	"github.com/gernest/vince/render"
 )
 
-func (v *Vince) info(w http.ResponseWriter, r *http.Request) {
-	ServeJSON(w, http.StatusOK, GetBuildInfo())
+func Info(w http.ResponseWriter, r *http.Request) {
+	render.JSON(w, http.StatusOK, GetBuildInfo())
 }
 
 type BuildInfo struct {

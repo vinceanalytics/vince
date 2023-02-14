@@ -1,4 +1,4 @@
-package vince
+package api
 
 import (
 	"crypto/rand"

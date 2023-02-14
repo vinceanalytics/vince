@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/timeseries"
 )
 
@@ -35,9 +36,9 @@ func (v *Vince) v1StatsRealtimeVisitors(w http.ResponseWriter, r *http.Request) 
 	query.Set("period", "realtime")
 	if res, err := v.ts.CurrentVisitors(r.Context(), timeseries.QueryFrom(query)); err != nil {
 		log.Get(r.Context()).Err(err).Msg("failed to query events")
-		ServeJSON(w, http.StatusInternalServerError, timeseries.Record{})
+		render.JSON(w, http.StatusInternalServerError, timeseries.Record{})
 	} else {
-		ServeJSON(w, http.StatusOK, res)
+		render.JSON(w, http.StatusOK, res)
 	}
 }
 

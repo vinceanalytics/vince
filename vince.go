@@ -33,11 +33,10 @@ import (
 const MAX_BUFFER_SIZE = 4098
 
 type Vince struct {
-	ts      *timeseries.Tables
-	sql     *gorm.DB
-	session *timeseries.SessionCache
-	mailer  email.Mailer
-	config  *config.Config
+	ts     *timeseries.Tables
+	sql    *gorm.DB
+	mailer email.Mailer
+	config *config.Config
 
 	events     chan *timeseries.Event
 	sessions   chan *timeseries.Session
@@ -125,7 +124,7 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 		computeCtx: compute.DefaultExecCtx(),
 		allocator:  alloc,
 	}
-	v.session = timeseries.NewSessionCache(cache, v.sessions)
+	v.ts.Cache = timeseries.NewSessionCache(cache, v.sessions, v.events)
 	return v, nil
 }
 
@@ -152,6 +151,7 @@ func (v *Vince) Serve(ctx context.Context) error {
 			ctx = compute.WithAllocator(ctx, v.allocator)
 			ctx = models.Set(ctx, v.sql)
 			ctx = email.Set(ctx, v.mailer)
+			ctx = timeseries.Set(ctx, v.ts)
 			return ctx
 		},
 	}
@@ -181,7 +181,6 @@ func (v *Vince) Serve(ctx context.Context) error {
 	models.CloseDB(v.sql)
 	v.ts.Close()
 	v.mailer.Close()
-	v.session.Close()
 	close(v.events)
 	close(v.sessions)
 	close(v.abort)

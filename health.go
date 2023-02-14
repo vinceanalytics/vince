@@ -3,6 +3,8 @@ package vince
 import (
 	"net/http"
 	"time"
+
+	"github.com/gernest/vince/render"
 )
 
 type Health struct {
@@ -25,7 +27,7 @@ func (v *Vince) health(w http.ResponseWriter, r *http.Request) {
 	if !h.DB || !h.Workers.EventWriter || !h.Workers.SessionWriter || !h.Workers.SeriesFlush {
 		code = http.StatusInternalServerError
 	}
-	ServeJSON(w, code, h)
+	render.JSON(w, code, h)
 }
 
 type WorkerHealthChannels struct {

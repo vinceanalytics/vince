@@ -1,4 +1,4 @@
-package vince
+package api
 
 import (
 	"encoding/json"
@@ -25,15 +25,16 @@ type Request struct {
 	Meta        map[string]string `json:"m"`
 }
 
-func (v *Vince) EventsEndpoint(w http.ResponseWriter, r *http.Request) {
-	if !v.processEvent(r) {
+func Events(w http.ResponseWriter, r *http.Request) {
+	if !processEvent(r) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
 
-func (v *Vince) processEvent(r *http.Request) bool {
+func processEvent(r *http.Request) bool {
 	xlg := log.Get(r.Context())
+	ts := timeseries.Get(r.Context())
 	var req Request
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -155,8 +156,7 @@ func (v *Vince) processEvent(r *http.Request) bool {
 		e.Labels = req.Meta
 		e.Timestamp = now
 		previousUUserID := int64(seedID.GenPrevious(remoteIp, userAgent, domain, host))
-		e.SessionId = v.session.RegisterSession(e, previousUUserID)
-		v.events <- e
+		e.SessionId = ts.Cache.RegisterSession(e, previousUUserID)
 	}
 	return true
 }

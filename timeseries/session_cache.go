@@ -12,14 +12,16 @@ import (
 )
 
 type SessionCache struct {
-	cache   *ristretto.Cache
-	process chan<- *Session
+	cache    *ristretto.Cache
+	sessions chan<- *Session
+	events   chan<- *Event
 }
 
-func NewSessionCache(cache *ristretto.Cache, process chan<- *Session) *SessionCache {
+func NewSessionCache(cache *ristretto.Cache, sessions chan<- *Session, events chan<- *Event) *SessionCache {
 	return &SessionCache{
-		cache:   cache,
-		process: process,
+		cache:    cache,
+		sessions: sessions,
+		events:   events,
 	}
 }
 
@@ -33,12 +35,13 @@ func (c *SessionCache) RegisterSession(e *Event, prevUserId int64) uuid.UUID {
 		updated := s.Update(e)
 		updated.Sign = 1
 		s.Sign = -1
-		c.process <- updated
-		c.process <- s
+		c.sessions <- updated
+		c.sessions <- s
 		return c.Persist(updated)
 	}
 	newSession := e.NewSession()
-	c.process <- newSession
+	c.sessions <- newSession
+	c.events <- e
 	return c.Persist(newSession)
 }
 

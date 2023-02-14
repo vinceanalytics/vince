@@ -1,13 +1,17 @@
 package vince
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/gernest/vince/api"
+)
 
 func (v *Vince) api(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		switch r.URL.Path {
 		case "/api/event":
-			v.EventsEndpoint(w, r)
+			api.Events(w, r)
 			return
 		case "/subscription/webhook":
 			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
@@ -22,7 +26,7 @@ func (v *Vince) api(w http.ResponseWriter, r *http.Request) {
 			v.health(w, r)
 			return
 		case "/api/system":
-			v.info(w, r)
+			api.Info(w, r)
 			return
 		default:
 			if domainStatusRe.MatchString(r.URL.Path) {

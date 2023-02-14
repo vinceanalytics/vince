@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"context"
 	"path/filepath"
 	"time"
 
@@ -147,8 +148,9 @@ func (s *Session) Update(e *Event) *Session {
 }
 
 type Tables struct {
-	events   *Storage[*Event]
-	sessions *Storage[*Session]
+	Events   *Storage[*Event]
+	Sessions *Storage[*Session]
+	Cache    *SessionCache
 }
 
 func Open(allocator memory.Allocator, dir string) (*Tables, error) {
@@ -161,29 +163,40 @@ func Open(allocator memory.Allocator, dir string) (*Tables, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Tables{events: events, sessions: sessions}, nil
+	return &Tables{Events: events, Sessions: sessions}, nil
 }
 
 func (t *Tables) WriteEvents(events []*Event) (int, error) {
-	return t.events.Write(events[len(events)-1].Timestamp, events)
+	return t.Events.Write(events[len(events)-1].Timestamp, events)
 }
 
 func (t *Tables) WriteSessions(sessions []*Session) (int, error) {
-	return t.sessions.Write(sessions[len(sessions)-1].Timestamp, sessions)
+	return t.Sessions.Write(sessions[len(sessions)-1].Timestamp, sessions)
 }
 
 func (t *Tables) ArchiveEvents() (int64, error) {
-	return t.events.Archive()
+	return t.Events.Archive()
 }
 
 func (t *Tables) ArchiveSessions() (int64, error) {
-	return t.sessions.Archive()
+	return t.Sessions.Archive()
 }
 
 func (t *Tables) Close() (err error) {
-	if err = t.events.Close(); err != nil {
+	if err = t.Events.Close(); err != nil {
 		return
 	}
-	err = t.sessions.Close()
+	err = t.Sessions.Close()
+	t.Cache.Close()
 	return
+}
+
+type tablesKey struct{}
+
+func Set(ctx context.Context, t *Tables) context.Context {
+	return context.WithValue(ctx, tablesKey{}, t)
+}
+
+func Get(ctx context.Context) *Tables {
+	return ctx.Value(tablesKey{}).(*Tables)
 }
