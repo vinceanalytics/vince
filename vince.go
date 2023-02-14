@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/apache/arrow/go/v12/arrow/memory"
@@ -26,6 +25,7 @@ import (
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/timeseries"
+	"github.com/gernest/vince/worker"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -72,6 +72,7 @@ func ServeCMD() *cli.Command {
 			if err != nil {
 				return err
 			}
+			goCtx = config.Set(goCtx, conf)
 			svr, err := New(goCtx, conf)
 			if err != nil {
 				return err
@@ -141,16 +142,9 @@ func (v *Vince) Serve(ctx context.Context) error {
 	var wg sync.WaitGroup
 	{
 		// add all workers
-		wg.Add(3)
-		eventHealth := health.NewPing("event_writer_worker")
-		go v.eventWriter(ctx, &wg, eventHealth.Channel)
-		h = append(h, eventHealth)
-		sessionHealth := health.NewPing("session_writer_worker")
-		go v.sessionWriter(ctx, &wg, sessionHealth.Channel)
-		h = append(h, sessionHealth)
-		seriesHealth := health.NewPing("series_archive_writer")
-		go v.seriesArchive(ctx, &wg, seriesHealth.Channel)
-		h = append(h, seriesHealth)
+		h = append(h, worker.StartEventWriter(ctx, v.events, v.ts, &wg, v.exit))
+		h = append(h, worker.StartSessionWriter(ctx, v.sessions, v.ts, &wg, v.exit))
+		h = append(h, worker.StartSeriesArchive(ctx, v.ts, &wg, v.exit))
 	}
 	h = append(h, health.Base{
 		Key:       "database",
@@ -161,7 +155,6 @@ func (v *Vince) Serve(ctx context.Context) error {
 		Addr:    fmt.Sprintf(":%d", v.config.Port),
 		Handler: v.Handle(),
 		BaseContext: func(l net.Listener) context.Context {
-			ctx := config.Set(ctx, v.config)
 			ctx = compute.SetExecCtx(ctx, v.computeCtx)
 			ctx = compute.WithAllocator(ctx, v.allocator)
 			ctx = models.Set(ctx, v.sql)
@@ -201,127 +194,6 @@ func (v *Vince) Serve(ctx context.Context) error {
 	close(v.sessions)
 	close(v.abort)
 	return nil
-}
-
-func (v *Vince) eventWriter(ctx context.Context, wg *sync.WaitGroup, h health.PingChannel) {
-	ev := func() *zerolog.Event {
-		return log.Get(ctx).Debug().Str("worker", "event_writer")
-	}
-	ev().Msg("start")
-	defer func() {
-		ev().Msg("exit")
-		defer wg.Done()
-	}()
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-	events := make([]*timeseries.Event, 0, MAX_BUFFER_SIZE)
-	flush := func() {
-		count := len(events)
-		if count == 0 {
-			return
-		}
-		_, err := v.ts.WriteEvents(events)
-		if err != nil {
-			ev().Err(err).Msg("saving events")
-			v.exit()
-			return
-		}
-		events = events[:0]
-	}
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case f := <-h:
-			f()
-		case <-ticker.C:
-			flush()
-		case e := <-v.events:
-			events = append(events, e)
-			if len(events) == MAX_BUFFER_SIZE {
-				flush()
-			}
-		}
-	}
-}
-
-func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup, h health.PingChannel) {
-	ev := func() *zerolog.Event {
-		return log.Get(ctx).Debug().Str("worker", "session_writer")
-	}
-	ev().Msg("start")
-	defer func() {
-		ev().Msg("exit")
-		defer wg.Done()
-	}()
-	sessions := make([]*timeseries.Session, 0, MAX_BUFFER_SIZE)
-	flush := func() {
-		count := len(sessions)
-		if count == 0 {
-			return
-		}
-		_, err := v.ts.WriteSessions(sessions)
-		if err != nil {
-			ev().Err(err).Msg("saving sessions")
-			v.exit()
-			return
-		}
-		sessions = sessions[:0]
-	}
-	ticker := time.NewTicker(time.Second)
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case f := <-h:
-			f()
-		case <-ticker.C:
-			flush()
-		case sess := <-v.sessions:
-			sessions = append(sessions, sess)
-			if len(sessions) == MAX_BUFFER_SIZE {
-				flush()
-			}
-		}
-	}
-}
-
-func (v *Vince) seriesArchive(ctx context.Context, wg *sync.WaitGroup, h health.PingChannel) {
-	ev := func() *zerolog.Event {
-		return log.Get(ctx).Debug().Str("worker", "series_archive")
-	}
-	interval := v.config.FlushInterval.AsDuration()
-	ev().Dur("interval", interval).Msg("start")
-	defer func() {
-		ev().Msg("exit")
-		defer wg.Done()
-	}()
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case f := <-h:
-			f()
-		case <-ticker.C:
-			n, err := v.ts.ArchiveEvents()
-			if err != nil {
-				ev().Msg("failed archiving events")
-				v.exit()
-				return
-			}
-			ev().Int64("size", n).Msg("archiving events")
-			n, err = v.ts.ArchiveSessions()
-			if err != nil {
-				ev().Err(err).Msg("failed archiving sessions")
-				v.exit()
-				return
-			}
-			ev().Int64("size", n).Msg("archiving sessions")
-		}
-	}
-
 }
 
 func (v *Vince) exit() {
