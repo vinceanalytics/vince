@@ -5,13 +5,11 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
-	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/belak/octicon"
 	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 )
 
@@ -159,24 +157,4 @@ func GetActivationCode(ctx context.Context) uint64 {
 		return v.(uint64)
 	}
 	return 0
-}
-
-func ServeHTML(ctx context.Context, w http.ResponseWriter, tpl *template.Template, code int, f ...func(*Context)) {
-	w.Header().Add("Content-Type", "text/html")
-	w.WriteHeader(code)
-	data := New(ctx)
-	if len(f) > 0 {
-		f[0](data)
-	}
-	err := tpl.Execute(w, data)
-	if err != nil {
-		log.Get(ctx).Err(err).Str("template", tpl.Name()).Msg("Failed to render")
-	}
-}
-
-func ServeError(ctx context.Context, w http.ResponseWriter, code int) {
-	ServeHTML(ctx, w, Error, code, func(ctx *Context) {
-		ctx.Status = code
-		ctx.StatusText = http.StatusText(code)
-	})
 }

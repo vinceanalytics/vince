@@ -1,12 +1,37 @@
 package render
 
 import (
+	"context"
 	"encoding/json"
+	"html/template"
 	"net/http"
+
+	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/log"
 )
 
 func JSON(w http.ResponseWriter, code int, data any) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(data)
+}
+
+func HTML(ctx context.Context, w http.ResponseWriter, tpl *template.Template, code int, f ...func(*templates.Context)) {
+	w.Header().Add("Content-Type", "text/html")
+	w.WriteHeader(code)
+	data := templates.New(ctx)
+	if len(f) > 0 {
+		f[0](data)
+	}
+	err := tpl.Execute(w, data)
+	if err != nil {
+		log.Get(ctx).Err(err).Str("template", tpl.Name()).Msg("Failed to render")
+	}
+}
+
+func Error(ctx context.Context, w http.ResponseWriter, code int) {
+	HTML(ctx, w, templates.Error, code, func(ctx *templates.Context) {
+		ctx.Status = code
+		ctx.StatusText = http.StatusText(code)
+	})
 }

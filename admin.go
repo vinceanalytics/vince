@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/auth"
+	"github.com/gernest/vince/render"
 )
 
 var registerInvitationRe = regexp.MustCompile(`^/register/invitation/(?P<v0>[^.]+)$`)
@@ -67,6 +67,6 @@ func Admin() http.Handler {
 				return
 			}
 		}
-		templates.ServeError(r.Context(), w, http.StatusNotImplemented)
+		render.Error(r.Context(), w, http.StatusNotImplemented)
 	})
 }

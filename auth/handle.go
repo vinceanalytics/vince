@@ -12,16 +12,17 @@ import (
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
 	"gorm.io/gorm"
 )
 
 func LoginForm(w http.ResponseWriter, r *http.Request) {
-	templates.ServeHTML(r.Context(), w, templates.Login, http.StatusOK)
+	render.HTML(r.Context(), w, templates.Login, http.StatusOK)
 }
 
 func RegisterForm(w http.ResponseWriter, r *http.Request) {
-	templates.ServeHTML(r.Context(), w, templates.Register, http.StatusOK)
+	render.HTML(r.Context(), w, templates.Register, http.StatusOK)
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	u, m, err := NewUser(r)
 	if err != nil {
 		log.Get(r.Context()).Err(err).Msg("Failed decoding new user from")
-		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
+		render.Error(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 
@@ -44,7 +45,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			}
 			m["_captcha"] = "Please complete the captcha to register"
 		}
-		templates.ServeHTML(r.Context(), w, templates.Register, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(r.Context(), w, templates.Register, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Errors = m
 			ctx.Form = r.Form
 		})
@@ -55,7 +56,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			r = sessions.SaveCsrf(w, r)
 			r = sessions.SaveCaptcha(w, r)
-			templates.ServeHTML(r.Context(), w, templates.Register, http.StatusOK, func(ctx *templates.Context) {
+			render.HTML(r.Context(), w, templates.Register, http.StatusOK, func(ctx *templates.Context) {
 				ctx.Errors = map[string]string{
 					"email": "already exists",
 				}
@@ -63,7 +64,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			})
 			return
 		}
-		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
+		render.Error(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	ctx := models.SetCurrentUser(r.Context(), u)
@@ -96,7 +97,7 @@ func ActivateForm(w http.ResponseWriter, r *http.Request) {
 	err := models.Get(r.Context()).Model(&models.Invitation{}).Where("email=?", usr.Email).Count(&count).Error
 	if err != nil {
 		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
-		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
+		render.Error(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	hasInvitation := count != 0
@@ -104,11 +105,11 @@ func ActivateForm(w http.ResponseWriter, r *http.Request) {
 	err = models.Get(r.Context()).Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).First(&code).Error
 	if err != nil {
 		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
-		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
+		render.Error(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	ctx := templates.SetActivationCode(r.Context(), code.Code)
-	templates.ServeHTML(ctx, w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(ctx, w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
 		ctx.HasInvitation = hasInvitation
 	})
 }
@@ -121,7 +122,7 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	err := models.Get(ctx).Model(&models.Invitation{}).Where("email=?", usr.Email).Count(&count).Error
 	if err != nil {
 		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
-		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
+		render.Error(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	hasInvitation := count != 0
@@ -132,7 +133,7 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r = sessions.SaveCsrf(w, r)
-			templates.ServeHTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
+			render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
 				ctx.Errors = map[string]string{
 					"code": "Incorrect activation code",
 				}
@@ -142,13 +143,13 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Get(r.Context()).Err(err).Msg("failed querying verification codes")
-		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
+		render.Error(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	if codes.UpdatedAt.Before(time.Now().Add(-4 * time.Hour)) {
 		// verification code has expired
 		r = sessions.SaveCsrf(w, r)
-		templates.ServeHTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Errors = map[string]string{
 				"code": "Code is expired, please request another one",
 			}
@@ -166,14 +167,14 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		db.Rollback()
 		log.Get(r.Context()).Err(err).Msg("failed updating user verification status")
-		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
+		render.Error(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	err = models.Get(ctx).Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).Update("user_id", nil).Error
 	if err != nil {
 		db.Rollback()
 		log.Get(r.Context()).Err(err).Msg("failed resetting  verification codes")
-		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
+		render.Error(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	db.Commit()

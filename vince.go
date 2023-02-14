@@ -16,13 +16,13 @@ import (
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/plug"
+	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/worker"
@@ -229,6 +229,6 @@ func (v *Vince) Handle() http.Handler {
 			admin.ServeHTTP(w, r)
 			return
 		}
-		templates.ServeError(r.Context(), w, http.StatusNotFound)
+		render.Error(r.Context(), w, http.StatusNotFound)
 	})
 }
