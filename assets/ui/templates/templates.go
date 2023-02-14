@@ -62,6 +62,9 @@ type Context struct {
 	Config        *config.Config
 	HasInvitation bool
 	CurrentStep   int
+	Status        int
+	StatusText    string
+	HasPin        bool
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
@@ -135,10 +138,6 @@ func (t *Context) InputField(name string) template.HTMLAttr {
 	return template.HTMLAttr(s.String())
 }
 
-func (t *Context) HasPin() bool {
-	return t.Code != 0
-}
-
 func (t *Context) SetStep(n int) {
 	t.CurrentStep = n
 }
@@ -162,9 +161,13 @@ func GetActivationCode(ctx context.Context) uint64 {
 	return 0
 }
 
-func ServeHTML(ctx context.Context, w http.ResponseWriter, tpl *template.Template, code int, data any) {
+func ServeHTML(ctx context.Context, w http.ResponseWriter, tpl *template.Template, code int, f ...func(*Context)) {
 	w.Header().Add("Content-Type", "text/html")
 	w.WriteHeader(code)
+	data := New(ctx)
+	if len(f) > 0 {
+		f[0](data)
+	}
 	err := tpl.Execute(w, data)
 	if err != nil {
 		log.Get(ctx).Err(err).Str("template", tpl.Name()).Msg("Failed to render")
@@ -172,8 +175,8 @@ func ServeHTML(ctx context.Context, w http.ResponseWriter, tpl *template.Templat
 }
 
 func ServeError(ctx context.Context, w http.ResponseWriter, code int) {
-	ServeHTML(ctx, w, Error, code, map[string]any{
-		"Status": code,
-		"Text":   http.StatusText(code),
+	ServeHTML(ctx, w, Error, code, func(ctx *Context) {
+		ctx.Status = code
+		ctx.StatusText = http.StatusText(code)
 	})
 }

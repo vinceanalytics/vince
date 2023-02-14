@@ -62,6 +62,10 @@ func Admin() http.Handler {
 				auth.ActivateForm(w, r)
 				return
 			}
+			if r.Method == http.MethodPost {
+				auth.Activate(w, r)
+				return
+			}
 		}
 		templates.ServeError(r.Context(), w, http.StatusNotImplemented)
 	})
