@@ -45,10 +45,9 @@ func FetchSession(h http.Handler) http.Handler {
 func SessionTimeout(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
-
 		now := time.Now()
 		switch {
-		case session.Data.CurrentUserID != 0 && now.After(session.Data.TimeoutAt):
+		case session.Data.CurrentUserID != 0 && !session.Data.TimeoutAt.IsZero() && now.After(session.Data.TimeoutAt):
 			session.Data = sessions.Data{}
 		case session.Data.CurrentUserID != 0:
 			session.Data.TimeoutAt = now.Add(24 * 7 * 2 * time.Hour)
