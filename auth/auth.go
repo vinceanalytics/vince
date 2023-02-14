@@ -28,16 +28,3 @@ func IssueEmailVerification(ctx context.Context, usr *models.User) (uint64, erro
 	}
 	return code.Code, nil
 }
-
-type activationCodeKey struct{}
-
-func SetActivationCode(ctx context.Context, code uint64) context.Context {
-	return context.WithValue(ctx, activationCodeKey{}, code)
-}
-
-func GetActivationCode(ctx context.Context) uint64 {
-	if v := ctx.Value(activationCodeKey{}); v != nil {
-		return v.(uint64)
-	}
-	return 0
-}

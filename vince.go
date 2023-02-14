@@ -17,6 +17,7 @@ import (
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
+	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/log"
@@ -342,6 +343,6 @@ func (v *Vince) Handle() http.Handler {
 			admin.ServeHTTP(w, r)
 			return
 		}
-		ServeError(r.Context(), w, http.StatusNotFound)
+		templates.ServeError(r.Context(), w, http.StatusNotFound)
 	})
 }

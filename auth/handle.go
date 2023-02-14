@@ -1,4 +1,4 @@
-package vince
+package auth
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/gernest/vince/assets/ui/templates"
-	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
@@ -14,20 +13,20 @@ import (
 )
 
 func LoginForm(w http.ResponseWriter, r *http.Request) {
-	ServeHTML(r.Context(), w, templates.Login, http.StatusOK, templates.New(r.Context()))
+	templates.ServeHTML(r.Context(), w, templates.Login, http.StatusOK, templates.New(r.Context()))
 }
 
 func RegisterForm(w http.ResponseWriter, r *http.Request) {
-	ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(r.Context()))
+	templates.ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(r.Context()))
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
 	session, r := sessions.Load(r)
 	r.ParseForm()
-	u, m, err := auth.NewUser(r)
+	u, m, err := NewUser(r)
 	if err != nil {
 		log.Get(r.Context()).Err(err).Msg("Failed decoding new user from")
-		ServeError(r.Context(), w, http.StatusInternalServerError)
+		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 
@@ -41,7 +40,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			}
 			m["_captcha"] = "Please complete the captcha to register"
 		}
-		ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(
+		templates.ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(
 			r.Context(),
 			func(c *templates.Context) {
 				c.Errors = m
@@ -55,7 +54,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			r = sessions.SaveCsrf(w, r)
 			r = sessions.SaveCaptcha(w, r)
-			ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(
+			templates.ServeHTML(r.Context(), w, templates.Register, http.StatusOK, templates.New(
 				r.Context(),
 				func(c *templates.Context) {
 					c.Errors = map[string]string{
@@ -66,7 +65,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			))
 			return
 		}
-		ServeError(r.Context(), w, http.StatusInternalServerError)
+		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	ctx := models.SetCurrentUser(r.Context(), u)
@@ -85,11 +84,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func SendVerificationEmail(ctx context.Context, usr *models.User) error {
-	code, err := auth.IssueEmailVerification(ctx, usr)
+	code, err := IssueEmailVerification(ctx, usr)
 	if err != nil {
 		return err
 	}
-	ctx = auth.SetActivationCode(ctx, code)
+	ctx = templates.SetActivationCode(ctx, code)
 	return email.SendActivation(ctx)
 }
 
@@ -99,7 +98,7 @@ func ActivateForm(w http.ResponseWriter, r *http.Request) {
 	err := models.Get(r.Context()).Model(&models.Invitation{}).Where("email=?", usr.Email).Count(&count).Error
 	if err != nil {
 		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
-		ServeError(r.Context(), w, http.StatusInternalServerError)
+		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	hasInvitation := count != 0
@@ -107,11 +106,11 @@ func ActivateForm(w http.ResponseWriter, r *http.Request) {
 	err = models.Get(r.Context()).Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).First(&code).Error
 	if err != nil {
 		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
-		ServeError(r.Context(), w, http.StatusInternalServerError)
+		templates.ServeError(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
-	ctx := auth.SetActivationCode(r.Context(), code.Code)
-	ServeHTML(r.Context(), w, templates.Activate, http.StatusOK, templates.New(ctx, func(c *templates.Context) {
+	ctx := templates.SetActivationCode(r.Context(), code.Code)
+	templates.ServeHTML(r.Context(), w, templates.Activate, http.StatusOK, templates.New(ctx, func(c *templates.Context) {
 		c.HasInvitation = hasInvitation
 	}))
 }

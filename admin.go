@@ -3,6 +3,9 @@ package vince
 import (
 	"net/http"
 	"regexp"
+
+	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/auth"
 )
 
 var registerInvitationRe = regexp.MustCompile(`^/register/invitation/(?P<v0>[^.]+)$`)
@@ -42,24 +45,24 @@ func Admin() http.Handler {
 		switch r.URL.Path {
 		case "/login":
 			if r.Method == http.MethodGet {
-				LoginForm(w, r)
+				auth.LoginForm(w, r)
 				return
 			}
 		case "/register":
 			if r.Method == http.MethodGet {
-				RegisterForm(w, r)
+				auth.RegisterForm(w, r)
 				return
 			}
 			if r.Method == http.MethodPost {
-				Register(w, r)
+				auth.Register(w, r)
 				return
 			}
 		case "/activate":
 			if r.Method == http.MethodGet {
-				ActivateForm(w, r)
+				auth.ActivateForm(w, r)
 				return
 			}
 		}
-		ServeError(r.Context(), w, http.StatusNotImplemented)
+		templates.ServeError(r.Context(), w, http.StatusNotImplemented)
 	})
 }
