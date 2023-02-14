@@ -20,6 +20,7 @@ import (
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
+	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/plug"
@@ -41,7 +42,6 @@ type Vince struct {
 	events     chan *timeseries.Event
 	sessions   chan *timeseries.Session
 	abort      chan os.Signal
-	hs         *WorkerHealthChannels
 	computeCtx compute.ExecCtx
 	allocator  memory.Allocator
 }
@@ -120,7 +120,6 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 		events:     make(chan *timeseries.Event, MAX_BUFFER_SIZE),
 		sessions:   make(chan *timeseries.Session, MAX_BUFFER_SIZE),
 		abort:      make(chan os.Signal, 1),
-		hs:         newWorkerHealth(),
 		computeCtx: compute.DefaultExecCtx(),
 		allocator:  alloc,
 	}
@@ -133,14 +132,30 @@ func (v *Vince) Serve(ctx context.Context) error {
 	defer cancel()
 	session := sessions.NewSession("vince")
 	ctx = sessions.Set(ctx, session)
+	var h health.Health
+	defer func() {
+		for _, o := range h {
+			o.Clone()
+		}
+	}()
 	var wg sync.WaitGroup
 	{
 		// add all workers
 		wg.Add(3)
-		go v.eventWriter(ctx, &wg)
-		go v.sessionWriter(ctx, &wg)
-		go v.seriesArchive(ctx, &wg)
+		eventHealth := health.NewPing("event_writer_worker")
+		go v.eventWriter(ctx, &wg, eventHealth.Channel)
+		h = append(h, eventHealth)
+		sessionHealth := health.NewPing("session_writer_worker")
+		go v.sessionWriter(ctx, &wg, sessionHealth.Channel)
+		h = append(h, sessionHealth)
+		seriesHealth := health.NewPing("series_archive_writer")
+		go v.seriesArchive(ctx, &wg, seriesHealth.Channel)
+		h = append(h, seriesHealth)
 	}
+	h = append(h, health.Base{
+		Key:       "database",
+		CheckFunc: models.Check,
+	})
 
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", v.config.Port),
@@ -152,6 +167,7 @@ func (v *Vince) Serve(ctx context.Context) error {
 			ctx = models.Set(ctx, v.sql)
 			ctx = email.Set(ctx, v.mailer)
 			ctx = timeseries.Set(ctx, v.ts)
+			ctx = health.Set(ctx, h)
 			return ctx
 		},
 	}
@@ -184,11 +200,10 @@ func (v *Vince) Serve(ctx context.Context) error {
 	close(v.events)
 	close(v.sessions)
 	close(v.abort)
-	v.hs.Close()
 	return nil
 }
 
-func (v *Vince) eventWriter(ctx context.Context, wg *sync.WaitGroup) {
+func (v *Vince) eventWriter(ctx context.Context, wg *sync.WaitGroup, h health.PingChannel) {
 	ev := func() *zerolog.Event {
 		return log.Get(ctx).Debug().Str("worker", "event_writer")
 	}
@@ -217,10 +232,10 @@ func (v *Vince) eventWriter(ctx context.Context, wg *sync.WaitGroup) {
 		select {
 		case <-ctx.Done():
 			return
+		case f := <-h:
+			f()
 		case <-ticker.C:
 			flush()
-		case ch := <-v.hs.eventWriter:
-			ch <- struct{}{}
 		case e := <-v.events:
 			events = append(events, e)
 			if len(events) == MAX_BUFFER_SIZE {
@@ -230,7 +245,7 @@ func (v *Vince) eventWriter(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
+func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup, h health.PingChannel) {
 	ev := func() *zerolog.Event {
 		return log.Get(ctx).Debug().Str("worker", "session_writer")
 	}
@@ -258,10 +273,10 @@ func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
 		select {
 		case <-ctx.Done():
 			return
+		case f := <-h:
+			f()
 		case <-ticker.C:
 			flush()
-		case ch := <-v.hs.sessionWriter:
-			ch <- struct{}{}
 		case sess := <-v.sessions:
 			sessions = append(sessions, sess)
 			if len(sessions) == MAX_BUFFER_SIZE {
@@ -271,7 +286,7 @@ func (v *Vince) sessionWriter(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (v *Vince) seriesArchive(ctx context.Context, wg *sync.WaitGroup) {
+func (v *Vince) seriesArchive(ctx context.Context, wg *sync.WaitGroup, h health.PingChannel) {
 	ev := func() *zerolog.Event {
 		return log.Get(ctx).Debug().Str("worker", "series_archive")
 	}
@@ -287,8 +302,8 @@ func (v *Vince) seriesArchive(ctx context.Context, wg *sync.WaitGroup) {
 		select {
 		case <-ctx.Done():
 			return
-		case ch := <-v.hs.seriesFlush:
-			ch <- struct{}{}
+		case f := <-h:
+			f()
 		case <-ticker.C:
 			n, err := v.ts.ArchiveEvents()
 			if err != nil {

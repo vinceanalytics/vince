@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gernest/vince/api"
+	"github.com/gernest/vince/health"
 )
 
 func (v *Vince) api(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +24,7 @@ func (v *Vince) api(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 			return
 		case "/api/health":
-			v.health(w, r)
+			health.Handle(w, r)
 			return
 		case "/api/system":
 			api.Info(w, r)

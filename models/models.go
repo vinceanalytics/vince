@@ -328,3 +328,9 @@ func Set(ctx context.Context, db *gorm.DB) context.Context {
 func Get(ctx context.Context) *gorm.DB {
 	return ctx.Value(dbKey{}).(*gorm.DB)
 }
+
+// Check performs health check on the database. This make sure we can query the
+// database
+func Check(ctx context.Context) bool {
+	return Get(ctx).Exec("SELECT 1").Error == nil
+}
