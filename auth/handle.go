@@ -18,11 +18,11 @@ import (
 )
 
 func LoginForm(w http.ResponseWriter, r *http.Request) {
-	render.HTML(r.Context(), w, templates.Login, http.StatusOK)
+	render.HTML(r.Context(), w, templates.LoginForm, http.StatusOK)
 }
 
 func RegisterForm(w http.ResponseWriter, r *http.Request) {
-	render.HTML(r.Context(), w, templates.Register, http.StatusOK)
+	render.HTML(r.Context(), w, templates.RegisterForm, http.StatusOK)
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +45,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			}
 			m["_captcha"] = "Please complete the captcha to register"
 		}
-		render.HTML(r.Context(), w, templates.Register, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(r.Context(), w, templates.RegisterForm, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Errors = m
 			ctx.Form = r.Form
 		})
@@ -56,7 +56,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			r = sessions.SaveCsrf(w, r)
 			r = sessions.SaveCaptcha(w, r)
-			render.HTML(r.Context(), w, templates.Register, http.StatusOK, func(ctx *templates.Context) {
+			render.HTML(r.Context(), w, templates.RegisterForm, http.StatusOK, func(ctx *templates.Context) {
 				ctx.Errors = map[string]string{
 					"email": "already exists",
 				}

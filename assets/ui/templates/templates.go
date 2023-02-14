@@ -16,14 +16,14 @@ import (
 //go:embed layouts auth error email
 var files embed.FS
 
-var Login = template.Must(
+var LoginForm = template.Must(
 	template.ParseFS(files,
 		"layouts/focus.html",
 		"auth/login_form.html",
 	),
 )
 
-var Register = template.Must(
+var RegisterForm = template.Must(
 	template.ParseFS(files,
 		"layouts/focus.html",
 		"auth/register_form.html",
