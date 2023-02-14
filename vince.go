@@ -229,6 +229,6 @@ func (v *Vince) Handle() http.Handler {
 			admin.ServeHTTP(w, r)
 			return
 		}
-		render.Error(r.Context(), w, http.StatusNotFound)
+		render.ERROR(r.Context(), w, http.StatusNotFound)
 	})
 }

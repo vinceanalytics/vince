@@ -67,6 +67,6 @@ func Admin() http.Handler {
 				return
 			}
 		}
-		render.Error(r.Context(), w, http.StatusNotImplemented)
+		render.ERROR(r.Context(), w, http.StatusNotImplemented)
 	})
 }
