@@ -6,3 +6,5 @@
     https://github.com/pocketbase/pocketbase
 * Landing page and docs
     https://github.com/metalbear-co/metalbear.co
+* Gateway research
+  https://lucperkins.dev/blog/service-mesh-use-cases/
