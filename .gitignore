@@ -10,6 +10,6 @@ geoip/*.mmdb
 geoip/*.gz
 geoip/*.zstd
 .vince/
-vincento
 loadgen
 tmp
+vince
