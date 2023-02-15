@@ -4,15 +4,26 @@ package timeseries;
 import "google/protobuf/timestamp.proto";
 option go_package = "github.com/gernest/vince/timeseries";
 
-message Series {
+message Store {
 
-  message Sheet {
-    repeated Bucket buckets = 1;
+  message Table {
+    string name = 1;
+    Index index = 2;
+  }
+
+  message Index {
+    repeated Entry entries = 1;
     Range range = 2;
   }
 
-  message Bucket {
+  // Entry is a single archived parquet file. This is determined by the
+  // configured archive interval. If archive interval is 30 minues then this
+  // will represnent 30 minutes data of data.
+  message Entry {
+    // ID is a ULID identifying this   parquet file
     bytes id = 1;
+
+    // range is the interval on which data forming this file covers
     Range range = 2;
   }
 

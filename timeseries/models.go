@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/apache/arrow/go/v12/arrow/memory"
+	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v3/options"
+	"github.com/gernest/vince/log"
 	"github.com/google/uuid"
 )
 
@@ -148,6 +151,7 @@ func (s *Session) Update(e *Event) *Session {
 }
 
 type Tables struct {
+	db       *badger.DB
 	Events   *Storage[*Event]
 	Sessions *Storage[*Session]
 	Cache    *SessionCache
@@ -155,15 +159,23 @@ type Tables struct {
 
 func Open(ctx context.Context, allocator memory.Allocator, dir string) (*Tables, error) {
 	base := filepath.Join(dir, "ts")
-	events, err := NewStorage[*Event](ctx, allocator, filepath.Join(base, "events"))
+	o := badger.DefaultOptions(filepath.Join(base, "store")).
+		WithLogger(log.Badger(ctx)).
+		WithCompression(options.ZSTD)
+	db, err := badger.Open(o)
 	if err != nil {
 		return nil, err
 	}
-	sessions, err := NewStorage[*Session](ctx, allocator, filepath.Join(base, "sessions"))
+
+	events, err := NewStorage[*Event](ctx, allocator, db, filepath.Join(base, "events"))
 	if err != nil {
 		return nil, err
 	}
-	return &Tables{Events: events, Sessions: sessions}, nil
+	sessions, err := NewStorage[*Session](ctx, allocator, db, filepath.Join(base, "sessions"))
+	if err != nil {
+		return nil, err
+	}
+	return &Tables{db: db, Events: events, Sessions: sessions}, nil
 }
 
 func (t *Tables) WriteEvents(events []*Event) (int, error) {
@@ -183,14 +195,7 @@ func (t *Tables) ArchiveSessions() (int64, error) {
 }
 
 func (t *Tables) Close() (err error) {
-	if err = t.Events.Close(); err != nil {
-		return
-	}
-	err = t.Sessions.Close()
-	if t.Cache != nil {
-		t.Cache.Close()
-	}
-	return
+	return t.db.Close()
 }
 
 type tablesKey struct{}

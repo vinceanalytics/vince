@@ -14,110 +14,44 @@ import (
 
 const MAX_BUFFER_SIZE = 4098
 
-func StartEventWriter(
+func Flush[T any](
 	ctx context.Context,
-	source <-chan *timeseries.Event,
-	ts *timeseries.Tables,
+	name string,
+	source <-chan T,
+	write func([]T) (int, error),
 	wg *sync.WaitGroup,
 	exit func(),
 ) health.Component {
 	wg.Add(1)
-	h := health.NewPing("event_writer_worker")
-	go eventWriter(ctx, source, ts, wg, h.Channel, exit)
+	h := health.NewPing(name)
+	go flushInternal(ctx, name, source, write, wg, h.Channel, exit)
 	return h
 }
 
-func eventWriter(
+func flushInternal[T any](
 	ctx context.Context,
-	source <-chan *timeseries.Event,
-	ts *timeseries.Tables,
+	name string,
+	source <-chan T,
+	write func([]T) (int, error),
 	wg *sync.WaitGroup,
 	h health.PingChannel,
 	exit func(),
 ) {
-	ev := func() *zerolog.Event {
-		return log.Get(ctx).Debug().Str("worker", "event_writer")
-	}
-	ev().Msg("start")
 	defer func() {
-		ev().Msg("exit")
 		defer wg.Done()
 	}()
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-	events := make([]*timeseries.Event, 0, MAX_BUFFER_SIZE)
+	ls := make([]T, 0, MAX_BUFFER_SIZE)
 	flush := func() {
-		count := len(events)
+		count := len(ls)
 		if count == 0 {
 			return
 		}
-		_, err := ts.WriteEvents(events)
+		_, err := write(ls)
 		if err != nil {
-			ev().Err(err).Msg("saving events")
 			exit()
 			return
 		}
-		events = events[:0]
-	}
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case f := <-h:
-			f()
-		case <-ticker.C:
-			flush()
-		case e := <-source:
-			events = append(events, e)
-			if len(events) == MAX_BUFFER_SIZE {
-				flush()
-			}
-		}
-	}
-}
-
-func StartSessionWriter(
-	ctx context.Context,
-	source <-chan *timeseries.Session,
-	ts *timeseries.Tables,
-	wg *sync.WaitGroup,
-	exit func(),
-) health.Component {
-	wg.Add(1)
-	h := health.NewPing("session_writer_worker")
-	go sessionWriter(ctx, source, ts, wg, h.Channel, exit)
-	return h
-}
-
-func sessionWriter(
-	ctx context.Context,
-	source <-chan *timeseries.Session,
-	ts *timeseries.Tables,
-	wg *sync.WaitGroup,
-	h health.PingChannel,
-	exit func(),
-) {
-	ev := func() *zerolog.Event {
-		return log.Get(ctx).Debug().Str("worker", "session_writer")
-	}
-	ev().Msg("start")
-	defer func() {
-		ev().Msg("exit")
-		defer wg.Done()
-	}()
-	sessions := make([]*timeseries.Session, 0, MAX_BUFFER_SIZE)
-	flush := func() {
-		count := len(sessions)
-		if count == 0 {
-			return
-		}
-		_, err := ts.WriteSessions(sessions)
-		if err != nil {
-			ev().Err(err).Msg("saving sessions")
-			exit()
-			return
-		}
-		sessions = sessions[:0]
+		ls = ls[:0]
 	}
 	ticker := time.NewTicker(time.Second)
 	for {
@@ -128,13 +62,14 @@ func sessionWriter(
 			f()
 		case <-ticker.C:
 			flush()
-		case sess := <-source:
-			sessions = append(sessions, sess)
-			if len(sessions) == MAX_BUFFER_SIZE {
+		case v := <-source:
+			ls = append(ls, v)
+			if len(ls) == MAX_BUFFER_SIZE {
 				flush()
 			}
 		}
 	}
+
 }
 
 func StartSeriesArchive(
@@ -176,7 +111,7 @@ func seriesArchive(
 		case <-ticker.C:
 			n, err := ts.ArchiveEvents()
 			if err != nil {
-				ev().Msg("failed archiving events")
+				ev().Err(err).Msg("failed archiving events")
 				exit()
 				return
 			}

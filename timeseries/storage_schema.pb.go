@@ -21,14 +21,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Series struct {
+type Store struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *Series) Reset() {
-	*x = Series{}
+func (x *Store) Reset() {
+	*x = Store{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_storage_schema_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -36,13 +36,13 @@ func (x *Series) Reset() {
 	}
 }
 
-func (x *Series) String() string {
+func (x *Store) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Series) ProtoMessage() {}
+func (*Store) ProtoMessage() {}
 
-func (x *Series) ProtoReflect() protoreflect.Message {
+func (x *Store) ProtoReflect() protoreflect.Message {
 	mi := &file_storage_schema_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -54,22 +54,22 @@ func (x *Series) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Series.ProtoReflect.Descriptor instead.
-func (*Series) Descriptor() ([]byte, []int) {
+// Deprecated: Use Store.ProtoReflect.Descriptor instead.
+func (*Store) Descriptor() ([]byte, []int) {
 	return file_storage_schema_proto_rawDescGZIP(), []int{0}
 }
 
-type Series_Sheet struct {
+type Store_Table struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Buckets []*Series_Bucket `protobuf:"bytes,1,rep,name=buckets,proto3" json:"buckets,omitempty"`
-	Range   *Series_Range    `protobuf:"bytes,2,opt,name=range,proto3" json:"range,omitempty"`
+	Name  string       `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Index *Store_Index `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
 }
 
-func (x *Series_Sheet) Reset() {
-	*x = Series_Sheet{}
+func (x *Store_Table) Reset() {
+	*x = Store_Table{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_storage_schema_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -77,13 +77,13 @@ func (x *Series_Sheet) Reset() {
 	}
 }
 
-func (x *Series_Sheet) String() string {
+func (x *Store_Table) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Series_Sheet) ProtoMessage() {}
+func (*Store_Table) ProtoMessage() {}
 
-func (x *Series_Sheet) ProtoReflect() protoreflect.Message {
+func (x *Store_Table) ProtoReflect() protoreflect.Message {
 	mi := &file_storage_schema_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -95,36 +95,36 @@ func (x *Series_Sheet) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Series_Sheet.ProtoReflect.Descriptor instead.
-func (*Series_Sheet) Descriptor() ([]byte, []int) {
+// Deprecated: Use Store_Table.ProtoReflect.Descriptor instead.
+func (*Store_Table) Descriptor() ([]byte, []int) {
 	return file_storage_schema_proto_rawDescGZIP(), []int{0, 0}
 }
 
-func (x *Series_Sheet) GetBuckets() []*Series_Bucket {
+func (x *Store_Table) GetName() string {
 	if x != nil {
-		return x.Buckets
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Store_Table) GetIndex() *Store_Index {
+	if x != nil {
+		return x.Index
 	}
 	return nil
 }
 
-func (x *Series_Sheet) GetRange() *Series_Range {
-	if x != nil {
-		return x.Range
-	}
-	return nil
-}
-
-type Series_Bucket struct {
+type Store_Index struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id    []byte        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Range *Series_Range `protobuf:"bytes,2,opt,name=range,proto3" json:"range,omitempty"`
+	Entries []*Store_Entry `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	Range   *Store_Range   `protobuf:"bytes,2,opt,name=range,proto3" json:"range,omitempty"`
 }
 
-func (x *Series_Bucket) Reset() {
-	*x = Series_Bucket{}
+func (x *Store_Index) Reset() {
+	*x = Store_Index{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_storage_schema_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -132,13 +132,13 @@ func (x *Series_Bucket) Reset() {
 	}
 }
 
-func (x *Series_Bucket) String() string {
+func (x *Store_Index) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Series_Bucket) ProtoMessage() {}
+func (*Store_Index) ProtoMessage() {}
 
-func (x *Series_Bucket) ProtoReflect() protoreflect.Message {
+func (x *Store_Index) ProtoReflect() protoreflect.Message {
 	mi := &file_storage_schema_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -150,36 +150,41 @@ func (x *Series_Bucket) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Series_Bucket.ProtoReflect.Descriptor instead.
-func (*Series_Bucket) Descriptor() ([]byte, []int) {
+// Deprecated: Use Store_Index.ProtoReflect.Descriptor instead.
+func (*Store_Index) Descriptor() ([]byte, []int) {
 	return file_storage_schema_proto_rawDescGZIP(), []int{0, 1}
 }
 
-func (x *Series_Bucket) GetId() []byte {
+func (x *Store_Index) GetEntries() []*Store_Entry {
 	if x != nil {
-		return x.Id
+		return x.Entries
 	}
 	return nil
 }
 
-func (x *Series_Bucket) GetRange() *Series_Range {
+func (x *Store_Index) GetRange() *Store_Range {
 	if x != nil {
 		return x.Range
 	}
 	return nil
 }
 
-type Series_Range struct {
+// Entry is a single archived parquet file. This is determined by the
+// configured archive interval. If archive interval is 30 minues then this
+// will represnent 30 minutes data of data.
+type Store_Entry struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Start *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
-	End   *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
+	// ID is a ULID identifying this   parquet file
+	Id []byte `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// range is the interval on which data forming this file covers
+	Range *Store_Range `protobuf:"bytes,2,opt,name=range,proto3" json:"range,omitempty"`
 }
 
-func (x *Series_Range) Reset() {
-	*x = Series_Range{}
+func (x *Store_Entry) Reset() {
+	*x = Store_Entry{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_storage_schema_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -187,13 +192,13 @@ func (x *Series_Range) Reset() {
 	}
 }
 
-func (x *Series_Range) String() string {
+func (x *Store_Entry) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Series_Range) ProtoMessage() {}
+func (*Store_Entry) ProtoMessage() {}
 
-func (x *Series_Range) ProtoReflect() protoreflect.Message {
+func (x *Store_Entry) ProtoReflect() protoreflect.Message {
 	mi := &file_storage_schema_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -205,19 +210,74 @@ func (x *Series_Range) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Series_Range.ProtoReflect.Descriptor instead.
-func (*Series_Range) Descriptor() ([]byte, []int) {
+// Deprecated: Use Store_Entry.ProtoReflect.Descriptor instead.
+func (*Store_Entry) Descriptor() ([]byte, []int) {
 	return file_storage_schema_proto_rawDescGZIP(), []int{0, 2}
 }
 
-func (x *Series_Range) GetStart() *timestamppb.Timestamp {
+func (x *Store_Entry) GetId() []byte {
+	if x != nil {
+		return x.Id
+	}
+	return nil
+}
+
+func (x *Store_Entry) GetRange() *Store_Range {
+	if x != nil {
+		return x.Range
+	}
+	return nil
+}
+
+type Store_Range struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Start *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
+	End   *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
+}
+
+func (x *Store_Range) Reset() {
+	*x = Store_Range{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_storage_schema_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Store_Range) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Store_Range) ProtoMessage() {}
+
+func (x *Store_Range) ProtoReflect() protoreflect.Message {
+	mi := &file_storage_schema_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Store_Range.ProtoReflect.Descriptor instead.
+func (*Store_Range) Descriptor() ([]byte, []int) {
+	return file_storage_schema_proto_rawDescGZIP(), []int{0, 3}
+}
+
+func (x *Store_Range) GetStart() *timestamppb.Timestamp {
 	if x != nil {
 		return x.Start
 	}
 	return nil
 }
 
-func (x *Series_Range) GetEnd() *timestamppb.Timestamp {
+func (x *Store_Range) GetEnd() *timestamppb.Timestamp {
 	if x != nil {
 		return x.End
 	}
@@ -231,28 +291,33 @@ var file_storage_schema_proto_rawDesc = []byte{
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0a, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x69,
 	0x65, 0x73, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x22, 0xa9, 0x02, 0x0a, 0x06, 0x53, 0x65, 0x72, 0x69, 0x65, 0x73, 0x1a, 0x6c,
-	0x0a, 0x05, 0x53, 0x68, 0x65, 0x65, 0x74, 0x12, 0x33, 0x0a, 0x07, 0x62, 0x75, 0x63, 0x6b, 0x65,
-	0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x74, 0x69, 0x6d, 0x65, 0x73,
-	0x65, 0x72, 0x69, 0x65, 0x73, 0x2e, 0x53, 0x65, 0x72, 0x69, 0x65, 0x73, 0x2e, 0x42, 0x75, 0x63,
-	0x6b, 0x65, 0x74, 0x52, 0x07, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x73, 0x12, 0x2e, 0x0a, 0x05,
-	0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x74, 0x69,
-	0x6d, 0x65, 0x73, 0x65, 0x72, 0x69, 0x65, 0x73, 0x2e, 0x53, 0x65, 0x72, 0x69, 0x65, 0x73, 0x2e,
-	0x52, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x1a, 0x48, 0x0a, 0x06,
-	0x42, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0c, 0x52, 0x02, 0x69, 0x64, 0x12, 0x2e, 0x0a, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x69,
-	0x65, 0x73, 0x2e, 0x53, 0x65, 0x72, 0x69, 0x65, 0x73, 0x2e, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x52,
-	0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x1a, 0x67, 0x0a, 0x05, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x12,
-	0x30, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x72, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a,
-	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
-	0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x05, 0x73, 0x74, 0x61, 0x72,
-	0x74, 0x12, 0x2c, 0x0a, 0x03, 0x65, 0x6e, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a,
-	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
-	0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x03, 0x65, 0x6e, 0x64, 0x42,
-	0x25, 0x5a, 0x23, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x67, 0x65,
-	0x72, 0x6e, 0x65, 0x73, 0x74, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x74, 0x69, 0x6d, 0x65,
-	0x73, 0x65, 0x72, 0x69, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x74, 0x6f, 0x22, 0xef, 0x02, 0x0a, 0x05, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x1a, 0x4a, 0x0a,
+	0x05, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x2d, 0x0a, 0x05, 0x69, 0x6e,
+	0x64, 0x65, 0x78, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x74, 0x69, 0x6d, 0x65,
+	0x73, 0x65, 0x72, 0x69, 0x65, 0x73, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x49, 0x6e, 0x64,
+	0x65, 0x78, 0x52, 0x05, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x1a, 0x69, 0x0a, 0x05, 0x49, 0x6e, 0x64,
+	0x65, 0x78, 0x12, 0x31, 0x0a, 0x07, 0x65, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x69, 0x65, 0x73,
+	0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x07, 0x65, 0x6e,
+	0x74, 0x72, 0x69, 0x65, 0x73, 0x12, 0x2d, 0x0a, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x69, 0x65,
+	0x73, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x05, 0x72,
+	0x61, 0x6e, 0x67, 0x65, 0x1a, 0x46, 0x0a, 0x05, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x0e, 0x0a,
+	0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x02, 0x69, 0x64, 0x12, 0x2d, 0x0a,
+	0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x74,
+	0x69, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x69, 0x65, 0x73, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e,
+	0x52, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x1a, 0x67, 0x0a, 0x05,
+	0x52, 0x61, 0x6e, 0x67, 0x65, 0x12, 0x30, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x72, 0x74, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
+	0x52, 0x05, 0x73, 0x74, 0x61, 0x72, 0x74, 0x12, 0x2c, 0x0a, 0x03, 0x65, 0x6e, 0x64, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
+	0x52, 0x03, 0x65, 0x6e, 0x64, 0x42, 0x25, 0x5a, 0x23, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x67, 0x65, 0x72, 0x6e, 0x65, 0x73, 0x74, 0x2f, 0x76, 0x69, 0x6e, 0x63,
+	0x65, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x69, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -267,25 +332,27 @@ func file_storage_schema_proto_rawDescGZIP() []byte {
 	return file_storage_schema_proto_rawDescData
 }
 
-var file_storage_schema_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_storage_schema_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_storage_schema_proto_goTypes = []interface{}{
-	(*Series)(nil),                // 0: timeseries.Series
-	(*Series_Sheet)(nil),          // 1: timeseries.Series.Sheet
-	(*Series_Bucket)(nil),         // 2: timeseries.Series.Bucket
-	(*Series_Range)(nil),          // 3: timeseries.Series.Range
-	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
+	(*Store)(nil),                 // 0: timeseries.Store
+	(*Store_Table)(nil),           // 1: timeseries.Store.Table
+	(*Store_Index)(nil),           // 2: timeseries.Store.Index
+	(*Store_Entry)(nil),           // 3: timeseries.Store.Entry
+	(*Store_Range)(nil),           // 4: timeseries.Store.Range
+	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
 }
 var file_storage_schema_proto_depIdxs = []int32{
-	2, // 0: timeseries.Series.Sheet.buckets:type_name -> timeseries.Series.Bucket
-	3, // 1: timeseries.Series.Sheet.range:type_name -> timeseries.Series.Range
-	3, // 2: timeseries.Series.Bucket.range:type_name -> timeseries.Series.Range
-	4, // 3: timeseries.Series.Range.start:type_name -> google.protobuf.Timestamp
-	4, // 4: timeseries.Series.Range.end:type_name -> google.protobuf.Timestamp
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	2, // 0: timeseries.Store.Table.index:type_name -> timeseries.Store.Index
+	3, // 1: timeseries.Store.Index.entries:type_name -> timeseries.Store.Entry
+	4, // 2: timeseries.Store.Index.range:type_name -> timeseries.Store.Range
+	4, // 3: timeseries.Store.Entry.range:type_name -> timeseries.Store.Range
+	5, // 4: timeseries.Store.Range.start:type_name -> google.protobuf.Timestamp
+	5, // 5: timeseries.Store.Range.end:type_name -> google.protobuf.Timestamp
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_storage_schema_proto_init() }
@@ -295,7 +362,7 @@ func file_storage_schema_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_storage_schema_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Series); i {
+			switch v := v.(*Store); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -307,7 +374,7 @@ func file_storage_schema_proto_init() {
 			}
 		}
 		file_storage_schema_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Series_Sheet); i {
+			switch v := v.(*Store_Table); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -319,7 +386,7 @@ func file_storage_schema_proto_init() {
 			}
 		}
 		file_storage_schema_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Series_Bucket); i {
+			switch v := v.(*Store_Index); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -331,7 +398,19 @@ func file_storage_schema_proto_init() {
 			}
 		}
 		file_storage_schema_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Series_Range); i {
+			switch v := v.(*Store_Entry); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_storage_schema_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Store_Range); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -349,7 +428,7 @@ func file_storage_schema_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_storage_schema_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

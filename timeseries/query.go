@@ -172,6 +172,8 @@ func today() time.Time {
 	return toDate(time.Now().UTC())
 }
 
+const ISO8601 = "2006-01-02"
+
 func parseSingleDate(date string) time.Time {
 	if date == "today" || date == "" {
 		return today()

@@ -1,10 +1,10 @@
 package timeseries
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -35,42 +35,42 @@ var ErrNoRows = errors.New("no rows")
 var ErrSkipPage = errors.New("skip page")
 
 type Storage[T any] struct {
+	name       string
 	path       string
 	activeFile *os.File
 	writer     *parquet.SortingWriter[T]
 	mu         sync.Mutex
-	meta       *meta
+	bob        *Bob
 	pool       *sync.Pool
 	allocator  memory.Allocator
 	start      time.Time
 	end        time.Time
 }
 
-func NewStorage[T any](ctx context.Context, allocator memory.Allocator, path string) (*Storage[T], error) {
-	dirs := []string{BucketPath, BucketMergePath, MetaPath}
-	for _, p := range dirs {
-		os.MkdirAll(filepath.Join(path, p), 0755)
-	}
-	o := badger.DefaultOptions(filepath.Join(path, MetaPath))
-	o.Logger = log.Badger(ctx)
-	db, err := badger.Open(o)
-	if err != nil {
-		return nil, err
-	}
+func NewStorage[T any](ctx context.Context, allocator memory.Allocator, db *badger.DB, path string) (*Storage[T], error) {
+	os.MkdirAll(path, 0755)
 	f, err := os.Create(filepath.Join(path, ActiveFileName))
 	if err != nil {
 		return nil, err
 	}
+	name := filepath.Base(path)
+	bob := &Bob{db: db}
+	err = bob.Create(name)
+	if err != nil {
+		return nil, err
+	}
+
 	now := time.Now()
 	s := &Storage[T]{
+		name:       filepath.Base(path),
 		path:       path,
+		bob:        bob,
 		activeFile: f,
 		writer: parquet.NewSortingWriter[T](f, SortRowCount, parquet.SortingWriterConfig(
 			parquet.SortingColumns(
 				parquet.Ascending("timestamp"),
 			),
 		)),
-		meta:      &meta{db: db},
 		allocator: allocator,
 		start:     now,
 		end:       now,
@@ -94,6 +94,12 @@ func (s *Storage[T]) Archive() (int64, error) {
 	return s.archive(true)
 }
 
+var bytesPool = &sync.Pool{
+	New: func() any {
+		return new(bytes.Buffer)
+	},
+}
+
 func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -105,16 +111,17 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 		return 0, err
 	}
 	id := ulid.Make()
-
-	n, err := createFile(filepath.Join(s.path, BucketPath, id.String()), s.activeFile)
+	buf := bytesPool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		bytesPool.Put(buf)
+	}()
+	s.activeFile.Seek(0, io.SeekStart)
+	n, err := buf.ReadFrom(s.activeFile)
 	if err != nil {
 		return 0, err
 	}
-	_, err = createAtomicFile(filepath.Join(s.path, RealTimeFileName), s.activeFile)
-	if err != nil {
-		return 0, err
-	}
-	err = s.meta.SaveBucket(id, s.start, s.end)
+	err = s.bob.Store(s.name, id, buf.Bytes(), s.start, s.end)
 	if err != nil {
 		return 0, err
 	}
@@ -133,65 +140,7 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	return n, nil
 }
 
-func createFile(out string, src *os.File) (int64, error) {
-	f, err := os.Create(out)
-	if err != nil {
-		return 0, err
-	}
-	defer f.Close()
-	src.Seek(0, io.SeekStart)
-	return f.ReadFrom(src)
-}
-
-func createAtomicFile(out string, src *os.File) (n int64, err error) {
-	f, err := ioutil.TempFile(filepath.Dir(out), filepath.Base(out))
-	if err != nil {
-		return 0, err
-	}
-	defer func() {
-		os.Remove(f.Name())
-	}()
-	src.Seek(0, io.SeekStart)
-	n, err = f.ReadFrom(src)
-	if err != nil {
-		return
-	}
-	err = f.Close()
-	if err != nil {
-		return
-	}
-	err = os.Rename(f.Name(), out)
-	return
-}
-
-func (s *Storage[T]) Close() error {
-	_, err := s.archive(false)
-	if err != nil {
-		return err
-	}
-	return s.meta.Close()
-}
-
-func (s *Storage[T]) Query(ctx context.Context, query Query) (*Record, error) {
-	ids, err := s.meta.Buckets(query.start, query.end)
-	if err != nil {
-		return nil, err
-	}
-	if len(ids) == 0 {
-		return nil, ErrNoRows
-	}
-	files := make([]string, len(ids))
-	for i := range ids {
-		files[i] = filepath.Join(s.path, BucketPath, ids[i])
-	}
-	return s.query(ctx, query, files...)
-}
-
-func (s *Storage[T]) QueryRealtime(ctx context.Context, query Query) (*Record, error) {
-	return s.query(ctx, query, filepath.Join(s.path, RealTimeFileName))
-}
-
-func (s *Storage[T]) query(ctx context.Context, query Query, files ...string) (*Record, error) {
+func (s *Storage[T]) Query(ctx context.Context, query Query, files ...string) (*Record, error) {
 	b := s.get()
 	defer s.put(b)
 	m := make(map[string]*Writer)
@@ -216,11 +165,9 @@ func (s *Storage[T]) query(ctx context.Context, query Query, files ...string) (*
 		b.results = make([][]arrow.Array, len(b.selected))
 	}
 	b.results = b.results[0:len(b.selected)]
-	for _, file := range files {
-		err := b.processFile(ctx, file, query)
-		if err != nil {
-			return nil, err
-		}
+	err := s.bob.Iterate(s.name, query.start, query.end, b.process(ctx, query))
+	if err != nil {
+		return nil, err
 	}
 	return b.record(ctx)
 }
@@ -311,16 +258,14 @@ func (b *StoreBuilder[T]) reset() {
 	b.results = b.results[:0]
 }
 
-func (b *StoreBuilder[T]) processFile(ctx context.Context, filePath string, query Query) error {
-	f, err := os.Open(filePath)
-	if err != nil {
-		return err
+func (b *StoreBuilder[T]) process(ctx context.Context, query Query) func(io.ReaderAt, int64) error {
+	return func(ra io.ReaderAt, i int64) error {
+		return b.processFile(ctx, ra, i, query)
 	}
-	stat, err := f.Stat()
-	if err != nil {
-		return err
-	}
-	file, err := parquet.OpenFile(f, stat.Size())
+}
+
+func (b *StoreBuilder[T]) processFile(ctx context.Context, f io.ReaderAt, size int64, query Query) error {
+	file, err := parquet.OpenFile(f, size)
 	if err != nil {
 		return err
 	}

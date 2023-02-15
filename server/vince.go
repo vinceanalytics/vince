@@ -135,8 +135,12 @@ func (v *Vince) Serve(ctx context.Context) error {
 	var wg sync.WaitGroup
 	{
 		// add all workers
-		h = append(h, worker.StartEventWriter(ctx, v.events, v.ts, &wg, v.exit))
-		h = append(h, worker.StartSessionWriter(ctx, v.sessions, v.ts, &wg, v.exit))
+		h = append(h,
+			worker.Flush(ctx, "events_worker", v.events, v.ts.WriteEvents, &wg, v.exit),
+		)
+		h = append(h,
+			worker.Flush(ctx, "session_worker", v.sessions, v.ts.WriteSessions, &wg, v.exit),
+		)
 		h = append(h, worker.StartSeriesArchive(ctx, v.ts, &wg, v.exit))
 	}
 	h = append(h, health.Base{
