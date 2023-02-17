@@ -47,7 +47,7 @@ func Get(ctx context.Context) *Session {
 
 func NewSession(name string) *Session {
 	var s Session
-	s.maxAge = 86400
+	s.maxAge = 60 * 60 * 24 * 365 * 5
 	s.name = name
 	rand.Read(s.hashKey[:])
 	rand.Read(s.blockKey[:])
