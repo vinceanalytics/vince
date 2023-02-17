@@ -28,7 +28,8 @@ func RegisterForm(w http.ResponseWriter, r *http.Request) {
 func Register(w http.ResponseWriter, r *http.Request) {
 	session, r := sessions.Load(r)
 	r.ParseForm()
-	u, m, err := NewUser(r)
+	u := new(models.User)
+	m, err := u.New(r)
 	if err != nil {
 		log.Get(r.Context()).Err(err).Msg("Failed decoding new user from")
 		render.ERROR(r.Context(), w, http.StatusInternalServerError)
