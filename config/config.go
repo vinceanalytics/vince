@@ -2,6 +2,8 @@ package config
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"os"
 	"time"
 
@@ -59,6 +61,12 @@ func Flags() []cli.Flag {
 			Usage:   "url for the server on which vince is hosted(it shows up on emails)",
 			Value:   "dev",
 			EnvVars: []string{"VINCE_URL"},
+		},
+		&cli.StringFlag{
+			Name:    "secret-key-base",
+			Usage:   "secret with size 64 bytes",
+			Value:   defaultSecret(),
+			EnvVars: []string{"VINCE_SECRET_KEY_BASE"},
 		},
 		&cli.BoolFlag{
 			Name:    "enable-email-verification",
@@ -145,6 +153,12 @@ func Load(ctx *cli.Context) (*Config, error) {
 	return base, nil
 }
 
+func defaultSecret() string {
+	b := make([]byte, 64)
+	rand.Read(b)
+	return hex.EncodeToString(b)
+}
+
 func fromFile(ctx *cli.Context) (*Config, error) {
 	path := ctx.String("config")
 	if path == "" {
@@ -170,6 +184,7 @@ func fromCli(ctx *cli.Context) *Config {
 		FlushInterval:           durationpb.New(ctx.Duration("flush-interval")),
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
 		IsSelfHost:              ctx.Bool("self-host"),
+		SecretKeyBase:           ctx.String("secret-key-base"),
 		Mailer: &Config_Mailer{
 			Address: &Config_Address{
 				Name:  ctx.String("mailer-address-name"),
@@ -251,9 +266,23 @@ func fromCli(ctx *cli.Context) *Config {
 }
 
 func (c *Config) WriteToFile(name string) error {
-	b, err := protojson.Marshal(c)
+	b, err := protojson.Marshal(c.Scrub())
 	if err != nil {
 		return err
 	}
 	return os.WriteFile(name, b, 0600)
+}
+
+func (c *Config) Scrub() *Config {
+	n := proto.Clone(c).(*Config)
+	base := make([]byte, len(c.SecretKeyBase))
+	for i := range base {
+		if i < 6 {
+			base[i] = c.SecretKeyBase[i]
+		} else {
+			base[i] = '*'
+		}
+	}
+	n.SecretKeyBase = string(base)
+	return n
 }

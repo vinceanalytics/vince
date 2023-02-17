@@ -14,6 +14,7 @@ message Config {
   bool enable_email_verification = 7;
   bool is_self_host = 8;
   LogLevel log_level = 9;
+  string secret_key_base = 10;
 
   message Mailer {
     Address address = 1;
