@@ -15,6 +15,7 @@ message Config {
   bool is_self_host = 8;
   LogLevel log_level = 9;
   string secret_key_base = 10;
+  Cors cors = 11;
 
   message Mailer {
     Address address = 1;
@@ -69,4 +70,14 @@ message Config {
     // TraceLevel defines trace log level.
     trace = -1;
   }
+}
+
+message Cors {
+  string origin = 1;
+  bool credentials = 2;
+  int32 max_age = 3;
+  repeated string headers = 4;
+  repeated string expose = 5;
+  repeated string methods = 6;
+  bool send_preflight_response = 7;
 }

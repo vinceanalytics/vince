@@ -195,6 +195,27 @@ func fromCli(ctx *cli.Context) *Config {
 				Port: int32(ctx.Int("mailer-smtp-port")),
 			},
 		},
+		Cors: &Cors{
+			Origin:      "*",
+			Credentials: true,
+			MaxAge:      1_728_000,
+			Headers: []string{
+				"Authorization",
+				"Content-Type",
+				"Accept",
+				"Origin",
+				"User-Agent",
+				"DNT",
+				"Cache-Control",
+				"X-Mx-ReqToken",
+				"Keep-Alive",
+				"X-Requested-With",
+				"If-Modified-Since",
+				"X-CSRF-Token",
+			},
+			Methods:               []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+			SendPreflightResponse: true,
+		},
 	}
 	switch ctx.String("env") {
 	case "dev":
