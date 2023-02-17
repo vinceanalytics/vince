@@ -275,14 +275,6 @@ func (c *Config) WriteToFile(name string) error {
 
 func (c *Config) Scrub() *Config {
 	n := proto.Clone(c).(*Config)
-	base := make([]byte, len(c.SecretKeyBase))
-	for i := range base {
-		if i < 6 {
-			base[i] = c.SecretKeyBase[i]
-		} else {
-			base[i] = '*'
-		}
-	}
-	n.SecretKeyBase = string(base)
+	n.SecretKeyBase = n.SecretKeyBase[0:6] + "***"
 	return n
 }
