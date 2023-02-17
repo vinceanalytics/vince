@@ -38,6 +38,7 @@ type User struct {
 	TrialExpiryDate         sql.NullTime
 	EmailVerified           bool   `gorm:"not null;default:false"`
 	Theme                   string `gorm:"not null;default:system"`
+	GracePeriod             *GracePeriod
 }
 
 func (u *User) Recipient() string {
@@ -62,11 +63,50 @@ func GetCurrentUser(ctx context.Context) *User {
 	return nil
 }
 
+type GracePeriod struct {
+	Model
+	UserID             uint64
+	EndDate            time.Time
+	AllowanceRRequired uint
+	IsOver             bool
+	ManualLock         bool
+}
+
+func (gp *GracePeriod) Start(allowance uint) {
+	gp.EndDate = toDate(time.Now()).AddDate(0, 0, 7)
+	gp.AllowanceRRequired = allowance
+	gp.IsOver = false
+	gp.ManualLock = false
+}
+
+func (gp *GracePeriod) StartManualLock(allowance uint) {
+	gp.EndDate = time.Time{}
+	gp.AllowanceRRequired = allowance
+	gp.IsOver = false
+	gp.ManualLock = true
+}
+
+func (gp *GracePeriod) End() {
+	gp.IsOver = true
+}
+
+func (gp *GracePeriod) Active() bool {
+	return gp != nil && (gp.ManualLock || gp.EndDate.After(toDate(time.Now())))
+}
+
+func (gp *GracePeriod) Expired() bool {
+	return gp == nil || !gp.Active()
+}
+
+func toDate(ts time.Time) time.Time {
+	y, m, d := ts.Date()
+	return time.Date(
+		y, m, d, 0, 0, 0, 0, ts.Location(),
+	)
+}
+
 type Site struct {
-	ID         uint64 `gorm:"primarykey;autoIncrement:true"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time      `gorm:"index"`
-	DeletedAt  gorm.DeletedAt `gorm:"index"`
+	Model
 	UserID     uint64
 	Domain     string     `gorm:"uniqueIndex"`
 	Timezone   string     `gorm:"default:UTC"`
