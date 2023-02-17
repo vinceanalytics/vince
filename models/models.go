@@ -2,7 +2,9 @@ package models
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"math/rand"
 	"net/http"
 	"net/mail"
@@ -237,6 +239,13 @@ type APIKey struct {
 	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
 	KeyPrefix             string `gorm:"not null"`
 	KeyHash               string `gorm:"not null"`
+}
+
+func HashAPIKey(ctx context.Context, key string) string {
+	h := sha256.New()
+	h.Write([]byte(config.Get(ctx).SecretKeyBase))
+	h.Write([]byte(key))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 type IntroEmail struct {
