@@ -39,7 +39,7 @@ type User struct {
 	CreateSiteEmails        []*CreateSiteEmail       `gorm:"constraint:OnDelete:CASCADE;"`
 	CheckStatEmail          []*CheckStatEmail        `gorm:"constraint:OnDelete:CASCADE;"`
 	SentRenewalNotification []*SentRenewalNotification
-	APIKey                  []*APIKey
+	APIKeys                 []*APIKey
 	Subscription            Subscription
 	EnterprisePlan          EnterprisePlan
 	GoogleAuth              GoogleAuth
@@ -48,6 +48,7 @@ type User struct {
 	EmailVerified           bool   `gorm:"not null;default:false"`
 	Theme                   string `gorm:"not null;default:system"`
 	GracePeriod             *GracePeriod
+	Invitations             []*Invitation
 }
 
 func (u *User) New(r *http.Request) (validation map[string]string, err error) {
