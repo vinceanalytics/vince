@@ -2,8 +2,10 @@ package models
 
 import (
 	"context"
+	crand "crypto/rand"
 	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
 	"encoding/hex"
 	"math/rand"
 	"net/http"
@@ -15,6 +17,7 @@ import (
 	"time"
 
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/log"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -235,10 +238,22 @@ type APIKey struct {
 	Model
 	UserID                uint64 `gorm:"not null"`
 	Name                  string `gorm:"not null"`
-	Scopes                string `gorm:"not null"`
+	Scopes                string `gorm:"not null;default:stats:read:*"`
 	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
 	KeyPrefix             string `gorm:"not null"`
 	KeyHash               string `gorm:"not null"`
+}
+
+func (ak *APIKey) New(ctx context.Context) {
+	b := make([]byte, 64)
+	_, err := crand.Read(b)
+	if err != nil {
+		// something is really wrong when we cant generate random data.
+		log.Get(ctx).Fatal().Msg("failed to generate random data " + err.Error())
+	}
+	key := base64.StdEncoding.EncodeToString(b)[0:64]
+	ak.KeyHash = HashAPIKey(ctx, key)
+	ak.KeyPrefix = key[0:6]
 }
 
 func HashAPIKey(ctx context.Context, key string) string {
