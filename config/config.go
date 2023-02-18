@@ -150,7 +150,8 @@ func Load(ctx *cli.Context) (*Config, error) {
 		return nil, err
 	}
 	proto.Merge(base, conf)
-	return base, nil
+
+	return base, setupKey(base)
 }
 
 func defaultSecret() string {

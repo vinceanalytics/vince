@@ -11,9 +11,12 @@ import (
 
 func Main() {
 	app := &cli.App{
-		Name:   "vince",
-		Usage:  "alternative to google analytics",
-		Flags:  config.Flags(),
+		Name:  "vince",
+		Usage: "alternative to google analytics",
+		Flags: config.Flags(),
+		Commands: []*cli.Command{
+			config.GenKeyCMD(),
+		},
 		Action: server.Serve,
 	}
 	err := app.Run(os.Args)
