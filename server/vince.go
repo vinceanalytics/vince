@@ -8,21 +8,20 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"regexp"
-	"strings"
 	"sync"
 
 	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
+	"github.com/gernest/vince/assets/tracker"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/plug"
-	"github.com/gernest/vince/render"
+	"github.com/gernest/vince/router"
 	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/worker"
@@ -147,17 +146,16 @@ func (v *Vince) Serve(ctx context.Context) error {
 		Key:       "database",
 		CheckFunc: models.Check,
 	})
-
+	ctx = compute.SetExecCtx(ctx, v.computeCtx)
+	ctx = compute.WithAllocator(ctx, v.allocator)
+	ctx = models.Set(ctx, v.sql)
+	ctx = email.Set(ctx, v.mailer)
+	ctx = timeseries.Set(ctx, v.ts)
+	ctx = health.Set(ctx, h)
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", v.config.Port),
-		Handler: v.Handle(),
+		Handler: v.Handle(ctx),
 		BaseContext: func(l net.Listener) context.Context {
-			ctx = compute.SetExecCtx(ctx, v.computeCtx)
-			ctx = compute.WithAllocator(ctx, v.allocator)
-			ctx = models.Set(ctx, v.sql)
-			ctx = email.Set(ctx, v.mailer)
-			ctx = timeseries.Set(ctx, v.ts)
-			ctx = health.Set(ctx, h)
 			return ctx
 		},
 	}
@@ -197,35 +195,15 @@ func (v *Vince) exit() {
 	v.abort <- os.Interrupt
 }
 
-var domainStatusRe = regexp.MustCompile(`^/(?P<v0>[^.]+)/status$`)
-
-func (v *Vince) Handle() http.Handler {
-	asset := assets.Serve()
-	admin := plug.Chain(Admin(), append(plug.Browser(), plug.SecureForm()...)...)
-	home := v.home()
-	v1Stats := v1Stats()
+func (v *Vince) Handle(ctx context.Context) http.Handler {
+	pipe := plug.Pipeline{
+		tracker.Plug(),
+		assets.Plug(),
+		plug.CORS,
+		router.Plug(),
+	}
+	h := pipe.Pass(router.S404)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/" && r.Method == http.MethodGet {
-			home.ServeHTTP(w, r)
-			return
-		}
-		if assets.Match(r.URL.Path) {
-			asset.ServeHTTP(w, r)
-			return
-		}
-		if strings.HasPrefix(r.URL.Path, "/api/v1/stats") {
-			v1Stats.ServeHTTP(w, r)
-			return
-		}
-		if strings.HasPrefix(r.URL.Path, "/api") {
-			v.api(w, r)
-			return
-		}
-
-		if isAdminPath(r.URL.Path, r.Method) {
-			admin.ServeHTTP(w, r)
-			return
-		}
-		render.ERROR(r.Context(), w, http.StatusNotFound)
+		h.ServeHTTP(w, r)
 	})
 }

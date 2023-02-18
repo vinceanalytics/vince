@@ -16,28 +16,14 @@ import (
 
 type Plug func(http.Handler) http.Handler
 
-func Chain(h http.Handler, plugs ...Plug) http.Handler {
-	for i := range plugs {
-		h = plugs[len(plugs)-1-i](h)
-	}
-	return h
-}
+type Pipeline []Plug
 
-func Browser() []Plug {
-	return []Plug{
-		FetchSession,
-		PutSecureBrowserHeaders,
-		SessionTimeout,
-		Auth,
-		LastSeen,
+func (p Pipeline) Pass(h http.HandlerFunc) http.Handler {
+	x := http.Handler(h)
+	for i := range p {
+		x = p[len(p)-1-i](x)
 	}
-}
-
-func SecureForm() []Plug {
-	return []Plug{
-		Captcha,
-		CSRF,
-	}
+	return x
 }
 
 func FetchSession(h http.Handler) http.Handler {
