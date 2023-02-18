@@ -154,7 +154,7 @@ func (v *Vince) Serve(ctx context.Context) error {
 	ctx = health.Set(ctx, h)
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", v.config.Port),
-		Handler: v.Handle(ctx),
+		Handler: Handle(ctx),
 		BaseContext: func(l net.Listener) context.Context {
 			return ctx
 		},
@@ -195,10 +195,11 @@ func (v *Vince) exit() {
 	v.abort <- os.Interrupt
 }
 
-func (v *Vince) Handle(ctx context.Context) http.Handler {
+func Handle(ctx context.Context) http.Handler {
 	pipe := plug.Pipeline{
 		tracker.Plug(),
 		assets.Plug(),
+		plug.RequestID,
 		plug.CORS,
 		router.Plug(),
 	}

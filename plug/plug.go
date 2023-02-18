@@ -12,6 +12,7 @@ import (
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/sessions"
+	"github.com/oklog/ulid/v2"
 )
 
 type Plug func(http.Handler) http.Handler
@@ -268,4 +269,12 @@ func parseHeaderList(headerList string) []string {
 		}
 	}
 	return headers
+}
+
+func RequestID(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("x-request-id") == "" {
+			r.Header.Set("x-request-id", ulid.Make().String())
+		}
+	})
 }
