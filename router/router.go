@@ -5,15 +5,19 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
+	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/params"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/render"
+	"github.com/gernest/vince/stats"
 )
 
 func Plug() plug.Plug {
 	pipe := plug.Pipeline{
-		Home(),
+		API(),
+		APIStatsV1(),
 		APIStats(),
 		AdminScope(),
 	}
@@ -36,9 +40,13 @@ func AdminScope() plug.Plug {
 		plug.Captcha,
 		plug.CSRF,
 	}
+
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch r.URL.Path {
+			case "/":
+				pipe.Pass(Home).ServeHTTP(w, r)
+				return
 			case "/login":
 				if r.Method == http.MethodGet {
 					pipe.Pass(auth.LoginForm).ServeHTTP(w, r)
@@ -68,16 +76,8 @@ func AdminScope() plug.Plug {
 	}
 }
 
-func Home() plug.Plug {
-	return func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == "/" {
-				http.Redirect(w, r, "/login", http.StatusFound)
-				return
-			}
-			h.ServeHTTP(w, r)
-		})
-	}
+func Home(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 var handlesAPIStats = []*ReHandle{
@@ -204,7 +204,10 @@ var handlesAPIStats = []*ReHandle{
 }
 
 func APIStats() plug.Plug {
-	pipe := plug.Pipeline{}
+	pipe := plug.Pipeline{
+		plug.FetchSession,
+		plug.Auth,
+	}
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/api/stats") {
@@ -245,3 +248,78 @@ func S404(w http.ResponseWriter, r *http.Request) {
 }
 
 func NOOP(w http.ResponseWriter, r *http.Request) {}
+
+var domainStatus = regexp.MustCompile(`^/api/(?P<domain>[^.]+)/status$`)
+
+func API() plug.Plug {
+	pipe := plug.Pipeline{}
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/api") {
+				switch r.Method {
+				case http.MethodGet:
+					switch r.URL.Path {
+					case "/api/event":
+						pipe.Pass(api.Events).ServeHTTP(w, r)
+						return
+					case "/api/error":
+						pipe.Pass(S501).ServeHTTP(w, r)
+						return
+					case "/api/health":
+						pipe.Pass(health.Handle).ServeHTTP(w, r)
+						return
+					case "/api/system":
+						pipe.Pass(api.Info).ServeHTTP(w, r)
+						return
+					case "/api/sites":
+						pipe.Pass(S501).ServeHTTP(w, r)
+						return
+					default:
+						if domainStatus.MatchString(r.URL.Path) {
+							matches := domainStatus.FindStringSubmatch(r.URL.Path)
+							r = r.WithContext(params.Set(r.Context(), params.Params{
+								"domain": matches[domainStatus.SubexpIndex("domain")],
+							}))
+							pipe.Pass(S501).ServeHTTP(w, r)
+							return
+						}
+					}
+				case http.MethodPost:
+					switch r.URL.Path {
+					case "/subscription/webhook":
+						pipe.Pass(S501).ServeHTTP(w, r)
+						return
+					}
+				}
+			}
+			h.ServeHTTP(w, r)
+		})
+	}
+}
+
+func APIStatsV1() plug.Plug {
+	pipe := plug.Pipeline{}
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/api/v1/stats") {
+				if r.Method == http.MethodGet {
+					switch r.URL.Path {
+					case "/api/v1/stats/realtime/visitors":
+						pipe.Pass(stats.V1RealtimeVisitors).ServeHTTP(w, r)
+						return
+					case "/api/v1/stats/aggregate":
+						pipe.Pass(stats.V1Aggregate).ServeHTTP(w, r)
+						return
+					case "/api/v1/stats/breakdown":
+						pipe.Pass(stats.V1Breakdown).ServeHTTP(w, r)
+						return
+					case "/api/v1/stats/timeseries":
+						pipe.Pass(stats.V1Timeseries).ServeHTTP(w, r)
+						return
+					}
+				}
+				h.ServeHTTP(w, r)
+			}
+		})
+	}
+}
