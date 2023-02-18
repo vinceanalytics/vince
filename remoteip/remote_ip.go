@@ -1,4 +1,4 @@
-package api
+package remoteip
 
 import (
 	"net"
@@ -9,7 +9,7 @@ var remoteIPHeaders = []string{
 	"X-Real-IP", "X-Forwarded-For", "X-Client-IP",
 }
 
-func GetRemoteIP(r *http.Request) string {
+func Get(r *http.Request) string {
 	var raw string
 	for _, v := range remoteIPHeaders {
 		if raw = r.Header.Get(v); raw != "" {
@@ -31,3 +31,5 @@ func GetRemoteIP(r *http.Request) string {
 	}
 	return ip.String()
 }
+
+type remoteKey struct{}

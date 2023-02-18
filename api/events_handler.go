@@ -11,6 +11,7 @@ import (
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/referrer"
+	"github.com/gernest/vince/remoteip"
 	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/ua"
 )
@@ -41,7 +42,7 @@ func processEvent(r *http.Request) bool {
 		xlg.Err(err).Msg("Failed decoding json")
 		return false
 	}
-	remoteIp := GetRemoteIP(r)
+	remoteIp := remoteip.Get(r)
 	if req.URI == "" {
 		xlg.Debug().Msg("url is required")
 		return false
