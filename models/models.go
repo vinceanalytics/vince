@@ -232,7 +232,7 @@ type SiteMembership struct {
 	Model
 	UserID uint64
 	SiteID uint64
-	Role   string `gorm:"not null;default:owner"`
+	Role   string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
 }
 
 type APIKey struct {
@@ -356,7 +356,7 @@ type Invitation struct {
 	Email  string `gorm:"not null;uniqueIndex"`
 	SiteID int    `gorm:"uniqueIndex"`
 	UserID uint64 `gorm:"uniqueIndex"`
-	Role   string `gorm:"not null"`
+	Role   string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
 }
 
 type Model struct {
