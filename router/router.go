@@ -31,15 +31,7 @@ func Plug() plug.Plug {
 }
 
 func AdminScope() plug.Plug {
-	pipe := plug.Pipeline{
-		plug.FetchSession,
-		plug.PutSecureBrowserHeaders,
-		plug.SessionTimeout,
-		plug.Auth,
-		plug.LastSeen,
-		plug.Captcha,
-		plug.CSRF,
-	}
+	pipe := append(plug.Browser(), plug.Protect()...)
 
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -204,10 +196,7 @@ var handlesAPIStats = []*ReHandle{
 }
 
 func APIStats() plug.Plug {
-	pipe := plug.Pipeline{
-		plug.FetchSession,
-		plug.Auth,
-	}
+	pipe := plug.InternalStatsAPI()
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/api/stats") {
@@ -252,7 +241,7 @@ func NOOP(w http.ResponseWriter, r *http.Request) {}
 var domainStatus = regexp.MustCompile(`^/api/(?P<domain>[^.]+)/status$`)
 
 func API() plug.Plug {
-	pipe := plug.Pipeline{}
+	pipe := plug.API()
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/api") {
@@ -298,7 +287,7 @@ func API() plug.Plug {
 }
 
 func APIStatsV1() plug.Plug {
-	pipe := plug.Pipeline{}
+	pipe := plug.PublicAPI()
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/api/v1/stats") {
