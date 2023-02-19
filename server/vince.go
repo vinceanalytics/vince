@@ -18,6 +18,7 @@ import (
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/health"
+	"github.com/gernest/vince/limit"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/plug"
@@ -37,6 +38,7 @@ type Vince struct {
 	sql    *gorm.DB
 	mailer email.Mailer
 	config *config.Config
+	rate   *limit.Rate
 
 	events     chan *timeseries.Event
 	sessions   chan *timeseries.Session
@@ -98,11 +100,25 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 		ts.Close()
 		return nil, err
 	}
+	rateCache, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 1e7,
+		MaxCost:     1 << 30,
+		BufferItems: 64,
+	})
+	if err != nil {
+		log.Get(ctx).Err(err).Msg("failed creating timeseries session cache")
+		models.CloseDB(sqlDb)
+		ts.Close()
+		cache.Close()
+		return nil, err
+	}
 	mailer, err := email.FromConfig(o)
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed creating mailer")
 		models.CloseDB(sqlDb)
 		ts.Close()
+		cache.Close()
+		rateCache.Close()
 		return nil, err
 	}
 	v := &Vince{
@@ -110,6 +126,7 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 		sql:        sqlDb,
 		mailer:     mailer,
 		config:     o,
+		rate:       limit.New(rateCache),
 		events:     make(chan *timeseries.Event, MAX_BUFFER_SIZE),
 		sessions:   make(chan *timeseries.Session, MAX_BUFFER_SIZE),
 		abort:      make(chan os.Signal, 1),
@@ -152,6 +169,8 @@ func (v *Vince) Serve(ctx context.Context) error {
 	ctx = email.Set(ctx, v.mailer)
 	ctx = timeseries.Set(ctx, v.ts)
 	ctx = health.Set(ctx, h)
+	ctx = limit.Set(ctx, v.rate)
+
 	svr := &http.Server{
 		Addr:    fmt.Sprintf(":%d", v.config.Port),
 		Handler: Handle(ctx),
@@ -185,6 +204,7 @@ func (v *Vince) Serve(ctx context.Context) error {
 	models.CloseDB(v.sql)
 	v.ts.Close()
 	v.mailer.Close()
+	v.rate.Close()
 	close(v.events)
 	close(v.sessions)
 	close(v.abort)

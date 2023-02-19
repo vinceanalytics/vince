@@ -129,17 +129,30 @@ func GetCurrentUser(ctx context.Context) *User {
 	return nil
 }
 
-type currentRole struct{}
+type currentRoleKey struct{}
 
 func SetCurrentUserRole(ctx context.Context, role string) context.Context {
-	return context.WithValue(ctx, currentRole{}, role)
+	return context.WithValue(ctx, currentRoleKey{}, role)
 }
 
 func GetCurrentUserRole(ctx context.Context) string {
-	if u := ctx.Value(currentRole{}); u != nil {
+	if u := ctx.Value(currentRoleKey{}); u != nil {
 		return u.(string)
 	}
 	return ""
+}
+
+type siteKey struct{}
+
+func SetSite(ctx context.Context, site *Site) context.Context {
+	return context.WithValue(ctx, siteKey{}, site)
+}
+
+func GetSite(ctx context.Context) *Site {
+	if u := ctx.Value(siteKey{}); u != nil {
+		return u.(*Site)
+	}
+	return nil
 }
 
 type GracePeriod struct {
@@ -192,7 +205,7 @@ type Site struct {
 	Public     bool       `gorm:"not null;default:false"`
 	GoogleAuth GoogleAuth `gorm:"constraint:OnDelete:CASCADE;"`
 
-	SiteMembership     []*SiteMembership `gorm:"constraint:OnDelete:CASCADE;"`
+	SiteMemberships    []*SiteMembership `gorm:"constraint:OnDelete:CASCADE;"`
 	WeeklyReport       WeeklyReport
 	SentWeeklyReports  []*SentWeeklyReport
 	MonthlyReports     *MonthlyReport
@@ -209,6 +222,24 @@ type Site struct {
 	CustomDomains []*CustomDomain `gorm:"constraint:OnDelete:CASCADE;"`
 	Invitations   []*Invitation   `gorm:"constraint:OnDelete:CASCADE;"`
 	SharedLinks   []*SharedLink
+}
+
+func (s *Site) IsMember(userId uint64) bool {
+	for _, m := range s.SiteMemberships {
+		if m.UserID == userId {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Site) HasAdminAccess(userId uint64) bool {
+	for _, m := range s.SiteMemberships {
+		if m.UserID == userId {
+			return m.Role == "admin" || m.Role == "owner"
+		}
+	}
+	return false
 }
 
 type CustomDomain struct {

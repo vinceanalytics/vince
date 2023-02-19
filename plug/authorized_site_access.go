@@ -42,8 +42,8 @@ func AuthorizedSiteAccess(allowed ...string) Plug {
 			}
 			var role string
 			switch {
-			case len(site.SiteMembership) == 1:
-				role = site.SiteMembership[0].Role
+			case len(site.SiteMemberships) == 1:
+				role = site.SiteMemberships[0].Role
 			case user != nil && config.Get(ctx).IsSuperUser(user.ID):
 				role = "super_admin"
 			case site.Public:

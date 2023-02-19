@@ -3,7 +3,6 @@ module github.com/gernest/vince
 go 1.19
 
 require (
-	github.com/NYTimes/gziphandler v1.1.1
 	github.com/apache/arrow/go/v12 v12.0.0-20230202173645-b0e103795ef1
 	github.com/belak/octicon v0.0.0-20220531043918-8d81fefac757
 	github.com/dchest/captcha v1.0.0
@@ -27,6 +26,7 @@ require (
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
 	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
+	golang.org/x/time v0.3.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/sqlite v1.4.4
