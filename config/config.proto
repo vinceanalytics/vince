@@ -17,6 +17,7 @@ message Config {
   string secret_key_base = 10;
   Cors cors = 11;
   Ed25519Key ed25519_key_pair = 12;
+  repeated uint64 super_user_id = 13;
 
   message Mailer {
     Address address = 1;

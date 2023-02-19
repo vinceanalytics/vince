@@ -32,7 +32,7 @@ type User struct {
 	PasswordHash string
 	Sites        []*Site
 
-	SiteMembership          []*SiteMembership
+	SiteMemberships         []*SiteMembership
 	EmailVerificationCodes  []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
 	IntroEmail              []*IntroEmail            `gorm:"constraint:OnDelete:CASCADE;"`
 	FeedbackEmail           []*FeedbackEmail         `gorm:"constraint:OnDelete:CASCADE;"`
@@ -129,6 +129,19 @@ func GetCurrentUser(ctx context.Context) *User {
 	return nil
 }
 
+type currentRole struct{}
+
+func SetCurrentUserRole(ctx context.Context, role string) context.Context {
+	return context.WithValue(ctx, currentRole{}, role)
+}
+
+func GetCurrentUserRole(ctx context.Context) string {
+	if u := ctx.Value(currentRole{}); u != nil {
+		return u.(string)
+	}
+	return ""
+}
+
 type GracePeriod struct {
 	Model
 	UserID             uint64
@@ -195,6 +208,7 @@ type Site struct {
 
 	CustomDomains []*CustomDomain `gorm:"constraint:OnDelete:CASCADE;"`
 	Invitations   []*Invitation   `gorm:"constraint:OnDelete:CASCADE;"`
+	SharedLinks   []*SharedLink
 }
 
 type CustomDomain struct {
@@ -288,9 +302,12 @@ type Subscription struct {
 	LastBillDate   time.Time
 }
 
-type SharedLinks struct {
+type SharedLink struct {
 	Model
-	Name string `gorm:"not null"`
+	Name         string `gorm:"uniqueIndex;not null"`
+	Slug         string `gorm:"uniqueIndex"`
+	SiteID       uint64
+	PasswordHash string
 }
 
 type SentRenewalNotification struct {
@@ -388,7 +405,7 @@ func Open(path string) (*gorm.DB, error) {
 		&SentMonthlyReport{},
 		&SentRenewalNotification{},
 		&SentWeeklyReport{},
-		&SharedLinks{},
+		&SharedLink{},
 		&SiteMembership{},
 		&Site{},
 		&SpikeNotification{},

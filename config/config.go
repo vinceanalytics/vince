@@ -298,5 +298,15 @@ func (c *Config) WriteToFile(name string) error {
 func (c *Config) Scrub() *Config {
 	n := proto.Clone(c).(*Config)
 	n.SecretKeyBase = n.SecretKeyBase[0:6] + "***"
+	n.SuperUserId = nil
 	return n
+}
+
+func (c *Config) IsSuperUser(id uint64) bool {
+	for _, u := range c.SuperUserId {
+		if u == id {
+			return true
+		}
+	}
+	return false
 }
