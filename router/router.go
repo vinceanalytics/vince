@@ -19,6 +19,7 @@ func Plug(ctx context.Context) plug.Plug {
 	pipe := plug.Pipeline{
 		API(ctx),
 		APIStatsV1(ctx),
+		APISitesV1(ctx),
 		APIStats(ctx),
 		AdminScope(ctx),
 	}
@@ -288,7 +289,7 @@ func API(ctx context.Context) plug.Plug {
 }
 
 func APIStatsV1(ctx context.Context) plug.Plug {
-	pipe := plug.PublicAPI(ctx)
+	pipe := append(plug.PublicAPI(ctx), plug.AuthorizeStatsAPI)
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/api/v1/stats") {
@@ -305,6 +306,56 @@ func APIStatsV1(ctx context.Context) plug.Plug {
 						return
 					case "/api/v1/stats/timeseries":
 						pipe.Pass(stats.V1Timeseries).ServeHTTP(w, r)
+						return
+					}
+				}
+				h.ServeHTTP(w, r)
+			}
+		})
+	}
+}
+
+var sites = regexp.MustCompile(`^/api/v1/sites/(?P<site_id>[^.]+)$`)
+var goals = regexp.MustCompile(`^/api/v1/sites/goals/(?P<goal_id>[^.]+)$`)
+
+func APISitesV1(ctx context.Context) plug.Plug {
+	pipe := append(plug.PublicAPI(ctx), plug.AuthorizeSiteAPI)
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/api/v1/sites") {
+				switch r.URL.Path {
+				case "/api/v1/sites":
+					if r.Method == http.MethodPost {
+						pipe.Pass(S501).ServeHTTP(w, r)
+						return
+					}
+				case "/api/v1/sites/shared-links":
+					if r.Method == http.MethodPut {
+						pipe.Pass(S501).ServeHTTP(w, r)
+						return
+					}
+				case "/api/v1/sites/goals":
+					if r.Method == http.MethodPut {
+						pipe.Pass(S501).ServeHTTP(w, r)
+						return
+					}
+				default:
+					if goals.MatchString(r.URL.Path) {
+						if r.Method == http.MethodDelete {
+							pipe.Pass(S501).ServeHTTP(w, r)
+							return
+						}
+					}
+					if sites.MatchString(r.URL.Path) {
+						switch r.Method {
+						case http.MethodGet, http.MethodDelete:
+							matches := sites.FindStringSubmatch(r.URL.Path)
+							r = r.WithContext(params.Set(r.Context(), params.Params{
+								"site_id": matches[sites.SubexpIndex("site_id")],
+							}))
+							pipe.Pass(S501).ServeHTTP(w, r)
+							return
+						}
 						return
 					}
 				}
