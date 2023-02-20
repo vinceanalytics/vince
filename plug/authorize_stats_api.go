@@ -19,7 +19,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 		token := bearer(r.Header)
 		if token == "" {
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
-				ctx.StatusText = "Missing API key. Please use a valid Plausible API key as a Bearer Token."
+				ctx.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
 			})
 			return
 		}
@@ -29,7 +29,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 		if err != nil {
 			log.Get(r.Context()).Err(err).Msg("failed to get hashed api key")
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
-				ctx.StatusText = "Missing API key. Please use a valid Plausible API key as a Bearer Token."
+				ctx.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
 			})
 			return
 		}
@@ -65,7 +65,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			r = r.WithContext(models.SetSite(r.Context(), site))
 		case site.Locked:
 			render.ERROR(r.Context(), w, http.StatusPaymentRequired, func(ctx *templates.Context) {
-				ctx.StatusText = "This Plausible site is locked due to missing active subscription. In order to access it, the site owner should subscribe to a suitable plan"
+				ctx.StatusText = "This Vince site is locked due to missing active subscription. In order to access it, the site owner should subscribe to a suitable plan"
 			})
 			return
 		default:
