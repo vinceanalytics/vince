@@ -221,7 +221,7 @@ func Handle(ctx context.Context) http.Handler {
 		assets.Plug(),
 		plug.RequestID,
 		plug.CORS,
-		router.Plug(),
+		router.Plug(ctx),
 	}
 	h := pipe.Pass(router.S404)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

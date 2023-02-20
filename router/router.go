@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"net/http"
 	"regexp"
 	"strings"
@@ -14,12 +15,12 @@ import (
 	"github.com/gernest/vince/stats"
 )
 
-func Plug() plug.Plug {
+func Plug(ctx context.Context) plug.Plug {
 	pipe := plug.Pipeline{
-		API(),
-		APIStatsV1(),
-		APIStats(),
-		AdminScope(),
+		API(ctx),
+		APIStatsV1(ctx),
+		APIStats(ctx),
+		AdminScope(ctx),
 	}
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -30,8 +31,8 @@ func Plug() plug.Plug {
 	}
 }
 
-func AdminScope() plug.Plug {
-	pipe := append(plug.Browser(), plug.Protect()...)
+func AdminScope(ctx context.Context) plug.Plug {
+	pipe := append(plug.Browser(ctx), plug.Protect()...)
 
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -195,8 +196,8 @@ var handlesAPIStats = []*ReHandle{
 	},
 }
 
-func APIStats() plug.Plug {
-	pipe := plug.InternalStatsAPI()
+func APIStats(ctx context.Context) plug.Plug {
+	pipe := plug.InternalStatsAPI(ctx)
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/api/stats") {
@@ -240,8 +241,8 @@ func NOOP(w http.ResponseWriter, r *http.Request) {}
 
 var domainStatus = regexp.MustCompile(`^/api/(?P<domain>[^.]+)/status$`)
 
-func API() plug.Plug {
-	pipe := plug.API()
+func API(ctx context.Context) plug.Plug {
+	pipe := plug.API(ctx)
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/api") {
@@ -286,8 +287,8 @@ func API() plug.Plug {
 	}
 }
 
-func APIStatsV1() plug.Plug {
-	pipe := plug.PublicAPI()
+func APIStatsV1(ctx context.Context) plug.Plug {
+	pipe := plug.PublicAPI(ctx)
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/api/v1/stats") {

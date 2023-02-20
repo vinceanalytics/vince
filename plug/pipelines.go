@@ -1,7 +1,10 @@
 package plug
 
-func Browser() Pipeline {
+import "context"
+
+func Browser(ctx context.Context) Pipeline {
 	return Pipeline{
+		Firewall(ctx),
 		FetchSession,
 		PutSecureBrowserHeaders,
 		SessionTimeout,
@@ -23,20 +26,24 @@ func Protect() Pipeline {
 	}
 }
 
-func API() Pipeline {
+func API(ctx context.Context) Pipeline {
 	return Pipeline{
+		Firewall(ctx),
 		FetchSession,
 		Auth,
 	}
 }
 
-func InternalStatsAPI() Pipeline {
+func InternalStatsAPI(ctx context.Context) Pipeline {
 	return Pipeline{
+		Firewall(ctx),
 		FetchSession,
 		AuthorizedSiteAccess(),
 	}
 }
 
-func PublicAPI() Pipeline {
-	return Pipeline{}
+func PublicAPI(ctx context.Context) Pipeline {
+	return Pipeline{
+		Firewall(ctx),
+	}
 }
