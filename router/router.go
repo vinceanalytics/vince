@@ -22,6 +22,7 @@ func Plug(ctx context.Context) plug.Plug {
 		APISitesV1(ctx),
 		APIStats(ctx),
 		AdminScope(ctx),
+		Share(),
 	}
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,20 +33,16 @@ func Plug(ctx context.Context) plug.Plug {
 	}
 }
 
+var invitation = regexp.MustCompile(`^/register/invitation/(?P<invitation_id>[^.]+)$`)
+
 func AdminScope(ctx context.Context) plug.Plug {
 	pipe := append(plug.Browser(ctx), plug.Protect()...)
-
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch r.URL.Path {
 			case "/":
 				pipe.Pass(Home).ServeHTTP(w, r)
 				return
-			case "/login":
-				if r.Method == http.MethodGet {
-					pipe.Pass(auth.LoginForm).ServeHTTP(w, r)
-					return
-				}
 			case "/register":
 				if r.Method == http.MethodGet {
 					pipe.Pass(auth.RegisterForm).ServeHTTP(w, r)
@@ -62,6 +59,50 @@ func AdminScope(ctx context.Context) plug.Plug {
 				}
 				if r.Method == http.MethodPost {
 					pipe.Pass(auth.Activate).ServeHTTP(w, r)
+					return
+				}
+			case "/activate/request-code":
+				pipe.Pass(S501).ServeHTTP(w, r)
+				return
+			case "/login":
+				if r.Method == http.MethodGet {
+					pipe.Pass(auth.LoginForm).ServeHTTP(w, r)
+					return
+				}
+			case "/password/request-reset":
+				if r.Method == http.MethodGet {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+				if r.Method == http.MethodPost {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+			case "/password/reset":
+				if r.Method == http.MethodGet {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+				if r.Method == http.MethodPost {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+			case "/error_report":
+				if r.Method == http.MethodPost {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+			default:
+				if invitation.MatchString(r.URL.Path) {
+					switch r.Method {
+					case http.MethodGet, http.MethodPost:
+						matches := invitation.FindStringSubmatch(r.URL.Path)
+						r = r.WithContext(params.Set(r.Context(), params.Params{
+							"invitation_id": matches[invitation.SubexpIndex("invitation_id")],
+						}))
+						pipe.Pass(S501).ServeHTTP(w, r)
+						return
+					}
 					return
 				}
 			}
@@ -356,11 +397,42 @@ func APISitesV1(ctx context.Context) plug.Plug {
 							pipe.Pass(S501).ServeHTTP(w, r)
 							return
 						}
-						return
 					}
 				}
 				h.ServeHTTP(w, r)
 			}
+		})
+	}
+}
+
+var share = regexp.MustCompile(`^/share/(?P<domain>[^.]+)$`)
+var shareAuth = regexp.MustCompile(`^/share/(?P<slug>[^.]+)/authenticate$`)
+
+func Share() plug.Plug {
+	pipe := plug.SharedLink()
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if share.MatchString(r.URL.Path) {
+				if r.Method == http.MethodGet {
+					matches := sites.FindStringSubmatch(r.URL.Path)
+					r = r.WithContext(params.Set(r.Context(), params.Params{
+						"domain": matches[share.SubexpIndex("domain")],
+					}))
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+			}
+			if shareAuth.MatchString(r.URL.Path) {
+				if r.Method == http.MethodGet {
+					matches := sites.FindStringSubmatch(r.URL.Path)
+					r = r.WithContext(params.Set(r.Context(), params.Params{
+						"slug": matches[share.SubexpIndex("slug")],
+					}))
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+			}
+			h.ServeHTTP(w, r)
 		})
 	}
 }
