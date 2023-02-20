@@ -37,6 +37,7 @@ var invitation = regexp.MustCompile(`^/register/invitation/(?P<invitation_id>[^.
 
 func AdminScope(ctx context.Context) plug.Plug {
 	pipe := append(plug.Browser(ctx), plug.Protect()...)
+	pipeAccount := append(pipe, plug.RequireAccount)
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch r.URL.Path {
@@ -54,7 +55,7 @@ func AdminScope(ctx context.Context) plug.Plug {
 				}
 			case "/activate":
 				if r.Method == http.MethodGet {
-					pipe.Pass(auth.ActivateForm).ServeHTTP(w, r)
+					pipeAccount.Pass(auth.ActivateForm).ServeHTTP(w, r)
 					return
 				}
 				if r.Method == http.MethodPost {
