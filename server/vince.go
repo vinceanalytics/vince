@@ -140,7 +140,7 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 func (v *Vince) Serve(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	session := sessions.NewSession("vince")
+	session := sessions.NewSession("_vince")
 	ctx = sessions.Set(ctx, session)
 	var h health.Health
 	defer func() {
