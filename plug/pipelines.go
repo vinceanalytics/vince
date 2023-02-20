@@ -7,6 +7,7 @@ func Browser(ctx context.Context) Pipeline {
 		Firewall(ctx),
 		FetchSession,
 		PutSecureBrowserHeaders,
+		FirstLaunch,
 		SessionTimeout,
 		Auth,
 		LastSeen,
