@@ -218,7 +218,7 @@ func (v *Vince) exit() {
 func Handle(ctx context.Context) http.Handler {
 	pipe := plug.Pipeline{
 		tracker.Plug(),
-		plug.Favicon,
+		plug.Favicon(plug.DefaultClient),
 		assets.Plug(),
 		plug.RequestID,
 		plug.CORS,
