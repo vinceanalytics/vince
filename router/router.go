@@ -15,8 +15,8 @@ import (
 	"github.com/gernest/vince/stats"
 )
 
-func Plug(ctx context.Context) plug.Plug {
-	pipe := plug.Pipeline{
+func Pipe(ctx context.Context) plug.Pipeline {
+	return plug.Pipeline{
 		// Please be mindful of the order in which these plugs are sorted. We start
 		// we start with ones with strict unique prefix. This allows faster lookup
 		//
@@ -28,13 +28,6 @@ func Plug(ctx context.Context) plug.Plug {
 		APIStats(ctx),
 		API(ctx),
 		Root(ctx),
-	}
-	return func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			pipe.Pass(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				h.ServeHTTP(w, r)
-			})).ServeHTTP(w, r)
-		})
 	}
 }
 

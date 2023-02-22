@@ -216,14 +216,16 @@ func (v *Vince) exit() {
 }
 
 func Handle(ctx context.Context) http.Handler {
-	pipe := plug.Pipeline{
-		tracker.Plug(),
-		plug.Favicon(plug.DefaultClient),
-		assets.Plug(),
-		plug.RequestID,
-		plug.CORS,
-		router.Plug(ctx),
-	}
+	pipe := append(
+		plug.Pipeline{
+			tracker.Plug(),
+			plug.Favicon(plug.DefaultClient),
+			assets.Plug(),
+			plug.RequestID,
+			plug.CORS,
+		},
+		router.Pipe(ctx)...,
+	)
 	h := pipe.Pass(router.S404)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTP(w, r)
