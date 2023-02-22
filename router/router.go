@@ -17,11 +17,16 @@ import (
 
 func Plug(ctx context.Context) plug.Plug {
 	pipe := plug.Pipeline{
-		API(ctx),
+		// Please be mindful of the order in which these plugs are sorted. We start
+		// we start with ones with strict unique prefix. This allows faster lookup
+		//
+		// Root must  always be the last one because it heavily relies on regular expressions
+		// that will require exhaustive search to find the right route path.
 		APIStatsV1(ctx),
 		APISitesV1(ctx),
-		APIStats(ctx),
 		Share(),
+		APIStats(ctx),
+		API(ctx),
 		Root(ctx),
 	}
 	return func(h http.Handler) http.Handler {
@@ -36,6 +41,8 @@ func Plug(ctx context.Context) plug.Plug {
 func Root(ctx context.Context) plug.Plug {
 	pipe := append(plug.Browser(ctx), plug.Protect()...)
 	pipeAccount := append(pipe, plug.RequireAccount)
+	rootStat := regexp.MustCompile(`^/(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z
+		]{2,3})$`)
 	expr := plug.ExprPipe{
 		pipe.GET(`^/register/invitation/(?P<invitation_id>[^.]+)$`, S501),
 		pipe.POST(`^/register/invitation/(?P<invitation_id>[^.]+)$`, S501),
@@ -104,6 +111,7 @@ func Root(ctx context.Context) plug.Plug {
 		pipe.GET(`^/(?P<domain>[^.]+)/export$`, S501),
 		pipe.GET(`^/(?P<domain>[^.]+)/(?P<path>[^.]+)$`, S501),
 	}
+	statsPipe := append(pipe, plug.AuthorizedSiteAccess())
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch r.URL.Path {
@@ -240,6 +248,12 @@ func Root(ctx context.Context) plug.Plug {
 				if expr.ServeHTTP(w, r) {
 					return
 				}
+				if rootStat.MatchString(r.URL.Path) {
+					if r.Method == http.MethodGet {
+						statsPipe.Pass(S501).ServeHTTP(w, r)
+						return
+					}
+				}
 			}
 			h.ServeHTTP(w, r)
 		})
@@ -281,11 +295,14 @@ func APIStats(ctx context.Context) plug.Plug {
 
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/api/stats") {
-				pipe.Pass(S404).ServeHTTP(w, r)
-				if expr.ServeHTTP(w, r) {
-					return
+			if strings.HasPrefix(r.URL.Path, "/api/stats") {
+				if r.Method == http.MethodGet {
+					if expr.ServeHTTP(w, r) {
+						return
+					}
 				}
+				S404(w, r)
+				return
 			}
 			h.ServeHTTP(w, r)
 		})
@@ -335,11 +352,12 @@ func API(ctx context.Context) plug.Plug {
 					}
 				case http.MethodPost:
 					switch r.URL.Path {
-					case "/subscription/webhook":
+					case "/api/subscription/webhook":
 						pipe.Pass(S501).ServeHTTP(w, r)
 						return
 					}
 				}
+				S404(w, r)
 			}
 			h.ServeHTTP(w, r)
 		})
@@ -367,8 +385,10 @@ func APIStatsV1(ctx context.Context) plug.Plug {
 						return
 					}
 				}
-				h.ServeHTTP(w, r)
+				S404(w, r)
+				return
 			}
+			h.ServeHTTP(w, r)
 		})
 	}
 }
@@ -417,8 +437,10 @@ func APISitesV1(ctx context.Context) plug.Plug {
 						}
 					}
 				}
-				h.ServeHTTP(w, r)
+				S404(w, r)
+				return
 			}
+			h.ServeHTTP(w, r)
 		})
 	}
 }
@@ -448,8 +470,11 @@ func Share() plug.Plug {
 						return
 					}
 				}
+				// no other /share/** routes are registered its safe to end the chain
+				// here with 404
+				S404(w, r)
+				return
 			}
-
 			h.ServeHTTP(w, r)
 		})
 	}
