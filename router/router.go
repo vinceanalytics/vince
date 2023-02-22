@@ -21,8 +21,8 @@ func Plug(ctx context.Context) plug.Plug {
 		APIStatsV1(ctx),
 		APISitesV1(ctx),
 		APIStats(ctx),
-		AdminScope(ctx),
 		Share(),
+		Root(ctx),
 	}
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func Plug(ctx context.Context) plug.Plug {
 	}
 }
 
-func AdminScope(ctx context.Context) plug.Plug {
+func Root(ctx context.Context) plug.Plug {
 	pipe := append(plug.Browser(ctx), plug.Protect()...)
 	pipeAccount := append(pipe, plug.RequireAccount)
 	expr := plug.ExprPipe{
@@ -42,6 +42,67 @@ func AdminScope(ctx context.Context) plug.Plug {
 		pipe.DELETE(`^/settings/api-keys/(?P<id>[^.]+)$`, S501),
 		pipe.GET(`^/billing/change-plan/preview/(?P<plan_id>[^.]+)$`, S501),
 		pipe.POST(`^/billing/change-plan/(?P<new_plan_id>[^.]+)$`, S501),
+		pipe.GET(`^/billing/upgrade/(?P<plain_id>[^.]+)$`, S501),
+		pipe.GET(`^/billing/upgrade/enterprise/(?P<plain_id>[^.]+)$`, S501),
+		pipe.GET(`^/billing/change-plan/enterprise/(?P<plain_id>[^.]+)$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/make-public$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/make-private$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/weekly-report/enable$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/weekly-report/disable$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/weekly-report/recipients$`, S501),
+		pipe.DELETE(`^/sites/(?P<website>[^.]+)/weekly-report/recipients/(?P<recipient>[^.]+)$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/monthly-report/enable$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/monthly-report/disable$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/monthly-report/recipients$`, S501),
+		pipe.DELETE(`^/sites/(?P<website>[^.]+)/monthly-report/recipients/(?P<recipient>[^.]+)$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/spike-notification/enable$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/spike-notification/disable$`, S501),
+		pipe.PUT(`^/sites/(?P<website>[^.]+)/spike-notification$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/spike-notification/recipients$`, S501),
+		pipe.DELETE(`^/sites/(?P<website>[^.]+)/spike-notification/recipients/(?P<recipient>[^.]+)$`, S501),
+		pipe.GET(`^/sites/(?P<website>[^.]+)/shared-links/new$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/shared-links$`, S501),
+		pipe.GET(`^/sites/(?P<website>[^.]+)/shared-links/(?P<slug>[^.]+)/edit$`, S501),
+		pipe.PUT(`^/sites/(?P<website>[^.]+)/shared-links/(?P<slug>[^.]+)$`, S501),
+		pipe.DELETE(`^/sites/(?P<website>[^.]+)/shared-links/(?P<slug>[^.]+)$`, S501),
+		pipe.DELETE(`^/sites/(?P<website>[^.]+)/custom-domains/(?P<id>[^.]+)$`, S501),
+		pipe.GET(`^/sites/(?P<website>[^.]+)/memberships/invite$`, S501),
+		pipe.POST(`^/sites/(?P<website>[^.]+)/memberships/invite$`, S501),
+		pipe.POST(`^/sites/invitations/(?P<invitation_id>[^.]+)/accept$`, S501),
+		pipe.POST(`^/sites/invitations/(?P<invitation_id>[^.]+)/reject$`, S501),
+		pipe.GET(`^/sites/(?P<website>[^.]+)/transfer-ownership$`, S501),
+		pipe.PUT(`^/sites/(?P<website>[^.]+)/memberships/(?P<id>[^.]+)/role/(?P<new_role>[^.]+)$`, S501),
+		pipe.DELETE(`^/sites/(?P<website>[^.]+)/memberships/(?P<id>[^.]+)$`, S501),
+		pipe.GET(`^/sites/(?P<website>[^.]+)/weekly-report/unsubscribe$`, S501),
+		pipe.GET(`^/sites/(?P<website>[^.]+)/monthly-report/unsubscribe$`, S501),
+
+		pipe.GET(`^/(?P<website>[^.]+)/snippet$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/settings$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/settings/general$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/settings/people$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/settings/visibility$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/settings/goals$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/settings/search-console$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/settings/email-reports$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/settings/custom-domain$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/settings/danger-zone$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/goals/new$`, S501),
+		pipe.POST(`^/(?P<website>[^.]+)/goals$`, S501),
+		pipe.DELETE(`^/(?P<website>[^.]+)/goals/(?P<id>[^.]+)$`, S501),
+		pipe.PUT(`^/(?P<website>[^.]+)/settings$`, S501),
+		pipe.PUT(`^/(?P<website>[^.]+)/settings/google$`, S501),
+		pipe.DELETE(`^/(?P<website>[^.]+)/settings/google-search$`, S501),
+		pipe.DELETE(`^/(?P<website>[^.]+)/settings/google-import$`, S501),
+		pipe.DELETE(`^/(?P<website>[^.]+)$`, S501),
+		pipe.DELETE(`^/(?P<website>[^.]+)/stats$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/import/google-analytics/view-id$`, S501),
+		pipe.POST(`^/(?P<website>[^.]+)/import/google-analytics/view-id$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/import/google-analytics/user-metric$`, S501),
+		pipe.GET(`^/(?P<website>[^.]+)/import/google-analytics/confirm$`, S501),
+		pipe.POST(`^/(?P<website>[^.]+)/settings/google-import$`, S501),
+		pipe.DELETE(`^/(?P<website>[^.]+)/settings/forget-imported$`, S501),
+		pipe.GET(`^/(?P<domain>[^.]+)/export$`, S501),
+		pipe.GET(`^/(?P<domain>[^.]+)/(?P<path>[^.]+)$`, S501),
 	}
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -141,6 +202,36 @@ func AdminScope(ctx context.Context) plug.Plug {
 					return
 				}
 			case "/billing/change-plan":
+				if r.Method == http.MethodGet {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+			case "/billing/upgrade":
+				if r.Method == http.MethodGet {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+			case "/billing/upgrade-success":
+				if r.Method == http.MethodGet {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+			case "/billing/subscription/ping":
+				if r.Method == http.MethodGet {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+			case "/sites":
+				if r.Method == http.MethodGet {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+				if r.Method == http.MethodPost {
+					pipe.Pass(S501).ServeHTTP(w, r)
+					return
+				}
+
+			case "/sites/new":
 				if r.Method == http.MethodGet {
 					pipe.Pass(S501).ServeHTTP(w, r)
 					return
