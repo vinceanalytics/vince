@@ -30,9 +30,8 @@ type User struct {
 	Name         string
 	Email        string `gorm:"uniqueIndex"`
 	PasswordHash string
-	Sites        []*Site
+	Sites        []*Site `gorm:"many2many:site_memberships;"`
 
-	SiteMemberships         []*SiteMembership
 	EmailVerificationCodes  []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
 	IntroEmail              []*IntroEmail            `gorm:"constraint:OnDelete:CASCADE;"`
 	FeedbackEmail           []*FeedbackEmail         `gorm:"constraint:OnDelete:CASCADE;"`
@@ -209,7 +208,7 @@ type Site struct {
 	IngestRateLimitScaleSeconds uint64 `gorm:"not null;default:60"`
 	IngestRateLimitThreshold    uint64
 
-	SiteMemberships    []*SiteMembership `gorm:"constraint:OnDelete:CASCADE;"`
+	Users              []*User `gorm:"many2many:site_memberships;"`
 	SentWeeklyReports  []*SentWeeklyReport
 	SentMonthlyReports []*SentMonthlyReport
 
@@ -224,18 +223,9 @@ type Site struct {
 }
 
 func (s *Site) IsMember(userId uint64) bool {
-	for _, m := range s.SiteMemberships {
-		if m.UserID == userId {
+	for _, m := range s.Users {
+		if m.ID == userId {
 			return true
-		}
-	}
-	return false
-}
-
-func (s *Site) HasAdminAccess(userId uint64) bool {
-	for _, m := range s.SiteMemberships {
-		if m.UserID == userId {
-			return m.Role == "admin" || m.Role == "owner"
 		}
 	}
 	return false
@@ -273,10 +263,11 @@ type SpikeNotification struct {
 }
 
 type SiteMembership struct {
-	Model
-	UserID uint64
-	SiteID uint64
-	Role   string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
+	UserID    uint64 `gorm:"primaryKey"`
+	SiteID    uint64 `gorm:"primaryKey"`
+	Role      string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
+	CreatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
 type APIKey struct {
@@ -418,6 +409,8 @@ func Open(path string) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	db.SetupJoinTable(&User{}, "Sites", &SiteMembership{})
+	db.SetupJoinTable(&Site{}, "Users", &SiteMembership{})
 	err = db.AutoMigrate(
 		&APIKey{},
 		&CheckStatEmail{},
