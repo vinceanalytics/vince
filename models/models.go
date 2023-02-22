@@ -495,6 +495,14 @@ func Get(ctx context.Context) *gorm.DB {
 	return ctx.Value(dbKey{}).(*gorm.DB)
 }
 
+func Exists(ctx context.Context, where func(db *gorm.DB) *gorm.DB) bool {
+	db := Get(ctx)
+	db = where(db).Select("1")
+	var n int
+	err := db.Find(&n).Error
+	return err == nil
+}
+
 // Check performs health check on the database. This make sure we can query the
 // database
 func Check(ctx context.Context) bool {

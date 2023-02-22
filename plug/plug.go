@@ -276,5 +276,6 @@ func RequestID(h http.Handler) http.Handler {
 		if r.Header.Get("x-request-id") == "" {
 			r.Header.Set("x-request-id", ulid.Make().String())
 		}
+		h.ServeHTTP(w, r)
 	})
 }

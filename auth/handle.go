@@ -94,16 +94,11 @@ func SendVerificationEmail(ctx context.Context, usr *models.User) error {
 
 func ActivateForm(w http.ResponseWriter, r *http.Request) {
 	usr := models.GetCurrentUser(r.Context())
-	var count int64
-	err := models.Get(r.Context()).Model(&models.Invitation{}).Where("email=?", usr.Email).Count(&count).Error
-	if err != nil {
-		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
-		render.ERROR(r.Context(), w, http.StatusInternalServerError)
-		return
-	}
-	hasInvitation := count != 0
+	hasInvitation := models.Exists(r.Context(), func(db *gorm.DB) *gorm.DB {
+		return db.Model(&models.Invitation{}).Where("email=?", usr.Email)
+	})
 	var code models.EmailVerificationCode
-	err = models.Get(r.Context()).Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).First(&code).Error
+	err := models.Get(r.Context()).Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).First(&code).Error
 	if err != nil {
 		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
 		render.ERROR(r.Context(), w, http.StatusInternalServerError)
@@ -119,18 +114,14 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	ctx := r.Context()
 	usr := models.GetCurrentUser(ctx)
-	var count int64
-	err := models.Get(ctx).Model(&models.Invitation{}).Where("email=?", usr.Email).Count(&count).Error
-	if err != nil {
-		log.Get(r.Context()).Err(err).Msg("failed querying invitation")
-		render.ERROR(r.Context(), w, http.StatusInternalServerError)
-		return
-	}
-	hasInvitation := count != 0
+
+	hasInvitation := models.Exists(ctx, func(db *gorm.DB) *gorm.DB {
+		return db.Model(&models.Invitation{}).Where("email=?", usr.Email)
+	})
+
 	code, _ := strconv.Atoi(r.Form.Get("code"))
-	count = 0
 	var codes models.EmailVerificationCode
-	err = models.Get(ctx).Where("user_id=?", usr.ID).Where("code=?", code).First(&codes).Error
+	err := models.Get(ctx).Where("user_id=?", usr.ID).Where("code=?", code).First(&codes).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r = sessions.SaveCsrf(w, r)
