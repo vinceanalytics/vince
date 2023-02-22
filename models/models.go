@@ -199,29 +199,28 @@ func toDate(ts time.Time) time.Time {
 
 type Site struct {
 	Model
-	UserID     uint64
-	Domain     string     `gorm:"uniqueIndex"`
-	Timezone   string     `gorm:"default:UTC"`
-	Public     bool       `gorm:"not null;default:false"`
-	GoogleAuth GoogleAuth `gorm:"constraint:OnDelete:CASCADE;"`
-
-	SiteMemberships    []*SiteMembership `gorm:"constraint:OnDelete:CASCADE;"`
-	WeeklyReport       WeeklyReport
-	SentWeeklyReports  []*SentWeeklyReport
-	MonthlyReports     *MonthlyReport
-	SentMonthlyReports []*SentMonthlyReport
-
-	SpikeNotifications          []*SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
-	IngestRateLimitScaleSeconds uint64               `gorm:"not null;default:60"`
+	UserID                      uint64
+	Domain                      string `gorm:"uniqueIndex"`
+	Timezone                    string `gorm:"default:UTC"`
+	Public                      bool   `gorm:"not null;default:false"`
+	StatsStartDate              time.Time
+	HasStats                    bool   `gorm:"not null,default:false"`
+	Locked                      bool   `gorm:"not null,default:false"`
+	IngestRateLimitScaleSeconds uint64 `gorm:"not null;default:60"`
 	IngestRateLimitThreshold    uint64
 
-	StatsStartDate time.Time
-	HasStats       bool `gorm:"not null,default:false"`
-	Locked         bool `gorm:"not null,default:false"`
+	SiteMemberships    []*SiteMembership `gorm:"constraint:OnDelete:CASCADE;"`
+	SentWeeklyReports  []*SentWeeklyReport
+	SentMonthlyReports []*SentMonthlyReport
 
-	CustomDomains []*CustomDomain `gorm:"constraint:OnDelete:CASCADE;"`
-	Invitations   []*Invitation   `gorm:"constraint:OnDelete:CASCADE;"`
-	SharedLinks   []*SharedLink
+	WeeklyReport      WeeklyReport
+	MonthlyReports    MonthlyReport
+	GoogleAuth        GoogleAuth        `gorm:"constraint:OnDelete:CASCADE;"`
+	CustomDomain      CustomDomain      `gorm:"constraint:OnDelete:CASCADE;"`
+	SpikeNotification SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
+
+	Invitations []*Invitation `gorm:"constraint:OnDelete:CASCADE;"`
+	SharedLinks []*SharedLink
 }
 
 func (s *Site) IsMember(userId uint64) bool {
