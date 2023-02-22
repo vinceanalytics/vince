@@ -48,70 +48,64 @@ func InternalStatsAPI(ctx context.Context) Pipeline {
 	}
 }
 
-func PublicAPI(ctx context.Context) Pipeline {
-	return Pipeline{
-		Firewall(ctx),
-	}
-}
-
-type Expr interface {
-	ServeHTTP(w http.ResponseWriter, r *http.Request) bool
-}
-
-type ExprPipe []Expr
-
-func (ex ExprPipe) ServeHTTP(w http.ResponseWriter, r *http.Request) bool {
-	for _, e := range ex {
-		if e.ServeHTTP(w, r) {
-			return true
-		}
-	}
-	return false
-}
-
-type ExprFunc func(w http.ResponseWriter, r *http.Request) bool
-
-func (f ExprFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) bool {
-	return f(w, r)
-}
-
-func ExprHandle(h http.Handler, expr ...Expr) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		for _, e := range expr {
-			if e.ServeHTTP(w, r) {
+func (p Pipeline) Re(exp string, method string, f func(w http.ResponseWriter, r *http.Request)) Plug {
+	re := regexp.MustCompile(exp)
+	pipe := p.Pass(f)
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if method == r.Method && re.MatchString(r.URL.Path) {
+				r = r.WithContext(params.Set(r.Context(),
+					params.Re(re, r.URL.Path),
+				))
+				pipe.ServeHTTP(w, r)
 				return
 			}
-		}
-		h.ServeHTTP(w, r)
-	})
+			h.ServeHTTP(w, r)
+		})
+	}
 }
 
-func Re(exp string, method string, f http.Handler) Expr {
-	re := regexp.MustCompile(exp)
-	return ExprFunc(func(w http.ResponseWriter, r *http.Request) bool {
-		if method == r.Method && re.MatchString(r.URL.Path) {
-			r = r.WithContext(params.Set(r.Context(),
-				params.Re(re, r.URL.Path),
-			))
-			f.ServeHTTP(w, r)
-			return true
-		}
-		return false
-	})
+func (p Pipeline) GET(re string, f func(w http.ResponseWriter, r *http.Request)) Plug {
+	return p.Re(re, http.MethodGet, f)
 }
 
-func (p Pipeline) GET(re string, f http.HandlerFunc) Expr {
-	return Re(re, http.MethodGet, p.Pass(f))
+func (p Pipeline) PUT(re string, f func(w http.ResponseWriter, r *http.Request)) Plug {
+	return p.Re(re, http.MethodPut, f)
 }
 
-func (p Pipeline) PUT(re string, f http.HandlerFunc) Expr {
-	return Re(re, http.MethodPut, p.Pass(f))
+func (p Pipeline) POST(re string, f func(w http.ResponseWriter, r *http.Request)) Plug {
+	return p.Re(re, http.MethodPost, f)
 }
 
-func (p Pipeline) POST(re string, f http.HandlerFunc) Expr {
-	return Re(re, http.MethodPost, p.Pass(f))
+func (p Pipeline) DELETE(re string, f func(w http.ResponseWriter, r *http.Request)) Plug {
+	return p.Re(re, http.MethodDelete, f)
 }
 
-func (p Pipeline) DELETE(re string, f http.HandlerFunc) Expr {
-	return Re(re, http.MethodDelete, p.Pass(f))
+func (p Pipeline) PathGET(path string, handler func(w http.ResponseWriter, r *http.Request)) Plug {
+	return p.Path(http.MethodGet, path, handler)
+}
+
+func (p Pipeline) PathPOST(path string, handler func(w http.ResponseWriter, r *http.Request)) Plug {
+	return p.Path(http.MethodPost, path, handler)
+}
+
+func (p Pipeline) PathPUT(path string, handler func(w http.ResponseWriter, r *http.Request)) Plug {
+	return p.Path(http.MethodPut, path, handler)
+}
+
+func (p Pipeline) PathDELETE(path string, handler func(w http.ResponseWriter, r *http.Request)) Plug {
+	return p.Path(http.MethodDelete, path, handler)
+}
+
+func (p Pipeline) Path(method, path string, handler func(w http.ResponseWriter, r *http.Request)) Plug {
+	pipe := p.Pass(handler)
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == method && r.URL.Path == path {
+				pipe.ServeHTTP(w, r)
+				return
+			}
+			h.ServeHTTP(w, r)
+		})
+	}
 }

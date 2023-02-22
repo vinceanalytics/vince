@@ -27,6 +27,8 @@ func (p Pipeline) Pass(h http.HandlerFunc) http.Handler {
 	return x
 }
 
+func NOOP(w http.ResponseWriter, r *http.Request) {}
+
 func FetchSession(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, r = sessions.Load(r)
@@ -113,16 +115,15 @@ func CSRF(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
+			r = sessions.SaveCsrf(w, r)
+			h.ServeHTTP(w, r)
 		default:
 			if !sessions.IsValidCSRF(r) {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
 			h.ServeHTTP(w, r)
-			return
 		}
-		r = sessions.SaveCsrf(w, r)
-		h.ServeHTTP(w, r)
 	})
 }
 
@@ -276,6 +277,9 @@ func RequestID(h http.Handler) http.Handler {
 		if r.Header.Get("x-request-id") == "" {
 			r.Header.Set("x-request-id", ulid.Make().String())
 		}
+		lg := log.Get(r.Context())
+		rg := lg.With().Str("request_id", r.Header.Get("x-request-id")).Logger()
+		r = r.WithContext(log.Set(r.Context(), &rg))
 		h.ServeHTTP(w, r)
 	})
 }

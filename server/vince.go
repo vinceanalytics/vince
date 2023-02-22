@@ -226,7 +226,7 @@ func Handle(ctx context.Context) http.Handler {
 		},
 		router.Pipe(ctx)...,
 	)
-	h := pipe.Pass(router.S404)
+	h := pipe.Pass(plug.NOOP)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTP(w, r)
 	})
