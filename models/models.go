@@ -439,12 +439,10 @@ func Open(path string) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// fill verification codes
-	var codes int64
-	if err = db.Model(&EmailVerificationCode{}).Count(&codes).Error; err != nil {
-		return nil, err
-	}
-	if codes == 0 {
+	generateCode := !exists(db, func(db *gorm.DB) *gorm.DB {
+		return db.Model(&EmailVerificationCode{}).Where("code <> 0")
+	})
+	if generateCode {
 		// We generate end-start rows on email_verification_codes table with random
 		// code between start and end. user_id is set to null.
 		start := 1000
@@ -496,11 +494,14 @@ func Get(ctx context.Context) *gorm.DB {
 }
 
 func Exists(ctx context.Context, where func(db *gorm.DB) *gorm.DB) bool {
-	db := Get(ctx)
-	db = where(db).Select("1")
+	return exists(Get(ctx), where)
+}
+
+func exists(db *gorm.DB, where func(db *gorm.DB) *gorm.DB) bool {
+	db = where(db).Select("1").Limit(1)
 	var n int
 	err := db.Find(&n).Error
-	return err == nil
+	return err == nil && n == 1
 }
 
 // Check performs health check on the database. This make sure we can query the
