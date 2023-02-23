@@ -6,7 +6,6 @@ import (
 
 	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
-	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/stats"
@@ -60,12 +59,12 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe3.GET(`^/api/stats/(?P<domain>[^.]+)/suggestions/(?P<filter_name>[^.]+)$`, S501),
 
 		pipe4.PathGET("/api/event", api.Events),
-		pipe4.PathGET("/api/error", S501),
-		pipe4.PathGET("/api/health", health.Handle),
+		pipe4.PathGET("/api/error", api.Error),
+		pipe4.PathGET("/api/health", api.Health),
 		pipe4.PathGET("/api/system", api.Info),
-		pipe4.PathGET("/api/sites", S501),
-		pipe4.PathPOST("/api/subscription/webhook", S501),
-		pipe4.GET("`^/api/(?P<domain>[^.]+)/status$`", S501),
+		pipe4.PathGET("/api/sites", api.Sites),
+		pipe4.PathPOST("/api/subscription/webhook", api.SubscriptionWebhook),
+		pipe4.GET("`^/api/(?P<domain>[^.]+)/status$`", api.DomainStatus),
 
 		pipe5.PathGET("/", Home),
 		pipe5.PathGET("/register", auth.RegisterForm),
