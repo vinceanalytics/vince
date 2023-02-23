@@ -1,7 +1,7 @@
 {{define "content"}}
-<div class="width-full d-flex container-xl mt-4 mx-auto">
+<div class="width-full d-flex container-md mt-4 mx-auto">
     {{if .HasPin}}
-    <form action="/activate" method="post" class="width-full container-lg mx-auto  rounded px-8 py-6 mb-4 mt-8">
+    <form action="/activate" method="post" class="width-full container-sm mx-auto  rounded px-8 py-6 mb-4 mt-8">
         <h2>Activate your account </h2>
         <div class="mt-2 text-small">
             Please enter the 4-digit code we sent to <b>
@@ -14,19 +14,42 @@
                 onclick="this.select();" placeholder="••••" maxlength="4">
             <button type="submit" id="submit" class="btn"> Activate &rarr;</button>
         </div>
-        <div class="mt-16 text-small">
+
+        <div class="mt-16 text-sm">
             Didn't receive an email?
         </div>
-        <ol class="text-small">
-            <li>Check your spam folder</li>
-            <li><a href="/activate/request-code" data-method="post">Send a new code</a></li>
-        </ol>
-        <div class="mt-4 text-small">
-            Entered the wrong email address?
-        </div>
-        <ul class="text-xs mt-1">
-            <li>
-                <a href="/me?redirect=/register" data-method="delete" class="underline">Delete this account</a>
+
+        <ul class="ActionList" role="listbox" aria-label="Select multiple options" aria-multiselectable="true">
+            <li class="ActionList-item" role="option" aria-selected="true">
+                <span class="ActionList-content">
+                    <span class="ActionList-item-action ActionList-item-action--leading">
+                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true" focusable="false" class="ActionList-item-multiSelectIcon">
+                            <rect x="2" y="2" width="12" height="12" rx="4" class="ActionList-item-multiSelectIconRect">
+                            </rect>
+                            <path fill-rule="evenodd"
+                                d="M4.03231 8.69862C3.84775 8.20646 4.49385 7.77554 4.95539 7.77554C5.41693 7.77554 6.80154 9.85246 6.80154 9.85246C6.80154 9.85246 10.2631 4.314 10.4938 4.08323C10.7246 3.85246 11.8785 4.08323 11.4169 5.00631C11.0081 5.82388 7.26308 11.4678 7.26308 11.4678C7.26308 11.4678 6.80154 12.1602 6.34 11.4678C5.87846 10.7755 4.21687 9.19077 4.03231 8.69862Z"
+                                class="ActionList-item-multiSelectCheckmark"></path>
+                        </svg>
+                    </span>
+                    <span class="ActionList-item-label">Check your spam folder</span>
+                </span>
+            </li>
+            <li class="ActionList-item" role="option" aria-selected="true">
+                <span class="ActionList-content">
+                    <span class="ActionList-item-action ActionList-item-action--leading">
+                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true" focusable="false" class="ActionList-item-multiSelectIcon">
+                            <rect x="2" y="2" width="12" height="12" rx="4" class="ActionList-item-multiSelectIconRect">
+                            </rect>
+                            <path fill-rule="evenodd"
+                                d="M4.03231 8.69862C3.84775 8.20646 4.49385 7.77554 4.95539 7.77554C5.41693 7.77554 6.80154 9.85246 6.80154 9.85246C6.80154 9.85246 10.2631 4.314 10.4938 4.08323C10.7246 3.85246 11.8785 4.08323 11.4169 5.00631C11.0081 5.82388 7.26308 11.4678 7.26308 11.4678C7.26308 11.4678 6.80154 12.1602 6.34 11.4678C5.87846 10.7755 4.21687 9.19077 4.03231 8.69862Z"
+                                class="ActionList-item-multiSelectCheckmark"></path>
+                        </svg>
+                    </span>
+                    <span class="ActionList-item-label"><a href="/activate/request-code" data-method="post">Send a
+                            new code</a></span>
+                </span>
             </li>
         </ul>
     </form>
