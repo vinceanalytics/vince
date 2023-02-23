@@ -8,6 +8,7 @@ import (
 	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/render"
+	"github.com/gernest/vince/sites"
 	"github.com/gernest/vince/stats"
 )
 
@@ -24,11 +25,12 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe0.PathGET("/api/v1/stats/breakdown", stats.V1Breakdown),
 		pipe0.PathGET("/api/v1/stats/timeseries", stats.V1Timeseries),
 
-		pipe1.PathGET("/api/v1/sites", S501),
-		pipe1.PathGET("/api/v1/sites/goals", S501),
-		pipe1.GET(`^/api/v1/sites/(?P<site_id>[^.]+)$`, S501),
-		pipe1.DELETE(`^/api/v1/sites/(?P<site_id>[^.]+)$`, S501),
-		pipe1.DELETE(`^/api/v1/sites/goals/(?P<goal_id>[^.]+)$`, S501),
+		pipe1.PathPOST("/api/v1/sites", sites.Create),
+		pipe1.PathPUT("/api/v1/sites/goals", sites.CreateGoal),
+		pipe1.PathPUT("/api/v1/sites/shared-links", sites.FindOrCreateSharedLink),
+		pipe1.GET(`^/api/v1/sites/(?P<site_id>[^.]+)$`, sites.Get),
+		pipe1.DELETE(`^/api/v1/sites/(?P<site_id>[^.]+)$`, sites.Delete),
+		pipe1.DELETE(`^/api/v1/sites/goals/(?P<goal_id>[^.]+)$`, sites.DeleteGoal),
 
 		pipe2.GET(`^/share/(?P<domain>[^.]+)$`, S501),
 		pipe2.GET(`^/share/(?P<slug>[^.]+)/authenticate$`, S501),
