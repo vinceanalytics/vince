@@ -11,8 +11,7 @@ import (
 )
 
 var (
-	IndexKeyPrefix = []byte("index/")
-	ErrSkip        = errors.New("skip iteration")
+	ErrSkip = errors.New("skip iteration")
 )
 
 // stores parquet files identified by ULID.
