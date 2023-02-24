@@ -6,6 +6,7 @@ import (
 
 	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
+	"github.com/gernest/vince/billing"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sites"
@@ -92,20 +93,23 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe5.PathPOST("/settings/api-keys", auth.CreateAPIKey),
 		pipe5.PathGET("/auth/google/callback", auth.GoogleAuthCallback),
 
-		pipe5.PathGET("/billing/change-plan", S501),
-		pipe5.PathGET("/billing/upgrade", S501),
-		pipe5.PathGET("/billing/subscription/ping", S501),
+		pipe5.PathGET("/billing/change-plan", billing.ChangePlanForm),
+		pipe5.GET(`^/billing/change-plan/preview/(?P<plan_id>[^.]+)$`, billing.ChangePlanPreview),
+		pipe5.POST(`^/billing/change-plan/(?P<new_plan_id>[^.]+)$`, billing.ChangePlan),
+		pipe5.PathGET("/billing/upgrade", billing.Upgrade),
+		pipe5.GET(`^/billing/upgrade/(?P<plain_id>[^.]+)$`, billing.UpgradeToPlan),
+		pipe5.GET(`^/billing/upgrade/enterprise/(?P<plain_id>[^.]+)$`, billing.UpgradeEnterprisePlan),
+		pipe5.GET(`^/billing/change-plan/enterprise/(?P<plain_id>[^.]+)$`, billing.ChangeEnterprisePlan),
+		pipe5.PathGET("/billing/upgrade-success", billing.UpgradeSuccess),
+		pipe5.PathGET("/billing/subscription/ping", billing.PingSubscription),
+
 		pipe5.PathGET("sites", S501),
 		pipe5.PathPOST("/sites", S501),
 		pipe5.PathGET("/sites/new", S501),
 		pipe5.GET(`^/register/invitation/(?P<invitation_id>[^.]+)$`, S501),
 		pipe5.POST(`^/register/invitation/(?P<invitation_id>[^.]+)$`, S501),
 		pipe5.DELETE(`^/settings/api-keys/(?P<id>[^.]+)$`, S501),
-		pipe5.GET(`^/billing/change-plan/preview/(?P<plan_id>[^.]+)$`, S501),
-		pipe5.POST(`^/billing/change-plan/(?P<new_plan_id>[^.]+)$`, S501),
-		pipe5.GET(`^/billing/upgrade/(?P<plain_id>[^.]+)$`, S501),
-		pipe5.GET(`^/billing/upgrade/enterprise/(?P<plain_id>[^.]+)$`, S501),
-		pipe5.GET(`^/billing/change-plan/enterprise/(?P<plain_id>[^.]+)$`, S501),
+
 		pipe5.POST(`^/sites/(?P<website>[^.]+)/make-public$`, S501),
 		pipe5.POST(`^/sites/(?P<website>[^.]+)/make-private$`, S501),
 		pipe5.POST(`^/sites/(?P<website>[^.]+)/weekly-report/enable$`, S501),
