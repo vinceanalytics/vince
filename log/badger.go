@@ -10,11 +10,11 @@ import (
 var _ badger.Logger = (*badgerLogger)(nil)
 
 type badgerLogger struct {
-	lg *zerolog.Logger
+	lg zerolog.Logger
 }
 
 func Badger(ctx context.Context) badger.Logger {
-	return &badgerLogger{lg: Get(ctx)}
+	return &badgerLogger{lg: Get(ctx).Level(zerolog.WarnLevel)}
 }
 
 func (b *badgerLogger) Errorf(format string, args ...interface{}) {

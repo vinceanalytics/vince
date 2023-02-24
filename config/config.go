@@ -33,11 +33,11 @@ func Flags() []cli.Flag {
 			Value:   "vince.json",
 			EnvVars: []string{"VINCE_CONFIG"},
 		},
-		&cli.IntFlag{
-			Name:    "port",
-			Usage:   "bind the server to this port ",
-			Value:   8080,
-			EnvVars: []string{"VINCE_LISTEN_PORT"},
+		&cli.StringFlag{
+			Name:    "listen-address",
+			Usage:   "bind the server to this port",
+			Value:   ":8080",
+			EnvVars: []string{"VINCE_LISTEN_ADDRESS"},
 		},
 		&cli.StringFlag{
 			Name:    "data",
@@ -179,7 +179,7 @@ func fromFile(ctx *cli.Context) (*Config, error) {
 
 func fromCli(ctx *cli.Context) *Config {
 	x := &Config{
-		Port:                    int32(ctx.Int("port")),
+		ListenAddress:           ctx.String("listen-address"),
 		Url:                     ctx.String("url"),
 		DataPath:                ctx.String("data"),
 		FlushInterval:           durationpb.New(ctx.Duration("flush-interval")),

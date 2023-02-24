@@ -5,7 +5,7 @@ import "google/protobuf/duration.proto";
 option go_package = "github.com/gernest/vince/config";
 
 message Config {
-  int32 port = 1;
+  string listen_address = 1;
   Env env = 2;
   string url = 3;
   Mailer mailer = 4;

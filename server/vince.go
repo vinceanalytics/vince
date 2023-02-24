@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -172,7 +171,7 @@ func (v *Vince) Serve(ctx context.Context) error {
 	ctx = limit.Set(ctx, v.rate)
 
 	svr := &http.Server{
-		Addr:    fmt.Sprintf(":%d", v.config.Port),
+		Addr:    v.config.ListenAddress,
 		Handler: Handle(ctx),
 		BaseContext: func(l net.Listener) context.Context {
 			return ctx
