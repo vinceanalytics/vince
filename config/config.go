@@ -140,6 +140,12 @@ func Flags() []cli.Flag {
 			Usage:   "port value for oauth bearer smtp auth",
 			EnvVars: []string{"VINCE_MAILER_SMTP_OAUTH_PORT"},
 		},
+		&cli.DurationFlag{
+			Name:    "data-ttl",
+			Usage:   "data retention period",
+			Value:   24 * time.Hour,
+			EnvVars: []string{"VINCE_DATA_TTL"},
+		},
 	}
 }
 
@@ -217,6 +223,7 @@ func fromCli(ctx *cli.Context) *Config {
 			Methods:               []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 			SendPreflightResponse: true,
 		},
+		DataTtl: durationpb.New(ctx.Duration("data-ttl")),
 	}
 	switch ctx.String("env") {
 	case "dev":

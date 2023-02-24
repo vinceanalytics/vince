@@ -82,7 +82,7 @@ func New(ctx context.Context, o *config.Config) (*Vince, error) {
 		return nil, err
 	}
 	alloc := memory.DefaultAllocator
-	ts, err := timeseries.Open(ctx, alloc, o.DataPath)
+	ts, err := timeseries.Open(ctx, alloc, o.DataPath, o.DataTtl.AsDuration())
 	if err != nil {
 		models.CloseDB(sqlDb)
 		return nil, err

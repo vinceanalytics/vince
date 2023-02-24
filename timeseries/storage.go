@@ -42,9 +42,16 @@ type Storage[T any] struct {
 	allocator  memory.Allocator
 	start      time.Time
 	end        time.Time
+	ttl        time.Duration
 }
 
-func NewStorage[T any](ctx context.Context, allocator memory.Allocator, db *badger.DB, path string) (*Storage[T], error) {
+func NewStorage[T any](
+	ctx context.Context,
+	allocator memory.Allocator,
+	db *badger.DB,
+	path string,
+	ttl time.Duration,
+) (*Storage[T], error) {
 	os.MkdirAll(path, 0755)
 	f, err := os.Create(filepath.Join(path, ActiveFileName))
 	if err != nil {
@@ -65,6 +72,7 @@ func NewStorage[T any](ctx context.Context, allocator memory.Allocator, db *badg
 		allocator: allocator,
 		start:     now,
 		end:       now,
+		ttl:       ttl,
 	}
 	s.pool = &sync.Pool{
 		New: func() any {
@@ -116,6 +124,7 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 		Table: s.name,
 		ID:    id,
 		Data:  buf.Bytes(),
+		TTL:   s.ttl,
 	})
 	if err != nil {
 		return 0, err

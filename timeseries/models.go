@@ -157,7 +157,7 @@ type Tables struct {
 	Cache    *SessionCache
 }
 
-func Open(ctx context.Context, allocator memory.Allocator, dir string) (*Tables, error) {
+func Open(ctx context.Context, allocator memory.Allocator, dir string, ttl time.Duration) (*Tables, error) {
 	base := filepath.Join(dir, "ts")
 	o := badger.DefaultOptions(filepath.Join(base, "store")).
 		WithLogger(log.Badger(ctx)).
@@ -167,11 +167,11 @@ func Open(ctx context.Context, allocator memory.Allocator, dir string) (*Tables,
 		return nil, err
 	}
 
-	events, err := NewStorage[*Event](ctx, allocator, db, filepath.Join(base, "events"))
+	events, err := NewStorage[*Event](ctx, allocator, db, filepath.Join(base, "events"), ttl)
 	if err != nil {
 		return nil, err
 	}
-	sessions, err := NewStorage[*Session](ctx, allocator, db, filepath.Join(base, "sessions"))
+	sessions, err := NewStorage[*Session](ctx, allocator, db, filepath.Join(base, "sessions"), ttl)
 	if err != nil {
 		return nil, err
 	}
