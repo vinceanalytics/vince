@@ -179,16 +179,8 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-func S501(w http.ResponseWriter, r *http.Request) {
-	render.ERROR(r.Context(), w, http.StatusNotImplemented)
-}
-
-func S404(w http.ResponseWriter, r *http.Request) {
-	render.ERROR(r.Context(), w, http.StatusNotFound)
-}
-
 func NotFound(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		S404(w, r)
+		render.ERROR(r.Context(), w, http.StatusNotFound)
 	})
 }
