@@ -62,7 +62,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe3.GET(`^/api/stats/(?P<domain>[^.]+)/property/(?P<property>[^.]+)$`, stats.PropBreakdown),
 		pipe3.GET(`^/api/stats/(?P<domain>[^.]+)/suggestions/(?P<filter_name>[^.]+)$`, stats.FilterSuggestions),
 
-		pipe4.PathGET("/api/event", api.Events),
+		pipe4.PathPOST("/api/event", api.Events),
 		pipe4.PathGET("/api/error", api.Error),
 		pipe4.PathGET("/api/health", api.Health),
 		pipe4.PathGET("/api/system", api.Info),
