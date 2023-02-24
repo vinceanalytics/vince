@@ -60,8 +60,7 @@ func (b *Bob) Iterate(table string, start, end time.Time, f func(io.ReaderAt, in
 			var id ulid.ULID
 			id.SetTime(ulid.Timestamp(startDate))
 			o := badger.DefaultIteratorOptions
-			prefix := append([]byte(table), id[:6]...)
-			o.Prefix = prefix
+			o.Prefix = append([]byte(table), id[:6]...)
 			it := txn.NewIterator(o)
 			defer it.Close()
 			for it.Next(); it.Valid(); it.Next() {
