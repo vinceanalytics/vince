@@ -7,9 +7,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/golang/protobuf/proto"
 	"github.com/oklog/ulid/v2"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -17,90 +15,59 @@ var (
 	ErrSkip        = errors.New("skip iteration")
 )
 
+// stores parquet files identified by ULID.
 type Bob struct {
 	db *badger.DB
 }
 
-func (b *Bob) Create(name string) error {
-	key := append(IndexKeyPrefix, []byte(name)...)
+func (b *Bob) GC() {
+	b.db.RunValueLogGC(0.5)
+}
+
+type StoreRequest struct {
+	Table string
+	ID    ulid.ULID
+	Data  []byte
+	TTL   time.Duration
+}
+
+func (b *Bob) Store(r *StoreRequest) error {
 	return b.db.Update(func(txn *badger.Txn) error {
-		_, err := txn.Get(key)
-		if err != nil {
-			if !errors.Is(err, badger.ErrKeyNotFound) {
-				return err
-			}
+		key := append([]byte(r.Table), r.ID[:]...)
+		e := badger.NewEntry(key, r.Data)
+		if r.TTL != 0 {
+			e.WithTTL(r.TTL)
 		}
-		b, err := proto.Marshal(&Store_Table{
-			Name: name,
-		})
-		if err != nil {
-			return err
-		}
-		return txn.Set(key, b)
+		return txn.SetEntry(e)
 	})
 }
 
-func (b *Bob) Store(table string, id ulid.ULID, data []byte, start, end time.Time) error {
-	return b.db.Update(func(txn *badger.Txn) error {
-		key := append(IndexKeyPrefix, []byte(table)...)
-		t, err := b.table(txn, key)
-		if err != nil {
-			return err
-		}
-		begin := timestamppb.New(start)
-		end := timestamppb.New(start)
-		if t.Index == nil {
-			t.Index = &Store_Index{}
-		}
-		t.Index.Entries = append(t.Index.Entries, &Store_Entry{
-			Id: id[:],
-			Range: &Store_Range{
-				Start: begin,
-				End:   end,
-			},
-		})
-		if t.Index.Range == nil {
-			t.Index.Range = &Store_Range{
-				Start: begin,
-				End:   end,
-			}
-		} else {
-			t.Index.Range.End = end
-		}
-		err = txn.Set(id[:], data)
-		if err != nil {
-			return err
-		}
-		bs, err := proto.Marshal(t)
-		if err != nil {
-			return err
-		}
-		return txn.Set(key, bs)
-	})
+func CreateULID() ulid.ULID {
+	return ulid.MustNew(
+		ulid.Timestamp(toDate(time.Now())), ulid.DefaultEntropy(),
+	)
 }
 
+// Reads parquet files in the range start .. end .Time comparison is done by date
 func (b *Bob) Iterate(table string, start, end time.Time, f func(io.ReaderAt, int64) error) error {
 	return b.db.View(func(txn *badger.Txn) error {
-		key := append(IndexKeyPrefix, []byte(table)...)
-		t, err := b.table(txn, key)
-		if err != nil {
-			return err
-		}
-		if t.Index == nil {
-			return nil
-		}
-		if !t.Index.Range.Within(start, end) {
-			return nil
-		}
-		for _, e := range t.Index.Entries {
-			if e.Range.Within(start, end) {
-				it, err := txn.Get(e.Id)
-				if err != nil {
-					return err
-				}
-				err = it.Value(func(val []byte) error {
-					r := bytes.NewReader(val)
-					return f(r, int64(len(val)))
+		startDate := toDate(start)
+		endDate := toDate(end)
+		if startDate.Equal(endDate) {
+			// This is an optimization. When we are iterating on data from the same
+			// date. We know ULID are prefixed with timestamp. So the prefix for
+			// the date will be append(table,id[:6]) where id is ulid with startDate
+			// timestamp.
+			var id ulid.ULID
+			id.SetTime(ulid.Timestamp(startDate))
+			o := badger.DefaultIteratorOptions
+			prefix := append([]byte(table), id[:6]...)
+			o.Prefix = prefix
+			it := txn.NewIterator(o)
+			defer it.Close()
+			for it.Next(); it.Valid(); it.Next() {
+				err := it.Item().Value(func(val []byte) error {
+					return f(bytes.NewReader(val), int64(len(val)))
 				})
 				if err != nil {
 					if errors.Is(err, ErrSkip) {
@@ -109,33 +76,45 @@ func (b *Bob) Iterate(table string, start, end time.Time, f func(io.ReaderAt, in
 					return err
 				}
 			}
+			return nil
+		}
+		o := badger.DefaultIteratorOptions
+		o.Prefix = []byte(table)
+		// we set starting iteration date a day before the start date.
+		o.SinceTs = uint64(startDate.AddDate(0, 0, -1).Unix())
+		it := txn.NewIterator(o)
+
+		var id, startTime, endTime ulid.ULID
+		startTime.SetTime(ulid.Timestamp(startDate))
+		endTime.SetTime(ulid.Timestamp(endDate))
+
+		for ; it.Valid(); it.Next() {
+			x := it.Item()
+			copy(id[:], x.Key()[len(table):len(table)+6])
+			// id,startTime and endTime all only contains timestamp part of the ulid
+			// we check to see if startDate <= ulid <= endDate
+			a := id.Compare(startTime)
+			if a == -1 {
+				// TOO early we can skip this iteration
+				continue
+			}
+			if !within(a, id.Compare(endTime)) {
+				break
+			}
+			err := x.Value(func(val []byte) error {
+				return f(bytes.NewReader(val), int64(len(val)))
+			})
+			if err != nil {
+				if errors.Is(err, ErrSkip) {
+					return nil
+				}
+				return err
+			}
 		}
 		return nil
 	})
 }
 
-func (r *Store_Range) Within(start, end time.Time) bool {
-	a := r.Start.AsTime()
-	b := r.End.AsTime()
-	if a.Before(start) && b.After(end) {
-		return true
-	}
-	// earlier start date but ending within the boundary. This is same as
-	// [r.Start, end]
-	if start.Before(a) && b.After(end) {
-		return true
-	}
-	return false
-}
-
-func (b *Bob) table(txn *badger.Txn, key []byte) (t *Store_Table, err error) {
-	it, err := txn.Get(key)
-	if err != nil {
-		return nil, err
-	}
-	err = it.Value(func(val []byte) error {
-		t = &Store_Table{}
-		return proto.Unmarshal(val, t)
-	})
-	return
+func within(a, b int) bool {
+	return (a == 0 || a == 1) && (b == 0 || b == -1)
 }

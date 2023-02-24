@@ -16,11 +16,8 @@ import (
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
-	"github.com/oklog/ulid/v2"
 	"github.com/segmentio/parquet-go"
 )
-
-//go:generate protoc -I=. --go_out=paths=source_relative:. storage_schema.proto
 
 const (
 	BucketPath       = "buckets"
@@ -53,13 +50,7 @@ func NewStorage[T any](ctx context.Context, allocator memory.Allocator, db *badg
 	if err != nil {
 		return nil, err
 	}
-	name := filepath.Base(path)
 	bob := &Bob{db: db}
-	err = bob.Create(name)
-	if err != nil {
-		return nil, err
-	}
-
 	now := time.Now()
 	s := &Storage[T]{
 		name:       filepath.Base(path),
@@ -110,7 +101,7 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	id := ulid.Make()
+	id := CreateULID()
 	buf := bytesPool.Get().(*bytes.Buffer)
 	defer func() {
 		buf.Reset()
@@ -121,7 +112,11 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	err = s.bob.Store(s.name, id, buf.Bytes(), s.start, s.end)
+	err = s.bob.Store(&StoreRequest{
+		Table: s.name,
+		ID:    id,
+		Data:  buf.Bytes(),
+	})
 	if err != nil {
 		return 0, err
 	}
