@@ -18,8 +18,8 @@ import (
 
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/log"
+	"github.com/glebarez/sqlite"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
