@@ -80,8 +80,7 @@ func (b *Bob) Iterate(table string, start, end time.Time, f func(io.ReaderAt, in
 		}
 		o := badger.DefaultIteratorOptions
 		o.Prefix = []byte(table)
-		// we set starting iteration date a day before the start date.
-		o.SinceTs = uint64(startDate.AddDate(0, 0, -1).Unix())
+		o.SinceTs = uint64(startDate.Unix())
 		it := txn.NewIterator(o)
 
 		var id, startTime, endTime ulid.ULID
