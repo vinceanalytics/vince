@@ -34,8 +34,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe1.DELETE(`^/api/v1/sites/(?P<site_id>[^.]+)$`, sites.Delete),
 		pipe1.DELETE(`^/api/v1/sites/goals/(?P<goal_id>[^.]+)$`, sites.DeleteGoal),
 
-		pipe2.GET(`^/share/(?P<domain>[^.]+)$`, S501),
-		pipe2.GET(`^/share/(?P<slug>[^.]+)/authenticate$`, S501),
+		pipe2.GET(`^/share/(?P<domain>[^.]+)$`, stats.SharedLink),
+		pipe2.GET(`^/share/(?P<slug>[^.]+)/authenticate$`, stats.AuthenticateSharedLink),
 
 		pipe3.GET(`^/api/stats/(?P<domain>[^.]+)/current-visitors$`, stats.CurrentVisitors),
 		pipe3.GET(`^/api/stats/(?P<domain>[^.]+)/main-graph$`, stats.MainGraph),
