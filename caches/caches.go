@@ -9,12 +9,25 @@ import (
 type rateLimit struct{}
 type sessionSeries struct{}
 
-func Open(ctx context.Context) (context.Context, error) {
+type Hooks struct {
+	Rate    Hook
+	Session Hook
+}
+
+type Hook struct {
+	OnEvict, OnReject func(item *ristretto.Item)
+	OnExit            func(any)
+}
+
+func Open(ctx context.Context, hooks Hooks) (context.Context, error) {
 
 	session, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1e7,
 		MaxCost:     1 << 30,
 		BufferItems: 64,
+		OnEvict:     hooks.Session.OnEvict,
+		OnReject:    hooks.Session.OnReject,
+		OnExit:      hooks.Session.OnExit,
 	})
 	if err != nil {
 		return nil, err
@@ -28,6 +41,9 @@ func Open(ctx context.Context) (context.Context, error) {
 		NumCounters: 1e7,
 		MaxCost:     10 << 20,
 		BufferItems: 64,
+		OnEvict:     hooks.Rate.OnEvict,
+		OnReject:    hooks.Rate.OnReject,
+		OnExit:      hooks.Rate.OnExit,
 	})
 	if err != nil {
 		return nil, err
