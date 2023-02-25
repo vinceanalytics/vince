@@ -26,20 +26,9 @@ import (
 	"github.com/gernest/vince/worker"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
-	"gorm.io/gorm"
 )
 
 const MAX_BUFFER_SIZE = 4098
-
-type Vince struct {
-	ts         *timeseries.Tables
-	sql        *gorm.DB
-	mailer     email.Mailer
-	config     *config.Config
-	abort      chan os.Signal
-	computeCtx compute.ExecCtx
-	allocator  memory.Allocator
-}
 
 func Serve(ctx *cli.Context) error {
 	xlg := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
@@ -63,10 +52,10 @@ func Serve(ctx *cli.Context) error {
 		return err
 	}
 	goCtx = config.Set(goCtx, conf)
-	return New(goCtx, conf)
+	return HTTP(goCtx, conf)
 }
 
-func New(ctx context.Context, o *config.Config) error {
+func HTTP(ctx context.Context, o *config.Config) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -167,82 +156,6 @@ func New(ctx context.Context, o *config.Config) error {
 	caches.Close(ctx)
 	close(abort)
 	return nil
-}
-
-func (v *Vince) Serve(ctx context.Context) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	session := sessions.NewSession("_vince")
-	ctx = sessions.Set(ctx, session)
-	var h health.Health
-	defer func() {
-		for _, o := range h {
-			o.Clone()
-		}
-	}()
-	var wg sync.WaitGroup
-	{
-		// add all workers
-		tab := timeseries.Get(ctx)
-		h = append(h,
-			worker.Flush(ctx, "events_worker", tab.Ingest.Events, v.ts.WriteEvents, &wg, v.exit),
-		)
-		h = append(h,
-			worker.Flush(ctx, "session_worker", tab.Ingest.Sessions, v.ts.WriteSessions, &wg, v.exit),
-		)
-		h = append(h, worker.StartSeriesArchive(ctx, v.ts, &wg, v.exit))
-	}
-	h = append(h, health.Base{
-		Key:       "database",
-		CheckFunc: models.Check,
-	})
-	ctx = compute.SetExecCtx(ctx, v.computeCtx)
-	ctx = compute.WithAllocator(ctx, v.allocator)
-	ctx = models.Set(ctx, v.sql)
-	ctx = email.Set(ctx, v.mailer)
-	ctx = timeseries.Set(ctx, v.ts)
-	ctx = health.Set(ctx, h)
-
-	svr := &http.Server{
-		Addr:    v.config.ListenAddress,
-		Handler: Handle(ctx),
-		BaseContext: func(l net.Listener) context.Context {
-			return ctx
-		},
-	}
-	go func() {
-		err := svr.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			log.Get(ctx).Err(err).Msg("Exited server")
-			v.exit()
-		}
-	}()
-	log.Get(ctx).Info().Msgf("started serving traffic from %s", svr.Addr)
-	signal.Notify(v.abort, os.Interrupt)
-	sig := <-v.abort
-	log.Get(ctx).Info().Msgf("received signal %s shutting down the server", sig)
-
-	err := svr.Shutdown(ctx)
-	if err != nil {
-		return err
-	}
-	err = svr.Close()
-	if err != nil {
-		return err
-	}
-	cancel()
-	wg.Wait()
-
-	models.CloseDB(v.sql)
-	v.ts.Close()
-	v.mailer.Close()
-	caches.Close(ctx)
-	close(v.abort)
-	return nil
-}
-
-func (v *Vince) exit() {
-	v.abort <- os.Interrupt
 }
 
 func Handle(ctx context.Context) http.Handler {
