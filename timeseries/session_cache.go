@@ -12,6 +12,27 @@ import (
 	"github.com/google/uuid"
 )
 
+type Buffer struct {
+	sessions []*Session
+	events   []*Event
+}
+
+func (b *Buffer) Reset() {
+	b.events = b.events[:0]
+	b.sessions = b.sessions[:0]
+	bigBufferPool.Put(b)
+}
+
+func NewBuffer() *Buffer {
+	return bigBufferPool.Get().(*Buffer)
+}
+
+var bigBufferPool = &sync.Pool{
+	New: func() any {
+		return new(Buffer)
+	},
+}
+
 func RegisterSession(ctx context.Context, e *Event, prevUserId int64) uuid.UUID {
 	tab := Get(ctx)
 	var s *Session
