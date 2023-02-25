@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/oklog/ulid/v2"
@@ -70,6 +71,15 @@ func (id *ID) Table() TableID {
 	return TableID(id[tableOffset])
 }
 
+// only table id ans user id
 func (id *ID) Prefix() []byte {
+	return id[:7]
+}
+
+func (id *ID) PrefixWithDate() []byte {
 	return id[:13]
+}
+
+func (id *ID) Compare(other *ID) int {
+	return bytes.Compare(id[:], other[:])
 }

@@ -6,12 +6,14 @@ import (
 	"github.com/dgraph-io/ristretto"
 )
 
-type rateLimit struct{}
-type sessionSeries struct{}
+type rateKey struct{}
+type sessionKey struct{}
+type bufferKey struct{}
 
 type Hooks struct {
 	Rate    Hook
 	Session Hook
+	Buffer  Hook
 }
 
 type Hook struct {
@@ -20,7 +22,6 @@ type Hook struct {
 }
 
 func Open(ctx context.Context, hooks Hooks) (context.Context, error) {
-
 	session, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1e7,
 		MaxCost:     1 << 30,
@@ -48,20 +49,36 @@ func Open(ctx context.Context, hooks Hooks) (context.Context, error) {
 	if err != nil {
 		return nil, err
 	}
-	ctx = context.WithValue(ctx, sessionSeries{}, session)
-	ctx = context.WithValue(ctx, rateLimit{}, rate)
+	buffer, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 1e7,
+		MaxCost:     5 << 20,
+		BufferItems: 64,
+		OnEvict:     hooks.Buffer.OnEvict,
+		OnReject:    hooks.Buffer.OnReject,
+		OnExit:      hooks.Buffer.OnExit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	ctx = context.WithValue(ctx, sessionKey{}, session)
+	ctx = context.WithValue(ctx, rateKey{}, rate)
+	ctx = context.WithValue(ctx, bufferKey{}, buffer)
 	return ctx, nil
 }
 
 func Close(ctx context.Context) {
-	GetSession(ctx).Close()
-	GetRate(ctx).Close()
+	Session(ctx).Close()
+	Rate(ctx).Close()
 }
 
-func GetSession(ctx context.Context) *ristretto.Cache {
-	return ctx.Value(sessionSeries{}).(*ristretto.Cache)
+func Session(ctx context.Context) *ristretto.Cache {
+	return ctx.Value(sessionKey{}).(*ristretto.Cache)
 }
 
-func GetRate(ctx context.Context) *ristretto.Cache {
-	return ctx.Value(rateLimit{}).(*ristretto.Cache)
+func Rate(ctx context.Context) *ristretto.Cache {
+	return ctx.Value(rateKey{}).(*ristretto.Cache)
+}
+
+func Buffer(ctx context.Context) *ristretto.Cache {
+	return ctx.Value(bufferKey{}).(*ristretto.Cache)
 }

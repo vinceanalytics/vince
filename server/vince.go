@@ -70,7 +70,11 @@ func HTTP(ctx context.Context, o *config.Config) error {
 		models.CloseDB(sqlDb)
 		return err
 	}
-	ctx, err = caches.Open(ctx, caches.Hooks{})
+	ctx, err = caches.Open(ctx, caches.Hooks{
+		Buffer: caches.Hook{
+			OnEvict: timeseries.OnEvict(ctx),
+		},
+	})
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed to open caches")
 		models.CloseDB(sqlDb)
@@ -151,9 +155,9 @@ func HTTP(ctx context.Context, o *config.Config) error {
 	wg.Wait()
 
 	models.CloseDB(sqlDb)
+	caches.Close(ctx)
 	ts.Close()
 	mailer.Close()
-	caches.Close(ctx)
 	close(abort)
 	return nil
 }

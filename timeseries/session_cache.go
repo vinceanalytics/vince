@@ -12,27 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Buffer struct {
-	sessions []*Session
-	events   []*Event
-}
-
-func (b *Buffer) Reset() {
-	b.events = b.events[:0]
-	b.sessions = b.sessions[:0]
-	bigBufferPool.Put(b)
-}
-
-func NewBuffer() *Buffer {
-	return bigBufferPool.Get().(*Buffer)
-}
-
-var bigBufferPool = &sync.Pool{
-	New: func() any {
-		return new(Buffer)
-	},
-}
-
 func RegisterSession(ctx context.Context, e *Event, prevUserId int64) uuid.UUID {
 	tab := Get(ctx)
 	var s *Session
@@ -55,7 +34,7 @@ func RegisterSession(ctx context.Context, e *Event, prevUserId int64) uuid.UUID 
 }
 
 func find(ctx context.Context, e *Event, userId int64) *Session {
-	v, _ := caches.GetSession(ctx).Get(key(e.Domain, userId))
+	v, _ := caches.Session(ctx).Get(key(e.Domain, userId))
 	if v != nil {
 		return v.(*Session)
 	}
@@ -80,6 +59,6 @@ var bufPool = &sync.Pool{
 }
 
 func persist(ctx context.Context, s *Session) uuid.UUID {
-	caches.GetSession(ctx).SetWithTTL(key(s.Domain, s.UserId), s, int64(sessionSize), 30*time.Minute)
+	caches.Session(ctx).SetWithTTL(key(s.Domain, s.UserId), s, int64(sessionSize), 30*time.Minute)
 	return s.ID
 }

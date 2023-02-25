@@ -9,7 +9,7 @@ import (
 )
 
 func Allow(ctx context.Context, id uint64, events uint, duration time.Duration) bool {
-	cache := caches.GetRate(ctx)
+	cache := caches.Rate(ctx)
 	l, ok := cache.Get(id)
 	if !ok {
 		x := rate.NewLimiter(rate.Limit(float64(events)/duration.Seconds()), 10)
