@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/referrer"
@@ -33,7 +35,19 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func findUserBuffer(ctx context.Context, userID uint64, ttl time.Duration) *timeseries.Buffer {
+	cache := caches.Buffer(ctx)
+	if b, ok := cache.Get(userID); ok {
+		return b.(*timeseries.Buffer)
+	}
+	b := timeseries.NewBuffer(userID, ttl)
+	cache.SetWithTTL(userID, b, 1, ttl)
+	return b
+}
+
 func processEvent(r *http.Request) bool {
+	usrID := uint64(1)
+	b := findUserBuffer(r.Context(), usrID, time.Second)
 	xlg := log.Get(r.Context())
 	var req Request
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -156,7 +170,7 @@ func processEvent(r *http.Request) bool {
 		e.Labels = req.Meta
 		e.Timestamp = now
 		previousUUserID := int64(seedID.GenPrevious(remoteIp, userAgent, domain, host))
-		e.SessionId = timeseries.RegisterSession(r.Context(), e, previousUUserID)
+		e.SessionId = b.Register(r.Context(), e, previousUUserID)
 	}
 	return true
 }

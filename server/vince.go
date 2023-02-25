@@ -23,7 +23,6 @@ import (
 	"github.com/gernest/vince/router"
 	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/timeseries"
-	"github.com/gernest/vince/worker"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
 )
@@ -64,15 +63,20 @@ func HTTP(ctx context.Context, o *config.Config) error {
 	if err != nil {
 		return err
 	}
+	ctx = models.Set(ctx, sqlDb)
 	alloc := memory.DefaultAllocator
+	ctx = compute.WithAllocator(ctx, alloc)
 	ts, err := timeseries.Open(ctx, alloc, o.DataPath, o.DataTtl.AsDuration())
 	if err != nil {
 		models.CloseDB(sqlDb)
 		return err
 	}
+	ctx = timeseries.Set(ctx, ts)
+
 	ctx, err = caches.Open(ctx, caches.Hooks{
 		Buffer: caches.Hook{
-			OnEvict: timeseries.OnEvict(ctx),
+			OnEvict:  timeseries.OnEvict(ctx),
+			OnReject: timeseries.OnReject,
 		},
 	})
 	if err != nil {
@@ -90,7 +94,7 @@ func HTTP(ctx context.Context, o *config.Config) error {
 		caches.Close(ctx)
 		return err
 	}
-
+	ctx = email.Set(ctx, mailer)
 	session := sessions.NewSession("_vince")
 	ctx = sessions.Set(ctx, session)
 	var h health.Health
@@ -104,25 +108,12 @@ func HTTP(ctx context.Context, o *config.Config) error {
 		abort <- os.Interrupt
 	}
 	var wg sync.WaitGroup
-	{
-		// add all workers
-		h = append(h,
-			worker.Flush(ctx, "events_worker", ts.Ingest.Events, ts.WriteEvents, &wg, exit),
-		)
-		h = append(h,
-			worker.Flush(ctx, "session_worker", ts.Ingest.Sessions, ts.WriteSessions, &wg, exit),
-		)
-		h = append(h, worker.StartSeriesArchive(ctx, ts, &wg, exit))
-	}
 	h = append(h, health.Base{
 		Key:       "database",
 		CheckFunc: models.Check,
 	})
 	ctx = compute.SetExecCtx(ctx, compute.DefaultExecCtx())
-	ctx = compute.WithAllocator(ctx, alloc)
-	ctx = models.Set(ctx, sqlDb)
-	ctx = email.Set(ctx, mailer)
-	ctx = timeseries.Set(ctx, ts)
+
 	ctx = health.Set(ctx, h)
 
 	svr := &http.Server{

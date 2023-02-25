@@ -156,12 +156,6 @@ type Tables struct {
 	db       *badger.DB
 	Events   *Storage[*Event]
 	Sessions *Storage[*Session]
-	Ingest   *Ingest
-}
-
-type Ingest struct {
-	Events   chan *Event
-	Sessions chan *Session
 }
 
 func Open(ctx context.Context, allocator memory.Allocator, dir string, ttl time.Duration) (*Tables, error) {
@@ -185,10 +179,6 @@ func Open(ctx context.Context, allocator memory.Allocator, dir string, ttl time.
 	return &Tables{db: db,
 		Events:   events,
 		Sessions: sessions,
-		Ingest: &Ingest{
-			Events:   make(chan *Event, MAX_BUFFER_SIZE),
-			Sessions: make(chan *Session, MAX_BUFFER_SIZE),
-		},
 	}, nil
 }
 
@@ -212,8 +202,6 @@ func (t *Tables) Close() (err error) {
 	t.Events.archive(false)
 	t.Events.archive(false)
 	err = t.db.Close()
-	close(t.Ingest.Events)
-	close(t.Ingest.Sessions)
 	return
 }
 
