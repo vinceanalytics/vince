@@ -12,6 +12,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const MAX_BUFFER_SIZE = 4098
+
 type Event struct {
 	Timestamp              time.Time         `parquet:"timestamp"`
 	Name                   string            `parquet:"name,dict,zstd"`
@@ -154,7 +156,12 @@ type Tables struct {
 	db       *badger.DB
 	Events   *Storage[*Event]
 	Sessions *Storage[*Session]
-	Cache    *SessionCache
+	Ingest   *Ingest
+}
+
+type Ingest struct {
+	Events   chan *Event
+	Sessions chan *Session
 }
 
 func Open(ctx context.Context, allocator memory.Allocator, dir string, ttl time.Duration) (*Tables, error) {
@@ -175,7 +182,14 @@ func Open(ctx context.Context, allocator memory.Allocator, dir string, ttl time.
 	if err != nil {
 		return nil, err
 	}
-	return &Tables{db: db, Events: events, Sessions: sessions}, nil
+	return &Tables{db: db,
+		Events:   events,
+		Sessions: sessions,
+		Ingest: &Ingest{
+			Events:   make(chan *Event, MAX_BUFFER_SIZE),
+			Sessions: make(chan *Session, MAX_BUFFER_SIZE),
+		},
+	}, nil
 }
 
 func (t *Tables) WriteEvents(events []*Event) (int, error) {
@@ -195,7 +209,12 @@ func (t *Tables) ArchiveSessions() (int64, error) {
 }
 
 func (t *Tables) Close() (err error) {
-	return t.db.Close()
+	t.Events.archive(false)
+	t.Events.archive(false)
+	err = t.db.Close()
+	close(t.Ingest.Events)
+	close(t.Ingest.Sessions)
+	return
 }
 
 type tablesKey struct{}

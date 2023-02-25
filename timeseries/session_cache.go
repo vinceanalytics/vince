@@ -2,51 +2,39 @@ package timeseries
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"reflect"
 	"sync"
 	"time"
 
-	"github.com/dgraph-io/ristretto"
+	"github.com/gernest/vince/caches"
 	"github.com/google/uuid"
 )
 
-type SessionCache struct {
-	cache    *ristretto.Cache
-	sessions chan<- *Session
-	events   chan<- *Event
-}
-
-func NewSessionCache(cache *ristretto.Cache, sessions chan<- *Session, events chan<- *Event) *SessionCache {
-	return &SessionCache{
-		cache:    cache,
-		sessions: sessions,
-		events:   events,
-	}
-}
-
-func (c *SessionCache) RegisterSession(e *Event, prevUserId int64) uuid.UUID {
+func RegisterSession(ctx context.Context, e *Event, prevUserId int64) uuid.UUID {
+	tab := Get(ctx)
 	var s *Session
-	s = c.Find(e, e.UserId)
+	s = find(ctx, e, e.UserId)
 	if s == nil {
-		s = c.Find(e, prevUserId)
+		s = find(ctx, e, prevUserId)
 	}
 	if s != nil {
 		updated := s.Update(e)
 		updated.Sign = 1
 		s.Sign = -1
-		c.sessions <- updated
-		c.sessions <- s
-		return c.Persist(updated)
+		tab.Ingest.Sessions <- updated
+		tab.Ingest.Sessions <- s
+		return persist(ctx, updated)
 	}
 	newSession := e.NewSession()
-	c.sessions <- newSession
-	c.events <- e
-	return c.Persist(newSession)
+	tab.Ingest.Sessions <- newSession
+	tab.Ingest.Events <- e
+	return persist(ctx, newSession)
 }
 
-func (c *SessionCache) Find(e *Event, userId int64) *Session {
-	v, _ := c.cache.Get(key(e.Domain, userId))
+func find(ctx context.Context, e *Event, userId int64) *Session {
+	v, _ := caches.GetSession(ctx).Get(key(e.Domain, userId))
 	if v != nil {
 		return v.(*Session)
 	}
@@ -70,11 +58,7 @@ var bufPool = &sync.Pool{
 	},
 }
 
-func (c *SessionCache) Persist(s *Session) uuid.UUID {
-	c.cache.SetWithTTL(key(s.Domain, s.UserId), s, int64(sessionSize), 30*time.Minute)
+func persist(ctx context.Context, s *Session) uuid.UUID {
+	caches.GetSession(ctx).SetWithTTL(key(s.Domain, s.UserId), s, int64(sessionSize), 30*time.Minute)
 	return s.ID
-}
-
-func (c *SessionCache) Close() {
-	c.cache.Close()
 }

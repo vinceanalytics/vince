@@ -11,13 +11,12 @@ import (
 
 	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/apache/arrow/go/v12/arrow/memory"
-	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/assets/tracker"
+	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/health"
-	"github.com/gernest/vince/limit"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/plug"
@@ -33,14 +32,10 @@ import (
 const MAX_BUFFER_SIZE = 4098
 
 type Vince struct {
-	ts     *timeseries.Tables
-	sql    *gorm.DB
-	mailer email.Mailer
-	config *config.Config
-	rate   *limit.Rate
-
-	events     chan *timeseries.Event
-	sessions   chan *timeseries.Session
+	ts         *timeseries.Tables
+	sql        *gorm.DB
+	mailer     email.Mailer
+	config     *config.Config
 	abort      chan os.Signal
 	computeCtx compute.ExecCtx
 	allocator  memory.Allocator
@@ -68,72 +63,110 @@ func Serve(ctx *cli.Context) error {
 		return err
 	}
 	goCtx = config.Set(goCtx, conf)
-	svr, err := New(goCtx, conf)
-	if err != nil {
-		return err
-	}
-	return svr.Serve(goCtx)
+	return New(goCtx, conf)
 }
 
-func New(ctx context.Context, o *config.Config) (*Vince, error) {
+func New(ctx context.Context, o *config.Config) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	sqlPath := filepath.Join(o.DataPath, "vince.db")
 	sqlDb, err := models.Open(sqlPath)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	alloc := memory.DefaultAllocator
 	ts, err := timeseries.Open(ctx, alloc, o.DataPath, o.DataTtl.AsDuration())
 	if err != nil {
 		models.CloseDB(sqlDb)
-		return nil, err
+		return err
+	}
+	ctx, err = caches.Open(ctx)
+	if err != nil {
+		log.Get(ctx).Err(err).Msg("failed to open caches")
+		models.CloseDB(sqlDb)
+		ts.Close()
+		return err
 	}
 
-	cache, err := ristretto.NewCache(&ristretto.Config{
-		NumCounters: 1e7,
-		MaxCost:     1 << 30,
-		BufferItems: 64,
-	})
-	if err != nil {
-		log.Get(ctx).Err(err).Msg("failed creating timeseries session cache")
-		models.CloseDB(sqlDb)
-		ts.Close()
-		return nil, err
-	}
-	rateCache, err := ristretto.NewCache(&ristretto.Config{
-		NumCounters: 1e7,
-		MaxCost:     1 << 30,
-		BufferItems: 64,
-	})
-	if err != nil {
-		log.Get(ctx).Err(err).Msg("failed creating timeseries session cache")
-		models.CloseDB(sqlDb)
-		ts.Close()
-		cache.Close()
-		return nil, err
-	}
 	mailer, err := email.FromConfig(o)
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed creating mailer")
 		models.CloseDB(sqlDb)
 		ts.Close()
-		cache.Close()
-		rateCache.Close()
-		return nil, err
+		caches.Close(ctx)
+		return err
 	}
-	v := &Vince{
-		ts:         ts,
-		sql:        sqlDb,
-		mailer:     mailer,
-		config:     o,
-		rate:       limit.New(rateCache),
-		events:     make(chan *timeseries.Event, MAX_BUFFER_SIZE),
-		sessions:   make(chan *timeseries.Session, MAX_BUFFER_SIZE),
-		abort:      make(chan os.Signal, 1),
-		computeCtx: compute.DefaultExecCtx(),
-		allocator:  alloc,
+
+	session := sessions.NewSession("_vince")
+	ctx = sessions.Set(ctx, session)
+	var h health.Health
+	defer func() {
+		for _, o := range h {
+			o.Clone()
+		}
+	}()
+	abort := make(chan os.Signal, 1)
+	exit := func() {
+		abort <- os.Interrupt
 	}
-	v.ts.Cache = timeseries.NewSessionCache(cache, v.sessions, v.events)
-	return v, nil
+	var wg sync.WaitGroup
+	{
+		// add all workers
+		h = append(h,
+			worker.Flush(ctx, "events_worker", ts.Ingest.Events, ts.WriteEvents, &wg, exit),
+		)
+		h = append(h,
+			worker.Flush(ctx, "session_worker", ts.Ingest.Sessions, ts.WriteSessions, &wg, exit),
+		)
+		h = append(h, worker.StartSeriesArchive(ctx, ts, &wg, exit))
+	}
+	h = append(h, health.Base{
+		Key:       "database",
+		CheckFunc: models.Check,
+	})
+	ctx = compute.SetExecCtx(ctx, compute.DefaultExecCtx())
+	ctx = compute.WithAllocator(ctx, alloc)
+	ctx = models.Set(ctx, sqlDb)
+	ctx = email.Set(ctx, mailer)
+	ctx = timeseries.Set(ctx, ts)
+	ctx = health.Set(ctx, h)
+
+	svr := &http.Server{
+		Addr:    o.ListenAddress,
+		Handler: Handle(ctx),
+		BaseContext: func(l net.Listener) context.Context {
+			return ctx
+		},
+	}
+	go func() {
+		err := svr.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Get(ctx).Err(err).Msg("Exited server")
+			exit()
+		}
+	}()
+	log.Get(ctx).Info().Msgf("started serving traffic from %s", svr.Addr)
+	signal.Notify(abort, os.Interrupt)
+	sig := <-abort
+	log.Get(ctx).Info().Msgf("received signal %s shutting down the server", sig)
+	err = svr.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
+	err = svr.Close()
+	if err != nil {
+		return err
+	}
+	cancel()
+	wg.Wait()
+
+	models.CloseDB(sqlDb)
+	ts.Close()
+	mailer.Close()
+	caches.Close(ctx)
+	close(abort)
+	return nil
 }
 
 func (v *Vince) Serve(ctx context.Context) error {
@@ -150,11 +183,12 @@ func (v *Vince) Serve(ctx context.Context) error {
 	var wg sync.WaitGroup
 	{
 		// add all workers
+		tab := timeseries.Get(ctx)
 		h = append(h,
-			worker.Flush(ctx, "events_worker", v.events, v.ts.WriteEvents, &wg, v.exit),
+			worker.Flush(ctx, "events_worker", tab.Ingest.Events, v.ts.WriteEvents, &wg, v.exit),
 		)
 		h = append(h,
-			worker.Flush(ctx, "session_worker", v.sessions, v.ts.WriteSessions, &wg, v.exit),
+			worker.Flush(ctx, "session_worker", tab.Ingest.Sessions, v.ts.WriteSessions, &wg, v.exit),
 		)
 		h = append(h, worker.StartSeriesArchive(ctx, v.ts, &wg, v.exit))
 	}
@@ -168,7 +202,6 @@ func (v *Vince) Serve(ctx context.Context) error {
 	ctx = email.Set(ctx, v.mailer)
 	ctx = timeseries.Set(ctx, v.ts)
 	ctx = health.Set(ctx, h)
-	ctx = limit.Set(ctx, v.rate)
 
 	svr := &http.Server{
 		Addr:    v.config.ListenAddress,
@@ -203,9 +236,7 @@ func (v *Vince) Serve(ctx context.Context) error {
 	models.CloseDB(v.sql)
 	v.ts.Close()
 	v.mailer.Close()
-	v.rate.Close()
-	close(v.events)
-	close(v.sessions)
+	caches.Close(ctx)
 	close(v.abort)
 	return nil
 }

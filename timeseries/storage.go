@@ -120,6 +120,7 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	s.activeFile.Close()
 	err = s.bob.Store(&StoreRequest{
 		Table: s.name,
 		ID:    id,
@@ -133,7 +134,6 @@ func (s *Storage[T]) archive(openActive bool) (int64, error) {
 	s.end = s.start
 	if openActive {
 		a := filepath.Join(s.path, ActiveFileName)
-		s.activeFile.Close()
 		af, err := os.Create(a)
 		if err != nil {
 			return 0, err

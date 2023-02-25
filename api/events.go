@@ -35,7 +35,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 
 func processEvent(r *http.Request) bool {
 	xlg := log.Get(r.Context())
-	ts := timeseries.Get(r.Context())
 	var req Request
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -157,7 +156,7 @@ func processEvent(r *http.Request) bool {
 		e.Labels = req.Meta
 		e.Timestamp = now
 		previousUUserID := int64(seedID.GenPrevious(remoteIp, userAgent, domain, host))
-		e.SessionId = ts.Cache.RegisterSession(e, previousUUserID)
+		e.SessionId = timeseries.RegisterSession(r.Context(), e, previousUUserID)
 	}
 	return true
 }
