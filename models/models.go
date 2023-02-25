@@ -198,7 +198,6 @@ func toDate(ts time.Time) time.Time {
 
 type Site struct {
 	Model
-	UserID                      uint64
 	Domain                      string `gorm:"uniqueIndex"`
 	Timezone                    string `gorm:"default:UTC"`
 	Public                      bool   `gorm:"not null;default:false"`
@@ -265,7 +264,7 @@ type SpikeNotification struct {
 type SiteMembership struct {
 	UserID    uint64 `gorm:"primaryKey"`
 	SiteID    uint64 `gorm:"primaryKey"`
-	Role      string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
+	Role      string `gorm:"not null;default:'owner';check:role in ('owner', 'admin', 'viewer')"`
 	CreatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
