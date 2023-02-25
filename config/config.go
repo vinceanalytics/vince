@@ -223,7 +223,8 @@ func fromCli(ctx *cli.Context) *Config {
 			Methods:               []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 			SendPreflightResponse: true,
 		},
-		DataTtl: durationpb.New(ctx.Duration("data-ttl")),
+		DataTtl:                           durationpb.New(ctx.Duration("data-ttl")),
+		SitesByDomainCacheRefreshInterval: durationpb.New(15 * time.Minute),
 	}
 	switch ctx.String("env") {
 	case "dev":
