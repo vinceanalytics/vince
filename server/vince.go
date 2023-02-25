@@ -70,7 +70,7 @@ func HTTP(ctx context.Context, o *config.Config) error {
 		models.CloseDB(sqlDb)
 		return err
 	}
-	ctx, err = caches.Open(ctx)
+	ctx, err = caches.Open(ctx, caches.Hooks{})
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed to open caches")
 		models.CloseDB(sqlDb)
