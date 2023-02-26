@@ -73,18 +73,15 @@ func HTTP(ctx context.Context, o *config.Config) error {
 	}
 	ctx = timeseries.Set(ctx, ts)
 
-	ctx, err = caches.Open(ctx, caches.Hooks{
-		Buffer: caches.Hook{
-			OnEvict:  timeseries.OnEvict(ctx),
-			OnReject: timeseries.OnReject,
-		},
-	})
+	ctx, err = caches.Open(ctx, caches.Hooks{})
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed to open caches")
 		models.CloseDB(sqlDb)
 		ts.Close()
 		return err
 	}
+	m := timeseries.NewMap()
+	ctx = timeseries.SetMap(ctx, m)
 
 	mailer, err := email.FromConfig(o)
 	if err != nil {

@@ -14,6 +14,7 @@ require (
 	github.com/emersion/go-message v0.16.0
 	github.com/emersion/go-sasl v0.0.0-20200509203442-7bfe0ed36a21
 	github.com/emersion/go-smtp v0.16.0
+	github.com/gammazero/deque v0.2.1
 	github.com/glebarez/sqlite v1.7.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0

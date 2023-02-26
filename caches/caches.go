@@ -8,12 +8,10 @@ import (
 
 type rateKey struct{}
 type sessionKey struct{}
-type bufferKey struct{}
 
 type Hooks struct {
 	Rate    Hook
 	Session Hook
-	Buffer  Hook
 }
 
 type Hook struct {
@@ -49,20 +47,8 @@ func Open(ctx context.Context, hooks Hooks) (context.Context, error) {
 	if err != nil {
 		return nil, err
 	}
-	buffer, err := ristretto.NewCache(&ristretto.Config{
-		NumCounters: 1e7,
-		MaxCost:     5 << 20,
-		BufferItems: 64,
-		OnEvict:     hooks.Buffer.OnEvict,
-		OnReject:    hooks.Buffer.OnReject,
-		OnExit:      hooks.Buffer.OnExit,
-	})
-	if err != nil {
-		return nil, err
-	}
 	ctx = context.WithValue(ctx, sessionKey{}, session)
 	ctx = context.WithValue(ctx, rateKey{}, rate)
-	ctx = context.WithValue(ctx, bufferKey{}, buffer)
 	return ctx, nil
 }
 
@@ -77,8 +63,4 @@ func Session(ctx context.Context) *ristretto.Cache {
 
 func Rate(ctx context.Context) *ristretto.Cache {
 	return ctx.Value(rateKey{}).(*ristretto.Cache)
-}
-
-func Buffer(ctx context.Context) *ristretto.Cache {
-	return ctx.Value(bufferKey{}).(*ristretto.Cache)
 }
