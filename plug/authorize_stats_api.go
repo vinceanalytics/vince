@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/config"
@@ -33,7 +32,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			})
 			return
 		}
-		if !limit.Allow(r.Context(), key.ID, key.HourlyAPIRequestLimit, time.Hour) {
+		if !limit.API.Allow(key.RateLimit()) {
 			render.ERROR(r.Context(), w, http.StatusTooManyRequests, func(ctx *templates.Context) {
 				ctx.StatusText = fmt.Sprintf(
 					"Too many API requests. Your API key is limited to %d requests per hour.",

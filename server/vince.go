@@ -72,7 +72,7 @@ func HTTP(ctx context.Context, o *config.Config) error {
 	}
 	ctx = timeseries.Set(ctx, ts)
 
-	ctx, err = caches.Open(ctx, caches.Hooks{})
+	ctx, err = caches.Open(ctx)
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed to open caches")
 		models.CloseDB(sqlDb)

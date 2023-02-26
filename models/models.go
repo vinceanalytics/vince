@@ -20,6 +20,7 @@ import (
 	"github.com/gernest/vince/log"
 	"github.com/glebarez/sqlite"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 )
 
@@ -277,6 +278,11 @@ type APIKey struct {
 	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
 	KeyPrefix             string `gorm:"not null"`
 	KeyHash               string `gorm:"not null"`
+}
+
+func (ak *APIKey) RateLimit() (uint64, rate.Limit, int) {
+	r := rate.Limit(float64(ak.HourlyAPIRequestLimit) / time.Hour.Seconds())
+	return ak.ID, r, 10
 }
 
 func (ak *APIKey) New(ctx context.Context) {

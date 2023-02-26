@@ -2,7 +2,6 @@ package gate
 
 import (
 	"context"
-	"time"
 
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
@@ -19,7 +18,7 @@ func Check(ctx context.Context, domain string) (*timeseries.Buffer, bool) {
 		return nil, false
 	}
 	x := site.(*models.CachedSite)
-	ok = limit.Allow(ctx, x.ID, uint(x.IngestRateLimitThreshold), time.Duration(x.IngestRateLimitScaleSeconds)*time.Second)
+	ok = limit.SITES.Allow(x.RateLimit())
 	if !ok {
 		return nil, false
 	}

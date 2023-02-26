@@ -3,7 +3,9 @@ package models
 import (
 	"errors"
 	"sync"
+	"time"
 
+	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 )
 
@@ -13,6 +15,12 @@ type CachedSite struct {
 	IngestRateLimitScaleSeconds uint64
 	IngestRateLimitThreshold    uint64
 	UserID                      uint64
+}
+
+func (c *CachedSite) RateLimit() (uint64, rate.Limit, int) {
+	events := float64(c.IngestRateLimitThreshold)
+	per := time.Duration(c.IngestRateLimitScaleSeconds) * time.Second
+	return c.ID, rate.Limit(events / per.Seconds()), 10
 }
 
 var SitesMu sync.Mutex
