@@ -27,8 +27,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const MAX_BUFFER_SIZE = 4098
-
 func Serve(ctx *cli.Context) error {
 	xlg := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
 	conf, err := config.Load(ctx)
