@@ -23,6 +23,7 @@ import (
 	"github.com/gernest/vince/router"
 	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/timeseries"
+	"github.com/gernest/vince/worker"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
 )
@@ -95,7 +96,7 @@ func HTTP(ctx context.Context, o *config.Config) error {
 	var h health.Health
 	defer func() {
 		for _, o := range h {
-			o.Clone()
+			o.Close()
 		}
 	}()
 	abort := make(chan os.Signal, 1)
@@ -107,8 +108,10 @@ func HTTP(ctx context.Context, o *config.Config) error {
 		Key:       "database",
 		CheckFunc: models.Check,
 	})
+	h = append(h,
+		worker.UpdateCacheSites(ctx, &wg, exit),
+	)
 	ctx = compute.SetExecCtx(ctx, compute.DefaultExecCtx())
-
 	ctx = health.Set(ctx, h)
 
 	svr := &http.Server{

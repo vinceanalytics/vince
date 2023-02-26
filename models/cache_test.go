@@ -43,7 +43,8 @@ func TestQueryCacheSites(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c, err := QuerySitesToCache(db)
+	var c []*CachedSite
+	err = QuerySitesToCache(db, &c)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,6 +1,9 @@
 package models
 
 import (
+	"errors"
+	"sync"
+
 	"gorm.io/gorm"
 )
 
@@ -12,13 +15,17 @@ type CachedSite struct {
 	UserID                      uint64
 }
 
-func QuerySitesToCache(db *gorm.DB) ([]*CachedSite, error) {
-	var results []*CachedSite
+var SitesMu sync.Mutex
+
+func QuerySitesToCache(db *gorm.DB, results *[]*CachedSite) error {
 	err := db.Model(&Site{}).Select("sites.id, sites.domain, sites.ingest_rate_limit_scale_seconds,sites.ingest_rate_limit_threshold,site_memberships.user_id").
 		Joins("left join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' ").
-		Scan(&results).Error
+		Scan(results).Error
 	if err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
+		return err
 	}
-	return results, nil
+	return nil
 }
