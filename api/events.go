@@ -5,9 +5,11 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/gernest/vince/gate"
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/referrer"
@@ -27,36 +29,31 @@ type Request struct {
 }
 
 func Events(w http.ResponseWriter, r *http.Request) {
-	if !processEvent(r) {
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.WriteHeader(http.StatusBadRequest)
-	}
-}
-
-func processEvent(r *http.Request) bool {
-	uid := uint64(1)
-	b := timeseries.GetMap(r.Context()).Get(r.Context(), uid, time.Second)
-
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 	xlg := log.Get(r.Context())
 	var req Request
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		xlg.Err(err).Msg("Failed decoding json")
-		return false
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	remoteIp := remoteip.Get(r)
 	if req.URI == "" {
 		xlg.Debug().Msg("url is required")
-		return false
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	uri, err := url.Parse(req.URI)
 	if err != nil {
 		xlg.Err(err).Msg("Failed parsing url")
-		return false
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	if uri.Scheme == "data" {
 		xlg.Debug().Msg("url scheme is not allowed")
-		return false
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	host := sanitizeHost(uri.Host)
@@ -66,7 +63,8 @@ func processEvent(r *http.Request) bool {
 	refUrl, err := url.Parse(reqReferrer)
 	if err != nil {
 		xlg.Err(err).Msg("Failed parsing referrer url")
-		return false
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	path := uri.Path
 	if req.HashMode && uri.Fragment != "" {
@@ -74,15 +72,18 @@ func processEvent(r *http.Request) bool {
 	}
 	if len(path) > 2000 {
 		xlg.Debug().Msg("pathname too long")
-		return false
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	if req.EventName == "" {
 		xlg.Debug().Msg("event_name is required")
-		return false
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	if req.Domain == "" {
 		xlg.Debug().Msg("domain is required")
-		return false
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	var domains []string
 	for _, d := range strings.Split(req.Domain, ",") {
@@ -133,8 +134,13 @@ func processEvent(r *http.Request) bool {
 	case req.ScreenWidth >= 1440:
 		screenSize = "Desktop"
 	}
-
+	var dropped int
 	for _, domain := range domains {
+		b, pass := gate.Check(r.Context(), domain)
+		if !pass {
+			dropped += 1
+			continue
+		}
 		userID := int64(seedID.Gen(remoteIp, userAgent, domain, host))
 		e := new(timeseries.Event)
 		e.UserId = userID
@@ -161,7 +167,13 @@ func processEvent(r *http.Request) bool {
 		previousUUserID := int64(seedID.GenPrevious(remoteIp, userAgent, domain, host))
 		e.SessionId = b.Register(r.Context(), e, previousUUserID)
 	}
-	return true
+	if dropped > 0 {
+		w.Header().Set("x-vince-dropped", strconv.Itoa(dropped))
+		w.WriteHeader(http.StatusAccepted)
+	} else {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	}
 }
 
 func sanitizeHost(s string) string {
