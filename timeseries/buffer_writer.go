@@ -16,6 +16,15 @@ import (
 	"github.com/segmentio/parquet-go"
 )
 
+// Buffer buffers parquet file per user. Files are stored in badger db with keys
+// of the form [TableID][UserID][Date][Random data], which is sortable. Basically
+// we store daily stats and only care about the day [YY-MM-DD]. Individual files
+// within the day are random.
+//
+// Since parquet data is sorted by timestamp, we can fast scan for relevant files/row
+// groups by only relying on min/max of the timestamp column.
+//
+// This type is reusable.
 type Buffer struct {
 	id       ID
 	start    time.Time
