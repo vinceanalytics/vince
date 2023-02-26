@@ -11,12 +11,7 @@ type Limit struct {
 }
 
 func (l *Limit) Allow(id uint64, by rate.Limit, bust int) bool {
-	x, ok := l.m.Load(id)
-	if !ok {
-		r := rate.NewLimiter(by, bust)
-		l.m.Store(id, r)
-		return r.Allow()
-	}
+	x, _ := l.m.LoadOrStore(id, rate.NewLimiter(by, bust))
 	return x.(*rate.Limiter).Allow()
 }
 
