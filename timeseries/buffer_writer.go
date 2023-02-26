@@ -118,7 +118,7 @@ func (b *Buffer) Save(ctx context.Context) {
 			say.Err(err).Msg("failed to close parquet writer for events")
 			return
 		}
-		err = bob.Store2(&b.id, b.eb.Bytes(), b.ttl)
+		err = bob.Store(&b.id, b.eb.Bytes(), b.ttl)
 		if err != nil {
 			say.Err(err).Msg("failed to save events to permanent storage")
 			return
@@ -133,7 +133,7 @@ func (b *Buffer) Save(ctx context.Context) {
 			log.Get(ctx).Err(err).Msg("failed to close parquet writer for sessions")
 			return
 		}
-		err = bob.Store2(&b.id, b.sb.Bytes(), b.ttl)
+		err = bob.Store(&b.id, b.sb.Bytes(), b.ttl)
 		if err != nil {
 			say.Err(err).Msg("failed to save events to permanent storage")
 			return

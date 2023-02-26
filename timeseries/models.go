@@ -12,8 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-const MAX_BUFFER_SIZE = 4098
-
 type Event struct {
 	Timestamp              time.Time         `parquet:"timestamp"`
 	Name                   string            `parquet:"name,dict,zstd"`
@@ -153,9 +151,7 @@ func (s *Session) Update(e *Event) *Session {
 }
 
 type Tables struct {
-	db       *badger.DB
-	Events   *Storage[*Event]
-	Sessions *Storage[*Session]
+	db *badger.DB
 }
 
 func Open(ctx context.Context, allocator memory.Allocator, dir string, ttl time.Duration) (*Tables, error) {
@@ -167,40 +163,10 @@ func Open(ctx context.Context, allocator memory.Allocator, dir string, ttl time.
 	if err != nil {
 		return nil, err
 	}
-
-	events, err := NewStorage[*Event](ctx, allocator, db, filepath.Join(base, "events"), ttl)
-	if err != nil {
-		return nil, err
-	}
-	sessions, err := NewStorage[*Session](ctx, allocator, db, filepath.Join(base, "sessions"), ttl)
-	if err != nil {
-		return nil, err
-	}
-	return &Tables{db: db,
-		Events:   events,
-		Sessions: sessions,
-	}, nil
-}
-
-func (t *Tables) WriteEvents(events []*Event) (int, error) {
-	return t.Events.Write(events[len(events)-1].Timestamp, events)
-}
-
-func (t *Tables) WriteSessions(sessions []*Session) (int, error) {
-	return t.Sessions.Write(sessions[len(sessions)-1].Timestamp, sessions)
-}
-
-func (t *Tables) ArchiveEvents() (int64, error) {
-	return t.Events.Archive()
-}
-
-func (t *Tables) ArchiveSessions() (int64, error) {
-	return t.Sessions.Archive()
+	return &Tables{db: db}, nil
 }
 
 func (t *Tables) Close() (err error) {
-	t.Events.archive(false)
-	t.Events.archive(false)
 	err = t.db.Close()
 	return
 }

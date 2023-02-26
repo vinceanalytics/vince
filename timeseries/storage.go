@@ -1,152 +1,51 @@
 package timeseries
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"io"
-	"os"
-	"path/filepath"
 	"sync"
-	"time"
 
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/apache/arrow/go/v12/arrow/array"
 	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/apache/arrow/go/v12/arrow/memory"
-	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
 	"github.com/segmentio/parquet-go"
 )
 
 const (
-	BucketPath       = "buckets"
-	BucketMergePath  = "merge"
-	MetaPath         = "meta"
-	ActiveFileName   = "active.parquet"
-	RealTimeFileName = "realtime.parquet"
-	SortRowCount     = int64(4089)
+	SortRowCount = int64(4089)
 )
 
 var ErrNoRows = errors.New("no rows")
 var ErrSkipPage = errors.New("skip page")
 
-type Storage[T any] struct {
-	name       string
-	path       string
-	activeFile *os.File
-	writer     *parquet.SortingWriter[T]
-	mu         sync.Mutex
-	bob        *Bob
-	pool       *sync.Pool
-	allocator  memory.Allocator
-	start      time.Time
-	end        time.Time
-	ttl        time.Duration
+type StoreItem interface {
+	*Event | *Session
 }
 
-func NewStorage[T any](
-	ctx context.Context,
-	allocator memory.Allocator,
-	db *badger.DB,
-	path string,
-	ttl time.Duration,
-) (*Storage[T], error) {
-	os.MkdirAll(path, 0755)
-	f, err := os.Create(filepath.Join(path, ActiveFileName))
-	if err != nil {
-		return nil, err
+func QueryTable[T StoreItem](ctx context.Context, model T, uid uint64, query Query, files ...string) (*Record, error) {
+	bob := Bob{db: Get(ctx).db}
+	t := any(model)
+	var b *StoreBuilder[T]
+	var table TableID
+	switch t.(type) {
+	case *Event:
+		table = EVENTS
+		b = eventsPool.Get().(*StoreBuilder[T])
+		defer func() {
+			b.reset()
+			eventsPool.Put(b)
+		}()
+	case *Session:
+		table = SESSIONS
+		b = sessionsPool.Get().(*StoreBuilder[T])
+		defer func() {
+			b.reset()
+			sessionsPool.Put(b)
+		}()
 	}
-	bob := &Bob{db: db}
-	now := time.Now()
-	s := &Storage[T]{
-		name:       filepath.Base(path),
-		path:       path,
-		bob:        bob,
-		activeFile: f,
-		writer: parquet.NewSortingWriter[T](f, SortRowCount, parquet.SortingWriterConfig(
-			parquet.SortingColumns(
-				parquet.Ascending("timestamp"),
-			),
-		)),
-		allocator: allocator,
-		start:     now,
-		end:       now,
-		ttl:       ttl,
-	}
-	s.pool = &sync.Pool{
-		New: func() any {
-			return s.build()
-		},
-	}
-	return s, nil
-}
-
-func (s *Storage[T]) Write(lastTimestamp time.Time, rows []T) (int, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.end = lastTimestamp
-	return s.writer.Write(rows)
-}
-
-func (s *Storage[T]) Archive() (int64, error) {
-	return s.archive(true)
-}
-
-var bytesPool = &sync.Pool{
-	New: func() any {
-		return new(bytes.Buffer)
-	},
-}
-
-func (s *Storage[T]) archive(openActive bool) (int64, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.start.Equal(s.end) {
-		return 0, nil
-	}
-	err := s.writer.Close()
-	if err != nil {
-		return 0, err
-	}
-	id := CreateULID()
-	buf := bytesPool.Get().(*bytes.Buffer)
-	defer func() {
-		buf.Reset()
-		bytesPool.Put(buf)
-	}()
-	s.activeFile.Seek(0, io.SeekStart)
-	n, err := buf.ReadFrom(s.activeFile)
-	if err != nil {
-		return 0, err
-	}
-	s.activeFile.Close()
-	err = s.bob.Store(&StoreRequest{
-		Table: s.name,
-		ID:    id,
-		Data:  buf.Bytes(),
-		TTL:   s.ttl,
-	})
-	if err != nil {
-		return 0, err
-	}
-	s.start = s.end
-	s.end = s.start
-	if openActive {
-		a := filepath.Join(s.path, ActiveFileName)
-		af, err := os.Create(a)
-		if err != nil {
-			return 0, err
-		}
-		s.activeFile = af
-		s.writer.Reset(af)
-	}
-	return n, nil
-}
-
-func (s *Storage[T]) Query(ctx context.Context, query Query, files ...string) (*Record, error) {
-	b := s.get()
-	defer s.put(b)
 	m := make(map[string]*Writer)
 	set := make(map[string]bool)
 	for _, w := range b.writers {
@@ -169,31 +68,34 @@ func (s *Storage[T]) Query(ctx context.Context, query Query, files ...string) (*
 		b.results = make([][]arrow.Array, len(b.selected))
 	}
 	b.results = b.results[0:len(b.selected)]
-	err := s.bob.Iterate(s.name, query.start, query.end, b.process(ctx, query))
+
+	err := bob.Iterate(table, uid, query.start, query.end, b.process(ctx, query))
 	if err != nil {
 		return nil, err
 	}
 	return b.record(ctx)
 }
 
-func (s *Storage[T]) get() *StoreBuilder[T] {
-	return s.pool.Get().(*StoreBuilder[T])
+var eventsPool = &sync.Pool{
+	New: func() any {
+		return build(&Event{})
+	},
 }
 
-func (s *Storage[T]) put(b *StoreBuilder[T]) {
-	b.reset()
-	s.pool.Put(b)
+var sessionsPool = &sync.Pool{
+	New: func() any {
+		return build(&Session{})
+	},
 }
 
-func (s *Storage[T]) build() *StoreBuilder[T] {
-	fields := s.writer.Schema().Fields()
+func build[T StoreItem](model T) *StoreBuilder[T] {
+	fields := parquet.SchemaOf(model).Fields()
 	b := &StoreBuilder[T]{
-		store:   s,
 		writers: make([]*Writer, len(fields)),
 		builders: &Builders{
-			Int64:  array.NewInt64Builder(s.allocator),
-			String: array.NewStringBuilder(s.allocator),
-			Bool:   array.NewBooleanBuilder(s.allocator),
+			Int64:  array.NewInt64Builder(memory.DefaultAllocator),
+			String: array.NewStringBuilder(memory.DefaultAllocator),
+			Bool:   array.NewBooleanBuilder(memory.DefaultAllocator),
 		},
 	}
 	for i, f := range fields {
@@ -202,7 +104,7 @@ func (s *Storage[T]) build() *StoreBuilder[T] {
 			panic(err.Error())
 		}
 		b.writers[i] = &Writer{
-			build: array.NewBuilder(s.allocator, dt),
+			build: array.NewBuilder(memory.DefaultAllocator, dt),
 			index: i,
 			name:  f.Name(),
 		}
@@ -242,7 +144,6 @@ func (w *Writer) WritePage(p parquet.Page) error {
 }
 
 type StoreBuilder[T any] struct {
-	store    *Storage[T]
 	writers  []*Writer
 	active   []*Writer
 	selected []*Writer
@@ -402,7 +303,7 @@ type Record struct {
 func (b *StoreBuilder[T]) record(ctx context.Context) (*Record, error) {
 	r := &Record{}
 	for i, s := range b.selected {
-		a, err := array.Concatenate(b.results[i], b.store.allocator)
+		a, err := array.Concatenate(b.results[i], memory.DefaultAllocator)
 		if err != nil {
 			return nil, err
 		}
