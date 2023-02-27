@@ -8,3 +8,7 @@
     https://github.com/metalbear-co/metalbear.co
 * Gateway research
   https://lucperkins.dev/blog/service-mesh-use-cases/
+
+* Generics
+
+https://gfw.go101.org/generics/555-type-constraints-and-parameters.html
