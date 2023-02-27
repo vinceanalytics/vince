@@ -1,3 +1,4 @@
+{{define "_flash"}}
 {{$root:=.}}
 {{with .Flash}}
 {{range .Success}}
@@ -22,5 +23,6 @@
         <span>{{.}}</span>
     </div>
 </div>
+{{end}}
 {{end}}
 {{end}}
