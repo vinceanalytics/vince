@@ -1,1 +1,14 @@
-Placeholder
+{{with .Flash}}
+{{range .Success}}
+<div class="Box ">
+    <div class="Box-header Box-header--blue">
+        {{.}}
+    </div>
+</div>
+{{end}}
+{{ range .Failure}}
+<div class="Box Box--danger ">
+    {{.}}
+</div>
+{{end}}
+{{end}}
