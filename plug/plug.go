@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/sessions"
@@ -32,6 +33,19 @@ func NOOP(w http.ResponseWriter, r *http.Request) {}
 func FetchSession(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, r = sessions.Load(r)
+		h.ServeHTTP(w, r)
+	})
+}
+
+func FetchFlash(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, r := sessions.Load(r)
+		f := session.Data.Flash
+		if f != nil {
+			r = r.WithContext(flash.Set(r.Context(), f))
+			// save session without the flashes
+			session.Save(w)
+		}
 		h.ServeHTTP(w, r)
 	})
 }

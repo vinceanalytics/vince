@@ -10,6 +10,7 @@ import (
 
 	"github.com/belak/octicon"
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/models"
 )
 
@@ -63,6 +64,7 @@ type Context struct {
 	Status        int
 	StatusText    string
 	HasPin        bool
+	Flash         *flash.Flash
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
@@ -73,6 +75,7 @@ func New(ctx context.Context, f ...func(c *Context)) *Context {
 		CurrentUser: models.GetCurrentUser(ctx),
 		Config:      config.Get(ctx),
 		Code:        GetActivationCode(ctx),
+		Flash:       flash.Get(ctx),
 	}
 	if len(f) > 0 {
 		f[0](c)

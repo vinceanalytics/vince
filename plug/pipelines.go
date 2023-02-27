@@ -12,6 +12,7 @@ func Browser(ctx context.Context) Pipeline {
 	return Pipeline{
 		Firewall(ctx),
 		FetchSession,
+		FetchFlash,
 		PutSecureBrowserHeaders,
 		SessionTimeout,
 		Auth,

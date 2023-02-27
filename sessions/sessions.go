@@ -22,6 +22,7 @@ import (
 
 	"github.com/dchest/captcha"
 	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/log"
 	"github.com/lestrrat-go/dataurl"
 )
@@ -102,13 +103,30 @@ type SessionContext struct {
 }
 
 type Data struct {
-	TimeoutAt     time.Time `json:",omitempty"`
-	CurrentUserID uint64    `json:",omitempty"`
-	LastSeen      time.Time `json:",omitempty"`
-	LoggedIn      bool      `json:",omitempty"`
-	Captcha       string    `json:",omitempty"`
-	Csrf          string    `json:",omitempty"`
-	LoginDest     string    `json:",omitempty"`
+	TimeoutAt     time.Time    `json:",omitempty"`
+	CurrentUserID uint64       `json:",omitempty"`
+	LastSeen      time.Time    `json:",omitempty"`
+	LoggedIn      bool         `json:",omitempty"`
+	Captcha       string       `json:",omitempty"`
+	Csrf          string       `json:",omitempty"`
+	LoginDest     string       `json:",omitempty"`
+	Flash         *flash.Flash `json:",omitempty"`
+}
+
+func (s *SessionContext) SuccessFlash(m string) *SessionContext {
+	if s.Data.Flash == nil {
+		s.Data.Flash = &flash.Flash{}
+	}
+	s.Data.Flash.Success = append(s.Data.Flash.Success, m)
+	return s
+}
+
+func (s *SessionContext) FailFlash(m string) *SessionContext {
+	if s.Data.Flash == nil {
+		s.Data.Flash = &flash.Flash{}
+	}
+	s.Data.Flash.Failure = append(s.Data.Flash.Failure, m)
+	return s
 }
 
 func (s *SessionContext) VerifyCaptchaSolution(r *http.Request) bool {
