@@ -17,5 +17,6 @@ func Get(ctx context.Context) *Flash {
 
 type Flash struct {
 	Success []string
-	Failure []string
+	Error   []string
+	Warn    []string
 }

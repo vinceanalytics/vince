@@ -125,7 +125,7 @@ func (s *SessionContext) FailFlash(m string) *SessionContext {
 	if s.Data.Flash == nil {
 		s.Data.Flash = &flash.Flash{}
 	}
-	s.Data.Flash.Failure = append(s.Data.Flash.Failure, m)
+	s.Data.Flash.Error = append(s.Data.Flash.Error, m)
 	return s
 }
 

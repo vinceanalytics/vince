@@ -128,6 +128,10 @@ func (t *Context) Validate(name string) template.HTML {
 	return template.HTML("")
 }
 
+func (t *Context) Icon(name string, height int, class ...string) (template.HTML, error) {
+	return octicon.IconTemplateFunc(name, height, class...)
+}
+
 func (t *Context) InputField(name string) template.HTMLAttr {
 	var s strings.Builder
 	if t.Errors != nil && t.Errors[name] != "" {

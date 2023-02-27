@@ -1,14 +1,26 @@
+{{$root:=.}}
 {{with .Flash}}
 {{range .Success}}
 <div class="Box ">
-    <div class="Box-header Box-header--blue">
-        {{.}}
+    <div class="flash flash-full flash-success">
+        {{$root.Icon "check" 16}}
+        <span>{{.}}</span>
     </div>
 </div>
 {{end}}
-{{ range .Failure}}
-<div class="Box Box--danger ">
-    {{.}}
+{{range .Warn}}
+<div class="Box ">
+    <div class="flash flash-full flash-warn">
+        {{$root.Icon "alert" 16}}
+        <span>{{.}}</span>
+    </div>
+</div>
+{{end}}
+{{ range .Error}}
+<div class="Box ">
+    <div class="flash flash-full flash-error">
+        <span>{{.}}</span>
+    </div>
 </div>
 {{end}}
 {{end}}
