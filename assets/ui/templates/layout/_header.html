@@ -1,6 +1,40 @@
+{{define "_header"}}
 <div class="positon-relative py-8" style="z-index: 20;">
     <nav class="UnderlineNav UnderlineNav--right">
         <div class="UnderlineNav-actions">
+            <a href="/" class="logo">VINCE</a>
+        </div>
+        <div class="UnderlineNav-body">
+            {{if .CurrentUser}}
+            {{if .IsSelfHost}}
+            <a href="github.com/gernest/vince" class="UnderlineNav-item lead">
+                Repo
+            </a>
+            <a href="github.com/gernest/vince" class="UnderlineNav-item lead">
+                Docs
+            </a>
+            <div class="UnderlineNav-item">
+                <details class="dropdown details-reset details-overlay d-inline-block">
+                    <summary class="btn">
+                        <span class="lead">{{.CurrentUser.Email}}</span>
+                        <div class="dropdown-caret"></div>
+                    </summary>
+                    <ul class="dropdown-menu dropdown-menu-se">
+                        <li><a class="dropdown-item lead" href="/settings">Settings</a></li>
+                        <li><a class="dropdown-item lead" href="/logout">Log out</a></li>
+                    </ul>
+                </details>
+            </div>
+            {{end}}
+            {{else}}
+            <a href="/login" class="UnderlineNav-item lead">
+                Login
+            </a>
+            <a href="/register" class="UnderlineNav-item lead">
+                Register
+            </a>
+            {{end}}
         </div>
     </nav>
 </div>
+{{end}}
