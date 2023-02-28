@@ -1,1 +1,54 @@
-Placeholder
+<div class="mt-24">
+    <div class="container-lg clearfix px-4 py-12 px-sm-6 py-lg-16 px-lg-8">
+        <div class="cols-3 ">
+            <div class="my-8 my-md-0">
+                <h4>
+                    Vince Analytics
+                </h4>
+                <p class="mt-4">
+                    {{if not .Config.IsSelfHost}}
+                    Made in Africa and hosted in the EU <span class="text-lg">🇪🇺</span><br />
+                    {{end}}
+                    We are Open Source and we love it.
+                </p>
+                {{if .Config.IsSelfHost}}
+                <div class="mt-4">
+                    <a href="">
+                        Sponsor Vince
+                    </a>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        <div class="cols-2">
+            <div>
+                <h4>Why Vince</h4>
+                <ul class="mt-4">
+                    <li>
+                        <a href="">
+                            Simple metrics
+                        </a>
+                    </li>
+                    <li class="mt-4">
+                        Lightweight script
+                    </li>
+                    <li class="mt-4">
+                        Privacy focused
+                    </li>
+                    <li class="mt-4">
+                        Open source
+                    </li>
+                    <li class="mt-4">
+                        For creators
+                    </li>
+                    <li class="mt-4">
+                        For agencies
+                    </li>
+                    <li class="mt-4">
+                        For commerce
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
