@@ -27,8 +27,8 @@ type Event struct {
 	Domain                 string            `parquet:"domain,dict,zstd"`
 	UserId                 int64             `parquet:"user_id"`
 	SessionId              uuid.UUID         `parquet:"session_id,zstd"`
-	Hostname               string            `parquet:"hostname,zstd"`
-	Pathname               string            `parquet:"path,zstd"`
+	Hostname               string            `parquet:"hostname,dict,zstd"`
+	Pathname               string            `parquet:"path,dict,zstd"`
 	Referrer               string            `parquet:"referrer,dict,zstd"`
 	ReferrerSource         string            `parquet:"referrer_source,dict,zstd"`
 	CountryCode            string            `parquet:"country_code,dict,zstd"`
