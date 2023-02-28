@@ -40,8 +40,8 @@ type Event struct {
 
 func (e *Event) NewSession() *Session {
 	s := new(Session)
-	s.Sign = 1
-	s.ID = uuid.New()
+	s.Sign = true
+	s.SessionId = uuid.New()
 	s.Hostname = e.Hostname
 	s.Domain = e.Domain
 	s.UserId = e.UserId
@@ -84,8 +84,8 @@ type Label struct {
 
 type Session struct {
 	Timestamp              time.Time         `parquet:"timestamp,zstd"`
-	ID                     uuid.UUID         `parquet:"id,zstd"`
-	Sign                   int32             `parquet:"sign,zstd"`
+	SessionId              uuid.UUID         `parquet:"session_id,zstd"`
+	Sign                   bool              `parquet:"sign,dict,zstd"`
 	Domain                 string            `parquet:"domain,dict,zstd"`
 	UserId                 int64             `parquet:"user_id,zstd"`
 	Hostname               string            `parquet:"hostname,dict,zstd"`

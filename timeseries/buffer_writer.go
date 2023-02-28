@@ -92,8 +92,8 @@ func (b *Buffer) Register(ctx context.Context, e *Event, prevUserId int64) uuid.
 	}
 	if s != nil {
 		updated := s.Update(e)
-		updated.Sign = 1
-		s.Sign = -1
+		updated.Sign = true
+		s.Sign = false
 		b.sessions[0] = updated
 		b.sessions[1] = s
 		b.sw.Write(b.sessions[:])
@@ -179,7 +179,7 @@ var bufPool = &sync.Pool{
 
 func persist(ctx context.Context, s *Session) uuid.UUID {
 	caches.Session(ctx).SetWithTTL(key(s.Domain, s.UserId), s, sessionSize, 30*time.Minute)
-	return s.ID
+	return s.SessionId
 }
 
 type Map struct {
