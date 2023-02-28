@@ -123,16 +123,16 @@ func Events(w http.ResponseWriter, r *http.Request) {
 			cityGeonameId = uint32(city.Country.GeoNameID)
 		}
 	}
-	var screenSize string
+	var screenSize timeseries.ScreenSize
 	switch {
 	case req.ScreenWidth < 576:
-		screenSize = "Mobile"
+		screenSize = timeseries.Mobile
 	case req.ScreenWidth < 992:
-		screenSize = "Tablet"
+		screenSize = timeseries.Tablet
 	case req.ScreenWidth < 1440:
-		screenSize = "Laptop"
+		screenSize = timeseries.Laptop
 	case req.ScreenWidth >= 1440:
-		screenSize = "Desktop"
+		screenSize = timeseries.Desktop
 	}
 	var dropped int
 	for _, domain := range domains {

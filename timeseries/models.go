@@ -12,6 +12,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type ScreenSize uint8
+
+const (
+	Desktop ScreenSize = 1 + iota
+	Laptop
+	Tablet
+	Mobile
+)
+
 type Event struct {
 	Timestamp              time.Time         `parquet:"timestamp"`
 	Name                   string            `parquet:"name,dict,zstd"`
@@ -23,7 +32,7 @@ type Event struct {
 	Referrer               string            `parquet:"referrer,dict,zstd"`
 	ReferrerSource         string            `parquet:"referrer_source,dict,zstd"`
 	CountryCode            string            `parquet:"country_code,dict,zstd"`
-	ScreenSize             string            `parquet:"screen_size,dict,zstd"`
+	ScreenSize             ScreenSize        `parquet:"screen_size,dict,zstd"`
 	OperatingSystem        string            `parquet:"operating_system,dict,zstd"`
 	Browser                string            `parquet:"browser,dict,zstd"`
 	UtmMedium              string            `parquet:"utm_medium,dict,zstd"`
@@ -109,7 +118,7 @@ type Session struct {
 	UtmContent             string            `parquet:"utm_content,dict,zstd"`
 	UtmTerm                string            `parquet:"utm_term,dict,zstd"`
 	TransferredFrom        string            `parquet:"transferred_from,dict,zstd"`
-	ScreenSize             string            `parquet:"screen_size,dict,zstd"`
+	ScreenSize             ScreenSize        `parquet:"screen_size,dict,zstd"`
 	Labels                 map[string]string `parquet:"labels"`
 	Start                  time.Time         `parquet:"start,zstd"`
 }
@@ -143,7 +152,7 @@ func (s *Session) Update(e *Event) *Session {
 	if ss.BrowserVersion == "" {
 		ss.BrowserVersion = e.BrowserVersion
 	}
-	if ss.ScreenSize == "" {
+	if ss.ScreenSize == 0 {
 		ss.ScreenSize = e.ScreenSize
 	}
 	ss.Events += 1
