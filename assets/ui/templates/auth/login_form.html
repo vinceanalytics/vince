@@ -1,4 +1,4 @@
-{{define "content"}}
+{{define "_content"}}
 <form action="/login" method="post" class="FormControl width-full container-md mx-auto px-8 py-6 mt-8">
     <h1 class="lead">Enter your email and password</h1>
     <div class="FormControl-input-wrap FormControl-medium">
@@ -12,7 +12,8 @@
             id="password">
         <p>Forgot password? <a href="/password/request-reset">Click here</a> to reset it</p>
     </div>
-    {{template "secure" .}}
+    {{template "_csrf" .}}
+    {{template "_captcha" .}}
     <button type="submit" class="btn">Login →</button>
     <p>
         Don't have an account? <a href="/register"> Register</a> instead

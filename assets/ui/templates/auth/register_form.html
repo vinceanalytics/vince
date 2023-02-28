@@ -1,4 +1,4 @@
-{{define "content"}}
+{{define "_content"}}
 <div class="mx-auto mt-6 text-center">
     <h1 class="lead">Register your account</h1>
 </div>
@@ -29,7 +29,8 @@
                 name="password_confirmation" id="password_confirmation" required>
         </div>
         {{.Validate "password_confirmation"}}
-        {{template "secure" .}}
+        {{template "_csrf" .}}
+        {{template "_captcha" .}}
         <button type="submit" class="btn">Create my account →</button>
         <p>Already have an account? <a href="/login">Log in</a></p>
     </form>

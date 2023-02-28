@@ -14,19 +14,25 @@ import (
 	"github.com/gernest/vince/models"
 )
 
-//go:embed layouts auth error email
+//go:embed layout  auth error email
 var files embed.FS
 
 var LoginForm = template.Must(
 	template.ParseFS(files,
-		"layouts/focus.html",
+		"layout/focus.html",
+		"layout/flash.html",
+		"layout/csrf.html",
+		"layout/captcha.html",
 		"auth/login_form.html",
 	),
 )
 
 var RegisterForm = template.Must(
 	template.ParseFS(files,
-		"layouts/focus.html",
+		"layout/focus.html",
+		"layout/flash.html",
+		"layout/csrf.html",
+		"layout/captcha.html",
 		"auth/register_form.html",
 	),
 )
@@ -37,14 +43,16 @@ var Error = template.Must(template.ParseFS(files,
 
 var ActivationEmail = template.Must(
 	template.ParseFS(files,
-		"layouts/focus.html",
+		"layout/focus.html",
 		"email/activation_code.html",
 	),
 )
 
 var Activate = template.Must(
 	template.ParseFS(files,
-		"layouts/focus.html",
+		"layout/focus.html",
+		"layout/flash.html",
+		"layout/csrf.html",
 		"auth/activate.html",
 	),
 )

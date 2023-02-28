@@ -1,0 +1,10 @@
+{{define "_captcha"}}
+{{if .Captcha}}
+<div style="height: 64px;">
+    <img {{.Captcha}} class="img-responsive" />
+</div>
+<input {{if .Errors.captcha}} invalid="true" {{end}} type="text" name="_captcha" class="FormControl-input"
+    placeholder="write the number displayed above" required>
+{{.Validate "_captcha"}}
+{{end}}
+{{end}}
