@@ -1,6 +1,6 @@
 {{define "content"}}
 <form action="/login" method="post" class="FormControl width-full container-md mx-auto px-8 py-6 mt-8">
-    <h1>Enter your email and password</h1>
+    <h1 class="lead">Enter your email and password</h1>
     <div class="FormControl-input-wrap FormControl-medium">
         <label for="email" class="FormControl-label">email</label>
         <input {{if .Errors.email}} invalid="true" {{end}} {{with .Form.email}}value="{{index . 0}}" {{end}}

@@ -29836,9 +29836,17 @@ a.branch-name .octicon {
   font-size: 64px;
   font-style: italic;
   font-weight: 800;
-  padding-top: 60px;
   text-align: center;
   text-shadow: #222f37 3px 3px 0;
+  text-transform: uppercase;
+  font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+}
+
+.lead {
+  display: inline-block;
+  font-style: italic;
+  font-weight: 800;
+  text-align: center;
   text-transform: uppercase;
   font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
 }
