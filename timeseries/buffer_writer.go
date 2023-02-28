@@ -63,16 +63,28 @@ func (b *Buffer) Release() {
 }
 
 func (b *Buffer) setup() *Buffer {
-	b.ew = parquet.NewSortingWriter[*Event](&b.eb, SortRowCount, parquet.SortingWriterConfig(
-		parquet.SortingColumns(
-			parquet.Ascending("timestamp"),
+	b.ew = parquet.NewSortingWriter[*Event](&b.eb, SortRowCount,
+		parquet.SortingWriterConfig(
+			parquet.SortingColumns(
+				parquet.Ascending("timestamp"),
+			),
 		),
-	))
-	b.sw = parquet.NewSortingWriter[*Session](&b.sb, SortRowCount, parquet.SortingWriterConfig(
-		parquet.SortingColumns(
-			parquet.Ascending("timestamp"),
+		parquet.BloomFilters(
+			parquet.SplitBlockFilter(10, "hostname"),
+			parquet.SplitBlockFilter(10, "domain"),
 		),
-	))
+	)
+	b.sw = parquet.NewSortingWriter[*Session](&b.sb, SortRowCount,
+		parquet.SortingWriterConfig(
+			parquet.SortingColumns(
+				parquet.Ascending("timestamp"),
+			),
+		),
+		parquet.BloomFilters(
+			parquet.SplitBlockFilter(10, "hostname"),
+			parquet.SplitBlockFilter(10, "domain"),
+		),
+	)
 	return b
 }
 
