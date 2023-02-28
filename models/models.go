@@ -40,8 +40,8 @@ type User struct {
 	CheckStatEmail          []*CheckStatEmail        `gorm:"constraint:OnDelete:CASCADE;"`
 	SentRenewalNotification []*SentRenewalNotification
 	APIKeys                 []*APIKey
-	Subscription            Subscription
-	EnterprisePlan          EnterprisePlan
+	Subscription            *Subscription
+	EnterprisePlan          *EnterprisePlan
 	GoogleAuth              GoogleAuth
 	LastSeen                time.Time
 	TrialExpiryDate         sql.NullTime
@@ -326,6 +326,13 @@ type Subscription struct {
 	NextBillAmount string    `gorm:"not null"`
 	NextBillDate   time.Time `gorm:"not null"`
 	LastBillDate   time.Time
+}
+
+func (s *Subscription) CheckStatus(status string) bool {
+	if s == nil {
+		return false
+	}
+	return s.Status == status
 }
 
 type SharedLink struct {

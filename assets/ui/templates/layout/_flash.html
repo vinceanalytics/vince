@@ -1,28 +1,31 @@
 {{define "_flash"}}
 {{$root:=.}}
 {{with .Flash}}
-{{range .Success}}
-<div class="Box ">
-    <div class="flash flash-full flash-success">
-        {{$root.Icon "check" 16}}
-        <span>{{.}}</span>
+<div class="flash-messages">
+    {{range .Success}}
+    <div class="Box ">
+        <div class="flash flash-full flash-success">
+            {{$root.Icon "check" 16}}
+            <span>{{.}}</span>
+        </div>
     </div>
-</div>
-{{end}}
-{{range .Warn}}
-<div class="Box ">
-    <div class="flash flash-full flash-warn">
-        {{$root.Icon "alert" 16}}
-        <span>{{.}}</span>
+    {{end}}
+    {{range .Warn}}
+    <div class="Box ">
+        <div class="flash flash-full flash-warn">
+            {{$root.Icon "alert" 16}}
+            <span>{{.}}</span>
+        </div>
     </div>
-</div>
-{{end}}
-{{ range .Error}}
-<div class="Box ">
-    <div class="flash flash-full flash-error">
-        <span>{{.}}</span>
+    {{end}}
+    {{ range .Error}}
+    <div class="Box ">
+        <div class="flash flash-full flash-error">
+            <span>{{.}}</span>
+        </div>
     </div>
+    {{end}}
+    {{end}}
 </div>
-{{end}}
-{{end}}
+
 {{end}}
