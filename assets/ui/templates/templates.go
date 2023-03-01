@@ -67,6 +67,23 @@ var Home = template.Must(
 	),
 )
 
+var SiteNew = template.Must(
+	template.ParseFS(files,
+		"layout/app.html",
+		"layout/header.html",
+		"layout/flash.html",
+		"layout/notice.html",
+		"layout/footer.html",
+		"site/new.html",
+	),
+)
+
+type NewSite struct {
+	IsFirstSite bool
+	IsAtLimit   bool
+	SiteLimit   int
+}
+
 type Context struct {
 	Title         string
 	CurrentUser   *models.User
@@ -83,6 +100,7 @@ type Context struct {
 	StatusText    string
 	HasPin        bool
 	Flash         *flash.Flash
+	NewSite       *NewSite
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {

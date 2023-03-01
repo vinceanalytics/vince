@@ -29,6 +29,8 @@ message Config {
   // using this interval.
   google.protobuf.Duration sites_by_domain_cache_refresh_interval = 16;
 
+  repeated string site_limit_exempt = 17;
+
   message Mailer {
     Address address = 1;
     Smtp smtp = 2;

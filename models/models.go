@@ -8,126 +8,17 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"math/rand"
-	"net/http"
-	"net/mail"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/log"
 	"github.com/glebarez/sqlite"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 )
-
-type currentUserKey struct{}
-
-type User struct {
-	Model
-	Name         string
-	Email        string `gorm:"uniqueIndex"`
-	PasswordHash string
-	Sites        []*Site `gorm:"many2many:site_memberships;"`
-
-	EmailVerificationCodes  []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
-	IntroEmail              []*IntroEmail            `gorm:"constraint:OnDelete:CASCADE;"`
-	FeedbackEmail           []*FeedbackEmail         `gorm:"constraint:OnDelete:CASCADE;"`
-	CreateSiteEmails        []*CreateSiteEmail       `gorm:"constraint:OnDelete:CASCADE;"`
-	CheckStatEmail          []*CheckStatEmail        `gorm:"constraint:OnDelete:CASCADE;"`
-	SentRenewalNotification []*SentRenewalNotification
-	APIKeys                 []*APIKey
-	Subscription            *Subscription
-	EnterprisePlan          *EnterprisePlan
-	GoogleAuth              GoogleAuth
-	LastSeen                time.Time
-	TrialExpiryDate         sql.NullTime
-	EmailVerified           bool   `gorm:"not null;default:false"`
-	Theme                   string `gorm:"not null;default:system"`
-	GracePeriod             *GracePeriod
-	Invitations             []*Invitation
-}
-
-func (u *User) New(r *http.Request) (validation map[string]string, err error) {
-	conf := config.Get(r.Context())
-	u.Name = r.Form.Get("name")
-	u.Email = r.Form.Get("email")
-	password := r.Form.Get("password")
-	passwordConfirm := r.Form.Get("password_confirmation")
-	validation = make(map[string]string)
-	validate("name", u.Name, "required", validation, func(s string) bool {
-		return s != ""
-	})
-	validate("email", u.Email, "required", validation, func(s string) bool {
-		return s != ""
-	})
-	validate("email", u.Email, "invalid email", validation, func(s string) bool {
-		return emailRRe.MatchString(s)
-	})
-	validate("password", password, "required", validation, func(s string) bool {
-		return s != ""
-	})
-	validate("password", password, "has to be at least 6 characters", validation, func(s string) bool {
-		return len(s) >= 6
-	})
-	validate("password", password, "cannot be longer than 64 characters", validation, func(s string) bool {
-		return len(s) <= 64
-	})
-	validate("password_confirmation", passwordConfirm, "required", validation, func(s string) bool {
-		return s != ""
-	})
-	validate("password_confirmation", passwordConfirm, "must match password", validation, func(s string) bool {
-		return s == password
-	})
-	if len(validation) != 0 {
-		return
-	}
-	b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, err
-	}
-	u.PasswordHash = string(b)
-	if conf.IsSelfHost {
-		u.TrialExpiryDate = sql.NullTime{
-			Time:  time.Now().AddDate(100, 0, 0),
-			Valid: true,
-		}
-	} else {
-		u.TrialExpiryDate = sql.NullTime{
-			Time:  time.Now().AddDate(0, 0, 30),
-			Valid: true,
-		}
-	}
-	if !conf.EnableEmailVerification {
-		u.EmailVerified = true
-	}
-	return
-}
-
-func (u *User) Recipient() string {
-	return strings.Split(u.Name, " ")[0]
-}
-
-func (u *User) Address() *mail.Address {
-	return &mail.Address{
-		Name:    u.Name,
-		Address: u.Email,
-	}
-}
-
-func SetCurrentUser(ctx context.Context, usr *User) context.Context {
-	return context.WithValue(ctx, currentUserKey{}, usr)
-}
-
-func GetCurrentUser(ctx context.Context) *User {
-	if u := ctx.Value(currentUserKey{}); u != nil {
-		return u.(*User)
-	}
-	return nil
-}
 
 type currentRoleKey struct{}
 
@@ -316,16 +207,16 @@ type FeedbackEmail struct {
 
 type Subscription struct {
 	Model
-	UserID         int
-	SubID          string    `gorm:"uniqueIndex"`
-	PlanID         string    `gorm:"not null"`
-	UpdateURL      string    `gorm:"not null"`
-	CancelURL      string    `gorm:"not null"`
-	Status         string    `gorm:"not null"`
-	CurrencyCode   string    `gorm:"not null:default:USD"`
-	NextBillAmount string    `gorm:"not null"`
-	NextBillDate   time.Time `gorm:"not null"`
-	LastBillDate   time.Time
+	UserID             int
+	PlanSubscriptionID string    `gorm:"uniqueIndex"`
+	PlanID             string    `gorm:"not null"`
+	UpdateURL          string    `gorm:"not null"`
+	CancelURL          string    `gorm:"not null"`
+	Status             string    `gorm:"not null"`
+	CurrencyCode       string    `gorm:"not null:default:USD"`
+	NextBillAmount     string    `gorm:"not null"`
+	NextBillDate       time.Time `gorm:"not null"`
+	LastBillDate       time.Time
 }
 
 func (s *Subscription) CheckStatus(status string) bool {
@@ -394,6 +285,7 @@ type Goal struct {
 
 type EnterprisePlan struct {
 	Model
+	PlanID                string `gorm:"not null"`
 	UserID                uint64 `gorm:"not null;uniqueIndex"`
 	BillingInterval       string `gorm:"not null"`
 	MonthlyPageViewLimit  uint64 `gorm:"not null"`
