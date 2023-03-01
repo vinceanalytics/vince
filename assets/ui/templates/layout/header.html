@@ -1,10 +1,21 @@
 {{define "_header"}}
 <div class="positon-relative py-8" style="z-index: 20;">
+    <a href="/" class="logo-fixed">VINCE</a>
     <nav class="UnderlineNav UnderlineNav--right">
         <div class="UnderlineNav-actions">
-            <a href="/" class="logo">VINCE</a>
+
         </div>
         <div class="UnderlineNav-body">
+            <a href="github.com/gernest/vince" class="UnderlineNav-item solid-text">
+                pricing
+            </a>
+            <a href="github.com/gernest/vince" class="UnderlineNav-item solid-text">
+                comparisons
+            </a>
+            <a href="github.com/gernest/vince" class="UnderlineNav-item solid-text">
+                support
+            </a>
+
             {{if .CurrentUser}}
             {{if .IsSelfHost}}
             <a href="github.com/gernest/vince" class="UnderlineNav-item lead">
@@ -27,11 +38,12 @@
             </div>
             {{end}}
             {{else}}
-            <a href="/login" class="UnderlineNav-item lead">
-                Login
+            <a href="/login" class="UnderlineNav-item  px-4" style="color: green;" aria-current="page">
+                Sign In
             </a>
-            <a href="/register" class="UnderlineNav-item lead">
-                Register
+            <a href=" /register" class="UnderlineNav-item" style="color: blue;">
+                Try for free
+                {{.Icon "chevron-right" 16}}
             </a>
             {{end}}
         </div>

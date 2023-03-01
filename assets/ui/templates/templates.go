@@ -57,6 +57,16 @@ var Activate = template.Must(
 	),
 )
 
+var Home = template.Must(
+	template.ParseFS(files,
+		"layout/app.html",
+		"layout/header.html",
+		"layout/flash.html",
+		"layout/notice.html",
+		"layout/footer.html",
+	),
+)
+
 type Context struct {
 	Title         string
 	CurrentUser   *models.User

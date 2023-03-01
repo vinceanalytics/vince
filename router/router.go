@@ -7,6 +7,7 @@ import (
 	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/billing"
+	"github.com/gernest/vince/pages"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/site"
@@ -70,7 +71,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe4.PathPOST("/api/subscription/webhook", api.SubscriptionWebhook),
 		pipe4.GET("`^/api/(?P<domain>[^.]+)/status$`", api.DomainStatus),
 
-		pipe5.PathGET("/", Home),
+		pipe5.PathGET("/", pages.Home),
 		pipe5.PathGET("/register", auth.RegisterForm),
 		pipe5.PathPOST("/register", auth.Register),
 		pipe5.GET(`^/register/invitation/(?P<invitation_id>[^.]+)$`, auth.RegisterFromInvitationForm),
@@ -173,10 +174,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		NotFound,
 	}
 
-}
-
-func Home(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 func NotFound(h http.Handler) http.Handler {
