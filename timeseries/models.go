@@ -22,29 +22,28 @@ const (
 )
 
 type Event struct {
-	Timestamp              time.Time         `parquet:"timestamp"`
-	Name                   string            `parquet:"name,dict,zstd"`
-	Domain                 string            `parquet:"domain,dict,zstd"`
-	UserId                 int64             `parquet:"user_id,dict,zstd"`
-	SessionId              uuid.UUID         `parquet:"session_id,dict,zstd"`
-	Hostname               string            `parquet:"hostname,dict,zstd"`
-	Pathname               string            `parquet:"path,dict,zstd"`
-	Referrer               string            `parquet:"referrer,dict,zstd"`
-	ReferrerSource         string            `parquet:"referrer_source,dict,zstd"`
-	CountryCode            string            `parquet:"country_code,dict,zstd"`
-	ScreenSize             ScreenSize        `parquet:"screen_size,dict,zstd"`
-	OperatingSystem        string            `parquet:"operating_system,dict,zstd"`
-	Browser                string            `parquet:"browser,dict,zstd"`
-	UtmMedium              string            `parquet:"utm_medium,dict,zstd"`
-	UtmSource              string            `parquet:"utm_source,dict,zstd"`
-	UtmCampaign            string            `parquet:"utm_campaign,dict,zstd"`
-	BrowserVersion         string            `parquet:"browser_version,dict,zstd"`
-	OperatingSystemVersion string            `parquet:"operating_system_version,dict,zstd"`
-	CityGeoNameID          uint32            `parquet:"city_geo_name_id,dict,zstd"`
-	UtmContent             string            `parquet:"utm_content,dict,zstd"`
-	UtmTerm                string            `parquet:"utm_term,dict,zstd"`
-	TransferredFrom        string            `parquet:"transferred_from,dict,zstd"`
-	Labels                 map[string]string `parquet:"labels"`
+	Timestamp              time.Time  `parquet:"timestamp"`
+	Name                   string     `parquet:"name,dict,zstd"`
+	Domain                 string     `parquet:"domain,dict,zstd"`
+	UserId                 int64      `parquet:"user_id,dict,zstd"`
+	SessionId              uuid.UUID  `parquet:"session_id,dict,zstd"`
+	Hostname               string     `parquet:"hostname,dict,zstd"`
+	Pathname               string     `parquet:"path,dict,zstd"`
+	Referrer               string     `parquet:"referrer,dict,zstd"`
+	ReferrerSource         string     `parquet:"referrer_source,dict,zstd"`
+	CountryCode            string     `parquet:"country_code,dict,zstd"`
+	ScreenSize             ScreenSize `parquet:"screen_size,dict,zstd"`
+	OperatingSystem        string     `parquet:"operating_system,dict,zstd"`
+	Browser                string     `parquet:"browser,dict,zstd"`
+	UtmMedium              string     `parquet:"utm_medium,dict,zstd"`
+	UtmSource              string     `parquet:"utm_source,dict,zstd"`
+	UtmCampaign            string     `parquet:"utm_campaign,dict,zstd"`
+	BrowserVersion         string     `parquet:"browser_version,dict,zstd"`
+	OperatingSystemVersion string     `parquet:"operating_system_version,dict,zstd"`
+	CityGeoNameID          uint32     `parquet:"city_geo_name_id,dict,zstd"`
+	UtmContent             string     `parquet:"utm_content,dict,zstd"`
+	UtmTerm                string     `parquet:"utm_term,dict,zstd"`
+	TransferredFrom        string     `parquet:"transferred_from,dict,zstd"`
 }
 
 var eventsFilterFields = []string{
@@ -99,50 +98,38 @@ func (e *Event) NewSession() *Session {
 	s.Browser = e.Browser
 	s.Start = e.Timestamp
 	s.Timestamp = e.Timestamp
-	if s.Labels == nil {
-		s.Labels = make(map[string]string)
-	}
-	for k, v := range e.Labels {
-		s.Labels[k] = v
-	}
 	return s
 }
 
-type Label struct {
-	Name  string `parquet:"name,zstd"`
-	Value string `parquet:"value,zstd"`
-}
-
 type Session struct {
-	Timestamp              time.Time         `parquet:"timestamp,zstd"`
-	SessionId              uuid.UUID         `parquet:"session_id,dict,zstd"`
-	Sign                   bool              `parquet:"sign,dict,zstd"`
-	Domain                 string            `parquet:"domain,dict,zstd"`
-	UserId                 int64             `parquet:"user_id,zstd"`
-	Hostname               string            `parquet:"hostname,dict,zstd"`
-	IsBounce               bool              `parquet:"is_bounce,dict,zstd"`
-	EntryPage              string            `parquet:"entry_page,dict,zstd"`
-	ExitPage               string            `parquet:"exit_page,dict,zstd"`
-	PageViews              int64             `parquet:"pageviews,dict,zstd"`
-	Events                 int64             `parquet:"events,dict,zstd"`
-	Duration               time.Duration     `parquet:"duration,dict,zstd"`
-	Referrer               string            `parquet:"referrer,dict,zstd"`
-	ReferrerSource         string            `parquet:"referrer_source,dict,zstd"`
-	CountryCode            string            `parquet:"country_code,dict,zstd"`
-	OperatingSystem        string            `parquet:"operating_system,dict,zstd"`
-	Browser                string            `parquet:"browser,dict,zstd"`
-	UtmMedium              string            `parquet:"utm_medium,dict,zstd"`
-	UtmSource              string            `parquet:"utm_source,dict,zstd"`
-	UtmCampaign            string            `parquet:"UtmCampaign,dict,zstd"`
-	BrowserVersion         string            `parquet:"browser_version,dict,zstd"`
-	OperatingSystemVersion string            `parquet:"operating_system_version,dict,zstd"`
-	CityGeoNameId          uint32            `parquet:"city_geo_name_id,dict,zstd"`
-	UtmContent             string            `parquet:"utm_content,dict,zstd"`
-	UtmTerm                string            `parquet:"utm_term,dict,zstd"`
-	TransferredFrom        string            `parquet:"transferred_from,dict,zstd"`
-	ScreenSize             ScreenSize        `parquet:"screen_size,dict,zstd"`
-	Labels                 map[string]string `parquet:"labels"`
-	Start                  time.Time         `parquet:"start,zstd"`
+	Timestamp              time.Time     `parquet:"timestamp,zstd"`
+	SessionId              uuid.UUID     `parquet:"session_id,dict,zstd"`
+	Sign                   bool          `parquet:"sign,dict,zstd"`
+	Domain                 string        `parquet:"domain,dict,zstd"`
+	UserId                 int64         `parquet:"user_id,zstd"`
+	Hostname               string        `parquet:"hostname,dict,zstd"`
+	IsBounce               bool          `parquet:"is_bounce,dict,zstd"`
+	EntryPage              string        `parquet:"entry_page,dict,zstd"`
+	ExitPage               string        `parquet:"exit_page,dict,zstd"`
+	PageViews              int64         `parquet:"pageviews,dict,zstd"`
+	Events                 int64         `parquet:"events,dict,zstd"`
+	Duration               time.Duration `parquet:"duration,dict,zstd"`
+	Referrer               string        `parquet:"referrer,dict,zstd"`
+	ReferrerSource         string        `parquet:"referrer_source,dict,zstd"`
+	CountryCode            string        `parquet:"country_code,dict,zstd"`
+	OperatingSystem        string        `parquet:"operating_system,dict,zstd"`
+	Browser                string        `parquet:"browser,dict,zstd"`
+	UtmMedium              string        `parquet:"utm_medium,dict,zstd"`
+	UtmSource              string        `parquet:"utm_source,dict,zstd"`
+	UtmCampaign            string        `parquet:"UtmCampaign,dict,zstd"`
+	BrowserVersion         string        `parquet:"browser_version,dict,zstd"`
+	OperatingSystemVersion string        `parquet:"operating_system_version,dict,zstd"`
+	CityGeoNameId          uint32        `parquet:"city_geo_name_id,dict,zstd"`
+	UtmContent             string        `parquet:"utm_content,dict,zstd"`
+	UtmTerm                string        `parquet:"utm_term,dict,zstd"`
+	TransferredFrom        string        `parquet:"transferred_from,dict,zstd"`
+	ScreenSize             ScreenSize    `parquet:"screen_size,dict,zstd"`
+	Start                  time.Time     `parquet:"start,zstd"`
 }
 
 var sessionFilterFields = []string{

@@ -162,7 +162,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.CountryCode = countryCode
 		e.CityGeoNameID = cityGeonameId
 		e.ScreenSize = screenSize
-		e.Labels = req.Meta
 		e.Timestamp = now
 		previousUUserID := int64(seedID.GenPrevious(remoteIp, userAgent, domain, host))
 		e.SessionId = b.Register(r.Context(), e, previousUUserID)
