@@ -14,7 +14,7 @@ func AuthorizeSiteAPI(h http.Handler) http.Handler {
 		token := bearer(r.Header)
 		if token == "" {
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
-				ctx.StatusText = "Missing API key. Please use a valid vince API key as a Bearer Token."
+				ctx.Error.StatusText = "Missing API key. Please use a valid vince API key as a Bearer Token."
 			})
 			return
 		}
@@ -25,7 +25,7 @@ func AuthorizeSiteAPI(h http.Handler) http.Handler {
 		if err != nil {
 			log.Get(r.Context()).Err(err).Msg("failed to get hashed api key")
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
-				ctx.StatusText = "Missing API key. Please use a valid vince API key as a Bearer Token."
+				ctx.Error.StatusText = "Missing API key. Please use a valid vince API key as a Bearer Token."
 			})
 			return
 		}

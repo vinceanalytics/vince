@@ -14,7 +14,7 @@ import (
 	"github.com/gernest/vince/models"
 )
 
-//go:embed layout  auth error email
+//go:embed layout site auth error email
 var files embed.FS
 
 var LoginForm = template.Must(
@@ -84,6 +84,11 @@ type NewSite struct {
 	SiteLimit   int
 }
 
+type Errors struct {
+	Status     int
+	StatusText string
+}
+
 type Context struct {
 	Title         string
 	CurrentUser   *models.User
@@ -96,11 +101,10 @@ type Context struct {
 	Config        *config.Config
 	HasInvitation bool
 	CurrentStep   int
-	Status        int
-	StatusText    string
 	HasPin        bool
 	Flash         *flash.Flash
 	NewSite       *NewSite
+	Error         *Errors
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {

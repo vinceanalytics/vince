@@ -31,8 +31,10 @@ func HTML(ctx context.Context, w http.ResponseWriter, tpl *template.Template, co
 
 func ERROR(ctx context.Context, w http.ResponseWriter, code int, f ...func(*templates.Context)) {
 	HTML(ctx, w, templates.Error, code, func(ctx *templates.Context) {
-		ctx.Status = code
-		ctx.StatusText = http.StatusText(code)
+		ctx.Error = &templates.Errors{
+			Status:     code,
+			StatusText: http.StatusText(code),
+		}
 		if len(f) > 0 {
 			f[0](ctx)
 		}

@@ -18,7 +18,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 		token := bearer(r.Header)
 		if token == "" {
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
-				ctx.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
+				ctx.Error.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
 			})
 			return
 		}
@@ -28,13 +28,13 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 		if err != nil {
 			log.Get(r.Context()).Err(err).Msg("failed to get hashed api key")
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
-				ctx.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
+				ctx.Error.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
 			})
 			return
 		}
 		if !limit.API.Allow(key.RateLimit()) {
 			render.ERROR(r.Context(), w, http.StatusTooManyRequests, func(ctx *templates.Context) {
-				ctx.StatusText = fmt.Sprintf(
+				ctx.Error.StatusText = fmt.Sprintf(
 					"Too many API requests. Your API key is limited to %d requests per hour.",
 					key.HourlyAPIRequestLimit,
 				)
@@ -44,7 +44,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 		siteID := r.URL.Query().Get("site_id")
 		if siteID == "" {
 			render.ERROR(r.Context(), w, http.StatusBadRequest, func(ctx *templates.Context) {
-				ctx.StatusText = "Missing site ID. Please provide the required site_id parameter with your request."
+				ctx.Error.StatusText = "Missing site ID. Please provide the required site_id parameter with your request."
 			})
 			return
 		}
@@ -54,7 +54,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 		if err != nil {
 			log.Get(r.Context()).Err(err).Str("domain", siteID).Msg("failed to get site")
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
-				ctx.StatusText = "Invalid API key or site ID. Please make sure you're using a valid API key with access to the site you've requested."
+				ctx.Error.StatusText = "Invalid API key or site ID. Please make sure you're using a valid API key with access to the site you've requested."
 			})
 			return
 		}
@@ -64,12 +64,12 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			r = r.WithContext(models.SetSite(r.Context(), site))
 		case site.Locked:
 			render.ERROR(r.Context(), w, http.StatusPaymentRequired, func(ctx *templates.Context) {
-				ctx.StatusText = "This Vince site is locked due to missing active subscription. In order to access it, the site owner should subscribe to a suitable plan"
+				ctx.Error.StatusText = "This Vince site is locked due to missing active subscription. In order to access it, the site owner should subscribe to a suitable plan"
 			})
 			return
 		default:
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
-				ctx.StatusText = "Invalid API key or site ID. Please make sure you're using a valid API key with access to the site you've requested."
+				ctx.Error.StatusText = "Invalid API key or site ID. Please make sure you're using a valid API key with access to the site you've requested."
 			})
 			return
 		}
