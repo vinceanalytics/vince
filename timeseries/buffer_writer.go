@@ -63,27 +63,29 @@ func (b *Buffer) Release() {
 }
 
 func (b *Buffer) setup() *Buffer {
+	eb := make([]parquet.BloomFilterColumn, len(eventsFilterFields))
+	for i := range eventsFilterFields {
+		eb[i] = parquet.SplitBlockFilter(10, eventsFilterFields[i])
+	}
 	b.ew = parquet.NewSortingWriter[*Event](&b.eb, SortRowCount,
 		parquet.SortingWriterConfig(
 			parquet.SortingColumns(
 				parquet.Ascending("timestamp"),
 			),
 		),
-		parquet.BloomFilters(
-			parquet.SplitBlockFilter(10, "hostname"),
-			parquet.SplitBlockFilter(10, "domain"),
-		),
+		parquet.BloomFilters(eb...),
 	)
+	sb := make([]parquet.BloomFilterColumn, len(sessionFilterFields))
+	for i := range sessionFilterFields {
+		sb[i] = parquet.SplitBlockFilter(10, sessionFilterFields[i])
+	}
 	b.sw = parquet.NewSortingWriter[*Session](&b.sb, SortRowCount,
 		parquet.SortingWriterConfig(
 			parquet.SortingColumns(
 				parquet.Ascending("timestamp"),
 			),
 		),
-		parquet.BloomFilters(
-			parquet.SplitBlockFilter(10, "hostname"),
-			parquet.SplitBlockFilter(10, "domain"),
-		),
+		parquet.BloomFilters(sb...),
 	)
 	return b
 }

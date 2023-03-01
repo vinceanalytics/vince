@@ -25,8 +25,8 @@ type Event struct {
 	Timestamp              time.Time         `parquet:"timestamp"`
 	Name                   string            `parquet:"name,dict,zstd"`
 	Domain                 string            `parquet:"domain,dict,zstd"`
-	UserId                 int64             `parquet:"user_id"`
-	SessionId              uuid.UUID         `parquet:"session_id,zstd"`
+	UserId                 int64             `parquet:"user_id,dict,zstd"`
+	SessionId              uuid.UUID         `parquet:"session_id,dict,zstd"`
 	Hostname               string            `parquet:"hostname,dict,zstd"`
 	Pathname               string            `parquet:"path,dict,zstd"`
 	Referrer               string            `parquet:"referrer,dict,zstd"`
@@ -45,6 +45,28 @@ type Event struct {
 	UtmTerm                string            `parquet:"utm_term,dict,zstd"`
 	TransferredFrom        string            `parquet:"transferred_from,dict,zstd"`
 	Labels                 map[string]string `parquet:"labels"`
+}
+
+var eventsFilterFields = []string{
+	"name",
+	"domain",
+	"hostname",
+	"path",
+	"referrer",
+	"referrer_source",
+	"country_code",
+	"screen_size",
+	"operating_system",
+	"browser",
+	"utm_medium",
+	"utm_source",
+	"utm_campaign",
+	"browser_version",
+	"operating_system_version",
+	"city_geo_name_id",
+	"utm_content",
+	"utm_term",
+	"transferred_from",
 }
 
 func (e *Event) NewSession() *Session {
@@ -93,7 +115,7 @@ type Label struct {
 
 type Session struct {
 	Timestamp              time.Time         `parquet:"timestamp,zstd"`
-	SessionId              uuid.UUID         `parquet:"session_id,zstd"`
+	SessionId              uuid.UUID         `parquet:"session_id,dict,zstd"`
 	Sign                   bool              `parquet:"sign,dict,zstd"`
 	Domain                 string            `parquet:"domain,dict,zstd"`
 	UserId                 int64             `parquet:"user_id,zstd"`
@@ -121,6 +143,28 @@ type Session struct {
 	ScreenSize             ScreenSize        `parquet:"screen_size,dict,zstd"`
 	Labels                 map[string]string `parquet:"labels"`
 	Start                  time.Time         `parquet:"start,zstd"`
+}
+
+var sessionFilterFields = []string{
+	"domain",
+	"hostname",
+	"entry_page",
+	"exit_page",
+	"referrer",
+	"referrer_source",
+	"country_code",
+	"operating_system",
+	"browser",
+	"utm_medium",
+	"utm_source",
+	"UtmCampaign",
+	"browser_version",
+	"operating_system_version",
+	"city_geo_name_id",
+	"utm_content",
+	"utm_term",
+	"transferred_from",
+	"screen_size",
 }
 
 func (s *Session) Update(e *Event) *Session {
