@@ -8,11 +8,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/docker/go-units"
 	"github.com/gammazero/deque"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/log"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog"
 	"github.com/segmentio/parquet-go"
 )
 
@@ -127,10 +129,16 @@ var bigBufferPool = &sync.Pool{
 	},
 }
 
-func (b *Buffer) Save(ctx context.Context) {
+func (b *Buffer) Save(ctx context.Context) error {
 	say := log.Get(ctx)
 	ts := Get(ctx)
-	bob := &Bob{db: ts.db}
+	b.id.SetTime(time.Now())
+	b.id.Entropy()
+	return ts.db.Update(func(txn *badger.Txn) error {
+		return b.save(txn, say)
+	})
+}
+func (b *Buffer) save(txn *badger.Txn, say *zerolog.Logger) error {
 	b.id.SetTime(time.Now())
 	b.id.Entropy()
 	{
@@ -139,12 +147,12 @@ func (b *Buffer) Save(ctx context.Context) {
 		err := b.ew.Close()
 		if err != nil {
 			say.Err(err).Msg("failed to close parquet writer for events")
-			return
+			return err
 		}
-		err = bob.Store(&b.id, b.eb.Bytes(), b.ttl)
+		err = storeTxn(&b.id, b.eb.Bytes(), b.ttl, txn)
 		if err != nil {
 			say.Err(err).Msg("failed to save events to permanent storage")
-			return
+			return err
 		}
 		say.Debug().Msgf("saved  %s events ", units.BytesSize(float64(b.eb.Len())))
 	}
@@ -153,16 +161,17 @@ func (b *Buffer) Save(ctx context.Context) {
 		b.id.SetTable(SESSIONS)
 		err := b.sw.Close()
 		if err != nil {
-			log.Get(ctx).Err(err).Msg("failed to close parquet writer for sessions")
-			return
+			say.Err(err).Msg("failed to close parquet writer for sessions")
+			return err
 		}
-		err = bob.Store(&b.id, b.sb.Bytes(), b.ttl)
+		err = storeTxn(&b.id, b.sb.Bytes(), b.ttl, txn)
 		if err != nil {
 			say.Err(err).Msg("failed to save events to permanent storage")
-			return
+			return err
 		}
 		say.Debug().Msgf("saved  %s sessions ", units.BytesSize(float64(b.sb.Len())))
 	}
+	return nil
 }
 
 func find(ctx context.Context, e *Event, userId int64) *Session {

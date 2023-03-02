@@ -73,11 +73,11 @@ func (id *ID) Table() TableID {
 
 // only table id ans user id
 func (id *ID) Prefix() []byte {
-	return id[:7]
+	return id[:dateOffset]
 }
 
 func (id *ID) PrefixWithDate() []byte {
-	return id[:13]
+	return id[:entropyOffset]
 }
 
 func (id *ID) Compare(other *ID) int {
