@@ -52,6 +52,7 @@ type Code uint8
 			fmt.Fprintln(&b, c.Alpha2)
 		}
 		fmt.Fprintf(&reverse, "%q :%s,\n", c.Alpha2, c.Alpha2)
+		fmt.Fprintf(&reverse, "%q :%s,\n", c.Alpha3, c.Alpha2)
 	}
 	fmt.Fprintln(&reverse, "}")
 	fmt.Fprintln(&b, ")")
