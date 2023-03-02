@@ -52,7 +52,6 @@ func (b *Bob) Iterate(table TableID, user uint64, start, end time.Time, f func(i
 			// date. We know ID are prefixed with timestamp.
 			//
 			// We can just iterate on files for the user on this date.
-
 			o := badger.DefaultIteratorOptions
 			o.Prefix = id.PrefixWithDate()
 			it := txn.NewIterator(o)
