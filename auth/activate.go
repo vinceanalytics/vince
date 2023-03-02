@@ -61,10 +61,10 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if hasInvitation {
-				http.Redirect(w, r, "/", http.StatusFound)
+				http.Redirect(w, r, "/sites", http.StatusFound)
 				return
 			}
-			http.Redirect(w, r, "/new", http.StatusFound)
+			http.Redirect(w, r, "/sites/new", http.StatusFound)
 			return
 		}
 
