@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gernest/vince/country"
 	"github.com/gernest/vince/gate"
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/log"
@@ -113,13 +114,13 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	}
 	reqReferrer = cleanReferrer(reqReferrer)
 
-	var countryCode string
+	var countryCode country.Code
 	var cityGeonameId uint32
 	if remoteIp != "" {
 		ip := net.ParseIP(remoteIp)
 		city, err := geoip.Lookup(ip)
 		if err == nil {
-			countryCode = city.Country.IsoCode
+			countryCode = country.Lookup(city.Country.IsoCode)
 			cityGeonameId = uint32(city.Country.GeoNameID)
 		}
 	}

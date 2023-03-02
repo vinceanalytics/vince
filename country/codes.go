@@ -4,7 +4,7 @@ package country
 type Code uint8
 
 const (
-	AF Code = iota
+	AF Code = 1 + iota
 	AX
 	AL
 	DZ

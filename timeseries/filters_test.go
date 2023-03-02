@@ -1,6 +1,8 @@
 package timeseries
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestParseFilters(t *testing.T) {
 	t.Run("simple positive", func(t *testing.T) {

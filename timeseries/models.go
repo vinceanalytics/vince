@@ -8,6 +8,7 @@ import (
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/dgraph-io/badger/v3/options"
+	"github.com/gernest/vince/country"
 	"github.com/gernest/vince/log"
 	"github.com/google/uuid"
 )
@@ -22,28 +23,28 @@ const (
 )
 
 type Event struct {
-	Timestamp              time.Time  `parquet:"timestamp"`
-	Name                   string     `parquet:"name,dict,zstd"`
-	Domain                 string     `parquet:"domain,dict,zstd"`
-	UserId                 int64      `parquet:"user_id,dict,zstd"`
-	SessionId              uuid.UUID  `parquet:"session_id,dict,zstd"`
-	Hostname               string     `parquet:"hostname,dict,zstd"`
-	Pathname               string     `parquet:"path,dict,zstd"`
-	Referrer               string     `parquet:"referrer,dict,zstd"`
-	ReferrerSource         string     `parquet:"referrer_source,dict,zstd"`
-	CountryCode            string     `parquet:"country_code,dict,zstd"`
-	ScreenSize             ScreenSize `parquet:"screen_size,dict,zstd"`
-	OperatingSystem        string     `parquet:"operating_system,dict,zstd"`
-	Browser                string     `parquet:"browser,dict,zstd"`
-	UtmMedium              string     `parquet:"utm_medium,dict,zstd"`
-	UtmSource              string     `parquet:"utm_source,dict,zstd"`
-	UtmCampaign            string     `parquet:"utm_campaign,dict,zstd"`
-	BrowserVersion         string     `parquet:"browser_version,dict,zstd"`
-	OperatingSystemVersion string     `parquet:"operating_system_version,dict,zstd"`
-	CityGeoNameID          uint32     `parquet:"city_geo_name_id,dict,zstd"`
-	UtmContent             string     `parquet:"utm_content,dict,zstd"`
-	UtmTerm                string     `parquet:"utm_term,dict,zstd"`
-	TransferredFrom        string     `parquet:"transferred_from,dict,zstd"`
+	Timestamp              time.Time    `parquet:"timestamp"`
+	Name                   string       `parquet:"name,dict,zstd"`
+	Domain                 string       `parquet:"domain,dict,zstd"`
+	UserId                 int64        `parquet:"user_id,dict,zstd"`
+	SessionId              uuid.UUID    `parquet:"session_id,dict,zstd"`
+	Hostname               string       `parquet:"hostname,dict,zstd"`
+	Pathname               string       `parquet:"path,dict,zstd"`
+	Referrer               string       `parquet:"referrer,dict,zstd"`
+	ReferrerSource         string       `parquet:"referrer_source,dict,zstd"`
+	CountryCode            country.Code `parquet:"country_code,dict,zstd"`
+	ScreenSize             ScreenSize   `parquet:"screen_size,dict,zstd"`
+	OperatingSystem        string       `parquet:"operating_system,dict,zstd"`
+	Browser                string       `parquet:"browser,dict,zstd"`
+	UtmMedium              string       `parquet:"utm_medium,dict,zstd"`
+	UtmSource              string       `parquet:"utm_source,dict,zstd"`
+	UtmCampaign            string       `parquet:"utm_campaign,dict,zstd"`
+	BrowserVersion         string       `parquet:"browser_version,dict,zstd"`
+	OperatingSystemVersion string       `parquet:"operating_system_version,dict,zstd"`
+	CityGeoNameID          uint32       `parquet:"city_geo_name_id,dict,zstd"`
+	UtmContent             string       `parquet:"utm_content,dict,zstd"`
+	UtmTerm                string       `parquet:"utm_term,dict,zstd"`
+	TransferredFrom        string       `parquet:"transferred_from,dict,zstd"`
 }
 
 var eventsFilterFields = []string{
@@ -116,7 +117,7 @@ type Session struct {
 	Duration               time.Duration `parquet:"duration,dict,zstd"`
 	Referrer               string        `parquet:"referrer,dict,zstd"`
 	ReferrerSource         string        `parquet:"referrer_source,dict,zstd"`
-	CountryCode            string        `parquet:"country_code,dict,zstd"`
+	CountryCode            country.Code  `parquet:"country_code,dict,zstd"`
 	OperatingSystem        string        `parquet:"operating_system,dict,zstd"`
 	Browser                string        `parquet:"browser,dict,zstd"`
 	UtmMedium              string        `parquet:"utm_medium,dict,zstd"`
@@ -165,7 +166,7 @@ func (s *Session) Update(e *Event) *Session {
 	if e.Name == "pageview" {
 		ss.PageViews++
 	}
-	if ss.CountryCode == "" {
+	if ss.CountryCode == 0 {
 		ss.CountryCode = e.CountryCode
 	}
 	if ss.CityGeoNameId == 0 {

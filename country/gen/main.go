@@ -47,7 +47,7 @@ type Code uint8
 	fmt.Fprintln(&reverse, "var _lookup=map[string]Code{")
 	for i, c := range countries {
 		if i == 0 {
-			fmt.Fprintf(&b, "%s Code=iota\n", c.Alpha2)
+			fmt.Fprintf(&b, "%s Code=1+iota\n", c.Alpha2)
 		} else {
 			fmt.Fprintln(&b, c.Alpha2)
 		}
