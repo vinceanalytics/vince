@@ -39,7 +39,7 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 			}
 			txn := models.Get(ctx).Begin()
 			// update user  email_verified field
-			err := txn.Model(usr).Update("email_verified=?", true).Error
+			err := txn.Model(usr).Update("email_verified", true).Error
 			if err != nil {
 				txn.Rollback()
 				log.Get(ctx).Err(err).Msg("failed to update user.email_verified")

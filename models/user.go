@@ -59,7 +59,7 @@ func LoadUserModel(ctx context.Context, uid uint64) (*User, error) {
 	db := Get(ctx)
 	err := db.Preload("Sites").
 		Preload("EmailVerificationCodes").
-		Preload("IntroEmail").
+		Preload("IntroEmails").
 		Preload("FeedbackEmails").
 		Preload("CreateSiteEmails").
 		Preload("SentRenewalNotification").
