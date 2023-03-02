@@ -9,6 +9,7 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/timex"
 	"github.com/segmentio/parquet-go"
 )
 
@@ -33,22 +34,30 @@ func storeTxn(id *ID, data []byte, ttl time.Duration, txn *badger.Txn) error {
 	return txn.SetEntry(e)
 }
 
+// Iterate searches of all parquet files belonging to the user between start and
+// end date. The emphasize here is start and end Must be dates.
+//
+// This requirements avoid further time/date conversions. Use timex.Date to get a
+// date from time.Time.
+//
+// To stop iteration f must return ErrSkip.
 func (b *Bob) Iterate(table TableID, user uint64, start, end time.Time, f func(io.ReaderAt, int64) error) error {
 	return b.db.View(func(txn *badger.Txn) error {
-		startDate := toDate(start)
-		endDate := toDate(end)
-		if startDate.Equal(endDate) {
+		var id ID
+		id.SetTable(table)
+		id.SetUserID(user)
+		id.SetDate(start)
+		if start.Equal(end) {
 			// This is an optimization. When we are iterating on data from the same
 			// date. We know ID are prefixed with timestamp.
-			var id ID
-			id.SetTable(table)
-			id.SetUserID(user)
-			id.SetTime(startDate)
+			//
+			// We can just iterate on files for the user on this date.
+
 			o := badger.DefaultIteratorOptions
 			o.Prefix = id.PrefixWithDate()
 			it := txn.NewIterator(o)
 			defer it.Close()
-			for it.Next(); it.Valid(); it.Next() {
+			for ; it.Valid(); it.Next() {
 				err := it.Item().Value(func(val []byte) error {
 					return f(bytes.NewReader(val), int64(len(val)))
 				})
@@ -62,33 +71,24 @@ func (b *Bob) Iterate(table TableID, user uint64, start, end time.Time, f func(i
 			return nil
 		}
 		o := badger.DefaultIteratorOptions
-		o.SinceTs = uint64(startDate.Unix())
+		o.SinceTs = uint64(start.Unix())
 		it := txn.NewIterator(o)
 
-		var id, startTime, endTime ID
+		// Iterate over all user's keys in this table.
+		o.Prefix = id.Prefix()
+		// Limit keys starting at beginning of the day on start date.
+		o.SinceTs = uint64(start.Unix())
 
-		startTime.SetTable(table)
-		startTime.SetUserID(user)
-		startTime.SetTime(startDate)
-		endTime.SetTable(table)
-		endTime.SetUserID(user)
-		endTime.SetTime(endDate)
-		o.Prefix = startTime.Prefix()
+		// Limit keys up to the end of the day on end date.
+		lastVersion := uint64(end.Unix())
 
 		// we rely SinceTS value to seek to a better starting point for the iterator
 		// SinceTS will be the time at the beginning of the day in which we want
 		// to retrieve data from.
 		for ; it.Valid(); it.Next() {
 			x := it.Item()
-			copy(id[:], x.Key())
-			// id,startTime and endTime all only contains timestamp part of the ulid
-			// we check to see if startDate <= ulid <= endDate
-			a := id.Compare(&startTime)
-			if a == -1 {
-				// Too early we can skip this iteration
-				continue
-			}
-			if !within(a, id.Compare(&endTime)) {
+			if x.Version() >= lastVersion {
+				// we have reached the end of the iteration range.
 				break
 			}
 			err := x.Value(func(val []byte) error {
@@ -103,10 +103,6 @@ func (b *Bob) Iterate(table TableID, user uint64, start, end time.Time, f func(i
 		}
 		return nil
 	})
-}
-
-func within(a, b int) bool {
-	return (a == 0 || a == 1) && (b == 0 || b == -1)
 }
 
 // Merge  combines all the parquet files for today for a specific user
@@ -132,27 +128,28 @@ func (b *Bob) Merge(ctx context.Context) error {
 	// We take advantage of SinceTs option for iterator for faster narrowing down
 	// keys for the day.
 	fetchUserID := func(t TableID, txn *badger.Txn) {
-		// start with events
 		id.SetTable(t)
 		o := badger.DefaultIteratorOptions
-		// we are only interested in keys
+		// we are only interested in keys only
 		o.PrefetchValues = false
 		// perform table only iteration using seek to narrow down the time range
-		now := toDate(time.Now()).Unix()
-		o.Prefix = bytes.Clone(id[0:1])
-		o.SinceTs = uint64(now)
+		now := time.Now()
+		start := timex.BeginningOfDay(now)
+		end := uint64(timex.EndOfDay(now).Unix())
+
+		o.Prefix = bytes.Clone(id[:userOffset])
+		o.SinceTs = uint64(start.Unix())
 		it := txn.NewIterator(o)
 		defer it.Close()
 		for it.Next(); it.Valid(); it.Next() {
 			x := it.Item()
+			if x.Version() > end {
+				break
+			}
 			if x.IsDeletedOrExpired() {
 				continue
 			}
-			ts := id.Time().Unix()
-			if ts != now {
-				break
-			}
-			copy(id[:], it.Item().Key())
+			copy(id[userOffset:dateOffset], it.Item().Key()[userOffset:dateOffset])
 			hash[id.UserID()] = struct{}{}
 		}
 	}

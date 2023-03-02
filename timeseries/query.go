@@ -10,6 +10,7 @@ import (
 
 	"github.com/apache/arrow/go/v12/arrow/array"
 	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/timex"
 	"github.com/segmentio/parquet-go"
 )
 
@@ -50,7 +51,7 @@ func QueryFrom(params url.Values) Query {
 	}
 	switch params.Get("period") {
 	case "realtime":
-		date := today()
+		date := timex.Today()
 		return Query{
 			period:          "realtime",
 			interval:        interval,
@@ -93,8 +94,8 @@ func QueryFrom(params url.Values) Query {
 		}
 	case "month":
 		date := parseSingleDate(params.Get("date"))
-		startDate := beginningOfMonth(date)
-		endDate := endOfMonth(date)
+		startDate := timex.BeginningOfMonth(date)
+		endDate := timex.EndOfMonth(date)
 		return Query{
 			period:          "month",
 			interval:        interval,
@@ -104,8 +105,8 @@ func QueryFrom(params url.Values) Query {
 			sampleThreshold: sampleThreshold,
 		}
 	case "6mo":
-		endDate := endOfMonth(parseSingleDate(params.Get("date")))
-		startDate := beginningOfMonth(endDate.AddDate(0, -5, 0))
+		endDate := timex.EndOfMonth(parseSingleDate(params.Get("date")))
+		startDate := timex.BeginningOfMonth(endDate.AddDate(0, -5, 0))
 		return Query{
 			period:          "6mo",
 			interval:        interval,
@@ -115,8 +116,8 @@ func QueryFrom(params url.Values) Query {
 			sampleThreshold: sampleThreshold,
 		}
 	case "12mo":
-		endDate := endOfMonth(parseSingleDate(params.Get("date")))
-		startDate := beginningOfMonth(endDate.AddDate(0, -11, 0))
+		endDate := timex.EndOfMonth(parseSingleDate(params.Get("date")))
+		startDate := timex.BeginningOfMonth(endDate.AddDate(0, -11, 0))
 		return Query{
 			period:          "12mo",
 			interval:        interval,
@@ -126,8 +127,8 @@ func QueryFrom(params url.Values) Query {
 			sampleThreshold: sampleThreshold,
 		}
 	case "year":
-		endDate := endOfYear(parseSingleDate(params.Get("date")))
-		startDate := beginningOfYear(endDate)
+		endDate := timex.EndOfYear(parseSingleDate(params.Get("date")))
+		startDate := timex.BeginningOfYear(endDate)
 		return Query{
 			period:          "year",
 			interval:        interval,
@@ -151,45 +152,17 @@ func QueryFrom(params url.Values) Query {
 	return Query{}
 }
 
-func beginningOfMonth(ts time.Time) time.Time {
-	y, m, _ := ts.Date()
-	return time.Date(y, m, 1, 0, 0, 0, 0, ts.Location())
-}
-func beginningOfYear(ts time.Time) time.Time {
-	y, _, _ := ts.Date()
-	return time.Date(y, time.January, 1, 0, 0, 0, 0, ts.Location())
-}
-
-func endOfMonth(ts time.Time) time.Time {
-	return beginningOfMonth(ts).AddDate(0, 1, 0).Add(-time.Nanosecond)
-}
-
-func endOfYear(ts time.Time) time.Time {
-	return beginningOfYear(ts).AddDate(1, 0, 0).Add(-time.Nanosecond)
-}
-
-func today() time.Time {
-	return toDate(time.Now().UTC())
-}
-
 const ISO8601 = "2006-01-02"
 
 func parseSingleDate(date string) time.Time {
 	if date == "today" || date == "" {
-		return today()
+		return timex.Today()
 	}
 	ts, err := time.Parse(ISO8601, date)
 	if err != nil {
-		return today()
+		return timex.Today()
 	}
-	return toDate(ts)
-}
-
-func toDate(ts time.Time) time.Time {
-	y, m, d := ts.Date()
-	return time.Date(
-		y, m, d, 0, 0, 0, 0, ts.Location(),
-	)
+	return timex.Date(ts)
 }
 
 func defaultIntervalForPeriod(period string) string {

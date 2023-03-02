@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"time"
 
+	"github.com/gernest/vince/timex"
 	"github.com/oklog/ulid/v2"
 )
 
@@ -29,7 +30,11 @@ const (
 type ID [size]byte
 
 func (id *ID) SetTime(ts time.Time) {
-	id.uint64(dateOffset, uint64(toDate(ts).Unix()))
+	id.uint64(dateOffset, uint64(timex.Date(ts).Unix()))
+}
+
+func (id *ID) SetDate(ts time.Time) {
+	id.uint64(dateOffset, uint64(ts.Unix()))
 }
 
 func (id *ID) SetTable(table TableID) {
