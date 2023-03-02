@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,65 +17,64 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	ctx := r.Context()
 	usr := models.GetCurrentUser(ctx)
-
 	hasInvitation := models.Exists(ctx, func(db *gorm.DB) *gorm.DB {
 		return db.Model(&models.Invitation{}).Where("email=?", usr.Email)
 	})
-
 	code, _ := strconv.Atoi(r.Form.Get("code"))
-	var codes models.EmailVerificationCode
-	err := models.Get(ctx).Where("user_id=?", usr.ID).Where("code=?", code).First(&codes).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			r = sessions.SaveCsrf(w, r)
-			render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
-				ctx.Errors = map[string]string{
-					"code": "Incorrect activation code",
-				}
-				ctx.HasPin = true
-				ctx.HasInvitation = hasInvitation
-			})
+	// User model is preloaded with verification codes
+	for _, codes := range usr.EmailVerificationCodes {
+		if codes.Code == uint64(code) {
+			// we found a match
+			if codes.UpdatedAt.Before(time.Now().Add(-4 * time.Hour)) {
+				// verification code has expired
+				r = sessions.SaveCsrf(w, r)
+				render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
+					ctx.Errors = map[string]string{
+						"code": "Code is expired, please request another one",
+					}
+					ctx.HasPin = true
+					ctx.HasInvitation = hasInvitation
+				})
+				return
+			}
+			txn := models.Get(ctx).Begin()
+			// update user  email_verified field
+			err := txn.Model(usr).Update("email_verified=?", true).Error
+			if err != nil {
+				txn.Rollback()
+				log.Get(ctx).Err(err).Msg("failed to update user.email_verified")
+				render.ERROR(ctx, w, http.StatusInternalServerError)
+				return
+			}
+			err = txn.Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).Update("user_id", nil).Error
+			if err != nil {
+				txn.Rollback()
+				log.Get(ctx).Err(err).Msg("failed to update email_verification_codes.user_id")
+				render.ERROR(ctx, w, http.StatusInternalServerError)
+				return
+			}
+			err = txn.Commit().Error
+			if err != nil {
+				txn.Rollback()
+				log.Get(ctx).Err(err).Msg("failed to commit email_verification_codes transaction")
+				render.ERROR(ctx, w, http.StatusInternalServerError)
+				return
+			}
+			if hasInvitation {
+				http.Redirect(w, r, "/", http.StatusFound)
+				return
+			}
+			http.Redirect(w, r, "/new", http.StatusFound)
 			return
 		}
-		log.Get(r.Context()).Err(err).Msg("failed querying verification codes")
-		render.ERROR(r.Context(), w, http.StatusInternalServerError)
-		return
+
 	}
-	if codes.UpdatedAt.Before(time.Now().Add(-4 * time.Hour)) {
-		// verification code has expired
-		r = sessions.SaveCsrf(w, r)
-		render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
-			ctx.Errors = map[string]string{
-				"code": "Code is expired, please request another one",
-			}
-			ctx.HasPin = true
-			ctx.HasInvitation = hasInvitation
-		})
-		return
-	}
-	// set user.email_verified = true and release all verification codes assigned
-	// to user.
-	// Do all of this inside a single transaction.
-	db := models.Get(ctx).Begin()
-	usr.EmailVerified = true
-	err = models.Get(ctx).Save(usr).Error
-	if err != nil {
-		db.Rollback()
-		log.Get(r.Context()).Err(err).Msg("failed updating user verification status")
-		render.ERROR(r.Context(), w, http.StatusInternalServerError)
-		return
-	}
-	err = models.Get(ctx).Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).Update("user_id", nil).Error
-	if err != nil {
-		db.Rollback()
-		log.Get(r.Context()).Err(err).Msg("failed resetting  verification codes")
-		render.ERROR(r.Context(), w, http.StatusInternalServerError)
-		return
-	}
-	db.Commit()
-	if hasInvitation {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
-	http.Redirect(w, r, "/new", http.StatusFound)
+	r = sessions.SaveCsrf(w, r)
+	render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
+		ctx.Errors = map[string]string{
+			"code": "Incorrect activation code",
+		}
+		ctx.HasPin = true
+		ctx.HasInvitation = hasInvitation
+	})
 }

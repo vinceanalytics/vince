@@ -28,6 +28,10 @@ func (p Pipeline) Pass(h http.HandlerFunc) http.Handler {
 	return x
 }
 
+func (p Pipeline) And(n ...Plug) Pipeline {
+	return append(p, n...)
+}
+
 func NOOP(w http.ResponseWriter, r *http.Request) {}
 
 func FetchSession(h http.Handler) http.Handler {
@@ -69,11 +73,11 @@ func Auth(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
 		if session.Data.CurrentUserID != 0 {
-			usr := &models.User{}
-			if err := models.Get(r.Context()).First(usr, session.Data.CurrentUserID).Error; err != nil {
+			u, err := models.LoadUserModel(r.Context(), session.Data.CurrentUserID)
+			if err != nil {
 				log.Get(r.Context()).Err(err).Msg("failed fetching current user")
 			} else {
-				r = r.WithContext(models.SetCurrentUser(r.Context(), usr))
+				r = r.WithContext(models.SetCurrentUser(r.Context(), u))
 			}
 		}
 		h.ServeHTTP(w, r)
