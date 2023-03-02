@@ -144,13 +144,12 @@ func (b *Bob) Merge(ctx context.Context) error {
 		it := txn.NewIterator(o)
 		defer it.Close()
 		for it.Next(); it.Valid(); it.Next() {
-			ts := id.Time().Unix()
-			if now < ts {
-				// version slightly order. Just skip them.
+			x := it.Item()
+			if x.IsDeletedOrExpired() {
 				continue
 			}
-			if now > ts {
-				// not today
+			ts := id.Time().Unix()
+			if ts != now {
 				break
 			}
 			copy(id[:], it.Item().Key())
@@ -211,7 +210,6 @@ func (b *Bob) Merge(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-
 			// Track the number of files successfully merged
 			files += 1
 		}
