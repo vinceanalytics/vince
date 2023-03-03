@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/gernest/vince/caches"
-	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/limit"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/timeseries"
@@ -25,5 +24,5 @@ func Check(ctx context.Context, domain string) (*timeseries.Buffer, bool) {
 		return nil, false
 	}
 	return timeseries.GetMap(ctx).Get(ctx,
-		x.UserID, config.Get(ctx).FlushInterval.AsDuration()), true
+		x.UserID), true
 }

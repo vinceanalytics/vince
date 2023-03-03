@@ -79,7 +79,7 @@ func HTTP(ctx context.Context, o *config.Config) error {
 		ts.Close()
 		return err
 	}
-	m := timeseries.NewMap()
+	m := timeseries.NewMap(o.FlushInterval.AsDuration())
 	ctx = timeseries.SetMap(ctx, m)
 
 	mailer, err := email.FromConfig(o)
