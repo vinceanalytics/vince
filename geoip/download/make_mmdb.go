@@ -43,7 +43,7 @@ func main() {
 	}
 	defer res.Body.Close()
 	if res.StatusCode == http.StatusOK {
-		f, err := os.Create("geoip/dbip-country.mmdb.gz")
+		f, err := os.Create("dbip-country.mmdb")
 		if err != nil {
 			log.Fatal(err)
 		}

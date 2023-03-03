@@ -12,11 +12,9 @@ import (
 	"github.com/oschwald/maxminddb-golang"
 )
 
-// compressed with the command
-//
-//	zstd -o=geoip/dbip-country.mmdb.zstd -22 --ultra  geoip/dbip-country.mmdb
-//
-//go:embed dbip-country.mmdb.zstd
+//go:generate go run download/make_mmdb.go
+
+//go:embed dbip-country.mmdb
 var data []byte
 
 var (
@@ -26,16 +24,8 @@ var (
 
 func Get() *geoip2.Reader {
 	once.Do(func() {
-		r, err := zstd.NewReader(bytes.NewReader(data))
-		if err != nil {
-			panic(err.Error())
-		}
-		defer r.Close()
-		b, err := io.ReadAll(r)
-		if err != nil {
-			panic(err.Error())
-		}
-		mmdb, err = geoip2.FromBytes(b)
+		var err error
+		mmdb, err = geoip2.FromBytes(data)
 		if err != nil {
 			panic(err.Error())
 		}
