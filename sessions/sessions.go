@@ -206,6 +206,7 @@ func (s *SessionContext) Save(w http.ResponseWriter) {
 	b, _ := json.Marshal(s.Data)
 	value := s.s.Create(b)
 	cookie := &http.Cookie{
+		Path:    "/",
 		Name:    s.s.name,
 		Value:   value,
 		Expires: time.Now().Add(time.Duration(s.s.maxAge) * time.Second),

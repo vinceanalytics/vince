@@ -12,9 +12,7 @@ func RequireAccount(h http.Handler) http.Handler {
 		usr := models.GetCurrentUser(r.Context())
 		if usr == nil {
 			session, r := sessions.Load(r)
-			session.Data = sessions.Data{
-				LoginDest: r.URL.Path,
-			}
+			session.Data.LoginDest = r.URL.Path
 			session.Save(w)
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return

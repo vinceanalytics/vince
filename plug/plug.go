@@ -48,6 +48,7 @@ func FetchFlash(h http.Handler) http.Handler {
 		if f != nil {
 			r = r.WithContext(flash.Set(r.Context(), f))
 			// save session without the flashes
+			session.Data.Flash = nil
 			session.Save(w)
 		}
 		h.ServeHTTP(w, r)
