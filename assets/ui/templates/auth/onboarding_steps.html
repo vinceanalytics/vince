@@ -1,0 +1,36 @@
+{{define "onboarding_steps"}}
+{{$root:=.}}
+<div>
+    {{range .StepsBefore}}
+    <div class="TimelineItem TimelineItem--condensed">
+        <div class="TimelineItem-badge">
+            {{$root.Icon "git-commit" 16}}
+        </div>
+        <div class="TimelineItem-body">
+            {{.}}
+        </div>
+    </div>
+    {{end}}
+
+    <div class="TimelineItem TimelineItem--condensed">
+        <div class="TimelineItem-badge color-bg-success-emphasis">
+            {{$root.Icon "check" 16}}
+        </div>
+        <div class="TimelineItem-body">
+            {{.CurrentStep}}
+        </div>
+    </div>
+
+
+    {{range .StepsAfter}}
+    <div class="TimelineItem TimelineItem--condensed">
+        <div class="TimelineItem-badge">
+            {{$root.Icon "git-commit" 16}}
+        </div>
+    </div>
+    <div class="TimelineItem-body">
+        {{.}}
+    </div>
+    {{end}}
+</div>
+{{end}}

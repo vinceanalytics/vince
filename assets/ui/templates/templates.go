@@ -74,6 +74,7 @@ var SiteNew = template.Must(
 		"layout/flash.html",
 		"layout/notice.html",
 		"layout/footer.html",
+		"auth/onboarding_steps.html",
 		"site/new.html",
 	),
 )
@@ -100,11 +101,11 @@ type Context struct {
 	Code          uint64
 	Config        *config.Config
 	HasInvitation bool
-	CurrentStep   int
 	HasPin        bool
 	Flash         *flash.Flash
 	NewSite       *NewSite
 	Error         *Errors
+	Position      int
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
@@ -153,6 +154,17 @@ func (t *Context) VinceURL() template.HTML {
 	return template.HTML("http://localhost:8080")
 }
 
+func (t *Context) SetPosition(pos int) *Context {
+	t.Position = pos
+	return t
+}
+
+func (t *Context) OnboardSteps() []string {
+	return []string{
+		"Register", "Activate account", "Add site info", "Install snippet",
+	}
+}
+
 func (t *Context) Validate(name string) template.HTML {
 	if t.Errors != nil {
 		o, _ := octicon.Icon("alert-fill", 12)
@@ -183,14 +195,20 @@ func (t *Context) InputField(name string) template.HTMLAttr {
 	return template.HTMLAttr(s.String())
 }
 
-func (t *Context) SetStep(n int) {
-	t.CurrentStep = n
+var steps = []string{
+	"Register", "Activate account", "Add site info", "Install snippet",
 }
 
-func (t *Context) Steps() []string {
-	return []string{
-		"Register", "Activate account", "Add site info", "Install snippet",
-	}
+func (t *Context) CurrentStep() string {
+	return steps[t.Position]
+}
+
+func (t *Context) StepsBefore() []string {
+	return steps[0:t.Position]
+}
+
+func (t *Context) StepsAfter() []string {
+	return steps[t.Position:]
 }
 
 type activationCodeKey struct{}
