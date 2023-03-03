@@ -69,7 +69,7 @@ func QueryTable[T StoreItem](ctx context.Context, model T, uid uint64, query Que
 	}
 	b.results = b.results[0:len(b.selected)]
 
-	err := bob.Iterate(table, uid, query.start, query.end, b.process(ctx, query))
+	err := bob.Iterate(ctx, table, uid, query.start, query.end, b.process(ctx, query))
 	if err != nil {
 		return nil, err
 	}

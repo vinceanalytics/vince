@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"runtime/trace"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
@@ -41,7 +42,10 @@ func storeTxn(id *ID, data []byte, ttl time.Duration, txn *badger.Txn) error {
 // date from time.Time.
 //
 // To stop iteration f must return ErrSkip.
-func (b *Bob) Iterate(table TableID, user uint64, start, end time.Time, f func(io.ReaderAt, int64) error) error {
+func (b *Bob) Iterate(ctx context.Context, table TableID, user uint64, start, end time.Time, f func(io.ReaderAt, int64) error) error {
+	_, task := trace.NewTask(ctx, "ts_iterate")
+	defer task.End()
+
 	return b.db.View(func(txn *badger.Txn) error {
 		var id ID
 		id.SetTable(table)
@@ -107,6 +111,9 @@ func (b *Bob) Iterate(table TableID, user uint64, start, end time.Time, f func(i
 // Merge  combines all the parquet files for today for a specific user
 // to a single parquet file.
 func (b *Bob) Merge(ctx context.Context) error {
+	_, task := trace.NewTask(ctx, "ts_merge")
+	defer task.End()
+
 	start := time.Now()
 	say := log.Get(ctx)
 	say.Debug().Msg("starting merging daily parquet files")
