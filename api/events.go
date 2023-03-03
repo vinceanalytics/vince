@@ -91,7 +91,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		domains = append(domains, sanitizeHost(d))
 	}
 
-	query := r.URL.Query()
+	query := uri.Query()
 	now := time.Now()
 	agent := ua.Parse(userAgent)
 	// handle referrer
@@ -170,10 +170,10 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	if dropped > 0 {
 		w.Header().Set("x-vince-dropped", strconv.Itoa(dropped))
 		w.WriteHeader(http.StatusAccepted)
-	} else {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		return
 	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("ok"))
 }
 
 func sanitizeHost(s string) string {
