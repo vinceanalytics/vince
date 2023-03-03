@@ -10,10 +10,12 @@ import (
 	"github.com/gernest/vince/timeseries"
 )
 
+// Check ensure that domain is part of registered sites. Returns *timeseries.Buffer
+// that collects events for domain owner.
+//
+// This applies rate limits configured per site/domain
 func Check(ctx context.Context, domain string) (*timeseries.Buffer, bool) {
-	models.SitesMu.Lock()
 	site, ok := caches.Site(ctx).Get(domain)
-	models.SitesMu.Unlock()
 	if !ok {
 		return nil, false
 	}

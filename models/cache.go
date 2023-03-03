@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -22,8 +21,6 @@ func (c *CachedSite) RateLimit() (uint64, rate.Limit, int) {
 	per := time.Duration(c.IngestRateLimitScaleSeconds) * time.Second
 	return c.ID, rate.Limit(events / per.Seconds()), 10
 }
-
-var SitesMu sync.Mutex
 
 func QuerySitesToCache(db *gorm.DB, results *[]*CachedSite) error {
 	err := db.Model(&Site{}).Select("sites.id, sites.domain, sites.ingest_rate_limit_scale_seconds,sites.ingest_rate_limit_threshold,site_memberships.user_id").
