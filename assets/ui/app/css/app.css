@@ -29842,6 +29842,17 @@ a.branch-name .octicon {
   font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
 }
 
+.logo-footer {
+  display: inline-block;
+  font-size: 24px;
+  font-style: italic;
+  font-weight: 800;
+  text-align: center;
+  text-shadow: #222f37 3px 3px 0;
+  text-transform: uppercase;
+  font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+}
+
 .logo-plain {
   display: inline-block;
   font-style: italic;
