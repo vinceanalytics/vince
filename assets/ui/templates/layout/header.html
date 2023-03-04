@@ -53,11 +53,28 @@
                     {{if .CurrentUser}}
                     <details class="dropdown details-reset details-overlay d-inline-block">
                         <summary
+                            class="header-link border-0 width-full width-lg-auto px-0 px-lg-2 py-3 py-lg-2 no-wrap d-flex flex-items-center flex-justify-between">
+                            <span class="avatar avatar-1">
+                                {{.Icon "plus" 16 }}
+                            </span>
+                            <div class="dropdown-caret"></div>
+                        </summary>
+                        <ul class="dropdown-menu dropdown-menu-s">
+                            <li>
+                                <a href="/settings" class="dropdown-item">Settings</a>
+                            </li>
+                            <li>
+                                <a href="/logout" class="dropdown-item">Log out</a>
+                            </li>
+                        </ul>
+                    </details>
+                    <details class="dropdown details-reset details-overlay d-inline-block">
+                        <summary
                             class=" border-0 width-full width-lg-auto px-0 px-lg-2 py-3 py-lg-2 no-wrap d-flex flex-items-center flex-justify-between">
                             <span class="avatar avatar-1">
                                 {{.Icon "person" 16 }}
                             </span>
-                            {{.Icon "chevron-down" 16 "HeaderMenu-icon ml-1"}}
+                            <div class="dropdown-caret"></div>
                         </summary>
                         <ul class="dropdown-menu dropdown-menu-s">
                             <li>
