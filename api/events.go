@@ -1,12 +1,15 @@
 package api
 
 import (
-	"encoding/json"
+	"bytes"
+	"errors"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gernest/vince/country"
@@ -17,23 +20,53 @@ import (
 	"github.com/gernest/vince/remoteip"
 	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/ua"
+	jsoniter "github.com/json-iterator/go"
 )
 
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+var ErrBadJSON = errors.New("api: invalid json ")
+
+// Request is sent by the vince script embedded in client websites. For faster
+// performance we use simd if available
 type Request struct {
-	EventName   string            `json:"n"`
-	URI         string            `json:"url"`
-	Referrer    string            `json:"r"`
-	Domain      string            `json:"d"`
-	ScreenWidth int               `json:"w"`
-	HashMode    bool              `json:"h"`
-	Meta        map[string]string `json:"m"`
+	EventName   string `json:"n"`
+	URI         string `json:"url"`
+	Referrer    string `json:"r"`
+	Domain      string `json:"d"`
+	ScreenWidth int    `json:"w"`
+	HashMode    bool   `json:"h"`
 }
 
+// Parse opportunistic parses request body to r object. This is crucial method
+// any gains here translates to smooth  events ingestion pipeline.
+//
+// A hard size limitation of 32kb is imposed. This is arbitrary value, any change
+// to it must be be supported with statistics.
+func (r *Request) Parse(body io.Reader) error {
+	b := bufPool.Get().(*bytes.Buffer)
+	defer func() {
+		b.Reset()
+		bufPool.Put(b)
+	}()
+	// My mom used to say, don't trust the internet. Never stream decode payloads
+	// directly from strangers. We copy just enough then we  process.
+	b.ReadFrom(io.LimitReader(body, 32<<10))
+	return json.Unmarshal(b.Bytes(), r)
+}
+
+var bufPool = &sync.Pool{
+	New: func() any {
+		return new(bytes.Buffer)
+	},
+}
+
+// Events accepts events payloads from vince client script.
 func Events(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	xlg := log.Get(r.Context())
 	var req Request
-	err := json.NewDecoder(r.Body).Decode(&req)
+	err := req.Parse(r.Body)
 	if err != nil {
 		xlg.Err(err).Msg("Failed decoding json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -41,7 +74,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	}
 	remoteIp := remoteip.Get(r)
 	if req.URI == "" {
-		xlg.Debug().Msg("url is required")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -52,7 +84,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if uri.Scheme == "data" {
-		xlg.Debug().Msg("url scheme is not allowed")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -72,17 +103,14 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		path += "#" + uri.Fragment
 	}
 	if len(path) > 2000 {
-		xlg.Debug().Msg("pathname too long")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if req.EventName == "" {
-		xlg.Debug().Msg("event_name is required")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if req.Domain == "" {
-		xlg.Debug().Msg("domain is required")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
