@@ -78,7 +78,7 @@ func (gp *GracePeriod) Active() bool {
 }
 
 func (gp *GracePeriod) Expired() bool {
-	return gp == nil || !gp.Active()
+	return gp != nil && !gp.Active()
 }
 
 func toDate(ts time.Time) time.Time {
