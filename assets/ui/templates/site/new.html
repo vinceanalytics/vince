@@ -1,8 +1,9 @@
 {{define "_content"}}
-<div class="width-full container-md mt-4 mx-auto ">
-    <form action="/sites" method="post">
+<div class="container-xl mx-auto px-8 py-6 mt-8">
+    <form action="/sites" method="post" class="FormControl width-full container-md mx-auto px-8 py-6 mt-8">
         {{if .NewSite.IsAtLimit}}
-        <div class="Box Box--danger p-4 mt-4">
+
+        <div class="flash  p-4 mt-4 flash-warn">
             <div class="Box-header Box-header--red">
                 <h3 class="Box-title">Upgrade required</h3>
             </div>
@@ -12,7 +13,6 @@
             </div>
         </div>
         {{end}}
-
         {{if not .CurrentUser.TrialExpiryDate.Valid}}
         <div class="Box">
             <div class="Box-header Box-header--blue">
