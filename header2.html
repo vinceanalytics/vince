@@ -1,0 +1,54 @@
+{{define "_header"}}
+<div class="positon-relative py-8" style="z-index: 20;">
+    <a href="/" class="logo-fixed">VINCE</a>
+    <nav class="UnderlineNav UnderlineNav--right">
+        <div class="UnderlineNav-actions">
+
+        </div>
+        <div class="UnderlineNav-body">
+            <a href="github.com/gernest/vince" class="UnderlineNav-item solid-text">
+                pricing
+            </a>
+            <a href="github.com/gernest/vince" class="UnderlineNav-item solid-text">
+                comparisons
+            </a>
+            <a href="github.com/gernest/vince" class="UnderlineNav-item solid-text">
+                support
+            </a>
+
+            {{if .CurrentUser}}
+            {{if .Config.IsSelfHost}}
+            <a href="github.com/gernest/vince" class="UnderlineNav-item lead">
+                Repo
+            </a>
+            <a href="github.com/gernest/vince" class="UnderlineNav-item lead">
+                Docs
+            </a>
+            <div class="UnderlineNav-item">
+                <details class="dropdown details-reset details-overlay d-inline-block">
+                    <summary class="btn">
+                        <span class="lead">{{.CurrentUser.Email}}</span>
+                        <div class="dropdown-caret"></div>
+                    </summary>
+                    <ul class="dropdown-menu dropdown-menu-se">
+                        <li><a class="dropdown-item lead" href="/settings">Settings</a></li>
+                        <li><a class="dropdown-item lead" href="/logout">Log out</a></li>
+                    </ul>
+                </details>
+            </div>
+            {{end}}
+            {{else}}
+            <a href="/login" class="UnderlineNav-item  px-4" style="color: green;" aria-current="page">
+                Sign In
+            </a>
+            <a href=" /register" class="UnderlineNav-item" style="color: blue;">
+                Try for free
+                {{.Icon "chevron-right" 16}}
+            </a>
+            {{end}}
+        </div>
+    </nav>
+</div>
+
+
+{{end}}

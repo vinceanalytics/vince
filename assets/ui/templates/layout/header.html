@@ -1,52 +1,67 @@
 {{define "_header"}}
-<div class="positon-relative py-8" style="z-index: 20;">
-    <a href="/" class="logo-fixed">VINCE</a>
-    <nav class="UnderlineNav UnderlineNav--right">
-        <div class="UnderlineNav-actions">
-
+<header class=" header position-relative f4 py-3">
+    <div
+        class="container-xl d-flex flex-column flex-lg-row flex-items-center p-responsive height-full position-relative z-1">
+        <div class="d-flex flex-justify-between flex-items-center width-full width-lg-auto">
+            <a class="mr-lg-3 color-fg-inherit flex-order-2 logo-main my-auto" href="/" aria-label="Homepage">
+                Vince
+            </a>
         </div>
-        <div class="UnderlineNav-body">
-            <a href="github.com/gernest/vince" class="UnderlineNav-item solid-text">
-                pricing
-            </a>
-            <a href="github.com/gernest/vince" class="UnderlineNav-item solid-text">
-                comparisons
-            </a>
-            <a href="github.com/gernest/vince" class="UnderlineNav-item solid-text">
-                support
-            </a>
+        <div class=" p-responsive height-fit position-lg-relative d-lg-flex flex-column flex-auto pt-7 pb-4 top-0">
+            <div
+                class="header-menu-wrapper d-flex flex-column flex-self-end flex-lg-row flex-justify-between flex-auto p-3 p-lg-0 rounded rounded-lg-0 mt-3 mt-lg-0">
+                <nav class="mt-0 px-3 px-lg-0 mb-3 mb-lg-0" aria-label="Global">
+                    <ul class="d-lg-flex list-style-none">
+                        <li
+                            class="Header-item position-relative flex-wrap flex-justify-between flex-items-center d-block d-lg-flex flex-lg-nowrap flex-lg-items-center js-details-container js-header-menu-item">
+                            <details class="dropdown details-reset details-overlay d-inline-block">
+                                <summary
+                                    class=" border-0 width-full width-lg-auto px-0 px-lg-2 py-3 py-lg-2 no-wrap d-flex flex-items-center flex-justify-between js-details-target">
+                                    Product
+                                    {{.Icon "chevron-down" 16 "HeaderMenu-icon ml-1"}}
+                                </summary>
+                            </details>
+                        </li>
+                        <li
+                            class="Header-item position-relative flex-wrap flex-justify-between flex-items-center d-block d-lg-flex flex-lg-nowrap flex-lg-items-center js-details-container js-header-menu-item">
+                            <details class="dropdown details-reset details-overlay d-inline-block">
+                                <summary
+                                    class=" border-0 width-full width-lg-auto px-0 px-lg-2 py-3 py-lg-2 no-wrap d-flex flex-items-center flex-justify-between js-details-target">
+                                    Solutions
+                                    {{.Icon "chevron-down" 16 "HeaderMenu-icon ml-1"}}
+                                </summary>
+                            </details>
+                        </li>
+                        <li
+                            class="Header-item position-relative flex-wrap flex-justify-between flex-items-center d-block d-lg-flex flex-lg-nowrap flex-lg-items-center js-details-container js-header-menu-item">
+                            <details class="dropdown details-reset details-overlay d-inline-block">
+                                <summary
+                                    class=" border-0 width-full width-lg-auto px-0 px-lg-2 py-3 py-lg-2 no-wrap d-flex flex-items-center flex-justify-between js-details-target">
+                                    Open source
+                                    {{.Icon "chevron-down" 16 "HeaderMenu-icon ml-1"}}
+                                </summary>
+                            </details>
+                        </li>
+                        <li
+                            class="Header-item position-relative flex-wrap flex-justify-between flex-items-center d-block d-lg-flex flex-lg-nowrap flex-lg-items-center js-details-container js-header-menu-item">
+                            <a>Pricing</a>
+                        </li>
 
-            {{if .CurrentUser}}
-            {{if .Config.IsSelfHost}}
-            <a href="github.com/gernest/vince" class="UnderlineNav-item lead">
-                Repo
-            </a>
-            <a href="github.com/gernest/vince" class="UnderlineNav-item lead">
-                Docs
-            </a>
-            <div class="UnderlineNav-item">
-                <details class="dropdown details-reset details-overlay d-inline-block">
-                    <summary class="btn">
-                        <span class="lead">{{.CurrentUser.Email}}</span>
-                        <div class="dropdown-caret"></div>
-                    </summary>
-                    <ul class="dropdown-menu dropdown-menu-se">
-                        <li><a class="dropdown-item lead" href="/settings">Settings</a></li>
-                        <li><a class="dropdown-item lead" href="/logout">Log out</a></li>
                     </ul>
-                </details>
+                </nav>
+
+                <div class="d-lg-flex flex-items-center px-3 px-lg-0 mb-3 mb-lg-0 text-center text-lg-left">
+                    <div class="position-relative  mr-lg-3 d-lg-inline-block">
+                        <a href="/login">
+                            Sign in
+                        </a>
+                    </div>
+                    <a href="/register" class="btn color-border-open-emphasis">
+                        Sign up
+                    </a>
+                </div>
             </div>
-            {{end}}
-            {{else}}
-            <a href="/login" class="UnderlineNav-item  px-4" style="color: green;" aria-current="page">
-                Sign In
-            </a>
-            <a href=" /register" class="UnderlineNav-item" style="color: blue;">
-                Try for free
-                {{.Icon "chevron-right" 16}}
-            </a>
-            {{end}}
         </div>
-    </nav>
-</div>
+    </div>
+</header>
 {{end}}
