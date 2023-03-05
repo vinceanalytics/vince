@@ -70,11 +70,11 @@ var Home = template.Must(
 var SiteNew = template.Must(
 	template.ParseFS(files,
 		"layout/app.html",
+		"layout/csrf.html",
 		"layout/header.html",
 		"layout/flash.html",
 		"layout/notice.html",
 		"layout/footer.html",
-		"auth/onboarding_steps.html",
 		"site/new.html",
 	),
 )
