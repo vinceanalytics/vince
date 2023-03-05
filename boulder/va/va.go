@@ -27,7 +27,6 @@ import (
 	"github.com/gernest/vince/boulder/metrics"
 	"github.com/gernest/vince/boulder/probs"
 	vapb "github.com/gernest/vince/boulder/va/proto"
-	"github.com/honeycombio/beeline-go"
 	"github.com/jmhodges/clock"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -659,9 +658,6 @@ func (va *ValidationAuthorityImpl) PerformValidation(ctx context.Context, req *v
 		Requester: req.Authz.RegID,
 		Hostname:  req.Domain,
 	}
-	beeline.AddFieldToTrace(ctx, "authz.id", req.Authz.Id)
-	beeline.AddFieldToTrace(ctx, "acct.id", req.Authz.RegID)
-	beeline.AddFieldToTrace(ctx, "authz.dnsname", req.Domain)
 	vStart := va.clk.Now()
 
 	var remoteResults chan *remoteValidationResult
@@ -690,7 +686,6 @@ func (va *ValidationAuthorityImpl) PerformValidation(ctx context.Context, req *v
 		challenge.Status = core.StatusInvalid
 		challenge.Error = prob
 		logEvent.Error = prob.Error()
-		beeline.AddFieldToTrace(ctx, "challenge.error", prob.Error())
 	} else if remoteResults != nil {
 		if !features.Enabled(features.EnforceMultiVA) && features.Enabled(features.MultiVAFullResults) {
 			// If we're not going to enforce multi VA but we are logging the
@@ -724,9 +719,6 @@ func (va *ValidationAuthorityImpl) PerformValidation(ctx context.Context, req *v
 				challenge.Status = core.StatusInvalid
 				challenge.Error = remoteProb
 				logEvent.Error = remoteProb.Error()
-				beeline.AddFieldToTrace(ctx, "challenge.error", remoteProb.Error())
-				va.log.Infof("Validation failed due to remote failures: identifier=%v err=%s",
-					req.Domain, remoteProb)
 				va.metrics.remoteValidationFailures.Inc()
 			} else {
 				challenge.Status = core.StatusValid
@@ -737,9 +729,6 @@ func (va *ValidationAuthorityImpl) PerformValidation(ctx context.Context, req *v
 	}
 
 	logEvent.Challenge = challenge
-	beeline.AddFieldToTrace(ctx, "challenge.type", challenge.Type)
-	beeline.AddFieldToTrace(ctx, "challenge.status", challenge.Status)
-
 	validationLatency := time.Since(vStart)
 	logEvent.ValidationLatency = validationLatency.Round(time.Millisecond).Seconds()
 

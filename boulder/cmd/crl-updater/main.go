@@ -6,8 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/honeycombio/beeline-go"
-
 	capb "github.com/gernest/vince/boulder/ca/proto"
 	"github.com/gernest/vince/boulder/cmd"
 	cspb "github.com/gernest/vince/boulder/crl/storer/proto"
@@ -122,11 +120,6 @@ func main() {
 	defer logger.AuditPanic()
 	logger.Info(cmd.VersionString())
 	clk := cmd.Clock()
-
-	bc, err := c.Beeline.Load()
-	cmd.FailOnError(err, "Failed to load Beeline config")
-	beeline.Init(bc)
-	defer beeline.Close()
 
 	issuers := make([]*issuance.Certificate, 0, len(c.CRLUpdater.IssuerCerts))
 	for _, filepath := range c.CRLUpdater.IssuerCerts {

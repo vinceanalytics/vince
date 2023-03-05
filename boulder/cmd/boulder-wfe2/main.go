@@ -24,7 +24,6 @@ import (
 	rapb "github.com/gernest/vince/boulder/ra/proto"
 	sapb "github.com/gernest/vince/boulder/sa/proto"
 	"github.com/gernest/vince/boulder/wfe2"
-	"github.com/honeycombio/beeline-go"
 	"github.com/jmhodges/clock"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -436,11 +435,6 @@ func main() {
 			}
 		}
 	}
-
-	bc, err := c.Beeline.Load()
-	cmd.FailOnError(err, "Failed to load Beeline config")
-	beeline.Init(bc)
-	defer beeline.Close()
 
 	stats, logger := cmd.StatsAndLogging(c.Syslog, c.WFE.DebugAddr)
 	defer logger.AuditPanic()

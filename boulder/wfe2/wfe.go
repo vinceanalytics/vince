@@ -24,8 +24,6 @@ import (
 	"github.com/gernest/vince/boulder/goodkey"
 	bgrpc "github.com/gernest/vince/boulder/grpc"
 	"github.com/gernest/vince/boulder/nonce"
-	"github.com/honeycombio/beeline-go"
-	"github.com/honeycombio/beeline-go/wrappers/hnynethttp"
 	"github.com/jmhodges/clock"
 
 	// 'grpc/noncebalancer' is imported for its init function.
@@ -33,7 +31,6 @@ import (
 	"github.com/gernest/vince/boulder/identifier"
 	"github.com/gernest/vince/boulder/issuance"
 	blog "github.com/gernest/vince/boulder/log"
-	"github.com/gernest/vince/boulder/metrics/measured_http"
 	"github.com/gernest/vince/boulder/probs"
 	rapb "github.com/gernest/vince/boulder/ra/proto"
 	"github.com/gernest/vince/boulder/revocation"
@@ -254,10 +251,8 @@ func (wfe *WebFrontEndImpl) HandleFunc(mux *http.ServeMux, pattern string, h web
 	handler := http.StripPrefix(pattern, web.NewTopHandler(wfe.log,
 		web.WFEHandlerFunc(func(ctx context.Context, logEvent *web.RequestEvent, response http.ResponseWriter, request *http.Request) {
 			logEvent.Endpoint = pattern
-			beeline.AddFieldToTrace(ctx, "endpoint", pattern)
 			if request.URL != nil {
 				logEvent.Slug = request.URL.Path
-				beeline.AddFieldToTrace(ctx, "slug", request.URL.Path)
 			}
 			tls := request.Header.Get("TLS-Version")
 			if tls == "TLSv1" || tls == "TLSv1.1" {
@@ -432,7 +427,7 @@ func (wfe *WebFrontEndImpl) Handler(stats prometheus.Registerer) http.Handler {
 	// meaning we can wind up returning 405 when we mean to return 404. See
 	// https://github.com/gernest/vince/boulder/issues/717
 	m.Handle("/", web.NewTopHandler(wfe.log, web.WFEHandlerFunc(wfe.Index)))
-	return hnynethttp.WrapHandler(measured_http.New(m, wfe.clk, stats))
+	return m
 }
 
 // Method implementations
@@ -511,7 +506,6 @@ func (wfe *WebFrontEndImpl) Directory(
 			return
 		}
 		logEvent.Requester = acct.ID
-		beeline.AddFieldToTrace(ctx, "acct.id", acct.ID)
 	}
 
 	// Add a random key to the directory in order to make sure that clients don't hardcode an
@@ -569,7 +563,6 @@ func (wfe *WebFrontEndImpl) Nonce(
 			return
 		}
 		logEvent.Requester = acct.ID
-		beeline.AddFieldToTrace(ctx, "acct.id", acct.ID)
 	}
 
 	statusCode := http.StatusNoContent
@@ -647,8 +640,6 @@ func (wfe *WebFrontEndImpl) NewAccount(
 		response.Header().Set("Location",
 			web.RelativeEndpoint(request, fmt.Sprintf("%s%d", acctPath, acctPB.Id)))
 		logEvent.Requester = acctPB.Id
-		beeline.AddFieldToTrace(ctx, "acct.id", acctPB.Id)
-		addRequesterHeader(response, acctPB.Id)
 
 		acct, err := bgrpc.PbToRegistration(acctPB)
 		if err != nil {
@@ -764,11 +755,9 @@ func (wfe *WebFrontEndImpl) NewAccount(
 		return
 	}
 	logEvent.Requester = acct.ID
-	beeline.AddFieldToTrace(ctx, "acct.id", acct.ID)
 	addRequesterHeader(response, acct.ID)
 	if acct.Contact != nil {
 		logEvent.Contacts = *acct.Contact
-		beeline.AddFieldToTrace(ctx, "contacts", *acct.Contact)
 	}
 
 	acctURL := web.RelativeEndpoint(request, fmt.Sprintf("%s%d", acctPath, acct.ID))
@@ -818,7 +807,6 @@ func (wfe *WebFrontEndImpl) parseRevocation(
 	if revokeRequest.Reason != nil {
 		logEvent.Extra["RevocationReason"] = *revokeRequest.Reason
 	}
-	beeline.AddFieldToTrace(ctx, "cert.serial", serial)
 
 	// Try to validate the signature on the provided cert using its corresponding
 	// issuer certificate.
@@ -832,7 +820,6 @@ func (wfe *WebFrontEndImpl) parseRevocation(
 		return nil, 0, probs.NotFound("No such certificate")
 	}
 	logEvent.DNSNames = parsedCertificate.DNSNames
-	beeline.AddFieldToTrace(ctx, "dnsnames", parsedCertificate.DNSNames)
 
 	if parsedCertificate.NotAfter.Before(wfe.clk.Now()) {
 		return nil, 0, probs.Unauthorized("Certificate is expired")
@@ -1067,10 +1054,8 @@ func (wfe *WebFrontEndImpl) Challenge(
 
 	if authz.Identifier.Type == identifier.DNS {
 		logEvent.DNSName = authz.Identifier.Value
-		beeline.AddFieldToTrace(ctx, "authz.dnsname", authz.Identifier.Value)
 	}
 	logEvent.Status = string(authz.Status)
-	beeline.AddFieldToTrace(ctx, "authz.status", authz.Status)
 
 	challenge := authz.Challenges[challengeIndex]
 	switch request.Method {
@@ -1079,7 +1064,6 @@ func (wfe *WebFrontEndImpl) Challenge(
 
 	case "POST":
 		logEvent.ChallengeType = string(challenge.Type)
-		beeline.AddFieldToTrace(ctx, "authz.challenge.type", challenge.Type)
 		wfe.postChallenge(ctx, response, request, authz, challengeIndex, logEvent)
 	}
 }
@@ -1491,10 +1475,8 @@ func (wfe *WebFrontEndImpl) Authorization(
 
 	if identifier.IdentifierType(authzPB.Identifier) == identifier.DNS {
 		logEvent.DNSName = authzPB.Identifier
-		beeline.AddFieldToTrace(ctx, "authz.dnsname", authzPB.Identifier)
 	}
 	logEvent.Status = authzPB.Status
-	beeline.AddFieldToTrace(ctx, "authz.status", authzPB.Status)
 
 	// After expiring, authorizations are inaccessible
 	if time.Unix(0, authzPB.Expires).Before(wfe.clk.Now()) {
@@ -1590,7 +1572,6 @@ func (wfe *WebFrontEndImpl) Certificate(ctx context.Context, logEvent *web.Reque
 		return
 	}
 	logEvent.Extra["RequestedSerial"] = serial
-	beeline.AddFieldToTrace(ctx, "request.serial", serial)
 
 	cert, err := wfe.sa.GetCertificate(ctx, &sapb.Serial{Serial: serial})
 	if err != nil {
@@ -2032,7 +2013,6 @@ func (wfe *WebFrontEndImpl) NewOrder(
 		return
 	}
 	logEvent.Created = fmt.Sprintf("%d", order.Id)
-	beeline.AddFieldToTrace(ctx, "order.id", order.Id)
 
 	orderURL := web.RelativeEndpoint(request,
 		fmt.Sprintf("%s%d/%d", orderPath, acct.ID, order.Id))
@@ -2214,9 +2194,7 @@ func (wfe *WebFrontEndImpl) FinalizeOrder(ctx context.Context, logEvent *web.Req
 	}
 
 	logEvent.DNSNames = order.Names
-	beeline.AddFieldToTrace(ctx, "dnsnames", csr.DNSNames)
 	logEvent.Extra["KeyType"] = web.KeyTypeToString(csr.PublicKey)
-	beeline.AddFieldToTrace(ctx, "csr.key_type", web.KeyTypeToString(csr.PublicKey))
 
 	updatedOrder, err := wfe.ra.FinalizeOrder(ctx, &rapb.FinalizeOrderRequest{
 		Csr:   rawCSR.CSR,
@@ -2296,7 +2274,6 @@ func (wfe *WebFrontEndImpl) RenewalInfo(ctx context.Context, logEvent *web.Reque
 		return
 	}
 	logEvent.Extra["RequestedSerial"] = serial
-	beeline.AddFieldToTrace(ctx, "request.serial", serial)
 
 	setDefaultRetryAfterHeader := func(response http.ResponseWriter) {
 		response.Header().Set(headerRetryAfter, fmt.Sprintf("%d", int(6*time.Hour/time.Second)))

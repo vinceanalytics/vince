@@ -15,7 +15,6 @@ import (
 
 	"github.com/gernest/vince/boulder/core"
 	"github.com/go-sql-driver/mysql"
-	"github.com/honeycombio/beeline-go"
 	"google.golang.org/grpc/resolver"
 )
 
@@ -516,20 +515,4 @@ func makeSampler(rate uint32) func(fields map[string]interface{}) (bool, int) {
 		h.Write([]byte(id))
 		return h.Sum32() < upperBound, int(rate)
 	}
-}
-
-// Load converts a BeelineConfig to a beeline.Config, loading the api WriteKey
-// and setting the ServiceName automatically.
-func (bc *BeelineConfig) Load() (beeline.Config, error) {
-	writekey, err := bc.WriteKey.Pass()
-	if err != nil {
-		return beeline.Config{}, fmt.Errorf("failed to get write key: %w", err)
-	}
-
-	return beeline.Config{
-		WriteKey:    writekey,
-		ServiceName: bc.ServiceName,
-		SamplerHook: makeSampler(bc.SampleRate),
-		Mute:        bc.Mute,
-	}, nil
 }

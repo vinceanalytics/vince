@@ -9,7 +9,6 @@ import (
 	bgrpc "github.com/gernest/vince/boulder/grpc"
 	"github.com/gernest/vince/boulder/sa"
 	sapb "github.com/gernest/vince/boulder/sa/proto"
-	"github.com/honeycombio/beeline-go"
 )
 
 type Config struct {
@@ -57,11 +56,6 @@ func main() {
 	if *debugAddr != "" {
 		c.SA.DebugAddr = *debugAddr
 	}
-
-	bc, err := c.Beeline.Load()
-	cmd.FailOnError(err, "Failed to load Beeline config")
-	beeline.Init(bc)
-	defer beeline.Close()
 
 	scope, logger := cmd.StatsAndLogging(c.Syslog, c.SA.DebugAddr)
 	defer logger.AuditPanic()

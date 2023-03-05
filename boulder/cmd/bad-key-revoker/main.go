@@ -20,7 +20,6 @@ import (
 	"github.com/gernest/vince/boulder/mail"
 	rapb "github.com/gernest/vince/boulder/ra/proto"
 	"github.com/gernest/vince/boulder/sa"
-	"github.com/honeycombio/beeline-go"
 	"github.com/jmhodges/clock"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/crypto/ocsp"
@@ -436,11 +435,6 @@ func main() {
 	var config Config
 	err := cmd.ReadConfigFile(*configPath, &config)
 	cmd.FailOnError(err, "Failed reading config file")
-
-	bc, err := config.Beeline.Load()
-	cmd.FailOnError(err, "Failed to load Beeline config")
-	beeline.Init(bc)
-	defer beeline.Close()
 
 	scope, logger := cmd.StatsAndLogging(config.Syslog, config.BadKeyRevoker.DebugAddr)
 	clk := cmd.Clock()

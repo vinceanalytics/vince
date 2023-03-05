@@ -8,7 +8,6 @@ import (
 	"github.com/gernest/vince/boulder/cmd"
 	bcreds "github.com/gernest/vince/boulder/grpc/creds"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/honeycombio/beeline-go/wrappers/hnygrpc"
 	"github.com/jmhodges/clock"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
@@ -44,7 +43,6 @@ func ClientSetup(c *cmd.GRPCClientConfig, tlsConfig *tls.Config, statsRegistry p
 	unaryInterceptors := []grpc.UnaryClientInterceptor{
 		cmi.Unary,
 		cmi.metrics.grpcMetrics.UnaryClientInterceptor(),
-		hnygrpc.UnaryClientInterceptor(),
 	}
 
 	streamInterceptors := []grpc.StreamClientInterceptor{

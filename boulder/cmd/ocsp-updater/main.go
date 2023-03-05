@@ -5,8 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/honeycombio/beeline-go"
-
 	capb "github.com/gernest/vince/boulder/ca/proto"
 	"github.com/gernest/vince/boulder/cmd"
 	"github.com/gernest/vince/boulder/db"
@@ -75,11 +73,6 @@ func main() {
 	conf := c.OCSPUpdater
 	err = features.Set(conf.Features)
 	cmd.FailOnError(err, "Failed to set feature flags")
-
-	bc, err := c.Beeline.Load()
-	cmd.FailOnError(err, "Failed to load Beeline config")
-	beeline.Init(bc)
-	defer beeline.Close()
 
 	scope, logger := cmd.StatsAndLogging(c.Syslog, conf.DebugAddr)
 	defer logger.AuditPanic()
