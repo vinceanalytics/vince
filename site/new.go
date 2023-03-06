@@ -10,12 +10,12 @@ import (
 
 func New(w http.ResponseWriter, r *http.Request) {
 	u := models.GetCurrentUser(r.Context())
-	owned := len(u.OwnedSites)
+	owned := u.CountOwnedSites(r.Context())
 	limit := u.SitesLimit(r.Context())
 	render.HTML(r.Context(), w, templates.SiteNew, http.StatusOK, func(ctx *templates.Context) {
 		ctx.NewSite = &templates.NewSite{
 			IsFirstSite: owned == 0,
-			IsAtLimit:   owned >= limit,
+			IsAtLimit:   owned >= int64(limit),
 			SiteLimit:   limit,
 		}
 	})

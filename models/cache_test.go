@@ -54,4 +54,7 @@ func TestQueryCacheSites(t *testing.T) {
 	if c[0].UserID != usr.ID {
 		t.Errorf("expected %d got %d", usr.ID, c[0].UserID)
 	}
+	// db.Logger = logger.Default.LogMode(logger.Info)
+	// usr.CountOwnedSites(Set(context.TODO(), db))
+	// t.Error()
 }

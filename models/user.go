@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"math"
 	"net/http"
 	"net/mail"
@@ -10,7 +11,9 @@ import (
 	"time"
 
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/log"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type currentUserKey struct{}
@@ -21,7 +24,6 @@ type User struct {
 	Email        string `gorm:"uniqueIndex"`
 	PasswordHash string
 	Sites        []*Site `gorm:"many2many:site_memberships;"`
-	OwnedSites   []*Site `gorm:"-"`
 
 	EmailVerificationCodes  []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
 	IntroEmails             []*IntroEmail            `gorm:"constraint:OnDelete:CASCADE;"`
@@ -74,14 +76,22 @@ func LoadUserModel(ctx context.Context, uid uint64) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = db.Model(&Site{}).
-		Joins("inner join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' and site_memberships.user_id = ? ", u.ID).
-		Scan(&u.OwnedSites).Error
-	if err != nil {
-		return nil, err
-	}
 	return &u, nil
+}
 
+// CountOwnedSites counts sites owned by the user.
+func (u *User) CountOwnedSites(ctx context.Context) int64 {
+	var o int64
+	err := Get(ctx).Model(&Site{}).
+		Joins("inner join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' and site_memberships.user_id = ? ", u.ID).
+		Count(&o).Error
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Get(ctx).Err(err).Msg("failed to count owned sites")
+		}
+		return 0
+	}
+	return o
 }
 
 func (u *User) SitesLimit(ctx context.Context) int {
