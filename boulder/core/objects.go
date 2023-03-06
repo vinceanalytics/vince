@@ -455,6 +455,10 @@ type CertificateStatus struct {
 	IssuerID int64
 }
 
+func (CertificateStatus) TableName() string {
+	return "certificateStatus"
+}
+
 // FQDNSet contains the SHA256 hash of the lowercased, comma joined dNSNames
 // contained in a certificate.
 type FQDNSet struct {
@@ -463,6 +467,10 @@ type FQDNSet struct {
 	Serial  string
 	Issued  time.Time
 	Expires time.Time
+}
+
+func (FQDNSet) TableName() string {
+	return "fqdnSets"
 }
 
 // SCTDERs is a convenience type

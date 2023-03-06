@@ -139,6 +139,10 @@ type CertStatusMetadata struct {
 	IssuerID              int64             `db:"issuerID"`
 }
 
+func (CertStatusMetadata) TableName() string {
+	return "certificateStatus"
+}
+
 const certStatusFields = "id, serial, status, ocspLastUpdated, revokedDate, revokedReason, lastExpirationNagSent, ocspResponse, notAfter, isExpired, issuerID"
 
 // SelectCertificateStatus selects all fields of one certificate status model
@@ -194,6 +198,10 @@ type issuedNameModel struct {
 	ReversedName string    `db:"reversedName"`
 	NotBefore    time.Time `db:"notBefore"`
 	Serial       string    `db:"serial"`
+}
+
+func (issuedNameModel) TableName() string {
+	return "issuedNames"
 }
 
 // regModel is the description of a core.Registration in the database before
@@ -311,6 +319,10 @@ type recordedSerialModel struct {
 	Expires        time.Time
 }
 
+func (recordedSerialModel) TableName() string {
+	return "serials"
+}
+
 type precertificateModel struct {
 	ID             int64
 	Serial         string
@@ -318,6 +330,10 @@ type precertificateModel struct {
 	DER            []byte
 	Issued         time.Time
 	Expires        time.Time
+}
+
+func (precertificateModel) TableName() string {
+	return "precertificates"
 }
 
 type orderModel struct {
@@ -330,15 +346,27 @@ type orderModel struct {
 	BeganProcessing   bool
 }
 
+func (orderModel) TableName() string {
+	return "orders"
+}
+
 type requestedNameModel struct {
 	ID           int64
 	OrderID      int64
 	ReversedName string
 }
 
+func (requestedNameModel) TableName() string {
+	return "requestedNames"
+}
+
 type orderToAuthzModel struct {
 	OrderID int64
 	AuthzID int64
+}
+
+func (orderToAuthzModel) TableName() string {
+	return "orderToAuthz"
 }
 
 func orderToModel(order *corepb.Order) (*orderModel, error) {
@@ -444,6 +472,10 @@ type authzModel struct {
 	Token            []byte     `db:"token"`
 	ValidationError  []byte     `db:"validationError"`
 	ValidationRecord []byte     `db:"validationRecord"`
+}
+
+func (authzModel) TableName() string {
+	return "authz2"
 }
 
 // SelectAuthzsMatchingIssuance looks for a set of authzs that would have
@@ -710,6 +742,10 @@ type keyHashModel struct {
 	CertSerial   string
 }
 
+func (keyHashModel) TableName() string {
+	return "keyHashToSerial"
+}
+
 var stringToSourceInt = map[string]int{
 	"API":           1,
 	"admin-revoker": 2,
@@ -722,6 +758,10 @@ type incidentModel struct {
 	URL         string    `db:"url"`
 	RenewBy     time.Time `db:"renewBy"`
 	Enabled     bool      `db:"enabled"`
+}
+
+func (incidentModel) TableName() string {
+	return "incidents"
 }
 
 func incidentModelToPB(i incidentModel) sapb.Incident {
@@ -742,6 +782,10 @@ type incidentSerialModel struct {
 	LastNoticeSent time.Time `db:"lastNoticeSent"`
 }
 
+func (incidentSerialModel) TableName() string {
+	return "incidentSerialModel"
+}
+
 // crlEntryModel has just the certificate status fields necessary to construct
 // an entry in a CRL.
 type crlEntryModel struct {
@@ -749,6 +793,10 @@ type crlEntryModel struct {
 	Status        core.OCSPStatus   `db:"status"`
 	RevokedReason revocation.Reason `db:"revokedReason"`
 	RevokedDate   time.Time         `db:"revokedDate"`
+}
+
+func (crlEntryModel) TableName() string {
+	return "certificateStatus"
 }
 
 // HashNames returns a hash of the names requested. This is intended for use
@@ -769,6 +817,10 @@ type orderFQDNSet struct {
 	OrderID        int64
 	RegistrationID int64
 	Expires        time.Time
+}
+
+func (orderFQDNSet) TableName() string {
+	return "orderFqdnSets"
 }
 
 func addFQDNSet(db db.Inserter, names []string, serial string, issued time.Time, expires time.Time) error {
