@@ -91,7 +91,7 @@ func toDate(ts time.Time) time.Time {
 type Site struct {
 	Model
 	Domain                      string `gorm:"uniqueIndex"`
-	Description                 sql.NullString
+	Description                 string
 	Timezone                    string `gorm:"default:UTC"`
 	Public                      bool   `gorm:"not null;default:false"`
 	StatsStartDate              time.Time
