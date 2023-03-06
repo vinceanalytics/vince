@@ -32,15 +32,17 @@ type User struct {
 	CheckStatEmail          []*CheckStatEmail        `gorm:"constraint:OnDelete:CASCADE;"`
 	SentRenewalNotification []*SentRenewalNotification
 	APIKeys                 []*APIKey
-	Subscription            *Subscription
-	EnterprisePlan          *EnterprisePlan
-	GoogleAuth              *GoogleAuth
-	LastSeen                time.Time
-	TrialExpiryDate         sql.NullTime
-	EmailVerified           bool   `gorm:"not null;default:false"`
-	Theme                   string `gorm:"not null;default:system"`
-	GracePeriod             *GracePeriod
-	Invitations             []*Invitation
+
+	Subscription   *Subscription
+	EnterprisePlan *EnterprisePlan
+	GoogleAuth     *GoogleAuth
+	GracePeriod    *GracePeriod
+
+	LastSeen        time.Time
+	TrialExpiryDate sql.NullTime
+	EmailVerified   bool   `gorm:"not null;default:false"`
+	Theme           string `gorm:"not null;default:system"`
+	Invitations     []*Invitation
 }
 
 func SetCurrentUser(ctx context.Context, usr *User) context.Context {
@@ -59,19 +61,11 @@ func GetCurrentUser(ctx context.Context) *User {
 func LoadUserModel(ctx context.Context, uid uint64) (*User, error) {
 	var u User
 	db := Get(ctx)
-	err := db.Preload("Sites").
-		Preload("EmailVerificationCodes").
-		Preload("IntroEmails").
-		Preload("FeedbackEmails").
-		Preload("CreateSiteEmails").
-		Preload("SentRenewalNotification").
-		Preload("APIKeys").
+	err := db.
 		Preload("Subscription").
-		Preload("EnterprisePlan").
 		Preload("EnterprisePlan").
 		Preload("GoogleAuth").
 		Preload("GracePeriod").
-		Preload("Invitations").
 		First(&u).Error
 	if err != nil {
 		return nil, err

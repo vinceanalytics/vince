@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -17,10 +18,22 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	ctx := r.Context()
 	usr := models.GetCurrentUser(ctx)
+
+	// load verification codes belonging to the user. We save space by only selecting id instead
+	// of all columns.
+	// We only care about correctness of the relationship, since we already have
+	// our current user object.
+	err := models.Get(r.Context()).Preload("EmailVerificationCodes").Select("id").First(usr).Error
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Get(r.Context()).Err(err).Msg("failed preloading EmailVerificationCodes")
+		}
+	}
 	hasInvitation := models.Exists(ctx, func(db *gorm.DB) *gorm.DB {
 		return db.Model(&models.Invitation{}).Where("email=?", usr.Email)
 	})
 	code, _ := strconv.Atoi(r.Form.Get("code"))
+
 	// User model is preloaded with verification codes
 	for _, codes := range usr.EmailVerificationCodes {
 		if codes.Code == uint64(code) {
