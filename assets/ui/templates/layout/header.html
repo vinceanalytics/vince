@@ -1,4 +1,13 @@
 {{define "_header"}}
+{{if not .CurrentUser}}
+{{template "_logged_in" .}}
+{{else}}
+{{template "_logged_out" .}}
+{{end}}
+{{end}}
+
+
+{{define "_logged_out"}}
 <header class=" header position-relative f4 py-3">
     <div
         class="container-xl d-flex flex-column flex-lg-row flex-items-center p-responsive height-full position-relative z-1">
@@ -95,6 +104,509 @@
                 </div>
             </div>
         </div>
+    </div>
+</header>
+{{end}}
+
+{{define "_logged_in"}}
+<header class="Header js-details-container Details px-3 px-md-4 px-lg-5 flex-wrap flex-md-nowrap open Details--on"
+    role="banner">
+    <div class="Header-item mt-n1 mb-n1  d-none d-md-flex">
+        <a class="Header-link" href="/" data-hotkey="g d" aria-label="Homepage " data-turbo="false"
+            data-analytics-event="{&quot;category&quot;:&quot;Header&quot;,&quot;action&quot;:&quot;go to dashboard&quot;,&quot;label&quot;:&quot;icon:logo&quot;}">
+            <span class="logo-main v-align-middle">vince</span>
+        </a>
+    </div>
+    <div
+        class="Header-item Header-item--full flex-column flex-md-row width-full flex-order-2 flex-md-order-none mr-0 mt-3 mt-md-0 Details-content--hidden-not-important d-md-flex">
+        <nav id="global-nav" class="d-flex flex-column flex-md-row flex-self-stretch flex-md-self-auto"
+            aria-label="Global">
+
+            <a class="Header-link d-block d-md-none mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade"
+                data-turbo="false" href="/settings/profile">Settings</a>
+
+            <a class="Header-link d-block d-md-none mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade"
+                data-turbo="false" href="/gernest">
+                <img class="avatar avatar-user" loading="lazy" decoding="async" src="/avatar?s=40&amp;u=4" width="20"
+                    height="20" alt="@gernest">
+                gernest
+            </a>
+            <!-- '"` --><!-- </textarea></xmp> -->
+            <form data-turbo="false" action="/logout" accept-charset="UTF-8" method="post"><input type="hidden"
+                    name="authenticity_token"
+                    value="VnEcXnfABFsAOVNZHJrqTQ6ZVhgq4Pdwje18bULoeT-cH_lhuZIZOVYfIV_F5XWSZLv0xwhs89E_23F0Ii1Dkw">
+                <button type="submit"
+                    class="Header-link mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade d-md-none btn-link d-block width-full text-left"
+                    style="padding-left: 2px;"
+                    data-analytics-event="{&quot;category&quot;:&quot;Header&quot;,&quot;action&quot;:&quot;sign out&quot;,&quot;label&quot;:&quot;icon:logout&quot;}">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-sign-out v-align-middle">
+                        <path fill-rule="evenodd"
+                            d="M2 2.75C2 1.784 2.784 1 3.75 1h2.5a.75.75 0 010 1.5h-2.5a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h2.5a.75.75 0 010 1.5h-2.5A1.75 1.75 0 012 13.25V2.75zm10.44 4.5H6.75a.75.75 0 000 1.5h5.69l-1.97 1.97a.75.75 0 101.06 1.06l3.25-3.25a.75.75 0 000-1.06l-3.25-3.25a.75.75 0 10-1.06 1.06l1.97 1.97z">
+                        </path>
+                    </svg>
+                    Sign out
+                </button>
+            </form>
+        </nav>
+
+    </div>
+
+    <div class="Header-item Header-item--full flex-justify-center d-md-none position-relative">
+        <a class="Header-link" href="/" data-hotkey="g d" aria-label="Homepage " data-turbo="false"
+            data-analytics-event="{&quot;category&quot;:&quot;Header&quot;,&quot;action&quot;:&quot;go to dashboard&quot;,&quot;label&quot;:&quot;icon:logo&quot;}">
+            <span class="logo-main v-align-middle">vince</span>
+        </a>
+
+    </div>
+
+
+
+    <div class="Header-item position-relative d-none d-md-flex">
+        <details class="details-overlay details-reset" data-ol-has-click-handler="">
+            <summary class="Header-link" aria-label="Create new…"
+                data-analytics-event="{&quot;category&quot;:&quot;Header&quot;,&quot;action&quot;:&quot;create new&quot;,&quot;label&quot;:&quot;icon:add&quot;}"
+                aria-haspopup="menu" role="button">
+                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                    data-view-component="true" class="octicon octicon-plus">
+                    <path fill-rule="evenodd"
+                        d="M7.75 2a.75.75 0 01.75.75V7h4.25a.75.75 0 110 1.5H8.5v4.25a.75.75 0 11-1.5 0V8.5H2.75a.75.75 0 010-1.5H7V2.75A.75.75 0 017.75 2z">
+                    </path>
+                </svg> <span class="dropdown-caret"></span>
+            </summary>
+            <details-menu class="dropdown-menu dropdown-menu-sw" role="menu">
+
+                <a role="menuitem" class="dropdown-item" href="/new" data-ga-click="Header, create new repository">
+                    New repository
+                </a>
+
+                <a role="menuitem" class="dropdown-item" href="/new/import" data-ga-click="Header, import a repository">
+                    Import repository
+                </a>
+
+                <a role="menuitem" class="dropdown-item" href="/codespaces/new">
+                    New codespace
+                </a>
+
+                <a role="menuitem" class="dropdown-item" href="https://gist.github.com/"
+                    data-ga-click="Header, create new gist">
+                    New gist
+                </a>
+
+                <a role="menuitem" class="dropdown-item" href="/organizations/new"
+                    data-ga-click="Header, create new organization">
+                    New organization
+                </a>
+
+
+                <!-- '"` --><!-- </textarea></xmp> -->
+                <form data-turbo="false" action="/users/gernest/projects?type=new" accept-charset="UTF-8" method="post">
+                    <input type="hidden" name="authenticity_token"
+                        value="6vo51Lf2gwWoh4-lWTJXT9eXZQzxgYGW4QNIJUL8YU9Bx7Nsw61sNNnX4JS67p6nqPNdqC1NqwDRMYnP4T7Uxw">
+                    <input type="hidden" name="action" id="action" value="create" autocomplete="off"
+                        class="form-control">
+                    <input id="project-title" value="@gernest's untitled project" autocomplete="off" type="hidden"
+                        name="memex_project[title]">
+                    <button role="menuitem" data-ga-click="Header, create new project" type="submit"
+                        data-view-component="true" class="dropdown-item btn-link"> New project
+                    </button>
+                </form>
+            </details-menu>
+        </details>
+
+    </div>
+
+    <div class="Header-item position-relative mr-0 d-none d-md-flex">
+
+        <details class="details-overlay details-reset js-feature-preview-indicator-container"
+            data-feature-preview-indicator-src="/users/gernest/feature_preview/indicator_check"
+            data-ol-has-click-handler="">
+
+            <summary class="Header-link" aria-label="View profile and more"
+                data-analytics-event="{&quot;category&quot;:&quot;Header&quot;,&quot;action&quot;:&quot;show menu&quot;,&quot;label&quot;:&quot;icon:avatar&quot;}"
+                aria-haspopup="menu" role="button">
+                <img src="/avatar?s=40&amp;u=4" alt="@gernest" size="20" height="20" width="20"
+                    data-view-component="true" class="avatar avatar-small circle">
+                <span class="unread-indicator js-feature-preview-indicator" style="top: 1px;" hidden=""></span>
+                <span class="dropdown-caret"></span>
+            </summary>
+            <details-menu class="dropdown-menu dropdown-menu-sw" style="width: 180px" preload="" role="menu">
+                <div class="header-nav-current-user css-truncate"><a role="menuitem"
+                        class="no-underline user-profile-link px-3 pt-2 pb-2 mb-n2 mt-n1 d-block" href="/gernest"
+                        data-ga-click="Header, go to profile, text:Signed in as">Signed in as <strong
+                            class="css-truncate-target">gernest</strong></a></div>
+                <div role="none" class="dropdown-divider"></div>
+
+                <div class="pl-3 pr-3 f6 user-status-container js-user-status-context lh-condensed"
+                    data-url="/users/status?compact=1&amp;link_mentions=0&amp;truncate=1">
+
+                    <div class="js-user-status-container rounded-2 px-2 py-1 mt-2 border"
+                        data-team-hovercards-enabled="">
+                        <details class="js-user-status-details details-reset details-overlay details-overlay-dark">
+                            <summary
+                                class="btn-link btn-block Link--secondary no-underline js-toggle-user-status-edit toggle-user-status-edit"
+                                role="menuitem">
+                                <div class="d-flex flex-items-center flex-items-stretch">
+                                    <div
+                                        class="f6 lh-condensed user-status-header d-flex user-status-emoji-only-header circle">
+                                        <div
+                                            class="user-status-emoji-container flex-shrink-0 mr-2 d-flex flex-items-center flex-justify-center lh-condensed-ultra v-align-bottom">
+                                            <svg class="octicon octicon-smiley" viewBox="0 0 16 16" version="1.1"
+                                                width="16" height="16" aria-hidden="true">
+                                                <path fill-rule="evenodd"
+                                                    d="M1.5 8a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0zM8 0a8 8 0 100 16A8 8 0 008 0zM5 8a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zM5.32 9.636a.75.75 0 011.038.175l.007.009c.103.118.22.222.35.31.264.178.683.37 1.285.37.602 0 1.02-.192 1.285-.371.13-.088.247-.192.35-.31l.007-.008a.75.75 0 111.222.87l-.614-.431c.614.43.614.431.613.431v.001l-.001.002-.002.003-.005.007-.014.019a1.984 1.984 0 01-.184.213c-.16.166-.338.316-.53.445-.63.418-1.37.638-2.127.629-.946 0-1.652-.308-2.126-.63a3.32 3.32 0 01-.715-.657l-.014-.02-.005-.006-.002-.003v-.002h-.001l.613-.432-.614.43a.75.75 0 01.183-1.044h.001z">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="
+          
+           user-status-message-wrapper f6 min-width-0" style="line-height: 20px;">
+                                        <div
+                                            class="css-truncate css-truncate-target width-fit color-fg-default text-left">
+                                            <span class="color-fg-muted">Set status</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </summary>
+                            <details-dialog class="rounded-2 anim-fade-in fast Box Box--overlay overflow-visible"
+                                role="dialog" aria-label="Edit status" tabindex="-1" aria-modal="true">
+
+                                <!-- '"` --><!-- </textarea></xmp> -->
+                                <form class="position-relative flex-auto js-user-status-form" data-turbo="false"
+                                    action="/users/status?circle=0&amp;compact=1&amp;link_mentions=0&amp;truncate=1"
+                                    accept-charset="UTF-8" method="post"><input type="hidden" name="_method" value="put"
+                                        autocomplete="off"><input type="hidden" name="authenticity_token"
+                                        value="nmKrvsx495xmeRK4sLuvu0y8PUzux11fb9V6Svj_QPF9Fk54AEXj2UyI8Bfy7vY6KC7sZILWPcmdPqUm1_MAqQ">
+                                    <div class="Box-header color-bg-subtle border-bottom p-3">
+                                        <button
+                                            class="Box-btn-octicon js-toggle-user-status-edit btn-octicon float-right"
+                                            type="reset" aria-label="Close dialog" data-close-dialog="">
+                                            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1"
+                                                width="16" data-view-component="true" class="octicon octicon-x">
+                                                <path fill-rule="evenodd"
+                                                    d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                        <h3 class="Box-title f5 text-bold color-fg-default">Edit status</h3>
+                                    </div>
+                                    <input type="hidden" name="emoji" class="js-user-status-emoji-field" value="">
+                                    <input type="hidden" name="organization_id" class="js-user-status-org-id-field"
+                                        value="">
+                                    <div class="px-3 py-2 color-fg-default">
+                                        <div class="js-characters-remaining-container position-relative mt-2">
+                                            <div class="input-group d-table form-group my-0 js-user-status-form-group">
+                                                <span class="input-group-button d-table-cell v-align-middle"
+                                                    style="width: 1%">
+                                                    <button aria-label="Choose an emoji"
+                                                        style="height: 32px; width: 46px;" type="button"
+                                                        data-view-component="true"
+                                                        class="js-toggle-user-status-emoji-picker btn-outline btn p-0">
+                                                        <span class="js-user-status-original-emoji" hidden=""></span>
+                                                        <span class="js-user-status-custom-emoji"></span>
+                                                        <span class="js-user-status-no-emoji-icon">
+                                                            <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                version="1.1" width="16" data-view-component="true"
+                                                                class="octicon octicon-smiley">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M1.5 8a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0zM8 0a8 8 0 100 16A8 8 0 008 0zM5 8a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zM5.32 9.636a.75.75 0 011.038.175l.007.009c.103.118.22.222.35.31.264.178.683.37 1.285.37.602 0 1.02-.192 1.285-.371.13-.088.247-.192.35-.31l.007-.008a.75.75 0 111.222.87l-.614-.431c.614.43.614.431.613.431v.001l-.001.002-.002.003-.005.007-.014.019a1.984 1.984 0 01-.184.213c-.16.166-.338.316-.53.445-.63.418-1.37.638-2.127.629-.946 0-1.652-.308-2.126-.63a3.32 3.32 0 01-.715-.657l-.014-.02-.005-.006-.002-.003v-.002h-.001l.613-.432-.614.43a.75.75 0 01.183-1.044h.001z">
+                                                                </path>
+                                                            </svg>
+                                                        </span>
+                                                    </button> </span>
+                                                <text-expander keys=": @"
+                                                    data-mention-url="/autocomplete/user-suggestions"
+                                                    data-emoji-url="/autocomplete/emoji">
+                                                    <input type="text" autocomplete="off"
+                                                        data-no-org-url="/autocomplete/user-suggestions"
+                                                        data-org-url="/suggestions?mention_suggester=1"
+                                                        data-maxlength="80"
+                                                        class="d-table-cell width-full form-control js-user-status-message-field js-characters-remaining-field"
+                                                        placeholder="What's happening?" name="message" value=""
+                                                        aria-label="What is your current status?">
+                                                </text-expander>
+                                                <div class="error">Could not update your status, please try again.</div>
+                                            </div>
+                                            <div style="margin-left: 53px"
+                                                class="my-1 text-small label-characters-remaining js-characters-remaining"
+                                                data-suffix="remaining" hidden="">
+                                                80 remaining
+                                            </div>
+                                        </div>
+                                        <include-fragment loading="lazy" src="/users/status/emoji"></include-fragment>
+                                        <div class="overflow-auto ml-n3 mr-n3 px-3 border-bottom"
+                                            style="max-height: 33vh">
+                                            <div
+                                                class="user-status-suggestions js-user-status-suggestions collapsed overflow-hidden">
+                                                <h4 class="f6 text-normal my-3">Suggestions:</h4>
+                                                <div class="mx-3 mt-2 clearfix">
+                                                    <div class="float-left col-6">
+                                                        <button type="button" value=":palm_tree:"
+                                                            class="d-flex flex-items-baseline flex-items-stretch lh-condensed f6 btn-link Link--secondary no-underline js-predefined-user-status mb-1">
+                                                            <div
+                                                                class="emoji-status-width mr-2 v-align-middle js-predefined-user-status-emoji">
+                                                                <g-emoji alias="palm_tree"
+                                                                    fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/1f334.png">🌴</g-emoji>
+                                                            </div>
+                                                            <div class="d-flex flex-items-center no-underline js-predefined-user-status-message ws-normal text-left"
+                                                                style="border-left: 1px solid transparent">
+                                                                On vacation
+                                                            </div>
+                                                        </button>
+                                                        <button type="button" value=":face_with_thermometer:"
+                                                            class="d-flex flex-items-baseline flex-items-stretch lh-condensed f6 btn-link Link--secondary no-underline js-predefined-user-status mb-1">
+                                                            <div
+                                                                class="emoji-status-width mr-2 v-align-middle js-predefined-user-status-emoji">
+                                                                <g-emoji alias="face_with_thermometer"
+                                                                    fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/1f912.png">🤒</g-emoji>
+                                                            </div>
+                                                            <div class="d-flex flex-items-center no-underline js-predefined-user-status-message ws-normal text-left"
+                                                                style="border-left: 1px solid transparent">
+                                                                Out sick
+                                                            </div>
+                                                        </button>
+                                                    </div>
+                                                    <div class="float-left col-6">
+                                                        <button type="button" value=":house:"
+                                                            class="d-flex flex-items-baseline flex-items-stretch lh-condensed f6 btn-link Link--secondary no-underline js-predefined-user-status mb-1">
+                                                            <div
+                                                                class="emoji-status-width mr-2 v-align-middle js-predefined-user-status-emoji">
+                                                                <g-emoji alias="house"
+                                                                    fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/1f3e0.png">🏠</g-emoji>
+                                                            </div>
+                                                            <div class="d-flex flex-items-center no-underline js-predefined-user-status-message ws-normal text-left"
+                                                                style="border-left: 1px solid transparent">
+                                                                Working from home
+                                                            </div>
+                                                        </button>
+                                                        <button type="button" value=":dart:"
+                                                            class="d-flex flex-items-baseline flex-items-stretch lh-condensed f6 btn-link Link--secondary no-underline js-predefined-user-status mb-1">
+                                                            <div
+                                                                class="emoji-status-width mr-2 v-align-middle js-predefined-user-status-emoji">
+                                                                <g-emoji alias="dart"
+                                                                    fallback-src="https://github.githubassets.com/images/icons/emoji/unicode/1f3af.png">🎯</g-emoji>
+                                                            </div>
+                                                            <div class="d-flex flex-items-center no-underline js-predefined-user-status-message ws-normal text-left"
+                                                                style="border-left: 1px solid transparent">
+                                                                Focusing
+                                                            </div>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="user-status-limited-availability-container">
+                                                <div class="form-checkbox my-0">
+                                                    <input type="checkbox" name="limited_availability" value="1"
+                                                        class="js-user-status-limited-availability-checkbox"
+                                                        data-default-message="I may be slow to respond."
+                                                        aria-describedby="limited-availability-help-text-truncate-true-compact-true"
+                                                        id="limited-availability-truncate-true-compact-true">
+                                                    <label class="d-block f5 color-fg-default mb-1"
+                                                        for="limited-availability-truncate-true-compact-true">
+                                                        Busy
+                                                    </label>
+                                                    <p class="note"
+                                                        id="limited-availability-help-text-truncate-true-compact-true">
+                                                        When others mention you, assign you, or request your review,
+                                                        GitHub will let them know that you have limited availability.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-inline-block f5 mr-2 pt-3 pb-2">
+                                            <div class="d-inline-block mr-1">
+                                                Clear status
+                                            </div>
+
+                                            <details
+                                                class="js-user-status-expire-drop-down f6 dropdown details-reset details-overlay d-inline-block mr-2">
+                                                <summary aria-haspopup="true" data-view-component="true"
+                                                    class="btn-sm btn v-align-baseline">
+                                                    <div
+                                                        class="js-user-status-expiration-interval-selected d-inline-block v-align-baseline">
+                                                        Never
+                                                    </div>
+                                                    <div class="dropdown-caret"></div>
+                                                </summary>
+                                                <ul class="dropdown-menu dropdown-menu-se pl-0 overflow-auto"
+                                                    style="width: 220px; max-height: 15.5em">
+                                                    <li>
+                                                        <button type="button"
+                                                            class="btn-link dropdown-item js-user-status-expire-button ws-normal"
+                                                            title="Never">
+                                                            <span class="d-inline-block text-bold mb-1">Never</span>
+                                                            <div class="f6 lh-condensed">Keep this status until you
+                                                                clear your status or edit your status.</div>
+                                                        </button>
+                                                    </li>
+                                                    <li class="dropdown-divider" role="none"></li>
+                                                    <li>
+                                                        <button type="button"
+                                                            class="btn-link dropdown-item ws-normal js-user-status-expire-button"
+                                                            title="in 30 minutes" value="2023-03-07T20:41:43+03:00">
+                                                            in 30 minutes
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button"
+                                                            class="btn-link dropdown-item ws-normal js-user-status-expire-button"
+                                                            title="in 1 hour" value="2023-03-07T21:11:43+03:00">
+                                                            in 1 hour
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button"
+                                                            class="btn-link dropdown-item ws-normal js-user-status-expire-button"
+                                                            title="in 4 hours" value="2023-03-08T00:11:43+03:00">
+                                                            in 4 hours
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button"
+                                                            class="btn-link dropdown-item ws-normal js-user-status-expire-button"
+                                                            title="today" value="2023-03-07T23:59:59+03:00">
+                                                            today
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button"
+                                                            class="btn-link dropdown-item ws-normal js-user-status-expire-button"
+                                                            title="this week" value="2023-03-12T23:59:59+03:00">
+                                                            this week
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </details>
+                                            <input class="js-user-status-expiration-date-input" type="hidden"
+                                                name="expires_at" value="">
+                                        </div>
+
+                                        <include-fragment loading="lazy"
+                                            src="/users/status/organizations"></include-fragment>
+                                    </div>
+                                    <div class="d-flex flex-items-center flex-justify-between p-3 border-top">
+                                        <button type="submit" disabled=""
+                                            class="width-full btn btn-primary mr-2 js-user-status-submit">
+                                            Set status
+                                        </button>
+                                        <button type="button" disabled=""
+                                            class="width-full js-clear-user-status-button btn ml-2 ">
+                                            Clear status
+                                        </button>
+                                    </div>
+                                </form>
+                            </details-dialog>
+                        </details>
+                    </div>
+
+                </div>
+                <div role="none" class="dropdown-divider"></div>
+
+                <a role="menuitem" class="dropdown-item" href="/gernest"
+                    data-ga-click="Header, go to profile, text:your profile"
+                    data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;YOUR_PROFILE&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                    data-hydro-click-hmac="b903b6430d6efda32afa1871dd46e50da822d19ccb7948ca19a07dd94fcc25c8">Your
+                    profile</a>
+
+                <a role="menuitem" class="dropdown-item" href="/gernest?tab=repositories"
+                    data-ga-click="Header, go to repositories, text:your repositories"
+                    data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;YOUR_REPOSITORIES&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                    data-hydro-click-hmac="313c382e1da25843eac2f071ea9a16bc3d274deed13e3167426926bdfd023c3d">Your
+                    repositories</a>
+
+                <div id="pending-invitations-indicator"
+                    class="hide-sm hide-md unread-indicator-container position-relative">
+                    <a role="menuitem" class="dropdown-item" href="/settings/organizations"
+                        data-ga-click="Header, go to organizations, text:your organizations"
+                        data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;YOUR_ORGANIZATIONS&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                        data-hydro-click-hmac="f3ec042f4d9660652973f1314211611ac06e0625e0baf88a5d58aa82d9f53102">
+                        Your organizations
+                    </a>
+                </div>
+
+
+
+                <a role="menuitem" class="dropdown-item" href="/gernest?tab=projects"
+                    data-ga-click="Header, go to projects, text:your projects"
+                    data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;YOUR_PROJECTS&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                    data-hydro-click-hmac="3f35545217da1d650bcb153d18efb03d756813bda48e004573200cbcb3e389ff">Your
+                    projects</a>
+
+                <a role="menuitem" class="dropdown-item" href="/discussions/commented"
+                    data-ga-click="Header, go to discussions, text:your discussions">Your discussions</a>
+
+                <a role="menuitem" class="dropdown-item" href="/gernest?tab=stars"
+                    data-ga-click="Header, go to starred repos, text:your stars"
+                    data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;YOUR_STARS&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                    data-hydro-click-hmac="a43ce840be08dcb47669644da28ff47a5d6c956f202b02ab17ba5c044b0a3f68">Your
+                    stars</a>
+                <a role="menuitem" class="dropdown-item" href="https://gist.github.com/mine"
+                    data-ga-click="Header, your gists, text:your gists"
+                    data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;YOUR_GISTS&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                    data-hydro-click-hmac="5314cd109cfc06367dd5e8942c951224246b36c9dc47adb6730417584fd57404">Your
+                    gists</a>
+
+                <a role="menuitem" class="dropdown-item"
+                    data-ga-click="Header, go to GitHub Sponsors accounts page, text:your sponsors"
+                    data-hydro-click="{&quot;event_type&quot;:&quot;sponsors.button_click&quot;,&quot;payload&quot;:{&quot;button&quot;:&quot;HEADER_SPONSORS_DASHBOARD&quot;,&quot;sponsorable_login&quot;:&quot;gernest&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                    data-hydro-click-hmac="bb21f3dc0609872999afbb649dd402567f90cdb99094b04a8f26f7a62f0db2b8"
+                    href="/sponsors/accounts">Your sponsors</a>
+
+
+                <div role="none" class="dropdown-divider"></div>
+                <a role="menuitem" class="dropdown-item" href="/account/choose?action=upgrade"
+                    data-ga-click="Header, go to compare plans, text:upgrade"
+                    data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;UPGRADE&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                    data-hydro-click-hmac="4072c320f6fc3c328b5d6fae85c55be6b4d65f0ead49727db2ae48b21573d0ce">Upgrade</a>
+                <a role="menuitem" class="dropdown-item"
+                    href="/organizations/enterprise_plan?ref_cta=Try%2520Enterprise&amp;ref_loc=user_drawer_side_panel&amp;ref_page=Header+Avatar"
+                    data-analytics-event="{&quot;category&quot;:&quot;start_a_trial&quot;,&quot;action&quot;:&quot;click_to_set_up_enterprise_trial&quot;,&quot;label&quot;:&quot;ref_loc:side_panel;ref_cta:start_a_trial&quot;}">Try
+                    Enterprise</a>
+
+                <div id="feature-enrollment-toggle"
+                    class="hide-sm hide-md unread-indicator-container position-relative">
+                    <button type="button" class="dropdown-item btn-link" role="menuitem"
+                        data-feature-preview-trigger-url="/users/gernest/feature_previews"
+                        data-feature-preview-close-details="{&quot;event_type&quot;:&quot;feature_preview.clicks.close_modal&quot;,&quot;payload&quot;:{&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                        data-feature-preview-close-hmac="cb7b8fc8da756c1e4bcc9061e81bebeb8a87a6e9c4ac206620a793d646a78051"
+                        data-hydro-click="{&quot;event_type&quot;:&quot;feature_preview.clicks.open_modal&quot;,&quot;payload&quot;:{&quot;link_location&quot;:&quot;user_dropdown&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                        data-hydro-click-hmac="72c9a46fbf781625856c9a03607650d088b06fb99057216e03ef66ab3f1d23fd">
+                        Feature preview
+                    </button>
+                    <span class="unread-indicator js-feature-preview-indicator" hidden=""></span>
+                </div>
+
+                <a role="menuitem" class="dropdown-item" href="https://docs.github.com"
+                    data-ga-click="Header, go to help, text:help"
+                    data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;HELP&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                    data-hydro-click-hmac="ca6ca0c349e12a0b956d922ab88e4225e778af085608bec6b65c3eb9dc69f927">Help</a>
+                <a role="menuitem" class="dropdown-item" href="/settings/profile"
+                    data-ga-click="Header, go to settings, icon:settings"
+                    data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;SETTINGS&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                    data-hydro-click-hmac="e0d944646f4608cd279ec4af20ac5c807e769be52db4914b7980ea0599ed94f6">Settings</a>
+                <div role="none" class="dropdown-divider"></div>
+                <!-- '"` --><!-- </textarea></xmp> -->
+                <form class="logout-form js-loggout-form" data-turbo="false" action="/logout" accept-charset="UTF-8"
+                    method="post"><input type="hidden" name="authenticity_token"
+                        value="s1Davp01BSS1XwY5DIGg2qOcOE1WUKRr9tiNUet83Wd5Pj-BU2cYRuN5dD_V_j8Fyb6aknTcoMpE7oBIi7nnyw">
+
+                    <button type="submit" class="dropdown-item dropdown-signout"
+                        data-ga-click="Header, sign out, icon:logout"
+                        data-hydro-click="{&quot;event_type&quot;:&quot;global_header.user_menu_dropdown.click&quot;,&quot;payload&quot;:{&quot;request_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;target&quot;:&quot;SIGN_OUT&quot;,&quot;originating_url&quot;:&quot;https://github.com/users/6039952/menu&quot;,&quot;user_id&quot;:6039952}}"
+                        data-hydro-click-hmac="98e15fdc48cb692a1fc09344817d69f8212a44992bcb1be60078ed490a158d6e"
+                        role="menuitem">
+                        Sign out
+                    </button>
+                    <input type="text" name="required_field_d3e5" hidden="hidden" class="form-control"><input
+                        type="hidden" name="timestamp" value="1678209103647" autocomplete="off"
+                        class="form-control"><input type="hidden" name="timestamp_secret"
+                        value="32c74ef6e2a62302a6d30aab4903ff8e5a261a8acf591d8891a273bcace4bec6" autocomplete="off"
+                        class="form-control">
+                </form>
+            </details-menu>
+        </details>
+
     </div>
 </header>
 {{end}}
