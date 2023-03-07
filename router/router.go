@@ -6,6 +6,7 @@ import (
 
 	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
+	"github.com/gernest/vince/avatar"
 	"github.com/gernest/vince/billing"
 	"github.com/gernest/vince/pages"
 	"github.com/gernest/vince/plug"
@@ -73,6 +74,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe4.GET("`^/api/(?P<domain>[^.]+)/status$`", api.DomainStatus),
 
 		pipe5.PathGET("/", pages.Home),
+		pipe5.PathGET("/avatar", avatar.Serve),
 		pipe5.And(plug.RequireLoggedOut).PathGET("/register", auth.RegisterForm),
 		pipe5.And(plug.RequireLoggedOut).PathPOST("/register", auth.Register),
 		pipe5.And(plug.RequireLoggedOut).GET(`^/register/invitation/(?P<invitation_id>[^.]+)$`, auth.RegisterFromInvitationForm),

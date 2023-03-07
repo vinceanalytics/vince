@@ -1,0 +1,475 @@
+.pinned-item-list-item .pinned-item-handle {
+    color: var(--color-fg-muted)
+}
+
+.pinned-item-list-item .pinned-item-handle:hover {
+    cursor: grab
+}
+
+.pinned-item-list-item.is-dragging,
+.pinned-item-list-item.is-dragging .pinned-item-handle {
+    cursor: grabbing
+}
+
+.pinned-item-list-item.is-dragging {
+    background-color: var(--color-accent-subtle)
+}
+
+.pinned-item-list-item.sortable-ghost {
+    background-color: var(--color-accent-subtle);
+    opacity: 0
+}
+
+.pinned-item-list-item.empty {
+    border-style: dashed;
+    border-width: 1px;
+    align-items: center;
+    justify-content: center
+}
+
+.pinned-item-list-item-content {
+    display: flex;
+    width: 100%;
+    flex-direction: column
+}
+
+.pinned-item-desc {
+    flex: 1 0 auto
+}
+
+.pinned-item-meta {
+    display: inline-block
+}
+
+.pinned-item-meta+.pinned-item-meta {
+    margin-left: 16px
+}
+
+.achievement-badge-sidebar {
+    filter: drop-shadow(var(--color-shadow-large))
+}
+
+.achievement-badge-card {
+    width: 96px;
+    margin: 4px;
+    filter: drop-shadow(var(--color-shadow-large))
+}
+
+@media(min-width: 1012px) {
+    .achievement-badge-card {
+        width: 128px
+    }
+}
+
+.achievement-tier-label {
+    color: var(--color-scale-gray-9)
+}
+
+.achievement-tier-label--bronze {
+    background-color: #f9bfa7;
+    border-color: #f9bfa7
+}
+
+.achievement-tier-label--silver {
+    background-color: #e1e4e4;
+    border-color: #e1e4e4
+}
+
+.achievement-tier-label--gold {
+    background-color: #fae57e;
+    border-color: #fae57e
+}
+
+.achievement-card {
+    box-shadow: var(--color-shadow-medium);
+    transition: .4s ease
+}
+
+.achievement-card:hover {
+    box-shadow: var(--color-shadow-large)
+}
+
+.achievement-card-unseen {
+    box-shadow: 0 3px 6px var(--color-accent-subtle)
+}
+
+.achievement-badges .tier-badge {
+    padding: 0;
+    border: 0
+}
+
+.achievement-badges-flip {
+    position: relative;
+    transform-style: preserve-3d;
+    width: 140px;
+    height: 140px
+}
+
+.achievement-badges-flip .tier-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    opacity: 0
+}
+
+.achievement-badges-flip .tier-badge--back {
+    transform: rotateY(180deg)
+}
+
+.achievement-badges-flip .tier-badge:first-child,
+.achievement-badges-flip .tier-badge:nth-child(2) {
+    opacity: 1
+}
+
+.achievement-detail-close {
+    width: 32px;
+    height: 32px
+}
+
+.achievement-history {
+    margin-bottom: -16px
+}
+
+.achievement-history .achievement-history-unlocked-at::before {
+    top: 24px
+}
+
+.achievement-history .achievement-history-tier:last-child::before {
+    bottom: 40px
+}
+
+.contributions-setting-menu {
+    z-index: 80;
+    width: 330px
+}
+
+.ContributionCalendar.days-selected .ContributionCalendar-day {
+    opacity: .5
+}
+
+.ContributionCalendar.days-selected .ContributionCalendar-day.active {
+    opacity: 1
+}
+
+.ContributionCalendar-grid {
+    width: max-content;
+    border-collapse: separate
+}
+
+.ContributionCalendar-label {
+    padding: .125em .5em .125em 0;
+    font-size: 12px;
+    font-weight: var(--base-text-weight-normal, 400);
+    color: var(--color-fg-default);
+    text-align: left;
+    fill: var(--color-fg-default)
+}
+
+.ContributionCalendar-day-private-profile {
+    fill: var(--color-canvas-subtle);
+    background-color: var(--color-canvas-subtle)
+}
+
+.ContributionCalendar-day,
+.ContributionCalendar-day[data-level="0"] {
+    fill: var(--color-calendar-graph-day-bg);
+    shape-rendering: geometricPrecision;
+    background-color: var(--color-calendar-graph-day-bg);
+    border-radius: 2px;
+    outline: 1px solid var(--color-calendar-graph-day-border);
+    outline-offset: -1px
+}
+
+.ContributionCalendar-day[data-level]:focus {
+    outline: 2px solid var(--color-accent-fg)
+}
+
+.ContributionCalendar-day[data-level="1"] {
+    fill: var(--color-calendar-graph-day-L1-bg);
+    background-color: var(--color-calendar-graph-day-L1-bg);
+    outline: 1px solid var(--color-calendar-graph-day-L1-border)
+}
+
+.ContributionCalendar-day[data-level="2"] {
+    fill: var(--color-calendar-graph-day-L2-bg);
+    background-color: var(--color-calendar-graph-day-L2-bg);
+    outline: 1px solid var(--color-calendar-graph-day-L2-border)
+}
+
+.ContributionCalendar-day[data-level="3"] {
+    fill: var(--color-calendar-graph-day-L3-bg);
+    background-color: var(--color-calendar-graph-day-L3-bg);
+    outline: 1px solid var(--color-calendar-graph-day-L3-border)
+}
+
+.ContributionCalendar-day[data-level="4"] {
+    fill: var(--color-calendar-graph-day-L4-bg);
+    background-color: var(--color-calendar-graph-day-L4-bg);
+    outline: 1px solid var(--color-calendar-graph-day-L4-border)
+}
+
+.ContributionCalendar[data-holiday=halloween] .ContributionCalendar-day[data-level="1"] {
+    fill: var(--color-calendar-halloween-graph-day-L1-bg);
+    background-color: var(--color-calendar-halloween-graph-day-L1-bg)
+}
+
+.ContributionCalendar[data-holiday=halloween] .ContributionCalendar-day[data-level="2"] {
+    fill: var(--color-calendar-halloween-graph-day-L2-bg);
+    background-color: var(--color-calendar-halloween-graph-day-L2-bg)
+}
+
+.ContributionCalendar[data-holiday=halloween] .ContributionCalendar-day[data-level="3"] {
+    fill: var(--color-calendar-halloween-graph-day-L3-bg);
+    background-color: var(--color-calendar-halloween-graph-day-L3-bg)
+}
+
+.ContributionCalendar[data-holiday=halloween] .ContributionCalendar-day[data-level="4"] {
+    fill: var(--color-calendar-halloween-graph-day-L4-bg);
+    background-color: var(--color-calendar-halloween-graph-day-L4-bg)
+}
+
+.ContributionCalendar[data-holiday=winter] .ContributionCalendar-day[data-level="1"] {
+    fill: var(--color-calendar-winter-graph-day-L1-bg);
+    background-color: var(--color-calendar-winter-graph-day-L1-bg)
+}
+
+.ContributionCalendar[data-holiday=winter] .ContributionCalendar-day[data-level="2"] {
+    fill: var(--color-calendar-winter-graph-day-L2-bg);
+    background-color: var(--color-calendar-winter-graph-day-L2-bg)
+}
+
+.ContributionCalendar[data-holiday=winter] .ContributionCalendar-day[data-level="3"] {
+    fill: var(--color-calendar-winter-graph-day-L3-bg);
+    background-color: var(--color-calendar-winter-graph-day-L3-bg)
+}
+
+.ContributionCalendar[data-holiday=winter] .ContributionCalendar-day[data-level="4"] {
+    fill: var(--color-calendar-winter-graph-day-L4-bg);
+    background-color: var(--color-calendar-winter-graph-day-L4-bg)
+}
+
+.graph-before-activity-overview {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px
+}
+
+.activity-overview-box {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0
+}
+
+.contribution-activity .select-menu-button {
+    position: relative;
+    top: -4px
+}
+
+.contribution-activity.loading .contribution-activity-listing {
+    display: none
+}
+
+.contribution-activity.loading .contribution-activity-show-more {
+    display: none
+}
+
+.contribution-activity.loading .contribution-activity-spinner {
+    display: block
+}
+
+.contribution-activity-spinner {
+    display: none
+}
+
+li.contribution {
+    padding: 8px 0;
+    list-style: none
+}
+
+li.contribution h3 {
+    display: inline-block;
+    margin: 0;
+    font-size: 14px
+}
+
+li.contribution .cmeta {
+    display: block;
+    font-size: 12px
+}
+
+li.contribution .d {
+    color: var(--color-fg-default)
+}
+
+li.contribution .a {
+    color: var(--color-fg-default)
+}
+
+li.contribution .num {
+    color: var(--color-fg-muted)
+}
+
+.user-profile-sticky-bar::after {
+    height: 48px
+}
+
+.user-profile-sticky-bar {
+    position: fixed;
+    top: 0;
+    z-index: 90;
+    width: 233px;
+    word-break: break-all;
+    pointer-events: none;
+    opacity: 0;
+    transition: .2s
+}
+
+.user-profile-sticky-bar.is-stuck {
+    pointer-events: auto;
+    opacity: 1
+}
+
+.user-profile-nav .UnderlineNav-item {
+    margin-right: 0 !important;
+    line-height: 30px;
+    white-space: nowrap
+}
+
+.user-profile-nav {
+    background-color: var(--color-canvas-default);
+    border-bottom: 1px solid var(--color-border-default);
+    box-shadow: none
+}
+
+.user-profile-nav.is-stuck {
+    z-index: 90
+}
+
+.user-profile-mini-vcard {
+    position: relative;
+    top: 1px;
+    z-index: 110;
+    height: 48px
+}
+
+.user-profile-mini-avatar {
+    width: 32px
+}
+
+.page-profile .news {
+    float: none;
+    width: auto
+}
+
+.mini-follow-button {
+    padding: 0 8px;
+    line-height: 1.5;
+    opacity: 0;
+    transition: opacity .2s
+}
+
+.is-follow-stuck .mini-follow-button {
+    opacity: 1
+}
+
+.user-status-circle-badge-container {
+    position: absolute;
+    bottom: 0;
+    left: 100%;
+    z-index: 2;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 32px;
+    margin-left: -40px
+}
+
+.user-status-circle-badge-container .user-status-emoji-container {
+    width: 20px;
+    height: 20px;
+    margin-right: 0 !important
+}
+
+.user-status-circle-badge-container .user-status-message-wrapper {
+    width: 0;
+    padding-top: 0 !important;
+    overflow: hidden;
+    line-height: 20px;
+    opacity: 0;
+    transition: .1s ease
+}
+
+.user-status-circle-badge-container .user-status-busy {
+    background-color: var(--color-canvas-default) !important;
+    background-image: linear-gradient(var(--color-attention-subtle), var(--color-attention-subtle))
+}
+
+.user-status-circle-badge-container.user-status-editable:hover,
+.user-status-circle-badge-container.user-status-has-content:hover {
+    width: auto;
+    max-width: 544px
+}
+
+.user-status-circle-badge-container.user-status-editable:hover .user-status-emoji-container,
+.user-status-circle-badge-container.user-status-has-content:hover .user-status-emoji-container {
+    margin-right: 8px !important
+}
+
+.user-status-circle-badge-container.user-status-editable:hover .user-status-message-wrapper,
+.user-status-circle-badge-container.user-status-has-content:hover .user-status-message-wrapper {
+    width: 100%;
+    opacity: 1
+}
+
+.user-status-circle-badge-container.user-status-editable:hover .user-status-circle-badge,
+.user-status-circle-badge-container.user-status-has-content:hover .user-status-circle-badge {
+    box-shadow: var(--color-shadow-medium)
+}
+
+.user-status-circle-badge-container .user-status-message-wrapper .team-mention,
+.user-status-circle-badge-container .user-status-message-wrapper .user-mention {
+    white-space: nowrap
+}
+
+.vcard-names-container {
+    position: sticky;
+    top: 0
+}
+
+.vcard-names-container.is-stuck {
+    pointer-events: none
+}
+
+.vcard-names-container.is-stuck .vcard-names {
+    opacity: 0
+}
+
+.vcard-names-container.is-stuck::after {
+    opacity: 1
+}
+
+.vcard-names {
+    line-height: 1
+}
+
+.vcard-details {
+    list-style: none
+}
+
+.vcard-detail {
+    padding-left: 24px;
+    font-size: 14px
+}
+
+.vcard-detail .octicon {
+    float: left;
+    width: 16px;
+    margin-top: 4px;
+    margin-left: -24px;
+    color: var(--color-fg-muted);
+    text-align: center
+}
+
+.user-profile-bio {
+    overflow: hidden;
+    font-size: 14px
+}

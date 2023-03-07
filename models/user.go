@@ -7,6 +7,8 @@ import (
 	"math"
 	"net/http"
 	"net/mail"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -43,6 +45,13 @@ type User struct {
 	EmailVerified   bool   `gorm:"not null;default:false"`
 	Theme           string `gorm:"not null;default:system"`
 	Invitations     []*Invitation
+}
+
+func (u *User) Avatar(size int) string {
+	q := make(url.Values)
+	q.Set("u", strconv.FormatUint(u.ID, 10))
+	q.Set("s", strconv.Itoa(size))
+	return "/avatar?" + q.Encode()
 }
 
 func SetCurrentUser(ctx context.Context, usr *User) context.Context {
