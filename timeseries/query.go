@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/apache/arrow/go/v12/arrow/array"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/timex"
 	"github.com/segmentio/parquet-go"
@@ -210,10 +209,4 @@ func Eq(value string) MatchFunc {
 		}
 		return true
 	}
-}
-
-type Builders struct {
-	Int64  *array.Int64Builder
-	String *array.StringBuilder
-	Bool   *array.BooleanBuilder
 }

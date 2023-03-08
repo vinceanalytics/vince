@@ -139,6 +139,10 @@ func (f Filters) String() string {
 
 type filterHandList []*filterHand
 
+func (f filterHandList) build() []FILTER {
+	return []FILTER{}
+}
+
 func (f Filters) build() (ls filterHandList) {
 	for key, v := range f {
 		switch e := v.(type) {
