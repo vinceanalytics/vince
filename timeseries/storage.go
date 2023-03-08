@@ -47,11 +47,11 @@ func QueryTable[T StoreItem](ctx context.Context, model T, uid uint64, query Que
 		}()
 	}
 
-	err := bob.Iterate(ctx, table, uid, query.start, query.end, b.process(ctx, query))
+	err := bob.Iterate(ctx, table, uid, query.start, query.end, b.Process(ctx, query))
 	if err != nil {
 		return nil, err
 	}
-	return b.record(ctx)
+	return b.Result(ctx)
 }
 
 var eventsPool = &sync.Pool{
@@ -259,13 +259,13 @@ func (b *StoreBuilder[T]) reset() {
 	}
 }
 
-func (b *StoreBuilder[T]) process(ctx context.Context, query Query) func(io.ReaderAt, int64) error {
+func (b *StoreBuilder[T]) Process(ctx context.Context, query Query) func(io.ReaderAt, int64) error {
 	return func(ra io.ReaderAt, i int64) error {
-		return b.processFile(ctx, ra, i, query)
+		return b.ProcessFile(ctx, ra, i, query)
 	}
 }
 
-func (b *StoreBuilder[T]) processFile(ctx context.Context, f io.ReaderAt, size int64, query Query) error {
+func (b *StoreBuilder[T]) ProcessFile(ctx context.Context, f io.ReaderAt, size int64, query Query) error {
 	file, err := parquet.OpenFile(f, size)
 	if err != nil {
 		return err
@@ -508,7 +508,7 @@ type Record struct {
 	Values  []arrow.Array `json:"values,omitempty"`
 }
 
-func (b *StoreBuilder[T]) record(ctx context.Context) (*Record, error) {
+func (b *StoreBuilder[T]) Result(ctx context.Context) (*Record, error) {
 	r := &Record{}
 	for _, w := range b.writers {
 		if w.pick {
