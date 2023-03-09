@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/gernest/vince/params"
 )
@@ -103,6 +104,19 @@ func (p Pipeline) Path(method, path string, handler func(w http.ResponseWriter, 
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == method && r.URL.Path == path {
+				pipe.ServeHTTP(w, r)
+				return
+			}
+			h.ServeHTTP(w, r)
+		})
+	}
+}
+
+func (p Pipeline) Prefix(path string, handler func(w http.ResponseWriter, r *http.Request)) Plug {
+	pipe := p.Pass(handler)
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, path) {
 				pipe.ServeHTTP(w, r)
 				return
 			}

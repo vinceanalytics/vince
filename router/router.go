@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"net/http"
+	"net/http/pprof"
 
 	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
@@ -25,6 +26,9 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	pipe5 := append(plug.Browser(ctx), plug.Protect()...)
 	sitePipe := pipe5.And(plug.RequireAccount, plug.AuthorizedSiteAccess("owner", "admin", "super_admin"))
 	return plug.Pipeline{
+		// add prefix matches on the top of the pipeline for faster lookups
+		pipe5.Prefix("/debug/pprof/", pprof.Index),
+
 		pipe0.PathGET("/api/v1/stats/realtime/visitors", stats.V1RealtimeVisitors),
 		pipe0.PathGET("/api/v1/stats/aggregate", stats.V1Aggregate),
 		pipe0.PathGET("/api/v1/stats/breakdown", stats.V1Breakdown),
