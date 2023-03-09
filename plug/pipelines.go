@@ -124,3 +124,15 @@ func (p Pipeline) Prefix(path string, handler func(w http.ResponseWriter, r *htt
 		})
 	}
 }
+
+func PREFIX(prefix string, pipe ...Plug) Plug {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, prefix) {
+				Pipeline(pipe).Pass(NOOP).ServeHTTP(w, r)
+				return
+			}
+			h.ServeHTTP(w, r)
+		})
+	}
+}
