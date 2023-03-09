@@ -143,15 +143,6 @@ func (CertStatusMetadata) TableName() string {
 	return "certificateStatus"
 }
 
-type certificateModel struct {
-	core.Certificate
-	Registration regModel
-}
-
-func (certificateModel) TableName() string {
-	return "certificates"
-}
-
 const certStatusFields = "id, serial, status, ocspLastUpdated, revokedDate, revokedReason, lastExpirationNagSent, ocspResponse, notAfter, isExpired, issuerID"
 
 // SelectCertificateStatus selects all fields of one certificate status model
@@ -222,10 +213,12 @@ type regModel struct {
 	Agreement string `db:"agreement"`
 	// InitialIP is stored as sixteen binary bytes, regardless of whether it
 	// represents a v4 or v6 IP address.
-	InitialIP []byte    `db:"initialIp"`
-	CreatedAt time.Time `db:"createdAt"`
-	LockCol   int64
-	Status    string `db:"status"`
+	InitialIP    []byte    `db:"initialIp"`
+	CreatedAt    time.Time `db:"createdAt"`
+	LockCol      int64
+	Status       string                 `db:"status"`
+	Serials      []*recordedSerialModel `gorm:"foreignKey:registration_id"`
+	Certificates []*core.Certificate    `gorm:"foreignKey:registration_id"`
 }
 
 func (regModel) TableName() string {
