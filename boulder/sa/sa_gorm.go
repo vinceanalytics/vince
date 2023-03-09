@@ -16,8 +16,9 @@ func Open(path string) (*gorm.DB, error) {
 	}
 
 	db.AutoMigrate(
+		&regModel{},
 		&issuedNameModel{},
-		&core.Certificate{},
+		&certificateModel{},
 		&core.CertificateStatus{},
 		&core.FQDNSet{},
 		&orderModel{},

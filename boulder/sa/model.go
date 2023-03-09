@@ -143,6 +143,15 @@ func (CertStatusMetadata) TableName() string {
 	return "certificateStatus"
 }
 
+type certificateModel struct {
+	core.Certificate
+	Registration regModel
+}
+
+func (certificateModel) TableName() string {
+	return "certificates"
+}
+
 const certStatusFields = "id, serial, status, ocspLastUpdated, revokedDate, revokedReason, lastExpirationNagSent, ocspResponse, notAfter, isExpired, issuerID"
 
 // SelectCertificateStatus selects all fields of one certificate status model
@@ -217,6 +226,10 @@ type regModel struct {
 	CreatedAt time.Time `db:"createdAt"`
 	LockCol   int64
 	Status    string `db:"status"`
+}
+
+func (regModel) TableName() string {
+	return "registrations"
 }
 
 func registrationPbToModel(reg *corepb.Registration) (*regModel, error) {
