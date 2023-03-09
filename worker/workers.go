@@ -11,6 +11,7 @@ import (
 	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/timex"
 )
 
 func UpdateCacheSites(ctx context.Context, wg *sync.WaitGroup, exit func()) *health.Ping {
@@ -42,7 +43,8 @@ func (c *cacheUpdater) Do(ctx context.Context) {
 }
 
 func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
-	log.Get(ctx).Debug().Str("worker", "sites_to_domain_cache").Msg("started")
+	log.Get(ctx).Debug().Str("worker", "sites_to_domain_cache").
+		Int("some", 0).Msg("started")
 	defer wg.Done()
 	interval := config.Get(ctx).SitesByDomainCacheRefreshInterval
 	work := &cacheUpdater{
@@ -62,6 +64,43 @@ func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingCh
 			pong()
 		case <-tick.C:
 			work.Do(ctx)
+		}
+	}
+}
+
+func LogRotate(b *log.Rotate) func(ctx context.Context, wg *sync.WaitGroup, exit func()) *health.Ping {
+	return func(ctx context.Context, wg *sync.WaitGroup, exit func()) *health.Ping {
+		wg.Add(1)
+		h := health.NewPing("log_rotation")
+		go rotateLog(ctx, b, wg, h.Channel, exit)
+		return h
+	}
+}
+
+func rotateLog(ctx context.Context, b *log.Rotate, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
+	log.Get(ctx).Debug().Str("worker", "log_rotation").Msg("started")
+	defer wg.Done()
+	// Do 1 second  interval flushing of buffered logs
+	tick := time.NewTicker(time.Second)
+	date := timex.Date(time.Now())
+	defer tick.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case pong := <-ch:
+			pong()
+		case x := <-tick.C:
+			x = timex.Date(x)
+			if !x.Equal(date) {
+				// Any change on date warrants log rotation
+				err := b.Rotate()
+				if err != nil {
+					log.Get(ctx).Err(err).Msg("failed log rotation")
+				}
+				date = x
+			}
+			b.Flush()
 		}
 	}
 }

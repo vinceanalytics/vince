@@ -8,6 +8,9 @@ import (
 
 type loggerKey struct{}
 
+func init() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+}
 func Set(ctx context.Context, lg *zerolog.Logger) context.Context {
 	return context.WithValue(ctx, loggerKey{}, lg)
 }

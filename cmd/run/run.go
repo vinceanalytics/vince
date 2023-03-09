@@ -1,10 +1,11 @@
 package run
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/server"
 	"github.com/urfave/cli/v2"
 )
@@ -16,11 +17,13 @@ func Main() {
 		Flags: config.Flags(),
 		Commands: []*cli.Command{
 			config.GenKeyCMD(),
+			log.CMD(),
 		},
 		Action: server.Serve,
 	}
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }

@@ -29,13 +29,26 @@ import (
 )
 
 func Serve(ctx *cli.Context) error {
-	xlg := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
+
 	conf, err := config.Load(ctx)
 	if err != nil {
 		return err
 	}
 	goCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	// make sure we create log path
+	logPath := filepath.Join(conf.DataPath, "logs")
+	os.MkdirAll(logPath, 0755)
+	errorLog, err := log.NewRotate(logPath)
+	if err != nil {
+		return err
+	}
+
+	xlg := zerolog.New(zerolog.MultiLevelWriter(
+		os.Stderr, errorLog,
+	)).Level(zerolog.InfoLevel).With().Timestamp().Logger()
+
 	xlg = xlg.Level(zerolog.Level(conf.LogLevel))
 	goCtx = log.Set(goCtx, &xlg)
 	if _, err = os.Stat(conf.DataPath); err != nil && os.IsNotExist(err) {
@@ -50,10 +63,10 @@ func Serve(ctx *cli.Context) error {
 		return err
 	}
 	goCtx = config.Set(goCtx, conf)
-	return HTTP(goCtx, conf)
+	return HTTP(goCtx, conf, errorLog)
 }
 
-func HTTP(ctx context.Context, o *config.Config) error {
+func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -110,6 +123,7 @@ func HTTP(ctx context.Context, o *config.Config) error {
 	})
 	h = append(h,
 		worker.UpdateCacheSites(ctx, &wg, exit),
+		worker.LogRotate(errorLog)(ctx, &wg, exit),
 	)
 	ctx = compute.SetExecCtx(ctx, compute.DefaultExecCtx())
 	ctx = health.Set(ctx, h)
@@ -147,6 +161,7 @@ func HTTP(ctx context.Context, o *config.Config) error {
 	caches.Close(ctx)
 	ts.Close()
 	mailer.Close()
+	errorLog.Close()
 	close(abort)
 	return nil
 }
