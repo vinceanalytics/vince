@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/rs/zerolog"
 	"github.com/segmentio/parquet-go"
 	"github.com/urfave/cli/v2"
@@ -33,16 +34,32 @@ type Columns struct {
 
 const format = "1/02 15:04:05"
 
-func (c *Columns) Write(o io.Writer) {
+func (c *Columns) Write(o io.Writer, duration time.Duration) {
+	table := tablewriter.NewWriter(o)
+	table.SetHeader([]string{"timestamp", "level", "key", "value", "msg"})
+	table.SetCaption(true, fmt.Sprintf("elapsed %s", duration))
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("\t") // pad with tabs
+	table.SetNoWhiteSpace(true)
 	for i := range c.Timestamps {
-		fmt.Fprintf(o, "%s %s %q %q %q \n",
-			time.Unix(0, c.Timestamps[i].Int64()).Format(format),
-			c.Levels[i],
-			c.Messages[i],
-			c.Keys[i],
-			c.Values[i],
-		)
+		ls := make([]string, 5)
+		ls[0] = time.Unix(0, c.Timestamps[i].Int64()).Format(format)
+		ls[1] = c.Levels[i].String()
+		ls[2] = c.Keys[i].String()
+		ls[3] = c.Values[i].String()
+		ls[4] = c.Messages[i].String()
+		table.Append(ls)
 	}
+	table.Render()
+
 }
 
 const BUFFER_SIZE = 2 << 10
@@ -251,8 +268,7 @@ func analyze(file string) error {
 			p.Close()
 		}
 	}
-	result.Write(os.Stdout)
-	fmt.Printf("  Elapsed: %s\n", time.Since(start))
+	result.Write(os.Stdout, time.Since(start))
 	return nil
 }
 
