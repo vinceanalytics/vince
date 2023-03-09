@@ -213,12 +213,14 @@ type regModel struct {
 	Agreement string `db:"agreement"`
 	// InitialIP is stored as sixteen binary bytes, regardless of whether it
 	// represents a v4 or v6 IP address.
-	InitialIP    []byte    `db:"initialIp"`
-	CreatedAt    time.Time `db:"createdAt"`
-	LockCol      int64
-	Status       string                 `db:"status"`
-	Serials      []*recordedSerialModel `gorm:"foreignKey:registration_id"`
-	Certificates []*core.Certificate    `gorm:"foreignKey:registration_id"`
+	InitialIP       []byte    `db:"initialIp"`
+	CreatedAt       time.Time `db:"createdAt"`
+	LockCol         int64
+	Status          string                 `db:"status"`
+	Serials         []*recordedSerialModel `gorm:"foreignKey:registration_id"`
+	Certificates    []*core.Certificate    `gorm:"foreignKey:registration_id"`
+	OrderFqdnSets   []*orderFQDNSet        `gorm:"foreignKey:registration_id"`
+	Precertificates []*precertificateModel `gorm:"foreignKey:registration_id"`
 }
 
 func (regModel) TableName() string {
@@ -350,6 +352,8 @@ type orderModel struct {
 	Error             []byte
 	CertificateSerial string
 	BeganProcessing   bool
+	OrderFqdnSets     []*orderFQDNSet       `gorm:"foreignKey:order_id"`
+	RequestedNames    []*requestedNameModel `gorm:"foreignKey:order_id"`
 }
 
 func (orderModel) TableName() string {

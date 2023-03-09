@@ -398,7 +398,7 @@ type Certificate struct {
 	ID             int64 `db:"id"`
 	RegistrationID int64 `db:"registrationID"`
 
-	Serial  string    `db:"serial"`
+	Serial  string    `db:"serial" gorm:"uniqueIndex"`
 	Digest  string    `db:"digest"`
 	DER     []byte    `db:"der"`
 	Issued  time.Time `db:"issued"`
