@@ -1,38 +1,39 @@
 {{define "_content"}}
-<div class="mx-auto mt-6 text-center">
-    <h1 class="lead">Register your account</h1>
-</div>
-<div class="width-full container-md  mt-4 mx-auto  flex">
-    <form action="/register" method="post" class="FormControl  width-full container-md  mx-auto">
-        <h2>Enter your details</h2>
-        <div class="FormControl-input-wrap FormControl-medium">
-            <label for="name" class="FormControl-label">name</label>
-            <input {{.InputField "name" }} class="FormControl-input" type="text" name="name" id="name"
+
+<div class="auth-form px-3">
+    <div class="auth-form-header p0">
+        Register a VINCE account
+    </div>
+    <div class="auth-form-body mt3">
+        <form action="/register" method="post">
+            <label for="name">name</label>
+            <input {{.InputField "name" }} class="form-control input-block" type="text" name="name" id="name"
                 placeholder="John Doe" required>
-        </div>
-        {{.Validate "name"}}
-        <div class="FormControl-input-wrap FormControl-medium">
-            <label for="email" class="FormControl-label">email</label>
-            <input {{.InputField "email" }} class="FormControl-input" type="email" name="email" id="email"
+            {{.Validate "name"}}
+            <label for="email">email</label>
+            <input {{.InputField "email" }} class="form-control input-block" type="email" name="email" id="email"
                 placeholder="example@email.com" required>
-        </div>
-        {{.Validate "email"}}
-        <div class="FormControl-input-wrap FormControl-medium">
-            <label for="password" class="FormControl-label">password</label>
-            <input {{.InputField "password" }} maxlength="64" minlength="6" class="FormControl-input" type="password"
-                name="password" id="password" required>
-        </div>
-        {{.Validate "password"}}
-        <div class="FormControl-input-wrap FormControl-medium">
-            <label for="password_confirmation" class="FormControl-label">Confirm password</label>
-            <input {{.InputField "password_confirmation" }} class="FormControl-input" type="password"
+            {{.Validate "email"}}
+            <label for="password">password</label>
+            <input {{.InputField "password" }} maxlength="64" minlength="6" class="form-control input-block"
+                type="password" name="password" id="password" required>
+            {{.Validate "password"}}
+            <label for="password_confirmation">Confirm password</label>
+            <input {{.InputField "password_confirmation" }} class="form-control input-block" type="password"
                 name="password_confirmation" id="password_confirmation" required>
-        </div>
-        {{.Validate "password_confirmation"}}
-        {{template "_csrf" .}}
-        {{template "_captcha" .}}
-        <button type="submit" class="btn">Create my account →</button>
-        <p>Already have an account? <a href="/login">Log in</a></p>
-    </form>
+            {{.Validate "password_confirmation"}}
+            {{template "_csrf" .}}
+            {{template "_captcha" .}}
+            <input type="submit" value="Create my account →" name="submit" class="btn btn-primary btn-block">
+            <p class="login-callout mt-3">
+                Have an account?<a href="/login"> Sign In</a>
+            </p>
+        </form>
+
+    </div>
+</div>
+
+<div class="width-full container-md  mt-4 mx-auto  flex">
+
 </div>
 {{end}}
