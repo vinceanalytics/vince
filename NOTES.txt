@@ -11,4 +11,8 @@
 
 * Generics
 
-https://gfw.go101.org/generics/555-type-constraints-and-parameters.html
+https://gfw.go101.org/generics/555-type-constraints-and-parameters.html 
+
+* personal website
+
+https://bt.ht/
