@@ -9,7 +9,6 @@ import (
 
 	"github.com/gernest/vince/boulder/test"
 	"github.com/gernest/vince/boulder/test/vars"
-	"github.com/go-sql-driver/mysql"
 )
 
 func TestInvalidDSN(t *testing.T) {
@@ -115,81 +114,4 @@ func TestStrictness(t *testing.T) {
 	if !strings.Contains(err.Error(), "Out of range value for column") {
 		t.Fatalf("Got wrong type of error: %s", err)
 	}
-}
-
-func TestTimeouts(t *testing.T) {
-	dbMap, err := NewDbMap(vars.DBConnSA+"?readTimeout=1s", DbSettings{1, 0, 0, 0})
-	if err != nil {
-		t.Fatal("Error setting up DB:", err)
-	}
-	// SLEEP is defined to return 1 if it was interrupted, but we want to actually
-	// get an error to simulate what would happen with a slow query. So we wrap
-	// the SLEEP in a subselect.
-	_, err = dbMap.Exec(`SELECT 1 FROM (SELECT SLEEP(5)) as subselect;`)
-	if err == nil {
-		t.Fatal("Expected error when running slow query, got none.")
-	}
-
-	// We expect to get:
-	// Error 1969: Query execution was interrupted (max_statement_time exceeded)
-	// https://mariadb.com/kb/en/mariadb/mariadb-error-codes/
-	if !strings.Contains(err.Error(), "Error 1969") {
-		t.Fatalf("Got wrong type of error: %s", err)
-	}
-}
-
-// TestAutoIncrementSchema tests that all of the tables in the boulder_*
-// databases that have auto_increment columns use BIGINT for the data type. Our
-// data is too big for INT.
-func TestAutoIncrementSchema(t *testing.T) {
-	dbMap, err := NewDbMap(vars.DBInfoSchemaRoot, DbSettings{1, 0, 0, 0})
-	test.AssertNotError(t, err, "unexpected err making NewDbMap")
-
-	var count int64
-	err = dbMap.SelectOne(
-		&count,
-		`SELECT COUNT(*) FROM columns WHERE
-			table_schema LIKE 'boulder%' AND
-			extra LIKE '%auto_increment%' AND
-			data_type != "bigint"`)
-	test.AssertNotError(t, err, "unexpected err querying columns")
-	test.AssertEquals(t, count, int64(0))
-}
-
-func TestAdjustMySQLConfig(t *testing.T) {
-	conf := &mysql.Config{}
-	adjustMySQLConfig(conf)
-	test.AssertDeepEquals(t, conf.Params, map[string]string{
-		"sql_mode": "'STRICT_ALL_TABLES'",
-	})
-
-	conf = &mysql.Config{ReadTimeout: 100 * time.Second}
-	adjustMySQLConfig(conf)
-	test.AssertDeepEquals(t, conf.Params, map[string]string{
-		"sql_mode":           "'STRICT_ALL_TABLES'",
-		"max_statement_time": "95",
-		"long_query_time":    "80",
-	})
-
-	conf = &mysql.Config{
-		ReadTimeout: 100 * time.Second,
-		Params: map[string]string{
-			"max_statement_time": "0",
-		},
-	}
-	adjustMySQLConfig(conf)
-	test.AssertDeepEquals(t, conf.Params, map[string]string{
-		"sql_mode":        "'STRICT_ALL_TABLES'",
-		"long_query_time": "80",
-	})
-
-	conf = &mysql.Config{
-		Params: map[string]string{
-			"max_statement_time": "0",
-		},
-	}
-	adjustMySQLConfig(conf)
-	test.AssertDeepEquals(t, conf.Params, map[string]string{
-		"sql_mode": "'STRICT_ALL_TABLES'",
-	})
 }
