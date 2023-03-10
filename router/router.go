@@ -134,6 +134,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			pipe5.And(plug.RequireAccount).PathGET("/sites", site.Index),
 			pipe5.And(plug.RequireAccount).PathGET("/sites/new", site.New),
 			pipe5.And(plug.RequireAccount).PathPOST("/sites", site.CreateSite),
+			sitePipe.GET(`^/sites/stats/(?P<domain>[^.]+)$`, site.Stats),
 			sitePipe.POST(`^/sites/(?P<website>[^.]+)/make-public$`, site.MakePublic),
 			sitePipe.POST(`^/sites/(?P<website>[^.]+)/make-private$`, site.MakePrivate),
 			sitePipe.POST(`^/sites/(?P<website>[^.]+)/weekly-report/enable$`, site.EnableWeeklyReport),
@@ -195,7 +196,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.POST(`^/(?P<website>[^.]+)/settings/google-import$`, site.ImportFromGoogle),
 		sitePipe.DELETE(`^/(?P<website>[^.]+)/settings/forget-imported$`, site.ForgetImported),
 		sitePipe.GET(`^/(?P<domain>[^.]+)/export$`, site.CsvExport),
-		sitePipe.GET(`^/(?P<domain>[^.]+)/(?P<path>[^.]+)$`, site.Stats),
 		NotFound,
 	}
 
