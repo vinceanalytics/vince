@@ -1,5 +1,5 @@
 {{define "_header"}}
-{{if not .CurrentUser}}
+{{if .CurrentUser}}
 {{template "_logged_in" .}}
 {{else}}
 {{template "_logged_out" .}}
