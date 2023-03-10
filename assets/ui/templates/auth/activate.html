@@ -1,59 +1,23 @@
 {{define "_content"}}
 <div class="width-full d-flex container-md mt-4 mx-auto">
     {{if .HasPin}}
-    <form action="/activate" method="post" class="width-full container-md  mx-auto  rounded px-8 py-6 mb-4 mt-8">
-        <h2 class="lead">Activate your account </h2>
-        <div class="mt-2 text-small">
-            Please enter the 4-digit code we sent to <b>
-                {{.CurrentUser.Email}}
-            </b>
+    <div class="auth-form px-3">
+        <div class="auth-form-header p0">
+            Code Activation
         </div>
-        <div class="container-sm">
-            <input type="text" name="code" id="code" class="form-control" style="width: 9rem;"
-                oninput="this.value=this.value.replace(/[^0-9]/g, ''); if (this.value.length >= 4) document.getElementById('submit').focus()"
-                onclick="this.select();" placeholder="••••" maxlength="4">
-            {{template "_csrf" .}}
-            <button type="submit" id="submit" class="btn btn-primary"> Activate &rarr;</button>
+        <div class="auth-form-body mt3">
+            <form action="/activate" method="post">
+                <input type="text" name="code" id="code" class="form-control input-block"
+                    oninput="this.value=this.value.replace(/[^0-9]/g, ''); if (this.value.length >= 4) document.getElementById('submit').focus()"
+                    onclick="this.select();" placeholder="••••" maxlength="4">
+                {{template "_csrf" .}}
+                <input type="submit" id="submit" value="Activate →" name="submit" class="btn btn-primary btn-block">
+                <p class="login-callout mt-3">
+                    Not received the code?<a href="/activate/request-code">Send again</a>
+                </p>
+            </form>
         </div>
-
-        <div class="mt-16 text-sm">
-            Didn't receive an email?
-        </div>
-
-        <ul class="ActionList" role="listbox" aria-label="Select multiple options" aria-multiselectable="true">
-            <li class="ActionList-item" role="option" aria-selected="true">
-                <span class="ActionList-content">
-                    <span class="ActionList-item-action ActionList-item-action--leading">
-                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden="true" focusable="false" class="ActionList-item-multiSelectIcon">
-                            <rect x="2" y="2" width="12" height="12" rx="4" class="ActionList-item-multiSelectIconRect">
-                            </rect>
-                            <path fill-rule="evenodd"
-                                d="M4.03231 8.69862C3.84775 8.20646 4.49385 7.77554 4.95539 7.77554C5.41693 7.77554 6.80154 9.85246 6.80154 9.85246C6.80154 9.85246 10.2631 4.314 10.4938 4.08323C10.7246 3.85246 11.8785 4.08323 11.4169 5.00631C11.0081 5.82388 7.26308 11.4678 7.26308 11.4678C7.26308 11.4678 6.80154 12.1602 6.34 11.4678C5.87846 10.7755 4.21687 9.19077 4.03231 8.69862Z"
-                                class="ActionList-item-multiSelectCheckmark"></path>
-                        </svg>
-                    </span>
-                    <span class="ActionList-item-label">Check your spam folder</span>
-                </span>
-            </li>
-            <li class="ActionList-item" role="option" aria-selected="true">
-                <span class="ActionList-content">
-                    <span class="ActionList-item-action ActionList-item-action--leading">
-                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden="true" focusable="false" class="ActionList-item-multiSelectIcon">
-                            <rect x="2" y="2" width="12" height="12" rx="4" class="ActionList-item-multiSelectIconRect">
-                            </rect>
-                            <path fill-rule="evenodd"
-                                d="M4.03231 8.69862C3.84775 8.20646 4.49385 7.77554 4.95539 7.77554C5.41693 7.77554 6.80154 9.85246 6.80154 9.85246C6.80154 9.85246 10.2631 4.314 10.4938 4.08323C10.7246 3.85246 11.8785 4.08323 11.4169 5.00631C11.0081 5.82388 7.26308 11.4678 7.26308 11.4678C7.26308 11.4678 6.80154 12.1602 6.34 11.4678C5.87846 10.7755 4.21687 9.19077 4.03231 8.69862Z"
-                                class="ActionList-item-multiSelectCheckmark"></path>
-                        </svg>
-                    </span>
-                    <span class="ActionList-item-label"><a href="/activate/request-code" data-method="post">Send a
-                            new code</a></span>
-                </span>
-            </li>
-        </ul>
-    </form>
+    </div>
     {{else}}
     <div>
         <form action="/activate/request-code" method="post"
