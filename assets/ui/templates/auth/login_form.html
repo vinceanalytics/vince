@@ -1,22 +1,28 @@
 {{define "_content"}}
-<form action="/login" method="post" class="FormControl width-full container-md mx-auto px-8 py-6 mt-8">
-    <h1 class="lead">Enter your email and password</h1>
-    <div class="FormControl-input-wrap FormControl-medium">
-        <label for="email" class="FormControl-label">email</label>
-        <input {{if .Errors.email}} invalid="true" {{end}} {{with .Form.email}}value="{{index . 0}}" {{end}}
-            class="FormControl-input" type="email" name="email" id="email" placeholder="example@email.com">
+<div class="auth-form px-3">
+    <div class="auth-form-header p0">
+        Sign In
     </div>
-    <div class="FormControl-input-wrap FormControl-medium">
-        <label for="password" class="FormControl-label">password</label>
-        <input {{if .Errors.password}}invalid="true" {{end}} class="FormControl-input" type="password" name="password"
-            id="password">
-        <p>Forgot password? <a href="/password/request-reset">Click here</a> to reset it</p>
+    <div class="auth-form-body mt3">
+        <form action="/login" method="post">
+            <label for="email">email address</label>
+            <input {{if .Errors.email}} invalid="true" {{end}} {{with .Form.email}}value="{{index . 0}}" {{end}}
+                class="form-control input-block" type="email" name="email" id="email" placeholder="example@email.com">
+            <div class="position-relative">
+                <label for="password">password</label>
+                <input {{if .Errors.password}}invalid="true" {{end}} class="form-control input-block" type="password"
+                    name="password" id="password">
+                <a href="/password/request-reset" class="label-link position-absolute top-0 right-0">
+                    Forgot password ?
+                </a>
+                {{template "_csrf" .}}
+                {{template "_captcha" .}}
+                <input type="submit" value="Sign In" name="submit" class="btn btn-primary btn-block">
+            </div>
+            <p class="login-callout mt-3">
+                New to VINCE ?<a href="/register"> Create an account</a>
+            </p>
+        </form>
     </div>
-    {{template "_csrf" .}}
-    {{template "_captcha" .}}
-    <button type="submit" class="btn">Login →</button>
-    <p>
-        Don't have an account? <a href="/register"> Register</a> instead
-    </p>
-</form>
+</div>
 {{end}}

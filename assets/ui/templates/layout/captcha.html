@@ -3,7 +3,7 @@
 <div style="height: 64px;">
     <img {{.Captcha}} class="img-responsive" />
 </div>
-<input {{if .Errors.captcha}} invalid="true" {{end}} type="text" name="_captcha" class="FormControl-input"
+<input {{if .Errors.captcha}} invalid="true" {{end}} type="text" name="_captcha" class="form-control input-block"
     placeholder="write the number displayed above" required>
 {{.Validate "_captcha"}}
 {{end}}
