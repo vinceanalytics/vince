@@ -11,6 +11,7 @@ import (
 	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/timex"
 )
 
@@ -103,6 +104,32 @@ func rotateLog(ctx context.Context, b *log.Rotate, wg *sync.WaitGroup, ch health
 				date = x
 			}
 			b.Flush()
+		}
+	}
+}
+
+func SaveTimeseries(ctx context.Context, wg *sync.WaitGroup, exit func()) *health.Ping {
+	wg.Add(1)
+	h := health.NewPing("timeseries_writer")
+	go saveBuffer(ctx, wg, h.Channel, exit)
+	return h
+}
+
+func saveBuffer(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
+	log.Get(ctx).Debug().Str("worker", "timeseries_writer").Msg("started")
+	defer wg.Done()
+	// Do 1 second  interval flushing of buffered logs
+	tick := time.NewTicker(config.Get(ctx).FlushInterval.AsDuration())
+	m := timeseries.GetMap(ctx)
+	defer tick.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case pong := <-ch:
+			pong()
+		case <-tick.C:
+			m.Save(ctx)
 		}
 	}
 }

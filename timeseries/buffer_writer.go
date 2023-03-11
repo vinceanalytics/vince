@@ -29,7 +29,6 @@ type Buffer struct {
 	id        ID
 	expiresAt time.Time
 	eb        bytes.Buffer
-	sb        bytes.Buffer
 	ew        *parquet.SortingWriter[*Entry]
 }
 
@@ -45,7 +44,6 @@ func (b *Buffer) Reset() *Buffer {
 	}
 	b.expiresAt = time.Time{}
 	b.eb.Reset()
-	b.sb.Reset()
 	return b
 }
 
@@ -116,6 +114,7 @@ func (b *Buffer) Save(ctx context.Context) error {
 		return b.save(txn, say)
 	})
 }
+
 func (b *Buffer) save(txn *badger.Txn, say *zerolog.Logger) error {
 	b.id.SetTime(time.Now())
 	b.id.Entropy()
