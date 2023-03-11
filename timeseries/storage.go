@@ -3,13 +3,16 @@ package timeseries
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"sync"
+	"unsafe"
 
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/apache/arrow/go/v12/arrow/array"
 	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/apache/arrow/go/v12/arrow/memory"
+	"github.com/apache/arrow/go/v12/arrow/scalar"
 	"github.com/segmentio/parquet-go"
 )
 
@@ -46,7 +49,9 @@ func build() *StoreBuilder {
 	b := &StoreBuilder{
 		names:   make(map[string]*writer),
 		writers: make([]*writer, len(fields)),
-		boolean: array.NewBooleanBuilder(memory.DefaultAllocator),
+		timestamp: array.NewTimestampBuilder(memory.DefaultAllocator, &arrow.TimestampType{
+			Unit: arrow.Nanosecond,
+		}),
 	}
 
 	for i, f := range fields {
@@ -65,16 +70,15 @@ func build() *StoreBuilder {
 }
 
 type writer struct {
-	build      array.Builder
-	collect    []arrow.Array
-	index      int
-	pick       bool
-	name       string
-	filter     *FILTER
-	chunk      parquet.ColumnChunk
-	dictionary bool
-	pages      parquet.Pages
-	page       parquet.Page
+	build   array.Builder
+	collect []arrow.Array
+	index   int
+	pick    bool
+	name    string
+	filter  *FILTER
+	chunk   parquet.ColumnChunk
+	pages   parquet.Pages
+	page    parquet.Page
 }
 
 type int64Buf struct {
@@ -93,37 +97,6 @@ func (i *valuesBuf) release() {
 	valuesPool.Put(i)
 }
 
-type stringsBuf struct {
-	values []string
-}
-
-func (i *stringsBuf) release() {
-	stringsPool.Put(i)
-}
-
-type boolBuf struct {
-	values []bool
-}
-
-func (i *boolBuf) release() {
-	i.values = i.values[:0]
-	stringsPool.Put(i)
-}
-
-func (i *boolBuf) reserve(size int) []bool {
-	i.values = i.values[:0]
-	n := cap(i.values)
-	if size <= cap(i.values) {
-		i.values = i.values[:size]
-	} else {
-		i.values = make([]bool, n*size)
-	}
-	for x := 0; x < size; x += 1 {
-		i.values[x] = false
-	}
-	return i.values
-}
-
 var int64Pool = &sync.Pool{
 	New: func() any {
 		return &int64Buf{values: make([]int64, 4098)}
@@ -136,19 +109,7 @@ var valuesPool = &sync.Pool{
 	},
 }
 
-var stringsPool = &sync.Pool{
-	New: func() any {
-		return &stringsBuf{values: make([]string, 4098)}
-	},
-}
-
-var boolBufPool = &sync.Pool{
-	New: func() any {
-		return &boolBuf{values: make([]bool, 4098)}
-	},
-}
-
-func (w *writer) write(p parquet.Page, filter []bool, f func(any) bool) error {
+func (w *writer) write(p parquet.Page) error {
 	switch b := w.build.(type) {
 	case *array.Int64Builder:
 		buf := int64Pool.Get().(*int64Buf)
@@ -164,26 +125,12 @@ func (w *writer) write(p parquet.Page, filter []bool, f func(any) bool) error {
 					break
 				}
 			}
-			if f != nil {
-				for i := 0; i < n; i += 1 {
-					if f(values[i]) {
-						filter[i] = true
-					}
-				}
-			}
-
-			filter = filter[n:]
-			if w.pick {
-				b.AppendValues(values[:n], nil)
-			}
+			b.AppendValues(values[:n], nil)
 		}
-	case *array.StringBuilder:
+	case *array.BinaryDictionaryBuilder:
 		buf := valuesPool.Get().(*valuesBuf)
 		defer buf.release()
 		values := buf.values
-		sb := stringsPool.Get().(*stringsBuf)
-		sv := sb.values
-		defer sb.release()
 		var n int
 		var err error
 		r := p.Values()
@@ -191,21 +138,20 @@ func (w *writer) write(p parquet.Page, filter []bool, f func(any) bool) error {
 			n, err = r.ReadValues(values)
 			if err != nil {
 				if errors.Is(err, io.EOF) {
+					for i := 0; i < n; i += 1 {
+						err = b.AppendString(values[i].String())
+						if err != nil {
+							return err
+						}
+					}
 					break
 				}
 			}
-			if f != nil {
-				for i := 0; i < n; i++ {
-					sv[i] = values[i].String()
-					if f(sv[i]) {
-						filter[i] = true
-					}
+			for i := 0; i < n; i += 1 {
+				err = b.AppendString(values[i].String())
+				if err != nil {
+					return err
 				}
-			}
-
-			filter = filter[n:]
-			if w.pick {
-				b.AppendValues(sv[:n], nil)
 			}
 		}
 	default:
@@ -214,12 +160,30 @@ func (w *writer) write(p parquet.Page, filter []bool, f func(any) bool) error {
 }
 
 type StoreBuilder struct {
-	names   map[string]*writer
-	pick    []FIELD_TYPE
-	filters []FILTER
-	writers []*writer
-	active  []*writer
-	boolean *array.BooleanBuilder
+	names     map[string]*writer
+	pick      []string
+	filters   []FILTER
+	writers   []*writer
+	active    []*writer
+	timestamp *array.TimestampBuilder
+}
+
+type releasable interface {
+	Release()
+}
+
+type releaseList []releasable
+
+func (r releaseList) Release() {
+	for _, v := range r {
+		v.Release()
+	}
+}
+
+type releaseFunc func()
+
+func (r releaseFunc) Release() {
+	r()
 }
 
 func (b *StoreBuilder) reset() {
@@ -252,23 +216,20 @@ func (b *StoreBuilder) ProcessFile(ctx context.Context, f io.ReaderAt, size int6
 	m := make(map[string]struct{})
 
 	for _, n := range query.selected {
-		f := TypeFromString(n)
-		if f == UNKNOWN {
-			continue
+		if w, ok := b.names[n]; ok {
+			m[n] = struct{}{}
+			w.pick = true
+			b.active = append(b.active, w)
+			b.pick = append(b.pick, n)
 		}
-		m[f.String()] = struct{}{}
-		w := b.names[f.String()]
-		w.pick = true
-		b.active = append(b.active, w)
-		b.pick = append(b.pick, f)
 	}
 	b.filters = append(b.filters, query.filters.build()...)
 
 	for i := range b.filters {
 		p := &b.filters[i]
-		_, ok := m[p.Field.Type().String()]
+		_, ok := m[p.Field]
 		if !ok {
-			w := b.names[p.Field.Type().String()]
+			w := b.names[p.Field]
 			w.filter = p
 			b.active = append(b.active, w)
 		}
@@ -283,31 +244,11 @@ func (b *StoreBuilder) ProcessFile(ctx context.Context, f io.ReaderAt, size int6
 	return nil
 }
 
-func (e *writer) skip() (bool, error) {
-	if e.dictionary {
-		p, err := e.pages.ReadPage()
-		if err != nil {
-			return false, err
-		}
-		e.page = p
-		value := e.filter.Field.Value()
-		dict := p.Dictionary()
-		for i := 0; i < dict.Len(); i += 1 {
-			if parquet.Equal(dict.Index(int32(i)), value) {
-				return false, nil
-			}
-		}
-		// no hash with the value on the this page.
-		return true, nil
-	}
-	return false, nil
-}
-
-func (e *writer) read(b []bool) error {
+func (e *writer) read() error {
 	if e.page != nil {
 		// we performed a dict filter before the page is already open we just read it here
 		// and set it to nil so next reads will open a new page.
-		err := e.write(e.page, b, e.match())
+		err := e.write(e.page)
 		e.page = nil
 		return err
 	}
@@ -315,85 +256,93 @@ func (e *writer) read(b []bool) error {
 	if err != nil {
 		return err
 	}
-	return e.write(p, b, e.match())
-}
-
-func (e *writer) final(ctx context.Context, filter arrow.Array) error {
-	if e.pick {
-		a, err := compute.FilterArray(ctx, e.build.NewArray(), filter, *compute.DefaultFilterOptions())
-		if err != nil {
-			return err
-		}
-		e.collect = append(e.collect, a)
-	}
-	return nil
-}
-
-func (e *writer) match() func(any) bool {
-	if e.filter == nil {
-		return nil
-	}
-	return e.filter.Match
+	return e.write(p)
 }
 
 func (b *StoreBuilder) rows(ctx context.Context, rg parquet.RowGroup, query Query) error {
 	columns := rg.ColumnChunks()
-	// map all columns to fields
-	fields := make(map[FIELD_TYPE]*writer)
+
+	// Ensure pages are closed regardless of success or failure to execute this
+	// function.
+	var releasePages releaseList
+	defer releasePages.Release()
 
 	// RowGroup level filter
 	for _, w := range b.active {
 		column := columns[w.index]
 		w.chunk = column
 		w.pages = column.Pages()
+		releasePages = append(releasePages, releaseFunc(func() {
+			w.pages.Close()
+		}))
+
 		if w.filter == nil {
-			// set column and
 			continue
 		}
-		w.dictionary = w.filter.Op == BLOOM_AND_DICT_EQ ||
-			w.filter.Op == DICT
 		switch w.filter.Op {
-		case BLOOM_EQ, BLOOM_AND_DICT_EQ:
+		case BLOOM_EQ:
 			// We guarantee  that the bloom is in memory. If any filter matches the
 			//  bloom filter condition we skip the the entire row group.
-			ok, _ := column.BloomFilter().Check(w.filter.Field.Value())
+			ok, _ := column.BloomFilter().Check(w.filter.Parquet)
 			if !ok {
 				return nil
 			}
 		case BLOOM_NE:
 			// We guarantee  that the bloom is in memory. If any filter matches the
-			//  bloom filter condition we skip the the entire row group.
-			ok, _ := column.BloomFilter().Check(w.filter.Field.Value())
+			//  bloom filter condition we skip  the entire row group.
+			ok, _ := column.BloomFilter().Check(w.filter.Parquet)
 			if ok {
 				return nil
 			}
 		}
 	}
 
-	// everything is relative to the timestamp. Timestamps are stored as unix nanoseconds
 	tsw := b.active[0]
-	ts := columns[tsw.index]
-	pages := ts.Pages()
-	defer pages.Close()
+	pages := tsw.pages
 
 	start := query.start.UnixNano()
 	end := query.start.UnixNano()
 
-	f := func(a any) bool {
-		x := a.(int64)
-		return start <= x && x < end
-	}
+	startDatum := compute.NewDatum(
+		scalar.NewTimestampScalar(arrow.Timestamp(start), &arrow.TimestampType{
+			Unit: arrow.Nanosecond,
+		}),
+	)
 
-	xb := boolBufPool.Get().(*boolBuf)
-	defer xb.release()
+	endDatum := compute.NewDatum(
+		scalar.NewTimestampScalar(arrow.Timestamp(end), &arrow.TimestampType{
+			Unit: arrow.Nanosecond,
+		}),
+	)
+
+	// Cleanup per page resources
+	var release releaseList
+	defer release.Release()
+	var lastIteration bool
 
 	for {
+		if len(release) > 0 {
+			// free resources from last iteration
+			release.Release()
+			release = release[:0]
+		}
+		if lastIteration {
+			// we have reached the end of our range within this row group. This will
+			// be true if end timestamp is found in one of the pages in this row
+			// group.
+			return ErrSkip
+		}
+
 		tsPage, err := pages.ReadPage()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return nil
 			}
 			return err
+		}
+		if tsPage.NumRows() == 0 {
+			// skip empty pages.
+			continue
 		}
 		min, max, ok := tsPage.Bounds()
 		if !ok {
@@ -412,70 +361,144 @@ func (b *StoreBuilder) rows(ctx context.Context, rg parquet.RowGroup, query Quer
 		if minValue < end && maxValue > start {
 			// The page is within bounds
 
-			// first we quickly use dictionary to skip pages not containing fields
-			// with dict type.
-			var skip bool
-			for _, f := range fields {
-				skip, err = f.skip()
-				if err != nil {
-					return err
-				}
-				if skip {
-					// no need to process any other filter
-					break
-				}
-			}
-			if skip {
-				// skip this page, move on to the next one.
-				continue
-			}
-
 			// By now we have the following facts
 			//
 			//	[start, end] timestamp within bounds
 			//	pages contains rows with data we want
-			//
-
-			filter := xb.reserve(int(tsPage.NumRows()))
-
-			// directly read the timestamp data
-			err = tsw.write(tsPage, filter, f)
+			err = b.readTimestamp(tsPage)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to read timestamp %v", err)
 			}
 
-			//  select everything
-			for _, e := range fields {
+			tsArray := b.timestamp.NewArray()
+			release = append(release, tsArray)
+
+			var activeFilter compute.Datum
+			{
+				// We have already positioned start and end to point to the beginning
+				// and end of the day respectively.  Data of interest is now
+				// reduced to  start < data < end.
+
+				// select values greater then start timestamp
+				value0, err := compute.CallFunction(ctx, "greater", nil,
+					&compute.ArrayDatum{
+						Value: tsArray.Data(),
+					},
+					startDatum,
+				)
+				if err != nil {
+					return err
+				}
+				release = append(release, value0)
+
+				// select values less then end timestamp
+				value1, err := compute.CallFunction(ctx, "less", nil,
+					&compute.ArrayDatum{
+						Value: tsArray.Data(),
+					},
+					endDatum,
+				)
+				if err != nil {
+					return err
+				}
+				tsMatch, err := compute.CallFunction(ctx, "and", nil, value0, value1)
+				if err != nil {
+					return err
+				}
+				release = append(release, tsMatch)
+
+				activeFilter = tsMatch
+
+				// Timestamp is sorted in ascending order. If the last element of
+				// tsMatch is false means this is the last page we are supposed
+				// to read.
+				a := array.NewBooleanData(tsMatch.(*compute.ArrayDatum).Value)
+				lastIteration = !a.Value(a.Len() - 1)
+				release = append(release, a)
+			}
+
+			for _, e := range b.active {
 				// avoid timestamp on this stage. We have already read timestamps
 				// above.
 				if e.name == "timestamp" {
 					continue
 				}
-				err := e.read(filter)
+				// read both selected and filter fields.
+				err := e.read()
 				if err != nil {
 					return err
+				}
+
+				if e.filter != nil {
+					a := e.build.NewArray()
+					release = append(release, a)
+					fa, err := compute.CallFunction(ctx, e.filter.Op.String(), nil,
+						compute.NewDatumWithoutOwning(a),
+						e.filter.Scalar,
+					)
+
+					if err != nil {
+						return fmt.Errorf("failed to apply filter on field %q %v", e.name, err)
+					}
+					release = append(release, fa)
+					filterMatch, err := compute.CallFunction(ctx, "and", nil, activeFilter, activeFilter)
+					if err != nil {
+						return err
+					}
+					if err != nil {
+						return fmt.Errorf("failed to apply filter match  on field %q %v", e.name, err)
+					}
+					activeFilter = filterMatch
 				}
 			}
 
-			// we have applied initial filters based on parquet. Now we use arrow to
-			// take picked rows.
-			//
-			// Same filter is applied to all selected columns
-			b.boolean.AppendValues(filter, nil)
-			a := b.boolean.NewArray()
-			// e.collect will only work with selected writers so, just range over the fields
-			// without worrying whether they are filter fields or selected fields.
-			for _, e := range fields {
-				err := e.final(ctx, a)
-				if err != nil {
-					a.Release()
-					return err
+			for _, e := range b.active {
+				if e.filter == nil {
+					a := e.build.NewArray()
+					release = append(release, a)
+					selected, err := compute.Filter(
+						ctx,
+						compute.NewDatumWithoutOwning(a),
+						activeFilter,
+						compute.FilterOptions{},
+					)
+					if err != nil {
+						return err
+					}
+					release = append(release, selected)
+					e.collect = append(e.collect,
+						selected.(*compute.ArrayDatum).MakeArray(),
+					)
 				}
 			}
-			a.Release()
 		}
 	}
+}
 
+// reads timestamp data into b.timestamp
+func (b *StoreBuilder) readTimestamp(p parquet.Page) error {
+	buf := int64Pool.Get().(*int64Buf)
+	defer buf.release()
+	values := buf.values
+	r := p.Values().(parquet.Int64Reader)
+	var n int
+	var err error
+	for {
+		n, err = r.ReadInt64s(values)
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				b.timestamp.AppendValues(makeTimestamp(values[:n]), nil)
+				break
+			}
+			return err
+		}
+		b.timestamp.AppendValues(makeTimestamp(values[:n]), nil)
+	}
+	return nil
+}
+
+func makeTimestamp(a []int64) []arrow.Timestamp {
+	return *(*[]arrow.Timestamp)(unsafe.Pointer(&a))
 }
 
 type Record struct {

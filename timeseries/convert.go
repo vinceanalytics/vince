@@ -48,7 +48,10 @@ func ParquetNodeToType(n parquet.Node) (arrow.DataType, error) {
 	case lt != nil:
 		switch {
 		case lt.UTF8 != nil:
-			dt = &arrow.StringType{}
+			dt = &arrow.DictionaryType{
+				IndexType: &arrow.Uint64Type{},
+				ValueType: &arrow.StringType{},
+			}
 		case lt.Integer != nil:
 			switch lt.Integer.BitWidth {
 			case 64:

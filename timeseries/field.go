@@ -1,43 +1,33 @@
 package timeseries
 
 import (
+	"github.com/apache/arrow/go/v12/arrow/compute"
 	"github.com/segmentio/parquet-go"
 )
-
-// FIELD_TYPE represents a filterable column in parquet file.
-type FIELD_TYPE uint
-
-const (
-	UNKNOWN FIELD_TYPE = iota
-)
-
-func (f FIELD_TYPE) String() string {
-	return ""
-}
-
-func TypeFromString(str string) FIELD_TYPE {
-	return UNKNOWN
-}
-
-type Field interface {
-	Type() FIELD_TYPE
-	Value() parquet.Value
-}
 
 type OP uint
 
 const (
 	BLOOM_EQ OP = iota
 	BLOOM_NE
-	BLOOM_AND_DICT_EQ
-	DICT
+	EQ
+	NE
 )
 
-type FILTER struct {
-	Field Field
-	Op    OP
+func (op OP) String() string {
+	switch op {
+	case EQ, BLOOM_EQ:
+		return "equal"
+	case NE, BLOOM_NE:
+		return "not_equal"
+	default:
+		return ""
+	}
 }
 
-func (f *FILTER) Match(a any) bool {
-	return true
+type FILTER struct {
+	Field   string
+	Op      OP
+	Scalar  *compute.ScalarDatum
+	Parquet parquet.Value
 }
