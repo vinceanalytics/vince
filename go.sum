@@ -47,6 +47,8 @@ github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHG
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/apache/arrow/go/v12 v12.0.0-20230301192359-e8107bfa58ef h1:adwRHtzi/OKQUWf8kYvQaVR2D2BBXNJE8mMiAxYAWmo=
 github.com/apache/arrow/go/v12 v12.0.0-20230301192359-e8107bfa58ef/go.mod h1:3JcT3bSZFdc7wLPKSlQXhf3L0GjPz0TOmLlG1YXnBfU=
+github.com/apache/arrow/go/v12 v12.0.0-20230310195443-5b2fbade23ed h1:duwbMyd36avelY+ooBNWBkxcHuclvXwLv8s2NpfPwso=
+github.com/apache/arrow/go/v12 v12.0.0-20230310195443-5b2fbade23ed/go.mod h1:d+tV/eHZZ7Dz7RPrFKtPK02tpr+c9/PEd/zm8mDS9Vg=
 github.com/apache/thrift v0.16.0 h1:qEy6UW60iVOlUy+b9ZR0d5WzUWYGOo4HfopoyBaNmoY=
 github.com/apache/thrift v0.16.0/go.mod h1:PHK3hniurgQaNMZYaCLEqXKsYK8upmhPbmdP2FXSqgU=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=

@@ -3,7 +3,7 @@ module github.com/gernest/vince
 go 1.20
 
 require (
-	github.com/apache/arrow/go/v12 v12.0.0-20230301192359-e8107bfa58ef
+	github.com/apache/arrow/go/v12 v12.0.0-20230310195443-5b2fbade23ed
 	github.com/aws/aws-sdk-go-v2 v1.17.5
 	github.com/aws/aws-sdk-go-v2/config v1.18.15
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.30.5
