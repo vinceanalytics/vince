@@ -15,38 +15,19 @@ import (
 
 const (
 	SortRowCount = int64(4089)
-	BUFFER       = 4098
 )
 
 var ErrNoRows = errors.New("no rows")
 var ErrSkipPage = errors.New("skip page")
 
-type StoreItem interface {
-	*Event | *Session
-}
-
-func QueryTable[T StoreItem](ctx context.Context, model T, uid uint64, query Query, files ...string) (*Record, error) {
+func QueryTable(ctx context.Context, uid uint64, query Query, files ...string) (*Record, error) {
 	bob := Bob{db: Get(ctx).db}
-	t := any(model)
-	var b *StoreBuilder[T]
-	var table TableID
-	switch t.(type) {
-	case *Event:
-		table = EVENTS
-		b = eventsPool.Get().(*StoreBuilder[T])
-		defer func() {
-			b.reset()
-			eventsPool.Put(b)
-		}()
-	case *Session:
-		table = SESSIONS
-		b = sessionsPool.Get().(*StoreBuilder[T])
-		defer func() {
-			b.reset()
-			sessionsPool.Put(b)
-		}()
-	}
-
+	b := entriesBuildPool.Get().(*StoreBuilder)
+	table := EVENTS
+	defer func() {
+		b.reset()
+		entriesBuildPool.Put(b)
+	}()
 	err := bob.Iterate(ctx, table, uid, query.start, query.end, b.Process(ctx, query))
 	if err != nil {
 		return nil, err
@@ -54,21 +35,15 @@ func QueryTable[T StoreItem](ctx context.Context, model T, uid uint64, query Que
 	return b.Result(ctx)
 }
 
-var eventsPool = &sync.Pool{
+var entriesBuildPool = &sync.Pool{
 	New: func() any {
-		return build(&Event{})
+		return build()
 	},
 }
 
-var sessionsPool = &sync.Pool{
-	New: func() any {
-		return build(&Session{})
-	},
-}
-
-func build[T StoreItem](model T) *StoreBuilder[T] {
-	fields := parquet.SchemaOf(model).Fields()
-	b := &StoreBuilder[T]{
+func build() *StoreBuilder {
+	fields := parquet.SchemaOf(&Entry{}).Fields()
+	b := &StoreBuilder{
 		names:   make(map[string]*writer),
 		writers: make([]*writer, len(fields)),
 		boolean: array.NewBooleanBuilder(memory.DefaultAllocator),
@@ -238,7 +213,7 @@ func (w *writer) write(p parquet.Page, filter []bool, f func(any) bool) error {
 	return nil
 }
 
-type StoreBuilder[T any] struct {
+type StoreBuilder struct {
 	names   map[string]*writer
 	pick    []FIELD_TYPE
 	filters []FILTER
@@ -247,7 +222,7 @@ type StoreBuilder[T any] struct {
 	boolean *array.BooleanBuilder
 }
 
-func (b *StoreBuilder[T]) reset() {
+func (b *StoreBuilder) reset() {
 	b.pick = b.pick[:0]
 	b.filters = b.filters[:0]
 	b.active = b.active[:0]
@@ -259,13 +234,13 @@ func (b *StoreBuilder[T]) reset() {
 	}
 }
 
-func (b *StoreBuilder[T]) Process(ctx context.Context, query Query) func(io.ReaderAt, int64) error {
+func (b *StoreBuilder) Process(ctx context.Context, query Query) func(io.ReaderAt, int64) error {
 	return func(ra io.ReaderAt, i int64) error {
 		return b.ProcessFile(ctx, ra, i, query)
 	}
 }
 
-func (b *StoreBuilder[T]) ProcessFile(ctx context.Context, f io.ReaderAt, size int64, query Query) error {
+func (b *StoreBuilder) ProcessFile(ctx context.Context, f io.ReaderAt, size int64, query Query) error {
 	file, err := parquet.OpenFile(f, size)
 	if err != nil {
 		return err
@@ -361,7 +336,7 @@ func (e *writer) match() func(any) bool {
 	return e.filter.Match
 }
 
-func (b *StoreBuilder[T]) rows(ctx context.Context, rg parquet.RowGroup, query Query) error {
+func (b *StoreBuilder) rows(ctx context.Context, rg parquet.RowGroup, query Query) error {
 	columns := rg.ColumnChunks()
 	// map all columns to fields
 	fields := make(map[FIELD_TYPE]*writer)
@@ -508,7 +483,7 @@ type Record struct {
 	Values  []arrow.Array `json:"values,omitempty"`
 }
 
-func (b *StoreBuilder[T]) Result(ctx context.Context) (*Record, error) {
+func (b *StoreBuilder) Result(ctx context.Context) (*Record, error) {
 	r := &Record{}
 	for _, w := range b.writers {
 		if w.pick {

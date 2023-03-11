@@ -171,7 +171,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		userID := int64(seedID.Gen(remoteIp, userAgent, domain, host))
-		e := new(timeseries.Event)
+		e := new(timeseries.Entry)
 		e.UserId = userID
 		e.Name = req.EventName
 		e.Hostname = host
@@ -193,7 +193,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.ScreenSize = screenSize
 		e.Timestamp = now
 		previousUUserID := int64(seedID.GenPrevious(remoteIp, userAgent, domain, host))
-		e.SessionId = b.Register(r.Context(), e, previousUUserID)
+		b.Register(r.Context(), e, previousUUserID)
 	}
 	if dropped > 0 {
 		w.Header().Set("x-vince-dropped", strconv.Itoa(dropped))

@@ -196,12 +196,6 @@ func (b *Bob) Merge(ctx context.Context) error {
 						return err
 					}
 					parquet.CopyRows(w.ew, g.Rows())
-				case SESSIONS:
-					g, err := parquet.MergeRowGroups(f.RowGroups())
-					if err != nil {
-						return err
-					}
-					parquet.CopyRows(w.sw, g.Rows())
 				}
 				return nil
 			})

@@ -3,7 +3,6 @@ package timeseries
 import (
 	"bytes"
 	"context"
-	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -12,7 +11,6 @@ import (
 	"github.com/docker/go-units"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/log"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/segmentio/parquet-go"
 )
@@ -31,9 +29,7 @@ type Buffer struct {
 	expiresAt time.Time
 	eb        bytes.Buffer
 	sb        bytes.Buffer
-	ew        *parquet.SortingWriter[*Event]
-	sw        *parquet.SortingWriter[*Session]
-	sessions  [2]*Session
+	ew        *parquet.SortingWriter[*Entry]
 	events    [1]*Event
 }
 
@@ -51,8 +47,6 @@ func (b *Buffer) Reset() *Buffer {
 	b.eb.Reset()
 	b.sb.Reset()
 	b.events[0] = nil
-	b.sessions[0] = nil
-	b.sessions[1] = nil
 	return b
 }
 
@@ -66,25 +60,13 @@ func (b *Buffer) setup() *Buffer {
 	for i := range eventsFilterFields {
 		eb[i] = parquet.SplitBlockFilter(10, eventsFilterFields[i])
 	}
-	b.ew = parquet.NewSortingWriter[*Event](&b.eb, SortRowCount,
+	b.ew = parquet.NewSortingWriter[*Entry](&b.eb, SortRowCount,
 		parquet.SortingWriterConfig(
 			parquet.SortingColumns(
 				parquet.Ascending("timestamp"),
 			),
 		),
 		parquet.BloomFilters(eb...),
-	)
-	sb := make([]parquet.BloomFilterColumn, len(sessionFilterFields))
-	for i := range sessionFilterFields {
-		sb[i] = parquet.SplitBlockFilter(10, sessionFilterFields[i])
-	}
-	b.sw = parquet.NewSortingWriter[*Session](&b.sb, SortRowCount,
-		parquet.SortingWriterConfig(
-			parquet.SortingColumns(
-				parquet.Ascending("timestamp"),
-			),
-		),
-		parquet.BloomFilters(sb...),
 	)
 	return b
 }
@@ -97,8 +79,8 @@ func (b *Buffer) expired(now time.Time) bool {
 	return b.expiresAt.Before(now)
 }
 
-func (b *Buffer) Register(ctx context.Context, e *Event, prevUserId int64) uuid.UUID {
-	var s *Session
+func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId int64) {
+	var s *Entry
 	s = find(ctx, e, e.UserId)
 	if s == nil {
 		s = find(ctx, e, prevUserId)
@@ -107,17 +89,15 @@ func (b *Buffer) Register(ctx context.Context, e *Event, prevUserId int64) uuid.
 		updated := s.Update(e)
 		updated.Sign = true
 		s.Sign = false
-		b.sessions[0] = updated
-		b.sessions[1] = s
-		b.sw.Write(b.sessions[:])
-		return persist(ctx, updated)
+		e.SessionId = updated.SessionId
+		b.ew.Write([]*Entry{updated, s, e})
+		persist(ctx, updated)
+		return
 	}
-	newSession := e.NewSession()
-	b.sessions[0] = newSession
-	b.sw.Write(b.sessions[:1])
-	b.events[0] = e
-	b.ew.Write(b.events[:])
-	return persist(ctx, newSession)
+	newSession := e.Session()
+	e.SessionId = newSession.SessionId
+	b.ew.Write([]*Entry{newSession, e})
+	persist(ctx, newSession)
 }
 
 var bigBufferPool = &sync.Pool{
@@ -153,34 +133,16 @@ func (b *Buffer) save(txn *badger.Txn, say *zerolog.Logger) error {
 		}
 		say.Debug().Msgf("saved  %s events ", units.BytesSize(float64(b.eb.Len())))
 	}
-	{
-		// save sessions
-		b.id.SetTable(SESSIONS)
-		err := b.sw.Close()
-		if err != nil {
-			say.Err(err).Msg("failed to close parquet writer for sessions")
-			return err
-		}
-		err = storeTxn(&b.id, b.sb.Bytes(), 0, txn)
-		if err != nil {
-			say.Err(err).Msg("failed to save events to permanent storage")
-			return err
-		}
-		say.Debug().Msgf("saved  %s sessions ", units.BytesSize(float64(b.sb.Len())))
-	}
 	return nil
 }
 
-func find(ctx context.Context, e *Event, userId int64) *Session {
+func find(ctx context.Context, e *Entry, userId int64) *Entry {
 	v, _ := caches.Session(ctx).Get(key(e.Domain, userId))
 	if v != nil {
-		return v.(*Session)
+		return v.(*Entry)
 	}
 	return nil
 }
-
-// const of storing a session in cache
-var sessionSize = int64(reflect.TypeOf(Session{}).Size())
 
 func key(domain string, userId int64) string {
 	b := bufPool.Get().(*bytes.Buffer)
@@ -197,7 +159,6 @@ var bufPool = &sync.Pool{
 	},
 }
 
-func persist(ctx context.Context, s *Session) uuid.UUID {
-	caches.Session(ctx).SetWithTTL(key(s.Domain, s.UserId), s, sessionSize, 30*time.Minute)
-	return s.SessionId
+func persist(ctx context.Context, s *Entry) {
+	caches.Session(ctx).SetWithTTL(key(s.Domain, s.UserId), s, 1, 30*time.Minute)
 }

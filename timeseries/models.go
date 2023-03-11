@@ -48,8 +48,11 @@ type Event struct {
 }
 
 var eventsFilterFields = []string{
+	"timestamp",
 	"name",
 	"domain",
+	"user_id",
+	"session_id",
 	"hostname",
 	"path",
 	"referrer",
@@ -67,128 +70,10 @@ var eventsFilterFields = []string{
 	"utm_content",
 	"utm_term",
 	"transferred_from",
-}
-
-func (e *Event) NewSession() *Session {
-	s := new(Session)
-	s.Sign = true
-	s.SessionId = uuid.New()
-	s.Hostname = e.Hostname
-	s.Domain = e.Domain
-	s.UserId = e.UserId
-	s.EntryPage = e.Pathname
-	s.ExitPage = e.Pathname
-	s.IsBounce = true
-	s.PageViews = 0
-	if e.Name == "pageview" {
-		s.PageViews = 1
-	}
-	s.Events = 1
-	s.Referrer = e.Referrer
-	s.ReferrerSource = e.ReferrerSource
-	s.UtmMedium = e.UtmMedium
-	s.UtmSource = e.UtmSource
-	s.UtmCampaign = e.UtmCampaign
-	s.UtmContent = e.UtmContent
-	s.UtmTerm = e.UtmTerm
-	s.CountryCode = e.CountryCode
-	s.CityGeoNameId = e.CityGeoNameID
-	s.ScreenSize = e.ScreenSize
-	s.OperatingSystem = e.OperatingSystem
-	s.OperatingSystemVersion = e.OperatingSystemVersion
-	s.Browser = e.Browser
-	s.Start = e.Timestamp
-	s.Timestamp = e.Timestamp
-	return s
-}
-
-type Session struct {
-	Timestamp              time.Time     `parquet:"timestamp,zstd"`
-	SessionId              uuid.UUID     `parquet:"session_id,dict,zstd"`
-	Sign                   bool          `parquet:"sign,dict,zstd"`
-	Domain                 string        `parquet:"domain,dict,zstd"`
-	UserId                 int64         `parquet:"user_id,zstd"`
-	Hostname               string        `parquet:"hostname,dict,zstd"`
-	IsBounce               bool          `parquet:"is_bounce,dict,zstd"`
-	EntryPage              string        `parquet:"entry_page,dict,zstd"`
-	ExitPage               string        `parquet:"exit_page,dict,zstd"`
-	PageViews              int64         `parquet:"pageviews,dict,zstd"`
-	Events                 int64         `parquet:"events,dict,zstd"`
-	Duration               time.Duration `parquet:"duration,dict,zstd"`
-	Referrer               string        `parquet:"referrer,dict,zstd"`
-	ReferrerSource         string        `parquet:"referrer_source,dict,zstd"`
-	CountryCode            country.Code  `parquet:"country_code,dict,zstd"`
-	OperatingSystem        string        `parquet:"operating_system,dict,zstd"`
-	Browser                string        `parquet:"browser,dict,zstd"`
-	UtmMedium              string        `parquet:"utm_medium,dict,zstd"`
-	UtmSource              string        `parquet:"utm_source,dict,zstd"`
-	UtmCampaign            string        `parquet:"UtmCampaign,dict,zstd"`
-	BrowserVersion         string        `parquet:"browser_version,dict,zstd"`
-	OperatingSystemVersion string        `parquet:"operating_system_version,dict,zstd"`
-	CityGeoNameId          uint32        `parquet:"city_geo_name_id,dict,zstd"`
-	UtmContent             string        `parquet:"utm_content,dict,zstd"`
-	UtmTerm                string        `parquet:"utm_term,dict,zstd"`
-	TransferredFrom        string        `parquet:"transferred_from,dict,zstd"`
-	ScreenSize             ScreenSize    `parquet:"screen_size,dict,zstd"`
-	Start                  time.Time     `parquet:"start,zstd"`
-}
-
-var sessionFilterFields = []string{
-	"domain",
-	"hostname",
+	"sign",
+	"is_bounce",
 	"entry_page",
 	"exit_page",
-	"referrer",
-	"referrer_source",
-	"country_code",
-	"operating_system",
-	"browser",
-	"utm_medium",
-	"utm_source",
-	"UtmCampaign",
-	"browser_version",
-	"operating_system_version",
-	"city_geo_name_id",
-	"utm_content",
-	"utm_term",
-	"transferred_from",
-	"screen_size",
-}
-
-func (s *Session) Update(e *Event) *Session {
-	ss := new(Session)
-	*ss = *s
-	ss.UserId = e.UserId
-	ss.Timestamp = e.Timestamp
-	ss.ExitPage = e.Pathname
-	ss.IsBounce = false
-	ss.Duration = e.Timestamp.Sub(ss.Start)
-	if e.Name == "pageview" {
-		ss.PageViews++
-	}
-	if ss.CountryCode == 0 {
-		ss.CountryCode = e.CountryCode
-	}
-	if ss.CityGeoNameId == 0 {
-		ss.CityGeoNameId = e.CityGeoNameID
-	}
-	if ss.OperatingSystem == "" {
-		ss.OperatingSystem = e.OperatingSystem
-	}
-	if ss.OperatingSystemVersion == "" {
-		ss.OperatingSystemVersion = e.OperatingSystemVersion
-	}
-	if ss.Browser == "" {
-		ss.Browser = e.Browser
-	}
-	if ss.BrowserVersion == "" {
-		ss.BrowserVersion = e.BrowserVersion
-	}
-	if ss.ScreenSize == 0 {
-		ss.ScreenSize = e.ScreenSize
-	}
-	ss.Events += 1
-	return ss
 }
 
 type Tables struct {
