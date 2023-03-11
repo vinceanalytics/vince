@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gernest/vince/country"
 	"github.com/gernest/vince/gate"
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/log"
@@ -142,26 +141,26 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	}
 	reqReferrer = cleanReferrer(reqReferrer)
 
-	var countryCode country.Code
+	var countryCode string
 	var cityGeonameId uint32
 	if remoteIp != "" {
 		ip := net.ParseIP(remoteIp)
 		city, err := geoip.Lookup(ip)
 		if err == nil {
-			countryCode = country.Lookup(city.Country.IsoCode)
+			countryCode = city.Country.IsoCode
 			cityGeonameId = uint32(city.Country.GeoNameID)
 		}
 	}
-	var screenSize timeseries.ScreenSize
+	var screenSize string
 	switch {
 	case req.ScreenWidth < 576:
-		screenSize = timeseries.Mobile
+		screenSize = "mobile"
 	case req.ScreenWidth < 992:
-		screenSize = timeseries.Tablet
+		screenSize = "tablet"
 	case req.ScreenWidth < 1440:
-		screenSize = timeseries.Laptop
+		screenSize = "laptop"
 	case req.ScreenWidth >= 1440:
-		screenSize = timeseries.Desktop
+		screenSize = "desktop"
 	}
 	var dropped int
 	for _, domain := range domains {

@@ -68,6 +68,7 @@ message Config {
     DEVELOPMENT = 0;
     STAGING = 1;
     PRODUCTION = 2;
+    LOADING = 3;
   }
 
   enum LogLevel {

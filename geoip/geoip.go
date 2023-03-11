@@ -2,6 +2,7 @@ package geoip
 
 import (
 	"bytes"
+	"compress/gzip"
 	_ "embed"
 	"io"
 	"net"
@@ -25,7 +26,15 @@ var (
 func Get() *geoip2.Reader {
 	once.Do(func() {
 		var err error
-		mmdb, err = geoip2.FromBytes(data)
+		r, err := gzip.NewReader(bytes.NewReader(data))
+		if err != nil {
+			panic("failed to read embedded mmdb data file gzip data expected " + err.Error())
+		}
+		b, err := io.ReadAll(r)
+		if err != nil {
+			panic(err.Error())
+		}
+		mmdb, err = geoip2.FromBytes(b)
 		if err != nil {
 			panic(err.Error())
 		}

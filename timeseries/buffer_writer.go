@@ -25,12 +25,12 @@ import (
 //
 // This type is reusable.
 type Buffer struct {
+	mu        sync.Mutex
 	id        ID
 	expiresAt time.Time
 	eb        bytes.Buffer
 	sb        bytes.Buffer
 	ew        *parquet.SortingWriter[*Entry]
-	events    [1]*Event
 }
 
 func (b *Buffer) Init(user uint64, ttl time.Duration) *Buffer {
@@ -46,7 +46,6 @@ func (b *Buffer) Reset() *Buffer {
 	b.expiresAt = time.Time{}
 	b.eb.Reset()
 	b.sb.Reset()
-	b.events[0] = nil
 	return b
 }
 
@@ -80,6 +79,8 @@ func (b *Buffer) expired(now time.Time) bool {
 }
 
 func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId int64) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	var s *Entry
 	s = find(ctx, e, e.UserId)
 	if s == nil {

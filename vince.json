@@ -12,5 +12,6 @@
     },
     "dataPath": ".vince",
     "flushInterval": "10s",
-    "logLevel": "debug"
+    "logLevel": "debug",
+    "env": "LOADING"
 }

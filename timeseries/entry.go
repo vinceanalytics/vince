@@ -3,7 +3,6 @@ package timeseries
 import (
 	"time"
 
-	"github.com/gernest/vince/country"
 	"github.com/google/uuid"
 )
 
@@ -18,8 +17,8 @@ type Entry struct {
 	Pathname               string        `parquet:"path,dict,zstd"`
 	Referrer               string        `parquet:"referrer,dict,zstd"`
 	ReferrerSource         string        `parquet:"referrer_source,dict,zstd"`
-	CountryCode            country.Code  `parquet:"country_code,dict,zstd"`
-	ScreenSize             ScreenSize    `parquet:"screen_size,dict,zstd"`
+	CountryCode            string        `parquet:"country_code,dict,zstd"`
+	ScreenSize             string        `parquet:"screen_size,dict,zstd"`
 	OperatingSystem        string        `parquet:"operating_system,dict,zstd"`
 	Browser                string        `parquet:"browser,dict,zstd"`
 	UtmMedium              string        `parquet:"utm_medium,dict,zstd"`
@@ -67,7 +66,7 @@ func (s *Entry) Update(e *Entry) *Entry {
 	if e.Name == "pageview" {
 		ss.PageViews++
 	}
-	if ss.CountryCode == 0 {
+	if ss.CountryCode == "" {
 		ss.CountryCode = e.CountryCode
 	}
 	if ss.CityGeoNameID == 0 {
@@ -85,7 +84,7 @@ func (s *Entry) Update(e *Entry) *Entry {
 	if ss.BrowserVersion == "" {
 		ss.BrowserVersion = e.BrowserVersion
 	}
-	if ss.ScreenSize == 0 {
+	if ss.ScreenSize == "" {
 		ss.ScreenSize = e.ScreenSize
 	}
 	ss.Events += 1
