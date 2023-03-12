@@ -23,7 +23,7 @@ type TableID byte
 
 const (
 	EVENTS TableID = iota
-	SESSIONS
+	SYSTEM
 )
 
 // Similar to ulid.ULID. With addition of TableID and

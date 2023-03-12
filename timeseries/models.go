@@ -3,7 +3,6 @@ package timeseries
 import (
 	"context"
 	"path/filepath"
-	"time"
 
 	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/dgraph-io/badger/v3"
@@ -44,7 +43,7 @@ type Tables struct {
 	db *badger.DB
 }
 
-func Open(ctx context.Context, allocator memory.Allocator, dir string, ttl time.Duration) (*Tables, error) {
+func Open(ctx context.Context, allocator memory.Allocator, dir string) (*Tables, error) {
 	base := filepath.Join(dir, "ts")
 	o := badger.DefaultOptions(filepath.Join(base, "store")).
 		WithLogger(log.Badger(ctx)).

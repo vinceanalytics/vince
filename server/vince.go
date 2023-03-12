@@ -29,7 +29,6 @@ import (
 )
 
 func Serve(ctx *cli.Context) error {
-
 	conf, err := config.Load(ctx)
 	if err != nil {
 		return err
@@ -47,9 +46,8 @@ func Serve(ctx *cli.Context) error {
 
 	xlg := zerolog.New(zerolog.MultiLevelWriter(
 		os.Stderr, errorLog,
-	)).Level(zerolog.InfoLevel).With().Timestamp().Logger()
-
-	xlg = xlg.Level(zerolog.Level(conf.LogLevel))
+	)).Level(zerolog.Level(conf.LogLevel)).With().
+		Timestamp().Str("env", conf.Env.String()).Logger()
 	goCtx = log.Set(goCtx, &xlg)
 	if _, err = os.Stat(conf.DataPath); err != nil && os.IsNotExist(err) {
 		err = os.MkdirAll(conf.DataPath, 0755)
@@ -78,7 +76,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	ctx = models.Set(ctx, sqlDb)
 	alloc := memory.DefaultAllocator
 	ctx = compute.WithAllocator(ctx, alloc)
-	ts, err := timeseries.Open(ctx, alloc, o.DataPath, o.DataTtl.AsDuration())
+	ts, err := timeseries.Open(ctx, alloc, o.DataPath)
 	if err != nil {
 		models.CloseDB(sqlDb)
 		return err
@@ -92,7 +90,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		ts.Close()
 		return err
 	}
-	m := timeseries.NewMap(o.FlushInterval.AsDuration())
+	m := timeseries.NewMap(o.Intervals.SaveTimeseriesBufferInterval.AsDuration())
 	ctx = timeseries.SetMap(ctx, m)
 
 	mailer, err := email.FromConfig(o)

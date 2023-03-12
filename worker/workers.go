@@ -49,7 +49,7 @@ func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingCh
 		Int("some2", 2).
 		Msg("started")
 	defer wg.Done()
-	interval := config.Get(ctx).SitesByDomainCacheRefreshInterval
+	interval := config.Get(ctx).Intervals.SitesByDomainCacheRefreshInterval
 	work := &cacheUpdater{
 		sites: make([]*models.CachedSite, 0, 4098),
 		ttl:   interval.AsDuration(),
@@ -83,8 +83,7 @@ func LogRotate(b *log.Rotate) func(ctx context.Context, wg *sync.WaitGroup, exit
 func rotateLog(ctx context.Context, b *log.Rotate, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
 	log.Get(ctx).Debug().Str("worker", "log_rotation").Msg("started")
 	defer wg.Done()
-	// Do 1 second  interval flushing of buffered logs
-	tick := time.NewTicker(time.Second)
+	tick := time.NewTicker(config.Get(ctx).Intervals.LogRotationCheckInterval.AsDuration())
 	date := timex.Date(time.Now())
 	defer tick.Stop()
 	for {
@@ -119,7 +118,7 @@ func saveBuffer(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, 
 	log.Get(ctx).Debug().Str("worker", "timeseries_writer").Msg("started")
 	defer wg.Done()
 	// Do 1 second  interval flushing of buffered logs
-	tick := time.NewTicker(config.Get(ctx).FlushInterval.AsDuration())
+	tick := time.NewTicker(config.Get(ctx).Intervals.SaveTimeseriesBufferInterval.AsDuration())
 	m := timeseries.GetMap(ctx)
 	defer tick.Stop()
 	for {

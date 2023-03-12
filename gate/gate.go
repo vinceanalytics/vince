@@ -16,7 +16,7 @@ import (
 // This applies rate limits configured per site/domain
 func Check(ctx context.Context, domain string) (*timeseries.Buffer, bool) {
 	conf := config.Get(ctx)
-	if conf.Env == config.Config_LOADING {
+	if conf.Env == config.Config_load {
 		// special case
 		return timeseries.GetMap(ctx).Get(ctx,
 			1), true

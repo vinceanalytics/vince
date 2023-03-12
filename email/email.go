@@ -98,7 +98,7 @@ func FromConfig(conf *config.Config) (Mailer, error) {
 			)
 		}
 	}
-	if conf.Env == config.Config_DEVELOPMENT {
+	if conf.Env == config.Config_dev {
 		return &MailHog{SMTP: s}, nil
 	}
 	return s, nil

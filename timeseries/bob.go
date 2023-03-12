@@ -215,7 +215,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 	save := func(u uint64, txn *badger.Txn) error {
 		w.Init(u, 0)
 		defer w.Reset()
-		for _, t := range []TableID{EVENTS, SESSIONS} {
+		for _, t := range []TableID{EVENTS, SYSTEM} {
 			id.SetTable(t)
 			o := badger.DefaultIteratorOptions
 			o.Prefix = id.PrefixWithDate()

@@ -1,5 +1,6 @@
 {
     "listenAddress": ":8080",
+    "url": "dev",
     "mailer": {
         "address": {
             "name": "vincent from vince",
@@ -11,7 +12,14 @@
         }
     },
     "dataPath": ".vince",
-    "flushInterval": "10s",
-    "logLevel": "debug",
-    "env": "LOADING"
+    "enableEmailVerification": true,
+    "isSelfHost": true,
+    "logLevel": "trace",
+    "env": "load",
+    "intervals": {
+        "sitesByDomainCacheRefreshInterval": "900s",
+        "logRotationCheckInterval": "3600s",
+        "saveTimeseriesBufferInterval": "900s",
+        "mergeTimeseriesInterval": "1800s"
+    }
 }

@@ -45,11 +45,6 @@ func Flags() []cli.Flag {
 			Value:   ".vince",
 			EnvVars: []string{"VINCE_DATA"},
 		},
-		&cli.DurationFlag{
-			Name:    "flush-interval",
-			Value:   30 * time.Minute,
-			EnvVars: []string{"VINCE_FLUSH_INTERVAL"},
-		},
 		&cli.StringFlag{
 			Name:    "env",
 			Usage:   "environment on which vince is run (dev,staging,production)",
@@ -59,7 +54,6 @@ func Flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    "url",
 			Usage:   "url for the server on which vince is hosted(it shows up on emails)",
-			Value:   "dev",
 			EnvVars: []string{"VINCE_URL"},
 		},
 		&cli.StringFlag{
@@ -79,6 +73,12 @@ func Flags() []cli.Flag {
 			Usage:   "self hosted version",
 			Value:   true,
 			EnvVars: []string{"VINCE_SELF_HOST"},
+		},
+		&cli.StringFlag{
+			Name:    "log",
+			Usage:   "level of logging",
+			Value:   "info",
+			EnvVars: []string{"VINCE_LOG_LEVEL"},
 		},
 		&cli.StringFlag{
 			Name:    "mailer-address",
@@ -141,10 +141,37 @@ func Flags() []cli.Flag {
 			EnvVars: []string{"VINCE_MAILER_SMTP_OAUTH_PORT"},
 		},
 		&cli.DurationFlag{
-			Name:    "data-ttl",
-			Usage:   "data retention period",
-			Value:   24 * time.Hour,
-			EnvVars: []string{"VINCE_DATA_TTL"},
+			Name:    "cache-refresh",
+			Usage:   "window for refreshing sites cache",
+			Value:   15 * time.Minute,
+			EnvVars: []string{"VINCE_SITE_CACHE_REFRESH_INTERVAL"},
+		},
+		&cli.DurationFlag{
+			Name:    "rotation-check",
+			Usage:   "window for checking log rotation",
+			Value:   time.Hour,
+			EnvVars: []string{"VINCE_LOG_ROTATION_CHECK_INTERVAL"},
+		},
+		&cli.DurationFlag{
+			Name:  "ts-buffer",
+			Usage: "window for buffering timeseries in memory",
+			// This seems reasonable to avoid users to wait for a long time between
+			// creating the site and seeing something on the dashboard. A bigger
+			// duration is better though, to reduce pressure on our kv store
+			Value:   15 * time.Minute,
+			EnvVars: []string{"VINCE_TS_BUFFER_INTERVAL"},
+		},
+		&cli.DurationFlag{
+			Name:  "ts-merge",
+			Usage: "window for compacting daily timeseries data",
+			// We pick this value to balance the number of items processed per
+			// iteration. This will ensure we have al most 3 files per user.
+			//
+			// Merge operation is slow, and gets even slower with the number of active
+			// users in the system growing. This is by design to conserve amount of memory used
+			// during the operation.
+			Value:   30 * time.Minute,
+			EnvVars: []string{"VINCE_TS_MERGE_INTERVAL"},
 		},
 	}
 }
@@ -156,7 +183,6 @@ func Load(ctx *cli.Context) (*Config, error) {
 		return nil, err
 	}
 	proto.Merge(base, conf)
-
 	return base, setupKey(base)
 }
 
@@ -188,10 +214,17 @@ func fromCli(ctx *cli.Context) *Config {
 		ListenAddress:           ctx.String("listen-address"),
 		Url:                     ctx.String("url"),
 		DataPath:                ctx.String("data"),
-		FlushInterval:           durationpb.New(ctx.Duration("flush-interval")),
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
 		IsSelfHost:              ctx.Bool("self-host"),
 		SecretKeyBase:           ctx.String("secret-key-base"),
+		LogLevel:                Config_LogLevel(Config_LogLevel_value[ctx.String("log")]),
+		Env:                     Config_Env(Config_LogLevel_value[ctx.String("log")]),
+		Intervals: &Intervals{
+			SitesByDomainCacheRefreshInterval: durationpb.New(ctx.Duration("cache-refresh")),
+			LogRotationCheckInterval:          durationpb.New(ctx.Duration("rotation-check")),
+			SaveTimeseriesBufferInterval:      durationpb.New(ctx.Duration("ts-buffer")),
+			MergeTimeseriesInterval:           durationpb.New(ctx.Duration("ts-merge")),
+		},
 		Mailer: &Config_Mailer{
 			Address: &Config_Address{
 				Name:  ctx.String("mailer-address-name"),
@@ -223,18 +256,7 @@ func fromCli(ctx *cli.Context) *Config {
 			Methods:               []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 			SendPreflightResponse: true,
 		},
-		DataTtl:                           durationpb.New(ctx.Duration("data-ttl")),
-		SitesByDomainCacheRefreshInterval: durationpb.New(15 * time.Minute),
 	}
-	switch ctx.String("env") {
-	case "dev":
-		x.Env = Config_DEVELOPMENT
-	case "staging":
-		x.Env = Config_STAGING
-	case "prod":
-		x.Env = Config_PRODUCTION
-	}
-
 	var anon *Config_Mailer_Anonymous
 	var plain *Config_Mailer_Plain
 	var oauth *Config_Mailer_OauthBearer

@@ -210,7 +210,7 @@ func NotFound(h http.Handler) http.Handler {
 }
 
 func Load(cfg *config.Config) plug.Plug {
-	load := cfg.Env == config.Config_LOADING
+	load := cfg.Env == config.Config_load
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if load && r.Method == http.MethodPost && r.URL.Path == "/api/event" {
