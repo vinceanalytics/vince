@@ -3,6 +3,7 @@ package timeseries
 import (
 	"time"
 
+	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/google/uuid"
 )
 
@@ -26,24 +27,58 @@ type Entry struct {
 	UtmCampaign            string        `parquet:"utm_campaign,dict,zstd"`
 	BrowserVersion         string        `parquet:"browser_version,dict,zstd"`
 	OperatingSystemVersion string        `parquet:"operating_system_version,dict,zstd"`
-	CityGeoNameID          uint32        `parquet:"city_geo_name_id,dict,zstd"`
 	UtmContent             string        `parquet:"utm_content,dict,zstd"`
 	UtmTerm                string        `parquet:"utm_term,dict,zstd"`
 	TransferredFrom        string        `parquet:"transferred_from,dict,zstd"`
-	Sign                   bool          `parquet:"sign,dict,zstd"`
-	IsBounce               bool          `parquet:"is_bounce,dict,zstd"`
 	EntryPage              string        `parquet:"entry_page,dict,zstd"`
 	ExitPage               string        `parquet:"exit_page,dict,zstd"`
+	CityGeoNameID          uint32        `parquet:"city_geo_name_id,dict,zstd"`
 	PageViews              int64         `parquet:"pageviews,dict,zstd"`
 	Events                 int64         `parquet:"events,dict,zstd"`
+	Sign                   int32         `parquet:"sign,dict,zstd"`
+	IsBounce               bool          `parquet:"is_bounce,dict,zstd"`
 	Duration               time.Duration `parquet:"duration,dict,zstd"`
 	Start                  time.Time     `parquet:"start,zstd"`
+}
+
+// A list of Entry properties as arrow.Field.
+var Fields = []arrow.Field{
+	{Name: "timestamp", Type: &arrow.TimestampType{Unit: arrow.Nanosecond}},
+	{Name: "name", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "domain", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "user_id", Type: &arrow.DictionaryType{IndexType: &arrow.Int64Type{}, ValueType: &arrow.Int64Type{}}},
+	{Name: "session_id", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.FixedSizeBinaryType{ByteWidth: 16}}},
+	{Name: "hostname", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "path", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "referrer", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "referrer_source", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "country_code", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "screen_size", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "operating_system", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "browser", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "utm_medium", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "utm_source", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "utm_campaign", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "browser_version", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "operating_system_version", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "utm_content", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "utm_term", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "transferred_from", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "entry_page", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "exit_page", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
+	{Name: "city_geo_name_id", Type: &arrow.Int32Type{}},
+	{Name: "pageviews", Type: &arrow.Int64Type{}},
+	{Name: "events", Type: &arrow.Int64Type{}},
+	{Name: "sign", Type: &arrow.Int32Type{}},
+	{Name: "is_bounce", Type: &arrow.BooleanType{}},
+	{Name: "duration", Type: &arrow.DurationType{}},
+	{Name: "start", Type: &arrow.TimestampType{Unit: arrow.Nanosecond}},
 }
 
 // Session creates a new session from entry
 func (e *Entry) Session() *Entry {
 	s := *e
-	s.Sign = true
+	s.Sign = 1
 	s.SessionId = uuid.New()
 	s.EntryPage = e.Pathname
 	s.ExitPage = e.Pathname

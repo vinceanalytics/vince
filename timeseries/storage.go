@@ -45,25 +45,20 @@ var entriesBuildPool = &sync.Pool{
 }
 
 func build() *StoreBuilder {
-	fields := parquet.SchemaOf(&Entry{}).Fields()
 	b := &StoreBuilder{
 		names:   make(map[string]*writer),
-		writers: make([]*writer, len(fields)),
+		writers: make([]*writer, len(Fields)),
 		timestamp: array.NewTimestampBuilder(memory.DefaultAllocator, &arrow.TimestampType{
 			Unit: arrow.Nanosecond,
 		}),
 	}
 
-	for i, f := range fields {
-		dt, err := ParquetNodeToType(f)
-		if err != nil {
-			panic(err.Error())
-		}
-		b.names[f.Name()] = &writer{
-			build:   array.NewBuilder(memory.DefaultAllocator, dt),
+	for i, f := range Fields {
+		b.names[f.Name] = &writer{
+			build:   array.NewBuilder(memory.DefaultAllocator, f.Type),
 			collect: make([]arrow.Array, 1024),
 			index:   i,
-			name:    f.Name(),
+			name:    f.Name,
 		}
 	}
 	return b
@@ -78,7 +73,6 @@ type writer struct {
 	filter  *FILTER
 	chunk   parquet.ColumnChunk
 	pages   parquet.Pages
-	page    parquet.Page
 }
 
 type int64Buf struct {
@@ -87,6 +81,22 @@ type int64Buf struct {
 
 func (i *int64Buf) release() {
 	int64Pool.Put(i)
+}
+
+type int32Buf struct {
+	values []int32
+}
+
+func (i *int32Buf) release() {
+	int32Pool.Put(i)
+}
+
+type boolBuf struct {
+	values []bool
+}
+
+func (i *boolBuf) release() {
+	boolPool.Put(i)
 }
 
 type valuesBuf struct {
@@ -103,6 +113,18 @@ var int64Pool = &sync.Pool{
 	},
 }
 
+var int32Pool = &sync.Pool{
+	New: func() any {
+		return &int32Buf{values: make([]int32, 4098)}
+	},
+}
+
+var boolPool = &sync.Pool{
+	New: func() any {
+		return &boolBuf{values: make([]bool, 4098)}
+	},
+}
+
 var valuesPool = &sync.Pool{
 	New: func() any {
 		return &valuesBuf{values: make([]parquet.Value, 4098)}
@@ -111,6 +133,74 @@ var valuesPool = &sync.Pool{
 
 func (w *writer) write(p parquet.Page) error {
 	switch b := w.build.(type) {
+	case *array.BooleanBuilder:
+		buf := boolPool.Get().(*boolBuf)
+		defer buf.release()
+		values := buf.values
+		r := p.Values().(parquet.BooleanReader)
+		var n int
+		var err error
+		for {
+			n, err = r.ReadBooleans(values)
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					b.AppendValues(values[:n], nil)
+					break
+				}
+			}
+			b.AppendValues(values[:n], nil)
+		}
+	case *array.Int32Builder:
+		buf := int32Pool.Get().(*int32Buf)
+		defer buf.release()
+		values := buf.values
+		r := p.Values().(parquet.Int32Reader)
+		var n int
+		var err error
+		for {
+			n, err = r.ReadInt32s(values)
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					b.AppendValues(values[:n], nil)
+					break
+				}
+			}
+			b.AppendValues(values[:n], nil)
+		}
+	case *array.TimestampBuilder:
+		buf := int64Pool.Get().(*int64Buf)
+		defer buf.release()
+		values := buf.values
+		r := p.Values().(parquet.Int64Reader)
+		var n int
+		var err error
+		for {
+			n, err = r.ReadInt64s(values)
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					b.AppendValues(makeTimestamp(values[:n]), nil)
+					break
+				}
+			}
+			b.AppendValues(makeTimestamp(values[:n]), nil)
+		}
+	case *array.DurationBuilder:
+		buf := int64Pool.Get().(*int64Buf)
+		defer buf.release()
+		values := buf.values
+		r := p.Values().(parquet.Int64Reader)
+		var n int
+		var err error
+		for {
+			n, err = r.ReadInt64s(values)
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					b.AppendValues(makeDUration(values[:n]), nil)
+					break
+				}
+			}
+			b.AppendValues(makeDUration(values[:n]), nil)
+		}
 	case *array.Int64Builder:
 		buf := int64Pool.Get().(*int64Buf)
 		defer buf.release()
@@ -139,7 +229,7 @@ func (w *writer) write(p parquet.Page) error {
 			if err != nil {
 				if errors.Is(err, io.EOF) {
 					for i := 0; i < n; i += 1 {
-						err = b.AppendString(values[i].String())
+						err = b.Append(values[i].Bytes())
 						if err != nil {
 							return err
 						}
@@ -148,15 +238,75 @@ func (w *writer) write(p parquet.Page) error {
 				}
 			}
 			for i := 0; i < n; i += 1 {
-				err = b.AppendString(values[i].String())
+				err = b.Append(values[i].Bytes())
 				if err != nil {
 					return err
 				}
 			}
 		}
+	case *array.FixedSizeBinaryDictionaryBuilder:
+		buf := valuesPool.Get().(*valuesBuf)
+		defer buf.release()
+		values := buf.values
+		var n int
+		var err error
+		r := p.Values()
+		for {
+			n, err = r.ReadValues(values)
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					for i := 0; i < n; i += 1 {
+						err = b.Append(values[i].Bytes())
+						if err != nil {
+							return err
+						}
+					}
+					break
+				}
+			}
+			for i := 0; i < n; i += 1 {
+				err = b.Append(values[i].Bytes())
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+	case *array.Int64DictionaryBuilder:
+		buf := int64Pool.Get().(*int64Buf)
+		defer buf.release()
+		values := buf.values
+		var n int
+		var err error
+		r := p.Values().(parquet.Int64Reader)
+		for {
+			n, err = r.ReadInt64s(values)
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					for i := 0; i < n; i += 1 {
+						err = b.Append(values[i])
+						if err != nil {
+							return err
+						}
+					}
+					break
+				}
+			}
+			for i := 0; i < n; i += 1 {
+				err = b.Append(values[i])
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 	default:
 	}
 	return nil
+}
+
+func makeDUration(a []int64) []arrow.Duration {
+	return *(*[]arrow.Duration)(unsafe.Pointer(&a))
 }
 
 type StoreBuilder struct {
@@ -245,13 +395,6 @@ func (b *StoreBuilder) ProcessFile(ctx context.Context, f io.ReaderAt, size int6
 }
 
 func (e *writer) read() error {
-	if e.page != nil {
-		// we performed a dict filter before the page is already open we just read it here
-		// and set it to nil so next reads will open a new page.
-		err := e.write(e.page)
-		e.page = nil
-		return err
-	}
 	p, err := e.pages.ReadPage()
 	if err != nil {
 		return err

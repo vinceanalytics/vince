@@ -2,6 +2,8 @@ package timeseries
 
 import (
 	"testing"
+
+	"github.com/segmentio/parquet-go"
 )
 
 func TestParseFilters(t *testing.T) {
@@ -104,4 +106,12 @@ func TestParseFilters(t *testing.T) {
 			t.Errorf("expected %q got %q", expect, got)
 		}
 	})
+}
+
+func TestCheck(t *testing.T) {
+	s := parquet.SchemaOf(&Entry{})
+	for _, f := range s.Fields() {
+		println(f.Name(), f.Type().String())
+	}
+	t.Error()
 }

@@ -86,8 +86,8 @@ func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId int64) {
 	}
 	if s != nil {
 		updated := s.Update(e)
-		updated.Sign = true
-		s.Sign = false
+		updated.Sign = 1
+		s.Sign = -1
 		e.SessionId = updated.SessionId
 		b.ew.Write([]*Entry{updated, s, e})
 		persist(ctx, updated)
