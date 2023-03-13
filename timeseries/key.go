@@ -1,7 +1,6 @@
 package timeseries
 
 import (
-	"bytes"
 	"encoding/binary"
 	"time"
 
@@ -80,12 +79,4 @@ func (id *ID) SetEntropy() {
 // only table id ans user id
 func (id *ID) Prefix() []byte {
 	return id[:dateOffset]
-}
-
-func (id *ID) PrefixWithDate() []byte {
-	return id[:entropyOffset]
-}
-
-func (id *ID) Compare(other *ID) int {
-	return bytes.Compare(id[:], other[:])
 }

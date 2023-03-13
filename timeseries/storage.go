@@ -23,7 +23,7 @@ const (
 var ErrNoRows = errors.New("no rows")
 var ErrSkipPage = errors.New("skip page")
 
-func QueryTable(ctx context.Context, uid uint64, query Query, files ...string) (*Record, error) {
+func QueryTable(ctx context.Context, uid, sid uint64, query Query, files ...string) (*Record, error) {
 	bob := Bob{db: Get(ctx).db}
 	b := entriesBuildPool.Get().(*StoreBuilder)
 	table := EVENTS
@@ -31,10 +31,7 @@ func QueryTable(ctx context.Context, uid uint64, query Query, files ...string) (
 		b.reset()
 		entriesBuildPool.Put(b)
 	}()
-	err := bob.Iterate(ctx, table, uid, query.start, query.end, b.Process(ctx, query))
-	if err != nil {
-		return nil, err
-	}
+	bob.Iterate(ctx, table, uid, sid, query.start, query.end, b.Process(ctx, query))
 	return b.Result(ctx)
 }
 

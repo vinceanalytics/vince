@@ -36,66 +36,70 @@ func storeTxn(id *ID, data []byte, ttl time.Duration, txn *badger.Txn) error {
 	return txn.SetEntry(e)
 }
 
-// Iterate searches of all parquet files belonging to the user between start and
+// Iterate searches of all parquet files belonging to the user/site between start and
 // end date. The emphasize here is start and end Must be dates.
 //
 // This requirements avoid further time/date conversions. Use timex.Date to get a
 // date from time.Time.
 //
 // To stop iteration f must return ErrSkip.
-func (b *Bob) Iterate(ctx context.Context, table TableID, user uint64, start, end time.Time, f func(io.ReaderAt, int64) error) error {
+func (b *Bob) Iterate(ctx context.Context, table TableID, uid, sid uint64, start, end time.Time, f func(io.ReaderAt, int64) error) {
 	_, task := trace.NewTask(ctx, "ts_iterate")
 	defer task.End()
+	if start.Equal(end) {
+		err := b.IterateDay(ctx, table, uid, sid, start, f)
+		if err != nil {
+			// TODO:(gernest) Include query in text format in this log context ?
+			log.Get(ctx).Err(err).
+				Uint64("uid", uid).
+				Uint64("sid", sid).
+				Msg("failed to iterate by day")
+		}
+		return
+	}
+	days := int(end.Sub(start).Hours() / 24)
+	var wg sync.WaitGroup
+	for i := 0; i < days; i += 1 {
+		wg.Add(1)
+		go func(n int) {
+			defer wg.Done()
+			date := start.AddDate(0, 0, n)
+			if date.After(end) {
+				return
+			}
+			err := b.IterateDay(ctx, table, uid, sid, date, f)
+			if err != nil {
+				// TODO:(gernest) Include query in text format in this log context ?
+				log.Get(ctx).Err(err).
+					Uint64("uid", uid).
+					Uint64("sid", sid).
+					Msg("failed to iterate by day")
+			}
+		}(i)
+	}
+	wg.Wait()
+}
 
+func (b *Bob) IterateDay(ctx context.Context, table TableID, uid, sid uint64, day time.Time, f func(io.ReaderAt, int64) error) error {
+	_, task := trace.NewTask(ctx, "ts_iterate_day")
+	defer task.End()
 	return b.db.View(func(txn *badger.Txn) error {
 		var id ID
 		id.SetTable(table)
-		id.SetUserID(user)
-		id.SetDate(start)
-		if start.Equal(end) {
-			// This is an optimization. When we are iterating on data from the same
-			// date. We know ID are prefixed with timestamp.
-			//
-			// We can just iterate on files for the user on this date.
-			o := badger.DefaultIteratorOptions
-			o.Prefix = id.PrefixWithDate()
-			it := txn.NewIterator(o)
-			defer it.Close()
-			for ; it.Valid(); it.Next() {
-				err := it.Item().Value(func(val []byte) error {
-					return f(bytes.NewReader(val), int64(len(val)))
-				})
-				if err != nil {
-					if errors.Is(err, ErrSkip) {
-						return nil
-					}
-					return err
-				}
-			}
-			return nil
-		}
+		id.SetUserID(uid)
+		id.SetDate(day)
+		id.SetSiteID(sid)
 		o := badger.DefaultIteratorOptions
-		o.SinceTs = uint64(start.Unix())
+		o.Prefix = id[:entropyOffset]
 		it := txn.NewIterator(o)
-
-		// Iterate over all user's keys in this table.
-		o.Prefix = id.Prefix()
-		// Limit keys starting at beginning of the day on start date.
-		o.SinceTs = uint64(start.Unix())
-
-		// Limit keys up to the end of the day on end date.
-		lastVersion := uint64(end.Unix())
-
-		// we rely SinceTS value to seek to a better starting point for the iterator
-		// SinceTS will be the time at the beginning of the day in which we want
-		// to retrieve data from.
+		defer it.Close()
 		for ; it.Valid(); it.Next() {
-			x := it.Item()
-			if x.Version() >= lastVersion {
-				// we have reached the end of the iteration range.
-				break
+			if ctx.Err() != nil {
+				// support setting deadlines we don't want this to go on forever
+				// for slower queries.
+				return ctx.Err()
 			}
-			err := x.Value(func(val []byte) error {
+			err := it.Item().Value(func(val []byte) error {
 				return f(bytes.NewReader(val), int64(len(val)))
 			})
 			if err != nil {
@@ -105,6 +109,7 @@ func (b *Bob) Iterate(ctx context.Context, table TableID, user uint64, start, en
 				return err
 			}
 		}
+		return nil
 		return nil
 	})
 }
