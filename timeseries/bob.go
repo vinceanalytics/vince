@@ -3,6 +3,7 @@ package timeseries
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"errors"
 	"io"
 	"runtime/trace"
@@ -120,7 +121,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 
 	var files int
 	var id ID
-	hash := make(map[uint64]struct{})
+	hash := make(map[uint64]uint64)
 	id.SetTime(time.Now())
 
 	defer func() {
@@ -130,7 +131,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 			Msgf("finished merging daily parquet files in %s", time.Since(start))
 	}()
 
-	// Tries to find all users who ingested events in a single day (Well, TODAY)
+	// Tries to find all sites which ingested events in a single day (Well, TODAY)
 	// We take advantage of SinceTs option for iterator for faster narrowing down
 	// keys for the day.
 	fetchUserID := func(t TableID, txn *badger.Txn) {
@@ -143,7 +144,9 @@ func (b *Bob) Merge(ctx context.Context) error {
 		start := timex.BeginningOfDay(now)
 		end := uint64(timex.EndOfDay(now).Unix())
 
+		// We are iterating per active table here.
 		o.Prefix = bytes.Clone(id[:userOffset])
+
 		o.SinceTs = uint64(start.Unix())
 		it := txn.NewIterator(o)
 		defer it.Close()
@@ -155,8 +158,10 @@ func (b *Bob) Merge(ctx context.Context) error {
 			if x.IsDeletedOrExpired() {
 				continue
 			}
-			copy(id[userOffset:dateOffset], it.Item().Key()[userOffset:dateOffset])
-			hash[id.GetUserID()] = struct{}{}
+			key := it.Item().Key()
+			uid := binary.BigEndian.Uint64(key[userOffset:])
+			sid := binary.BigEndian.Uint64(key[siteOffset:])
+			hash[sid] = uid
 		}
 	}
 	b.db.View(func(txn *badger.Txn) error {
@@ -178,7 +183,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 	// We are trading time for memory here. We use only this buffer for all merge
 	// operations. Operations are performed sequentially, however it is safe to
 	// call Merge concurrently. We offload database updates to badger transactions.
-	w := NewBuffer(0, 0)
+	w := NewBuffer(0, 0, 0)
 	defer w.Release()
 
 	merge := func(t TableID, it *badger.Iterator, txn *badger.Txn) error {
@@ -212,8 +217,8 @@ func (b *Bob) Merge(ctx context.Context) error {
 		}
 		return nil
 	}
-	save := func(u uint64, txn *badger.Txn) error {
-		w.Init(u, 0)
+	save := func(uid, sid uint64, txn *badger.Txn) error {
+		w.Init(uid, sid, 0)
 		defer w.Reset()
 		for _, t := range []TableID{EVENTS, SYSTEM} {
 			id.SetTable(t)
@@ -228,10 +233,10 @@ func (b *Bob) Merge(ctx context.Context) error {
 		return w.save(txn, say)
 	}
 	if len(hash) > 0 {
-		for u := range hash {
+		for sid, uid := range hash {
 			// we are running per user transaction to avoid ErrTxnTooBig
 			err := b.db.Update(func(txn *badger.Txn) error {
-				return save(u, txn)
+				return save(uid, sid, txn)
 			})
 			if err != nil {
 				return err

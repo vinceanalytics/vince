@@ -19,7 +19,7 @@ func Check(ctx context.Context, domain string) (*timeseries.Buffer, bool) {
 	if conf.Env == config.Config_load {
 		// special case
 		return timeseries.GetMap(ctx).Get(ctx,
-			1), true
+			0, 0), true
 	}
 	site, ok := caches.Site(ctx).Get(domain)
 	if !ok {
@@ -31,5 +31,5 @@ func Check(ctx context.Context, domain string) (*timeseries.Buffer, bool) {
 		return nil, false
 	}
 	return timeseries.GetMap(ctx).Get(ctx,
-		x.UserID), true
+		x.UserID, x.ID), true
 }

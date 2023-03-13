@@ -32,8 +32,9 @@ type Buffer struct {
 	ew        *parquet.SortingWriter[*Entry]
 }
 
-func (b *Buffer) Init(user uint64, ttl time.Duration) *Buffer {
-	b.id.SetUserID(user)
+func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
+	b.id.SetUserID(uid)
+	b.id.SetSiteID(sid)
 	b.expiresAt = time.Now().Add(ttl)
 	return b
 }
@@ -68,8 +69,8 @@ func (b *Buffer) setup() *Buffer {
 	return b
 }
 
-func NewBuffer(user uint64, ttl time.Duration) *Buffer {
-	return bigBufferPool.Get().(*Buffer).Init(user, ttl)
+func NewBuffer(uid, sid uint64, ttl time.Duration) *Buffer {
+	return bigBufferPool.Get().(*Buffer).Init(uid, sid, ttl)
 }
 
 func (b *Buffer) expired(now time.Time) bool {

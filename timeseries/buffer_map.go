@@ -31,12 +31,12 @@ func GetMap(ctx context.Context) *Map {
 
 // Get returns a *Buffer belonging to a user with uid. Expired buffers are released
 // first before creating new one.
-func (m *Map) Get(ctx context.Context, uid uint64) *Buffer {
-	if b, ok := m.m.Load(uid); ok {
+func (m *Map) Get(ctx context.Context, uid, sid uint64) *Buffer {
+	if b, ok := m.m.Load(sid); ok {
 		return b.(*Buffer)
 	}
-	b := NewBuffer(uid, m.ttl)
-	m.m.Store(uid, b)
+	b := NewBuffer(uid, sid, m.ttl)
+	m.m.Store(sid, b)
 	return b
 }
 
