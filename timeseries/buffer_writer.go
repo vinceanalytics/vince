@@ -109,7 +109,7 @@ func (b *Buffer) Save(ctx context.Context) error {
 	say := log.Get(ctx)
 	ts := Get(ctx)
 	b.id.SetTime(time.Now())
-	b.id.Entropy()
+	b.id.SetEntropy()
 	return ts.db.Update(func(txn *badger.Txn) error {
 		return b.save(txn, say)
 	})
@@ -117,7 +117,7 @@ func (b *Buffer) Save(ctx context.Context) error {
 
 func (b *Buffer) save(txn *badger.Txn, say *zerolog.Logger) error {
 	b.id.SetTime(time.Now())
-	b.id.Entropy()
+	b.id.SetEntropy()
 	{
 		// save events
 		b.id.SetTable(EVENTS)

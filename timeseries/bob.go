@@ -156,7 +156,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 				continue
 			}
 			copy(id[userOffset:dateOffset], it.Item().Key()[userOffset:dateOffset])
-			hash[id.UserID()] = struct{}{}
+			hash[id.GetUserID()] = struct{}{}
 		}
 	}
 	b.db.View(func(txn *badger.Txn) error {

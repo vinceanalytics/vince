@@ -2,78 +2,79 @@ package timeseries
 
 import (
 	"bytes"
+	"encoding/binary"
 	"time"
 
 	"github.com/gernest/vince/timex"
 	"github.com/oklog/ulid/v2"
 )
 
-// Table + User + Date + Random
-// 0:1 1:7 7:13 13:32
-const size = 1 + 6 + 6 + 19
-
 const (
 	tableOffset   = 0
 	userOffset    = 1
-	dateOffset    = 7
-	entropyOffset = 13
+	siteOffset    = 9
+	dateOffset    = 17
+	entropyOffset = 25
 )
 
 type TableID byte
 
 const (
-	EVENTS TableID = iota
+	EVENTS TableID = 1 + iota
 	SYSTEM
 )
 
-// Similar to ulid.ULID. With addition of TableID and
-type ID [size]byte
+// Lexicographically sortable unique Identifier used as a key for storing  parquet
+// files with the time series data.
+//
+//	TableID + UserID + SiteID + Date + Random
+//	1 + 8 + 8 + 8 + 7 = 32 bytes in total
+type ID [32]byte
 
-func (id *ID) SetTime(ts time.Time) {
-	id.uint64(dateOffset, uint64(timex.Date(ts).Unix()))
-}
-
-func (id *ID) SetDate(ts time.Time) {
-	id.uint64(dateOffset, uint64(ts.Unix()))
-}
-
+// SetTable stores table  in id. TableID is stored as byte with the same value as
+// table.
 func (id *ID) SetTable(table TableID) {
-	(*id)[tableOffset] = byte(table)
+	id[tableOffset] = byte(table)
 }
 
-func (id *ID) Entropy() {
-	ulid.DefaultEntropy().Read((*id)[entropyOffset:])
+func (id *ID) GetTable() TableID {
+	return TableID(id[tableOffset])
 }
 
 func (id *ID) SetUserID(u uint64) {
-	id.uint64(userOffset, u)
+	binary.BigEndian.PutUint64(id[userOffset:], u)
 }
 
-func (id *ID) uint64(offset int, u uint64) {
-	(*id)[offset+0] = byte(u >> 40)
-	(*id)[offset+1] = byte(u >> 32)
-	(*id)[offset+2] = byte(u >> 24)
-	(*id)[offset+3] = byte(u >> 16)
-	(*id)[offset+4] = byte(u >> 8)
-	(*id)[offset+5] = byte(u)
+func (id *ID) SetSiteID(u uint64) {
+	binary.BigEndian.PutUint64(id[siteOffset:], u)
 }
 
-func (id *ID) read(offset int) uint64 {
-	return uint64(id[offset+5]) | uint64(id[offset+4])<<8 |
-		uint64(id[offset+3])<<16 | uint64(id[offset+2])<<24 |
-		uint64(id[offset+1])<<32 | uint64(id[offset+0])<<40
+func (id *ID) GetUserID() uint64 {
+	return binary.BigEndian.Uint64(id[userOffset:])
 }
 
-func (id *ID) Time() time.Time {
-	return time.Unix(int64(id.read(dateOffset)), 0)
+func (id *ID) GetSiteID() uint64 {
+	return binary.BigEndian.Uint64(id[siteOffset:])
 }
 
-func (id *ID) UserID() uint64 {
-	return id.read(userOffset)
+// SetTime converts ts to a unix date and stores it.
+func (id *ID) SetTime(ts time.Time) {
+	id.SetDate(timex.Date(ts))
 }
 
-func (id *ID) Table() TableID {
-	return TableID(id[tableOffset])
+func (id *ID) GetTime() time.Time {
+	return time.Unix(
+		int64(binary.BigEndian.Uint64(id[dateOffset:])),
+		0,
+	)
+}
+
+func (id *ID) SetDate(ts time.Time) {
+	binary.BigEndian.PutUint64(id[dateOffset:], uint64(ts.Unix()))
+}
+
+func (id *ID) SetEntropy() {
+	ulid.DefaultEntropy().Read(id[entropyOffset:])
 }
 
 // only table id ans user id
