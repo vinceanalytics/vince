@@ -35,6 +35,7 @@ type Buffer struct {
 func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
 	b.id.SetUserID(uid)
 	b.id.SetSiteID(sid)
+	b.id.SetTable(EVENTS)
 	b.expiresAt = time.Now().Add(ttl)
 	return b
 }
@@ -110,6 +111,7 @@ func (b *Buffer) Save(ctx context.Context) error {
 	say := log.Get(ctx)
 	ts := Get(ctx)
 	b.id.SetTime(time.Now())
+	b.id.SetTable(EVENTS)
 	b.id.SetEntropy()
 	return ts.db.Update(func(txn *badger.Txn) error {
 		return b.save(txn, say)
@@ -117,23 +119,17 @@ func (b *Buffer) Save(ctx context.Context) error {
 }
 
 func (b *Buffer) save(txn *badger.Txn, say *zerolog.Logger) error {
-	b.id.SetTime(time.Now())
-	b.id.SetEntropy()
-	{
-		// save events
-		b.id.SetTable(EVENTS)
-		err := b.ew.Close()
-		if err != nil {
-			say.Err(err).Msg("failed to close parquet writer for events")
-			return err
-		}
-		err = storeTxn(&b.id, b.eb.Bytes(), 0, txn)
-		if err != nil {
-			say.Err(err).Msg("failed to save events to permanent storage")
-			return err
-		}
-		say.Debug().Msgf("saved  %s events ", units.BytesSize(float64(b.eb.Len())))
+	err := b.ew.Close()
+	if err != nil {
+		say.Err(err).Msg("failed to close parquet writer for events")
+		return err
 	}
+	err = storeTxn(&b.id, b.eb.Bytes(), 0, txn)
+	if err != nil {
+		say.Err(err).Msg("failed to save events to permanent storage")
+		return err
+	}
+	say.Debug().Msgf("saved  %s events ", units.BytesSize(float64(b.eb.Len())))
 	return nil
 }
 

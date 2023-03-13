@@ -7,11 +7,11 @@ import (
 	"errors"
 	"io"
 	"runtime/trace"
+	"sync"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
-	"github.com/gernest/vince/timex"
 	"github.com/segmentio/parquet-go"
 )
 
@@ -109,8 +109,8 @@ func (b *Bob) Iterate(ctx context.Context, table TableID, user uint64, start, en
 	})
 }
 
-// Merge  combines all the parquet files for today for a specific user
-// to a single parquet file.
+// Merge  combines all the parquet files for today partitioned by user and site
+// to a single file.
 func (b *Bob) Merge(ctx context.Context) error {
 	_, task := trace.NewTask(ctx, "ts_merge")
 	defer task.End()
@@ -119,42 +119,27 @@ func (b *Bob) Merge(ctx context.Context) error {
 	say := log.Get(ctx)
 	say.Debug().Msg("starting merging daily parquet files")
 
-	var files int
-	var id ID
 	hash := make(map[uint64]uint64)
-	id.SetTime(time.Now())
 
 	defer func() {
 		say.Debug().
 			Int("users", len(hash)).
-			Int("total_files", files).
 			Msgf("finished merging daily parquet files in %s", time.Since(start))
 	}()
 
-	// Tries to find all sites which ingested events in a single day (Well, TODAY)
-	// We take advantage of SinceTs option for iterator for faster narrowing down
-	// keys for the day.
-	fetchUserID := func(t TableID, txn *badger.Txn) {
-		id.SetTable(t)
+	// Try to find all sites which ingested events in a single day (Well, TODAY)
+	b.db.View(func(txn *badger.Txn) error {
+		var id ID
+		id.SetTable(EVENTS)
+		id.SetTime(time.Now())
 		o := badger.DefaultIteratorOptions
 		// we are only interested in keys only
 		o.PrefetchValues = false
-		// perform table only iteration using seek to narrow down the time range
-		now := time.Now()
-		start := timex.BeginningOfDay(now)
-		end := uint64(timex.EndOfDay(now).Unix())
-
-		// We are iterating per active table here.
-		o.Prefix = bytes.Clone(id[:userOffset])
-
-		o.SinceTs = uint64(start.Unix())
+		o.Prefix = id[:userOffset]
 		it := txn.NewIterator(o)
 		defer it.Close()
 		for it.Next(); it.Valid(); it.Next() {
 			x := it.Item()
-			if x.Version() > end {
-				break
-			}
 			if x.IsDeletedOrExpired() {
 				continue
 			}
@@ -163,30 +148,10 @@ func (b *Bob) Merge(ctx context.Context) error {
 			sid := binary.BigEndian.Uint64(key[siteOffset:])
 			hash[sid] = uid
 		}
-	}
-	b.db.View(func(txn *badger.Txn) error {
-		fetchUserID(EVENTS, txn)
-		// It is sufficient to just query the EVENTS table for active users in a
-		// single Day. Basically same user stores one event and a possibility of
-		// one or two sessions.
-		//
-		// This means it is safe to assume users found in a day in EVENTS table
-		// are the same users with entries in SESSIONS table.
 		return nil
 	})
 
-	// This is important!!! . Daily ingestion is rate limited per user, this guarantees
-	// there won't be huge parquet data file  per user. We use in memory buffer instead of
-	// a file for faster operations. The resulting file will be enough to safely
-	// to store in badger.
-	//
-	// We are trading time for memory here. We use only this buffer for all merge
-	// operations. Operations are performed sequentially, however it is safe to
-	// call Merge concurrently. We offload database updates to badger transactions.
-	w := NewBuffer(0, 0, 0)
-	defer w.Release()
-
-	merge := func(t TableID, it *badger.Iterator, txn *badger.Txn) error {
+	merge := func(it *badger.Iterator, txn *badger.Txn, buf *Buffer) error {
 		defer it.Close()
 		for it.Next(); it.Valid(); it.Next() {
 			err := it.Item().Value(func(val []byte) error {
@@ -194,14 +159,11 @@ func (b *Bob) Merge(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
-				switch t {
-				case EVENTS:
-					g, err := parquet.MergeRowGroups(f.RowGroups())
-					if err != nil {
-						return err
-					}
-					parquet.CopyRows(w.ew, g.Rows())
+				g, err := parquet.MergeRowGroups(f.RowGroups())
+				if err != nil {
+					return err
 				}
+				parquet.CopyRows(buf.ew, g.Rows())
 				return nil
 			})
 			if err != nil {
@@ -212,36 +174,42 @@ func (b *Bob) Merge(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			// Track the number of files successfully merged
-			files += 1
 		}
 		return nil
 	}
-	save := func(uid, sid uint64, txn *badger.Txn) error {
-		w.Init(uid, sid, 0)
-		defer w.Reset()
-		for _, t := range []TableID{EVENTS, SYSTEM} {
-			id.SetTable(t)
+
+	save := func(ctx context.Context, wg *sync.WaitGroup, uid, sid uint64) {
+		defer wg.Done()
+		err := b.db.Update(func(txn *badger.Txn) error {
+			w := bigBufferPool.Get().(*Buffer).Init(uid, sid, 0)
+			defer w.Release()
+
+			w.id.SetDate(start)
+			w.id.SetEntropy()
+
 			o := badger.DefaultIteratorOptions
-			o.Prefix = id.PrefixWithDate()
+			o.Prefix = bytes.Clone(w.id[:entropyOffset])
 			it := txn.NewIterator(o)
-			err := merge(t, it, txn)
+			err := merge(it, txn, w)
 			if err != nil {
 				return err
 			}
+			return w.save(txn, say)
+		})
+		if err != nil {
+			log.Get(ctx).Err(err).
+				Uint64("uid", uid).
+				Uint64("sid", sid).
+				Msg("failed merging events")
 		}
-		return w.save(txn, say)
 	}
 	if len(hash) > 0 {
+		var wg sync.WaitGroup
 		for sid, uid := range hash {
-			// we are running per user transaction to avoid ErrTxnTooBig
-			err := b.db.Update(func(txn *badger.Txn) error {
-				return save(uid, sid, txn)
-			})
-			if err != nil {
-				return err
-			}
+			wg.Add(1)
+			go save(ctx, &wg, uid, sid)
 		}
+		wg.Wait()
 		// try to reclaim space if possible.
 		b.GC()
 	}

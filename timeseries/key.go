@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	tableOffset   = 0
-	userOffset    = 1
-	siteOffset    = 9
-	dateOffset    = 17
+	dateOffset    = 0
+	tableOffset   = 8
+	userOffset    = 9
+	siteOffset    = 17
 	entropyOffset = 25
 )
 
