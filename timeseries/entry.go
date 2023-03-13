@@ -3,6 +3,7 @@ package timeseries
 import (
 	"time"
 
+	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/google/uuid"
 )
@@ -12,13 +13,14 @@ type Entry struct {
 	Timestamp              time.Time     `parquet:"timestamp"`
 	Name                   string        `parquet:"name,dict,zstd"`
 	Domain                 string        `parquet:"domain,dict,zstd"`
-	UserId                 int64         `parquet:"user_id,dict,zstd"`
+	UserId                 uint64        `parquet:"user_id,dict,zstd"`
 	SessionId              uuid.UUID     `parquet:"session_id,dict,zstd"`
 	Hostname               string        `parquet:"hostname,dict,zstd"`
 	Pathname               string        `parquet:"path,dict,zstd"`
 	Referrer               string        `parquet:"referrer,dict,zstd"`
 	ReferrerSource         string        `parquet:"referrer_source,dict,zstd"`
 	CountryCode            string        `parquet:"country_code,dict,zstd"`
+	Region                 string        `parquet:"region,dict,zstd"`
 	ScreenSize             string        `parquet:"screen_size,dict,zstd"`
 	OperatingSystem        string        `parquet:"operating_system,dict,zstd"`
 	Browser                string        `parquet:"browser,dict,zstd"`
@@ -124,4 +126,16 @@ func (s *Entry) Update(e *Entry) *Entry {
 	}
 	ss.Events += 1
 	return &ss
+}
+
+type EntryList []*Entry
+
+func (ls EntryList) Uniq(r *roaring64.Bitmap, f func(*Entry)) {
+	r.Clear()
+	for _, e := range ls {
+		if !r.Contains(e.UserId) {
+			r.Add(e.UserId)
+			f(e)
+		}
+	}
 }

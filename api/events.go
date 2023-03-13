@@ -141,7 +141,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	}
 	reqReferrer = cleanReferrer(reqReferrer)
 
-	var countryCode string
+	var countryCode, region string
 	var cityGeonameId uint32
 	if remoteIp != "" {
 		ip := net.ParseIP(remoteIp)
@@ -149,6 +149,9 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			countryCode = city.Country.IsoCode
 			cityGeonameId = uint32(city.Country.GeoNameID)
+			if len(city.Subdivisions) > 0 {
+				region = city.Subdivisions[0].IsoCode
+			}
 		}
 	}
 	var screenSize string
@@ -169,7 +172,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 			dropped += 1
 			continue
 		}
-		userID := int64(seedID.Gen(remoteIp, userAgent, domain, host))
+		userID := seedID.Gen(remoteIp, userAgent, domain, host)
 		e := new(timeseries.Entry)
 		e.UserId = userID
 		e.Name = req.EventName
@@ -188,10 +191,11 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.ReferrerSource = source
 		e.Referrer = reqReferrer
 		e.CountryCode = countryCode
+		e.Region = region
 		e.CityGeoNameID = cityGeonameId
 		e.ScreenSize = screenSize
 		e.Timestamp = now
-		previousUUserID := int64(seedID.GenPrevious(remoteIp, userAgent, domain, host))
+		previousUUserID := seedID.GenPrevious(remoteIp, userAgent, domain, host)
 		b.Register(r.Context(), e, previousUUserID)
 	}
 	if dropped > 0 {

@@ -78,7 +78,7 @@ func (b *Buffer) expired(now time.Time) bool {
 	return b.expiresAt.Before(now)
 }
 
-func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId int64) {
+func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	var s *Entry
@@ -133,7 +133,7 @@ func (b *Buffer) save(txn *badger.Txn, say *zerolog.Logger) error {
 	return nil
 }
 
-func find(ctx context.Context, e *Entry, userId int64) *Entry {
+func find(ctx context.Context, e *Entry, userId uint64) *Entry {
 	v, _ := caches.Session(ctx).Get(key(e.Domain, userId))
 	if v != nil {
 		return v.(*Entry)
@@ -141,12 +141,12 @@ func find(ctx context.Context, e *Entry, userId int64) *Entry {
 	return nil
 }
 
-func key(domain string, userId int64) string {
+func key(domain string, userId uint64) string {
 	b := bufPool.Get().(*bytes.Buffer)
 	defer bufPool.Put(b)
 	b.Reset()
 	b.WriteString(domain)
-	b.WriteString(strconv.FormatInt(userId, 10))
+	b.WriteString(strconv.FormatUint(userId, 10))
 	return b.String()
 }
 

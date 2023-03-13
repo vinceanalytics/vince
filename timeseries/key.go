@@ -2,6 +2,7 @@ package timeseries
 
 import (
 	"encoding/binary"
+	"sync"
 	"time"
 
 	"github.com/gernest/vince/timex"
@@ -21,6 +22,29 @@ type TableID byte
 const (
 	EVENTS TableID = 1 + iota
 	SYSTEM
+)
+
+type PROPERTY byte
+
+const (
+	NAME PROPERTY = iota
+	PAGE
+	ENTRY_PAGE
+	EXIT_PAGE
+	REFERRER
+	UTM_MEDIUM
+	UTM_SOURCE
+	UTM_CAMPAIGN
+	UTM_CONTENT
+	UTM_TERM
+	UTM_DEVICE
+	BROWSER
+	BROWSER_VERSION
+	OS
+	OS_VERSION
+	COUNTRY
+	REGION
+	CITY
 )
 
 // Lexicographically sortable unique Identifier used as a key for storing  parquet
@@ -79,4 +103,28 @@ func (id *ID) SetEntropy() {
 // only table id ans user id
 func (id *ID) Prefix() []byte {
 	return id[:dateOffset]
+}
+
+func (id *ID) Release() {
+	for i := 0; i < len(id); i += 1 {
+		id[i] = 0
+	}
+	idBufPool.Put(id)
+}
+
+func (id *ID) Clone() *ID {
+	x := NewID()
+	copy(x[:], id[:])
+	return x
+}
+
+func NewID() *ID {
+	return idBufPool.Get().(*ID)
+}
+
+var idBufPool = &sync.Pool{
+	New: func() any {
+		var id ID
+		return &id
+	},
 }

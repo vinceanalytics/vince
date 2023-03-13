@@ -219,5 +219,4 @@ func (b *Bob) Merge(ctx context.Context) error {
 		b.GC()
 	}
 	return nil
-
 }
