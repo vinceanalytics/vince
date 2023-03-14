@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"sync"
+	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/segmentio/parquet-go"
@@ -35,9 +36,11 @@ var entryBufPool = &sync.Pool{
 }
 
 type mapEntry struct {
-	prop PROPERTY
-	m    map[string]*entryBuf
-	m2   map[uint32]*entryBuf
+	first time.Time
+	last  time.Time
+	prop  PROPERTY
+	m     map[string]*entryBuf
+	m2    map[uint32]*entryBuf
 }
 
 func (m *mapEntry) Release() {
@@ -54,6 +57,11 @@ func (m *mapEntry) Release() {
 }
 
 func (m *mapEntry) save(key string, e *Entry) {
+	if m.first.IsZero() {
+		m.first = e.Timestamp
+	} else {
+		m.last = e.Timestamp
+	}
 	if key == "" {
 		return
 	}
@@ -67,6 +75,11 @@ func (m *mapEntry) save(key string, e *Entry) {
 }
 
 func (m *mapEntry) saveInt(key uint32, e *Entry) {
+	if m.first.IsZero() {
+		m.first = e.Timestamp
+	} else {
+		m.last = e.Timestamp
+	}
 	if key == 0 {
 		return
 	}
@@ -115,7 +128,6 @@ func (m *Mike) writeRowGroup(ctx context.Context, id *ID, g parquet.RowGroup) fu
 		defer resources.Release()
 
 		group := make([]*mapEntry, CITY+1)
-
 		for i := 0; i < len(group); i++ {
 			if i == int(CITY) {
 				group[i] = &mapEntry{prop: PROPERTY(i), m2: make(map[uint32]*entryBuf)}
