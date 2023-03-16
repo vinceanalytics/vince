@@ -1,0 +1,46 @@
+syntax = "proto3";
+package timeseries;
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/gernest/vince/timeseries";
+
+message DayStats {
+  uint64 visitors = 1;
+  uint64 visits = 2;
+  repeated HourStats stats = 3;
+}
+
+message HourStats {
+  uint64 visitors = 1;
+  uint64 visits = 2;
+  Properties properties = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+message Properties {
+  PropAggregate name = 1;
+  PropAggregate page = 2;
+  PropAggregate entry_page = 3;
+  PropAggregate exit_page = 4;
+  PropAggregate referrer = 5;
+  PropAggregate utm_medium = 6;
+  PropAggregate utm_source = 7;
+  PropAggregate utm_campaign = 8;
+  PropAggregate utm_content = 9;
+  PropAggregate utm_term = 10;
+  PropAggregate utm_device = 11;
+  PropAggregate browser = 12;
+  PropAggregate browser_version = 13;
+  PropAggregate os = 14;
+  PropAggregate os_version = 15;
+  PropAggregate country = 16;
+  PropAggregate region = 17;
+  PropAggregate city = 18;
+}
+
+message PropAggregate { map<string, Aggregate> aggregate = 1; }
+
+message Aggregate {
+  uint64 visitors = 1;
+  uint64 visits = 2;
+}

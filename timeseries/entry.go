@@ -6,6 +6,7 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/google/uuid"
+	"github.com/segmentio/parquet-go/bloom/xxhash"
 )
 
 // Entry represent an event/session with web analytics payload.
@@ -41,6 +42,16 @@ type Entry struct {
 	IsBounce               bool          `parquet:"is_bounce,dict,zstd"`
 	Duration               time.Duration `parquet:"duration,dict,zstd"`
 	Start                  time.Time     `parquet:"start,zstd"`
+
+	hash uint64 // xxhash of SessionId
+}
+
+func (e *Entry) Hash() uint64 {
+	if e.hash != 0 {
+		return e.hash
+	}
+	e.hash = xxhash.Sum64(e.SessionId[:])
+	return e.hash
 }
 
 // A list of Entry properties as arrow.Field.
@@ -130,12 +141,53 @@ func (s *Entry) Update(e *Entry) *Entry {
 
 type EntryList []*Entry
 
-func (ls EntryList) Uniq(r *roaring64.Bitmap, f func(*Entry)) {
+func (ls EntryList) UniqUserID(r *roaring64.Bitmap, f func(*Entry)) {
 	r.Clear()
 	for _, e := range ls {
 		if !r.Contains(e.UserId) {
 			r.Add(e.UserId)
 			f(e)
 		}
+	}
+}
+
+func (ls EntryList) UniqUserSessionID(r *roaring64.Bitmap, f func(*Entry)) {
+	r.Clear()
+	for _, e := range ls {
+		if !r.Contains(e.Hash()) {
+			r.Add(e.Hash())
+			f(e)
+		}
+	}
+}
+
+func (ls EntryList) Visitors(r *roaring64.Bitmap) (count uint64) {
+	ls.UniqUserID(r, func(e *Entry) {
+		count++
+	})
+	return
+}
+
+func (ls EntryList) Visits(r *roaring64.Bitmap) (count uint64) {
+	ls.UniqUserSessionID(r, func(e *Entry) {
+		count++
+	})
+	return
+}
+
+// for collects entries happening within an hour and calls f with the hour and the list
+// of entries.
+//
+// Assumes ls is sorted and contains entries happening in the same day.
+func (ls EntryList) Emit(f func(int, EntryList)) {
+	var pos int
+	for i := range ls {
+		if i > 0 && ls[i].Timestamp.Hour() != ls[i-1].Start.Hour() {
+			f(ls[pos].Timestamp.Hour(), ls[pos:i-1])
+			pos = i
+		}
+	}
+	if pos < len(ls)-1 {
+		f(ls[pos].Timestamp.Hour(), ls[pos:])
 	}
 }
