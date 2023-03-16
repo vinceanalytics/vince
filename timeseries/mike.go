@@ -11,6 +11,8 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/segmentio/parquet-go"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 // Mike is the permanent storage for the events data. Data stored here is aggregated
@@ -83,7 +85,7 @@ func (g *Group) saveInt(p PROPERTY, key uint32, e *Entry) {
 
 func (g *Group) Save(h int, ts time.Time, ms *MetricSaver) {
 	for i, e := range g.props {
-		ms.Save(h, ts, func(b *roaring64.Bitmap, hs *HourStats) {
+		ms.Save(h, ts, func(u, s *roaring64.Bitmap, hs *HourStats) {
 			p := hs.Properties
 			var agg *PropAggregate
 			switch PROPERTY(i) {
@@ -178,7 +180,7 @@ func (g *Group) Save(h int, ts time.Time, ms *MetricSaver) {
 				}
 				agg = p.City
 			}
-			e.Save(b, agg)
+			e.Save(u, s, agg)
 		})
 	}
 }
@@ -202,16 +204,13 @@ func (m *mapEntry) Release() {
 	}
 }
 
-func (m *mapEntry) Save(r *roaring64.Bitmap, e *PropAggregate) {
+func (m *mapEntry) Save(u, s *roaring64.Bitmap, e *PropAggregate) {
 	if m.m != nil {
 		for k, v := range m.m {
 			if e.Aggregate == nil {
 				e.Aggregate = make(map[string]*Aggregate)
 			}
-			e.Aggregate[k] = &Aggregate{
-				Visitors: v.entries.Visitors(r),
-				Visits:   v.entries.Visits(r),
-			}
+			e.Aggregate[k] = v.entries.Aggregate(u, s)
 		}
 	}
 }
@@ -250,19 +249,19 @@ func getEntryBuf() *entryBuf {
 	return e
 }
 
-// Write process file and stores it permanently. file is assumed not to be owned
-// by m. This is supposed to happen in the background.
-//
-// RowGroups are processed sequentially. Concurrency is per file/id
-func (m *Mike) Write(ctx context.Context, id *ID, r io.ReaderAt, size int64) error {
+// Aggregate computes aggregate stats segmented by the hour of the day.
+func (m *Mike) Aggregate(ctx context.Context, id *ID, r io.ReaderAt, size int64) (day *DayStats, err error) {
 	f, err := parquet.OpenFile(r, size)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if f.NumRows() == 0 {
 		// Unlikely but ok
 		id.Release()
-		return nil
+		return nil, nil
+	}
+	day = &DayStats{
+		Aggregate: &Aggregate{},
 	}
 	saver := metricSaverPool.Get().(*MetricSaver)
 	e := getEntryBuf()
@@ -273,16 +272,25 @@ func (m *Mike) Write(ctx context.Context, id *ID, r io.ReaderAt, size int64) err
 		group.Release()
 	}()
 
-	var totalVisitors, totalVisis uint64
 	for _, rg := range f.RowGroups() {
-		visitors, visits, err := m.writeRowGroup(id, rg, saver, e, group)
+		err := m.writeRowGroup(id, rg, saver, e, group)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		totalVisitors += visitors
-		totalVisis += visits
 	}
-	return nil
+	var d time.Duration
+	var visit float64
+	for i := range saver.prop {
+		h := &saver.prop[i]
+		day.Aggregate.Visitors += h.Aggregate.Visitors
+		day.Aggregate.Visitors += h.Aggregate.Visits
+		d += h.Aggregate.VisitDuration.AsDuration()
+		visit += h.Aggregate.ViewsPerVisit
+		day.Stats = append(day.Stats, proto.Clone(h).(*HourStats))
+	}
+	day.Aggregate.ViewsPerVisit = visit / 12
+	day.Aggregate.VisitDuration = durationpb.New(d / 12)
+	return
 }
 
 func (m *Mike) writeRowGroup(
@@ -291,23 +299,17 @@ func (m *Mike) writeRowGroup(
 	saver *MetricSaver,
 	e *entryBuf,
 	group *Group,
-) (visitors, visits uint64, err error) {
-
+) error {
 	r := parquet.NewGenericRowGroupReader[*Entry](g)
 	values := e.ensure(int(r.NumRows()))
 	n, err := r.Read(values)
 	if err != nil {
 		if !errors.Is(err, io.EOF) {
-			return 0, 0, err
+			return err
 		}
 	}
 
 	ent := EntryList(values[:n])
-
-	// calculate totals and ensure hash for sessions is computed here. Next calls
-	// to visit will use computed hash.
-	visitors = ent.Visitors(saver.bloom)
-	visits = ent.Visits(saver.bloom)
 
 	ent.Emit(func(i int, el EntryList) {
 		// release for group works differently. It only release aggregate buffers
@@ -344,5 +346,5 @@ func (m *Mike) writeRowGroup(
 		group.Save(i, el[0].Timestamp, saver)
 		saver.UpdateHourTotals(i, el)
 	})
-	return
+	return nil
 }

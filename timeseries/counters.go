@@ -10,18 +10,22 @@ import (
 )
 
 type MetricSaver struct {
-	bloom *roaring64.Bitmap
-	prop  [12]HourStats
+	user, session *roaring64.Bitmap
+	prop          [12]HourStats
 }
 
 var metricSaverPool = &sync.Pool{
 	New: func() any {
-		return new(MetricSaver)
+		return &MetricSaver{
+			user:    roaring64.New(),
+			session: roaring64.New(),
+		}
 	},
 }
 
 func (m *MetricSaver) Reset() {
-	m.bloom.Clear()
+	m.user.Clear()
+	m.session.Clear()
 	for i := range m.prop {
 		m.prop[i].Reset()
 	}
@@ -29,21 +33,20 @@ func (m *MetricSaver) Reset() {
 
 func (m *MetricSaver) Save(
 	hr int,
-	ts time.Time, f func(*roaring64.Bitmap, *HourStats),
+	ts time.Time, f func(u, s *roaring64.Bitmap, h *HourStats),
 ) {
 	h := &m.prop[hr]
 	if h.Properties == nil {
 		h.Properties = &Properties{}
 	}
-	f(m.bloom, &m.prop[hr])
+	f(m.user, m.session, &m.prop[hr])
 	ts = timex.Date(ts)
 	ts = ts.Add(time.Duration(hr) * time.Hour)
 	m.prop[hr].Timestamp = timestamppb.New(ts)
 }
 
 func (m *MetricSaver) UpdateHourTotals(hr int, el EntryList) {
-	m.prop[hr].Visitors = el.Visitors(m.bloom)
-	m.prop[hr].Visits = el.Visits(m.bloom)
+	m.prop[hr].Aggregate = el.Aggregate(m.user, m.session)
 }
 
 func (m *MetricSaver) Release() {

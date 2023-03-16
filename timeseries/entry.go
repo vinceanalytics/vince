@@ -7,6 +7,7 @@ import (
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go/bloom/xxhash"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 // Entry represent an event/session with web analytics payload.
@@ -141,37 +142,28 @@ func (s *Entry) Update(e *Entry) *Entry {
 
 type EntryList []*Entry
 
-func (ls EntryList) UniqUserID(r *roaring64.Bitmap, f func(*Entry)) {
-	r.Clear()
+func (ls EntryList) Aggregate(u, s *roaring64.Bitmap) (a *Aggregate) {
+	a = &Aggregate{}
+	u.Clear()
+	s.Clear()
+	var d time.Duration
+	var pages int64
+	var sign int32
 	for _, e := range ls {
-		if !r.Contains(e.UserId) {
-			r.Add(e.UserId)
-			f(e)
+		if !u.Contains(e.UserId) {
+			u.Add(e.UserId)
+			a.Visitors += 1
 		}
-	}
-}
-
-func (ls EntryList) UniqUserSessionID(r *roaring64.Bitmap, f func(*Entry)) {
-	r.Clear()
-	for _, e := range ls {
-		if !r.Contains(e.Hash()) {
-			r.Add(e.Hash())
-			f(e)
+		if !s.Contains(e.Hash()) {
+			u.Add(e.Hash())
+			a.Visits += 1
 		}
+		d += e.Duration
+		sign += e.Sign
+		pages += e.PageViews
 	}
-}
-
-func (ls EntryList) Visitors(r *roaring64.Bitmap) (count uint64) {
-	ls.UniqUserID(r, func(e *Entry) {
-		count++
-	})
-	return
-}
-
-func (ls EntryList) Visits(r *roaring64.Bitmap) (count uint64) {
-	ls.UniqUserSessionID(r, func(e *Entry) {
-		count++
-	})
+	a.VisitDuration = durationpb.New(d / time.Duration(sign))
+	a.ViewsPerVisit = float64(pages) / float64(sign)
 	return
 }
 
