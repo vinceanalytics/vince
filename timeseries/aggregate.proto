@@ -12,29 +12,8 @@ message DayStats {
 
 message HourStats {
   Aggregate aggregate = 1;
-  Properties properties = 2;
+  map<uint32, PropAggregate> properties = 2;
   google.protobuf.Timestamp timestamp = 3;
-}
-
-message Properties {
-  PropAggregate name = 1;
-  PropAggregate page = 2;
-  PropAggregate entry_page = 3;
-  PropAggregate exit_page = 4;
-  PropAggregate referrer = 5;
-  PropAggregate utm_medium = 6;
-  PropAggregate utm_source = 7;
-  PropAggregate utm_campaign = 8;
-  PropAggregate utm_content = 9;
-  PropAggregate utm_term = 10;
-  PropAggregate utm_device = 11;
-  PropAggregate browser = 12;
-  PropAggregate browser_version = 13;
-  PropAggregate os = 14;
-  PropAggregate os_version = 15;
-  PropAggregate country = 16;
-  PropAggregate region = 17;
-  PropAggregate city = 18;
 }
 
 message PropAggregate { map<string, Aggregate> aggregate = 1; }
@@ -44,4 +23,34 @@ message Aggregate {
   uint64 visits = 2;
   double views_per_visit = 3;
   google.protobuf.Duration visit_duration = 4;
+}
+
+enum PROPS {
+  unknown = 0;
+  NAME = 1;
+  PAGE = 2;
+  ENTRY_PAGE = 3;
+  EXIT_PAGE = 4;
+  REFERRER = 5;
+  UTM_MEDIUM = 6;
+  UTM_SOURCE = 7;
+  UTM_CAMPAIGN = 8;
+  UTM_CONTENT = 9;
+  UTM_TERM = 10;
+  UTM_DEVICE = 11;
+  UTM_BROWSER = 12;
+  BROWSER_VERSION = 13;
+  OS = 14;
+  OS_VERSION = 15;
+  COUNTRY = 16;
+  REGION = 17;
+  CITY = 18;
+}
+
+enum METRIC_TYPE {
+  visitors = 0;
+  visits = 1;
+  page_views = 2;
+  views_per_visit = 3;
+  visit_duration = 4;
 }

@@ -37,7 +37,7 @@ func (m *MetricSaver) Save(
 ) {
 	h := &m.prop[hr]
 	if h.Properties == nil {
-		h.Properties = &Properties{}
+		h.Properties = make(map[uint32]*PropAggregate)
 	}
 	f(m.user, m.session, &m.prop[hr])
 	ts = timex.Date(ts)
