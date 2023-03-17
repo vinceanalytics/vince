@@ -110,7 +110,6 @@ func (b *Bob) IterateDay(ctx context.Context, table TableID, uid, sid uint64, da
 			}
 		}
 		return nil
-		return nil
 	})
 }
 
