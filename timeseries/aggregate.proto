@@ -23,6 +23,7 @@ message Aggregate {
   uint64 visits = 2;
   double views_per_visit = 3;
   google.protobuf.Duration visit_duration = 4;
+  uint32 bounce_rate = 5;
 }
 
 enum PROPS {
@@ -53,4 +54,5 @@ enum METRIC_TYPE {
   page_views = 2;
   views_per_visit = 3;
   visit_duration = 4;
+  bounce_rate = 5;
 }

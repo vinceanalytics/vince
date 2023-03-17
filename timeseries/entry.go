@@ -105,6 +105,13 @@ func (e *Entry) Session() *Entry {
 	return &s
 }
 
+func (e *Entry) Bounce() (n int32) {
+	if e.IsBounce {
+		n = 1
+	}
+	return
+}
+
 func (s *Entry) Update(e *Entry) *Entry {
 	ss := *s
 	ss.UserId = e.UserId
@@ -149,6 +156,7 @@ func (ls EntryList) Aggregate(u, s *roaring64.Bitmap) (a *Aggregate) {
 	var d time.Duration
 	var pages int64
 	var sign int32
+	var bounce int32
 	for _, e := range ls {
 		if !u.Contains(e.UserId) {
 			u.Add(e.UserId)
@@ -161,9 +169,12 @@ func (ls EntryList) Aggregate(u, s *roaring64.Bitmap) (a *Aggregate) {
 		d += e.Duration
 		sign += e.Sign
 		pages += e.PageViews
+		bounce += e.Sign * e.Bounce()
 	}
 	a.VisitDuration = durationpb.New(d / time.Duration(sign))
 	a.ViewsPerVisit = float64(pages) / float64(sign)
+	bounceRate := (float64(bounce) / float64(sign)) * 100
+	a.BounceRate = uint32(bounceRate)
 	return
 }
 

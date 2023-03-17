@@ -42,6 +42,7 @@ type Total struct {
 	ViewsPerVisit float64       `parquet:"views_per_visit,zstd"`
 	VisitDuration time.Duration `parquet:"visit_duration,zstd"`
 	Events        uint64        `parquet:"events,zstd"`
+	BounceRate    uint32        `parquet:"bounce_rate,zstd"`
 }
 
 var schema = parquet.SchemaOf(&Metrics{})
