@@ -26,7 +26,7 @@ require (
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/oschwald/maxminddb-golang v1.10.0
 	github.com/rs/zerolog v1.21.0
-	github.com/segmentio/parquet-go v0.0.0-20230106170957-952b1613a191
+	github.com/segmentio/parquet-go v0.0.0-20230309140036-b6d0a6236da6
 	github.com/urfave/cli/v2 v2.23.7
 	golang.org/x/crypto v0.1.0
 	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
