@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"strconv"
 	"sync"
 	"time"
 
@@ -31,22 +30,6 @@ func (e *entryBuf) ensure(capacity int) []*Entry {
 		e.entries = append([]*Entry(nil), make([]*Entry, capacity)...)
 	}
 	return e.entries[:capacity]
-}
-
-func (e *entryBuf) emit(f func(int, EntryList)) {
-	if len(e.entries) == 0 {
-		return
-	}
-	var start int
-	for i := range e.entries {
-		if i > 0 && e.entries[i].Timestamp.Hour() != e.entries[i-1].Timestamp.Hour() {
-			f(e.entries[start].Timestamp.Hour(), e.entries[start:i])
-			start = i
-		}
-	}
-	if start < len(e.entries) {
-		f(e.entries[start].Timestamp.Hour(), e.entries[start:])
-	}
 }
 
 func (e *entryBuf) Release() {
@@ -77,10 +60,6 @@ func NewGroup() *Group {
 
 func (g *Group) save(p PROPS, key string, e *Entry) {
 	g.props[p].save(key, e)
-}
-
-func (g *Group) saveInt(p PROPS, key uint32, e *Entry) {
-	g.props[p].saveInt(key, e)
 }
 
 func (g *Group) Save(h int, ts time.Time, ms *MetricSaver) {
@@ -134,20 +113,6 @@ func (m *mapEntry) save(key string, e *Entry) {
 	}
 	b := entryBufPool.Get().(*entryBuf)
 	m.m[key] = b
-	b.entries = append(b.entries, e)
-}
-
-func (m *mapEntry) saveInt(key uint32, e *Entry) {
-	if key == 0 {
-		return
-	}
-	k := strconv.FormatUint(uint64(key), 10)
-	if b, ok := m.m[k]; ok {
-		b.entries = append(b.entries, e)
-		return
-	}
-	b := entryBufPool.Get().(*entryBuf)
-	m.m[k] = b
 	b.entries = append(b.entries, e)
 }
 
@@ -250,9 +215,9 @@ func (m *Mike) writeRowGroup(
 			group.save(PROPS_OS_VERSION, e.OperatingSystemVersion, e)
 			group.save(PROPS_COUNTRY, e.CountryCode, e)
 			group.save(PROPS_REGION, e.Region, e)
-			group.saveInt(PROPS_CITY, e.CityGeoNameID, e)
+			group.save(PROPS_CITY, e.CityGeoNameId, e)
 		}
-		group.Save(i, el[0].Timestamp, saver)
+		group.Save(i, time.Unix(el[0].Timestamp, 0), saver)
 		saver.UpdateHourTotals(i, el)
 	})
 	return nil

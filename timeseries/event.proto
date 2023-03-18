@@ -1,0 +1,40 @@
+syntax = "proto3";
+package timeseries;
+
+option go_package = "github.com/gernest/vince/timeseries";
+
+message Entries { repeated Entry events = 1; }
+
+message Entry {
+  int64 timestamp = 1;
+  string name = 2;
+  string domain = 3;
+  uint64 user_id = 4;
+  uint64 session_id = 5;
+  string hostname = 6;
+  string pathname = 7;
+  string referrer = 8;
+  string referrer_source = 9;
+  string country_code = 10;
+  string screen_size = 11;
+  string operating_system = 12;
+  string browser = 13;
+  string utm_medium = 14;
+  string utm_source = 15;
+  string utm_campaign = 16;
+  string browser_version = 17;
+  string operating_system_version = 18;
+  string utm_content = 19;
+  string utm_term = 20;
+  string transferred_from = 21;
+  string entry_page = 22;
+  string exit_page = 23;
+  string city_geo_name_id = 24;
+  uint64 page_views = 25;
+  uint64 events = 26;
+  int32 sign = 27;
+  bool is_bounce = 28;
+  int64 duration = 29;
+  int64 start = 30;
+  string region = 31;
+}

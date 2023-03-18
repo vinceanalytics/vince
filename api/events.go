@@ -142,13 +142,13 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	reqReferrer = cleanReferrer(reqReferrer)
 
 	var countryCode, region string
-	var cityGeonameId uint32
+	var cityGeonameId string
 	if remoteIp != "" {
 		ip := net.ParseIP(remoteIp)
 		city, err := geoip.Lookup(ip)
 		if err == nil {
 			countryCode = city.Country.IsoCode
-			cityGeonameId = uint32(city.Country.GeoNameID)
+			cityGeonameId = strconv.FormatInt(int64(city.Continent.GeoNameID), 10)
 			if len(city.Subdivisions) > 0 {
 				region = city.Subdivisions[0].IsoCode
 			}
@@ -192,9 +192,9 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.Referrer = reqReferrer
 		e.CountryCode = countryCode
 		e.Region = region
-		e.CityGeoNameID = cityGeonameId
+		e.CityGeoNameId = cityGeonameId
 		e.ScreenSize = screenSize
-		e.Timestamp = now
+		e.Timestamp = now.Unix()
 		previousUUserID := seedID.GenPrevious(remoteIp, userAgent, domain, host)
 		b.Register(r.Context(), e, previousUUserID)
 	}
