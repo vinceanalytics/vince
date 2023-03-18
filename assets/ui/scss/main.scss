@@ -25,22 +25,75 @@
 }
 
 @font-face {
-    font-family: 'Futura Book Italic';
+    font-family: 'Futura Medium Italic';
     src: url("/fonts/Futura Medium Italic font.ttf");
+}
+
+:root {
+    --color-white: #fff;
+    --color-black: #222;
+    --color-grey: #777471;
+    --color-stone: #edeae6;
+    --color-stone-tint: #f6f4f2;
+    --color-yellow: #f5d652;
+    --color-canary: #fff5ca;
+    --color-canary-tint: #fffae5;
+    --color-cobalt: #0074e4;
+    --color-sky: #b6dbff;
+    --color-sky-tint: #daedfe;
+    --color-sky-light: #eef8ff;
+    --color-blurple: #5522fa;
+    --color-lavender: #d5d2ff;
+    --color-lavender-tint: #eae8fe;
+    --color-purple: #7700a2;
+    --color-pink: #cb84de;
+    --color-pink-tint: #efdaf5;
+    --color-salmon: #ec8580;
+    --color-peach: #fee5da;
+    --color-peach-tint: #fef2ed;
+    --color-teal: #5ceace;
+    --color-mint: #b3f8eb;
+    --color-mint-tint: #d8f9f0;
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --color-shadow-dark: rgba(0, 0, 0, 0.2);
+    --color-text: var(--color-black);
+    --color-background: var(--color-stone);
+    --color-sheet: var(--color-white);
+    --color-neutral: var(--color-grey);
+    --color-link: var(--color-blurple);
+    --color-accent: var(--color-teal);
+    --space-x-small: 0.25em;
+    --space-small: 0.5em;
+    --space-medium: 1em;
+    --space-large: 2em;
+    --space-x-large: 3em;
+    --space-xx-large: 4em;
+    --space-xxx-large: 6em;
+    --space-navbar: 4em;
+}
+
+:root {
+    --type-xxx-small: 55%;
+    --type-xx-small: 65%;
+    --type-x-small: 75%;
+    --type-small: 85%;
+    --type-medium: 100%;
+    --type-large: 125%;
+    --type-x-large: 150%;
+    --type-xx-large: 200%;
+    --type-xxx-large: 275%;
 }
 
 body {
     font-family: "Futura Heavy";
 }
 
-footer {
-    font-family: "Futura Book Italic";
-}
 
 .footer {
     margin: 10em 0 0 0;
     padding: 1em 0;
-    text-align: center
+    text-align: center;
+    font-family: "Futura Medium Italic";
 }
 
 
@@ -60,12 +113,10 @@ footer {
 }
 
 .footer__nav-item:hover {
-    background: linear-gradient(45deg, #fff5ca 0, #fee5da 100%);
     background: linear-gradient(45deg, var(--color-canary) 0%, var(--color-peach) 100%)
 }
 
 .footer__nav-item:visited {
-    color: #5522fa;
     color: var(--color-blurple)
 }
 
@@ -73,9 +124,9 @@ footer {
 .footer__nav-item {
     margin: .25em .125em;
     padding: .25em .75em;
-    font-size: 85%;
-    color: #5522fa;
-    background-color: #fff5ca;
+    font-size: var(--type-small);
+    color: var(--color-blurple);
+    background-color: var(--color-canary);
     border-radius: 1em;
     text-decoration: none;
 }
@@ -100,16 +151,7 @@ footer {
     font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
 }
 
-.logo-footer {
-    display: inline-block;
-    font-size: 24px;
-    font-style: italic;
-    font-weight: 800;
-    text-align: center;
-    text-shadow: #222f37 3px 3px 0;
-    text-transform: uppercase;
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
-}
+
 
 .logo-main {
     display: inline-block;
@@ -123,38 +165,9 @@ footer {
     font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
 }
 
-.logo-plain {
-    display: inline-block;
-    font-style: italic;
-    font-weight: 800;
-    text-align: center;
-    text-shadow: #222f37 3px 3px 0;
-    text-transform: uppercase;
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
-}
 
-.solid-text {
-    font-weight: 800;
-    font-style: italic;
-    text-transform: uppercase;
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
-}
 
-.logo-fixed {
-    display: inline-block;
-    font-style: italic;
-    font-size: 40px;
-    font-weight: 800;
-    text-align: center;
-    text-shadow: #222f37 3px 3px 0;
-    text-transform: uppercase;
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
-    left: 19px;
-    position: absolute;
-    top: 20px;
-    text-align: center;
-    z-index: 1
-}
+
 
 .lead {
     display: inline-block;
@@ -165,29 +178,10 @@ footer {
     font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
 }
 
-.header-menu-wrapper {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    pointer-events: auto;
-    background-color: var(--color-canvas-default);
-    box-shadow: var(--header-menu-shadow)
-}
 
-@media(min-width: 544px) {
-    .HeaderMenu--logged-out .header-menu-wrapper {
-        width: 320px
-    }
-}
 
-@media(min-width: 1012px) {
-    .header-menu-wrapper {
-        width: 100%;
-        overflow: visible;
-        background-color: transparent;
-        box-shadow: none
-    }
-}
+
+
 
 .login-callout {
     padding: 16px 16px;
