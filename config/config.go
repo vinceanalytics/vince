@@ -217,8 +217,6 @@ func fromCli(ctx *cli.Context) *Config {
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
 		IsSelfHost:              ctx.Bool("self-host"),
 		SecretKeyBase:           ctx.String("secret-key-base"),
-		LogLevel:                Config_LogLevel(Config_LogLevel_value[ctx.String("log")]),
-		Env:                     Config_Env(Config_LogLevel_value[ctx.String("log")]),
 		Intervals: &Intervals{
 			SitesByDomainCacheRefreshInterval: durationpb.New(ctx.Duration("cache-refresh")),
 			LogRotationCheckInterval:          durationpb.New(ctx.Duration("rotation-check")),

@@ -15,7 +15,7 @@
     "enableEmailVerification": true,
     "isSelfHost": true,
     "logLevel": "trace",
-    "env": "load",
+    "env": "dev",
     "intervals": {
         "sitesByDomainCacheRefreshInterval": "900s",
         "logRotationCheckInterval": "3600s",

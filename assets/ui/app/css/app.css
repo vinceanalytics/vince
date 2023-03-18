@@ -30301,6 +30301,14 @@ li.contribution .num {
   font-size: 14px;
 }
 
+@font-face {
+  font-family: "Futura Heavy";
+  src: url("/fonts/unicode.futurab.ttf");
+}
+body {
+  font-family: "Futura Heavy";
+}
+
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;

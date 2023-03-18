@@ -12,7 +12,8 @@ import (
 func match(path string) bool {
 	return path == "robots.txt" || path == "favicon.ico" ||
 		strings.HasPrefix(path, "/css") ||
-		strings.HasPrefix(path, "/js")
+		strings.HasPrefix(path, "/js") ||
+		strings.HasPrefix(path, "/fonts")
 }
 
 func Plug() plug.Plug {
