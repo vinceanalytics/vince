@@ -12,7 +12,7 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
-	"github.com/segmentio/parquet-go"
+	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -171,22 +171,16 @@ func (b *Bob) Merge(ctx context.Context) error {
 
 	merge := func(it *badger.Iterator, txn *badger.Txn, buf *Buffer) error {
 		defer it.Close()
+		var data Entries
+
 		for it.Next(); it.Valid(); it.Next() {
 			err := it.Item().Value(func(val []byte) error {
-				f, err := parquet.OpenFile(bytes.NewReader(val), int64(len(val)))
-				if err != nil {
-					return err
-				}
-				g, err := parquet.MergeRowGroups(f.RowGroups())
-				if err != nil {
-					return err
-				}
-				parquet.CopyRows(buf.ew, g.Rows())
-				return nil
+				return proto.Unmarshal(val, &data)
 			})
 			if err != nil {
 				return err
 			}
+			buf.entries = append(buf.entries, data.Events...)
 			// delete the file, we are done merging it
 			err = txn.Delete(it.Item().Key())
 			if err != nil {

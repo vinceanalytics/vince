@@ -3,16 +3,16 @@ package timeseries
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/docker/go-units"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/log"
+	"github.com/golang/protobuf/proto"
 	"github.com/rs/zerolog"
-	"github.com/segmentio/parquet-go"
 )
 
 // Buffer buffers parquet file per user. Files are stored in badger db with keys
@@ -28,8 +28,7 @@ type Buffer struct {
 	mu        sync.Mutex
 	id        ID
 	expiresAt time.Time
-	eb        bytes.Buffer
-	ew        *parquet.SortingWriter[*Entry]
+	entries   []*Entry
 }
 
 func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
@@ -45,29 +44,13 @@ func (b *Buffer) Reset() *Buffer {
 		b.id[i] = 0
 	}
 	b.expiresAt = time.Time{}
-	b.eb.Reset()
+	b.entries = b.entries[:0]
 	return b
 }
 
 func (b *Buffer) Release() {
 	b.Reset()
 	bigBufferPool.Put(b)
-}
-
-func (b *Buffer) setup() *Buffer {
-	eb := make([]parquet.BloomFilterColumn, len(eventsFilterFields))
-	for i := range eventsFilterFields {
-		eb[i] = parquet.SplitBlockFilter(10, eventsFilterFields[i])
-	}
-	b.ew = parquet.NewSortingWriter[*Entry](&b.eb, SortRowCount,
-		parquet.SortingWriterConfig(
-			parquet.SortingColumns(
-				parquet.Ascending("timestamp"),
-			),
-		),
-		parquet.BloomFilters(eb...),
-	)
-	return b
 }
 
 func NewBuffer(uid, sid uint64, ttl time.Duration) *Buffer {
@@ -91,19 +74,19 @@ func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
 		updated.Sign = 1
 		s.Sign = -1
 		e.SessionId = updated.SessionId
-		b.ew.Write([]*Entry{updated, s, e})
+		b.entries = append(b.entries, updated, s, e)
 		persist(ctx, updated)
 		return
 	}
 	newSession := e.Session()
 	e.SessionId = newSession.SessionId
-	b.ew.Write([]*Entry{newSession, e})
+	b.entries = append(b.entries, newSession, e)
 	persist(ctx, newSession)
 }
 
 var bigBufferPool = &sync.Pool{
 	New: func() any {
-		return new(Buffer).setup()
+		return new(Buffer)
 	},
 }
 
@@ -119,17 +102,19 @@ func (b *Buffer) Save(ctx context.Context) error {
 }
 
 func (b *Buffer) save(txn *badger.Txn, say *zerolog.Logger) error {
-	err := b.ew.Close()
-	if err != nil {
-		say.Err(err).Msg("failed to close parquet writer for events")
-		return err
+	x := Entries{
+		Events: b.entries,
 	}
-	err = storeTxn(&b.id, b.eb.Bytes(), 0, txn)
+	data, err := proto.Marshal(&x)
+	if err != nil {
+		return fmt.Errorf("failed to marshal events %v", err)
+	}
+	err = storeTxn(&b.id, data, 0, txn)
 	if err != nil {
 		say.Err(err).Msg("failed to save events to permanent storage")
 		return err
 	}
-	say.Debug().Msgf("saved  %s events ", units.BytesSize(float64(b.eb.Len())))
+	say.Debug().Msgf("saved  %s entries ", len(b.entries))
 	return nil
 }
 
