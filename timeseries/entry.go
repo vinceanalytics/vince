@@ -105,6 +105,10 @@ func (s *Entry) Update(e *Entry) *Entry {
 
 type EntryList []*Entry
 
+func (e *Entries) List() EntryList {
+	return EntryList(e.Events)
+}
+
 func (ls EntryList) Aggregate(u, s *roaring64.Bitmap) (a *Aggregate) {
 	a = &Aggregate{}
 	u.Clear()
