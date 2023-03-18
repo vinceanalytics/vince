@@ -22,8 +22,9 @@ var (
 
 // Bob stores parquet files identified by ID.
 type Bob struct {
-	cb MergeCallback
-	db *badger.DB
+	cb    MergeCallback
+	since uint64
+	db    *badger.DB
 }
 
 func (b *Bob) GC() {
@@ -136,16 +137,20 @@ func (b *Bob) Merge(ctx context.Context) error {
 	b.db.View(func(txn *badger.Txn) error {
 		var id ID
 		id.SetTable(EVENTS)
-		// we only merge last hour data.
-		id.SetDayHour(time.Now().Add(-time.Hour))
+		id.SetTime(time.Now())
 		o := badger.DefaultIteratorOptions
 		// we are only interested in keys only
 		o.PrefetchValues = false
 		o.Prefix = id[:userOffset]
+		o.SinceTs = b.since
 		it := txn.NewIterator(o)
 		defer it.Close()
+		var last uint64
 		for it.Next(); it.Valid(); it.Next() {
+
 			x := it.Item()
+			last = x.Version()
+
 			if x.IsDeletedOrExpired() {
 				continue
 			}
@@ -154,6 +159,8 @@ func (b *Bob) Merge(ctx context.Context) error {
 			sid := binary.BigEndian.Uint64(key[siteOffset:])
 			hash[sid] = uid
 		}
+		// Track the last version we processed. Next merge will start from here.
+		b.since = last
 		return nil
 	})
 

@@ -102,7 +102,7 @@ func (b *Buffer) Save(ctx context.Context) error {
 	say := log.Get(ctx)
 	ts := Get(ctx)
 	// data saved here is short lived
-	b.id.SetDayHour(time.Now())
+	b.id.SetTime(time.Now())
 	b.id.SetTable(EVENTS)
 	b.id.SetEntropy()
 	ttl := b.ttl

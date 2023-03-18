@@ -17,8 +17,6 @@ const (
 	entropyOffset = 25
 )
 
-const DayHour = "010215"
-
 type TableID byte
 
 const (
@@ -73,10 +71,6 @@ func (id *ID) GetTime() time.Time {
 
 func (id *ID) SetDate(ts time.Time) {
 	binary.BigEndian.PutUint64(id[dateOffset:], uint64(ts.Unix()))
-}
-
-func (id *ID) SetDayHour(ts time.Time) {
-	ts.AppendFormat(id[dateOffset:], DayHour)
 }
 
 func (id *ID) SetEntropy() {
