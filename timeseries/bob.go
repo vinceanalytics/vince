@@ -37,11 +37,11 @@ func (b *Bob) GC() {
 // date from time.Time.
 //
 // To stop iteration f must return ErrSkip.
-func (b *Bob) Iterate(ctx context.Context, table TableID, uid, sid uint64, start, end time.Time, f func(io.ReaderAt, int64) error) {
+func Iterate(ctx context.Context, db *badger.DB, table TableID, uid, sid uint64, start, end time.Time, f func(io.ReaderAt, int64) error) {
 	_, task := trace.NewTask(ctx, "ts_iterate")
 	defer task.End()
 	if start.Equal(end) {
-		err := b.IterateDay(ctx, table, uid, sid, start, f)
+		err := IterateDay(ctx, db, table, uid, sid, start, f)
 		if err != nil {
 			// TODO:(gernest) Include query in text format in this log context ?
 			log.Get(ctx).Err(err).
@@ -61,7 +61,7 @@ func (b *Bob) Iterate(ctx context.Context, table TableID, uid, sid uint64, start
 			if date.After(end) {
 				return
 			}
-			err := b.IterateDay(ctx, table, uid, sid, date, f)
+			err := IterateDay(ctx, db, table, uid, sid, date, f)
 			if err != nil {
 				// TODO:(gernest) Include query in text format in this log context ?
 				log.Get(ctx).Err(err).
@@ -74,10 +74,10 @@ func (b *Bob) Iterate(ctx context.Context, table TableID, uid, sid uint64, start
 	wg.Wait()
 }
 
-func (b *Bob) IterateDay(ctx context.Context, table TableID, uid, sid uint64, day time.Time, f func(io.ReaderAt, int64) error) error {
+func IterateDay(ctx context.Context, db *badger.DB, table TableID, uid, sid uint64, day time.Time, f func(io.ReaderAt, int64) error) error {
 	_, task := trace.NewTask(ctx, "ts_iterate_day")
 	defer task.End()
-	return b.db.View(func(txn *badger.Txn) error {
+	return db.View(func(txn *badger.Txn) error {
 		var id ID
 		id.SetTable(table)
 		id.SetUserID(uid)
