@@ -70,6 +70,8 @@
     --space-xx-large: 4em;
     --space-xxx-large: 6em;
     --space-navbar: 4em;
+    --futura-heavy: "Futura Heavy";
+    --futura-medium-italic: "Futura Medium Italic";
 }
 
 :root {
@@ -165,10 +167,6 @@ body {
     font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
 }
 
-
-
-
-
 .lead {
     display: inline-block;
     font-style: italic;
@@ -177,11 +175,6 @@ body {
     text-transform: uppercase;
     font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
 }
-
-
-
-
-
 
 .login-callout {
     padding: 16px 16px;
@@ -193,7 +186,9 @@ body {
 
 .auth-form {
     width: 340px;
-    margin: 0 auto
+    margin: 0 auto;
+    font-family: var(--futura-medium-italic);
+    background-color: linear-gradient(45deg, var(--color-canary) 0%, var(--color-peach) 100%);
 }
 
 .auth-form .form-group.warn .warning,
@@ -206,11 +201,7 @@ body {
 .auth-form-header {
     padding: 8px 16px;
     margin: 0;
-    color: #fff;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, .3);
-    background-color: #829aa8;
-    border: 1px solid #768995;
-    border-radius: 6px 6px 0 0
+    background-color: var(--color-canary);
 }
 
 .auth-form-header h1 {
@@ -221,58 +212,10 @@ body {
     color: #fff
 }
 
-.auth-form-header .octicon {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    color: rgba(0, 0, 0, .4);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, .1)
-}
-
-.auth-divider {
-    display: flex;
-    flex-basis: 100%;
-    align-items: center
-}
-
-.auth-divider::before,
-.auth-divider::after {
-    position: relative;
-    display: inline-block;
-    width: 50%;
-    height: 1px;
-    vertical-align: middle;
-    content: "";
-    background-color: var(--color-border-default)
-}
-
-.auth-divider::before {
-    right: .5em
-}
-
-.auth-divider::after {
-    left: .5em
-}
-
-.auth-form-message {
-    max-height: 140px;
-    padding: 16px 16px 8px;
-    overflow-y: scroll;
-    border: 1px solid var(--color-border-default);
-    border-radius: 6px
-}
-
-.auth-form-message ol,
-.auth-form-message ul {
-    padding-left: inherit;
-    margin-bottom: inherit
-}
-
 .auth-form-body {
     padding: 16px;
     font-size: 14px;
-    background-color: var(--color-canvas-subtle);
-    border: 1px solid var(--color-border-muted);
+    border: 1px solid var(--color-canary);
     border-top: 0;
     border-radius: 0 0 6px 6px
 }
