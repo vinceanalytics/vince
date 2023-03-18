@@ -30305,8 +30305,59 @@ li.contribution .num {
   font-family: "Futura Heavy";
   src: url("/fonts/unicode.futurab.ttf");
 }
+@font-face {
+  font-family: "Futura Book Italic";
+  src: url("/fonts/Futura Medium Italic font.ttf");
+}
 body {
   font-family: "Futura Heavy";
+}
+
+footer {
+  font-family: "Futura Book Italic";
+}
+
+.footer {
+  margin: 10em 0 0 0;
+  padding: 1em 0;
+  text-align: center;
+}
+
+.footer__nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 45em) {
+  .footer__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+.footer__nav-item:hover {
+  background: linear-gradient(45deg, #fff5ca 0, #fee5da 100%);
+  background: linear-gradient(45deg, var(--color-canary) 0%, var(--color-peach) 100%);
+}
+
+.footer__nav-item:visited {
+  color: #5522fa;
+  color: var(--color-blurple);
+}
+
+.footer__nav-item {
+  margin: 0.25em 0.125em;
+  padding: 0.25em 0.75em;
+  font-size: 85%;
+  color: #5522fa;
+  background-color: #fff5ca;
+  border-radius: 1em;
+  text-decoration: none;
+}
+
+.footer__nav-item:hover {
+  text-decoration: none;
 }
 
 .text-xs {
