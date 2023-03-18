@@ -13,6 +13,7 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
 	"github.com/segmentio/parquet-go"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -21,6 +22,7 @@ var (
 
 // Bob stores parquet files identified by ID.
 type Bob struct {
+	cb MergeCallback
 	db *badger.DB
 }
 
@@ -113,8 +115,20 @@ func (b *Bob) IterateDay(ctx context.Context, table TableID, uid, sid uint64, da
 	})
 }
 
+// Executed after stats have been merged to a single b
+type MergeCallback func(ctx context.Context, b *Buffer, uid, sid uint64)
+
 // Merge  combines all the parquet files for today partitioned by user and site
 // to a single file.
+//
+// Merging is done in two steps. First we find all uid/sid keys crated during this
+// merge window, then we process each unique uid/sid concurrently. By processing
+// we mean merging together all parquet files into a single one.
+//
+// We use parquet because we want to make sure the data is sorted and compressed
+// we don't want to stress badger with huge blobs for very active sites. Although
+// we have rate limits in place to ensure controlled buffer sizes, it should be
+// able to handle enterprise users with high traffic sites.
 func (b *Bob) Merge(ctx context.Context) error {
 	_, task := trace.NewTask(ctx, "ts_merge")
 	defer task.End()
@@ -182,39 +196,39 @@ func (b *Bob) Merge(ctx context.Context) error {
 		return nil
 	}
 
-	save := func(ctx context.Context, wg *sync.WaitGroup, uid, sid uint64) {
-		defer wg.Done()
-		err := b.db.Update(func(txn *badger.Txn) error {
-			w := bigBufferPool.Get().(*Buffer).Init(uid, sid, 0)
-			defer w.Release()
+	save := func(ctx context.Context, uid, sid uint64) func() error {
+		return func() error {
+			return b.db.Update(func(txn *badger.Txn) error {
+				w := bigBufferPool.Get().(*Buffer).Init(uid, sid, 0)
+				defer w.Release()
 
-			w.id.SetDate(start)
-			w.id.SetEntropy()
+				w.id.SetDate(start)
+				w.id.SetEntropy()
 
-			o := badger.DefaultIteratorOptions
-			o.Prefix = bytes.Clone(w.id[:entropyOffset])
-			it := txn.NewIterator(o)
-			err := merge(it, txn, w)
-			if err != nil {
-				return err
-			}
-			return w.save(txn, say)
-		})
-		if err != nil {
-			log.Get(ctx).Err(err).
-				Uint64("uid", uid).
-				Uint64("sid", sid).
-				Msg("failed merging events")
+				o := badger.DefaultIteratorOptions
+				o.Prefix = bytes.Clone(w.id[:entropyOffset])
+				it := txn.NewIterator(o)
+				err := merge(it, txn, w)
+				if err != nil {
+					return err
+				}
+				if b.cb != nil {
+					b.cb(ctx, w, uid, sid)
+				}
+				return nil
+			})
+
 		}
 	}
 	if len(hash) > 0 {
-		var wg sync.WaitGroup
+		g, ctx := errgroup.WithContext(ctx)
 		for sid, uid := range hash {
-			wg.Add(1)
-			go save(ctx, &wg, uid, sid)
+			g.Go(save(ctx, uid, sid))
 		}
-		wg.Wait()
-		// try to reclaim space if possible.
+		err := g.Wait()
+		if err != nil {
+			log.Get(ctx).Err(err).Msg("failed to merge ingested events")
+		}
 		b.GC()
 	}
 	return nil
