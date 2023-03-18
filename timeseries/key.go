@@ -17,6 +17,8 @@ const (
 	entropyOffset = 25
 )
 
+const DayHour = "010215"
+
 type TableID byte
 
 const (
@@ -27,7 +29,7 @@ const (
 // Lexicographically sortable unique Identifier used as a key for storing  parquet
 // files with the time series data.
 //
-//	TableID + UserID + SiteID + Date + Random
+//	TableID + Date + UserID + SiteID  + Random
 //	1 + 8 + 8 + 8 + 7 = 32 bytes in total
 type ID [32]byte
 
@@ -71,6 +73,10 @@ func (id *ID) GetTime() time.Time {
 
 func (id *ID) SetDate(ts time.Time) {
 	binary.BigEndian.PutUint64(id[dateOffset:], uint64(ts.Unix()))
+}
+
+func (id *ID) SetDayHour(ts time.Time) {
+	ts.AppendFormat(id[dateOffset:], DayHour)
 }
 
 func (id *ID) SetEntropy() {

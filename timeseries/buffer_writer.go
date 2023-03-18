@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -12,7 +13,6 @@ import (
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/log"
 	"github.com/golang/protobuf/proto"
-	"github.com/rs/zerolog"
 )
 
 // Buffer buffers parquet file per user. Files are stored in badger db with keys
@@ -26,6 +26,7 @@ import (
 // This type is reusable.
 type Buffer struct {
 	mu        sync.Mutex
+	ttl       time.Duration
 	id        ID
 	expiresAt time.Time
 	entries   []*Entry
@@ -36,6 +37,13 @@ func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
 	b.id.SetSiteID(sid)
 	b.id.SetTable(EVENTS)
 	b.expiresAt = time.Now().Add(ttl)
+	return b
+}
+
+func (b *Buffer) Sort() *Buffer {
+	sort.Slice(b.entries, func(i, j int) bool {
+		return b.entries[i].Timestamp < b.entries[j].Timestamp
+	})
 	return b
 }
 
@@ -93,29 +101,36 @@ var bigBufferPool = &sync.Pool{
 func (b *Buffer) Save(ctx context.Context) error {
 	say := log.Get(ctx)
 	ts := Get(ctx)
-	b.id.SetTime(time.Now())
+	// data saved here is short lived
+	b.id.SetDayHour(time.Now())
 	b.id.SetTable(EVENTS)
 	b.id.SetEntropy()
+	ttl := b.ttl
+	if ttl == 0 {
+		// retain this for maximum of 3 hours merge window must always be less than this
+		// to ensure data saved is processed.
+		ttl = 3 * time.Hour
+	}
 	return ts.db.Update(func(txn *badger.Txn) error {
-		return b.save(txn, say)
+		x := Entries{
+			Events: b.entries,
+		}
+		data, err := proto.Marshal(&x)
+		if err != nil {
+			return fmt.Errorf("failed to marshal events %v", err)
+		}
+		e := badger.NewEntry(b.id[:], data)
+		if ttl != 0 {
+			e.WithTTL(ttl)
+		}
+		err = txn.SetEntry(e)
+		if err != nil {
+			say.Err(err).Msg("failed to save events to permanent storage")
+			return err
+		}
+		say.Debug().Msgf("saved  %d entries ", len(b.entries))
+		return nil
 	})
-}
-
-func (b *Buffer) save(txn *badger.Txn, say *zerolog.Logger) error {
-	x := Entries{
-		Events: b.entries,
-	}
-	data, err := proto.Marshal(&x)
-	if err != nil {
-		return fmt.Errorf("failed to marshal events %v", err)
-	}
-	err = storeTxn(&b.id, data, 0, txn)
-	if err != nil {
-		say.Err(err).Msg("failed to save events to permanent storage")
-		return err
-	}
-	say.Debug().Msgf("saved  %s entries ", len(b.entries))
-	return nil
 }
 
 func find(ctx context.Context, e *Entry, userId uint64) *Entry {

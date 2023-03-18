@@ -30,14 +30,6 @@ func (b *Bob) GC() {
 	b.db.RunValueLogGC(0.5)
 }
 
-func storeTxn(id *ID, data []byte, ttl time.Duration, txn *badger.Txn) error {
-	e := badger.NewEntry(id[:], data)
-	if ttl != 0 {
-		e.WithTTL(ttl)
-	}
-	return txn.SetEntry(e)
-}
-
 // Iterate searches of all parquet files belonging to the user/site between start and
 // end date. The emphasize here is start and end Must be dates.
 //
@@ -124,11 +116,6 @@ type MergeCallback func(ctx context.Context, b *Buffer, uid, sid uint64)
 // Merging is done in two steps. First we find all uid/sid keys crated during this
 // merge window, then we process each unique uid/sid concurrently. By processing
 // we mean merging together all parquet files into a single one.
-//
-// We use parquet because we want to make sure the data is sorted and compressed
-// we don't want to stress badger with huge blobs for very active sites. Although
-// we have rate limits in place to ensure controlled buffer sizes, it should be
-// able to handle enterprise users with high traffic sites.
 func (b *Bob) Merge(ctx context.Context) error {
 	_, task := trace.NewTask(ctx, "ts_merge")
 	defer task.End()
@@ -149,7 +136,8 @@ func (b *Bob) Merge(ctx context.Context) error {
 	b.db.View(func(txn *badger.Txn) error {
 		var id ID
 		id.SetTable(EVENTS)
-		id.SetTime(time.Now())
+		// we only merge last hour data.
+		id.SetDayHour(time.Now().Add(-time.Hour))
 		o := badger.DefaultIteratorOptions
 		// we are only interested in keys only
 		o.PrefetchValues = false
@@ -172,7 +160,6 @@ func (b *Bob) Merge(ctx context.Context) error {
 	merge := func(it *badger.Iterator, txn *badger.Txn, buf *Buffer) error {
 		defer it.Close()
 		var data Entries
-
 		for it.Next(); it.Valid(); it.Next() {
 			err := it.Item().Value(func(val []byte) error {
 				return proto.Unmarshal(val, &data)
@@ -207,7 +194,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 					return err
 				}
 				if b.cb != nil {
-					b.cb(ctx, w, uid, sid)
+					b.cb(ctx, w.Sort(), uid, sid)
 				}
 				return nil
 			})
