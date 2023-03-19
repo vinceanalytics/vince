@@ -20,34 +20,3 @@ message Aggregate {
   google.protobuf.Duration visit_duration = 4;
   uint32 bounce_rate = 5;
 }
-
-enum PROPS {
-  unknown = 0;
-  NAME = 1;
-  PAGE = 2;
-  ENTRY_PAGE = 3;
-  EXIT_PAGE = 4;
-  REFERRER = 5;
-  UTM_MEDIUM = 6;
-  UTM_SOURCE = 7;
-  UTM_CAMPAIGN = 8;
-  UTM_CONTENT = 9;
-  UTM_TERM = 10;
-  UTM_DEVICE = 11;
-  UTM_BROWSER = 12;
-  BROWSER_VERSION = 13;
-  OS = 14;
-  OS_VERSION = 15;
-  COUNTRY = 16;
-  REGION = 17;
-  CITY = 18;
-}
-
-enum METRIC_TYPE {
-  visitors = 0;
-  visits = 1;
-  page_views = 2;
-  views_per_visit = 3;
-  visit_duration = 4;
-  bounce_rate = 5;
-}

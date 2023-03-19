@@ -7,7 +7,6 @@ import (
 	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go/bloom/xxhash"
-	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 // A list of Entry properties as arrow.Field.
@@ -139,35 +138,6 @@ func (ls EntryList) Aggr(u, s *roaring64.Bitmap) (a *Aggr_Total) {
 		bounce += e.Sign * e.Bounce()
 	}
 	a.VisitDuration = d / int64(sign)
-	a.ViewsPerVisit = float64(pages) / float64(sign)
-	bounceRate := (float64(bounce) / float64(sign)) * 100
-	a.BounceRate = uint32(bounceRate)
-	return
-}
-
-func (ls EntryList) Aggregate(u, s *roaring64.Bitmap) (a *Aggregate) {
-	a = &Aggregate{}
-	u.Clear()
-	s.Clear()
-	var d int64
-	var pages uint64
-	var sign int32
-	var bounce int32
-	for _, e := range ls {
-		if !u.Contains(e.UserId) {
-			u.Add(e.UserId)
-			a.Visitors += 1
-		}
-		if !s.Contains(e.SessionId) {
-			u.Add(e.SessionId)
-			a.Visits += 1
-		}
-		d += e.Duration
-		sign += e.Sign
-		pages += e.PageViews
-		bounce += e.Sign * e.Bounce()
-	}
-	a.VisitDuration = durationpb.New(time.Duration(d / int64(sign)))
 	a.ViewsPerVisit = float64(pages) / float64(sign)
 	bounceRate := (float64(bounce) / float64(sign)) * 100
 	a.BounceRate = uint32(bounceRate)
