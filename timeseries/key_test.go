@@ -10,10 +10,10 @@ import (
 
 func TestKey(t *testing.T) {
 	var id ID
-	table := SYSTEM
+	table := byte(10)
 	t.Run("sets table", func(t *testing.T) {
 		id.SetTable(table)
-		if id.GetTable() != SYSTEM {
+		if id.GetTable() != table {
 			t.Fatal("failed to encode table")
 		}
 	})
@@ -29,7 +29,7 @@ func TestKey(t *testing.T) {
 
 	t.Run("sets site id", func(t *testing.T) {
 		id.SetSiteID(sid)
-		if id.GetTable() != SYSTEM {
+		if id.GetTable() != table {
 			t.Fatal("failed to encode table")
 		}
 		if id.GetUserID() != uid {
@@ -44,7 +44,7 @@ func TestKey(t *testing.T) {
 	today := timex.Date(now)
 	t.Run("sets date", func(t *testing.T) {
 		id.SetDate(today)
-		if id.GetTable() != SYSTEM {
+		if id.GetTable() != table {
 			t.Fatal("failed to encode table")
 		}
 		if id.GetUserID() != uid {
@@ -60,7 +60,7 @@ func TestKey(t *testing.T) {
 	t.Run("sets entropy", func(t *testing.T) {
 		id.SetEntropy()
 		id.SetDate(today)
-		if id.GetTable() != SYSTEM {
+		if id.GetTable() != table {
 			t.Fatal("failed to encode table")
 		}
 		if id.GetUserID() != uid {

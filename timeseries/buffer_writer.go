@@ -35,7 +35,6 @@ type Buffer struct {
 func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
 	b.id.SetUserID(uid)
 	b.id.SetSiteID(sid)
-	b.id.SetTable(EVENTS)
 	b.expiresAt = time.Now().Add(ttl)
 	return b
 }
@@ -103,7 +102,6 @@ func (b *Buffer) Save(ctx context.Context) error {
 	ts := Get(ctx)
 	// data saved here is short lived
 	b.id.SetTime(time.Now())
-	b.id.SetTable(EVENTS)
 	b.id.SetEntropy()
 	ttl := b.ttl
 	if ttl == 0 {

@@ -82,7 +82,6 @@ func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
 			//
 			// Hour stats are strictly based on time the event hits our server.
 			e := badger.NewEntry(id[:], b).
-				WithMeta(byte(Hour)).
 				WithTTL(2 * time.Hour)
 			return txn.SetEntry(e)
 		})

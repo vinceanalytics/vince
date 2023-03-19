@@ -17,34 +17,20 @@ const (
 	entropyOffset = 25
 )
 
-type TableID byte
-
-const (
-	EVENTS TableID = 1 + iota
-	SYSTEM
-)
-
-type State byte
-
-const (
-	Hour State = 1 + iota
-)
-
-// Lexicographically sortable unique Identifier used as a key for storing  parquet
-// files with the time series data.
-//
-//	TableID + Date + UserID + SiteID  + Random
-//	1 + 8 + 8 + 8 + 7 = 32 bytes in total
 type ID [32]byte
 
-// SetTable stores table  in id. TableID is stored as byte with the same value as
-// table.
-func (id *ID) SetTable(table TableID) {
+func (id *ID) SetTable(table byte) {
 	id[tableOffset] = byte(table)
 }
 
-func (id *ID) GetTable() TableID {
-	return TableID(id[tableOffset])
+// Final returns id bytes without entropy. This is used as key to mike our permanent
+// metrics storage.
+func (id *ID) Final() []byte {
+	return id[:entropyOffset]
+}
+
+func (id *ID) GetTable() byte {
+	return id[tableOffset]
 }
 
 func (id *ID) SetUserID(u uint64) {

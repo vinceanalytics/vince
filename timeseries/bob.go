@@ -57,7 +57,6 @@ func (b *Bob) Merge(ctx context.Context) error {
 	// Try to find all sites which ingested events in a single day (Well, TODAY)
 	b.db.View(func(txn *badger.Txn) error {
 		var id ID
-		id.SetTable(EVENTS)
 		id.SetTime(time.Now())
 		o := badger.DefaultIteratorOptions
 		// we are only interested in keys only
