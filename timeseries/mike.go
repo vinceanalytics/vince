@@ -2,16 +2,13 @@ package timeseries
 
 import (
 	"context"
-	"errors"
-	"io"
 	"sync"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/dgraph-io/badger/v3"
-	"github.com/segmentio/parquet-go"
+	"github.com/gernest/vince/log"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 // Mike is the permanent storage for the events data. Data stored here is aggregated
@@ -39,7 +36,7 @@ func (e *entryBuf) Release() {
 var entryBufPool = &sync.Pool{
 	New: func() any {
 		return &entryBuf{
-			entries: make([]*Entry, 4098),
+			entries: make([]*Entry, 1024),
 		}
 	},
 }
@@ -48,7 +45,13 @@ type Group struct {
 	props [PROPS_CITY]*mapEntry
 }
 
-func NewGroup() *Group {
+var groupPool = &sync.Pool{
+	New: func() any {
+		return newGroup()
+	},
+}
+
+func newGroup() *Group {
 	var g Group
 	for i := range g.props {
 		g.props[i] = &mapEntry{
@@ -73,10 +76,15 @@ func (g *Group) Save(h int, ts time.Time, ms *MetricSaver) {
 	}
 }
 
-func (g *Group) Release() {
+func (g *Group) Reset() {
 	for _, e := range g.props {
 		e.Release()
 	}
+}
+
+func (g *Group) Release() {
+	g.Reset()
+	groupPool.Put(g)
 }
 
 type mapEntry struct {
@@ -111,93 +119,42 @@ func (m *mapEntry) save(key string, e *Entry) {
 		b.entries = append(b.entries, e)
 		return
 	}
-	b := entryBufPool.Get().(*entryBuf)
+	b := getEntryBuf()
 	m.m[key] = b
 	b.entries = append(b.entries, e)
 }
 
-// useful for reading. Returns entryBuf with entries spanning full capacity.
 func getEntryBuf() *entryBuf {
 	e := entryBufPool.Get().(*entryBuf)
 	e.entries = e.entries[:cap(e.entries)]
 	return e
 }
 
-// Aggregate computes aggregate stats segmented by the hour of the day.
-func (m *Mike) Aggregate(ctx context.Context, id *ID, r io.ReaderAt, size int64) (day *DayStats, err error) {
-	f, err := parquet.OpenFile(r, size)
-	if err != nil {
-		return nil, err
-	}
-	if f.NumRows() == 0 {
-		// Unlikely but ok
-		id.Release()
-		return nil, nil
-	}
-	day = &DayStats{
-		Aggregate: &Aggregate{},
-	}
-	saver := metricSaverPool.Get().(*MetricSaver)
-	e := getEntryBuf()
-	group := NewGroup()
-	defer func() {
-		saver.Release()
-		e.Release()
-		group.Release()
-	}()
+// Process and save data from b to m. Daily data is continuously merged until the next date
+// Final daily data is packed into parquet file for permanent storage.
+func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
+	defer b.Release()
+	ms := metricSaverPool.Get().(*MetricSaver)
+	defer ms.Release()
+	group := groupPool.Get().(*Group)
 
-	for _, rg := range f.RowGroups() {
-		err := m.writeRowGroup(id, rg, saver, e, group)
-		if err != nil {
-			return nil, err
-		}
-	}
-	var d time.Duration
-	var visit float64
-	for i := range saver.prop {
-		h := &saver.prop[i]
-		day.Aggregate.Visitors += h.Aggregate.Visitors
-		day.Aggregate.Visitors += h.Aggregate.Visits
-		d += h.Aggregate.VisitDuration.AsDuration()
-		visit += h.Aggregate.ViewsPerVisit
-		day.Stats = append(day.Stats, proto.Clone(h).(*HourStats))
-	}
-	day.Aggregate.ViewsPerVisit = visit / 12
-	day.Aggregate.VisitDuration = durationpb.New(d / 12)
-	return
-}
-
-func (m *Mike) writeRowGroup(
-	id *ID,
-	g parquet.RowGroup,
-	saver *MetricSaver,
-	e *entryBuf,
-	group *Group,
-) error {
-	r := parquet.NewGenericRowGroupReader[*Entry](g)
-	values := e.ensure(int(r.NumRows()))
-	n, err := r.Read(values)
-	if err != nil {
-		if !errors.Is(err, io.EOF) {
-			return err
-		}
-	}
-
-	ent := EntryList(values[:n])
-
+	ent := EntryList(b.entries)
 	ent.Emit(func(i int, el EntryList) {
-		// release for group works differently. It only release aggregate buffers
+		// reset for group works differently. It only release aggregate buffers
 		// accumulated in this callback.
 		//
 		// We avoid allocation property array(managed by group) for every iteration
 		// we only pay the prices of deleting map entries for the aggregate properties
-		// data.
-		defer group.Release()
+		// data that we have done processing
+		//
+		// TODO: never delete released buffers, just mark them as deleted after
+		// reset.
+		defer group.Reset()
 
 		// By now we have el which is a list of all entries happened in i hour
 		// We segment the props accordingly and compute aggregates That we save
 		// on saver.
-		for _, e := range el[:n] {
+		for _, e := range el {
 			group.save(PROPS_NAME, e.Name, e)
 			group.save(PROPS_PAGE, e.Pathname, e)
 			group.save(PROPS_ENTRY_PAGE, e.EntryPage, e)
@@ -217,8 +174,38 @@ func (m *Mike) writeRowGroup(
 			group.save(PROPS_REGION, e.Region, e)
 			group.save(PROPS_CITY, e.CityGeoNameId, e)
 		}
-		group.Save(i, time.Unix(el[0].Timestamp, 0), saver)
-		saver.UpdateHourTotals(i, el)
+		group.Save(i, time.Unix(el[0].Timestamp, 0), ms)
+		ms.UpdateHourTotals(i, el)
 	})
-	return nil
+
+	id := NewID()
+	defer id.Release()
+	id.SetSiteID(sid)
+	id.SetUserID(uid)
+
+	for i := range ms.prop {
+		h := &ms.prop[i]
+		if len(h.Properties) > 0 {
+			id.SetDate(h.Timestamp.AsTime())
+			id.SetEntropy()
+			err := m.db.Update(func(txn *badger.Txn) error {
+				b, err := proto.Marshal(h)
+				if err != nil {
+					return err
+				}
+				// This will later be discarded after we have aggregated all hourly
+				// stats. Keep them not more than 3 hours.
+				//
+				// NOTE: The key is by date. We use  meta to mark this as a hourly
+				// record.
+				e := badger.NewEntry(id[:], b).
+					WithMeta(byte(Hour)).
+					WithTTL(3 * time.Hour)
+				return txn.SetEntry(e)
+			})
+			if err != nil {
+				log.Get(ctx).Err(err).Msg("failed to save hourly stats ")
+			}
+		}
+	}
 }

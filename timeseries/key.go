@@ -24,6 +24,12 @@ const (
 	SYSTEM
 )
 
+type State byte
+
+const (
+	Hour State = 1 + iota
+)
+
 // Lexicographically sortable unique Identifier used as a key for storing  parquet
 // files with the time series data.
 //

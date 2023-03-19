@@ -188,7 +188,6 @@ func (b *Bob) Merge(ctx context.Context) error {
 		return func() error {
 			return b.db.Update(func(txn *badger.Txn) error {
 				w := bigBufferPool.Get().(*Buffer).Init(uid, sid, 0)
-				defer w.Release()
 				w.id.SetDate(start)
 				w.id.SetEntropy()
 				o := badger.DefaultIteratorOptions
