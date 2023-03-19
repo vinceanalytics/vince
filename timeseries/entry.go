@@ -48,6 +48,7 @@ var Fields = []arrow.Field{
 func (e *Entry) Session() *Entry {
 	s := *e
 	s.Sign = 1
+	s.IsSession = true
 	session := uuid.New()
 	s.SessionId = xxhash.Sum64(session[:])
 	s.EntryPage = e.Pathname
@@ -107,6 +108,41 @@ type EntryList []*Entry
 
 func (e *Entries) List() EntryList {
 	return EntryList(e.Events)
+}
+
+func (ls EntryList) Aggr(u, s *roaring64.Bitmap) (a *Aggr_Total) {
+	if len(ls) == 0 {
+		return
+	}
+	a = &Aggr_Total{}
+	u.Clear()
+	s.Clear()
+	var d int64
+	var pages uint64
+	var sign int32
+	var bounce int32
+	for _, e := range ls {
+		if !e.IsSession {
+			a.Events += 1
+		}
+		if !u.Contains(e.UserId) {
+			u.Add(e.UserId)
+			a.Visitors += 1
+		}
+		if !s.Contains(e.SessionId) {
+			u.Add(e.SessionId)
+			a.Visits += 1
+		}
+		d += e.Duration
+		sign += e.Sign
+		pages += e.PageViews
+		bounce += e.Sign * e.Bounce()
+	}
+	a.VisitDuration = d / int64(sign)
+	a.ViewsPerVisit = float64(pages) / float64(sign)
+	bounceRate := (float64(bounce) / float64(sign)) * 100
+	a.BounceRate = uint32(bounceRate)
+	return
 }
 
 func (ls EntryList) Aggregate(u, s *roaring64.Bitmap) (a *Aggregate) {

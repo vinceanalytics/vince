@@ -37,4 +37,65 @@ message Entry {
   int64 duration = 29;
   int64 start = 30;
   string region = 31;
+  bool is_session = 32;
+}
+
+message EntrySegment {
+  repeated Entry name = 2;
+  repeated Entry domain = 3;
+  repeated Entry hostname = 6;
+  repeated Entry pathname = 7;
+  repeated Entry referrer = 8;
+  repeated Entry referrer_source = 9;
+  repeated Entry country_code = 10;
+  repeated Entry screen_size = 11;
+  repeated Entry operating_system = 12;
+  repeated Entry browser = 13;
+  repeated Entry utm_medium = 14;
+  repeated Entry utm_source = 15;
+  repeated Entry utm_campaign = 16;
+  repeated Entry browser_version = 17;
+  repeated Entry operating_system_version = 18;
+  repeated Entry utm_content = 19;
+  repeated Entry utm_term = 20;
+  repeated Entry entry_page = 22;
+  repeated Entry exit_page = 23;
+  repeated Entry city_geo_name_id = 24;
+  repeated Entry region = 31;
+}
+
+message Aggr {
+  Total total = 1;
+  Segment name = 2;
+  Segment domain = 3;
+  Segment hostname = 6;
+  Segment pathname = 7;
+  Segment referrer = 8;
+  Segment referrer_source = 9;
+  Segment country_code = 10;
+  Segment screen_size = 11;
+  Segment operating_system = 12;
+  Segment browser = 13;
+  Segment utm_medium = 14;
+  Segment utm_source = 15;
+  Segment utm_campaign = 16;
+  Segment browser_version = 17;
+  Segment operating_system_version = 18;
+  Segment utm_content = 19;
+  Segment utm_term = 20;
+  Segment entry_page = 22;
+  Segment exit_page = 23;
+  Segment city_geo_name_id = 24;
+  Segment region = 31;
+
+  message Total {
+    uint64 visitors = 1;
+    uint64 visits = 2;
+    double views_per_visit = 3;
+    int64 visit_duration = 4;
+    uint32 bounce_rate = 5;
+    int64 events = 6;
+  }
+
+  message Segment { map<string, Total> aggregates = 1; }
 }

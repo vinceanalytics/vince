@@ -77,3 +77,20 @@ func TestMet(t *testing.T) {
 	}
 	t.Error()
 }
+
+func TestS(t *testing.T) {
+	type U struct {
+		a *int
+	}
+
+	n := func(x **int) {
+		if *x == nil {
+			var v int
+			*x = &v
+		}
+	}
+	u := &U{}
+	n(&u.a)
+
+	t.Error(*u.a == 0)
+}
