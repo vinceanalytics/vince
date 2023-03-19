@@ -189,10 +189,8 @@ func (b *Bob) Merge(ctx context.Context) error {
 			return b.db.Update(func(txn *badger.Txn) error {
 				w := bigBufferPool.Get().(*Buffer).Init(uid, sid, 0)
 				defer w.Release()
-
 				w.id.SetDate(start)
 				w.id.SetEntropy()
-
 				o := badger.DefaultIteratorOptions
 				o.Prefix = bytes.Clone(w.id[:entropyOffset])
 				it := txn.NewIterator(o)
@@ -205,7 +203,6 @@ func (b *Bob) Merge(ctx context.Context) error {
 				}
 				return nil
 			})
-
 		}
 	}
 	if len(hash) > 0 {
