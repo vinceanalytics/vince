@@ -1,5 +1,6 @@
 syntax = "proto3";
 package timeseries;
+import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/gernest/vince/timeseries";
 
@@ -98,6 +99,30 @@ message Aggr {
   }
 
   message Segment { map<string, Total> aggregates = 1; }
+
+  message Year {
+    uint32 year = 1;
+    // The size of days equals the number of days in this particular year.
+    repeated Total days = 2;
+  }
+
+  message Day {
+    google.protobuf.Timestamp date = 1;
+    // Size 24, aggregates all hourly totals
+    repeated Total hours = 2;
+  }
+
+  message YearProps {
+    uint32 year = 1;
+    PROPS prop = 2;
+    repeated Segment days = 3;
+  }
+
+  message DayProps {
+    google.protobuf.Timestamp date = 1;
+    PROPS prop = 2;
+    repeated Segment hours = 3;
+  }
 }
 
 enum PROPS {
@@ -129,4 +154,12 @@ enum METRIC_TYPE {
   views_per_visit = 3;
   visit_duration = 4;
   bounce_rate = 5;
+}
+
+// TABLE marks the namespace on which aggregate data is stored.
+enum TABLE {
+  RAW = 0;
+  HOUR = 1;
+  DAY = 2;
+  YEAR = 3;
 }
