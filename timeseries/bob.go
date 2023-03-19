@@ -5,9 +5,7 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"io"
 	"runtime/trace"
-	"sync"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
@@ -29,83 +27,6 @@ type Bob struct {
 
 func (b *Bob) GC() {
 	b.db.RunValueLogGC(0.5)
-}
-
-// Iterate searches of all parquet files belonging to the user/site between start and
-// end date. The emphasize here is start and end Must be dates.
-//
-// This requirements avoid further time/date conversions. Use timex.Date to get a
-// date from time.Time.
-//
-// To stop iteration f must return ErrSkip.
-func Iterate(ctx context.Context, db *badger.DB, table TableID, uid, sid uint64, start, end time.Time, f func(io.ReaderAt, int64) error) {
-	_, task := trace.NewTask(ctx, "ts_iterate")
-	defer task.End()
-	if start.Equal(end) {
-		err := IterateDay(ctx, db, table, uid, sid, start, f)
-		if err != nil {
-			// TODO:(gernest) Include query in text format in this log context ?
-			log.Get(ctx).Err(err).
-				Uint64("uid", uid).
-				Uint64("sid", sid).
-				Msg("failed to iterate by day")
-		}
-		return
-	}
-	days := int(end.Sub(start).Hours() / 24)
-	var wg sync.WaitGroup
-	for i := 0; i < days; i += 1 {
-		wg.Add(1)
-		go func(n int) {
-			defer wg.Done()
-			date := start.AddDate(0, 0, n)
-			if date.After(end) {
-				return
-			}
-			err := IterateDay(ctx, db, table, uid, sid, date, f)
-			if err != nil {
-				// TODO:(gernest) Include query in text format in this log context ?
-				log.Get(ctx).Err(err).
-					Uint64("uid", uid).
-					Uint64("sid", sid).
-					Msg("failed to iterate by day")
-			}
-		}(i)
-	}
-	wg.Wait()
-}
-
-func IterateDay(ctx context.Context, db *badger.DB, table TableID, uid, sid uint64, day time.Time, f func(io.ReaderAt, int64) error) error {
-	_, task := trace.NewTask(ctx, "ts_iterate_day")
-	defer task.End()
-	return db.View(func(txn *badger.Txn) error {
-		var id ID
-		id.SetTable(table)
-		id.SetUserID(uid)
-		id.SetDate(day)
-		id.SetSiteID(sid)
-		o := badger.DefaultIteratorOptions
-		o.Prefix = id[:entropyOffset]
-		it := txn.NewIterator(o)
-		defer it.Close()
-		for ; it.Valid(); it.Next() {
-			if ctx.Err() != nil {
-				// support setting deadlines we don't want this to go on forever
-				// for slower queries.
-				return ctx.Err()
-			}
-			err := it.Item().Value(func(val []byte) error {
-				return f(bytes.NewReader(val), int64(len(val)))
-			})
-			if err != nil {
-				if errors.Is(err, ErrSkip) {
-					return nil
-				}
-				return err
-			}
-		}
-		return nil
-	})
 }
 
 // Executed after stats have been merged to a single b
