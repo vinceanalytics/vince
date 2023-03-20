@@ -171,5 +171,6 @@ enum TABLE {
   RAW = 0;
   HOUR = 1;
   DAY = 2;
-  YEAR = 3;
+  MONTH = 3;
+  YEAR = 4;
 }

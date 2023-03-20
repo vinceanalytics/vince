@@ -6,7 +6,11 @@
 // we want before using it.
 package timex
 
-import "time"
+import (
+	"time"
+
+	"github.com/jinzhu/now"
+)
 
 func EndOfDay(ts time.Time) time.Time {
 	ts = ts.UTC()
@@ -35,7 +39,13 @@ func Today() time.Time {
 func BeginningOfMonth(ts time.Time) time.Time {
 	ts = ts.UTC()
 	y, m, _ := ts.Date()
+	now.BeginningOfHour()
 	return time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
+}
+
+func BeginningOfHour(ts time.Time) time.Time {
+	y, m, d := ts.Date()
+	return time.Date(y, m, d, ts.Hour(), 0, 0, 0, time.UTC)
 }
 
 func BeginningOfYear(ts time.Time) time.Time {
