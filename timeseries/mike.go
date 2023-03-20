@@ -67,7 +67,7 @@ func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
 		a.Reset()
 		a.Total = el.Aggr(group.u, group.s)
 		x.Aggr(group.u, group.s, a)
-		id.SetDate(time.Unix(el[0].Timestamp, 0))
+		id.Day(time.Unix(el[0].Timestamp, 0))
 
 		err := m.db.Update(func(txn *badger.Txn) error {
 			b, err := proto.Marshal(a)

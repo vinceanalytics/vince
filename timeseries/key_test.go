@@ -43,7 +43,7 @@ func TestKey(t *testing.T) {
 	now := time.Now()
 	today := timex.Date(now)
 	t.Run("sets date", func(t *testing.T) {
-		id.SetDate(today)
+		id.Day(today)
 		if id.GetTable() != table {
 			t.Fatal("failed to encode table")
 		}
@@ -59,7 +59,7 @@ func TestKey(t *testing.T) {
 	})
 	t.Run("sets entropy", func(t *testing.T) {
 		id.SetEntropy()
-		id.SetDate(today)
+		id.Day(today)
 		if id.GetTable() != table {
 			t.Fatal("failed to encode table")
 		}

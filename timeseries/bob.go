@@ -10,6 +10,7 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/timex"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/errgroup"
 )
@@ -57,7 +58,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 	// Try to find all sites which ingested events in a single day (Well, TODAY)
 	b.db.View(func(txn *badger.Txn) error {
 		var id ID
-		id.SetTime(time.Now())
+		id.Day(timex.Date(time.Now()))
 		o := badger.DefaultIteratorOptions
 		// we are only interested in keys only
 		o.PrefetchValues = false
@@ -108,7 +109,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 		return func() error {
 			return b.db.Update(func(txn *badger.Txn) error {
 				w := bigBufferPool.Get().(*Buffer).Init(uid, sid, 0)
-				w.id.SetDate(start)
+				w.id.Day(start)
 				w.id.SetEntropy()
 				o := badger.DefaultIteratorOptions
 				o.Prefix = bytes.Clone(w.id[:entropyOffset])
