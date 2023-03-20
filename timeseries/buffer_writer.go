@@ -12,6 +12,7 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/timex"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -101,7 +102,7 @@ func (b *Buffer) Save(ctx context.Context) error {
 	say := log.Get(ctx)
 	ts := Get(ctx)
 	// data saved here is short lived
-	b.id.Day(time.Now())
+	b.id.Day(timex.Today())
 	b.id.SetEntropy()
 	ttl := b.ttl
 	if ttl == 0 {
