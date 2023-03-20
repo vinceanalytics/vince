@@ -10,7 +10,6 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
-	"github.com/gernest/vince/timex"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/errgroup"
 )
@@ -42,7 +41,6 @@ type MergeCallback func(ctx context.Context, b *Buffer, uid, sid uint64)
 func (b *Bob) Merge(ctx context.Context) error {
 	_, task := trace.NewTask(ctx, "ts_merge")
 	defer task.End()
-
 	start := time.Now()
 	say := log.Get(ctx)
 	say.Debug().Msg("starting merging daily parquet files")
@@ -57,21 +55,16 @@ func (b *Bob) Merge(ctx context.Context) error {
 
 	// Try to find all sites which ingested events in a single day (Well, TODAY)
 	b.db.View(func(txn *badger.Txn) error {
-		var id ID
-		id.Day(timex.Date(time.Now()))
 		o := badger.DefaultIteratorOptions
-		// we are only interested in keys only
 		o.PrefetchValues = false
-		o.Prefix = id[:userOffset]
+		// start with keys from our last processed key.
 		o.SinceTs = b.since
 		it := txn.NewIterator(o)
 		defer it.Close()
 		var last uint64
 		for it.Next(); it.Valid(); it.Next() {
-
 			x := it.Item()
 			last = x.Version()
-
 			if x.IsDeletedOrExpired() {
 				continue
 			}
