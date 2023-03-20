@@ -61,3 +61,7 @@ func EndOfMonth(ts time.Time) time.Time {
 func EndOfYear(ts time.Time) time.Time {
 	return BeginningOfYear(ts).AddDate(1, 0, 0).Add(-time.Nanosecond)
 }
+
+func DaysInMonth(ts time.Time) int {
+	return EndOfMonth(ts).Day()
+}

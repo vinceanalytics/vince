@@ -2,6 +2,7 @@ package timeseries
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"strings"
 	"sync"
@@ -10,7 +11,9 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/timex"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Mike is the permanent storage for the events data. Data stored here is aggregated
@@ -67,9 +70,59 @@ func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
 		a.Reset()
 		a.Total = el.Aggr(group.u, group.s)
 		x.Aggr(group.u, group.s, a)
-		id.Day(time.Unix(el[0].Timestamp, 0))
+		ts := time.Unix(el[0].Timestamp, 0)
 
 		err := m.db.Update(func(txn *badger.Txn) error {
+			var yy Aggr_Year
+			var mm Aggr_Month
+			var dd Aggr_Day
+			var err error
+			{
+				err = get(txn,
+					id.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(0).Final(),
+					func(b []byte) error {
+						return proto.Unmarshal(b, &yy)
+					},
+					func() {
+						yy.Year = uint32(ts.Year())
+						yy.Months = make([]*Aggr_Total, 12)
+					},
+				)
+				if err != nil {
+					return err
+				}
+			}
+			{
+				err = get(txn,
+					id.Month(ts).SetTable(byte(TABLE_MONTH)).SetMeta(0).Final(),
+					func(b []byte) error {
+						return proto.Unmarshal(b, &mm)
+					},
+					func() {
+						mm.Month = Aggr_MONTH(ts.Month())
+						mm.Days = make([]*Aggr_Total, timex.DaysInMonth(ts))
+					},
+				)
+				if err != nil {
+					return err
+				}
+			}
+			{
+				err = get(txn,
+					id.Day(ts).SetTable(byte(TABLE_DAY)).SetMeta(0).Final(),
+					func(b []byte) error {
+						return proto.Unmarshal(b, &dd)
+					},
+					func() {
+						dd.Date = timestamppb.New(timex.Date(ts))
+						dd.Hours = make([]*Aggr_Total, 24)
+					},
+				)
+				if err != nil {
+					return err
+				}
+			}
+
 			b, err := proto.Marshal(a)
 			if err != nil {
 				return err
@@ -90,6 +143,22 @@ func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
 		}
 	})
 
+}
+
+// tries to get key by id, if its not found fn will be executed and nil is returned.
+// for found keys f is executed with the value.
+func get(txn *badger.Txn, id []byte, f func([]byte) error, fn ...func()) error {
+	key, err := txn.Get(id)
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			for _, x := range fn {
+				x()
+			}
+			return nil
+		}
+		return err
+	}
+	return key.Value(f)
 }
 
 func (e *EntrySegment) Save(entries ...*Entry) {

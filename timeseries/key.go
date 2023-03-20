@@ -23,12 +23,14 @@ const (
 
 type ID [32]byte
 
-func (id *ID) SetTable(table byte) {
+func (id *ID) SetTable(table byte) *ID {
 	id[tableOffset] = byte(table)
+	return id
 }
 
-func (id *ID) SetMeta(table byte) {
+func (id *ID) SetMeta(table byte) *ID {
 	id[metaOffset] = byte(table)
+	return id
 }
 
 // Final returns id bytes without entropy. This is used as key to mike our permanent
@@ -57,30 +59,31 @@ func (id *ID) GetSiteID() uint64 {
 	return binary.BigEndian.Uint64(id[siteOffset:])
 }
 
-func (id *ID) Hour(ts time.Time) {
+func (id *ID) Hour(ts time.Time) *ID {
 	yy, mm, dd := ts.Date()
-	id.setTs(yy, int(mm), dd, ts.Hour())
+	return id.setTs(yy, int(mm), dd, ts.Hour())
 }
 
-func (id *ID) Day(ts time.Time) {
+func (id *ID) Day(ts time.Time) *ID {
 	yy, mm, dd := ts.Date()
-	id.setTs(yy, int(mm), dd, 0)
+	return id.setTs(yy, int(mm), dd, 0)
 }
 
-func (id *ID) Month(ts time.Time) {
+func (id *ID) Month(ts time.Time) *ID {
 	yy, mm, _ := ts.Date()
-	id.setTs(yy, int(mm), 0, 0)
+	return id.setTs(yy, int(mm), 0, 0)
 }
 
-func (id *ID) Year(ts time.Time) {
-	id.setTs(ts.Year(), 0, 0, 0)
+func (id *ID) Year(ts time.Time) *ID {
+	return id.setTs(ts.Year(), 0, 0, 0)
 }
 
-func (id *ID) setTs(yy int, mm int, dd int, hh int) {
+func (id *ID) setTs(yy int, mm int, dd int, hh int) *ID {
 	binary.BigEndian.PutUint16(id[yearOffset:], uint16(yy))
 	id[monthOffset] = byte(mm)
 	id[dayOffset] = byte(dd)
 	id[hourOffset] = byte(hh)
+	return id
 }
 
 func (id *ID) SetEntropy() {
