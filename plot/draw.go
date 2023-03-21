@@ -345,8 +345,7 @@ func makeText(className string, x, y int, content string, o textOptions) *html.N
 }
 
 type verLineOptions struct {
-	stroke    string
-	className string
+	className, lineType, stroke string
 }
 
 func makeVertLine(x int, label string, y1, y2 int, o verLineOptions) *html.Node {
@@ -489,4 +488,160 @@ func shortenLargeNumber(a any) string {
 	s := math.Pow(10, p-l*3) * +(n / math.Pow(10, p))
 	s = math.Round(s*100) / 100
 	return strconv.FormatFloat(s, 'f', -1, 64) + []string{"", "K", "M", "B", "T"}[int(l)]
+}
+
+type axisLabelOptions struct {
+	title, position string
+	height, width   int
+}
+
+func generateAxisLabel(o axisLabelOptions) *html.Node {
+	if o.title == "" {
+		return nil
+	}
+	var y int
+	if o.position == "left" {
+		y = (o.height-TOTAL_PADDING)/2 +
+			(len(o.title)*5)/2
+	} else {
+		y = (o.height-TOTAL_PADDING)/2 -
+			(len(o.title)*5)/2
+	}
+	var x int
+	if o.position != "left" {
+		x = o.width
+	}
+	y2 := FONT_SIZE + LABEL_WIDTH*-1
+	if o.position == "left" {
+		y2 = FONT_SIZE - LABEL_WIDTH
+	}
+	rotation := "rotate(270)"
+	if o.position == "right" {
+		rotation = "rotate(90)"
+	}
+	labelSvg := createSVG("text", createOptions{
+		innerHtml: o.title,
+		attr: []html.Attribute{
+			{Key: "class", Val: "chart-label"},
+			{Key: "x", Val: "0"},
+			{Key: "y", Val: "0"},
+			{Key: "dy", Val: strconv.Itoa(y2) + "px"},
+			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "text-anchor", Val: "start"},
+		},
+	})
+	wrapper := createSVG("g", createOptions{
+		attr: []html.Attribute{
+			{Key: "x", Val: "0"},
+			{Key: "y", Val: "0"},
+			{Key: "transformBox", Val: "fill-box"},
+			{Key: "transform", Val: fmt.Sprintf("translate(%d, %d) %s", x, y, rotation)},
+			{Key: "class", Val: "test-" + o.position},
+		},
+	})
+	wrapper.AppendChild(labelSvg)
+	return wrapper
+}
+
+type yLineOptions struct {
+	className, title, lineType, mode, pos, stroke string
+	offset                                        int
+	shortenNumbers                                bool
+}
+
+func yLine(y int, label any, width int, o yLineOptions) *html.Node {
+	if o.pos == "" {
+		o.pos = "left"
+	}
+	if o.mode == "" {
+		o.mode = "span"
+	}
+	if o.stroke == "" {
+		o.stroke = BASE_LINE_COLOR
+	}
+	x1 := -1 * AXIS_TICK_LENGTH
+	var x2 int
+	if o.mode == "span" {
+		x2 = width + AXIS_TICK_LENGTH
+	}
+	if o.mode == "tick" && o.pos == "right" {
+		x1 = width + AXIS_TICK_LENGTH
+		x2 = width
+	}
+	x1 += o.offset
+	x2 += o.offset
+	if v, ok := label.(float64); ok {
+		label = math.Round(v)
+	}
+	return makeHoriLine(y, label, x1, x2, horiLineOptions{
+		stroke:         o.stroke,
+		className:      o.className,
+		lineType:       o.lineType,
+		alignment:      o.pos,
+		title:          o.title,
+		shortenNumbers: o.shortenNumbers,
+	})
+}
+
+func xLine(x int, label string, height int, o yLineOptions) *html.Node {
+	if o.pos == "" {
+		o.pos = "bottom"
+	}
+	if o.mode == "" {
+		o.mode = "span"
+	}
+	if o.stroke == "" {
+		o.stroke = BASE_LINE_COLOR
+	}
+	y1 := height + AXIS_TICK_LENGTH
+	y2 := height
+	if o.mode == "span" {
+		y2 = -1 * AXIS_TICK_LENGTH
+	}
+	if o.mode == "tick" && o.pos == "top" {
+		y1 = -1 * AXIS_TICK_LENGTH
+		y2 = 0
+	}
+	return makeVertLine(x, label, y1, y2, verLineOptions{
+		stroke:    o.stroke,
+		className: o.className,
+		lineType:  o.lineType,
+	})
+}
+
+type yMarkerOptions struct {
+	className, pos, stroke, lineType string
+}
+
+func yMarker(y int, label string, width int, o yLineOptions) *html.Node {
+	if o.pos == "" {
+		o.pos = "right"
+	}
+	if o.lineType == "" {
+		o.lineType = "dashed"
+	}
+	x := width - len(label)*5 - LABEL_MARGIN
+	if o.pos == "left" {
+		x = LABEL_MARGIN
+	}
+	if o.stroke == "" {
+		o.stroke = BASE_LINE_COLOR
+	}
+	labelSvg := createSVG("text", createOptions{
+		innerHtml: label,
+		attr: []html.Attribute{
+			{Key: "x", Val: strconv.Itoa(x)},
+			{Key: "y", Val: "0"},
+			{Key: "dy", Val: strconv.Itoa(FONT_SIZE/-2) + "px"},
+			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "text-anchor", Val: "start"},
+		},
+	})
+	line := makeHoriLine(y, "", 0, width, horiLineOptions{
+		stroke:    o.stroke,
+		className: o.className,
+		lineType:  o.lineType,
+	})
+	line.AppendChild(labelSvg)
+	return line
 }
