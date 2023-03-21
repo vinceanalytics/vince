@@ -20,14 +20,25 @@
 @import './profile';
 @import './charts';
 
+
 @font-face {
-    font-family: 'Futura Heavy';
-    src: url("/fonts/unicode.futurab.ttf");
+    font-family: 'Jost  Heavy';
+    src: url("/fonts/Jost-ExtraBold.ttf");
 }
 
 @font-face {
-    font-family: 'Futura Medium Italic';
-    src: url("/fonts/Futura Medium Italic font.ttf");
+    font-family: 'Jost Heavy Italic';
+    src: url("/fonts/Jost-ExtraBoldItalic.ttf");
+}
+
+@font-face {
+    font-family: 'Jost Medium';
+    src: url("/fonts/Jost-Medium.ttf");
+}
+
+@font-face {
+    font-family: 'Jost Medium Italic';
+    src: url("/fonts/Jost-MediumItalic.ttf");
 }
 
 :root {
@@ -71,8 +82,10 @@
     --space-xx-large: 4em;
     --space-xxx-large: 6em;
     --space-navbar: 4em;
-    --futura-heavy: "Futura Heavy";
-    --futura-medium-italic: "Futura Medium Italic";
+    --font-heavy: "Jost Heavy";
+    --font-heavy-italic: "Jost Heavy Italic";
+    --font-medium: "Jost Medium";
+    --font-medium-italic: "Jost Medium Italic";
 }
 
 :root {
@@ -88,7 +101,7 @@
 }
 
 body {
-    font-family: "Futura Heavy";
+    font-family: var(--font-heavy);
 }
 
 
@@ -96,7 +109,7 @@ body {
     margin: 10em 0 0 0;
     padding: 1em 0;
     text-align: center;
-    font-family: "Futura Medium Italic";
+    font-family: var(--font-medium-italic);
 }
 
 
@@ -165,7 +178,7 @@ body {
     text-align: center;
     text-shadow: #222f37 1px 1px 0;
     text-transform: uppercase;
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+    font-family: var(--font-heavy);
 }
 
 .lead {
@@ -174,7 +187,7 @@ body {
     font-weight: 800;
     text-align: center;
     text-transform: uppercase;
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+    font-family: var(--font-heavy);
 }
 
 .login-callout {
@@ -188,7 +201,7 @@ body {
 .auth-form {
     width: 340px;
     margin: 0 auto;
-    font-family: var(--futura-medium-italic);
+    font-family: var(--font-medium-italic);
     background-color: linear-gradient(45deg, var(--color-canary) 0%, var(--color-peach) 100%);
 }
 
