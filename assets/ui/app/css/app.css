@@ -30586,7 +30586,7 @@ body {
   text-align: center;
   text-shadow: #222f37 3px 3px 0;
   text-transform: uppercase;
-  font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+  font-family: var(--font-heavy);
 }
 
 .logo-main {
