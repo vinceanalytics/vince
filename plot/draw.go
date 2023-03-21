@@ -2,6 +2,7 @@ package plot
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,7 +27,7 @@ type createOptions struct {
 	attr           []html.Attribute
 }
 
-func crateSVG(tag string, o createOptions) *html.Node {
+func createSVG(tag string, o createOptions) *html.Node {
 	e := &html.Node{
 		Namespace: "http://www.w3.org/2000/svg",
 	}
@@ -70,7 +71,7 @@ func style(m map[string]string) html.Attribute {
 }
 
 func renderVerticalGradient(svgDefElem *html.Node, gradientId string) *html.Node {
-	return crateSVG("linearGradient", createOptions{
+	return createSVG("linearGradient", createOptions{
 		inside: svgDefElem,
 		attr: []html.Attribute{
 			{Key: "id", Val: gradientId},
@@ -83,7 +84,7 @@ func renderVerticalGradient(svgDefElem *html.Node, gradientId string) *html.Node
 }
 
 func setGradientStop(gradElem *html.Node, offset, color, opacity string) *html.Node {
-	return crateSVG("stop", createOptions{
+	return createSVG("stop", createOptions{
 		inside: gradElem,
 		style: map[string]string{
 			"stop-color": color,
@@ -96,7 +97,7 @@ func setGradientStop(gradElem *html.Node, offset, color, opacity string) *html.N
 }
 
 func makeSVGContainer(parent *html.Node, className, width, height string) *html.Node {
-	return crateSVG("svg", createOptions{
+	return createSVG("svg", createOptions{
 		inside: parent,
 		attr: []html.Attribute{
 			{Key: "class", Val: className},
@@ -107,7 +108,7 @@ func makeSVGContainer(parent *html.Node, className, width, height string) *html.
 }
 
 func makeSVGDefs(svgContainer *html.Node) *html.Node {
-	return crateSVG("defs", createOptions{
+	return createSVG("defs", createOptions{
 		inside: svgContainer,
 	})
 }
@@ -128,7 +129,7 @@ func makeSVGGroup(className string, args ...any) *html.Node {
 		}
 	}
 	o.attr = append(o.attr, html.Attribute{Key: "transform", Val: transform})
-	return crateSVG("g", o)
+	return createSVG("g", o)
 }
 
 type pathOpts struct {
@@ -145,7 +146,7 @@ func makePath(pathStr string, o pathOpts) *html.Node {
 	if o.strokeWidth == "" {
 		o.strokeWidth = "2"
 	}
-	return crateSVG("path", createOptions{
+	return createSVG("path", createOptions{
 		attr: []html.Attribute{
 			{Key: "class", Val: o.className},
 			{Key: "d", Val: pathStr},
@@ -209,7 +210,7 @@ func percentageBar(x, y, width, height int, isFirst, isLast bool, fill string) *
 			fill:      fill,
 		})
 	}
-	return crateSVG("rect", createOptions{
+	return createSVG("rect", createOptions{
 		attr: []html.Attribute{
 			{Key: "class", Val: "percentage-bar"},
 			{Key: "x", Val: strconv.Itoa(x)},
@@ -237,7 +238,7 @@ func heatSquare(className string, x, y, size, radius int, fill string, data ...h
 		},
 	}
 	o.attr = append(o.attr, data...)
-	return crateSVG("rect", o)
+	return createSVG("rect", o)
 }
 
 func legendDot(x, y, size, radius int, fill, label, value string, fontSize int, truncate bool) *html.Node {
@@ -262,7 +263,7 @@ func legendDot(x, y, size, radius int, fill, label, value string, fontSize int, 
 		},
 	}
 
-	textLabel := crateSVG("text", createOptions{
+	textLabel := createSVG("text", createOptions{
 		attr: []html.Attribute{
 			{Key: "class", Val: "legend-dataset-label"},
 			{Key: "y", Val: "0"},
@@ -276,7 +277,7 @@ func legendDot(x, y, size, radius int, fill, label, value string, fontSize int, 
 	})
 	var textValue *html.Node
 	if value != "" {
-		textValue = crateSVG("text", createOptions{
+		textValue = createSVG("text", createOptions{
 			attr: []html.Attribute{
 				{Key: "class", Val: "legend-dataset-value"},
 				{Key: "x", Val: strconv.Itoa(size)},
@@ -289,12 +290,12 @@ func legendDot(x, y, size, radius int, fill, label, value string, fontSize int, 
 			innerHtml: value,
 		})
 	}
-	group := crateSVG("g", createOptions{
+	group := createSVG("g", createOptions{
 		attr: []html.Attribute{
 			{Key: "transform", Val: fmt.Sprintf("translate(%d, %d)", x, y)},
 		},
 	})
-	group.AppendChild(crateSVG("rect", o))
+	group.AppendChild(createSVG("rect", o))
 	group.AppendChild(textLabel)
 	if textValue != nil {
 		group.AppendChild(textLabel)
@@ -330,7 +331,7 @@ func makeText(className string, x, y int, content string, o textOptions) *html.N
 	if o.textAnchor == "" {
 		o.textAnchor = "start"
 	}
-	return crateSVG("text", createOptions{
+	return createSVG("text", createOptions{
 		innerHtml: content,
 		attr: []html.Attribute{
 			{Key: "x", Val: strconv.Itoa(x)},
@@ -352,7 +353,7 @@ func makeVertLine(x int, label string, y1, y2 int, o verLineOptions) *html.Node 
 	if o.stroke == "" {
 		o.stroke = BASE_LINE_COLOR
 	}
-	l := crateSVG("line", createOptions{
+	l := createSVG("line", createOptions{
 		style: map[string]string{
 			"stroke": o.stroke,
 		},
@@ -368,7 +369,7 @@ func makeVertLine(x int, label string, y1, y2 int, o verLineOptions) *html.Node 
 	if y1 > y2 {
 		y = y1 + LABEL_MARGIN
 	}
-	text := crateSVG("text", createOptions{
+	text := createSVG("text", createOptions{
 		innerHtml: label,
 		attr: []html.Attribute{
 			{Key: "x", Val: "0"},
@@ -378,7 +379,7 @@ func makeVertLine(x int, label string, y1, y2 int, o verLineOptions) *html.Node 
 			{Key: "text-anchor", Val: "middle"},
 		},
 	})
-	line := crateSVG("g", createOptions{
+	line := createSVG("g", createOptions{
 		attr: []html.Attribute{
 			{Key: "transform", Val: fmt.Sprintf("translate(%d, 0)", x)},
 		},
@@ -386,4 +387,106 @@ func makeVertLine(x int, label string, y1, y2 int, o verLineOptions) *html.Node 
 	line.AppendChild(l)
 	line.AppendChild(text)
 	return line
+}
+
+type horiLineOptions struct {
+	className, title, stroke, lineType, alignment string
+	shortenNumbers                                bool
+}
+
+func makeHoriLine(y int, label any, x1, x2 int, o horiLineOptions) *html.Node {
+	if o.stroke == "" {
+		o.stroke = BASE_LINE_COLOR
+	}
+	if o.alignment == "" {
+		o.alignment = "left"
+	}
+	if o.shortenNumbers {
+		label = shortenLargeNumber(label)
+	}
+	className := "line-horizontal " + o.className + o.lineType
+	var textXPos int
+	if o.alignment == "left" {
+		if o.title != "" {
+			textXPos = x1 - LABEL_MARGIN + LABEL_WIDTH
+		} else {
+			textXPos = x1 - LABEL_MARGIN
+		}
+	} else {
+		if o.title != "" {
+			textXPos = x2 + LABEL_MARGIN*4 - LABEL_WIDTH
+		} else {
+			textXPos = x2 + LABEL_MARGIN*4
+		}
+	}
+	lineX1Post := x1
+	if o.title != "" {
+		lineX1Post = x1 + LABEL_WIDTH
+	}
+	lineX2Post := x2
+	if o.title != "" {
+		lineX2Post = x2 - LABEL_WIDTH
+	}
+	l := createSVG("line", createOptions{
+		attr: []html.Attribute{
+			{Key: "class", Val: className},
+			{Key: "x1", Val: strconv.Itoa(lineX1Post)},
+			{Key: "x2", Val: strconv.Itoa(lineX2Post)},
+			{Key: "y1", Val: "0"},
+			{Key: "y2", Val: "0"},
+		},
+		style: map[string]string{
+			"stroke": o.stroke,
+		},
+	})
+	a := "start"
+	if x1 < x2 {
+		a = "end"
+	}
+	text := createSVG("text", createOptions{
+		attr: []html.Attribute{
+			{Key: "x", Val: strconv.Itoa(textXPos)},
+			{Key: "y", Val: "0"},
+			{Key: "dy", Val: strconv.Itoa(FONT_SIZE/2-2) + "px"},
+			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "text-anchor", Val: a},
+		},
+		innerHtml: fmt.Sprint(label),
+	})
+	line := createSVG("g", createOptions{
+		attr: []html.Attribute{
+			{Key: "transform", Val: fmt.Sprintf("translate(0, %d)", y)},
+			{Key: "stroke-opacity", Val: "1"},
+		},
+	})
+	if text.Data == "0" {
+		line.Attr = append(line.Attr, style(map[string]string{
+			"stroke": "rgba(27, 31, 35, 0.6)",
+		}))
+	}
+	line.AppendChild(l)
+	line.AppendChild(text)
+	return line
+}
+func shortenLargeNumber(a any) string {
+	var n float64
+	switch e := a.(type) {
+	case string:
+		if e == "" {
+			return ""
+		}
+		n, _ = strconv.ParseFloat(e, 64)
+	case int:
+		n = float64(e)
+	case float64:
+		n = float64(e)
+	}
+	p := math.Floor(math.Log10(math.Abs(n)))
+	if p < 2 {
+		return strconv.FormatFloat(n, 'f', -1, 64)
+	}
+	l := math.Floor(p / 3)
+	s := math.Pow(10, p-l*3) * +(n / math.Pow(10, p))
+	s = math.Round(s*100) / 100
+	return strconv.FormatFloat(s, 'f', -1, 64) + []string{"", "K", "M", "B", "T"}[int(l)]
 }
