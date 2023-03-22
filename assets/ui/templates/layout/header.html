@@ -8,25 +8,44 @@
 
 
 {{define "_logged_out"}}
-<header class=" header position-relative f4 py-3">
-    <nav class="UnderlineNav UnderlineNav--full UnderlineNav--right">
-        <div class="container-lg UnderlineNav-container">
-            <div class="UnderlineNav-actions">
-                <a style="text-decoration: none;" class="mr-lg-3 color-fg-inherit flex-order-2 logo-main my-auto"
-                    href="/" aria-label="Homepage">
-                    Vince
-                </a>
-            </div>
-            <div class="UnderlineNav-body">
-                <a class="UnderlineNav-item" href="/pricing">Pricing</a>
-                <a class="UnderlineNav-item" href="/login">Sign In</a>
-                <a class="UnderlineNav-item color-fg-success" href="/register" aria-current="page">
-                    Try for free
-                </a>
+<div class="position-relative">
+
+
+    <header class=" header Details px-3 px-md-4 px-lg-5 flex-wrap flex-md-nowrap">
+
+        <div class="Header-item  d-md-none">
+            <div class="d-flex flex-justify-between">
+                <button aria-label="Toggle navigation" aria-expanded="false" type="button" class="Header-link  btn-link"
+                    style="color: var(--color-blurple);">
+                    <svg aria-hidden="true" height="24" viewBox="0 0 16 16" version="1.1" width="24"
+                        data-view-component="true" class="octicon octicon-three-bars">
+                        <path
+                            d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75Zm0 5A.75.75 0 0 1 1.75 7h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 7.75ZM1.75 12h12.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Z">
+                        </path>
+                    </svg>
+                </button>
             </div>
         </div>
-    </nav>
-</header>
+        <nav class="UnderlineNav UnderlineNav--full UnderlineNav--right d-none d-md-block">
+            <div class="container-lg UnderlineNav-container">
+                <div class="UnderlineNav-actions">
+                    <a style="text-decoration: none;" class="mr-lg-3 color-fg-inherit flex-order-2 logo-main my-auto"
+                        href="/" aria-label="Homepage" style="color: var(--color-blurple);">
+                        Vince
+                    </a>
+                </div>
+                <div class="UnderlineNav-body">
+                    <a class="UnderlineNav-item" href="/pricing">Pricing</a>
+                    <a class="UnderlineNav-item" href="/login">Sign In</a>
+                    <a class="UnderlineNav-item color-fg-success" href="/register" aria-current="page">
+                        Try for free
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+</div>
+
 {{end}}
 
 {{define "_logged_in"}}
