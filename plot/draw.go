@@ -2,6 +2,7 @@ package plot
 
 import (
 	"fmt"
+	"io"
 	"math"
 	"sort"
 	"strconv"
@@ -132,29 +133,25 @@ func makeSVGGroup(className string, args ...any) *html.Node {
 	return createSVG("g", o)
 }
 
-type pathOpts struct {
-	className, stroke, fill, strokeWidth string
-}
-
-func makePath(pathStr string, o pathOpts) *html.Node {
-	if o.stroke == "" {
-		o.stroke = "none"
+func makePath(pathStr, className, stroke, fill, strokeWidth string) *html.Node {
+	if stroke == "" {
+		stroke = "none"
 	}
-	if o.fill == "" {
-		o.fill = "none"
+	if fill == "" {
+		fill = "none"
 	}
-	if o.strokeWidth == "" {
-		o.strokeWidth = "2"
+	if strokeWidth == "" {
+		strokeWidth = "2"
 	}
 	return createSVG("path", createOptions{
 		attr: []html.Attribute{
-			{Key: "class", Val: o.className},
+			{Key: "class", Val: className},
 			{Key: "d", Val: pathStr},
 		},
 		style: map[string]string{
-			"stroke":       o.stroke,
-			"fill":         o.fill,
-			"stroke-width": o.strokeWidth,
+			"stroke":       stroke,
+			"fill":         fill,
+			"stroke-width": strokeWidth,
 		},
 	})
 }
@@ -198,17 +195,11 @@ func percentageBar(x, y, width, height int, isFirst, isLast bool, fill string) *
 	}
 	if isLast {
 		pathStr := rightRoundedBar(x, width, height)
-		return makePath(pathStr, pathOpts{
-			className: "percentage-bar",
-			fill:      fill,
-		})
+		return makePath(pathStr, "percentage-bar", "", fill, "")
 	}
 	if isFirst {
 		pathStr := leftRoundedBar(x, width, height)
-		return makePath(pathStr, pathOpts{
-			className: "percentage-bar",
-			fill:      fill,
-		})
+		return makePath(pathStr, "percentage-bar", "", fill, "")
 	}
 	return createSVG("rect", createOptions{
 		attr: []html.Attribute{
@@ -803,6 +794,102 @@ func datasetDot(x, y, radius int, color, label string, index int) *html.Node {
 	return group
 }
 
+type pathsOptions struct {
+	spline, heatLine, regionFill bool
+}
+
+type Meta = struct {
+	svgDefs  *html.Node
+	zeroLine float64
+}
+
+func getPaths(xList, yList []float64, color string, o pathsOptions, m Meta) (path, region *html.Node) {
+	var s strings.Builder
+	if o.spline {
+		s.Reset()
+		getSplineCurvePointsStr(&s, xList, yList)
+	} else {
+		for i := range xList {
+			if i != 0 {
+				s.WriteByte('L')
+			}
+			fmt.Fprintf(&s, "%f,%f", xList[i], yList[i])
+		}
+	}
+	pointsStr := s.String()
+	path = makePath("M"+pointsStr, "line-graph-path", color, "", "")
+	if o.heatLine {
+		gradientId := makeGradient(m.svgDefs, color, false)
+		setStyle(path, "stroke", fmt.Sprintf("url(#%s)", gradientId))
+	}
+	if o.regionFill {
+		gradientId := makeGradient(m.svgDefs, color, true)
+		pathStr := fmt.Sprintf("M%f,%fL%sL%f,%f",
+			xList[0], m.zeroLine, pointsStr, xList[len(xList)-1], m.zeroLine,
+		)
+		region = makePath(pathStr, "region-fill", "none", fmt.Sprintf("url(#%s)", gradientId), "")
+	}
+	return
+}
+
+func getSplineCurvePointsStr(o io.Writer, xList, yList []float64) {
+	type Point struct {
+		x, y float64
+	}
+	points := make([]*Point, len(xList))
+	for i := range xList {
+		points[i] = &Point{
+			x: xList[i],
+			y: yList[i],
+		}
+	}
+	smoothing := 0.2
+
+	line := func(a, b *Point) (length, angle float64) {
+		x := b.x - a.x
+		y := b.y - a.y
+		length = math.Sqrt(math.Pow(x, 2)) + math.Pow(y, 2)
+		angle = math.Atan2(y, x)
+		return
+	}
+	controlPoint := func(current, previous, next *Point, reverse bool) *Point {
+		p := previous
+		if p == nil {
+			p = current
+		}
+		n := next
+		if n == nil {
+			n = current
+		}
+		length, angle := line(p, n)
+		if reverse {
+			angle += math.Pi
+		}
+		length *= smoothing
+		return &Point{
+			x: current.x + math.Cos(angle)*length,
+			y: current.y + math.Sin(angle)*length,
+		}
+	}
+
+	bezierCommand := func(o io.Writer, point *Point, i int, a []*Point) {
+		cps := controlPoint(a[i-1], a[i-2], point, false)
+		cpe := controlPoint(point, a[i-1], a[i+1], true)
+		fmt.Fprintf(o, "C %f,%f %f,%f %f,%f",
+			cps.x, cps.y, cpe.x, cpe.y, point.x, point.y,
+		)
+	}
+
+	for i, point := range points {
+		if i == 0 {
+			fmt.Fprintf(o, "%f,%f", point.x, point.y)
+			continue
+		}
+		o.Write([]byte(" "))
+		bezierCommand(o, point, i, points)
+	}
+
+}
 func setAttribute(n *html.Node, key, value string) {
 	for i := range n.Attr {
 		if n.Attr[i].Key == key {
@@ -812,6 +899,17 @@ func setAttribute(n *html.Node, key, value string) {
 	}
 	n.Attr = append(n.Attr, html.Attribute{Key: key, Val: value})
 }
+
+func setStyle(n *html.Node, key, value string) {
+	for i := range n.Attr {
+		if n.Attr[i].Key == "style" {
+			n.Attr[i].Val += key + ":" + value + ";"
+			return
+		}
+	}
+	n.Attr = append(n.Attr, html.Attribute{Key: "style", Val: key + ":" + value + ";"})
+}
+
 func getAttribute(n *html.Node, key string) string {
 	for i := range n.Attr {
 		if n.Attr[i].Key == key {
