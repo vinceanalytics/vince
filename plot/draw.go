@@ -645,3 +645,121 @@ func yMarker(y int, label string, width int, o yLineOptions) *html.Node {
 	line.AppendChild(labelSvg)
 	return line
 }
+
+type yRegionOptions struct {
+	stroke, fill, pos string
+}
+
+func yRegion(y1, y2, width int, label string, o yRegionOptions) *html.Node {
+	if o.stroke == "" {
+		o.stroke = BASE_LINE_COLOR
+	}
+	if o.fill == "" {
+		o.fill = "rgba(228, 234, 239, 0.49)"
+	}
+	height := y1 - y2
+	rect := createSVG("rect", createOptions{
+		style: map[string]string{
+			"fill":             o.fill,
+			"stroke":           o.stroke,
+			"stroke-dasharray": fmt.Sprintf("%d, %d", width, height),
+		},
+		attr: []html.Attribute{
+			{Key: "x", Val: "0"},
+			{Key: "y", Val: "0"},
+			{Key: "width", Val: strconv.Itoa(width)},
+			{Key: "height", Val: strconv.Itoa(height)},
+		},
+	})
+	if o.pos == "" {
+		o.pos = "right"
+	}
+	x := width - (len(label) * 4) - LABEL_MARGIN
+	if o.pos == "left" {
+		x = LABEL_MARGIN
+	}
+	labelSvg := createSVG("text", createOptions{
+		innerHtml: label,
+		attr: []html.Attribute{
+			{Key: "class", Val: "chart-label"},
+			{Key: "x", Val: strconv.Itoa(x)},
+			{Key: "y", Val: "0"},
+			{Key: "dy", Val: strconv.Itoa(FONT_SIZE/-2) + "px"},
+			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "text-anchor", Val: "start"},
+		},
+	})
+	region := createSVG("g", createOptions{
+		attr: []html.Attribute{
+			{Key: "transform", Val: fmt.Sprintf("translate(0, %d)", y2)},
+		},
+	})
+	region.AppendChild(rect)
+	region.AppendChild(labelSvg)
+	return region
+}
+
+func getBarHeightAndYAttr(yTop, zeroLine int) (height, y int) {
+	if yTop <= zeroLine {
+		height = zeroLine - yTop
+		y = yTop
+	} else {
+		height = yTop - zeroLine
+		y = zeroLine
+	}
+	return
+}
+
+type datasetMeta struct {
+	zeroLine, minHeight int
+}
+
+func datasetBar(x, yTop, width int, color, label string, index, offset int, m datasetMeta) *html.Node {
+	height, y := getBarHeightAndYAttr(yTop, m.zeroLine)
+	y -= offset
+	if height == 0 {
+		height = m.minHeight
+		y -= m.minHeight
+	}
+	rect := createSVG("rect", createOptions{
+		style: map[string]string{
+			"fill": color,
+		},
+		attr: []html.Attribute{
+			{Key: "class", Val: "bar mini"},
+			{Key: "bar mini", Val: strconv.Itoa(index)},
+			{Key: "x", Val: strconv.Itoa(x)},
+			{Key: "y", Val: strconv.Itoa(y)},
+			{Key: "width", Val: strconv.Itoa(width)},
+			{Key: "height", Val: strconv.Itoa(height)},
+		},
+	})
+	if label == "" {
+		return rect
+	}
+	for i := range rect.Attr {
+		if rect.Attr[i].Key == "x" || rect.Attr[i].Key == "y" {
+			rect.Attr[i].Val = "0"
+		}
+	}
+	text := createSVG("text", createOptions{
+		innerHtml: label,
+		attr: []html.Attribute{
+			{Key: "class", Val: "data-point-value"},
+			{Key: "x", Val: strconv.Itoa(width / 2)},
+			{Key: "y", Val: "0"},
+			{Key: "dy", Val: strconv.Itoa((FONT_SIZE/2)*-1) + "px"},
+			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE/2) + "px"},
+			{Key: "text-anchor", Val: "middle"},
+		},
+	})
+	group := createSVG("g", createOptions{
+		attr: []html.Attribute{
+			{Key: "data-point-index", Val: strconv.Itoa(index)},
+			{Key: "transform", Val: fmt.Sprintf("translate(%d, %d)", x, y)},
+		},
+	})
+	group.AppendChild(rect)
+	group.AppendChild(text)
+	return group
+}
