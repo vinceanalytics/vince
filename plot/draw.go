@@ -30,7 +30,9 @@ type createOptions struct {
 
 func createSVG(tag string, o createOptions) *html.Node {
 	e := &html.Node{
+		Type:      html.ElementNode,
 		Namespace: "http://www.w3.org/2000/svg",
+		Data:      tag,
 	}
 	if o.inside != nil {
 		o.inside.AppendChild(e)
@@ -114,20 +116,14 @@ func makeSVGDefs(svgContainer *html.Node) *html.Node {
 	})
 }
 
-func makeSVGGroup(className string, args ...any) *html.Node {
+func makeSVGGroup(className, transform string, parent ...*html.Node) *html.Node {
 	o := createOptions{
 		attr: []html.Attribute{
 			{Key: "class", Val: className},
 		},
 	}
-	var transform string
-	for _, a := range args {
-		switch e := a.(type) {
-		case string:
-			transform = e
-		case *html.Node:
-			o.inside = e
-		}
+	if len(parent) > 0 {
+		o.inside = parent[0]
 	}
 	o.attr = append(o.attr, html.Attribute{Key: "transform", Val: transform})
 	return createSVG("g", o)
