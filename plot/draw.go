@@ -763,3 +763,60 @@ func datasetBar(x, yTop, width int, color, label string, index, offset int, m da
 	group.AppendChild(text)
 	return group
 }
+
+func datasetDot(x, y, radius int, color, label string, index int) *html.Node {
+	dot := createSVG("circle", createOptions{
+		style: map[string]string{
+			"fill": color,
+		},
+		attr: []html.Attribute{
+			{Key: "data-point-index", Val: strconv.Itoa(index)},
+			{Key: "cx", Val: strconv.Itoa(x)},
+			{Key: "cy", Val: strconv.Itoa(y)},
+			{Key: "r", Val: strconv.Itoa(radius)},
+		},
+	})
+	if label == "" {
+		return dot
+	}
+	setAttribute(dot, "cx", "0")
+	setAttribute(dot, "cy", "0")
+	text := createSVG("text", createOptions{
+		innerHtml: label,
+		attr: []html.Attribute{
+			{Key: "class", Val: "data-point-value"},
+			{Key: "x", Val: "0"},
+			{Key: "y", Val: "0"},
+			{Key: "dy", Val: strconv.Itoa((FONT_SIZE/2)*-1-radius) + "px"},
+			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "text-anchor", Val: "middle"},
+		},
+	})
+	group := createSVG("g", createOptions{
+		attr: []html.Attribute{
+			{Key: "data-point-index", Val: strconv.Itoa(index)},
+			{Key: "transform", Val: fmt.Sprintf("translate(%d, %d)", x, y)},
+		},
+	})
+	group.AppendChild(dot)
+	group.AppendChild(text)
+	return group
+}
+
+func setAttribute(n *html.Node, key, value string) {
+	for i := range n.Attr {
+		if n.Attr[i].Key == key {
+			n.Attr[i].Val = value
+			return
+		}
+	}
+	n.Attr = append(n.Attr, html.Attribute{Key: key, Val: value})
+}
+func getAttribute(n *html.Node, key string) string {
+	for i := range n.Attr {
+		if n.Attr[i].Key == key {
+			return n.Attr[i].Val
+		}
+	}
+	return ""
+}
