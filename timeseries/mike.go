@@ -3,6 +3,7 @@ package timeseries
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 	"sync"
@@ -11,9 +12,7 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gernest/vince/log"
-	"github.com/gernest/vince/timex"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Mike is the permanent storage for the events data. Data stored here is aggregated
@@ -50,8 +49,6 @@ func (g *Group) Release() {
 	groupPool.Put(g)
 }
 
-// Process and save data from b to m. Daily data is continuously merged until the next date
-// Final daily data is packed into parquet file for permanent storage.
 func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
 	defer b.Release()
 	group := groupPool.Get().(*Group)
@@ -71,94 +68,85 @@ func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
 		a.Total = el.Aggr(group.u, group.s)
 		x.Aggr(group.u, group.s, a)
 		ts := time.Unix(el[0].Timestamp, 0)
-
 		err := m.db.Update(func(txn *badger.Txn) error {
-			var yy Aggr_Year
-			var mm Aggr_Month
-			var dd Aggr_Day
-			var err error
-			{
-				err = get(txn,
-					id.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(0).Final(),
-					func(b []byte) error {
-						return proto.Unmarshal(b, &yy)
-					},
-					func() {
-						yy.Year = uint32(ts.Year())
-						yy.Months = make([]*Aggr_Total, 12)
-					},
-				)
-				if err != nil {
-					return err
-				}
-			}
-			{
-				err = get(txn,
-					id.Month(ts).SetTable(byte(TABLE_MONTH)).SetMeta(0).Final(),
-					func(b []byte) error {
-						return proto.Unmarshal(b, &mm)
-					},
-					func() {
-						mm.Month = Aggr_MONTH(ts.Month())
-						mm.Days = make([]*Aggr_Total, timex.DaysInMonth(ts))
-					},
-				)
-				if err != nil {
-					return err
-				}
-			}
-			{
-				err = get(txn,
-					id.Day(ts).SetTable(byte(TABLE_DAY)).SetMeta(0).Final(),
-					func(b []byte) error {
-						return proto.Unmarshal(b, &dd)
-					},
-					func() {
-						dd.Date = timestamppb.New(timex.Date(ts))
-						dd.Hours = make([]*Aggr_Total, 24)
-					},
-				)
-				if err != nil {
-					return err
-				}
-			}
-
-			b, err := proto.Marshal(a)
+			err := updateRoot(txn, ts, id, a.Total)
 			if err != nil {
 				return err
 			}
-			// This will later be discarded after we have aggregated all hourly
-			// stats. Keep them not more than 3 hours.
-			//
-			// NOTE: The key is by date. We use  meta to mark this as a hourly
-			// record.
-			//
-			// Hour stats are strictly based on time the event hits our server.
-			e := badger.NewEntry(id[:], b).
-				WithTTL(2 * time.Hour)
-			return txn.SetEntry(e)
+			err = updateMeta(txn, ts, id, PROPS_NAME, a.Name)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_PAGE, a.Pathname)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_ENTRY_PAGE, a.EntryPage)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_EXIT_PAGE, a.ExitPage)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_REFERRER, a.Referrer)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_UTM_MEDIUM, a.UtmMedium)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_UTM_SOURCE, a.UtmSource)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_UTM_CAMPAIGN, a.UtmCampaign)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_UTM_CONTENT, a.UtmContent)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_UTM_TERM, a.UtmTerm)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_UTM_DEVICE, a.ScreenSize)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_UTM_BROWSER, a.Browser)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_BROWSER_VERSION, a.BrowserVersion)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_OS, a.OperatingSystem)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_OS_VERSION, a.OperatingSystemVersion)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_COUNTRY, a.CountryCode)
+			if err != nil {
+				return err
+			}
+			err = updateMeta(txn, ts, id, PROPS_COUNTRY, a.Region)
+			if err != nil {
+				return err
+			}
+			return updateMeta(txn, ts, id, PROPS_CITY, a.CityGeoNameId)
 		})
 		if err != nil {
 			log.Get(ctx).Err(err).Msg("failed to save hourly stats ")
 		}
 	})
-
-}
-
-// tries to get key by id, if its not found fn will be executed and nil is returned.
-// for found keys f is executed with the value.
-func get(txn *badger.Txn, id []byte, f func([]byte) error, fn ...func()) error {
-	key, err := txn.Get(id)
-	if err != nil {
-		if errors.Is(err, badger.ErrKeyNotFound) {
-			for _, x := range fn {
-				x()
-			}
-			return nil
-		}
-		return err
-	}
-	return key.Value(f)
 }
 
 func (e *EntrySegment) Save(entries ...*Entry) {
@@ -419,6 +407,123 @@ func aggr(ls []*Entry, u,
 		}
 		if pos < len(ls)-1 {
 			w.Aggregates[key(ls[pos])] = EntryList(ls[pos:]).Aggr(u, s)
+		}
+	}
+}
+
+func updateRoot(txn *badger.Txn, ts time.Time, id *ID, a *Aggr_Total) error {
+	var key []byte
+	for i := TABLE_HOUR; i <= TABLE_YEAR; i += 1 {
+		switch i {
+		case TABLE_HOUR:
+			key = id.Hour(ts).SetTable(byte(i)).SetMeta(0).Final()
+		case TABLE_DAY:
+			key = id.Day(ts).SetTable(byte(i)).SetMeta(0).Final()
+		case TABLE_MONTH:
+			key = id.Month(ts).SetTable(byte(i)).SetMeta(0).Final()
+		case TABLE_YEAR:
+			key = id.Year(ts).SetTable(byte(i)).SetMeta(0).Final()
+		}
+		err := updateAggregate(txn, key, a)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func updateMeta(txn *badger.Txn, ts time.Time, id *ID, meta PROPS, a *Aggr_Segment) error {
+	if a == nil {
+		return nil
+	}
+	var key []byte
+	for i := TABLE_HOUR; i <= TABLE_YEAR; i += 1 {
+		switch i {
+		case TABLE_HOUR:
+			key = id.Hour(ts).SetTable(byte(i)).SetMeta(byte(meta)).Final()
+		case TABLE_DAY:
+			key = id.Day(ts).SetTable(byte(i)).SetMeta(byte(meta)).Final()
+		case TABLE_MONTH:
+			key = id.Month(ts).SetTable(byte(i)).SetMeta(byte(meta)).Final()
+		case TABLE_YEAR:
+			key = id.Year(ts).SetTable(byte(i)).SetMeta(byte(meta)).Final()
+		}
+		err := updateSegment(txn, key, a)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func updateAggregate(txn *badger.Txn, key []byte, a *Aggr_Total) error {
+	x, err := txn.Get(key)
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			// new entry we store a
+			b, err := proto.Marshal(a)
+			if err != nil {
+				return fmt.Errorf("failed to marshal aggr total %v", err)
+			}
+			return txn.Set(key, b)
+		}
+		return err
+	}
+	var o Aggr_Total
+	err = x.Value(func(val []byte) error {
+		return proto.Unmarshal(val, &o)
+	})
+	if err != nil {
+		return fmt.Errorf("failed to read  aggr total %v", err)
+	}
+	o.Add(a)
+	b, err := proto.Marshal(&o)
+	if err != nil {
+		return fmt.Errorf("failed to marshal aggr total %v", err)
+	}
+	return txn.Set(key, b)
+}
+
+func updateSegment(txn *badger.Txn, key []byte, a *Aggr_Segment) error {
+	x, err := txn.Get(key)
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			// new entry we store a
+			b, err := proto.Marshal(a)
+			if err != nil {
+				return fmt.Errorf("failed to marshal aggr total %v", err)
+			}
+			return txn.Set(key, b)
+		}
+		return err
+	}
+	var o Aggr_Segment
+	err = x.Value(func(val []byte) error {
+		return proto.Unmarshal(val, &o)
+	})
+	if err != nil {
+		return fmt.Errorf("failed to read  aggr total %v", err)
+	}
+	o.Add(a)
+	b, err := proto.Marshal(&o)
+	if err != nil {
+		return fmt.Errorf("failed to marshal aggr total %v", err)
+	}
+	return txn.Set(key, b)
+}
+
+func (a *Aggr_Total) Add(o *Aggr_Total) {
+	a.Visitors += o.Visitors
+	a.Visits += o.Visits
+	a.Events += o.Events
+}
+
+func (a *Aggr_Segment) Add(o *Aggr_Segment) {
+	for k, v := range o.Aggregates {
+		if x, ok := a.Aggregates[k]; ok {
+			x.Add(v)
+		} else {
+			a.Aggregates[k] = v
 		}
 	}
 }

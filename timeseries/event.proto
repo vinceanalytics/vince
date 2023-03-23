@@ -92,10 +92,7 @@ message Aggr {
   message Total {
     uint64 visitors = 1;
     uint64 visits = 2;
-    double views_per_visit = 3;
-    int64 visit_duration = 4;
-    uint32 bounce_rate = 5;
-    int64 events = 6;
+    int64 events = 3;
   }
 
   message Segment { map<string, Total> aggregates = 1; }

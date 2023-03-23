@@ -116,10 +116,6 @@ func (ls EntryList) Aggr(u, s *roaring64.Bitmap) (a *Aggr_Total) {
 	a = &Aggr_Total{}
 	u.Clear()
 	s.Clear()
-	var d int64
-	var pages uint64
-	var sign int32
-	var bounce int32
 	for _, e := range ls {
 		if !e.IsSession {
 			a.Events += 1
@@ -132,15 +128,7 @@ func (ls EntryList) Aggr(u, s *roaring64.Bitmap) (a *Aggr_Total) {
 			u.Add(e.SessionId)
 			a.Visits += 1
 		}
-		d += e.Duration
-		sign += e.Sign
-		pages += e.PageViews
-		bounce += e.Sign * e.Bounce()
 	}
-	a.VisitDuration = d / int64(sign)
-	a.ViewsPerVisit = float64(pages) / float64(sign)
-	bounceRate := (float64(bounce) / float64(sign)) * 100
-	a.BounceRate = uint32(bounceRate)
 	return
 }
 
