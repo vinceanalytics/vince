@@ -113,24 +113,6 @@ message Aggr {
     repeated Total hours = 2;
   }
 
-  message YearProps {
-    uint32 year = 1;
-    PROPS prop = 2;
-    repeated Segment months = 3;
-  }
-
-  message MonthProps {
-    uint32 month = 1;
-    PROPS prop = 2;
-    repeated Segment days = 3;
-  }
-
-  message DayProps {
-    google.protobuf.Timestamp date = 1;
-    PROPS prop = 2;
-    repeated Segment hours = 3;
-  }
-
   enum MONTH {
     January = 0;
     February = 1;
