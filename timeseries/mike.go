@@ -69,79 +69,86 @@ func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
 		x.Aggr(group.u, group.s, a)
 		ts := time.Unix(el[0].Timestamp, 0)
 		err := m.db.Update(func(txn *badger.Txn) error {
+			enc := getCompressor()
+			dec := getDecompressor()
+			defer func() {
+				enc.Release()
+				dec.Release()
+			}()
+
 			err := updateRoot(txn, ts, id, a.Total)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_NAME, a.Name)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_NAME, a.Name)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_PAGE, a.Pathname)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_PAGE, a.Pathname)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_ENTRY_PAGE, a.EntryPage)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_ENTRY_PAGE, a.EntryPage)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_EXIT_PAGE, a.ExitPage)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_EXIT_PAGE, a.ExitPage)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_REFERRER, a.Referrer)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_REFERRER, a.Referrer)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_UTM_MEDIUM, a.UtmMedium)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_UTM_MEDIUM, a.UtmMedium)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_UTM_SOURCE, a.UtmSource)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_UTM_SOURCE, a.UtmSource)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_UTM_CAMPAIGN, a.UtmCampaign)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_UTM_CAMPAIGN, a.UtmCampaign)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_UTM_CONTENT, a.UtmContent)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_UTM_CONTENT, a.UtmContent)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_UTM_TERM, a.UtmTerm)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_UTM_TERM, a.UtmTerm)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_UTM_DEVICE, a.ScreenSize)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_UTM_DEVICE, a.ScreenSize)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_UTM_BROWSER, a.Browser)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_UTM_BROWSER, a.Browser)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_BROWSER_VERSION, a.BrowserVersion)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_BROWSER_VERSION, a.BrowserVersion)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_OS, a.OperatingSystem)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_OS, a.OperatingSystem)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_OS_VERSION, a.OperatingSystemVersion)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_OS_VERSION, a.OperatingSystemVersion)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_COUNTRY, a.CountryCode)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_COUNTRY, a.CountryCode)
 			if err != nil {
 				return err
 			}
-			err = updateMeta(txn, ts, id, PROPS_COUNTRY, a.Region)
+			err = updateMeta(txn, enc, dec, ts, id, PROPS_COUNTRY, a.Region)
 			if err != nil {
 				return err
 			}
-			return updateMeta(txn, ts, id, PROPS_CITY, a.CityGeoNameId)
+			return updateMeta(txn, enc, dec, ts, id, PROPS_CITY, a.CityGeoNameId)
 		})
 		if err != nil {
 			log.Get(ctx).Err(err).Msg("failed to save hourly stats ")
@@ -434,7 +441,7 @@ func updateRoot(txn *badger.Txn, ts time.Time, id *ID, a *Aggr_Total) error {
 	return nil
 }
 
-func updateMeta(txn *badger.Txn, ts time.Time, id *ID, meta PROPS, a *Aggr_Segment) error {
+func updateMeta(txn *badger.Txn, enc *compressor, dec *decompressor, ts time.Time, id *ID, meta PROPS, a *Aggr_Segment) error {
 	if a == nil {
 		return nil
 	}
@@ -450,7 +457,7 @@ func updateMeta(txn *badger.Txn, ts time.Time, id *ID, meta PROPS, a *Aggr_Segme
 		case TABLE_YEAR:
 			key = id.Year(ts).SetTable(byte(i)).SetMeta(byte(meta)).Final()
 		}
-		err := updateSegment(txn, key, a)
+		err := updateSegment(txn, enc, dec, key, a)
 		if err != nil {
 			return err
 		}
@@ -486,7 +493,7 @@ func updateAggregate(txn *badger.Txn, key []byte, a *Aggr_Total) error {
 	return txn.Set(key, b)
 }
 
-func updateSegment(txn *badger.Txn, key []byte, a *Aggr_Segment) error {
+func updateSegment(txn *badger.Txn, enc *compressor, dec *decompressor, key []byte, a *Aggr_Segment) error {
 	x, err := txn.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
@@ -500,7 +507,7 @@ func updateSegment(txn *badger.Txn, key []byte, a *Aggr_Segment) error {
 		return err
 	}
 	var o Aggr_Segment
-	err = x.Value(func(val []byte) error {
+	err = dec.Read(x, func(val []byte) error {
 		return proto.Unmarshal(val, &o)
 	})
 	if err != nil {
@@ -511,7 +518,7 @@ func updateSegment(txn *badger.Txn, key []byte, a *Aggr_Segment) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal aggr total %v", err)
 	}
-	return txn.Set(key, b)
+	return enc.Write(txn, key, b, 0)
 }
 
 func (a *Aggr_Total) Add(o *Aggr_Total) {

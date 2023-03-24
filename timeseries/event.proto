@@ -92,7 +92,7 @@ message Aggr {
   message Total {
     uint64 visitors = 1;
     uint64 visits = 2;
-    int64 events = 3;
+    uint64 events = 3;
   }
 
   message Segment { map<string, Total> aggregates = 1; }

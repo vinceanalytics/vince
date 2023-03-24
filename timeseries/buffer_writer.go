@@ -111,6 +111,9 @@ func (b *Buffer) Save(ctx context.Context) error {
 		ttl = 3 * time.Hour
 	}
 	return ts.db.Update(func(txn *badger.Txn) error {
+		enc := getCompressor()
+		defer enc.Release()
+
 		x := Entries{
 			Events: b.entries,
 		}
@@ -118,11 +121,7 @@ func (b *Buffer) Save(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("failed to marshal events %v", err)
 		}
-		e := badger.NewEntry(b.id[:], data)
-		if ttl != 0 {
-			e.WithTTL(ttl)
-		}
-		err = txn.SetEntry(e)
+		err = enc.Write(txn, b.id[:], data, ttl)
 		if err != nil {
 			say.Err(err).Msg("failed to save events to permanent storage")
 			return err

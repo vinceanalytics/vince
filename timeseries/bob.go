@@ -81,8 +81,11 @@ func (b *Bob) Merge(ctx context.Context) error {
 	merge := func(it *badger.Iterator, txn *badger.Txn, buf *Buffer) error {
 		defer it.Close()
 		var data Entries
+		de := getDecompressor()
+		defer de.Release()
 		for it.Next(); it.Valid(); it.Next() {
-			err := it.Item().Value(func(val []byte) error {
+			item := it.Item()
+			err := de.Read(item, func(val []byte) error {
 				return proto.Unmarshal(val, &data)
 			})
 			if err != nil {
@@ -90,7 +93,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 			}
 			buf.entries = append(buf.entries, data.Events...)
 			// delete the file, we are done merging it
-			err = txn.Delete(it.Item().Key())
+			err = txn.Delete(item.Key())
 			if err != nil {
 				return err
 			}
