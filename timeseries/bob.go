@@ -21,8 +21,8 @@ var (
 // Bob stores parquet files identified by ID.
 type Bob struct {
 	cb    MergeCallback
-	since uint64
 	db    *badger.DB
+	since uint64
 }
 
 func (b *Bob) GC() {

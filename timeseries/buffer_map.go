@@ -8,8 +8,8 @@ import (
 
 // Maps user ID to *Buffer.
 type Map struct {
-	ttl time.Duration
 	m   *sync.Map
+	ttl time.Duration
 }
 
 func NewMap(ttl time.Duration) *Map {

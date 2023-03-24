@@ -26,11 +26,11 @@ import (
 //
 // This type is reusable.
 type Buffer struct {
-	mu        sync.Mutex
-	ttl       time.Duration
-	id        ID
 	expiresAt time.Time
 	entries   []*Entry
+	ttl       time.Duration
+	mu        sync.Mutex
+	id        ID
 }
 
 func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {

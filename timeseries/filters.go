@@ -197,8 +197,8 @@ func (f *filterGoal) String() string {
 }
 
 type filterExpr struct {
-	op    filterOp
 	value string
+	op    filterOp
 }
 
 type filterOp uint

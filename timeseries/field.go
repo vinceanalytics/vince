@@ -26,8 +26,8 @@ func (op OP) String() string {
 }
 
 type FILTER struct {
-	Field   string
-	Op      OP
 	Scalar  *compute.ScalarDatum
+	Field   string
 	Parquet parquet.Value
+	Op      OP
 }

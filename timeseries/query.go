@@ -18,9 +18,9 @@ type Query struct {
 	end             time.Time
 	period          string
 	interval        string
-	sampleThreshold int
 	selected        []string
 	filters         filterHandList
+	sampleThreshold int
 }
 
 func (q Query) Select(fields ...string) Query {
@@ -180,8 +180,8 @@ func defaultIntervalForPeriod(period string) string {
 }
 
 type filterHand struct {
-	field string
 	h     MatchFunc
+	field string
 }
 
 type MatchFunc func(ctx context.Context, values []parquet.Value, b []bool, page parquet.Page) bool
