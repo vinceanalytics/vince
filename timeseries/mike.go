@@ -413,8 +413,10 @@ func aggr(ls []*Entry, u,
 
 func updateRoot(txn *badger.Txn, ts time.Time, id *ID, a *Aggr_Total) error {
 	var key []byte
-	for i := TABLE_HOUR; i <= TABLE_YEAR; i += 1 {
+	for i := TABLE_RAW; i <= TABLE_YEAR; i += 1 {
 		switch i {
+		case TABLE_RAW:
+			key = id.Raw().SetTable(byte(i)).SetMeta(0).Final()
 		case TABLE_HOUR:
 			key = id.Hour(ts).SetTable(byte(i)).SetMeta(0).Final()
 		case TABLE_DAY:

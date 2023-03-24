@@ -59,6 +59,10 @@ func (id *ID) GetSiteID() uint64 {
 	return binary.BigEndian.Uint64(id[siteOffset:])
 }
 
+func (id *ID) Raw() *ID {
+	return id.setTs(0, 0, 0, 0)
+}
+
 func (id *ID) Hour(ts time.Time) *ID {
 	yy, mm, dd := ts.Date()
 	return id.setTs(yy, int(mm), dd, ts.Hour())
