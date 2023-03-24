@@ -16,6 +16,14 @@ type Data struct {
 	datasets []DataSet
 }
 
+func (d *Data) prep() {
+	if len(d.datasets) == 0 {
+		d.datasets = []DataSet{
+			{Values: make([]float64, len(d.labels))},
+		}
+	}
+}
+
 type DataSet struct {
 	Name   string
 	Values []float64
@@ -28,6 +36,11 @@ func newAxis() *axis {
 	}
 }
 
+type axisData struct {
+	labels    []string
+	positions []int
+}
+
 type axis struct {
 	container, svg, svgDefs, titleEl, drawArea                                 *html.Node
 	title, chartType                                                           string
@@ -37,6 +50,8 @@ type axis struct {
 	setMeasure                           func(*Measure)
 	baseHeight, height, baseWidth, width int
 	data                                 Data
+	datasetLength, unitWidth, xOffset    int
+	xAxis                                axisData
 }
 
 func (b *axis) config() {
@@ -52,6 +67,17 @@ func (b *axis) makeContainer() {
 	b.container = &html.Node{
 		Type: html.ElementNode,
 		Data: atom.Div.String(),
+	}
+}
+
+func (b *axis) calcXPositions() {
+	b.datasetLength = len(b.data.labels)
+	b.unitWidth = b.width / b.datasetLength
+	b.xOffset = b.unitWidth / 2
+	b.xAxis.labels = b.data.labels
+	b.xAxis.positions = make([]int, len(b.data.labels))
+	for i := range b.xAxis.positions {
+		b.xAxis.positions[i] = b.xOffset + i*b.unitWidth
 	}
 }
 
