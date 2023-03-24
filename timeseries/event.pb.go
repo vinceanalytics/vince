@@ -310,10 +310,9 @@ func (Aggr_MONTH) EnumDescriptor() ([]byte, []int) {
 
 type Entries struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Events []*Entry `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
+	Events        []*Entry `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Entries) Reset() {
@@ -356,42 +355,41 @@ func (x *Entries) GetEvents() []*Entry {
 }
 
 type Entry struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Timestamp              int64  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Name                   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Domain                 string `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
-	UserId                 uint64 `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	SessionId              uint64 `protobuf:"varint,5,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	state                  protoimpl.MessageState
+	UtmMedium              string `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
 	Hostname               string `protobuf:"bytes,6,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	Region                 string `protobuf:"bytes,31,opt,name=region,proto3" json:"region,omitempty"`
+	Name                   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	UtmSource              string `protobuf:"bytes,15,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
+	CityGeoNameId          string `protobuf:"bytes,24,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
+	ExitPage               string `protobuf:"bytes,23,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
+	UtmCampaign            string `protobuf:"bytes,16,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
 	Pathname               string `protobuf:"bytes,7,opt,name=pathname,proto3" json:"pathname,omitempty"`
-	Referrer               string `protobuf:"bytes,8,opt,name=referrer,proto3" json:"referrer,omitempty"`
+	BrowserVersion         string `protobuf:"bytes,17,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
 	ReferrerSource         string `protobuf:"bytes,9,opt,name=referrer_source,json=referrerSource,proto3" json:"referrer_source,omitempty"`
 	CountryCode            string `protobuf:"bytes,10,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
 	ScreenSize             string `protobuf:"bytes,11,opt,name=screen_size,json=screenSize,proto3" json:"screen_size,omitempty"`
 	OperatingSystem        string `protobuf:"bytes,12,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
 	Browser                string `protobuf:"bytes,13,opt,name=browser,proto3" json:"browser,omitempty"`
-	UtmMedium              string `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
-	UtmSource              string `protobuf:"bytes,15,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
-	UtmCampaign            string `protobuf:"bytes,16,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
-	BrowserVersion         string `protobuf:"bytes,17,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
+	EntryPage              string `protobuf:"bytes,22,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
+	Domain                 string `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
+	TransferredFrom        string `protobuf:"bytes,21,opt,name=transferred_from,json=transferredFrom,proto3" json:"transferred_from,omitempty"`
+	Referrer               string `protobuf:"bytes,8,opt,name=referrer,proto3" json:"referrer,omitempty"`
 	OperatingSystemVersion string `protobuf:"bytes,18,opt,name=operating_system_version,json=operatingSystemVersion,proto3" json:"operating_system_version,omitempty"`
 	UtmContent             string `protobuf:"bytes,19,opt,name=utm_content,json=utmContent,proto3" json:"utm_content,omitempty"`
 	UtmTerm                string `protobuf:"bytes,20,opt,name=utm_term,json=utmTerm,proto3" json:"utm_term,omitempty"`
-	TransferredFrom        string `protobuf:"bytes,21,opt,name=transferred_from,json=transferredFrom,proto3" json:"transferred_from,omitempty"`
-	EntryPage              string `protobuf:"bytes,22,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
-	ExitPage               string `protobuf:"bytes,23,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
-	CityGeoNameId          string `protobuf:"bytes,24,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	SessionId              uint64 `protobuf:"varint,5,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	UserId                 uint64 `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	PageViews              uint64 `protobuf:"varint,25,opt,name=page_views,json=pageViews,proto3" json:"page_views,omitempty"`
 	Events                 uint64 `protobuf:"varint,26,opt,name=events,proto3" json:"events,omitempty"`
-	Sign                   int32  `protobuf:"varint,27,opt,name=sign,proto3" json:"sign,omitempty"`
-	IsBounce               bool   `protobuf:"varint,28,opt,name=is_bounce,json=isBounce,proto3" json:"is_bounce,omitempty"`
 	Duration               int64  `protobuf:"varint,29,opt,name=duration,proto3" json:"duration,omitempty"`
 	Start                  int64  `protobuf:"varint,30,opt,name=start,proto3" json:"start,omitempty"`
-	Region                 string `protobuf:"bytes,31,opt,name=region,proto3" json:"region,omitempty"`
-	IsSession              bool   `protobuf:"varint,32,opt,name=is_session,json=isSession,proto3" json:"is_session,omitempty"`
+	Timestamp              int64  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	sizeCache              protoimpl.SizeCache
+	Sign                   int32 `protobuf:"varint,27,opt,name=sign,proto3" json:"sign,omitempty"`
+	IsBounce               bool  `protobuf:"varint,28,opt,name=is_bounce,json=isBounce,proto3" json:"is_bounce,omitempty"`
+	IsSession              bool  `protobuf:"varint,32,opt,name=is_session,json=isSession,proto3" json:"is_session,omitempty"`
 }
 
 func (x *Entry) Reset() {
@@ -651,21 +649,20 @@ func (x *Entry) GetIsSession() bool {
 }
 
 type EntrySegment struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name                   []*Entry `protobuf:"bytes,2,rep,name=name,proto3" json:"name,omitempty"`
+	state                  protoimpl.MessageState
+	Browser                []*Entry `protobuf:"bytes,13,rep,name=browser,proto3" json:"browser,omitempty"`
+	Region                 []*Entry `protobuf:"bytes,31,rep,name=region,proto3" json:"region,omitempty"`
+	OperatingSystem        []*Entry `protobuf:"bytes,12,rep,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
 	Domain                 []*Entry `protobuf:"bytes,3,rep,name=domain,proto3" json:"domain,omitempty"`
 	Hostname               []*Entry `protobuf:"bytes,6,rep,name=hostname,proto3" json:"hostname,omitempty"`
 	Pathname               []*Entry `protobuf:"bytes,7,rep,name=pathname,proto3" json:"pathname,omitempty"`
 	Referrer               []*Entry `protobuf:"bytes,8,rep,name=referrer,proto3" json:"referrer,omitempty"`
 	ReferrerSource         []*Entry `protobuf:"bytes,9,rep,name=referrer_source,json=referrerSource,proto3" json:"referrer_source,omitempty"`
 	CountryCode            []*Entry `protobuf:"bytes,10,rep,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
-	ScreenSize             []*Entry `protobuf:"bytes,11,rep,name=screen_size,json=screenSize,proto3" json:"screen_size,omitempty"`
-	OperatingSystem        []*Entry `protobuf:"bytes,12,rep,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
-	Browser                []*Entry `protobuf:"bytes,13,rep,name=browser,proto3" json:"browser,omitempty"`
 	UtmMedium              []*Entry `protobuf:"bytes,14,rep,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
+	Name                   []*Entry `protobuf:"bytes,2,rep,name=name,proto3" json:"name,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	ScreenSize             []*Entry `protobuf:"bytes,11,rep,name=screen_size,json=screenSize,proto3" json:"screen_size,omitempty"`
 	UtmSource              []*Entry `protobuf:"bytes,15,rep,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
 	UtmCampaign            []*Entry `protobuf:"bytes,16,rep,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
 	BrowserVersion         []*Entry `protobuf:"bytes,17,rep,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
@@ -675,7 +672,7 @@ type EntrySegment struct {
 	EntryPage              []*Entry `protobuf:"bytes,22,rep,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
 	ExitPage               []*Entry `protobuf:"bytes,23,rep,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
 	CityGeoNameId          []*Entry `protobuf:"bytes,24,rep,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
-	Region                 []*Entry `protobuf:"bytes,31,rep,name=region,proto3" json:"region,omitempty"`
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *EntrySegment) Reset() {
@@ -858,22 +855,21 @@ func (x *EntrySegment) GetRegion() []*Entry {
 }
 
 type Aggr struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Total                  *Aggr_Total   `protobuf:"bytes,1,opt,name=total,proto3" json:"total,omitempty"`
+	OperatingSystem        *Aggr_Segment `protobuf:"bytes,12,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
 	Name                   *Aggr_Segment `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	state                  protoimpl.MessageState
+	Total                  *Aggr_Total   `protobuf:"bytes,1,opt,name=total,proto3" json:"total,omitempty"`
+	Browser                *Aggr_Segment `protobuf:"bytes,13,opt,name=browser,proto3" json:"browser,omitempty"`
 	Domain                 *Aggr_Segment `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
 	Hostname               *Aggr_Segment `protobuf:"bytes,6,opt,name=hostname,proto3" json:"hostname,omitempty"`
-	Pathname               *Aggr_Segment `protobuf:"bytes,7,opt,name=pathname,proto3" json:"pathname,omitempty"`
+	UtmMedium              *Aggr_Segment `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
 	Referrer               *Aggr_Segment `protobuf:"bytes,8,opt,name=referrer,proto3" json:"referrer,omitempty"`
 	ReferrerSource         *Aggr_Segment `protobuf:"bytes,9,opt,name=referrer_source,json=referrerSource,proto3" json:"referrer_source,omitempty"`
 	CountryCode            *Aggr_Segment `protobuf:"bytes,10,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
 	ScreenSize             *Aggr_Segment `protobuf:"bytes,11,opt,name=screen_size,json=screenSize,proto3" json:"screen_size,omitempty"`
-	OperatingSystem        *Aggr_Segment `protobuf:"bytes,12,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
-	Browser                *Aggr_Segment `protobuf:"bytes,13,opt,name=browser,proto3" json:"browser,omitempty"`
-	UtmMedium              *Aggr_Segment `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
+	Region                 *Aggr_Segment `protobuf:"bytes,31,opt,name=region,proto3" json:"region,omitempty"`
+	CityGeoNameId          *Aggr_Segment `protobuf:"bytes,24,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
+	Pathname               *Aggr_Segment `protobuf:"bytes,7,opt,name=pathname,proto3" json:"pathname,omitempty"`
 	UtmSource              *Aggr_Segment `protobuf:"bytes,15,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
 	UtmCampaign            *Aggr_Segment `protobuf:"bytes,16,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
 	BrowserVersion         *Aggr_Segment `protobuf:"bytes,17,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
@@ -882,8 +878,8 @@ type Aggr struct {
 	UtmTerm                *Aggr_Segment `protobuf:"bytes,20,opt,name=utm_term,json=utmTerm,proto3" json:"utm_term,omitempty"`
 	EntryPage              *Aggr_Segment `protobuf:"bytes,22,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
 	ExitPage               *Aggr_Segment `protobuf:"bytes,23,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
-	CityGeoNameId          *Aggr_Segment `protobuf:"bytes,24,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
-	Region                 *Aggr_Segment `protobuf:"bytes,31,opt,name=region,proto3" json:"region,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *Aggr) Reset() {
@@ -1074,12 +1070,11 @@ func (x *Aggr) GetRegion() *Aggr_Segment {
 
 type Aggr_Total struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Visitors uint64 `protobuf:"varint,1,opt,name=visitors,proto3" json:"visitors,omitempty"`
-	Visits   uint64 `protobuf:"varint,2,opt,name=visits,proto3" json:"visits,omitempty"`
-	Events   int64  `protobuf:"varint,3,opt,name=events,proto3" json:"events,omitempty"`
+	Visitors      uint64 `protobuf:"varint,1,opt,name=visitors,proto3" json:"visitors,omitempty"`
+	Visits        uint64 `protobuf:"varint,2,opt,name=visits,proto3" json:"visits,omitempty"`
+	Events        int64  `protobuf:"varint,3,opt,name=events,proto3" json:"events,omitempty"`
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Aggr_Total) Reset() {
@@ -1137,10 +1132,9 @@ func (x *Aggr_Total) GetEvents() int64 {
 
 type Aggr_Segment struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
+	Aggregates    map[string]*Aggr_Total `protobuf:"bytes,1,rep,name=aggregates,proto3" json:"aggregates,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	unknownFields protoimpl.UnknownFields
-
-	Aggregates map[string]*Aggr_Total `protobuf:"bytes,1,rep,name=aggregates,proto3" json:"aggregates,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Aggr_Segment) Reset() {
@@ -1184,11 +1178,10 @@ func (x *Aggr_Segment) GetAggregates() map[string]*Aggr_Total {
 
 type Aggr_Year struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Year   uint32        `protobuf:"varint,1,opt,name=year,proto3" json:"year,omitempty"`
-	Months []*Aggr_Total `protobuf:"bytes,2,rep,name=months,proto3" json:"months,omitempty"`
+	Months        []*Aggr_Total `protobuf:"bytes,2,rep,name=months,proto3" json:"months,omitempty"`
+	sizeCache     protoimpl.SizeCache
+	Year          uint32 `protobuf:"varint,1,opt,name=year,proto3" json:"year,omitempty"`
 }
 
 func (x *Aggr_Year) Reset() {
@@ -1239,11 +1232,10 @@ func (x *Aggr_Year) GetMonths() []*Aggr_Total {
 
 type Aggr_Month struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Month Aggr_MONTH    `protobuf:"varint,1,opt,name=month,proto3,enum=timeseries.Aggr_MONTH" json:"month,omitempty"`
-	Days  []*Aggr_Total `protobuf:"bytes,2,rep,name=days,proto3" json:"days,omitempty"`
+	Days          []*Aggr_Total `protobuf:"bytes,2,rep,name=days,proto3" json:"days,omitempty"`
+	sizeCache     protoimpl.SizeCache
+	Month         Aggr_MONTH `protobuf:"varint,1,opt,name=month,proto3,enum=timeseries.Aggr_MONTH" json:"month,omitempty"`
 }
 
 func (x *Aggr_Month) Reset() {
@@ -1294,12 +1286,10 @@ func (x *Aggr_Month) GetDays() []*Aggr_Total {
 
 type Aggr_Day struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
+	Date          *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
 	unknownFields protoimpl.UnknownFields
-
-	Date *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
-	// Size 24, aggregates all hourly totals
-	Hours []*Aggr_Total `protobuf:"bytes,2,rep,name=hours,proto3" json:"hours,omitempty"`
+	Hours         []*Aggr_Total `protobuf:"bytes,2,rep,name=hours,proto3" json:"hours,omitempty"`
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Aggr_Day) Reset() {
@@ -1350,12 +1340,11 @@ func (x *Aggr_Day) GetHours() []*Aggr_Total {
 
 type Aggr_YearProps struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Year   uint32          `protobuf:"varint,1,opt,name=year,proto3" json:"year,omitempty"`
-	Prop   PROPS           `protobuf:"varint,2,opt,name=prop,proto3,enum=timeseries.PROPS" json:"prop,omitempty"`
-	Months []*Aggr_Segment `protobuf:"bytes,3,rep,name=months,proto3" json:"months,omitempty"`
+	Months        []*Aggr_Segment `protobuf:"bytes,3,rep,name=months,proto3" json:"months,omitempty"`
+	sizeCache     protoimpl.SizeCache
+	Year          uint32 `protobuf:"varint,1,opt,name=year,proto3" json:"year,omitempty"`
+	Prop          PROPS  `protobuf:"varint,2,opt,name=prop,proto3,enum=timeseries.PROPS" json:"prop,omitempty"`
 }
 
 func (x *Aggr_YearProps) Reset() {
@@ -1413,12 +1402,11 @@ func (x *Aggr_YearProps) GetMonths() []*Aggr_Segment {
 
 type Aggr_MonthProps struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Month uint32          `protobuf:"varint,1,opt,name=month,proto3" json:"month,omitempty"`
-	Prop  PROPS           `protobuf:"varint,2,opt,name=prop,proto3,enum=timeseries.PROPS" json:"prop,omitempty"`
-	Days  []*Aggr_Segment `protobuf:"bytes,3,rep,name=days,proto3" json:"days,omitempty"`
+	Days          []*Aggr_Segment `protobuf:"bytes,3,rep,name=days,proto3" json:"days,omitempty"`
+	sizeCache     protoimpl.SizeCache
+	Month         uint32 `protobuf:"varint,1,opt,name=month,proto3" json:"month,omitempty"`
+	Prop          PROPS  `protobuf:"varint,2,opt,name=prop,proto3,enum=timeseries.PROPS" json:"prop,omitempty"`
 }
 
 func (x *Aggr_MonthProps) Reset() {
@@ -1476,12 +1464,11 @@ func (x *Aggr_MonthProps) GetDays() []*Aggr_Segment {
 
 type Aggr_DayProps struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
+	Date          *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
 	unknownFields protoimpl.UnknownFields
-
-	Date  *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
-	Prop  PROPS                  `protobuf:"varint,2,opt,name=prop,proto3,enum=timeseries.PROPS" json:"prop,omitempty"`
-	Hours []*Aggr_Segment        `protobuf:"bytes,3,rep,name=hours,proto3" json:"hours,omitempty"`
+	Hours         []*Aggr_Segment `protobuf:"bytes,3,rep,name=hours,proto3" json:"hours,omitempty"`
+	sizeCache     protoimpl.SizeCache
+	Prop          PROPS `protobuf:"varint,2,opt,name=prop,proto3,enum=timeseries.PROPS" json:"prop,omitempty"`
 }
 
 func (x *Aggr_DayProps) Reset() {
