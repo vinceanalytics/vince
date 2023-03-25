@@ -63,6 +63,7 @@ var Home = template.Must(
 		"layout/header.html",
 		"layout/flash.html",
 		"layout/notice.html",
+		"site/index.html",
 		"layout/footer.html",
 	),
 )
