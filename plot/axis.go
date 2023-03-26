@@ -2,6 +2,8 @@ package plot
 
 import (
 	"fmt"
+	"math"
+	"sort"
 	"strconv"
 
 	"golang.org/x/net/html"
@@ -101,14 +103,35 @@ func (b *axis) calcYAxisParameters(withMinimum bool) {
 		for i := range x.Values {
 			positions[i] = zeroLine - int(x.Values[i])*scaleMultiplier
 		}
-		b.yAxis = append(b.yAxis, axisData{
-			key:             x.Name,
-			labels:          yPts,
-			pos:             "left",
-			scaleMultiplier: scaleMultiplier,
-			zeroLine:        zeroLine,
-			positions:       positions,
-		})
+		if len(b.yAxis) > 1 {
+			scaleMultiplier := b.height / int(getValueRange(yPts))
+			firstArr := b.yAxis[0]
+			yPtsArray := make([]float64, len(firstArr.positions))
+			for i = range firstArr.positions {
+				yPtsArray[i] = math.Ceil(float64(firstArr.positions[i]) / float64(scaleMultiplier))
+			}
+			sort.Sort(sort.Reverse(sort.Float64Slice(yPtsArray)))
+			zeroLine =
+				b.height - int(getZeroIndex(yPts))*intervalHeight
+			b.yAxis = append(b.yAxis, axisData{
+				key:             x.Name,
+				labels:          yPtsArray,
+				pos:             "left",
+				scaleMultiplier: scaleMultiplier,
+				zeroLine:        zeroLine,
+				positions:       firstArr.positions,
+			})
+		} else {
+			b.yAxis = append(b.yAxis, axisData{
+				key:             x.Name,
+				labels:          yPts,
+				pos:             "left",
+				scaleMultiplier: scaleMultiplier,
+				zeroLine:        zeroLine,
+				positions:       positions,
+			})
+		}
+
 	}
 }
 
