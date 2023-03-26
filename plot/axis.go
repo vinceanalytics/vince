@@ -12,7 +12,7 @@ type axisOptions struct {
 }
 
 type Data struct {
-	labels   []string
+	labels   []float64
 	datasets []DataSet
 }
 
@@ -37,8 +37,11 @@ func newAxis() *axis {
 }
 
 type axisData struct {
-	labels    []string
-	positions []int
+	key                       string
+	pos                       string
+	scaleMultiplier, zeroLine int
+	labels                    []float64
+	positions                 []int
 }
 
 type axis struct {
@@ -52,6 +55,7 @@ type axis struct {
 	data                                 Data
 	datasetLength, unitWidth, xOffset    int
 	xAxis                                axisData
+	yAxis                                []axisData
 }
 
 func (b *axis) config() {
@@ -87,7 +91,25 @@ func (b *axis) calcXPositions() {
 }
 
 func (b *axis) calcYAxisParameters(withMinimum bool) {
-
+	for i := range b.data.datasets {
+		x := &b.data.datasets[i]
+		yPts := calcChartIntervals(x.Values, withMinimum)
+		scaleMultiplier := b.height / int(getValueRange(yPts))
+		intervalHeight := int(getIntervalSize(x.Values)) * scaleMultiplier
+		zeroLine := b.height - int(getZeroIndex(yPts))*intervalHeight
+		positions := make([]int, len(x.Values))
+		for i := range x.Values {
+			positions[i] = zeroLine - int(x.Values[i])*scaleMultiplier
+		}
+		b.yAxis = append(b.yAxis, axisData{
+			key:             x.Name,
+			labels:          yPts,
+			pos:             "left",
+			scaleMultiplier: scaleMultiplier,
+			zeroLine:        zeroLine,
+			positions:       positions,
+		})
+	}
 }
 
 func (b *axis) updateWidth() {

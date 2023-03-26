@@ -137,3 +137,23 @@ func calcChartIntervals(values []float64, withMinimum bool) (intervals []float64
 	})
 	return
 }
+
+func getZeroIndex(y []float64) float64 {
+	interval := getIntervalSize(y)
+	if y[0] >= 0 {
+		return y[0]
+	}
+	if y[0] > 0 {
+		min := y[0]
+		return (-1 * min) / interval
+	}
+	max := y[len(y)-1]
+	return (-1*max)/interval + (float64(len(y)) - 1)
+}
+
+func getValueRange(a []float64) float64 {
+	return a[len(a)-1] - a[0]
+}
+func getIntervalSize(a []float64) float64 {
+	return a[1] - a[0]
+}
