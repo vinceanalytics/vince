@@ -70,6 +70,11 @@ func (b *axis) makeContainer() {
 	}
 }
 
+func (b *axis) calc() {
+	b.calcXPositions()
+	b.calcYAxisParameters(true)
+}
+
 func (b *axis) calcXPositions() {
 	b.datasetLength = len(b.data.labels)
 	b.unitWidth = b.width / b.datasetLength
@@ -79,6 +84,10 @@ func (b *axis) calcXPositions() {
 	for i := range b.xAxis.positions {
 		b.xAxis.positions[i] = b.xOffset + i*b.unitWidth
 	}
+}
+
+func (b *axis) calcYAxisParameters(withMinimum bool) {
+
 }
 
 func (b *axis) updateWidth() {
