@@ -36,7 +36,7 @@
                 </div>
 
                 <div class="UnderlineNav-body">
-                    {{if .CurrentUser}}
+                    {{if not .CurrentUser}}
                     <a class="UnderlineNav-item" href="/pricing">Pricing</a>
                     <a class="UnderlineNav-item" href="/login">Sign In</a>
                     <a class="UnderlineNav-item color-fg-success" href="/register" aria-current="page">
