@@ -171,21 +171,21 @@ func makeGradient(svgDefElem *html.Node, color string, lighter bool) string {
 	return gradientId
 }
 
-func rightRoundedBar(x, width, height int) string {
+func rightRoundedBar(x, width, height float64) string {
 	radius := height / 2
 	xOffset := width - radius
 	return fmt.Sprintf("M%d,0 h%d q%d,0 %d,%d q0,%d -%d,%d h-%d v%d",
 		x, xOffset, radius, radius, radius, radius, radius, radius, xOffset, height)
 }
 
-func leftRoundedBar(x, width, height int) string {
+func leftRoundedBar(x, width, height float64) string {
 	radius := height / 2
 	xOffset := width - radius
 	return fmt.Sprintf("M%d,0 h%d v%d h-%d q-%d, 0 -%d,-%d q0,-%d %d,-%dz",
 		x+radius, xOffset, height, xOffset, radius, radius, radius, radius, radius, radius)
 }
 
-func percentageBar(x, y, width, height int, isFirst, isLast bool, fill string) *html.Node {
+func percentageBar(x, y, width, height float64, isFirst, isLast bool, fill string) *html.Node {
 	if fill == "" {
 		fill = "none"
 	}
@@ -200,27 +200,27 @@ func percentageBar(x, y, width, height int, isFirst, isLast bool, fill string) *
 	return createSVG("rect", createOptions{
 		attr: []html.Attribute{
 			{Key: "class", Val: "percentage-bar"},
-			{Key: "x", Val: strconv.Itoa(x)},
-			{Key: "y", Val: strconv.Itoa(y)},
-			{Key: "width", Val: strconv.Itoa(width)},
-			{Key: "height", Val: strconv.Itoa(height)},
+			{Key: "x", Val: formatFloat(x)},
+			{Key: "y", Val: formatFloat(y)},
+			{Key: "width", Val: formatFloat(width)},
+			{Key: "height", Val: formatFloat(height)},
 			{Key: "fill", Val: fill},
 		},
 	})
 }
 
-func heatSquare(className string, x, y, size, radius int, fill string, data ...html.Attribute) *html.Node {
+func heatSquare(className string, x, y, size, radius float64, fill string, data ...html.Attribute) *html.Node {
 	if fill == "" {
 		fill = "none"
 	}
 	o := createOptions{
 		attr: []html.Attribute{
 			{Key: "class", Val: className},
-			{Key: "x", Val: strconv.Itoa(x)},
-			{Key: "y", Val: strconv.Itoa(y)},
-			{Key: "width", Val: strconv.Itoa(size)},
-			{Key: "height", Val: strconv.Itoa(size)},
-			{Key: "rx", Val: strconv.Itoa(radius)},
+			{Key: "x", Val: formatFloat(x)},
+			{Key: "y", Val: formatFloat(y)},
+			{Key: "width", Val: formatFloat(size)},
+			{Key: "height", Val: formatFloat(size)},
+			{Key: "rx", Val: formatFloat(radius)},
 			{Key: "fill", Val: fill},
 		},
 	}
@@ -228,7 +228,7 @@ func heatSquare(className string, x, y, size, radius int, fill string, data ...h
 	return createSVG("rect", o)
 }
 
-func legendDot(x, y, size, radius int, fill, label, value string, fontSize int, truncate bool) *html.Node {
+func legendDot(x, y, size, radius float64, fill, label, value string, fontSize float64, truncate bool) *html.Node {
 	if fill == "" {
 		fill = "none"
 	}
@@ -242,10 +242,10 @@ func legendDot(x, y, size, radius int, fill, label, value string, fontSize int, 
 		attr: []html.Attribute{
 			{Key: "class", Val: "legend-dot"},
 			{Key: "x", Val: "0"},
-			{Key: "y", Val: strconv.Itoa(4 - size)},
-			{Key: "height", Val: strconv.Itoa(size)},
-			{Key: "width", Val: strconv.Itoa(size)},
-			{Key: "rx", Val: strconv.Itoa(radius)},
+			{Key: "y", Val: formatFloat(4 - size)},
+			{Key: "height", Val: formatFloat(size)},
+			{Key: "width", Val: formatFloat(size)},
+			{Key: "rx", Val: formatFloat(radius)},
 			{Key: "fill", Val: fill},
 		},
 	}
@@ -254,9 +254,9 @@ func legendDot(x, y, size, radius int, fill, label, value string, fontSize int, 
 		attr: []html.Attribute{
 			{Key: "class", Val: "legend-dataset-label"},
 			{Key: "y", Val: "0"},
-			{Key: "x", Val: strconv.Itoa(size)},
-			{Key: "dx", Val: strconv.Itoa(fontSize) + "px"},
-			{Key: "dy", Val: strconv.Itoa(fontSize/3) + "px"},
+			{Key: "x", Val: formatFloat(size)},
+			{Key: "dx", Val: formatFloat(fontSize) + "px"},
+			{Key: "dy", Val: formatFloat(fontSize/3) + "px"},
 			{Key: "font-size", Val: strconv.FormatFloat(float64(fontSize)*1.6, 'f', -1, 64) + "px"},
 			{Key: "text-anchor", Val: "start"},
 		},
@@ -267,10 +267,10 @@ func legendDot(x, y, size, radius int, fill, label, value string, fontSize int, 
 		textValue = createSVG("text", createOptions{
 			attr: []html.Attribute{
 				{Key: "class", Val: "legend-dataset-value"},
-				{Key: "x", Val: strconv.Itoa(size)},
-				{Key: "y", Val: strconv.Itoa(FONT_SIZE + 10)},
-				{Key: "dx", Val: strconv.Itoa(FONT_SIZE) + "px"},
-				{Key: "dy", Val: strconv.Itoa(FONT_SIZE/3) + "px"},
+				{Key: "x", Val: formatFloat(size)},
+				{Key: "y", Val: formatFloat(FONT_SIZE + 10)},
+				{Key: "dx", Val: formatFloat(FONT_SIZE) + "px"},
+				{Key: "dy", Val: formatFloat(FONT_SIZE/3) + "px"},
 				{Key: "font-size", Val: strconv.FormatFloat(float64(fontSize)*1.2, 'f', -1, 64) + "px"},
 				{Key: "text-anchor", Val: "start"},
 			},
@@ -279,7 +279,7 @@ func legendDot(x, y, size, radius int, fill, label, value string, fontSize int, 
 	}
 	group := createSVG("g", createOptions{
 		attr: []html.Attribute{
-			{Key: "transform", Val: fmt.Sprintf("translate(%d, %d)", x, y)},
+			{Key: "transform", Val: fmt.Sprintf("translate(%f, %f)", x, y)},
 		},
 	})
 	group.AppendChild(createSVG("rect", o))
@@ -301,11 +301,11 @@ func truncateString(txt string, n int) string {
 }
 
 type textOptions struct {
-	fontSize, dy     int
+	fontSize, dy     float64
 	fill, textAnchor string
 }
 
-func makeText(className string, x, y int, content string, o textOptions) *html.Node {
+func makeText(className string, x, y float64, content string, o textOptions) *html.Node {
 	if o.fontSize == 0 {
 		o.fontSize = FONT_SIZE
 	}
@@ -321,21 +321,25 @@ func makeText(className string, x, y int, content string, o textOptions) *html.N
 	return createSVG("text", createOptions{
 		innerHtml: content,
 		attr: []html.Attribute{
-			{Key: "x", Val: strconv.Itoa(x)},
-			{Key: "y", Val: strconv.Itoa(y)},
-			{Key: "dy", Val: strconv.Itoa(o.dy) + "px"},
-			{Key: "font-size", Val: strconv.Itoa(o.fontSize) + "px"},
+			{Key: "x", Val: formatFloat(x)},
+			{Key: "y", Val: formatFloat(y)},
+			{Key: "dy", Val: formatFloat(o.dy) + "px"},
+			{Key: "font-size", Val: formatFloat(o.fontSize) + "px"},
 			{Key: "fill", Val: o.fill},
 			{Key: "text-anchor", Val: o.textAnchor},
 		},
 	})
 }
 
+func formatFloat(f float64) string {
+	return strconv.FormatFloat(f, 'f', 2, 64)
+}
+
 type verLineOptions struct {
 	className, lineType, stroke string
 }
 
-func makeVertLine(x int, label string, y1, y2 int, o verLineOptions) *html.Node {
+func makeVertLine(x float64, label string, y1, y2 float64, o verLineOptions) *html.Node {
 	if o.stroke == "" {
 		o.stroke = BASE_LINE_COLOR
 	}
@@ -347,8 +351,8 @@ func makeVertLine(x int, label string, y1, y2 int, o verLineOptions) *html.Node 
 			{Key: "class", Val: "line-vertical " + o.className},
 			{Key: "x1", Val: "0"},
 			{Key: "x2", Val: "0"},
-			{Key: "y1", Val: strconv.Itoa(y1)},
-			{Key: "y2", Val: strconv.Itoa(y2)},
+			{Key: "y1", Val: formatFloat(y1)},
+			{Key: "y2", Val: formatFloat(y2)},
 		},
 	})
 	y := y1 - LABEL_MARGIN - FONT_SIZE
@@ -359,15 +363,15 @@ func makeVertLine(x int, label string, y1, y2 int, o verLineOptions) *html.Node 
 		innerHtml: label,
 		attr: []html.Attribute{
 			{Key: "x", Val: "0"},
-			{Key: "y", Val: strconv.Itoa(y)},
-			{Key: "dy", Val: strconv.Itoa(FONT_SIZE) + "px"},
-			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "y", Val: formatFloat(y)},
+			{Key: "dy", Val: formatFloat(FONT_SIZE) + "px"},
+			{Key: "font-size", Val: formatFloat(FONT_SIZE) + "px"},
 			{Key: "text-anchor", Val: "middle"},
 		},
 	})
 	line := createSVG("g", createOptions{
 		attr: []html.Attribute{
-			{Key: "transform", Val: fmt.Sprintf("translate(%d, 0)", x)},
+			{Key: "transform", Val: fmt.Sprintf("translate(%f, 0)", x)},
 		},
 	})
 	line.AppendChild(l)
@@ -380,7 +384,7 @@ type horiLineOptions struct {
 	shortenNumbers                                bool
 }
 
-func makeHoriLine(y int, label any, x1, x2 int, o horiLineOptions) *html.Node {
+func makeHoriLine(y float64, label any, x1, x2 float64, o horiLineOptions) *html.Node {
 	if o.stroke == "" {
 		o.stroke = BASE_LINE_COLOR
 	}
@@ -391,7 +395,7 @@ func makeHoriLine(y int, label any, x1, x2 int, o horiLineOptions) *html.Node {
 		label = shortenLargeNumber(label)
 	}
 	className := "line-horizontal " + o.className + o.lineType
-	var textXPos int
+	var textXPos float64
 	if o.alignment == "left" {
 		if o.title != "" {
 			textXPos = x1 - LABEL_MARGIN + LABEL_WIDTH
@@ -416,8 +420,8 @@ func makeHoriLine(y int, label any, x1, x2 int, o horiLineOptions) *html.Node {
 	l := createSVG("line", createOptions{
 		attr: []html.Attribute{
 			{Key: "class", Val: className},
-			{Key: "x1", Val: strconv.Itoa(lineX1Post)},
-			{Key: "x2", Val: strconv.Itoa(lineX2Post)},
+			{Key: "x1", Val: formatFloat(lineX1Post)},
+			{Key: "x2", Val: formatFloat(lineX2Post)},
 			{Key: "y1", Val: "0"},
 			{Key: "y2", Val: "0"},
 		},
@@ -431,10 +435,10 @@ func makeHoriLine(y int, label any, x1, x2 int, o horiLineOptions) *html.Node {
 	}
 	text := createSVG("text", createOptions{
 		attr: []html.Attribute{
-			{Key: "x", Val: strconv.Itoa(textXPos)},
+			{Key: "x", Val: formatFloat(textXPos)},
 			{Key: "y", Val: "0"},
-			{Key: "dy", Val: strconv.Itoa(FONT_SIZE/2-2) + "px"},
-			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "dy", Val: formatFloat(FONT_SIZE/2-2) + "px"},
+			{Key: "font-size", Val: formatFloat(FONT_SIZE) + "px"},
 			{Key: "text-anchor", Val: a},
 		},
 		innerHtml: fmt.Sprint(label),
@@ -479,26 +483,26 @@ func shortenLargeNumber(a any) string {
 
 type axisLabelOptions struct {
 	title, position string
-	height, width   int
+	height, width   float64
 }
 
 func generateAxisLabel(o axisLabelOptions) *html.Node {
 	if o.title == "" {
 		return nil
 	}
-	var y int
+	var y float64
 	if o.position == "left" {
 		y = (o.height-TOTAL_PADDING)/2 +
-			(len(o.title)*5)/2
+			float64(len(o.title)*5)/2
 	} else {
 		y = (o.height-TOTAL_PADDING)/2 -
-			(len(o.title)*5)/2
+			float64(len(o.title)*5)/2
 	}
-	var x int
+	var x float64
 	if o.position != "left" {
 		x = o.width
 	}
-	y2 := FONT_SIZE + LABEL_WIDTH*-1
+	var y2 float64 = FONT_SIZE + LABEL_WIDTH*-1
 	if o.position == "left" {
 		y2 = FONT_SIZE - LABEL_WIDTH
 	}
@@ -512,8 +516,8 @@ func generateAxisLabel(o axisLabelOptions) *html.Node {
 			{Key: "class", Val: "chart-label"},
 			{Key: "x", Val: "0"},
 			{Key: "y", Val: "0"},
-			{Key: "dy", Val: strconv.Itoa(y2) + "px"},
-			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "dy", Val: formatFloat(y2) + "px"},
+			{Key: "font-size", Val: formatFloat(FONT_SIZE) + "px"},
 			{Key: "text-anchor", Val: "start"},
 		},
 	})
@@ -522,7 +526,7 @@ func generateAxisLabel(o axisLabelOptions) *html.Node {
 			{Key: "x", Val: "0"},
 			{Key: "y", Val: "0"},
 			{Key: "transformBox", Val: "fill-box"},
-			{Key: "transform", Val: fmt.Sprintf("translate(%d, %d) %s", x, y, rotation)},
+			{Key: "transform", Val: fmt.Sprintf("translate(%f, %f) %s", x, y, rotation)},
 			{Key: "class", Val: "test-" + o.position},
 		},
 	})
@@ -532,11 +536,11 @@ func generateAxisLabel(o axisLabelOptions) *html.Node {
 
 type yLineOptions struct {
 	className, title, lineType, mode, pos, stroke string
-	offset                                        int
+	offset                                        float64
 	shortenNumbers                                bool
 }
 
-func yLine(y int, label any, width int, o yLineOptions) *html.Node {
+func yLine(y float64, label any, width float64, o yLineOptions) *html.Node {
 	if o.pos == "" {
 		o.pos = "left"
 	}
@@ -546,8 +550,8 @@ func yLine(y int, label any, width int, o yLineOptions) *html.Node {
 	if o.stroke == "" {
 		o.stroke = BASE_LINE_COLOR
 	}
-	x1 := -1 * AXIS_TICK_LENGTH
-	var x2 int
+	var x1 float64 = -1 * AXIS_TICK_LENGTH
+	var x2 float64
 	if o.mode == "span" {
 		x2 = width + AXIS_TICK_LENGTH
 	}
@@ -570,7 +574,7 @@ func yLine(y int, label any, width int, o yLineOptions) *html.Node {
 	})
 }
 
-func xLine(x int, label string, height int, o yLineOptions) *html.Node {
+func xLine(x float64, label string, height float64, o yLineOptions) *html.Node {
 	if o.pos == "" {
 		o.pos = "bottom"
 	}
@@ -600,14 +604,14 @@ type yMarkerOptions struct {
 	className, pos, stroke, lineType string
 }
 
-func yMarker(y int, label string, width int, o yLineOptions) *html.Node {
+func yMarker(y float64, label string, width float64, o yLineOptions) *html.Node {
 	if o.pos == "" {
 		o.pos = "right"
 	}
 	if o.lineType == "" {
 		o.lineType = "dashed"
 	}
-	x := width - len(label)*5 - LABEL_MARGIN
+	x := width - float64(len(label)*5) - LABEL_MARGIN
 	if o.pos == "left" {
 		x = LABEL_MARGIN
 	}
@@ -617,10 +621,10 @@ func yMarker(y int, label string, width int, o yLineOptions) *html.Node {
 	labelSvg := createSVG("text", createOptions{
 		innerHtml: label,
 		attr: []html.Attribute{
-			{Key: "x", Val: strconv.Itoa(x)},
+			{Key: "x", Val: formatFloat(x)},
 			{Key: "y", Val: "0"},
-			{Key: "dy", Val: strconv.Itoa(FONT_SIZE/-2) + "px"},
-			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "dy", Val: formatFloat(FONT_SIZE/-2) + "px"},
+			{Key: "font-size", Val: formatFloat(FONT_SIZE) + "px"},
 			{Key: "text-anchor", Val: "start"},
 		},
 	})
@@ -637,7 +641,7 @@ type yRegionOptions struct {
 	stroke, fill, pos string
 }
 
-func yRegion(y1, y2, width int, label string, o yRegionOptions) *html.Node {
+func yRegion(y1, y2, width float64, label string, o yRegionOptions) *html.Node {
 	if o.stroke == "" {
 		o.stroke = BASE_LINE_COLOR
 	}
@@ -654,14 +658,14 @@ func yRegion(y1, y2, width int, label string, o yRegionOptions) *html.Node {
 		attr: []html.Attribute{
 			{Key: "x", Val: "0"},
 			{Key: "y", Val: "0"},
-			{Key: "width", Val: strconv.Itoa(width)},
-			{Key: "height", Val: strconv.Itoa(height)},
+			{Key: "width", Val: formatFloat(width)},
+			{Key: "height", Val: formatFloat(height)},
 		},
 	})
 	if o.pos == "" {
 		o.pos = "right"
 	}
-	x := width - (len(label) * 4) - LABEL_MARGIN
+	x := width - float64(len(label)*4) - LABEL_MARGIN
 	if o.pos == "left" {
 		x = LABEL_MARGIN
 	}
@@ -669,10 +673,10 @@ func yRegion(y1, y2, width int, label string, o yRegionOptions) *html.Node {
 		innerHtml: label,
 		attr: []html.Attribute{
 			{Key: "class", Val: "chart-label"},
-			{Key: "x", Val: strconv.Itoa(x)},
+			{Key: "x", Val: formatFloat(x)},
 			{Key: "y", Val: "0"},
-			{Key: "dy", Val: strconv.Itoa(FONT_SIZE/-2) + "px"},
-			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "dy", Val: formatFloat(FONT_SIZE/-2) + "px"},
+			{Key: "font-size", Val: formatFloat(FONT_SIZE) + "px"},
 			{Key: "text-anchor", Val: "start"},
 		},
 	})
@@ -686,7 +690,7 @@ func yRegion(y1, y2, width int, label string, o yRegionOptions) *html.Node {
 	return region
 }
 
-func getBarHeightAndYAttr(yTop, zeroLine int) (height, y int) {
+func getBarHeightAndYAttr(yTop, zeroLine float64) (height, y float64) {
 	if yTop <= zeroLine {
 		height = zeroLine - yTop
 		y = yTop
@@ -698,10 +702,10 @@ func getBarHeightAndYAttr(yTop, zeroLine int) (height, y int) {
 }
 
 type datasetMeta struct {
-	zeroLine, minHeight int
+	zeroLine, minHeight float64
 }
 
-func datasetBar(x, yTop, width int, color, label string, index, offset int, m datasetMeta) *html.Node {
+func datasetBar(x, yTop, width float64, color, label string, index int, offset float64, m datasetMeta) *html.Node {
 	height, y := getBarHeightAndYAttr(yTop, m.zeroLine)
 	y -= offset
 	if height == 0 {
@@ -715,10 +719,10 @@ func datasetBar(x, yTop, width int, color, label string, index, offset int, m da
 		attr: []html.Attribute{
 			{Key: "class", Val: "bar mini"},
 			{Key: "bar mini", Val: strconv.Itoa(index)},
-			{Key: "x", Val: strconv.Itoa(x)},
-			{Key: "y", Val: strconv.Itoa(y)},
-			{Key: "width", Val: strconv.Itoa(width)},
-			{Key: "height", Val: strconv.Itoa(height)},
+			{Key: "x", Val: formatFloat(x)},
+			{Key: "y", Val: formatFloat(y)},
+			{Key: "width", Val: formatFloat(width)},
+			{Key: "height", Val: formatFloat(height)},
 		},
 	})
 	if label == "" {
@@ -733,17 +737,17 @@ func datasetBar(x, yTop, width int, color, label string, index, offset int, m da
 		innerHtml: label,
 		attr: []html.Attribute{
 			{Key: "class", Val: "data-point-value"},
-			{Key: "x", Val: strconv.Itoa(width / 2)},
+			{Key: "x", Val: formatFloat(width / 2)},
 			{Key: "y", Val: "0"},
-			{Key: "dy", Val: strconv.Itoa((FONT_SIZE/2)*-1) + "px"},
-			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE/2) + "px"},
+			{Key: "dy", Val: formatFloat((FONT_SIZE/2)*-1) + "px"},
+			{Key: "font-size", Val: formatFloat(FONT_SIZE/2) + "px"},
 			{Key: "text-anchor", Val: "middle"},
 		},
 	})
 	group := createSVG("g", createOptions{
 		attr: []html.Attribute{
 			{Key: "data-point-index", Val: strconv.Itoa(index)},
-			{Key: "transform", Val: fmt.Sprintf("translate(%d, %d)", x, y)},
+			{Key: "transform", Val: fmt.Sprintf("translate(%f, %f)", x, y)},
 		},
 	})
 	group.AppendChild(rect)
@@ -751,16 +755,16 @@ func datasetBar(x, yTop, width int, color, label string, index, offset int, m da
 	return group
 }
 
-func datasetDot(x, y, radius int, color, label string, index int) *html.Node {
+func datasetDot(x, y, radius float64, color, label string, index int) *html.Node {
 	dot := createSVG("circle", createOptions{
 		style: map[string]string{
 			"fill": color,
 		},
 		attr: []html.Attribute{
 			{Key: "data-point-index", Val: strconv.Itoa(index)},
-			{Key: "cx", Val: strconv.Itoa(x)},
-			{Key: "cy", Val: strconv.Itoa(y)},
-			{Key: "r", Val: strconv.Itoa(radius)},
+			{Key: "cx", Val: formatFloat(x)},
+			{Key: "cy", Val: formatFloat(y)},
+			{Key: "r", Val: formatFloat(radius)},
 		},
 	})
 	if label == "" {
@@ -774,15 +778,15 @@ func datasetDot(x, y, radius int, color, label string, index int) *html.Node {
 			{Key: "class", Val: "data-point-value"},
 			{Key: "x", Val: "0"},
 			{Key: "y", Val: "0"},
-			{Key: "dy", Val: strconv.Itoa((FONT_SIZE/2)*-1-radius) + "px"},
-			{Key: "font-size", Val: strconv.Itoa(FONT_SIZE) + "px"},
+			{Key: "dy", Val: formatFloat((FONT_SIZE/2)*-1-radius) + "px"},
+			{Key: "font-size", Val: formatFloat(FONT_SIZE) + "px"},
 			{Key: "text-anchor", Val: "middle"},
 		},
 	})
 	group := createSVG("g", createOptions{
 		attr: []html.Attribute{
 			{Key: "data-point-index", Val: strconv.Itoa(index)},
-			{Key: "transform", Val: fmt.Sprintf("translate(%d, %d)", x, y)},
+			{Key: "transform", Val: fmt.Sprintf("translate(%f, %f)", x, y)},
 		},
 	})
 	group.AppendChild(dot)

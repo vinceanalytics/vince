@@ -66,26 +66,26 @@ var (
 
 type Measure struct {
 	Margin, Padding                                      Dimension
-	BaseHeight, TitleHeight, LegendHeight, TitleFontSize int
+	BaseHeight, TitleHeight, LegendHeight, TitleFontSize float64
 }
 
 type Dimension struct {
-	Top, Bottom, Left, Right int
+	Top, Bottom, Left, Right float64
 }
 
-func (m Measure) TopOffset() int {
+func (m Measure) TopOffset() float64 {
 	return m.TitleHeight + m.Margin.Top + m.Padding.Top
 }
 
-func (m Measure) LeftOffset() int {
+func (m Measure) LeftOffset() float64 {
 	return m.Margin.Left + m.Padding.Left
 }
 
-func (m Measure) ExtraHeight() int {
+func (m Measure) ExtraHeight() float64 {
 	return m.Margin.Top + m.Margin.Bottom + m.Padding.Top + m.Padding.Bottom +
 		m.TitleHeight + m.LegendHeight
 }
 
-func (m Measure) ExtraWidth() int {
+func (m Measure) ExtraWidth() float64 {
 	return m.Margin.Left + m.Margin.Right + m.Padding.Left + m.Padding.Right
 }
