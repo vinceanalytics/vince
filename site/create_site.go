@@ -33,8 +33,8 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 	}
 	domain = dns.CanonicalName(domain)
 	err := models.Get(ctx).Model(u).Association("Sites").Append(&models.Site{
-		Domain:      domain,
-		Description: r.Form.Get("description"),
+		Domain: domain,
+		Public: r.Form.Get("public") == "true",
 	})
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed saving site")

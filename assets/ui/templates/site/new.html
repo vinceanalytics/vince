@@ -1,84 +1,29 @@
 {{define "_content"}}
-<div class="container-md my-6 px-3 px-md-4 px-lg-5">
-    <form data-turbo="false" class="js-braintree-encrypt js-repo-form" id="new_repository"
-        aria-label="Create a new site" action="/sites" accept-charset="UTF-8" method="post">
-        {{template "_csrf" .}}
-        <div data-view-component="true" class="Subhead mb-3">
-            <h1 data-view-component="true" class="Subhead-heading">Create a new site</h1>
-            <div data-view-component="true" class="Subhead-description">
-                <div class="d-flex flex-auto ">
-                    <p>
-                        A site contains the domain of the website you want to collect web analytics.
-                    </p>
-                </div>
+<div class="container-xl">
+    <div class="container-md" style="padding: 67px 0 200px;">
+        <div class="auth-form px-3">
+            <div class="auth-form-header p0">
+                create new site
+            </div>
+            <div class="auth-form-body mt3">
+                <form action="/sites/new" method="post">
+                    <label for="domain">domain </label>
+                    <input {{if .Errors.domain}} invalid="true" {{end}} {{with .Form.domain}}value="{{index . 0}}"
+                        {{end}} class="form-control input-block" type="text" name="domain" id="domain"
+                        placeholder="example.com">
+                    <div class="form-checkbox">
+                        <label>
+                            <input type="checkbox" name="public" checked="checked" value="true" />
+                            Public
+                        </label>
+                        <p class="note" id="help-text-for-checkbox">
+                            Public sites are accessible to the whole internet
+                        </p>
+                    </div>
+                    <input type="submit" value="Add  →" name="submit" class="btn btn-primary btn-block">
+                </form>
             </div>
         </div>
-        <div class="js-owner-reponame owner-reponame clearfix">
-            <dl class="form-group float-left required mt-1">
-                <dt class="form-group-header">
-                    <label id="repository-owner-label" for="repository-owner">Owner</label>
-                </dt>
-                <dd class="form-group-body ">
-                    <details class="js-owner-container position-relative details-reset details-overlay select-menu">
-                        <summary id="repository-owner"
-                            class="btn select-menu-button with-gravatar js-owner-select hack-repos-owner-summary"
-                            data-menu-button="" aria-describedby="repository-owner-label" aria-haspopup="menu"
-                            role="button">
-                            {{.CurrentUser.Email}}
-                        </summary>
-                    </details>
-                </dd>
-            </dl>
-
-            <span class="float-left pt-4 mx-2 f2 js-with-permission-fields mt-1">/</span>
-            <div class="d-block d-sm-none mb-2 clearfix"></div>
-            <dl class="form-group mt-1 float-left js-with-permission-fields required">
-                <dt class="input-label"><label autocapitalize="off" maxlength="100" required="required"
-                        aria-describedby="repo-name-suggestion" for="site_domain">Domain name</label></dt>
-                <dd><input autocapitalize="off" maxlength="100"
-                        class="form-control js-repo-name js-repo-name-auto-check short" required="" value="" size="100"
-                        type="text" name="domain" id="site_domain" autocomplete="off" spellcheck="false">
-                </dd>
-            </dl>
-        </div>
-
-        <div class="js-with-permission-fields">
-            <p class="my-2" id="repo-name-suggestion">
-                Domain name is your website url without http:// or https:// or the leading www, like example.dom
-            </p>
-
-            <dl class="form-group">
-                <dt class="input-label"><label autocomplete="off" for="site_description">Description <span
-                            class="note">(optional)</span></label></dt>
-                <dd><input class="form-control long" autocomplete="off" type="text" name="description"
-                        id="site_description"></dd>
-            </dl>
-
-            <hr aria-hidden="true">
-
-            <div class="hx_disabled-form-checkbox-label form-checkbox">
-                <label>
-                    <input class="mt-2" aria-describedby="public-description" type="radio" value="public" name="public"
-                        id="public">
-                    Public
-                </label>
-                <svg height="24" aria-hidden="true" viewBox="0 0 24 24" version="1.1" width="24"
-                    data-view-component="true" class="octicon octicon-repo float-left mt-1 mr-2 color-fg-muted">
-                    <path fill-rule="evenodd"
-                        d="M3 2.75A2.75 2.75 0 015.75 0h14.5a.75.75 0 01.75.75v20.5a.75.75 0 01-.75.75h-6a.75.75 0 010-1.5h5.25v-4H6A1.5 1.5 0 004.5 18v.75c0 .716.43 1.334 1.05 1.605a.75.75 0 01-.6 1.374A3.25 3.25 0 013 18.75v-16zM19.5 1.5V15H6c-.546 0-1.059.146-1.5.401V2.75c0-.69.56-1.25 1.25-1.25H19.5z">
-                    </path>
-                    <path
-                        d="M7 18.25a.25.25 0 01.25-.25h5a.25.25 0 01.25.25v5.01a.25.25 0 01-.397.201l-2.206-1.604a.25.25 0 00-.294 0L7.397 23.46a.25.25 0 01-.397-.2v-5.01z">
-                    </path>
-                </svg>
-                <span id="public-description" class="note">
-                    Anyone on the internet can see stats from this site.
-                </span>
-            </div>
-
-            <hr aria-hidden="true">
-            <button type="submit" data-view-component="true" class="btn-primary btn"> Create Site </button>
-        </div>
-    </form>
+    </div>
 </div>
 {{end}}
