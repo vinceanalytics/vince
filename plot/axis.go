@@ -27,8 +27,10 @@ func (d *Data) prep() {
 }
 
 type DataSet struct {
-	Name   string
-	Values []float64
+	Name                       string
+	Values                     []float64
+	yPositions, cumulativeYPos []int
+	index                      int
 }
 
 func newAxis() *axis {
@@ -58,6 +60,7 @@ type axis struct {
 	datasetLength, unitWidth, xOffset    int
 	xAxis                                axisData
 	yAxis                                []axisData
+	datasets                             []DataSet
 }
 
 func (b *axis) config() {
