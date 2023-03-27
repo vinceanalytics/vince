@@ -1,0 +1,507 @@
+.repoOverviews > h1 {
+    margin: 0 0 30px
+}
+
+.repoOverviews .trend {
+    height: 240px
+}
+
+.repoOverviews .empty {
+    height: 150px
+}
+
+.repoOverview {
+    font-size: 16px;
+    height: 240px
+}
+
+.repoOverview.overviewEmpty {
+    height: 150px
+}
+
+.repoOverview ~ .repoOverview {
+    margin-top: 50px;
+    padding-top: 5px
+}
+
+.repoOverview h1 {
+    border: 0;
+    font-size: 34px;
+    font-style: normal;
+    margin: 0 0 10px;
+    padding-top: 0
+}
+
+
+.summary {
+    font-family: futura-pt, "Futura", "open-sans", "Helvetica", sans-serif;
+    display: inline-block;
+    font-size: 15px;
+    padding-right: 100px;
+    position: relative;
+    z-index: 10
+}
+
+.summary strong {
+    font-weight: bold
+}
+
+.summary a {
+    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 1px dotted;
+    position: relative;
+    z-index: 10
+}
+
+.summary a:hover {
+    border-bottom: 0;
+    color: #b94947
+}
+
+.summary .buildNumber {
+    font-size: 18px;
+    position: absolute;
+    right: 30px;
+    top: 40px
+}
+
+.trend {
+    background-color: transparent;
+    position: relative;
+    left: 2vw;
+    position: absolute;
+    top: auto;
+    width: 96vw
+}
+
+.trend svg {
+    display: block;
+    overflow: visible;
+    position: relative;
+    z-index: 9
+}
+
+.trend em {
+    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+    font-weight: bold;
+    bottom: -18px;
+    font-size: 11px;
+    font-style: normal;
+    left: 225px;
+    padding-left: 15px;
+    position: absolute;
+    text-transform: uppercase
+}
+
+.trend em:before {
+    background-color: rgba(0, 0, 0, 0.3);
+    content: "";
+    height: 10px;
+    left: 0;
+    position: absolute;
+    top: 2px;
+    width: 10px
+}
+
+.trend circle {
+    fill: rgba(0, 0, 0, 0.3);
+    stroke: #fefdf8;
+    stroke-width: 1.5px;
+    opacity: 0.8
+}
+
+.trend .area {
+    fill: rgba(0, 0, 0, 0.2)
+}
+
+.trend.coverage-high .area {
+    fill: rgba(95, 151, 68, 0.25)
+}
+
+.trend.coverage-high circle {
+    fill: rgba(95, 151, 68, 0.4)
+}
+
+.trend.coverage-high em:before {
+    background-color: rgba(95, 151, 68, 0.3)
+}
+
+.trend.coverage-medium .area {
+    fill: rgba(248, 148, 6, 0.25)
+}
+
+.trend.coverage-medium circle {
+    fill: rgba(248, 148, 6, 0.4)
+}
+
+.trend.coverage-medium em:before {
+    background-color: rgba(248, 148, 6, 0.3)
+}
+
+.trend.coverage-low .area {
+    fill: rgba(185, 73, 71, 0.25)
+}
+
+.trend.coverage-low circle {
+    fill: rgba(185, 73, 71, 0.4)
+}
+
+.trend.coverage-low em:before {
+    background-color: rgba(185, 73, 71, 0.3)
+}
+
+.repo-overview-footer-wrapper {
+    margin-top: 180px
+}
+
+.repo-overview-footer-wrapper.empty-repo {
+    margin-top: 100px
+}
+
+.trend-line-footer {
+    margin: 0px 0px 20px;
+    background-color: transparent;
+    display: flex;
+    justify-content: space-between
+}
+
+.trend-line-footer.empty-line {
+    opacity: 0.4
+}
+
+.trend-line-footer em {
+    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+    font-weight: bold;
+    font-size: 11px;
+    font-style: normal;
+    text-transform: uppercase
+}
+
+.trend-line-footer .branch-label {
+    display: flex;
+    align-items: center
+}
+
+.trend-line-footer .prefix {
+    display: flex;
+    align-items: center
+}
+
+.trend-line-footer .prefix-square {
+    background-color: rgba(0, 0, 0, 0.3);
+    content: "";
+    height: 10px;
+    top: 2px;
+    width: 10px;
+    margin-right: 5px
+}
+
+.trend-line-footer .prefix-line {
+    display: inline-block;
+    margin-left: -5px;
+    background-color: rgba(53, 74, 87, 0.6);
+    content: "";
+    height: 1px;
+    left: 0;
+    top: 7px;
+    width: 18px
+}
+
+.trend-line-footer .prefix-circle {
+    display: inline-block;
+    margin-left: -15px;
+    background-color: rgba(53, 74, 87, 0.6);
+    background-color: rgba(53, 74, 87, 0.3);
+    border-radius: 999px;
+    border: 3px solid #fefdf8;
+    content: "";
+    height: 7px;
+    left: 3px;
+    top: 1px;
+    width: 7px;
+    margin-right: 8px
+}
+
+.trend-line-footer.coverage-high .prefix-square {
+    background-color: rgba(95, 151, 68, 0.3)
+}
+
+.trend-line-footer.coverage-high .prefix-line {
+    background-color: rgba(95, 151, 68, 0.6)
+}
+
+.trend-line-footer.coverage-high .prefix-circle {
+    background-color: rgba(95, 151, 68, 0.4)
+}
+
+.trend-line-footer.coverage-medium .prefix-square {
+    background-color: rgba(248, 148, 6, 0.3)
+}
+
+.trend-line-footer.coverage-medium .prefix-line {
+    background-color: rgba(248, 148, 6, 0.6)
+}
+
+.trend-line-footer.coverage-medium .prefix-circle {
+    background-color: rgba(248, 148, 6, 0.4)
+}
+
+.trend-line-footer.coverage-low .prefix-square {
+    background-color: rgba(185, 73, 71, 0.3)
+}
+
+.trend-line-footer.coverage-low .prefix-line {
+    background-color: rgba(185, 73, 71, 0.6)
+}
+
+.trend-line-footer.coverage-low .prefix-circle {
+    background-color: rgba(185, 73, 71, 0.4)
+}
+
+.trend-default.coverage-high .area {
+    fill: rgba(95, 151, 68, 0.1)
+}
+
+.trend-default.coverage-medium .area {
+    fill: rgba(248, 148, 6, 0.1)
+}
+
+.trend-default.coverage-low .area {
+    fill: rgba(185, 73, 71, 0.1)
+}
+
+.trend-line {
+    position: absolute
+}
+
+.trend-line em {
+    padding-left: 25px
+}
+
+.trend-line em:before {
+    background-color: rgba(53, 74, 87, 0.6);
+    content: "";
+    height: 1px;
+    left: 0;
+    position: absolute;
+    top: 7px;
+    width: 19px
+}
+
+.trend-line em:after {
+    background-color: rgba(53, 74, 87, 0.3);
+    border-radius: 999px;
+    border: 3px solid #fefdf8;
+    content: "";
+    height: 7px;
+    left: 3px;
+    position: absolute;
+    top: 1px;
+    width: 7px
+}
+
+.trend-line .repo-default-line {
+    background-color: transparent
+}
+
+.trend-line .line {
+    fill: transparent;
+    stroke: rgba(53, 74, 87, 0.5);
+    stroke-width: 1px
+}
+
+.trend-line circle {
+    fill: rgba(53, 74, 87, 0.3)
+}
+
+.trend-line.coverage-high .line {
+    stroke: rgba(95, 151, 68, 0.6)
+}
+
+.trend-line.coverage-high circle {
+    fill: rgba(95, 151, 68, 0.4)
+}
+
+.trend-line.coverage-high em:before {
+    background-color: rgba(95, 151, 68, 0.6)
+}
+
+.trend-line.coverage-high em:after {
+    background-color: rgba(95, 151, 68, 0.4)
+}
+
+.trend-line.coverage-medium .line {
+    stroke: rgba(248, 148, 6, 0.6)
+}
+
+.trend-line.coverage-medium circle {
+    fill: rgba(248, 148, 6, 0.4)
+}
+
+.trend-line.coverage-medium em:before {
+    background-color: rgba(248, 148, 6, 0.6)
+}
+
+.trend-line.coverage-medium em:after {
+    background-color: rgba(248, 148, 6, 0.4)
+}
+
+.trend-line.coverage-low .line {
+    stroke: rgba(185, 73, 71, 0.6)
+}
+
+.trend-line.coverage-low circle {
+    fill: rgba(185, 73, 71, 0.4)
+}
+
+.trend-line.coverage-low em:before {
+    background-color: rgba(185, 73, 71, 0.6)
+}
+
+.trend-line.coverage-low em:after {
+    background-color: rgba(185, 73, 71, 0.4)
+}
+
+.trend-default em,
+.relevant-covered em {
+    left: auto;
+    padding-left: 15px;
+    right: 175px;
+    text-align: right
+}
+
+.infobox {
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid #354a57;
+    font-size: 10px;
+    font-weight: bold;
+    left: 0px;
+    padding: 2px 7px 4px;
+    position: absolute;
+    text-transform: uppercase;
+    top: 0px;
+    white-space: nowrap;
+    z-index: 20
+}
+
+.infobox span {
+    border-bottom: 1px dotted
+}
+
+.infobox:hover {
+    display: block
+}
+
+.coverageText.repo-coverage-outline {
+    color: #fefdf8;
+    text-shadow: 1px 1px #666, 1px -1px #666, -1px -1px #666, -1px 1px #666
+}
+
+.coverage-high.repo-coverage-outline {
+    text-shadow: 1px 1px #5f9744, 1px -1px #5f9744, -1px -1px #5f9744, -1px 1px #5f9744
+}
+
+.coverage-medium.repo-coverage-outline {
+    text-shadow: 1px 1px #F89406, 1px -1px #F89406, -1px -1px #F89406, -1px 1px #F89406
+}
+
+.coverage-low.repo-coverage-outline {
+    text-shadow: 1px 1px #b94947, 1px -1px #b94947, -1px -1px #b94947, -1px 1px #b94947
+}
+
+.coverage-text-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    float: right
+}
+
+.coverageText {
+    background-color: transparent;
+    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+    font-weight: bold;
+    float: right;
+    font-size: 42px;
+    margin-top: -5px;
+    opacity: 0.7;
+    position: relative;
+    z-index: 10
+}
+
+.coverageText.repo-default-percent {
+    font-size: 18px;
+    float: none;
+    opacity: 0.5;
+    padding-top: 10px;
+    text-shadow: none
+}
+
+.sparkline-relevent .line {
+    fill: transparent;
+    stroke: rgba(53, 74, 87, 0.3);
+    stroke-width: 1px
+}
+
+.relevant-trend-count {
+    display: flex;
+    align-items: center;
+    justify-content: space-between
+}
+
+.relevant-trend-count .left-label {
+    display: flex;
+    align-items: center
+}
+
+.relevant-trend-count em {
+    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
+    font-weight: bold;
+    font-size: 11px;
+    display: flex;
+    align-items: center
+}
+
+.relevant-trend-count em span {
+    padding: 0px 2px 0px 5px
+}
+
+.relevant-trend-count em:before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px
+}
+
+.relevant-trend-count .count-relevant:before {
+    background-color: rgba(53, 74, 87, 0.3)
+}
+
+.relevant-trend-count .count-covered {
+    margin-left: 10px
+}
+
+.relevant-trend-count .count-covered:before {
+    background-color: rgba(185, 73, 71, 0.3)
+}
+
+.relevant-total .area {
+    fill: rgba(53, 74, 87, 0.1)
+}
+
+.relevant-covered em:before {
+    display: none
+}
+
+.relevant-covered .area {
+    fill: rgba(185, 73, 71, 0.1)
+}
+
+.relevant-covered circle {
+    fill: rgba(185, 73, 71, 0.4)
+}
+
+.relevant-covered .sparkline-relevent .line {
+    stroke: rgba(185, 73, 71, 0.3)
+}

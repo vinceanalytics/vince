@@ -34,12 +34,33 @@
                         Vince
                     </a>
                 </div>
+
                 <div class="UnderlineNav-body">
+                    {{if .CurrentUser}}
                     <a class="UnderlineNav-item" href="/pricing">Pricing</a>
                     <a class="UnderlineNav-item" href="/login">Sign In</a>
                     <a class="UnderlineNav-item color-fg-success" href="/register" aria-current="page">
                         Try for free
                     </a>
+                    {{else}}
+                    <a class="UnderlineNav-item" href="/pricing">
+                        {{.Icon "repo" 16 "SideNav-icon"}}
+                        <span class="menu-link">sites</span>
+                    </a>
+                    <a class="UnderlineNav-item menu-link" href="/pricing">
+                        {{.Icon "plus" 16 "SideNav-icon"}}
+                        <span class="menu-link">add site </span>
+                    </a>
+                    <a class="UnderlineNav-item" href="/pricing">
+                        {{.Icon "key" 16 "SideNav-icon"}}
+                        <span class="menu-link">buy a plan </span>
+                    </a>
+                    <a class="UnderlineNav-item" href="/pricing">
+                        {{.Icon "book" 16 "SideNav-icon"}}
+                        <span class="menu-link"> docs </span>
+                    </a>
+                    {{end}}
+
                 </div>
             </div>
         </nav>

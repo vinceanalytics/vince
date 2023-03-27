@@ -18,7 +18,7 @@
 @import './product';
 @import './marketing';
 @import './profile';
-@import './charts';
+@import './sites';
 
 
 @font-face {
@@ -140,7 +140,7 @@ body {
 .footer__nav-item {
     margin: .25em .125em;
     padding: .25em .75em;
-    font-size: var(--type-small);
+    font-size: var(--type-large);
     color: var(--color-blurple);
     background-color: var(--color-canary);
     border-radius: 1em;
@@ -247,4 +247,10 @@ body {
 .auth-form-body ul {
     padding-left: inherit;
     margin-bottom: inherit
+}
+
+.menu-link {
+    font-size: var(--type-large);
+    color: var(--color-blurple);
+    font-family: var(--font-medium-italic);
 }
