@@ -30301,6 +30301,15 @@ li.contribution .num {
   font-size: 14px;
 }
 
+.repoChartInfo {
+  width: 100%;
+}
+
+.repoChartInfo h1 a {
+  position: relative;
+  z-index: 10;
+}
+
 .repoOverviews > h1 {
   margin: 0 0 30px;
 }
