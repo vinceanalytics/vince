@@ -31,11 +31,12 @@
                         Try for free
                     </a>
                     {{else}}
-                    <a class="UnderlineNav-item" href="/sites">
+                    <a class="UnderlineNav-item" href="/sites" {{if eq .Page "sites" }}aria-current="page" {{end}}>
                         {{.Icon "repo" 16 "SideNav-icon"}}
                         <span class="menu-link">sites</span>
                     </a>
-                    <a class="UnderlineNav-item menu-link" href="/sites/new">
+                    <a class="UnderlineNav-item menu-link" href="/sites/new" {{if eq .Page "add_site"
+                        }}aria-current="page" {{end}}>
                         {{.Icon "plus" 16 "SideNav-icon"}}
                         <span class="menu-link">add site </span>
                     </a>

@@ -63,6 +63,16 @@ var Home = template.Must(
 		"layout/header.html",
 		"layout/flash.html",
 		"layout/notice.html",
+		"layout/footer.html",
+	),
+)
+
+var Sites = template.Must(
+	template.ParseFS(files,
+		"layout/app.html",
+		"layout/header.html",
+		"layout/flash.html",
+		"layout/notice.html",
 		"site/index.html",
 		"layout/footer.html",
 	),
@@ -107,6 +117,7 @@ type Context struct {
 	NewSite       *NewSite
 	Error         *Errors
 	Position      int
+	Page          string
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {

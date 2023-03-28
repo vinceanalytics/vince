@@ -18,5 +18,6 @@ func New(w http.ResponseWriter, r *http.Request) {
 			IsAtLimit:   owned >= int64(limit),
 			SiteLimit:   limit,
 		}
+		ctx.Page = "add_site"
 	})
 }
