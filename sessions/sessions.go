@@ -46,12 +46,21 @@ func Get(ctx context.Context) *Session {
 	return ctx.Value(sessionsKey{}).(*Session)
 }
 
-func NewSession(name string) *Session {
+func NewSession(name, secret string) *Session {
 	var s Session
 	s.maxAge = 60 * 60 * 24 * 365 * 5
 	s.name = name
-	rand.Read(s.hashKey[:])
-	rand.Read(s.blockKey[:])
+	if secret != "" {
+		d, _ := base64.StdEncoding.DecodeString(secret)
+		if len(d) == 48 {
+			copy(s.hashKey[:], d[:32])
+			copy(s.blockKey[:], d[32:])
+		}
+	} else {
+		rand.Read(s.hashKey[:])
+		rand.Read(s.blockKey[:])
+	}
+
 	s.block, _ = aes.NewCipher(s.blockKey[:])
 	s.macPool = &sync.Pool{
 		New: func() any {

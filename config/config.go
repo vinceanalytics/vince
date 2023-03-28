@@ -62,6 +62,12 @@ func Flags() []cli.Flag {
 			Value:   defaultSecret(),
 			EnvVars: []string{"VINCE_SECRET_KEY_BASE"},
 		},
+		&cli.StringFlag{
+			Name:    "cookie-store-secret",
+			Usage:   "48 bytes base64 encoded cookie encryption key",
+			Value:   defaultSecret(),
+			EnvVars: []string{"VINCE_COOKIE_STORE_SECRET"},
+		},
 		&cli.BoolFlag{
 			Name:    "enable-email-verification",
 			Usage:   "send emails for account verification",
@@ -217,6 +223,7 @@ func fromCli(ctx *cli.Context) *Config {
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
 		IsSelfHost:              ctx.Bool("self-host"),
 		SecretKeyBase:           ctx.String("secret-key-base"),
+		CookieStoreSecret:       ctx.String("cookie-store-secret"),
 		Intervals: &Intervals{
 			SitesByDomainCacheRefreshInterval: durationpb.New(ctx.Duration("cache-refresh")),
 			LogRotationCheckInterval:          durationpb.New(ctx.Duration("rotation-check")),

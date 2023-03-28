@@ -102,7 +102,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		return err
 	}
 	ctx = email.Set(ctx, mailer)
-	session := sessions.NewSession("_vince")
+	session := sessions.NewSession("_vince", o.CookieStoreSecret)
 	ctx = sessions.Set(ctx, session)
 	var h health.Health
 	defer func() {
