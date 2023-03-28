@@ -76,13 +76,11 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	ctx = models.Set(ctx, sqlDb)
 	alloc := memory.DefaultAllocator
 	ctx = compute.WithAllocator(ctx, alloc)
-	ts, err := timeseries.Open(ctx, alloc, o.DataPath)
+	ctx, ts, err := timeseries.Open(ctx, o.DataPath)
 	if err != nil {
 		models.CloseDB(sqlDb)
 		return err
 	}
-	ctx = timeseries.Set(ctx, ts)
-
 	ctx, err = caches.Open(ctx)
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed to open caches")

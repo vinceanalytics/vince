@@ -100,7 +100,7 @@ var bigBufferPool = &sync.Pool{
 
 func (b *Buffer) Save(ctx context.Context) error {
 	say := log.Get(ctx)
-	ts := Get(ctx)
+	ts := GetBob(ctx)
 	// data saved here is short lived
 	b.id.Day(timex.Today())
 	b.id.SetEntropy()
@@ -110,7 +110,7 @@ func (b *Buffer) Save(ctx context.Context) error {
 		// to ensure data saved is processed.
 		ttl = 3 * time.Hour
 	}
-	return ts.db.Update(func(txn *badger.Txn) error {
+	return ts.Update(func(txn *badger.Txn) error {
 		enc := getCompressor()
 		defer enc.Release()
 
