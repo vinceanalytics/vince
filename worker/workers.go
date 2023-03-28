@@ -132,3 +132,32 @@ func saveBuffer(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, 
 		}
 	}
 }
+
+func MergeTimeseries(ctx context.Context, wg *sync.WaitGroup, exit func()) *health.Ping {
+	wg.Add(1)
+	h := health.NewPing("timeseries_merger")
+	go mergeTs(ctx, wg, h.Channel, exit)
+	return h
+}
+
+func mergeTs(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
+	log.Get(ctx).Debug().Str("worker", "timeseries_writer").Msg("started")
+	defer wg.Done()
+	tick := time.NewTicker(config.Get(ctx).Intervals.MergeTimeseriesInterval.AsDuration())
+	defer tick.Stop()
+	var since uint64
+	var err error
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case pong := <-ch:
+			pong()
+		case <-tick.C:
+			since, err = timeseries.Merge(ctx, since, timeseries.Save)
+			if err != nil {
+				log.Get(ctx).Err(err).Msg("failed to merge ts")
+			}
+		}
+	}
+}

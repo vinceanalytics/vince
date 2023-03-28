@@ -18,47 +18,31 @@ var (
 	ErrSkip = errors.New("skip iteration")
 )
 
-// Bob stores parquet files identified by ID.
-type Bob struct {
-	cb    MergeCallback
-	db    *badger.DB
-	since uint64
-}
-
-func (b *Bob) GC() {
-	b.db.RunValueLogGC(0.5)
-}
-
 // Executed after stats have been merged to a single b
 type MergeCallback func(ctx context.Context, b *Buffer, uid, sid uint64)
 
-// Merge  combines all the parquet files for today partitioned by user and site
-// to a single file.
-//
-// Merging is done in two steps. First we find all uid/sid keys crated during this
-// merge window, then we process each unique uid/sid concurrently. By processing
-// we mean merging together all parquet files into a single one.
-func (b *Bob) Merge(ctx context.Context) error {
+func Merge(ctx context.Context, since uint64, cb MergeCallback) (uint64, error) {
 	_, task := trace.NewTask(ctx, "ts_merge")
 	defer task.End()
 	start := time.Now()
 	say := log.Get(ctx)
 	say.Debug().Msg("starting merging daily parquet files")
+	db := GetBob(ctx)
 
 	hash := make(map[uint64]uint64)
 
 	defer func() {
 		say.Debug().
 			Int("users", len(hash)).
-			Msgf("finished merging daily parquet files in %s", time.Since(start))
+			Msgf("finished merging in %s", time.Since(start))
 	}()
 
 	// Try to find all sites which ingested events in a single day (Well, TODAY)
-	b.db.View(func(txn *badger.Txn) error {
+	db.View(func(txn *badger.Txn) error {
 		o := badger.DefaultIteratorOptions
 		o.PrefetchValues = false
 		// start with keys from our last processed key.
-		o.SinceTs = b.since
+		o.SinceTs = since
 		it := txn.NewIterator(o)
 		defer it.Close()
 		var last uint64
@@ -69,14 +53,20 @@ func (b *Bob) Merge(ctx context.Context) error {
 				continue
 			}
 			key := it.Item().Key()
+			// only interested in site id and user id
 			uid := binary.BigEndian.Uint64(key[userOffset:])
 			sid := binary.BigEndian.Uint64(key[siteOffset:])
 			hash[sid] = uid
 		}
 		// Track the last version we processed. Next merge will start from here.
-		b.since = last
+		since = last
 		return nil
 	})
+
+	if len(hash) == 0 {
+		// early exit if there was no activity.
+		return 0, nil
+	}
 
 	merge := func(it *badger.Iterator, txn *badger.Txn, buf *Buffer) error {
 		defer it.Close()
@@ -103,7 +93,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 
 	save := func(ctx context.Context, uid, sid uint64) func() error {
 		return func() error {
-			return b.db.Update(func(txn *badger.Txn) error {
+			return db.Update(func(txn *badger.Txn) error {
 				w := bigBufferPool.Get().(*Buffer).Init(uid, sid, 0)
 				w.id.Day(start)
 				w.id.SetEntropy()
@@ -114,9 +104,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
-				if b.cb != nil {
-					b.cb(ctx, w.Sort(), uid, sid)
-				}
+				go cb(ctx, w.Sort(), uid, sid)
 				return nil
 			})
 		}
@@ -130,7 +118,7 @@ func (b *Bob) Merge(ctx context.Context) error {
 		if err != nil {
 			log.Get(ctx).Err(err).Msg("failed to merge ingested events")
 		}
-		b.GC()
+		db.RunValueLogGC(0.5)
 	}
-	return nil
+	return since, nil
 }

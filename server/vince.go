@@ -121,6 +121,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		worker.UpdateCacheSites(ctx, &wg, exit),
 		worker.LogRotate(errorLog)(ctx, &wg, exit),
 		worker.SaveTimeseries(ctx, &wg, exit),
+		worker.MergeTimeseries(ctx, &wg, exit),
 	)
 	ctx = compute.SetExecCtx(ctx, compute.DefaultExecCtx())
 	ctx = health.Set(ctx, h)

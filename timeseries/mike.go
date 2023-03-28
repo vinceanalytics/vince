@@ -15,13 +15,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// Mike is the permanent storage for the events data. Data stored here is aggregated
-// and broken down. All data is still stored in parquet format. This  only supports
-// reads and writes, nothing is ever deleted from this storage.
-type Mike struct {
-	db *badger.DB
-}
-
 type Group struct {
 	u, s  *roaring64.Bitmap
 	props [PROPS_CITY]EntrySegment
@@ -49,7 +42,8 @@ func (g *Group) Release() {
 	groupPool.Put(g)
 }
 
-func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
+func Save(ctx context.Context, b *Buffer, uid, sid uint64) {
+	db := GetMike(ctx)
 	defer b.Release()
 	group := groupPool.Get().(*Group)
 
@@ -68,7 +62,7 @@ func (m *Mike) Save(ctx context.Context, b *Buffer, uid, sid uint64) {
 		a.Total = el.Aggr(group.u, group.s)
 		x.Aggr(group.u, group.s, a)
 		ts := time.Unix(el[0].Timestamp, 0)
-		err := m.db.Update(func(txn *badger.Txn) error {
+		err := db.Update(func(txn *badger.Txn) error {
 			enc := getCompressor()
 			dec := getDecompressor()
 			defer func() {
