@@ -4,44 +4,9 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/apache/arrow/go/v12/arrow"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go/bloom/xxhash"
 )
-
-// A list of Entry properties as arrow.Field.
-var Fields = []arrow.Field{
-	{Name: "timestamp", Type: &arrow.TimestampType{Unit: arrow.Nanosecond}},
-	{Name: "name", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "domain", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "user_id", Type: &arrow.DictionaryType{IndexType: &arrow.Int64Type{}, ValueType: &arrow.Int64Type{}}},
-	{Name: "session_id", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.FixedSizeBinaryType{ByteWidth: 16}}},
-	{Name: "hostname", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "path", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "referrer", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "referrer_source", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "country_code", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "screen_size", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "operating_system", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "browser", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "utm_medium", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "utm_source", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "utm_campaign", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "browser_version", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "operating_system_version", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "utm_content", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "utm_term", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "transferred_from", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "entry_page", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "exit_page", Type: &arrow.DictionaryType{IndexType: &arrow.Int32Type{}, ValueType: &arrow.StringType{}}},
-	{Name: "city_geo_name_id", Type: &arrow.Int32Type{}},
-	{Name: "pageviews", Type: &arrow.Int64Type{}},
-	{Name: "events", Type: &arrow.Int64Type{}},
-	{Name: "sign", Type: &arrow.Int32Type{}},
-	{Name: "is_bounce", Type: &arrow.BooleanType{}},
-	{Name: "duration", Type: &arrow.DurationType{}},
-	{Name: "start", Type: &arrow.TimestampType{Unit: arrow.Nanosecond}},
-}
 
 // Session creates a new session from entry
 func (e *Entry) Session() *Entry {

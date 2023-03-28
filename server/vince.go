@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/apache/arrow/go/v12/arrow/compute"
-	"github.com/apache/arrow/go/v12/arrow/memory"
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/assets/tracker"
 	"github.com/gernest/vince/caches"
@@ -74,8 +72,6 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		return err
 	}
 	ctx = models.Set(ctx, sqlDb)
-	alloc := memory.DefaultAllocator
-	ctx = compute.WithAllocator(ctx, alloc)
 	ctx, ts, err := timeseries.Open(ctx, o.DataPath)
 	if err != nil {
 		models.CloseDB(sqlDb)
@@ -123,7 +119,6 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		worker.SaveTimeseries(ctx, &wg, exit),
 		worker.MergeTimeseries(ctx, &wg, exit),
 	)
-	ctx = compute.SetExecCtx(ctx, compute.DefaultExecCtx())
 	ctx = health.Set(ctx, h)
 
 	svr := &http.Server{
