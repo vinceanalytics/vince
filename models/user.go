@@ -75,7 +75,7 @@ func LoadUserModel(ctx context.Context, uid uint64) (*User, error) {
 		Preload("EnterprisePlan").
 		Preload("GoogleAuth").
 		Preload("GracePeriod").
-		First(&u).Error
+		First(&u, uid).Error
 	if err != nil {
 		return nil, err
 	}

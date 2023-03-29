@@ -14,7 +14,7 @@ import (
 	"github.com/gernest/vince/models"
 )
 
-//go:embed layout site auth error email
+//go:embed layout pages site auth error email
 var files embed.FS
 
 var LoginForm = template.Must(
@@ -87,6 +87,18 @@ var SiteNew = template.Must(
 		"layout/notice.html",
 		"layout/footer.html",
 		"site/new.html",
+	),
+)
+
+var Pricing = template.Must(
+	template.ParseFS(files,
+		"layout/app.html",
+		"layout/csrf.html",
+		"layout/header.html",
+		"layout/flash.html",
+		"layout/notice.html",
+		"layout/footer.html",
+		"pages/pricing.html",
 	),
 )
 
