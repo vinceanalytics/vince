@@ -77,6 +77,8 @@ func Auth(h http.Handler) http.Handler {
 			u, err := models.LoadUserModel(r.Context(), session.Data.CurrentUserID)
 			if err != nil {
 				log.Get(r.Context()).Err(err).Msg("failed fetching current user")
+				session.Data = sessions.Data{}
+				session.Save(w)
 			} else {
 				r = r.WithContext(models.SetCurrentUser(r.Context(), u))
 			}
