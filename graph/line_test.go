@@ -8,22 +8,30 @@ import (
 	"bytes"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/wcharczuk/go-chart"
-	"github.com/wcharczuk/go-chart/drawing"
 )
 
 func TestOther(t *testing.T) {
+	now := time.Now()
 	graph := chart.Chart{
-
+		Width:  1613,
+		Height: 240,
 		Series: []chart.Series{
-			chart.ContinuousSeries{
+			chart.TimeSeries{
 				Style: chart.Style{
 					Show:        true,
-					StrokeColor: drawing.ColorRed,               // will supercede defaults
-					FillColor:   drawing.ColorRed.WithAlpha(64), // will supercede defaults
+					StrokeColor: TrendStroke, // will supercede defaults
+					FillColor:   TrendFill,   // will supercede defaults
 				},
-				XValues: []float64{1.0, 2.0, 3.0, 4.0, 5.0},
+				XValues: []time.Time{
+					now.Add(time.Hour),
+					now.Add(2 * time.Hour),
+					now.Add(3 * time.Hour),
+					now.Add(4 * time.Hour),
+					now.Add(5 * time.Hour),
+				},
 				YValues: []float64{1.0, 10.0, 8.0, 4.0, 5.0},
 			},
 		},
