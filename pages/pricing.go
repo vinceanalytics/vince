@@ -8,5 +8,7 @@ import (
 )
 
 func Pricing(w http.ResponseWriter, r *http.Request) {
-	render.HTML(r.Context(), w, templates.Pricing, http.StatusOK)
+	render.HTML(r.Context(), w, templates.Pricing, http.StatusOK, func(ctx *templates.Context) {
+		ctx.Page = "pricing"
+	})
 }
