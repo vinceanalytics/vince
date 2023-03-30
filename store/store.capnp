@@ -9,3 +9,9 @@ struct Calendar{
     visits @1 :List(Float64);
     events @2 :List(Float64);
 }
+
+struct Sum{
+    visitors @0 :Float64;
+    visits @1 :Float64;
+    events @2 :Float64; 
+}
