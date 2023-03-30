@@ -43,6 +43,7 @@ const (
 	PROPS_COUNTRY         PROPS = 16
 	PROPS_REGION          PROPS = 17
 	PROPS_CITY            PROPS = 18
+	PROPS_TREND           PROPS = 19
 )
 
 // Enum value maps for PROPS.
@@ -67,6 +68,7 @@ var (
 		16: "COUNTRY",
 		17: "REGION",
 		18: "CITY",
+		19: "TREND",
 	}
 	PROPS_value = map[string]int32{
 		"unknown":         0,
@@ -88,6 +90,7 @@ var (
 		"COUNTRY":         16,
 		"REGION":          17,
 		"CITY":            18,
+		"TREND":           19,
 	}
 )
 
@@ -310,9 +313,10 @@ func (Aggr_MONTH) EnumDescriptor() ([]byte, []int) {
 
 type Entries struct {
 	state         protoimpl.MessageState
-	unknownFields protoimpl.UnknownFields
-	Events        []*Entry `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Events []*Entry `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
 }
 
 func (x *Entries) Reset() {
@@ -355,41 +359,42 @@ func (x *Entries) GetEvents() []*Entry {
 }
 
 type Entry struct {
-	state                  protoimpl.MessageState
-	UtmMedium              string `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
-	Hostname               string `protobuf:"bytes,6,opt,name=hostname,proto3" json:"hostname,omitempty"`
-	Region                 string `protobuf:"bytes,31,opt,name=region,proto3" json:"region,omitempty"`
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Timestamp              int64  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	Name                   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	UtmSource              string `protobuf:"bytes,15,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
-	CityGeoNameId          string `protobuf:"bytes,24,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
-	ExitPage               string `protobuf:"bytes,23,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
-	UtmCampaign            string `protobuf:"bytes,16,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
+	Domain                 string `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
+	UserId                 uint64 `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	SessionId              uint64 `protobuf:"varint,5,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	Hostname               string `protobuf:"bytes,6,opt,name=hostname,proto3" json:"hostname,omitempty"`
 	Pathname               string `protobuf:"bytes,7,opt,name=pathname,proto3" json:"pathname,omitempty"`
-	BrowserVersion         string `protobuf:"bytes,17,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
+	Referrer               string `protobuf:"bytes,8,opt,name=referrer,proto3" json:"referrer,omitempty"`
 	ReferrerSource         string `protobuf:"bytes,9,opt,name=referrer_source,json=referrerSource,proto3" json:"referrer_source,omitempty"`
 	CountryCode            string `protobuf:"bytes,10,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
 	ScreenSize             string `protobuf:"bytes,11,opt,name=screen_size,json=screenSize,proto3" json:"screen_size,omitempty"`
 	OperatingSystem        string `protobuf:"bytes,12,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
 	Browser                string `protobuf:"bytes,13,opt,name=browser,proto3" json:"browser,omitempty"`
-	EntryPage              string `protobuf:"bytes,22,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
-	Domain                 string `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
-	TransferredFrom        string `protobuf:"bytes,21,opt,name=transferred_from,json=transferredFrom,proto3" json:"transferred_from,omitempty"`
-	Referrer               string `protobuf:"bytes,8,opt,name=referrer,proto3" json:"referrer,omitempty"`
+	UtmMedium              string `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
+	UtmSource              string `protobuf:"bytes,15,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
+	UtmCampaign            string `protobuf:"bytes,16,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
+	BrowserVersion         string `protobuf:"bytes,17,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
 	OperatingSystemVersion string `protobuf:"bytes,18,opt,name=operating_system_version,json=operatingSystemVersion,proto3" json:"operating_system_version,omitempty"`
 	UtmContent             string `protobuf:"bytes,19,opt,name=utm_content,json=utmContent,proto3" json:"utm_content,omitempty"`
 	UtmTerm                string `protobuf:"bytes,20,opt,name=utm_term,json=utmTerm,proto3" json:"utm_term,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	SessionId              uint64 `protobuf:"varint,5,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	UserId                 uint64 `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	TransferredFrom        string `protobuf:"bytes,21,opt,name=transferred_from,json=transferredFrom,proto3" json:"transferred_from,omitempty"`
+	EntryPage              string `protobuf:"bytes,22,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
+	ExitPage               string `protobuf:"bytes,23,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
+	CityGeoNameId          string `protobuf:"bytes,24,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
 	PageViews              uint64 `protobuf:"varint,25,opt,name=page_views,json=pageViews,proto3" json:"page_views,omitempty"`
 	Events                 uint64 `protobuf:"varint,26,opt,name=events,proto3" json:"events,omitempty"`
+	Sign                   int32  `protobuf:"varint,27,opt,name=sign,proto3" json:"sign,omitempty"`
+	IsBounce               bool   `protobuf:"varint,28,opt,name=is_bounce,json=isBounce,proto3" json:"is_bounce,omitempty"`
 	Duration               int64  `protobuf:"varint,29,opt,name=duration,proto3" json:"duration,omitempty"`
 	Start                  int64  `protobuf:"varint,30,opt,name=start,proto3" json:"start,omitempty"`
-	Timestamp              int64  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	sizeCache              protoimpl.SizeCache
-	Sign                   int32 `protobuf:"varint,27,opt,name=sign,proto3" json:"sign,omitempty"`
-	IsBounce               bool  `protobuf:"varint,28,opt,name=is_bounce,json=isBounce,proto3" json:"is_bounce,omitempty"`
-	IsSession              bool  `protobuf:"varint,32,opt,name=is_session,json=isSession,proto3" json:"is_session,omitempty"`
+	Region                 string `protobuf:"bytes,31,opt,name=region,proto3" json:"region,omitempty"`
+	IsSession              bool   `protobuf:"varint,32,opt,name=is_session,json=isSession,proto3" json:"is_session,omitempty"`
 }
 
 func (x *Entry) Reset() {
@@ -649,20 +654,21 @@ func (x *Entry) GetIsSession() bool {
 }
 
 type EntrySegment struct {
-	state                  protoimpl.MessageState
-	Browser                []*Entry `protobuf:"bytes,13,rep,name=browser,proto3" json:"browser,omitempty"`
-	Region                 []*Entry `protobuf:"bytes,31,rep,name=region,proto3" json:"region,omitempty"`
-	OperatingSystem        []*Entry `protobuf:"bytes,12,rep,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name                   []*Entry `protobuf:"bytes,2,rep,name=name,proto3" json:"name,omitempty"`
 	Domain                 []*Entry `protobuf:"bytes,3,rep,name=domain,proto3" json:"domain,omitempty"`
 	Hostname               []*Entry `protobuf:"bytes,6,rep,name=hostname,proto3" json:"hostname,omitempty"`
 	Pathname               []*Entry `protobuf:"bytes,7,rep,name=pathname,proto3" json:"pathname,omitempty"`
 	Referrer               []*Entry `protobuf:"bytes,8,rep,name=referrer,proto3" json:"referrer,omitempty"`
 	ReferrerSource         []*Entry `protobuf:"bytes,9,rep,name=referrer_source,json=referrerSource,proto3" json:"referrer_source,omitempty"`
 	CountryCode            []*Entry `protobuf:"bytes,10,rep,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
-	UtmMedium              []*Entry `protobuf:"bytes,14,rep,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
-	Name                   []*Entry `protobuf:"bytes,2,rep,name=name,proto3" json:"name,omitempty"`
-	unknownFields          protoimpl.UnknownFields
 	ScreenSize             []*Entry `protobuf:"bytes,11,rep,name=screen_size,json=screenSize,proto3" json:"screen_size,omitempty"`
+	OperatingSystem        []*Entry `protobuf:"bytes,12,rep,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
+	Browser                []*Entry `protobuf:"bytes,13,rep,name=browser,proto3" json:"browser,omitempty"`
+	UtmMedium              []*Entry `protobuf:"bytes,14,rep,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
 	UtmSource              []*Entry `protobuf:"bytes,15,rep,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
 	UtmCampaign            []*Entry `protobuf:"bytes,16,rep,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
 	BrowserVersion         []*Entry `protobuf:"bytes,17,rep,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
@@ -672,7 +678,7 @@ type EntrySegment struct {
 	EntryPage              []*Entry `protobuf:"bytes,22,rep,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
 	ExitPage               []*Entry `protobuf:"bytes,23,rep,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
 	CityGeoNameId          []*Entry `protobuf:"bytes,24,rep,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
-	sizeCache              protoimpl.SizeCache
+	Region                 []*Entry `protobuf:"bytes,31,rep,name=region,proto3" json:"region,omitempty"`
 }
 
 func (x *EntrySegment) Reset() {
@@ -855,21 +861,22 @@ func (x *EntrySegment) GetRegion() []*Entry {
 }
 
 type Aggr struct {
-	OperatingSystem        *Aggr_Segment `protobuf:"bytes,12,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
-	Name                   *Aggr_Segment `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	state                  protoimpl.MessageState
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
 	Total                  *Aggr_Total   `protobuf:"bytes,1,opt,name=total,proto3" json:"total,omitempty"`
-	Browser                *Aggr_Segment `protobuf:"bytes,13,opt,name=browser,proto3" json:"browser,omitempty"`
+	Name                   *Aggr_Segment `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Domain                 *Aggr_Segment `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
 	Hostname               *Aggr_Segment `protobuf:"bytes,6,opt,name=hostname,proto3" json:"hostname,omitempty"`
-	UtmMedium              *Aggr_Segment `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
+	Pathname               *Aggr_Segment `protobuf:"bytes,7,opt,name=pathname,proto3" json:"pathname,omitempty"`
 	Referrer               *Aggr_Segment `protobuf:"bytes,8,opt,name=referrer,proto3" json:"referrer,omitempty"`
 	ReferrerSource         *Aggr_Segment `protobuf:"bytes,9,opt,name=referrer_source,json=referrerSource,proto3" json:"referrer_source,omitempty"`
 	CountryCode            *Aggr_Segment `protobuf:"bytes,10,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
 	ScreenSize             *Aggr_Segment `protobuf:"bytes,11,opt,name=screen_size,json=screenSize,proto3" json:"screen_size,omitempty"`
-	Region                 *Aggr_Segment `protobuf:"bytes,31,opt,name=region,proto3" json:"region,omitempty"`
-	CityGeoNameId          *Aggr_Segment `protobuf:"bytes,24,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
-	Pathname               *Aggr_Segment `protobuf:"bytes,7,opt,name=pathname,proto3" json:"pathname,omitempty"`
+	OperatingSystem        *Aggr_Segment `protobuf:"bytes,12,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
+	Browser                *Aggr_Segment `protobuf:"bytes,13,opt,name=browser,proto3" json:"browser,omitempty"`
+	UtmMedium              *Aggr_Segment `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
 	UtmSource              *Aggr_Segment `protobuf:"bytes,15,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
 	UtmCampaign            *Aggr_Segment `protobuf:"bytes,16,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
 	BrowserVersion         *Aggr_Segment `protobuf:"bytes,17,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
@@ -878,8 +885,8 @@ type Aggr struct {
 	UtmTerm                *Aggr_Segment `protobuf:"bytes,20,opt,name=utm_term,json=utmTerm,proto3" json:"utm_term,omitempty"`
 	EntryPage              *Aggr_Segment `protobuf:"bytes,22,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
 	ExitPage               *Aggr_Segment `protobuf:"bytes,23,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	CityGeoNameId          *Aggr_Segment `protobuf:"bytes,24,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
+	Region                 *Aggr_Segment `protobuf:"bytes,31,opt,name=region,proto3" json:"region,omitempty"`
 }
 
 func (x *Aggr) Reset() {
@@ -1068,19 +1075,67 @@ func (x *Aggr) GetRegion() *Aggr_Segment {
 	return nil
 }
 
+type Trend struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Series []float64 `protobuf:"fixed64,1,rep,packed,name=series,proto3" json:"series,omitempty"`
+}
+
+func (x *Trend) Reset() {
+	*x = Trend{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_event_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Trend) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Trend) ProtoMessage() {}
+
+func (x *Trend) ProtoReflect() protoreflect.Message {
+	mi := &file_event_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Trend.ProtoReflect.Descriptor instead.
+func (*Trend) Descriptor() ([]byte, []int) {
+	return file_event_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *Trend) GetSeries() []float64 {
+	if x != nil {
+		return x.Series
+	}
+	return nil
+}
+
 type Aggr_Total struct {
 	state         protoimpl.MessageState
-	unknownFields protoimpl.UnknownFields
-	Visitors      uint64 `protobuf:"varint,1,opt,name=visitors,proto3" json:"visitors,omitempty"`
-	Visits        uint64 `protobuf:"varint,2,opt,name=visits,proto3" json:"visits,omitempty"`
-	Events        uint64 `protobuf:"varint,3,opt,name=events,proto3" json:"events,omitempty"`
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Visitors uint64 `protobuf:"varint,1,opt,name=visitors,proto3" json:"visitors,omitempty"`
+	Visits   uint64 `protobuf:"varint,2,opt,name=visits,proto3" json:"visits,omitempty"`
+	Events   uint64 `protobuf:"varint,3,opt,name=events,proto3" json:"events,omitempty"`
 }
 
 func (x *Aggr_Total) Reset() {
 	*x = Aggr_Total{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_event_proto_msgTypes[4]
+		mi := &file_event_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1093,7 +1148,7 @@ func (x *Aggr_Total) String() string {
 func (*Aggr_Total) ProtoMessage() {}
 
 func (x *Aggr_Total) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[4]
+	mi := &file_event_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1132,15 +1187,16 @@ func (x *Aggr_Total) GetEvents() uint64 {
 
 type Aggr_Segment struct {
 	state         protoimpl.MessageState
-	Aggregates    map[string]*Aggr_Total `protobuf:"bytes,1,rep,name=aggregates,proto3" json:"aggregates,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Aggregates map[string]*Aggr_Total `protobuf:"bytes,1,rep,name=aggregates,proto3" json:"aggregates,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *Aggr_Segment) Reset() {
 	*x = Aggr_Segment{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_event_proto_msgTypes[5]
+		mi := &file_event_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1153,7 +1209,7 @@ func (x *Aggr_Segment) String() string {
 func (*Aggr_Segment) ProtoMessage() {}
 
 func (x *Aggr_Segment) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[5]
+	mi := &file_event_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1178,16 +1234,17 @@ func (x *Aggr_Segment) GetAggregates() map[string]*Aggr_Total {
 
 type Aggr_Year struct {
 	state         protoimpl.MessageState
-	unknownFields protoimpl.UnknownFields
-	Months        []*Aggr_Total `protobuf:"bytes,2,rep,name=months,proto3" json:"months,omitempty"`
 	sizeCache     protoimpl.SizeCache
-	Year          uint32 `protobuf:"varint,1,opt,name=year,proto3" json:"year,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	Year   uint32        `protobuf:"varint,1,opt,name=year,proto3" json:"year,omitempty"`
+	Months []*Aggr_Total `protobuf:"bytes,2,rep,name=months,proto3" json:"months,omitempty"`
 }
 
 func (x *Aggr_Year) Reset() {
 	*x = Aggr_Year{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_event_proto_msgTypes[6]
+		mi := &file_event_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1200,7 +1257,7 @@ func (x *Aggr_Year) String() string {
 func (*Aggr_Year) ProtoMessage() {}
 
 func (x *Aggr_Year) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[6]
+	mi := &file_event_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1232,16 +1289,17 @@ func (x *Aggr_Year) GetMonths() []*Aggr_Total {
 
 type Aggr_Month struct {
 	state         protoimpl.MessageState
-	unknownFields protoimpl.UnknownFields
-	Days          []*Aggr_Total `protobuf:"bytes,2,rep,name=days,proto3" json:"days,omitempty"`
 	sizeCache     protoimpl.SizeCache
-	Month         Aggr_MONTH `protobuf:"varint,1,opt,name=month,proto3,enum=timeseries.Aggr_MONTH" json:"month,omitempty"`
+	unknownFields protoimpl.UnknownFields
+
+	Month Aggr_MONTH    `protobuf:"varint,1,opt,name=month,proto3,enum=timeseries.Aggr_MONTH" json:"month,omitempty"`
+	Days  []*Aggr_Total `protobuf:"bytes,2,rep,name=days,proto3" json:"days,omitempty"`
 }
 
 func (x *Aggr_Month) Reset() {
 	*x = Aggr_Month{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_event_proto_msgTypes[7]
+		mi := &file_event_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1254,7 +1312,7 @@ func (x *Aggr_Month) String() string {
 func (*Aggr_Month) ProtoMessage() {}
 
 func (x *Aggr_Month) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[7]
+	mi := &file_event_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1286,16 +1344,18 @@ func (x *Aggr_Month) GetDays() []*Aggr_Total {
 
 type Aggr_Day struct {
 	state         protoimpl.MessageState
-	Date          *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	Hours         []*Aggr_Total `protobuf:"bytes,2,rep,name=hours,proto3" json:"hours,omitempty"`
 	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Date *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	// Size 24, aggregates all hourly totals
+	Hours []*Aggr_Total `protobuf:"bytes,2,rep,name=hours,proto3" json:"hours,omitempty"`
 }
 
 func (x *Aggr_Day) Reset() {
 	*x = Aggr_Day{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_event_proto_msgTypes[8]
+		mi := &file_event_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1308,7 +1368,7 @@ func (x *Aggr_Day) String() string {
 func (*Aggr_Day) ProtoMessage() {}
 
 func (x *Aggr_Day) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[8]
+	mi := &file_event_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1603,39 +1663,41 @@ var file_event_proto_rawDesc = []byte{
 	0x73, 0x74, 0x10, 0x07, 0x12, 0x0d, 0x0a, 0x09, 0x53, 0x65, 0x70, 0x74, 0x65, 0x6d, 0x62, 0x65,
 	0x72, 0x10, 0x08, 0x12, 0x0b, 0x0a, 0x07, 0x4f, 0x63, 0x74, 0x6f, 0x62, 0x65, 0x72, 0x10, 0x09,
 	0x12, 0x0c, 0x0a, 0x08, 0x4e, 0x6f, 0x76, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x10, 0x0a, 0x12, 0x0c,
-	0x0a, 0x08, 0x44, 0x65, 0x63, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x10, 0x0b, 0x2a, 0x97, 0x02, 0x0a,
-	0x05, 0x50, 0x52, 0x4f, 0x50, 0x53, 0x12, 0x0b, 0x0a, 0x07, 0x75, 0x6e, 0x6b, 0x6e, 0x6f, 0x77,
-	0x6e, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x41, 0x4d, 0x45, 0x10, 0x01, 0x12, 0x08, 0x0a,
-	0x04, 0x50, 0x41, 0x47, 0x45, 0x10, 0x02, 0x12, 0x0e, 0x0a, 0x0a, 0x45, 0x4e, 0x54, 0x52, 0x59,
-	0x5f, 0x50, 0x41, 0x47, 0x45, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x45, 0x58, 0x49, 0x54, 0x5f,
-	0x50, 0x41, 0x47, 0x45, 0x10, 0x04, 0x12, 0x0c, 0x0a, 0x08, 0x52, 0x45, 0x46, 0x45, 0x52, 0x52,
-	0x45, 0x52, 0x10, 0x05, 0x12, 0x0e, 0x0a, 0x0a, 0x55, 0x54, 0x4d, 0x5f, 0x4d, 0x45, 0x44, 0x49,
-	0x55, 0x4d, 0x10, 0x06, 0x12, 0x0e, 0x0a, 0x0a, 0x55, 0x54, 0x4d, 0x5f, 0x53, 0x4f, 0x55, 0x52,
-	0x43, 0x45, 0x10, 0x07, 0x12, 0x10, 0x0a, 0x0c, 0x55, 0x54, 0x4d, 0x5f, 0x43, 0x41, 0x4d, 0x50,
-	0x41, 0x49, 0x47, 0x4e, 0x10, 0x08, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x54, 0x4d, 0x5f, 0x43, 0x4f,
-	0x4e, 0x54, 0x45, 0x4e, 0x54, 0x10, 0x09, 0x12, 0x0c, 0x0a, 0x08, 0x55, 0x54, 0x4d, 0x5f, 0x54,
-	0x45, 0x52, 0x4d, 0x10, 0x0a, 0x12, 0x0e, 0x0a, 0x0a, 0x55, 0x54, 0x4d, 0x5f, 0x44, 0x45, 0x56,
-	0x49, 0x43, 0x45, 0x10, 0x0b, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x54, 0x4d, 0x5f, 0x42, 0x52, 0x4f,
-	0x57, 0x53, 0x45, 0x52, 0x10, 0x0c, 0x12, 0x13, 0x0a, 0x0f, 0x42, 0x52, 0x4f, 0x57, 0x53, 0x45,
-	0x52, 0x5f, 0x56, 0x45, 0x52, 0x53, 0x49, 0x4f, 0x4e, 0x10, 0x0d, 0x12, 0x06, 0x0a, 0x02, 0x4f,
-	0x53, 0x10, 0x0e, 0x12, 0x0e, 0x0a, 0x0a, 0x4f, 0x53, 0x5f, 0x56, 0x45, 0x52, 0x53, 0x49, 0x4f,
-	0x4e, 0x10, 0x0f, 0x12, 0x0b, 0x0a, 0x07, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x52, 0x59, 0x10, 0x10,
-	0x12, 0x0a, 0x0a, 0x06, 0x52, 0x45, 0x47, 0x49, 0x4f, 0x4e, 0x10, 0x11, 0x12, 0x08, 0x0a, 0x04,
-	0x43, 0x49, 0x54, 0x59, 0x10, 0x12, 0x2a, 0x71, 0x0a, 0x0b, 0x4d, 0x45, 0x54, 0x52, 0x49, 0x43,
-	0x5f, 0x54, 0x59, 0x50, 0x45, 0x12, 0x0c, 0x0a, 0x08, 0x76, 0x69, 0x73, 0x69, 0x74, 0x6f, 0x72,
-	0x73, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x76, 0x69, 0x73, 0x69, 0x74, 0x73, 0x10, 0x01, 0x12,
-	0x0e, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x65, 0x5f, 0x76, 0x69, 0x65, 0x77, 0x73, 0x10, 0x02, 0x12,
-	0x13, 0x0a, 0x0f, 0x76, 0x69, 0x65, 0x77, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x76, 0x69, 0x73,
-	0x69, 0x74, 0x10, 0x03, 0x12, 0x12, 0x0a, 0x0e, 0x76, 0x69, 0x73, 0x69, 0x74, 0x5f, 0x64, 0x75,
-	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x04, 0x12, 0x0f, 0x0a, 0x0b, 0x62, 0x6f, 0x75, 0x6e,
-	0x63, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x10, 0x05, 0x2a, 0x38, 0x0a, 0x05, 0x54, 0x41, 0x42,
-	0x4c, 0x45, 0x12, 0x07, 0x0a, 0x03, 0x52, 0x41, 0x57, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x48,
-	0x4f, 0x55, 0x52, 0x10, 0x01, 0x12, 0x07, 0x0a, 0x03, 0x44, 0x41, 0x59, 0x10, 0x02, 0x12, 0x09,
-	0x0a, 0x05, 0x4d, 0x4f, 0x4e, 0x54, 0x48, 0x10, 0x03, 0x12, 0x08, 0x0a, 0x04, 0x59, 0x45, 0x41,
-	0x52, 0x10, 0x04, 0x42, 0x25, 0x5a, 0x23, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x67, 0x65, 0x72, 0x6e, 0x65, 0x73, 0x74, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f,
-	0x74, 0x69, 0x6d, 0x65, 0x73, 0x65, 0x72, 0x69, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x0a, 0x08, 0x44, 0x65, 0x63, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x10, 0x0b, 0x22, 0x1f, 0x0a, 0x05,
+	0x54, 0x72, 0x65, 0x6e, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x72, 0x69, 0x65, 0x73, 0x18,
+	0x01, 0x20, 0x03, 0x28, 0x01, 0x52, 0x06, 0x73, 0x65, 0x72, 0x69, 0x65, 0x73, 0x2a, 0xa2, 0x02,
+	0x0a, 0x05, 0x50, 0x52, 0x4f, 0x50, 0x53, 0x12, 0x0b, 0x0a, 0x07, 0x75, 0x6e, 0x6b, 0x6e, 0x6f,
+	0x77, 0x6e, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x41, 0x4d, 0x45, 0x10, 0x01, 0x12, 0x08,
+	0x0a, 0x04, 0x50, 0x41, 0x47, 0x45, 0x10, 0x02, 0x12, 0x0e, 0x0a, 0x0a, 0x45, 0x4e, 0x54, 0x52,
+	0x59, 0x5f, 0x50, 0x41, 0x47, 0x45, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x45, 0x58, 0x49, 0x54,
+	0x5f, 0x50, 0x41, 0x47, 0x45, 0x10, 0x04, 0x12, 0x0c, 0x0a, 0x08, 0x52, 0x45, 0x46, 0x45, 0x52,
+	0x52, 0x45, 0x52, 0x10, 0x05, 0x12, 0x0e, 0x0a, 0x0a, 0x55, 0x54, 0x4d, 0x5f, 0x4d, 0x45, 0x44,
+	0x49, 0x55, 0x4d, 0x10, 0x06, 0x12, 0x0e, 0x0a, 0x0a, 0x55, 0x54, 0x4d, 0x5f, 0x53, 0x4f, 0x55,
+	0x52, 0x43, 0x45, 0x10, 0x07, 0x12, 0x10, 0x0a, 0x0c, 0x55, 0x54, 0x4d, 0x5f, 0x43, 0x41, 0x4d,
+	0x50, 0x41, 0x49, 0x47, 0x4e, 0x10, 0x08, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x54, 0x4d, 0x5f, 0x43,
+	0x4f, 0x4e, 0x54, 0x45, 0x4e, 0x54, 0x10, 0x09, 0x12, 0x0c, 0x0a, 0x08, 0x55, 0x54, 0x4d, 0x5f,
+	0x54, 0x45, 0x52, 0x4d, 0x10, 0x0a, 0x12, 0x0e, 0x0a, 0x0a, 0x55, 0x54, 0x4d, 0x5f, 0x44, 0x45,
+	0x56, 0x49, 0x43, 0x45, 0x10, 0x0b, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x54, 0x4d, 0x5f, 0x42, 0x52,
+	0x4f, 0x57, 0x53, 0x45, 0x52, 0x10, 0x0c, 0x12, 0x13, 0x0a, 0x0f, 0x42, 0x52, 0x4f, 0x57, 0x53,
+	0x45, 0x52, 0x5f, 0x56, 0x45, 0x52, 0x53, 0x49, 0x4f, 0x4e, 0x10, 0x0d, 0x12, 0x06, 0x0a, 0x02,
+	0x4f, 0x53, 0x10, 0x0e, 0x12, 0x0e, 0x0a, 0x0a, 0x4f, 0x53, 0x5f, 0x56, 0x45, 0x52, 0x53, 0x49,
+	0x4f, 0x4e, 0x10, 0x0f, 0x12, 0x0b, 0x0a, 0x07, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x52, 0x59, 0x10,
+	0x10, 0x12, 0x0a, 0x0a, 0x06, 0x52, 0x45, 0x47, 0x49, 0x4f, 0x4e, 0x10, 0x11, 0x12, 0x08, 0x0a,
+	0x04, 0x43, 0x49, 0x54, 0x59, 0x10, 0x12, 0x12, 0x09, 0x0a, 0x05, 0x54, 0x52, 0x45, 0x4e, 0x44,
+	0x10, 0x13, 0x2a, 0x71, 0x0a, 0x0b, 0x4d, 0x45, 0x54, 0x52, 0x49, 0x43, 0x5f, 0x54, 0x59, 0x50,
+	0x45, 0x12, 0x0c, 0x0a, 0x08, 0x76, 0x69, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x73, 0x10, 0x00, 0x12,
+	0x0a, 0x0a, 0x06, 0x76, 0x69, 0x73, 0x69, 0x74, 0x73, 0x10, 0x01, 0x12, 0x0e, 0x0a, 0x0a, 0x70,
+	0x61, 0x67, 0x65, 0x5f, 0x76, 0x69, 0x65, 0x77, 0x73, 0x10, 0x02, 0x12, 0x13, 0x0a, 0x0f, 0x76,
+	0x69, 0x65, 0x77, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x76, 0x69, 0x73, 0x69, 0x74, 0x10, 0x03,
+	0x12, 0x12, 0x0a, 0x0e, 0x76, 0x69, 0x73, 0x69, 0x74, 0x5f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x10, 0x04, 0x12, 0x0f, 0x0a, 0x0b, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x5f, 0x72,
+	0x61, 0x74, 0x65, 0x10, 0x05, 0x2a, 0x38, 0x0a, 0x05, 0x54, 0x41, 0x42, 0x4c, 0x45, 0x12, 0x07,
+	0x0a, 0x03, 0x52, 0x41, 0x57, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x48, 0x4f, 0x55, 0x52, 0x10,
+	0x01, 0x12, 0x07, 0x0a, 0x03, 0x44, 0x41, 0x59, 0x10, 0x02, 0x12, 0x09, 0x0a, 0x05, 0x4d, 0x4f,
+	0x4e, 0x54, 0x48, 0x10, 0x03, 0x12, 0x08, 0x0a, 0x04, 0x59, 0x45, 0x41, 0x52, 0x10, 0x04, 0x42,
+	0x25, 0x5a, 0x23, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x67, 0x65,
+	0x72, 0x6e, 0x65, 0x73, 0x74, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x74, 0x69, 0x6d, 0x65,
+	0x73, 0x65, 0x72, 0x69, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1651,7 +1713,7 @@ func file_event_proto_rawDescGZIP() []byte {
 }
 
 var file_event_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_event_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_event_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_event_proto_goTypes = []interface{}{
 	(PROPS)(0),                    // 0: timeseries.PROPS
 	(METRIC_TYPE)(0),              // 1: timeseries.METRIC_TYPE
@@ -1661,13 +1723,14 @@ var file_event_proto_goTypes = []interface{}{
 	(*Entry)(nil),                 // 5: timeseries.Entry
 	(*EntrySegment)(nil),          // 6: timeseries.EntrySegment
 	(*Aggr)(nil),                  // 7: timeseries.Aggr
-	(*Aggr_Total)(nil),            // 8: timeseries.Aggr.Total
-	(*Aggr_Segment)(nil),          // 9: timeseries.Aggr.Segment
-	(*Aggr_Year)(nil),             // 10: timeseries.Aggr.Year
-	(*Aggr_Month)(nil),            // 11: timeseries.Aggr.Month
-	(*Aggr_Day)(nil),              // 12: timeseries.Aggr.Day
-	nil,                           // 13: timeseries.Aggr.Segment.AggregatesEntry
-	(*timestamppb.Timestamp)(nil), // 14: google.protobuf.Timestamp
+	(*Trend)(nil),                 // 8: timeseries.Trend
+	(*Aggr_Total)(nil),            // 9: timeseries.Aggr.Total
+	(*Aggr_Segment)(nil),          // 10: timeseries.Aggr.Segment
+	(*Aggr_Year)(nil),             // 11: timeseries.Aggr.Year
+	(*Aggr_Month)(nil),            // 12: timeseries.Aggr.Month
+	(*Aggr_Day)(nil),              // 13: timeseries.Aggr.Day
+	nil,                           // 14: timeseries.Aggr.Segment.AggregatesEntry
+	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
 }
 var file_event_proto_depIdxs = []int32{
 	5,  // 0: timeseries.Entries.events:type_name -> timeseries.Entry
@@ -1692,35 +1755,35 @@ var file_event_proto_depIdxs = []int32{
 	5,  // 19: timeseries.EntrySegment.exit_page:type_name -> timeseries.Entry
 	5,  // 20: timeseries.EntrySegment.city_geo_name_id:type_name -> timeseries.Entry
 	5,  // 21: timeseries.EntrySegment.region:type_name -> timeseries.Entry
-	8,  // 22: timeseries.Aggr.total:type_name -> timeseries.Aggr.Total
-	9,  // 23: timeseries.Aggr.name:type_name -> timeseries.Aggr.Segment
-	9,  // 24: timeseries.Aggr.domain:type_name -> timeseries.Aggr.Segment
-	9,  // 25: timeseries.Aggr.hostname:type_name -> timeseries.Aggr.Segment
-	9,  // 26: timeseries.Aggr.pathname:type_name -> timeseries.Aggr.Segment
-	9,  // 27: timeseries.Aggr.referrer:type_name -> timeseries.Aggr.Segment
-	9,  // 28: timeseries.Aggr.referrer_source:type_name -> timeseries.Aggr.Segment
-	9,  // 29: timeseries.Aggr.country_code:type_name -> timeseries.Aggr.Segment
-	9,  // 30: timeseries.Aggr.screen_size:type_name -> timeseries.Aggr.Segment
-	9,  // 31: timeseries.Aggr.operating_system:type_name -> timeseries.Aggr.Segment
-	9,  // 32: timeseries.Aggr.browser:type_name -> timeseries.Aggr.Segment
-	9,  // 33: timeseries.Aggr.utm_medium:type_name -> timeseries.Aggr.Segment
-	9,  // 34: timeseries.Aggr.utm_source:type_name -> timeseries.Aggr.Segment
-	9,  // 35: timeseries.Aggr.utm_campaign:type_name -> timeseries.Aggr.Segment
-	9,  // 36: timeseries.Aggr.browser_version:type_name -> timeseries.Aggr.Segment
-	9,  // 37: timeseries.Aggr.operating_system_version:type_name -> timeseries.Aggr.Segment
-	9,  // 38: timeseries.Aggr.utm_content:type_name -> timeseries.Aggr.Segment
-	9,  // 39: timeseries.Aggr.utm_term:type_name -> timeseries.Aggr.Segment
-	9,  // 40: timeseries.Aggr.entry_page:type_name -> timeseries.Aggr.Segment
-	9,  // 41: timeseries.Aggr.exit_page:type_name -> timeseries.Aggr.Segment
-	9,  // 42: timeseries.Aggr.city_geo_name_id:type_name -> timeseries.Aggr.Segment
-	9,  // 43: timeseries.Aggr.region:type_name -> timeseries.Aggr.Segment
-	13, // 44: timeseries.Aggr.Segment.aggregates:type_name -> timeseries.Aggr.Segment.AggregatesEntry
-	8,  // 45: timeseries.Aggr.Year.months:type_name -> timeseries.Aggr.Total
+	9,  // 22: timeseries.Aggr.total:type_name -> timeseries.Aggr.Total
+	10, // 23: timeseries.Aggr.name:type_name -> timeseries.Aggr.Segment
+	10, // 24: timeseries.Aggr.domain:type_name -> timeseries.Aggr.Segment
+	10, // 25: timeseries.Aggr.hostname:type_name -> timeseries.Aggr.Segment
+	10, // 26: timeseries.Aggr.pathname:type_name -> timeseries.Aggr.Segment
+	10, // 27: timeseries.Aggr.referrer:type_name -> timeseries.Aggr.Segment
+	10, // 28: timeseries.Aggr.referrer_source:type_name -> timeseries.Aggr.Segment
+	10, // 29: timeseries.Aggr.country_code:type_name -> timeseries.Aggr.Segment
+	10, // 30: timeseries.Aggr.screen_size:type_name -> timeseries.Aggr.Segment
+	10, // 31: timeseries.Aggr.operating_system:type_name -> timeseries.Aggr.Segment
+	10, // 32: timeseries.Aggr.browser:type_name -> timeseries.Aggr.Segment
+	10, // 33: timeseries.Aggr.utm_medium:type_name -> timeseries.Aggr.Segment
+	10, // 34: timeseries.Aggr.utm_source:type_name -> timeseries.Aggr.Segment
+	10, // 35: timeseries.Aggr.utm_campaign:type_name -> timeseries.Aggr.Segment
+	10, // 36: timeseries.Aggr.browser_version:type_name -> timeseries.Aggr.Segment
+	10, // 37: timeseries.Aggr.operating_system_version:type_name -> timeseries.Aggr.Segment
+	10, // 38: timeseries.Aggr.utm_content:type_name -> timeseries.Aggr.Segment
+	10, // 39: timeseries.Aggr.utm_term:type_name -> timeseries.Aggr.Segment
+	10, // 40: timeseries.Aggr.entry_page:type_name -> timeseries.Aggr.Segment
+	10, // 41: timeseries.Aggr.exit_page:type_name -> timeseries.Aggr.Segment
+	10, // 42: timeseries.Aggr.city_geo_name_id:type_name -> timeseries.Aggr.Segment
+	10, // 43: timeseries.Aggr.region:type_name -> timeseries.Aggr.Segment
+	14, // 44: timeseries.Aggr.Segment.aggregates:type_name -> timeseries.Aggr.Segment.AggregatesEntry
+	9,  // 45: timeseries.Aggr.Year.months:type_name -> timeseries.Aggr.Total
 	3,  // 46: timeseries.Aggr.Month.month:type_name -> timeseries.Aggr.MONTH
-	8,  // 47: timeseries.Aggr.Month.days:type_name -> timeseries.Aggr.Total
-	14, // 48: timeseries.Aggr.Day.date:type_name -> google.protobuf.Timestamp
-	8,  // 49: timeseries.Aggr.Day.hours:type_name -> timeseries.Aggr.Total
-	8,  // 50: timeseries.Aggr.Segment.AggregatesEntry.value:type_name -> timeseries.Aggr.Total
+	9,  // 47: timeseries.Aggr.Month.days:type_name -> timeseries.Aggr.Total
+	15, // 48: timeseries.Aggr.Day.date:type_name -> google.protobuf.Timestamp
+	9,  // 49: timeseries.Aggr.Day.hours:type_name -> timeseries.Aggr.Total
+	9,  // 50: timeseries.Aggr.Segment.AggregatesEntry.value:type_name -> timeseries.Aggr.Total
 	51, // [51:51] is the sub-list for method output_type
 	51, // [51:51] is the sub-list for method input_type
 	51, // [51:51] is the sub-list for extension type_name
@@ -1783,7 +1846,7 @@ func file_event_proto_init() {
 			}
 		}
 		file_event_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Aggr_Total); i {
+			switch v := v.(*Trend); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1795,7 +1858,7 @@ func file_event_proto_init() {
 			}
 		}
 		file_event_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Aggr_Segment); i {
+			switch v := v.(*Aggr_Total); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1807,7 +1870,7 @@ func file_event_proto_init() {
 			}
 		}
 		file_event_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Aggr_Year); i {
+			switch v := v.(*Aggr_Segment); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1819,7 +1882,7 @@ func file_event_proto_init() {
 			}
 		}
 		file_event_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Aggr_Month); i {
+			switch v := v.(*Aggr_Year); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1831,6 +1894,18 @@ func file_event_proto_init() {
 			}
 		}
 		file_event_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Aggr_Month); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_event_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Aggr_Day); i {
 			case 0:
 				return &v.state
@@ -1849,7 +1924,7 @@ func file_event_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_event_proto_rawDesc,
 			NumEnums:      4,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

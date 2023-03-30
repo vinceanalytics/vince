@@ -149,6 +149,7 @@ enum PROPS {
   COUNTRY = 16;
   REGION = 17;
   CITY = 18;
+  TREND = 19;
 }
 
 enum METRIC_TYPE {
@@ -168,3 +169,5 @@ enum TABLE {
   MONTH = 3;
   YEAR = 4;
 }
+
+message Trend { repeated double series = 1; }
