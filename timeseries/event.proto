@@ -170,4 +170,8 @@ enum TABLE {
   YEAR = 4;
 }
 
-message Trend { repeated double series = 1; }
+message Trend {
+  repeated double visitors = 1;
+  repeated double visits = 2;
+  repeated double events = 3;
+}
