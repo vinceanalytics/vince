@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
 	"google.golang.org/protobuf/proto"
 )

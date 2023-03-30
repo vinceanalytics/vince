@@ -8,7 +8,7 @@ import (
 	"runtime/trace"
 	"time"
 
-	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/sync/errgroup"
@@ -28,7 +28,6 @@ func Merge(ctx context.Context, since uint64, cb MergeCallback) (uint64, error) 
 	say := log.Get(ctx)
 	say.Debug().Msg("starting merging daily parquet files")
 	db := GetBob(ctx)
-
 	hash := make(map[uint64]uint64)
 
 	defer func() {
@@ -46,7 +45,7 @@ func Merge(ctx context.Context, since uint64, cb MergeCallback) (uint64, error) 
 		it := txn.NewIterator(o)
 		defer it.Close()
 		var last uint64
-		for it.Next(); it.Valid(); it.Next() {
+		for ; it.Valid(); it.Next() {
 			x := it.Item()
 			last = x.Version()
 			if x.IsDeletedOrExpired() {
@@ -73,7 +72,7 @@ func Merge(ctx context.Context, since uint64, cb MergeCallback) (uint64, error) 
 		var data Entries
 		de := getDecompressor()
 		defer de.Release()
-		for it.Next(); it.Valid(); it.Next() {
+		for ; it.Valid(); it.Next() {
 			item := it.Item()
 			err := de.Read(item, func(val []byte) error {
 				return proto.Unmarshal(val, &data)

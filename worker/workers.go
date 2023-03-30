@@ -141,7 +141,7 @@ func MergeTimeseries(ctx context.Context, wg *sync.WaitGroup, exit func()) *heal
 }
 
 func mergeTs(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
-	log.Get(ctx).Debug().Str("worker", "timeseries_writer").Msg("started")
+	log.Get(ctx).Debug().Str("worker", "timeseries_merger").Msg("started")
 	defer wg.Done()
 	tick := time.NewTicker(config.Get(ctx).Intervals.MergeTimeseriesInterval.AsDuration())
 	defer tick.Stop()

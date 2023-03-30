@@ -7,7 +7,7 @@ require (
 	github.com/belak/octicon v0.0.0-20220531043918-8d81fefac757
 	github.com/dchest/captcha v1.0.0
 	github.com/dchest/siphash v1.2.3
-	github.com/dgraph-io/badger/v3 v3.2103.5
+	github.com/dgraph-io/badger/v4 v4.0.1
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/emersion/go-message v0.16.0

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/timex"
