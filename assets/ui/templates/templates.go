@@ -15,10 +15,10 @@ import (
 )
 
 //go:embed layout pages site auth error email
-var files embed.FS
+var Files embed.FS
 
 var LoginForm = template.Must(
-	template.ParseFS(files,
+	template.ParseFS(Files,
 		"layout/focus.html",
 		"layout/flash.html",
 		"layout/csrf.html",
@@ -28,7 +28,7 @@ var LoginForm = template.Must(
 )
 
 var RegisterForm = template.Must(
-	template.ParseFS(files,
+	template.ParseFS(Files,
 		"layout/focus.html",
 		"layout/flash.html",
 		"layout/csrf.html",
@@ -37,19 +37,19 @@ var RegisterForm = template.Must(
 	),
 )
 
-var Error = template.Must(template.ParseFS(files,
+var Error = template.Must(template.ParseFS(Files,
 	"error/error.html",
 ))
 
 var ActivationEmail = template.Must(
-	template.ParseFS(files,
+	template.ParseFS(Files,
 		"layout/focus.html",
 		"email/activation_code.html",
 	),
 )
 
 var Activate = template.Must(
-	template.ParseFS(files,
+	template.ParseFS(Files,
 		"layout/focus.html",
 		"layout/flash.html",
 		"layout/csrf.html",
@@ -58,7 +58,7 @@ var Activate = template.Must(
 )
 
 var Home = template.Must(
-	template.ParseFS(files,
+	template.ParseFS(Files,
 		"layout/app.html",
 		"layout/header.html",
 		"layout/flash.html",
@@ -68,7 +68,7 @@ var Home = template.Must(
 )
 
 var Sites = template.Must(
-	template.ParseFS(files,
+	template.ParseFS(Files,
 		"layout/app.html",
 		"layout/header.html",
 		"layout/flash.html",
@@ -79,7 +79,7 @@ var Sites = template.Must(
 )
 
 var SiteNew = template.Must(
-	template.ParseFS(files,
+	template.ParseFS(Files,
 		"layout/app.html",
 		"layout/csrf.html",
 		"layout/header.html",
@@ -91,7 +91,7 @@ var SiteNew = template.Must(
 )
 
 var Pricing = template.Must(
-	template.ParseFS(files,
+	template.ParseFS(Files,
 		"layout/app.html",
 		"layout/csrf.html",
 		"layout/header.html",
@@ -99,6 +99,18 @@ var Pricing = template.Must(
 		"layout/notice.html",
 		"layout/footer.html",
 		"pages/pricing.html",
+	),
+)
+
+var Markdown = template.Must(
+	template.ParseFS(Files,
+		"layout/app.html",
+		"layout/csrf.html",
+		"layout/header.html",
+		"layout/flash.html",
+		"layout/notice.html",
+		"layout/footer.html",
+		"pages/markdown.html",
 	),
 )
 
@@ -130,6 +142,7 @@ type Context struct {
 	Error         *Errors
 	Position      int
 	Page          string
+	Content       template.HTML
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {

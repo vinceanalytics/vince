@@ -15,6 +15,7 @@ require (
 	github.com/emersion/go-smtp v0.16.0
 	github.com/glebarez/sqlite v1.7.0
 	github.com/golang/protobuf v1.5.2
+	github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/now v1.1.5
 	github.com/json-iterator/go v1.1.12
