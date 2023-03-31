@@ -1,6 +1,5 @@
 syntax = "proto3";
 package timeseries;
-import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/gernest/vince/timeseries";
 
@@ -63,70 +62,6 @@ message EntrySegment {
   repeated Entry exit_page = 23;
   repeated Entry city_geo_name_id = 24;
   repeated Entry region = 31;
-}
-
-message Aggr {
-  Total total = 1;
-  Segment name = 2;
-  Segment domain = 3;
-  Segment hostname = 6;
-  Segment pathname = 7;
-  Segment referrer = 8;
-  Segment referrer_source = 9;
-  Segment country_code = 10;
-  Segment screen_size = 11;
-  Segment operating_system = 12;
-  Segment browser = 13;
-  Segment utm_medium = 14;
-  Segment utm_source = 15;
-  Segment utm_campaign = 16;
-  Segment browser_version = 17;
-  Segment operating_system_version = 18;
-  Segment utm_content = 19;
-  Segment utm_term = 20;
-  Segment entry_page = 22;
-  Segment exit_page = 23;
-  Segment city_geo_name_id = 24;
-  Segment region = 31;
-
-  message Total {
-    uint64 visitors = 1;
-    uint64 visits = 2;
-    uint64 events = 3;
-  }
-
-  message Segment { map<string, Total> aggregates = 1; }
-
-  message Year {
-    uint32 year = 1;
-    repeated Total months = 2;
-  }
-
-  message Month {
-    MONTH month = 1;
-    repeated Total days = 2;
-  }
-
-  message Day {
-    google.protobuf.Timestamp date = 1;
-    // Size 24, aggregates all hourly totals
-    repeated Total hours = 2;
-  }
-
-  enum MONTH {
-    January = 0;
-    February = 1;
-    March = 2;
-    April = 3;
-    May = 4;
-    June = 5;
-    July = 6;
-    August = 7;
-    September = 8;
-    October = 9;
-    November = 10;
-    December = 11;
-  }
 }
 
 enum PROPS {
