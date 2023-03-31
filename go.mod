@@ -3,8 +3,10 @@ module github.com/gernest/vince
 go 1.20
 
 require (
+	capnproto.org/go/capnp/v3 v3.0.0-alpha.26
 	github.com/RoaringBitmap/roaring v1.2.3
 	github.com/belak/octicon v0.0.0-20220531043918-8d81fefac757
+	github.com/cespare/xxhash/v2 v2.1.2
 	github.com/dchest/captcha v1.0.0
 	github.com/dchest/siphash v1.2.3
 	github.com/dgraph-io/badger/v4 v4.0.1
@@ -40,12 +42,9 @@ require (
 )
 
 require (
-	capnproto.org/go/capnp/v3 v3.0.0-alpha.26 // indirect
-	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
 	github.com/blend/go-sdk v1.20220411.3 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emersion/go-textwrapper v0.0.0-20200911093747-65d896831594 // indirect
@@ -61,18 +60,14 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
-	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
-	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/segmentio/encoding v0.3.5 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
+	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69 // indirect

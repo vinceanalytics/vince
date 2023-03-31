@@ -14,6 +14,23 @@ func (s *Sum) Add(o *Sum) {
 	s.SetEvents(s.Events() + o.Events())
 }
 
+func ZeroSum() Sum {
+	_, seg, _ := capnp.NewMessage(capnp.MultiSegment(nil))
+	sum, _ := NewSum(seg)
+	sum.SetEvents(0)
+	sum.SetVisitors(0)
+	sum.SetVisits(0)
+	return sum
+}
+
+func (s *Sum) Reuse() {
+	msg := s.Message()
+	msg.Reset(capnp.MultiSegment(nil))
+	s.SetEvents(0)
+	s.SetVisitors(0)
+	s.SetVisits(0)
+}
+
 func (s *Sum) Update(ts time.Time, visitors, visits, events capnp.Float64List) {
 	day := ts.YearDay()
 	visitors.Set(day, visitors.At(day)+s.Visitors())
@@ -21,54 +38,53 @@ func (s *Sum) Update(ts time.Time, visitors, visits, events capnp.Float64List) {
 	events.Set(day, events.At(day)+s.Events())
 }
 
-func (c *Calendar) Update(ts time.Time, sum Sum) {
-	visitors, _ := c.Visitors()
-	visits, _ := c.Visits()
-	events, _ := c.Events()
+func (s *Calendar) Update(ts time.Time, sum Sum) {
+	visitors, _ := s.Visitors()
+	visits, _ := s.Visits()
+	events, _ := s.Events()
 	sum.Update(ts, visitors, visits, events)
 }
 
-func ZeroCalendar(ts time.Time, sum Sum) ([]byte, error) {
+func ZeroCalendar(ts time.Time, sum Sum) (Calendar, error) {
 	var arena = capnp.MultiSegment(nil)
-	msg, seg, err := capnp.NewMessage(arena)
+	_, seg, err := capnp.NewMessage(arena)
 	if err != nil {
-		return nil, err
+		return Calendar{}, err
 	}
-	defer msg.Release()
 	calendar, err := NewCalendar(seg)
 	if err != nil {
-		return nil, err
+		return Calendar{}, err
 	}
 	days := timex.DaysInAYear(ts)
 
 	visits, err := capnp.NewFloat64List(seg, int32(days))
 	if err != nil {
-		return nil, err
+		return Calendar{}, err
 	}
 
 	visitors, err := capnp.NewFloat64List(seg, int32(days))
 	if err != nil {
-		return nil, err
+		return Calendar{}, err
 	}
 
 	events, err := capnp.NewFloat64List(seg, int32(days))
 	if err != nil {
-		return nil, err
+		return Calendar{}, err
 	}
 	sum.Update(ts, visitors, visits, events)
 	err = calendar.SetVisitors(visitors)
 	if err != nil {
-		return nil, err
+		return Calendar{}, err
 	}
 	err = calendar.SetVisits(visits)
 	if err != nil {
-		return nil, err
+		return Calendar{}, err
 	}
 	err = calendar.SetEvents(events)
 	if err != nil {
-		return nil, err
+		return Calendar{}, err
 	}
-	return msg.MarshalPacked()
+	return calendar, nil
 }
 
 func (c *Calendar) SeriesVisitors(from, to time.Time) ([]float64, error) {
@@ -79,7 +95,7 @@ func (c *Calendar) SeriesVisitors(from, to time.Time) ([]float64, error) {
 	return series(ls, from, to), nil
 }
 
-func (c *Calendar) SeriesVisits(from, to time.Time) ([]float64, error) {
+func (c Calendar) SeriesVisits(from, to time.Time) ([]float64, error) {
 	ls, err := c.Visits()
 	if err != nil {
 		return nil, err
@@ -87,7 +103,7 @@ func (c *Calendar) SeriesVisits(from, to time.Time) ([]float64, error) {
 	return series(ls, from, to), nil
 }
 
-func (c *Calendar) SeriesEvents(from, to time.Time) ([]float64, error) {
+func (c Calendar) SeriesEvents(from, to time.Time) ([]float64, error) {
 	ls, err := c.Events()
 	if err != nil {
 		return nil, err

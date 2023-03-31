@@ -15,3 +15,4 @@ struct Sum{
     visits @1 :Float64;
     events @2 :Float64; 
 }
+

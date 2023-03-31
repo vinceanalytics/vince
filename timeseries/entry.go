@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
+	"github.com/gernest/vince/timex"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go/bloom/xxhash"
 )
@@ -74,24 +75,23 @@ func (e *Entries) List() EntryList {
 	return EntryList(e.Events)
 }
 
-func (ls EntryList) Aggr(u, s *roaring64.Bitmap) (a *Aggr_Total) {
+func (ls EntryList) Count(u, s *roaring64.Bitmap) (visitors, visits, events float64) {
 	if len(ls) == 0 {
 		return
 	}
-	a = &Aggr_Total{}
 	u.Clear()
 	s.Clear()
 	for _, e := range ls {
 		if !e.IsSession {
-			a.Events += 1
+			events += 1
 		}
 		if !u.Contains(e.UserId) {
 			u.Add(e.UserId)
-			a.Visitors += 1
+			visitors += 1
 		}
 		if !s.Contains(e.SessionId) {
 			u.Add(e.SessionId)
-			a.Visits += 1
+			visits += 1
 		}
 	}
 	return
@@ -101,12 +101,12 @@ func (ls EntryList) Aggr(u, s *roaring64.Bitmap) (a *Aggr_Total) {
 // of entries.
 //
 // Assumes ls is sorted and contains entries happening in the same day.
-func (ls EntryList) Emit(f func(int, EntryList)) {
+func (ls EntryList) Emit(f func(time.Time, EntryList)) {
 	var pos int
-	var last, curr int
+	var last, curr time.Time
 	for i := range ls {
-		curr = hour(ls[i].Timestamp)
-		if i > 0 && curr != last {
+		curr = date(ls[i].Timestamp)
+		if i > 0 && !curr.Equal(last) {
 			f(curr, ls[pos:i-1])
 			pos = i
 		}
@@ -117,6 +117,6 @@ func (ls EntryList) Emit(f func(int, EntryList)) {
 	}
 }
 
-func hour(ts int64) int {
-	return time.Unix(ts, 0).Hour()
+func date(ts int64) time.Time {
+	return timex.Date(time.Unix(ts, 0))
 }
