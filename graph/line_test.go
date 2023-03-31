@@ -43,3 +43,12 @@ func TestOther(t *testing.T) {
 	}
 	os.WriteFile("new.png", buffer.Bytes(), 0600)
 }
+
+func TestTrend(t *testing.T) {
+	var b bytes.Buffer
+	err := Trend(271, 51, []float64{1.0, 10.0, 8.0, 4.0, 5.0}, &b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.WriteFile("trend.svg", b.Bytes(), 0600)
+}
