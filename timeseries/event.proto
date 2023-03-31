@@ -40,30 +40,6 @@ message Entry {
   bool is_session = 32;
 }
 
-message EntrySegment {
-  repeated Entry name = 2;
-  repeated Entry domain = 3;
-  repeated Entry hostname = 6;
-  repeated Entry pathname = 7;
-  repeated Entry referrer = 8;
-  repeated Entry referrer_source = 9;
-  repeated Entry country_code = 10;
-  repeated Entry screen_size = 11;
-  repeated Entry operating_system = 12;
-  repeated Entry browser = 13;
-  repeated Entry utm_medium = 14;
-  repeated Entry utm_source = 15;
-  repeated Entry utm_campaign = 16;
-  repeated Entry browser_version = 17;
-  repeated Entry operating_system_version = 18;
-  repeated Entry utm_content = 19;
-  repeated Entry utm_term = 20;
-  repeated Entry entry_page = 22;
-  repeated Entry exit_page = 23;
-  repeated Entry city_geo_name_id = 24;
-  repeated Entry region = 31;
-}
-
 enum PROPS {
   unknown = 0;
   NAME = 1;
