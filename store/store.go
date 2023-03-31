@@ -28,7 +28,7 @@ func (c *Calendar) Update(ts time.Time, sum Sum) {
 	sum.Update(ts, visitors, visits, events)
 }
 
-func ZeroCalendar(ts time.Time, sum Sum, f func([]byte) error) ([]byte, error) {
+func ZeroCalendar(ts time.Time, sum Sum) ([]byte, error) {
 	var arena = capnp.MultiSegment(nil)
 	msg, seg, err := capnp.NewMessage(arena)
 	if err != nil {
