@@ -164,14 +164,5 @@ enum METRIC_TYPE {
 // TABLE marks the namespace on which aggregate data is stored.
 enum TABLE {
   RAW = 0;
-  HOUR = 1;
-  DAY = 2;
-  MONTH = 3;
-  YEAR = 4;
-}
-
-message Trend {
-  repeated double visitors = 1;
-  repeated double visits = 2;
-  repeated double events = 3;
+  YEAR = 1;
 }

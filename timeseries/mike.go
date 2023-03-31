@@ -413,50 +413,16 @@ func aggr(ls []*Entry, u,
 }
 
 func updateRoot(txn *badger.Txn, ts time.Time, id *ID, a *Aggr_Total) error {
-	var key []byte
-	for i := TABLE_RAW; i <= TABLE_YEAR; i += 1 {
-		switch i {
-		case TABLE_RAW:
-			key = id.Raw().SetTable(byte(i)).SetMeta(0).Final()
-		case TABLE_HOUR:
-			key = id.Hour(ts).SetTable(byte(i)).SetMeta(0).Final()
-		case TABLE_DAY:
-			key = id.Day(ts).SetTable(byte(i)).SetMeta(0).Final()
-		case TABLE_MONTH:
-			key = id.Month(ts).SetTable(byte(i)).SetMeta(0).Final()
-		case TABLE_YEAR:
-			key = id.Year(ts).SetTable(byte(i)).SetMeta(0).Final()
-		}
-		err := updateAggregate(txn, key, a)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	key := id.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(0).Final()
+	return updateAggregate(txn, key, a)
 }
 
 func updateMeta(txn *badger.Txn, enc *compressor, dec *decompressor, ts time.Time, id *ID, meta PROPS, a *Aggr_Segment) error {
 	if a == nil {
 		return nil
 	}
-	var key []byte
-	for i := TABLE_HOUR; i <= TABLE_YEAR; i += 1 {
-		switch i {
-		case TABLE_HOUR:
-			key = id.Hour(ts).SetTable(byte(i)).SetMeta(byte(meta)).Final()
-		case TABLE_DAY:
-			key = id.Day(ts).SetTable(byte(i)).SetMeta(byte(meta)).Final()
-		case TABLE_MONTH:
-			key = id.Month(ts).SetTable(byte(i)).SetMeta(byte(meta)).Final()
-		case TABLE_YEAR:
-			key = id.Year(ts).SetTable(byte(i)).SetMeta(byte(meta)).Final()
-		}
-		err := updateSegment(txn, enc, dec, key, a)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	key := id.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(byte(meta)).Final()
+	return updateSegment(txn, enc, dec, key, a)
 }
 
 func updateAggregate(txn *badger.Txn, key []byte, a *Aggr_Total) error {
