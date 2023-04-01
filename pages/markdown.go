@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/docs"
 	"github.com/gernest/vince/render"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
@@ -14,12 +15,11 @@ import (
 
 func Mark(page string, title string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		f, err := templates.Files.Open("pages/" + page + ".md")
+		f, err := docs.FS.Open(page)
 		if err != nil {
 			render.ERROR(r.Context(), w, http.StatusNotFound)
 			return
 		}
-		stat, _ := f.Stat()
 		b, _ := io.ReadAll(f)
 		extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 		p := parser.NewWithExtensions(extensions)
@@ -31,7 +31,7 @@ func Mark(page string, title string) http.HandlerFunc {
 		render.HTML(r.Context(), w, templates.Markdown, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Title = title
 			ctx.Content = template.HTML(b)
-			ctx.ModTime = stat.ModTime()
+			ctx.ModTime = docs.ModTime(page)
 		})
 	}
 }
