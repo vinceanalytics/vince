@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/belak/octicon"
 	"github.com/gernest/vince/config"
@@ -143,6 +144,7 @@ type Context struct {
 	Position      int
 	Page          string
 	Content       template.HTML
+	ModTime       time.Time
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {

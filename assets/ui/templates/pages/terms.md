@@ -40,7 +40,8 @@ When satisfied they should then proceed to purchase a paid plan.
 **services are pre paid**
 
 - Full payment  prior to commencement of the plan.
-- All payments are in USD 
+- All payments are in USD
+- Billing is on annual basis.
 
 ### Account Termination
 
@@ -53,7 +54,7 @@ If you intend to request a refund, please do so before terminating your account.
 
 If you sign up for one of our paid plans and find our services unsatisfactory or simply unfit for your needs within the first 14 days, we do offer a worry-free money back guarantee. If you have used our service extensively during those 14 days, we may deduct the prorated cost of usage and refund the remainder.
 
-**After 14 days of payment, all sales are to be considered final. That includes payments for new monthly and yearly plans, prepayments as well renewals.**
+**After 14 days of payment, all sales are to be considered final. That includes payments for new yearly plans, prepayments as well renewals.**
 
 Refund requests for already terminated accounts will not be accepted.
 

@@ -19,6 +19,7 @@ func Mark(page string, title string) http.HandlerFunc {
 			render.ERROR(r.Context(), w, http.StatusNotFound)
 			return
 		}
+		stat, _ := f.Stat()
 		b, _ := io.ReadAll(f)
 		extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 		p := parser.NewWithExtensions(extensions)
@@ -30,6 +31,7 @@ func Mark(page string, title string) http.HandlerFunc {
 		render.HTML(r.Context(), w, templates.Markdown, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Title = title
 			ctx.Content = template.HTML(b)
+			ctx.ModTime = stat.ModTime()
 		})
 	}
 }
