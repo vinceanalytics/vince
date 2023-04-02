@@ -45,7 +45,7 @@ func Merge(ctx context.Context, since uint64, cb MergeCallback) (uint64, error) 
 		it := txn.NewIterator(o)
 		defer it.Close()
 		var last uint64
-		for ; it.Valid(); it.Next() {
+		for it.Rewind(); it.Valid(); it.Next() {
 			x := it.Item()
 			last = x.Version()
 			if x.IsDeletedOrExpired() {
@@ -72,7 +72,7 @@ func Merge(ctx context.Context, since uint64, cb MergeCallback) (uint64, error) 
 		var data Entries
 		de := getDecompressor()
 		defer de.Release()
-		for ; it.Valid(); it.Next() {
+		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
 			err := de.Read(item, func(val []byte) error {
 				return proto.Unmarshal(val, &data)
