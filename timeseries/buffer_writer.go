@@ -3,6 +3,7 @@ package timeseries
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"fmt"
 	"sort"
 	"strconv"
@@ -12,7 +13,6 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/log"
-	"github.com/gernest/vince/timex"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -30,12 +30,12 @@ type Buffer struct {
 	entries   []*Entry
 	ttl       time.Duration
 	mu        sync.Mutex
-	id        ID
+	id        [16]byte
 }
 
 func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
-	b.id.SetUserID(uid)
-	b.id.SetSiteID(sid)
+	binary.BigEndian.PutUint64(b.id[:8], uid)
+	binary.BigEndian.PutUint64(b.id[8:], sid)
 	b.expiresAt = time.Now().Add(ttl)
 	return b
 }
@@ -102,8 +102,6 @@ func (b *Buffer) Save(ctx context.Context) error {
 	say := log.Get(ctx)
 	ts := GetBob(ctx)
 	// data saved here is short lived
-	b.id.Day(timex.Today())
-	b.id.SetEntropy()
 	ttl := b.ttl
 	if ttl == 0 {
 		// retain this for maximum of 3 hours merge window must always be less than this

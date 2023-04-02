@@ -1,7 +1,6 @@
 package timeseries
 
 import (
-	"bytes"
 	"context"
 	"encoding/binary"
 	"errors"
@@ -94,10 +93,8 @@ func Merge(ctx context.Context, since uint64, cb MergeCallback) (uint64, error) 
 		return func() error {
 			return db.Update(func(txn *badger.Txn) error {
 				w := bigBufferPool.Get().(*Buffer).Init(uid, sid, 0)
-				w.id.Day(start)
-				w.id.SetEntropy()
 				o := badger.DefaultIteratorOptions
-				o.Prefix = bytes.Clone(w.id[:entropyOffset])
+				o.Prefix = w.id[:]
 				it := txn.NewIterator(o)
 				err := merge(it, txn, w)
 				if err != nil {
