@@ -7,17 +7,14 @@ import (
 )
 
 const (
-	yearOffset  = 0
-	monthOffset = 2  // 2 bytes for year
-	dayOffset   = 3  // 1 byte for month
-	hourOffset  = 4  // 1 byte for  day
-	tableOffset = 5  // 1 byte for hour
-	metaOffset  = 6  // 1 byte for table
-	userOffset  = 7  // 1 byte for metadata
-	siteOffset  = 15 // 8 bytes for user id
+	userOffset  = 0
+	siteOffset  = 8
+	yearOffset  = 16
+	tableOffset = 18
+	metaOffset  = 19
 )
 
-type ID [24]byte
+type ID [20]byte
 
 func (id *ID) SetTable(table byte) *ID {
 	id[tableOffset] = byte(table)
@@ -49,39 +46,9 @@ func (id *ID) GetSiteID() uint64 {
 	return binary.BigEndian.Uint64(id[siteOffset:])
 }
 
-func (id *ID) Hour(ts time.Time) *ID {
-	yy, mm, dd := ts.Date()
-	return id.setTs(yy, int(mm), dd, ts.Hour())
-}
-
-func (id *ID) Day(ts time.Time) *ID {
-	yy, mm, dd := ts.Date()
-	return id.setTs(yy, int(mm), dd, 0)
-}
-
-func (id *ID) Month(ts time.Time) *ID {
-	yy, mm, _ := ts.Date()
-	return id.setTs(yy, int(mm), 0, 0)
-}
-
 func (id *ID) Year(ts time.Time) *ID {
-	return id.setTs(ts.Year(), 0, 0, 0)
-}
-
-func (id *ID) setTs(yy int, mm int, dd int, hh int) *ID {
-	binary.BigEndian.PutUint16(id[yearOffset:], uint16(yy))
-	id[monthOffset] = byte(mm)
-	id[dayOffset] = byte(dd)
-	id[hourOffset] = byte(hh)
+	binary.BigEndian.PutUint16(id[yearOffset:], uint16(ts.Year()))
 	return id
-}
-
-func (id *ID) GetTime() time.Time {
-	yy := binary.BigEndian.Uint16(id[yearOffset:])
-	mm := id[monthOffset]
-	dd := id[dayOffset]
-	hr := id[hourOffset]
-	return time.Date(int(yy), time.Month(mm), int(dd), int(hr), 0, 0, 0, time.UTC)
 }
 
 func (id *ID) Release() {

@@ -4,10 +4,8 @@ import (
 	"math/rand"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/gernest/vince/timex"
 )
 
 func TestKey(t *testing.T) {
@@ -42,10 +40,7 @@ func TestKey(t *testing.T) {
 		}
 	})
 
-	now := time.Now()
-	today := timex.Date(now)
 	t.Run("sets date", func(t *testing.T) {
-		id.Day(today)
 		if id.GetTable() != table {
 			t.Fatal("failed to encode table")
 		}
@@ -54,13 +49,9 @@ func TestKey(t *testing.T) {
 		}
 		if id.GetSiteID() != sid {
 			t.Fatalf("expected %d got %d", sid, id.GetSiteID())
-		}
-		if !id.GetTime().Equal(today) {
-			t.Fatalf("expected %s got %s", today, id.GetTime())
 		}
 	})
 	t.Run("sets entropy", func(t *testing.T) {
-		id.Day(today)
 		if id.GetTable() != table {
 			t.Fatal("failed to encode table")
 		}
@@ -69,9 +60,6 @@ func TestKey(t *testing.T) {
 		}
 		if id.GetSiteID() != sid {
 			t.Fatalf("expected %d got %d", sid, id.GetSiteID())
-		}
-		if !id.GetTime().Equal(today) {
-			t.Fatalf("expected %s got %s", today, id.GetTime())
 		}
 	})
 }

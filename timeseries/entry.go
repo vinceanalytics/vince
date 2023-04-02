@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/vince/timex"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go/bloom/xxhash"
 )
@@ -101,22 +100,18 @@ func (ls EntryList) Count(u, s *roaring64.Bitmap) (visitors, visits, events floa
 // of entries.
 //
 // Assumes ls is sorted and contains entries happening in the same day.
-func (ls EntryList) Emit(f func(time.Time, EntryList)) {
+func (ls EntryList) Emit(f func(EntryList)) {
 	var pos int
-	var last, curr time.Time
+	var last, curr int64
 	for i := range ls {
-		curr = date(ls[i].Timestamp)
-		if i > 0 && !curr.Equal(last) {
-			f(curr, ls[pos:i-1])
+		curr = ls[i].Timestamp
+		if i > 0 && curr != last {
+			f(ls[pos : i-1])
 			pos = i
 		}
 		last = curr
 	}
 	if pos < len(ls)-1 {
-		f(curr, ls[pos:])
+		f(ls[pos:])
 	}
-}
-
-func date(ts int64) time.Time {
-	return timex.Date(time.Unix(ts, 0))
 }

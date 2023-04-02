@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/gernest/vince/gate"
 	"github.com/gernest/vince/geoip"
@@ -18,6 +17,7 @@ import (
 	"github.com/gernest/vince/referrer"
 	"github.com/gernest/vince/remoteip"
 	"github.com/gernest/vince/timeseries"
+	"github.com/gernest/vince/timex"
 	"github.com/gernest/vince/ua"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -119,7 +119,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := uri.Query()
-	now := time.Now()
 	agent := ua.Parse(userAgent)
 	// handle referrer
 	ref := referrer.ParseReferrer(req.Referrer)
@@ -166,6 +165,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		screenSize = "desktop"
 	}
 	var dropped int
+	today := timex.Today().Unix()
 	for _, domain := range domains {
 		b, pass := gate.Check(r.Context(), domain)
 		if !pass {
@@ -194,7 +194,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.Region = region
 		e.CityGeoNameId = cityGeonameId
 		e.ScreenSize = screenSize
-		e.Timestamp = now.Unix()
+		e.Timestamp = today
 		previousUUserID := seedID.GenPrevious(remoteIp, userAgent, domain, host)
 		b.Register(r.Context(), e, previousUUserID)
 	}

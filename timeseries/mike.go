@@ -54,7 +54,7 @@ func Save(ctx context.Context, b *Buffer) {
 	defer id.Release()
 	id.SetSiteID(b.SID())
 	id.SetUserID(b.UID())
-	ent.Emit(func(i time.Time, el EntryList) {
+	ent.Emit(func(el EntryList) {
 		defer group.Reset()
 		group.Save(el)
 		ts := time.Unix(el[0].Timestamp, 0)
