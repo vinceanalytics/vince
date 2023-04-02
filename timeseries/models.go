@@ -16,7 +16,7 @@ import (
 // permanent storage/query.
 func Open(ctx context.Context, dir string) (context.Context, io.Closer, error) {
 	dir = filepath.Join(dir, "ts")
-	bob, err := open(ctx, filepath.Join(dir, "bob"))
+	bob, err := openBob(ctx, filepath.Join(dir, "bob"))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -44,6 +44,16 @@ func open(ctx context.Context, path string) (*badger.DB, error) {
 	o := badger.DefaultOptions(path).
 		WithLogger(log.Badger(ctx)).
 		WithCompression(options.ZSTD)
+	return badger.Open(o)
+}
+
+func openBob(ctx context.Context, path string) (*badger.DB, error) {
+	os.MkdirAll(path, 0755)
+	o := badger.DefaultOptions(path).
+		WithLogger(log.Badger(ctx)).
+		WithCompression(options.ZSTD).
+		// keep up to two versions.
+		WithNumVersionsToKeep(2)
 	return badger.Open(o)
 }
 
