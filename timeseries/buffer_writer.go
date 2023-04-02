@@ -48,12 +48,17 @@ func (b *Buffer) Sort() *Buffer {
 }
 
 func (b *Buffer) Reset() *Buffer {
-	for i := range b.id {
-		b.id[i] = 0
-	}
 	b.expiresAt = time.Time{}
 	b.entries = b.entries[:0]
 	return b
+}
+
+func (b *Buffer) UID() uint64 {
+	return binary.BigEndian.Uint64(b.id[:8])
+}
+
+func (b *Buffer) SID() uint64 {
+	return binary.BigEndian.Uint64(b.id[8:])
 }
 
 func (b *Buffer) Release() {

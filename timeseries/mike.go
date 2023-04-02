@@ -45,15 +45,15 @@ func (g *Group) Release() {
 	groupPool.Put(g)
 }
 
-func Save(ctx context.Context, b *Buffer, uid, sid uint64) {
+func Save(ctx context.Context, b *Buffer) {
 	db := GetMike(ctx)
 	defer b.Release()
 	group := groupPool.Get().(*Group)
 	ent := EntryList(b.entries)
 	id := NewID()
 	defer id.Release()
-	id.SetSiteID(sid)
-	id.SetUserID(uid)
+	id.SetSiteID(b.SID())
+	id.SetUserID(b.UID())
 	ent.Emit(func(i time.Time, el EntryList) {
 		defer group.Reset()
 		group.Save(el)
