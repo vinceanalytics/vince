@@ -68,7 +68,7 @@ func Save(ctx context.Context, b *Buffer) {
 }
 
 func updateCalendar(txn *badger.Txn, ts time.Time, id *ID, a store.Sum) error {
-	key := id.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(0).Final()
+	key := id.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(0)[:]
 	x, err := txn.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {

@@ -60,7 +60,6 @@ func TestKey(t *testing.T) {
 		}
 	})
 	t.Run("sets entropy", func(t *testing.T) {
-		id.SetEntropy()
 		id.Day(today)
 		if id.GetTable() != table {
 			t.Fatal("failed to encode table")

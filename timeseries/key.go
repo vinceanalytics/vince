@@ -4,24 +4,20 @@ import (
 	"encoding/binary"
 	"sync"
 	"time"
-
-	"github.com/oklog/ulid/v2"
 )
 
 const (
-	yearOffset    = 0
-	monthOffset   = 2  // 2 bytes for year
-	dayOffset     = 3  // 1 byte for month
-	hourOffset    = 4  // 1 byte for  day
-	tableOffset   = 5  // 1 byte for hour
-	metaOffset    = 6  // 1 byte for table
-	userOffset    = 7  // 1 byte for metadata
-	siteOffset    = 15 // 8 bytes for user id
-	entropyOffset = 23 // 8 bytes for site id
-	// 9 bytes for random data
+	yearOffset  = 0
+	monthOffset = 2  // 2 bytes for year
+	dayOffset   = 3  // 1 byte for month
+	hourOffset  = 4  // 1 byte for  day
+	tableOffset = 5  // 1 byte for hour
+	metaOffset  = 6  // 1 byte for table
+	userOffset  = 7  // 1 byte for metadata
+	siteOffset  = 15 // 8 bytes for user id
 )
 
-type ID [32]byte
+type ID [24]byte
 
 func (id *ID) SetTable(table byte) *ID {
 	id[tableOffset] = byte(table)
@@ -31,12 +27,6 @@ func (id *ID) SetTable(table byte) *ID {
 func (id *ID) SetMeta(table byte) *ID {
 	id[metaOffset] = byte(table)
 	return id
-}
-
-// Final returns id bytes without entropy. This is used as key to mike our permanent
-// metrics storage.
-func (id *ID) Final() []byte {
-	return id[:entropyOffset]
 }
 
 func (id *ID) GetTable() byte {
@@ -57,10 +47,6 @@ func (id *ID) GetUserID() uint64 {
 
 func (id *ID) GetSiteID() uint64 {
 	return binary.BigEndian.Uint64(id[siteOffset:])
-}
-
-func (id *ID) Raw() *ID {
-	return id.setTs(0, 0, 0, 0)
 }
 
 func (id *ID) Hour(ts time.Time) *ID {
@@ -88,10 +74,6 @@ func (id *ID) setTs(yy int, mm int, dd int, hh int) *ID {
 	id[dayOffset] = byte(dd)
 	id[hourOffset] = byte(hh)
 	return id
-}
-
-func (id *ID) SetEntropy() {
-	ulid.DefaultEntropy().Read(id[entropyOffset:])
 }
 
 func (id *ID) GetTime() time.Time {
