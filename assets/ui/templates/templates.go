@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -261,4 +262,20 @@ func GetActivationCode(ctx context.Context) uint64 {
 		return v.(uint64)
 	}
 	return 0
+}
+
+func (t *Context) Format(n uint64) string {
+	switch {
+	case n >= 1_000 && n < 1_000_000:
+		thousands := (n / 100) / 10
+		return fmt.Sprintf("%dK", thousands)
+	case n >= 1_000_000 && n < 1_000_000_000:
+		millions := (n / 100_000) / 10
+		return fmt.Sprintf("%dM", millions)
+	case n >= 1_000_000_000 && n < 1_000_000_000_000:
+		billions := (n / 100_000_000) / 10
+		return fmt.Sprintf("%dB", billions)
+	default:
+		return strconv.FormatUint(n, 10)
+	}
 }

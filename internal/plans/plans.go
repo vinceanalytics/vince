@@ -14,6 +14,11 @@ type Plan struct {
 	YearlyCost       float64
 }
 
+var Enterprize = Plan{
+	MonthlyProductID: 2023,
+	YearlyProductID:  2023,
+}
+
 //go:embed v1.json
 var planV1 []byte
 
