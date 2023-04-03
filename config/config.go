@@ -87,6 +87,12 @@ func Flags() []cli.Flag {
 			EnvVars: []string{"VINCE_LOG_LEVEL"},
 		},
 		&cli.StringFlag{
+			Name:    "backup-dir",
+			Usage:   "directory where backups are stored",
+			Value:   "info",
+			EnvVars: []string{"VINCE_BACKUP_DIR"},
+		},
+		&cli.StringFlag{
 			Name:    "mailer-address",
 			Usage:   "email address used for the sender of outgoing emails ",
 			EnvVars: []string{"VINCE_MAILER_ADDRESS"},
@@ -224,6 +230,7 @@ func fromCli(ctx *cli.Context) *Config {
 		IsSelfHost:              ctx.Bool("self-host"),
 		SecretKeyBase:           ctx.String("secret-key-base"),
 		CookieStoreSecret:       ctx.String("cookie-store-secret"),
+		BackupDir:               ctx.String("backup-dir"),
 		Intervals: &Intervals{
 			SitesByDomainCacheRefreshInterval: durationpb.New(ctx.Duration("cache-refresh")),
 			LogRotationCheckInterval:          durationpb.New(ctx.Duration("rotation-check")),
