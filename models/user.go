@@ -40,10 +40,14 @@ type User struct {
 	GoogleAuth     *GoogleAuth
 	GracePeriod    *GracePeriod
 
+	// for invoice generation and billing
+	Organization  string
+	PostalAddress string
+	VATNumber     string
+
 	LastSeen        time.Time
 	TrialExpiryDate sql.NullTime
-	EmailVerified   bool   `gorm:"not null;default:false"`
-	Theme           string `gorm:"not null;default:system"`
+	EmailVerified   bool `gorm:"not null;default:false"`
 	Invitations     []*Invitation
 }
 
