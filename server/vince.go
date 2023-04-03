@@ -11,6 +11,7 @@ import (
 
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/assets/tracker"
+	"github.com/gernest/vince/backup"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
@@ -65,9 +66,7 @@ func Serve(ctx *cli.Context) error {
 func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	sqlPath := filepath.Join(o.DataPath, "vince.db")
-	sqlDb, err := models.Open(sqlPath)
+	sqlDb, err := models.Open(models.Database(o))
 	if err != nil {
 		return err
 	}
@@ -127,6 +126,10 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		BaseContext: func(l net.Listener) context.Context {
 			return ctx
 		},
+	}
+	err = backup.Backup(ctx)
+	if err != nil {
+		log.Get(ctx).Err(err).Msg("failed backup")
 	}
 	go func() {
 		err := svr.ListenAndServe()

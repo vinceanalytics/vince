@@ -309,6 +309,10 @@ type Model struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
+func Database(cfg *config.Config) string {
+	return filepath.Join(cfg.DataPath, "vince.db")
+}
+
 func Open(path string) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{})
 	if err != nil {
