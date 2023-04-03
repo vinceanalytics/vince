@@ -158,7 +158,7 @@ func Backup(ctx context.Context) error {
 		return err
 	}
 	f.Close()
-	name := fmt.Sprintf("%s-vince.backup", time.Now().Format(time.DateOnly))
+	name := fmt.Sprintf("%s-vince-backup.tar", time.Now().Format(time.DateOnly))
 	return os.Rename(path, filepath.Join(cfg.BackupDir, name))
 }
 
