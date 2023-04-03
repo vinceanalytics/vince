@@ -213,17 +213,10 @@ type Subscription struct {
 	PlanID             string    `gorm:"not null"`
 	UpdateURL          string    `gorm:"not null"`
 	CancelURL          string    `gorm:"not null"`
-	Status             string    `gorm:"not null"`
+	Status             string    `gorm:"not null;check:status in ('active', 'past_due', 'deleted', 'paused')"`
 	NextBillAmount     string    `gorm:"not null"`
 	NextBillDate       time.Time `gorm:"not null"`
 	LastBillDate       time.Time
-}
-
-func (s *Subscription) CheckStatus(status string) bool {
-	if s == nil {
-		return false
-	}
-	return s.Status == status
 }
 
 type SharedLink struct {
