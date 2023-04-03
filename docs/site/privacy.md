@@ -12,7 +12,6 @@ Once an account has been provisioned by our system, entry of additional personal
 
 - full name
 - postal address
-- additional email address(es)
 - organization / company name
 - VAT number
 
