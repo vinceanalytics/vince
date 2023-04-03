@@ -214,7 +214,6 @@ type Subscription struct {
 	UpdateURL          string    `gorm:"not null"`
 	CancelURL          string    `gorm:"not null"`
 	Status             string    `gorm:"not null"`
-	CurrencyCode       string    `gorm:"not null:default:USD"`
 	NextBillAmount     string    `gorm:"not null"`
 	NextBillDate       time.Time `gorm:"not null"`
 	LastBillDate       time.Time
