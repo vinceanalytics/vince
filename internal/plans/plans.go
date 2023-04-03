@@ -1,10 +1,16 @@
 package plans
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"sync"
+
+	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/models"
 )
+
+const enterprizeUsage = 10_000_000
 
 type Plan struct {
 	Limit            uint64
@@ -24,22 +30,75 @@ var planV1 []byte
 
 var plan = &sync.Map{}
 
+var All []Plan
+
 func init() {
-	var o []Plan
-	err := json.Unmarshal(planV1, &o)
+	err := json.Unmarshal(planV1, &All)
 	if err != nil {
 		panic("failed to decode plans " + err.Error())
 	}
-	for _, p := range o {
+	for _, p := range All {
 		plan.Store(p.MonthlyProductID, p)
 		plan.Store(p.YearlyProductID, p)
 	}
 }
 
-func GetPlan(id uint64) (Plan, bool) {
+func GetPlan(id uint64) Plan {
 	p, ok := plan.Load(id)
 	if !ok {
-		return Plan{}, ok
+		return Plan{}
 	}
-	return p.(Plan), true
+	return p.(Plan)
+}
+
+func (p Plan) IsEnterprize() bool {
+	return p.MonthlyProductID == Enterprize.MonthlyProductID
+}
+
+func SuggestPlan(ctx context.Context, u *models.User, usage uint64) Plan {
+	switch {
+	case usage > enterprizeUsage:
+		return Enterprize
+	case u.IsEnterprize(ctx):
+		return Enterprize
+	default:
+		for _, p := range All {
+			if usage < p.Limit {
+				return p
+			}
+		}
+		return Plan{}
+	}
+}
+
+func SubscriptionInterval(ctx context.Context, sub *models.Subscription) string {
+	o := GetPlan(sub.PlanID)
+	if o.MonthlyProductID == 0 {
+		e := sub.GetEnterPrise(ctx)
+		if e != nil {
+			return e.BillingInterval
+		}
+		return ""
+	}
+	for _, p := range All {
+		if p.MonthlyProductID == sub.PlanID {
+			return "monthly"
+		}
+		if p.YearlyProductID == sub.PlanID {
+			return "yearly"
+		}
+	}
+	return ""
+}
+
+func Allowance(ctx context.Context, sub *models.Subscription) uint64 {
+	o := GetPlan(sub.PlanID)
+	if o.MonthlyProductID != 0 {
+		return o.Limit
+	}
+	if e := sub.GetEnterPrise(ctx); e != nil {
+		return e.MonthlyPageViewLimit
+	}
+	log.Get(ctx).Debug().Uint64("plan_id", sub.PlanID).Msg("Unknown allowance")
+	return 0
 }

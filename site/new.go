@@ -15,7 +15,7 @@ func New(w http.ResponseWriter, r *http.Request) {
 	render.HTML(r.Context(), w, templates.SiteNew, http.StatusOK, func(ctx *templates.Context) {
 		ctx.NewSite = &templates.NewSite{
 			IsFirstSite: owned == 0,
-			IsAtLimit:   owned >= int64(limit),
+			IsAtLimit:   limit != -1 && owned >= int64(limit),
 			SiteLimit:   limit,
 		}
 		ctx.Page = "add_site"

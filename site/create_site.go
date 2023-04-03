@@ -17,15 +17,20 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 	owned := u.CountOwnedSites(ctx)
 	domain := r.Form.Get("domain")
 	limit := u.SitesLimit(ctx)
-	if _, ok := dns.IsDomainName(domain); !ok {
+	isAtLimit := limit != -1 && owned >= int64(limit)
+	_, valid := dns.IsDomainName(domain)
+	if isAtLimit || !valid {
 		sessions.SaveCsrf(w, r)
 		render.HTML(r.Context(), w, templates.SiteNew, http.StatusOK, func(ctx *templates.Context) {
-			ctx.Errors = map[string]string{
-				"domain": "not a valid domain name",
+			if !valid {
+				ctx.Errors = map[string]string{
+					"domain": "not a valid domain name",
+				}
 			}
+
 			ctx.NewSite = &templates.NewSite{
 				IsFirstSite: owned == 0,
-				IsAtLimit:   owned >= int64(limit),
+				IsAtLimit:   isAtLimit,
 				SiteLimit:   limit,
 			}
 		})

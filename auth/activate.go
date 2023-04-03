@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -23,12 +22,8 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	// of all columns.
 	// We only care about correctness of the relationship, since we already have
 	// our current user object.
-	err := models.Get(r.Context()).Preload("EmailVerificationCodes").Select("id").First(usr).Error
-	if err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Get(r.Context()).Err(err).Msg("failed preloading EmailVerificationCodes")
-		}
-	}
+	usr.Preload(ctx, "EmailVerificationCodes")
+
 	hasInvitation := models.Exists(ctx, func(db *gorm.DB) *gorm.DB {
 		return db.Model(&models.Invitation{}).Where("email=?", usr.Email)
 	})

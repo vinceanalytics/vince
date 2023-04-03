@@ -3,8 +3,6 @@ package models
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"math"
 	"net/http"
 	"net/mail"
 	"net/url"
@@ -13,9 +11,7 @@ import (
 	"time"
 
 	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/log"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type currentUserKey struct{}
@@ -69,21 +65,20 @@ func GetCurrentUser(ctx context.Context) *User {
 	return nil
 }
 
-// LoadUserModel returns a User model will all relations preloaded. This should be
-// the biggest bottleneck performance  wise.
-func LoadUserModel(ctx context.Context, uid uint64) (*User, error) {
-	var u User
-	db := Get(ctx)
-	err := db.
-		Preload("Subscription").
-		Preload("EnterprisePlan").
-		Preload("GoogleAuth").
-		Preload("GracePeriod").
-		First(&u, uid).Error
+func (u *User) Load(ctx context.Context, uid uint64) error {
+	return Get(ctx).First(u, uid).Error
+}
+
+func (u *User) Preload(ctx context.Context, preload string) {
+	err := Get(ctx).Preload(preload).First(u).Error
 	if err != nil {
-		return nil, err
+		DBE(ctx, err, "failed to preload "+preload)
 	}
-	return &u, nil
+}
+
+func (u *User) IsEnterprize(ctx context.Context) bool {
+	u.Preload(ctx, "EnterprisePlan")
+	return u.EnterprisePlan != nil
 }
 
 // CountOwnedSites counts sites owned by the user.
@@ -93,34 +88,42 @@ func (u *User) CountOwnedSites(ctx context.Context) int64 {
 		Joins("inner join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' and site_memberships.user_id = ? ", u.ID).
 		Count(&o).Error
 	if err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Get(ctx).Err(err).Msg("failed to count owned sites")
-		}
+		DBE(ctx, err, "failed to count owned sites")
 		return 0
 	}
 	return o
 }
 
 func (u *User) SitesLimit(ctx context.Context) int {
+	u.Preload(ctx, "EnterprisePlan")
 	x := config.Get(ctx)
-	if x.IsSelfHost {
-		return math.MaxInt
-	}
-	for _, e := range x.SiteLimitExempt {
-		if e == u.Email {
-			return math.MaxInt
+
+	switch {
+	case x.IsSelfHost:
+		return -1
+	case x.IsExempt(u.Email):
+		return -1
+	case u.EnterprisePlan != nil:
+		if u.HasActiveSubscription(ctx) {
+			return -1
 		}
+		return int(x.SiteLimit)
+	default:
+		return int(x.SiteLimit)
 	}
-	if u.EnterprisePlan != nil {
-		// check if a user has active plan
-		if u.Subscription != nil {
-			if u.EnterprisePlan.PlanID == u.Subscription.PlanID &&
-				u.Subscription.Status == "active" {
-				return int(u.EnterprisePlan.SiteLimit)
-			}
-		}
+}
+
+func (u *User) HasActiveSubscription(ctx context.Context) bool {
+	var count int64
+	err := Get(ctx).Model(&Subscription{}).
+		Where("user_id = ?", u.ID).
+		Where("plan_id", u.EnterprisePlan.PlanID).
+		Where("status = ?", "active").Count(&count).Error
+	if err != nil {
+		DBE(ctx, err, "failed to check active subscription")
+		return false
 	}
-	return 0
+	return count == 1
 }
 
 func (u *User) New(r *http.Request) (validation map[string]string, err error) {

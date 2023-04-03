@@ -32,11 +32,7 @@ func (c *cacheUpdater) Do(ctx context.Context) {
 	ctx, task := trace.NewTask(ctx, "sites_to_domain_cache_update")
 	defer task.End()
 	c.sites = c.sites[:0]
-	err := models.QuerySitesToCache(models.Get(ctx), &c.sites)
-	if err != nil {
-		log.Get(ctx).Err(err).Str("worker", "sites_to_domain_cache").Msg("failed querying sites to cache")
-		return
-	}
+	models.QuerySitesToCache(ctx, &c.sites)
 	cache := caches.Site(ctx)
 	for _, s := range c.sites {
 		cache.SetWithTTL(s.Domain, s, 1, c.ttl)

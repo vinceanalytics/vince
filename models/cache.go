@@ -1,11 +1,10 @@
 package models
 
 import (
-	"errors"
+	"context"
 	"time"
 
 	"golang.org/x/time/rate"
-	"gorm.io/gorm"
 )
 
 type CachedSite struct {
@@ -22,15 +21,11 @@ func (c *CachedSite) RateLimit() (uint64, rate.Limit, int) {
 	return c.ID, rate.Limit(events / per.Seconds()), 10
 }
 
-func QuerySitesToCache(db *gorm.DB, results *[]*CachedSite) error {
-	err := db.Model(&Site{}).Select("sites.id, sites.domain, sites.ingest_rate_limit_scale_seconds,sites.ingest_rate_limit_threshold,site_memberships.user_id").
+func QuerySitesToCache(ctx context.Context, results *[]*CachedSite) {
+	err := Get(ctx).Model(&Site{}).Select("sites.id, sites.domain, sites.ingest_rate_limit_scale_seconds,sites.ingest_rate_limit_threshold,site_memberships.user_id").
 		Joins("left join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' ").
 		Scan(results).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
-		}
-		return err
+		DBE(ctx, err, "failed getting sites to cache")
 	}
-	return nil
 }

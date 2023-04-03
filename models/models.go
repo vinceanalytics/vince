@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"math/rand"
 	"path/filepath"
 	"regexp"
@@ -208,15 +209,33 @@ type FeedbackEmail struct {
 
 type Subscription struct {
 	Model
-	UserID             int
-	PlanSubscriptionID string    `gorm:"uniqueIndex"`
-	PlanID             string    `gorm:"not null"`
-	UpdateURL          string    `gorm:"not null"`
-	CancelURL          string    `gorm:"not null"`
-	Status             string    `gorm:"not null;check:status in ('active', 'past_due', 'deleted', 'paused')"`
-	NextBillAmount     string    `gorm:"not null"`
-	NextBillDate       time.Time `gorm:"not null"`
-	LastBillDate       time.Time
+	UserID         int
+	PlanID         uint64    `gorm:"not null"`
+	UpdateURL      string    `gorm:"not null"`
+	CancelURL      string    `gorm:"not null"`
+	Status         string    `gorm:"not null;check:status in ('active', 'past_due', 'deleted', 'paused')"`
+	NextBillAmount string    `gorm:"not null"`
+	NextBillDate   time.Time `gorm:"not null"`
+	LastBillDate   time.Time
+}
+
+func (sub *Subscription) GetEnterPrise(ctx context.Context) *EnterprisePlan {
+	var e EnterprisePlan
+	err := Get(ctx).Model(&EnterprisePlan{}).
+		Where("plan_id = ? ", sub.PlanID).
+		Where("user_id = ?", sub.UserID).First(&e).Error
+	if err != nil {
+		DBE(ctx, err, "failed getting enterprise plan from subscription")
+		return nil
+	}
+	return &e
+}
+
+func DBE(ctx context.Context, err error, msg string) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return
+	}
+	log.Get(ctx).Err(err).Msg(msg)
 }
 
 type SharedLink struct {
@@ -278,9 +297,9 @@ type Goal struct {
 
 type EnterprisePlan struct {
 	Model
-	PlanID                string `gorm:"not null"`
+	PlanID                uint64 `gorm:"not null"`
 	UserID                uint64 `gorm:"not null;uniqueIndex"`
-	BillingInterval       string `gorm:"not null"`
+	BillingInterval       string `gorm:"not null;check:billing_interval in ('monthly', 'yearly')"`
 	MonthlyPageViewLimit  uint64 `gorm:"not null"`
 	HourlyAPIRequestLimit uint64 `gorm:"not null"`
 	SiteLimit             uint64 `gorm:"default:50"`
