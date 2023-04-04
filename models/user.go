@@ -54,11 +54,11 @@ func (u *User) Avatar(size int) string {
 	return "/avatar?" + q.Encode()
 }
 
-func SetCurrentUser(ctx context.Context, usr *User) context.Context {
+func SetUser(ctx context.Context, usr *User) context.Context {
 	return context.WithValue(ctx, currentUserKey{}, usr)
 }
 
-func GetCurrentUser(ctx context.Context) *User {
+func GetUser(ctx context.Context) *User {
 	if u := ctx.Value(currentUserKey{}); u != nil {
 		return u.(*User)
 	}

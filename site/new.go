@@ -9,7 +9,7 @@ import (
 )
 
 func New(w http.ResponseWriter, r *http.Request) {
-	u := models.GetCurrentUser(r.Context())
+	u := models.GetUser(r.Context())
 	owned := u.CountOwnedSites(r.Context())
 	limit := u.SitesLimit(r.Context())
 	render.HTML(r.Context(), w, templates.SiteNew, http.StatusOK, func(ctx *templates.Context) {

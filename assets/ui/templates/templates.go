@@ -116,6 +116,15 @@ var Markdown = template.Must(
 	),
 )
 
+var AddSnippet = template.Must(
+	template.ParseFS(Files,
+		"layout/focus.html",
+		"layout/flash.html",
+		"layout/csrf.html",
+		"site/snippet.html",
+	),
+)
+
 type NewSite struct {
 	IsFirstSite bool
 	IsAtLimit   bool
@@ -146,6 +155,8 @@ type Context struct {
 	Page          string
 	Content       template.HTML
 	ModTime       time.Time
+	Site          *models.Site
+	IsFIrstSite   bool
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
@@ -153,7 +164,7 @@ func New(ctx context.Context, f ...func(c *Context)) *Context {
 		Data:        make(map[string]any),
 		CSRF:        getCsrf(ctx),
 		Captcha:     getCaptcha(ctx),
-		CurrentUser: models.GetCurrentUser(ctx),
+		CurrentUser: models.GetUser(ctx),
 		Config:      config.Get(ctx),
 		Code:        GetActivationCode(ctx),
 		Flash:       flash.Get(ctx),

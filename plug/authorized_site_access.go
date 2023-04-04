@@ -1,15 +1,14 @@
 package plug
 
 import (
-	"errors"
+	"context"
 	"net/http"
 
 	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/params"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sites"
-	"gorm.io/gorm"
 )
 
 func AuthorizedSiteAccess(allowed ...string) Plug {
@@ -18,41 +17,22 @@ func AuthorizedSiteAccess(allowed ...string) Plug {
 			"public", "viewer", "admin", "super_admin", "owner",
 		}
 	}
-	type AuthSite struct {
-		ID     uint64
-		Public bool
-	}
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			db := models.Get(ctx)
-			query := r.URL.Query()
-			var site AuthSite
-			domain := query.Get("domain")
+			params := params.Get(r.Context())
+			domain := params["domain"]
 			if domain == "" {
-				domain = query.Get("website")
+				domain = params["website"]
 			}
-			err := db.Model(&models.Site{}).Where("domain=?", domain).
-				Select("id", "public").Limit(1).Find(&site).Error
-			if err != nil {
-				log.Get(ctx).Err(err).Str("domain", domain).Msg("failed to get site by domain")
+			site := GetSite(ctx, domain)
+			if site == nil {
 				render.ERROR(ctx, w, http.StatusNotFound)
 				return
 			}
-			var sharedLink uint64
 			slug := r.URL.Query().Get("auth")
-			if slug != "" {
-				err = db.Model(&models.SharedLink{}).Where("slug=?", slug).
-					Select("site_id").Limit(1).Find(&sharedLink).Error
-				if err != nil {
-					if !errors.Is(err, gorm.ErrRecordNotFound) {
-						log.Get(ctx).Err(err).Str("slug", slug).Msg("failed to get shared link")
-						render.ERROR(ctx, w, http.StatusInternalServerError)
-						return
-					}
-				}
-			}
-			usr := models.GetCurrentUser(ctx)
+			sharedLink := GetSharedLink(ctx, slug)
+			usr := models.GetUser(ctx)
 
 			var membership string
 			if usr != nil {
@@ -67,12 +47,14 @@ func AuthorizedSiteAccess(allowed ...string) Plug {
 				role = "super_admin"
 			case site.Public:
 				role = "public"
-			case sharedLink == site.ID:
+			case sharedLink != nil && sharedLink.SiteID == site.ID:
 				role = "public"
 			}
 			for _, a := range allowed {
 				if a == role {
-					r = r.WithContext(models.SetCurrentUserRole(ctx, role))
+					ctx = models.SetRole(ctx, role)
+					ctx = models.SetSite(ctx, site)
+					r = r.WithContext(ctx)
 					h.ServeHTTP(w, r)
 					return
 				}
@@ -80,4 +62,32 @@ func AuthorizedSiteAccess(allowed ...string) Plug {
 			render.ERROR(ctx, w, http.StatusNotFound)
 		})
 	}
+}
+
+func GetSite(ctx context.Context, domain string) *models.Site {
+	var site models.Site
+	err := models.Get(ctx).Model(&models.Site{}).Where("domain=?", domain).
+		First(&site).Error
+	if err != nil {
+		models.DBE(ctx, err, "failed to get site by domain")
+		return nil
+	}
+	return &site
+}
+
+func GetSharedLink(ctx context.Context, slug string) *models.SharedLink {
+	if slug == "" {
+		return nil
+	}
+	var link models.SharedLink
+	err := models.Get(ctx).
+		Model(&models.SharedLink{}).
+		Where("slug = ?", slug).
+		Select("site_id").Limit(1).First(&link).Error
+
+	if err != nil {
+		models.DBE(ctx, err, "failed to get shared link")
+		return nil
+	}
+	return &link
 }

@@ -13,7 +13,7 @@ import (
 
 func CreateSite(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	u := models.GetCurrentUser(ctx)
+	u := models.GetUser(ctx)
 	owned := u.CountOwnedSites(ctx)
 	domain := r.Form.Get("domain")
 	limit := u.SitesLimit(ctx)
@@ -36,7 +36,6 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	domain = dns.CanonicalName(domain)
 	err := models.Get(ctx).Model(u).Association("Sites").Append(&models.Site{
 		Domain: domain,
 		Public: r.Form.Get("public") == "true",
@@ -55,5 +54,6 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 		ss.Data.EmailReport[domain] = true
 	}
 	ss.Save(w)
-	http.Redirect(w, r, "/"+domain+"/snippet", http.StatusFound)
+	path := "/" + domain + "/snippet"
+	http.Redirect(w, r, path, http.StatusFound)
 }

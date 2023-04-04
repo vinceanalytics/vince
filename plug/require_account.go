@@ -9,7 +9,7 @@ import (
 
 func RequireAccount(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		usr := models.GetCurrentUser(r.Context())
+		usr := models.GetUser(r.Context())
 		if usr == nil {
 			session, r := sessions.Load(r)
 			session.Data.LoginDest = r.URL.Path

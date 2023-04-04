@@ -16,7 +16,7 @@ import (
 func Activate(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	ctx := r.Context()
-	usr := models.GetCurrentUser(ctx)
+	usr := models.GetUser(ctx)
 
 	// load verification codes belonging to the user. We save space by only selecting id instead
 	// of all columns.

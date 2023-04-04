@@ -9,7 +9,7 @@ import (
 
 func RequireLoggedOut(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if models.GetCurrentUser(r.Context()) != nil {
+		if models.GetUser(r.Context()) != nil {
 			session, r := sessions.Load(r)
 			session.Data.LoggedIn = true
 			session.Save(w)

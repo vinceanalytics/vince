@@ -54,7 +54,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
-	ctx := models.SetCurrentUser(r.Context(), u)
+	ctx := models.SetUser(r.Context(), u)
 	session.Data.CurrentUserID = u.ID
 	session.Data.LoggedIn = true
 	session.Save(w)

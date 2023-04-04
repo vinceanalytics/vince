@@ -76,7 +76,7 @@ func Auth(h http.Handler) http.Handler {
 		if session.Data.CurrentUserID != 0 {
 			var u models.User
 			if u.Load(r.Context(), session.Data.CurrentUserID) {
-				r = r.WithContext(models.SetCurrentUser(r.Context(), &u))
+				r = r.WithContext(models.SetUser(r.Context(), &u))
 			} else {
 				session.Data = sessions.Data{}
 				session.Save(w)
@@ -89,7 +89,7 @@ func Auth(h http.Handler) http.Handler {
 func LastSeen(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
-		usr := models.GetCurrentUser(r.Context())
+		usr := models.GetUser(r.Context())
 		now := time.Now()
 		switch {
 		case usr != nil && !session.Data.LastSeen.IsZero() && now.Add(-4*time.Hour).After(session.Data.LastSeen):

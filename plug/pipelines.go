@@ -51,6 +51,9 @@ func InternalStatsAPI(ctx context.Context) Pipeline {
 }
 
 func (p Pipeline) Re(exp string, method string, f func(w http.ResponseWriter, r *http.Request)) Plug {
+	for k, v := range replace {
+		exp = strings.ReplaceAll(exp, k, v)
+	}
 	re := regexp.MustCompile(exp)
 	pipe := p.Pass(f)
 	return func(h http.Handler) http.Handler {
@@ -135,4 +138,21 @@ func PREFIX(prefix string, pipe ...Plug) Plug {
 			h.ServeHTTP(w, r)
 		})
 	}
+}
+
+const domain = `(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`
+const website = `(?P<website>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`
+
+var replace = map[string]string{
+	":plan_id":       "(?P<plan_id>[^.]+)",
+	":new_plan_id":   "(?P<new_plan_id>[^.]+)",
+	":domain":        domain,
+	":website":       website,
+	":recipient":     "(?P<recipient>[^.]+)",
+	":slug":          "(?P<slug>[^.]+)",
+	":id":            "(?P<id>[^.]+)",
+	":invitation_id": "(?P<id>[^.]+)",
+	":new_role":      "(?P<new_role>[^.]+)",
+	":site_id":       "(?P<site_id>[^.]+)",
+	":goal_id":       "(?P<goal_id>[^.]+)",
 }

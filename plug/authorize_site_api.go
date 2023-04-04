@@ -37,7 +37,7 @@ func AuthorizeSiteAPI(h http.Handler) http.Handler {
 			render.ERROR(r.Context(), w, http.StatusInternalServerError)
 			return
 		}
-		r = r.WithContext(models.SetCurrentUser(r.Context(), user))
+		r = r.WithContext(models.SetUser(r.Context(), user))
 		h.ServeHTTP(w, r)
 	})
 }

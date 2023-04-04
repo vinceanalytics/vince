@@ -23,11 +23,11 @@ import (
 
 type currentRoleKey struct{}
 
-func SetCurrentUserRole(ctx context.Context, role string) context.Context {
+func SetRole(ctx context.Context, role string) context.Context {
 	return context.WithValue(ctx, currentRoleKey{}, role)
 }
 
-func GetCurrentUserRole(ctx context.Context) string {
+func GetRole(ctx context.Context) string {
 	if u := ctx.Value(currentRoleKey{}); u != nil {
 		return u.(string)
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 func ActivateForm(w http.ResponseWriter, r *http.Request) {
-	usr := models.GetCurrentUser(r.Context())
+	usr := models.GetUser(r.Context())
 	hasInvitation := models.Exists(r.Context(), func(db *gorm.DB) *gorm.DB {
 		return db.Model(&models.Invitation{}).Where("email=?", usr.Email)
 	})
