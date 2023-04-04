@@ -65,8 +65,16 @@ func GetCurrentUser(ctx context.Context) *User {
 	return nil
 }
 
-func (u *User) Load(ctx context.Context, uid uint64) error {
-	return Get(ctx).First(u, uid).Error
+// Load fetches user by uid, preloads Subscription. This returns true if the user
+// was found and false otherwise.
+func (u *User) Load(ctx context.Context, uid uint64) bool {
+	err := Get(ctx).First(u, uid).Error
+	if err != nil {
+		DBE(ctx, err, "failed to get a user")
+		return false
+	}
+	u.Preload(ctx, "Subscription")
+	return true
 }
 
 func (u *User) Preload(ctx context.Context, preload string) {
