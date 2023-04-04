@@ -46,5 +46,14 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
-	render.ERROR(r.Context(), w, http.StatusNotImplemented)
+	ss, r := sessions.Load(r)
+	if ss.Data.EmailReport == nil {
+		ss.Data.EmailReport = map[string]bool{
+			domain: true,
+		}
+	} else {
+		ss.Data.EmailReport[domain] = true
+	}
+	ss.Save(w)
+	http.Redirect(w, r, "/"+domain+"/snippet", http.StatusFound)
 }

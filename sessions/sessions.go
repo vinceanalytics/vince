@@ -112,14 +112,15 @@ type SessionContext struct {
 }
 
 type Data struct {
-	TimeoutAt     time.Time    `json:",omitempty"`
-	CurrentUserID uint64       `json:",omitempty"`
-	LastSeen      time.Time    `json:",omitempty"`
-	LoggedIn      bool         `json:",omitempty"`
-	Captcha       string       `json:",omitempty"`
-	Csrf          string       `json:",omitempty"`
-	LoginDest     string       `json:",omitempty"`
-	Flash         *flash.Flash `json:",omitempty"`
+	TimeoutAt     time.Time       `json:",omitempty"`
+	CurrentUserID uint64          `json:",omitempty"`
+	LastSeen      time.Time       `json:",omitempty"`
+	LoggedIn      bool            `json:",omitempty"`
+	Captcha       string          `json:",omitempty"`
+	Csrf          string          `json:",omitempty"`
+	LoginDest     string          `json:",omitempty"`
+	Flash         *flash.Flash    `json:",omitempty"`
+	EmailReport   map[string]bool `json:",omitempty"`
 }
 
 func (s *SessionContext) SuccessFlash(m string) *SessionContext {
