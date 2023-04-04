@@ -1,41 +1,40 @@
 {{define "_notice"}}
 {{template "_flash" .}}
 {{if .CurrentUser}}
-<div class="width-full container-md">
+<div class="width-full container-xl">
     {{if .CurrentUser.GracePeriod.Active}}
-    <div class="flash  flash-warn">
+    <div class="flash  flash-warn f3">
         {{if .CurrentUser.EnterprisePlan}}
-        You have outgrown your VINCE subscription tier
+        You have outgrown your subscription tier
         {{else}}
         Please upgrade your account
         {{end}}
-        <a href="/upgrade" class="btn btn-sm flash-action">Upgrade now →</a>
+        <a href="/upgrade" class="btn flash-action menu-link">Upgrade now →</a>
     </div>
     {{end}}
 
     {{if .CurrentUser.GracePeriod.Expired}}
-    <div class="flash  flash-warn">
+    <div class="flash  flash-warn f3">
         Dashboard locked
-        <a href="/upgrade" class="btn btn-sm flash-action">
+        <a href="/upgrade" class="btn  flash-action menu-link">
             Upgrade now →
         </a>
     </div>
     {{end}}
     {{if .CurrentUser.Subscription }}
     {{if eq .CurrentUser.Subscription.Status "past_due"}}
-    <div class="flash  flash-warn">
-        There was a problem with your latest payment. Please update your payment information to keep using VINCE
-        <a href="{{.CurrentUser.Subscription.UpdateURL}}" class="btn btn-sm flash-action">Update billing info →</a>
+    <div class="flash  flash-warn f3">
+        There was a problem with your latest payment.
+        <a href="{{.CurrentUser.Subscription.UpdateURL}}" class="btn  flash-action menu-link">Update billing info →</a>
     </div>
     {{end}}
-    {{if .CurrentUser.Subscription.CheckStatus "paused"}}
-    <div class="flash  flash-warn">
-        Your subscription is paused due to failed payments. Please provide valid payment details to keep using
-        VINCE.
-        <a href="{{.CurrentUser.Subscription.UpdateURL}}" class="btn btn-sm flash-action">Update billing info →</a>
+    {{if eq .CurrentUser.Subscription.Status "paused"}}
+    <div class="flash  flash-warn f3">
+        Your subscription is paused due to failed payments.
+        <a href="{{.CurrentUser.Subscription.UpdateURL}}" class="btn flash-action">Update billing info →</a>
     </div>
     {{end}}
     {{end}}
-</div>
-{{end}}
-{{end}}
+
+    {{end}}
+    {{end}}

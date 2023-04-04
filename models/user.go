@@ -73,18 +73,27 @@ func (u *User) Load(ctx context.Context, uid uint64) bool {
 		DBE(ctx, err, "failed to get a user")
 		return false
 	}
-	u.Preload(ctx, "Subscription")
+	u.Preload(ctx, "Subscription", "EnterprisePlan")
 	return true
 }
 
-func (u *User) Preload(ctx context.Context, preload string) {
-	err := Get(ctx).Preload(preload).First(u).Error
+func (u *User) Preload(ctx context.Context, preload ...string) {
+	db := Get(ctx)
+	for _, p := range preload {
+		db = db.Preload(p)
+	}
+	err := db.First(u).Error
 	if err != nil {
-		DBE(ctx, err, "failed to preload "+preload)
+		DBE(ctx, err, "failed to preload "+strings.Join(preload, ","))
 	}
 }
 
 func (u *User) IsEnterprize(ctx context.Context) bool {
+	if u.EnterprisePlan != nil {
+		// avoid preloading twice if u was CurrentUser must have been preloaded
+		// already.
+		return true
+	}
 	u.Preload(ctx, "EnterprisePlan")
 	return u.EnterprisePlan != nil
 }
