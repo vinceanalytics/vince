@@ -21,7 +21,8 @@
         </a>
     </div>
     {{end}}
-    {{if .CurrentUser.Subscription.CheckStatus "past_due"}}
+    {{if .CurrentUser.Subscription }}
+    {{if eq .CurrentUser.Subscription.Status "past_due"}}
     <div class="flash  flash-warn">
         There was a problem with your latest payment. Please update your payment information to keep using VINCE
         <a href="{{.CurrentUser.Subscription.UpdateURL}}" class="btn btn-sm flash-action">Update billing info →</a>
@@ -33,6 +34,7 @@
         VINCE.
         <a href="{{.CurrentUser.Subscription.UpdateURL}}" class="btn btn-sm flash-action">Update billing info →</a>
     </div>
+    {{end}}
     {{end}}
 </div>
 {{end}}
