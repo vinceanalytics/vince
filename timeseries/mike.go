@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -14,6 +15,28 @@ import (
 	"github.com/gernest/vince/store"
 	"google.golang.org/protobuf/proto"
 )
+
+var commonHash = &sync.Map{}
+
+var commonProps = []string{
+	"pageviews",
+	// devices
+	"mobile",
+	"tablet",
+	"laptop",
+	"desktop",
+}
+
+func init() {
+	for _, h := range commonProps {
+		commonHash.Store(hashKey(h), h)
+	}
+}
+
+// case insensitive hash of key
+func hashKey(key string) uint64 {
+	return xxhash.Sum64String(strings.ToLower(key))
+}
 
 type Group struct {
 	u, s *roaring64.Bitmap
@@ -101,18 +124,26 @@ func saveProps(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, by PROPS, ts
 	if err != nil {
 		return err
 	}
+	if len(m.Hash) == 0 {
+		// avoid touching the index for common keys
+		return nil
+	}
 	return updatePropHash(txn, x, by, ts, &m)
 }
 
 func updateProp(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, by PROPS, ts time.Time, m *Hash) error {
 	x.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(byte(by))
 	return g.Prop(el, by, func(key string, sum *store.Sum) error {
-		h := xxhash.Sum64String(key)
+		h := hashKey(key)
 		if m.Hash == nil {
 			m.Hash = make(map[uint64]string)
 		}
 		if _, ok := m.Hash[h]; !ok {
-			m.Hash[h] = key
+			_, has := commonHash.Load(h)
+			if !has {
+				// only index non common keys
+				m.Hash[h] = key
+			}
 		}
 		x.SetHash(h)
 		return updateCalendar(txn, ts, x[:], sum)
