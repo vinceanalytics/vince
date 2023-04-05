@@ -77,3 +77,9 @@ enum TABLE {
   RAW = 0;
   YEAR = 1;
 }
+
+// Hash keepn a mapping of xxhash to strings.
+message Hash {
+  // key is the xxhash of value.
+  map<uint64, string> hash = 1;
+}
