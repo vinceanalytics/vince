@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -13,27 +12,15 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/store"
+	"github.com/gernest/vince/ua"
 	"google.golang.org/protobuf/proto"
 )
-
-var commonHash = &sync.Map{}
-
-var commonProps = []string{
-	"pageviews",
-	// devices
-	"mobile",
-	"tablet",
-	"laptop",
-	"desktop",
-}
 
 var commonKeysSet = roaring64.NewBitmap()
 
 func init() {
-	for _, h := range commonProps {
-		x := hashKey(h)
-		commonHash.Store(x, h)
-		commonKeysSet.Add(x)
+	for h := range ua.CommonIndex {
+		commonKeysSet.Add(h)
 	}
 }
 
@@ -41,9 +28,8 @@ func keyIsCommon(h uint64) bool {
 	return commonKeysSet.Contains(h)
 }
 
-// case insensitive hash of key
 func hashKey(key string) uint64 {
-	return xxhash.Sum64String(strings.ToLower(key))
+	return xxhash.Sum64String(key)
 }
 
 type Group struct {
