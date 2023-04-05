@@ -150,6 +150,10 @@ func Events(w http.ResponseWriter, r *http.Request) {
 			cityGeonameId = strconv.FormatInt(int64(city.Continent.GeoNameID), 10)
 			if len(city.Subdivisions) > 0 {
 				region = city.Subdivisions[0].IsoCode
+				// for indexing we combine country code with region
+				if region != "" {
+					region = countryCode + "-" + region
+				}
 			}
 		}
 	}

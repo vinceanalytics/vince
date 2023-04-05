@@ -129,12 +129,14 @@ func updateProp(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, by PROPS, t
 	x.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(byte(by))
 	return g.Prop(el, by, func(key string, sum *store.Sum) error {
 		h := hashKey(key)
-		if m.Hash == nil {
-			m.Hash = make(map[uint64]string)
-		}
-		if _, ok := m.Hash[h]; !ok {
-			if !keyIsCommon(h) {
-				m.Hash[h] = key
+		if by.ShouldIndex() {
+			if m.Hash == nil {
+				m.Hash = make(map[uint64]string)
+			}
+			if _, ok := m.Hash[h]; !ok {
+				if !keyIsCommon(h) {
+					m.Hash[h] = key
+				}
 			}
 		}
 		x.SetHash(h)
@@ -203,4 +205,18 @@ func updateCalendar(txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) err
 		}
 		return txn.Set(key, b)
 	})
+}
+
+func (x PROPS) ShouldIndex() bool {
+	switch x {
+	case PROPS_COUNTRY,
+		PROPS_REGION,
+		PROPS_UTM_DEVICE,
+		PROPS_UTM_BROWSER,
+		PROPS_BROWSER_VERSION,
+		PROPS_OS, PROPS_OS_VERSION:
+		return false
+	default:
+		return true
+	}
 }
