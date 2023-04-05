@@ -5,7 +5,9 @@ go 1.20
 require (
 	capnproto.org/go/capnp/v3 v3.0.0-alpha.26
 	github.com/RoaringBitmap/roaring v1.2.3
+	github.com/arl/statsviz v0.5.2
 	github.com/belak/octicon v0.0.0-20220531043918-8d81fefac757
+	github.com/cespare/xxhash/v2 v2.1.2
 	github.com/dchest/captcha v1.0.0
 	github.com/dchest/siphash v1.2.3
 	github.com/dgraph-io/badger/v4 v4.0.1
@@ -43,7 +45,6 @@ require (
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
 	github.com/blend/go-sdk v1.20220411.3 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emersion/go-textwrapper v0.0.0-20200911093747-65d896831594 // indirect
@@ -55,6 +56,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v2.0.8+incompatible // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect

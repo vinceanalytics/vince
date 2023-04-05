@@ -4,7 +4,9 @@ import (
 	"context"
 	"net/http"
 	"net/http/pprof"
+	"time"
 
+	"github.com/arl/statsviz"
 	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/avatar"
@@ -91,7 +93,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			pipe4.GET("`^/api/:domain/status$`", api.DomainStatus),
 			NotFound,
 		),
-
+		pipe5.Prefix("/debug/statsviz/ws", statsviz.NewWsHandler(time.Second)),
+		pipe5.Prefix("/debug/statsviz", statsviz.IndexAtRoot("/debug/statsviz")),
 		pipe5.PathGET("/", pages.Home),
 		pipe5.PathGET("/pricing", pages.Pricing),
 		pipe5.PathGET("/about", pages.Mark("site/about.md", "about us")),
