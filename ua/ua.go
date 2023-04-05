@@ -20,6 +20,7 @@ import (
 //go:generate go run client/make_client.go
 //go:generate go run os/make_os.go
 //go:generate go run vendor_fragment/make_vendor.go
+//go:generate go run index/main.go
 
 type botRe struct {
 	re           *ReMatch

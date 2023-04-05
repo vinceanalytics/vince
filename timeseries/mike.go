@@ -13,7 +13,6 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/store"
-	"github.com/gernest/vince/ua"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -32,16 +31,6 @@ var commonKeysSet = roaring64.NewBitmap()
 
 func init() {
 	for _, h := range commonProps {
-		x := hashKey(h)
-		commonHash.Store(x, h)
-		commonKeysSet.Add(x)
-	}
-	for _, h := range ua.CommonOs {
-		x := hashKey(h)
-		commonHash.Store(x, h)
-		commonKeysSet.Add(x)
-	}
-	for _, h := range ua.CommonBrowser {
 		x := hashKey(h)
 		commonHash.Store(x, h)
 		commonKeysSet.Add(x)

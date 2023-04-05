@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"go/format"
 	"log"
@@ -13,6 +14,7 @@ import (
 )
 
 var all = map[string]struct{}{}
+var versions = map[string]struct{}{}
 
 func main() {
 	var b bytes.Buffer
@@ -52,8 +54,17 @@ func main() {
 		ls = append(ls, k)
 	}
 	sort.Strings(ls)
-
-	fmt.Fprintf(&b, "\n var CommonBrowser =%#v", ls)
+	var o bytes.Buffer
+	json.NewEncoder(&o).Encode(ls)
+	os.WriteFile("browsers.json", o.Bytes(), 0600)
+	ls = ls[:0]
+	for k := range versions {
+		ls = append(ls, k)
+	}
+	sort.Strings(ls)
+	o.Reset()
+	json.NewEncoder(&o).Encode(ls)
+	os.WriteFile("browser_version.json", o.Bytes(), 0600)
 	r, err := format.Source(b.Bytes())
 	if err != nil {
 		log.Fatal(err)
@@ -111,6 +122,9 @@ func generic(b *bytes.Buffer, name string, path string) error {
 		if !strings.Contains(d.Name, "$") {
 			all[d.Name] = struct{}{}
 		}
+		if d.Version != "" && !strings.Contains(d.Version, "$") {
+			versions[d.Version] = struct{}{}
+		}
 		// set kind
 		if d.Type == "" {
 			d.Type = name
@@ -155,7 +169,7 @@ func generic(b *bytes.Buffer, name string, path string) error {
 				for k := range d.Engine.Versions {
 					ls = append(ls, k)
 				}
-				sort.Sort(sort.StringSlice(ls))
+				sort.Strings(ls)
 				fmt.Fprintf(b, "versions:map[string]string{")
 				for _, k := range ls {
 					fmt.Fprintf(b, "%q:%q,\n", k, d.Engine.Versions[k])

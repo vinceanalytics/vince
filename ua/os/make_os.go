@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"go/format"
 	"log"
@@ -13,6 +14,7 @@ import (
 )
 
 var allOs = map[string]struct{}{}
+var versions = map[string]struct{}{}
 
 func main() {
 	var b bytes.Buffer
@@ -30,7 +32,17 @@ func main() {
 		ls = append(ls, k)
 	}
 	sort.Strings(ls)
-	fmt.Fprintf(&b, "\n var CommonOs=%#v\n", ls)
+	var o bytes.Buffer
+	json.NewEncoder(&o).Encode(ls)
+	os.WriteFile("os.json", o.Bytes(), 0600)
+	ls = ls[:0]
+	for k := range versions {
+		ls = append(ls, k)
+	}
+	sort.Strings(ls)
+	o.Reset()
+	json.NewEncoder(&o).Encode(ls)
+	os.WriteFile("os_version.json", o.Bytes(), 0600)
 
 	r, err := format.Source(b.Bytes())
 	if err != nil {
@@ -57,6 +69,9 @@ func generate(b *bytes.Buffer, path string) error {
 	for i, d := range items {
 		if !strings.Contains(d.Name, "$") {
 			allOs[d.Name] = struct{}{}
+		}
+		if d.Version != "" && !strings.Contains(d.Version, "$") {
+			versions[d.Version] = struct{}{}
 		}
 		if i != 0 {
 			s.WriteByte('|')
