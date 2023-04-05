@@ -50,7 +50,7 @@ func Save(ctx context.Context, b *Buffer) {
 	defer b.Release()
 	group := groupPool.Get().(*Group)
 	ent := EntryList(b.entries)
-	id := NewID()
+	id := newID()
 	defer id.Release()
 	id.SetSiteID(b.SID())
 	id.SetUserID(b.UID())
@@ -59,7 +59,8 @@ func Save(ctx context.Context, b *Buffer) {
 		group.Save(el)
 		ts := time.Unix(el[0].Timestamp, 0)
 		err := db.Update(func(txn *badger.Txn) error {
-			return updateCalendar(txn, ts, id, group.sum)
+			key := id.Year(ts).SetTable(byte(TABLE_YEAR))[:]
+			return updateCalendar(txn, ts, key, group.sum)
 		})
 		if err != nil {
 			log.Get(ctx).Err(err).Msg("failed to save hourly stats ")
@@ -67,8 +68,9 @@ func Save(ctx context.Context, b *Buffer) {
 	})
 }
 
-func updateCalendar(txn *badger.Txn, ts time.Time, id *ID, a store.Sum) error {
-	key := id.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(0)[:]
+// creates a new calendar for ts year and updates the sum of this date. For existing
+// calendar we just update the sums for the date.
+func updateCalendar(txn *badger.Txn, ts time.Time, key []byte, a store.Sum) error {
 	x, err := txn.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
@@ -80,30 +82,23 @@ func updateCalendar(txn *badger.Txn, ts time.Time, id *ID, a store.Sum) error {
 			defer cal.Message().Release()
 			b, err := cal.Message().MarshalPacked()
 			if err != nil {
-				return fmt.Errorf("failed to marshal aggr total %v", err)
+				return fmt.Errorf("failed to marshal calendar %v", err)
 			}
 			return txn.Set(key, b)
 		}
 		return err
 	}
-	var o store.Calendar
-	err = x.Value(func(val []byte) error {
+	return x.Value(func(val []byte) error {
 		cal, err := store.CalendarFromBytes(val)
 		if err != nil {
 			return err
 		}
-		o = cal
-		return nil
+		defer cal.Message().Release()
+		cal.Update(ts, a)
+		b, err := cal.Message().MarshalPacked()
+		if err != nil {
+			return fmt.Errorf("failed to marshal calendar %v", err)
+		}
+		return txn.Set(key, b)
 	})
-	if err != nil {
-		return fmt.Errorf("failed to read  aggr total %v", err)
-	}
-	o.Update(ts, a)
-	defer o.Message().Release()
-
-	b, err := o.Message().MarshalPacked()
-	if err != nil {
-		return fmt.Errorf("failed to marshal aggr total %v", err)
-	}
-	return txn.Set(key, b)
 }

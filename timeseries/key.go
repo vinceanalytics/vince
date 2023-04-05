@@ -12,17 +12,13 @@ const (
 	yearOffset  = 16
 	tableOffset = 18
 	metaOffset  = 19
+	hashOffset  = 20
 )
 
-type ID [20]byte
+type ID [19]byte
 
 func (id *ID) SetTable(table byte) *ID {
 	id[tableOffset] = byte(table)
-	return id
-}
-
-func (id *ID) SetMeta(table byte) *ID {
-	id[metaOffset] = byte(table)
 	return id
 }
 
@@ -59,12 +55,12 @@ func (id *ID) Release() {
 }
 
 func (id *ID) Clone() *ID {
-	x := NewID()
+	x := newID()
 	copy(x[:], id[:])
 	return x
 }
 
-func NewID() *ID {
+func newID() *ID {
 	return idBufPool.Get().(*ID)
 }
 
@@ -73,4 +69,65 @@ var idBufPool = &sync.Pool{
 		var id ID
 		return &id
 	},
+}
+var metaKeyPool = &sync.Pool{
+	New: func() any {
+		var id MetaKey
+		return &id
+	},
+}
+
+// stores values for props
+type MetaKey [28]byte
+
+func (id *MetaKey) SetTable(table byte) *MetaKey {
+	id[tableOffset] = byte(table)
+	return id
+}
+
+func (id *MetaKey) SetMeta(table byte) *MetaKey {
+	id[metaOffset] = byte(table)
+	return id
+}
+
+func (id *MetaKey) GetTable() byte {
+	return id[tableOffset]
+}
+
+func (id *MetaKey) SetUserID(u uint64) {
+	binary.BigEndian.PutUint64(id[userOffset:], u)
+}
+
+func (id *MetaKey) SetSiteID(u uint64) {
+	binary.BigEndian.PutUint64(id[siteOffset:], u)
+}
+
+func (id *MetaKey) GetUserID() uint64 {
+	return binary.BigEndian.Uint64(id[userOffset:])
+}
+
+func (id *MetaKey) GetSiteID() uint64 {
+	return binary.BigEndian.Uint64(id[siteOffset:])
+}
+
+func (id *MetaKey) Year(ts time.Time) *MetaKey {
+	binary.BigEndian.PutUint16(id[yearOffset:], uint16(ts.Year()))
+	return id
+}
+
+func (id *MetaKey) Release() {
+	for i := 0; i < len(id); i += 1 {
+		id[i] = 0
+	}
+	metaKeyPool.Put(id)
+}
+
+func (id *MetaKey) Clone() *MetaKey {
+	x := newMetaKey()
+	copy(x[:], id[:])
+	return x
+}
+
+func newMetaKey() *MetaKey {
+	return metaKeyPool.Get().(*MetaKey)
 }
