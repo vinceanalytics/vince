@@ -12,6 +12,8 @@ import (
 	"github.com/gernest/vince/ua"
 )
 
+var all = map[string]struct{}{}
+
 func main() {
 	var b bytes.Buffer
 
@@ -45,6 +47,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var ls []string
+	for k := range all {
+		ls = append(ls, k)
+	}
+	sort.Strings(ls)
+
+	fmt.Fprintf(&b, "\n var CommonBrowser =%#v", ls)
 	r, err := format.Source(b.Bytes())
 	if err != nil {
 		log.Fatal(err)
@@ -99,6 +108,9 @@ func generic(b *bytes.Buffer, name string, path string) error {
 	}
 	var s strings.Builder
 	for i, d := range items {
+		if !strings.Contains(d.Name, "$") {
+			all[d.Name] = struct{}{}
+		}
 		// set kind
 		if d.Type == "" {
 			d.Type = name

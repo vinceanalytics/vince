@@ -41,6 +41,11 @@ func init() {
 		commonHash.Store(x, h)
 		commonKeysSet.Add(x)
 	}
+	for _, h := range ua.CommonBrowser {
+		x := hashKey(h)
+		commonHash.Store(x, h)
+		commonKeysSet.Add(x)
+	}
 }
 
 func keyIsCommon(h uint64) bool {
