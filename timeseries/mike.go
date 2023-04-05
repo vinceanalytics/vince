@@ -13,6 +13,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/store"
+	"github.com/gernest/vince/ua"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -27,10 +28,23 @@ var commonProps = []string{
 	"desktop",
 }
 
+var commonKeysSet = roaring64.NewBitmap()
+
 func init() {
 	for _, h := range commonProps {
-		commonHash.Store(hashKey(h), h)
+		x := hashKey(h)
+		commonHash.Store(x, h)
+		commonKeysSet.Add(x)
 	}
+	for _, h := range ua.CommonOs {
+		x := hashKey(h)
+		commonHash.Store(x, h)
+		commonKeysSet.Add(x)
+	}
+}
+
+func keyIsCommon(h uint64) bool {
+	return commonKeysSet.Contains(h)
 }
 
 // case insensitive hash of key
@@ -139,9 +153,7 @@ func updateProp(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, by PROPS, t
 			m.Hash = make(map[uint64]string)
 		}
 		if _, ok := m.Hash[h]; !ok {
-			_, has := commonHash.Load(h)
-			if !has {
-				// only index non common keys
+			if !keyIsCommon(h) {
 				m.Hash[h] = key
 			}
 		}

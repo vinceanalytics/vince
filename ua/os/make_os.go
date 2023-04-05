@@ -6,10 +6,13 @@ import (
 	"go/format"
 	"log"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/gernest/vince/ua"
 )
+
+var allOs = map[string]struct{}{}
 
 func main() {
 	var b bytes.Buffer
@@ -21,11 +24,21 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var ls []string
+	for k := range allOs {
+		ls = append(ls, k)
+	}
+	sort.Strings(ls)
+	fmt.Fprintf(&b, "\n var CommonOs=%#v\n", ls)
+
 	r, err := format.Source(b.Bytes())
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	os.WriteFile("ua_os.go", r, 0600)
+
 }
 
 type OsReg struct {
@@ -42,6 +55,9 @@ func generate(b *bytes.Buffer, path string) error {
 	}
 	var s strings.Builder
 	for i, d := range items {
+		if !strings.Contains(d.Name, "$") {
+			allOs[d.Name] = struct{}{}
+		}
 		if i != 0 {
 			s.WriteByte('|')
 		}
