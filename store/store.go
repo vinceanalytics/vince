@@ -23,12 +23,19 @@ func ZeroSum() Sum {
 	return sum
 }
 
-func (s *Sum) Reuse() {
+func (s *Sum) SetValues(visitors, visits, events float64) {
+	s.SetVisitors(visitors)
+	s.SetVisits(visits)
+	s.SetEvents(events)
+}
+
+func (s *Sum) Reuse() *Sum {
 	msg := s.Message()
 	msg.Reset(capnp.MultiSegment(nil))
 	s.SetEvents(0)
 	s.SetVisitors(0)
 	s.SetVisits(0)
+	return s
 }
 
 func (s *Sum) Update(ts time.Time, visitors, visits, events capnp.Float64List) {
@@ -38,14 +45,14 @@ func (s *Sum) Update(ts time.Time, visitors, visits, events capnp.Float64List) {
 	events.Set(day, events.At(day)+s.Events())
 }
 
-func (s *Calendar) Update(ts time.Time, sum Sum) {
+func (s *Calendar) Update(ts time.Time, sum *Sum) {
 	visitors, _ := s.Visitors()
 	visits, _ := s.Visits()
 	events, _ := s.Events()
 	sum.Update(ts, visitors, visits, events)
 }
 
-func ZeroCalendar(ts time.Time, sum Sum) (Calendar, error) {
+func ZeroCalendar(ts time.Time, sum *Sum) (Calendar, error) {
 	var arena = capnp.MultiSegment(nil)
 	_, seg, err := capnp.NewMessage(arena)
 	if err != nil {

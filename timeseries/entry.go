@@ -1,9 +1,11 @@
 package timeseries
 
 import (
+	"sort"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
+	"github.com/gernest/vince/store"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go/bloom/xxhash"
 )
@@ -114,4 +116,58 @@ func (ls EntryList) Emit(f func(EntryList)) {
 	if pos < len(ls)-1 {
 		f(ls[pos:])
 	}
+}
+
+func (e EntryList) Sort(by PROPS) {
+	switch by {
+	case PROPS_NAME:
+		sort.Slice(e, func(i, j int) bool {
+			return e[i].Name < e[j].Name
+		})
+	default:
+		return
+	}
+}
+
+func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f func(key string, sum *store.Sum) error) error {
+	e.Sort(by)
+	var key func(*Entry) string
+	switch by {
+	case PROPS_NAME:
+		key = func(e *Entry) string {
+			return e.Name
+		}
+	default:
+		return nil
+	}
+	var start int
+	var lastKey, currentKey string
+	for i := range e {
+		currentKey = key(e[i])
+		if currentKey == "" {
+			continue
+		}
+		if lastKey == "" {
+			// empty keys starts first. Here we have non empty key, we start counting
+			// for this key forward.
+			lastKey = currentKey
+			start = i
+			continue
+		}
+		if lastKey != currentKey {
+			// we have come across anew key, save the old key
+			sum.SetValues(e[start:i].Count(u, s))
+			err := f(lastKey, sum)
+			if err != nil {
+				return err
+			}
+			start = i
+			lastKey = currentKey
+		}
+	}
+	if start < len(e)-1 {
+		sum.SetValues(e[start:].Count(u, s))
+		return f(lastKey, sum)
+	}
+	return nil
 }

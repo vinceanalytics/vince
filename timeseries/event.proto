@@ -76,6 +76,7 @@ enum METRIC_TYPE {
 enum TABLE {
   RAW = 0;
   YEAR = 1;
+  HASH = 2;
 }
 
 // Hash keepn a mapping of xxhash to strings.

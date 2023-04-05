@@ -101,6 +101,9 @@ func (id *MetaKey) SetUserID(u uint64) {
 func (id *MetaKey) SetSiteID(u uint64) {
 	binary.BigEndian.PutUint64(id[siteOffset:], u)
 }
+func (id *MetaKey) SetHash(h uint64) {
+	binary.BigEndian.PutUint64(id[hashOffset:], h)
+}
 
 func (id *MetaKey) GetUserID() uint64 {
 	return binary.BigEndian.Uint64(id[userOffset:])
