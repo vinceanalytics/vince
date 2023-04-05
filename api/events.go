@@ -141,13 +141,13 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	reqReferrer = cleanReferrer(reqReferrer)
 
 	var countryCode, region string
-	var cityGeonameId string
+	var cityGeonameId uint
 	if remoteIp != "" {
 		ip := net.ParseIP(remoteIp)
 		city, err := geoip.Lookup(ip)
 		if err == nil {
 			countryCode = city.Country.IsoCode
-			cityGeonameId = strconv.FormatInt(int64(city.Continent.GeoNameID), 10)
+			cityGeonameId = city.Continent.GeoNameID
 			if len(city.Subdivisions) > 0 {
 				region = city.Subdivisions[0].IsoCode
 				// for indexing we combine country code with region
@@ -196,7 +196,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.Referrer = reqReferrer
 		e.CountryCode = countryCode
 		e.Region = region
-		e.CityGeoNameId = cityGeonameId
+		e.CityGeoNameId = uint32(cityGeonameId)
 		e.ScreenSize = screenSize
 		e.Timestamp = today
 		previousUUserID := seedID.GenPrevious(remoteIp, userAgent, domain, host)

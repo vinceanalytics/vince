@@ -29,7 +29,7 @@ message Entry {
   string transferred_from = 21;
   string entry_page = 22;
   string exit_page = 23;
-  string city_geo_name_id = 24;
+  uint32 city_geo_name_id = 24;
   uint64 page_views = 25;
   uint64 events = 26;
   int32 sign = 27;

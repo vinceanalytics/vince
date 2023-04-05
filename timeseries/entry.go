@@ -48,7 +48,7 @@ func (s *Entry) Update(e *Entry) *Entry {
 	if ss.CountryCode == "" {
 		ss.CountryCode = e.CountryCode
 	}
-	if ss.CityGeoNameId == "" {
+	if ss.CityGeoNameId == 0 {
 		ss.CityGeoNameId = e.CityGeoNameId
 	}
 	if ss.OperatingSystem == "" {
