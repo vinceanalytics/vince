@@ -13,7 +13,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/log"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type Buffer struct {

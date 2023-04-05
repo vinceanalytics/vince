@@ -3,16 +3,11 @@ package timeseries
 import (
 	"bytes"
 	"context"
-	"errors"
 	"runtime/trace"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
-	"github.com/golang/protobuf/proto"
-)
-
-var (
-	ErrSkip = errors.New("skip iteration")
+	"google.golang.org/protobuf/proto"
 )
 
 func Merge(ctx context.Context, since uint64, cb func(ctx context.Context, b *Buffer)) (uint64, error) {

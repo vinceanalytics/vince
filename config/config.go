@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/urfave/cli/v2"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
 )
 
