@@ -3,7 +3,7 @@ package timeseries
 import (
 	"bytes"
 	"context"
-	"runtime/trace"
+	"time"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
@@ -11,8 +11,9 @@ import (
 )
 
 func Merge(ctx context.Context, since uint64, cb func(ctx context.Context, b *Buffer)) (uint64, error) {
-	_, task := trace.NewTask(ctx, "ts_merge")
-	defer task.End()
+	start := time.Now()
+	defer mergeDuration.UpdateDuration(start)
+
 	say := log.Get(ctx)
 	say.Debug().Msg("starting merging daily parquet files")
 	db := GetBob(ctx)

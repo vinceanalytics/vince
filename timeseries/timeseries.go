@@ -6,5 +6,6 @@ import "github.com/gernest/vince/system"
 
 var (
 	// Distribution of save duration for each accumulated buffer
-	saveDuration = system.Get("mike_save_duration")
+	saveDuration  = system.Get("mike_save_duration")
+	mergeDuration = system.Get("bob_merge_duration")
 )
