@@ -12,7 +12,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/store"
-	"google.golang.org/protobuf/proto"
+	"github.com/gernest/vince/ua"
 )
 
 func hashKey(key string) uint64 {
@@ -78,20 +78,11 @@ func Save(ctx context.Context, b *Buffer) {
 		group.Save(el)
 		ts := time.Unix(el[0].Timestamp, 0)
 		err := db.Update(func(txn *badger.Txn) error {
-			{
-				key := id.Year(ts).SetTable(byte(TABLE_YEAR))[:]
-				err := updateCalendar(txn, ts, key, &group.sum)
-				if err != nil {
-					return err
-				}
-			}
-			{
-				err := saveProps(txn, el, group, meta, PROPS_NAME, ts)
-				if err != nil {
-					return err
-				}
-			}
-			return nil
+			id.Year(ts).SetTable(byte(TABLE_YEAR))
+			return errors.Join(
+				updateCalendar(txn, ts, id[:], &group.sum),
+				updateFromUA(txn, el, group, meta, ts),
+			)
 		})
 		if err != nil {
 			log.Get(ctx).Err(err).Msg("failed to save hourly stats ")
@@ -99,58 +90,26 @@ func Save(ctx context.Context, b *Buffer) {
 	})
 }
 
-func saveProps(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, by PROPS, ts time.Time) error {
-	var m Hash
-	err := updateProp(txn, el, g, x, by, ts, &m)
-	if err != nil {
-		return err
-	}
-	if len(m.Hash) == 0 {
-		// avoid touching the index for common keys
-		return nil
-	}
-	return updatePropHash(txn, x, by, ts, &m)
-}
-
-func updateProp(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, by PROPS, ts time.Time, m *Hash) error {
-	x.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(byte(by))
-	return g.Prop(el, by, func(key string, sum *store.Sum) error {
-		h := hashKey(key)
-		if by.ShouldIndex() {
-			if m.Hash == nil {
-				m.Hash = make(map[uint64]string)
-			}
-		}
-		return updateCalendar(txn, ts, x.HashU64(h), sum)
-	})
-}
-
-func updatePropHash(txn *badger.Txn, x *MetaKey, by PROPS, ts time.Time, m *Hash) error {
-	key := x.Year(ts).SetTable(byte(TABLE_HASH)).SetMeta(byte(by))[:hashOffset]
-	it, err := txn.Get(key)
-	if err != nil {
-		if errors.Is(err, badger.ErrKeyNotFound) {
-			b, err := proto.Marshal(m)
-			if err != nil {
-				return err
-			}
-			return txn.Set(key, b)
-		}
-		return err
-	}
-	return it.Value(func(val []byte) error {
-		var o Hash
-		err := proto.Unmarshal(val, &o)
-		if err != nil {
-			return err
-		}
-		proto.Merge(&o, m)
-		b, err := proto.Marshal(&o)
-		if err != nil {
-			return err
-		}
-		return txn.Set(key, b)
-	})
+// compute and update calendars for values derived from user agent.
+func updateFromUA(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
+	x.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(byte(PROPS_UTM_DEVICE))
+	return errors.Join(
+		g.Prop(el, PROPS_UTM_DEVICE, func(key string, sum *store.Sum) error {
+			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+		}),
+		g.Prop(el, PROPS_UTM_BROWSER, func(key string, sum *store.Sum) error {
+			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+		}),
+		g.Prop(el, PROPS_BROWSER_VERSION, func(key string, sum *store.Sum) error {
+			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+		}),
+		g.Prop(el, PROPS_OS, func(key string, sum *store.Sum) error {
+			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+		}),
+		g.Prop(el, PROPS_OS_VERSION, func(key string, sum *store.Sum) error {
+			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+		}),
+	)
 }
 
 // creates a new calendar for ts year and updates the sum of this date. For existing

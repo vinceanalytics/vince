@@ -143,6 +143,26 @@ func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f 
 		key = func(e *Entry) string {
 			return e.Name
 		}
+	case PROPS_UTM_DEVICE:
+		key = func(e *Entry) string {
+			return e.ScreenSize
+		}
+	case PROPS_OS:
+		key = func(e *Entry) string {
+			return e.OperatingSystem
+		}
+	case PROPS_OS_VERSION:
+		key = func(e *Entry) string {
+			return e.OperatingSystemVersion
+		}
+	case PROPS_UTM_BROWSER:
+		key = func(e *Entry) string {
+			return e.Browser
+		}
+	case PROPS_BROWSER_VERSION:
+		key = func(e *Entry) string {
+			return e.BrowserVersion
+		}
 	default:
 		return nil
 	}
