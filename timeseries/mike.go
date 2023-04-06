@@ -146,17 +146,3 @@ func updateCalendar(txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) err
 		return txn.Set(key, b)
 	})
 }
-
-func (x PROPS) ShouldIndex() bool {
-	switch x {
-	case PROPS_COUNTRY,
-		PROPS_REGION,
-		PROPS_UTM_DEVICE,
-		PROPS_UTM_BROWSER,
-		PROPS_BROWSER_VERSION,
-		PROPS_OS, PROPS_OS_VERSION:
-		return false
-	default:
-		return true
-	}
-}
