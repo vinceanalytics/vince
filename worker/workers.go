@@ -41,8 +41,6 @@ func (c *cacheUpdater) Do(ctx context.Context) {
 
 func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
 	log.Get(ctx).Debug().Str("worker", "sites_to_domain_cache").
-		Int("some", 1).
-		Int("some2", 2).
 		Msg("started")
 	defer wg.Done()
 	interval := config.Get(ctx).Intervals.SitesByDomainCacheRefreshInterval
