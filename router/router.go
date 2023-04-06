@@ -209,7 +209,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.GET(`^/:website/import/google-analytics/confirm$`, site.ImportFromGoogleConfirm),
 		sitePipe.POST(`^/:website/settings/google-import$`, site.ImportFromGoogle),
 		sitePipe.DELETE(`^/:website/settings/forget-imported$`, site.ForgetImported),
-		sitePipe.GET(`^/:domain$`, site.CsvExport),
+		sitePipe.GET(`^/:domain/csv$`, site.CsvExport),
+		sitePipe.GET(`^/:domain/stats$`, site.Stats),
 		NotFound,
 	}
 
