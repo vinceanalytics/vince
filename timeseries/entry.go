@@ -51,6 +51,12 @@ func (s *Entry) Update(e *Entry) *Entry {
 	if ss.CityGeoNameId == 0 {
 		ss.CityGeoNameId = e.CityGeoNameId
 	}
+	if ss.Subdivision1Code == "" {
+		ss.Subdivision1Code = e.Subdivision1Code
+	}
+	if ss.Subdivision2Code == "" {
+		ss.Subdivision2Code = e.Subdivision2Code
+	}
 	if ss.OperatingSystem == "" {
 		ss.OperatingSystem = e.OperatingSystem
 	}
