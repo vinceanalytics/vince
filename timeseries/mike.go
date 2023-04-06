@@ -139,8 +139,7 @@ func updateProp(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, by PROPS, t
 				}
 			}
 		}
-		x.SetHash(h)
-		return updateCalendar(txn, ts, x[:], sum)
+		return updateCalendar(txn, ts, x.HashU64(h), sum)
 	})
 }
 
