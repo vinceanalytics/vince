@@ -163,6 +163,14 @@ func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f 
 		key = func(e *Entry) string {
 			return e.BrowserVersion
 		}
+	case PROPS_REGION:
+		key = func(e *Entry) string {
+			return e.Subdivision1Code
+		}
+	case PROPS_COUNTRY:
+		key = func(e *Entry) string {
+			return e.CountryCode
+		}
 	default:
 		return nil
 	}

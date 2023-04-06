@@ -10,6 +10,7 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
+	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/store"
 	"github.com/gernest/vince/ua"
@@ -82,6 +83,7 @@ func Save(ctx context.Context, b *Buffer) {
 			return errors.Join(
 				updateCalendar(txn, ts, id[:], &group.sum),
 				updateFromUA(txn, el, group, meta, ts),
+				updateCountryAndRegion(txn, el, group, meta, ts),
 			)
 		})
 		if err != nil {
@@ -92,22 +94,34 @@ func Save(ctx context.Context, b *Buffer) {
 
 // compute and update calendars for values derived from user agent.
 func updateFromUA(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
-	x.Year(ts).SetTable(byte(TABLE_YEAR)).SetMeta(byte(PROPS_UTM_DEVICE))
+	x.Year(ts).SetTable(byte(TABLE_YEAR))
 	return errors.Join(
 		g.Prop(el, PROPS_UTM_DEVICE, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_UTM_DEVICE)).HashU16(ua.ToIndex(key)), sum)
 		}),
 		g.Prop(el, PROPS_UTM_BROWSER, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_UTM_BROWSER)).HashU16(ua.ToIndex(key)), sum)
 		}),
 		g.Prop(el, PROPS_BROWSER_VERSION, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_BROWSER_VERSION)).HashU16(ua.ToIndex(key)), sum)
 		}),
 		g.Prop(el, PROPS_OS, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_OS)).HashU16(ua.ToIndex(key)), sum)
 		}),
 		g.Prop(el, PROPS_OS_VERSION, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_OS_VERSION)).HashU16(ua.ToIndex(key)), sum)
+		}),
+	)
+}
+
+func updateCountryAndRegion(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
+	x.Year(ts).SetTable(byte(TABLE_YEAR))
+	return errors.Join(
+		g.Prop(el, PROPS_COUNTRY, func(key string, sum *store.Sum) error {
+			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_COUNTRY)).HashU16(cities.ToIndex(key)), sum)
+		}),
+		g.Prop(el, PROPS_REGION, func(key string, sum *store.Sum) error {
+			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_REGION)).HashU16(cities.ToIndex(key)), sum)
 		}),
 	)
 }

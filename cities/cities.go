@@ -221,7 +221,7 @@ func Get(u uint) uint {
 	return u
 }
 
-func IndexIsoCode(code string) uint16 {
+func ToIndex(code string) uint16 {
 	return isoCodes[code]
 }
 
