@@ -57,6 +57,9 @@ func (g *Group) Release() {
 }
 
 func Save(ctx context.Context, b *Buffer) {
+	start := time.Now()
+	defer saveDuration.UpdateDuration(start)
+
 	db := GetMike(ctx)
 	defer b.Release()
 	group := groupPool.Get().(*Group)
