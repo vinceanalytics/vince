@@ -12,21 +12,8 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/store"
-	"github.com/gernest/vince/ua"
 	"google.golang.org/protobuf/proto"
 )
-
-var commonKeysSet = roaring64.NewBitmap()
-
-func init() {
-	for h := range ua.CommonIndex {
-		commonKeysSet.Add(h)
-	}
-}
-
-func keyIsCommon(h uint64) bool {
-	return commonKeysSet.Contains(h)
-}
 
 func hashKey(key string) uint64 {
 	return xxhash.Sum64String(key)
@@ -132,11 +119,6 @@ func updateProp(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, by PROPS, t
 		if by.ShouldIndex() {
 			if m.Hash == nil {
 				m.Hash = make(map[uint64]string)
-			}
-			if _, ok := m.Hash[h]; !ok {
-				if !keyIsCommon(h) {
-					m.Hash[h] = key
-				}
 			}
 		}
 		return updateCalendar(txn, ts, x.HashU64(h), sum)

@@ -417,3 +417,11 @@ func Read(name string, out any) error {
 	}
 	return yaml.Unmarshal(f, out)
 }
+
+func ToIndex(s string) uint16 {
+	return commonIndex[s]
+}
+
+func FromIndex(i uint16) string {
+	return commonIndexReverse[i]
+}
