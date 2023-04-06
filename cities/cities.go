@@ -220,3 +220,21 @@ func Get(u uint) uint {
 	}
 	return u
 }
+
+func IndexIsoCode(code string) uint16 {
+	return isoCodes[code]
+}
+
+func NameFromIndex(idx uint16) string {
+	if int(idx) < len(countryAndRegions) {
+		return countryAndRegions[idx]
+	}
+	return ""
+}
+
+func IsoCodeFromIndex(idx uint16) string {
+	if int(idx) < len(isoCodeList) {
+		return isoCodeList[idx]
+	}
+	return ""
+}
