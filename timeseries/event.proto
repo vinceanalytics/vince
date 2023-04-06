@@ -15,29 +15,32 @@ message Entry {
   string pathname = 7;
   string referrer = 8;
   string referrer_source = 9;
+
   string country_code = 10;
-  string screen_size = 11;
-  string operating_system = 12;
-  string browser = 13;
-  string utm_medium = 14;
-  string utm_source = 15;
-  string utm_campaign = 16;
-  string browser_version = 17;
-  string operating_system_version = 18;
-  string utm_content = 19;
-  string utm_term = 20;
-  string transferred_from = 21;
-  string entry_page = 22;
-  string exit_page = 23;
-  uint32 city_geo_name_id = 24;
-  uint64 page_views = 25;
-  uint64 events = 26;
-  int32 sign = 27;
-  bool is_bounce = 28;
-  int64 duration = 29;
-  int64 start = 30;
-  string region = 31;
-  bool is_session = 32;
+  string subdivision1_code = 11;
+  string subdivision2_code = 12;
+  uint32 city_geo_name_id = 13;
+
+  string screen_size = 14;
+  string operating_system = 15;
+  string browser = 16;
+  string utm_medium = 17;
+  string utm_source = 18;
+  string utm_campaign = 19;
+  string browser_version = 20;
+  string operating_system_version = 21;
+  string utm_content = 22;
+  string utm_term = 23;
+  string transferred_from = 24;
+  string entry_page = 25;
+  string exit_page = 26;
+  uint64 page_views = 27;
+  uint64 events = 28;
+  int32 sign = 29;
+  bool is_bounce = 30;
+  int64 duration = 31;
+  int64 start = 32;
+  bool is_session = 33;
 }
 
 enum PROPS {

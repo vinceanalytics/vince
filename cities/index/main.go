@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/cespare/xxhash"
+	"github.com/cespare/xxhash/v2"
 )
 
 func main() {

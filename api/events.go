@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/gate"
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/log"
@@ -140,19 +141,39 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	}
 	reqReferrer = cleanReferrer(reqReferrer)
 
-	var countryCode, region string
+	var countryCode, subdivision1, subdivision2 string
 	var cityGeonameId uint
 	if remoteIp != "" {
 		ip := net.ParseIP(remoteIp)
 		city, err := geoip.Lookup(ip)
 		if err == nil {
 			countryCode = city.Country.IsoCode
-			cityGeonameId = city.Continent.GeoNameID
+			switch countryCode {
+			case
+				// Worldwide
+				"ZZ",
+				// Disputed territory
+				"XX",
+				// Tor exit node
+				"T1":
+				countryCode = ""
+			}
+			if countryCode != "" {
+				cityGeonameId = city.City.GeoNameID
+				if cityGeonameId != 0 {
+					cityGeonameId = cities.Get(cityGeonameId)
+				}
+			}
 			if len(city.Subdivisions) > 0 {
-				region = city.Subdivisions[0].IsoCode
-				// for indexing we combine country code with region
-				if region != "" {
-					region = countryCode + "-" + region
+				subdivision1 = city.Subdivisions[0].IsoCode
+				if subdivision1 != "" {
+					subdivision1 = countryCode + "-" + subdivision1
+				}
+			}
+			if len(city.Subdivisions) > 1 {
+				subdivision2 = city.Subdivisions[1].IsoCode
+				if subdivision2 != "" {
+					subdivision2 = countryCode + "-" + subdivision2
 				}
 			}
 		}
@@ -195,7 +216,8 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.ReferrerSource = source
 		e.Referrer = reqReferrer
 		e.CountryCode = countryCode
-		e.Region = region
+		e.Subdivision1Code = subdivision1
+		e.Subdivision2Code = subdivision2
 		e.CityGeoNameId = uint32(cityGeonameId)
 		e.ScreenSize = screenSize
 		e.Timestamp = today
