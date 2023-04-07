@@ -1,7 +1,7 @@
 // The MIT License (MIT)
 //
 // Copyright (c) 2019 VictoriaMetrics
-// Copyright (c) 2023 VINCE
+// Copyright (c) 2023 VINCE ANALYTICS
 package system
 
 import (
@@ -20,34 +20,7 @@ const (
 
 var bucketMultiplier = math.Pow(10, 1.0/bucketsPerDecimal)
 
-// Histogram is a histogram for non-negative values with automatically created buckets.
-//
-// See https://medium.com/@valyala/improving-histogram-usability-for-prometheus-and-grafana-bc7e5df0e350
-//
-// Each bucket contains a counter for values in the given range.
-// Each non-empty bucket is exposed via the following metric:
-//
-//	<metric_name>_bucket{<optional_tags>,vmrange="<start>...<end>"} <counter>
-//
-// Where:
-//
-//   - <metric_name> is the metric name passed to NewHistogram
-//   - <optional_tags> is optional tags for the <metric_name>, which are passed to NewHistogram
-//   - <start> and <end> - start and end values for the given bucket
-//   - <counter> - the number of hits to the given bucket during Update* calls
-//
-// Histogram buckets can be converted to Prometheus-like buckets with `le` labels
-// with `prometheus_buckets(<metric_name>_bucket)` function from PromQL extensions in VictoriaMetrics.
-// (see https://github.com/VictoriaMetrics/VictoriaMetrics/wiki/MetricsQL ):
-//
-//	prometheus_buckets(request_duration_bucket)
-//
-// Time series produced by the Histogram have better compression ratio comparing to
-// Prometheus histogram buckets with `le` labels, since they don't include counters
-// for all the previous buckets.
-//
-// Zero histogram is usable.
-type Histogram struct {
+type histogramMetric struct {
 	name string
 	mu   sync.Mutex
 
@@ -59,7 +32,7 @@ type Histogram struct {
 	sum float64
 }
 
-type History struct {
+type Histogram struct {
 	Timestamp  time.Time `parquet:"timestamp,dict,zstd"`
 	Name       string    `parquet:"name,dict,zstd"`
 	Buckets    []Bucket
@@ -67,7 +40,7 @@ type History struct {
 	TotalCount uint64  `parquet:"start,dict,zstd"`
 }
 
-func (h *History) Reset() {
+func (h *Histogram) Reset() {
 	h.Buckets = h.Buckets[:0]
 	h.Sum = 0
 	h.TotalCount = 0
@@ -80,7 +53,7 @@ type Bucket struct {
 }
 
 // Reset resets the given histogram.
-func (h *Histogram) Reset() {
+func (h *histogramMetric) Reset() {
 	h.mu.Lock()
 	for _, db := range h.decimalBuckets[:] {
 		if db == nil {
@@ -99,7 +72,7 @@ func (h *Histogram) Reset() {
 // Update updates h with v.
 //
 // Negative values and NaNs are ignored.
-func (h *Histogram) Update(v float64) {
+func (h *histogramMetric) Update(v float64) {
 	if math.IsNaN(v) || v < 0 {
 		// Skip NaNs and negative values.
 		return
@@ -131,9 +104,13 @@ func (h *Histogram) Update(v float64) {
 	h.mu.Unlock()
 }
 
-func (h *Histogram) Read(o *History) {
+func (h *histogramMetric) Read(ts time.Time) (o *Histogram) {
+
 	h.mu.Lock()
-	o.Name = h.name
+	o = &Histogram{
+		Timestamp: ts,
+		Name:      h.name,
+	}
 	if h.lower > 0 {
 		o.Buckets = append(o.Buckets, Bucket{
 			Start: lowerBucketRange.Start,
@@ -169,10 +146,11 @@ func (h *Histogram) Read(o *History) {
 	}
 	o.Sum = h.sum
 	h.mu.Unlock()
+	return
 }
 
 // UpdateDuration updates request duration based on the given startTime.
-func (h *Histogram) UpdateDuration(startTime time.Time) {
+func (h *histogramMetric) UpdateDuration(startTime time.Time) {
 	d := time.Since(startTime).Seconds()
 	h.Update(d)
 }
