@@ -14,3 +14,8 @@ var (
 	DataPointRejectedBadRequest = &counterMetric{name: "data_point_rejected_bad_request"}
 	DataPointDropped            = &counterMetric{name: "data_point_dropped"}
 )
+
+// gauges
+var (
+	SitesInCache = &gaugeMetric{name: "sites_in_cache"}
+)

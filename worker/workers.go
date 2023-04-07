@@ -33,6 +33,7 @@ func (c *cacheUpdater) Do(ctx context.Context) {
 	defer system.SiteCacheDuration.UpdateDuration(start)
 	c.sites = c.sites[:0]
 	models.QuerySitesToCache(ctx, &c.sites)
+	system.SitesInCache.Set(float64(len(c.sites)))
 	cache := caches.Site(ctx)
 	for _, s := range c.sites {
 		cache.SetWithTTL(s.Domain, s, 1, c.ttl)

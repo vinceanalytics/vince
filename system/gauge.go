@@ -13,8 +13,8 @@ type Gauge struct {
 }
 
 type gaugeMetric struct {
-	name    string
 	valBits uint64
+	name    string
 }
 
 func (g *gaugeMetric) Set(val float64) {
