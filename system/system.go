@@ -11,7 +11,6 @@ var (
 var (
 	DataPointReceived           = &counterMetric{name: "data_point_received"}
 	DataPointAccepted           = &counterMetric{name: "data_point_accepted"}
-	DataPointRejected           = &counterMetric{name: "data_point_rejected"}
 	DataPointRejectedBadRequest = &counterMetric{name: "data_point_rejected_bad_request"}
 	DataPointDropped            = &counterMetric{name: "data_point_dropped"}
 )
