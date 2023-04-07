@@ -13,6 +13,7 @@ import (
 	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/store"
+	"github.com/gernest/vince/system"
 	"github.com/gernest/vince/ua"
 )
 
@@ -58,7 +59,7 @@ func (g *Group) Release() {
 
 func Save(ctx context.Context, b *Buffer) {
 	start := time.Now()
-	defer saveDuration.UpdateDuration(start)
+	defer system.SaveDuration.UpdateDuration(start)
 
 	db := GetMike(ctx)
 	defer b.Release()

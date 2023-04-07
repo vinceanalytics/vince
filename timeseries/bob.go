@@ -7,12 +7,13 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/system"
 	"google.golang.org/protobuf/proto"
 )
 
 func Merge(ctx context.Context, since uint64, cb func(ctx context.Context, b *Buffer)) (uint64, error) {
 	start := time.Now()
-	defer mergeDuration.UpdateDuration(start)
+	defer system.MergeDuration.UpdateDuration(start)
 
 	say := log.Get(ctx)
 	say.Debug().Msg("starting merging daily parquet files")

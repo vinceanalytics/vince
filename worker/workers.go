@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"runtime/trace"
 	"sync"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/system"
 	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/timex"
 )
@@ -29,8 +29,8 @@ type cacheUpdater struct {
 
 // Do updates the cache with new *models.CachedSite entries
 func (c *cacheUpdater) Do(ctx context.Context) {
-	ctx, task := trace.NewTask(ctx, "sites_to_domain_cache_update")
-	defer task.End()
+	start := time.Now()
+	defer system.SiteCacheDuration.UpdateDuration(start)
 	c.sites = c.sites[:0]
 	models.QuerySitesToCache(ctx, &c.sites)
 	cache := caches.Site(ctx)
