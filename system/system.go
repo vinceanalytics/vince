@@ -55,6 +55,7 @@ type metrics struct {
 	counters   []*counterMetric
 	histograms []*histogramMetric
 }
+
 type Sync struct {
 	metrics    metrics
 	ms         runtime.MemStats
