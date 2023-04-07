@@ -16,26 +16,35 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
-// Creates two badger.DB instances one for temporary aggregate and another for
-// permanent storage/query.
-func Open(ctx context.Context, dir string) (context.Context, io.Closer, error) {
-	dir = filepath.Join(dir, "ts")
+func Open(ctx context.Context, dataPath string) (context.Context, io.Closer, error) {
+	dir := filepath.Join(dataPath, "ts")
 	bob, err := openBob(ctx, filepath.Join(dir, "bob"))
 	if err != nil {
 		return nil, nil, err
 	}
 	mike, err := open(ctx, filepath.Join(dir, "mike"))
 	if err != nil {
+		bob.Close()
 		return nil, nil, err
 	}
 	geo, err := openGeo(ctx, filepath.Join(dir, "geo"))
 	if err != nil {
+		mike.Close()
+		bob.Close()
+		return nil, nil, err
+	}
+	sys, err := openSystem(dataPath)
+	if err != nil {
+		mike.Close()
+		bob.Close()
+		geo.Close()
 		return nil, nil, err
 	}
 	ctx = context.WithValue(ctx, bobKey{}, bob)
 	ctx = context.WithValue(ctx, mikeKey{}, mike)
 	ctx = context.WithValue(ctx, geoKey{}, geo)
-	return ctx, resourceList{bob, mike, geo}, nil
+	ctx = context.WithValue(ctx, systemKey{}, sys)
+	return ctx, resourceList{bob, mike, geo, sys}, nil
 }
 
 type resourceList []io.Closer
@@ -98,6 +107,8 @@ type mikeKey struct{}
 
 type geoKey struct{}
 
+type systemKey struct{}
+
 func GetBob(ctx context.Context) *badger.DB {
 	return ctx.Value(bobKey{}).(*badger.DB)
 }
@@ -108,4 +119,8 @@ func GetMike(ctx context.Context) *badger.DB {
 
 func GetGeo(ctx context.Context) *badger.DB {
 	return ctx.Value(geoKey{}).(*badger.DB)
+}
+
+func GetSystem(ctx context.Context) *AllSystem {
+	return ctx.Value(systemKey{}).(*AllSystem)
 }
