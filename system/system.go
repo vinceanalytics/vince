@@ -12,12 +12,20 @@ var (
 	SiteCacheDuration = &histogramMetric{name: "sites_cache_update"}
 )
 
-// counters
+// counters for the /api/event endpoint.
 var (
-	DataPointReceived           = &counterMetric{name: "data_point_received"}
-	DataPointAccepted           = &counterMetric{name: "data_point_accepted"}
-	DataPointRejectedBadRequest = &counterMetric{name: "data_point_rejected_bad_request"}
-	DataPointDropped            = &counterMetric{name: "data_point_dropped"}
+	// DataPointReceived is cumulative total of calls to /api/event
+	DataPointReceived = &counterMetric{name: "data_point_received_total"}
+	// DataPointReceived is cumulative total of calls to /api/event that were successfully
+	// accepted and processed.
+	DataPointAccepted = &counterMetric{name: "data_point_accepted_total"}
+	// DataPointReceived is cumulative total of calls to /api/event that were rejected with
+	// bad request. We don't care about the actual reason, we need only an indication of something
+	// was not right.
+	DataPointRejectedBadRequest = &counterMetric{name: "data_point_rejected_bad_request_total"}
+	// DataPointReceived is cumulative total of calls to /api/event that were dropped. This happens
+	// when calls are made to deleted sites or sites with exceeded limits/quotas.
+	DataPointDropped = &counterMetric{name: "data_point_dropped_total"}
 )
 
 // gauges
