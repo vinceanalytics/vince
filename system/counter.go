@@ -50,3 +50,46 @@ func (c *counterMetric) Read(ts time.Time) *Counter {
 		Value:     c.get(),
 	}
 }
+
+type CounterSeries []*Counter
+
+// Rate calculates rate per second
+func (s CounterSeries) Rate(start, end time.Time) float64 {
+	if len(s) < 2 {
+		return 0
+	}
+	r := s[len(s)-1].Value - s[0].Value
+	prev := s[0].Value
+	for _, p := range s {
+		if p.Value < prev {
+			r += prev
+		}
+		prev = p.Value
+	}
+
+	durationToStart := s[0].Timestamp.Sub(start).Seconds()
+	durationToEnd := end.Sub(s[len(s)-1].Timestamp).Seconds()
+
+	sampledInterval := s[len(s)-1].Timestamp.Sub(s[0].Timestamp).Seconds()
+	averageDurationBetweenSamples := sampledInterval / float64(len(s))
+	durationToZero := sampledInterval * (s[0].Value / r)
+
+	if durationToZero < durationToStart {
+		durationToStart = durationToZero
+	}
+	extrapolationThreshold := averageDurationBetweenSamples * 1.1
+	extrapolateToInterval := sampledInterval
+
+	if durationToStart < extrapolationThreshold {
+		extrapolateToInterval += durationToStart
+	} else {
+		extrapolateToInterval += averageDurationBetweenSamples / 2
+	}
+	if durationToEnd < extrapolationThreshold {
+		extrapolateToInterval += durationToEnd
+	} else {
+		extrapolateToInterval += averageDurationBetweenSamples / 2
+	}
+	factor := extrapolateToInterval / sampledInterval
+	return r * factor
+}
