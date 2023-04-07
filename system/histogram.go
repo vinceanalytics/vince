@@ -20,6 +20,8 @@ const (
 
 var bucketMultiplier = math.Pow(10, 1.0/bucketsPerDecimal)
 
+// notes on how to interpret this info
+// https://andykuszyk.github.io/2020-07-24-prometheus-histograms.html
 type histogramMetric struct {
 	name string
 	mu   sync.Mutex
