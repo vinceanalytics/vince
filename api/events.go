@@ -17,6 +17,7 @@ import (
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/referrer"
 	"github.com/gernest/vince/remoteip"
+	"github.com/gernest/vince/system"
 	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/timex"
 	"github.com/gernest/vince/ua"
@@ -63,27 +64,34 @@ var bufPool = &sync.Pool{
 
 // Events accepts events payloads from vince client script.
 func Events(w http.ResponseWriter, r *http.Request) {
+	system.DataPointReceived.Inc()
+
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	xlg := log.Get(r.Context())
 	var req Request
 	err := req.Parse(r.Body)
 	if err != nil {
+		system.DataPointRejectedBadRequest.Inc()
 		xlg.Err(err).Msg("Failed decoding json")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
 	remoteIp := remoteip.Get(r)
 	if req.URI == "" {
+		system.DataPointRejectedBadRequest.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	uri, err := url.Parse(req.URI)
 	if err != nil {
+		system.DataPointRejectedBadRequest.Inc()
 		xlg.Err(err).Msg("Failed parsing url")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if uri.Scheme == "data" {
+		system.DataPointRejectedBadRequest.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -94,6 +102,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	reqReferrer := req.Referrer
 	refUrl, err := url.Parse(reqReferrer)
 	if err != nil {
+		system.DataPointRejectedBadRequest.Inc()
 		xlg.Err(err).Msg("Failed parsing referrer url")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -103,14 +112,17 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		path += "#" + uri.Fragment
 	}
 	if len(path) > 2000 {
+		system.DataPointRejectedBadRequest.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if req.EventName == "" {
+		system.DataPointRejectedBadRequest.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if req.Domain == "" {
+		system.DataPointRejectedBadRequest.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -225,10 +237,12 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		b.Register(r.Context(), e, previousUUserID)
 	}
 	if dropped > 0 {
+		system.DataPointDropped.Inc()
 		w.Header().Set("x-vince-dropped", strconv.Itoa(dropped))
 		w.WriteHeader(http.StatusAccepted)
 		return
 	}
+	system.DataPointAccepted.Inc()
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
