@@ -2,13 +2,32 @@ project_name: vince
 builds:
   - env:
       - CGO_ENABLED=0
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CC=CC=zig cc -target x86_64-macos-musl{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-windows-musl{{- end }}
+        {{- end }}
+        {{- if eq .Os "linux" }}
+          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-linux-musl{{- end }}
+        {{- end }}
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CXX=CC=zig cc -target x86_64-macos-musl{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64"}}CXX=zig cc -target x86_64-windows-musl{{- end }}
+        {{- end }}
+        {{- if eq .Os "linux" }}
+          {{- if eq .Arch "amd64"}}CXX=zig cc -target x86_64-linux-musl{{- end }}
+        {{- end }}
     goos:
       - linux
       - windows
       - darwin
     goarch:
       - amd64
-      - arm64
 
 archives:
   - format: tar.gz
