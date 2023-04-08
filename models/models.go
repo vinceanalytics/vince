@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -113,6 +114,42 @@ type Site struct {
 
 	Invitations []*Invitation `gorm:"constraint:OnDelete:CASCADE;"`
 	SharedLinks []*SharedLink
+}
+
+var domainRe = regexp.MustCompile(`(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`)
+
+func ValidateSiteDomain(ctx context.Context, domain string) (good, bad string) {
+	good = CleanupDOmain(domain)
+	if good == "" {
+		bad = "is required"
+		return
+	}
+	if !domainRe.MatchString(good) {
+		bad = "only letters, numbers, slashes and period allowed"
+		return
+	}
+	if strings.ContainsAny(domain, reservedChars) {
+		bad = "must not contain URI reserved characters " + reservedChars
+		return
+	}
+	if Exists(ctx, func(db *gorm.DB) *gorm.DB {
+		return db.Model(&Site{}).Where("domain = ?", domain)
+	}) {
+		bad = " already exists"
+	}
+	return
+}
+
+const reservedChars = `:?#[]@!$&'()*+,;=`
+
+func CleanupDOmain(domain string) string {
+	domain = strings.TrimSpace(domain)
+	domain = strings.TrimPrefix(domain, "http://")
+	domain = strings.TrimPrefix(domain, "https://")
+	domain = strings.TrimPrefix(domain, "www.")
+	domain = strings.TrimSuffix(domain, "/")
+	domain = strings.ToLower(domain)
+	return domain
 }
 
 func (s *Site) IsMember(userId uint64) bool {

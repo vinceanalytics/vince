@@ -8,9 +8,6 @@ import (
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
-	"github.com/miekg/dns"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func CreateSite(w http.ResponseWriter, r *http.Request) {
@@ -20,25 +17,13 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 	domain := r.Form.Get("domain")
 	limit := u.SitesLimit(ctx)
 	isAtLimit := limit != -1 && owned >= int64(limit)
-	_, valid := dns.IsDomainName(domain)
-	var exists bool
-	if !isAtLimit && valid {
-		exists = models.Exists(ctx, func(db *gorm.DB) *gorm.DB {
-			return db.Model(&models.Site{}).
-				Joins("left join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' and  site_memberships.user_id = ? and sites.domain = ?", u.ID, domain)
-		})
-	}
-	if isAtLimit || !valid || exists {
-		sessions.SaveCsrf(w, r)
+	domain, bad := models.ValidateSiteDomain(ctx, domain)
+	if isAtLimit || bad != "" {
+		r = sessions.SaveCsrf(w, r)
 		render.HTML(r.Context(), w, templates.SiteNew, http.StatusOK, func(ctx *templates.Context) {
-			if !valid {
+			if bad != "" {
 				ctx.Errors = map[string]string{
-					"domain": "not a valid domain name",
-				}
-			}
-			if exists {
-				ctx.Errors = map[string]string{
-					"domain": "already exists",
+					"domain": bad,
 				}
 			}
 			ctx.Form = r.Form
@@ -50,8 +35,6 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	db := models.Get(ctx)
-	db.Logger = db.Logger.LogMode(logger.Info)
 	err := models.Get(ctx).Model(u).Association("Sites").Append(&models.Site{
 		Domain: domain,
 		Public: r.Form.Get("public") == "true",
