@@ -8,9 +8,9 @@
             <div class="auth-form-body mt3">
                 <form action="/sites" method="post">
                     <label for="domain">domain</label>
-                    <input {{if .Errors.domain}} invalid="true" {{end}} {{with .Form.domain}}value="{{index . 0}}"
-                        {{end}} class="form-control input-block" type="text" name="domain" id="domain"
-                        placeholder="example.com">
+                    <input {{.InputField "domain" }} class="form-control input-block" type="text" name="domain"
+                        id="domain" placeholder="example.com" required>
+                    {{.Validate "domain"}}
                     <div class="form-checkbox">
                         <label>
                             <input type="checkbox" name="public" checked="checked" value="true" />
