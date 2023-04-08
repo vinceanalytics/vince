@@ -116,6 +116,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		worker.LogRotate(errorLog)(ctx, &wg, exit),
 		worker.SaveTimeseries(ctx, &wg, exit),
 		worker.MergeTimeseries(ctx, &wg, exit),
+		worker.CollectSYstemMetrics(ctx, &wg, exit),
 	)
 	ctx = health.Set(ctx, h)
 

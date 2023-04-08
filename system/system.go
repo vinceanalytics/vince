@@ -93,6 +93,6 @@ type Collector struct {
 	Histograms func([]*Histogram)
 }
 
-func Collect(co Collector) {
-	syncStats.Collect(time.Now(), co)
+func Collect(ts time.Time, co Collector) {
+	syncStats.Collect(ts, co)
 }

@@ -156,3 +156,38 @@ func mergeTs(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exi
 		}
 	}
 }
+func CollectSYstemMetrics(ctx context.Context, wg *sync.WaitGroup, exit func()) *health.Ping {
+	wg.Add(1)
+	h := health.NewPing("system_metrics_collector")
+	go collectSystemMetrics(ctx, wg, h.Channel, exit)
+	return h
+}
+
+func collectSystemMetrics(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
+	log.Get(ctx).Debug().Str("worker", "system_metrics_collector").Msg("started")
+	defer wg.Done()
+	tick := time.NewTicker(config.Get(ctx).Intervals.SystemScrapeInterval.AsDuration())
+	defer tick.Stop()
+
+	// By default  we collect 24 hour windows into their own file.
+	persist := time.NewTicker(24 * time.Hour)
+	defer persist.Stop()
+
+	sys := timeseries.GetSystem(ctx)
+	collect := sys.Collect(ctx)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case pong := <-ch:
+			pong()
+		case <-persist.C:
+			err := sys.Save()
+			if err != nil {
+				log.Get(ctx).Err(err).Msg("failed to save system metrics")
+			}
+		case ts := <-tick.C:
+			system.Collect(ts, collect)
+		}
+	}
+}

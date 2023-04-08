@@ -1,11 +1,13 @@
 package timeseries
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/system"
 	"github.com/oklog/ulid/v2"
 	"github.com/segmentio/parquet-go"
@@ -38,6 +40,10 @@ func NewSystem[T any](dir, name string) (*System[T], error) {
 	}
 	return s, nil
 
+}
+
+func (s *System[T]) Write(rows []T) (int, error) {
+	return s.w.Write(rows)
 }
 
 func (s *System[T]) Save(reopen bool) error {
@@ -99,4 +105,42 @@ func (a *AllSystem) Close() error {
 	return errors.Join(
 		a.Counters.Close(), a.Gauges.Close(), a.Histograms.Close(),
 	)
+}
+
+func (a *AllSystem) Save() error {
+	return errors.Join(
+		a.Counters.Save(true), a.Gauges.Save(true), a.Histograms.Save(true),
+	)
+}
+
+func (a *AllSystem) Collect(ctx context.Context) system.Collector {
+	return system.Collector{
+		Gauges: func(g []*system.Gauge) {
+			if len(g) == 0 {
+				return
+			}
+			_, err := a.Gauges.Write(g)
+			if err != nil {
+				log.Get(ctx).Err(err).Msg("failed to write gauges")
+			}
+		},
+		Counters: func(c []*system.Counter) {
+			if len(c) == 0 {
+				return
+			}
+			_, err := a.Counters.Write(c)
+			if err != nil {
+				log.Get(ctx).Err(err).Msg("failed to write counters")
+			}
+		},
+		Histograms: func(h []*system.Histogram) {
+			if len(h) == 0 {
+				return
+			}
+			_, err := a.Histograms.Write(h)
+			if err != nil {
+				log.Get(ctx).Err(err).Msg("failed to write histograms")
+			}
+		},
+	}
 }
