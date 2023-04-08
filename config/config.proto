@@ -134,6 +134,10 @@ message Intervals {
   // before being merged together. The smaller the
   // save_timeseries_buffer_interval the higher the number of files.
   google.protobuf.Duration merge_timeseries_interval = 4;
+
+  // Duration to collect system metrics. This includes counters, gauages and
+  // histograms.
+  google.protobuf.Duration system_scrape_interval = 5;
 }
 
 message Cors {

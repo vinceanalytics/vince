@@ -182,14 +182,17 @@ func Flags() []cli.Flag {
 		&cli.DurationFlag{
 			Name:  "ts-merge",
 			Usage: "window for compacting daily timeseries data",
-			// We pick this value to balance the number of items processed per
-			// iteration. This will ensure we have al most 3 files per user.
-			//
 			// Merge operation is slow, and gets even slower with the number of active
 			// users in the system growing. This is by design to conserve amount of memory used
 			// during the operation.
 			Value:   30 * time.Minute,
 			EnvVars: []string{"VINCE_TS_MERGE_INTERVAL"},
+		},
+		&cli.DurationFlag{
+			Name:    "scrape-interval",
+			Usage:   "system wide metrics collection interval",
+			Value:   time.Minute,
+			EnvVars: []string{"VINCE_SCRAPE_INTERVAL"},
 		},
 	}
 }
@@ -243,6 +246,7 @@ func fromCli(ctx *cli.Context) *Config {
 			LogRotationCheckInterval:          durationpb.New(ctx.Duration("rotation-check")),
 			SaveTimeseriesBufferInterval:      durationpb.New(ctx.Duration("ts-buffer")),
 			MergeTimeseriesInterval:           durationpb.New(ctx.Duration("ts-merge")),
+			SystemScrapeInterval:              durationpb.New(ctx.Duration("scrape-interval")),
 		},
 		Mailer: &Config_Mailer{
 			Address: &Config_Address{
