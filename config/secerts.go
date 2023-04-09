@@ -10,6 +10,7 @@ func Secrets() *cli.Command {
 			&cli.StringFlag{
 				Name:  "path,p",
 				Usage: "directory to save the secrets",
+				Value: ".vince",
 			},
 		},
 	}
