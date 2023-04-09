@@ -13,6 +13,7 @@ import (
 	"github.com/belak/octicon"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
+	"github.com/gernest/vince/internal/plans"
 	"github.com/gernest/vince/models"
 )
 
@@ -299,4 +300,8 @@ func (t *Context) Format(n uint64) string {
 	default:
 		return strconv.FormatUint(n, 10)
 	}
+}
+
+func (t *Context) Plans() []plans.Plan {
+	return plans.All
 }

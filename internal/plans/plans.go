@@ -4,6 +4,8 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"fmt"
+	"strconv"
 	"sync"
 
 	"github.com/gernest/vince/log"
@@ -18,6 +20,23 @@ type Plan struct {
 	YearlyProductID  uint64
 	MonthlyCost      float64
 	YearlyCost       float64
+}
+
+func (p Plan) Format() string {
+	n := p.Limit
+	switch {
+	case n >= 1_000 && n < 1_000_000:
+		thousands := (n / 100) / 10
+		return fmt.Sprintf("%dK", thousands)
+	case n >= 1_000_000 && n < 1_000_000_000:
+		millions := (n / 100_000) / 10
+		return fmt.Sprintf("%dM", millions)
+	case n >= 1_000_000_000 && n < 1_000_000_000_000:
+		billions := (n / 100_000_000) / 10
+		return fmt.Sprintf("%dB", billions)
+	default:
+		return strconv.FormatUint(n, 10)
+	}
 }
 
 var Enterprize = Plan{
