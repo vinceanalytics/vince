@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/health"
+	"github.com/gernest/vince/limit"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/system"
@@ -24,7 +24,6 @@ func UpdateCacheSites(ctx context.Context, wg *sync.WaitGroup, exit func()) *hea
 
 type cacheUpdater struct {
 	sites []*models.CachedSite
-	ttl   time.Duration
 }
 
 // Do updates the cache with new *models.CachedSite entries
@@ -34,9 +33,8 @@ func (c *cacheUpdater) Do(ctx context.Context) {
 	c.sites = c.sites[:0]
 	models.QuerySitesToCache(ctx, &c.sites)
 	system.SitesInCache.Set(float64(len(c.sites)))
-	cache := caches.Site(ctx)
 	for _, s := range c.sites {
-		cache.SetWithTTL(s.Domain, s, 1, c.ttl)
+		limit.SITES.Set(s)
 	}
 }
 
@@ -47,7 +45,6 @@ func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingCh
 	interval := config.Get(ctx).Intervals.SitesByDomainCacheRefreshInterval
 	work := &cacheUpdater{
 		sites: make([]*models.CachedSite, 0, 4098),
-		ttl:   interval.AsDuration(),
 	}
 	// On startup , fill the cache first before the next interval. Ensures we are
 	// operational  on the get go.

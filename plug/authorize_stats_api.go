@@ -32,7 +32,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			})
 			return
 		}
-		if !limit.API.Allow(key.RateLimit()) {
+		if !limit.API.AllowID(key.RateLimit()) {
 			render.ERROR(r.Context(), w, http.StatusTooManyRequests, func(ctx *templates.Context) {
 				ctx.Error.StatusText = fmt.Sprintf(
 					"Too many API requests. Your API key is limited to %d requests per hour.",

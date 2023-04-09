@@ -15,10 +15,10 @@ type CachedSite struct {
 	UserID                      uint64
 }
 
-func (c *CachedSite) RateLimit() (uint64, rate.Limit, int) {
+func (c *CachedSite) RateLimit() (rate.Limit, int) {
 	events := float64(c.IngestRateLimitThreshold)
 	per := time.Duration(c.IngestRateLimitScaleSeconds) * time.Second
-	return c.ID, rate.Limit(events / per.Seconds()), 10
+	return rate.Limit(events / per.Seconds()), 10
 }
 
 func QuerySitesToCache(ctx context.Context, results *[]*CachedSite) {
