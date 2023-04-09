@@ -23,9 +23,10 @@ func ZeroSum() Sum {
 	return sum
 }
 
-func (s *Sum) SetValues(visitors, visits, events float64) {
+func (s *Sum) SetValues(visitors, visits, views, events float64) {
 	s.SetVisitors(visitors)
 	s.SetVisits(visits)
+	s.SetViews(views)
 	s.SetEvents(events)
 }
 
@@ -38,18 +39,20 @@ func (s *Sum) Reuse() *Sum {
 	return s
 }
 
-func (s *Sum) Update(ts time.Time, visitors, visits, events capnp.Float64List) {
+func (s *Sum) Update(ts time.Time, visitors, visits, views, events capnp.Float64List) {
 	day := ts.YearDay()
 	visitors.Set(day, visitors.At(day)+s.Visitors())
 	visits.Set(day, visits.At(day)+s.Visits())
+	views.Set(day, views.At(day)+s.Views())
 	events.Set(day, events.At(day)+s.Events())
 }
 
 func (s *Calendar) Update(ts time.Time, sum *Sum) {
 	visitors, _ := s.Visitors()
 	visits, _ := s.Visits()
+	views, _ := s.Visits()
 	events, _ := s.Events()
-	sum.Update(ts, visitors, visits, events)
+	sum.Update(ts, visitors, visits, views, events)
 }
 
 func ZeroCalendar(ts time.Time, sum *Sum) (Calendar, error) {
@@ -74,11 +77,16 @@ func ZeroCalendar(ts time.Time, sum *Sum) (Calendar, error) {
 		return Calendar{}, err
 	}
 
+	views, err := capnp.NewFloat64List(seg, int32(days))
+	if err != nil {
+		return Calendar{}, err
+	}
+
 	events, err := capnp.NewFloat64List(seg, int32(days))
 	if err != nil {
 		return Calendar{}, err
 	}
-	sum.Update(ts, visitors, visits, events)
+	sum.Update(ts, visitors, visits, views, events)
 	err = calendar.SetVisitors(visitors)
 	if err != nil {
 		return Calendar{}, err
@@ -104,6 +112,13 @@ func (c *Calendar) SeriesVisitors(from, to time.Time) ([]float64, error) {
 
 func (c Calendar) SeriesVisits(from, to time.Time) ([]float64, error) {
 	ls, err := c.Visits()
+	if err != nil {
+		return nil, err
+	}
+	return series(ls, from, to), nil
+}
+func (c Calendar) SeriesViews(from, to time.Time) ([]float64, error) {
+	ls, err := c.Views()
 	if err != nil {
 		return nil, err
 	}

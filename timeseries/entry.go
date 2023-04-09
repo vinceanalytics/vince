@@ -82,32 +82,32 @@ func (e *Entries) List() EntryList {
 	return EntryList(e.Events)
 }
 
-func (ls EntryList) Count(u, s *roaring64.Bitmap) (visitors, visits, events float64) {
+func (ls EntryList) Count(u, s *roaring64.Bitmap) (visitors, visits, views, events float64) {
 	if len(ls) == 0 {
 		return
 	}
 	u.Clear()
 	s.Clear()
 	for _, e := range ls {
-		if !e.IsSession {
-			events += 1
+		if e.IsSession {
+			if !s.Contains(e.SessionId) {
+				u.Add(e.SessionId)
+				visits += 1
+			}
+			continue
+		}
+		events += 1
+		if e.Name == "pageviews" {
+			views += 1
 		}
 		if !u.Contains(e.UserId) {
 			u.Add(e.UserId)
 			visitors += 1
 		}
-		if !s.Contains(e.SessionId) {
-			u.Add(e.SessionId)
-			visits += 1
-		}
 	}
 	return
 }
 
-// for collects entries happening within an hour and calls f with the hour and the list
-// of entries.
-//
-// Assumes ls is sorted and contains entries happening in the same day.
 func (ls EntryList) Emit(f func(EntryList)) {
 	var pos int
 	var last, curr int64
