@@ -58,7 +58,7 @@ func setupKey(c *Config) error {
 func GenKeyCMD() *cli.Command {
 	return &cli.Command{
 		Name:  "genkey",
-		Usage: "generate Ed25519 and Write pem encoded data into vince_key(for private key) and vince_key(for public key)",
+		Usage: "generate Ed25519 and Write pem encoded data into vince_key(for private key) and vince_key.pub(for public key)",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "path",
