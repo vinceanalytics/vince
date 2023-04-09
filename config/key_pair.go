@@ -4,11 +4,10 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"os"
 	"path/filepath"
-
-	"github.com/urfave/cli/v2"
 )
 
 type KeyPair struct {
@@ -18,62 +17,56 @@ type KeyPair struct {
 
 var SecurityKey *KeyPair
 
-func setupKey(c *Config) error {
-	if c.Ed25519KeyPair != nil {
-		b, err := os.ReadFile(c.Ed25519KeyPair.PublicKeyPath)
-		if err != nil {
-			return err
-		}
-		data, _ := pem.Decode(b)
-		pub, err := x509.ParsePKIXPublicKey(data.Bytes)
-		if err != nil {
-			return err
-		}
-		b, err = os.ReadFile(c.Ed25519KeyPair.PrivateKeyPath)
-		if err != nil {
-			return err
-		}
-		data, _ = pem.Decode(b)
-		priv, err := x509.ParsePKCS8PrivateKey(data.Bytes)
-		if err != nil {
-			return err
-		}
-		SecurityKey = &KeyPair{
-			Public:  pub.(ed25519.PublicKey),
-			Private: priv.(ed25519.PrivateKey),
-		}
-		return nil
+var SessionKey []byte
+
+var BaseKey []byte
+
+func readSecret(path string) ([]byte, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
 	}
-	pub, priv, err := ed25519.GenerateKey(rand.Reader)
+	return base64.StdEncoding.DecodeString(string(b))
+}
+
+func setupSecrets(c *Config) (err error) {
+	s := c.Secrets
+	BaseKey, err = readSecret(s.SecretKeyBase)
+	if err != nil {
+		return err
+	}
+	SessionKey, err = readSecret(s.Session)
+	if err != nil {
+		return err
+	}
+
+	b, err := os.ReadFile(s.Ed25519KeyPair.PublicKey)
+	if err != nil {
+		return err
+	}
+	data, _ := pem.Decode(b)
+	pub, err := x509.ParsePKIXPublicKey(data.Bytes)
+	if err != nil {
+		return err
+	}
+	b, err = os.ReadFile(s.Ed25519KeyPair.PrivateKey)
+	if err != nil {
+		return err
+	}
+	data, _ = pem.Decode(b)
+	priv, err := x509.ParsePKCS8PrivateKey(data.Bytes)
 	if err != nil {
 		return err
 	}
 	SecurityKey = &KeyPair{
-		Public:  pub,
-		Private: priv,
+		Public:  pub.(ed25519.PublicKey),
+		Private: priv.(ed25519.PrivateKey),
 	}
 	return nil
 }
 
-func GenKeyCMD() *cli.Command {
-	return &cli.Command{
-		Name:  "genkey",
-		Usage: "generate Ed25519 and Write pem encoded data into vince_key(for private key) and vince_key.pub(for public key)",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:  "path",
-				Usage: "directory to write the files",
-			},
-		},
-		Action: func(ctx *cli.Context) error {
-			return GenerateAndSaveEd25519(ctx.String("path"))
-		},
-	}
-}
-
-func GenerateAndSaveEd25519(dir string) error {
+func generateAndSaveEd25519(dir string) (privPath, pubPath string, err error) {
 	var (
-		err   error
 		b     []byte
 		block *pem.Block
 		pub   ed25519.PublicKey
@@ -82,12 +75,12 @@ func GenerateAndSaveEd25519(dir string) error {
 
 	pub, priv, err = ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		return err
+		return
 	}
 
 	b, err = x509.MarshalPKCS8PrivateKey(priv)
 	if err != nil {
-		return err
+		return
 	}
 
 	block = &pem.Block{
@@ -97,16 +90,17 @@ func GenerateAndSaveEd25519(dir string) error {
 
 	name := filepath.Join(dir, "vince_key")
 
-	println("write ", name)
 	err = os.WriteFile(name, pem.EncodeToMemory(block), 0600)
 	if err != nil {
-		return err
+		return
 	}
+
+	privPath = name
 
 	// public key
 	b, err = x509.MarshalPKIXPublicKey(pub)
 	if err != nil {
-		return err
+		return
 	}
 
 	block = &pem.Block{
@@ -114,6 +108,7 @@ func GenerateAndSaveEd25519(dir string) error {
 		Bytes: b,
 	}
 	name += ".pub"
-	println("write ", name)
-	return os.WriteFile(name, pem.EncodeToMemory(block), 0644)
+	err = os.WriteFile(name, pem.EncodeToMemory(block), 0644)
+	pubPath = name
+	return
 }

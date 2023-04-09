@@ -2,8 +2,6 @@ package config
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"os"
 	"time"
 
@@ -55,18 +53,6 @@ func Flags() []cli.Flag {
 			Name:    "url",
 			Usage:   "url for the server on which vince is hosted(it shows up on emails)",
 			EnvVars: []string{"VINCE_URL"},
-		},
-		&cli.StringFlag{
-			Name:    "secret-key-base",
-			Usage:   "secret with size 64 bytes",
-			Value:   defaultSecret(),
-			EnvVars: []string{"VINCE_SECRET_KEY_BASE"},
-		},
-		&cli.StringFlag{
-			Name:    "cookie-store-secret",
-			Usage:   "48 bytes base64 encoded cookie encryption key",
-			Value:   defaultSecret(),
-			EnvVars: []string{"VINCE_COOKIE_STORE_SECRET"},
 		},
 		&cli.BoolFlag{
 			Name:    "enable-email-verification",
@@ -194,6 +180,28 @@ func Flags() []cli.Flag {
 			Value:   time.Minute,
 			EnvVars: []string{"VINCE_SCRAPE_INTERVAL"},
 		},
+
+		// secrets
+		&cli.PathFlag{
+			Name:    "secret-base",
+			Usage:   "secret with size 64 bytes",
+			EnvVars: []string{"VINCE_SECRET_BASE"},
+		},
+		&cli.PathFlag{
+			Name:    "secret-session",
+			Usage:   "path to a file with  48 bytes base64 encoded session encryption key",
+			EnvVars: []string{"VINCE_SECRET_SESSION"},
+		},
+		&cli.PathFlag{
+			Name:    "secret-ed-priv",
+			Usage:   "path to a file with  ed25519 private key",
+			EnvVars: []string{"VINCE_SECRET_ED25519_private"},
+		},
+		&cli.PathFlag{
+			Name:    "secret-ed-pub",
+			Usage:   "path to a file with  ed25519 public key",
+			EnvVars: []string{"VINCE_SECRET_ED25519_public"},
+		},
 	}
 }
 
@@ -204,13 +212,7 @@ func Load(ctx *cli.Context) (*Config, error) {
 		return nil, err
 	}
 	proto.Merge(base, conf)
-	return base, setupKey(base)
-}
-
-func defaultSecret() string {
-	b := make([]byte, 64)
-	rand.Read(b)
-	return hex.EncodeToString(b)
+	return base, setupSecrets(base)
 }
 
 func fromFile(ctx *cli.Context) (*Config, error) {
@@ -237,10 +239,16 @@ func fromCli(ctx *cli.Context) *Config {
 		DataPath:                ctx.String("data"),
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
 		IsSelfHost:              ctx.Bool("self-host"),
-		SecretKeyBase:           ctx.String("secret-key-base"),
-		CookieStoreSecret:       ctx.String("cookie-store-secret"),
 		BackupDir:               ctx.String("backup-dir"),
 		SiteLimit:               uint32(ctx.Int("site-limit")),
+		Secrets: &Secrets{
+			SecretKeyBase: ctx.Path("secret-base"),
+			Session:       ctx.Path("secret-session"),
+			Ed25519KeyPair: &Secrets_KeyPair{
+				PrivateKey: ctx.Path("secret-ed-priv"),
+				PublicKey:  ctx.Path("secret-ed-pub"),
+			},
+		},
 		Intervals: &Intervals{
 			SitesByDomainCacheRefreshInterval: durationpb.New(ctx.Duration("cache-refresh")),
 			LogRotationCheckInterval:          durationpb.New(ctx.Duration("rotation-check")),
@@ -350,8 +358,8 @@ func (c *Config) WriteToFile(name string) error {
 
 func (c *Config) Scrub() *Config {
 	n := proto.Clone(c).(*Config)
-	n.SecretKeyBase = n.SecretKeyBase[0:6] + "***"
 	n.SuperUserId = nil
+	n.Secrets = nil
 	return n
 }
 

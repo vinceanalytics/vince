@@ -22,6 +22,7 @@ import (
 
 	"github.com/dchest/captcha"
 	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/log"
 	"github.com/lestrrat-go/dataurl"
@@ -46,21 +47,12 @@ func Get(ctx context.Context) *Session {
 	return ctx.Value(sessionsKey{}).(*Session)
 }
 
-func NewSession(name, secret string) *Session {
+func NewSession(name string) *Session {
 	var s Session
 	s.maxAge = 60 * 60 * 24 * 365 * 5
 	s.name = name
-	if secret != "" {
-		d, _ := base64.StdEncoding.DecodeString(secret)
-		if len(d) == 48 {
-			copy(s.hashKey[:], d[:32])
-			copy(s.blockKey[:], d[32:])
-		}
-	} else {
-		rand.Read(s.hashKey[:])
-		rand.Read(s.blockKey[:])
-	}
-
+	copy(s.hashKey[:], config.SessionKey[:32])
+	copy(s.blockKey[:], config.SessionKey[32:])
 	s.block, _ = aes.NewCipher(s.blockKey[:])
 	s.macPool = &sync.Pool{
 		New: func() any {

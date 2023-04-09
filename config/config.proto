@@ -13,22 +13,12 @@ message Config {
   bool enable_email_verification = 6;
   bool is_self_host = 7;
   LogLevel log_level = 8;
-  string secret_key_base = 9;
+  Secrets secrets = 9;
   Cors cors = 10;
-  Ed25519Key ed25519_key_pair = 11;
   repeated uint64 super_user_id = 12;
   Firewall firewall = 13;
   repeated string site_limit_exempt = 14;
   Intervals intervals = 15;
-
-  // Base64 encoded secret of 48 bytes (before encoding). This is used for
-  // securing cookies. The first 32 bytes are used for hmac hashing and the 16
-  // bytes are used for encryption.
-  //
-  // Cookies are encrypted. This can be referred to as cookie encrtyption key.
-  // Change of this value invalidates all cookies, this can lead to lgging out
-  // of authenticated clients.
-  string cookie_store_secret = 16;
 
   // Path where we store backups. Backups aren't incremental, we perfoem full
   // system storage backup.
@@ -94,11 +84,6 @@ message Config {
     // TraceLevel defines trace log level.
     trace = -1;
   }
-
-  message Ed25519Key {
-    string public_key_path = 1;
-    string private_key_path = 2;
-  }
 }
 
 // Various intervals used by the system
@@ -138,6 +123,31 @@ message Intervals {
   // Duration to collect system metrics. This includes counters, gauages and
   // histograms.
   google.protobuf.Duration system_scrape_interval = 5;
+}
+
+// secure secret values used by vince. All fields are paths to files conaining
+// base64 encoded data.
+message Secrets {
+  // used for hashing api keys. Change to this value invalidates all issued api
+  // keys.
+  string secret_key_base = 1;
+
+  // used for any crypto functions
+  KeyPair ed25519_key_pair = 2;
+
+  // Base64 encoded secret of 48 bytes (before encoding). This is used for
+  // securing cookies. The first 32 bytes are used for hmac hashing and the 16
+  // bytes are used for encryption.
+  //
+  // Cookies are encrypted. This can be referred to as cookie encrtyption key.
+  // Change of this value invalidates all cookies, this can lead to lgging out
+  // of authenticated clients.
+  string session = 3;
+
+  message KeyPair {
+    string public_key = 1;
+    string private_key = 2;
+  }
 }
 
 message Cors {

@@ -229,7 +229,7 @@ func (ak *APIKey) New(ctx context.Context) {
 
 func HashAPIKey(ctx context.Context, key string) string {
 	h := sha256.New()
-	h.Write([]byte(config.Get(ctx).SecretKeyBase))
+	h.Write([]byte(config.BaseKey))
 	h.Write([]byte(key))
 	return hex.EncodeToString(h.Sum(nil))
 }
