@@ -209,7 +209,7 @@ func (t *Context) VinceURL() template.HTML {
 
 func (t *Context) Logo(width, height int) template.HTML {
 	return template.HTML(fmt.Sprintf(
-		`<img height="%d" width="%d" src=%q>`,
+		`<img alt="Vince Analytics logo" width=%d height=%d src=%q>`,
 		width, height, Logo,
 	))
 }
