@@ -14,7 +14,9 @@
 
 <body class="d-flex flex-column height-full">
     <div class="width-full my-4 text-center">
-        <a href="/" class="logo">VINCE ANALYTICS </a>
+        <a href="/">
+            {{.Logo 160 100}}
+        </a>
     </div>
     {{block "_flash" .}}{{end}}
     {{block "_content" .}}{{end}}
