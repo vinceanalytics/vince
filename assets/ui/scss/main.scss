@@ -254,3 +254,20 @@ body {
     color: var(--color-blurple);
     font-family: var(--font-medium-italic);
 }
+
+.diagonal_line_through {
+    position: relative;
+    display: inline-block;
+}
+
+.diagonal_line_through::before {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 100%;
+    content: "";
+    border-bottom-color: var(--color-fg-subtle);
+    border-bottom-style: solid;
+    border-bottom-width: 3px;
+    transform: skewY(45deg);
+}

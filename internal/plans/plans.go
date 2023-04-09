@@ -22,6 +22,10 @@ type Plan struct {
 	YearlyCost       float64
 }
 
+func (p Plan) Before() float64 {
+	return p.MonthlyCost * 12
+}
+
 func (p Plan) Format() string {
 	n := p.Limit
 	switch {

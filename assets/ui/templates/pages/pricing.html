@@ -135,55 +135,48 @@
                 <span class="mb-2 h5-mktg">{{.Format}}</span><span class="color-fg-muted lh-condensed mb-2"> data points
                     </p>
             </div>
-
-            <div hidden="" class="js-monthly-cost tooltipped-n tooltipped-multiline tooltipped-no-delay "
-                aria-label="Prices in local currency will change as the exchange rate fluctuates and are provided as a convenience. The actual charge will be USD $0 per user/month."
-                data-plan="free">
-                <h3 class="mb-0">
-                    <span class="d-flex flex-justify-center flex-items-center">
-                        <span class="d-flex flex-items-center f0-mktg text-normal text-mono mr-2">
-                            <sup class="f3 color-fg-muted v-align-middle mr-1">$</sup>
-                            <span class="js-computed-value" data-plan="free">{{.MonthlyCost}}</span>
-                            <span
-                                class="text-normal text-mono f4 color-fg-muted js-pricing-cost-suffix js-monthly-suffix">per
-                                month</span>
-                        </span>
-
-                    </span>
-                </h3>
-            </div>
-
             <div class="js-yearly-cost tooltipped-n tooltipped-multiline tooltipped-no-delay "
                 aria-label="Prices in local currency will change as the exchange rate fluctuates and are provided as a convenience. The actual charge will be USD $0 per user/month."
                 data-plan="free">
                 <h3 class="mb-0">
-                    <div
-                        class="d-flex flex-lg-column flex-lg-wrap flex-xl-nowrap flex-justify-center flex-items-center">
-                        <div class="d-flex flex-lg-row flex-lg-wrap flex-justify-center flex-items-center">
-                            <span class="d-flex flex-items-center f0-mktg text-normal text-mono mr-2 no-wrap">
-                                <sup class="f3 color-fg-muted v-align-middle mr-1">$</sup>
-                                <span class="js-computed-value" data-plan="free">{{.MonthlyCost}}</span>
+                    <h3 class="mb-0">
+                        <div
+                            class="d-flex flex-lg-column flex-lg-wrap flex-xl-nowrap flex-justify-center flex-items-center">
+                            <div class="d-flex flex-lg-row flex-lg-wrap flex-justify-center flex-items-center">
+                                <span class="d-flex flex-items-center f0-mktg text-normal mr-2 no-wrap">
+                                    <sup class="f3 color-fg-muted v-align-middle mr-1">$</sup>
+                                    <span class="js-computed-value" data-plan="business">{{.MonthlyCost}}</span>
+                                </span>
+                            </div>
+                            <span class="text-normal text-center f6-mktg color-fg-muted">
+                                <span>
+                                    per month
+                                </span>
                             </span>
                         </div>
-                        <span class="text-normal text-center text-mono f6-mktg color-fg-muted">
-                            <span>
-                                per month
+                        <div
+                            class="d-flex flex-lg-column flex-lg-wrap flex-xl-nowrap flex-justify-center flex-items-center">
+                            <div class="d-flex flex-lg-row flex-lg-wrap flex-justify-center flex-items-center">
+                                <span
+                                    class="d-flex js-yearly-cost flex-items-center f1-mktg color-fg-subtle mr-2 no-wrap">
+                                    <sup class="f0 color-fg-subtle v-align-middle mr-1">$</sup>
+                                    <span class="diagonal_line_through" data-plan="business">{{.Before}}</span>
+                                </span>
+                                <span class="d-flex flex-items-center f0-mktg text-normal mr-2 no-wrap">
+                                    <sup class="f1 color-fg-muted v-align-middle mr-1">$</sup>
+                                    <span class="js-computed-value" data-plan="business">{{.YearlyCost}}</span>
+                                </span>
+                            </div>
+                            <span class="text-normal text-center f6-mktg color-fg-muted">
+                                <span>
+                                    per year
+                                </span>
                             </span>
-                            <span class="d-lg-block no-wrap">
-                                forever
-                            </span>
-                        </span>
-                    </div>
+                        </div>
+                    </h3>
                 </h3>
             </div>
-            <div class="mt-2">
-                <a class="btn-mktg d-block btn-muted-mktg"
-                    data-analytics-event="{&quot;category&quot;:&quot;Sign up&quot;,&quot;action&quot;:&quot;click to sign up for account&quot;,&quot;label&quot;:&quot;ref_page:/pricing;ref_cta:Join for free;ref_loc:cards&quot;}"
-                    href="/join?plan=free&amp;ref_cta=Join%2520for%2520free&amp;ref_loc=cards&amp;ref_page=%2Fpricing&amp;source=pricing-card-free"
-                    test_selector="plan-input-free">
-                    Join for free
-                </a>
-            </div>
+
         </div>
     </div>
 </div>
