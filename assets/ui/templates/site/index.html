@@ -1,68 +1,32 @@
+{{$ctx := .}}
+
 {{define "_content"}}
 
 <div class="container-xl">
     <div class="container-md" style="padding: 67px 0 200px;">
         <div class="repoOverviews">
-            <div class="repoOverview">
-                <div class="coverage-low trend trend-default">
-                    <div class="repo-sparkline sparkline-no-circles" data-branch="master"
-                        data-graph-data="[[0,87.95180722891567,3284079],[1,87.91208791208791,3284547],[2,77.27272727272727,8889604],[3,77.27272727272727,10017586],[4,77.27272727272727,10020126],[5,77.27272727272727,20362380]]">
-                        <svg class="d3-chart" width="1613" height="240">
-                            <path class="area"
-                                d="M0,18.92881824464405L322.6,19.68065797367811L645.2,221.07118175535592L967.8,221.07118175535592L1290.4,221.07118175535592L1613,221.07118175535592L1613,240L1290.4,240L967.8,240L645.2,240L322.6,240L0,240Z">
-                            </path>
-                        </svg>
-                    </div>
-                    <a class="infobox" href="/builds/" onmouseout="$('.infobox').hide();" style="display:none;">
-                        <span>
-                            Build:
-                            <i class="fa fa-arrow-circle-right"></i>
-                        </span>
-                    </a>
-                </div>
-                <div class="coverage-low trend trend-line">
-                    <div class="repo-sparkline repo-default-line" data-branch="emptyfiles" data-graph-data="[]">
-                        <svg class="d3-chart" width="1613" height="240">
-                            <path class="line"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="repoChartInfo">
-                    <h1>
-                        <a href="/github/gernest">vince.io</a>
-                        <div class="coverage-text-wrapper">
-                            <div class="coverage-low coverageText repo-coverage-outline">
-                                77k
-                            </div>
-                        </div>
-                    </h1>
-                </div>
-                <div class="repo-overview-footer-wrapper">
-                    <div class="coverage-low trend-line-footer">
-                        <div class="branch-label">
-                            <div class="prefix">
-                                <div class="prefix-line"></div>
-                                <div class="prefix-circle"></div>
-                            </div>
-                            <em>
-                                LAST BUILD BRANCH:
-                                <span>emptyfiles</span>
-                            </em>
-                        </div>
-                        <div class="branch-label">
-                            <div class="prefix">
-                                <div class="prefix-square"></div>
-                            </div>
-                            <em>
-                                DEFAULT BRANCH:
-                                <span>master</span>
-                            </em>
-                        </div>
-                    </div>
+            {{range .SitesOverview}}
+            {{template "single_site" .}}
+            {{end}}
+        </div>
+    </div>
+</div>
+{{end}}
 
+{{define "single_site"}}
+<div class="repoOverview">
+    <div class="coverage-low trend trend-default">
+        {{.SparkLine}}
+    </div>
+    <div class="repoChartInfo">
+        <h1>
+            <a href="/{{.Site.Domain}}/stats">{{.Site.Domain}}</a>
+            <div class="coverage-text-wrapper">
+                <div class="coverage-high coverageText">
+                    77k views
                 </div>
             </div>
-        </div>
+        </h1>
     </div>
 </div>
 {{end}}

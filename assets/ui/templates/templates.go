@@ -161,6 +161,7 @@ type Context struct {
 	ModTime       time.Time
 	Site          *models.Site
 	IsFIrstSite   bool
+	SitesOverview []models.SiteOverView
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {

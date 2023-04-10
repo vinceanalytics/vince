@@ -30301,6 +30301,46 @@ li.contribution .num {
   font-size: 14px;
 }
 
+.coverage-unknown {
+  background-color: #999;
+}
+
+.coverage-unknown.coverageText {
+  color: #999;
+}
+
+.coverage-high {
+  background-color: #5f9744;
+}
+
+.coverage-high.coverageText {
+  color: #5f9744;
+}
+
+.coverage-medium {
+  background-color: #F89406;
+}
+
+.coverage-medium.coverageText {
+  color: #F89406;
+}
+
+.coverage-low {
+  background-color: #b94947;
+}
+
+.coverage-low.coverageText {
+  color: #b94947;
+}
+
+.negative {
+  color: #b94947;
+}
+
+.positive {
+  color: #5f9744;
+}
+
 .repoChartInfo {
   width: 100%;
 }
