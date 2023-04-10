@@ -3,7 +3,7 @@ package gate
 import (
 	"context"
 
-	"github.com/gernest/vince/limit"
+	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/timeseries"
 )
 
@@ -12,7 +12,7 @@ import (
 //
 // This applies rate limits configured per site/domain
 func Check(ctx context.Context, domain string) (*timeseries.Buffer, bool) {
-	uid, sid, ok := limit.SITES.Allow(domain)
+	uid, sid, ok := caches.AllowSite(ctx, domain)
 	if !ok {
 		return nil, false
 	}

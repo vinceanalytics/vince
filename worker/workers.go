@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/health"
-	"github.com/gernest/vince/limit"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/system"
@@ -25,11 +25,11 @@ func UpdateCacheSites(ctx context.Context, wg *sync.WaitGroup, exit func()) *hea
 type cacheUpdater struct {
 }
 
-func doSiteCacheUpdate(ctx context.Context) {
+func doSiteCacheUpdate(ctx context.Context, fn func(*models.CachedSite)) {
 	start := time.Now()
 	defer system.SiteCacheDuration.UpdateDuration(start)
 	system.SitesInCache.Set(
-		models.QuerySitesToCache(ctx, limit.API.Set),
+		models.QuerySitesToCache(ctx, fn),
 	)
 }
 
@@ -37,11 +37,12 @@ func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingCh
 	log.Get(ctx).Debug().Str("worker", "sites_to_domain_cache").
 		Msg("started")
 	defer wg.Done()
-	interval := config.Get(ctx).Intervals.SitesByDomainCacheRefreshInterval
+	interval := config.Get(ctx).Intervals.SitesByDomainCacheRefreshInterval.AsDuration()
 	// On startup , fill the cache first before the next interval. Ensures we are
 	// operational  on the get go.
-	doSiteCacheUpdate(ctx)
-	tick := time.NewTicker(interval.AsDuration())
+	setSite := caches.SetSite(ctx, interval)
+	doSiteCacheUpdate(ctx, setSite)
+	tick := time.NewTicker(interval)
 	defer tick.Stop()
 	for {
 		select {
@@ -50,7 +51,7 @@ func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingCh
 		case pong := <-ch:
 			pong()
 		case <-tick.C:
-			doSiteCacheUpdate(ctx)
+			doSiteCacheUpdate(ctx, setSite)
 		}
 	}
 }
@@ -145,6 +146,7 @@ func mergeTs(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exi
 		}
 	}
 }
+
 func CollectSYstemMetrics(ctx context.Context, wg *sync.WaitGroup, exit func()) *health.Ping {
 	wg.Add(1)
 	h := health.NewPing("system_metrics_collector")

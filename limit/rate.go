@@ -45,4 +45,3 @@ func (l *Limit) Set(m *models.CachedSite) {
 }
 
 var API = &Limit{m: &sync.Map{}}
-var SITES = &Limit{m: &sync.Map{}}
