@@ -8,6 +8,37 @@
             <h2 class="h6-mktg mb-3">Billing is Yearly</h2>
         </div>
 
+        <div></div>
+        <div class="container-md">
+            <div class="rounded-3 px-2 pt-5 pb-2 ">
+                <ul class="d-lg-block flex-auto list-style-none text-left rounded-bottom-3 px-3 py-2">
+                    <li>
+                        <span class="px-2">{{.Icon "check" 24 "color-fg-success"}}</span>
+                        <span style="font-family: var(--font-heavy-italic);font-size: var( --type-large);">
+                            50 websites
+                        </span>
+                    </li>
+                    <li>
+                        <span class="px-2">{{.Icon "check" 24 "color-fg-success"}}</span>
+                        <span style="font-family: var(--font-heavy-italic);font-size: var( --type-large);">
+                            Unlimited team members
+                        </span>
+                    </li>
+                    <li>
+                        <span class="px-2">{{.Icon "check" 24 "color-fg-success"}}</span>
+                        <span style="font-family: var(--font-heavy-italic);font-size: var( --type-large);">
+                            Unlimited data retention
+                        </span>
+                    </li>
+                    <li>
+                        <span class="px-2">{{.Icon "check" 24 "color-fg-success"}}</span>
+                        <span style="font-family: var(--font-heavy-italic);font-size: var( --type-large);">
+                            Email reports
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <div class="position-relative">
@@ -53,7 +84,7 @@
                                     <summary class="position-relative list-style-none pl-4 py-4">
                                         <h3
                                             class="d-inline-block v-align-top mt-n1 col-11 ml-1 ml-lg-6 mb-0 f3-mktg text-semibold color-fg-default">
-                                            Why my billing is yearly?
+                                            Why your billing is yearly?
                                         </h3>
                                     </summary>
                                     <div
@@ -126,8 +157,7 @@
 
 
 {{define "price_slot"}}
-<div class="height-full position-relative rounded-3 px-2 pt-5 pb-2 js-pricing-plan" data-min-seats="1"
-    data-max-seats="4">
+<div class="height-full position-relative rounded-3 px-2 pt-5 pb-2 ">
     <div
         class="d-md-flex flex-column flex-justify-between height-full rounded-3 color-shadow-extra-large color-bg-default">
         <div class="px-3 pt-4 pb-3">
@@ -135,9 +165,8 @@
                 <span class="mb-2 h5-mktg">{{.Format}}</span><span class="color-fg-muted lh-condensed mb-2"> data points
                     </p>
             </div>
-            <div class="js-yearly-cost tooltipped-n tooltipped-multiline tooltipped-no-delay "
-                aria-label="Prices in local currency will change as the exchange rate fluctuates and are provided as a convenience. The actual charge will be USD $0 per user/month."
-                data-plan="free">
+            <div
+                aria-label="Prices are all in USD and billed per year. The actual charge will be USD ${{.YearlyCost}} per year.">
                 <h3 class="mb-0">
                     <h3 class="mb-0">
                         <div
@@ -145,7 +174,7 @@
                             <div class="d-flex flex-lg-row flex-lg-wrap flex-justify-center flex-items-center">
                                 <span class="d-flex flex-items-center f0-mktg text-normal mr-2 no-wrap">
                                     <sup class="f3 color-fg-muted v-align-middle mr-1">$</sup>
-                                    <span class="js-computed-value" data-plan="business">{{.MonthlyCost}}</span>
+                                    <span>{{.MonthlyCost}}</span>
                                 </span>
                             </div>
                             <span class="text-normal text-center f6-mktg color-fg-muted">
@@ -157,14 +186,13 @@
                         <div
                             class="d-flex flex-lg-column flex-lg-wrap flex-xl-nowrap flex-justify-center flex-items-center">
                             <div class="d-flex flex-lg-row flex-lg-wrap flex-justify-center flex-items-center">
-                                <span
-                                    class="d-flex js-yearly-cost flex-items-center f1-mktg color-fg-subtle mr-2 no-wrap">
+                                <span class="d-flex  flex-items-center f1-mktg color-fg-subtle mr-2 no-wrap">
                                     <sup class="f0 color-fg-subtle v-align-middle mr-1">$</sup>
                                     <span class="diagonal_line_through" data-plan="business">{{.Before}}</span>
                                 </span>
                                 <span class="d-flex flex-items-center f0-mktg text-normal mr-2 no-wrap">
                                     <sup class="f1 color-fg-muted v-align-middle mr-1">$</sup>
-                                    <span class="js-computed-value" data-plan="business">{{.YearlyCost}}</span>
+                                    <span>{{.YearlyCost}}</span>
                                 </span>
                             </div>
                             <span class="text-normal text-center f6-mktg color-fg-muted">
