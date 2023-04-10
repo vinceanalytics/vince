@@ -12,6 +12,5 @@ geoip/*.zstd
 loadgen
 tmp
 vince
-*.png
 dist/
 *.zip

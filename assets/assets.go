@@ -9,11 +9,21 @@ import (
 	"github.com/gernest/vince/plug"
 )
 
+var files = map[string]bool{
+	"/android-chrome-192x192.png": true,
+	"/favicon-32x32.png":          true,
+	"/android-chrome-512x512.png": true,
+	"/favicon.ico":                true,
+	"/apple-touch-icon.png":       true,
+	"/site.webmanifest":           true,
+	"/favicon-16x16.png":          true,
+	"robots.txt":                  true,
+}
+
 func match(path string) bool {
-	return path == "robots.txt" || path == "favicon.ico" ||
-		strings.HasPrefix(path, "/css") ||
+	return strings.HasPrefix(path, "/css") ||
 		strings.HasPrefix(path, "/js") ||
-		strings.HasPrefix(path, "/fonts")
+		strings.HasPrefix(path, "/fonts") || files[path]
 }
 
 func Plug() plug.Plug {
