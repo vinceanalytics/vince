@@ -13,6 +13,7 @@ func AddSnippet(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user := models.GetUser(ctx)
 	site := models.GetSite(ctx)
+	site.Preload(ctx, "CustomDomain")
 	isFirst := !models.Exists(ctx, func(db *gorm.DB) *gorm.DB {
 		return db.Model(&models.SiteMembership{}).
 			Where("site_id", site.ID).

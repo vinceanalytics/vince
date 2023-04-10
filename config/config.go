@@ -52,6 +52,7 @@ func Flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    "url",
 			Usage:   "url for the server on which vince is hosted(it shows up on emails)",
+			Value:   "vinceanalytics.com",
 			EnvVars: []string{"VINCE_URL"},
 		},
 		&cli.BoolFlag{

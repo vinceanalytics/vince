@@ -17489,7 +17489,9 @@ a.tabnav-extra:hover {
   white-space: nowrap;
 }
 
-.UnderlineNav-item:focus, .UnderlineNav-item:focus-visible, .UnderlineNav-item:hover {
+.UnderlineNav-item:focus,
+.UnderlineNav-item:focus-visible,
+.UnderlineNav-item:hover {
   border-bottom-color: var(--color-neutral-muted);
   color: var(--color-fg-default);
   outline-offset: -2px;
@@ -17524,7 +17526,9 @@ a.tabnav-extra:hover {
     transition: background 0.12s ease-out;
   }
 }
-.UnderlineNav-item.selected, .UnderlineNav-item[aria-current]:not([aria-current=false]), .UnderlineNav-item[role=tab][aria-selected=true] {
+.UnderlineNav-item.selected,
+.UnderlineNav-item[aria-current]:not([aria-current=false]),
+.UnderlineNav-item[role=tab][aria-selected=true] {
   border-bottom-color: var(--color-primer-border-active);
   color: var(--color-fg-default);
   font-weight: var(--base-text-weight-semibold, 600);
@@ -31094,4 +31098,8 @@ body {
   border-bottom-style: solid;
   border-bottom-width: 3px;
   transform: skewY(45deg);
+}
+
+.hide {
+  display: none;
 }

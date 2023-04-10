@@ -306,3 +306,12 @@ func (t *Context) Format(n uint64) string {
 func (t *Context) Plans() []plans.Plan {
 	return plans.All
 }
+
+func (t *Context) Snippet() template.HTML {
+	track := fmt.Sprintf("https://%s/js/script.js", t.Config.Url)
+	if t.Site.CustomDomain != nil {
+		track = fmt.Sprintf("https://%s/js/index.js", t.Site.CustomDomain.Domain)
+	}
+	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", t.Site.Domain, track)
+	return template.HTML(src)
+}

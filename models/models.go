@@ -106,14 +106,25 @@ type Site struct {
 	SentWeeklyReports  []*SentWeeklyReport
 	SentMonthlyReports []*SentMonthlyReport
 
-	WeeklyReport      WeeklyReport
-	MonthlyReports    MonthlyReport
-	GoogleAuth        GoogleAuth        `gorm:"constraint:OnDelete:CASCADE;"`
-	CustomDomain      CustomDomain      `gorm:"constraint:OnDelete:CASCADE;"`
+	WeeklyReport      *WeeklyReport
+	MonthlyReports    *MonthlyReport
+	GoogleAuth        *GoogleAuth       `gorm:"constraint:OnDelete:CASCADE;"`
+	CustomDomain      *CustomDomain     `gorm:"constraint:OnDelete:CASCADE;"`
 	SpikeNotification SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
 
 	Invitations []*Invitation `gorm:"constraint:OnDelete:CASCADE;"`
 	SharedLinks []*SharedLink
+}
+
+func (u *Site) Preload(ctx context.Context, preload ...string) {
+	db := Get(ctx)
+	for _, p := range preload {
+		db = db.Preload(p)
+	}
+	err := db.First(u).Error
+	if err != nil {
+		DBE(ctx, err, "failed to preload for Site model "+strings.Join(preload, ","))
+	}
 }
 
 var domainRe = regexp.MustCompile(`(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`)

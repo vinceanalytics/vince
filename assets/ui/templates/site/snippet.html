@@ -1,1 +1,34 @@
-Placeholder
+{{define "_content"}}
+<div class="container-xl">
+    <div class="container-md" style="padding: 67px 0 200px;">
+        <div class="auth-form px-3">
+            <div class="auth-form-header p0">
+                Add JavaScript snippet
+            </div>
+            <div class="auth-form-body mt3">
+                <form action="/{{.Site.Domain}}/stats" method="get">
+                    <label for="snippet_code">
+                        Paste this snippet in the <code>&lt;head&gt;</code> of your website.
+                    </label>
+                    <div class="position-relative">
+                        <textarea class="form-control input-block text-xs" disabled="disabled" name="snippet_code"
+                            id="snippet_code" readonly="readonly" rows="3">
+                            {{- .Snippet -}}
+                        </textarea>
+                        <span class="position-absolute top-0 right-0" style="cursor: pointer;">
+                            <clipboard-copy for="snippet_code" aria-label="Copy snippet to clipboard"
+                                data-view-component="true" tabindex="0" role="button">
+                                {{.Icon "copy" 16 }}
+                                {{.Icon "check" 16 "hide"}}
+                            </clipboard-copy>
+                        </span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Start collecting data →
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
