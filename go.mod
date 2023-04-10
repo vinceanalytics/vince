@@ -29,7 +29,7 @@ require (
 	github.com/rs/zerolog v1.21.0
 	github.com/segmentio/parquet-go v0.0.0-20230404173032-05ed5ed000b1
 	github.com/urfave/cli/v2 v2.23.7
-	github.com/wcharczuk/go-chart v2.0.1+incompatible
+	github.com/wcharczuk/go-chart/v2 v2.1.0
 	golang.org/x/crypto v0.1.0
 	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
 	golang.org/x/net v0.7.0
@@ -43,7 +43,6 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.3 // indirect
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
-	github.com/blend/go-sdk v1.20220411.3 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
