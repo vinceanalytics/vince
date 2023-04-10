@@ -75,7 +75,6 @@ func Flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    "backup-dir",
 			Usage:   "directory where backups are stored",
-			Value:   "info",
 			EnvVars: []string{"VINCE_BACKUP_DIR"},
 		},
 		&cli.IntFlag{
@@ -87,21 +86,25 @@ func Flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    "mailer-address",
 			Usage:   "email address used for the sender of outgoing emails ",
+			Value:   "vince@mailhog.example",
 			EnvVars: []string{"VINCE_MAILER_ADDRESS"},
 		},
 		&cli.StringFlag{
 			Name:    "mailer-address-name",
 			Usage:   "email address name  used for the sender of outgoing emails ",
+			Value:   "gernest from vince analytics",
 			EnvVars: []string{"VINCE_MAILER_ADDRESS_NAME"},
 		},
 		&cli.StringFlag{
 			Name:    "mailer-smtp-host",
 			Usage:   "host address of the smtp server used for outgoing emails",
+			Value:   "localhost",
 			EnvVars: []string{"VINCE_MAILER_SMTP_HOST"},
 		},
 		&cli.IntFlag{
 			Name:    "mailer-smtp-port",
 			Usage:   "port address of the smtp server used for outgoing emails",
+			Value:   1025,
 			EnvVars: []string{"VINCE_MAILER_SMTP_PORT"},
 		},
 		&cli.StringFlag{
@@ -195,12 +198,12 @@ func Flags() []cli.Flag {
 		&cli.PathFlag{
 			Name:    "secret-ed-priv",
 			Usage:   "path to a file with  ed25519 private key",
-			EnvVars: []string{"VINCE_SECRET_ED25519_private"},
+			EnvVars: []string{"VINCE_SECRET_ED25519_PRIVATE"},
 		},
 		&cli.PathFlag{
 			Name:    "secret-ed-pub",
 			Usage:   "path to a file with  ed25519 public key",
-			EnvVars: []string{"VINCE_SECRET_ED25519_public"},
+			EnvVars: []string{"VINCE_SECRET_ED25519_PUBLIC"},
 		},
 	}
 }
@@ -209,9 +212,12 @@ func Load(ctx *cli.Context) (*Config, error) {
 	base := fromCli(ctx)
 	conf, err := fromFile(ctx)
 	if err != nil {
-		return nil, err
+		if !os.IsNotExist(err) {
+			return nil, err
+		}
+	} else {
+		proto.Merge(base, conf)
 	}
-	proto.Merge(base, conf)
 	return base, setupSecrets(base)
 }
 

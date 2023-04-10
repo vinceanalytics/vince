@@ -47,10 +47,36 @@ func SecretsCMD() *cli.Command {
 				return err
 			}
 			var o bytes.Buffer
-			fmt.Fprintf(&o, "export  VINCE_SECRET_BASE=%q\n", basePath)
-			fmt.Fprintf(&o, "export  VINCE_SECRET_ED25519_private=%q\n", priv)
-			fmt.Fprintf(&o, "export  VINCE_SECRET_ED25519_public=%q\n", pub)
-			fmt.Fprintf(&o, "export  VINCE_SECRET_SESSION=%q\n", cookiePath)
+			for _, f := range Flags() {
+				switch e := f.(type) {
+				case *cli.PathFlag:
+					fmt.Fprintf(&o, "# %s\n", e.Usage)
+					switch e.EnvVars[0] {
+					case "VINCE_SECRET_BASE":
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], basePath)
+					case "VINCE_SECRET_ED25519_PRIVATE":
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], priv)
+					case "VINCE_SECRET_ED25519_PUBLIC":
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], pub)
+					case "VINCE_SECRET_SESSION":
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], cookiePath)
+					default:
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], e.Value)
+					}
+				case *cli.StringFlag:
+					fmt.Fprintf(&o, "# %s\n", e.Usage)
+					fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], e.Value)
+				case *cli.IntFlag:
+					fmt.Fprintf(&o, "# %s\n", e.Usage)
+					fmt.Fprintf(&o, "export  %s=%d\n", e.EnvVars[0], e.Value)
+				case *cli.DurationFlag:
+					fmt.Fprintf(&o, "# %s\n", e.Usage)
+					fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], e.Value)
+				case *cli.BoolFlag:
+					fmt.Fprintf(&o, "# %s\n", e.Usage)
+					fmt.Fprintf(&o, "export  %s=%v\n", e.EnvVars[0], e.Value)
+				}
+			}
 			return os.WriteFile(filepath.Join(path, "secrets"), o.Bytes(), 0600)
 		},
 	}
