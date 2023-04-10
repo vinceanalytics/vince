@@ -11,7 +11,6 @@ import (
 	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/avatar"
 	"github.com/gernest/vince/billing"
-	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/pages"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/render"
@@ -29,7 +28,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	pipe5 := append(plug.Browser(ctx), plug.Protect()...)
 	sitePipe := pipe5.And(plug.RequireAccount, plug.AuthorizedSiteAccess("owner", "admin", "super_admin"))
 	return plug.Pipeline{
-		Load(config.Get(ctx)),
 		// add prefix matches on the top of the pipeline for faster lookups
 		pipe5.Prefix("/debug/pprof/", pprof.Index),
 
@@ -220,17 +218,4 @@ func NotFound(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(r.Context(), w, http.StatusNotFound)
 	})
-}
-
-func Load(cfg *config.Config) plug.Plug {
-	load := cfg.Env == config.Config_load
-	return func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if load && r.Method == http.MethodPost && r.URL.Path == "/api/event" {
-				api.Events(w, r)
-				return
-			}
-			h.ServeHTTP(w, r)
-		})
-	}
 }

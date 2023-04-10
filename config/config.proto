@@ -67,7 +67,6 @@ message Config {
     dev = 0;
     stagging = 1;
     prod = 2;
-    load = 3;
   }
 
   enum LogLevel {
