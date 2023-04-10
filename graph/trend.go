@@ -5,17 +5,14 @@ import (
 	"html/template"
 	"io"
 	"strings"
-	"time"
 
-	"github.com/gernest/vince/timex"
 	"github.com/wcharczuk/go-chart/v2"
 )
 
-func Trend(width, height int, ts time.Time, series []float64, w io.Writer) error {
-	x := make([]time.Time, len(series))
-	ts = ts.AddDate(0, 0, -len(x))
+func Trend(width, height int, series []float64, w io.Writer) error {
+	x := make([]float64, len(series))
 	for i := range x {
-		x[i] = ts.AddDate(0, 0, i)
+		x[i] = float64(i)
 	}
 	graph := chart.Chart{
 		Width:  width,
@@ -23,15 +20,13 @@ func Trend(width, height int, ts time.Time, series []float64, w io.Writer) error
 		XAxis:  chart.HideXAxis(),
 		YAxis:  chart.HideYAxis(),
 		Series: []chart.Series{
-			&SparkLine{
-				TimeSeries: chart.TimeSeries{
-					Style: chart.Style{
-						StrokeColor: TrendStroke,
-						FillColor:   TrendFill,
-					},
-					XValues: x,
-					YValues: series,
+			chart.ContinuousSeries{
+				Style: chart.Style{
+					StrokeColor: TrendStroke,
+					FillColor:   TrendFill,
 				},
+				XValues: x,
+				YValues: series,
 			},
 		},
 	}
@@ -40,7 +35,7 @@ func Trend(width, height int, ts time.Time, series []float64, w io.Writer) error
 
 func SiteTrend() template.HTML {
 	var b bytes.Buffer
-	err := Trend(1613, 240, timex.Today(), []float64{1.0, 10.0, 8.0, 4.0, 5.0}, &b)
+	err := Trend(1613, 240, []float64{1.0, 10.0, 8.0, 4.0, 5.0}, &b)
 	if err != nil {
 		return ""
 	}
