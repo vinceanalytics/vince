@@ -23,19 +23,14 @@ func UpdateCacheSites(ctx context.Context, wg *sync.WaitGroup, exit func()) *hea
 }
 
 type cacheUpdater struct {
-	sites []*models.CachedSite
 }
 
-// Do updates the cache with new *models.CachedSite entries
-func (c *cacheUpdater) Do(ctx context.Context) {
+func doSiteCacheUpdate(ctx context.Context) {
 	start := time.Now()
 	defer system.SiteCacheDuration.UpdateDuration(start)
-	c.sites = c.sites[:0]
-	models.QuerySitesToCache(ctx, &c.sites)
-	system.SitesInCache.Set(float64(len(c.sites)))
-	for _, s := range c.sites {
-		limit.SITES.Set(s)
-	}
+	system.SitesInCache.Set(
+		models.QuerySitesToCache(ctx, limit.API.Set),
+	)
 }
 
 func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
@@ -43,12 +38,9 @@ func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingCh
 		Msg("started")
 	defer wg.Done()
 	interval := config.Get(ctx).Intervals.SitesByDomainCacheRefreshInterval
-	work := &cacheUpdater{
-		sites: make([]*models.CachedSite, 0, 4098),
-	}
 	// On startup , fill the cache first before the next interval. Ensures we are
 	// operational  on the get go.
-	work.Do(ctx)
+	doSiteCacheUpdate(ctx)
 	tick := time.NewTicker(interval.AsDuration())
 	defer tick.Stop()
 	for {
@@ -58,7 +50,7 @@ func updateCachedSites(ctx context.Context, wg *sync.WaitGroup, ch health.PingCh
 		case pong := <-ch:
 			pong()
 		case <-tick.C:
-			work.Do(ctx)
+			doSiteCacheUpdate(ctx)
 		}
 	}
 }

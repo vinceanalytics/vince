@@ -12,10 +12,9 @@ import (
 //
 // This applies rate limits configured per site/domain
 func Check(ctx context.Context, domain string) (*timeseries.Buffer, bool) {
-	x, ok := limit.SITES.Allow(domain)
+	uid, sid, ok := limit.SITES.Allow(domain)
 	if !ok {
 		return nil, false
 	}
-	return timeseries.GetMap(ctx).Get(ctx,
-		x.UserID, x.ID), true
+	return timeseries.GetMap(ctx).Get(ctx, uid, sid), true
 }

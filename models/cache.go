@@ -21,11 +21,20 @@ func (c *CachedSite) RateLimit() (rate.Limit, int) {
 	return rate.Limit(events / per.Seconds()), 10
 }
 
-func QuerySitesToCache(ctx context.Context, results *[]*CachedSite) {
-	err := Get(ctx).Model(&Site{}).Select("sites.id, sites.domain, sites.ingest_rate_limit_scale_seconds,sites.ingest_rate_limit_threshold,site_memberships.user_id").
+func QuerySitesToCache(ctx context.Context, fn func(*CachedSite)) (count float64) {
+	db := Get(ctx)
+	rows, err := db.Model(&Site{}).Select("sites.id, sites.domain, sites.ingest_rate_limit_scale_seconds,sites.ingest_rate_limit_threshold,site_memberships.user_id").
 		Joins("left join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' ").
-		Scan(results).Error
+		Rows()
 	if err != nil {
 		DBE(ctx, err, "failed getting sites to cache")
+	} else {
+		var site CachedSite
+		for rows.Next() {
+			db.ScanRows(rows, &site)
+			fn(&site)
+			count += 1
+		}
 	}
+	return
 }

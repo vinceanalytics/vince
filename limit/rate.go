@@ -8,21 +8,22 @@ import (
 )
 
 type siteRate struct {
-	cached *models.CachedSite
-	rate   *rate.Limiter
+	sid  uint64
+	uid  uint64
+	rate *rate.Limiter
 }
 
 type Limit struct {
 	m *sync.Map
 }
 
-func (l *Limit) Allow(domain string) (*models.CachedSite, bool) {
+func (l *Limit) Allow(domain string) (uid, sid uint64, ok bool) {
 	x, ok := l.m.Load(domain)
 	if !ok {
-		return nil, false
+		return
 	}
 	v := x.(*siteRate)
-	return v.cached, v.rate.Allow()
+	return v.uid, v.sid, v.rate.Allow()
 }
 
 func (l *Limit) AllowID(id uint64, by rate.Limit, burst int) bool {
@@ -37,8 +38,9 @@ func (l *Limit) AllowID(id uint64, by rate.Limit, burst int) bool {
 
 func (l *Limit) Set(m *models.CachedSite) {
 	l.m.Store(m.Domain, &siteRate{
-		cached: m,
-		rate:   rate.NewLimiter(m.RateLimit()),
+		sid:  m.ID,
+		uid:  m.UserID,
+		rate: rate.NewLimiter(m.RateLimit()),
 	})
 }
 
