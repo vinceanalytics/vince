@@ -40,7 +40,6 @@ message Entry {
   bool is_bounce = 30;
   int64 duration = 31;
   int64 start = 32;
-  bool is_session = 33;
 }
 
 enum PROPS {
