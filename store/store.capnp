@@ -12,9 +12,15 @@ struct Calendar{
 }
 
 struct Sum{
+    # events metrics 
     visitors @0 :Float64;
-    visits @1 :Float64;
-    views @2 :Float64;
-    events @3 :Float64; 
+    views @1 :Float64;
+    events @2 :Float64; 
+
+    # session metrics 
+    visits @3 :Float64;
+    bounceRate @4 :Float64;
+    visitDuration @5 :Float64;
+    viewsPerVisit @6 :Float64;
 }
 

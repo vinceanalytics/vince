@@ -172,12 +172,12 @@ type Sum capnp.Struct
 const Sum_TypeID = 0xb5b7b963d0a9b4d4
 
 func NewSum(s *capnp.Segment) (Sum, error) {
-	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 32, PointerCount: 0})
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 56, PointerCount: 0})
 	return Sum(st), err
 }
 
 func NewRootSum(s *capnp.Segment) (Sum, error) {
-	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 32, PointerCount: 0})
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 56, PointerCount: 0})
 	return Sum(st), err
 }
 
@@ -221,28 +221,52 @@ func (s Sum) SetVisitors(v float64) {
 	capnp.Struct(s).SetUint64(0, math.Float64bits(v))
 }
 
-func (s Sum) Visits() float64 {
+func (s Sum) Views() float64 {
 	return math.Float64frombits(capnp.Struct(s).Uint64(8))
 }
 
-func (s Sum) SetVisits(v float64) {
+func (s Sum) SetViews(v float64) {
 	capnp.Struct(s).SetUint64(8, math.Float64bits(v))
 }
 
-func (s Sum) Views() float64 {
+func (s Sum) Events() float64 {
 	return math.Float64frombits(capnp.Struct(s).Uint64(16))
 }
 
-func (s Sum) SetViews(v float64) {
+func (s Sum) SetEvents(v float64) {
 	capnp.Struct(s).SetUint64(16, math.Float64bits(v))
 }
 
-func (s Sum) Events() float64 {
+func (s Sum) Visits() float64 {
 	return math.Float64frombits(capnp.Struct(s).Uint64(24))
 }
 
-func (s Sum) SetEvents(v float64) {
+func (s Sum) SetVisits(v float64) {
 	capnp.Struct(s).SetUint64(24, math.Float64bits(v))
+}
+
+func (s Sum) BounceRate() float64 {
+	return math.Float64frombits(capnp.Struct(s).Uint64(32))
+}
+
+func (s Sum) SetBounceRate(v float64) {
+	capnp.Struct(s).SetUint64(32, math.Float64bits(v))
+}
+
+func (s Sum) VisitDuration() float64 {
+	return math.Float64frombits(capnp.Struct(s).Uint64(40))
+}
+
+func (s Sum) SetVisitDuration(v float64) {
+	capnp.Struct(s).SetUint64(40, math.Float64bits(v))
+}
+
+func (s Sum) ViewsPerVisit() float64 {
+	return math.Float64frombits(capnp.Struct(s).Uint64(48))
+}
+
+func (s Sum) SetViewsPerVisit(v float64) {
+	capnp.Struct(s).SetUint64(48, math.Float64bits(v))
 }
 
 // Sum_List is a list of Sum.
@@ -250,7 +274,7 @@ type Sum_List = capnp.StructList[Sum]
 
 // NewSum creates a new list of Sum.
 func NewSum_List(s *capnp.Segment, sz int32) (Sum_List, error) {
-	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 32, PointerCount: 0}, sz)
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 56, PointerCount: 0}, sz)
 	return capnp.StructList[Sum](l), err
 }
 
@@ -262,26 +286,32 @@ func (f Sum_Future) Struct() (Sum, error) {
 	return Sum(p.Struct()), err
 }
 
-const schema_da1eebf4d7c0f83e = "x\xdat\xcf\xbdJ;A\x14\x05\xf0sf6\xff\x7f" +
-	"\x11\x0c\x99$\xa0\x95y\x02\x15-S\x18!\x9dU\x06" +
-	"_\xc0%Yp!\x1f\xeb\xee\x1a\x15|\x00\x1b!\x0f" +
-	" \x88`c+\x8aZ\x08\xb6\x16\x82\x85\"\x06\xacS" +
-	"X\x09\x0a\xb1Z\x99\x90\x8fM\xc0j\xe6\x9e{\x8a\xdf" +
-	"M\xbf\xafY\xcb3\xb3\x02B\xcf%\xfeE\xcf\x97\xe7" +
-	"O\x95\xdb\xeb+\xe8\x0c\xadh\xb5w\xff\xfa\xf51\xdf" +
-	"\x81\xf5\x1fP\x9f\x17\xea\xc7\xbc\xdf]0\xb2O\x1eJ" +
-	"\xaa}\xd7\x83\xcap\xdcK\x98b\xf6\x91\x9d\xec\x1b\xcd" +
-	"\xef\x85],DA\xd8\xf4\x9d\xa5 d\xd3w\x16+" +
-	"\xb6\xd7\xc8{\x85\x8d\x9dz\x99\xd4ii\x01\x16\x01e" +
-	"\xaf\x03zSR\xd7\x04\x15\x99\xa3\x09\xdd\x02\xa0\xab\x92" +
-	"\xda\x13TB\xe4(\x00U_\x01\xf4\x96\xa4\x0e\x05\x95" +
-	"\x949J@m\x9bfMR\xef\x09F-7p\xc3" +
-	"\xa6\x1f\x00`\x12\x82I\xb0\xd8\xcf\x82\xe1\x98o\xb9\xce" +
-	"\xeeh*:-\xa71^\x8e\xc0b\x08\xf6\x0a%\xbb" +
-	"\xe64\xaa\xd2\xf6\xffP\x1f\xc4\xd4\xfb\xc6\x12J\xeav" +
-	"L}d\xd4\x87\x92\xfa,\xa6>5\xcdcI}3" +
-	"\xa5N\x81e\xc9>(5\xc6O\xa6\x83\x1b\xa6\xaa\x83" +
-	"S&\xd3\xdf\x00\x00\x00\xff\xff\x18\xcfj\xce"
+const schema_da1eebf4d7c0f83e = "x\xda\\\x90\xbfk\x14Q\x14\x85\xcfywf\xb7\x08" +
+	"\x09\xbed@\x0bq\xff\x02\x7f\xc4r\x0b\x15be\xb5" +
+	"W\xc1\xc2\xcaq}\xc5\x82\xce,3\xb3\x1b\x04\xff\x00" +
+	"\x9b`\x1a\x0bA\x10\xc1\xc6V\x12\x8c``\x05\x85\x04" +
+	",\"\x04\xd4`)XX\x09\x0a\xb1\x1ayKvv" +
+	"\xb2\xdd\x9c\x8fo\xe0\xdd\xef\xc2<\xaf\x04\xcb\xf3'\x0d" +
+	"\x8c\x9e\x0a\x1b\xe5\xfe\xc6\xab\xbd\xee\xdb7\x9b\xd0E6" +
+	"\xcbK\x87\xa3/\x7f~\x9d9@\xd0\x04\xec\xef\xd7\xf6" +
+	"_\x13X\xfe\xfb\x98`\x19?\xdf]\xb1\xeb\xdb\x87\xb0" +
+	"\x8b\x9c\x8a\xa17\x97\xd6\xcc\xc1\xd2S\xe3\xbf\x9e\x98\x9f" +
+	"8[\xe6E\x9a\xb9\xf3y\xc14s\xe7\xbaq?i" +
+	"\xf5\xdb7\x06\xf7;\xa4\x9e\x96\x00\x08\x08\xd8\xcdk\x80" +
+	"n\x08udh\xc9\x88\x1en_\x04tK\xa8\x1f\x0c" +
+	"\xad1\x11\x0d`\xdf\xb7\x01}'\xd4\x1dC+\x12Q" +
+	"\x00\xfb\xd1\xc3\x91P?\x19\xda \x88\x18\x00v\xf7\x16" +
+	"\xa0;B\xdd7\xb4a\x181\x04\xec\xe7\x0c\xd0=\xa1" +
+	"~7\xb4\x8dF\xc4\x06`\xbfy\xf8U\xa8?\x0c\xcb" +
+	"a/\xef\x15i\x96\x03\xe0\x1c\x0c\xe7\xc0\xd6\xb0\xe7V" +
+	"\xf3\xc9\xba\xec\x86.)\xa6s\xfcC5\xcb;\xe9 " +
+	"\xe9\xba\xeb1\xa4p\x15\x1c;W\x07\x19Zq\xd1K" +
+	"\x93\x1aw\xaby\xc7eh\xdd\xf4F\xc5'\xd1\xcc$" +
+	"Z\xbf\xbd\x12\xdfs\xc9]\x893_\xeeDU.\xf6" +
+	"\xe5n\x0b\xf5a\xad\xdc\x03\xdf\xa3\x10\xeaz\xad\xdc\x9a" +
+	"\xcf\xf9H\xa8/k\xe5^x\xf3\x99P\xb7fN_" +
+	"\x00;\xc2\xf1\x83\x16\xa6G\x1e\xa7G]f\xd4\xa3<" +
+	"\xc7\xe9\xff\x00\x00\x00\xff\xff\xd2'\x8b\x1c"
 
 func RegisterSchema(reg *schemas.Registry) {
 	reg.Register(&schemas.Schema{
