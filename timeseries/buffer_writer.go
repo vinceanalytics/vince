@@ -77,14 +77,13 @@ func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
 		updated := s.Update(e)
 		updated.Sign = 1
 		s.Sign = -1
-		e.SessionId = updated.SessionId
-		b.entries = append(b.entries, updated, s, e)
+		b.entries = append(b.entries, updated, s)
 		persist(ctx, updated)
 		return
 	}
 	newSession := e.Session()
 	e.SessionId = newSession.SessionId
-	b.entries = append(b.entries, newSession, e)
+	b.entries = append(b.entries, newSession)
 	persist(ctx, newSession)
 }
 

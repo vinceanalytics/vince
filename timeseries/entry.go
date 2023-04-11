@@ -13,20 +13,18 @@ import (
 
 // Session creates a new session from entry
 func (e *Entry) Session() *Entry {
-	s := proto.Clone(e).(*Entry)
-	s.Sign = 1
-	s.IsSession = true
+	e.Sign = 1
 	session := uuid.New()
-	s.SessionId = xxhash.Sum64(session[:])
-	s.EntryPage = e.Pathname
-	s.ExitPage = e.Pathname
-	s.IsBounce = true
-	s.PageViews = 0
+	e.SessionId = xxhash.Sum64(session[:])
+	e.EntryPage = e.Pathname
+	e.ExitPage = e.Pathname
+	e.IsBounce = true
+	e.PageViews = 0
 	if e.Name == "pageview" {
-		s.PageViews = 1
+		e.PageViews = 1
 	}
-	s.Events = 1
-	return s
+	e.Events = 1
+	return e
 }
 
 func (e *Entry) Bounce() (n int32) {
@@ -83,29 +81,13 @@ func (e *Entries) List() EntryList {
 	return EntryList(e.Events)
 }
 
-func (ls EntryList) Count(u, s *roaring64.Bitmap) (visitors, visits, views, events float64) {
+func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *store.Sum) {
 	if len(ls) == 0 {
 		return
 	}
 	u.Clear()
 	s.Clear()
-	for _, e := range ls {
-		if e.IsSession {
-			if !s.Contains(e.SessionId) {
-				u.Add(e.SessionId)
-				visits += 1
-			}
-			continue
-		}
-		events += 1
-		if e.Name == "pageviews" {
-			views += 1
-		}
-		if !u.Contains(e.UserId) {
-			u.Add(e.UserId)
-			visitors += 1
-		}
-	}
+
 	return
 }
 
@@ -191,7 +173,7 @@ func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f 
 		}
 		if lastKey != currentKey {
 			// we have come across anew key, save the old key
-			sum.SetValues(e[start:i].Count(u, s))
+			e[start:i].Count(u, s, sum)
 			err := f(lastKey, sum)
 			if err != nil {
 				return err
@@ -201,7 +183,7 @@ func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f 
 		}
 	}
 	if start < len(e)-1 {
-		sum.SetValues(e[start:].Count(u, s))
+		e[start:].Count(u, s, sum)
 		return f(lastKey, sum)
 	}
 	return nil

@@ -44,7 +44,7 @@ func (g *Group) Reset() {
 
 func (g *Group) Save(el EntryList) {
 	g.Reset()
-	g.sum.SetValues(el.Count(g.u, g.s))
+	el.Count(g.u, g.s, &g.sum)
 }
 
 func (g *Group) Prop(el EntryList, by PROPS, f func(key string, sum *store.Sum) error) error {
