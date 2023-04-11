@@ -16,3 +16,7 @@ https://gfw.go101.org/generics/555-type-constraints-and-parameters.html
 * personal website
 
 https://bt.ht/
+
+* competitor
+
+https://pirsch.io/
