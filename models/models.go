@@ -189,13 +189,18 @@ func (s *Site) HasGoals(ctx context.Context) bool {
 	})
 }
 
-func (s *Site) IsMember(userId uint64) bool {
-	for _, m := range s.Users {
-		if m.ID == userId {
-			return true
-		}
+func SiteByDomain(ctx context.Context, domain string) *Site {
+	var s Site
+	err := Get(ctx).Model(&Site{}).Where("domain = ?", domain).First(&s).Error
+	if err != nil {
+		DBE(ctx, err, "failed to find site by domain")
+		return nil
 	}
-	return false
+	return &s
+}
+
+func (s *Site) IsMember(ctx context.Context, uid uint64) bool {
+	return Role(ctx, uid, s.ID) != ""
 }
 
 type CustomDomain struct {
@@ -245,6 +250,17 @@ type APIKey struct {
 	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
 	KeyPrefix             string `gorm:"not null"`
 	KeyHash               string `gorm:"not null"`
+}
+
+func KeyByHash(ctx context.Context, hash string) *APIKey {
+	var k APIKey
+	err := Get(ctx).Model(&APIKey{}).
+		Where("key_hash = ?", hash).First(&k).Error
+	if err != nil {
+		DBE(ctx, err, "failed to find key by hash")
+		return nil
+	}
+	return &k
 }
 
 func (ak *APIKey) RateLimit() (uint64, rate.Limit, int) {
@@ -306,7 +322,7 @@ func (sub *Subscription) GetEnterPrise(ctx context.Context) *EnterprisePlan {
 }
 
 func DBE(ctx context.Context, err error, msg string) {
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, sql.ErrNoRows) {
 		return
 	}
 	log.Get(ctx).Err(err).Msg(msg)

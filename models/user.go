@@ -209,3 +209,16 @@ func (u *User) Address() *mail.Address {
 		Address: u.Email,
 	}
 }
+
+func Role(ctx context.Context, uid, sid uint64) (role string) {
+	err := Get(ctx).Model(&SiteMembership{}).
+		Select("role").
+		Where("site_id = ?", sid).
+		Where("user_id = ?", uid).
+		Limit(1).
+		Row().Scan(&role)
+	if err != nil {
+		DBE(ctx, err, "failed to retrieve role membership")
+	}
+	return
+}
