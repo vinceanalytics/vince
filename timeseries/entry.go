@@ -129,7 +129,6 @@ func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *store.Sum) {
 	sum.SetVisits(float64(visits))
 	sum.SetViewsPerVisit(viewsPerVisit)
 	sum.SetVisitDuration(float64(visitDuration))
-
 }
 
 func (ls EntryList) Emit(f func(EntryList)) {
