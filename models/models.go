@@ -170,6 +170,25 @@ func CleanupDOmain(domain string) string {
 	return domain
 }
 
+func (s *Site) Owner(ctx context.Context) *User {
+	var u User
+	err := Get(ctx).Model(&User{}).
+		Joins("left join site_memberships on site_memberships.user_id = users.id").
+		Where("site_memberships.site_id = ?", s.ID).
+		Where("site_memberships.role = ?", "owner").First(&u).Error
+	if err != nil {
+		DBE(ctx, err, "failed to find site owner")
+		return nil
+	}
+	return &u
+}
+
+func (s *Site) HasGoals(ctx context.Context) bool {
+	return Exists(ctx, func(db *gorm.DB) *gorm.DB {
+		return db.Model(&Goal{}).Where("domain = ?", s.Domain)
+	})
+}
+
 func (s *Site) IsMember(userId uint64) bool {
 	for _, m := range s.Users {
 		if m.ID == userId {

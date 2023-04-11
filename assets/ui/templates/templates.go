@@ -17,7 +17,7 @@ import (
 	"github.com/gernest/vince/models"
 )
 
-//go:embed layout pages site auth error email
+//go:embed layout pages site stats auth error email
 var Files embed.FS
 
 var LoginForm = template.Must(
@@ -126,6 +126,42 @@ var AddSnippet = template.Must(
 	),
 )
 
+var Stats = template.Must(
+	template.ParseFS(Files,
+		"layout/app.html",
+		"layout/csrf.html",
+		"layout/header.html",
+		"layout/flash.html",
+		"layout/notice.html",
+		"layout/footer.html",
+		"stats/stats.html",
+	),
+)
+
+var WaitingFirstPageView = template.Must(
+	template.ParseFS(Files,
+		"layout/app.html",
+		"layout/csrf.html",
+		"layout/header.html",
+		"layout/flash.html",
+		"layout/notice.html",
+		"layout/footer.html",
+		"stats/waiting_first_pageview.html",
+	),
+)
+
+var SiteLocked = template.Must(
+	template.ParseFS(Files,
+		"layout/app.html",
+		"layout/csrf.html",
+		"layout/header.html",
+		"layout/flash.html",
+		"layout/notice.html",
+		"layout/footer.html",
+		"stats/site_locked.html",
+	),
+)
+
 type NewSite struct {
 	IsFirstSite bool
 	IsAtLimit   bool
@@ -162,6 +198,9 @@ type Context struct {
 	Site          *models.Site
 	IsFIrstSite   bool
 	SitesOverview []models.SiteOverView
+	EmailReport   bool
+	HasGoals      bool
+	Owner         *models.User
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
