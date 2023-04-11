@@ -156,7 +156,7 @@ func updateCalendar(txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) err
 			return err
 		}
 		defer cal.Message().Release()
-		cal.Update(ts, a)
+		a.UpdateCalendar(ts, &cal)
 		b, err := cal.Message().MarshalPacked()
 		if err != nil {
 			return fmt.Errorf("failed to marshal calendar %v", err)

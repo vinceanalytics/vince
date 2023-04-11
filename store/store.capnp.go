@@ -15,12 +15,12 @@ type Calendar capnp.Struct
 const Calendar_TypeID = 0xf8bd901143c99f61
 
 func NewCalendar(s *capnp.Segment) (Calendar, error) {
-	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 4})
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 7})
 	return Calendar(st), err
 }
 
 func NewRootCalendar(s *capnp.Segment) (Calendar, error) {
-	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 4})
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 7})
 	return Calendar(st), err
 }
 
@@ -79,40 +79,17 @@ func (s Calendar) NewVisitors(n int32) (capnp.Float64List, error) {
 	err = capnp.Struct(s).SetPtr(0, l.ToPtr())
 	return l, err
 }
-func (s Calendar) Visits() (capnp.Float64List, error) {
+func (s Calendar) Views() (capnp.Float64List, error) {
 	p, err := capnp.Struct(s).Ptr(1)
 	return capnp.Float64List(p.List()), err
 }
 
-func (s Calendar) HasVisits() bool {
+func (s Calendar) HasViews() bool {
 	return capnp.Struct(s).HasPtr(1)
 }
 
-func (s Calendar) SetVisits(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(1, v.ToPtr())
-}
-
-// NewVisits sets the visits field to a newly
-// allocated capnp.Float64List, preferring placement in s's segment.
-func (s Calendar) NewVisits(n int32) (capnp.Float64List, error) {
-	l, err := capnp.NewFloat64List(capnp.Struct(s).Segment(), n)
-	if err != nil {
-		return capnp.Float64List{}, err
-	}
-	err = capnp.Struct(s).SetPtr(1, l.ToPtr())
-	return l, err
-}
-func (s Calendar) Views() (capnp.Float64List, error) {
-	p, err := capnp.Struct(s).Ptr(2)
-	return capnp.Float64List(p.List()), err
-}
-
-func (s Calendar) HasViews() bool {
-	return capnp.Struct(s).HasPtr(2)
-}
-
 func (s Calendar) SetViews(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(2, v.ToPtr())
+	return capnp.Struct(s).SetPtr(1, v.ToPtr())
 }
 
 // NewViews sets the views field to a newly
@@ -122,20 +99,20 @@ func (s Calendar) NewViews(n int32) (capnp.Float64List, error) {
 	if err != nil {
 		return capnp.Float64List{}, err
 	}
-	err = capnp.Struct(s).SetPtr(2, l.ToPtr())
+	err = capnp.Struct(s).SetPtr(1, l.ToPtr())
 	return l, err
 }
 func (s Calendar) Events() (capnp.Float64List, error) {
-	p, err := capnp.Struct(s).Ptr(3)
+	p, err := capnp.Struct(s).Ptr(2)
 	return capnp.Float64List(p.List()), err
 }
 
 func (s Calendar) HasEvents() bool {
-	return capnp.Struct(s).HasPtr(3)
+	return capnp.Struct(s).HasPtr(2)
 }
 
 func (s Calendar) SetEvents(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(3, v.ToPtr())
+	return capnp.Struct(s).SetPtr(2, v.ToPtr())
 }
 
 // NewEvents sets the events field to a newly
@@ -145,7 +122,99 @@ func (s Calendar) NewEvents(n int32) (capnp.Float64List, error) {
 	if err != nil {
 		return capnp.Float64List{}, err
 	}
+	err = capnp.Struct(s).SetPtr(2, l.ToPtr())
+	return l, err
+}
+func (s Calendar) Visits() (capnp.Float64List, error) {
+	p, err := capnp.Struct(s).Ptr(3)
+	return capnp.Float64List(p.List()), err
+}
+
+func (s Calendar) HasVisits() bool {
+	return capnp.Struct(s).HasPtr(3)
+}
+
+func (s Calendar) SetVisits(v capnp.Float64List) error {
+	return capnp.Struct(s).SetPtr(3, v.ToPtr())
+}
+
+// NewVisits sets the visits field to a newly
+// allocated capnp.Float64List, preferring placement in s's segment.
+func (s Calendar) NewVisits(n int32) (capnp.Float64List, error) {
+	l, err := capnp.NewFloat64List(capnp.Struct(s).Segment(), n)
+	if err != nil {
+		return capnp.Float64List{}, err
+	}
 	err = capnp.Struct(s).SetPtr(3, l.ToPtr())
+	return l, err
+}
+func (s Calendar) BounceRate() (capnp.Float64List, error) {
+	p, err := capnp.Struct(s).Ptr(4)
+	return capnp.Float64List(p.List()), err
+}
+
+func (s Calendar) HasBounceRate() bool {
+	return capnp.Struct(s).HasPtr(4)
+}
+
+func (s Calendar) SetBounceRate(v capnp.Float64List) error {
+	return capnp.Struct(s).SetPtr(4, v.ToPtr())
+}
+
+// NewBounceRate sets the bounceRate field to a newly
+// allocated capnp.Float64List, preferring placement in s's segment.
+func (s Calendar) NewBounceRate(n int32) (capnp.Float64List, error) {
+	l, err := capnp.NewFloat64List(capnp.Struct(s).Segment(), n)
+	if err != nil {
+		return capnp.Float64List{}, err
+	}
+	err = capnp.Struct(s).SetPtr(4, l.ToPtr())
+	return l, err
+}
+func (s Calendar) VisitDuration() (capnp.Float64List, error) {
+	p, err := capnp.Struct(s).Ptr(5)
+	return capnp.Float64List(p.List()), err
+}
+
+func (s Calendar) HasVisitDuration() bool {
+	return capnp.Struct(s).HasPtr(5)
+}
+
+func (s Calendar) SetVisitDuration(v capnp.Float64List) error {
+	return capnp.Struct(s).SetPtr(5, v.ToPtr())
+}
+
+// NewVisitDuration sets the visitDuration field to a newly
+// allocated capnp.Float64List, preferring placement in s's segment.
+func (s Calendar) NewVisitDuration(n int32) (capnp.Float64List, error) {
+	l, err := capnp.NewFloat64List(capnp.Struct(s).Segment(), n)
+	if err != nil {
+		return capnp.Float64List{}, err
+	}
+	err = capnp.Struct(s).SetPtr(5, l.ToPtr())
+	return l, err
+}
+func (s Calendar) ViewsPerVisit() (capnp.Float64List, error) {
+	p, err := capnp.Struct(s).Ptr(6)
+	return capnp.Float64List(p.List()), err
+}
+
+func (s Calendar) HasViewsPerVisit() bool {
+	return capnp.Struct(s).HasPtr(6)
+}
+
+func (s Calendar) SetViewsPerVisit(v capnp.Float64List) error {
+	return capnp.Struct(s).SetPtr(6, v.ToPtr())
+}
+
+// NewViewsPerVisit sets the viewsPerVisit field to a newly
+// allocated capnp.Float64List, preferring placement in s's segment.
+func (s Calendar) NewViewsPerVisit(n int32) (capnp.Float64List, error) {
+	l, err := capnp.NewFloat64List(capnp.Struct(s).Segment(), n)
+	if err != nil {
+		return capnp.Float64List{}, err
+	}
+	err = capnp.Struct(s).SetPtr(6, l.ToPtr())
 	return l, err
 }
 
@@ -154,7 +223,7 @@ type Calendar_List = capnp.StructList[Calendar]
 
 // NewCalendar creates a new list of Calendar.
 func NewCalendar_List(s *capnp.Segment, sz int32) (Calendar_List, error) {
-	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 4}, sz)
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 7}, sz)
 	return capnp.StructList[Calendar](l), err
 }
 
@@ -286,32 +355,35 @@ func (f Sum_Future) Struct() (Sum, error) {
 	return Sum(p.Struct()), err
 }
 
-const schema_da1eebf4d7c0f83e = "x\xda\\\x90\xbfk\x14Q\x14\x85\xcfywf\xb7\x08" +
-	"\x09\xbed@\x0bq\xff\x02\x7f\xc4r\x0b\x15be\xb5" +
-	"W\xc1\xc2\xcaq}\xc5\x82\xce,3\xb3\x1b\x04\xff\x00" +
-	"\x9b`\x1a\x0bA\x10\xc1\xc6V\x12\x8c``\x05\x85\x04" +
-	",\"\x04\xd4`)XX\x09\x0a\xb1\x1ayKvv" +
-	"\xb2\xdd\x9c\x8fo\xe0\xdd\xef\xc2<\xaf\x04\xcb\xf3'\x0d" +
-	"\x8c\x9e\x0a\x1b\xe5\xfe\xc6\xab\xbd\xee\xdb7\x9b\xd0E6" +
-	"\xcbK\x87\xa3/\x7f~\x9d9@\xd0\x04\xec\xef\xd7\xf6" +
-	"_\x13X\xfe\xfb\x98`\x19?\xdf]\xb1\xeb\xdb\x87\xb0" +
-	"\x8b\x9c\x8a\xa17\x97\xd6\xcc\xc1\xd2S\xe3\xbf\x9e\x98\x9f" +
-	"8[\xe6E\x9a\xb9\xf3y\xc14s\xe7\xbaq?i" +
-	"\xf5\xdb7\x06\xf7;\xa4\x9e\x96\x00\x08\x08\xd8\xcdk\x80" +
-	"n\x08udh\xc9\x88\x1en_\x04tK\xa8\x1f\x0c" +
-	"\xad1\x11\x0d`\xdf\xb7\x01}'\xd4\x1dC+\x12Q" +
-	"\x00\xfb\xd1\xc3\x91P?\x19\xda \x88\x18\x00v\xf7\x16" +
-	"\xa0;B\xdd7\xb4a\x181\x04\xec\xe7\x0c\xd0=\xa1" +
-	"~7\xb4\x8dF\xc4\x06`\xbfy\xf8U\xa8?\x0c\xcb" +
-	"a/\xef\x15i\x96\x03\xe0\x1c\x0c\xe7\xc0\xd6\xb0\xe7V" +
-	"\xf3\xc9\xba\xec\x86.)\xa6s\xfcC5\xcb;\xe9 " +
-	"\xe9\xba\xeb1\xa4p\x15\x1c;W\x07\x19Zq\xd1K" +
-	"\x93\x1aw\xaby\xc7eh\xdd\xf4F\xc5'\xd1\xcc$" +
-	"Z\xbf\xbd\x12\xdfs\xc9]\x893_\xeeDU.\xf6" +
-	"\xe5n\x0b\xf5a\xad\xdc\x03\xdf\xa3\x10\xeaz\xad\xdc\x9a" +
-	"\xcf\xf9H\xa8/k\xe5^x\xf3\x99P\xb7fN_" +
-	"\x00;\xc2\xf1\x83\x16\xa6G\x1e\xa7G]f\xd4\xa3<" +
-	"\xc7\xe9\xff\x00\x00\x00\xff\xff\xd2'\x8b\x1c"
+const schema_da1eebf4d7c0f83e = "x\xdat\xd0\xbfk\x14A\x18\xc6\xf1\xe7\x99\xd9\xbdU" +
+	"\xa2\x81\xc9.h!\x9e\x82\xad?\x12\x1b=D\x85\xd8" +
+	"hu\xe3\x8aE\xba\xf5\x9c\xe2@w\x8f\xdd\xbd\xcb_" +
+	"!\xb1\xb1\xb0\xb2\xb6\x95\x04\x15\x0c\x9c\xa0\x90\x80\xc2\x09" +
+	"\x015\xa4\x11\xd2\xd9(\x188\xab\x95=\xeenoW" +
+	"R\xbe\xdf\xf7\x9db>\x97n\xf3\xa6\xb5x\xfc\x84\x80" +
+	"\xd0'\xedZ\xb6\xb3\xfer\xd0z\xfbz\x03z\x81N" +
+	"v}\xd8\xff\xfa\xe7\xe7\xe9]X\x0e\xa0~\xbfR\x7f" +
+	"\x1d`\xf1`\x8d`\x16\xbc\xd8^VO7\x87P\x0b" +
+	",\x0em\xc7\x01\xdc'b\xd7}.\x1c\xe0\xf23\xb1" +
+	"F\x9c\xcf\x924\x8a\xcd\xc5$e\x14\x9b\x0b\xad\xa0\x13" +
+	"\xd6;\x0d\xbf\xfb\xb8I\xeaS\xd2\x02,\x02j\xe3\x0e" +
+	"\xa0\xd7%u_P\x91\x1e\xf3\xb8\xb9\x04\xe87\x92\xfa" +
+	"\x83\xa0\x12\xc2\xa3\x00\xd4\xfb\x06\xa0\xdfI\xea-A%" +
+	"\xa5G\x09\xa8\x8fy\xecK\xeaO\x82\xca\xb2<Z\x80" +
+	"\xda^\x01\xf4\x96\xa4\xde\x11T\xb6\xed\xd1\x06\xd4\x97\x18" +
+	"\xd0\x03I\xbd'\xa8j5\x8f5@}\xcf\xe37I" +
+	"\xbd/\x98\xf5\xdaI;\x8d\xe2\x04\x00\xe7 8\x07\xd6" +
+	"{m\xb3\x9aL\xa6\x1b\xa6g\xc2\xb4\x18G\x0f\xa6c" +
+	"\xf6 \xea\x86-s7\x80L\xcd4\x8ennuc" +
+	"\xd4\x83\xb4\x1d\x853\xdd\xac&M\x13\xa3~?\xbf\x98" +
+	"\xf6\x09\x9a\x98\xa0u\x1a\xcb\xc1#\x13>\x94A|\x88" +
+	"\xdc`F\xee\xf3\xd2\xf8\xeb\xfb3r?r\xa4=I" +
+	"=\x9c\x91;\xc8\xe3/I\xff\x18\x0b:\xf7(W\x00" +
+	"\xff\x08%\xfds,\xf4\xdc\xb3\x8c\x01\xffL\xde\xaf\xb1" +
+	"\x00t\xaf\x8e\xfa\x95\xbc\xdfc\xc5p\x1elJ\x8e~" +
+	"6?\xa5,\xc7\x89h\xa5\x8ea\xcb\xb5\xec[\xd9U" +
+	"\x99\xff[\x97\xb5\xcb\xeb\x7f\x01\x00\x00\xff\xff\xc79\xa7" +
+	"e"
 
 func RegisterSchema(reg *schemas.Registry) {
 	reg.Register(&schemas.Schema{

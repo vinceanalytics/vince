@@ -1,6 +1,7 @@
 package store
 
 import (
+	"errors"
 	"time"
 
 	"capnproto.org/go/capnp/v3"
@@ -39,67 +40,66 @@ func (s *Sum) Reuse() *Sum {
 	return s
 }
 
-func (s *Sum) Update(ts time.Time, visitors, visits, views, events capnp.Float64List) {
+func (s *Sum) UpdateCalendar(ts time.Time, cal *Calendar) error {
 	day := ts.YearDay()
-	visitors.Set(day, visitors.At(day)+s.Visitors())
-	visits.Set(day, visits.At(day)+s.Visits())
-	views.Set(day, views.At(day)+s.Views())
-	events.Set(day, events.At(day)+s.Events())
+	return errors.Join(
+		update(day, s.Visitors(), cal.Visitors),
+		update(day, s.Views(), cal.Views),
+		update(day, s.Events(), cal.Events),
+		update(day, s.Visits(), cal.Visits),
+		update(day, s.BounceRate(), cal.BounceRate),
+		update(day, s.VisitDuration(), cal.VisitDuration),
+		update(day, s.ViewsPerVisit(), cal.ViewsPerVisit),
+	)
 }
 
-func (s *Calendar) Update(ts time.Time, sum *Sum) {
-	visitors, _ := s.Visitors()
-	visits, _ := s.Visits()
-	views, _ := s.Visits()
-	events, _ := s.Events()
-	sum.Update(ts, visitors, visits, views, events)
+func update(i int, v float64, f func() (capnp.Float64List, error)) error {
+	ls, err := f()
+	if err != nil {
+		return err
+	}
+	ls.Set(i, ls.At(i)+v)
+	return nil
 }
 
-func ZeroCalendar(ts time.Time, sum *Sum) (Calendar, error) {
+func ZeroCalendar(ts time.Time, sum *Sum) (*Calendar, error) {
 	var arena = capnp.MultiSegment(nil)
 	_, seg, err := capnp.NewMessage(arena)
 	if err != nil {
-		return Calendar{}, err
+		return nil, err
 	}
 	calendar, err := NewCalendar(seg)
 	if err != nil {
-		return Calendar{}, err
+		return nil, err
 	}
 	days := timex.DaysInAYear(ts)
-
-	visits, err := capnp.NewFloat64List(seg, int32(days))
+	cal := &calendar
+	err = initFloats(int32(days), seg,
+		cal.SetVisitors,
+		cal.SetViews,
+		cal.SetEvents,
+		cal.SetVisits,
+		cal.SetBounceRate,
+		cal.SetVisitDuration,
+		cal.SetViewsPerVisit,
+	)
 	if err != nil {
-		return Calendar{}, err
+		return nil, err
 	}
 
-	visitors, err := capnp.NewFloat64List(seg, int32(days))
-	if err != nil {
-		return Calendar{}, err
-	}
+	return cal, sum.UpdateCalendar(ts, cal)
+}
 
-	views, err := capnp.NewFloat64List(seg, int32(days))
-	if err != nil {
-		return Calendar{}, err
+func initFloats(n int32, seg *capnp.Segment, fn ...func(capnp.Float64List) error) error {
+	var errs []error
+	for _, f := range fn {
+		ls, err := capnp.NewFloat64List(seg, n)
+		if err != nil {
+			return err
+		}
+		errs = append(errs, f(ls))
 	}
-
-	events, err := capnp.NewFloat64List(seg, int32(days))
-	if err != nil {
-		return Calendar{}, err
-	}
-	sum.Update(ts, visitors, visits, views, events)
-	err = calendar.SetVisitors(visitors)
-	if err != nil {
-		return Calendar{}, err
-	}
-	err = calendar.SetVisits(visits)
-	if err != nil {
-		return Calendar{}, err
-	}
-	err = calendar.SetEvents(events)
-	if err != nil {
-		return Calendar{}, err
-	}
-	return calendar, nil
+	return errors.Join(errs...)
 }
 
 func (c *Calendar) SeriesVisitors(from, to time.Time) ([]float64, error) {
@@ -117,6 +117,15 @@ func (c Calendar) SeriesVisits(from, to time.Time) ([]float64, error) {
 	}
 	return series(ls, from, to), nil
 }
+
+func (c Calendar) SeriesEvents(from, to time.Time) ([]float64, error) {
+	ls, err := c.Events()
+	if err != nil {
+		return nil, err
+	}
+	return series(ls, from, to), nil
+}
+
 func (c Calendar) SeriesViews(from, to time.Time) ([]float64, error) {
 	ls, err := c.Views()
 	if err != nil {
@@ -125,8 +134,24 @@ func (c Calendar) SeriesViews(from, to time.Time) ([]float64, error) {
 	return series(ls, from, to), nil
 }
 
-func (c Calendar) SeriesEvents(from, to time.Time) ([]float64, error) {
-	ls, err := c.Events()
+func (c Calendar) SeriesBounceRates(from, to time.Time) ([]float64, error) {
+	ls, err := c.BounceRate()
+	if err != nil {
+		return nil, err
+	}
+	return series(ls, from, to), nil
+}
+
+func (c Calendar) SeriesVisitDuration(from, to time.Time) ([]float64, error) {
+	ls, err := c.VisitDuration()
+	if err != nil {
+		return nil, err
+	}
+	return series(ls, from, to), nil
+}
+
+func (c Calendar) SeriesViewsPerVisit(from, to time.Time) ([]float64, error) {
+	ls, err := c.ViewsPerVisit()
 	if err != nil {
 		return nil, err
 	}
