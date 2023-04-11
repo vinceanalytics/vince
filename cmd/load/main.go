@@ -9,41 +9,28 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"runtime"
 	"sync"
 	"time"
 )
 
 func main() {
 	duration := flag.Duration("d", 10*time.Minute, "duration of running the script")
-	host := flag.String("h", "http://localhost:8080", "vince instance")
+	requests := flag.Int("r", 1, "number of requests")
+	host := flag.String("h", "http://localhost:8080", "vince analytics  instance")
 	flag.Parse()
+	domain := flag.Arg(0)
 	ctx, _ := context.WithTimeout(context.Background(), *duration)
+	s := BasicSession(domain)
 	wg := &sync.WaitGroup{}
-	for i := 0; i < runtime.NumCPU(); i += 1 {
+	for i := 0; i < *requests; i += 1 {
 		wg.Add(1)
-		go runSession(ctx, wg, *host)
-	}
-	wg.Wait()
-}
-
-func runSession(ctx context.Context, wg *sync.WaitGroup, host string) {
-	log.Println("starting session runner ")
-	defer log.Println("done session running")
-	defer wg.Done()
-	for {
-		select {
-		case <-ctx.Done():
+		err := s.Execute(ctx, *host)
+		if err != nil {
+			log.Println(err)
 			return
-		default:
-			s := BasicSession()
-			err := s.Execute(ctx, host)
-			if err != nil {
-				log.Println(err)
-				return
-			}
 		}
 	}
+	wg.Wait()
 }
 
 var client = &http.Client{}
@@ -141,10 +128,10 @@ func (s *Session) Execute(ctx context.Context, host string) error {
 
 // a simple user journey. A user comes from a random site and starts at / , stays
 // for 1 ms and clicks /about stats 1 ms and leaves the site.
-func BasicSession() Session {
+func BasicSession(domain string) Session {
 	return Session{
 		URI:    "https://vince.test",
-		Domain: "vince.test",
+		Domain: domain,
 		Journeys: []*Journey{
 			{Path: "/", From: GetReferrer(), Events: []*Event{
 				{Name: "pageview", Stay: time.Millisecond},
