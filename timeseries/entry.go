@@ -8,11 +8,12 @@ import (
 	"github.com/gernest/vince/store"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go/bloom/xxhash"
+	"google.golang.org/protobuf/proto"
 )
 
 // Session creates a new session from entry
 func (e *Entry) Session() *Entry {
-	s := *e
+	s := proto.Clone(e).(*Entry)
 	s.Sign = 1
 	s.IsSession = true
 	session := uuid.New()
@@ -25,7 +26,7 @@ func (e *Entry) Session() *Entry {
 		s.PageViews = 1
 	}
 	s.Events = 1
-	return &s
+	return s
 }
 
 func (e *Entry) Bounce() (n int32) {
@@ -36,7 +37,7 @@ func (e *Entry) Bounce() (n int32) {
 }
 
 func (s *Entry) Update(e *Entry) *Entry {
-	ss := *s
+	ss := proto.Clone(s).(*Entry)
 	ss.UserId = e.UserId
 	ss.Timestamp = e.Timestamp
 	ss.ExitPage = e.Pathname
@@ -73,7 +74,7 @@ func (s *Entry) Update(e *Entry) *Entry {
 		ss.ScreenSize = e.ScreenSize
 	}
 	ss.Events += 1
-	return &ss
+	return ss
 }
 
 type EntryList []*Entry
