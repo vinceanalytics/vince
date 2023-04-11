@@ -40,6 +40,9 @@ func (b *Buffer) Sort() *Buffer {
 
 func (b *Buffer) Reset() *Buffer {
 	b.expiresAt = time.Time{}
+	for _, e := range b.entries {
+		e.Release()
+	}
 	b.entries = b.entries[:0]
 	return b
 }
@@ -74,6 +77,8 @@ func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
 		s = find(ctx, e, prevUserId)
 	}
 	if s != nil {
+		// free e since we don't use it when doing updates
+		defer e.Release()
 		updated := s.Update(e)
 		updated.Sign = 1
 		s.Sign = -1
@@ -82,7 +87,6 @@ func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
 		return
 	}
 	newSession := e.Session()
-	e.SessionId = newSession.SessionId
 	b.entries = append(b.entries, newSession)
 	persist(ctx, newSession)
 }

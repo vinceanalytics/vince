@@ -210,7 +210,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		userID := seedID.Gen(remoteIp, userAgent, domain, host)
-		e := new(timeseries.Entry)
+		e := timeseries.NewEntry()
 		e.UserId = userID
 		e.Name = req.EventName
 		e.Hostname = host

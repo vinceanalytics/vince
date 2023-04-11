@@ -3,6 +3,7 @@ package timeseries
 import (
 	"math"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
@@ -11,6 +12,21 @@ import (
 	"github.com/segmentio/parquet-go/bloom/xxhash"
 	"google.golang.org/protobuf/proto"
 )
+
+var entryPool = &sync.Pool{
+	New: func() any {
+		return new(Entry)
+	},
+}
+
+func NewEntry() *Entry {
+	return entryPool.Get().(*Entry)
+}
+
+func (e *Entry) Release() {
+	e.Reset()
+	entryPool.Put(e)
+}
 
 // Session creates a new session from entry
 func (e *Entry) Session() *Entry {
