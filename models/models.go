@@ -116,6 +116,13 @@ type Site struct {
 	SharedLinks []*SharedLink
 }
 
+func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
+	err := Get(ctx).Model(&Site{}).Where("id = ?", sid).Update("stats_start_date", start).Error
+	if err != nil {
+		DBE(ctx, err, "failed to update stats_start_date")
+	}
+}
+
 func (u *Site) Preload(ctx context.Context, preload ...string) {
 	db := Get(ctx)
 	for _, p := range preload {
