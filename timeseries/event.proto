@@ -34,11 +34,11 @@ message Entry {
   string transferred_from = 24;
   string entry_page = 25;
   string exit_page = 26;
-  uint64 page_views = 27;
-  uint64 events = 28;
+  int32 page_views = 27;
+  int32 events = 28;
   int32 sign = 29;
   bool is_bounce = 30;
-  int64 duration = 31;
+  double duration = 31;
   int64 start = 32;
 }
 

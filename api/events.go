@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/gate"
@@ -19,7 +20,6 @@ import (
 	"github.com/gernest/vince/remoteip"
 	"github.com/gernest/vince/system"
 	"github.com/gernest/vince/timeseries"
-	"github.com/gernest/vince/timex"
 	"github.com/gernest/vince/ua"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -202,7 +202,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		screenSize = "desktop"
 	}
 	var dropped int
-	today := timex.Today().Unix()
+	today := time.Now().Unix()
 	for _, domain := range domains {
 		b, pass := gate.Check(r.Context(), domain)
 		if !pass {

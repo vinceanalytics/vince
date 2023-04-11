@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"math"
 	"sort"
 	"time"
 
@@ -40,7 +41,7 @@ func (s *Entry) Update(e *Entry) *Entry {
 	ss.Timestamp = e.Timestamp
 	ss.ExitPage = e.Pathname
 	ss.IsBounce = false
-	ss.Duration = int64(time.Unix(e.Timestamp, 0).Sub(time.Unix(ss.Start, 0)))
+	ss.Duration = math.Abs(time.Unix(e.Timestamp, 0).Sub(time.Unix(ss.Start, 0)).Seconds())
 	if e.Name == "pageview" {
 		ss.PageViews++
 	}
@@ -85,10 +86,34 @@ func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *store.Sum) {
 	if len(ls) == 0 {
 		return
 	}
-	u.Clear()
-	s.Clear()
+	var signSum, bounce, views, events, visitors int32
+	var duration float64
+	for _, e := range ls {
+		signSum += e.Sign
+		bounce += e.Bounce() * e.Sign
+		views += e.PageViews * e.Sign
+		events += e.Events * e.Sign
+		if !u.Contains(e.UserId) {
+			visitors += 1
+			u.Add(e.UserId)
+		}
+		duration += e.Duration * float64(e.Sign)
+	}
+	bounceRate := uint32(math.Round(float64(bounce) / float64(signSum) * 100))
+	visits := uint32(signSum)
+	pageViews := uint32(views)
+	_events := uint32(events)
+	_visitors := uint32(visitors)
+	visitDuration := uint32(math.Round(duration / float64(signSum)))
+	viewsPerVisit := float64(views) / float64(signSum)
+	sum.SetEvents(float64(_events))
+	sum.SetViews(float64(pageViews))
+	sum.SetVisitors(float64(_visitors))
+	sum.SetBounceRate(float64(bounceRate))
+	sum.SetVisits(float64(visits))
+	sum.SetViewsPerVisit(viewsPerVisit)
+	sum.SetVisitDuration(float64(visitDuration))
 
-	return
 }
 
 func (ls EntryList) Emit(f func(EntryList)) {

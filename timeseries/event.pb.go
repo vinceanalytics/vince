@@ -280,38 +280,38 @@ type Entry struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Timestamp              int64  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Name                   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Domain                 string `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
-	UserId                 uint64 `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	SessionId              uint64 `protobuf:"varint,5,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	Hostname               string `protobuf:"bytes,6,opt,name=hostname,proto3" json:"hostname,omitempty"`
-	Pathname               string `protobuf:"bytes,7,opt,name=pathname,proto3" json:"pathname,omitempty"`
-	Referrer               string `protobuf:"bytes,8,opt,name=referrer,proto3" json:"referrer,omitempty"`
-	ReferrerSource         string `protobuf:"bytes,9,opt,name=referrer_source,json=referrerSource,proto3" json:"referrer_source,omitempty"`
-	CountryCode            string `protobuf:"bytes,10,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
-	Subdivision1Code       string `protobuf:"bytes,11,opt,name=subdivision1_code,json=subdivision1Code,proto3" json:"subdivision1_code,omitempty"`
-	Subdivision2Code       string `protobuf:"bytes,12,opt,name=subdivision2_code,json=subdivision2Code,proto3" json:"subdivision2_code,omitempty"`
-	CityGeoNameId          uint32 `protobuf:"varint,13,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
-	ScreenSize             string `protobuf:"bytes,14,opt,name=screen_size,json=screenSize,proto3" json:"screen_size,omitempty"`
-	OperatingSystem        string `protobuf:"bytes,15,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
-	Browser                string `protobuf:"bytes,16,opt,name=browser,proto3" json:"browser,omitempty"`
-	UtmMedium              string `protobuf:"bytes,17,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
-	UtmSource              string `protobuf:"bytes,18,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
-	UtmCampaign            string `protobuf:"bytes,19,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
-	BrowserVersion         string `protobuf:"bytes,20,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
-	OperatingSystemVersion string `protobuf:"bytes,21,opt,name=operating_system_version,json=operatingSystemVersion,proto3" json:"operating_system_version,omitempty"`
-	UtmContent             string `protobuf:"bytes,22,opt,name=utm_content,json=utmContent,proto3" json:"utm_content,omitempty"`
-	UtmTerm                string `protobuf:"bytes,23,opt,name=utm_term,json=utmTerm,proto3" json:"utm_term,omitempty"`
-	TransferredFrom        string `protobuf:"bytes,24,opt,name=transferred_from,json=transferredFrom,proto3" json:"transferred_from,omitempty"`
-	EntryPage              string `protobuf:"bytes,25,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
-	ExitPage               string `protobuf:"bytes,26,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
-	PageViews              uint64 `protobuf:"varint,27,opt,name=page_views,json=pageViews,proto3" json:"page_views,omitempty"`
-	Events                 uint64 `protobuf:"varint,28,opt,name=events,proto3" json:"events,omitempty"`
-	Sign                   int32  `protobuf:"varint,29,opt,name=sign,proto3" json:"sign,omitempty"`
-	IsBounce               bool   `protobuf:"varint,30,opt,name=is_bounce,json=isBounce,proto3" json:"is_bounce,omitempty"`
-	Duration               int64  `protobuf:"varint,31,opt,name=duration,proto3" json:"duration,omitempty"`
-	Start                  int64  `protobuf:"varint,32,opt,name=start,proto3" json:"start,omitempty"`
+	Timestamp              int64   `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Name                   string  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Domain                 string  `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
+	UserId                 uint64  `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	SessionId              uint64  `protobuf:"varint,5,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	Hostname               string  `protobuf:"bytes,6,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	Pathname               string  `protobuf:"bytes,7,opt,name=pathname,proto3" json:"pathname,omitempty"`
+	Referrer               string  `protobuf:"bytes,8,opt,name=referrer,proto3" json:"referrer,omitempty"`
+	ReferrerSource         string  `protobuf:"bytes,9,opt,name=referrer_source,json=referrerSource,proto3" json:"referrer_source,omitempty"`
+	CountryCode            string  `protobuf:"bytes,10,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
+	Subdivision1Code       string  `protobuf:"bytes,11,opt,name=subdivision1_code,json=subdivision1Code,proto3" json:"subdivision1_code,omitempty"`
+	Subdivision2Code       string  `protobuf:"bytes,12,opt,name=subdivision2_code,json=subdivision2Code,proto3" json:"subdivision2_code,omitempty"`
+	CityGeoNameId          uint32  `protobuf:"varint,13,opt,name=city_geo_name_id,json=cityGeoNameId,proto3" json:"city_geo_name_id,omitempty"`
+	ScreenSize             string  `protobuf:"bytes,14,opt,name=screen_size,json=screenSize,proto3" json:"screen_size,omitempty"`
+	OperatingSystem        string  `protobuf:"bytes,15,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
+	Browser                string  `protobuf:"bytes,16,opt,name=browser,proto3" json:"browser,omitempty"`
+	UtmMedium              string  `protobuf:"bytes,17,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
+	UtmSource              string  `protobuf:"bytes,18,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
+	UtmCampaign            string  `protobuf:"bytes,19,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
+	BrowserVersion         string  `protobuf:"bytes,20,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
+	OperatingSystemVersion string  `protobuf:"bytes,21,opt,name=operating_system_version,json=operatingSystemVersion,proto3" json:"operating_system_version,omitempty"`
+	UtmContent             string  `protobuf:"bytes,22,opt,name=utm_content,json=utmContent,proto3" json:"utm_content,omitempty"`
+	UtmTerm                string  `protobuf:"bytes,23,opt,name=utm_term,json=utmTerm,proto3" json:"utm_term,omitempty"`
+	TransferredFrom        string  `protobuf:"bytes,24,opt,name=transferred_from,json=transferredFrom,proto3" json:"transferred_from,omitempty"`
+	EntryPage              string  `protobuf:"bytes,25,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
+	ExitPage               string  `protobuf:"bytes,26,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
+	PageViews              int32   `protobuf:"varint,27,opt,name=page_views,json=pageViews,proto3" json:"page_views,omitempty"`
+	Events                 int32   `protobuf:"varint,28,opt,name=events,proto3" json:"events,omitempty"`
+	Sign                   int32   `protobuf:"varint,29,opt,name=sign,proto3" json:"sign,omitempty"`
+	IsBounce               bool    `protobuf:"varint,30,opt,name=is_bounce,json=isBounce,proto3" json:"is_bounce,omitempty"`
+	Duration               float64 `protobuf:"fixed64,31,opt,name=duration,proto3" json:"duration,omitempty"`
+	Start                  int64   `protobuf:"varint,32,opt,name=start,proto3" json:"start,omitempty"`
 }
 
 func (x *Entry) Reset() {
@@ -528,14 +528,14 @@ func (x *Entry) GetExitPage() string {
 	return ""
 }
 
-func (x *Entry) GetPageViews() uint64 {
+func (x *Entry) GetPageViews() int32 {
 	if x != nil {
 		return x.PageViews
 	}
 	return 0
 }
 
-func (x *Entry) GetEvents() uint64 {
+func (x *Entry) GetEvents() int32 {
 	if x != nil {
 		return x.Events
 	}
@@ -556,7 +556,7 @@ func (x *Entry) GetIsBounce() bool {
 	return false
 }
 
-func (x *Entry) GetDuration() int64 {
+func (x *Entry) GetDuration() float64 {
 	if x != nil {
 		return x.Duration
 	}
@@ -683,14 +683,14 @@ var file_event_proto_rawDesc = []byte{
 	0x01, 0x28, 0x09, 0x52, 0x09, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x50, 0x61, 0x67, 0x65, 0x12, 0x1b,
 	0x0a, 0x09, 0x65, 0x78, 0x69, 0x74, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x18, 0x1a, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x08, 0x65, 0x78, 0x69, 0x74, 0x50, 0x61, 0x67, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x70,
-	0x61, 0x67, 0x65, 0x5f, 0x76, 0x69, 0x65, 0x77, 0x73, 0x18, 0x1b, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x61, 0x67, 0x65, 0x5f, 0x76, 0x69, 0x65, 0x77, 0x73, 0x18, 0x1b, 0x20, 0x01, 0x28, 0x05, 0x52,
 	0x09, 0x70, 0x61, 0x67, 0x65, 0x56, 0x69, 0x65, 0x77, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x76,
-	0x65, 0x6e, 0x74, 0x73, 0x18, 0x1c, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x65, 0x76, 0x65, 0x6e,
+	0x65, 0x6e, 0x74, 0x73, 0x18, 0x1c, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x65, 0x76, 0x65, 0x6e,
 	0x74, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69, 0x67, 0x6e, 0x18, 0x1d, 0x20, 0x01, 0x28, 0x05,
 	0x52, 0x04, 0x73, 0x69, 0x67, 0x6e, 0x12, 0x1b, 0x0a, 0x09, 0x69, 0x73, 0x5f, 0x62, 0x6f, 0x75,
 	0x6e, 0x63, 0x65, 0x18, 0x1e, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x69, 0x73, 0x42, 0x6f, 0x75,
 	0x6e, 0x63, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18,
-	0x1f, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0x1f, 0x20, 0x01, 0x28, 0x01, 0x52, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
 	0x14, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x72, 0x74, 0x18, 0x20, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05,
 	0x73, 0x74, 0x61, 0x72, 0x74, 0x22, 0x6f, 0x0a, 0x04, 0x48, 0x61, 0x73, 0x68, 0x12, 0x2e, 0x0a,
 	0x04, 0x68, 0x61, 0x73, 0x68, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x74, 0x69,
