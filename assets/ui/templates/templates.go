@@ -146,7 +146,7 @@ var WaitingFirstPageView = template.Must(
 		"layout/flash.html",
 		"layout/notice.html",
 		"layout/footer.html",
-		"stats/waiting_first_pageview.html",
+		"stats/stats.html",
 	),
 )
 

@@ -1,29 +1,44 @@
-{{define "_metric"}}
-<div style="position: absolute; left: 0px; top: 0px; width: 271.833px; height: 110px;">
-    <div
-        style="width: 271.833px; height: 110px; padding: 12px; border-radius: 3px; position: relative; display: flex; background: linear-gradient(120deg, rgb(223, 20, 16), rgb(240, 49, 96)); flex-direction: column;">
-        <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 13.75px; line-height: 1.2; color: rgb(247, 248, 250);">Cellar</div>
-            <div
-                style="font-size: 35px; font-weight: 500; line-height: 1.2; position: relative; z-index: 1; color: rgb(247, 248, 250);">
-                <div><span>88.2</span><span style="font-size: 21px;"> m²</span></div>
-            </div>
-        </div>
-        <div style="position: absolute; right: 0px; bottom: 0px;">
-            <div style="position: relative;">
-                <div data-testid="uplot-main-div">
-                    <div class="uplot u-hz">
-                        <div class="u-wrap" style="width: 271px; height: 51px;">
-                            <div class="u-under" style="left: 0px; top: 0px; width: 271px; height: 51px;"></div><canvas
-                                width="542" height="102"></canvas>
-                            <div class="u-over" style="left: 0px; top: 0px; width: 271px; height: 51px;">
-                                <div class="u-select" style="left: 0px; width: 0px; top: 0px; height: 0px;"></div>
-                            </div>
-                        </div>
+{{define "_content"}}
+<div class="container-lg">
+    <div class="Box my-1">
+        <div class="Box-row">
+            <div class="d-flex text-center f4">
+                <div class="col-3 mx-1  Box Box--condensed">
+                    <div class="Box-header">
+                        <h3 class="Box-title">
+                            Visits
+                        </h3>
+                    </div>
+                    <div class="Box-body f0-mktg text-normal">
+                        20k
+                    </div>
+                </div>
+                <div class="col-3 mx-1 Box Box--condensed">
+                    <div class="Box-header">
+                        <h3 class="Box-title">
+                            Page views
+                        </h3>
+                    </div>
+                    <div class="Box-body f0-mktg text-normal">
+                        20k
+                    </div>
+                </div>
+                <div class="col-3 mx-1 Box Box--condensed">
+                    <div class="Box-header">
+                        <h3 class="Box-title">
+                            Page Duration
+                        </h3>
+                    </div>
+                    <div class="Box-body f0-mktg text-normal">
+                        20m0s
                     </div>
                 </div>
             </div>
         </div>
+        <div class="Box-footer">
+            Box footer
+        </div>
     </div>
+</div>
 </div>
 {{end}}
