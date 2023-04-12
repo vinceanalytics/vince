@@ -29,9 +29,8 @@ type Group struct {
 var groupPool = &sync.Pool{
 	New: func() any {
 		return &Group{
-			u:   roaring64.New(),
-			s:   roaring64.New(),
-			sum: store.ZeroSum(),
+			u: roaring64.New(),
+			s: roaring64.New(),
 		}
 	},
 }
@@ -39,7 +38,7 @@ var groupPool = &sync.Pool{
 func (g *Group) Reset() {
 	g.u.Clear()
 	g.s.Clear()
-	g.sum.Reuse()
+	g.sum = store.Sum{}
 }
 
 func (g *Group) Save(el EntryList) {

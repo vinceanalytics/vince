@@ -6,7 +6,6 @@ import (
 	capnp "capnproto.org/go/capnp/v3"
 	text "capnproto.org/go/capnp/v3/encoding/text"
 	schemas "capnproto.org/go/capnp/v3/schemas"
-	math "math"
 )
 
 type Calendar capnp.Struct
@@ -235,161 +234,31 @@ func (f Calendar_Future) Struct() (Calendar, error) {
 	return Calendar(p.Struct()), err
 }
 
-type Sum capnp.Struct
-
-// Sum_TypeID is the unique identifier for the type Sum.
-const Sum_TypeID = 0xb5b7b963d0a9b4d4
-
-func NewSum(s *capnp.Segment) (Sum, error) {
-	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 56, PointerCount: 0})
-	return Sum(st), err
-}
-
-func NewRootSum(s *capnp.Segment) (Sum, error) {
-	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 56, PointerCount: 0})
-	return Sum(st), err
-}
-
-func ReadRootSum(msg *capnp.Message) (Sum, error) {
-	root, err := msg.Root()
-	return Sum(root.Struct()), err
-}
-
-func (s Sum) String() string {
-	str, _ := text.Marshal(0xb5b7b963d0a9b4d4, capnp.Struct(s))
-	return str
-}
-
-func (s Sum) EncodeAsPtr(seg *capnp.Segment) capnp.Ptr {
-	return capnp.Struct(s).EncodeAsPtr(seg)
-}
-
-func (Sum) DecodeFromPtr(p capnp.Ptr) Sum {
-	return Sum(capnp.Struct{}.DecodeFromPtr(p))
-}
-
-func (s Sum) ToPtr() capnp.Ptr {
-	return capnp.Struct(s).ToPtr()
-}
-func (s Sum) IsValid() bool {
-	return capnp.Struct(s).IsValid()
-}
-
-func (s Sum) Message() *capnp.Message {
-	return capnp.Struct(s).Message()
-}
-
-func (s Sum) Segment() *capnp.Segment {
-	return capnp.Struct(s).Segment()
-}
-func (s Sum) Visitors() float64 {
-	return math.Float64frombits(capnp.Struct(s).Uint64(0))
-}
-
-func (s Sum) SetVisitors(v float64) {
-	capnp.Struct(s).SetUint64(0, math.Float64bits(v))
-}
-
-func (s Sum) Views() float64 {
-	return math.Float64frombits(capnp.Struct(s).Uint64(8))
-}
-
-func (s Sum) SetViews(v float64) {
-	capnp.Struct(s).SetUint64(8, math.Float64bits(v))
-}
-
-func (s Sum) Events() float64 {
-	return math.Float64frombits(capnp.Struct(s).Uint64(16))
-}
-
-func (s Sum) SetEvents(v float64) {
-	capnp.Struct(s).SetUint64(16, math.Float64bits(v))
-}
-
-func (s Sum) Visits() float64 {
-	return math.Float64frombits(capnp.Struct(s).Uint64(24))
-}
-
-func (s Sum) SetVisits(v float64) {
-	capnp.Struct(s).SetUint64(24, math.Float64bits(v))
-}
-
-func (s Sum) BounceRate() float64 {
-	return math.Float64frombits(capnp.Struct(s).Uint64(32))
-}
-
-func (s Sum) SetBounceRate(v float64) {
-	capnp.Struct(s).SetUint64(32, math.Float64bits(v))
-}
-
-func (s Sum) VisitDuration() float64 {
-	return math.Float64frombits(capnp.Struct(s).Uint64(40))
-}
-
-func (s Sum) SetVisitDuration(v float64) {
-	capnp.Struct(s).SetUint64(40, math.Float64bits(v))
-}
-
-func (s Sum) ViewsPerVisit() float64 {
-	return math.Float64frombits(capnp.Struct(s).Uint64(48))
-}
-
-func (s Sum) SetViewsPerVisit(v float64) {
-	capnp.Struct(s).SetUint64(48, math.Float64bits(v))
-}
-
-// Sum_List is a list of Sum.
-type Sum_List = capnp.StructList[Sum]
-
-// NewSum creates a new list of Sum.
-func NewSum_List(s *capnp.Segment, sz int32) (Sum_List, error) {
-	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 56, PointerCount: 0}, sz)
-	return capnp.StructList[Sum](l), err
-}
-
-// Sum_Future is a wrapper for a Sum promised by a client call.
-type Sum_Future struct{ *capnp.Future }
-
-func (f Sum_Future) Struct() (Sum, error) {
-	p, err := f.Future.Ptr()
-	return Sum(p.Struct()), err
-}
-
-const schema_da1eebf4d7c0f83e = "x\xdat\xd0\xbfk\x14A\x18\xc6\xf1\xe7\x99\xd9\xbdU" +
-	"\xa2\x81\xc9.h!\x9e\x82\xad?\x12\x1b=D\x85\xd8" +
-	"hu\xe3\x8aE\xba\xf5\x9c\xe2@w\x8f\xdd\xbd\xcb_" +
-	"!\xb1\xb1\xb0\xb2\xb6\x95\x04\x15\x0c\x9c\xa0\x90\x80\xc2\x09" +
-	"\x015\xa4\x11\xd2\xd9(\x188\xab\x95=\xeenoW" +
-	"R\xbe\xdf\xf7\x9db>\x97n\xf3\xa6\xb5x\xfc\x84\x80" +
-	"\xd0'\xedZ\xb6\xb3\xfer\xd0z\xfbz\x03z\x81N" +
-	"v}\xd8\xff\xfa\xe7\xe7\xe9]X\x0e\xa0~\xbfR\x7f" +
-	"\x1d`\xf1`\x8d`\x16\xbc\xd8^VO7\x87P\x0b" +
-	",\x0em\xc7\x01\xdc'b\xd7}.\x1c\xe0\xf23\xb1" +
-	"F\x9c\xcf\x924\x8a\xcd\xc5$e\x14\x9b\x0b\xad\xa0\x13" +
-	"\xd6;\x0d\xbf\xfb\xb8I\xeaS\xd2\x02,\x02j\xe3\x0e" +
-	"\xa0\xd7%u_P\x91\x1e\xf3\xb8\xb9\x04\xe87\x92\xfa" +
-	"\x83\xa0\x12\xc2\xa3\x00\xd4\xfb\x06\xa0\xdfI\xea-A%" +
-	"\xa5G\x09\xa8\x8fy\xecK\xeaO\x82\xca\xb2<Z\x80" +
-	"\xda^\x01\xf4\x96\xa4\xde\x11T\xb6\xed\xd1\x06\xd4\x97\x18" +
-	"\xd0\x03I\xbd'\xa8j5\x8f5@}\xcf\xe37I" +
-	"\xbd/\x98\xf5\xdaI;\x8d\xe2\x04\x00\xe7 8\x07\xd6" +
-	"{m\xb3\x9aL\xa6\x1b\xa6g\xc2\xb4\x18G\x0f\xa6c" +
-	"\xf6 \xea\x86-s7\x80L\xcd4\x8ennuc" +
-	"\xd4\x83\xb4\x1d\x853\xdd\xac&M\x13\xa3~?\xbf\x98" +
-	"\xf6\x09\x9a\x98\xa0u\x1a\xcb\xc1#\x13>\x94A|\x88" +
-	"\xdc`F\xee\xf3\xd2\xf8\xeb\xfb3r?r\xa4=I" +
-	"=\x9c\x91;\xc8\xe3/I\xff\x18\x0b:\xf7(W\x00" +
-	"\xff\x08%\xfds,\xf4\xdc\xb3\x8c\x01\xffL\xde\xaf\xb1" +
-	"\x00t\xaf\x8e\xfa\x95\xbc\xdfc\xc5p\x1elJ\x8e~" +
-	"6?\xa5,\xc7\x89h\xa5\x8ea\xcb\xb5\xec[\xd9U" +
-	"\x99\xff[\x97\xb5\xcb\xeb\x7f\x01\x00\x00\xff\xff\xc79\xa7" +
-	"e"
+const schema_da1eebf4d7c0f83e = "x\xdad\xcc?K\xf3P\x14\xc7\xf1\xdf\xef\xde$}" +
+	"\x1e\xfc\x83\xd7f\x14\xab\xe0\xaaR'-\xa2B\x9d\x9c" +
+	"z\x8d8\xb8\xc5z\x87\x80$%I\xdb\x97\xa1\xef\xc0" +
+	"7\xa1\xa3\xe8\"(X\xd0I(.\x82\x9b\x8b\x83B" +
+	"\xb7\xc8\xed\x98n\x87\xcf\xf7\x9c3\xf7\xbc\xe7\xd4g\xee" +
+	"\x08\xa1}\xd7+\xc2\xab\xa7\xa6\xba\xbc\x1dA\xcd\xb3\xd8" +
+	"\x19\xdd\xbf\xfd|-\x0e\xe1V*\x80z\x18\xaa\xd7\x0a" +
+	"P\x1f\\\x10\xabE\x96'\xa9Y\xcfr\x91\xa4f\xad" +
+	"\x1dv\xe2N\xa3\x19\x9e\x9b\xf8L\x86i\x8b\xd4\x0b\xd2" +
+	"\x01\x1c\x02\xea\xe6\x00\xd0\xd7\x92\xfaEP\x91>-\x0e" +
+	"6\x00\xfd(\xa9?\x05\x95\x10>\x05\xa0>\x1a\x80~" +
+	"\x97\xd4#A%\xa5O\x09\xa8_\x8b\xdf\x92\xc14\x05" +
+	"\x95\xe3\xf8t\x80\xea\x7f\x9e\x00\xc1?J\x06+\xd6]" +
+	"\xd7\xa7\x0bT\x97\x99\x02\xc1\x92\xf5m\xeb\x9e\xe7\xd3\x03" +
+	"\xaa[c\xdf\xb4~D\xc1\xa2\x17eQ\x9e\xa4\x19\x00" +
+	"\xce\x82-INA\xd8\xb1\xd6\x8bL?+\xe1\xae\xe9" +
+	"\x998\x9f\xd0\xf1\x97\xb2\x16\xa7I7n\x9b\xc3\x102" +
+	"7\xe56\xbe\xd8\xef\xa6\xa8\x85y\x94\xc4\x93\xd9\xf4\xb3" +
+	"\x96IQ;\xb6\x8b\xa5\xfc\x17\x00\x00\xff\xffh\x8eT" +
+	"\x91"
 
 func RegisterSchema(reg *schemas.Registry) {
 	reg.Register(&schemas.Schema{
 		String: schema_da1eebf4d7c0f83e,
 		Nodes: []uint64{
-			0xb5b7b963d0a9b4d4,
 			0xf8bd901143c99f61,
 		},
 		Compressed: true,

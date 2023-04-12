@@ -115,20 +115,13 @@ func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *store.Sum) {
 		}
 		duration += e.Duration * float64(e.Sign)
 	}
-	bounceRate := uint32(math.Round(float64(bounce) / float64(signSum) * 100))
-	visits := uint32(signSum)
-	pageViews := uint32(views)
-	_events := uint32(events)
-	_visitors := uint32(visitors)
-	visitDuration := uint32(math.Round(duration / float64(signSum)))
-	viewsPerVisit := float64(views) / float64(signSum)
-	sum.SetEvents(float64(_events))
-	sum.SetViews(float64(pageViews))
-	sum.SetVisitors(float64(_visitors))
-	sum.SetBounceRate(float64(bounceRate))
-	sum.SetVisits(float64(visits))
-	sum.SetViewsPerVisit(viewsPerVisit)
-	sum.SetVisitDuration(float64(visitDuration))
+	sum.BounceRate = uint32(math.Round(float64(bounce) / float64(signSum) * 100))
+	sum.Visits = uint32(signSum)
+	sum.Views = uint32(views)
+	sum.Events = uint32(events)
+	sum.Visitors = uint32(visitors)
+	sum.VisitDuration = uint32(math.Round(duration / float64(signSum)))
+	sum.ViewsPerVisit = uint32(math.Round(float64(views) / float64(signSum)))
 }
 
 func (ls EntryList) Emit(f func(EntryList)) {
