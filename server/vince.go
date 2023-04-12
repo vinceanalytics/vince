@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	"github.com/gernest/vince/assets"
-	"github.com/gernest/vince/assets/tracker"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/email"
@@ -161,7 +160,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 func Handle(ctx context.Context) http.Handler {
 	pipe := append(
 		plug.Pipeline{
-			tracker.Plug(),
+			plug.Track(),
 			plug.Favicon(plug.DefaultClient),
 			assets.Plug(),
 			plug.RequestID,

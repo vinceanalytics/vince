@@ -55,6 +55,20 @@ func FetchFlash(h http.Handler) http.Handler {
 	})
 }
 
+func Track() Plug {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/js/vince") {
+				w.Header().Set("x-content-type-options", "nosniff")
+				w.Header().Set("cross-origin-resource-policy", "cross-origin")
+				w.Header().Set("access-control-allow-origin", "*")
+				w.Header().Set("cache-control", "public, max-age=86400, must-revalidate")
+			}
+			h.ServeHTTP(w, r)
+		})
+	}
+}
+
 func SessionTimeout(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
