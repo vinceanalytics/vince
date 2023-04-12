@@ -9,7 +9,7 @@ import (
 
 //go:generate go run gen/main.go docs ../assets/
 
-//go:embed site manifest.json
+//go:embed  manifest.json
 var FS embed.FS
 
 var modTime = &sync.Map{}

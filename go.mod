@@ -28,6 +28,7 @@ require (
 	github.com/oschwald/maxminddb-golang v1.10.0
 	github.com/rs/zerolog v1.21.0
 	github.com/segmentio/parquet-go v0.0.0-20230404173032-05ed5ed000b1
+	github.com/tdewolff/minify/v2 v2.12.5
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/wcharczuk/go-chart/v2 v2.1.0
 	golang.org/x/crypto v0.1.0
@@ -69,6 +70,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/segmentio/encoding v0.3.5 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
+	github.com/tdewolff/parse/v2 v2.6.5 // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.23.0 // indirect

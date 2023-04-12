@@ -16,6 +16,10 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/css"
+	h2 "github.com/tdewolff/minify/v2/html"
+	"github.com/tdewolff/minify/v2/svg"
 )
 
 func main() {
@@ -32,6 +36,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	m := minify.New()
+	m.AddFunc("text/css", css.Minify)
+	m.AddFunc("text/html", h2.Minify)
+	m.AddFunc("image/svg+xml", svg.Minify)
+
 	var buf bytes.Buffer
 	err = filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
@@ -49,13 +58,15 @@ func main() {
 			return err
 		}
 		buf.Reset()
-		err = Render(&buf, b, filepath.Base(path), info.ModTime())
+		w := m.Writer("text/html", &buf)
+		err = Render(w, b, filepath.Base(path), info.ModTime())
 		if err != nil {
 			return err
 		}
 		path = strings.TrimSuffix(path, filepath.Ext(path))
 		path += ".html"
 		path, _ = filepath.Rel(src, path)
+		w.Close()
 		return os.WriteFile(filepath.Join(dest, path), buf.Bytes(), info.Mode())
 	})
 	if err != nil {

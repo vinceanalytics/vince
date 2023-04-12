@@ -23,7 +23,8 @@ var files = map[string]bool{
 func match(path string) bool {
 	return strings.HasPrefix(path, "/css") ||
 		strings.HasPrefix(path, "/js") ||
-		strings.HasPrefix(path, "/fonts") || files[path]
+		strings.HasPrefix(path, "/fonts") ||
+		strings.HasPrefix(path, "/image") || files[path]
 }
 
 func Plug() plug.Plug {
