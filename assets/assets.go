@@ -1,11 +1,10 @@
 package assets
 
 import (
-	"io/fs"
+	"embed"
 	"net/http"
 	"strings"
 
-	"github.com/gernest/vince/assets/ui"
 	"github.com/gernest/vince/plug"
 )
 
@@ -20,6 +19,9 @@ var files = map[string]bool{
 	"robots.txt":                  true,
 }
 
+//go:embed css image js site *.png *.ico *.webmanifest
+var fs embed.FS
+
 func match(path string) bool {
 	return strings.HasPrefix(path, "/css") ||
 		strings.HasPrefix(path, "/js") ||
@@ -28,8 +30,7 @@ func match(path string) bool {
 }
 
 func Plug() plug.Plug {
-	files, _ := fs.Sub(ui.UI, "app")
-	app := http.FileServer(http.FS(files))
+	app := http.FileServer(http.FS(fs))
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if match(r.URL.Path) {
