@@ -19,13 +19,14 @@ var files = map[string]bool{
 	"robots.txt":                  true,
 }
 
-//go:embed css image js site *.png *.ico *.webmanifest
+//go:embed css image js docs *.png *.ico *.webmanifest
 var fs embed.FS
 
 func match(path string) bool {
 	return strings.HasPrefix(path, "/css") ||
 		strings.HasPrefix(path, "/js") ||
 		strings.HasPrefix(path, "/fonts") ||
+		strings.HasPrefix(path, "/docs") ||
 		strings.HasPrefix(path, "/image") || files[path]
 }
 
