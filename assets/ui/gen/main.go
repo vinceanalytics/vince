@@ -14,11 +14,15 @@ func main() {
 	if src == "" {
 		return
 	}
+	_, err := os.Stat(src)
+	if os.IsNotExist(err) {
+		return
+	}
 	dest := flag.Arg(1)
 	if dest == "" {
 		return
 	}
-	dest, err := filepath.Abs(dest)
+	dest, err = filepath.Abs(dest)
 	if err != nil {
 		log.Fatal(err)
 	}
