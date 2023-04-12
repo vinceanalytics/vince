@@ -29,9 +29,9 @@ function compilefile(input, output, templateVars = {}) {
 const base_variants = ["hash", "outbound-links", "exclusions", "compat", "local", "manual", "file-downloads", "dimensions", "tagged-events"]
 const variants = [...g.clone.powerSet(base_variants)].filter(a => a.length > 0).map(a => a.sort());
 
-compilefile(relPath('src/vince.js'), relPath('../assets/tracker/js/vince.js'))
+compilefile(relPath('src/vince.js'), relPath('../assets/js/vince.js'))
 
 variants.map(variant => {
   const options = variant.map(variant => variant.replace('-', '_')).reduce((acc, curr) => (acc[curr] = true, acc), {})
-  compilefile(relPath('src/vince.js'), relPath(`../assets/tracker/js/vince.${variant.join('.')}.js`), options)
+  compilefile(relPath('src/vince.js'), relPath(`../assets/js/vince.${variant.join('.')}.js`), options)
 })
