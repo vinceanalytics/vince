@@ -8,6 +8,11 @@ import (
 	"github.com/gernest/vince/timex"
 )
 
+const (
+	// The cost of keeping a Calendar in memory
+	CacheCost = 490704
+)
+
 func update(i int, v float64, f func() (capnp.Float64List, error)) error {
 	if v == 0 {
 		return nil
