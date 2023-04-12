@@ -30872,22 +30872,6 @@ li.contribution .num {
   stroke: rgba(185, 73, 71, 0.3);
 }
 
-@font-face {
-  font-family: "Jost  Heavy";
-  src: url("/fonts/Jost-ExtraBold.ttf");
-}
-@font-face {
-  font-family: "Jost Heavy Italic";
-  src: url("/fonts/Jost-ExtraBoldItalic.ttf");
-}
-@font-face {
-  font-family: "Jost Medium";
-  src: url("/fonts/Jost-Medium.ttf");
-}
-@font-face {
-  font-family: "Jost Medium Italic";
-  src: url("/fonts/Jost-MediumItalic.ttf");
-}
 :root {
   --color-white: #fff;
   --color-black: #222;
@@ -30929,10 +30913,6 @@ li.contribution .num {
   --space-xx-large: 4em;
   --space-xxx-large: 6em;
   --space-navbar: 4em;
-  --font-heavy: "Jost Heavy";
-  --font-heavy-italic: "Jost Heavy Italic";
-  --font-medium: "Jost Medium";
-  --font-medium-italic: "Jost Medium Italic";
 }
 
 :root {
@@ -30947,15 +30927,18 @@ li.contribution .num {
   --type-xxx-large: 275%;
 }
 
-body {
-  font-family: var(--font-heavy);
-}
-
 .footer {
   margin: 10em 0 0 0;
   padding: 1em 0;
   text-align: center;
-  font-family: var(--font-medium-italic);
+  font-style: italic;
+  font-weight: var(--base-text-weight-medium, 500);
+}
+
+.serious-text {
+  font-size: 24px !important;
+  letter-spacing: -0.01em !important;
+  font-weight: var(--base-text-weight-medium, 500);
 }
 
 .footer__nav {
@@ -30998,38 +30981,6 @@ body {
   line-height: 1rem;
 }
 
-.logo {
-  display: inline-block;
-  font-size: 64px;
-  font-style: italic;
-  font-weight: 800;
-  text-align: center;
-  text-shadow: #222f37 3px 3px 0;
-  text-transform: uppercase;
-  font-family: var(--font-heavy);
-}
-
-.logo-main {
-  display: inline-block;
-  font-size: 24px;
-  vertical-align: text-bottom;
-  font-style: italic;
-  font-weight: 800;
-  text-align: center;
-  text-shadow: #222f37 1px 1px 0;
-  text-transform: uppercase;
-  font-family: var(--font-heavy);
-}
-
-.lead {
-  display: inline-block;
-  font-style: italic;
-  font-weight: 800;
-  text-align: center;
-  text-transform: uppercase;
-  font-family: var(--font-heavy);
-}
-
 .login-callout {
   padding: 16px 16px;
   text-align: center;
@@ -31040,7 +30991,7 @@ body {
 .auth-form {
   width: 340px;
   margin: 0 auto;
-  font-family: var(--font-medium-italic);
+  font-weight: var(--base-text-weight-medium, 500);
   background-color: linear-gradient(45deg, var(--color-canary) 0%, var(--color-peach) 100%);
 }
 
@@ -31091,7 +31042,7 @@ body {
 .menu-link {
   font-size: var(--type-large);
   color: var(--color-blurple);
-  font-family: var(--font-medium-italic);
+  font-weight: var(--base-text-weight-medium, 500);
 }
 
 .diagonal_line_through {
