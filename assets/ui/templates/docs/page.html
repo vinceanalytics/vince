@@ -5,9 +5,32 @@
             <div class="markdown-body">
                 {{.Content}}
             </div>
+            <div></div>
             <p class="text-xs" style="margin-top: 2em;">
                 <em>Updated {{.ModTime}}</em>
             </p>
+            {{with .DocPage}}
+            <div class="prev-next">
+                <div class="pager">
+                    {{with .Prev}}
+                    <a href="/{{.Path}}" class="pager-link prev" style="text-decoration: none;">
+                        <span class="desc color-fg-subtle">Previous Page</span>
+                        <span class="title color-fg-accent">{{.Meta.Title}}</span>
+                    </a>
+                    {{end}}
+                </div>
+                {{$prev := .Prev}}
+                <div class="{{if $prev}}has-prev{{end}} pager">
+                    {{with .Next}}
+                    <a href="/{{.Path}}" class="pager-link next" style="text-decoration: none;">
+                        <span class="desc color-fg-subtle">Next Page</span>
+                        <span class="title color-fg-accent">{{.Meta.Title}}</span>
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+
         </div>
         <div class="Layout-sidebar">{{template "_side_nav" .}}</div>
     </div>

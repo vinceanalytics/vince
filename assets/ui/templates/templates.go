@@ -223,6 +223,7 @@ type Context struct {
 	Owner         *models.User
 	Docs          bool
 	Pages         []*Page
+	DocPage       *Page
 }
 
 type Page struct {
@@ -247,6 +248,7 @@ func (p *Page) Render(w io.Writer, pages Pages) error {
 		ModTime: p.UpdatedAt,
 		Docs:    true,
 		Pages:   pages,
+		DocPage: p,
 	})
 }
 
@@ -289,8 +291,11 @@ type Pages []*Page
 
 func (p Pages) Sort() Pages {
 	sort.SliceStable(p, func(i, j int) bool {
-		return p[i].Meta.Section < p[j].Meta.Section &&
-			p[i].Meta.Weight < p[j].Meta.Weight
+		n := strings.Compare(p[i].Meta.Section, p[j].Meta.Section)
+		if n == 0 {
+			return p[i].Meta.Weight < p[j].Meta.Weight
+		}
+		return n == -1
 	})
 	var prev *Page
 	for i, x := range p {
@@ -313,6 +318,9 @@ func (Context) Section(p Pages) string {
 func (Context) Sections(p Pages) (o []Pages) {
 	var ls []*Page
 	for _, v := range p {
+		if v.Meta.Section == "" {
+			continue
+		}
 		if len(ls) == 0 {
 			ls = append(ls, v)
 		} else {
