@@ -1,17 +1,17 @@
 {{define "_content"}}
 <div class="width-full d-flex container-md mt-4 mx-auto">
     {{if .HasPin}}
-    <div class="auth-form px-3">
-        <div class="auth-form-header p0">
+    <div class="container-md Box">
+        <div class="Box-header ">
             Code Activation
         </div>
-        <div class="auth-form-body mt3">
+        <div class="Box-body">
             <form action="/activate" method="post">
-                <input type="text" name="code" id="code" class="form-control input-block"
+                <input type="text" name="code" id="code" class="form-control input-block my-2"
                     oninput="this.value=this.value.replace(/[^0-9]/g, ''); if (this.value.length >= 4) document.getElementById('submit').focus()"
                     onclick="this.select();" placeholder="••••" maxlength="4">
                 {{template "_csrf" .}}
-                <input type="submit" id="submit" value="Activate →" name="submit" class="btn btn-primary btn-block">
+                <input type="submit" id="submit" value="Activate →" name="submit" class="btn  btn-block">
                 <p class="login-callout mt-3">
                     Not received the code?<a href="/activate/request-code">Send again</a>
                 </p>
