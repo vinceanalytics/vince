@@ -1,5 +1,5 @@
 --- mark ---
-title = "data policy"
+title = "Data policy"
 section = "site"
 weight = 1
 --- mark ---

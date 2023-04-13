@@ -1,5 +1,5 @@
 --- mark ---
-title = "terms and conditions"
+title = "Terms and conditions"
 section = "site"
 weight = 1
 --- mark ---

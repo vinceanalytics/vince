@@ -1,5 +1,5 @@
 --- mark ---
-title = "privacy policy"
+title = "Privacy policy"
 section = "site"
 weight = 1
 --- mark ---

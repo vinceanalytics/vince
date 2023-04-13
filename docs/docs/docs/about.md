@@ -1,5 +1,5 @@
 --- mark ---
-title = "about vince analytics"
+title = "About vince analytics"
 section = "site"
 weight = 1
 --- mark ---

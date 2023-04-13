@@ -1,5 +1,5 @@
 --- mark ---
-title = "contact us"
+title = "Contact us"
 section = "site"
 weight = 100
 --- mark ---

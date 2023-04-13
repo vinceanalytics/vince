@@ -1,5 +1,5 @@
 --- mark ---
-title = "how to get website insights for bloggers and content creators"
+title = "How to get website insights for bloggers and content creators"
 section = "site"
 weight = 1
 --- mark ---
