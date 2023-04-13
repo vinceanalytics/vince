@@ -11,7 +11,12 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
     <title>
-        {{block "_title" .}} VINCE - A convincing google analytics alternative {{end}}
+        VINCE ANALYTICS |
+        {{- if .Title -}}
+        {{.Title}}
+        {{ else -}}
+        {{.Slogan}}
+        {{end}}
     </title>
     <link rel="stylesheet" href="/css/app.css" />
     <script defer="defer" type="application/javascript" src="/js/primer_view_components.js"></script>

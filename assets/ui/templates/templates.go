@@ -345,6 +345,10 @@ func (t *Context) Plans() []plans.Plan {
 	return plans.All
 }
 
+func (Context) Slogan() string {
+	return "Self hosted, single file ,privacy friendly web analytics platform"
+}
+
 func (t *Context) Snippet() string {
 	track := fmt.Sprintf("https://%s/js/script.js", t.Config.Url)
 	if t.Site.CustomDomain != nil {
