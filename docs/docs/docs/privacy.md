@@ -1,3 +1,9 @@
+--- mark ---
+title = "privacy policy"
+section = "site"
+weight = 1
+--- mark ---
+
 # Our privacy policy
 
 All personal data is kept securely by us and thus protected from unauthorized access.

@@ -1,3 +1,10 @@
+--- mark ---
+title = "terms and conditions"
+section = "site"
+weight = 1
+--- mark ---
+
+
 # Terms of service
 
 ### Introduction

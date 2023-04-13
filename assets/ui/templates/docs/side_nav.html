@@ -1,0 +1,14 @@
+{{define "_side_nav"}}
+<nav class="menu">
+    {{$ctx := .}}
+    {{range $ctx.Sections .Pages}}
+    <span class="menu-heading">{{$ctx.Section .}}</span>
+    {{range .}}
+    {{if ne .Meta.Layout "home"}}
+    <a class="menu-item" href="/{{.Path}}" {{if eq .Meta.Title $ctx.Title}} aria-current="page"
+        {{end}}>{{.Meta.Title}}</a>
+    {{end}}
+    {{end}}
+    {{end}}
+</nav>
+{{end}}

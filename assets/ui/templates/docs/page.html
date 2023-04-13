@@ -1,0 +1,16 @@
+{{define "_content"}}
+<div class="container-xl py-6">
+    <div class="Layout">
+        <div class="Layout-main">
+            <div class="markdown-body">
+                {{.Content}}
+            </div>
+            <p class="text-xs" style="margin-top: 2em;">
+                <em>Updated {{.ModTime}}</em>
+            </p>
+        </div>
+        <div class="Layout-sidebar">{{template "_side_nav" .}}</div>
+    </div>
+</div>
+
+{{end}}

@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	capnproto.org/go/capnp/v3 v3.0.0-alpha.26
+	github.com/BurntSushi/toml v1.2.1
 	github.com/RoaringBitmap/roaring v1.2.3
 	github.com/arl/statsviz v0.5.2
 	github.com/belak/octicon v0.0.0-20220531043918-8d81fefac757

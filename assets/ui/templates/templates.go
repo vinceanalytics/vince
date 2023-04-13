@@ -1,23 +1,31 @@
 package templates
 
 import (
+	"bytes"
 	"context"
 	"embed"
 	"fmt"
 	"html/template"
+	"io"
+	"log"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/belak/octicon"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/internal/plans"
 	"github.com/gernest/vince/models"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 )
 
-//go:embed layout pages site stats auth error email
+//go:embed layout pages docs site stats auth error email
 var Files embed.FS
 
 var LoginForm = template.Must(
@@ -117,6 +125,19 @@ var Markdown = template.Must(
 	),
 )
 
+var DocsPage = template.Must(
+	template.ParseFS(Files,
+		"layout/app.html",
+		"layout/csrf.html",
+		"layout/header.html",
+		"layout/flash.html",
+		"layout/notice.html",
+		"layout/footer.html",
+		"docs/side_nav.html",
+		"docs/page.html",
+	),
+)
+
 var AddSnippet = template.Must(
 	template.ParseFS(Files,
 		"layout/focus.html",
@@ -201,6 +222,112 @@ type Context struct {
 	HasGoals      bool
 	Owner         *models.User
 	Docs          bool
+	Pages         []*Page
+}
+
+type Page struct {
+	Meta       Meta
+	Next, Prev *Page
+	Data       []byte
+	Path       string
+	UpdatedAt  time.Time
+}
+
+func (p *Page) Render(w io.Writer, pages Pages) error {
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
+	x := parser.NewWithExtensions(extensions)
+	doc := x.Parse(p.Data)
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
+	b := markdown.Render(doc, renderer)
+	return DocsPage.Execute(w, &Context{
+		Title:   p.Meta.Title,
+		Content: template.HTML(b),
+		ModTime: p.UpdatedAt,
+		Docs:    true,
+		Pages:   pages,
+	})
+}
+
+func (p *Page) Read(path string, b []byte, modTime time.Time) {
+	p.Path = path
+	p.Data = p.Meta.Read(b)
+	p.UpdatedAt = modTime
+}
+
+type Meta struct {
+	Weight  int    `toml:"weight,omitempty"`
+	Title   string `toml:"title,omitempty"`
+	Section string `toml:"section,omitempty"`
+	Layout  string `toml:"layout,omitempty"`
+}
+
+var marker = []byte("--- mark ---")
+
+func (m *Meta) Read(src []byte) []byte {
+	b := src
+	start := bytes.Index(b, marker)
+	if start == -1 {
+		return src
+	}
+	b = b[start+len(marker):]
+	last := bytes.Index(b, marker)
+	if last == -1 {
+		return src
+	}
+	chunk := b[:last]
+	b = b[last+len(marker):]
+	_, err := toml.Decode(string(chunk), m)
+	if err != nil {
+		log.Println("failed decoding meta "+err.Error(), string(chunk))
+	}
+	return b
+}
+
+type Pages []*Page
+
+func (p Pages) Sort() Pages {
+	sort.SliceStable(p, func(i, j int) bool {
+		return p[i].Meta.Section < p[j].Meta.Section &&
+			p[i].Meta.Weight < p[j].Meta.Weight
+	})
+	var prev *Page
+	for i, x := range p {
+		x.Prev = prev
+		if i+1 < len(p) {
+			x.Next = p[i+1]
+		}
+		prev = x
+	}
+	return p
+}
+
+func (Context) Section(p Pages) string {
+	if len(p) > 0 {
+		return p[0].Meta.Section
+	}
+	return ""
+}
+
+func (Context) Sections(p Pages) (o []Pages) {
+	var ls []*Page
+	for _, v := range p {
+		if len(ls) == 0 {
+			ls = append(ls, v)
+		} else {
+			if ls[0].Meta.Section == v.Meta.Section {
+				ls = append(ls, v)
+			} else {
+				o = append(o, ls)
+				ls = []*Page{v}
+			}
+		}
+	}
+	if len(ls) > 0 {
+		o = append(o, ls)
+	}
+	return
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {

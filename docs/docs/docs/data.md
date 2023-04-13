@@ -1,3 +1,10 @@
+--- mark ---
+title = "data policy"
+section = "site"
+weight = 1
+--- mark ---
+
+
 # Our Data Policy
 
 ### What we   collect
