@@ -1,34 +1,30 @@
 {{define "_content"}}
-<div class="container-xl">
-    <div class="container-md" style="padding: 67px 0 200px;">
-        <div class="Box">
-            <div class="Box-header">
-                Add JavaScript snippet
+<div class="container-md  Box text-center">
+    <div class=" Box-header">
+        Add JavaScript snippet
+    </div>
+    <div class=" Box-body">
+        <h3>
+            Paste this snippet in the <code>&lt;head&gt;</code> of your website.
+        </h3>
+        <div class="position-relative">
+            <div class="markdown-body">
+                <pre id="snippet_code">
+                {{- .Snippet -}}
+                </pre>
             </div>
-            <div class="Box-body">
-                <h3>
-                    Paste this snippet in the <code>&lt;head&gt;</code> of your website.
-                </h3>
-                <div class="position-relative">
-                    <div class="markdown-body">
-                        <pre id="snippet_code">
-                        {{- .Snippet -}}
-                        </pre>
-                    </div>
-                    <span class="position-absolute top-0 right-0" style="cursor: pointer;">
-                        <clipboard-copy for="snippet_code" aria-label="Copy snippet to clipboard"
-                            data-view-component="true" tabindex="0" role="button">
-                            {{.Icon "copy" 16 }}
-                            {{.Icon "check" 16 "hide"}}
-                        </clipboard-copy>
-                    </span>
-                </div>
-
-                <a href="/{{.Site.Domain}}/stats" class="btn btn-primary btn-block">
-                    Start collecting data →
-                </a>
-            </div>
+            <span class="position-absolute top-0 right-0" style="cursor: pointer;">
+                <clipboard-copy for="snippet_code" aria-label="Copy snippet to clipboard" data-view-component="true"
+                    tabindex="0" role="button">
+                    {{.Icon "copy" 16 }}
+                    {{.Icon "check" 16 "hide"}}
+                </clipboard-copy>
+            </span>
         </div>
+
+        <a href="/{{.Site.Domain}}/stats" class="btn btn-primary btn-block">
+            Start collecting data →
+        </a>
     </div>
 </div>
 {{end}}
