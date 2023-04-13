@@ -1,9 +1,9 @@
 {{define "_content"}}
-<div class="auth-form px-3">
-    <div class="auth-form-header p0">
+<div class="container-md Box">
+    <div class="Box-header">
         Sign In
     </div>
-    <div class="auth-form-body mt3">
+    <div class="Box-body mt3">
         <form action="/login" method="post">
             <label for="email">email address</label>
             <input {{if .Errors.email}} invalid="true" {{end}} {{with .Form.email}}value="{{index . 0}}" {{end}}
@@ -17,7 +17,7 @@
                 </a>
                 {{template "_csrf" .}}
                 {{template "_captcha" .}}
-                <input type="submit" value="Sign In  →" name="submit" class="btn btn-primary btn-block">
+                <input type="submit" value="Sign In  →" name="submit" class="btn btn-primary btn-block my-2">
             </div>
             <p class="login-callout mt-3">
                 New to VINCE ?<a href="/register"> Create an account</a>
