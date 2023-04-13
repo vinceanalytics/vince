@@ -4,11 +4,18 @@
         <nav class="UnderlineNav UnderlineNav--full UnderlineNav--right">
             <div class="container-lg UnderlineNav-container">
                 <div class="UnderlineNav-actions">
-                    <a href="/">
+                    <a href="{{if .Docs}}/docs{{else}}/{{end}}">
                         {{.Logo 120 60}}
                     </a>
                 </div>
 
+                {{if .Docs}}
+                <div class="UnderlineNav-body">
+                    <a href="/" class="UnderlineNav-item" aria-current="page">
+                        website
+                    </a>
+                </div>
+                {{else}}
                 <div class="UnderlineNav-body">
                     {{if not .CurrentUser}}
                     <a class="UnderlineNav-item" href="/pricing" {{if eq .Page "pricing" }}aria-current="page"
@@ -37,11 +44,10 @@
                         <span class="menu-link"> docs </span>
                     </a>
                     {{end}}
-
                 </div>
+                {{end}}
             </div>
         </nav>
     </header>
 </div>
-
 {{end}}

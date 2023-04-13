@@ -86,5 +86,6 @@ func Render(w io.Writer, b []byte, title string, mod time.Time) error {
 		Title:   title,
 		Content: template.HTML(b),
 		ModTime: mod,
+		Docs:    true,
 	})
 }

@@ -24,7 +24,7 @@ We reserve the right at any time and from time to time to modify or discontinue,
 
 ### Privacy Policy
 
-Our privacy policy is [available as a separate document](/privacy).
+Our privacy policy is [available as a separate document](/docs/privacy.html).
 
 ### The Free Trial
 

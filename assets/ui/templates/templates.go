@@ -200,6 +200,7 @@ type Context struct {
 	EmailReport   bool
 	HasGoals      bool
 	Owner         *models.User
+	Docs          bool
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
@@ -341,7 +342,7 @@ func (t *Context) Format(n uint64) string {
 	}
 }
 
-func (t *Context) Plans() []plans.Plan {
+func (Context) Plans() []plans.Plan {
 	return plans.All
 }
 
