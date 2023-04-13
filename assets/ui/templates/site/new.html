@@ -1,30 +1,29 @@
 {{define "_content"}}
-<div class="container-xl">
-    <div class="container-md" style="padding: 67px 0 200px;">
-        <div class="auth-form px-3">
-            <div class="auth-form-header p0">
-                create new site
-            </div>
-            <div class="auth-form-body mt3">
-                <form action="/sites" method="post">
-                    <label for="domain">domain</label>
-                    <input {{.InputField "domain" }} class="form-control input-block" type="text" name="domain"
-                        id="domain" placeholder="example.com" required>
-                    {{.Validate "domain"}}
-                    <div class="form-checkbox">
-                        <label>
-                            <input type="checkbox" name="public" checked="checked" value="true" />
-                            Public
-                        </label>
-                        <p class="note" id="help-text-for-checkbox">
-                            Public sites are accessible to the whole internet
-                        </p>
-                    </div>
-                    {{template "_csrf" .}}
-                    <input type="submit" value="Add  →" name="submit" class="btn btn-primary btn-block">
-                </form>
-            </div>
+<div class="d-flex">
+    <div class="container-md Box my-3">
+        <div class="Box-header">
+            create new site
+        </div>
+        <div class="Box-body">
+            <form action="/sites" method="post">
+                <label for="domain">domain</label>
+                <input {{.InputField "domain" }} class="form-control input-block" type="text" name="domain" id="domain"
+                    placeholder="example.com" required>
+                {{.Validate "domain"}}
+                <div class="form-checkbox">
+                    <label>
+                        <input type="checkbox" name="public" checked="checked" value="true" />
+                        Public
+                    </label>
+                    <p class="note" id="help-text-for-checkbox">
+                        Public sites are accessible to the whole internet
+                    </p>
+                </div>
+                {{template "_csrf" .}}
+                <input type="submit" value="Add  →" name="submit" class="btn btn-primary btn-block">
+            </form>
         </div>
     </div>
 </div>
+
 {{end}}
