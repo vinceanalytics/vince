@@ -91,12 +91,13 @@ func processCountry() error {
 		return err
 	}
 	defer f.Close()
-	e, _ := zstd.NewWriter(f)
+	e, _ := zstd.NewWriter(f, zstd.WithEncoderLevel(
+		zstd.SpeedBestCompression,
+	))
 	_, err = db.Backup(e, 0)
 	if err != nil {
 		return err
 	}
-
 	e.Close()
 	return nil
 }
