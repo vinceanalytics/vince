@@ -13,6 +13,8 @@ import (
 
 type sessionKey struct{}
 type sitesKey struct{}
+type userKey struct{}
+type ipKey struct{}
 
 func Open(ctx context.Context) (context.Context, error) {
 	session, err := ristretto.NewCache(&ristretto.Config{
@@ -32,14 +34,38 @@ func Open(ctx context.Context) (context.Context, error) {
 		session.Close()
 		return nil, err
 	}
+	users, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 1e7,
+		MaxCost:     1 << 20,
+		BufferItems: 64,
+	})
+	if err != nil {
+		session.Close()
+		sites.Close()
+		return nil, err
+	}
+	ip, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 1e7,
+		MaxCost:     1 << 20,
+		BufferItems: 64,
+	})
+	if err != nil {
+		session.Close()
+		sites.Close()
+		users.Close()
+		return nil, err
+	}
 	ctx = context.WithValue(ctx, sessionKey{}, session)
 	ctx = context.WithValue(ctx, sitesKey{}, sites)
+	ctx = context.WithValue(ctx, userKey{}, users)
+	ctx = context.WithValue(ctx, ipKey{}, ip)
 	return ctx, nil
 }
 
 func Close(ctx context.Context) {
 	Session(ctx).Close()
 	Site(ctx).Close()
+	User(ctx).Close()
 }
 
 func Session(ctx context.Context) *ristretto.Cache {
@@ -48,6 +74,14 @@ func Session(ctx context.Context) *ristretto.Cache {
 
 func Site(ctx context.Context) *ristretto.Cache {
 	return ctx.Value(sitesKey{}).(*ristretto.Cache)
+}
+
+func User(ctx context.Context) *ristretto.Cache {
+	return ctx.Value(userKey{}).(*ristretto.Cache)
+}
+
+func IP(ctx context.Context) *ristretto.Cache {
+	return ctx.Value(ipKey{}).(*ristretto.Cache)
 }
 
 type SiteRate struct {
@@ -91,4 +125,26 @@ func AllowSite(ctx context.Context, domain string) (uid, sid uint64, ok bool) {
 		return r.Allow(ctx)
 	}
 	return
+}
+
+var LoginRate = rate.Limit(5 / time.Minute.Seconds())
+
+func AllowUseIDToLogin(ctx context.Context, uid uint64) bool {
+	r := User(ctx)
+	x, ok := r.Get(uid)
+	if !ok {
+		r.Set(uid, rate.NewLimiter(LoginRate, 0), 1)
+		return true
+	}
+	return x.(*rate.Limiter).Allow()
+}
+
+func AllowRemoteIPLogin(ctx context.Context, ip string) bool {
+	r := IP(ctx)
+	x, ok := r.Get(ip)
+	if !ok {
+		r.Set(ip, rate.NewLimiter(LoginRate, 0), 1)
+		return true
+	}
+	return x.(*rate.Limiter).Allow()
 }

@@ -199,6 +199,10 @@ func (u *User) New(r *http.Request) (validation map[string]string, err error) {
 	return
 }
 
+func (u *User) PasswordMatch(pwd string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(pwd)) == nil
+}
+
 func (u *User) Recipient() string {
 	return strings.Split(u.Name, " ")[0]
 }

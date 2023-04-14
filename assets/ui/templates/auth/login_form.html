@@ -1,17 +1,21 @@
 {{define "_content"}}
-<div class="container-md Box">
+<div class="container-md Box {{if .Errors.failed}} Box--danger {{end}}">
     <div class="Box-header">
         Sign In
     </div>
     <div class="Box-body mt3">
+        {{if .Errors.failed}}
+        <div class="flash flash-full flash-error text-center">
+            {{.Errors.failed}}
+        </div>
+        {{end}}
         <form action="/login" method="post">
             <label for="email">email address</label>
-            <input {{if .Errors.email}} invalid="true" {{end}} {{with .Form.email}}value="{{index . 0}}" {{end}}
-                class="form-control input-block" type="email" name="email" id="email" placeholder="example@email.com">
+            <input {{with .Form.email}}value="{{index . 0}}" {{end}} class="form-control input-block" type="email"
+                name="email" id="email" placeholder="example@email.com">
             <div class="position-relative">
                 <label for="password">password</label>
-                <input {{if .Errors.password}}invalid="true" {{end}} class="form-control input-block" type="password"
-                    name="password" id="password">
+                <input class="form-control input-block" type="password" name="password" id="password">
                 <a href="/password/request-reset" class="label-link position-absolute top-0 right-0">
                     Forgot password ?
                 </a>
