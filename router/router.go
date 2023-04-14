@@ -4,9 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/pprof"
-	"time"
 
-	"github.com/arl/statsviz"
 	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/avatar"
@@ -91,18 +89,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			pipe4.GET("`^/api/:domain/status$`", api.DomainStatus),
 			NotFound,
 		),
-		pipe5.Prefix("/debug/statsviz/ws", statsviz.NewWsHandler(time.Second)),
-		pipe5.Prefix("/debug/statsviz", statsviz.IndexAtRoot("/debug/statsviz")),
 		pipe5.PathGET("/", pages.Home),
 		pipe5.PathGET("/pricing", pages.Pricing),
-		pipe5.PathGET("/about", pages.Mark("site/about.md", "about us")),
-		pipe5.PathGET("/creators", pages.Mark("site/creators.md", "web analytics for digital creators")),
-		pipe5.PathGET("/agencies", pages.Mark("site/agencies.md", "web analytics for freelancers and agencies")),
-		pipe5.PathGET("/ecommerce", pages.Mark("site/ecommerce.md", "web analytics for ecommerce")),
-		pipe5.PathGET("/contact", pages.Mark("site/contact.md", "contact us")),
-		pipe5.PathGET("/privacy", pages.Mark("site/privacy.md", "privacy policy")),
-		pipe5.PathGET("/data", pages.Mark("site/data.md", "data policy")),
-		pipe5.PathGET("/terms", pages.Mark("site/terms.md", "Terms and Conditions")),
 		pipe5.PathGET("/avatar", avatar.Serve),
 		pipe5.And(plug.RequireLoggedOut).PathGET("/register", auth.RegisterForm),
 		pipe5.And(plug.RequireLoggedOut).PathPOST("/register", auth.Register),
