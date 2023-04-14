@@ -25,7 +25,7 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
-//go:embed layout pages docs site stats auth error email
+//go:embed layout pages plot docs site stats auth error email
 var Files embed.FS
 
 var LoginForm = template.Must(
@@ -84,6 +84,7 @@ var Sites = template.Must(
 		"layout/header.html",
 		"layout/flash.html",
 		"layout/notice.html",
+		"plot/plot.html",
 		"site/index.html",
 		"layout/footer.html",
 	),
