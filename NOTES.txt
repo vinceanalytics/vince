@@ -20,3 +20,8 @@ https://bt.ht/
 * competitor
 
 https://pirsch.io/
+
+* analyze size 
+```
+go tool nm -size -sort size ./vince
+```
