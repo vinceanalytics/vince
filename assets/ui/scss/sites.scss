@@ -49,7 +49,7 @@
 
 .header:hover .siteNav .octicon,
 .header.pin .siteNav .octicon {
-    color: #fefdf8
+    color: var(--color-blurple)
 }
 
 .header:hover .siteNav a:hover,
@@ -70,15 +70,6 @@
 .header:hover .siteNav span,
 .header.pin .siteNav span {
     max-width: 200px
-}
-
-.header:hover .icon_student,
-.header.pin .icon_student {
-    opacity: 1
-}
-
-.header.dark-bg .octicon {
-    color: #fefdf8
 }
 
 .logo-fixed {
@@ -129,7 +120,7 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     font-weight: bold;
-    color: #fffdfa;
+    color: var(--color-blurple);
     display: block;
     font-size: 16px;
     height: 41px;
@@ -149,7 +140,7 @@
 }
 
 .siteNav .octicon {
-    color: #354a57;
+    color: var(--color-blurple);
     font-size: 18px;
     margin: 2px 8px 0 0;
     text-align: center;

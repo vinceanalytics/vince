@@ -1,23 +1,19 @@
 {{define "_header"}}
 {{if .Docs}}
-<div class="position-relative">
-    <header class=" header Details px-3 px-md-4 px-lg-5 flex-wrap flex-md-nowrap">
-        <nav class="UnderlineNav UnderlineNav--full UnderlineNav--right">
-            <div class="container-lg UnderlineNav-container">
-                <div class="UnderlineNav-actions">
-                    <a href="{{if .Docs}}/docs{{else}}/{{end}}">
-                        {{.Logo 120 60}}
-                    </a>
-                </div>
-                <div class="UnderlineNav-body">
-                    <a href="/" class="UnderlineNav-item" aria-current="page">
-                        website
-                    </a>
-                </div>
-            </div>
-        </nav>
-    </header>
-</div>
+<nav class="UnderlineNav UnderlineNav--full UnderlineNav--right">
+    <div class="container-lg UnderlineNav-container">
+        <div class="UnderlineNav-actions">
+            <a href="{{if .Docs}}/docs{{else}}/{{end}}">
+                {{.Logo 120 60}}
+            </a>
+        </div>
+        <div class="UnderlineNav-body">
+            <a href="/" class="UnderlineNav-item" aria-current="page">
+                website
+            </a>
+        </div>
+    </div>
+</nav>
 {{else if not .CurrentUser}}
 <div class="position-relative">
     <header class=" header Details px-3 px-md-4 px-lg-5 flex-wrap flex-md-nowrap">
@@ -65,7 +61,7 @@
 <div class="header">
     <div class="logo-fixed">
         <a href="{{if .Docs}}/docs{{else}}/{{end}}">
-            {{.Logo 120 60}}
+            {{.Logo 120 24}}
         </a>
     </div>
     <nav class="siteNav">
@@ -91,7 +87,7 @@
                 </a>
             </li>
             <li>
-                <a href="">
+                <a href="/docs">
                     {{.Icon "key" 24}}
                     <span>docs </span>
                 </a>
@@ -100,6 +96,12 @@
                 <a href="">
                     {{.Icon "person" 24 }}
                     <span>account </span>
+                </a>
+            </li>
+            <li>
+                <a href="">
+                    {{.Icon "link-external" 24 }}
+                    <span>sign out </span>
                 </a>
             </li>
         </ul>
