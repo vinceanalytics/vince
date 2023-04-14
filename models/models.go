@@ -20,6 +20,7 @@ import (
 	"golang.org/x/time/rate"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type currentRoleKey struct{}
@@ -419,6 +420,7 @@ func Open(path string) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	db.Logger = db.Logger.LogMode(logger.Silent)
 	db.SetupJoinTable(&User{}, "Sites", &SiteMembership{})
 	db.SetupJoinTable(&Site{}, "Users", &SiteMembership{})
 	err = db.AutoMigrate(

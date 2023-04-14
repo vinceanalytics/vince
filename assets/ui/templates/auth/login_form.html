@@ -1,14 +1,15 @@
 {{define "_content"}}
 <div class="container-md Box {{if .Errors.failed}} Box--danger {{end}}">
-    <div class="Box-header">
+    <div class="Box-header {{if .Errors.failed}}color-border-danger-emphasis{{end}}">
         Sign In
     </div>
-    <div class="Box-body mt3">
-        {{if .Errors.failed}}
-        <div class="flash flash-full flash-error text-center">
-            {{.Errors.failed}}
-        </div>
-        {{end}}
+    {{if .Errors.failed}}
+    <div class="flash flash-full flash-error text-center">
+        {{.Errors.failed}}
+    </div>
+    {{end}}
+    <div class="Box-body mt3">4
+
         <form action="/login" method="post">
             <label for="email">email address</label>
             <input {{with .Form.email}}value="{{index . 0}}" {{end}} class="form-control input-block" type="email"

@@ -13,7 +13,7 @@ import (
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	if caches.AllowRemoteIPLogin(ctx, remoteip.Get(r)) {
+	if !caches.AllowRemoteIPLogin(ctx, remoteip.Get(r)) {
 		render.ERROR(ctx, w, http.StatusTooManyRequests, func(ctx *templates.Context) {
 			ctx.Error.StatusText = "Too many login attempts. Wait a minute before trying again."
 		})
