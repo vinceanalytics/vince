@@ -264,9 +264,9 @@ func KeyByHash(ctx context.Context, hash string) *APIKey {
 	return &k
 }
 
-func (ak *APIKey) RateLimit() (uint64, rate.Limit, int) {
+func (ak *APIKey) RateLimit() (rate.Limit, int) {
 	r := rate.Limit(float64(ak.HourlyAPIRequestLimit) / time.Hour.Seconds())
-	return ak.ID, r, 10
+	return r, 10
 }
 
 func (ak *APIKey) New(ctx context.Context) {

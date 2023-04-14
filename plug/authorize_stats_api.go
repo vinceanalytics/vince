@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/limit"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
 )
@@ -30,7 +30,8 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			})
 			return
 		}
-		if !limit.API.AllowID(key.RateLimit()) {
+		rate, burst := key.RateLimit()
+		if !caches.AllowAPI(ctx, key.ID, rate, burst) {
 			render.ERROR(r.Context(), w, http.StatusTooManyRequests, func(ctx *templates.Context) {
 				ctx.Error.StatusText = fmt.Sprintf(
 					"Too many API requests. Your API key is limited to %d requests per hour.",
