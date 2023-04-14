@@ -1,4 +1,5 @@
 {{define "_header"}}
+{{if .Docs}}
 <div class="position-relative">
     <header class=" header Details px-3 px-md-4 px-lg-5 flex-wrap flex-md-nowrap">
         <nav class="UnderlineNav UnderlineNav--full UnderlineNav--right">
@@ -8,14 +9,25 @@
                         {{.Logo 120 60}}
                     </a>
                 </div>
-
-                {{if .Docs}}
                 <div class="UnderlineNav-body">
                     <a href="/" class="UnderlineNav-item" aria-current="page">
                         website
                     </a>
                 </div>
-                {{else}}
+            </div>
+        </nav>
+    </header>
+</div>
+{{else if not .CurrentUser}}
+<div class="position-relative">
+    <header class=" header Details px-3 px-md-4 px-lg-5 flex-wrap flex-md-nowrap">
+        <nav class="UnderlineNav UnderlineNav--full UnderlineNav--right">
+            <div class="container-lg UnderlineNav-container">
+                <div class="UnderlineNav-actions">
+                    <a href="{{if .Docs}}/docs{{else}}/{{end}}">
+                        {{.Logo 120 60}}
+                    </a>
+                </div>
                 <div class="UnderlineNav-body">
                     {{if not .CurrentUser}}
                     <a class="UnderlineNav-item" href="/pricing" {{if eq .Page "pricing" }}aria-current="page"
@@ -45,9 +57,53 @@
                     </a>
                     {{end}}
                 </div>
-                {{end}}
             </div>
         </nav>
     </header>
 </div>
+{{else if .CurrentUser}}
+<div class="header">
+    <div class="logo-fixed">
+        <a href="{{if .Docs}}/docs{{else}}/{{end}}">
+            {{.Logo 120 60}}
+        </a>
+    </div>
+    <nav class="siteNav">
+        <ul>
+            <li>
+                <a href="">
+                    <a href="/sites">
+                        {{.Icon "repo" 24}}
+                        <span>sites </span>
+                    </a>
+                </a>
+            </li>
+            <li>
+                <a href="/sites/new">
+                    {{.Icon "plus" 24}}
+                    <span> add site </span>
+                </a>
+            </li>
+            <li>
+                <a href="">
+                    {{.Icon "key" 24}}
+                    <span>upgrade </span>
+                </a>
+            </li>
+            <li>
+                <a href="">
+                    {{.Icon "key" 24}}
+                    <span>docs </span>
+                </a>
+            </li>
+            <li>
+                <a href="">
+                    {{.Icon "person" 24 }}
+                    <span>account </span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{{end}}
 {{end}}

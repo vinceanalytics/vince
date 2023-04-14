@@ -24,10 +24,10 @@
     <script defer="defer" type="application/javascript" src="/js/primer_view_components.js"></script>
 </head>
 
-<body class="page-responsive page-profile">
+<body>
     {{block "_header" .}}{{end}}
     {{block "_notice" .}}{{end}}
-    <main style="flex: 1 1 0%;">
+    <main class="container-xl" style=" padding: 67px 0 200px;">
         {{block "_content" .}}{{end}}
     </main>
     {{block "_footer" .}}{{end}}

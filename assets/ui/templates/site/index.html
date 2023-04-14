@@ -1,32 +1,19 @@
 {{$ctx := .}}
 
 {{define "_content"}}
-
-<div class="container-xl">
-    <div class="container-md" style="padding: 67px 0 200px;">
-        <div class="repoOverviews">
-            {{range .SitesOverview}}
-            {{template "single_site" .}}
-            {{end}}
-        </div>
+<div class="container-md">
+    <div>
+        {{range .SitesOverview}}
+        {{template "single_site" .}}
+        {{end}}
     </div>
 </div>
 {{end}}
 
 {{define "single_site"}}
-<div class="repoOverview">
-    <div class="coverage-low trend trend-default">
-        {{.SparkLine}}
-    </div>
-    <div class="repoChartInfo">
-        <h1>
-            <a href="/{{.Site.Domain}}/stats">{{.Site.Domain}}</a>
-            <div class="coverage-text-wrapper">
-                <div class="coverage-high coverageText">
-                    77k views
-                </div>
-            </div>
-        </h1>
+<div class="Box">
+    <div class="Box-header">
+        <a href="/{{.Site.Domain}}/stats">{{.Site.Domain}}</a>
     </div>
 </div>
 {{end}}

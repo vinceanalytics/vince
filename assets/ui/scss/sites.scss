@@ -1,555 +1,159 @@
-.coverage-unknown {
-    background-color: #999
-}
-
-.coverage-unknown.coverageText {
-    color: #999
-}
-
-.coverage-high {
-    background-color: #5f9744
-}
-
-.coverage-high.coverageText {
-    color: #5f9744
-}
-
-.coverage-medium {
-    background-color: #F89406
-}
-
-.coverage-medium.coverageText {
-    color: #F89406
-}
-
-.coverage-low {
-    background-color: #b94947
-}
-
-.coverage-low.coverageText {
-    color: #b94947
-}
-
-.negative {
-    color: #b94947
-}
-
-.positive {
-    color: #5f9744
-}
-
-.repoChartInfo {
-    width: 100%
-}
-
-.repoChartInfo h1 a {
-    position: relative;
-    z-index: 10
-}
-
-.repoOverviews > h1 {
-    margin: 0 0 30px
-}
-
-.repoOverviews .trend {
-    height: 240px
-}
-
-.repoOverviews .empty {
-    height: 150px
-}
-
-.repoOverview {
-    font-size: 16px;
-    height: 240px
-}
-
-.repoOverview.overviewEmpty {
-    height: 150px
-}
-
-.repoOverview ~ .repoOverview {
-    margin-top: 50px;
-    padding-top: 5px
-}
-
-.repoOverview h1 {
-    border: 0;
-    font-size: 34px;
-    font-style: normal;
-    margin: 0 0 10px;
-    padding-top: 0
-}
-
-.summary {
-    font-family: futura-pt, "Futura", "open-sans", "Helvetica", sans-serif;
-    display: inline-block;
-    font-size: 15px;
-    padding-right: 100px;
-    position: relative;
-    z-index: 10
-}
-
-.summary strong {
-    font-weight: bold
-}
-
-.summary a {
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
-    font-weight: bold;
-    text-transform: uppercase;
-    border-bottom: 1px dotted;
-    position: relative;
-    z-index: 10
-}
-
-.summary a:hover {
-    border-bottom: 0;
-    color: #b94947
-}
-
-.summary .buildNumber {
-    font-size: 18px;
-    position: absolute;
-    right: 30px;
-    top: 40px
-}
-
-.trend {
+.header {
     background-color: transparent;
-    position: relative;
-    left: 2vw;
-    position: absolute;
-    top: auto;
-    width: 96vw
-}
-
-.trend svg {
-    display: block;
-    overflow: visible;
-    position: relative;
-    z-index: 9
-}
-
-.trend em {
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
-    font-weight: bold;
-    bottom: -18px;
-    font-size: 11px;
-    font-style: normal;
-    left: 225px;
-    padding-left: 15px;
-    position: absolute;
-    text-transform: uppercase
-}
-
-.trend em:before {
-    background-color: rgba(0, 0, 0, 0.3);
-    content: "";
-    height: 10px;
+    height: 100%;
     left: 0;
-    position: absolute;
-    top: 2px;
-    width: 10px
+    position: fixed;
+    top: 0;
+    transition: all 0.2s ease-in-out;
+    width: 47px;
+    z-index: 25
 }
 
-.trend circle {
-    fill: rgba(0, 0, 0, 0.3);
-    stroke: #fefdf8;
-    stroke-width: 1.5px;
-    opacity: 0.8
-}
-
-.trend .area {
-    fill: rgba(0, 0, 0, 0.2)
-}
-
-.trend.coverage-high .area {
-    fill: rgba(95, 151, 68, 0.25)
-}
-
-.trend.coverage-high circle {
-    fill: rgba(95, 151, 68, 0.4)
-}
-
-.trend.coverage-high em:before {
-    background-color: rgba(95, 151, 68, 0.3)
-}
-
-.trend.coverage-medium .area {
-    fill: rgba(248, 148, 6, 0.25)
-}
-
-.trend.coverage-medium circle {
-    fill: rgba(248, 148, 6, 0.4)
-}
-
-.trend.coverage-medium em:before {
-    background-color: rgba(248, 148, 6, 0.3)
-}
-
-.trend.coverage-low .area {
-    fill: rgba(185, 73, 71, 0.25)
-}
-
-.trend.coverage-low circle {
-    fill: rgba(185, 73, 71, 0.4)
-}
-
-.trend.coverage-low em:before {
-    background-color: rgba(185, 73, 71, 0.3)
-}
-
-.repo-overview-footer-wrapper {
-    margin-top: 180px
-}
-
-.repo-overview-footer-wrapper.empty-repo {
-    margin-top: 100px
-}
-
-.trend-line-footer {
-    margin: 0px 0px 20px;
+.header .logo {
     background-color: transparent;
-    display: flex;
-    justify-content: space-between
+    max-width: 0
 }
 
-.trend-line-footer.empty-line {
-    opacity: 0.4
-}
-
-.trend-line-footer em {
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
-    font-weight: bold;
-    font-size: 11px;
-    font-style: normal;
-    text-transform: uppercase
-}
-
-.trend-line-footer .branch-label {
-    display: flex;
-    align-items: center
-}
-
-.trend-line-footer .prefix {
-    display: flex;
-    align-items: center
-}
-
-.trend-line-footer .prefix-square {
-    background-color: rgba(0, 0, 0, 0.3);
-    content: "";
-    height: 10px;
-    top: 2px;
-    width: 10px;
-    margin-right: 5px
-}
-
-.trend-line-footer .prefix-line {
-    display: inline-block;
-    margin-left: -5px;
-    background-color: rgba(53, 74, 87, 0.6);
-    content: "";
-    height: 1px;
-    left: 0;
-    top: 7px;
+.header .subIcon {
+    height: 18px;
+    margin: 0 8px 0 0;
+    vertical-align: -3px;
     width: 18px
 }
 
-.trend-line-footer .prefix-circle {
-    display: inline-block;
-    margin-left: -15px;
-    background-color: rgba(53, 74, 87, 0.6);
-    background-color: rgba(53, 74, 87, 0.3);
-    border-radius: 999px;
-    border: 3px solid #fefdf8;
-    content: "";
-    height: 7px;
-    left: 3px;
-    top: 1px;
-    width: 7px;
-    margin-right: 8px
+.header .icon_student {
+    margin: 0 0.2em 0 -8px;
+    height: auto;
+    width: 22px;
+    vertical-align: -8px;
+    opacity: 0;
+    transition: all 0.2s ease-in-out
 }
 
-.trend-line-footer.coverage-high .prefix-square {
-    background-color: rgba(95, 151, 68, 0.3)
+.header:hover,
+.header.pin {
+    background-color: var(--color-canary);
+    width: 210px
 }
 
-.trend-line-footer.coverage-high .prefix-line {
-    background-color: rgba(95, 151, 68, 0.6)
+.header:hover .logo,
+.header.pin .logo {
+    background-color: #b94947;
+    max-width: 100%
 }
 
-.trend-line-footer.coverage-high .prefix-circle {
-    background-color: rgba(95, 151, 68, 0.4)
+.header:hover .siteNav li.current a,
+.header.pin .siteNav li.current a {
+    background-color: #fefdf8;
 }
 
-.trend-line-footer.coverage-medium .prefix-square {
-    background-color: rgba(248, 148, 6, 0.3)
+.header:hover .siteNav .octicon,
+.header.pin .siteNav .octicon {
+    color: #fefdf8
 }
 
-.trend-line-footer.coverage-medium .prefix-line {
-    background-color: rgba(248, 148, 6, 0.6)
+.header:hover .siteNav a:hover,
+.header.pin .siteNav a:hover {
+    color: #354a57
 }
 
-.trend-line-footer.coverage-medium .prefix-circle {
-    background-color: rgba(248, 148, 6, 0.4)
+.header:hover .siteNav a:hover .octicon,
+.header.pin .siteNav a:hover .octicon {
+    color: #354a57
 }
 
-.trend-line-footer.coverage-low .prefix-square {
-    background-color: rgba(185, 73, 71, 0.3)
+.header:hover .siteNav .current .octicon,
+.header.pin .siteNav .current .octicon {
+    color: #354a57
 }
 
-.trend-line-footer.coverage-low .prefix-line {
-    background-color: rgba(185, 73, 71, 0.6)
+.header:hover .siteNav span,
+.header.pin .siteNav span {
+    max-width: 200px
 }
 
-.trend-line-footer.coverage-low .prefix-circle {
-    background-color: rgba(185, 73, 71, 0.4)
+.header:hover .icon_student,
+.header.pin .icon_student {
+    opacity: 1
 }
 
-.trend-default.coverage-high .area {
-    fill: rgba(95, 151, 68, 0.1)
+.header.dark-bg .octicon {
+    color: #fefdf8
 }
 
-.trend-default.coverage-medium .area {
-    fill: rgba(248, 148, 6, 0.1)
-}
-
-.trend-default.coverage-low .area {
-    fill: rgba(185, 73, 71, 0.1)
-}
-
-.trend-line {
-    position: absolute
-}
-
-.trend-line em {
-    padding-left: 25px
-}
-
-.trend-line em:before {
-    background-color: rgba(53, 74, 87, 0.6);
-    content: "";
-    height: 1px;
-    left: 0;
+.logo-fixed {
+    left: 19px;
     position: absolute;
-    top: 7px;
-    width: 19px
+    top: 20px;
+    text-align: center;
+    z-index: 1
 }
 
-.trend-line em:after {
-    background-color: rgba(53, 74, 87, 0.3);
-    border-radius: 999px;
-    border: 3px solid #fefdf8;
-    content: "";
-    height: 7px;
-    left: 3px;
-    position: absolute;
-    top: 1px;
-    width: 7px
+.logo-fixed img {
+    width: 120px
 }
 
-.trend-line .repo-default-line {
-    background-color: transparent
-}
-
-.trend-line .line {
-    fill: transparent;
-    stroke: rgba(53, 74, 87, 0.5);
-    stroke-width: 1px
-}
-
-.trend-line circle {
-    fill: rgba(53, 74, 87, 0.3)
-}
-
-.trend-line.coverage-high .line {
-    stroke: rgba(95, 151, 68, 0.6)
-}
-
-.trend-line.coverage-high circle {
-    fill: rgba(95, 151, 68, 0.4)
-}
-
-.trend-line.coverage-high em:before {
-    background-color: rgba(95, 151, 68, 0.6)
-}
-
-.trend-line.coverage-high em:after {
-    background-color: rgba(95, 151, 68, 0.4)
-}
-
-.trend-line.coverage-medium .line {
-    stroke: rgba(248, 148, 6, 0.6)
-}
-
-.trend-line.coverage-medium circle {
-    fill: rgba(248, 148, 6, 0.4)
-}
-
-.trend-line.coverage-medium em:before {
-    background-color: rgba(248, 148, 6, 0.6)
-}
-
-.trend-line.coverage-medium em:after {
-    background-color: rgba(248, 148, 6, 0.4)
-}
-
-.trend-line.coverage-low .line {
-    stroke: rgba(185, 73, 71, 0.6)
-}
-
-.trend-line.coverage-low circle {
-    fill: rgba(185, 73, 71, 0.4)
-}
-
-.trend-line.coverage-low em:before {
-    background-color: rgba(185, 73, 71, 0.6)
-}
-
-.trend-line.coverage-low em:after {
-    background-color: rgba(185, 73, 71, 0.4)
-}
-
-.trend-default em,
-.relevant-covered em {
-    left: auto;
-    padding-left: 15px;
-    right: 175px;
-    text-align: right
-}
-
-.infobox {
-    background: rgba(255, 255, 255, 0.8);
-    border: 2px solid #354a57;
-    font-size: 10px;
-    font-weight: bold;
-    left: 0px;
-    padding: 2px 7px 4px;
-    position: absolute;
-    text-transform: uppercase;
-    top: 0px;
-    white-space: nowrap;
-    z-index: 20
-}
-
-.infobox span {
-    border-bottom: 1px dotted
-}
-
-.infobox:hover {
-    display: block
-}
-
-.coverageText.repo-coverage-outline {
-    color: #fefdf8;
-    text-shadow: 1px 1px #666, 1px -1px #666, -1px -1px #666, -1px 1px #666
-}
-
-.coverage-high.repo-coverage-outline {
-    text-shadow: 1px 1px #5f9744, 1px -1px #5f9744, -1px -1px #5f9744, -1px 1px #5f9744
-}
-
-.coverage-medium.repo-coverage-outline {
-    text-shadow: 1px 1px #F89406, 1px -1px #F89406, -1px -1px #F89406, -1px 1px #F89406
-}
-
-.coverage-low.repo-coverage-outline {
-    text-shadow: 1px 1px #b94947, 1px -1px #b94947, -1px -1px #b94947, -1px 1px #b94947
-}
-
-.coverage-text-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: end;
-    float: right
-}
-
-.coverageText {
-    background-color: transparent;
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
-    font-weight: bold;
-    float: right;
-    font-size: 42px;
-    margin-top: -5px;
-    opacity: 0.7;
+.logo {
+    display: block;
+    margin-top: 18px;
+    overflow: hidden;
     position: relative;
+    transition: all 0.2s ease-in-out;
     z-index: 10
 }
 
-.coverageText.repo-default-percent {
-    font-size: 18px;
-    float: none;
-    opacity: 0.5;
-    padding-top: 10px;
-    text-shadow: none
-}
-
-.sparkline-relevent .line {
-    fill: transparent;
-    stroke: rgba(53, 74, 87, 0.3);
-    stroke-width: 1px
-}
-
-.relevant-trend-count {
-    display: flex;
-    align-items: center;
-    justify-content: space-between
-}
-
-.relevant-trend-count .left-label {
-    display: flex;
-    align-items: center
-}
-
-.relevant-trend-count em {
-    font-family: futura-pt-condensed, "Futura Cond", "Helvetica", sans-serif;
-    font-weight: bold;
-    font-size: 11px;
-    display: flex;
-    align-items: center
-}
-
-.relevant-trend-count em span {
-    padding: 0px 2px 0px 5px
-}
-
-.relevant-trend-count em:before {
-    content: "";
+.logo img {
     display: inline-block;
-    width: 10px;
-    height: 10px
+    height: 25px;
+    margin-left: 19px;
+    width: 120px
 }
 
-.relevant-trend-count .count-relevant:before {
-    background-color: rgba(53, 74, 87, 0.3)
+.siteNav {
+    padding: 20px 0 0 5px
 }
 
-.relevant-trend-count .count-covered {
-    margin-left: 10px
+.siteNav li.current a {
+    -webkit-box-shadow: 3px 0 0 0 #354a57 inset;
+    -moz-box-shadow: 3px 0 0 0 #354a57 inset;
+    box-shadow: 3px 0 0 0 #354a57 inset;
+    color: #354a57
 }
 
-.relevant-trend-count .count-covered:before {
-    background-color: rgba(185, 73, 71, 0.3)
+.siteNav li.current .octicon {
+    color: #b94947
 }
 
-.relevant-total .area {
-    fill: rgba(53, 74, 87, 0.1)
+.siteNav a {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    font-weight: bold;
+    color: #fffdfa;
+    display: block;
+    font-size: 16px;
+    height: 41px;
+    overflow: hidden;
+    padding: 10px 0 10px 12px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: all 0.1s ease-in-out;
+    white-space: nowrap
 }
 
-.relevant-covered em:before {
-    display: none
+.siteNav span {
+    display: inline-block;
+    overflow: hidden;
+    transition: all 0.2s ease-in-out;
+    max-width: 0
 }
 
-.relevant-covered .area {
-    fill: rgba(185, 73, 71, 0.1)
-}
-
-.relevant-covered circle {
-    fill: rgba(185, 73, 71, 0.4)
-}
-
-.relevant-covered .sparkline-relevent .line {
-    stroke: rgba(185, 73, 71, 0.3)
+.siteNav .octicon {
+    color: #354a57;
+    font-size: 18px;
+    margin: 2px 8px 0 0;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+    vertical-align: top;
+    width: 20px
 }
