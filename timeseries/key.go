@@ -4,8 +4,6 @@ import (
 	"encoding/binary"
 	"sync"
 	"time"
-
-	"github.com/cespare/xxhash/v2"
 )
 
 const (
@@ -62,10 +60,6 @@ func (id *ID) Clone() *ID {
 	return x
 }
 
-func (id *ID) Hash() uint64 {
-	return xxhash.Sum64(id[:])
-}
-
 func newID() *ID {
 	return idBufPool.Get().(*ID)
 }
@@ -108,11 +102,6 @@ func (id *MetaKey) SetSiteID(u uint64) {
 	binary.BigEndian.PutUint64(id[siteOffset:], u)
 }
 
-func (id *MetaKey) HashU64(h uint64) []byte {
-	binary.BigEndian.PutUint64(id[hashOffset:], h)
-	return id[:]
-}
-
 func (id *MetaKey) HashU16(h uint16) []byte {
 	binary.BigEndian.PutUint16(id[hashOffset:], h)
 	return id[:][:hashOffset+2]
@@ -142,10 +131,6 @@ func (id *MetaKey) Clone() *MetaKey {
 	x := newMetaKey()
 	copy(x[:], id[:])
 	return x
-}
-
-func (id *MetaKey) Hash() uint64 {
-	return xxhash.Sum64(id[:])
 }
 
 func newMetaKey() *MetaKey {

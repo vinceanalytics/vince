@@ -10,6 +10,7 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
+	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/store"
@@ -84,9 +85,9 @@ func Save(ctx context.Context, b *Buffer) {
 		err := db.Update(func(txn *badger.Txn) error {
 			id.Year(ts).SetTable(byte(TABLE_YEAR))
 			return errors.Join(
-				updateCalendar(txn, ts, id[:], &group.sum),
-				updateFromUA(txn, el, group, meta, ts),
-				updateCountryAndRegion(txn, el, group, meta, ts),
+				updateCalendar(ctx, txn, ts, id[:], &group.sum),
+				updateFromUA(ctx, txn, el, group, meta, ts),
+				updateCountryAndRegion(ctx, txn, el, group, meta, ts),
 			)
 		})
 		if err != nil {
@@ -96,42 +97,52 @@ func Save(ctx context.Context, b *Buffer) {
 }
 
 // compute and update calendars for values derived from user agent.
-func updateFromUA(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
+func updateFromUA(ctx context.Context, txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
 	x.Year(ts).SetTable(byte(TABLE_YEAR))
 	return errors.Join(
 		g.Prop(el, PROPS_UTM_DEVICE, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_UTM_DEVICE)).HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_UTM_DEVICE)).HashU16(ua.ToIndex(key)), sum)
 		}),
 		g.Prop(el, PROPS_UTM_BROWSER, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_UTM_BROWSER)).HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_UTM_BROWSER)).HashU16(ua.ToIndex(key)), sum)
 		}),
 		g.Prop(el, PROPS_BROWSER_VERSION, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_BROWSER_VERSION)).HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_BROWSER_VERSION)).HashU16(ua.ToIndex(key)), sum)
 		}),
 		g.Prop(el, PROPS_OS, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_OS)).HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_OS)).HashU16(ua.ToIndex(key)), sum)
 		}),
 		g.Prop(el, PROPS_OS_VERSION, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_OS_VERSION)).HashU16(ua.ToIndex(key)), sum)
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_OS_VERSION)).HashU16(ua.ToIndex(key)), sum)
 		}),
 	)
 }
 
-func updateCountryAndRegion(txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
+func updateCountryAndRegion(ctx context.Context, txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
 	x.Year(ts).SetTable(byte(TABLE_YEAR))
 	return errors.Join(
 		g.Prop(el, PROPS_COUNTRY, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_COUNTRY)).HashU16(cities.ToIndex(key)), sum)
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_COUNTRY)).HashU16(cities.ToIndex(key)), sum)
 		}),
 		g.Prop(el, PROPS_REGION, func(key string, sum *store.Sum) error {
-			return updateCalendar(txn, ts, x.SetMeta(byte(PROPS_REGION)).HashU16(cities.ToIndex(key)), sum)
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_REGION)).HashU16(cities.ToIndex(key)), sum)
 		}),
 	)
 }
 
-// creates a new calendar for ts year and updates the sum of this date. For existing
-// calendar we just update the sums for the date.
-func updateCalendar(txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) error {
+func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) error {
+	cache := caches.Calendar(ctx)
+	hash := xxhash.Sum64(key)
+	if x, ok := cache.Get(hash); ok {
+		// The calendar was in cache we update it and save.
+		cal := x.(*store.Calendar)
+		a.UpdateCalendar(ts, cal)
+		b, err := cal.Message().MarshalPacked()
+		if err != nil {
+			return fmt.Errorf("failed to marshal calendar %v", err)
+		}
+		return txn.Set(key, b)
+	}
 	x, err := txn.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
@@ -140,7 +151,7 @@ func updateCalendar(txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) err
 			if err != nil {
 				return err
 			}
-			defer cal.Message().Release()
+			defer cache.Set(hash, &cal, store.CacheCost)
 			b, err := cal.Message().MarshalPacked()
 			if err != nil {
 				return fmt.Errorf("failed to marshal calendar %v", err)
@@ -154,7 +165,7 @@ func updateCalendar(txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) err
 		if err != nil {
 			return err
 		}
-		defer cal.Message().Release()
+		defer cache.Set(hash, &cal, store.CacheCost)
 		a.UpdateCalendar(ts, &cal)
 		b, err := cal.Message().MarshalPacked()
 		if err != nil {
