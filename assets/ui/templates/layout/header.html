@@ -59,19 +59,17 @@
 </div>
 {{else if .CurrentUser}}
 <div class="header">
-    <div class="logo-fixed">
-        <a href="{{if .Docs}}/docs{{else}}/{{end}}">
-            {{.Logo 120 24}}
+    <div class="logo">
+        <a href=" {{if .Docs}}/docs{{else}}/{{end}}">
+            <img src="/image/logo.svg" alt="vince analytics logo">
         </a>
     </div>
     <nav class="siteNav">
         <ul>
             <li>
-                <a href="">
-                    <a href="/sites">
-                        {{.Icon "repo" 24}}
-                        <span>sites </span>
-                    </a>
+                <a href="/sites">
+                    {{.Icon "repo" 24}}
+                    <span>sites </span>
                 </a>
             </li>
             <li>

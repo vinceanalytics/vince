@@ -9,11 +9,6 @@
     z-index: 25
 }
 
-.header .logo {
-    background-color: transparent;
-    max-width: 0
-}
-
 .header .subIcon {
     height: 18px;
     margin: 0 8px 0 0;
@@ -36,11 +31,7 @@
     width: 210px
 }
 
-.header:hover .logo,
-.header.pin .logo {
-    background-color: #b94947;
-    max-width: 100%
-}
+
 
 .header:hover .siteNav li.current a,
 .header.pin .siteNav li.current a {
@@ -72,25 +63,11 @@
     max-width: 200px
 }
 
-.logo-fixed {
-    left: 19px;
-    position: absolute;
-    top: 20px;
-    text-align: center;
-    z-index: 1
-}
-
-.logo-fixed img {
-    width: 120px
-}
 
 .logo {
     display: block;
     margin-top: 18px;
-    overflow: hidden;
-    position: relative;
     transition: all 0.2s ease-in-out;
-    z-index: 10
 }
 
 .logo img {
