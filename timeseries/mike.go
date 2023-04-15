@@ -88,9 +88,7 @@ func Save(ctx context.Context, b *Buffer) {
 			id.Year(ts).SetTable(byte(TABLE_YEAR))
 			return errors.Join(
 				updateCalendar(ctx, txn, ts, id[:], &group.sum),
-				updateFromUA(ctx, txn, el, group, meta, ts),
-				updateCountryAndRegion(ctx, txn, el, group, meta, ts),
-				updateStrings(ctx, txn, el, group, meta, ts),
+				updateMeta(ctx, txn, el, group, meta, ts),
 			)
 		})
 		if err != nil {
@@ -102,55 +100,39 @@ func Save(ctx context.Context, b *Buffer) {
 	})
 }
 
-func updateStrings(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
-	stringProps := []PROPS{
-		PROPS_NAME, PROPS_PAGE, PROPS_ENTRY_PAGE, PROPS_EXIT_PAGE,
-		PROPS_REFERRER, PROPS_UTM_MEDIUM, PROPS_UTM_SOURCE,
-		PROPS_UTM_CAMPAIGN, PROPS_UTM_CONTENT, PROPS_UTM_TERM,
-	}
-	errs := make([]error, len(stringProps))
-	for i, name := range stringProps {
-		errs[i] = g.Prop(el, name, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(name)).String(key), sum)
-		})
+func updateMeta(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
+	errs := make([]error, 0, PROPS_CITY)
+	for i := 1; i <= int(PROPS_CITY); i++ {
+		p := PROPS(i)
+		errs = append(errs, p.Save(ctx, txn, el, g, x, ts))
 	}
 	return errors.Join(errs...)
-
 }
 
-func updateFromUA(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
-	return errors.Join(
-		g.Prop(el, PROPS_UTM_DEVICE, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_UTM_DEVICE)).HashU16(ua.ToIndex(key)), sum)
-		}),
-		g.Prop(el, PROPS_UTM_BROWSER, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_UTM_BROWSER)).HashU16(ua.ToIndex(key)), sum)
-		}),
-		g.Prop(el, PROPS_BROWSER_VERSION, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_BROWSER_VERSION)).HashU16(ua.ToIndex(key)), sum)
-		}),
-		g.Prop(el, PROPS_OS, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_OS)).HashU16(ua.ToIndex(key)), sum)
-		}),
-		g.Prop(el, PROPS_OS_VERSION, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_OS_VERSION)).HashU16(ua.ToIndex(key)), sum)
-		}),
-	)
-}
-
-func updateCountryAndRegion(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
-	x.Year(ts).SetTable(byte(TABLE_YEAR))
-	return errors.Join(
-		g.Prop(el, PROPS_COUNTRY, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_COUNTRY)).HashU16(cities.ToIndex(key)), sum)
-		}),
-		g.Prop(el, PROPS_REGION, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_REGION)).HashU16(cities.ToIndex(key)), sum)
-		}),
-		g.City(el, func(key uint32, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_CITY)).HashU32(key), sum)
-		}),
-	)
+func (p PROPS) Save(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
+	switch p {
+	case PROPS_NAME, PROPS_PAGE, PROPS_ENTRY_PAGE, PROPS_EXIT_PAGE,
+		PROPS_REFERRER, PROPS_UTM_MEDIUM, PROPS_UTM_SOURCE,
+		PROPS_UTM_CAMPAIGN, PROPS_UTM_CONTENT, PROPS_UTM_TERM:
+		return g.Prop(el, p, func(key string, sum *store.Sum) error {
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(p)).String(key), sum)
+		})
+		// properties from user agent
+	case PROPS_UTM_DEVICE, PROPS_UTM_BROWSER, PROPS_BROWSER_VERSION, PROPS_OS, PROPS_OS_VERSION:
+		return g.Prop(el, p, func(key string, sum *store.Sum) error {
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(p)).HashU16(ua.ToIndex(key)), sum)
+		})
+	case PROPS_COUNTRY, PROPS_REGION:
+		return g.Prop(el, p, func(key string, sum *store.Sum) error {
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(p)).HashU16(cities.ToIndex(key)), sum)
+		})
+	case PROPS_CITY:
+		return g.City(el, func(key uint32, sum *store.Sum) error {
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(p)).HashU32(key), sum)
+		})
+	default:
+		return nil
+	}
 }
 
 func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) error {

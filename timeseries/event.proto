@@ -62,7 +62,6 @@ enum PROPS {
   COUNTRY = 16;
   REGION = 17;
   CITY = 18;
-  TREND = 19;
 }
 
 enum METRIC_TYPE {
