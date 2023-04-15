@@ -52,6 +52,11 @@ func (g *Group) Prop(el EntryList, by PROPS, f func(key string, sum *store.Sum) 
 	return el.EmitProp(g.u, g.s, by, &g.sum, f)
 }
 
+func (g *Group) City(el EntryList, f func(key uint32, sum *store.Sum) error) error {
+	g.Reset()
+	return el.EmitCity(g.u, g.s, &g.sum, f)
+}
+
 func (g *Group) Release() {
 	g.Reset()
 	groupPool.Put(g)
@@ -88,6 +93,7 @@ func Save(ctx context.Context, b *Buffer) {
 				updateCalendar(ctx, txn, ts, id[:], &group.sum),
 				updateFromUA(ctx, txn, el, group, meta, ts),
 				updateCountryAndRegion(ctx, txn, el, group, meta, ts),
+				updateStrings(ctx, txn, el, group, meta, ts),
 			)
 		})
 		if err != nil {
@@ -96,9 +102,23 @@ func Save(ctx context.Context, b *Buffer) {
 	})
 }
 
-// compute and update calendars for values derived from user agent.
+func updateStrings(ctx context.Context, txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
+	stringProps := []PROPS{
+		PROPS_NAME, PROPS_PAGE, PROPS_ENTRY_PAGE, PROPS_EXIT_PAGE,
+		PROPS_REFERRER, PROPS_UTM_MEDIUM, PROPS_UTM_SOURCE,
+		PROPS_UTM_CAMPAIGN, PROPS_UTM_CONTENT, PROPS_UTM_TERM,
+	}
+	errs := make([]error, len(stringProps))
+	for i, name := range stringProps {
+		errs[i] = g.Prop(el, name, func(key string, sum *store.Sum) error {
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(name)).String(key), sum)
+		})
+	}
+	return errors.Join(errs...)
+
+}
+
 func updateFromUA(ctx context.Context, txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
-	x.Year(ts).SetTable(byte(TABLE_YEAR))
 	return errors.Join(
 		g.Prop(el, PROPS_UTM_DEVICE, func(key string, sum *store.Sum) error {
 			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_UTM_DEVICE)).HashU16(ua.ToIndex(key)), sum)
@@ -126,6 +146,9 @@ func updateCountryAndRegion(ctx context.Context, txn *badger.Txn, el EntryList, 
 		}),
 		g.Prop(el, PROPS_REGION, func(key string, sum *store.Sum) error {
 			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_REGION)).HashU16(cities.ToIndex(key)), sum)
+		}),
+		g.City(el, func(key uint32, sum *store.Sum) error {
+			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_CITY)).HashU32(key), sum)
 		}),
 	)
 }

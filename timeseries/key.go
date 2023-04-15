@@ -107,6 +107,15 @@ func (id *MetaKey) HashU16(h uint16) []byte {
 	return id[:][:hashOffset+2]
 }
 
+func (id *MetaKey) HashU32(h uint32) []byte {
+	binary.BigEndian.PutUint32(id[hashOffset:], h)
+	return id[:][:hashOffset+4]
+}
+
+func (id *MetaKey) String(s string) []byte {
+	return append(id[:hashOffset], []byte(s)...)
+}
+
 func (id *MetaKey) GetUserID() uint64 {
 	return binary.BigEndian.Uint64(id[userOffset:])
 }

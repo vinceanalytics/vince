@@ -141,14 +141,84 @@ func (ls EntryList) Emit(f func(EntryList)) {
 }
 
 func (e EntryList) Sort(by PROPS) {
+	var less func(i, j int) bool
 	switch by {
 	case PROPS_NAME:
-		sort.Slice(e, func(i, j int) bool {
+		less = func(i, j int) bool {
 			return e[i].Name < e[j].Name
-		})
+		}
+	case PROPS_PAGE:
+		less = func(i, j int) bool {
+			return e[i].Pathname < e[j].Pathname
+		}
+	case PROPS_ENTRY_PAGE:
+		less = func(i, j int) bool {
+			return e[i].EntryPage < e[j].EntryPage
+		}
+	case PROPS_EXIT_PAGE:
+		less = func(i, j int) bool {
+			return e[i].ExitPage < e[j].ExitPage
+		}
+	case PROPS_REFERRER:
+		less = func(i, j int) bool {
+			return e[i].Referrer < e[j].Referrer
+		}
+	case PROPS_UTM_DEVICE:
+		less = func(i, j int) bool {
+			return e[i].ScreenSize < e[j].ScreenSize
+		}
+	case PROPS_UTM_MEDIUM:
+		less = func(i, j int) bool {
+			return e[i].UtmMedium < e[j].UtmMedium
+		}
+	case PROPS_UTM_SOURCE:
+		less = func(i, j int) bool {
+			return e[i].UtmSource < e[j].UtmSource
+		}
+	case PROPS_UTM_CAMPAIGN:
+		less = func(i, j int) bool {
+			return e[i].UtmCampaign < e[j].UtmCampaign
+		}
+	case PROPS_UTM_CONTENT:
+		less = func(i, j int) bool {
+			return e[i].UtmContent < e[j].UtmContent
+		}
+	case PROPS_UTM_TERM:
+		less = func(i, j int) bool {
+			return e[i].UtmTerm < e[j].UtmTerm
+		}
+	case PROPS_OS:
+		less = func(i, j int) bool {
+			return e[i].OperatingSystem < e[j].OperatingSystem
+		}
+	case PROPS_OS_VERSION:
+		less = func(i, j int) bool {
+			return e[i].OperatingSystemVersion < e[j].OperatingSystemVersion
+		}
+	case PROPS_UTM_BROWSER:
+		less = func(i, j int) bool {
+			return e[i].Browser < e[j].Browser
+		}
+	case PROPS_BROWSER_VERSION:
+		less = func(i, j int) bool {
+			return e[i].BrowserVersion < e[j].BrowserVersion
+		}
+	case PROPS_REGION:
+		less = func(i, j int) bool {
+			return e[i].Subdivision1Code < e[j].Subdivision1Code
+		}
+	case PROPS_COUNTRY:
+		less = func(i, j int) bool {
+			return e[i].CountryCode < e[j].CountryCode
+		}
+	case PROPS_CITY:
+		less = func(i, j int) bool {
+			return e[i].CityGeoNameId < e[j].CityGeoNameId
+		}
 	default:
 		return
 	}
+	sort.Slice(e, less)
 }
 
 func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f func(key string, sum *store.Sum) error) error {
@@ -159,9 +229,45 @@ func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f 
 		key = func(e *Entry) string {
 			return e.Name
 		}
+	case PROPS_PAGE:
+		key = func(e *Entry) string {
+			return e.Pathname
+		}
+	case PROPS_ENTRY_PAGE:
+		key = func(e *Entry) string {
+			return e.EntryPage
+		}
+	case PROPS_EXIT_PAGE:
+		key = func(e *Entry) string {
+			return e.ExitPage
+		}
+	case PROPS_REFERRER:
+		key = func(e *Entry) string {
+			return e.Referrer
+		}
 	case PROPS_UTM_DEVICE:
 		key = func(e *Entry) string {
 			return e.ScreenSize
+		}
+	case PROPS_UTM_MEDIUM:
+		key = func(e *Entry) string {
+			return e.UtmMedium
+		}
+	case PROPS_UTM_SOURCE:
+		key = func(e *Entry) string {
+			return e.UtmSource
+		}
+	case PROPS_UTM_CAMPAIGN:
+		key = func(e *Entry) string {
+			return e.UtmCampaign
+		}
+	case PROPS_UTM_CONTENT:
+		key = func(e *Entry) string {
+			return e.UtmContent
+		}
+	case PROPS_UTM_TERM:
+		key = func(e *Entry) string {
+			return e.UtmTerm
 		}
 	case PROPS_OS:
 		key = func(e *Entry) string {
@@ -198,6 +304,40 @@ func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f 
 			continue
 		}
 		if lastKey == "" {
+			// empty keys starts first. Here we have non empty key, we start counting
+			// for this key forward.
+			lastKey = currentKey
+			start = i
+			continue
+		}
+		if lastKey != currentKey {
+			// we have come across anew key, save the old key
+			e[start:i].Count(u, s, sum)
+			err := f(lastKey, sum)
+			if err != nil {
+				return err
+			}
+			start = i
+			lastKey = currentKey
+		}
+	}
+	if start < len(e)-1 {
+		e[start:].Count(u, s, sum)
+		return f(lastKey, sum)
+	}
+	return nil
+}
+
+func (e EntryList) EmitCity(u, s *roaring64.Bitmap, sum *store.Sum, f func(key uint32, sum *store.Sum) error) error {
+	e.Sort(PROPS_CITY)
+	var start int
+	var lastKey, currentKey uint32
+	for i := range e {
+		currentKey = e[i].CityGeoNameId
+		if currentKey == 0 {
+			continue
+		}
+		if lastKey == 0 {
 			// empty keys starts first. Here we have non empty key, we start counting
 			// for this key forward.
 			lastKey = currentKey
