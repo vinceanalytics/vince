@@ -2,7 +2,6 @@ package timeseries
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 	"sync"
@@ -76,71 +75,34 @@ func (s *System[T]) Close() error {
 }
 
 type AllSystem struct {
-	Counters   *System[*system.Counter]
-	Gauges     *System[*system.Gauge]
-	Histograms *System[*system.Histogram]
+	system *System[*system.Stats]
 }
 
 func openSystem(dataPath string) (*AllSystem, error) {
 	path := filepath.Join(dataPath, "system")
 	os.MkdirAll(filepath.Join(path, "metrics"), 0755)
-	c, err := NewSystem[*system.Counter](path, "counter")
+	c, err := NewSystem[*system.Stats](path, "stats")
 	if err != nil {
 		return nil, err
 	}
-	g, err := NewSystem[*system.Gauge](path, "gauge")
-	if err != nil {
-		return nil, err
-	}
-	h, err := NewSystem[*system.Histogram](path, "histogram")
-	if err != nil {
-		return nil, err
-	}
-	return &AllSystem{
-		Counters: c, Gauges: g, Histograms: h,
-	}, nil
+	return &AllSystem{system: c}, nil
 }
 
 func (a *AllSystem) Close() error {
-	return errors.Join(
-		a.Counters.Close(), a.Gauges.Close(), a.Histograms.Close(),
-	)
+	return a.system.Close()
 }
 
 func (a *AllSystem) Save() error {
-	return errors.Join(
-		a.Counters.Save(true), a.Gauges.Save(true), a.Histograms.Save(true),
-	)
+	return a.system.Save(true)
 }
 
-func (a *AllSystem) Collect(ctx context.Context) system.Collector {
-	return system.Collector{
-		Gauges: func(g []*system.Gauge) {
-			if len(g) == 0 {
-				return
-			}
-			_, err := a.Gauges.Write(g)
-			if err != nil {
-				log.Get(ctx).Err(err).Msg("failed to write gauges")
-			}
-		},
-		Counters: func(c []*system.Counter) {
-			if len(c) == 0 {
-				return
-			}
-			_, err := a.Counters.Write(c)
-			if err != nil {
-				log.Get(ctx).Err(err).Msg("failed to write counters")
-			}
-		},
-		Histograms: func(h []*system.Histogram) {
-			if len(h) == 0 {
-				return
-			}
-			_, err := a.Histograms.Write(h)
-			if err != nil {
-				log.Get(ctx).Err(err).Msg("failed to write histograms")
-			}
-		},
+func (a *AllSystem) Collect(ctx context.Context) func(s system.Stats) {
+	var ls [1]*system.Stats
+	return func(s system.Stats) {
+		ls[0] = &s
+		_, err := a.system.Write(ls[:])
+		if err != nil {
+			log.Get(ctx).Err(err).Msg("failed to save system stats")
+		}
 	}
 }

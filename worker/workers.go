@@ -178,7 +178,7 @@ func collectSystemMetrics(ctx context.Context, wg *sync.WaitGroup, ch health.Pin
 				log.Get(ctx).Err(err).Msg("failed to save system metrics")
 			}
 		case ts := <-tick.C:
-			system.Collect(ts, collect)
+			collect(system.Collect(ts))
 		}
 	}
 }

@@ -33,66 +33,22 @@ var (
 	SitesInCache = &gaugeMetric{name: "sites_in_cache"}
 )
 
-var syncStats = &Sync{
-	metrics: metrics{
-		histograms: []*histogramMetric{
-			SaveDuration, MergeDuration, SiteCacheDuration,
-		},
-		gauges: []*gaugeMetric{
-			SitesInCache,
-		},
-		counters: []*counterMetric{
-			DataPointReceived, DataPointAccepted, DataPointRejectedBadRequest, DataPointDropped,
-		},
-	},
-	gauges:     make([]*Gauge, 0, 1024),
-	counters:   make([]*Counter, 0, 1024),
-	histograms: make([]*Histogram, 0, 1024),
-}
-
-type metrics struct {
-	gauges     []*gaugeMetric
-	counters   []*counterMetric
-	histograms []*histogramMetric
-}
+var syncStats = &Sync{}
 
 type Sync struct {
-	metrics    metrics
-	ms         runtime.MemStats
-	gauges     []*Gauge
-	counters   []*Counter
-	histograms []*Histogram
+	ms    runtime.MemStats
+	stats Stats
 }
 
 func (s *Sync) read(ts time.Time) {
-	s.counters = s.counters[:0]
-	s.gauges = s.gauges[:0]
-	s.histograms = s.histograms[:0]
-	for _, m := range s.metrics.gauges {
-		s.gauges = append(s.gauges, m.Read(ts))
-	}
-	for _, m := range s.metrics.counters {
-		s.counters = append(s.counters, m.Read(ts))
-	}
-	for _, m := range s.metrics.histograms {
-		s.histograms = append(s.histograms, m.Read(ts))
-	}
 	s.readGo(ts)
 }
 
-func (s *Sync) Collect(ts time.Time, co Collector) {
+func (s *Sync) Collect(ts time.Time) Stats {
 	s.read(ts)
-	co.Gauges(s.gauges)
-	co.Counters(s.counters)
-	co.Histograms(s.histograms)
+	return s.stats
 }
 
-type Collector struct {
-	Gauges     func([]*Gauge)
-	Counters   func([]*Counter)
-	Histograms func([]*Histogram)
-}
-
-func Collect(ts time.Time, co Collector) {
-	syncStats.Collect(ts, co)
+func Collect(ts time.Time) Stats {
+	return syncStats.Collect(ts)
 }
