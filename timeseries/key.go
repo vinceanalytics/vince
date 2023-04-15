@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"sync"
 	"time"
+
+	"github.com/cespare/xxhash/v2"
 )
 
 const (
@@ -58,6 +60,10 @@ func (id *ID) Clone() *ID {
 	x := newID()
 	copy(x[:], id[:])
 	return x
+}
+
+func (id *ID) Hash() uint64 {
+	return xxhash.Sum64(id[:])
 }
 
 func newID() *ID {
@@ -136,6 +142,10 @@ func (id *MetaKey) Clone() *MetaKey {
 	x := newMetaKey()
 	copy(x[:], id[:])
 	return x
+}
+
+func (id *MetaKey) Hash() uint64 {
+	return xxhash.Sum64(id[:])
 }
 
 func newMetaKey() *MetaKey {
