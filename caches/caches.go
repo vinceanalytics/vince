@@ -16,6 +16,7 @@ type sitesKey struct{}
 type userKey struct{}
 type ipKey struct{}
 type apiKey struct{}
+type calendarKey struct{}
 
 func Open(ctx context.Context) (context.Context, error) {
 	session, err := ristretto.NewCache(&ristretto.Config{
@@ -68,11 +69,27 @@ func Open(ctx context.Context) (context.Context, error) {
 		ip.Close()
 		return nil, err
 	}
+	calendar, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 1e7,
+		// We set boundary as 1 GB , we use the size of zero calendar as cost for
+		// adding items to the cache.
+		MaxCost:     1 << 30,
+		BufferItems: 64,
+	})
+	if err != nil {
+		session.Close()
+		sites.Close()
+		users.Close()
+		ip.Close()
+		api.Close()
+		return nil, err
+	}
 	ctx = context.WithValue(ctx, sessionKey{}, session)
 	ctx = context.WithValue(ctx, sitesKey{}, sites)
 	ctx = context.WithValue(ctx, userKey{}, users)
 	ctx = context.WithValue(ctx, ipKey{}, ip)
 	ctx = context.WithValue(ctx, apiKey{}, api)
+	ctx = context.WithValue(ctx, calendarKey{}, calendar)
 	return ctx, nil
 }
 
@@ -82,6 +99,7 @@ func Close(ctx context.Context) {
 	User(ctx).Close()
 	IP(ctx).Close()
 	API(ctx).Close()
+	Calendar(ctx).Close()
 }
 
 func Session(ctx context.Context) *ristretto.Cache {
@@ -102,6 +120,10 @@ func IP(ctx context.Context) *ristretto.Cache {
 
 func API(ctx context.Context) *ristretto.Cache {
 	return ctx.Value(apiKey{}).(*ristretto.Cache)
+}
+
+func Calendar(ctx context.Context) *ristretto.Cache {
+	return ctx.Value(calendarKey{}).(*ristretto.Cache)
 }
 
 type SiteRate struct {
