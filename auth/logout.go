@@ -3,9 +3,16 @@ package auth
 import (
 	"net/http"
 
-	"github.com/gernest/vince/render"
+	"github.com/gernest/vince/sessions"
 )
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	render.ERROR(r.Context(), w, http.StatusNotImplemented)
+	redirect := r.URL.Query().Get("redirect")
+	if redirect == "" {
+		redirect = "/"
+	}
+	session, r := sessions.Load(r)
+	session.Data = sessions.Data{}
+	session.Save(w)
+	http.Redirect(w, r, redirect, http.StatusFound)
 }
