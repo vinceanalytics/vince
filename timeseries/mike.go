@@ -18,46 +18,42 @@ import (
 	"github.com/gernest/vince/ua"
 )
 
-func hashKey(key string) uint64 {
-	return xxhash.Sum64String(key)
-}
-
-type Group struct {
+type aggregate struct {
 	u, s *roaring64.Bitmap
 	sum  store.Sum
 }
 
 var groupPool = &sync.Pool{
 	New: func() any {
-		return &Group{
+		return &aggregate{
 			u: roaring64.New(),
 			s: roaring64.New(),
 		}
 	},
 }
 
-func (g *Group) Reset() {
+func (g *aggregate) Reset() {
 	g.u.Clear()
 	g.s.Clear()
 	g.sum = store.Sum{}
 }
 
-func (g *Group) Save(el EntryList) {
+func (g *aggregate) Save(el EntryList) {
 	g.Reset()
 	el.Count(g.u, g.s, &g.sum)
 }
 
-func (g *Group) Prop(el EntryList, by PROPS, f func(key string, sum *store.Sum) error) error {
+func (g *aggregate) Prop(el EntryList, by PROPS, f func(key string, sum *store.Sum) error) error {
 	g.Reset()
 	return el.EmitProp(g.u, g.s, by, &g.sum, f)
 }
 
-func (g *Group) City(el EntryList, f func(key uint32, sum *store.Sum) error) error {
+func (g *aggregate) City(el EntryList, f func(key uint32, sum *store.Sum) error) error {
 	g.Reset()
 	return el.EmitCity(g.u, g.s, &g.sum, f)
 }
 
-func (g *Group) Release() {
+func (g *aggregate) Release() {
 	g.Reset()
 	groupPool.Put(g)
 }
@@ -68,7 +64,7 @@ func Save(ctx context.Context, b *Buffer) {
 
 	db := GetMike(ctx)
 	defer b.Release()
-	group := groupPool.Get().(*Group)
+	group := groupPool.Get().(*aggregate)
 	ent := EntryList(b.entries)
 	id := newID()
 	defer id.Release()
@@ -83,6 +79,7 @@ func Save(ctx context.Context, b *Buffer) {
 	meta.SetSiteID(sid)
 	meta.SetUserID(uid)
 
+	// Guarantee that aggregates are on per hour windows.
 	ent.Emit(func(el EntryList) {
 		defer group.Reset()
 		group.Save(el)
@@ -97,12 +94,15 @@ func Save(ctx context.Context, b *Buffer) {
 			)
 		})
 		if err != nil {
-			log.Get(ctx).Err(err).Msg("failed to save hourly stats ")
+			log.Get(ctx).Err(err).
+				Uint64("uid", uid).
+				Uint64("sid", sid).
+				Msg("failed to save hourly stats ")
 		}
 	})
 }
 
-func updateStrings(ctx context.Context, txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
+func updateStrings(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	stringProps := []PROPS{
 		PROPS_NAME, PROPS_PAGE, PROPS_ENTRY_PAGE, PROPS_EXIT_PAGE,
 		PROPS_REFERRER, PROPS_UTM_MEDIUM, PROPS_UTM_SOURCE,
@@ -118,7 +118,7 @@ func updateStrings(ctx context.Context, txn *badger.Txn, el EntryList, g *Group,
 
 }
 
-func updateFromUA(ctx context.Context, txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
+func updateFromUA(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	return errors.Join(
 		g.Prop(el, PROPS_UTM_DEVICE, func(key string, sum *store.Sum) error {
 			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(PROPS_UTM_DEVICE)).HashU16(ua.ToIndex(key)), sum)
@@ -138,7 +138,7 @@ func updateFromUA(ctx context.Context, txn *badger.Txn, el EntryList, g *Group, 
 	)
 }
 
-func updateCountryAndRegion(ctx context.Context, txn *badger.Txn, el EntryList, g *Group, x *MetaKey, ts time.Time) error {
+func updateCountryAndRegion(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	x.Year(ts).SetTable(byte(TABLE_YEAR))
 	return errors.Join(
 		g.Prop(el, PROPS_COUNTRY, func(key string, sum *store.Sum) error {
