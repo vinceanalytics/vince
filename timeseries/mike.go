@@ -134,6 +134,44 @@ func (p PROPS) Save(ctx context.Context, txn *badger.Txn, el EntryList, g *aggre
 		return nil
 	}
 }
+func (p PROPS) StringKey(x *MetaKey, key string) []byte {
+	switch p {
+	case PROPS_NAME, PROPS_PAGE, PROPS_ENTRY_PAGE, PROPS_EXIT_PAGE,
+		PROPS_REFERRER, PROPS_UTM_MEDIUM, PROPS_UTM_SOURCE,
+		PROPS_UTM_CAMPAIGN, PROPS_UTM_CONTENT, PROPS_UTM_TERM:
+		return x.SetMeta(byte(p)).String(key)
+	default:
+		return nil
+	}
+}
+
+func (p PROPS) UAKeys(x *MetaKey, key string) []byte {
+	switch p {
+	case PROPS_UTM_DEVICE, PROPS_UTM_BROWSER, PROPS_BROWSER_VERSION, PROPS_OS, PROPS_OS_VERSION:
+		return x.SetMeta(byte(p)).HashU16(ua.ToIndex(key))
+	default:
+		return nil
+	}
+}
+
+func (p PROPS) CountryKey(x *MetaKey, key string) []byte {
+	switch p {
+	case PROPS_COUNTRY, PROPS_REGION:
+		return x.SetMeta(byte(p)).HashU16(cities.ToIndex(key))
+	case PROPS_CITY:
+		return x.SetMeta(byte(p)).HashU32(uint32(cities.ToIndex(key)))
+	default:
+		return nil
+	}
+}
+func (p PROPS) CityKey(x *MetaKey, key uint32) []byte {
+	switch p {
+	case PROPS_CITY:
+		return x.SetMeta(byte(p)).HashU32(key)
+	default:
+		return nil
+	}
+}
 
 func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) error {
 	cache := caches.Calendar(ctx)
