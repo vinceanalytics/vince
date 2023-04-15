@@ -2,6 +2,7 @@ package timeseries
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"sync"
@@ -75,7 +76,8 @@ func (s *System[T]) Close() error {
 }
 
 type AllSystem struct {
-	system *System[*system.Stats]
+	system    *System[*system.Stats]
+	histogram *System[*system.Histogram]
 }
 
 func openSystem(dataPath string) (*AllSystem, error) {
@@ -85,24 +87,36 @@ func openSystem(dataPath string) (*AllSystem, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &AllSystem{system: c}, nil
+	h, err := NewSystem[*system.Histogram](path, "histogram")
+	if err != nil {
+		return nil, err
+	}
+	return &AllSystem{system: c, histogram: h}, nil
 }
 
 func (a *AllSystem) Close() error {
-	return a.system.Close()
+	return errors.Join(
+		a.system.Close(), a.histogram.Close(),
+	)
 }
 
 func (a *AllSystem) Save() error {
-	return a.system.Save(true)
+	return errors.Join(
+		a.system.Save(true), a.histogram.Save(true),
+	)
 }
 
-func (a *AllSystem) Collect(ctx context.Context) func(s system.Stats) {
+func (a *AllSystem) Collect(ctx context.Context) func(s system.Stats, h ...*system.Histogram) {
 	var ls [1]*system.Stats
-	return func(s system.Stats) {
+	return func(s system.Stats, h ...*system.Histogram) {
 		ls[0] = &s
 		_, err := a.system.Write(ls[:])
 		if err != nil {
 			log.Get(ctx).Err(err).Msg("failed to save system stats")
+		}
+		_, err = a.histogram.Write(h)
+		if err != nil {
+			log.Get(ctx).Err(err).Msg("failed to save histogram stats ")
 		}
 	}
 }

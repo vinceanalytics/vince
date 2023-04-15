@@ -52,3 +52,11 @@ func (s *Sync) Collect(ts time.Time) Stats {
 func Collect(ts time.Time) Stats {
 	return syncStats.Collect(ts)
 }
+
+func CollectHist(ts time.Time) []*Histogram {
+	return []*Histogram{
+		SaveDuration.Read(ts),
+		MergeDuration.Read(ts),
+		SiteCacheDuration.Read(ts),
+	}
+}
