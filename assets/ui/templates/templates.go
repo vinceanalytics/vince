@@ -212,7 +212,6 @@ type Context struct {
 	Flash         *flash.Flash
 	NewSite       *NewSite
 	Error         *Errors
-	Position      int
 	Page          string
 	Content       template.HTML
 	ModTime       time.Time
@@ -392,11 +391,6 @@ func (t *Context) Logo(width, height int) template.HTML {
 	))
 }
 
-func (t *Context) SetPosition(pos int) *Context {
-	t.Position = pos
-	return t
-}
-
 func (t *Context) OnboardSteps() []string {
 	return []string{
 		"Register", "Activate account", "Add site info", "Install snippet",
@@ -431,22 +425,6 @@ func (t *Context) InputField(name string) template.HTMLAttr {
 		s.WriteString(fmt.Sprintf("value=%q", t.Form.Get(name)))
 	}
 	return template.HTMLAttr(s.String())
-}
-
-var steps = []string{
-	"Register", "Activate account", "Add site info", "Install snippet",
-}
-
-func (t *Context) CurrentStep() string {
-	return steps[t.Position]
-}
-
-func (t *Context) StepsBefore() []string {
-	return steps[0:t.Position]
-}
-
-func (t *Context) StepsAfter() []string {
-	return steps[t.Position:]
 }
 
 type activationCodeKey struct{}
