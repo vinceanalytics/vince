@@ -28,161 +28,100 @@ import (
 //go:embed layout pages plot docs site stats auth error email
 var Files embed.FS
 
+var Layouts = template.Must(
+	base().ParseFS(Files,
+		"layout/*.html",
+	),
+)
+
 var LoginForm = template.Must(
-	template.ParseFS(Files,
-		"layout/focus.html",
-		"layout/flash.html",
-		"layout/csrf.html",
-		"layout/captcha.html",
+	layout().ParseFS(Files,
 		"auth/login_form.html",
 	),
-)
+).Lookup("focus")
+
+func base() *template.Template {
+	return template.New("root")
+}
 
 var RegisterForm = template.Must(
-	template.ParseFS(Files,
-		"layout/focus.html",
-		"layout/flash.html",
-		"layout/csrf.html",
-		"layout/captcha.html",
+	layout().ParseFS(Files,
 		"auth/register_form.html",
 	),
-)
+).Lookup("focus")
 
-var Error = template.Must(template.ParseFS(Files,
-	"error/error.html",
-))
+func layout() *template.Template {
+	return template.Must(Layouts.Clone())
+}
+
+var Error = template.Must(
+	template.ParseFS(Files,
+		"error/error.html",
+	))
 
 var ActivationEmail = template.Must(
-	template.ParseFS(Files,
-		"layout/focus.html",
+	layout().ParseFS(Files,
 		"email/activation_code.html",
 	),
-)
+).Lookup("focus")
 
 var Activate = template.Must(
-	template.ParseFS(Files,
-		"layout/focus.html",
-		"layout/flash.html",
-		"layout/csrf.html",
+	layout().ParseFS(Files,
 		"auth/activate.html",
 	),
-)
+).Lookup("focus")
 
-var Home = template.Must(
-	template.ParseFS(Files,
-		"layout/app.html",
-		"layout/header.html",
-		"layout/flash.html",
-		"layout/notice.html",
-		"layout/footer.html",
-	),
-)
+var Home = Layouts.Lookup("app")
 
 var Sites = template.Must(
-	template.ParseFS(Files,
-		"layout/app.html",
-		"layout/header.html",
-		"layout/flash.html",
-		"layout/notice.html",
+	layout().ParseFS(Files,
 		"plot/plot.html",
 		"site/index.html",
-		"layout/footer.html",
 	),
-)
+).Lookup("app")
 
 var SiteNew = template.Must(
-	template.ParseFS(Files,
-		"layout/app.html",
-		"layout/csrf.html",
-		"layout/header.html",
-		"layout/flash.html",
-		"layout/notice.html",
-		"layout/footer.html",
+	layout().ParseFS(Files,
 		"site/new.html",
 	),
-)
+).Lookup("app")
 
 var Pricing = template.Must(
-	template.ParseFS(Files,
-		"layout/app.html",
-		"layout/csrf.html",
-		"layout/header.html",
-		"layout/flash.html",
-		"layout/notice.html",
-		"layout/footer.html",
+	layout().ParseFS(Files,
 		"pages/pricing.html",
 	),
-)
-
-var Markdown = template.Must(
-	template.ParseFS(Files,
-		"layout/app.html",
-		"layout/csrf.html",
-		"layout/header.html",
-		"layout/flash.html",
-		"layout/notice.html",
-		"layout/footer.html",
-		"pages/markdown.html",
-	),
-)
+).Lookup("app")
 
 var DocsPage = template.Must(
-	template.ParseFS(Files,
-		"layout/app.html",
-		"layout/csrf.html",
-		"layout/header.html",
-		"layout/flash.html",
-		"layout/notice.html",
-		"layout/footer.html",
+	layout().ParseFS(Files,
 		"docs/side_nav.html",
 		"docs/page.html",
 	),
-)
+).Lookup("app")
 
 var AddSnippet = template.Must(
-	template.ParseFS(Files,
-		"layout/focus.html",
-		"layout/flash.html",
-		"layout/csrf.html",
+	layout().ParseFS(Files,
 		"site/snippet.html",
 	),
-)
+).Lookup("focus")
 
 var Stats = template.Must(
-	template.ParseFS(Files,
-		"layout/app.html",
-		"layout/csrf.html",
-		"layout/header.html",
-		"layout/flash.html",
-		"layout/notice.html",
-		"layout/footer.html",
+	layout().ParseFS(Files,
 		"stats/stats.html",
 	),
-)
+).Lookup("app")
 
 var WaitingFirstPageView = template.Must(
-	template.ParseFS(Files,
-		"layout/app.html",
-		"layout/csrf.html",
-		"layout/header.html",
-		"layout/flash.html",
-		"layout/notice.html",
-		"layout/footer.html",
+	layout().ParseFS(Files,
 		"stats/stats.html",
 	),
-)
+).Lookup("app")
 
 var SiteLocked = template.Must(
-	template.ParseFS(Files,
-		"layout/app.html",
-		"layout/csrf.html",
-		"layout/header.html",
-		"layout/flash.html",
-		"layout/notice.html",
-		"layout/footer.html",
+	layout().ParseFS(Files,
 		"stats/site_locked.html",
 	),
-)
+).Lookup("app")
 
 type NewSite struct {
 	IsFirstSite bool
