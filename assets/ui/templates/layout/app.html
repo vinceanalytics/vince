@@ -13,12 +13,7 @@
     <link rel="manifest" href="/site.webmanifest">
 
     <title>
-        VINCE ANALYTICS |
-        {{- if .Title -}}
-        {{.Title}}
-        {{ else -}}
-        {{.Slogan}}
-        {{end}}
+        VINCE ANALYTICS | {{if .Title }}{{.Title}}{{else }}{{.Slogan}}{{end}}
     </title>
     <link rel="stylesheet" href="/css/app.css" />
     {{if not .Docs}}
