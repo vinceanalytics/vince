@@ -127,6 +127,12 @@ var SiteLocked = template.Must(
 	),
 ).Lookup("app")
 
+var UserSettings = template.Must(
+	layout().ParseFS(Files,
+		"auth/user_settings.html",
+	),
+).Lookup("app")
+
 type NewSite struct {
 	IsFirstSite bool
 	IsAtLimit   bool
