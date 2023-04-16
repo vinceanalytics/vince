@@ -42,7 +42,9 @@ var LoginForm = template.Must(
 
 func base() *template.Template {
 	return template.New("root").Funcs(template.FuncMap{
-		"Icon": octicon.IconTemplateFunc,
+		"Icon":     octicon.IconTemplateFunc,
+		"Sections": Sections,
+		"Section":  Section,
 	})
 }
 
@@ -249,14 +251,14 @@ func (p Pages) Sort() Pages {
 	return p
 }
 
-func (Context) Section(p Pages) string {
+func Section(p Pages) string {
 	if len(p) > 0 {
 		return p[0].Meta.Section
 	}
 	return ""
 }
 
-func (Context) Sections(p Pages) (o []Pages) {
+func Sections(p Pages) (o []Pages) {
 	var ls []*Page
 	for _, v := range p {
 		if v.Meta.Section == "" {
