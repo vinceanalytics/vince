@@ -41,7 +41,9 @@ var LoginForm = template.Must(
 ).Lookup("focus")
 
 func base() *template.Template {
-	return template.New("root")
+	return template.New("root").Funcs(template.FuncMap{
+		"Icon": octicon.IconTemplateFunc,
+	})
 }
 
 var RegisterForm = template.Must(
@@ -343,10 +345,6 @@ func (t *Context) Validate(name string) template.HTML {
 		}
 	}
 	return template.HTML("")
-}
-
-func (t *Context) Icon(name string, height int, class ...string) (template.HTML, error) {
-	return octicon.IconTemplateFunc(name, height, class...)
 }
 
 func (t *Context) InputField(name string) template.HTMLAttr {
