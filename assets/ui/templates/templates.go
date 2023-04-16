@@ -391,12 +391,6 @@ func (t *Context) Logo(width, height int) template.HTML {
 	))
 }
 
-func (t *Context) OnboardSteps() []string {
-	return []string{
-		"Register", "Activate account", "Add site info", "Install snippet",
-	}
-}
-
 func (t *Context) Validate(name string) template.HTML {
 	if t.Errors != nil {
 		o, _ := octicon.Icon("alert-fill", 12)
