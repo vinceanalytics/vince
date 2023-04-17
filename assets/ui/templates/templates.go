@@ -94,14 +94,14 @@ var Pricing = template.Must(
 	layout().ParseFS(Files,
 		"pages/pricing.html",
 	),
-).Lookup("app")
+).Lookup("plain")
 
 var DocsPage = template.Must(
 	layout().ParseFS(Files,
 		"docs/side_nav.html",
 		"docs/page.html",
 	),
-).Lookup("app")
+).Lookup("docs")
 
 var AddSnippet = template.Must(
 	layout().ParseFS(Files,
