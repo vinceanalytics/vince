@@ -16,6 +16,7 @@ type U struct {
 	Width, Height uint
 	Start         time.Time
 	Series        []float64
+	Class         string
 }
 
 var basic = template.Must(
@@ -44,6 +45,7 @@ func (u *U) SparkLine() (htpl.HTML, error) {
 	o := O{
 		Width:   u.Width,
 		Height:  u.Height,
+		Class:   u.Class,
 		PXAlign: false,
 		Cursor:  &Cursor{Show: false},
 		Select:  &Select{BBox: BBox{Show: false}},

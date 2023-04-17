@@ -21,8 +21,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 				Site: u.Sites[i],
 				Plot: &plot.U{
 					ID:     u.Sites[i].ID,
-					Width:  1613,
-					Height: 240,
+					Height: 100,
 					Series: []float64{0, 13, 11, 4, 44, 10},
 				},
 			}
