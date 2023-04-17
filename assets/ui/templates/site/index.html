@@ -4,22 +4,16 @@
 <div class="container-md">
     <div>
         {{range .SitesOverview}}
-        {{template "single_site" .}}
-        {{end}}
-    </div>
-</div>
-{{end}}
-
-{{define "single_site"}}
-<div class="Box">
-    <div class="Box-header">
-        <a href="/{{.Site.Domain}}/stats">{{.Site.Domain}}</a>
-    </div>
-    <div class="Box-row">
-        <div id="uPlot" class="width-full"
-            data-series="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]">
+        <div class="Box">
+            <div class="Box-header">
+                <a href="/{{.Site.Domain}}/stats">{{.Site.Domain}}</a>
+            </div>
+            <div class="Box-row">
+                <div id="{{.Site.ID}}" class="width-full"></div>
+                {{.Plot.SparkLine}}
+            </div>
         </div>
-        {{template "_stat_line" "uPlot"}}
+        {{end}}
     </div>
 </div>
 {{end}}
