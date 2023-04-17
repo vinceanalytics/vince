@@ -126,21 +126,21 @@
     width: 20px
 }
 
-.repoOverview {
+.siteOverview {
     font-size: 16px;
     height: 240px
 }
 
-.repoOverview.overviewEmpty {
+.siteOverview.overviewEmpty {
     height: 150px
 }
 
-.repoOverview ~ .repoOverview {
+.siteOverview ~ .siteOverview {
     margin-top: 50px;
     padding-top: 5px
 }
 
-.repoOverview h1 {
+.siteOverview h1 {
     border: 0;
     font-size: 34px;
     font-style: normal;

@@ -3,13 +3,14 @@
 {{define "_content"}}
 <div>
     {{range .SitesOverview}}
-    <div class="repoOverview">
+    <div class="siteOverview">
         <div id="{{.Site.ID}}" class="spark">
         </div>
         <div class="container-md">
             <h1>
                 <a href="/{{.Site.Domain}}/stats">{{.Site.Domain}}</a>
-                <div class="viewsText">20k <span class="text-normal f6-mktg color-fg-muted">Views</span>
+                <div class="viewsText" style="color: var(--color-blurple);">20k <span
+                        class="text-normal f6-mktg color-fg-muted">Views</span>
                 </div>
             </h1>
         </div>
