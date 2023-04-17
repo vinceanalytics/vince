@@ -27,7 +27,7 @@
 <body>
     {{block "_header" .}}{{end}}
     {{block "_notice" .}}{{end}}
-    <main class="container-xl" {{if not .Docs}} style=" padding: 67px 0 200px;" {{end}}>
+    <main {{if not .Docs}} style="padding-top: 67px;" {{end}}>
         {{block "_content" .}}{{end}}
     </main>
     {{block "_footer" .}}{{end}}

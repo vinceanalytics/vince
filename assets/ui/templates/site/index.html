@@ -1,20 +1,22 @@
 {{$ctx := .}}
 
 {{define "_content"}}
-<div class="container-md">
-    <div>
-        {{range .SitesOverview}}
-        <div class="Box">
-            <div class="Box-header">
-                <a href="/{{.Site.Domain}}/stats">{{.Site.Domain}}</a>
-            </div>
-            <div class="Box-row">
-                <div id="{{.Site.ID}}" class="width-full">
-                </div>
-                {{.Plot.SparkLine}}
-            </div>
+<div>
+    {{range .SitesOverview}}
+    <div class="repoOverview">
+        <div id="{{.Site.ID}}" class="spark">
         </div>
-        {{end}}
+        <div class="container-md">
+            <h1>
+                <a href="/{{.Site.Domain}}/stats">{{.Site.Domain}}</a>
+                <div class="coverageText">20k <span class="text-normal f6-mktg color-fg-muted">Views</span>
+                </div>
+            </h1>
+        </div>
+        {{.Plot.SparkLine}}
+
     </div>
+    {{end}}
+</div>
 </div>
 {{end}}
