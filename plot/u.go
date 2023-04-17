@@ -57,8 +57,8 @@ func (u *U) SparkLine() (htpl.HTML, error) {
 		Series: []Series{
 			{},
 			{
-				Stroke: "red",
-				Fill:   "rgba(255,0,0,0.1)",
+				Stroke: "#ffaba8",
+				Fill:   "#ffcecb",
 			},
 		},
 	}
