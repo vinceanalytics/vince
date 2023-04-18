@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"math/rand"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -121,6 +122,10 @@ func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 	if err != nil {
 		DBE(ctx, err, "failed to update stats_start_date")
 	}
+}
+
+func (s *Site) SafeDomain() string {
+	return url.PathEscape(s.Domain)
 }
 
 func (u *Site) Preload(ctx context.Context, preload ...string) {

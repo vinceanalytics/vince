@@ -408,6 +408,6 @@ func (t *Context) Snippet() string {
 	if t.Site.CustomDomain != nil {
 		track = fmt.Sprintf("https://%s/js/index.js", t.Site.CustomDomain.Domain)
 	}
-	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", t.Site.Domain, track)
+	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", t.Site.SafeDomain(), track)
 	return src
 }
