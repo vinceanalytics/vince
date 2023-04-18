@@ -1,0 +1,104 @@
+{{define "_site_settings_nav"}}
+<navigation-list>
+    <div class="pr-4">
+        <nav aria-label="User Setting">
+            <nav-list>
+                <li class="ActionList-sectionDivider"></li>
+                <div>
+                    <div class="ActionList-sectionDivider">
+                        <h3 class="ActionList-sectionDivider-title">
+                            Site Settings
+                        </h3>
+                    </div>
+                    <ul class="ActionListWrap">
+                        <li class="ActionListItem {{if eq .Page " general"}}ActionListItem--navActive{{end}}">
+                            <a href="/{{.Site.SafeDomain}}/settings/general"
+                                class="ActionListContent ActionListContent--visual16">
+                                <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                    {{Icon "gear" 16
+                                    "ActionListItem-visual ActionListItem-visual--leading"}}
+                                </span>
+                                <span class="ActionListItem-label">
+                                    General
+                                </span>
+                            </a>
+                        </li>
+                        <li class="ActionListItem {{if eq .Page " goals"}}ActionListItem--navActive{{end}}">
+                            <a href="/{{.Site.SafeDomain}}/settings/goals"
+                                class="ActionListContent ActionListContent--visual16">
+                                <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                    {{Icon "goal" 16
+                                    "ActionListItem-visual ActionListItem-visual--leading"}}
+                                </span>
+                                <span class="ActionListItem-label">
+                                    Goals
+                                </span>
+                            </a>
+                        </li>
+                        <li class="ActionListItem {{if eq .Page " people"}}ActionListItem--navActive{{end}}">
+                            <a href="/{{.Site.SafeDomain}}/settings/people"
+                                class="ActionListContent ActionListContent--visual16">
+                                <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                    {{Icon "organization" 16
+                                    "ActionListItem-visual ActionListItem-visual--leading"}}
+                                </span>
+                                <span class="ActionListItem-label">
+                                    People
+                                </span>
+                            </a>
+                        </li>
+                        <li class="ActionListItem {{if eq .Page " visibility"}}ActionListItem--navActive{{end}}">
+                            <a href="/{{.Site.SafeDomain}}/settings/visibility"
+                                class="ActionListContent ActionListContent--visual16">
+                                <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                    {{Icon "lock" 16
+                                    "ActionListItem-visual ActionListItem-visual--leading"}}
+                                </span>
+                                <span class="ActionListItem-label">
+                                    Visibility
+                                </span>
+                            </a>
+                        </li>
+                        <li class="ActionListItem {{if eq .Page " reports"}}ActionListItem--navActive{{end}}">
+                            <a href="/{{.Site.SafeDomain}}/settings/email-reports"
+                                class="ActionListContent ActionListContent--visual16">
+                                <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                    {{Icon "mail" 16
+                                    "ActionListItem-visual ActionListItem-visual--leading"}}
+                                </span>
+                                <span class="ActionListItem-label">
+                                    Reports
+                                </span>
+                            </a>
+                        </li>
+                        <li class="ActionListItem {{if eq .Page " custom-domain"}}ActionListItem--navActive{{end}}">
+                            <a href="/{{.Site.SafeDomain}}/settings/custom-domain"
+                                class="ActionListContent ActionListContent--visual16">
+                                <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                    {{Icon "pencil" 16
+                                    "ActionListItem-visual ActionListItem-visual--leading"}}
+                                </span>
+                                <span class="ActionListItem-label">
+                                    Custom Domain
+                                </span>
+                            </a>
+                        </li>
+                        <li class="ActionListItem {{if eq .Page " danger"}}ActionListItem--navActive{{end}}">
+                            <a href="/{{.Site.SafeDomain}}/settings/danger-zone"
+                                class="ActionListContent ActionListContent--visual16">
+                                <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                    {{Icon "alert-fill" 16
+                                    "ActionListItem-visual ActionListItem-visual--leading"}}
+                                </span>
+                                <span class="ActionListItem-label">
+                                    Danger zone
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav-list>
+        </nav>
+    </div>
+</navigation-list>
+{{end}}

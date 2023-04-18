@@ -15,11 +15,11 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/belak/octicon"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/internal/plans"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/octicon"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
@@ -130,6 +130,48 @@ var SiteLocked = template.Must(
 var UserSettings = template.Must(
 	layout().ParseFS(Files,
 		"auth/user_settings.html",
+	),
+).Lookup("app")
+
+var SiteSettingsGeneral = template.Must(
+	layout().ParseFS(Files,
+		"site/settings_general.html",
+	),
+).Lookup("app")
+
+var SiteSettingsGoals = template.Must(
+	layout().ParseFS(Files,
+		"site/settings_goals.html",
+	),
+).Lookup("app")
+
+var SiteSettingsPeople = template.Must(
+	layout().ParseFS(Files,
+		"site/settings_people.html",
+	),
+).Lookup("app")
+
+var SiteSettingsVisibility = template.Must(
+	layout().ParseFS(Files,
+		"site/settings_visibility.html",
+	),
+).Lookup("app")
+
+var SiteSettingsReports = template.Must(
+	layout().ParseFS(Files,
+		"site/settings_email_reports.html",
+	),
+).Lookup("app")
+
+var SiteSettingsCustomDomain = template.Must(
+	layout().ParseFS(Files,
+		"site/settings_custom_domain.html",
+	),
+).Lookup("app")
+
+var SiteSettingsCustomDanger = template.Must(
+	layout().ParseFS(Files,
+		"site/settings_danger_zone.html",
 	),
 ).Lookup("app")
 

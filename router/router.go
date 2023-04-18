@@ -175,7 +175,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.GET(`^/:website/settings/people$`, site.SettingsPeople),
 		sitePipe.GET(`^/:website/settings/visibility$`, site.SettingsVisibility),
 		sitePipe.GET(`^/:website/settings/goals$`, site.SettingsGoals),
-		sitePipe.GET(`^/:website/settings/search-console$`, site.SettingsSearchConsole),
 		sitePipe.GET(`^/:website/settings/email-reports$`, site.SettingsEmailReports),
 		sitePipe.GET(`^/:website/settings/custom-domain$`, site.SettingsCustomDomain),
 		sitePipe.GET(`^/:website/settings/danger-zone$`, site.SettingsDangerZone),
