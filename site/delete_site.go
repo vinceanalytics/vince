@@ -32,5 +32,6 @@ func DeleteSite(w http.ResponseWriter, r *http.Request) {
 	session.Data.Flash = &flash.Flash{
 		Success: []string{"site and site stats have been permanently deleted"},
 	}
+	session.Save(w)
 	http.Redirect(w, r, "/sites", http.StatusFound)
 }
