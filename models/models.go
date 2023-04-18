@@ -408,7 +408,6 @@ type Model struct {
 	ID        uint64 `gorm:"primarykey;autoIncrement:true"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
 func Database(cfg *config.Config) string {
