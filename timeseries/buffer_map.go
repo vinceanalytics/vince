@@ -40,6 +40,13 @@ func (m *Map) Get(ctx context.Context, uid, sid uint64) *Buffer {
 	return b
 }
 
+// Removes the buffer associated with sid
+func (m *Map) Delete(ctx context.Context, sid uint64) {
+	if b, ok := m.m.LoadAndDelete(sid); ok {
+		b.(*Buffer).Delete(ctx)
+	}
+}
+
 func (m *Map) Save(ctx context.Context) {
 	now := time.Now()
 	var deleted []*Buffer

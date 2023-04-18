@@ -58,6 +58,40 @@ func (g *aggregate) Release() {
 	groupPool.Put(g)
 }
 
+func DropSite(ctx context.Context, uid, sid uint64) {
+	start := time.Now()
+	defer system.DropSiteDuration.UpdateDuration(start)
+
+	db := GetMike(ctx)
+	id := newID()
+	defer id.Release()
+
+	id.SetUserID(uid)
+	id.SetSiteID(sid)
+
+	err := db.Update(func(txn *badger.Txn) error {
+		o := badger.IteratorOptions{
+			Prefix: id.SitePrefix(),
+		}
+		it := txn.NewIterator(o)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			err := txn.Delete(it.Item().KeyCopy(nil))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		log.Get(ctx).Err(err).
+			Uint64("uid", uid).
+			Uint64("sid", sid).
+			Msg("failed to delete site from stats storage")
+	}
+
+}
+
 func Save(ctx context.Context, b *Buffer) {
 	start := time.Now()
 	defer system.SaveDuration.UpdateDuration(start)

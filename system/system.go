@@ -8,6 +8,7 @@ import (
 // histograms
 var (
 	SaveDuration      = &histogramMetric{name: "mike_save_duration"}
+	DropSiteDuration  = &histogramMetric{name: "mike_drop_site_duration"}
 	MergeDuration     = &histogramMetric{name: "bob_merge_duration"}
 	SiteCacheDuration = &histogramMetric{name: "sites_cache_update"}
 )
@@ -58,5 +59,6 @@ func CollectHist(ts time.Time) []*Histogram {
 		SaveDuration.Read(ts),
 		MergeDuration.Read(ts),
 		SiteCacheDuration.Read(ts),
+		DropSiteDuration.Read(ts),
 	}
 }

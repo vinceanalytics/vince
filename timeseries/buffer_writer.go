@@ -97,6 +97,19 @@ var bigBufferPool = &sync.Pool{
 	},
 }
 
+func (b *Buffer) Delete(ctx context.Context) {
+	err := GetBob(ctx).Update(func(txn *badger.Txn) error {
+		return txn.Delete(b.id[:])
+	})
+	if err != nil {
+		log.Get(ctx).Err(err).
+			Uint64("sid", b.SID()).
+			Uint64("uid", b.UID()).
+			Msg("failed to delete site collected events")
+	}
+	b.Release()
+}
+
 func (b *Buffer) Save(ctx context.Context) error {
 	say := log.Get(ctx)
 	ts := GetBob(ctx)

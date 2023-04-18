@@ -42,6 +42,10 @@ func (id *ID) GetSiteID() uint64 {
 	return binary.BigEndian.Uint64(id[siteOffset:])
 }
 
+func (id *ID) SitePrefix() []byte {
+	return id[:yearOffset]
+}
+
 func (id *ID) Year(ts time.Time) *ID {
 	binary.BigEndian.PutUint16(id[yearOffset:], uint16(ts.Year()))
 	return id
