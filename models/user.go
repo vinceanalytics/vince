@@ -33,7 +33,6 @@ type User struct {
 
 	Subscription   *Subscription
 	EnterprisePlan *EnterprisePlan
-	GoogleAuth     *GoogleAuth
 	GracePeriod    *GracePeriod
 
 	// for invoice generation and billing

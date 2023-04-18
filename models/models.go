@@ -109,7 +109,6 @@ type Site struct {
 
 	WeeklyReport      *WeeklyReport
 	MonthlyReports    *MonthlyReport
-	GoogleAuth        *GoogleAuth       `gorm:"constraint:OnDelete:CASCADE;"`
 	CustomDomain      *CustomDomain     `gorm:"constraint:OnDelete:CASCADE;"`
 	SpikeNotification SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
 
@@ -342,17 +341,6 @@ type SentRenewalNotification struct {
 	UserID uint64
 }
 
-type GoogleAuth struct {
-	Model
-	UserID       uint64
-	SiteID       uint64
-	Email        string    `gorm:"not null"`
-	RefreshToken string    `gorm:"not null"`
-	AccessToken  string    `gorm:"not null"`
-	Property     string    `gorm:"not null"`
-	Expires      time.Time `gorm:"not null"`
-}
-
 type WeeklyReport struct {
 	Model
 	SiteID int
@@ -431,8 +419,6 @@ func Open(path string) (*gorm.DB, error) {
 		&EnterprisePlan{},
 		&FeedbackEmail{},
 		&Goal{},
-		&GoogleAuth{},
-		&GracePeriod{},
 		&IntroEmail{},
 		&Invitation{},
 		&MonthlyReport{},
