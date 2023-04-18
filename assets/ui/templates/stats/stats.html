@@ -1,44 +1,77 @@
 {{define "_content"}}
-<div class="container-lg">
-    <div class="Box my-1">
-        <div class="Box-row">
-            <div class="d-flex text-center f4">
-                <div class="col-3 mx-1  Box Box--condensed">
-                    <div class="Box-header">
-                        <h3 class="Box-title">
-                            Visits
-                        </h3>
-                    </div>
-                    <div class="Box-body f0-mktg text-normal">
-                        20k
-                    </div>
+<div class="container-xl">
+    <div class="Layout">
+        <div class="Layout-sidebar">
+            <navigation-list>
+                <div>
+                    <nav aria-label="Site Options">
+                        <nav-list>
+                            <ul class="ActionListWrap">
+                                <li class="ActionListItem">
+                                    <a href="/{{.Site.SafeDomain}}/settings"
+                                        class="ActionListContent ActionListContent--visual16">
+                                        <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                            {{Icon "gear" 16
+                                            "ActionListItem-visual ActionListItem-visual--leading"}}
+                                        </span>
+                                        <span class="ActionListItem-label">
+                                            Settings
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav-list>
+                    </nav>
                 </div>
-                <div class="col-3 mx-1 Box Box--condensed">
+            </navigation-list>
+        </div>
+        <div class="Layout-main">
+            <div class="container-lg">
+                <div class="Box">
                     <div class="Box-header">
-                        <h3 class="Box-title">
-                            Page views
-                        </h3>
+                        {{.Site.Domain}}
                     </div>
-                    <div class="Box-body f0-mktg text-normal">
-                        20k
+                    <div class="Box-row">
+                        <div class="d-flex text-center f4">
+                            <div class="col-3 mx-1  Box Box--condensed">
+                                <div class="Box-header">
+                                    <h3 class="Box-title">
+                                        Visits
+                                    </h3>
+                                </div>
+                                <div class="Box-body f0-mktg text-normal">
+                                    20k
+                                </div>
+                            </div>
+                            <div class="col-3 mx-1 Box Box--condensed">
+                                <div class="Box-header">
+                                    <h3 class="Box-title">
+                                        Page views
+                                    </h3>
+                                </div>
+                                <div class="Box-body f0-mktg text-normal">
+                                    20k
+                                </div>
+                            </div>
+                            <div class="col-3 mx-1 Box Box--condensed">
+                                <div class="Box-header">
+                                    <h3 class="Box-title">
+                                        Page Duration
+                                    </h3>
+                                </div>
+                                <div class="Box-body f0-mktg text-normal">
+                                    20m0s
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-3 mx-1 Box Box--condensed">
-                    <div class="Box-header">
-                        <h3 class="Box-title">
-                            Page Duration
-                        </h3>
-                    </div>
-                    <div class="Box-body f0-mktg text-normal">
-                        20m0s
+                    <div class="Box-footer">
+                        Box footer
                     </div>
                 </div>
             </div>
         </div>
-        <div class="Box-footer">
-            Box footer
-        </div>
+
     </div>
-</div>
 </div>
 {{end}}
