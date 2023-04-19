@@ -175,6 +175,12 @@ var SiteSettingsCustomDanger = template.Must(
 	),
 ).Lookup("app")
 
+var SiteNewGoal = template.Must(
+	layout().ParseFS(Files,
+		"site/new_goal.html",
+	),
+).Lookup("focus")
+
 type NewSite struct {
 	IsFirstSite bool
 	IsAtLimit   bool
