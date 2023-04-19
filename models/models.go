@@ -110,8 +110,8 @@ type Site struct {
 
 	WeeklyReport      *WeeklyReport
 	MonthlyReports    *MonthlyReport
-	CustomDomain      *CustomDomain     `gorm:"constraint:OnDelete:CASCADE;"`
-	SpikeNotification SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
+	CustomDomain      *CustomDomain      `gorm:"constraint:OnDelete:CASCADE;"`
+	SpikeNotification *SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
 
 	Invitations []*Invitation `gorm:"constraint:OnDelete:CASCADE;"`
 	SharedLinks []*SharedLink
