@@ -446,9 +446,9 @@ func (Context) Slogan() string {
 }
 
 func (t *Context) Snippet() string {
-	track := fmt.Sprintf("https://%s/js/script.js", t.Config.Url)
+	track := fmt.Sprintf("https://%s/js/vince.js", t.Config.Url)
 	if t.Site.CustomDomain != nil {
-		track = fmt.Sprintf("https://%s/js/index.js", t.Site.CustomDomain.Domain)
+		track = fmt.Sprintf("https://%s/js/vince.js", t.Site.CustomDomain.Domain)
 	}
 	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", t.Site.SafeDomain(), track)
 	return src
