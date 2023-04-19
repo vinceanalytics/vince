@@ -5,23 +5,30 @@
     {{range .Success}}
     <div class="Box ">
         <div class="flash flash-full flash-success">
-            {{$root.Icon "check" 16}}
-            <span>{{.}}</span>
+            <div class="container-md">
+                {{Icon "check" 16}}
+                <span>{{.}}</span>
+            </div>
         </div>
     </div>
     {{end}}
     {{range .Warn}}
     <div class="Box ">
         <div class="flash flash-full flash-warn">
-            {{$root.Icon "alert" 16}}
-            <span>{{.}}</span>
+            <div class="container-md">
+                {{Icon "alert" 16}}
+                <span>{{.}}</span>
+            </div>
+
         </div>
     </div>
     {{end}}
     {{ range .Error}}
     <div class="Box ">
         <div class="flash flash-full flash-error">
-            <span>{{.}}</span>
+            <div class="container-md">
+                <span>{{.}}</span>
+            </div>
         </div>
     </div>
     {{end}}

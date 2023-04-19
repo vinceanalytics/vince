@@ -374,9 +374,39 @@ type SentMonthlyReport struct {
 
 type Goal struct {
 	Model
-	Domain    string `gorm:"uniqueIndex"`
+	Domain    string `gorm:"index"`
 	EventName string
 	PagePath  string
+}
+
+var pathRe = regexp.MustCompile(`^\/.*`)
+var eventRe = regexp.MustCompile(`^.+`)
+
+func ValidateGoals(event, path string) bool {
+	return (event != "" && eventRe.MatchString(event)) ||
+		(path != "" && pathRe.MatchString(path))
+}
+
+func (g *Goal) Name() string {
+	if g.EventName != "" {
+		return g.EventName
+	}
+	return "Visit " + g.PagePath
+}
+
+func CreateGoal(ctx context.Context, domain, event, path string) {
+	// Support multiple goals to be set per site. We have removed unique constraint
+	// on goals table, so we perform UPSERT based on the goals fields to avoid
+	// creating multiple rows of same goals
+	var o Goal
+	err := Get(ctx).Where(&Goal{
+		Domain:    domain,
+		EventName: strings.TrimSpace(event),
+		PagePath:  strings.TrimSpace(path),
+	}).FirstOrCreate(&o).Error
+	if err != nil {
+		DBE(ctx, err, "failed to create a new goal")
+	}
 }
 
 func Goals(ctx context.Context, domain string) (o []*Goal) {

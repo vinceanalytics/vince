@@ -20,11 +20,14 @@
                         <label for="event_name"> Event name</label>
                         <input type="text" name="event_name" id="event_name" placeholder="SignUp"
                             class="mt-3  form-control input-block border rounded">
+                        {{.Validate "event_name"}}
                     </div>
                     <div id="pageview-fields" class="d-none">
                         <label for="page_path"> Page path </label>
                         <input type="text" name="page_path" id="page_path" placeholder="/success"
                             class="mt-3  form-control input-block">
+                        {{.Validate "page_path"}}
+
                     </div>
                 </div>
                 {{template "_csrf" .}}

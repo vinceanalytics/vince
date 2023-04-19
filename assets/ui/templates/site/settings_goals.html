@@ -7,17 +7,39 @@
         <div class="Layout-main">
             <div class="container-md">
                 {{if .Goals}}
+                {{$site := .Site}}
+                <div class="Box">
+                    <div class="Box-body">
+                        {{range .Goals}}
+                        <div class="Subhead">
+                            <h1 class="Subhead-heading">{{.Name}}</h1>
+                            <div class="Subhead-actions">
+                                <form action="/{{$site.SafeDomain}}/goals/{{.ID}}" method="delete">
+                                    <input type="submit" value="Remove" class="btn btn-sm btn-danger">
+                                </form>
+                            </div>
+                        </div>
+                        {{end}}
+                        <a class="btn btn-primary" href="/{{.Site.SafeDomain}}/goals/new">
+                            {{Icon "plus" 16}}
+                            <span>Add goal</span>
+                        </a>
+                    </div>
+
+                </div>
+
                 {{else}}
                 <div class="Subhead">
                     <h2 class="Subhead-heading">No goals configured for this site yet</h2>
                     <div class="Subhead-description">You can start creating your goals now.
                     </div>
                 </div>
-                {{end}}
                 <a class="btn btn-primary" href="/{{.Site.SafeDomain}}/goals/new">
                     {{Icon "plus" 16}}
                     <span>Add goal</span>
                 </a>
+                {{end}}
+
             </div>
         </div>
     </div>
