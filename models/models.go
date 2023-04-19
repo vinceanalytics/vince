@@ -379,6 +379,14 @@ type Goal struct {
 	PagePath  string
 }
 
+func Goals(ctx context.Context, domain string) (o []*Goal) {
+	err := Get(ctx).Model(&Goal{}).Where("domain = ?", domain).Find(&o).Error
+	if err != nil {
+		DBE(ctx, err, "failed to find goals by domain")
+	}
+	return
+}
+
 type EnterprisePlan struct {
 	Model
 	PlanID                uint64 `gorm:"not null"`

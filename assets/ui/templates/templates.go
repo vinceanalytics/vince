@@ -207,6 +207,7 @@ type Context struct {
 	Content       template.HTML
 	ModTime       time.Time
 	Site          *models.Site
+	Goals         []*models.Goal
 	IsFIrstSite   bool
 	SitesOverview []models.SiteOverView
 	EmailReport   bool

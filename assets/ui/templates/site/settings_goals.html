@@ -5,6 +5,20 @@
             {{template "_site_settings_nav" .}}
         </div>
         <div class="Layout-main">
+            <div class="container-md">
+                {{if .Goals}}
+                {{else}}
+                <div class="Subhead">
+                    <h2 class="Subhead-heading">No goals configured for this site yet</h2>
+                    <div class="Subhead-description">You can start creating your goals now.
+                    </div>
+                </div>
+                {{end}}
+                <a class="btn btn-primary" href="/{{.Site.SafeDomain}}/goals/new">
+                    {{Icon "plus" 16}}
+                    <span>Add goal</span>
+                </a>
+            </div>
         </div>
     </div>
 </div>
