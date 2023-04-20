@@ -1,23 +1,45 @@
 {{$ctx := .}}
 
 {{define "_content"}}
-<div>
-    {{range .SitesOverview}}
-    <div class="siteOverview">
-        <div id="{{.Site.ID}}" class="spark">
-        </div>
-        <div class="container-md">
-            <h1>
+<div class="container-md">
+    <div class="Box">
+        {{range .SitesOverview}}
+        <div class="Box-row">
+            <h2 class="h3 lh-condensed">
                 <a href="/{{.Site.SafeDomain}}/stats">{{.Site.SafeDomain}}</a>
-                <div class="viewsText" style="color: var(--color-blurple);">20k <span
-                        class="text-normal f6-mktg color-fg-muted">Views</span>
+                <span class="Label Label--secondary v-align-middle ml-1 mb-1">
+                    {{if .Site.Public}}Public{{else}}Private{{end}}
+                </span>
+            </h2>
+            <div id="{{.Site.ID}}"></div>
+            <div class="f6 color-fg-muted mt-2">
+                <div class="d-inline-block mr-3">
+                    2.1 K visitors
                 </div>
-            </h1>
+                <div class="d-inline-block mr-3">
+                    2.1 K views
+                </div>
+                <div class="d-inline-block mr-3">
+                    2.1 K events
+                </div>
+                <div class="d-inline-block mr-3">
+                    2.1 K visits
+                </div>
+                <div class="d-inline-block mr-3">
+                    2.1 K bounce rate
+                </div>
+                <div class="d-inline-block mr-3">
+                    2.1 K visit duration
+                </div>
+                <div class="d-inline-block mr-3">
+                    2.1 K views per visit
+                </div>
+            </div>
+            {{.Plot.SparkLine}}
         </div>
-        {{.Plot.SparkLine}}
-
+        {{end}}
     </div>
-    {{end}}
+
 </div>
 </div>
 {{end}}
