@@ -45,6 +45,7 @@ func base() *template.Template {
 		"Icon":     octicon.IconTemplateFunc,
 		"Sections": Sections,
 		"Section":  Section,
+		"Avatar":   Avatar,
 	})
 }
 
@@ -459,4 +460,10 @@ func (t *Context) Snippet() string {
 	}
 	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", t.Site.SafeDomain(), track)
 	return src
+}
+
+func Avatar(uid uint64, size uint, class ...string) template.HTML {
+	return template.HTML(fmt.Sprintf(`<img class=%q src="/avatar?u=%d&s=%d">`,
+		strings.Join(class, " "), uid, size,
+	))
 }
