@@ -113,8 +113,9 @@ type Site struct {
 	CustomDomain      *CustomDomain      `gorm:"constraint:OnDelete:CASCADE;"`
 	SpikeNotification *SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
 
-	Invitations []*Invitation `gorm:"constraint:OnDelete:CASCADE;"`
-	SharedLinks []*SharedLink
+	Invitations     []*Invitation `gorm:"constraint:OnDelete:CASCADE;"`
+	SiteMemberships []*SiteMembership
+	SharedLinks     []*SharedLink
 }
 
 func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
@@ -240,11 +241,12 @@ type SpikeNotification struct {
 }
 
 type SiteMembership struct {
-	UserID    uint64 `gorm:"primaryKey"`
-	SiteID    uint64 `gorm:"primaryKey"`
-	Role      string `gorm:"not null;default:'owner';check:role in ('owner', 'admin', 'viewer')"`
-	CreatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	Model
+	UserID uint64 `gorm:"primaryKey"`
+	User   *User
+	SiteID uint64 `gorm:"primaryKey"`
+	Site   *Site
+	Role   string `gorm:"not null;default:'owner';check:role in ('owner', 'admin', 'viewer')"`
 }
 
 type APIKey struct {
