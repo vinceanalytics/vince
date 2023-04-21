@@ -182,7 +182,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.POST(`^/:website/goals$`, site.CreateGoal),
 		sitePipe.DELETE(`^/:website/goals/:id$`, site.DeleteGoal),
 		sitePipe.PUT(`^/:website/settings$`, site.UpdateSettings),
-		sitePipe.DELETE(`^/:website$`, site.DeleteSite),
+		sitePipe.POST(`^/:website/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:website/stats$`, site.ResetStats),
 
 		sitePipe.GET(`^/:domain/csv$`, site.CsvExport),
