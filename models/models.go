@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -417,6 +418,24 @@ func Goals(ctx context.Context, domain string) (o []*Goal) {
 		DBE(ctx, err, "failed to find goals by domain")
 	}
 	return
+}
+
+func DeleteGoal(ctx context.Context, gid, domain string) bool {
+	id, err := strconv.ParseUint(gid, 10, 64)
+	if err != nil {
+		log.Get(ctx).Err(err).
+			Str("domain", domain).
+			Str("id", gid).Msg("failed parsing goal id")
+		return false
+	}
+	err = Get(ctx).Where("domain = ?", domain).Delete(&Goal{
+		Model: Model{ID: id},
+	}).Error
+	if err != nil {
+		DBE(ctx, err, "failed to delete goal")
+		return false
+	}
+	return true
 }
 
 type EnterprisePlan struct {

@@ -1,11 +1,29 @@
 package site
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/gernest/vince/render"
+	"github.com/gernest/vince/flash"
+	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/params"
+	"github.com/gernest/vince/sessions"
 )
 
 func DeleteGoal(w http.ResponseWriter, r *http.Request) {
-	render.ERROR(r.Context(), w, http.StatusNotImplemented)
+	ctx := r.Context()
+	site := models.GetSite(ctx)
+	session, r := sessions.Load(r)
+	to := fmt.Sprintf("/%s/settings/goals", site.SafeDomain())
+	if !models.DeleteGoal(ctx, params.Get(ctx)["id"], site.Domain) {
+		session.Data.Flash = &flash.Flash{
+			Error: []string{"failed to delete goal"},
+		}
+	} else {
+		session.Data.Flash = &flash.Flash{
+			Success: []string{"Goal deleted successfully"},
+		}
+	}
+	session.Save(w)
+	http.Redirect(w, r, to, http.StatusFound)
 }

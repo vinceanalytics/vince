@@ -8,14 +8,20 @@
             <div class="container-md">
                 {{if .Goals}}
                 {{$site := .Site}}
+                {{$ctx := .}}
                 <div class="Box">
                     <div class="Box-body">
                         {{range .Goals}}
                         <div class="Subhead">
                             <h1 class="Subhead-heading">{{.Name}}</h1>
                             <div class="Subhead-actions">
-                                <form action="/{{$site.SafeDomain}}/goals/{{.ID}}" method="delete">
-                                    <input type="submit" value="Remove" class="btn btn-sm btn-danger">
+                                <form action="/{{$site.SafeDomain}}/goals/{{.ID}}/delete" method="post">
+                                    {{template "_csrf" $ctx}}
+                                    <button type="submit" class=" Button--danger Button--medium Button">
+                                        <span class="Button-content">
+                                            <span class="Button-label">Remove</span>
+                                        </span>
+                                    </button>
                                 </form>
                             </div>
                         </div>

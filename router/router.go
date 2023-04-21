@@ -180,7 +180,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.GET(`^/:website/settings/danger-zone$`, site.SettingsDangerZone),
 		sitePipe.GET(`^/:website/goals/new$`, site.NewGoal),
 		sitePipe.POST(`^/:website/goals$`, site.CreateGoal),
-		sitePipe.DELETE(`^/:website/goals/:id$`, site.DeleteGoal),
+		sitePipe.POST(`^/:website/goals/:id/delete$`, site.DeleteGoal),
 		sitePipe.PUT(`^/:website/settings$`, site.UpdateSettings),
 		sitePipe.POST(`^/:website/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:website/stats$`, site.ResetStats),
