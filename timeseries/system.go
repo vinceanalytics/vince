@@ -33,7 +33,7 @@ func NewSystem[T any](dir, name string) (*System[T], error) {
 		w: parquet.NewSortingWriter[T](f, 64<<10,
 			parquet.SortingWriterConfig(
 				parquet.SortingColumns(
-					parquet.Ascending("timestamp"),
+					parquet.Descending("timestamp"),
 				),
 			),
 		),
