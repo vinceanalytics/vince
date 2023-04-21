@@ -7,10 +7,11 @@ import (
 
 // histograms
 var (
-	SaveDuration      = &histogramMetric{name: "mike_save_duration"}
-	DropSiteDuration  = &histogramMetric{name: "mike_drop_site_duration"}
-	MergeDuration     = &histogramMetric{name: "bob_merge_duration"}
-	SiteCacheDuration = &histogramMetric{name: "sites_cache_update"}
+	SaveDuration         = &histogramMetric{name: "mike_save_duration"}
+	DropSiteDuration     = &histogramMetric{name: "mike_drop_site_duration"}
+	MergeDuration        = &histogramMetric{name: "bob_merge_duration"}
+	SiteCacheDuration    = &histogramMetric{name: "sites_cache_update_duration"}
+	CalendarReadDuration = &histogramMetric{name: "calendar_read_duration"}
 )
 
 // counters for the /api/event endpoint.
@@ -60,5 +61,6 @@ func CollectHist(ts time.Time) []*Histogram {
 		MergeDuration.Read(ts),
 		SiteCacheDuration.Read(ts),
 		DropSiteDuration.Read(ts),
+		CalendarReadDuration.Read(ts),
 	}
 }

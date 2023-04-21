@@ -250,6 +250,8 @@ func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []by
 }
 
 func ReadCalendars(ctx context.Context, ts time.Time, uid, sid uint64) (data plot.Data) {
+	start := time.Now()
+	defer system.CalendarReadDuration.UpdateDuration(start)
 	m := GetMike(ctx)
 	id := newID()
 	defer id.Release()
