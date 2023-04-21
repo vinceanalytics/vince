@@ -19,7 +19,7 @@ func TestData(t *testing.T) {
 	t.Run("calculate sum and percent", func(t *testing.T) {
 		views := []float64{1, 2, 3, 5, 4}
 		var d Data
-		d.Set(Event, "pageviews", AggrValues{
+		d.Set(Event, "pageviews", AggregateValues{
 			Views: views,
 		}, AggregateOptions{
 			NoSum:     true,

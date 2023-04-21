@@ -97,6 +97,10 @@ func (id *MetaKey) HashU32(h uint32) []byte {
 	return id[:][:hashOffset+4]
 }
 
+func (id *MetaKey) Prefix() []byte {
+	return id[:hashOffset]
+}
+
 func (id *MetaKey) String(s string) []byte {
 	return append(id[:hashOffset], []byte(s)...)
 }

@@ -131,7 +131,7 @@ type Item struct {
 	Value float64 `json:"value"`
 }
 
-type AggrValues struct {
+type AggregateValues struct {
 	Visitors      []float64 `json:"visitors,omitempty"`
 	Views         []float64 `json:"views,omitempty"`
 	Events        []float64 `json:"events,omitempty"`
@@ -274,7 +274,7 @@ func (d *Data) calendar(prop Property) *EntryMap {
 	}
 }
 
-func (d *Data) Set(prop Property, key string, agg AggrValues, o ...AggregateOptions) {
+func (d *Data) Set(prop Property, key string, agg AggregateValues, o ...AggregateOptions) {
 	cal := d.calendar(prop)
 	a := &AggregateEntry{Prop: prop}
 	if len(o) > 0 {
