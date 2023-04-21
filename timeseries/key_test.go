@@ -10,13 +10,7 @@ import (
 
 func TestKey(t *testing.T) {
 	var id ID
-	table := byte(10)
-	t.Run("sets table", func(t *testing.T) {
-		id.SetTable(table)
-		if id.GetTable() != table {
-			t.Fatal("failed to encode table")
-		}
-	})
+
 	uid := uint64(rand.Int63())
 
 	t.Run("sets user id", func(t *testing.T) {
@@ -29,9 +23,7 @@ func TestKey(t *testing.T) {
 
 	t.Run("sets site id", func(t *testing.T) {
 		id.SetSiteID(sid)
-		if id.GetTable() != table {
-			t.Fatal("failed to encode table")
-		}
+
 		if id.GetUserID() != uid {
 			t.Fatalf("expected %d got %d", uid, id.GetUserID())
 		}
@@ -41,9 +33,7 @@ func TestKey(t *testing.T) {
 	})
 
 	t.Run("sets date", func(t *testing.T) {
-		if id.GetTable() != table {
-			t.Fatal("failed to encode table")
-		}
+
 		if id.GetUserID() != uid {
 			t.Fatalf("expected %d got %d", uid, id.GetUserID())
 		}
@@ -52,9 +42,7 @@ func TestKey(t *testing.T) {
 		}
 	})
 	t.Run("sets entropy", func(t *testing.T) {
-		if id.GetTable() != table {
-			t.Fatal("failed to encode table")
-		}
+
 		if id.GetUserID() != uid {
 			t.Fatalf("expected %d got %d", uid, id.GetUserID())
 		}

@@ -7,24 +7,14 @@ import (
 )
 
 const (
-	userOffset  = 0
-	siteOffset  = 8
-	yearOffset  = 16
-	tableOffset = 18
-	metaOffset  = 19
-	hashOffset  = 20
+	userOffset = 0
+	siteOffset = 8
+	yearOffset = 16
+	metaOffset = 18
+	hashOffset = 19
 )
 
 type ID [19]byte
-
-func (id *ID) SetTable(table byte) *ID {
-	id[tableOffset] = byte(table)
-	return id
-}
-
-func (id *ID) GetTable() byte {
-	return id[tableOffset]
-}
 
 func (id *ID) SetUserID(u uint64) {
 	binary.BigEndian.PutUint64(id[userOffset:], u)
@@ -82,20 +72,11 @@ var metaKeyPool = &sync.Pool{
 }
 
 // stores values for props
-type MetaKey [28]byte
-
-func (id *MetaKey) SetTable(table byte) *MetaKey {
-	id[tableOffset] = byte(table)
-	return id
-}
+type MetaKey [27]byte
 
 func (id *MetaKey) SetMeta(table byte) *MetaKey {
 	id[metaOffset] = byte(table)
 	return id
-}
-
-func (id *MetaKey) GetTable() byte {
-	return id[tableOffset]
 }
 
 func (id *MetaKey) SetUserID(u uint64) {

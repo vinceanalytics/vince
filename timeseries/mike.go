@@ -13,6 +13,7 @@ import (
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/plot"
 	"github.com/gernest/vince/store"
 	"github.com/gernest/vince/system"
 	"github.com/gernest/vince/ua"
@@ -119,7 +120,7 @@ func Save(ctx context.Context, b *Buffer) {
 		group.Save(el)
 		ts := time.Unix(el[0].Timestamp, 0)
 		err := db.Update(func(txn *badger.Txn) error {
-			id.Year(ts).SetTable(byte(TABLE_YEAR))
+			id.Year(ts)
 			return errors.Join(
 				updateCalendar(ctx, txn, ts, id[:], &group.sum),
 				updateMeta(ctx, txn, el, group, meta, ts),
@@ -249,5 +250,77 @@ func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []by
 			return fmt.Errorf("failed to marshal calendar %v", err)
 		}
 		return txn.Set(key, b)
+	})
+}
+
+// ReadCalendars reads calendars for the year represented by ts.
+func ReadCalendars(ctx context.Context, ts time.Time, uid, sid uint64) (data plot.Data) {
+	m := GetMike(ctx)
+	id := newID()
+	defer id.Release()
+
+	err := m.View(func(txn *badger.Txn) error {
+		return errors.Join(
+			readAllAggregate(txn, ts, id, &data),
+		)
+	})
+	if err != nil {
+		log.Get(ctx).Err(err).
+			Uint64("uid", uid).
+			Uint64("sid", sid).
+			Msg("failed to read stats calendar")
+	}
+	data.Build()
+	return
+}
+
+func readAllAggregate(txn *badger.Txn, ts time.Time, id *ID, data *plot.Data) error {
+	return readCal(txn, id[:], func(c *store.Calendar) error {
+		data.All = &plot.Aggr{
+			Visitors:      &plot.Entry{},
+			Views:         &plot.Entry{},
+			Events:        &plot.Entry{},
+			Visits:        &plot.Entry{},
+			BounceRate:    &plot.Entry{},
+			VisitDuration: &plot.Entry{},
+			ViewsPerVisit: &plot.Entry{},
+		}
+		return errors.Join(
+			readEntry(ts, c.SeriesVisitors, data.All.Visitors),
+			readEntry(ts, c.SeriesViews, data.All.Views),
+			readEntry(ts, c.SeriesEvents, data.All.Events),
+			readEntry(ts, c.SeriesVisits, data.All.Visits),
+			readEntry(ts, c.SeriesBounceRates, data.All.BounceRate),
+			readEntry(ts, c.SeriesVisitDuration, data.All.VisitDuration),
+			readEntry(ts, c.SeriesViewsPerVisit, data.All.ViewsPerVisit),
+		)
+	})
+}
+
+func readEntry(ts time.Time, f func(time.Time, time.Time) ([]float64, error), e *plot.Entry) error {
+	v, err := f(ts, ts)
+	if err != nil {
+		return err
+	}
+	e.Values = v
+	return nil
+}
+
+func readCal(txn *badger.Txn, key []byte, f func(*store.Calendar) error) error {
+	it, err := txn.Get(key)
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			return nil
+		}
+		return err
+	}
+
+	return it.Value(func(val []byte) error {
+		cal, err := store.CalendarFromBytes(val)
+		if err != nil {
+			return err
+		}
+		defer cal.Message().Release()
+		return f(&cal)
 	})
 }

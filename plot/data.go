@@ -42,6 +42,7 @@ const (
 )
 
 type Data struct {
+	All               *Aggr     `json:"all,omitempty"`
 	Event             *EntryMap `json:"event,omitempty"`
 	Page              *EntryMap `json:"page,omitempty"`
 	EntryPage         *EntryMap `json:"entryPage,omitempty"`
@@ -78,6 +79,12 @@ type Entry struct {
 	Values []float64 `json:"values"`
 }
 
+func (e *Entry) Build() {
+	for i := range e.Values {
+		e.Sum += e.Values[i]
+	}
+}
+
 type EntryMap struct {
 	Entries map[string]*AggregateEntry `json:"entries,omitempty"`
 	Sum     *Summary                   `json:"sum,omitempty"`
@@ -102,6 +109,21 @@ type Aggr struct {
 	BounceRate    *Entry `json:"bounce_rate,omitempty"`
 	VisitDuration *Entry `json:"visitDuration,omitempty"`
 	ViewsPerVisit *Entry `json:"viewsPerVisit,omitempty"`
+}
+
+func build(b ...builder) {
+	for _, v := range b {
+		v.Build()
+	}
+}
+
+func (a *Aggr) Build() {
+	if a == nil {
+		return
+	}
+	build(
+		a.Visitors, a.Views, a.Events, a.Visits, a.BounceRate, a.VisitDuration, a.ViewsPerVisit,
+	)
 }
 
 type Item struct {
@@ -296,7 +318,7 @@ func sum(ls ...float64) (s float64) {
 	return
 }
 
-func (e *EntryMap) Summary() {
+func (e *EntryMap) Build() {
 	if e == nil {
 		return
 	}
@@ -361,10 +383,30 @@ func percentProp(prop Property, k string, e *Entry, totals float64, f *[]*Item) 
 	})
 }
 
+type builder interface {
+	Build()
+}
+
+func (d *Data) Build() *Data {
+	d.All.Build()
+	sum := func(ls ...*EntryMap) {
+		for _, e := range ls {
+			e.Build()
+		}
+	}
+	sum(
+		d.Event, d.Page, d.EntryPage, d.ExitPage,
+		d.Referrer, d.UtmMedium, d.UtmSource, d.UtmCampaign,
+		d.UtmContent, d.UtmTerm, d.UtmDevice, d.UtmBrowser,
+		d.UtmBrowserVersion, d.Os, d.OsVersion, d.Country, d.Region, d.City,
+	)
+	return d
+}
+
 func (d *Data) Render(w io.Writer) error {
 	sum := func(ls ...*EntryMap) {
 		for _, e := range ls {
-			e.Summary()
+			e.Build()
 		}
 	}
 	sum(
