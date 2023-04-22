@@ -111,7 +111,6 @@ type Site struct {
 
 	WeeklyReport      *WeeklyReport
 	MonthlyReports    *MonthlyReport
-	CustomDomain      *CustomDomain      `gorm:"constraint:OnDelete:CASCADE;"`
 	SpikeNotification *SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
 
 	Invitations     []*Invitation `gorm:"constraint:OnDelete:CASCADE;"`
@@ -214,13 +213,6 @@ func ChangeSiteVisibility(ctx context.Context, site *Site, public bool) {
 }
 func (s *Site) IsMember(ctx context.Context, uid uint64) bool {
 	return Role(ctx, uid, s.ID) != ""
-}
-
-type CustomDomain struct {
-	Model
-	Domain             string `gorm:"not null"`
-	SiteID             uint64 `gorm:"uniqueIndex"`
-	HasSSLCertificates bool   `gorm:"not null,default:false"`
 }
 
 type CreateSiteEmail struct {
@@ -484,7 +476,6 @@ func Open(path string) (*gorm.DB, error) {
 		&APIKey{},
 		&CheckStatEmail{},
 		&CreateSiteEmail{},
-		&CustomDomain{},
 		&EmailVerificationCode{},
 		&EnterprisePlan{},
 		&FeedbackEmail{},

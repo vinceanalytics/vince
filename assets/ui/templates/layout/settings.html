@@ -71,18 +71,6 @@
                                 </span>
                             </a>
                         </li>
-                        <li class="ActionListItem {{if eq .Page " custom-domain"}}ActionListItem--navActive{{end}}">
-                            <a href="/{{.Site.SafeDomain}}/settings/custom-domain"
-                                class="ActionListContent ActionListContent--visual16">
-                                <span class="ActionListItem-visual ActionListItem-visual--leading">
-                                    {{Icon "pencil" 16
-                                    "ActionListItem-visual ActionListItem-visual--leading"}}
-                                </span>
-                                <span class="ActionListItem-label">
-                                    Custom Domain
-                                </span>
-                            </a>
-                        </li>
                         <li class="ActionListItem {{if eq .Page " danger"}}ActionListItem--navActive{{end}}">
                             <a href="/{{.Site.SafeDomain}}/settings/danger-zone"
                                 class="ActionListContent ActionListContent--visual16">
