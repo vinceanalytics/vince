@@ -206,6 +206,12 @@ func SiteByDomain(ctx context.Context, domain string) *Site {
 	return &s
 }
 
+func ChangeSiteVisibility(ctx context.Context, site *Site, public bool) {
+	err := Get(ctx).Model(site).Update("public", public).Error
+	if err != nil {
+		DBE(ctx, err, "failed to change site visibility")
+	}
+}
 func (s *Site) IsMember(ctx context.Context, uid uint64) bool {
 	return Role(ctx, uid, s.ID) != ""
 }

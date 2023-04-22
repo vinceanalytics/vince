@@ -5,6 +5,30 @@
             {{template "_site_settings_nav" .}}
         </div>
         <div class="Layout-main">
+            <Div class="Box color-border-danger">
+                <div class="Box-row d-flex flex-items-center">
+                    <div class="flex-auto mb-md-0 mb-2">
+                        <strong>
+                            Change site visibility
+                        </strong>
+                        <p class="mb-0">
+                            This site is currently {{if .Site.Public}}public{{else}}private{{end}}
+                        </p>
+                    </div>
+                    <div class="flex-md-order-1 flex-order-2">
+                        <form action="/sites/{{.Site.SafeDomain}}/make-{{if .Site.Public}}private{{else}}public{{end}}"
+                            method="post">
+                            {{template "_csrf" .}}
+                            <button type="submit" class=" Button--danger Button--medium Button">
+                                <span class="Button-content">
+                                    <span class="Button-label"> change to {{if .Site.Public}}private{{else}}public
+                                        {{end}}</span>
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </Div>
         </div>
     </div>
 </div>
