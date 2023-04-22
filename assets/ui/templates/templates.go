@@ -165,12 +165,6 @@ var SiteSettingsReports = template.Must(
 	),
 ).Lookup("app")
 
-var SiteSettingsCustomDomain = template.Must(
-	layout().ParseFS(Files,
-		"site/settings_custom_domain.html",
-	),
-).Lookup("app")
-
 var SiteSettingsCustomDanger = template.Must(
 	layout().ParseFS(Files,
 		"site/settings_danger_zone.html",

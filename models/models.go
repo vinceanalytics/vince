@@ -125,6 +125,13 @@ func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 	}
 }
 
+func DeleteSite(ctx context.Context, site *Site) {
+	err := Get(ctx).Select("SiteMembership").Delete(site).Error
+	if err != nil {
+		DBE(ctx, err, "failed to delete site")
+	}
+}
+
 func (s *Site) SafeDomain() string {
 	return url.PathEscape(s.Domain)
 }

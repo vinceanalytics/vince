@@ -16,10 +16,8 @@ func DeleteSite(w http.ResponseWriter, r *http.Request) {
 	u := models.GetUser(ctx)
 
 	// remove site from database
-	err := models.Get(ctx).Delete(site).Error
-	if err != nil {
-		models.DBE(ctx, err, "failed to delete site")
-	}
+	models.DeleteSite(ctx, site)
+
 	// remove site from cache
 	caches.Site(ctx).Del(site.Domain)
 
