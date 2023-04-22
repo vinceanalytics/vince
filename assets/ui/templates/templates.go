@@ -46,6 +46,7 @@ func base() *template.Template {
 		"Sections": Sections,
 		"Section":  Section,
 		"Avatar":   Avatar,
+		"Logo":     Logo,
 	})
 }
 
@@ -385,7 +386,7 @@ func (t *Context) VinceURL() template.HTML {
 	return template.HTML("http://localhost:8080")
 }
 
-func (t *Context) Logo(width, height int) template.HTML {
+func Logo(width, height int) template.HTML {
 	return template.HTML(fmt.Sprintf(
 		`<img alt="Vince Analytics logo" width=%d height=%d src=%q>`,
 		width, height, "/image/logo.svg",
