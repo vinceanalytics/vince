@@ -2,7 +2,18 @@
 
 {{define "_content"}}
 <div class="container-md">
+    {{if .SitesOverview}}
     <div class="Box">
+        <div class="Box-header">
+            <div class="Subhead" style="border-bottom: none;margin-bottom: 0;">
+                <h2 class="Subhead-heading">My Sites</h2>
+                <div class="Subhead-actions"><a href="/sites/new" class="btn btn-sm btn-primary" role="button">
+                        {{Icon "plus" 16}}
+                        <span class="Button-label">Add Site</span>
+                    </a>
+                </div>
+            </div>
+        </div>
         {{range .SitesOverview}}
         <div class="Box-row">
             <h2 class="h3 lh-condensed">
@@ -40,6 +51,17 @@
         {{end}}
     </div>
 
+    {{else}}
+    <div class="blankslate">
+
+        <h3 class="blankslate-heading">You don’t seem to have any sites.</h3>
+        <div class="blankslate-action">
+            <a class="btn btn-primary" type="button" href="/sites/new">
+                Add new site
+            </a>
+        </div>
+    </div>
+    {{end}}
 </div>
 </div>
 {{end}}
