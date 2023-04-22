@@ -346,6 +346,8 @@ func New(ctx context.Context, f ...func(c *Context)) *Context {
 		Config:      config.Get(ctx),
 		Code:        GetActivationCode(ctx),
 		Flash:       flash.Get(ctx),
+		Errors:      make(map[string]string),
+		Form:        make(url.Values),
 	}
 	if len(f) > 0 {
 		f[0](c)
@@ -388,32 +390,6 @@ func (t *Context) Logo(width, height int) template.HTML {
 		`<img alt="Vince Analytics logo" width=%d height=%d src=%q>`,
 		width, height, "/image/logo.svg",
 	))
-}
-
-func (t *Context) Validate(name string) template.HTML {
-	if t.Errors != nil {
-		o, _ := octicon.Icon("alert-fill", 12)
-		if v, ok := t.Errors[name]; ok {
-			return template.HTML(fmt.Sprintf(`
-<div class="FormControl-inlineValidation">
-    %s
-    <span>%s</span>
-</div>
-		`, o, v))
-		}
-	}
-	return template.HTML("")
-}
-
-func (t *Context) InputField(name string) template.HTMLAttr {
-	var s strings.Builder
-	if t.Errors != nil && t.Errors[name] != "" {
-		s.WriteString(`invalid="true"`)
-	}
-	if t.Form != nil && t.Form.Get(name) != "" {
-		s.WriteString(fmt.Sprintf("value=%q", t.Form.Get(name)))
-	}
-	return template.HTMLAttr(s.String())
 }
 
 type activationCodeKey struct{}

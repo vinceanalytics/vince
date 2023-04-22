@@ -7,27 +7,51 @@
             </div>
             <div class="Box-body">
                 <div class="text-sm text-bold"> Goal Trigger</div>
-                <div class="d-flex width-full rounded border">
-                    <div style="width: 50%;cursor: pointer;" class="text-center py-2 border-right focus" id="event-tab">
-                        Custom Events
-                    </div>
-                    <div style="width: 50%;cursor: pointer;" class="text-center py-2" id="pageview-tab">
-                        Page Views
-                    </div>
-                </div>
-                <div class="my-3">
+                <segmented-control data-catalyst="">
+                    <ul aria-label="Goal Type Selection" role="list"
+                        class="SegmentedControl SegmentedControl--fullWidth">
+                        <li class="SegmentedControl-item SegmentedControl-item--selected" role="listitem"
+                            data-targets="segmented-control.items">
+                            <button data-action="click:segmented-control#select" aria-current="true" type="button"
+                                id="event-tab" data-view-component="true"
+                                class="Button--invisible Button--medium Button Button--fullWidth"> <span
+                                    class="Button-content">
+                                    <span class="Button-label">Custom Events</span>
+                                </span>
+                            </button>
+                        </li>
+                        <li class="SegmentedControl-item" role="listitem" data-targets="segmented-control.items">
+                            <button data-action="click:segmented-control#select" aria-current="false" type="button"
+                                data-view-component="true" id="pageview-tab"
+                                class="Button--invisible Button--medium Button Button--fullWidth"> <span
+                                    class="Button-content">
+                                    <span class="Button-label">Page Views</span>
+                                </span></button>
+                        </li>
+                    </ul>
+                </segmented-control>
+                <div class=" my-3">
                     <div id="event-fields">
-                        <label for="event_name"> Event name</label>
-                        <input type="text" name="event_name" id="event_name" placeholder="SignUp"
-                            class="mt-3  form-control input-block border rounded">
-                        {{.Validate "event_name"}}
+                        <div class="form-group">
+                            <div class="form-group-header">
+                                <label for="event_name"> Event name</label>
+                            </div>
+                            <div class="form-group-body">
+                                <input type="text" name="event_name" id="event_name" placeholder="SignUp"
+                                    class="form-control input-block border rounded">
+                            </div>
+                        </div>
                     </div>
                     <div id="pageview-fields" class="d-none">
-                        <label for="page_path"> Page path </label>
-                        <input type="text" name="page_path" id="page_path" placeholder="/success"
-                            class="mt-3  form-control input-block">
-                        {{.Validate "page_path"}}
-
+                        <div class="form-group">
+                            <div class="form-group-header">
+                                <label for="page_path"> Page path </label>
+                            </div>
+                            <div class="form-group-body">
+                                <input type="text" name="page_path" id="page_path" placeholder="/success"
+                                    class="form-control input-block">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {{template "_csrf" .}}
@@ -39,17 +63,12 @@
 <script>
     document.getElementById('pageview-tab').onclick = function () {
         document.getElementById('pageview-fields').classList.remove('d-none')
-        document.getElementById('pageview-tab').classList.add('focus')
         document.getElementById('event-fields').classList.add('d-none')
-        document.getElementById('event-tab').classList.remove('focus')
-        document.getElementById('event-tab').classList.add('dark:text-gray-100')
+        document.getElementById('event_name').value = ''
     }
     document.getElementById('event-tab').onclick = function () {
         document.getElementById('event-fields').classList.remove('d-none')
-        document.getElementById('event-tab').classList.add('focus')
         document.getElementById('pageview-fields').classList.add('d-none')
-        document.getElementById('pageview-tab').classList.remove('focus')
-        document.getElementById('pageview-tab').classList.add('dark:text-gray-100')
         document.getElementById('page_path').value = ''
     }
 </script>

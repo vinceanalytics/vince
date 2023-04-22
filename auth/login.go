@@ -22,12 +22,19 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
 	u := models.UserByEmail(ctx, email)
-	if u == nil {
+	session, r := sessions.Load(r)
+
+	validCaptcha := session.VerifyCaptchaSolution(r)
+
+	if !validCaptcha || u == nil {
 		r = sessions.SaveCsrf(w, r)
 		r = sessions.SaveCaptcha(w, r)
 		render.HTML(r.Context(), w, templates.LoginForm, http.StatusOK, func(ctx *templates.Context) {
-			ctx.Errors = map[string]string{
-				"failed": "Wrong email or password. Please try again.",
+			if !validCaptcha {
+				ctx.Errors["captcha"] = "Invalid Captcha"
+			}
+			if u == nil {
+				ctx.Errors["failed"] = "Wrong email or password. Please try again."
 			}
 			ctx.Form = r.Form
 		})
@@ -43,14 +50,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		r = sessions.SaveCsrf(w, r)
 		r = sessions.SaveCaptcha(w, r)
 		render.HTML(r.Context(), w, templates.LoginForm, http.StatusOK, func(ctx *templates.Context) {
-			ctx.Errors = map[string]string{
-				"failed": "Wrong email or password. Please try again.",
-			}
+			ctx.Errors["failed"] = "Wrong email or password. Please try again."
 			ctx.Form = r.Form
 		})
 		return
 	}
-	session, r := sessions.Load(r)
 	if session.Data.LoginDest == "" {
 		session.Data.LoginDest = "/sites"
 	}

@@ -37,9 +37,7 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 				// verification code has expired
 				r = sessions.SaveCsrf(w, r)
 				render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
-					ctx.Errors = map[string]string{
-						"code": "Code is expired, please request another one",
-					}
+					ctx.Errors["code"] = "Code is expired, please request another one"
 					ctx.HasPin = true
 					ctx.HasInvitation = hasInvitation
 				})
@@ -79,9 +77,7 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	}
 	r = sessions.SaveCsrf(w, r)
 	render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
-		ctx.Errors = map[string]string{
-			"code": "Incorrect activation code",
-		}
+		ctx.Errors["code"] = "Incorrect activation code"
 		ctx.HasPin = true
 		ctx.HasInvitation = hasInvitation
 	})

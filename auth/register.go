@@ -26,14 +26,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	if len(m) > 0 || !validCaptcha {
 		r = sessions.SaveCsrf(w, r)
 		r = sessions.SaveCaptcha(w, r)
-		if !validCaptcha {
-			if m == nil {
-				m = make(map[string]string)
-			}
-			m["_captcha"] = "Please complete the captcha to register"
-		}
 		render.HTML(r.Context(), w, templates.RegisterForm, http.StatusOK, func(ctx *templates.Context) {
-			ctx.Errors = m
+			for k, v := range m {
+				ctx.Errors[k] = v
+			}
+			if !validCaptcha {
+				ctx.Errors["captcha"] = "Please complete the captcha to register"
+			}
 			ctx.Form = r.Form
 		})
 		return
@@ -44,9 +43,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			r = sessions.SaveCsrf(w, r)
 			r = sessions.SaveCaptcha(w, r)
 			render.HTML(r.Context(), w, templates.RegisterForm, http.StatusOK, func(ctx *templates.Context) {
-				ctx.Errors = map[string]string{
-					"email": "already exists",
-				}
+				ctx.Errors["email"] = "already exists"
 				ctx.Form = r.Form
 			})
 			return
