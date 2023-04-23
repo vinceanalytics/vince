@@ -2,6 +2,31 @@
 <div class="container-xl">
     <div class="container-lg">
         <div class="Box">
+            <div class="Box-header">
+                <div class="d-flex flex-items-start">
+                    <div class="position-relative">
+                        <details id="date-range-selection-menu" class="details-reset details-overlay mr-0 mb-0 ">
+                            <summary class="btn css-truncate">
+                                <span class="css-truncate-target">today</span>
+                                <span class="dropdown-caret"></span>
+                            </summary>
+                            <div class="SelectMenu">
+                                <div class="SelectMenu-modal">
+                                    <div class="SelectMenu-list">
+                                        {{range Calendar}}
+                                        <label for="" class="SelectMenu-item">
+                                            <span class="text-normal">
+                                                {{.Name}}
+                                            </span>
+                                        </label>
+                                        {{end}}
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
             <div class="Box-body">
                 <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
                     <div class="container-lg UnderlineNav-container">
@@ -20,7 +45,7 @@
                             </button>
                         </div>
                         <div class="UnderlineNav-actions">
-                            <a href="/{{.Site.SafeDomain}}/settings" class="btn btn-outline">
+                            <a href="/{{.Site.SafeDomain}}/settings" class="btn btn-link">
                                 {{Icon "gear" 16}}
                                 <span>
                                     {{.Site.Domain}}

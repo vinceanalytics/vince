@@ -47,6 +47,7 @@ func base() *template.Template {
 		"Section":  Section,
 		"Avatar":   Avatar,
 		"Logo":     Logo,
+		"Calendar": CalendarEntries,
 	})
 }
 
