@@ -1,85 +1,169 @@
 {{define "_content"}}
 <div class="container-xl">
-    <div class="Layout">
-        <div class="Layout-sidebar">
-            <navigation-list>
-                <div>
-                    <nav aria-label="Site Options">
-                        <nav-list>
-                            <ul class="ActionListWrap">
-                                <li class="ActionListItem">
-                                    <a href="/{{.Site.SafeDomain}}/settings"
-                                        class="ActionListContent ActionListContent--visual16">
-                                        <span class="ActionListItem-visual ActionListItem-visual--leading">
-                                            {{Icon "gear" 16
-                                            "ActionListItem-visual ActionListItem-visual--leading"}}
-                                        </span>
-                                        <span class="ActionListItem-label">
-                                            Settings
-                                        </span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav-list>
-                    </nav>
+    <div class="container-lg">
+        <div class="Box">
+            <div class="Box-body">
+                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
+                    <div class="container-lg UnderlineNav-container">
+                        <div class="UnderlineNav-body">
+                            <button class="UnderlineNav-item px-3" role="tab">
+                                Visitors<span class="Counter">10</span>
+                            </button>
+                            <button class="UnderlineNav-item px-3 selected" role="tab" aria-selected="true">
+                                Views <span class="Counter">10</span>
+                            </button>
+                            <button class="UnderlineNav-item px-3" role="tab">
+                                Sessions <span class="Counter">10</span>
+                            </button>
+                            <button class="UnderlineNav-item px-3" role="tab">
+                                Bounce <span class="Counter">10</span>
+                            </button>
+                        </div>
+                        <div class="UnderlineNav-actions">
+                            <a href="/{{.Site.SafeDomain}}/settings" class="btn btn-outline">
+                                {{Icon "gear" 16}}
+                                <span>
+                                    {{.Site.Domain}}
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+                <div style="height: 400px;" class="width-full">
                 </div>
-            </navigation-list>
-        </div>
-        <div class="Layout-main">
-            <div class="container-lg">
-                <div class="Box">
-                    <div class="Box-header">
-                        {{.Site.Domain}}
-                    </div>
-                    <div class="Box-body">
-                        <nav class="UnderlineNav UnderlineNav--full" aria-label="Foo bar">
-                            <div class="container-lg UnderlineNav-container">
-                                <div class="UnderlineNav-body">
-                                    <a class="UnderlineNav-item px-3 SelectedStat" href="#url">
-                                        Unique Visitors<span class="Counter">10</span>
-                                    </a>
-                                    <a class="UnderlineNav-item px-3" href="#url">
-                                        Page Views <span class="Counter">10</span>
-                                    </a>
-                                    <a class="UnderlineNav-item px-3" href="#url">
-                                        Sessions <span class="Counter">10</span>
-                                    </a>
-                                    <a class="UnderlineNav-item px-3" href="#url">
-                                        Bounce Rate <span class="Counter">10</span>
-                                    </a>
-                                </div>
-                                <div class="UnderlineNav-actions">
-                                    <a class="btn btn-sm">Button</a>
-                                </div>
+            </div>
+            <div class="Box-row">
+                <div class="d-flex flex-row width-full">
+                    <div class="flex-1 flex-column">
+                        <div class="Box mr-3">
+                            <div class="Box-body">
+                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
+                                    <div class="UnderlineNav-container">
+                                        <div class="UnderlineNav-body">
+                                            <button class="UnderlineNav-item" role="tab">
+                                                Pages
+                                            </button>
+                                            <button class="UnderlineNav-item  selected" role="tab" aria-selected="true">
+                                                Entry Pages
+                                            </button>
+                                            <button class="UnderlineNav-item " role="tab">
+                                                ExitPage
+                                            </button>
+                                        </div>
+                                    </div>
+                                </nav>
                             </div>
-                        </nav>
+                        </div>
                     </div>
-                    <div class="Box-row">
-                        <div class="d-flex flex-row width-full">
-                            <div class="flex-1 flex-column">
-                                <div class="Box">
-                                    <div class="Box-header">
-                                        Box-1
+                    <div class="flex-1 flex-column">
+                        <div class="Box mr-3">
+                            <div class="Box-body">
+                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
+                                    <div class="UnderlineNav-container">
+                                        <div class="UnderlineNav-body">
+                                            <button class="UnderlineNav-item" role="tab">
+                                                Referrers
+                                            </button>
+                                            <button class="UnderlineNav-item  selected" role="tab" aria-selected="true">
+                                                Sources
+                                            </button>
+                                            <button class="UnderlineNav-item " role="tab">
+                                                Media
+                                            </button>
+                                            <button class="UnderlineNav-item " role="tab">
+                                                Campaigns
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="Box-body">
-                                </div>
+                                </nav>
                             </div>
-                            <div class="flex-1 flex-column">
-                                <div class="Box">
-                                    <div class="Box-header">
-                                        Box-2
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="Box-row">
+                <div class="d-flex flex-row width-full">
+                    <div class="flex-1 flex-column">
+                        <div class="Box mr-3">
+                            <div class="Box-body">
+                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
+                                    <div class="UnderlineNav-container">
+                                        <div class="UnderlineNav-body">
+                                            <button class="UnderlineNav-item px-3  selected" role="tab"
+                                                aria-selected="true">
+                                                Conversion Goals
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="Box-body">
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex-column">
+                        <div class="Box mr-3">
+                            <div class="Box-body">
+                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
+                                    <div class="UnderlineNav-container">
+                                        <div class="UnderlineNav-body">
+                                            <button class="UnderlineNav-item  px-3 selected" role="tab"
+                                                aria-selected="true">
+                                                Events
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="Box-row">
+                <div class="d-flex flex-row width-full">
+                    <div class="flex-1 flex-column">
+                        <div class="Box mr-3">
+                            <div class="Box-body">
+                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
+                                    <div class="UnderlineNav-container">
+                                        <div class="UnderlineNav-body">
+                                            <button class="UnderlineNav-item" role="tab">
+                                                Countries
+                                            </button>
+                                            <button class="UnderlineNav-item  selected" role="tab" aria-selected="true">
+                                                Cities
+                                            </button>
+                                            <button class="UnderlineNav-item " role="tab">
+                                                Regions
+                                            </button>
+                                        </div>
+                                    </div>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex-column">
+                        <div class="Box mr-3">
+                            <div class="Box-body">
+                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
+                                    <div class="UnderlineNav-container">
+                                        <div class="UnderlineNav-body">
+                                            <button class="UnderlineNav-item" role="tab">
+                                                OS
+                                            </button>
+                                            <button class="UnderlineNav-item  selected" role="tab" aria-selected="true">
+                                                Browsers
+                                            </button>
+                                            <button class="UnderlineNav-item " role="tab">
+                                                Device
+                                            </button>
+                                        </div>
+                                    </div>
+                                </nav>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 {{end}}
