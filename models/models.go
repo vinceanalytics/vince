@@ -19,6 +19,7 @@ import (
 
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/log"
+	"github.com/rs/zerolog"
 	"golang.org/x/time/rate"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -122,6 +123,30 @@ func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 	err := Get(ctx).Model(&Site{}).Where("id = ?", sid).Update("stats_start_date", start).Error
 	if err != nil {
 		DBE(ctx, err, "failed to update stats_start_date")
+	}
+}
+
+func EnableWeeklyReport(ctx context.Context, site *Site, usr *User) {
+	site.Preload(ctx, "WeeklyReport")
+	if site.WeeklyReport != nil {
+		// This is a work around for storing arrays in sqlite. We use comma separated
+		// list for emails.
+		site.WeeklyReport.Recipients += "," + usr.Email
+		err := Get(ctx).Save(site.WeeklyReport).Error
+		if err != nil {
+			DBE(ctx, err, "failed to update weekly update recipients", func(e *zerolog.Event) *zerolog.Event {
+				return e.Uint64("sid", site.ID).Uint64("uid", usr.ID)
+			})
+		}
+		return
+	}
+	err := Get(ctx).Model(site).Association("WeeklyReport").Append(&WeeklyReport{
+		Recipients: usr.Email,
+	})
+	if err != nil {
+		DBE(ctx, err, "failed to create weekly report for site", func(e *zerolog.Event) *zerolog.Event {
+			return e.Uint64("sid", site.ID).Uint64("uid", usr.ID)
+		})
 	}
 }
 
@@ -334,11 +359,15 @@ func (sub *Subscription) GetEnterPrise(ctx context.Context) *EnterprisePlan {
 	return &e
 }
 
-func DBE(ctx context.Context, err error, msg string) {
+func DBE(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *zerolog.Event) {
 	if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, sql.ErrNoRows) {
 		return
 	}
-	log.Get(ctx).Err(err).Msg(msg)
+	if len(f) > 0 {
+		f[0](log.Get(ctx).Err(err)).Msg(msg)
+	} else {
+		log.Get(ctx).Err(err).Msg(msg)
+	}
 }
 
 type SharedLink struct {
@@ -356,13 +385,13 @@ type SentRenewalNotification struct {
 
 type WeeklyReport struct {
 	Model
-	SiteID int
-	Email  string
+	SiteID     uint64
+	Recipients string
 }
 
 type SentWeeklyReport struct {
 	Model
-	SiteID int
+	SiteID uint64
 	Year   int
 	Week   int
 }
