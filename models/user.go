@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/log"
+	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -234,4 +236,21 @@ func UserByEmail(ctx context.Context, email string) *User {
 		return nil
 	}
 	return &u
+}
+
+func UserByID(ctx context.Context, id string) (u *User) {
+	uid, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		log.Get(ctx).Err(err).Str("kid", id).
+			Msg("bad user id")
+		return nil
+	}
+	err = Get(ctx).Model(&User{}).Where("id = ?", uid).First(u).Error
+	if err != nil {
+		DBE(ctx, err, "failed to get user by id", func(e *zerolog.Event) *zerolog.Event {
+			return e.Uint64("uid", uid)
+		})
+		return nil
+	}
+	return
 }

@@ -21,5 +21,5 @@ func IssueLicense(plan *Plan, emails []string, lid uint64) (string, error) {
 		IssuedAt:  jwt.NewNumericDate(today),
 		ID:        strconv.FormatUint(lid, 10),
 	})
-	return token.SignedString(config.SecurityKey.Private)
+	return token.SignedString(config.SECURITY.Private)
 }

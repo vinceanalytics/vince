@@ -4,10 +4,12 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
+	"errors"
 	"os"
 	"path/filepath"
+
+	"filippo.io/age"
 )
 
 type KeyPair struct {
@@ -15,30 +17,12 @@ type KeyPair struct {
 	Private ed25519.PrivateKey
 }
 
-var SecurityKey *KeyPair
+var SECURITY *KeyPair
 
-var SessionKey []byte
-
-var BaseKey []byte
-
-func readSecret(path string) ([]byte, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return base64.StdEncoding.DecodeString(string(b))
-}
+var AGE *age.X25519Identity
 
 func setupSecrets(c *Config) (err error) {
 	s := c.Secrets
-	BaseKey, err = readSecret(s.SecretKeyBase)
-	if err != nil {
-		return err
-	}
-	SessionKey, err = readSecret(s.Session)
-	if err != nil {
-		return err
-	}
 
 	b, err := os.ReadFile(s.Ed25519KeyPair.PublicKey)
 	if err != nil {
@@ -58,57 +42,66 @@ func setupSecrets(c *Config) (err error) {
 	if err != nil {
 		return err
 	}
-	SecurityKey = &KeyPair{
+	SECURITY = &KeyPair{
 		Public:  pub.(ed25519.PublicKey),
 		Private: priv.(ed25519.PrivateKey),
 	}
-	return nil
+	ageFile, err := os.ReadFile(s.Age.PrivateKey)
+	if err != nil {
+		return err
+	}
+	AGE, err = age.ParseX25519Identity(string(ageFile))
+	return
 }
 
 func generateAndSaveEd25519(dir string) (privPath, pubPath string, err error) {
-	var (
-		b     []byte
-		block *pem.Block
-		pub   ed25519.PublicKey
-		priv  ed25519.PrivateKey
-	)
-
-	pub, priv, err = ed25519.GenerateKey(rand.Reader)
+	pub, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		return
+		return "", "", err
 	}
 
-	b, err = x509.MarshalPKCS8PrivateKey(priv)
+	b, err := x509.MarshalPKCS8PrivateKey(priv)
 	if err != nil {
-		return
+		return "", "", err
 	}
 
-	block = &pem.Block{
+	privBlock := &pem.Block{
 		Type:  "PRIVATE KEY",
 		Bytes: b,
 	}
 
-	name := filepath.Join(dir, "vince_key")
-
-	err = os.WriteFile(name, pem.EncodeToMemory(block), 0600)
-	if err != nil {
-		return
-	}
-
-	privPath = name
-
 	// public key
-	b, err = x509.MarshalPKIXPublicKey(pub)
+	pubBytes, err := x509.MarshalPKIXPublicKey(pub)
 	if err != nil {
 		return
 	}
-
-	block = &pem.Block{
+	pubBlock := &pem.Block{
 		Type:  "PUBLIC KEY",
-		Bytes: b,
+		Bytes: pubBytes,
 	}
-	name += ".pub"
-	err = os.WriteFile(name, pem.EncodeToMemory(block), 0644)
-	pubPath = name
+
+	name := "vince_ed25519_key"
+	privPath = filepath.Join(dir, name)
+	pubPath = filepath.Join(dir, name+".pub")
+
+	err = errors.Join(
+		os.WriteFile(privPath, pem.EncodeToMemory(privBlock), 0600),
+		os.WriteFile(pubPath, pem.EncodeToMemory(pubBlock), 0644),
+	)
+	return
+}
+
+func generateAndSaveAge(dir string) (private, public string, err error) {
+	a, err := age.GenerateX25519Identity()
+	if err != nil {
+		return "", "", err
+	}
+	name := "vince_age_key"
+	private = filepath.Join(dir, name)
+	public = filepath.Join(dir, name+".pub")
+	err = errors.Join(
+		os.WriteFile(private, []byte(a.String()), 0600),
+		os.WriteFile(public, []byte(a.Recipient().String()), 0600),
+	)
 	return
 }

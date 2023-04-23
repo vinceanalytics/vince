@@ -8,6 +8,7 @@ import (
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/internal/tokens"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
 )
@@ -15,15 +16,21 @@ import (
 func AuthorizeStatsAPI(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		token := bearer(r.Header)
-		if token == "" {
+		tokenString := bearer(r.Header)
+		if tokenString == "" {
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
 				ctx.Error.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
 			})
 			return
 		}
-		hashedToken := models.HashAPIKey(ctx, token)
-		key := models.KeyByHash(ctx, hashedToken)
+		claim, ok := tokens.Validate(ctx, tokenString)
+		if !ok {
+			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
+				ctx.Error.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
+			})
+			return
+		}
+		key := models.KeyByID(ctx, claim.ID)
 		if key == nil {
 			render.ERROR(ctx, w, http.StatusUnauthorized, func(ctx *templates.Context) {
 				ctx.Error.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."

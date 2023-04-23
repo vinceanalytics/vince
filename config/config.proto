@@ -124,24 +124,13 @@ message Intervals {
   google.protobuf.Duration system_scrape_interval = 5;
 }
 
-// secure secret values used by vince. All fields are paths to files conaining
-// base64 encoded data.
 message Secrets {
-  // used for hashing api keys. Change to this value invalidates all issued api
-  // keys.
-  string secret_key_base = 1;
 
   // used for any crypto functions
-  KeyPair ed25519_key_pair = 2;
+  KeyPair ed25519_key_pair = 1;
 
-  // Base64 encoded secret of 48 bytes (before encoding). This is used for
-  // securing cookies. The first 32 bytes are used for hmac hashing and the 16
-  // bytes are used for encryption.
-  //
-  // Cookies are encrypted. This can be referred to as cookie encrtyption key.
-  // Change of this value invalidates all cookies, this can lead to lgging out
-  // of authenticated clients.
-  string session = 3;
+  // This is encryption keys used with the age tool/library
+  KeyPair age = 2;
 
   message KeyPair {
     string public_key = 1;

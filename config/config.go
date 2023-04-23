@@ -187,16 +187,6 @@ func Flags() []cli.Flag {
 
 		// secrets
 		&cli.PathFlag{
-			Name:    "secret-base",
-			Usage:   "secret with size 64 bytes",
-			EnvVars: []string{"VINCE_SECRET_BASE"},
-		},
-		&cli.PathFlag{
-			Name:    "secret-session",
-			Usage:   "path to a file with  48 bytes base64 encoded session encryption key",
-			EnvVars: []string{"VINCE_SECRET_SESSION"},
-		},
-		&cli.PathFlag{
 			Name:    "secret-ed-priv",
 			Usage:   "path to a file with  ed25519 private key",
 			EnvVars: []string{"VINCE_SECRET_ED25519_PRIVATE"},
@@ -205,6 +195,16 @@ func Flags() []cli.Flag {
 			Name:    "secret-ed-pub",
 			Usage:   "path to a file with  ed25519 public key",
 			EnvVars: []string{"VINCE_SECRET_ED25519_PUBLIC"},
+		},
+		&cli.PathFlag{
+			Name:    "secret-age-pub",
+			Usage:   "path to a file with  age public key",
+			EnvVars: []string{"VINCE_SECRET_AGE_PUBLIC"},
+		},
+		&cli.PathFlag{
+			Name:    "secret-age-priv",
+			Usage:   "path to a file with  age private key",
+			EnvVars: []string{"VINCE_SECRET_AGE_PRIVATE"},
 		},
 	}
 }
@@ -249,11 +249,13 @@ func fromCli(ctx *cli.Context) *Config {
 		BackupDir:               ctx.String("backup-dir"),
 		SiteLimit:               uint32(ctx.Int("site-limit")),
 		Secrets: &Secrets{
-			SecretKeyBase: ctx.Path("secret-base"),
-			Session:       ctx.Path("secret-session"),
 			Ed25519KeyPair: &Secrets_KeyPair{
 				PrivateKey: ctx.Path("secret-ed-priv"),
 				PublicKey:  ctx.Path("secret-ed-pub"),
+			},
+			Age: &Secrets_KeyPair{
+				PrivateKey: ctx.Path("secret-age-priv"),
+				PublicKey:  ctx.Path("secret-age-pub"),
 			},
 		},
 		Intervals: &Intervals{

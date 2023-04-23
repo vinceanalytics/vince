@@ -2,8 +2,6 @@ package config
 
 import (
 	"bytes"
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,22 +25,11 @@ func SecretsCMD() *cli.Command {
 			if err != nil {
 				return err
 			}
-			// secret base
-			b := make([]byte, 64)
-			rand.Read(b)
-			basePath := filepath.Join(path, "base")
-			err = os.WriteFile(basePath, []byte(base64.StdEncoding.EncodeToString(b)), 0600)
-			if err != nil {
-				return err
-			}
 			priv, pub, err := generateAndSaveEd25519(path)
 			if err != nil {
 				return err
 			}
-			b = make([]byte, 48)
-			rand.Read(b)
-			cookiePath := filepath.Join(path, "vince_session")
-			err = os.WriteFile(cookiePath, []byte(base64.StdEncoding.EncodeToString(b)), 0600)
+			agePriv, agePub, err := generateAndSaveAge(path)
 			if err != nil {
 				return err
 			}
@@ -52,14 +39,14 @@ func SecretsCMD() *cli.Command {
 				case *cli.PathFlag:
 					fmt.Fprintf(&o, "# %s\n", e.Usage)
 					switch e.EnvVars[0] {
-					case "VINCE_SECRET_BASE":
-						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], basePath)
 					case "VINCE_SECRET_ED25519_PRIVATE":
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], priv)
 					case "VINCE_SECRET_ED25519_PUBLIC":
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], pub)
-					case "VINCE_SECRET_SESSION":
-						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], cookiePath)
+					case "VINCE_SECRET_AGE_PRIVATE":
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], agePriv)
+					case "VINCE_SECRET_AGE_PUBLIC":
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], agePub)
 					default:
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], e.Value)
 					}

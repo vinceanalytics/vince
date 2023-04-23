@@ -2,11 +2,7 @@ package models
 
 import (
 	"context"
-	crand "crypto/rand"
-	"crypto/sha256"
 	"database/sql"
-	"encoding/base64"
-	"encoding/hex"
 	"errors"
 	"math/rand"
 	"net/url"
@@ -286,43 +282,27 @@ type APIKey struct {
 	Name                  string `gorm:"not null"`
 	Scopes                string `gorm:"not null;default:stats:read:*"`
 	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
-	KeyPrefix             string `gorm:"not null"`
-	KeyHash               string `gorm:"not null"`
+	KeyPrefix             string
 }
 
-func KeyByHash(ctx context.Context, hash string) *APIKey {
-	var k APIKey
-	err := Get(ctx).Model(&APIKey{}).
-		Where("key_hash = ?", hash).First(&k).Error
+func KeyByID(ctx context.Context, id string) (a *APIKey) {
+	kid, err := strconv.ParseUint(id, 10, 64)
 	if err != nil {
-		DBE(ctx, err, "failed to find key by hash")
+		log.Get(ctx).Err(err).Str("kid", id).
+			Msg("bad api key id")
 		return nil
 	}
-	return &k
+	err = Get(ctx).Where("id = ?", kid).First(a).Error
+	if err != nil {
+		DBE(ctx, err, "failed to get key by id")
+		return nil
+	}
+	return
 }
 
 func (ak *APIKey) RateLimit() (rate.Limit, int) {
 	r := rate.Limit(float64(ak.HourlyAPIRequestLimit) / time.Hour.Seconds())
 	return r, 10
-}
-
-func (ak *APIKey) New(ctx context.Context) {
-	b := make([]byte, 64)
-	_, err := crand.Read(b)
-	if err != nil {
-		// something is really wrong when we cant generate random data.
-		log.Get(ctx).Fatal().Msg("failed to generate random data " + err.Error())
-	}
-	key := base64.StdEncoding.EncodeToString(b)[0:64]
-	ak.KeyHash = HashAPIKey(ctx, key)
-	ak.KeyPrefix = key[0:6]
-}
-
-func HashAPIKey(ctx context.Context, key string) string {
-	h := sha256.New()
-	h.Write([]byte(config.BaseKey))
-	h.Write([]byte(key))
-	return hex.EncodeToString(h.Sum(nil))
 }
 
 type IntroEmail struct {
