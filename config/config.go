@@ -355,14 +355,6 @@ func fromCli(ctx *cli.Context) *Config {
 	return x
 }
 
-func (c *Config) WriteToFile(name string) error {
-	b, err := protojson.Marshal(c.Scrub())
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(name, b, 0600)
-}
-
 func (c *Config) Scrub() *Config {
 	n := proto.Clone(c).(*Config)
 	n.SuperUserId = nil

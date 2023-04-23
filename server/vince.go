@@ -53,10 +53,6 @@ func Serve(ctx *cli.Context) error {
 		}
 	}
 	conf.LogLevel = config.Config_info
-	err = conf.WriteToFile(filepath.Join(conf.DataPath, "config.json"))
-	if err != nil {
-		return err
-	}
 	goCtx = config.Set(goCtx, conf)
 	return HTTP(goCtx, conf, errorLog)
 }
