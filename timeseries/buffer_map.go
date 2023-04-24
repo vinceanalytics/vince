@@ -8,14 +8,28 @@ import (
 
 // Maps user ID to *Buffer.
 type Map struct {
-	m   *sync.Map
+	mu  sync.Mutex
+	b   *bufMap
 	ttl time.Duration
 }
 
-func NewMap(ttl time.Duration) *Map {
+type bufMap struct {
+	m       map[uint64]*Buffer
+	deleted []uint64
+}
+
+func (b *bufMap) Release() {
+	for k := range b.m {
+		delete(b.m, k)
+	}
+	if len(b.deleted) > 0 {
+		b.deleted = b.deleted[:0]
+	}
+}
+
+func NewMap() *Map {
 	return &Map{
-		ttl: ttl,
-		m:   &sync.Map{},
+		b: &bufMap{m: make(map[uint64]*Buffer)},
 	}
 }
 
@@ -32,39 +46,51 @@ func GetMap(ctx context.Context) *Map {
 // Get returns a *Buffer belonging to a user with uid. Expired buffers are released
 // first before creating new one.
 func (m *Map) Get(ctx context.Context, uid, sid uint64) *Buffer {
-	if b, ok := m.m.Load(sid); ok {
-		return b.(*Buffer)
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if b, ok := m.b.m[sid]; ok {
+		return b
 	}
 	b := NewBuffer(uid, sid, m.ttl)
-	m.m.Store(sid, b)
+	m.b.m[sid] = b
 	return b
 }
 
 // Removes the buffer associated with sid
 func (m *Map) Delete(ctx context.Context, sid uint64) {
-	if b, ok := m.m.LoadAndDelete(sid); ok {
-		b.(*Buffer).Delete(ctx)
-	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.b.deleted = append(m.b.deleted, sid)
 }
 
 func (m *Map) Save(ctx context.Context) {
-	now := time.Now()
-	var deleted []*Buffer
-	m.m.Range(func(key, value any) bool {
-		b := value.(*Buffer)
-		if b.expired(now) {
-			m.m.Delete(key.(uint64))
-			deleted = append(deleted, b)
-			return true
+	m.mu.Lock()
+	x := m.b
+	m.b = bufMapPool.Get().(*bufMap)
+	m.mu.Unlock()
+	defer x.Release()
+	if len(m.b.deleted) == 0 {
+		for _, v := range x.m {
+			go Save(ctx, v)
 		}
-		return true
-	})
-	go m.release(ctx, deleted...)
+		return
+	}
+	h := make(map[uint64]struct{})
+	for _, v := range m.b.deleted {
+		h[v] = struct{}{}
+	}
+	for _, v := range x.m {
+		if _, ok := h[v.SID()]; ok {
+			// This site was deleted drop the buffer.
+			v.Release()
+		} else {
+			go Save(ctx, v)
+		}
+	}
 }
 
-func (m *Map) release(ctx context.Context, x ...*Buffer) {
-	for _, b := range x {
-		b.Save(ctx)
-		b.Release()
-	}
+var bufMapPool = &sync.Pool{
+	New: func() any {
+		return &bufMap{m: make(map[uint64]*Buffer)}
+	},
 }

@@ -77,9 +77,6 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		ts.Close()
 		return err
 	}
-	m := timeseries.NewMap(o.Intervals.SaveTimeseriesBufferInterval.AsDuration())
-	ctx = timeseries.SetMap(ctx, m)
-
 	mailer, err := email.FromConfig(o)
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed creating mailer")
@@ -110,7 +107,6 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		worker.UpdateCacheSites(ctx, &wg, exit),
 		worker.LogRotate(errorLog)(ctx, &wg, exit),
 		worker.SaveTimeseries(ctx, &wg, exit),
-		worker.MergeTimeseries(ctx, &wg, exit),
 		worker.CollectSYstemMetrics(ctx, &wg, exit),
 	)
 	ctx = health.Set(ctx, h)

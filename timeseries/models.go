@@ -18,33 +18,26 @@ import (
 
 func Open(ctx context.Context, dataPath string) (context.Context, io.Closer, error) {
 	dir := filepath.Join(dataPath, "ts")
-	bob, err := openBob(ctx, filepath.Join(dir, "bob"))
-	if err != nil {
-		return nil, nil, err
-	}
 	mike, err := open(ctx, filepath.Join(dir, "mike"))
 	if err != nil {
-		bob.Close()
 		return nil, nil, err
 	}
 	geo, err := openGeo(ctx, filepath.Join(dir, "geo"))
 	if err != nil {
 		mike.Close()
-		bob.Close()
 		return nil, nil, err
 	}
 	sys, err := openSystem(dataPath)
 	if err != nil {
 		mike.Close()
-		bob.Close()
 		geo.Close()
 		return nil, nil, err
 	}
-	ctx = context.WithValue(ctx, bobKey{}, bob)
 	ctx = context.WithValue(ctx, mikeKey{}, mike)
 	ctx = context.WithValue(ctx, geoKey{}, geo)
 	ctx = context.WithValue(ctx, systemKey{}, sys)
-	return ctx, resourceList{bob, mike, geo, sys}, nil
+	ctx = SetMap(ctx, NewMap())
+	return ctx, resourceList{mike, geo, sys}, nil
 }
 
 type resourceList []io.Closer
@@ -62,16 +55,6 @@ func open(ctx context.Context, path string) (*badger.DB, error) {
 	o := badger.DefaultOptions(path).
 		WithLogger(log.Badger(ctx)).
 		WithCompression(options.ZSTD)
-	return badger.Open(o)
-}
-
-func openBob(ctx context.Context, path string) (*badger.DB, error) {
-	os.MkdirAll(path, 0755)
-	o := badger.DefaultOptions(path).
-		WithLogger(log.Badger(ctx)).
-		WithCompression(options.ZSTD).
-		// keep up to two versions.
-		WithNumVersionsToKeep(2)
 	return badger.Open(o)
 }
 
@@ -101,17 +84,11 @@ func openGeo(ctx context.Context, path string) (*badger.DB, error) {
 	return db, nil
 }
 
-type bobKey struct{}
-
 type mikeKey struct{}
 
 type geoKey struct{}
 
 type systemKey struct{}
-
-func GetBob(ctx context.Context) *badger.DB {
-	return ctx.Value(bobKey{}).(*badger.DB)
-}
 
 func GetMike(ctx context.Context) *badger.DB {
 	return ctx.Value(mikeKey{}).(*badger.DB)

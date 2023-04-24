@@ -96,28 +96,8 @@ message Intervals {
   // rotate logs. Logs are rotated by day.
   google.protobuf.Duration log_rotation_check_interval = 2;
 
-  // Duration for time series data is persisted in storage. Timeseries data is
-  // buffered in memory. Use this relative to merge_timeseries_interval for
-  // proper adjustment on time spant over amount of memory needed per iteration.
-  //
-  // Say you use 15 minute save_timeseries_buffer_interval and  30 mins
-  // merge_timeseries_interval
-  // Roughly estimate  for merge op to have up to 3 entries  per user on each
-  // merge window.
+  // Duration for time series data is persisted in storage.
   google.protobuf.Duration save_timeseries_buffer_interval = 3;
-
-  // Duration to perform compaction of timeseries data. Data is stored as
-  // parquet files grouped by user id. This is used as a window to merge
-  // together all parquet files per user in a day into a single parquet file.
-  //
-  // At the end of a day only 1 file will be stored with all timeseries data per
-  // user. However during the day we can have multiple timeseries files per user
-  // before this window triggers the compaction.
-  //
-  // save_timeseries_buffer_interval will determine how many files will exist
-  // before being merged together. The smaller the
-  // save_timeseries_buffer_interval the higher the number of files.
-  google.protobuf.Duration merge_timeseries_interval = 4;
 
   // Duration to collect system metrics. This includes counters, gauages and
   // histograms.
