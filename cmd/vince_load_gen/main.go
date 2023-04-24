@@ -24,7 +24,7 @@ func main() {
 	wg := &sync.WaitGroup{}
 	for i := 0; i < *requests; i += 1 {
 		wg.Add(1)
-		err := s.Execute(ctx, *host)
+		err := s.Execute(ctx, *host, wg)
 		if err != nil {
 			log.Println(err)
 			return
@@ -115,7 +115,8 @@ type Session struct {
 	Journeys []*Journey
 }
 
-func (s *Session) Execute(ctx context.Context, host string) error {
+func (s *Session) Execute(ctx context.Context, host string, wg *sync.WaitGroup) error {
+	defer wg.Done()
 	u := &User{
 		Agent:  GetUserAgent(),
 		IP:     GetIP(),
