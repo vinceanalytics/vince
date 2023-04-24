@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"fmt"
 	"math"
 	"sort"
 	"sync"
@@ -122,6 +123,7 @@ func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *store.Sum) {
 	sum.Visitors = uint32(visitors)
 	sum.VisitDuration = uint32(math.Round(duration / float64(signSum)))
 	sum.ViewsPerVisit = uint32(math.Round(float64(views) / float64(signSum)))
+	fmt.Printf("%#v\n", sum)
 }
 
 func (ls EntryList) Emit(f func(EntryList)) {
