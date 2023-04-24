@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	"github.com/gernest/vince/assets/ui/templates"
-	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
@@ -35,23 +34,15 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	err := models.Get(ctx).Model(u).Association("Sites").Append(&models.Site{
-		Domain: domain,
-		Public: r.Form.Get("public") == "true",
-	})
-	if err != nil {
-		log.Get(ctx).Err(err).Msg("failed saving site")
+	if !models.CreateSite(ctx, u, domain, r.Form.Get("public") == "true") {
 		render.ERROR(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
 	ss, r := sessions.Load(r)
 	if ss.Data.EmailReport == nil {
-		ss.Data.EmailReport = map[string]bool{
-			domain: true,
-		}
-	} else {
-		ss.Data.EmailReport[domain] = true
+		ss.Data.EmailReport = make(map[string]bool)
 	}
+	ss.Data.EmailReport[domain] = true
 	ss.Save(w)
 	to := fmt.Sprintf("/%s/snippet", url.PathEscape(domain))
 	http.Redirect(w, r, to, http.StatusFound)

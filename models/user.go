@@ -254,3 +254,17 @@ func UserByID(ctx context.Context, id string) (u *User) {
 	}
 	return &m
 }
+
+func CreateSite(ctx context.Context, usr *User, domain string, public bool) bool {
+	err := Get(ctx).Model(usr).Association("Sites").Append(&Site{
+		Domain: domain,
+		Public: public,
+	})
+	if err != nil {
+		DBE(ctx, err, "failed to create a new site", func(e *zerolog.Event) *zerolog.Event {
+			return e.Str("domain", domain).Bool("public", public)
+		})
+		return false
+	}
+	return true
+}
