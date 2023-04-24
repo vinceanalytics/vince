@@ -65,14 +65,16 @@ func (m *Map) Delete(ctx context.Context, sid uint64) {
 
 func (m *Map) Save(ctx context.Context) {
 	m.mu.Lock()
+	if len(m.b.m) == 0 {
+		// Do nothing
+		m.mu.Unlock()
+		return
+	}
 	x := m.b
 	m.b = bufMapPool.Get().(*bufMap)
 	m.mu.Unlock()
 	defer x.Release()
-	if len(x.m) == 0 {
-		// Do nothing
-		return
-	}
+
 	if len(m.b.deleted) == 0 {
 		for _, v := range x.m {
 			go Save(ctx, v)

@@ -162,11 +162,11 @@ func Flags() []cli.Flag {
 		},
 		&cli.DurationFlag{
 			Name:  "ts-buffer",
-			Usage: "window for buffering timeseries in memory",
+			Usage: "window for buffering timeseries in memory before savin them",
 			// This seems reasonable to avoid users to wait for a long time between
 			// creating the site and seeing something on the dashboard. A bigger
 			// duration is better though, to reduce pressure on our kv store
-			Value:   15 * time.Minute,
+			Value:   time.Minute,
 			EnvVars: []string{"VINCE_TS_BUFFER_INTERVAL"},
 		},
 		&cli.DurationFlag{
