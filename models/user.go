@@ -73,7 +73,7 @@ func UserByUID(ctx context.Context, uid uint64) (u *User) {
 		DBE(ctx, err, "failed to get a user")
 		return
 	}
-	u.Preload(ctx, "Subscription", "EnterprisePlan")
+	m.Preload(ctx, "Subscription", "EnterprisePlan")
 	return &m
 }
 
