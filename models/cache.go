@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -12,12 +13,15 @@ type CachedSite struct {
 	Domain                      string
 	StatsStartDate              time.Time
 	IngestRateLimitScaleSeconds uint64
-	IngestRateLimitThreshold    uint64
+	IngestRateLimitThreshold    sql.NullInt64
 	UserID                      uint64
 }
 
 func (c *CachedSite) RateLimit() (rate.Limit, int) {
-	events := float64(c.IngestRateLimitThreshold)
+	if !c.IngestRateLimitThreshold.Valid {
+		return rate.Inf, 0
+	}
+	events := float64(c.IngestRateLimitThreshold.Int64)
 	per := time.Duration(c.IngestRateLimitScaleSeconds) * time.Second
 	return rate.Limit(events / per.Seconds()), 10
 }

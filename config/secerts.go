@@ -9,14 +9,14 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func SecretsCMD() *cli.Command {
+func ConfigCMD() *cli.Command {
 	return &cli.Command{
-		Name:  "secrets",
-		Usage: "generates all secrets used by vince",
+		Name:  "config",
+		Usage: "generates configurations for vince",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "path,p",
-				Usage: "directory to save the secrets",
+				Usage: "directory to save configurations (including secrets)",
 				Value: ".vince",
 			},
 		},

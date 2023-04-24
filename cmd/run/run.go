@@ -15,7 +15,7 @@ func Main() {
 		Usage: "alternative to google analytics",
 		Flags: config.Flags(),
 		Commands: []*cli.Command{
-			config.SecretsCMD(),
+			config.ConfigCMD(),
 		},
 		Action: server.Serve,
 	}
