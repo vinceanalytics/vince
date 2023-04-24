@@ -102,7 +102,6 @@ func SaveTimeseries(ctx context.Context, wg *sync.WaitGroup, exit func()) *healt
 func saveBuffer(ctx context.Context, wg *sync.WaitGroup, ch health.PingChannel, exit func()) {
 	log.Get(ctx).Debug().Str("worker", "timeseries_writer").Msg("started")
 	defer wg.Done()
-	// Do 1 second  interval flushing of buffered logs
 	tick := time.NewTicker(config.Get(ctx).Intervals.SaveTimeseriesBufferInterval.AsDuration())
 	m := timeseries.GetMap(ctx)
 	defer tick.Stop()
