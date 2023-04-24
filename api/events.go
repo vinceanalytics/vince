@@ -20,6 +20,7 @@ import (
 	"github.com/gernest/vince/remoteip"
 	"github.com/gernest/vince/system"
 	"github.com/gernest/vince/timeseries"
+	"github.com/gernest/vince/timex"
 	"github.com/gernest/vince/ua"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -202,7 +203,9 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		screenSize = "desktop"
 	}
 	var dropped int
-	today := time.Now().Unix()
+	ts := time.Now()
+	unix := ts.Unix()
+	hours := timex.HourIndex(ts)
 	for _, domain := range domains {
 		b, pass := gate.Check(r.Context(), domain)
 		if !pass {
@@ -232,7 +235,8 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.Subdivision2Code = subdivision2
 		e.CityGeoNameId = uint32(cityGeonameId)
 		e.ScreenSize = screenSize
-		e.Timestamp = today
+		e.Timestamp = unix
+		e.HourIndex = int32(hours)
 		previousUUserID := seedID.GenPrevious(remoteIp, userAgent, domain, host)
 		b.Register(r.Context(), e, previousUUserID)
 	}

@@ -124,26 +124,20 @@ func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *store.Sum) {
 	sum.ViewsPerVisit = uint32(math.Round(float64(views) / float64(signSum)))
 }
 
-func (e *Entry) GetHour() int {
-	return time.Unix(e.Timestamp, 0).Hour()
-}
-
 func (ls EntryList) Emit(f func(EntryList)) {
 	if len(ls) < 2 {
 		return
 	}
-	if ls[0].GetHour() == ls[len(ls)-1].GetHour() {
+	if ls[0].HourIndex == ls[len(ls)-1].HourIndex {
 		// ls is stats for the hour. Return early. We don't need to check dates here
-		// we know collection windows are short and at most ls will have values
-		// for a full single day, this assumption will not hold only when we take a 25
-		// hours window worth of entries which is highly unlikely.
+		// we know collection windows are short.
 		f(ls)
 		return
 	}
 	var pos int
-	var last, curr int64
+	var last, curr int32
 	for i := range ls {
-		curr = ls[i].Timestamp
+		curr = ls[i].HourIndex
 		if i > 0 && curr != last {
 			f(ls[pos : i-1])
 			pos = i

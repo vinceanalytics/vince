@@ -40,6 +40,7 @@ message Entry {
   bool is_bounce = 30;
   double duration = 31;
   int64 start = 32;
+  int32 hour_index = 33;
 }
 
 enum PROPS {
