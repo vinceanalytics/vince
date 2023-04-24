@@ -292,12 +292,13 @@ func KeyByID(ctx context.Context, id string) (a *APIKey) {
 			Msg("bad api key id")
 		return nil
 	}
-	err = Get(ctx).Where("id = ?", kid).First(a).Error
+	var m APIKey
+	err = Get(ctx).Where("id = ?", kid).First(&m).Error
 	if err != nil {
 		DBE(ctx, err, "failed to get key by id")
 		return nil
 	}
-	return
+	return &m
 }
 
 func (ak *APIKey) RateLimit() (rate.Limit, int) {

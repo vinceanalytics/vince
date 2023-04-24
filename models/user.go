@@ -66,16 +66,15 @@ func GetUser(ctx context.Context) *User {
 	return nil
 }
 
-// Load fetches user by uid, preloads Subscription. This returns true if the user
-// was found and false otherwise.
-func (u *User) Load(ctx context.Context, uid uint64) bool {
-	err := Get(ctx).First(u, uid).Error
+func UserByUID(ctx context.Context, uid uint64) (u *User) {
+	var m User
+	err := Get(ctx).First(&m, uid).Error
 	if err != nil {
 		DBE(ctx, err, "failed to get a user")
-		return false
+		return
 	}
 	u.Preload(ctx, "Subscription", "EnterprisePlan")
-	return true
+	return &m
 }
 
 func (u *User) Preload(ctx context.Context, preload ...string) {
@@ -245,12 +244,13 @@ func UserByID(ctx context.Context, id string) (u *User) {
 			Msg("bad user id")
 		return nil
 	}
-	err = Get(ctx).Model(&User{}).Where("id = ?", uid).First(u).Error
+	var m User
+	err = Get(ctx).Model(&User{}).Where("id = ?", uid).First(&m).Error
 	if err != nil {
 		DBE(ctx, err, "failed to get user by id", func(e *zerolog.Event) *zerolog.Event {
 			return e.Uint64("uid", uid)
 		})
-		return nil
+		return
 	}
-	return
+	return &m
 }

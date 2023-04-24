@@ -23,7 +23,7 @@ func Issue(ctx context.Context, key *models.APIKey) string {
 	db := models.Get(ctx).Begin()
 	err := db.Create(key).Error
 	if err != nil {
-		models.DBE(ctx, err, "failed to save API Key")
+		models.DBE(ctx, err, "failed to create API Key")
 		db.Rollback()
 		return ""
 	}
@@ -57,7 +57,6 @@ func Issue(ctx context.Context, key *models.APIKey) string {
 		return ""
 	}
 	return tokenString
-
 }
 
 func Validate(ctx context.Context, tokenString string) (*jwt.RegisteredClaims, bool) {

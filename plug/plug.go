@@ -88,9 +88,8 @@ func Auth(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
 		if session.Data.CurrentUserID != 0 {
-			var u models.User
-			if u.Load(r.Context(), session.Data.CurrentUserID) {
-				r = r.WithContext(models.SetUser(r.Context(), &u))
+			if u := models.UserByUID(r.Context(), session.Data.CurrentUserID); u != nil {
+				r = r.WithContext(models.SetUser(r.Context(), u))
 			} else {
 				session.Data = sessions.Data{}
 				session.Save(w)
