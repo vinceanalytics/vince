@@ -1,7 +1,9 @@
 package site
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/log"
@@ -51,6 +53,6 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 		ss.Data.EmailReport[domain] = true
 	}
 	ss.Save(w)
-	path := "/" + domain + "/snippet"
-	http.Redirect(w, r, path, http.StatusFound)
+	to := fmt.Sprintf("/%s/snippet", url.PathEscape(domain))
+	http.Redirect(w, r, to, http.StatusFound)
 }
