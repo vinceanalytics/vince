@@ -3,13 +3,7 @@
     <div class="pr-4">
         <nav aria-label="User Setting">
             <nav-list>
-                <li class="ActionList-sectionDivider"></li>
                 <div>
-                    <div class="ActionList-sectionDivider">
-                        <h3 class="ActionList-sectionDivider-title">
-                            Site Settings
-                        </h3>
-                    </div>
                     <ul class="ActionListWrap">
                         <li class="ActionListItem {{if eq .Page " general"}}ActionListItem--navActive{{end}}">
                             <a href="/{{.Site.SafeDomain}}/settings/general"
