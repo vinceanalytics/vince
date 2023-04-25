@@ -12,13 +12,16 @@ import (
 	"github.com/emersion/go-smtp"
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/render"
 )
 
-func compose(out io.Writer, tpl *template.Template, ctx *templates.Context, from *mail.Address, subject string) error {
+func Compose(ctx context.Context,
+	out io.Writer, tpl *template.Template,
+	from, to *mail.Address, subject string, f ...func(*templates.Context)) error {
 	var h mail.Header
 	h.SetDate(time.Now())
 	h.SetAddressList("From", []*mail.Address{from})
-	h.SetAddressList("To", []*mail.Address{ctx.CurrentUser.Address()})
+	h.SetAddressList("To", []*mail.Address{to})
 	h.SetSubject(subject)
 	mw, err := mail.CreateWriter(out, h)
 	if err != nil {
@@ -31,7 +34,7 @@ func compose(out io.Writer, tpl *template.Template, ctx *templates.Context, from
 	if err != nil {
 		return err
 	}
-	err = tpl.Execute(out, ctx)
+	err = render.EXEC(ctx, w, tpl, f...)
 	if err != nil {
 		return err
 	}

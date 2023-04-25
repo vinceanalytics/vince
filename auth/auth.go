@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/models"
 )
@@ -36,6 +35,5 @@ func SendVerificationEmail(ctx context.Context, usr *models.User) error {
 	if err != nil {
 		return err
 	}
-	ctx = templates.SetActivationCode(ctx, code)
-	return email.SendActivation(ctx)
+	return email.SendActivation(ctx, code)
 }

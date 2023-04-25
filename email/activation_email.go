@@ -6,18 +6,21 @@ import (
 	"fmt"
 
 	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/models"
 )
 
-func SendActivation(ctx context.Context) error {
+func SendActivation(ctx context.Context, code uint64) error {
 	mailer := Get(ctx)
 	from := mailer.From()
-	rCtx := templates.New(ctx)
+	usr := models.GetUser(ctx)
 	var b bytes.Buffer
-	err := compose(&b, templates.ActivationEmail, rCtx, from,
-		fmt.Sprintf("%d is your Vince email verification code", rCtx.Code),
-	)
+	subject := fmt.Sprintf("%d is your Vince email verification code", code)
+	err := Compose(ctx, &b, templates.ActivationEmail, from, usr.Address(), subject, func(ctx *templates.Context) {
+		ctx.Code = code
+		ctx.Recipient = usr.Name
+	})
 	if err != nil {
 		return err
 	}
-	return mailer.SendMail(from.Address, []string{rCtx.CurrentUser.Email}, &b)
+	return mailer.SendMail(from.Address, []string{usr.Email}, &b)
 }

@@ -71,7 +71,7 @@ var ActivationEmail = template.Must(
 	layout().ParseFS(Files,
 		"email/activation_code.html",
 	),
-).Lookup("focus")
+).Lookup("base_email")
 
 var Activate = template.Must(
 	layout().ParseFS(Files,
@@ -237,6 +237,15 @@ type Context struct {
 	Docs          bool
 	Pages         []*Page
 	DocPage       *Page
+	// Name of the email recipient
+	Recipient string
+}
+
+func (t *Context) GreetRecipient() string {
+	if t.Recipient == "" {
+		return "Hey"
+	}
+	return "Hey " + strings.Split(t.Recipient, " ")[0]
 }
 
 type Page struct {
@@ -358,7 +367,6 @@ func New(ctx context.Context, f ...func(c *Context)) *Context {
 		Captcha:     getCaptcha(ctx),
 		CurrentUser: models.GetUser(ctx),
 		Config:      config.Get(ctx),
-		Code:        GetActivationCode(ctx),
 		Flash:       flash.Get(ctx),
 		Errors:      make(map[string]string),
 		Form:        make(url.Values),
@@ -404,19 +412,6 @@ func Logo(width, height int) template.HTML {
 		`<img alt="Vince Analytics logo" width=%d height=%d src=%q>`,
 		width, height, "/image/logo.svg",
 	))
-}
-
-type activationCodeKey struct{}
-
-func SetActivationCode(ctx context.Context, code uint64) context.Context {
-	return context.WithValue(ctx, activationCodeKey{}, code)
-}
-
-func GetActivationCode(ctx context.Context) uint64 {
-	if v := ctx.Value(activationCodeKey{}); v != nil {
-		return v.(uint64)
-	}
-	return 0
 }
 
 func (t *Context) Format(n uint64) string {

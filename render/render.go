@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"html/template"
+	"io"
 	"net/http"
 
 	"github.com/gernest/vince/assets/ui/templates"
@@ -19,14 +20,18 @@ func JSON(w http.ResponseWriter, code int, data any) {
 func HTML(ctx context.Context, w http.ResponseWriter, tpl *template.Template, code int, f ...func(*templates.Context)) {
 	w.Header().Add("Content-Type", "text/html")
 	w.WriteHeader(code)
+	err := EXEC(ctx, w, tpl, f...)
+	if err != nil {
+		log.Get(ctx).Err(err).Str("template", tpl.Name()).Msg("Failed to render")
+	}
+}
+
+func EXEC(ctx context.Context, w io.Writer, tpl *template.Template, f ...func(*templates.Context)) error {
 	data := templates.New(ctx)
 	if len(f) > 0 {
 		f[0](data)
 	}
-	err := tpl.Execute(w, data)
-	if err != nil {
-		log.Get(ctx).Err(err).Str("template", tpl.Name()).Msg("Failed to render")
-	}
+	return tpl.Execute(w, data)
 }
 
 func ERROR(ctx context.Context, w http.ResponseWriter, code int, f ...func(*templates.Context)) {

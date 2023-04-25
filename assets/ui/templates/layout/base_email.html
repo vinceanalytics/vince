@@ -1,1 +1,15 @@
-Placeholder
+{{define "base_email"}}
+{{.GreetRecipient}}
+<br /><br />
+
+{{block "_content" .}}{{end}}
+<br /><br />
+
+Regards,<br />
+The Vince Analytics Team 💌
+<br /><br />
+
+--
+<br /><br />
+<a href="{{.VinceURL}}">{{.VinceURL}}</a>
+{{end}}
