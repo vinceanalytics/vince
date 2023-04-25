@@ -1,36 +1,24 @@
 {{define "_content"}}
-<div class="container-xl">
-    <div class="Subhead">
-        <h2 class="Subhead-heading">Settings for {{.Site.Domain}}</h2>
-    </div>
-    <div class="Layout">
-        <div class="Layout-sidebar">
-            {{template "_site_settings_nav" .}}
+<Div class="Box color-border-danger">
+    <div class="Box-row d-flex flex-items-center">
+        <div class="flex-auto mb-md-0 mb-2">
+            <strong>
+                Delete this Site
+            </strong>
+            <p class="mb-0">
+                There is no way to recover this action.
+            </p>
         </div>
-        <div class="Layout-main">
-            <Div class="Box color-border-danger">
-                <div class="Box-row d-flex flex-items-center">
-                    <div class="flex-auto mb-md-0 mb-2">
-                        <strong>
-                            Delete this Site
-                        </strong>
-                        <p class="mb-0">
-                            There is no way to recover this action.
-                        </p>
-                    </div>
-                    <div class="flex-md-order-1 flex-order-2">
-                        <form action="/{{.Site.SafeDomain}}/delete" method="post">
-                            {{template "_csrf" .}}
-                            <button type="submit" class=" Button--danger Button--medium Button">
-                                <span class="Button-content">
-                                    <span class="Button-label">Delete this site</span>
-                                </span>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </Div>
+        <div class="flex-md-order-1 flex-order-2">
+            <form action="/{{.Site.SafeDomain}}/delete" method="post">
+                {{template "_csrf" .}}
+                <button type="submit" class=" Button--danger Button--medium Button">
+                    <span class="Button-content">
+                        <span class="Button-label">Delete this site</span>
+                    </span>
+                </button>
+            </form>
         </div>
     </div>
-</div>
+</Div>
 {{end}}

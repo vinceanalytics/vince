@@ -42,12 +42,13 @@ var LoginForm = template.Must(
 
 func base() *template.Template {
 	return template.New("root").Funcs(template.FuncMap{
-		"Icon":     octicon.IconTemplateFunc,
-		"Sections": Sections,
-		"Section":  Section,
-		"Avatar":   Avatar,
-		"Logo":     Logo,
-		"Calendar": CalendarEntries,
+		"Icon":       octicon.IconTemplateFunc,
+		"Sections":   Sections,
+		"Section":    Section,
+		"Avatar":     Avatar,
+		"Logo":       Logo,
+		"Calendar":   CalendarEntries,
+		"ActiveItem": ActiveItem,
 	})
 }
 
@@ -140,37 +141,37 @@ var SiteSettingsGeneral = template.Must(
 	layout().ParseFS(Files,
 		"site/settings_general.html",
 	),
-).Lookup("app")
+).Lookup("site_settings")
 
 var SiteSettingsGoals = template.Must(
 	layout().ParseFS(Files,
 		"site/settings_goals.html",
 	),
-).Lookup("app")
+).Lookup("site_settings")
 
 var SiteSettingsPeople = template.Must(
 	layout().ParseFS(Files,
 		"site/settings_people.html",
 	),
-).Lookup("app")
+).Lookup("site_settings")
 
 var SiteSettingsVisibility = template.Must(
 	layout().ParseFS(Files,
 		"site/settings_visibility.html",
 	),
-).Lookup("app")
+).Lookup("site_settings")
 
 var SiteSettingsReports = template.Must(
 	layout().ParseFS(Files,
 		"site/settings_email_reports.html",
 	),
-).Lookup("app")
+).Lookup("site_settings")
 
-var SiteSettingsCustomDanger = template.Must(
+var SiteSettingsDanger = template.Must(
 	layout().ParseFS(Files,
 		"site/settings_danger_zone.html",
 	),
-).Lookup("app")
+).Lookup("site_settings")
 
 var SiteNewGoal = template.Must(
 	layout().ParseFS(Files,
@@ -435,4 +436,11 @@ func Avatar(uid uint64, size uint, class ...string) template.HTML {
 	return template.HTML(fmt.Sprintf(`<img class=%q src="/avatar?u=%d&s=%d">`,
 		strings.Join(class, " "), uid, size,
 	))
+}
+
+func ActiveItem(ctx *Context, key string) string {
+	if ctx.Page == key {
+		return "ActionListItem--navActive"
+	}
+	return ""
 }

@@ -11,7 +11,7 @@ import (
 func SettingsDangerZone(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := models.GetSite(ctx)
-	render.HTML(ctx, w, templates.SiteSettingsCustomDanger, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(ctx, w, templates.SiteSettingsDanger, http.StatusOK, func(ctx *templates.Context) {
 		ctx.Site = site
 		ctx.Page = " danger"
 	})

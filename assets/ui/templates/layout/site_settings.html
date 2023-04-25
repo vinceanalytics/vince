@@ -1,1 +1,132 @@
-Placeholder
+{{define "site_settings"}}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A convincing  alternative to Google Analytics." />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
+    <title>
+        VINCE ANALYTICS | {{if .Title }}{{.Title}}{{else }}{{.Slogan}}{{end}}
+    </title>
+    <link rel="stylesheet" href="/css/app.css" />
+    {{if not .Docs}}
+    <link rel="stylesheet" href="/css/primer_view_components.css" />
+    <link rel="stylesheet" href="/css/uPlot.min.css" />
+    <script defer="defer" type="application/javascript" src="/js/primer_view_components.js"></script>
+    <script type="application/javascript" src="/js/uPlot.iife.min.js"></script>
+    {{end}}
+</head>
+
+<body>
+    {{block "_header" .}}{{end}}
+    {{block "_notice" .}}{{end}}
+    <main {{if not .Docs}} style="padding-top: 67px;" {{end}}>
+        <div class="container-xl">
+            <div class="Subhead">
+                <h2 class="Subhead-heading">Settings for {{.Site.Domain}}</h2>
+            </div>
+            <div class="Layout">
+                <div class="Layout-sidebar">
+                    <navigation-list>
+                        <div class="pr-4">
+                            <nav aria-label="User Setting">
+                                <nav-list>
+                                    <div>
+                                        <ul class="ActionListWrap">
+                                            <li class="ActionListItem {{ActiveItem . " general"}}">
+                                                <a href="/{{.Site.SafeDomain}}/settings/general"
+                                                    class="ActionListContent ActionListContent--visual16">
+                                                    <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                        {{Icon "gear" 16
+                                                        "ActionListItem-visual ActionListItem-visual--leading"}}
+                                                    </span>
+                                                    <span class="ActionListItem-label">
+                                                        General
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            <li class="ActionListItem  {{ActiveItem . " goals"}}">
+                                                <a href="/{{.Site.SafeDomain}}/settings/goals"
+                                                    class="ActionListContent ActionListContent--visual16">
+                                                    <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                        {{Icon "goal" 16
+                                                        "ActionListItem-visual ActionListItem-visual--leading"}}
+                                                    </span>
+                                                    <span class="ActionListItem-label">
+                                                        Goals
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            <li class="ActionListItem {{ActiveItem . " people"}}">
+                                                <a href="/{{.Site.SafeDomain}}/settings/people"
+                                                    class="ActionListContent ActionListContent--visual16">
+                                                    <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                        {{Icon "organization" 16
+                                                        "ActionListItem-visual ActionListItem-visual--leading"}}
+                                                    </span>
+                                                    <span class="ActionListItem-label">
+                                                        People
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            <li class="ActionListItem {{ActiveItem . " visibility"}}">
+                                                <a href="/{{.Site.SafeDomain}}/settings/visibility"
+                                                    class="ActionListContent ActionListContent--visual16">
+                                                    <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                        {{Icon "lock" 16
+                                                        "ActionListItem-visual ActionListItem-visual--leading"}}
+                                                    </span>
+                                                    <span class="ActionListItem-label">
+                                                        Visibility
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            <li class="ActionListItem {{ActiveItem . " reports"}}">
+                                                <a href="/{{.Site.SafeDomain}}/settings/email-reports"
+                                                    class="ActionListContent ActionListContent--visual16">
+                                                    <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                        {{Icon "mail" 16
+                                                        "ActionListItem-visual ActionListItem-visual--leading"}}
+                                                    </span>
+                                                    <span class="ActionListItem-label">
+                                                        Reports
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            <li class="ActionListItem {{ActiveItem . " danger"}}">
+                                                <a href="/{{.Site.SafeDomain}}/settings/danger-zone"
+                                                    class="ActionListContent ActionListContent--visual16">
+                                                    <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                        {{Icon "alert-fill" 16
+                                                        "ActionListItem-visual ActionListItem-visual--leading"}}
+                                                    </span>
+                                                    <span class="ActionListItem-label">
+                                                        Danger zone
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </nav-list>
+                            </nav>
+                        </div>
+                    </navigation-list>
+                </div>
+                <div class="Layout-main">
+                    {{block "_content" .}}{{end}}
+                </div>
+            </div>
+        </div>
+    </main>
+    {{block "_footer" .}}{{end}}
+</body>
+
+</html>
+{{end}}Placeholder

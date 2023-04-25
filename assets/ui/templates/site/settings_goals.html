@@ -1,56 +1,43 @@
 {{define "_content"}}
-<div class="container-xl">
-    <div class="Subhead">
-        <h2 class="Subhead-heading">Settings for {{.Site.Domain}}</h2>
-    </div>
-    <div class="Layout">
-        <div class="Layout-sidebar">
-            {{template "_site_settings_nav" .}}
-        </div>
-        <div class="Layout-main">
-            <div class="container-md">
-                {{if .Goals}}
-                {{$site := .Site}}
-                {{$ctx := .}}
-                <div class="Box">
-                    <div class="Box-body">
-                        {{range .Goals}}
-                        <div class="Subhead">
-                            <h1 class="Subhead-heading">{{.Name}}</h1>
-                            <div class="Subhead-actions">
-                                <form action="/{{$site.SafeDomain}}/goals/{{.ID}}/delete" method="post">
-                                    {{template "_csrf" $ctx}}
-                                    <button type="submit" class=" Button--danger Button--medium Button">
-                                        <span class="Button-content">
-                                            <span class="Button-label">Remove</span>
-                                        </span>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        {{end}}
-                        <a class="btn btn-primary" href="/{{.Site.SafeDomain}}/goals/new">
-                            {{Icon "plus" 16}}
-                            <span>Add goal</span>
-                        </a>
-                    </div>
-
+<div class="container-md">
+    {{if .Goals}}
+    {{$site := .Site}}
+    {{$ctx := .}}
+    <div class="Box">
+        <div class="Box-body">
+            {{range .Goals}}
+            <div class="Subhead">
+                <h1 class="Subhead-heading">{{.Name}}</h1>
+                <div class="Subhead-actions">
+                    <form action="/{{$site.SafeDomain}}/goals/{{.ID}}/delete" method="post">
+                        {{template "_csrf" $ctx}}
+                        <button type="submit" class=" Button--danger Button--medium Button">
+                            <span class="Button-content">
+                                <span class="Button-label">Remove</span>
+                            </span>
+                        </button>
+                    </form>
                 </div>
-
-                {{else}}
-                <div class="Subhead">
-                    <h2 class="Subhead-heading">No goals configured for this site yet</h2>
-                    <div class="Subhead-description">You can start creating your goals now.
-                    </div>
-                </div>
-                <a class="btn btn-primary" href="/{{.Site.SafeDomain}}/goals/new">
-                    {{Icon "plus" 16}}
-                    <span>Add goal</span>
-                </a>
-                {{end}}
-
             </div>
+            {{end}}
+            <a class="btn btn-primary" href="/{{.Site.SafeDomain}}/goals/new">
+                {{Icon "plus" 16}}
+                <span>Add goal</span>
+            </a>
+        </div>
+
+    </div>
+
+    {{else}}
+    <div class="Subhead">
+        <h2 class="Subhead-heading">No goals configured for this site yet</h2>
+        <div class="Subhead-description">You can start creating your goals now.
         </div>
     </div>
+    <a class="btn btn-primary" href="/{{.Site.SafeDomain}}/goals/new">
+        {{Icon "plus" 16}}
+        <span>Add goal</span>
+    </a>
+    {{end}}
 </div>
 {{end}}

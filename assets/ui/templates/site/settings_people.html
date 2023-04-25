@@ -1,63 +1,51 @@
 {{define "_content"}}
-<div class="container-xl">
-    <div class="Subhead">
-        <h2 class="Subhead-heading">Settings for {{.Site.Domain}}</h2>
-    </div>
-    <div class="Layout">
-        <div class="Layout-sidebar">
-            {{template "_site_settings_nav" .}}
+<div class="Box">
+    <div class="Box-body">
+        <div class="Subhead">
+            <h2 class="Subhead-heading">People</h2>
+            <div class="Subhead-description">Invite your friends or coworkers</div>
         </div>
-        <div class="Layout-main">
-            <div class="Box">
-                <div class="Box-body">
-                    <div class="Subhead">
-                        <h2 class="Subhead-heading">People</h2>
-                        <div class="Subhead-description">Invite your friends or coworkers</div>
+        <div class="Box">
+            {{range .Site.SiteMemberships}}
+            <div class="Box-row">
+                <div class="d-flex flex-items-center">
+                    <div class="flex-shrink-0 p-3">
+                        {{Avatar .User.ID 64 "rounded-full"}}
                     </div>
-                    <div class="Box">
-                        {{range .Site.SiteMemberships}}
-                        <div class="Box-row">
-                            <div class="d-flex flex-items-center">
-                                <div class="flex-shrink-0 p-3">
-                                    {{Avatar .User.ID 64 "rounded-full"}}
+                    <div class="flex-1">
+                        <h1 class="text-normal lh-condensed">
+                            {{.User.Name}}
+                        </h1>
+                        <p class="h4 color-fg-muted text-normal mb-2">
+                            {{.User.Email}}
+                        </p>
+                    </div>
+                    <details class="details-reset details-overlay position-relative mt-1 mt-lg-0 mr-1"
+                        id="type-options">
+                        <summary aria-haspopup="menu" data-view-component="true" class="Label Label--large"
+                            role="button"> <span>{{.Role}}</span>
+                            <span class="dropdown-caret"></span>
+                        </summary>
+                        <details-menu class="SelectMenu right-lg-0" role="menu">
+                            <div class="SelectMenu-modal">
+                                <header class="SelectMenu-header">
+                                    <span class="SelectMenu-title">Change Role</span>
+                                </header>
+                                <div class="SelectMenu-list">
+                                    <label class="SelectMenu-item" role="menuitemradio" aria-checked="true"
+                                        tabindex="0">
+                                        <input type="radio" name="type" id="type_" value="{{.Role}}" hidden="hidden"
+                                            data-autosubmit="true" checked="checked">
+                                        {{Icon "check" 16 "SelectMenu-icon SelectMenu-icon--check"}}
+                                        <span class="text-normal">{{.Role}}</span>
+                                    </label>
                                 </div>
-                                <div class="flex-1">
-                                    <h1 class="text-normal lh-condensed">
-                                        {{.User.Name}}
-                                    </h1>
-                                    <p class="h4 color-fg-muted text-normal mb-2">
-                                        {{.User.Email}}
-                                    </p>
-                                </div>
-                                <details class="details-reset details-overlay position-relative mt-1 mt-lg-0 mr-1"
-                                    id="type-options">
-                                    <summary aria-haspopup="menu" data-view-component="true" class="Label Label--large"
-                                        role="button"> <span>{{.Role}}</span>
-                                        <span class="dropdown-caret"></span>
-                                    </summary>
-                                    <details-menu class="SelectMenu right-lg-0" role="menu">
-                                        <div class="SelectMenu-modal">
-                                            <header class="SelectMenu-header">
-                                                <span class="SelectMenu-title">Change Role</span>
-                                            </header>
-                                            <div class="SelectMenu-list">
-                                                <label class="SelectMenu-item" role="menuitemradio" aria-checked="true"
-                                                    tabindex="0">
-                                                    <input type="radio" name="type" id="type_" value="{{.Role}}"
-                                                        hidden="hidden" data-autosubmit="true" checked="checked">
-                                                    {{Icon "check" 16 "SelectMenu-icon SelectMenu-icon--check"}}
-                                                    <span class="text-normal">{{.Role}}</span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </details-menu>
-                                </details>
                             </div>
-                        </div>
-                        {{end}}
-                    </div>
+                        </details-menu>
+                    </details>
                 </div>
             </div>
+            {{end}}
         </div>
     </div>
 </div>
