@@ -162,8 +162,7 @@ type Config struct {
 	// Path where we store backups. Backups aren't incremental, we perfoem full
 	// system storage backup.
 	//
-	// Only opearional data (sqlite) and timeseries data is backed up, Temporary
-	// buffered data is not(even if persisted on disk).
+	// Only opearional data (sqlite) and timeseries data is backed up,
 	BackupDir string `protobuf:"bytes,17,opt,name=backup_dir,json=backupDir,proto3" json:"backup_dir,omitempty"`
 	// maximum number of sites per user.
 	SiteLimit uint32 `protobuf:"varint,18,opt,name=site_limit,json=siteLimit,proto3" json:"site_limit,omitempty"`

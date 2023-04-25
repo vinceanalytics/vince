@@ -23,8 +23,7 @@ message Config {
   // Path where we store backups. Backups aren't incremental, we perfoem full
   // system storage backup.
   //
-  // Only opearional data (sqlite) and timeseries data is backed up, Temporary
-  // buffered data is not(even if persisted on disk).
+  // Only opearional data (sqlite) and timeseries data is backed up,
   string backup_dir = 17;
 
   // maximum number of sites per user.
