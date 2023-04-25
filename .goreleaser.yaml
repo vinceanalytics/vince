@@ -49,7 +49,7 @@ archives:
       - goos: windows
         format: zip
 checksum:
-  name_template: "checksums.txt"
+  disable: true
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 signs:
