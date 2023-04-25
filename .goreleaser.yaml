@@ -52,6 +52,13 @@ checksum:
   name_template: "checksums.txt"
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
+signs:
+  - signature: "${artifact}.minisig"
+    cmd: minisign
+    artifacts: all
+    args:
+      - "-Sm"
+      - "${artifact}"
 changelog:
   sort: asc
   filters:
