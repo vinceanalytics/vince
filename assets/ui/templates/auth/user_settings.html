@@ -1,5 +1,16 @@
 {{define "_content"}}
 <div class="container-xl">
+
+    <div class="d-flex flex-items-center flex-justify-between mt-1 mb-4">
+        <div class="d-flex flex-items-center mb-2">
+            {{Avatar .CurrentUser.ID 48 "avatar circle mr-3"}}
+            <div class="flex-auto">
+                <h1 class="h3 lh-condensed">{{.CurrentUser.Name}}</h1>
+            </div>
+        </div>
+
+    </div>
+
     <div class="Layout">
         <div class="Layout-sidebar">
             <navigation-list>
@@ -49,6 +60,17 @@
                                             </span>
                                             <span class="ActionListItem-label">
                                                 Billing
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li class="ActionListItem">
+                                        <a href="" class="ActionListContent ActionListContent--visual16">
+                                            <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                {{Icon "lock" 16
+                                                "ActionListItem-visual ActionListItem-visual--leading"}}
+                                            </span>
+                                            <span class="ActionListItem-label">
+                                                API Keys
                                             </span>
                                         </a>
                                     </li>
