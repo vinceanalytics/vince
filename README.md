@@ -1,0 +1,20 @@
+# vince
+
+Vince is a single file self hosted web analytics platform.
+
+
+
+# Downloads
+
+Files are signed with [minisign](https://jedisct1.github.io/minisign/) using this public key:
+```
+RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
+```
+| filename | signature | size |
+| ---- | ---- | ---- |
+| [vince_windows_arm64.zip]() | [minisig](vince_windows_arm64.zip.minisig)  | `60mb` |
+| [vince_windows_x86_64.zip]() | [minisig](vince_windows_x86_64.zip.minisig)  | `61mb` |
+| [vince_linux_arm64.tar.gz]() | [minisig](vince_linux_arm64.tar.gz.minisig)  | `60mb` |
+| [vince_linux_x86_64.tar.gz]() | [minisig](vince_linux_x86_64.tar.gz.minisig)  | `60mb` |
+| [vince_darwin_arm64.tar.gz]() | [minisig](vince_darwin_arm64.tar.gz.minisig)  | `61mb` |
+| [vince_darwin_x86_64.tar.gz]() | [minisig](vince_darwin_x86_64.tar.gz.minisig)  | `61mb` |
