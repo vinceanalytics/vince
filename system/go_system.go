@@ -30,8 +30,6 @@ type Stats struct {
 	OtherSys      float64   `parquet:"go_memstats_other_sys_bytes"`
 	NextGC        float64   `parquet:"go_memstats_next_gc_bytes"`
 	LastGC        float64   `parquet:"go_memstats_last_gc_time_seconds"`
-	PauseTotalNs  float64   `parquet:"go_gc_duration_seconds_sum"`
-	NumGC         float64   `parquet:"go_gc_duration_seconds_count"`
 	NumForcedGC   float64   `parquet:"go_gc_forced_count"`
 	GCCPUFraction float64   `parquet:"go_memstats_gc_cpu_fraction"`
 	CGOCalls      float64   `parquet:"go_cgo_calls_count"`
@@ -75,8 +73,6 @@ func (m *Stats) From(o *runtime.MemStats) {
 	m.OtherSys = float64(o.OtherSys)
 	m.NextGC = float64(o.NextGC)
 	m.LastGC = float64(o.LastGC) / 1e9
-	m.PauseTotalNs = float64(o.PauseTotalNs) / 1e9
-	m.NumGC = float64(o.NumGC)
 	m.NumForcedGC = float64(o.NumForcedGC)
 	m.GCCPUFraction = o.GCCPUFraction
 	m.MaxProcs = float64(runtime.GOMAXPROCS(0))

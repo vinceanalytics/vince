@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/segmentio/parquet-go"
@@ -12,53 +13,12 @@ import (
 
 type StatsSeries struct {
 	Timestamp []int64
-
-	Metrics map[string][]float64
+	Metrics   map[string][]float64
 }
 
 type Series struct {
 	Name   string
 	Values []float64
-}
-
-// MetricType maps stats to stats type  counter or gauge
-var MetricType = map[string]string{
-	"data_point_accepted_total":             "counter",
-	"data_point_dropped_total":              "counter",
-	"data_point_received_total":             "counter",
-	"data_point_rejected_bad_request_total": "counter",
-	"go_cgo_calls_count":                    "counter",
-	"go_cpu_count":                          "counter",
-	"go_gc_duration_seconds_count":          "counter",
-	"go_gc_duration_seconds_sum":            "counter",
-	"go_gc_forced_count":                    "counter",
-	"go_gomaxprocs":                         "counter",
-	"go_goroutines":                         "counter",
-	"go_memstats_alloc_bytes":               "counter",
-	"go_memstats_alloc_bytes_total":         "counter",
-	"go_memstats_frees_total":               "counter",
-	"go_memstats_gc_cpu_fraction":           "counter",
-	"go_memstats_gc_sys_bytes":              "counter",
-	"go_memstats_heap_alloc_bytes":          "counter",
-	"go_memstats_heap_idle_bytes":           "counter",
-	"go_memstats_heap_inuse_bytes":          "counter",
-	"go_memstats_heap_objects":              "counter",
-	"go_memstats_heap_released_bytes":       "counter",
-	"go_memstats_heap_sys_bytes":            "counter",
-	"go_memstats_last_gc_time_seconds":      "counter",
-	"go_memstats_lookups_total":             "counter",
-	"go_memstats_mallocs_total":             "counter",
-	"go_memstats_mcache_inuse_bytes":        "counter",
-	"go_memstats_mcache_sys_bytes":          "counter",
-	"go_memstats_mspan_inuse_bytes":         "counter",
-	"go_memstats_mspan_sys_bytes":           "counter",
-	"go_memstats_next_gc_bytes":             "counter",
-	"go_memstats_other_sys_bytes":           "counter",
-	"go_memstats_stack_inuse_bytes":         "counter",
-	"go_memstats_stack_sys_bytes":           "counter",
-	"go_memstats_sys_bytes":                 "counter",
-	"go_threads":                            "counter",
-	"sites_in_cache":                        "gauge",
 }
 
 func QueryStatsFile(path string, start, end time.Time, window time.Duration) (*StatsSeries, error) {
@@ -73,11 +33,10 @@ func QueryStatsFile(path string, start, end time.Time, window time.Duration) (*S
 	}
 	w := window.Milliseconds()
 	for m, series := range ts.Metrics {
-		switch m {
-		case "counter":
+		if strings.HasSuffix(m, "_total") {
 			// use rate for counters
 			o.Metrics[m] = roll(shared, ts.Timestamp, series, w, rate)
-		case "gauge":
+		} else {
 			// use sum for gauges
 			o.Metrics[m] = roll(shared, ts.Timestamp, series, w, sum)
 		}
