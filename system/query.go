@@ -3,7 +3,7 @@ package system
 import "time"
 
 // returns rate per second on counter.
-func counterRoll(ts []int64, values []float64) float64 {
+func rate(ts []int64, values []float64) float64 {
 	if len(values) != len(ts) {
 		return 0
 	}
@@ -23,11 +23,12 @@ func sum(ts []int64, values []float64) (o float64) {
 }
 
 func roll(shared, ts []int64, values []float64, window int64,
-	f func([]int64, []float64) float64) (ots []int64, ov []float64) {
+	f func([]int64, []float64) float64) (ov []float64) {
 	i := 0
 	j := 0
 	ni := 0
 	nj := 0
+	ov = make([]float64, 0, len(shared))
 	for _, tEnd := range shared {
 		tStart := tEnd - window
 		ni = seekFirstTimestampIdxAfter(ts[i:], tStart, ni)
@@ -38,7 +39,6 @@ func roll(shared, ts []int64, values []float64, window int64,
 		nj = seekFirstTimestampIdxAfter(ts[j:], tEnd, nj)
 		j += nj
 		p := f(ts[i:j], values[i:j])
-		ots = append(ots, tEnd)
 		ov = append(ov, p)
 	}
 	return

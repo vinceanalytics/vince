@@ -4,6 +4,8 @@ import (
 	"errors"
 	"io"
 	"os"
+	"sort"
+	"time"
 
 	"github.com/segmentio/parquet-go"
 )
@@ -59,7 +61,32 @@ var MetricType = map[string]string{
 	"sites_in_cache":                        "gauge",
 }
 
-func readStats(path string) (ts *StatsSeries, err error) {
+func QueryStatsFile(path string, start, end time.Time, window time.Duration) (*StatsSeries, error) {
+	ts, err := readStats(path, start.UnixMilli(), end.UnixMilli(), window.Milliseconds())
+	if err != nil {
+		return nil, err
+	}
+	shared := sharedTimestamp(start.UnixMilli(), end.UnixMilli())
+	o := &StatsSeries{
+		Timestamp: shared,
+		Metrics:   make(map[string][]float64),
+	}
+	w := window.Milliseconds()
+	for m, series := range ts.Metrics {
+		switch m {
+		case "counter":
+			// use rate for counters
+			o.Metrics[m] = roll(shared, ts.Timestamp, series, w, rate)
+		case "gauge":
+			// use sum for gauges
+			o.Metrics[m] = roll(shared, ts.Timestamp, series, w, sum)
+		}
+	}
+	return o, nil
+
+}
+
+func readStats(path string, start, end int64, window int64) (ts *StatsSeries, err error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -79,28 +106,67 @@ func readStats(path string) (ts *StatsSeries, err error) {
 	schema := r.Schema().Fields()
 
 	for _, g := range r.RowGroups() {
-		for i, col := range g.ColumnChunks() {
-			pages := col.Pages()
-			for {
-				page, err := pages.ReadPage()
-				if err != nil {
-					if errors.Is(err, io.EOF) {
-						break
-					}
-				}
-				if i == 0 {
-					// first column is for timestamp
-					o := make([]int64, page.NumValues())
-					page.Values().(parquet.Int64Reader).ReadInt64s(o)
-					ts.Timestamp = append(ts.Timestamp, o...)
-				} else {
-					name := schema[i].Name()
-					o := make([]float64, page.NumValues())
-					page.Values().(parquet.DoubleReader).ReadDoubles(o)
-					ts.Metrics[name] = append(ts.Metrics[name], o...)
+		chunks := g.ColumnChunks()
+		tsPage := chunks[0].Pages()
+		var tsValues []int64
+		var readAndExit bool
+		for {
+			page, err := tsPage.ReadPage()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break
 				}
 			}
+			min, max, ok := page.Bounds()
+			if !ok {
+				tsPage.Close()
+				// we are done return early
+				if ts == nil {
+					// we had read values before. Signal the end of reading
+					return ts, nil
+				}
+				return nil, io.EOF
+			}
+			lower := min.Int64()
+			if lower >= start {
+				tsPage.Close()
+				// we are done return early
+				if ts == nil {
+					// we had read values before. Signal the end of reading
+					return ts, nil
+				}
+				return nil, io.EOF
+			}
+			tsValues = make([]int64, page.NumValues())
+			page.Values().(parquet.Int64Reader).ReadInt64s(tsValues)
+
+			upper := max.Int64()
+			if end <= upper {
+				n := sort.Search(len(tsValues), func(i int) bool {
+					return tsValues[i] < end
+				})
+				tsValues = tsValues[:n]
+				readAndExit = true
+			}
+		}
+		tsPage.Close()
+		for i, col := range chunks[1:] {
+			pages := col.Pages()
+			page, err := pages.ReadPage()
+			if err != nil {
+				if !errors.Is(err, io.EOF) {
+					pages.Close()
+					return nil, err
+				}
+			}
+			name := schema[i+1].Name()
+			o := make([]float64, len(tsValues))
+			page.Values().(parquet.DoubleReader).ReadDoubles(o)
+			ts.Metrics[name] = append(ts.Metrics[name], o...)
 			pages.Close()
+			if readAndExit {
+				return ts, nil
+			}
 		}
 	}
 	return
