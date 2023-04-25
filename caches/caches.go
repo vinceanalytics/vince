@@ -169,13 +169,14 @@ func AllowSite(ctx context.Context, domain string) (uid, sid uint64, ok bool) {
 	return
 }
 
-var LoginRate = rate.Limit(5 / time.Minute.Seconds())
+// LoginRate limit to 5 login attempts per minute.
+var LoginRate = rate.Limit(5.0 / 60.0)
 
 func AllowUseIDToLogin(ctx context.Context, uid uint64) bool {
 	r := User(ctx)
 	x, ok := r.Get(uid)
 	if !ok {
-		r.Set(uid, rate.NewLimiter(LoginRate, 0), 1)
+		r.Set(uid, rate.NewLimiter(LoginRate, 10), 1)
 		return true
 	}
 	return x.(*rate.Limiter).Allow()
@@ -185,7 +186,7 @@ func AllowRemoteIPLogin(ctx context.Context, ip string) bool {
 	r := IP(ctx)
 	x, ok := r.Get(ip)
 	if !ok {
-		r.Set(ip, rate.NewLimiter(LoginRate, 0), 1)
+		r.Set(ip, rate.NewLimiter(LoginRate, 10), 1)
 		return true
 	}
 	return x.(*rate.Limiter).Allow()
