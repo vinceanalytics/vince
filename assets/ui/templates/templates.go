@@ -102,7 +102,6 @@ var Pricing = template.Must(
 
 var DocsPage = template.Must(
 	layout().ParseFS(Files,
-		"docs/side_nav.html",
 		"docs/page.html",
 	),
 ).Lookup("docs")

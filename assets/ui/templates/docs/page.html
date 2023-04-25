@@ -32,7 +32,20 @@
             {{end}}
 
         </div>
-        <div class="Layout-sidebar">{{template "_side_nav" .}}</div>
+        <div class="Layout-sidebar">
+            <nav class="menu">
+                {{$ctx := .}}
+                {{range Sections .Pages}}
+                <span class="menu-heading">{{Section .}}</span>
+                {{range .}}
+                {{if ne .Meta.Layout "home"}}
+                <a class="menu-item" href="/{{.Path}}" {{if eq .Meta.Title $ctx.Title}} aria-current="page"
+                    {{end}}>{{.Meta.Title}}</a>
+                {{end}}
+                {{end}}
+                {{end}}
+            </nav>
+        </div>
     </div>
 </div>
 
