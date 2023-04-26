@@ -1,7 +1,6 @@
 # vince
 
-Vince is a single file self hosted web analytics platform.
-
+The open source single file, self hosted web analytics platform.
 
 
 # Downloads
@@ -18,3 +17,9 @@ RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
 | [vince_linux_x86_64.tar.gz]() | [minisig](vince_linux_x86_64.tar.gz.minisig)  | `60mb` |
 | [vince_darwin_arm64.tar.gz]() | [minisig](vince_darwin_arm64.tar.gz.minisig)  | `61mb` |
 | [vince_darwin_x86_64.tar.gz]() | [minisig](vince_darwin_x86_64.tar.gz.minisig)  | `61mb` |
+
+## Container Image
+
+```
+ghcr.io/vinceanalytics/vince:latest
+```
