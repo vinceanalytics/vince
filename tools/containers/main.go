@@ -77,15 +77,15 @@ type MetaData struct {
 }
 
 func (m MetaData) Image(arch string) string {
-	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:%s-%s", m.Name, m.Tag, arch)
+	return fmt.Sprintf("vinceanalytics/%s:%s-%s", m.Name, m.Tag, arch)
 }
 
 func (m MetaData) Manifest() string {
-	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:%s", m.Name, m.Tag)
+	return fmt.Sprintf("vinceanalytics/%s:%s", m.Name, m.Tag)
 }
 
 func (m MetaData) Latest() string {
-	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:latest", m.Name)
+	return fmt.Sprintf("vinceanalytics/%s:latest", m.Name)
 }
 
 func read(path string, o any) {

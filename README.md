@@ -21,5 +21,5 @@ RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
 ## Container Image
 
 ```
-ghcr.io/vinceanalytics/vince:latest
+vinceanalytics/vince:latest
 ```
