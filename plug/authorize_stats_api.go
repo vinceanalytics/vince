@@ -23,14 +23,14 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			})
 			return
 		}
-		claim, ok := tokens.Validate(ctx, tokenString)
+		claims, ok := tokens.Validate(ctx, tokenString)
 		if !ok {
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
 				ctx.Error.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
 			})
 			return
 		}
-		key := models.KeyByID(ctx, claim.ID)
+		key := models.APIKeyByID(ctx, claims.ID)
 		if key == nil {
 			render.ERROR(ctx, w, http.StatusUnauthorized, func(ctx *templates.Context) {
 				ctx.Error.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
@@ -77,6 +77,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			})
 			return
 		}
+		models.UpdateAPIKeyUse(ctx, claims.ID)
 		h.ServeHTTP(w, r)
 	})
 }

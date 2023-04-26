@@ -283,17 +283,22 @@ type APIKey struct {
 	Scopes                string `gorm:"not null;default:stats:read:*"`
 	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
 	KeyPrefix             string
+	UsedAt                time.Time
 }
 
-func KeyByID(ctx context.Context, id string) (a *APIKey) {
-	kid, err := strconv.ParseUint(id, 10, 64)
+func UpdateAPIKeyUse(ctx context.Context, aid string) {
+	// aid is string because we use value we set in jwt token claims. No need to do
+	// extra decoding here.If its invalid value then an error will show up on logs
+	err := Get(ctx).Model(&APIKey{}).Where("id = ?", aid).
+		Update("used_at", time.Now()).Error
 	if err != nil {
-		log.Get(ctx).Err(err).Str("kid", id).
-			Msg("bad api key id")
-		return nil
+		DBE(ctx, err, "failed to update used at time")
 	}
+}
+
+func APIKeyByID(ctx context.Context, aid string) (a *APIKey) {
 	var m APIKey
-	err = Get(ctx).Where("id = ?", kid).First(&m).Error
+	err := Get(ctx).Where("id = ?", aid).First(&m).Error
 	if err != nil {
 		DBE(ctx, err, "failed to get key by id")
 		return nil

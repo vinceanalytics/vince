@@ -34,6 +34,7 @@ func AuthorizeSiteAPI(h http.Handler) http.Handler {
 			return
 		}
 		r = r.WithContext(models.SetUser(r.Context(), user))
+		models.UpdateAPIKeyUse(ctx, claims.ID)
 		h.ServeHTTP(w, r)
 	})
 }
