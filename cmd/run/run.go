@@ -12,7 +12,7 @@ import (
 func Main() {
 	app := &cli.App{
 		Name:  "vince",
-		Usage: "alternative to google analytics",
+		Usage: "The open source single file, self hosted web analytics platform.",
 		Flags: config.Flags(),
 		Commands: []*cli.Command{
 			config.ConfigCMD(),
