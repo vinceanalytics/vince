@@ -11,8 +11,6 @@ import (
 )
 
 const (
-	artifacts     = "dist/artifacts.json"
-	metadata      = "dist/metadata.json"
 	labelCreated  = "org.opencontainers.image.created=%q"
 	labelRevision = "org.opencontainers.image.revision=%q"
 	labelTitle    = "org.opencontainers.image.title=%q"
