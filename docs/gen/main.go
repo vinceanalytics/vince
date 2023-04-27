@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"io/fs"
 	"log"
 	"os"
@@ -17,19 +16,19 @@ import (
 )
 
 func main() {
-	flag.Parse()
-	src := flag.Arg(0)
-	if src == "" {
-		return
-	}
-	dest := flag.Arg(1)
-	if dest == "" {
-		return
-	}
-	dest, err := filepath.Abs(dest)
+	println("### Generating documentation ###")
+	src, err := filepath.Abs("docs")
 	if err != nil {
 		log.Fatal(err)
 	}
+	dest, err := filepath.Abs("../assets/")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	println(">>> source : ", src)
+	println(">>> destination : ", dest)
+
 	m := minify.New()
 	m.AddFunc("text/css", css.Minify)
 	m.AddFunc("text/html", h2.Minify)
@@ -72,7 +71,9 @@ func main() {
 			log.Fatal("failed to render page", err)
 		}
 		w.Close()
-		err = os.WriteFile(filepath.Join(dest, p.Path), b.Bytes(), 0600)
+		out := filepath.Join(dest, p.Path)
+		println("   writing: ", out)
+		err = os.WriteFile(out, b.Bytes(), 0600)
 		if err != nil {
 			log.Fatal("failed to write page", err)
 		}

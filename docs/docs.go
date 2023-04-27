@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-//go:generate go run gen/main.go docs ../assets/
+//go:generate go run gen/main.go
 
 //go:embed  manifest.json
 var FS embed.FS
