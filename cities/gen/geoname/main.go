@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,27 +13,23 @@ import (
 	"strings"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/gernest/vince/tools"
 	"github.com/klauspost/compress/zstd"
 )
 
 var client = http.Client{}
 
 func main() {
+	println("### Generating index of cities geoname ID ###")
 	download()
-	err := processCountry()
-	if err != nil {
-		log.Fatal(err)
-	}
+	processCountry()
 }
 
 func download() {
 	if os.Getenv("DOWNLOAD") == "" {
 		return
 	}
-	err := downloadCountries()
-	if err != nil {
-		log.Fatal(err)
-	}
+	downloadCountries()
 }
 
 type Feature struct {
@@ -42,22 +37,27 @@ type Feature struct {
 	Name string
 }
 
-func processCountry() error {
+func processCountry() {
 	r, err := zip.OpenReader(allCountriesURI)
 	if err != nil {
-		return err
+		if os.IsNotExist(err) {
+			tools.Exit("try DOWNLOAD=true go generate ./cities")
+		} else {
+			tools.Exit("failed to open zip file ", allCountriesURI, err.Error())
+		}
 	}
 	defer r.Close()
 
 	o, err := r.File[0].Open()
 	if err != nil {
-		return err
+		tools.Exit("failed to read zip file ", allCountriesURI, err.Error())
 	}
 	defer o.Close()
 
-	db, err := badger.Open(badger.DefaultOptions("").WithInMemory(true))
+	db, err := badger.Open(badger.DefaultOptions("").
+		WithInMemory(true).WithLoggingLevel(badger.ERROR))
 	if err != nil {
-		return err
+		tools.Exit("failed to open badger db  ", err.Error())
 	}
 	defer db.Close()
 	s := bufio.NewScanner(o)
@@ -80,7 +80,7 @@ func processCountry() error {
 				return txn.Set(key[:], []byte(name))
 			})
 			if err != nil {
-				log.Fatal(err)
+				tools.Exit("failed to update  badger ", err.Error())
 			}
 		}
 		return true
@@ -88,34 +88,36 @@ func processCountry() error {
 
 	f, err := os.Create("city_geoname_db.zstd")
 	if err != nil {
-		return err
+		tools.Exit("failed to create  file city_geoname_db.zstd  ", err.Error())
 	}
 	defer f.Close()
+	println("   write: ", f.Name())
 	e, _ := zstd.NewWriter(f, zstd.WithEncoderLevel(
 		zstd.SpeedBestCompression,
 	))
 	_, err = db.Backup(e, 0)
 	if err != nil {
-		return err
+		tools.Exit("failed to create  cities backup  ", err.Error())
 	}
 	e.Close()
-	return nil
 }
 
-func downloadCountries() error {
+func downloadCountries() {
 	url := fmt.Sprintf("%s%s", geonamesURL, allCountriesURI)
 	res, err := client.Get(url)
 	if err != nil {
-		return err
+		tools.Exit("failed to download countries", url, err.Error())
 	}
 	defer res.Body.Close()
 	f, err := os.Create(allCountriesURI)
 	if err != nil {
-		return err
+		tools.Exit("failed to create  ", allCountriesURI, err.Error())
 	}
 	defer f.Close()
 	_, err = f.ReadFrom(res.Body)
-	return err
+	if err != nil {
+		tools.Exit("failed to write to ", allCountriesURI, err.Error())
+	}
 }
 
 const (
@@ -126,38 +128,6 @@ const (
 	boolTrue        = "1"
 	allCountriesURI = `allCountries.zip`
 )
-
-func unzip(data []byte) ([]*zip.File, error) {
-	var err error
-
-	r, err := zip.NewReader(bytes.NewReader(data), (int64)(len(data)))
-	if err != nil {
-		return nil, err
-	}
-
-	return r.File, nil
-}
-
-func getZipData(files []*zip.File, name string) ([]byte, error) {
-	var result []byte
-
-	for _, f := range files {
-		if f.Name == name {
-			src, err := f.Open()
-			if err != nil {
-				return nil, err
-			}
-			defer src.Close()
-
-			result, err = ioutil.ReadAll(src)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	return result, nil
-}
 
 func sParse(s *bufio.Scanner, headerLength uint, f func([]string) bool) {
 	var err error

@@ -7,11 +7,20 @@ import (
 	"go/format"
 	"log"
 	"os"
+
+	"github.com/gernest/vince/tools"
 )
 
 func main() {
+	println("### Generating index for countries short codes ###")
+	make()
+}
+
+func make() {
 	src := os.Getenv("CITIES_DATA")
 	if src == "" {
+		println(">>> Missing  cities data json file source")
+		println(msg)
 		return
 	}
 	f, err := os.Open(src)
@@ -65,10 +74,9 @@ func main() {
 	b.WriteString("}\n")
 	x, err := format.Source(b.Bytes())
 	if err != nil {
-		log.Fatal(err)
+		tools.Exit("failed formatting go source ", err.Error())
 	}
-	os.WriteFile("index.go", x, 0600)
-
+	tools.WriteFile("index.go", x)
 }
 
 type KV struct {
@@ -85,3 +93,10 @@ type State struct {
 	Name string `json:"name"`
 	Code string `json:"state_code"`
 }
+
+const msg = `    You need to set CITIES_DATA env var to point to
+    https://github.com/dr5hn/countries-states-cities-database/blob/master/countries%2Bstates%2Bcities.json
+    before executing go generate
+    example
+    	CITIES_DATA=~/Downloads/countries+states+cities.json  go generate ./cities/
+`

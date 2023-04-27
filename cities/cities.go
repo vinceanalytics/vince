@@ -4,14 +4,8 @@ import (
 	_ "embed"
 )
 
-//go:generate go run index/main.go
-//go:generate go run geoname/main.go
-
-// You need to set CITIES_DATA env var to point to
-// https://github.com/dr5hn/countries-states-cities-database/blob/master/countries%2Bstates%2Bcities.json
-// before executing go generate
-// example
-//	CITIES_DATA=~/Downloads/countries+states+cities.json  go generate ./cities/
+//go:generate go run gen/index/main.go
+//go:generate go run gen/geoname/main.go
 
 //go:embed city_geoname_db.zstd
 var GeonameIndex []byte
