@@ -8,6 +8,7 @@ import (
 	"github.com/gernest/vince/timex"
 )
 
+//go:generate go run gen/main.go
 const (
 	// The cost of keeping a Calendar in memory
 	CacheCost = 490704

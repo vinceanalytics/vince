@@ -1,15 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime/debug"
 	"strings"
 
+	"github.com/gernest/vince/tools"
 	_ "k8s.io/code-generator"
 )
 
@@ -23,17 +22,18 @@ var (
 )
 
 func main() {
+
 	build, ok := debug.ReadBuildInfo()
 	if !ok {
 		return
 	}
 	CODEGEN_PKG := fmt.Sprintf("%s/pkg/mod/%s@%s",
-		execCollect("go", "env", "GOPATH"),
-		build.Deps[0].Path, build.Deps[0].Version,
+		tools.ExecCollect("go", "env", "GOPATH"),
+		build.Deps[1].Path, build.Deps[1].Version,
 	)
 	println(">>> using codegen: ", CODEGEN_PKG)
 	GENERATE_SCRIPT = filepath.Join(CODEGEN_PKG, "generate-groups.sh")
-	execPlain("chmod", "+x", GENERATE_SCRIPT)
+	tools.ExecPlain("chmod", "+x", GENERATE_SCRIPT)
 	println("##### Generating site client ######")
 	generate("site", "v1alpha1")
 }
@@ -46,45 +46,23 @@ func generate(resource string, versions ...string) {
 	defer os.RemoveAll(dir)
 
 	for _, v := range versions {
-		execPlain("rm", "-f", filepath.Join(rootDir,
+		tools.ExecPlain("rm", "-f", filepath.Join(rootDir,
 			"/pkg/apis", resource,
 			v,
 			"zz_generated.deepcopy.go",
 		))
 	}
-	execPlain("rm", "-rf", filepath.Join(
+	tools.ExecPlain("rm", "-rf", filepath.Join(
 		rootDir, "/pkg/gen/client", resource,
 	))
-	execPlain(GENERATE_SCRIPT, "all",
+	tools.ExecPlain(GENERATE_SCRIPT, "all",
 		filepath.Join(rootPackage, "/pkg/gen/client", resource),
 		filepath.Join(rootPackage, "/pkg/apis"),
 		resource+":"+strings.Join(versions, ","),
 		"--go-header-file", filepath.Join(rootDir, "tools/k8s/boilerplate.go.txt"),
 		"--output-base", dir,
 	)
-	execPlain("cp", "-r",
+	tools.ExecPlain("cp", "-r",
 		filepath.Join(dir, rootPackage)+"/.",
 		rootDir+"/")
-}
-
-func execCollect(name string, args ...string) string {
-	var o bytes.Buffer
-	cmd := exec.Command(name, args...)
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = &o
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return strings.TrimSpace(o.String())
-}
-
-func execPlain(name string, args ...string) {
-	cmd := exec.Command(name, args...)
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
 }
