@@ -1,13 +1,10 @@
 package ua
 
 import (
-	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 
 	re2 "github.com/dlclark/regexp2"
-	"gopkg.in/yaml.v2"
 )
 
 // to run go generate you need to set UA_ROOT which is the path to regex directory
@@ -407,15 +404,6 @@ func IsStdRe(s string) bool {
 	r := Clean(s)
 	_, err := regexp.Compile(r)
 	return err == nil
-}
-
-func Read(name string, out any) error {
-	path := filepath.Join(os.Getenv("UA_ROOT"), name)
-	f, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	return yaml.Unmarshal(f, out)
 }
 
 func ToIndex(s string) uint16 {

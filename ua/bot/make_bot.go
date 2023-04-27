@@ -4,17 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
-	"log"
-	"os"
 
+	"github.com/gernest/vince/tools"
 	"github.com/gernest/vince/ua"
 )
 
 func main() {
-	err := genBot()
-	if err != nil {
-		log.Fatal(err)
-	}
+	println("### Generating regex for bots ###")
+	make()
 }
 
 type Producer struct {
@@ -30,12 +27,9 @@ type Bot struct {
 	Producer Producer `yaml:"producer" json:"producer"`
 }
 
-func genBot() error {
+func make() {
 	var r []*Bot
-	err := ua.Read("bots.yml", &r)
-	if err != nil {
-		return err
-	}
+	tools.ReadUA("bots.yml", &r)
 
 	var s bytes.Buffer
 
@@ -69,7 +63,7 @@ func genBot() error {
 	fmt.Fprintln(&buf, "}")
 	f, err := format.Source(buf.Bytes())
 	if err != nil {
-		return err
+		tools.Exit("failed to format go source ", err.Error())
 	}
-	return os.WriteFile("ua_bots.go", f, 0600)
+	tools.WriteFile("ua_bots.go", f)
 }

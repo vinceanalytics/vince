@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"go/format"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
+
+	"github.com/gernest/vince/tools"
 )
 
 func main() {
@@ -48,10 +49,10 @@ func main() {
 			seen[v] = struct{}{}
 			ls = append(ls, v)
 		}
-		return os.Remove(path)
+		return tools.Remove(path)
 	})
 	if err != nil {
-		log.Fatal(err)
+		tools.Exit("failed building index ", err.Error())
 	}
 	sort.Strings(ls)
 	var b bytes.Buffer
@@ -74,7 +75,7 @@ func main() {
 	b.WriteString("}\n")
 	x, err := format.Source(b.Bytes())
 	if err != nil {
-		log.Fatal(err)
+		tools.Exit("failed formatting go source ", err.Error())
 	}
-	os.WriteFile("index.go", x, 0600)
+	tools.WriteFile("index.go", x)
 }
