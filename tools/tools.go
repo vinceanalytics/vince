@@ -29,9 +29,3 @@ func ExecPlain(name string, args ...string) {
 		log.Fatal(err)
 	}
 }
-
-func Proto(files ...string) {
-	ExecPlain("protoc", append([]string{
-		"-I=.", "--go_out=paths=source_relative:.",
-	}, files...)...)
-}
