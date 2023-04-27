@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 )
 
@@ -23,25 +24,25 @@ func main() {
 	read(artifacts, &a)
 	var meta MetaData
 	read(metadata, &meta)
-	dockerFile, err := os.ReadFile("Containerfile")
+	dockerFile, err := os.ReadFile("Dockerfile")
 	if err != nil {
 		log.Fatal(err)
 	}
-	// var amend []string
 	for _, v := range a {
 		if v.Type != "Binary" || v.Os != "linux" {
 			continue
 		}
 		// copy docker file to the context
-		os.WriteFile(filepath.Join(filepath.Dir(v.Path), "Containerfile"), dockerFile, 0600)
+		os.WriteFile(filepath.Join(filepath.Dir(v.Path), "Dockerfile"), dockerFile, 0600)
 		cmd := exec.Command(
-			"podman", "build",
+			"docker",
 			"--log-level", "debug",
+			"build",
 			"--platform", v.Os+"/"+v.Arch,
 			"--label", fmt.Sprintf(labelCreated, meta.Date.UTC().Format(time.RFC3339)),
 			"--label", fmt.Sprintf(labelRevision, meta.Commit),
 			"--label", fmt.Sprintf(labelTitle, meta.Image(v.Arch)),
-			"--manifest", meta.Manifest(),
+			"--tag", meta.Image(v.Arch),
 			filepath.Dir(v.Path),
 		)
 		cmd.Stderr = os.Stderr
@@ -51,7 +52,8 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	cmd := exec.Command("podman", "tag", meta.Manifest(), meta.Latest())
+
+	cmd := exec.Command("docker", "tag", meta.Image(runtime.GOARCH), meta.Latest())
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	err = cmd.Run()
