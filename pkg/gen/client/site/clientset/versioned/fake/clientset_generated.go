@@ -7,8 +7,8 @@ package fake
 
 import (
 	clientset "github.com/gernest/vince/pkg/gen/client/site/clientset/versioned"
-	sitev1alpha1 "github.com/gernest/vince/pkg/gen/client/site/clientset/versioned/typed/site/v1alpha1"
-	fakesitev1alpha1 "github.com/gernest/vince/pkg/gen/client/site/clientset/versioned/typed/site/v1alpha1/fake"
+	vincev1alpha1 "github.com/gernest/vince/pkg/gen/client/site/clientset/versioned/typed/site/v1alpha1"
+	fakevincev1alpha1 "github.com/gernest/vince/pkg/gen/client/site/clientset/versioned/typed/site/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -66,7 +66,7 @@ var (
 	_ testing.FakeClient  = &Clientset{}
 )
 
-// SiteV1alpha1 retrieves the SiteV1alpha1Client
-func (c *Clientset) SiteV1alpha1() sitev1alpha1.SiteV1alpha1Interface {
-	return &fakesitev1alpha1.FakeSiteV1alpha1{Fake: &c.Fake}
+// VinceV1alpha1 retrieves the VinceV1alpha1Client
+func (c *Clientset) VinceV1alpha1() vincev1alpha1.VinceV1alpha1Interface {
+	return &fakevincev1alpha1.FakeVinceV1alpha1{Fake: &c.Fake}
 }

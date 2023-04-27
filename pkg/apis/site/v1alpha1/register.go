@@ -9,7 +9,7 @@ import (
 // SchemeGroupVersion is the identifier for the API which includes
 // the name of the group and the version of the API
 var SchemeGroupVersion = schema.GroupVersion{
-	Group:   "site.vinceanalytics.com",
+	Group:   "vince.vinceanalytics.com",
 	Version: "v1alpha1",
 }
 

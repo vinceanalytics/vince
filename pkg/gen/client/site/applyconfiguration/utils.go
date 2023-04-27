@@ -15,7 +15,7 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=site.vinceanalytics.com, Version=v1alpha1
+	// Group=vince.vinceanalytics.com, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithKind("Site"):
 		return &sitev1alpha1.SiteApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("SiteSpec"):

@@ -21,7 +21,7 @@ import (
 
 // FakeSites implements SiteInterface
 type FakeSites struct {
-	Fake *FakeSiteV1alpha1
+	Fake *FakeVinceV1alpha1
 	ns   string
 }
 

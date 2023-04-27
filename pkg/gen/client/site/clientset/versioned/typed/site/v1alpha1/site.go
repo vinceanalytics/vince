@@ -47,7 +47,7 @@ type sites struct {
 }
 
 // newSites returns a Sites
-func newSites(c *SiteV1alpha1Client, namespace string) *sites {
+func newSites(c *VinceV1alpha1Client, namespace string) *sites {
 	return &sites{
 		client: c.RESTClient(),
 		ns:     namespace,

@@ -230,9 +230,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Site() site.Interface
+	Vince() site.Interface
 }
 
-func (f *sharedInformerFactory) Site() site.Interface {
+func (f *sharedInformerFactory) Vince() site.Interface {
 	return site.New(f, f.namespace, f.tweakListOptions)
 }
