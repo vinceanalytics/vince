@@ -1,12 +1,16 @@
 package tools
 
 import (
+	"bufio"
 	"bytes"
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"text/tabwriter"
 
 	"gopkg.in/yaml.v2"
 )
@@ -72,4 +76,45 @@ func Remove(path string) error {
 func Exit(a ...string) {
 	println(">>> ", strings.Join(a, " "))
 	os.Exit(1)
+}
+
+// Table generates nice looking markdown tables
+type Table struct {
+	bytes.Buffer
+	b    bytes.Buffer
+	line bytes.Buffer
+	tw   tabwriter.Writer
+}
+
+func (t *Table) Init(header ...string) *Table {
+	t.b.Reset()
+	t.tw.Init(&t.b, 0, 0, 1, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	dash := make([]string, len(header))
+	for i := range dash {
+		dash[i] = "----"
+	}
+	t.Row(header...)
+	t.Row(dash...)
+	return t
+}
+
+func (t *Table) Row(entries ...string) {
+	t.line.Reset()
+	for i := range entries {
+		if i != 0 {
+			t.line.WriteRune('\t')
+		}
+		t.line.WriteString(entries[i])
+	}
+	t.line.WriteByte('\n')
+	io.Copy(&t.tw, &t.line)
+}
+
+func (t *Table) Flush() {
+	t.tw.Flush()
+	t.Buffer.Reset()
+	s := bufio.NewScanner(&t.b)
+	for s.Scan() {
+		fmt.Fprintf(&t.Buffer, "|%s|\n", s.Text())
+	}
 }
