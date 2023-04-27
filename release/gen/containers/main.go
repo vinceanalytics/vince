@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -33,10 +32,7 @@ func main() {
 }
 
 func make() {
-	var a []Artifact
-	read(filepath.Join(root, artifacts), &a)
-	var meta MetaData
-	read(filepath.Join(root, metadata), &meta)
+	meta, a := tools.Release(root)
 	dockerFile, err := os.ReadFile(filepath.Join(root, "Dockerfile"))
 	if err != nil {
 		tools.Exit("failed to read docker  file", err.Error())
@@ -50,7 +46,7 @@ func make() {
 
 		tools.ExecPlain(
 			"docker",
-			"--log-level", "info",
+			"--log-level", "error",
 			"build",
 			"--platform", v.Os+"/"+v.Arch,
 			"--label", fmt.Sprintf(labelCreated, meta.Date.UTC().Format(time.RFC3339)),
@@ -59,45 +55,8 @@ func make() {
 			"--tag", meta.Image(v.Arch),
 			filepath.Dir(v.Path),
 		)
+		println(">>> tag:", meta.Image(v.Arch))
 	}
 	tools.ExecPlain("docker", "tag", meta.Image(runtime.GOARCH), meta.Latest())
-}
-
-type Artifact struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	Path string `json:"path"`
-	Os   string `json:"goos"`
-	Arch string `json:"goarch"`
-}
-
-type MetaData struct {
-	Name    string    `json:"project_name"`
-	Tag     string    `json:"tag"`
-	Version string    `json:"version"`
-	Commit  string    `json:"commit"`
-	Date    time.Time `json:"date"`
-}
-
-func (m MetaData) Image(arch string) string {
-	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:%s-%s", m.Name, m.Tag, arch)
-}
-
-func (m MetaData) Manifest() string {
-	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:%s", m.Name, m.Tag)
-}
-
-func (m MetaData) Latest() string {
-	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:latest", m.Name)
-}
-
-func read(path string, o any) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		tools.Exit("failed to read", path, err.Error())
-	}
-	err = json.Unmarshal(b, o)
-	if err != nil {
-		tools.Exit("failed to decode", path, err.Error())
-	}
+	println(">>> tag:", meta.Latest())
 }

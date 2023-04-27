@@ -3,6 +3,7 @@ package tools
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -117,4 +119,53 @@ func (t *Table) Flush() {
 	for s.Scan() {
 		fmt.Fprintf(&t.Buffer, "|%s|\n", s.Text())
 	}
+}
+
+type Artifact struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+	Path string `json:"path"`
+	Os   string `json:"goos"`
+	Arch string `json:"goarch"`
+}
+
+type MetaData struct {
+	Name    string    `json:"project_name"`
+	Tag     string    `json:"tag"`
+	Version string    `json:"version"`
+	Commit  string    `json:"commit"`
+	Date    time.Time `json:"date"`
+}
+
+func Release(root string) (meta MetaData, artifacts []Artifact) {
+	readJSON(filepath.Join(root, "dist/metadata.json"), &meta)
+	readJSON(filepath.Join(root, "dist/artifacts.json"), &artifacts)
+	return
+}
+
+func readJSON(path string, o any) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		Exit("failed to read", path, err.Error())
+	}
+	err = json.Unmarshal(b, o)
+	if err != nil {
+		Exit("failed to decode", path, err.Error())
+	}
+}
+
+func (m MetaData) Image(arch string) string {
+	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:%s-%s", m.Name, m.Tag, arch)
+}
+
+func (m MetaData) Manifest() string {
+	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:%s", m.Name, m.Tag)
+}
+
+func (m MetaData) Latest() string {
+	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:latest", m.Name)
+}
+
+func (m *MetaData) Link(name string) string {
+	return fmt.Sprintf("https://github.com/vinceanalytics/vince/releases/download/%s/%s", m.Tag, name)
 }
