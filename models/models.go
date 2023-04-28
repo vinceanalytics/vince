@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/rs/zerolog"
 	"golang.org/x/time/rate"
 	"gorm.io/driver/sqlite"

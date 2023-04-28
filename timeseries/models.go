@@ -12,7 +12,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/gernest/vince/cities"
-	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/klauspost/compress/zstd"
 )
 

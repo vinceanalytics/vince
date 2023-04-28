@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/referrer"
 )
 

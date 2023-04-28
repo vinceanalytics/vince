@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/system"
 	"github.com/oklog/ulid/v2"
 	"github.com/segmentio/parquet-go"

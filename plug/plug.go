@@ -10,8 +10,8 @@ import (
 
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
-	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/sessions"
 	"github.com/oklog/ulid/v2"
 )

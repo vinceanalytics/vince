@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/timex"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"

@@ -20,7 +20,7 @@ import (
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
-	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/lestrrat-go/dataurl"
 )
 

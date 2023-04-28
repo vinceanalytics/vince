@@ -13,7 +13,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/cities"
-	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/plot"
 	"github.com/gernest/vince/store"
 	"github.com/gernest/vince/system"

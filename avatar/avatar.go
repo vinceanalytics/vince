@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gernest/vince/identicon"
-	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/render"
 )
 

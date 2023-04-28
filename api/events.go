@@ -15,7 +15,7 @@ import (
 	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/gate"
 	"github.com/gernest/vince/geoip"
-	"github.com/gernest/vince/log"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/referrer"
 	"github.com/gernest/vince/remoteip"
 	"github.com/gernest/vince/system"

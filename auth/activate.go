@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gernest/vince/assets/ui/templates"
-	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
 	"gorm.io/gorm"

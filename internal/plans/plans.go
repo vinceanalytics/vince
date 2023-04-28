@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/gernest/vince/log"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/pkg/log"
 )
 
 const enterprizeUsage = 10_000_000
