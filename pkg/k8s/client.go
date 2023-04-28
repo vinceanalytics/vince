@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/gernest/vince/pkg/gen/client/site/clientset/versioned"
 	"github.com/gernest/vince/pkg/log"
@@ -10,6 +11,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
+
+const ResyncPeriod = 5 * time.Minute
 
 type Client interface {
 	Kube() kubernetes.Interface

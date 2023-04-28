@@ -8,7 +8,6 @@ import (
 type ResourceFilter struct {
 	watchedNamespaces []string
 	ignoredNamespaces []string
-	ignoredApps       []string
 }
 
 type namespaceName struct {
@@ -30,14 +29,6 @@ func WatchNamespaces(namespaces ...string) ResourceFilterOption {
 func IgnoreNamespaces(namespaces ...string) ResourceFilterOption {
 	return func(filter *ResourceFilter) {
 		filter.ignoredNamespaces = append(filter.ignoredNamespaces, namespaces...)
-	}
-}
-
-// IgnoreApps add the given apps to the list of apps to ignore. An app is a Kubernetes object
-// with an "app" label, the name of the app being the value of the label.
-func IgnoreApps(apps ...string) ResourceFilterOption {
-	return func(filter *ResourceFilter) {
-		filter.ignoredApps = append(filter.ignoredApps, apps...)
 	}
 }
 
@@ -68,11 +59,6 @@ func (f *ResourceFilter) IsIgnored(obj interface{}) bool {
 
 	// Check if the namespace is not explicitly ignored.
 	if contains(f.ignoredNamespaces, pMeta.Namespace) {
-		return true
-	}
-
-	// Check if the "app" label doesn't contain a value which is ignored.
-	if contains(f.ignoredApps, pMeta.Labels["app"]) {
 		return true
 	}
 	return false
