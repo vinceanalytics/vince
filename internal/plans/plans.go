@@ -7,12 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
-
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/pkg/log"
 )
-
-const enterprizeUsage = 10_000_000
 
 type Plan struct {
 	Limit            uint64
@@ -43,11 +38,6 @@ func (p Plan) Format() string {
 	}
 }
 
-var Enterprize = Plan{
-	MonthlyProductID: 2023,
-	YearlyProductID:  2023,
-}
-
 //go:embed v1.json
 var planV1 []byte
 
@@ -74,54 +64,14 @@ func GetPlan(id uint64) Plan {
 	return p.(Plan)
 }
 
-func (p Plan) IsEnterprize() bool {
-	return p.MonthlyProductID == Enterprize.MonthlyProductID
-}
-
-func SuggestPlan(ctx context.Context, u *models.User, usage uint64) Plan {
-	switch {
-	case usage > enterprizeUsage:
-		return Enterprize
-	case u.IsEnterprize(ctx):
-		return Enterprize
-	default:
-		for _, p := range All {
-			if usage < p.Limit {
-				return p
-			}
-		}
-		return Plan{}
-	}
-}
-
-func SubscriptionInterval(ctx context.Context, sub *models.Subscription) string {
-	o := GetPlan(sub.PlanID)
-	if o.MonthlyProductID == 0 {
-		e := sub.GetEnterPrise(ctx)
-		if e != nil {
-			return e.BillingInterval
-		}
-		return ""
-	}
+func SubscriptionInterval(ctx context.Context, pid uint64) string {
 	for _, p := range All {
-		if p.MonthlyProductID == sub.PlanID {
+		if p.MonthlyProductID == pid {
 			return "monthly"
 		}
-		if p.YearlyProductID == sub.PlanID {
+		if p.YearlyProductID == pid {
 			return "yearly"
 		}
 	}
 	return ""
-}
-
-func Allowance(ctx context.Context, sub *models.Subscription) uint64 {
-	o := GetPlan(sub.PlanID)
-	if o.MonthlyProductID != 0 {
-		return o.Limit
-	}
-	if e := sub.GetEnterPrise(ctx); e != nil {
-		return e.MonthlyPageViewLimit
-	}
-	log.Get(ctx).Debug().Uint64("plan_id", sub.PlanID).Msg("Unknown allowance")
-	return 0
 }

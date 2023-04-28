@@ -198,8 +198,6 @@ var SiteNewGoal = template.Must(
 
 type NewSite struct {
 	IsFirstSite bool
-	IsAtLimit   bool
-	SiteLimit   int
 }
 
 type Errors struct {

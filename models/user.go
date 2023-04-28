@@ -32,9 +32,7 @@ type User struct {
 	SentRenewalNotification []*SentRenewalNotification
 	APIKeys                 []*APIKey
 
-	Subscription   *Subscription
-	EnterprisePlan *EnterprisePlan
-	GracePeriod    *GracePeriod
+	Subscription *Subscription
 
 	// for invoice generation and billing
 	Organization  string
@@ -72,7 +70,7 @@ func UserByUID(ctx context.Context, uid uint64) (u *User) {
 		LOG(ctx, err, "failed to get a user")
 		return
 	}
-	m.Preload(ctx, "Subscription", "EnterprisePlan")
+	m.Preload(ctx, "Subscription")
 	return &m
 }
 
@@ -85,16 +83,6 @@ func (u *User) Preload(ctx context.Context, preload ...string) {
 	if err != nil {
 		LOG(ctx, err, "failed to preload "+strings.Join(preload, ","))
 	}
-}
-
-func (u *User) IsEnterprize(ctx context.Context) bool {
-	if u.EnterprisePlan != nil {
-		// avoid preloading twice if u was CurrentUser must have been preloaded
-		// already.
-		return true
-	}
-	u.Preload(ctx, "EnterprisePlan")
-	return u.EnterprisePlan != nil
 }
 
 // CountOwnedSites counts sites owned by the user.
@@ -110,36 +98,9 @@ func (u *User) CountOwnedSites(ctx context.Context) int64 {
 	return o
 }
 
-func (u *User) SitesLimit(ctx context.Context) int {
-	u.Preload(ctx, "EnterprisePlan")
-	x := config.Get(ctx)
-
-	switch {
-	case x.IsSelfHost:
-		return -1
-	case x.IsExempt(u.Email):
-		return -1
-	case u.EnterprisePlan != nil:
-		if u.HasActiveSubscription(ctx) {
-			return -1
-		}
-		return int(x.SiteLimit)
-	default:
-		return int(x.SiteLimit)
-	}
-}
-
 func (u *User) HasActiveSubscription(ctx context.Context) bool {
-	var count int64
-	err := Get(ctx).Model(&Subscription{}).
-		Where("user_id = ?", u.ID).
-		Where("plan_id", u.EnterprisePlan.PlanID).
-		Where("status = ?", "active").Count(&count).Error
-	if err != nil {
-		LOG(ctx, err, "failed to check active subscription")
-		return false
-	}
-	return count == 1
+	u.Preload(ctx, "Subscription")
+	return u.Subscription != nil && u.Subscription.Status == "active"
 }
 
 func (u *User) New(r *http.Request) (validation map[string]string, err error) {

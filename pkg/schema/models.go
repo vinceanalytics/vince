@@ -5,15 +5,6 @@ import (
 	"time"
 )
 
-type GracePeriod struct {
-	Model
-	UserID             uint64
-	EndDate            time.Time
-	AllowanceRRequired uint
-	IsOver             bool
-	ManualLock         bool
-}
-
 type Site struct {
 	Model
 	Domain                      string `gorm:"uniqueIndex"`
@@ -150,16 +141,6 @@ type Goal struct {
 	PagePath  string
 }
 
-type EnterprisePlan struct {
-	Model
-	PlanID                uint64 `gorm:"not null"`
-	UserID                uint64 `gorm:"not null;uniqueIndex"`
-	BillingInterval       string `gorm:"not null;check:billing_interval in ('monthly', 'yearly')"`
-	MonthlyPageViewLimit  uint64 `gorm:"not null"`
-	HourlyAPIRequestLimit uint64 `gorm:"not null"`
-	SiteLimit             uint64 `gorm:"default:50"`
-}
-
 type Invitation struct {
 	Model
 	Email  string `gorm:"not null;uniqueIndex"`
@@ -189,9 +170,7 @@ type User struct {
 	SentRenewalNotification []*SentRenewalNotification
 	APIKeys                 []*APIKey
 
-	Subscription   *Subscription
-	EnterprisePlan *EnterprisePlan
-	GracePeriod    *GracePeriod
+	Subscription *Subscription
 
 	// for invoice generation and billing
 	Organization  string

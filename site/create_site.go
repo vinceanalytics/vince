@@ -16,10 +16,8 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 	u := models.GetUser(ctx)
 	owned := u.CountOwnedSites(ctx)
 	domain := r.Form.Get("domain")
-	limit := u.SitesLimit(ctx)
-	isAtLimit := limit != -1 && owned >= int64(limit)
 	domain, bad := models.ValidateSiteDomain(ctx, domain)
-	if isAtLimit || bad != "" {
+	if bad != "" {
 		r = sessions.SaveCsrf(w, r)
 		render.HTML(r.Context(), w, templates.SiteNew, http.StatusOK, func(ctx *templates.Context) {
 			if bad != "" {
@@ -28,8 +26,6 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 			ctx.Form = r.Form
 			ctx.NewSite = &templates.NewSite{
 				IsFirstSite: owned == 0,
-				IsAtLimit:   isAtLimit,
-				SiteLimit:   limit,
 			}
 		})
 		return

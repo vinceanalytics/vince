@@ -48,48 +48,6 @@ func GetSite(ctx context.Context) *Site {
 	return nil
 }
 
-type GracePeriod struct {
-	Model
-	UserID             uint64
-	EndDate            time.Time
-	AllowanceRRequired uint
-	IsOver             bool
-	ManualLock         bool
-}
-
-func (gp *GracePeriod) Start(allowance uint) {
-	gp.EndDate = toDate(time.Now()).AddDate(0, 0, 7)
-	gp.AllowanceRRequired = allowance
-	gp.IsOver = false
-	gp.ManualLock = false
-}
-
-func (gp *GracePeriod) StartManualLock(allowance uint) {
-	gp.EndDate = time.Time{}
-	gp.AllowanceRRequired = allowance
-	gp.IsOver = false
-	gp.ManualLock = true
-}
-
-func (gp *GracePeriod) End() {
-	gp.IsOver = true
-}
-
-func (gp *GracePeriod) Active() bool {
-	return gp != nil && (gp.ManualLock || gp.EndDate.After(toDate(time.Now())))
-}
-
-func (gp *GracePeriod) Expired() bool {
-	return gp != nil && !gp.Active()
-}
-
-func toDate(ts time.Time) time.Time {
-	y, m, d := ts.Date()
-	return time.Date(
-		y, m, d, 0, 0, 0, 0, ts.Location(),
-	)
-}
-
 type Site struct {
 	Model
 	Domain                      string `gorm:"uniqueIndex"`
@@ -333,18 +291,6 @@ type Subscription struct {
 	LastBillDate   time.Time
 }
 
-func (sub *Subscription) GetEnterPrise(ctx context.Context) *EnterprisePlan {
-	var e EnterprisePlan
-	err := Get(ctx).Model(&EnterprisePlan{}).
-		Where("plan_id = ? ", sub.PlanID).
-		Where("user_id = ?", sub.UserID).First(&e).Error
-	if err != nil {
-		LOG(ctx, err, "failed getting enterprise plan from subscription")
-		return nil
-	}
-	return &e
-}
-
 func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *zerolog.Event) {
 	db.LOG(ctx, err, msg, f...)
 }
@@ -451,16 +397,6 @@ func DeleteGoal(ctx context.Context, gid, domain string) bool {
 	return true
 }
 
-type EnterprisePlan struct {
-	Model
-	PlanID                uint64 `gorm:"not null"`
-	UserID                uint64 `gorm:"not null;uniqueIndex"`
-	BillingInterval       string `gorm:"not null;check:billing_interval in ('monthly', 'yearly')"`
-	MonthlyPageViewLimit  uint64 `gorm:"not null"`
-	HourlyAPIRequestLimit uint64 `gorm:"not null"`
-	SiteLimit             uint64 `gorm:"default:50"`
-}
-
 type Invitation struct {
 	Model
 	Email  string `gorm:"not null;uniqueIndex"`
@@ -492,7 +428,6 @@ func Open(path string) (*gorm.DB, error) {
 		&CheckStatEmail{},
 		&CreateSiteEmail{},
 		&EmailVerificationCode{},
-		&EnterprisePlan{},
 		&FeedbackEmail{},
 		&Goal{},
 		&IntroEmail{},

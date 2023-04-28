@@ -127,8 +127,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			pipe5.POST(`^/billing/change-plan/:new_plan_id$`, billing.ChangePlan),
 			pipe5.PathGET("/billing/upgrade", billing.Upgrade),
 			pipe5.GET(`^/billing/upgrade/:plan_id$`, billing.UpgradeToPlan),
-			pipe5.GET(`^/billing/upgrade/enterprise/:plan_id$`, billing.UpgradeEnterprisePlan),
-			pipe5.GET(`^/billing/change-plan/enterprise/:plan_id$`, billing.ChangeEnterprisePlan),
 			pipe5.PathGET("/billing/upgrade-success", billing.UpgradeSuccess),
 			pipe5.PathGET("/billing/subscription/ping", billing.PingSubscription),
 		),

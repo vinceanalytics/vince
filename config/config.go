@@ -78,12 +78,6 @@ func Flags() []cli.Flag {
 			Usage:   "directory where backups are stored",
 			EnvVars: []string{"VINCE_BACKUP_DIR"},
 		},
-		&cli.IntFlag{
-			Name:    "site-limit",
-			Usage:   "maximum number os sites per user",
-			Value:   50,
-			EnvVars: []string{"VINCE_SITE_LIMIT"},
-		},
 		&cli.StringFlag{
 			Name:    "mailer-address",
 			Usage:   "email address used for the sender of outgoing emails ",
@@ -238,7 +232,6 @@ func fromCli(ctx *cli.Context) *Config {
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
 		IsSelfHost:              ctx.Bool("self-host"),
 		BackupDir:               ctx.String("backup-dir"),
-		SiteLimit:               uint32(ctx.Int("site-limit")),
 		Secrets: &Secrets{
 			Ed25519KeyPair: &Secrets_KeyPair{
 				PrivateKey: ctx.Path("secret-ed-priv"),
@@ -357,15 +350,6 @@ func (c *Config) Scrub() *Config {
 func (c *Config) IsSuperUser(id uint64) bool {
 	for _, u := range c.SuperUserId {
 		if u == id {
-			return true
-		}
-	}
-	return false
-}
-
-func (c *Config) IsExempt(email string) bool {
-	for _, s := range c.SiteLimitExempt {
-		if s == email {
 			return true
 		}
 	}
