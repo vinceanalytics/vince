@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -168,4 +169,21 @@ func (m MetaData) Latest() string {
 
 func (m *MetaData) Link(name string) string {
 	return fmt.Sprintf("https://github.com/vinceanalytics/vince/releases/download/%s/%s", m.Tag, name)
+}
+
+func ModuleRoot(module string) string {
+	build, ok := debug.ReadBuildInfo()
+	if !ok {
+		Exit("failed to read build info")
+	}
+	for _, m := range build.Deps {
+		if m.Path == module {
+			return fmt.Sprintf("%s/pkg/mod/%s@%s",
+				ExecCollect("go", "env", "GOPATH"),
+				m.Path, m.Version,
+			)
+		}
+	}
+	Exit("no such module ", module)
+	return ""
 }

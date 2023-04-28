@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
 
 	"github.com/gernest/vince/tools"
@@ -14,23 +12,26 @@ import (
 
 const (
 	rootPackage = "github.com/gernest/vince"
-	rootDir     = "."
 )
 
 var (
 	GENERATE_SCRIPT string
+	root            string
 )
 
 func main() {
-
-	build, ok := debug.ReadBuildInfo()
-	if !ok {
-		return
+	println("### Generating k8s client for crds ###")
+	var err error
+	root, err = filepath.Abs("../../")
+	if err != nil {
+		tools.Exit("failed to resolve root", err.Error())
 	}
-	CODEGEN_PKG := fmt.Sprintf("%s/pkg/mod/%s@%s",
-		tools.ExecCollect("go", "env", "GOPATH"),
-		build.Deps[1].Path, build.Deps[1].Version,
-	)
+	println(">>> root:", root)
+	make()
+}
+
+func make() {
+	CODEGEN_PKG := tools.ModuleRoot("k8s.io/code-generator")
 	println(">>> using codegen: ", CODEGEN_PKG)
 	GENERATE_SCRIPT = filepath.Join(CODEGEN_PKG, "generate-groups.sh")
 	tools.ExecPlain("chmod", "+x", GENERATE_SCRIPT)
@@ -46,23 +47,23 @@ func generate(resource string, versions ...string) {
 	defer os.RemoveAll(dir)
 
 	for _, v := range versions {
-		tools.ExecPlain("rm", "-f", filepath.Join(rootDir,
+		tools.ExecPlain("rm", "-f", filepath.Join(root,
 			"/pkg/apis", resource,
 			v,
 			"zz_generated.deepcopy.go",
 		))
 	}
 	tools.ExecPlain("rm", "-rf", filepath.Join(
-		rootDir, "/pkg/gen/client", resource,
+		root, "/pkg/gen/client", resource,
 	))
 	tools.ExecPlain(GENERATE_SCRIPT, "all",
 		filepath.Join(rootPackage, "/pkg/gen/client", resource),
 		filepath.Join(rootPackage, "/pkg/apis"),
 		resource+":"+strings.Join(versions, ","),
-		"--go-header-file", filepath.Join(rootDir, "tools/k8s/boilerplate.go.txt"),
+		"--go-header-file", filepath.Join(root, "pkg/apis/gen/boilerplate.go.txt"),
 		"--output-base", dir,
 	)
 	tools.ExecPlain("cp", "-r",
 		filepath.Join(dir, rootPackage)+"/.",
-		rootDir+"/")
+		root+"/")
 }
