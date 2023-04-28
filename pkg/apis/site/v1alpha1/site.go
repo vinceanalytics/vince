@@ -5,7 +5,6 @@ import (
 )
 
 // +genclient
-// +genclient:noStatus
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Site describes a website with vinceanalytics configured to send analytics
@@ -17,13 +16,18 @@ type Site struct {
 	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec SiteSpec `json:"spec"`
+	Spec              SiteSpec `json:"spec"`
+	// +optional
+	Status SiteStatus `json:"status,omitempty"`
 }
 
 type SiteSpec struct {
 	Domain string `json:"domain"`
 	Public bool   `json:"public"`
+}
+
+type SiteStatus struct {
+	Status string `json:"status"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -20,6 +20,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &sitev1alpha1.SiteApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("SiteSpec"):
 		return &sitev1alpha1.SiteSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("SiteStatus"):
+		return &sitev1alpha1.SiteStatusApplyConfiguration{}
 
 	}
 	return nil

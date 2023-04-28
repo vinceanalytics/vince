@@ -91,6 +91,18 @@ func (c *FakeSites) Update(ctx context.Context, site *v1alpha1.Site, opts v1.Upd
 	return obj.(*v1alpha1.Site), err
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *FakeSites) UpdateStatus(ctx context.Context, site *v1alpha1.Site, opts v1.UpdateOptions) (*v1alpha1.Site, error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateSubresourceAction(sitesResource, "status", c.ns, site), &v1alpha1.Site{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.Site), err
+}
+
 // Delete takes name of the site and deletes it. Returns an error if one occurs.
 func (c *FakeSites) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
@@ -133,6 +145,29 @@ func (c *FakeSites) Apply(ctx context.Context, site *sitev1alpha1.SiteApplyConfi
 	}
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(sitesResource, c.ns, *name, types.ApplyPatchType, data), &v1alpha1.Site{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.Site), err
+}
+
+// ApplyStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+func (c *FakeSites) ApplyStatus(ctx context.Context, site *sitev1alpha1.SiteApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Site, err error) {
+	if site == nil {
+		return nil, fmt.Errorf("site provided to Apply must not be nil")
+	}
+	data, err := json.Marshal(site)
+	if err != nil {
+		return nil, err
+	}
+	name := site.Name
+	if name == nil {
+		return nil, fmt.Errorf("site.Name must be provided to Apply")
+	}
+	obj, err := c.Fake.
+		Invokes(testing.NewPatchSubresourceAction(sitesResource, c.ns, *name, types.ApplyPatchType, data, "status"), &v1alpha1.Site{})
 
 	if obj == nil {
 		return nil, err

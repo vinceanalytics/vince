@@ -30,6 +30,7 @@ type SitesGetter interface {
 type SiteInterface interface {
 	Create(ctx context.Context, site *v1alpha1.Site, opts v1.CreateOptions) (*v1alpha1.Site, error)
 	Update(ctx context.Context, site *v1alpha1.Site, opts v1.UpdateOptions) (*v1alpha1.Site, error)
+	UpdateStatus(ctx context.Context, site *v1alpha1.Site, opts v1.UpdateOptions) (*v1alpha1.Site, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
 	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.Site, error)
@@ -37,6 +38,7 @@ type SiteInterface interface {
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Site, err error)
 	Apply(ctx context.Context, site *sitev1alpha1.SiteApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Site, err error)
+	ApplyStatus(ctx context.Context, site *sitev1alpha1.SiteApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Site, err error)
 	SiteExpansion
 }
 
@@ -126,6 +128,22 @@ func (c *sites) Update(ctx context.Context, site *v1alpha1.Site, opts v1.UpdateO
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *sites) UpdateStatus(ctx context.Context, site *v1alpha1.Site, opts v1.UpdateOptions) (result *v1alpha1.Site, err error) {
+	result = &v1alpha1.Site{}
+	err = c.client.Put().
+		Namespace(c.ns).
+		Resource("sites").
+		Name(site.Name).
+		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Body(site).
+		Do(ctx).
+		Into(result)
+	return
+}
+
 // Delete takes name of the site and deletes it. Returns an error if one occurs.
 func (c *sites) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
@@ -187,6 +205,36 @@ func (c *sites) Apply(ctx context.Context, site *sitev1alpha1.SiteApplyConfigura
 		Namespace(c.ns).
 		Resource("sites").
 		Name(*name).
+		VersionedParams(&patchOpts, scheme.ParameterCodec).
+		Body(data).
+		Do(ctx).
+		Into(result)
+	return
+}
+
+// ApplyStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+func (c *sites) ApplyStatus(ctx context.Context, site *sitev1alpha1.SiteApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Site, err error) {
+	if site == nil {
+		return nil, fmt.Errorf("site provided to Apply must not be nil")
+	}
+	patchOpts := opts.ToPatchOptions()
+	data, err := json.Marshal(site)
+	if err != nil {
+		return nil, err
+	}
+
+	name := site.Name
+	if name == nil {
+		return nil, fmt.Errorf("site.Name must be provided to Apply")
+	}
+
+	result = &v1alpha1.Site{}
+	err = c.client.Patch(types.ApplyPatchType).
+		Namespace(c.ns).
+		Resource("sites").
+		Name(*name).
+		SubResource("status").
 		VersionedParams(&patchOpts, scheme.ParameterCodec).
 		Body(data).
 		Do(ctx).

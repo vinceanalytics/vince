@@ -40,7 +40,7 @@ func make() {
 }
 
 func generate(resource string, versions ...string) {
-	dir, err := os.MkdirTemp(resource, "")
+	dir, err := os.MkdirTemp("", resource)
 	if err != nil {
 		log.Fatal(err)
 	}
