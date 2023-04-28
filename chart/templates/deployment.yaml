@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vince-controller
+  nospace: {{ .Release.Namespace }}
+  labels:
+    app: vince
+    component: controller
+    chart: {{ include "vince.chart" .  | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    release: {{ .Release.Name | quote }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vince
+      component: controller
+      release: {{ .Release.Name | quote }}
+  template:
+    metadata:
+      labels:
+        app: vince
+        component: controller
+        release: {{ .Release.Name | quote }}
+
+    spec:
+      serviceAccountName: vince-controller
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      containers:
+        - name: vince-contoller
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

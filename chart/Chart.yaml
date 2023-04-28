@@ -1,0 +1,15 @@
+apiVersion: v2
+name: vince
+description: The open source single file, self hosted web analytics platform.
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+keywords:
+  - vince
+  - web analytics
+home: https://vinceanalytics.com
+sources:
+  - https://github.com/vinceanalytics/vince
+maintainers:
+  - name: Geofrey Ernest
+    email: jeff@vinceanalytics.com
