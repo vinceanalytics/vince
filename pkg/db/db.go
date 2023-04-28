@@ -4,7 +4,11 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
+	"github.com/gernest/vince/pkg/log"
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
@@ -33,4 +37,15 @@ func ExistsDB(db *gorm.DB, where func(db *gorm.DB) *gorm.DB) bool {
 // database
 func Check(ctx context.Context) bool {
 	return Get(ctx).Exec("SELECT 1").Error == nil
+}
+
+func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *zerolog.Event) {
+	if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+	if len(f) > 0 {
+		f[0](log.Get(ctx).Err(err)).Msg(msg)
+	} else {
+		log.Get(ctx).Err(err).Msg(msg)
+	}
 }

@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"math/rand"
 	"net/url"
 	"path/filepath"
@@ -347,14 +346,7 @@ func (sub *Subscription) GetEnterPrise(ctx context.Context) *EnterprisePlan {
 }
 
 func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *zerolog.Event) {
-	if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, sql.ErrNoRows) {
-		return
-	}
-	if len(f) > 0 {
-		f[0](log.Get(ctx).Err(err)).Msg(msg)
-	} else {
-		log.Get(ctx).Err(err).Msg(msg)
-	}
+	db.LOG(ctx, err, msg, f...)
 }
 
 type SharedLink struct {
