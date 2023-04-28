@@ -23,7 +23,7 @@ func Issue(ctx context.Context, key *models.APIKey) string {
 	db := models.Get(ctx).Begin()
 	err := db.Create(key).Error
 	if err != nil {
-		models.DBE(ctx, err, "failed to create API Key")
+		models.LOG(ctx, err, "failed to create API Key")
 		db.Rollback()
 		return ""
 	}
@@ -47,13 +47,13 @@ func Issue(ctx context.Context, key *models.APIKey) string {
 	err = db.Model(key).Update("key_prefix", tokenString[:6]).Error
 	if err != nil {
 		db.Rollback()
-		models.DBE(ctx, err, "failed to update key prefix for api")
+		models.LOG(ctx, err, "failed to update key prefix for api")
 		return ""
 	}
 	err = db.Commit().Error
 	if err != nil {
 		db.Rollback()
-		models.DBE(ctx, err, "failed to commit token issuance transaction")
+		models.LOG(ctx, err, "failed to commit token issuance transaction")
 		return ""
 	}
 	return tokenString

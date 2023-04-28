@@ -69,7 +69,7 @@ func UserByUID(ctx context.Context, uid uint64) (u *User) {
 	var m User
 	err := Get(ctx).First(&m, uid).Error
 	if err != nil {
-		DBE(ctx, err, "failed to get a user")
+		LOG(ctx, err, "failed to get a user")
 		return
 	}
 	m.Preload(ctx, "Subscription", "EnterprisePlan")
@@ -83,7 +83,7 @@ func (u *User) Preload(ctx context.Context, preload ...string) {
 	}
 	err := db.First(u).Error
 	if err != nil {
-		DBE(ctx, err, "failed to preload "+strings.Join(preload, ","))
+		LOG(ctx, err, "failed to preload "+strings.Join(preload, ","))
 	}
 }
 
@@ -104,7 +104,7 @@ func (u *User) CountOwnedSites(ctx context.Context) int64 {
 		Joins("inner join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' and site_memberships.user_id = ? ", u.ID).
 		Count(&o).Error
 	if err != nil {
-		DBE(ctx, err, "failed to count owned sites")
+		LOG(ctx, err, "failed to count owned sites")
 		return 0
 	}
 	return o
@@ -136,7 +136,7 @@ func (u *User) HasActiveSubscription(ctx context.Context) bool {
 		Where("plan_id", u.EnterprisePlan.PlanID).
 		Where("status = ?", "active").Count(&count).Error
 	if err != nil {
-		DBE(ctx, err, "failed to check active subscription")
+		LOG(ctx, err, "failed to check active subscription")
 		return false
 	}
 	return count == 1
@@ -221,7 +221,7 @@ func Role(ctx context.Context, uid, sid uint64) (role string) {
 		Limit(1).
 		Row().Scan(&role)
 	if err != nil {
-		DBE(ctx, err, "failed to retrieve role membership")
+		LOG(ctx, err, "failed to retrieve role membership")
 	}
 	return
 }
@@ -230,7 +230,7 @@ func UserByEmail(ctx context.Context, email string) *User {
 	var u User
 	err := Get(ctx).Model(&User{}).Where("email = ?", email).First(&u).Error
 	if err != nil {
-		DBE(ctx, err, "failed to get user by email")
+		LOG(ctx, err, "failed to get user by email")
 		return nil
 	}
 	return &u
@@ -240,7 +240,7 @@ func UserByID(ctx context.Context, uid string) (u *User) {
 	var m User
 	err := Get(ctx).Model(&User{}).Where("id = ?", uid).First(&m).Error
 	if err != nil {
-		DBE(ctx, err, "failed to get user by id", func(e *zerolog.Event) *zerolog.Event {
+		LOG(ctx, err, "failed to get user by id", func(e *zerolog.Event) *zerolog.Event {
 			return e.Str("uid", uid)
 		})
 		return
@@ -254,7 +254,7 @@ func CreateSite(ctx context.Context, usr *User, domain string, public bool) bool
 		Public: public,
 	})
 	if err != nil {
-		DBE(ctx, err, "failed to create a new site", func(e *zerolog.Event) *zerolog.Event {
+		LOG(ctx, err, "failed to create a new site", func(e *zerolog.Event) *zerolog.Event {
 			return e.Str("domain", domain).Bool("public", public)
 		})
 		return false

@@ -69,7 +69,7 @@ func GetSite(ctx context.Context, domain string) *models.Site {
 	err := models.Get(ctx).Model(&models.Site{}).Where("domain=?", domain).
 		First(&site).Error
 	if err != nil {
-		models.DBE(ctx, err, "failed to get site by domain")
+		models.LOG(ctx, err, "failed to get site by domain")
 		return nil
 	}
 	return &site
@@ -86,7 +86,7 @@ func GetSharedLink(ctx context.Context, slug string) *models.SharedLink {
 		Select("site_id").Limit(1).First(&link).Error
 
 	if err != nil {
-		models.DBE(ctx, err, "failed to get shared link")
+		models.LOG(ctx, err, "failed to get shared link")
 		return nil
 	}
 	return &link

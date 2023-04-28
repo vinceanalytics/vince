@@ -119,7 +119,7 @@ type Site struct {
 func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 	err := Get(ctx).Model(&Site{}).Where("id = ?", sid).Update("stats_start_date", start).Error
 	if err != nil {
-		DBE(ctx, err, "failed to update stats_start_date")
+		LOG(ctx, err, "failed to update stats_start_date")
 	}
 }
 
@@ -131,7 +131,7 @@ func EnableWeeklyReport(ctx context.Context, site *Site, usr *User) {
 		site.WeeklyReport.Recipients += "," + usr.Email
 		err := Get(ctx).Save(site.WeeklyReport).Error
 		if err != nil {
-			DBE(ctx, err, "failed to update weekly update recipients", func(e *zerolog.Event) *zerolog.Event {
+			LOG(ctx, err, "failed to update weekly update recipients", func(e *zerolog.Event) *zerolog.Event {
 				return e.Uint64("sid", site.ID).Uint64("uid", usr.ID)
 			})
 		}
@@ -141,7 +141,7 @@ func EnableWeeklyReport(ctx context.Context, site *Site, usr *User) {
 		Recipients: usr.Email,
 	})
 	if err != nil {
-		DBE(ctx, err, "failed to create weekly report for site", func(e *zerolog.Event) *zerolog.Event {
+		LOG(ctx, err, "failed to create weekly report for site", func(e *zerolog.Event) *zerolog.Event {
 			return e.Uint64("sid", site.ID).Uint64("uid", usr.ID)
 		})
 	}
@@ -150,7 +150,7 @@ func EnableWeeklyReport(ctx context.Context, site *Site, usr *User) {
 func DeleteSite(ctx context.Context, site *Site) {
 	err := Get(ctx).Select("SiteMemberships").Delete(site).Error
 	if err != nil {
-		DBE(ctx, err, "failed to delete site")
+		LOG(ctx, err, "failed to delete site")
 	}
 }
 
@@ -165,7 +165,7 @@ func (u *Site) Preload(ctx context.Context, preload ...string) {
 	}
 	err := db.First(u).Error
 	if err != nil {
-		DBE(ctx, err, "failed to preload for Site model "+strings.Join(preload, ","))
+		LOG(ctx, err, "failed to preload for Site model "+strings.Join(preload, ","))
 	}
 }
 
@@ -212,7 +212,7 @@ func (s *Site) Owner(ctx context.Context) *User {
 		Where("site_memberships.site_id = ?", s.ID).
 		Where("site_memberships.role = ?", "owner").First(&u).Error
 	if err != nil {
-		DBE(ctx, err, "failed to find site owner")
+		LOG(ctx, err, "failed to find site owner")
 		return nil
 	}
 	return &u
@@ -228,7 +228,7 @@ func SiteByDomain(ctx context.Context, domain string) *Site {
 	var s Site
 	err := Get(ctx).Model(&Site{}).Where("domain = ?", domain).First(&s).Error
 	if err != nil {
-		DBE(ctx, err, "failed to find site by domain")
+		LOG(ctx, err, "failed to find site by domain")
 		return nil
 	}
 	return &s
@@ -237,7 +237,7 @@ func SiteByDomain(ctx context.Context, domain string) *Site {
 func ChangeSiteVisibility(ctx context.Context, site *Site, public bool) {
 	err := Get(ctx).Model(site).Update("public", public).Error
 	if err != nil {
-		DBE(ctx, err, "failed to change site visibility")
+		LOG(ctx, err, "failed to change site visibility")
 	}
 }
 func (s *Site) IsMember(ctx context.Context, uid uint64) bool {
@@ -293,7 +293,7 @@ func UpdateAPIKeyUse(ctx context.Context, aid string) {
 	err := Get(ctx).Model(&APIKey{}).Where("id = ?", aid).
 		Update("used_at", time.Now()).Error
 	if err != nil {
-		DBE(ctx, err, "failed to update used at time")
+		LOG(ctx, err, "failed to update used at time")
 	}
 }
 
@@ -301,7 +301,7 @@ func APIKeyByID(ctx context.Context, aid string) (a *APIKey) {
 	var m APIKey
 	err := Get(ctx).Where("id = ?", aid).First(&m).Error
 	if err != nil {
-		DBE(ctx, err, "failed to get key by id")
+		LOG(ctx, err, "failed to get key by id")
 		return nil
 	}
 	return &m
@@ -340,13 +340,13 @@ func (sub *Subscription) GetEnterPrise(ctx context.Context) *EnterprisePlan {
 		Where("plan_id = ? ", sub.PlanID).
 		Where("user_id = ?", sub.UserID).First(&e).Error
 	if err != nil {
-		DBE(ctx, err, "failed getting enterprise plan from subscription")
+		LOG(ctx, err, "failed getting enterprise plan from subscription")
 		return nil
 	}
 	return &e
 }
 
-func DBE(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *zerolog.Event) {
+func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *zerolog.Event) {
 	if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, sql.ErrNoRows) {
 		return
 	}
@@ -429,14 +429,14 @@ func CreateGoal(ctx context.Context, domain, event, path string) {
 		PagePath:  strings.TrimSpace(path),
 	}).FirstOrCreate(&o).Error
 	if err != nil {
-		DBE(ctx, err, "failed to create a new goal")
+		LOG(ctx, err, "failed to create a new goal")
 	}
 }
 
 func Goals(ctx context.Context, domain string) (o []*Goal) {
 	err := Get(ctx).Model(&Goal{}).Where("domain = ?", domain).Find(&o).Error
 	if err != nil {
-		DBE(ctx, err, "failed to find goals by domain")
+		LOG(ctx, err, "failed to find goals by domain")
 	}
 	return
 }
@@ -453,7 +453,7 @@ func DeleteGoal(ctx context.Context, gid, domain string) bool {
 		Model: Model{ID: id},
 	}).Error
 	if err != nil {
-		DBE(ctx, err, "failed to delete goal")
+		LOG(ctx, err, "failed to delete goal")
 		return false
 	}
 	return true

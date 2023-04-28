@@ -32,7 +32,7 @@ func QuerySitesToCache(ctx context.Context, fn func(*CachedSite)) (count float64
 		Joins("left join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' ").
 		Rows()
 	if err != nil {
-		DBE(ctx, err, "failed getting sites to cache")
+		LOG(ctx, err, "failed getting sites to cache")
 	} else {
 		var site CachedSite
 		for rows.Next() {
