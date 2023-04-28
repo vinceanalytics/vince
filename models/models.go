@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/pkg/db"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/rs/zerolog"
 	"golang.org/x/time/rate"
@@ -563,25 +564,20 @@ func OpenTest(t *testing.T) *gorm.DB {
 	return db
 }
 
-type dbKey struct{}
-
-func Set(ctx context.Context, db *gorm.DB) context.Context {
-	return context.WithValue(ctx, dbKey{}, db)
+func Set(ctx context.Context, dbs *gorm.DB) context.Context {
+	return db.Set(ctx, dbs)
 }
 
 func Get(ctx context.Context) *gorm.DB {
-	return ctx.Value(dbKey{}).(*gorm.DB)
+	return db.Get(ctx)
 }
 
 func Exists(ctx context.Context, where func(db *gorm.DB) *gorm.DB) bool {
-	return exists(Get(ctx), where)
+	return db.Exists(ctx, where)
 }
 
-func exists(db *gorm.DB, where func(db *gorm.DB) *gorm.DB) bool {
-	db = where(db).Select("1").Limit(1)
-	var n int
-	err := db.Find(&n).Error
-	return err == nil && n == 1
+func exists(g *gorm.DB, where func(db *gorm.DB) *gorm.DB) bool {
+	return db.ExistsDB(g, where)
 }
 
 // Check performs health check on the database. This make sure we can query the
