@@ -17,7 +17,7 @@ RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
 
 ## Container Image
 
-{{- $version := .Project.Meta.Version -}}
+{{- $version := .Project.Meta.Tag -}}
 {{range $k,$v := .Project.Artifacts}}
 ```
 ghcr.io/vinceanalytics/{{$k}}:{{$version}}

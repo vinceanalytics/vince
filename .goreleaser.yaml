@@ -95,11 +95,11 @@ signs:
 changelog:
   skip: true
 dockers:
-  - id: vince
+  - id: vince-amd64
     ids:
       - vince
     image_templates:
-      - "ghcr.io/vinceanalytics/vince:{{.Version}}-amd64"
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
     skip_push: true
     goos: linux
     goarch: amd64
@@ -109,13 +109,13 @@ dockers:
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
       - "--platform=linux/amd64"
-  - id: vince
+  - id: vince-arm64
     ids:
       - vince
     image_templates:
-      - "ghcr.io/vinceanalytics/vince:{{.Version}}-arm64"
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
     skip_push: true
     goos: linux
     goarch: arm64
@@ -125,14 +125,14 @@ dockers:
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
       - "--platform=linux/arm64"
 
-  - id: v8s
+  - id: v8s-amd64
     ids:
       - v8s
     image_templates:
-      - "ghcr.io/vinceanalytics/v8s:{{.Version}}-amd64"
+      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-amd64"
     skip_push: true
     goos: linux
     goarch: amd64
@@ -142,13 +142,13 @@ dockers:
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
       - "--platform=linux/amd64"
-  - id: v8s
+  - id: v8s-arm64
     ids:
       - v8s
     image_templates:
-      - "ghcr.io/vinceanalytics/v8s:{{.Version}}-arm64"
+      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-arm64"
     skip_push: true
     goos: linux
     goarch: arm64
@@ -158,21 +158,21 @@ dockers:
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
       - "--platform=linux/arm64"
 
 docker_manifests:
   - id: vince
-    name_template: "ghcr.io/vinceanalytics/vince:{{.Version}}"
+    name_template: "ghcr.io/vinceanalytics/vince:{{.Tag}}"
     image_templates:
-      - "ghcr.io/vinceanalytics/vince:{{.Version}}-amd64"
-      - "ghcr.io/vinceanalytics/vince:{{.Version}}-arm64"
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
     skip_push: true
   - id: v8s
-    name_template: "ghcr.io/vinceanalytics/v8s:{{.Version}}"
+    name_template: "ghcr.io/vinceanalytics/v8s:{{.Tag}}"
     image_templates:
-      - "ghcr.io/vinceanalytics/v8s:{{.Version}}-amd64"
-      - "ghcr.io/vinceanalytics/v8s:{{.Version}}-arm64"
+      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-amd64"
+      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-arm64"
     skip_push: true
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
