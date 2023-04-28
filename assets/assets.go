@@ -8,6 +8,8 @@ import (
 	"github.com/gernest/vince/plug"
 )
 
+//go:generate go run gen/main.go app ../../assets/
+
 var files = map[string]bool{
 	"/android-chrome-192x192.png": true,
 	"/favicon-32x32.png":          true,
