@@ -155,7 +155,7 @@ func SetSite(ctx context.Context, ttl time.Duration) func(*models.CachedSite) {
 			SID:        cs.ID,
 			UID:        cs.UserID,
 			HasStarted: ok,
-			Rate:       rate.NewLimiter(cs.RateLimit()),
+			Rate:       rate.NewLimiter(models.CacheRateLimit(cs)),
 		}, 1, ttl)
 	}
 }

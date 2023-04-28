@@ -49,6 +49,7 @@ func base() *template.Template {
 		"Logo":       Logo,
 		"Calendar":   CalendarEntries,
 		"ActiveItem": ActiveItem,
+		"GoalName":   models.GoalName,
 	})
 }
 

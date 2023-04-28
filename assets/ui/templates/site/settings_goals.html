@@ -7,7 +7,7 @@
         <div class="Box-body">
             {{range .Goals}}
             <div class="Subhead">
-                <h1 class="Subhead-heading">{{.Name}}</h1>
+                <h1 class="Subhead-heading">{{GoalName .}}</h1>
                 <div class="Subhead-actions">
                     <form action="/{{$site.SafeDomain}}/goals/{{.ID}}/delete" method="post">
                         {{template "_csrf" $ctx}}

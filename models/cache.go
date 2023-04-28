@@ -17,7 +17,7 @@ type CachedSite struct {
 	UserID                      uint64
 }
 
-func (c *CachedSite) RateLimit() (rate.Limit, int) {
+func CacheRateLimit(c *CachedSite) (rate.Limit, int) {
 	if !c.IngestRateLimitThreshold.Valid {
 		return rate.Inf, 0
 	}

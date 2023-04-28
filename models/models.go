@@ -349,7 +349,7 @@ func ValidateGoals(event, path string) bool {
 		(path != "" && pathRe.MatchString(path))
 }
 
-func (g *Goal) Name() string {
+func GoalName(g *Goal) string {
 	if g.EventName != "" {
 		return g.EventName
 	}
