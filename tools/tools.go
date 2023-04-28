@@ -129,8 +129,11 @@ type Artifact struct {
 	Os    string `json:"goos"`
 	Arch  string `json:"goarch"`
 	Extra struct {
-		ID string `json:"id"`
-	}
+		ID           string `json:"id"`
+		DockerConfig struct {
+			ID string `json:"id"`
+		} `json:"DockerConfig"`
+	} `json:"extra"`
 }
 
 type MetaData struct {
@@ -152,11 +155,12 @@ func Release(root string) (p Project) {
 	readJSON(filepath.Join(root, "dist/artifacts.json"), &artifacts)
 	p.Artifacts = make(map[string][]Artifact)
 	for _, a := range artifacts {
-		if a.Extra.ID == "default" {
-			continue
+		switch a.Type {
+		case "Archive":
+			p.Artifacts[a.Extra.ID] = append(p.Artifacts[a.Extra.ID], a)
 		}
-		p.Artifacts[a.Extra.ID] = append(p.Artifacts[a.Extra.ID], a)
 	}
+
 	return
 }
 

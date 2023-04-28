@@ -71,6 +71,29 @@ func releaseTable(artifacts []tools.Artifact) string {
 	return table.String()
 }
 
+func releaseImage(artifacts []tools.Artifact) string {
+	var table tools.Table
+	table.Init(
+		"filename", "signature", "size",
+	)
+	for _, a := range artifacts {
+		if a.Type != "Docker Image" {
+			continue
+		}
+		stat, err := os.Stat(filepath.Join(root, a.Path))
+		if err != nil {
+			tools.Exit("can't find artifact", err.Error())
+		}
+		table.Row(
+			fmt.Sprintf("[%s](%s)", a.Name, Link(project.Meta.Tag, a.Name)),
+			fmt.Sprintf("[minisig](%s)", Link(project.Meta.Tag, a.Name+".minisig")),
+			fmt.Sprintf("`%s`", size(int(stat.Size()))),
+		)
+	}
+	table.Flush()
+	return table.String()
+}
+
 func Link(tag, name string) string {
 	return fmt.Sprintf("https://github.com/vinceanalytics/vince/releases/download/%s/%s", tag, name)
 }
