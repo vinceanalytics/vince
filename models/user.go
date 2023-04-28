@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
-	"net/mail"
 	"strings"
 	"time"
 
@@ -145,19 +144,8 @@ func NewUser(u *User, r *http.Request) (validation map[string]string, err error)
 	return
 }
 
-func (u *User) PasswordMatch(pwd string) bool {
+func PasswordMatch(u *User, pwd string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(pwd)) == nil
-}
-
-func (u *User) Recipient() string {
-	return strings.Split(u.Name, " ")[0]
-}
-
-func (u *User) Address() *mail.Address {
-	return &mail.Address{
-		Name:    u.Name,
-		Address: u.Email,
-	}
 }
 
 func Role(ctx context.Context, uid, sid uint64) (role string) {

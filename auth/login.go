@@ -46,7 +46,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	if !u.PasswordMatch(password) {
+	if !models.PasswordMatch(u, password) {
 		r = sessions.SaveCsrf(w, r)
 		r = sessions.SaveCaptcha(w, r)
 		render.HTML(r.Context(), w, templates.LoginForm, http.StatusOK, func(ctx *templates.Context) {
