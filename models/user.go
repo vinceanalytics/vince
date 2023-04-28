@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"net/http"
 	"net/mail"
-	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -45,13 +43,6 @@ type User struct {
 	Invitations     []*Invitation
 }
 
-func (u *User) Avatar(size int) string {
-	q := make(url.Values)
-	q.Set("u", strconv.FormatUint(u.ID, 10))
-	q.Set("s", strconv.Itoa(size))
-	return "/avatar?" + q.Encode()
-}
-
 func SetUser(ctx context.Context, usr *User) context.Context {
 	return context.WithValue(ctx, currentUserKey{}, usr)
 }
@@ -70,11 +61,11 @@ func UserByUID(ctx context.Context, uid uint64) (u *User) {
 		LOG(ctx, err, "failed to get a user")
 		return
 	}
-	m.Preload(ctx, "Subscription")
+	PreloadUser(ctx, &m, "Subscription")
 	return &m
 }
 
-func (u *User) Preload(ctx context.Context, preload ...string) {
+func PreloadUser(ctx context.Context, u *User, preload ...string) {
 	db := Get(ctx)
 	for _, p := range preload {
 		db = db.Preload(p)
@@ -86,10 +77,10 @@ func (u *User) Preload(ctx context.Context, preload ...string) {
 }
 
 // CountOwnedSites counts sites owned by the user.
-func (u *User) CountOwnedSites(ctx context.Context) int64 {
+func CountOwnedSites(ctx context.Context, uid uint64) int64 {
 	var o int64
 	err := Get(ctx).Model(&Site{}).
-		Joins("inner join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' and site_memberships.user_id = ? ", u.ID).
+		Joins("inner join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' and site_memberships.user_id = ? ", uid).
 		Count(&o).Error
 	if err != nil {
 		LOG(ctx, err, "failed to count owned sites")
@@ -98,12 +89,7 @@ func (u *User) CountOwnedSites(ctx context.Context) int64 {
 	return o
 }
 
-func (u *User) HasActiveSubscription(ctx context.Context) bool {
-	u.Preload(ctx, "Subscription")
-	return u.Subscription != nil && u.Subscription.Status == "active"
-}
-
-func (u *User) New(r *http.Request) (validation map[string]string, err error) {
+func NewUser(u *User, r *http.Request) (validation map[string]string, err error) {
 	conf := config.Get(r.Context())
 	u.Name = r.Form.Get("name")
 	u.Email = r.Form.Get("email")

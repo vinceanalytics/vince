@@ -22,7 +22,7 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	// of all columns.
 	// We only care about correctness of the relationship, since we already have
 	// our current user object.
-	usr.Preload(ctx, "EmailVerificationCodes")
+	models.PreloadUser(ctx, usr, "EmailVerificationCodes")
 
 	hasInvitation := models.Exists(ctx, func(db *gorm.DB) *gorm.DB {
 		return db.Model(&models.Invitation{}).Where("email=?", usr.Email)
