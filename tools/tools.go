@@ -123,11 +123,14 @@ func (t *Table) Flush() {
 }
 
 type Artifact struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	Path string `json:"path"`
-	Os   string `json:"goos"`
-	Arch string `json:"goarch"`
+	Name  string `json:"name"`
+	Type  string `json:"type"`
+	Path  string `json:"path"`
+	Os    string `json:"goos"`
+	Arch  string `json:"goarch"`
+	Extra struct {
+		ID string `json:"id"`
+	}
 }
 
 type MetaData struct {
@@ -138,9 +141,22 @@ type MetaData struct {
 	Date    time.Time `json:"date"`
 }
 
-func Release(root string) (meta MetaData, artifacts []Artifact) {
-	readJSON(filepath.Join(root, "dist/metadata.json"), &meta)
+type Project struct {
+	Meta      MetaData
+	Artifacts map[string][]Artifact
+}
+
+func Release(root string) (p Project) {
+	readJSON(filepath.Join(root, "dist/metadata.json"), &p.Meta)
+	var artifacts []Artifact
 	readJSON(filepath.Join(root, "dist/artifacts.json"), &artifacts)
+	p.Artifacts = make(map[string][]Artifact)
+	for _, a := range artifacts {
+		if a.Extra.ID == "default" {
+			continue
+		}
+		p.Artifacts[a.Extra.ID] = append(p.Artifacts[a.Extra.ID], a)
+	}
 	return
 }
 
@@ -153,22 +169,6 @@ func readJSON(path string, o any) {
 	if err != nil {
 		Exit("failed to decode", path, err.Error())
 	}
-}
-
-func (m MetaData) Image(arch string) string {
-	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:%s-%s", m.Name, m.Tag, arch)
-}
-
-func (m MetaData) Manifest() string {
-	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:%s", m.Name, m.Tag)
-}
-
-func (m MetaData) Latest() string {
-	return fmt.Sprintf("ghcr.io/vinceanalytics/%s:latest", m.Name)
-}
-
-func (m *MetaData) Link(name string) string {
-	return fmt.Sprintf("https://github.com/vinceanalytics/vince/releases/download/%s/%s", m.Tag, name)
 }
 
 func ModuleRoot(module string) string {

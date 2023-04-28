@@ -35,11 +35,41 @@ builds:
     goarch:
       - amd64
       - arm64
+    id: vince
+    main: main.go
+    binary: vince
 
+  - id: v8s
+    main: ./cmd/v8s/main.go
+    binary: v8s
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
 archives:
-  - format: tar.gz
+  - builds:
+      - vince
+    id: vince
     name_template: >-
-      {{ .ProjectName }}_
+      {{ .Binary }}_
+      {{-  .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+  - builds:
+      - v8s
+    id: v8s
+    name_template: >-
+      {{ .Binary }}_
       {{-  .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
@@ -59,12 +89,11 @@ signs:
     args:
       - "-Sm"
       - "${artifact}"
+    ids:
+      - vince
+      - v8s
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
+  skip: true
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json

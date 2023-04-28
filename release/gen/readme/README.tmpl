@@ -10,7 +10,10 @@ Files are signed with [minisign](https://jedisct1.github.io/minisign/) using thi
 RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
 ```
 
-{{.ReleaseTable}}
+{{range $k,$v := .Project.Artifacts}}
+**{{$k}}**
+{{releaseTable $v}}
+{{end}}
 
 ## Container Image
 
