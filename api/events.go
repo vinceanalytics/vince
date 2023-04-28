@@ -22,6 +22,7 @@ import (
 	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/timex"
 	"github.com/gernest/vince/ua"
+	"github.com/gernest/vince/userid"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -206,13 +207,15 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	ts := time.Now()
 	unix := ts.Unix()
 	hours := timex.HourIndex(ts)
+	ctx := r.Context()
+	uid := userid.Get(ctx)
 	for _, domain := range domains {
 		b, pass := gate.Check(r.Context(), domain)
 		if !pass {
 			dropped += 1
 			continue
 		}
-		userID := seedID.Gen(remoteIp, userAgent, domain, host)
+		userID := uid.Hash(remoteIp, userAgent, domain, host)
 		e := timeseries.NewEntry()
 		e.UserId = userID
 		e.Name = req.EventName
@@ -237,7 +240,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.ScreenSize = screenSize
 		e.Timestamp = unix
 		e.HourIndex = int32(hours)
-		previousUUserID := seedID.GenPrevious(remoteIp, userAgent, domain, host)
+		previousUUserID := uid.HashPrevious(remoteIp, userAgent, domain, host)
 		b.Register(r.Context(), e, previousUUserID)
 	}
 	if dropped > 0 {

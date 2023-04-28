@@ -20,6 +20,7 @@ import (
 	"github.com/gernest/vince/router"
 	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/timeseries"
+	"github.com/gernest/vince/userid"
 	"github.com/gernest/vince/worker"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
@@ -60,6 +61,9 @@ func Serve(ctx *cli.Context) error {
 func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	ctx = userid.Open(ctx)
+
 	sqlDb, err := models.Open(models.Database(o))
 	if err != nil {
 		return err
