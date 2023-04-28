@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"database/sql"
 	"math/rand"
 	"net/url"
 	"path/filepath"
@@ -15,6 +14,7 @@ import (
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/pkg/db"
 	"github.com/gernest/vince/pkg/log"
+	"github.com/gernest/vince/pkg/schema"
 	"github.com/rs/zerolog"
 	"golang.org/x/time/rate"
 	"gorm.io/driver/sqlite"
@@ -48,30 +48,7 @@ func GetSite(ctx context.Context) *Site {
 	return nil
 }
 
-type Site struct {
-	Model
-	Domain                      string `gorm:"uniqueIndex"`
-	Description                 string
-	Timezone                    string `gorm:"default:UTC"`
-	Public                      bool   `gorm:"not null;default:false"`
-	StatsStartDate              time.Time
-	HasStats                    bool   `gorm:"not null,default:false"`
-	Locked                      bool   `gorm:"not null,default:false"`
-	IngestRateLimitScaleSeconds uint64 `gorm:"not null;default:60"`
-	IngestRateLimitThreshold    sql.NullInt64
-
-	Users              []*User `gorm:"many2many:site_memberships;"`
-	SentWeeklyReports  []*SentWeeklyReport
-	SentMonthlyReports []*SentMonthlyReport
-
-	WeeklyReport      *WeeklyReport
-	MonthlyReports    *MonthlyReport
-	SpikeNotification *SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
-
-	Invitations     []*Invitation `gorm:"constraint:OnDelete:CASCADE;"`
-	SiteMemberships []*SiteMembership
-	SharedLinks     []*SharedLink
-}
+type Site = schema.Site
 
 func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 	err := Get(ctx).Model(&Site{}).Where("id = ?", sid).Update("stats_start_date", start).Error
@@ -202,48 +179,17 @@ func UserIsMember(ctx context.Context, uid, sid uint64) bool {
 	return Role(ctx, uid, sid) != ""
 }
 
-type CreateSiteEmail struct {
-	Model
-	UserID uint64
-}
+type CreateSiteEmail = schema.CreateSiteEmail
 
-type CheckStatEmail struct {
-	Model
-	UserID uint64
-}
+type CheckStatEmail = schema.CheckStatEmail
 
-type EmailVerificationCode struct {
-	Model
-	Code   uint64
-	UserID sql.NullInt64
-}
+type EmailVerificationCode = schema.EmailVerificationCode
 
-type SpikeNotification struct {
-	Model
-	SiteID     uint64 `gorm:"uniqueIndex"`
-	Threshold  uint
-	LastSent   time.Time
-	Recipients string
-}
+type SpikeNotification = schema.SpikeNotification
 
-type SiteMembership struct {
-	Model
-	UserID uint64 `gorm:"primaryKey"`
-	User   *User
-	SiteID uint64 `gorm:"primaryKey"`
-	Site   *Site
-	Role   string `gorm:"not null;default:'owner';check:role in ('owner', 'admin', 'viewer')"`
-}
+type SiteMembership = schema.SiteMembership
 
-type APIKey struct {
-	Model
-	UserID                uint64 `gorm:"not null"`
-	Name                  string `gorm:"not null"`
-	Scopes                string `gorm:"not null;default:stats:read:*"`
-	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
-	KeyPrefix             string
-	UsedAt                time.Time
-}
+type APIKey = schema.APIKey
 
 func UpdateAPIKeyUse(ctx context.Context, aid string) {
 	// aid is string because we use value we set in jwt token claims. No need to do
@@ -270,77 +216,29 @@ func APIRateLimit(ak *APIKey) (rate.Limit, int) {
 	return r, 10
 }
 
-type IntroEmail struct {
-	Model
-	UserID uint64
-}
+type IntroEmail = schema.IntroEmail
 
-type FeedbackEmail struct {
-	Model
-	UserID uint64
-}
+type FeedbackEmail = schema.FeedbackEmail
 
-type Subscription struct {
-	Model
-	UserID         int
-	PlanID         uint64    `gorm:"not null"`
-	UpdateURL      string    `gorm:"not null"`
-	CancelURL      string    `gorm:"not null"`
-	Status         string    `gorm:"not null;check:status in ('active', 'past_due', 'deleted', 'paused')"`
-	NextBillAmount string    `gorm:"not null"`
-	NextBillDate   time.Time `gorm:"not null"`
-	LastBillDate   time.Time
-}
+type Subscription = schema.Subscription
 
 func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *zerolog.Event) {
 	db.LOG(ctx, err, msg, f...)
 }
 
-type SharedLink struct {
-	Model
-	Name         string `gorm:"uniqueIndex;not null"`
-	Slug         string `gorm:"uniqueIndex"`
-	SiteID       uint64
-	PasswordHash string
-}
+type SharedLink = schema.SharedLink
 
-type SentRenewalNotification struct {
-	Model
-	UserID uint64
-}
+type SentRenewalNotification = schema.SentRenewalNotification
 
-type WeeklyReport struct {
-	Model
-	SiteID     uint64
-	Recipients string
-}
+type WeeklyReport = schema.WeeklyReport
 
-type SentWeeklyReport struct {
-	Model
-	SiteID uint64
-	Year   int
-	Week   int
-}
+type SentWeeklyReport = schema.SentWeeklyReport
 
-type MonthlyReport struct {
-	Model
-	SiteID uint64
-	Email  string
-}
+type MonthlyReport = schema.MonthlyReport
 
-type SentMonthlyReport struct {
-	Model
-	SiteID uint64
-	Year   int
-	Week   int
-}
+type SentMonthlyReport = schema.SentMonthlyReport
 
-type Goal struct {
-	Model
-	Domain    string `gorm:"index"`
-	EventName string
-	PagePath  string
-}
+type Goal = schema.Goal
 
 var pathRe = regexp.MustCompile(`^\/.*`)
 var eventRe = regexp.MustCompile(`^.+`)
@@ -389,7 +287,7 @@ func DeleteGoal(ctx context.Context, gid, domain string) bool {
 		return false
 	}
 	err = Get(ctx).Where("domain = ?", domain).Delete(&Goal{
-		Model: Model{ID: id},
+		Model: schema.Model{ID: id},
 	}).Error
 	if err != nil {
 		LOG(ctx, err, "failed to delete goal")
@@ -398,19 +296,7 @@ func DeleteGoal(ctx context.Context, gid, domain string) bool {
 	return true
 }
 
-type Invitation struct {
-	Model
-	Email  string `gorm:"not null;uniqueIndex"`
-	SiteID int    `gorm:"uniqueIndex"`
-	UserID uint64 `gorm:"uniqueIndex"`
-	Role   string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
-}
-
-type Model struct {
-	ID        uint64 `gorm:"primarykey;autoIncrement:true"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
+type Invitation = schema.Invitation
 
 func Database(cfg *config.Config) string {
 	return filepath.Join(cfg.DataPath, "vince.db")

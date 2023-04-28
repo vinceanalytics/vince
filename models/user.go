@@ -8,39 +8,14 @@ import (
 	"time"
 
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/pkg/schema"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type currentUserKey struct{}
 
-type User struct {
-	Model
-	Name         string
-	Email        string `gorm:"uniqueIndex"`
-	PasswordHash string
-	Sites        []*Site `gorm:"many2many:site_memberships;"`
-
-	EmailVerificationCodes  []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
-	IntroEmails             []*IntroEmail            `gorm:"constraint:OnDelete:CASCADE;"`
-	FeedbackEmails          []*FeedbackEmail         `gorm:"constraint:OnDelete:CASCADE;"`
-	CreateSiteEmails        []*CreateSiteEmail       `gorm:"constraint:OnDelete:CASCADE;"`
-	CheckStatEmail          []*CheckStatEmail        `gorm:"constraint:OnDelete:CASCADE;"`
-	SentRenewalNotification []*SentRenewalNotification
-	APIKeys                 []*APIKey
-
-	Subscription *Subscription
-
-	// for invoice generation and billing
-	Organization  string
-	PostalAddress string
-	VATNumber     string
-
-	LastSeen        time.Time
-	TrialExpiryDate sql.NullTime
-	EmailVerified   bool `gorm:"not null;default:false"`
-	Invitations     []*Invitation
-}
+type User = schema.User
 
 func SetUser(ctx context.Context, usr *User) context.Context {
 	return context.WithValue(ctx, currentUserKey{}, usr)
