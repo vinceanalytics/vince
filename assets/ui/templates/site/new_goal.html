@@ -1,9 +1,9 @@
 {{define "_content"}}
 <div>
     <div class="container-md Box">
-        <form action="/{{.Site.SafeDomain}}/goals" method="post">
+        <form action="/{{SafeDomain .Site}}/goals" method="post">
             <div class="Box-header">
-                <h2>Add Goal for {{.Site.SafeDomain}}</h2>
+                <h2>Add Goal for {{SafeDomain .Site}}</h2>
             </div>
             <div class="Box-body">
                 <div class="text-sm text-bold"> Goal Trigger</div>

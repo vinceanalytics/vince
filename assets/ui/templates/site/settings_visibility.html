@@ -10,7 +10,7 @@
             </p>
         </div>
         <div class="flex-md-order-1 flex-order-2">
-            <form action="/sites/{{.Site.SafeDomain}}/make-{{if .Site.Public}}private{{else}}public{{end}}"
+            <form action="/sites/{{SafeDomain .Site}}/make-{{if .Site.Public}}private{{else}}public{{end}}"
                 method="post">
                 {{template "_csrf" .}}
                 <button type="submit" class=" Button--danger Button--medium Button">

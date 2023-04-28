@@ -9,7 +9,7 @@
             <div class="Subhead">
                 <h1 class="Subhead-heading">{{GoalName .}}</h1>
                 <div class="Subhead-actions">
-                    <form action="/{{$site.SafeDomain}}/goals/{{.ID}}/delete" method="post">
+                    <form action="/{{SafeDomain $site}}/goals/{{.ID}}/delete" method="post">
                         {{template "_csrf" $ctx}}
                         <button type="submit" class=" Button--danger Button--medium Button">
                             <span class="Button-content">
@@ -20,7 +20,7 @@
                 </div>
             </div>
             {{end}}
-            <a class="btn btn-primary" href="/{{.Site.SafeDomain}}/goals/new">
+            <a class="btn btn-primary" href="/{{SafeDomain .Site}}/goals/new">
                 {{Icon "plus" 16}}
                 <span>Add goal</span>
             </a>
@@ -34,7 +34,7 @@
         <div class="Subhead-description">You can start creating your goals now.
         </div>
     </div>
-    <a class="btn btn-primary" href="/{{.Site.SafeDomain}}/goals/new">
+    <a class="btn btn-primary" href="/{{SafeDomain .Site}}/goals/new">
         {{Icon "plus" 16}}
         <span>Add goal</span>
     </a>

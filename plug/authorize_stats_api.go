@@ -37,7 +37,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			})
 			return
 		}
-		rate, burst := key.RateLimit()
+		rate, burst := models.APIRateLimit(key)
 		if !caches.AllowAPI(ctx, key.ID, rate, burst) {
 			render.ERROR(r.Context(), w, http.StatusTooManyRequests, func(ctx *templates.Context) {
 				ctx.Error.StatusText = fmt.Sprintf(
@@ -62,7 +62,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			return
 		}
 		isSuperUser := config.Get(r.Context()).IsSuperUser(key.UserID)
-		isMember := site.IsMember(ctx, key.UserID)
+		isMember := models.UserIsMember(ctx, key.UserID, site.ID)
 		switch {
 		case isSuperUser, isMember:
 			r = r.WithContext(models.SetSite(ctx, site))

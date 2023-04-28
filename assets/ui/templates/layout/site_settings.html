@@ -23,7 +23,7 @@
                                     <div>
                                         <ul class="ActionListWrap">
                                             <li class="ActionListItem {{ActiveItem . " general"}}">
-                                                <a href="/{{.Site.SafeDomain}}/settings/general"
+                                                <a href="/{{SafeDomain .Site}}/settings/general"
                                                     class="ActionListContent ActionListContent--visual16">
                                                     <span class="ActionListItem-visual ActionListItem-visual--leading">
                                                         {{Icon "gear" 16
@@ -35,7 +35,7 @@
                                                 </a>
                                             </li>
                                             <li class="ActionListItem  {{ActiveItem . " goals"}}">
-                                                <a href="/{{.Site.SafeDomain}}/settings/goals"
+                                                <a href="/{{SafeDomain .Site}}/settings/goals"
                                                     class="ActionListContent ActionListContent--visual16">
                                                     <span class="ActionListItem-visual ActionListItem-visual--leading">
                                                         {{Icon "goal" 16
@@ -47,7 +47,7 @@
                                                 </a>
                                             </li>
                                             <li class="ActionListItem {{ActiveItem . " people"}}">
-                                                <a href="/{{.Site.SafeDomain}}/settings/people"
+                                                <a href="/{{SafeDomain .Site}}/settings/people"
                                                     class="ActionListContent ActionListContent--visual16">
                                                     <span class="ActionListItem-visual ActionListItem-visual--leading">
                                                         {{Icon "organization" 16
@@ -59,7 +59,7 @@
                                                 </a>
                                             </li>
                                             <li class="ActionListItem {{ActiveItem . " visibility"}}">
-                                                <a href="/{{.Site.SafeDomain}}/settings/visibility"
+                                                <a href="/{{SafeDomain .Site}}/settings/visibility"
                                                     class="ActionListContent ActionListContent--visual16">
                                                     <span class="ActionListItem-visual ActionListItem-visual--leading">
                                                         {{Icon "lock" 16
@@ -71,7 +71,7 @@
                                                 </a>
                                             </li>
                                             <li class="ActionListItem {{ActiveItem . " reports"}}">
-                                                <a href="/{{.Site.SafeDomain}}/settings/email-reports"
+                                                <a href="/{{SafeDomain .Site}}/settings/email-reports"
                                                     class="ActionListContent ActionListContent--visual16">
                                                     <span class="ActionListItem-visual ActionListItem-visual--leading">
                                                         {{Icon "mail" 16
@@ -83,7 +83,7 @@
                                                 </a>
                                             </li>
                                             <li class="ActionListItem {{ActiveItem . " danger"}}">
-                                                <a href="/{{.Site.SafeDomain}}/settings/danger-zone"
+                                                <a href="/{{SafeDomain .Site}}/settings/danger-zone"
                                                     class="ActionListContent ActionListContent--visual16">
                                                     <span class="ActionListItem-visual ActionListItem-visual--leading">
                                                         {{Icon "alert-fill" 16

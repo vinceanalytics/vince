@@ -10,7 +10,7 @@
             </p>
         </div>
         <div class="flex-md-order-1 flex-order-2">
-            <form action="/{{.Site.SafeDomain}}/delete" method="post">
+            <form action="/{{SafeDomain .Site}}/delete" method="post">
                 {{template "_csrf" .}}
                 <button type="submit" class=" Button--danger Button--medium Button">
                     <span class="Button-content">

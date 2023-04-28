@@ -81,7 +81,7 @@ func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 }
 
 func EnableWeeklyReport(ctx context.Context, site *Site, usr *User) {
-	site.Preload(ctx, "WeeklyReport")
+	PreloadSite(ctx, site, "WeeklyReport")
 	if site.WeeklyReport != nil {
 		// This is a work around for storing arrays in sqlite. We use comma separated
 		// list for emails.
@@ -111,11 +111,11 @@ func DeleteSite(ctx context.Context, site *Site) {
 	}
 }
 
-func (s *Site) SafeDomain() string {
+func SafeDomain(s *Site) string {
 	return url.PathEscape(s.Domain)
 }
 
-func (u *Site) Preload(ctx context.Context, preload ...string) {
+func PreloadSite(ctx context.Context, u *Site, preload ...string) {
 	db := Get(ctx)
 	for _, p := range preload {
 		db = db.Preload(p)
@@ -162,11 +162,11 @@ func CleanupDOmain(domain string) string {
 	return domain
 }
 
-func (s *Site) Owner(ctx context.Context) *User {
+func SiteOwner(ctx context.Context, sid uint64) *User {
 	var u User
 	err := Get(ctx).Model(&User{}).
 		Joins("left join site_memberships on site_memberships.user_id = users.id").
-		Where("site_memberships.site_id = ?", s.ID).
+		Where("site_memberships.site_id = ?", sid).
 		Where("site_memberships.role = ?", "owner").First(&u).Error
 	if err != nil {
 		LOG(ctx, err, "failed to find site owner")
@@ -175,9 +175,9 @@ func (s *Site) Owner(ctx context.Context) *User {
 	return &u
 }
 
-func (s *Site) HasGoals(ctx context.Context) bool {
+func SiteHasGoals(ctx context.Context, domain string) bool {
 	return Exists(ctx, func(db *gorm.DB) *gorm.DB {
-		return db.Model(&Goal{}).Where("domain = ?", s.Domain)
+		return db.Model(&Goal{}).Where("domain = ?", domain)
 	})
 }
 
@@ -197,8 +197,9 @@ func ChangeSiteVisibility(ctx context.Context, site *Site, public bool) {
 		LOG(ctx, err, "failed to change site visibility")
 	}
 }
-func (s *Site) IsMember(ctx context.Context, uid uint64) bool {
-	return Role(ctx, uid, s.ID) != ""
+
+func UserIsMember(ctx context.Context, uid, sid uint64) bool {
+	return Role(ctx, uid, sid) != ""
 }
 
 type CreateSiteEmail struct {
@@ -264,7 +265,7 @@ func APIKeyByID(ctx context.Context, aid string) (a *APIKey) {
 	return &m
 }
 
-func (ak *APIKey) RateLimit() (rate.Limit, int) {
+func APIRateLimit(ak *APIKey) (rate.Limit, int) {
 	r := rate.Limit(float64(ak.HourlyAPIRequestLimit) / time.Hour.Seconds())
 	return r, 10
 }

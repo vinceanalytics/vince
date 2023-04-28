@@ -22,7 +22,7 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		if session.Data.EmailReport != nil {
 			offer = session.Data.EmailReport[site.Domain]
 		}
-		hasGoals := site.HasGoals(ctx)
+		hasGoals := models.SiteHasGoals(ctx, site.Domain)
 		render.HTML(ctx, w, templates.Stats, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
 			ctx.Title = "Vince Analytics  · " + site.Domain
@@ -34,7 +34,7 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 			ctx.Site = site
 		})
 	case site.Locked:
-		owner := site.Owner(ctx)
+		owner := models.SiteOwner(ctx, site.ID)
 		render.HTML(ctx, w, templates.SiteLocked, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
 			ctx.Owner = owner

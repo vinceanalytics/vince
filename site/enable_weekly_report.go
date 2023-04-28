@@ -16,6 +16,6 @@ func EnableWeeklyReport(w http.ResponseWriter, r *http.Request) {
 	session, r := sessions.Load(r)
 	session.SuccessFlash("You will receive an email report every Monday going forward")
 	session.Save(w)
-	to := fmt.Sprintf("/%s/settings/email-reports", site.SafeDomain())
+	to := fmt.Sprintf("/%s/settings/email-reports", models.SafeDomain(site))
 	http.Redirect(w, r, to, http.StatusFound)
 }

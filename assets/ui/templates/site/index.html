@@ -17,7 +17,7 @@
         {{range .SitesOverview}}
         <div class="Box-row">
             <h2 class="h3 lh-condensed">
-                <a href="/{{.Site.SafeDomain}}/stats">{{.Site.SafeDomain}}</a>
+                <a href="/{{SafeDomain .Site}}/stats">{{SafeDomain .Site}}</a>
                 <span class="Label Label--secondary v-align-middle ml-1 mb-1">
                     {{if .Site.Public}}Public{{else}}Private{{end}}
                 </span>
