@@ -5,15 +5,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gernest/vince/pkg/apis/site/v1alpha1"
 	siteinformer "github.com/gernest/vince/pkg/gen/client/site/informers/externalversions"
 	sitelisterr "github.com/gernest/vince/pkg/gen/client/site/listers/site/v1alpha1"
 	"github.com/gernest/vince/pkg/k8s"
 	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/workqueue"
 )
 
 const (
@@ -36,7 +34,7 @@ type Control struct {
 	mu     sync.Mutex
 	stop   chan struct{}
 	opts   Options
-	work   workqueue.RateLimitingInterface
+	work   chan *Work
 	form   Inform
 	list   List
 	filter *k8s.ResourceFilter
@@ -58,7 +56,7 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 		form: Inform{
 			site: siteinformer.NewSharedInformerFactory(clients.Site(), k8s.ResyncPeriod),
 		},
-		work: workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
+		work: make(chan *Work, 2<<10),
 	}
 	handler := cache.FilteringResourceEventHandler{
 		FilterFunc: x.isWatchedResource,
@@ -77,21 +75,13 @@ type List struct {
 	site sitelisterr.SiteLister
 }
 
-func (c *Control) Run() error {
-	// Handle a panic with logging and exiting.
-	defer utilruntime.HandleCrash()
-	waitGroup := sync.WaitGroup{}
-	defer func() {
-		c.log.Info().Msg("Shutting down workers")
-		c.work.ShutDown()
-		waitGroup.Wait()
-	}()
+func (c *Control) Run(ctx context.Context) error {
 	c.log.Debug().Msg("Initializing vince controller")
 	// we only watch Site resources
 	{
 		timeout, _ := context.WithTimeout(context.Background(), 10*time.Second)
 		c.log.Debug().Msg("Starting sites informer")
-		c.form.site.Start(c.stop)
+		c.form.site.Start(ctx.Done())
 		for _, ok := range c.form.site.WaitForCacheSync(timeout.Done()) {
 			if !ok {
 				c.log.Fatal().Msg("timed out waiting for controller caches to sync:")
@@ -100,44 +90,37 @@ func (c *Control) Run() error {
 	}
 	c.ready()
 	c.log.Debug().Msg("Controller is ready")
-	// Start to poll work from the queue.
-	waitGroup.Add(1)
-
-	runWorker := func() {
-		defer waitGroup.Done()
-		c.runWorker()
+	for {
+		select {
+		case <-ctx.Done():
+			c.log.Debug().Msg("shutting down the controller")
+			return ctx.Err()
+		case w := <-c.work:
+			switch e := w.Item.(type) {
+			case *v1alpha1.Site:
+				switch w.Op {
+				case ADD:
+					c.log.Debug().
+						Str("name", e.Name).
+						Str("ns", e.Namespace).
+						Msg("adding site")
+				case Update:
+					c.log.Debug().
+						Str("name", e.Name).
+						Str("ns", e.Namespace).
+						Msg("updating site")
+				case Delete:
+					c.log.Debug().
+						Str("name", e.Name).
+						Str("ns", e.Namespace).
+						Msg("deleting site")
+				}
+			}
+		}
 	}
-	go wait.Until(runWorker, time.Second, c.stop)
-	<-c.stop
-	return nil
 }
 
 // isWatchedResource returns true if the given resource is not ignored, false otherwise.
 func (c *Control) isWatchedResource(obj interface{}) bool {
 	return !c.filter.IsIgnored(obj)
-}
-
-func (c *Control) Shutdown() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	select {
-	case <-c.stop:
-	default:
-		close(c.stop)
-	}
-}
-
-func (c *Control) runWorker() {
-	for c.processNextWorkItem() {
-	}
-}
-
-func (c *Control) processNextWorkItem() bool {
-	key, ok := c.work.Get()
-	if !ok {
-		return ok
-	}
-	defer c.work.Done(key)
-	c.work.Forget(key)
-	return true
 }

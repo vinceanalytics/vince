@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -60,18 +61,19 @@ func run(ctx *cli.Context) error {
 	xk8 := k8s.New(&xlg, master, kubeconfig)
 	a := &api{}
 	xctr := control.New(&xlg, xk8, control.Options{}, a.Ready)
+	base, cancel := context.WithCancel(context.Background())
 	var g errgroup.Group
 	svr := &http.Server{
 		Handler: a,
-		Addr:    fmt.Sprint(":d", port),
+		Addr:    fmt.Sprintf(":%d", port),
 	}
 	g.Go(func() error {
-		defer xctr.Shutdown()
+		defer cancel()
 		return svr.ListenAndServe()
 	})
 	g.Go(func() error {
 		defer svr.Close()
-		return xctr.Run()
+		return xctr.Run(base)
 	})
 	return g.Wait()
 }
