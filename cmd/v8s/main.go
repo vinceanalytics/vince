@@ -1,11 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"net/http"
 	"os"
+	"sync/atomic"
 
+	"github.com/gernest/vince/pkg/control"
+	"github.com/gernest/vince/pkg/k8s"
 	"github.com/gernest/vince/pkg/version"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -33,7 +39,7 @@ func main() {
 			Value:   9000,
 		},
 	}
-	a.Action = make
+	a.Action = run
 	err := a.Run(os.Args)
 	if err != nil {
 		println(err.Error())
@@ -41,7 +47,7 @@ func main() {
 	}
 }
 
-func make(ctx *cli.Context) error {
+func run(ctx *cli.Context) error {
 	xlg := zerolog.New(os.Stderr)
 	master := ctx.String("master-url")
 	kubeconfig := ctx.String("kubeconfig")
@@ -51,5 +57,39 @@ func make(ctx *cli.Context) error {
 		Str("kubeconfig", kubeconfig).
 		Int("port", port).
 		Msg("Starting controller")
-	return nil
+	xk8 := k8s.New(&xlg, master, kubeconfig)
+	a := &api{}
+	xctr := control.New(&xlg, xk8, control.Options{}, a.Ready)
+	var g errgroup.Group
+	svr := &http.Server{
+		Handler: a,
+		Addr:    fmt.Sprint(":d", port),
+	}
+	g.Go(func() error {
+		defer xctr.Shutdown()
+		return svr.ListenAndServe()
+	})
+	g.Go(func() error {
+		defer svr.Close()
+		return xctr.Run()
+	})
+	return g.Wait()
+}
+
+type api struct {
+	ready atomic.Bool
+}
+
+func (a *api) Ready() {
+	a.ready.Store(true)
+}
+
+func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch r.URL.Path {
+	case "/api/status/readiness":
+		if !a.ready.Load() {
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
+	}
 }

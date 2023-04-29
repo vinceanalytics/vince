@@ -2,14 +2,13 @@ package control
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
 	siteinformer "github.com/gernest/vince/pkg/gen/client/site/informers/externalversions"
 	sitelisterr "github.com/gernest/vince/pkg/gen/client/site/listers/site/v1alpha1"
 	"github.com/gernest/vince/pkg/k8s"
-	"github.com/gernest/vince/pkg/log"
+	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -41,12 +40,16 @@ type Control struct {
 	form   Inform
 	list   List
 	filter *k8s.ResourceFilter
+	ready  func()
+	log    *zerolog.Logger
 }
 
-func New(ctx context.Context, clients k8s.Client, o Options) *Control {
+func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Control {
 	x := Control{
-		stop: make(chan struct{}),
-		opts: o,
+		ready: ready,
+		log:   log,
+		stop:  make(chan struct{}),
+		opts:  o,
 		filter: k8s.NewResourceFilter(
 			k8s.WatchNamespaces(o.WatchNamespaces...),
 			k8s.IgnoreNamespaces(o.IgnoreNamespaces...),
@@ -59,7 +62,7 @@ func New(ctx context.Context, clients k8s.Client, o Options) *Control {
 	}
 	handler := cache.FilteringResourceEventHandler{
 		FilterFunc: x.isWatchedResource,
-		Handler:    &enqueueWorkHandler{logger: log.Get(ctx), workQueue: x.work},
+		Handler:    &enqueueWorkHandler{logger: log, workQueue: x.work},
 	}
 	x.list.site = x.form.site.Vince().V1alpha1().Sites().Lister()
 	x.form.site.Vince().V1alpha1().Sites().Informer().AddEventHandler(handler)
@@ -74,28 +77,29 @@ type List struct {
 	site sitelisterr.SiteLister
 }
 
-func (c *Control) Run(ctx context.Context) error {
+func (c *Control) Run() error {
 	// Handle a panic with logging and exiting.
 	defer utilruntime.HandleCrash()
 	waitGroup := sync.WaitGroup{}
 	defer func() {
-		log.Get(ctx).Info().Msg("Shutting down workers")
+		c.log.Info().Msg("Shutting down workers")
 		c.work.ShutDown()
 		waitGroup.Wait()
 	}()
-	x := log.Get(ctx)
-	x.Debug().Msg("Initializing vince controller")
+	c.log.Debug().Msg("Initializing vince controller")
 	// we only watch Site resources
 	{
-		timeout, _ := context.WithTimeout(ctx, 10*time.Second)
-		log.Get(ctx).Debug().Msg("Starting sites informer")
+		timeout, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		c.log.Debug().Msg("Starting sites informer")
 		c.form.site.Start(c.stop)
 		for _, ok := range c.form.site.WaitForCacheSync(timeout.Done()) {
 			if !ok {
-				log.Get(ctx).Fatal().Msg("timed out waiting for controller caches to sync:")
+				c.log.Fatal().Msg("timed out waiting for controller caches to sync:")
 			}
 		}
 	}
+	c.ready()
+	c.log.Debug().Msg("Controller is ready")
 	// Start to poll work from the queue.
 	waitGroup.Add(1)
 
@@ -121,18 +125,6 @@ func (c *Control) Shutdown() {
 	default:
 		close(c.stop)
 	}
-}
-func (c *Control) startInformers(ctx context.Context, timeout time.Duration) error {
-	ctx, _ = context.WithTimeout(ctx, timeout)
-	log.Get(ctx).Debug().Msg("Starting Informers")
-	c.form.site.Start(c.stop)
-	for t, ok := range c.form.site.WaitForCacheSync(ctx.Done()) {
-		if !ok {
-			return fmt.Errorf("timed out waiting for controller caches to sync: %s", t)
-		}
-	}
-	return nil
-
 }
 
 func (c *Control) runWorker() {
