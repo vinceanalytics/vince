@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/pkg/version"
 	"github.com/gernest/vince/server"
 	"github.com/urfave/cli/v2"
 )
@@ -16,6 +17,7 @@ func Main() {
 		Flags: config.Flags(),
 		Commands: []*cli.Command{
 			config.ConfigCMD(),
+			version.Version(),
 		},
 		Action: server.Serve,
 	}
