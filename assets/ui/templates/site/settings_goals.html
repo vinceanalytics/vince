@@ -17,11 +17,12 @@
 
             {{range .Goals}}
             <li class="Box-row">
-                <div class="f4 lh-condensed text-bold color-fg-default">
+                <div
+                    class="f4 d-flex width-full flex-items-baseline flex-justify-between lh-condensed text-bold color-fg-default">
                     <span class="text-bold  d-inline-block">
                         {{GoalName .}}
                     </span>
-                    <div class="d-flex BtnGroup float-right">
+                    <div>
                         <form action="/{{SafeDomain $site}}/goals/{{.ID}}/delete" method="post">
                             {{template "_csrf" $ctx}}
                             <button type="submit" class=" btn btn-danger">
