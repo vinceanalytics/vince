@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/gernest/vince/pkg/apis/site/v1alpha1"
@@ -31,8 +30,6 @@ type Options struct {
 }
 
 type Control struct {
-	mu     sync.Mutex
-	stop   chan struct{}
 	opts   Options
 	work   chan *Work
 	form   Inform
@@ -46,7 +43,6 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 	x := Control{
 		ready: ready,
 		log:   log,
-		stop:  make(chan struct{}),
 		opts:  o,
 		filter: k8s.NewResourceFilter(
 			k8s.WatchNamespaces(o.WatchNamespaces...),
