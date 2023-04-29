@@ -1,64 +1,53 @@
 {{$ctx := .}}
 
 {{define "_content"}}
-<div class="container-md">
+<div class="body">
     {{if .SitesOverview}}
-    <div class="Box">
-        <div class="Box-header">
-            <div class="Subhead" style="border-bottom: none;margin-bottom: 0;">
-                <h2 class="Subhead-heading">My Sites</h2>
-                <div class="Subhead-actions"><a href="/sites/new" class="btn btn-sm btn-primary" role="button">
-                        {{Icon "plus" 16}}
-                        <span class="Button-label">Add Site</span>
-                    </a>
-                </div>
-            </div>
-        </div>
+    <div class="container-md">
         {{range .SitesOverview}}
-        <div class="Box-row">
-            <h2 class="h3 lh-condensed">
-                <a href="/{{SafeDomain .Site}}/stats">{{SafeDomain .Site}}</a>
-                <span class="Label Label--secondary v-align-middle ml-1 mb-1">
-                    {{if .Site.Public}}Public{{else}}Private{{end}}
-                </span>
-            </h2>
-            <div id="{{.Site.ID}}"></div>
-            <div class="f6 color-fg-muted mt-2">
-                <div class="d-inline-block mr-3">
-                    2.1 K visitors
-                </div>
-                <div class="d-inline-block mr-3">
-                    2.1 K views
-                </div>
-                <div class="d-inline-block mr-3">
-                    2.1 K events
-                </div>
-                <div class="d-inline-block mr-3">
-                    2.1 K visits
-                </div>
-                <div class="d-inline-block mr-3">
-                    2.1 K bounce rate
-                </div>
-                <div class="d-inline-block mr-3">
-                    2.1 K visit duration
-                </div>
-                <div class="d-inline-block mr-3">
-                    2.1 K views per visit
+        <div class="d-flex flex-items-baseline py-4">
+            <div class="d-flex flex-column width-full">
+                <div class="Box p-3 mt-2 color-shadow-medium ">
+                    <div class="f4 lh-condensed text-bold color-fg-default">
+                        <a href="/{{SafeDomain .Site}}/stats"
+                            class="Link--primary text-bold no-underline wb-break-all d-inline-block">
+                            {{SafeDomain .Site}}
+                        </a>
+                        <div class="d-flex BtnGroup float-right">
+                            <a href="/{{SafeDomain .Site}}/settings" class="btn btn-link">
+                                {{Icon "gear" 16}}
+                            </a>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="{{.Site.ID}}"></div>
+                    </div>
+                    <div class="f6 color-fg-muted mt-2 mb-0">
+                        <span class="d-inline-block color-fg-muted mr-3">
+                            <span>This year</span>
+                        </span>
+                        <span class="d-inline-block mr-3">
+                            <span class="lh-condensed text-bold">
+                                10.1k page views
+                            </span>
+                        </span>
+                    </div>
+                    {{.Plot.SparkLine}}
                 </div>
             </div>
-            {{.Plot.SparkLine}}
         </div>
         {{end}}
     </div>
 
     {{else}}
-    <div class="blankslate">
-
-        <h3 class="blankslate-heading">You don’t seem to have any sites.</h3>
-        <div class="blankslate-action">
-            <a class="btn btn-primary" type="button" href="/sites/new">
-                Add new site
-            </a>
+    <div class="container-lg">
+        <div class="blankslate">
+            <h3 class="blankslate-heading">You don’t seem to have any sites.</h3>
+            <div class="blankslate-action">
+                <a class="btn btn-primary" type="button" href="/sites/new">
+                    Add new site
+                </a>
+            </div>
         </div>
     </div>
     {{end}}
