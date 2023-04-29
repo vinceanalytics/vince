@@ -9,16 +9,15 @@
 <body>
     {{block "_header" .}}{{end}}
     {{block "_notice" .}}{{end}}
-    <main {{if not .Docs}} style="padding-top: 67px;" {{end}}>
+    <main>
         <div class="container-xl">
-            <div class="d-flex flex-items-center flex-justify-between mt-1 mb-4">
+            <div class="d-flex flex-items-center flex-justify-between mt-3 mb-4">
                 <div class="d-flex flex-items-center mb-2">
                     {{Avatar .CurrentUser.ID 48 "avatar circle mr-3"}}
                     <div class="flex-auto">
                         <h1 class="h3 lh-condensed">{{.CurrentUser.Name}}</h1>
                     </div>
                 </div>
-
             </div>
             <div class="Layout">
                 <div class="Layout-sidebar">
