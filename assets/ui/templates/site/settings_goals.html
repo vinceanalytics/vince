@@ -1,43 +1,39 @@
 {{define "_content"}}
 <div class="container-md">
-    {{if .Goals}}
-    {{$site := .Site}}
-    {{$ctx := .}}
-    <div class="Box">
-        <div class="Box-body">
-            {{range .Goals}}
-            <div class="Subhead">
-                <h1 class="Subhead-heading">{{GoalName .}}</h1>
-                <div class="Subhead-actions">
-                    <form action="/{{SafeDomain $site}}/goals/{{.ID}}/delete" method="post">
-                        {{template "_csrf" $ctx}}
-                        <button type="submit" class=" Button--danger Button--medium Button">
-                            <span class="Button-content">
-                                <span class="Button-label">Remove</span>
-                            </span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            {{end}}
+    <div class="Subhead px-3" style="border-bottom: none;">
+        <h2 class="Subhead-heading">Goals</h2>
+        <div class="Subhead-description">You can start creating your goals now.</div>
+        <div class="Subhead-action">
             <a class="btn btn-primary" href="/{{SafeDomain .Site}}/goals/new">
                 {{Icon "plus" 16}}
                 <span>Add goal</span>
             </a>
         </div>
+    </div>
+    {{$site := .Site}}
+    {{$ctx := .}}
+    <div class="Box">
+        <ul>
 
+            {{range .Goals}}
+            <li class="Box-row">
+                <div class="f4 lh-condensed text-bold color-fg-default">
+                    <span class="text-bold  d-inline-block">
+                        {{GoalName .}}
+                    </span>
+                    <div class="d-flex BtnGroup float-right">
+                        <form action="/{{SafeDomain $site}}/goals/{{.ID}}/delete" method="post">
+                            {{template "_csrf" $ctx}}
+                            <button type="submit" class=" btn btn-danger">
+                                Remove
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            {{end}}
+        </ul>
     </div>
 
-    {{else}}
-    <div class="Subhead">
-        <h2 class="Subhead-heading">No goals configured for this site yet</h2>
-        <div class="Subhead-description">You can start creating your goals now.
-        </div>
-    </div>
-    <a class="btn btn-primary" href="/{{SafeDomain .Site}}/goals/new">
-        {{Icon "plus" 16}}
-        <span>Add goal</span>
-    </a>
-    {{end}}
 </div>
 {{end}}
