@@ -34,14 +34,13 @@ type Options struct {
 }
 
 type Control struct {
-	mu      sync.Mutex
-	stop    chan struct{}
-	opts    Options
-	work    workqueue.RateLimitingInterface
-	clients k8s.Client
-	form    Inform
-	list    List
-	filter  *k8s.ResourceFilter
+	mu     sync.Mutex
+	stop   chan struct{}
+	opts   Options
+	work   workqueue.RateLimitingInterface
+	form   Inform
+	list   List
+	filter *k8s.ResourceFilter
 }
 
 func New(ctx context.Context, clients k8s.Client, o Options) *Control {
@@ -86,9 +85,16 @@ func (c *Control) Run(ctx context.Context) error {
 	}()
 	x := log.Get(ctx)
 	x.Debug().Msg("Initializing vince controller")
-	err := c.startInformers(ctx, 10*time.Second)
-	if err != nil {
-		return err
+	// we only watch Site resources
+	{
+		timeout, _ := context.WithTimeout(ctx, 10*time.Second)
+		log.Get(ctx).Debug().Msg("Starting sites informer")
+		c.form.site.Start(c.stop)
+		for _, ok := range c.form.site.WaitForCacheSync(timeout.Done()) {
+			if !ok {
+				log.Get(ctx).Fatal().Msg("timed out waiting for controller caches to sync:")
+			}
+		}
 	}
 	// Start to poll work from the queue.
 	waitGroup.Add(1)
@@ -107,6 +113,15 @@ func (c *Control) isWatchedResource(obj interface{}) bool {
 	return !c.filter.IsIgnored(obj)
 }
 
+func (c *Control) Shutdown() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	select {
+	case <-c.stop:
+	default:
+		close(c.stop)
+	}
+}
 func (c *Control) startInformers(ctx context.Context, timeout time.Duration) error {
 	ctx, _ = context.WithTimeout(ctx, timeout)
 	log.Get(ctx).Debug().Msg("Starting Informers")
