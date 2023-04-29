@@ -351,7 +351,7 @@ func readMetaCal(txn *badger.Txn, ts time.Time, prefix []byte, f func([]byte, *s
 
 func readAllAggregate(txn *badger.Txn, ts time.Time, id *ID, data *plot.Data) error {
 	return readCal(txn, id[:], func(c *store.Calendar) error {
-		data.All = &plot.Aggr{
+		data.All = &plot.Aggregate{
 			Visitors:      &plot.Entry{},
 			Views:         &plot.Entry{},
 			Events:        &plot.Entry{},

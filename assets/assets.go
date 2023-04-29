@@ -18,10 +18,11 @@ var files = map[string]bool{
 	"/apple-touch-icon.png":       true,
 	"/site.webmanifest":           true,
 	"/favicon-16x16.png":          true,
-	"robots.txt":                  true,
+	"/robots.txt":                 true,
+	"/schema.json":                true,
 }
 
-//go:embed css image js docs *.png *.ico *.webmanifest
+//go:embed css image js docs *.png *.ico *.webmanifest *.json
 var fs embed.FS
 
 func match(path string) bool {

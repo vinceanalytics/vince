@@ -6,6 +6,7 @@ import (
 	"math"
 )
 
+//go:generate go run gen/main.go
 type Property uint
 
 const (
@@ -29,10 +30,10 @@ const (
 	City
 )
 
-type Aggregate uint
+type AggregateKind uint
 
 const (
-	Visitors Aggregate = iota
+	Visitors AggregateKind = iota
 	Views
 	Events
 	Visits
@@ -42,31 +43,31 @@ const (
 )
 
 type Data struct {
-	All               *Aggr     `json:"all,omitempty"`
-	Event             *EntryMap `json:"event,omitempty"`
-	Page              *EntryMap `json:"page,omitempty"`
-	EntryPage         *EntryMap `json:"entryPage,omitempty"`
-	ExitPage          *EntryMap `json:"exitPage,omitempty"`
-	Referrer          *EntryMap `json:"referrer,omitempty"`
-	UtmMedium         *EntryMap `json:"utmMedium,omitempty"`
-	UtmSource         *EntryMap `json:"utmSource,omitempty"`
-	UtmCampaign       *EntryMap `json:"utmCampaign,omitempty"`
-	UtmContent        *EntryMap `json:"utmContent,omitempty"`
-	UtmTerm           *EntryMap `json:"utmTerm,omitempty"`
-	UtmDevice         *EntryMap `json:"utmDevice,omitempty"`
-	UtmBrowser        *EntryMap `json:"utmBrowser,omitempty"`
-	UtmBrowserVersion *EntryMap `json:"utmBrowserVersion,omitempty"`
-	Os                *EntryMap `json:"os,omitempty"`
-	OsVersion         *EntryMap `json:"osVersion,omitempty"`
-	Country           *EntryMap `json:"country,omitempty"`
-	Region            *EntryMap `json:"region,omitempty"`
-	City              *EntryMap `json:"city,omitempty"`
+	All               *Aggregate `json:"all,omitempty"`
+	Event             *EntryMap  `json:"event,omitempty"`
+	Page              *EntryMap  `json:"page,omitempty"`
+	EntryPage         *EntryMap  `json:"entryPage,omitempty"`
+	ExitPage          *EntryMap  `json:"exitPage,omitempty"`
+	Referrer          *EntryMap  `json:"referrer,omitempty"`
+	UtmMedium         *EntryMap  `json:"utmMedium,omitempty"`
+	UtmSource         *EntryMap  `json:"utmSource,omitempty"`
+	UtmCampaign       *EntryMap  `json:"utmCampaign,omitempty"`
+	UtmContent        *EntryMap  `json:"utmContent,omitempty"`
+	UtmTerm           *EntryMap  `json:"utmTerm,omitempty"`
+	UtmDevice         *EntryMap  `json:"utmDevice,omitempty"`
+	UtmBrowser        *EntryMap  `json:"utmBrowser,omitempty"`
+	UtmBrowserVersion *EntryMap  `json:"utmBrowserVersion,omitempty"`
+	Os                *EntryMap  `json:"os,omitempty"`
+	OsVersion         *EntryMap  `json:"osVersion,omitempty"`
+	Country           *EntryMap  `json:"country,omitempty"`
+	Region            *EntryMap  `json:"region,omitempty"`
+	City              *EntryMap  `json:"city,omitempty"`
 }
 
 type AggregateEntry struct {
 	Options   AggregateOptions `json:"-"`
 	Prop      Property         `json:"-"`
-	Aggregate Aggr             `json:"aggregate"`
+	Aggregate Aggregate        `json:"aggregate"`
 }
 
 type AggregateOptions struct {
@@ -96,17 +97,17 @@ type Summary struct {
 	Views         []*Item `json:"views,omitempty"`
 	Events        []*Item `json:"events,omitempty"`
 	Visits        []*Item `json:"visits,omitempty"`
-	BounceRate    []*Item `json:"bounce_rate,omitempty"`
+	BounceRate    []*Item `json:"bounceRate,omitempty"`
 	VisitDuration []*Item `json:"visitDuration,omitempty"`
 	ViewsPerVisit []*Item `json:"viewsPerVisit,omitempty"`
 }
 
-type Aggr struct {
+type Aggregate struct {
 	Visitors      *Entry `json:"visitors,omitempty"`
 	Views         *Entry `json:"views,omitempty"`
 	Events        *Entry `json:"events,omitempty"`
 	Visits        *Entry `json:"visits,omitempty"`
-	BounceRate    *Entry `json:"bounce_rate,omitempty"`
+	BounceRate    *Entry `json:"bounceRate,omitempty"`
 	VisitDuration *Entry `json:"visitDuration,omitempty"`
 	ViewsPerVisit *Entry `json:"viewsPerVisit,omitempty"`
 }
@@ -117,7 +118,7 @@ func build(b ...builder) {
 	}
 }
 
-func (a *Aggr) Build() {
+func (a *Aggregate) Build() {
 	if a == nil {
 		return
 	}
@@ -127,7 +128,7 @@ func (a *Aggr) Build() {
 }
 
 type Item struct {
-	Key   string  `json:"skey"`
+	Key   string  `json:"key"`
 	Value float64 `json:"value"`
 }
 
@@ -136,7 +137,7 @@ type AggregateValues struct {
 	Views         []float64 `json:"views,omitempty"`
 	Events        []float64 `json:"events,omitempty"`
 	Visits        []float64 `json:"visits,omitempty"`
-	BounceRate    []float64 `json:"bounce_rate,omitempty"`
+	BounceRate    []float64 `json:"bounceRate,omitempty"`
 	VisitDuration []float64 `json:"visitDuration,omitempty"`
 	ViewsPerVisit []float64 `json:"viewsPerVisit,omitempty"`
 }
