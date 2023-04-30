@@ -3,6 +3,18 @@
 The open source single file, self hosted web analytics platform.
 
 
+# Features
+
+- Alert notification
+- Time on sote tracking
+- Conversion tracking 
+- Multiple site management
+- User Interaction Management 
+- Campaign Management 
+- Report Generation
+- Goal Tracking 
+- Event Tracking 
+
 # Downloads
 
 Files are signed with [minisign](https://jedisct1.github.io/minisign/) using this public key:
