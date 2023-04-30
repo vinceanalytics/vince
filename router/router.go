@@ -14,7 +14,6 @@ import (
 	"github.com/gernest/vince/share"
 	"github.com/gernest/vince/site"
 	"github.com/gernest/vince/sites"
-	"github.com/gernest/vince/stats"
 )
 
 func Pipe(ctx context.Context) plug.Pipeline {
@@ -28,13 +27,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		// add prefix matches on the top of the pipeline for faster lookups
 		pipe5.Prefix("/debug/pprof/", pprof.Index),
 
-		plug.PREFIX("/api/v1/stats/",
-			pipe0.PathGET("/api/v1/stats/realtime/visitors", stats.V1RealtimeVisitors),
-			pipe0.PathGET("/api/v1/stats/aggregate", stats.V1Aggregate),
-			pipe0.PathGET("/api/v1/stats/breakdown", stats.V1Breakdown),
-			pipe0.PathGET("/api/v1/stats/timeseries", stats.V1Timeseries),
-			NotFound,
-		),
+		pipe0.PathGET("/api/v1/stats", site.Stats),
 
 		plug.PREFIX("/api/v1/sites",
 			pipe1.PathPOST("/api/v1/sites", sites.Create),
