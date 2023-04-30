@@ -2,12 +2,13 @@ package server
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"sync"
 
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/caches"
@@ -24,6 +25,7 @@ import (
 	"github.com/gernest/vince/worker"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/sync/errgroup"
 )
 
 func Serve(ctx *cli.Context) error {
@@ -58,6 +60,22 @@ func Serve(ctx *cli.Context) error {
 	return HTTP(goCtx, conf, errorLog)
 }
 
+type resourceList []io.Closer
+
+type resourceFunc func() error
+
+func (r resourceFunc) Close() error {
+	return r()
+}
+
+func (r resourceList) Close() error {
+	e := make([]error, len(r))
+	for i, f := range r {
+		e[i] = f.Close()
+	}
+	return errors.Join(e...)
+}
+
 func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -68,51 +86,58 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	if err != nil {
 		return err
 	}
+	var resources resourceList
+	resources = append(resources, errorLog)
+	resources = append(resources, resourceFunc(func() error {
+		return models.CloseDB(sqlDb)
+	}))
+
 	ctx = models.Set(ctx, sqlDb)
 	ctx, ts, err := timeseries.Open(ctx, o.DataPath)
 	if err != nil {
-		models.CloseDB(sqlDb)
+		resources.Close()
 		return err
 	}
+	resources = append(resources, ts)
 	ctx, err = caches.Open(ctx)
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed to open caches")
-		models.CloseDB(sqlDb)
-		ts.Close()
+		resources.Close()
 		return err
 	}
+	resources = append(resources, resourceFunc(func() error {
+		return caches.Close(ctx)
+	}))
 	mailer, err := email.FromConfig(o)
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed creating mailer")
-		models.CloseDB(sqlDb)
-		ts.Close()
-		caches.Close(ctx)
+		resources.Close()
 		return err
 	}
+	resources = append(resources, mailer)
 	ctx = email.Set(ctx, mailer)
 	session := sessions.NewSession("_vince")
 	ctx = sessions.Set(ctx, session)
 	var h health.Health
-	defer func() {
-		for _, o := range h {
-			o.Close()
-		}
-	}()
-	abort := make(chan os.Signal, 1)
-	exit := func() {
-		abort <- os.Interrupt
+	addHealth := func(x *health.Ping) {
+		h = append(h, x)
 	}
-	var wg sync.WaitGroup
+
+	var g errgroup.Group
+
 	h = append(h, health.Base{
 		Key:       "database",
 		CheckFunc: models.Check,
 	})
-	h = append(h,
-		worker.UpdateCacheSites(ctx, &wg, exit),
-		worker.LogRotate(errorLog)(ctx, &wg, exit),
-		worker.SaveTimeseries(ctx, &wg, exit),
-		worker.CollectSYstemMetrics(ctx, &wg, exit),
-	)
+	{
+		// register and start workers
+		g.Go(worker.UpdateCacheSites(ctx, addHealth))
+		g.Go(worker.LogRotate(ctx, errorLog, addHealth))
+		g.Go(worker.SaveTimeseries(ctx, addHealth))
+		g.Go(worker.CollectSYstemMetrics(ctx, addHealth))
+	}
+
+	resources = append(resources, h)
 	ctx = health.Set(ctx, h)
 
 	svr := &http.Server{
@@ -122,35 +147,27 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 			return ctx
 		},
 	}
-	go func() {
-		err := svr.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			log.Get(ctx).Err(err).Msg("Exited server")
-			exit()
-		}
-	}()
-	log.Get(ctx).Info().Msgf("started serving traffic from %s", svr.Addr)
-	signal.Notify(abort, os.Interrupt)
-	sig := <-abort
-	log.Get(ctx).Info().Msgf("received signal %s shutting down the server", sig)
-	err = svr.Shutdown(ctx)
-	if err != nil {
-		return err
-	}
-	err = svr.Close()
-	if err != nil {
-		return err
-	}
-	cancel()
-	wg.Wait()
+	// We start by shutting down the server before shutting everything else. So we
+	// prepend svr for it to be called first.
+	resources = append(resourceList{svr}, resources...)
 
-	models.CloseDB(sqlDb)
-	caches.Close(ctx)
-	ts.Close()
-	mailer.Close()
-	errorLog.Close()
-	close(abort)
-	return nil
+	g.Go(svr.ListenAndServe)
+	g.Go(func() error {
+		// Ensure we close the server.
+		<-ctx.Done()
+		log.Get(ctx).Debug().Msg("shutting down gracefully ")
+		return resources.Close()
+	})
+	log.Get(ctx).Debug().Str("address", svr.Addr).Msg("started serving traffic")
+	g.Go(func() error {
+		abort := make(chan os.Signal, 1)
+		signal.Notify(abort, os.Interrupt)
+		sig := <-abort
+		log.Get(ctx).Info().Msgf("received signal %s shutting down the server", sig)
+		cancel()
+		return nil
+	})
+	return g.Wait()
 }
 
 func Handle(ctx context.Context) http.Handler {

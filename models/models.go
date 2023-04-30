@@ -360,9 +360,9 @@ func Open(path string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func CloseDB(db *gorm.DB) {
+func CloseDB(db *gorm.DB) error {
 	x, _ := db.DB()
-	x.Close()
+	return x.Close()
 }
 
 func OpenTest(t *testing.T) *gorm.DB {

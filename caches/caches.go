@@ -93,13 +93,14 @@ func Open(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
-func Close(ctx context.Context) {
+func Close(ctx context.Context) error {
 	Session(ctx).Close()
 	Site(ctx).Close()
 	User(ctx).Close()
 	IP(ctx).Close()
 	API(ctx).Close()
 	Calendar(ctx).Close()
+	return nil
 }
 
 func Session(ctx context.Context) *ristretto.Cache {

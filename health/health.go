@@ -2,6 +2,8 @@ package health
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net/http"
 	"time"
 
@@ -12,7 +14,7 @@ type Component interface {
 	Name() string
 	Check(context.Context) bool
 	Clone() Component
-	Close()
+	io.Closer
 }
 
 var _ Component = (*Base)(nil)
@@ -31,7 +33,9 @@ func (b Base) Check(ctx context.Context) bool {
 	return b.CheckFunc(ctx)
 }
 
-func (b Base) Close() {}
+func (b Base) Close() error {
+	return nil
+}
 
 func (b Base) Clone() Component {
 	return b
@@ -45,6 +49,14 @@ func (h Health) Check(ctx context.Context) map[string]bool {
 		o[x.Name()] = x.Clone().Check(ctx)
 	}
 	return o
+}
+
+func (h Health) Close() error {
+	e := make([]error, len(h))
+	for i, x := range h {
+		e[i] = x.Close()
+	}
+	return errors.Join(e...)
 }
 
 func Handle(w http.ResponseWriter, r *http.Request) {
@@ -94,8 +106,9 @@ func (p *Ping) Check(ctx context.Context) bool {
 	}
 }
 
-func (p *Ping) Close() {
+func (p *Ping) Close() error {
 	close(p.Channel)
+	return nil
 }
 
 func (p *Ping) Clone() Component {
