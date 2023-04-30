@@ -138,12 +138,6 @@ var UserSettingsAccount = template.Must(
 	),
 ).Lookup("user_settings")
 
-var UserSettingsBilling = template.Must(
-	layout().ParseFS(Files,
-		"auth/user_settings_billing.html",
-	),
-).Lookup("user_settings")
-
 var UserSettingsAPIKeys = template.Must(
 	layout().ParseFS(Files,
 		"auth/user_settings_api_keys.html",

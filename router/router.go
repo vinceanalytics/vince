@@ -78,7 +78,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe5.And(plug.RequireAccount).PathGET("/settings", auth.UserSettings),
 		pipe5.And(plug.RequireAccount).PathGET("/settings/profile", auth.UserSettingsProfile),
 		pipe5.And(plug.RequireAccount).PathGET("/settings/admin", auth.UserSettingsAccount),
-		pipe5.And(plug.RequireAccount).PathGET("/settings/billing", auth.UserSettingsBilling),
 		pipe5.And(plug.RequireAccount).PathGET("/settings/api-keys", auth.UserSettingsAPIKeys),
 		pipe5.And(plug.RequireAccount).PathPUT("/settings", auth.SaveSettings),
 		pipe5.And(plug.RequireAccount).PathDELETE("/me", auth.DeleteMe),

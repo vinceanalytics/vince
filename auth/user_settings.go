@@ -25,13 +25,6 @@ func UserSettingsAccount(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func UserSettingsBilling(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	render.HTML(ctx, w, templates.UserSettingsBilling, http.StatusOK, func(ctx *templates.Context) {
-		ctx.Page = " billing"
-	})
-}
-
 func UserSettingsAPIKeys(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	render.HTML(ctx, w, templates.UserSettingsAPIKeys, http.StatusOK, func(ctx *templates.Context) {

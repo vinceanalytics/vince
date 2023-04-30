@@ -169,18 +169,11 @@ type User struct {
 	CheckStatEmail          []*CheckStatEmail        `gorm:"constraint:OnDelete:CASCADE;"`
 	SentRenewalNotification []*SentRenewalNotification
 	APIKeys                 []*APIKey
-
-	Subscription *Subscription
-
-	// for invoice generation and billing
-	Organization  string
-	PostalAddress string
-	VATNumber     string
-
-	LastSeen        time.Time
-	TrialExpiryDate sql.NullTime
-	EmailVerified   bool `gorm:"not null;default:false"`
-	Invitations     []*Invitation
+	Subscription            *Subscription
+	LastSeen                time.Time
+	TrialExpiryDate         sql.NullTime
+	EmailVerified           bool `gorm:"not null;default:false"`
+	Invitations             []*Invitation
 }
 
 type CachedSite struct {
