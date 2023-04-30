@@ -70,7 +70,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe5.PathPOST("/password/request-reset", auth.PasswordResetRequest),
 		pipe5.PathGET("/password/reset", auth.PasswordResetForm),
 		pipe5.PathPOST("/password/reset", auth.PasswordReset),
-		pipe5.PathPOST("/error_report", SubmitErrorReport),
 
 		pipe5.And(plug.RequireAccount).PathGET("/password", auth.PasswordForm),
 		pipe5.And(plug.RequireAccount).PathPOST("/password", auth.SetPassword),
