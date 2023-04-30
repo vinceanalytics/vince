@@ -12,9 +12,10 @@ import (
 
 func Main() {
 	app := &cli.App{
-		Name:  "vince",
-		Usage: "The open source single file, self hosted web analytics platform.",
-		Flags: config.Flags(),
+		EnableBashCompletion: true,
+		Name:                 "vince",
+		Usage:                "The open source single file, self hosted web analytics platform.",
+		Flags:                config.Flags(),
 		Commands: []*cli.Command{
 			config.ConfigCMD(),
 			version.Version(),

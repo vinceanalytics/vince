@@ -19,6 +19,7 @@ func main() {
 	a := cli.NewApp()
 	a.Name = "v8s"
 	a.Usage = "The open source single file, self hosted web analytics platform."
+	a.EnableBashCompletion = true
 	a.Commands = []*cli.Command{
 		version.Version(),
 	}
