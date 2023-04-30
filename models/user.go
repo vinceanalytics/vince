@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gernest/vince/config"
+	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/pkg/schema"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
@@ -17,6 +18,29 @@ type currentUserKey struct{}
 
 type User = schema.User
 
+func SetPassword(ctx context.Context, pwd string) (err string) {
+	if pwd == "" {
+		return "is required"
+	}
+	if len(pwd) < 6 {
+		return "has to be at least 6 characters"
+	}
+	if len(pwd) > 64 {
+		return "cannot be longer than 64 characters"
+	}
+	u := GetUser(ctx)
+	b, e := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
+	if e != nil {
+		// It is fatal if we can no longer hash passwords terminate the process
+		log.Get(ctx).Fatal().AnErr("err", e).Msg("failed hashing password")
+	}
+	e = Get(ctx).Model(u).Update("password_hash", string(b)).Error
+	if e != nil {
+		LOG(ctx, e, "failed to update user password")
+		return "server error"
+	}
+	return ""
+}
 func SetUser(ctx context.Context, usr *User) context.Context {
 	return context.WithValue(ctx, currentUserKey{}, usr)
 }
