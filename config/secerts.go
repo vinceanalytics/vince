@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func ConfigCMD() *cli.Command {
@@ -36,7 +36,7 @@ func ConfigCMD() *cli.Command {
 			var o bytes.Buffer
 			for _, f := range Flags() {
 				switch e := f.(type) {
-				case *cli.PathFlag:
+				case *cli.StringFlag:
 					fmt.Fprintf(&o, "# %s\n", e.Usage)
 					switch e.EnvVars[0] {
 					case "VINCE_SECRET_ED25519_PRIVATE":
@@ -50,9 +50,6 @@ func ConfigCMD() *cli.Command {
 					default:
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], e.Value)
 					}
-				case *cli.StringFlag:
-					fmt.Fprintf(&o, "# %s\n", e.Usage)
-					fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], e.Value)
 				case *cli.IntFlag:
 					fmt.Fprintf(&o, "# %s\n", e.Usage)
 					fmt.Fprintf(&o, "export  %s=%d\n", e.EnvVars[0], e.Value)

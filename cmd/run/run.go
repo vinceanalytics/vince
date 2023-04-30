@@ -7,15 +7,14 @@ import (
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/pkg/version"
 	"github.com/gernest/vince/server"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func Main() {
 	app := &cli.App{
-		EnableBashCompletion: true,
-		Name:                 "vince",
-		Usage:                "The open source single file, self hosted web analytics platform.",
-		Flags:                config.Flags(),
+		Name:  "vince",
+		Usage: "The open source single file, self hosted web analytics platform.",
+		Flags: config.Flags(),
 		Commands: []*cli.Command{
 			config.ConfigCMD(),
 			version.Version(),

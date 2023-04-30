@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
@@ -171,22 +171,22 @@ func Flags() []cli.Flag {
 		},
 
 		// secrets
-		&cli.PathFlag{
+		&cli.StringFlag{
 			Name:    "secret-ed-priv",
 			Usage:   "path to a file with  ed25519 private key",
 			EnvVars: []string{"VINCE_SECRET_ED25519_PRIVATE"},
 		},
-		&cli.PathFlag{
+		&cli.StringFlag{
 			Name:    "secret-ed-pub",
 			Usage:   "path to a file with  ed25519 public key",
 			EnvVars: []string{"VINCE_SECRET_ED25519_PUBLIC"},
 		},
-		&cli.PathFlag{
+		&cli.StringFlag{
 			Name:    "secret-age-pub",
 			Usage:   "path to a file with  age public key",
 			EnvVars: []string{"VINCE_SECRET_AGE_PUBLIC"},
 		},
-		&cli.PathFlag{
+		&cli.StringFlag{
 			Name:    "secret-age-priv",
 			Usage:   "path to a file with  age private key",
 			EnvVars: []string{"VINCE_SECRET_AGE_PRIVATE"},
@@ -234,12 +234,12 @@ func fromCli(ctx *cli.Context) *Config {
 		BackupDir:               ctx.String("backup-dir"),
 		Secrets: &Secrets{
 			Ed25519KeyPair: &Secrets_KeyPair{
-				PrivateKey: ctx.Path("secret-ed-priv"),
-				PublicKey:  ctx.Path("secret-ed-pub"),
+				PrivateKey: ctx.String("secret-ed-priv"),
+				PublicKey:  ctx.String("secret-ed-pub"),
 			},
 			Age: &Secrets_KeyPair{
-				PrivateKey: ctx.Path("secret-age-priv"),
-				PublicKey:  ctx.Path("secret-age-pub"),
+				PrivateKey: ctx.String("secret-age-priv"),
+				PublicKey:  ctx.String("secret-age-pub"),
 			},
 		},
 		Intervals: &Intervals{

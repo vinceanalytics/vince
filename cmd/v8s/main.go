@@ -11,37 +11,38 @@ import (
 	"github.com/gernest/vince/pkg/k8s"
 	"github.com/gernest/vince/pkg/version"
 	"github.com/rs/zerolog"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"golang.org/x/sync/errgroup"
 )
 
 func main() {
-	a := cli.NewApp()
-	a.Name = "v8s"
-	a.Usage = "The open source single file, self hosted web analytics platform."
-	a.EnableBashCompletion = true
-	a.Commands = []*cli.Command{
-		version.Version(),
+	a := &cli.App{
+		Name:  "v8s",
+		Usage: "The open source single file, self hosted web analytics platform.",
+		Commands: []*cli.Command{
+			version.Version(),
+		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "master-url",
+				Usage:   "The address of the Kubernetes API server. Overrides any value in kubeconfig.",
+				EnvVars: []string{"V8S_MASTER_URL"},
+			},
+			&cli.StringFlag{
+				Name:    "kubeconfig",
+				Usage:   "Path to a kubeconfig. Only required if out-of-cluster.",
+				EnvVars: []string{"KUBECONFIG"},
+			},
+			&cli.IntFlag{
+				Name:    "port",
+				Usage:   "controller api port",
+				EnvVars: []string{"V8S_API_PORT"},
+				Value:   9000,
+			},
+		},
+		Action: run,
 	}
-	a.Flags = []cli.Flag{
-		&cli.StringFlag{
-			Name:    "master-url",
-			Usage:   "The address of the Kubernetes API server. Overrides any value in kubeconfig.",
-			EnvVars: []string{"V8S_MASTER_URL"},
-		},
-		&cli.StringFlag{
-			Name:    "kubeconfig",
-			Usage:   "Path to a kubeconfig. Only required if out-of-cluster.",
-			EnvVars: []string{"KUBECONFIG"},
-		},
-		&cli.IntFlag{
-			Name:    "port",
-			Usage:   "controller api port",
-			EnvVars: []string{"V8S_API_PORT"},
-			Value:   9000,
-		},
-	}
-	a.Action = run
+
 	err := a.Run(os.Args)
 	if err != nil {
 		println(err.Error())

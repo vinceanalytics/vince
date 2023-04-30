@@ -8,7 +8,7 @@ import (
 	"text/tabwriter"
 	"text/template"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func Version() *cli.Command {

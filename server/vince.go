@@ -25,7 +25,7 @@ import (
 	"github.com/gernest/vince/userid"
 	"github.com/gernest/vince/worker"
 	"github.com/rs/zerolog"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"golang.org/x/sync/errgroup"
 )
 
