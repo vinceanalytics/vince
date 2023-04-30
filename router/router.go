@@ -45,12 +45,10 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			NotFound,
 		),
 
-		plug.PREFIX("/api/",
-			pipe4.PathPOST("/api/event", api.Events),
-			pipe4.PathGET("/api/health", api.Health),
-			pipe4.PathGET("/api/system", api.Info),
-			NotFound,
-		),
+		pipe4.PathPOST("/api/event", api.Events),
+		pipe4.PathGET("/api/health", api.Health),
+		pipe4.PathGET("/api/system", api.Info),
+
 		pipe5.PathGET("/", pages.Home),
 		pipe5.PathGET("/avatar", avatar.Serve),
 		pipe5.And(plug.RequireLoggedOut).PathGET("/register", auth.RegisterForm),

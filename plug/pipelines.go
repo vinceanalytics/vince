@@ -37,8 +37,6 @@ func Protect() Pipeline {
 func API(ctx context.Context) Pipeline {
 	return Pipeline{
 		Firewall(ctx),
-		FetchSession,
-		Auth,
 	}
 }
 
