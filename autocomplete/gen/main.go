@@ -29,11 +29,11 @@ func main() {
 	}
 	os.MkdirAll("completions/bash", 0700)
 	os.MkdirAll("completions/powershell", 0700)
-	os.MkdirAll("completions/fish", 0700)
+	os.MkdirAll("completions/zsh", 0700)
 	binaries := []string{"vince", "v8s"}
 	for _, name := range binaries {
 		tools.WriteFile(filepath.Join("completions/bash", name), bash)
 		tools.WriteFile(filepath.Join("completions/powershell", name+".ps1"), power)
-		tools.WriteFile(filepath.Join("completions/fish", name), zsh)
+		tools.WriteFile(filepath.Join("completions/zsh", name), zsh)
 	}
 }
