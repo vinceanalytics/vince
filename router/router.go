@@ -47,7 +47,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 
 		plug.PREFIX("/api/",
 			pipe4.PathPOST("/api/event", api.Events),
-			pipe4.PathGET("/api/error", api.Error),
 			pipe4.PathGET("/api/health", api.Health),
 			pipe4.PathGET("/api/system", api.Info),
 			pipe4.PathGET("/api/sites", api.Sites),
