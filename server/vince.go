@@ -16,6 +16,7 @@ import (
 	"github.com/gernest/vince/email"
 	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/pkg/group"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/router"
@@ -79,6 +80,8 @@ func (r resourceList) Close() error {
 func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	var g errgroup.Group
+	ctx = group.Set(ctx, &g)
 
 	ctx = userid.Open(ctx)
 
@@ -122,8 +125,6 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	addHealth := func(x *health.Ping) {
 		h = append(h, x)
 	}
-
-	var g errgroup.Group
 
 	h = append(h, health.Base{
 		Key:       "database",
