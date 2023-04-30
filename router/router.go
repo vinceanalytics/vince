@@ -8,7 +8,6 @@ import (
 	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/avatar"
-	"github.com/gernest/vince/billing"
 	"github.com/gernest/vince/pages"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/render"
@@ -120,16 +119,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe5.PathGET("/settings/api-keys/new", auth.NewAPIKey),
 		pipe5.PathPOST("/settings/api-keys", auth.CreateAPIKey),
 		pipe5.DELETE(`^/settings/api-keys/:id$`, auth.DeleteAPIKey),
-
-		plug.PREFIX("/billing/",
-			pipe5.PathGET("/billing/change-plan", billing.ChangePlanForm),
-			pipe5.GET(`^/billing/change-plan/preview/:plan_id$`, billing.ChangePlanPreview),
-			pipe5.POST(`^/billing/change-plan/:new_plan_id$`, billing.ChangePlan),
-			pipe5.PathGET("/billing/upgrade", billing.Upgrade),
-			pipe5.GET(`^/billing/upgrade/:plan_id$`, billing.UpgradeToPlan),
-			pipe5.PathGET("/billing/upgrade-success", billing.UpgradeSuccess),
-			pipe5.PathGET("/billing/subscription/ping", billing.PingSubscription),
-		),
 
 		plug.PREFIX("/sites",
 			pipe5.And(plug.RequireAccount).PathGET("/sites", site.Index),
