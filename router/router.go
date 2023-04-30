@@ -89,7 +89,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			NotFound,
 		),
 		pipe5.PathGET("/", pages.Home),
-		pipe5.PathGET("/pricing", pages.Pricing),
 		pipe5.PathGET("/avatar", avatar.Serve),
 		pipe5.And(plug.RequireLoggedOut).PathGET("/register", auth.RegisterForm),
 		pipe5.And(plug.RequireLoggedOut).PathPOST("/register", auth.Register),

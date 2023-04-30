@@ -96,12 +96,6 @@ var SiteNew = template.Must(
 	),
 ).Lookup("app")
 
-var Pricing = template.Must(
-	layout().ParseFS(Files,
-		"pages/pricing.html",
-	),
-).Lookup("plain")
-
 var DocsPage = template.Must(
 	layout().ParseFS(Files,
 		"docs/page.html",
