@@ -42,14 +42,6 @@ func API(ctx context.Context) Pipeline {
 	}
 }
 
-func InternalStatsAPI(ctx context.Context) Pipeline {
-	return Pipeline{
-		Firewall(ctx),
-		FetchSession,
-		AuthorizedSiteAccess(),
-	}
-}
-
 func (p Pipeline) Re(exp string, method string, f func(w http.ResponseWriter, r *http.Request)) Plug {
 	for k, v := range replace {
 		exp = strings.ReplaceAll(exp, k, v)

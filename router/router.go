@@ -11,6 +11,7 @@ import (
 	"github.com/gernest/vince/pages"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/render"
+	"github.com/gernest/vince/share"
 	"github.com/gernest/vince/site"
 	"github.com/gernest/vince/sites"
 	"github.com/gernest/vince/stats"
@@ -20,7 +21,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	pipe0 := plug.Pipeline{plug.Firewall(ctx), plug.AuthorizeStatsAPI}
 	pipe1 := plug.Pipeline{plug.Firewall(ctx), plug.AuthorizeSiteAPI}
 	pipe2 := plug.SharedLink()
-	pipe3 := plug.InternalStatsAPI(ctx)
 	pipe4 := plug.API(ctx)
 	pipe5 := append(plug.Browser(ctx), plug.Protect()...)
 	sitePipe := pipe5.And(plug.RequireAccount, plug.AuthorizedSiteAccess("owner", "admin", "super_admin"))
@@ -47,37 +47,11 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		),
 
 		plug.PREFIX("/share/",
-			pipe2.GET(`^/share/:domain$`, stats.SharedLink),
-			pipe2.GET(`^/share/:slug/authenticate$`, stats.AuthenticateSharedLink),
+			pipe2.GET(`^/share/:domain$`, share.SharedLink),
+			pipe2.GET(`^/share/:slug/authenticate$`, share.AuthenticateSharedLink),
 			NotFound,
 		),
 
-		plug.PREFIX("/api/stats/",
-			pipe3.GET(`^/api/stats/:domain/current-visitors$`, stats.CurrentVisitors),
-			pipe3.GET(`^/api/stats/:domain/main-graph$`, stats.MainGraph),
-			pipe3.GET(`^/api/stats/:domain/top-stats$`, stats.TopStats),
-			pipe3.GET(`^/api/stats/:domain/sources$`, stats.Sources),
-			pipe3.GET(`^/api/stats/:domain/utm_mediums$`, stats.UTMMediums),
-			pipe3.GET(`^/api/stats/:domain/utm_sources$`, stats.UTMSources),
-			pipe3.GET(`^/api/stats/:domain/utm_campaigns$`, stats.UTMCampaigns),
-			pipe3.GET(`^/api/stats/:domain/utm_contents$`, stats.UTMContents),
-			pipe3.GET(`^/api/stats/:domain/utm_terms$`, stats.UTMTerms),
-			pipe3.GET(`^/api/stats/:domain/referrers/(?P<referrer>[^.]+)$`, stats.ReferrerDrillDown),
-			pipe3.GET(`^/api/stats/:domain/pages$`, stats.Pages),
-			pipe3.GET(`^/api/stats/:domain/entry-pages$`, stats.EntryPages),
-			pipe3.GET(`^/api/stats/:domain/exit-pages$`, stats.ExitPages),
-			pipe3.GET(`^/api/stats/:domain/countries$`, stats.Countries),
-			pipe3.GET(`^/api/stats/:domain/regions$`, stats.Regions),
-			pipe3.GET(`^/api/stats/:domain/cities$`, stats.Cities),
-			pipe3.GET(`^/api/stats/:domain/browsers$`, stats.Browsers),
-			pipe3.GET(`^/api/stats/:domain/browser-versions$`, stats.BrowserVersion),
-			pipe3.GET(`^/api/stats/:domain/operating-systems$`, stats.OperatingSystemVersions),
-			pipe3.GET(`^/api/stats/:domain/operating-system-versions$`, stats.OperatingSystemVersions),
-			pipe3.GET(`^/api/stats/:domain/screen-sizes$`, stats.ScreenSizes),
-			pipe3.GET(`^/api/stats/:domain/conversions$`, stats.Conversions),
-			pipe3.GET(`^/api/stats/:domain/property/(?P<property>[^.]+)$`, stats.PropBreakdown),
-			pipe3.GET(`^/api/stats/:domain/suggestions/(?P<filter_name>[^.]+)$`, stats.FilterSuggestions),
-		),
 		plug.PREFIX("/api/",
 			pipe4.PathPOST("/api/event", api.Events),
 			pipe4.PathGET("/api/error", api.Error),

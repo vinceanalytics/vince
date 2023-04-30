@@ -1,4 +1,4 @@
-package stats
+package share
 
 import (
 	"net/http"
@@ -6,6 +6,6 @@ import (
 	"github.com/gernest/vince/render"
 )
 
-func BrowserVersion(w http.ResponseWriter, r *http.Request) {
+func AuthenticateSharedLink(w http.ResponseWriter, r *http.Request) {
 	render.ERROR(r.Context(), w, http.StatusNotImplemented)
 }

@@ -1,4 +1,4 @@
-package stats
+package share
 
 import (
 	"net/http"
@@ -6,6 +6,6 @@ import (
 	"github.com/gernest/vince/render"
 )
 
-func Sources(w http.ResponseWriter, r *http.Request) {
+func SharedLink(w http.ResponseWriter, r *http.Request) {
 	render.ERROR(r.Context(), w, http.StatusNotImplemented)
 }
