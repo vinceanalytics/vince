@@ -186,6 +186,12 @@ var SiteNewGoal = template.Must(
 	),
 ).Lookup("focus")
 
+var PasswordForm = template.Must(
+	layout().ParseFS(Files,
+		"auth/password_form.html",
+	),
+).Lookup("focus")
+
 type NewSite struct {
 	IsFirstSite bool
 }

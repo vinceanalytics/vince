@@ -3,9 +3,10 @@ package auth
 import (
 	"net/http"
 
+	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/render"
 )
 
 func PasswordForm(w http.ResponseWriter, r *http.Request) {
-	render.ERROR(r.Context(), w, http.StatusNotImplemented)
+	render.HTML(r.Context(), w, templates.PasswordForm, http.StatusOK)
 }
