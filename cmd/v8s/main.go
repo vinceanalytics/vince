@@ -22,6 +22,7 @@ func main() {
 		Commands: []*cli.Command{
 			version.Version(),
 		},
+		EnableShellCompletion: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "master-url",

@@ -19,7 +19,8 @@ func Main() {
 			config.ConfigCMD(),
 			version.Version(),
 		},
-		Action: server.Serve,
+		EnableShellCompletion: true,
+		Action:                server.Serve,
 	}
 	err := app.Run(os.Args)
 	if err != nil {
