@@ -14,7 +14,6 @@ import (
 	"github.com/gernest/vince/cmd/app/vince"
 	"github.com/gernest/vince/tools"
 	"github.com/urfave/cli/v3"
-	_ "github.com/urfave/cli/v3"
 )
 
 var root string
