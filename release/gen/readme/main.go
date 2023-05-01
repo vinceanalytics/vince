@@ -11,6 +11,7 @@ import (
 	_ "embed"
 
 	"github.com/gernest/vince/tools"
+	_ "github.com/urfave/cli/v3"
 )
 
 var root string
@@ -34,6 +35,8 @@ func main() {
 		tools.Exit("failed to resolve root ", err.Error())
 	}
 	project = tools.Release(root)
+	make()
+
 	println(">>> building man pages")
 	man := tools.ExecCollect(
 		"go", "run", filepath.Join(root, "main.go"), "man",
@@ -43,7 +46,7 @@ func main() {
 		"go", "run", filepath.Join(root, "cmd", "v8s", "main.go"), "man",
 	)
 	tools.WriteFile(filepath.Join(root, "man", "v8s.1"), []byte(man))
-	make()
+	completion()
 }
 
 func make() {
@@ -91,4 +94,35 @@ func size(n int) string {
 		return strconv.Itoa(n/(1<<20)) + "mb"
 	}
 	return strconv.Itoa(n)
+}
+
+func completion() {
+	println("### Generating autocomplete scripts ###")
+	base := tools.ModuleRoot("github.com/urfave/cli/v3")
+	println(">>> from ", base)
+	bashFile := filepath.Join(base, "autocomplete", "bash_autocomplete")
+	bash, err := os.ReadFile(bashFile)
+	if err != nil {
+		tools.Exit(err.Error())
+	}
+	powerFile := filepath.Join(base, "autocomplete", "powershell_autocomplete.ps1")
+	power, err := os.ReadFile(powerFile)
+	if err != nil {
+		tools.Exit(err.Error())
+	}
+	zshFile := filepath.Join(base, "autocomplete", "zsh_autocomplete")
+	zsh, err := os.ReadFile(zshFile)
+	if err != nil {
+		tools.Exit(err.Error())
+	}
+	binaries := []string{"vince", "v8s"}
+	for _, name := range binaries {
+		fileBash := filepath.Join(root, "completions", name, name+"_bash")
+		fileZsh := filepath.Join(root, "completions", name, name+"_zsh")
+		filePowerShell := filepath.Join(root, "completions", name, name+".ps1")
+		os.MkdirAll(filepath.Join(root, "completions", name), 0700)
+		tools.WriteFile(fileBash, bash)
+		tools.WriteFile(filePowerShell, power)
+		tools.WriteFile(fileZsh, zsh)
+	}
 }

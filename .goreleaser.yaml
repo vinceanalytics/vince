@@ -65,6 +65,8 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    files:
+      - man/vince.1
   - builds:
       - v8s
     id: v8s
@@ -78,6 +80,8 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    files:
+      - man/v8s.1
 checksum:
   disable: true
 snapshot:
