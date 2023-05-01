@@ -68,6 +68,7 @@ archives:
     files:
       - man/vince.1
       - completions/vince/*
+      - LICENSE
   - builds:
       - v8s
     id: v8s
@@ -84,6 +85,7 @@ archives:
     files:
       - man/v8s.1
       - completions/v8s/*
+      - LICENSE
 checksum:
   disable: true
 snapshot:
