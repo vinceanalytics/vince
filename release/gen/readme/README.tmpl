@@ -44,14 +44,3 @@ brew install vinceanalytics/tap/{{.ID}}
 ```
 {{end}}
 
-## Scoop
-
-```
-scoop bucket add vinceanalytics https://github.com/vinceanalytics/scoop-bucket.git
-```
-{{range .Project.Artifacts}}
-**{{.ID}}**
-```
-scoop install {{.ID}}
-```
-{{end}}

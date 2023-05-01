@@ -68,19 +68,3 @@ brew install vinceanalytics/tap/vince
 ```
 
 
-## Scoop
-
-```
-scoop bucket add vinceanalytics https://github.com/vinceanalytics/scoop-bucket.git
-```
-
-**v8s**
-```
-scoop install v8s
-```
-
-**vince**
-```
-scoop install vince
-```
-
