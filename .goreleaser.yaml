@@ -213,8 +213,9 @@ brews:
       system "#{bin}/vince version"
     install: |-
       bin.install "vince"
-      bash_completion.install "completions/vince/vince_bash" => "vince"
-      zsh_completion.install "completions/vince/vince_zsh" => "_vince"
+      bash_completion.install "completions/vince/vince.bash" => "vince"
+      zsh_completion.install "completions/vince/vince.zsh" => "_vince"
+      fish_completion.install "completions/vince/vince.fish"
       man1.install "man/vince.1"
   - tap:
       owner: vinceanalytics
@@ -234,8 +235,9 @@ brews:
       system "#{bin}/v8s version"
     install: |-
       bin.install "v8s"
-      bash_completion.install "completions/v8s/v8s_bash" => "v8s"
-      zsh_completion.install "completions/v8s/v8s_zsh" => "_v8s"
+      bash_completion.install "completions/v8s/v8s.bash" => "v8s"
+      zsh_completion.install "completions/v8s/v8s.zsh" => "_v8s"
+      fish_completion.install "completions/v8s/v8s.fish"
       man1.install "man/v8s.1"
 
 # The lines beneath this are called `modelines`. See `:help modeline`
