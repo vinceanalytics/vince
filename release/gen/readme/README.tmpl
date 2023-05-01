@@ -1,6 +1,6 @@
 # vince
 
-The open source single file, self hosted web analytics platform.
+The Cloud Native Web Analytics Platform.
 
 
 # Features

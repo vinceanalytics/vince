@@ -7,6 +7,7 @@ import (
 	"os"
 	"sync/atomic"
 
+	"github.com/gernest/vince/cmd/man"
 	"github.com/gernest/vince/pkg/control"
 	"github.com/gernest/vince/pkg/k8s"
 	"github.com/gernest/vince/pkg/version"
@@ -18,9 +19,10 @@ import (
 func main() {
 	a := &cli.App{
 		Name:  "v8s",
-		Usage: "The open source single file, self hosted web analytics platform.",
+		Usage: "kubernetes controller for vince - The Cloud Native Web Analytics Platform.",
 		Commands: []*cli.Command{
 			version.Version(),
+			man.Page(),
 		},
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{

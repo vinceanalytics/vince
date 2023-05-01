@@ -34,6 +34,15 @@ func main() {
 		tools.Exit("failed to resolve root ", err.Error())
 	}
 	project = tools.Release(root)
+	println(">>> building man pages")
+	man := tools.ExecCollect(
+		"go", "run", filepath.Join(root, "main.go"), "man",
+	)
+	tools.WriteFile(filepath.Join(root, "vince.1"), []byte(man))
+	man = tools.ExecCollect(
+		"go", "run", filepath.Join(root, "cmd", "v8s", "main.go"), "man",
+	)
+	tools.WriteFile(filepath.Join(root, "v8s.1"), []byte(man))
 	make()
 }
 

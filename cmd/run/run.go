@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gernest/vince/cmd/man"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/pkg/version"
 	"github.com/gernest/vince/server"
@@ -13,11 +14,12 @@ import (
 func Main() {
 	app := &cli.App{
 		Name:  "vince",
-		Usage: "The open source single file, self hosted web analytics platform.",
+		Usage: "The Cloud Native Web Analytics Platform.",
 		Flags: config.Flags(),
 		Commands: []*cli.Command{
 			config.ConfigCMD(),
 			version.Version(),
+			man.Page(),
 		},
 		EnableShellCompletion: true,
 		Action:                server.Serve,
