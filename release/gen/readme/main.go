@@ -35,7 +35,7 @@ func main() {
 		tools.Exit("failed to resolve root ", err.Error())
 	}
 	project = tools.Release(root)
-	make()
+	readme()
 
 	println(">>> building man pages")
 	man := tools.ExecCollect(
@@ -49,7 +49,7 @@ func main() {
 	completion()
 }
 
-func make() {
+func readme() {
 	var o bytes.Buffer
 	err := tpl.Execute(&o, map[string]any{
 		"Project": &project,
