@@ -121,6 +121,16 @@ func completion() {
 		tools.WriteFile(filePowerShell, power)
 		tools.WriteFile(fileZsh, zsh)
 	}
+	vinceFish, err := vince.App().ToFishCompletion()
+	if err != nil {
+		tools.Exit(err.Error())
+	}
+	v8sFish, err := v8s.App().ToFishCompletion()
+	if err != nil {
+		tools.Exit(err.Error())
+	}
+	tools.WriteFile(filepath.Join(root, "completions", "vince", "vince.fish"), []byte(vinceFish))
+	tools.WriteFile(filepath.Join(root, "completions", "v8s", "v8s.fish"), []byte(v8sFish))
 }
 
 func mannPage(app *cli.App) {
