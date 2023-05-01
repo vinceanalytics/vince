@@ -62,7 +62,9 @@ func releaseTable(artifacts []tools.Artifact) string {
 		"filename", "signature", "size",
 	)
 	for _, a := range artifacts {
-		if a.Type != "Archive" {
+		switch a.Type {
+		case "Linux Package", "Archive":
+		default:
 			continue
 		}
 		stat, err := os.Stat(filepath.Join(root, a.Path))

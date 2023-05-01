@@ -240,6 +240,103 @@ brews:
       fish_completion.install "completions/v8s/v8s.fish"
       man1.install "man/v8s.1"
 
+nfpms:
+  - file_name_template: >-
+      vince_
+      {{-  .Tag }}_
+      {{-  .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    id: vince
+    builds:
+      - vince
+    homepage: https://vinceanalytics.com
+    description: The Cloud Native Web Analytics Platform
+    maintainer: Geofrey Ernest <geofreyernest@live.com>
+    license: AGPL-3.0
+    vendor: The Vince Analytics Team
+    bindir: /usr/bin
+    section: Web
+    contents:
+      - src: ./completions/vince/vince.bash
+        dst: /usr/share/bash-completion/completions/vince
+        file_info:
+          mode: 0644
+      - src: ./completions/vince/vince.fish
+        dst: /usr/share/fish/vendor_completions.d/vince.fish
+        file_info:
+          mode: 0644
+      - src: ./completions/vince/vince.zsh
+        dst: /usr/share/zsh/vendor-completions/_vince
+        file_info:
+          mode: 0644
+      - src: ./man/vince.1
+        dst: /usr/share/man/man1/vince.1
+        file_info:
+          mode: 0644
+      - src: ./LICENSE
+        dst: /usr/share/doc/vince/copyright
+        file_info:
+          mode: 0644
+    formats:
+      - apk
+      - deb
+      - rpm
+      - archlinux
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
+  - file_name_template: >-
+      v8s_
+      {{-  .Tag }}_
+      {{-  .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    id: v8s
+    builds:
+      - v8s
+    homepage: https://vinceanalytics.com
+    description: kubernetes controller for vince- The Cloud Native Web Analytics Platform
+    maintainer: Geofrey Ernest <geofreyernest@live.com>
+    license: AGPL-3.0
+    vendor: The Vince Analytics Team
+    bindir: /usr/bin
+    section: Web
+    contents:
+      - src: ./completions/v8s/v8s.bash
+        dst: /usr/share/bash-completion/completions/v8s
+        file_info:
+          mode: 0644
+      - src: ./completions/v8s/v8s.fish
+        dst: /usr/share/fish/vendor_completions.d/v8s.fish
+        file_info:
+          mode: 0644
+      - src: ./completions/v8s/v8s.zsh
+        dst: /usr/share/zsh/vendor-completions/_v8s
+        file_info:
+          mode: 0644
+      - src: ./man/v8s.1
+        dst: /usr/share/man/man1/v8s.1
+        file_info:
+          mode: 0644
+      - src: ./LICENSE
+        dst: /usr/share/doc/v8s/copyright
+        file_info:
+          mode: 0644
+    formats:
+      - apk
+      - deb
+      - rpm
+      - archlinux
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json

@@ -162,7 +162,7 @@ func Release(root string) (p Project) {
 	m := make(map[string][]Artifact)
 	for _, a := range artifacts {
 		switch a.Type {
-		case "Archive":
+		case "Archive", "Linux Package":
 			m[a.Extra.ID] = append(m[a.Extra.ID], a)
 		}
 	}

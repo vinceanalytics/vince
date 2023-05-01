@@ -6,7 +6,7 @@ The Cloud Native Web Analytics Platform.
 # Features
 
 - Alert notification
-- Time on sote tracking
+- Time on site tracking
 - Conversion tracking 
 - Multiple site management
 - User Interaction Management 
@@ -31,6 +31,7 @@ RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
 
 {{- $version := .Project.Meta.Tag -}}
 {{range .Project.Artifacts}}
+**{{.ID}}**
 ```
 ghcr.io/vinceanalytics/{{.ID}}:{{$version}}
 ```
@@ -39,6 +40,7 @@ ghcr.io/vinceanalytics/{{.ID}}:{{$version}}
 ## Brew
 
 {{range .Project.Artifacts}}
+**{{.ID}}**
 ```
 brew install vinceanalytics/tap/{{.ID}}
 ```
