@@ -38,11 +38,11 @@ func main() {
 	man := tools.ExecCollect(
 		"go", "run", filepath.Join(root, "main.go"), "man",
 	)
-	tools.WriteFile(filepath.Join(root, "vince.1"), []byte(man))
+	tools.WriteFile(filepath.Join(root, "man", "vince.1"), []byte(man))
 	man = tools.ExecCollect(
 		"go", "run", filepath.Join(root, "cmd", "v8s", "main.go"), "man",
 	)
-	tools.WriteFile(filepath.Join(root, "v8s.1"), []byte(man))
+	tools.WriteFile(filepath.Join(root, "man", "v8s.1"), []byte(man))
 	make()
 }
 
