@@ -8,9 +8,9 @@ import (
 	"sync/atomic"
 
 	"github.com/gernest/vince/cmd/man"
+	"github.com/gernest/vince/cmd/version"
 	"github.com/gernest/vince/pkg/control"
 	"github.com/gernest/vince/pkg/k8s"
-	"github.com/gernest/vince/pkg/version"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
 	"golang.org/x/sync/errgroup"
