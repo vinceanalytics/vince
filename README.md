@@ -55,3 +55,32 @@ ghcr.io/vinceanalytics/v8s:v0.0.0
 ghcr.io/vinceanalytics/vince:v0.0.0
 ```
 
+
+## Brew
+
+
+```
+brew install vinceanalytics/tap/v8s
+```
+
+```
+brew install vinceanalytics/tap/vince
+```
+
+
+## Scoop
+
+```
+scoop bucket add vinceanalytics https://github.com/vinceanalytics/scoop-bucket.git
+```
+
+**v8s**
+```
+scoop install v8s
+```
+
+**vince**
+```
+scoop install vince
+```
+

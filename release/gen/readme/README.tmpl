@@ -22,16 +22,36 @@ Files are signed with [minisign](https://jedisct1.github.io/minisign/) using thi
 RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
 ```
 
-{{range $k,$v := .Project.Artifacts}}
-**{{$k}}**
-{{releaseTable $v}}
+{{range  .Project.Artifacts}}
+**{{.ID}}**
+{{releaseTable .Artifacts}}
 {{end}}
 
 ## Container Image
 
 {{- $version := .Project.Meta.Tag -}}
-{{range $k,$v := .Project.Artifacts}}
+{{range .Project.Artifacts}}
 ```
-ghcr.io/vinceanalytics/{{$k}}:{{$version}}
+ghcr.io/vinceanalytics/{{.ID}}:{{$version}}
+```
+{{end}}
+
+## Brew
+
+{{range .Project.Artifacts}}
+```
+brew install vinceanalytics/tap/{{.ID}}
+```
+{{end}}
+
+## Scoop
+
+```
+scoop bucket add vinceanalytics https://github.com/vinceanalytics/scoop-bucket.git
+```
+{{range .Project.Artifacts}}
+**{{.ID}}**
+```
+scoop install {{.ID}}
 ```
 {{end}}

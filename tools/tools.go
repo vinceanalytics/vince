@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime/debug"
+	"sort"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -146,21 +147,34 @@ type MetaData struct {
 
 type Project struct {
 	Meta      MetaData
-	Artifacts map[string][]Artifact
+	Artifacts []*Artifacts
+}
+
+type Artifacts struct {
+	ID        string
+	Artifacts []Artifact
 }
 
 func Release(root string) (p Project) {
 	readJSON(filepath.Join(root, "dist/metadata.json"), &p.Meta)
 	var artifacts []Artifact
 	readJSON(filepath.Join(root, "dist/artifacts.json"), &artifacts)
-	p.Artifacts = make(map[string][]Artifact)
+	m := make(map[string][]Artifact)
 	for _, a := range artifacts {
 		switch a.Type {
 		case "Archive":
-			p.Artifacts[a.Extra.ID] = append(p.Artifacts[a.Extra.ID], a)
+			m[a.Extra.ID] = append(m[a.Extra.ID], a)
 		}
 	}
-
+	for k, v := range m {
+		p.Artifacts = append(p.Artifacts, &Artifacts{
+			ID:        k,
+			Artifacts: v,
+		})
+	}
+	sort.Slice(p.Artifacts, func(i, j int) bool {
+		return p.Artifacts[i].ID < p.Artifacts[j].ID
+	})
 	return
 }
 
