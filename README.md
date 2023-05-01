@@ -27,11 +27,11 @@ RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
 |                                                                                                              filename|                                                                                                    signature|size|
 |                                                                                                                  ----|                                                                                                         ----|----|
 |       [v8s_windows_arm64.zip](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_windows_arm64.zip)|    [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_windows_arm64.zip.minisig)|`9mb`|
-| [v8s_darwin_x86_64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_darwin_x86_64.tar.gz)| [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_darwin_x86_64.tar.gz.minisig)|`11mb`|
-|   [v8s_darwin_arm64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_darwin_arm64.tar.gz)|  [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_darwin_arm64.tar.gz.minisig)|`10mb`|
-|     [v8s_linux_arm64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_linux_arm64.tar.gz)|   [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_linux_arm64.tar.gz.minisig)|`9mb`|
 |   [v8s_linux_x86_64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_linux_x86_64.tar.gz)|  [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_linux_x86_64.tar.gz.minisig)|`10mb`|
 |     [v8s_windows_x86_64.zip](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_windows_x86_64.zip)|   [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_windows_x86_64.zip.minisig)|`10mb`|
+|     [v8s_linux_arm64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_linux_arm64.tar.gz)|   [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_linux_arm64.tar.gz.minisig)|`9mb`|
+| [v8s_darwin_x86_64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_darwin_x86_64.tar.gz)| [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_darwin_x86_64.tar.gz.minisig)|`11mb`|
+|   [v8s_darwin_arm64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_darwin_arm64.tar.gz)|  [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/v8s_darwin_arm64.tar.gz.minisig)|`10mb`|
 
 
 **vince**
@@ -40,8 +40,8 @@ RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
 |       [vince_windows_arm64.zip](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_windows_arm64.zip)|    [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_windows_arm64.zip.minisig)|`60mb`|
 |     [vince_windows_x86_64.zip](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_windows_x86_64.zip)|   [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_windows_x86_64.zip.minisig)|`61mb`|
 |     [vince_linux_arm64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_arm64.tar.gz)|   [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_arm64.tar.gz.minisig)|`60mb`|
-|   [vince_linux_x86_64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_x86_64.tar.gz)|  [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_x86_64.tar.gz.minisig)|`60mb`|
 |   [vince_darwin_arm64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_darwin_arm64.tar.gz)|  [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_darwin_arm64.tar.gz.minisig)|`61mb`|
+|   [vince_linux_x86_64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_x86_64.tar.gz)|  [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_x86_64.tar.gz.minisig)|`60mb`|
 | [vince_darwin_x86_64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_darwin_x86_64.tar.gz)| [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_darwin_x86_64.tar.gz.minisig)|`61mb`|
 
 

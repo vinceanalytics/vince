@@ -10,7 +10,10 @@ import (
 
 	_ "embed"
 
+	"github.com/gernest/vince/cmd/app/v8s"
+	"github.com/gernest/vince/cmd/app/vince"
 	"github.com/gernest/vince/tools"
+	"github.com/urfave/cli/v3"
 	_ "github.com/urfave/cli/v3"
 )
 
@@ -38,14 +41,8 @@ func main() {
 	readme()
 
 	println(">>> building man pages")
-	man := tools.ExecCollect(
-		"go", "run", filepath.Join(root, "main.go"), "man",
-	)
-	tools.WriteFile(filepath.Join(root, "man", "vince.1"), []byte(man))
-	man = tools.ExecCollect(
-		"go", "run", filepath.Join(root, "cmd", "v8s", "main.go"), "man",
-	)
-	tools.WriteFile(filepath.Join(root, "man", "v8s.1"), []byte(man))
+	mannPage(vince.App())
+	mannPage(v8s.App())
 	completion()
 }
 
@@ -125,4 +122,12 @@ func completion() {
 		tools.WriteFile(filePowerShell, power)
 		tools.WriteFile(fileZsh, zsh)
 	}
+}
+
+func mannPage(app *cli.App) {
+	m, err := app.ToMan()
+	if err != nil {
+		tools.Exit(err.Error())
+	}
+	tools.WriteFile(filepath.Join(root, "man", app.Name+".1"), []byte(m))
 }
