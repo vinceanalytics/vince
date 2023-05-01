@@ -186,6 +186,46 @@ docker_manifests:
       - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-amd64"
       - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-arm64"
     skip_push: true
+brews:
+  - tap:
+      owner: vinceanalytics
+      name: homebrew-tap
+    commit_author:
+      name: Geofrey Ernest
+      email: geofreyernest@live.com
+    name: vince
+    skip_upload: true
+    folder: Formula
+    homepage: https://winceanalytics.com
+    description: The Cloud Native Web Analytics Platform
+    license: AGPL-3.0
+    ids:
+      - vince
+    test: |
+      system "#{bin}/vince version"
+    install: |-
+      bin.install "vince"
+      man1.install "man/vince.1"
+  - tap:
+      owner: vinceanalytics
+      name: homebrew-tap
+    commit_author:
+      name: Geofrey Ernest
+      email: geofreyernest@live.com
+    name: v8s
+    skip_upload: true
+    folder: Formula
+    homepage: https://winceanalytics.com
+    description: kubernetes controller for vince- The Cloud Native Web Analytics Platform
+    license: AGPL-3.0
+    ids:
+      - v8s
+    test: |
+      system "#{bin}/v8s version"
+    install: |-
+      bin.install "v8s"
+      man1.install "man/v8s.1"
+
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
