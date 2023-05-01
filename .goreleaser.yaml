@@ -67,6 +67,7 @@ archives:
         format: zip
     files:
       - man/vince.1
+      - completions/vince/*
   - builds:
       - v8s
     id: v8s
@@ -82,6 +83,7 @@ archives:
         format: zip
     files:
       - man/v8s.1
+      - completions/v8s/*
 checksum:
   disable: true
 snapshot:
@@ -209,6 +211,8 @@ brews:
       system "#{bin}/vince version"
     install: |-
       bin.install "vince"
+      bash_completion.install "completions/vince/vince_bash" => "vince"
+      zsh_completion.install "completions/vince/vince_zsh" => "_vince"
       man1.install "man/vince.1"
   - tap:
       owner: vinceanalytics
@@ -228,6 +232,8 @@ brews:
       system "#{bin}/v8s version"
     install: |-
       bin.install "v8s"
+      bash_completion.install "completions/v8s/v8s_bash" => "v8s"
+      zsh_completion.install "completions/v8s/v8s_zsh" => "_v8s"
       man1.install "man/v8s.1"
 
 # The lines beneath this are called `modelines`. See `:help modeline`
