@@ -1,0 +1,35 @@
+{{define "_content"}}
+<div class="container-md Box">
+    <div class="Box-header">
+        <div class="Subhead" style="border-bottom: none; padding-bottom: 0px; margin-bottom: 0px;">
+            <h1 class="Subhead-heading">Invite members to {{.Site.Domain}}</h1>
+            <div class="Subhead-description">
+                Enter the email address and role of the person you want to invite. We will contact them over email to
+                offer them access to {{.Site.Domain}} analytics.
+            </div>
+        </div>
+    </div>
+    <div class="Box-body mt3">
+        <form action="/sites/{{SafeDomain .Site}}/memberships/invite" method="post">
+            <div class="form-group {{if .Errors.failed}}errored{{end}}">
+                <div class="form-group-body">
+                    <input class="form-control" type="email" name="email" id="email" placeholder="example@email.com"
+                        {{with .Form.Get "email" }} value="{{.}}" {{end}} autocomplete="email" required>
+                    <select class="form-select" name="role" id="role" required>
+                        <option value="admin">Admin</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                        {{Icon "people" 16}}
+                        <span>Invite →</span>
+                    </button>
+                </div>
+                {{with .Errors.failed}}
+                <p class="note error">{{.}}</p>
+                {{end}}
+            </div>
+            {{template "_csrf" .}}
+        </form>
+    </div>
+</div>
+{{end}}

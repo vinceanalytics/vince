@@ -3,9 +3,15 @@ package site
 import (
 	"net/http"
 
+	"github.com/gernest/vince/assets/ui/templates"
+	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
 )
 
 func InviteMemberForm(w http.ResponseWriter, r *http.Request) {
-	render.ERROR(r.Context(), w, http.StatusNotImplemented)
+	ctx := r.Context()
+	site := models.GetSite(ctx)
+	render.HTML(ctx, w, templates.InviteMemberForm, http.StatusOK, func(ctx *templates.Context) {
+		ctx.Site = site
+	})
 }

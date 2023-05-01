@@ -4,6 +4,12 @@
         <div class="Subhead">
             <h2 class="Subhead-heading">People</h2>
             <div class="Subhead-description">Invite your friends or coworkers</div>
+            <div class="Subhead-action">
+                <a class="btn btn-primary" href="/sites/{{SafeDomain .Site}}/memberships/invite">
+                    {{Icon "plus" 16}}
+                    <span>Invite</span>
+                </a>
+            </div>
         </div>
         <div class="Box">
             {{range .Site.SiteMemberships}}

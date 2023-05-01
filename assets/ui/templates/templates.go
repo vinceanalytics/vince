@@ -192,6 +192,12 @@ var PasswordForm = template.Must(
 	),
 ).Lookup("focus")
 
+var InviteMemberForm = template.Must(
+	layout().ParseFS(Files,
+		"site/invite_member_form.html",
+	),
+).Lookup("focus")
+
 type NewSite struct {
 	IsFirstSite bool
 }
