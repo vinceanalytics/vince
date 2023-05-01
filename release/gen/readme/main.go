@@ -113,8 +113,8 @@ func completion() {
 	}
 	binaries := []string{"vince", "v8s"}
 	for _, name := range binaries {
-		fileBash := filepath.Join(root, "completions", name, name+"_bash")
-		fileZsh := filepath.Join(root, "completions", name, name+"_zsh")
+		fileBash := filepath.Join(root, "completions", name, name+".bash")
+		fileZsh := filepath.Join(root, "completions", name, name+".zsh")
 		filePowerShell := filepath.Join(root, "completions", name, name+".ps1")
 		os.MkdirAll(filepath.Join(root, "completions", name), 0700)
 		tools.WriteFile(fileBash, bash)
