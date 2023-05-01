@@ -71,8 +71,8 @@ func releaseTable(artifacts []tools.Artifact) string {
 			tools.Exit("can't find artifact", err.Error())
 		}
 		table.Row(
-			fmt.Sprintf("[%s](%s)", a.Name, Link(project.Meta.Tag, a.Name)),
-			fmt.Sprintf("[minisig](%s)", Link(project.Meta.Tag, a.Name+".minisig")),
+			fmt.Sprintf("[%s](%s)", a.Name, link(project.Meta.Tag, a.Name)),
+			fmt.Sprintf("[minisig](%s)", link(project.Meta.Tag, a.Name+".minisig")),
 			fmt.Sprintf("`%s`", size(int(stat.Size()))),
 		)
 	}
@@ -80,30 +80,7 @@ func releaseTable(artifacts []tools.Artifact) string {
 	return table.String()
 }
 
-func releaseImage(artifacts []tools.Artifact) string {
-	var table tools.Table
-	table.Init(
-		"filename", "signature", "size",
-	)
-	for _, a := range artifacts {
-		if a.Type != "Docker Image" {
-			continue
-		}
-		stat, err := os.Stat(filepath.Join(root, a.Path))
-		if err != nil {
-			tools.Exit("can't find artifact", err.Error())
-		}
-		table.Row(
-			fmt.Sprintf("[%s](%s)", a.Name, Link(project.Meta.Tag, a.Name)),
-			fmt.Sprintf("[minisig](%s)", Link(project.Meta.Tag, a.Name+".minisig")),
-			fmt.Sprintf("`%s`", size(int(stat.Size()))),
-		)
-	}
-	table.Flush()
-	return table.String()
-}
-
-func Link(tag, name string) string {
+func link(tag, name string) string {
 	return fmt.Sprintf("https://github.com/vinceanalytics/vince/releases/download/%s/%s", tag, name)
 }
 func size(n int) string {
@@ -114,10 +91,4 @@ func size(n int) string {
 		return strconv.Itoa(n/(1<<20)) + "mb"
 	}
 	return strconv.Itoa(n)
-}
-
-type Artifact struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	Path string `json:"path"`
 }
