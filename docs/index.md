@@ -3,7 +3,7 @@
 layout: home
 
 hero:
-  name: "The Cloud Native Web Analytics Platform"
+  name: "vince"
   text: "The Cloud Native Web Analytics Platform"
   tagline: My great project tagline
   actions:
