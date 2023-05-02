@@ -13,3 +13,5 @@ loadgen
 tmp
 dist/
 *.zip
+node_modules
+package-lock.json
