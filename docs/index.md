@@ -16,22 +16,22 @@ hero:
 
 features:
   - title: Event tracking
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: Collect and analyze events emitted on your site.
   - title: Goal Tracking 
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: Track progress on business objectives
   - title: Report Generation
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: Receive weekly and monthly reports via email
   - title: Campaign Management
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: Get insight into your web strategies (through ads, etc..)
   - title: User Interaction Management 
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: Know how users interact with your site.
   - title: Multiple site management
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: Support unlimited number of sites
   - title:  Conversion tracking
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: Connect your campaigns with important metrics
   - title:  Time on site tracking
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: Know how much time visitors spend on your site.
   - title:  Alert notification
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: Get email whenever something actionable happen.
 ---
 
