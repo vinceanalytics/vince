@@ -23,6 +23,10 @@ export default defineConfig({
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
-    ]
+    ],
+    footer:{
+      message:"Released under the AGPL-3.0 license",
+      copyright: "Copyright @ 2023-present Geofrey Ernest"
+    }
   }
 })
