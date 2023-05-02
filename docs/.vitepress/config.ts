@@ -22,7 +22,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/vinceanalytics/vince' }
     ],
     footer:{
       message:"Released under the AGPL-3.0 license",
