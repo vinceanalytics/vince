@@ -144,7 +144,7 @@ type Goal struct {
 type Invitation struct {
 	Model
 	Email  string `gorm:"not null;uniqueIndex"`
-	SiteID int    `gorm:"uniqueIndex"`
+	SiteID uint64 `gorm:"uniqueIndex"`
 	UserID uint64 `gorm:"uniqueIndex"`
 	Role   string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
 }
