@@ -15,6 +15,17 @@ The Cloud Native Web Analytics Platform.
 - Goal Tracking 
 - Event Tracking 
 
+# Origins
+
+This started as a go port of [Plausible](https://github.com/plausible/analytics), with 
+the intention to remove clickhouse and postgresql dependency aiming for a self hosted solution
+used by all team sizes.
+
+We use 
+- sqlite for operational data (users,sites etc)
+- badger for persistance of aggregates
+- apache parquet/arrow timeseries data (system stats)
+
 # Downloads
 
 Files are signed with [minisign](https://jedisct1.github.io/minisign/) using this public key:
