@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "vince"
   text: "The Cloud Native Web Analytics Platform"
-  tagline: My great project tagline
+  tagline: Web Analytics for Everyone
   actions:
     - theme: brand
       text: Markdown Examples
