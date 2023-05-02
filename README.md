@@ -99,3 +99,22 @@ brew install vinceanalytics/tap/vince
 ```
 
 
+
+
+# The name vince 
+
+Vince is named after [Vince Staples](https://en.wikipedia.org/wiki/Vince_Staples) , 
+my favorite hip hop artist.
+
+It was late night, 1 year after I quit my job and took a sabbatical, I was listening
+to one of his album [Big Fish Theory](https://en.wikipedia.org/wiki/Big_Fish_Theory)
+. The song Big Fish inspired me to program again.
+
+The lirics that got me going.
+```
+I was up late night ballin'
+Countin' up hundreds by the thousand
+```
+
+So, enjoy the outcome of my late nights, hoping to be counting hundreds by the thousand
+soon, or in my next life.
