@@ -22,14 +22,13 @@ var files = map[string]bool{
 	"/schema.json":                true,
 }
 
-//go:embed css image js docs *.png *.ico *.webmanifest *.json
+//go:embed css image js *.png *.ico *.webmanifest *.json
 var fs embed.FS
 
 func match(path string) bool {
 	return strings.HasPrefix(path, "/css") ||
 		strings.HasPrefix(path, "/js") ||
 		strings.HasPrefix(path, "/fonts") ||
-		strings.HasPrefix(path, "/docs") ||
 		strings.HasPrefix(path, "/image") || files[path]
 }
 

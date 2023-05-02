@@ -1,31 +1,23 @@
 package templates
 
 import (
-	"bytes"
 	"context"
 	"embed"
 	"fmt"
 	"html/template"
-	"io"
-	"log"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/BurntSushi/toml"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/internal/plans"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/octicon"
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
 )
 
-//go:embed layout pages plot docs site stats auth error email
+//go:embed layout  plot site stats auth error email
 var Files embed.FS
 
 var Layouts = template.Must(
@@ -43,8 +35,6 @@ var LoginForm = template.Must(
 func base() *template.Template {
 	return template.New("root").Funcs(template.FuncMap{
 		"Icon":       octicon.IconTemplateFunc,
-		"Sections":   Sections,
-		"Section":    Section,
 		"Avatar":     Avatar,
 		"Logo":       Logo,
 		"Calendar":   CalendarEntries,
@@ -95,12 +85,6 @@ var SiteNew = template.Must(
 		"site/new.html",
 	),
 ).Lookup("app")
-
-var DocsPage = template.Must(
-	layout().ParseFS(Files,
-		"docs/page.html",
-	),
-).Lookup("docs")
 
 var AddSnippet = template.Must(
 	layout().ParseFS(Files,
@@ -234,9 +218,6 @@ type Context struct {
 	EmailReport   bool
 	HasGoals      bool
 	Owner         *models.User
-	Docs          bool
-	Pages         []*Page
-	DocPage       *Page
 	// Name of the email recipient
 	Recipient string
 }
@@ -246,118 +227,6 @@ func (t *Context) GreetRecipient() string {
 		return "Hey"
 	}
 	return "Hey " + strings.Split(t.Recipient, " ")[0]
-}
-
-type Page struct {
-	Meta       Meta
-	Next, Prev *Page
-	Data       []byte
-	Path       string
-	UpdatedAt  time.Time
-}
-
-func (p *Page) Render(w io.Writer, pages Pages) error {
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
-	x := parser.NewWithExtensions(extensions)
-	doc := x.Parse(p.Data)
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{Flags: htmlFlags}
-	renderer := html.NewRenderer(opts)
-	b := markdown.Render(doc, renderer)
-	return DocsPage.Execute(w, &Context{
-		Title:   p.Meta.Title,
-		Content: template.HTML(b),
-		ModTime: p.UpdatedAt,
-		Docs:    true,
-		Pages:   pages,
-		DocPage: p,
-	})
-}
-
-func (p *Page) Read(path string, b []byte, modTime time.Time) {
-	p.Path = path
-	p.Data = p.Meta.Read(b)
-	p.UpdatedAt = modTime
-}
-
-type Meta struct {
-	Weight  int    `toml:"weight,omitempty"`
-	Title   string `toml:"title,omitempty"`
-	Section string `toml:"section,omitempty"`
-	Layout  string `toml:"layout,omitempty"`
-}
-
-var marker = []byte("--- mark ---")
-
-func (m *Meta) Read(src []byte) []byte {
-	b := src
-	start := bytes.Index(b, marker)
-	if start == -1 {
-		return src
-	}
-	b = b[start+len(marker):]
-	last := bytes.Index(b, marker)
-	if last == -1 {
-		return src
-	}
-	chunk := b[:last]
-	b = b[last+len(marker):]
-	_, err := toml.Decode(string(chunk), m)
-	if err != nil {
-		log.Println("failed decoding meta "+err.Error(), string(chunk))
-	}
-	return b
-}
-
-type Pages []*Page
-
-func (p Pages) Sort() Pages {
-	sort.SliceStable(p, func(i, j int) bool {
-		n := strings.Compare(p[i].Meta.Section, p[j].Meta.Section)
-		if n == 0 {
-			return p[i].Meta.Weight < p[j].Meta.Weight
-		}
-		return n == -1
-	})
-	var prev *Page
-	for i, x := range p {
-		x.Prev = prev
-		if i+1 < len(p) {
-			x.Next = p[i+1]
-		}
-		prev = x
-	}
-	return p
-}
-
-func Section(p Pages) string {
-	if len(p) > 0 {
-		return p[0].Meta.Section
-	}
-	return ""
-}
-
-func Sections(p Pages) (o []Pages) {
-	var ls []*Page
-	for _, v := range p {
-		if v.Meta.Section == "" {
-			continue
-		}
-		if len(ls) == 0 {
-			ls = append(ls, v)
-		} else {
-			if ls[0].Meta.Section == v.Meta.Section {
-				ls = append(ls, v)
-			} else {
-				o = append(o, ls)
-				ls = []*Page{v}
-			}
-		}
-	}
-	if len(ls) > 0 {
-		o = append(o, ls)
-	}
-	return
 }
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
