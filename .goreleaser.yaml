@@ -256,7 +256,7 @@ nfpms:
     description: The Cloud Native Web Analytics Platform
     maintainer: Geofrey Ernest <geofreyernest@live.com>
     license: AGPL-3.0
-    vendor: The Vince Analytics Team
+    vendor: Geofrey Ernest
     bindir: /usr/bin
     section: Web
     contents:
@@ -304,7 +304,7 @@ nfpms:
     description: kubernetes controller for vince- The Cloud Native Web Analytics Platform
     maintainer: Geofrey Ernest <geofreyernest@live.com>
     license: AGPL-3.0
-    vendor: The Vince Analytics Team
+    vendor: Geofrey Ernest
     bindir: /usr/bin
     section: Web
     contents:

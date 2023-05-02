@@ -24,7 +24,7 @@ used by all team sizes.
 We use 
 - sqlite for operational data (users,sites etc)
 - badger for persistance of aggregates
-- apache parquet/arrow timeseries data (system stats)
+- apache parquet/arrow for timeseries data (system stats)
 
 # Downloads
 
