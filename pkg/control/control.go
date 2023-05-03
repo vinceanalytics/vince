@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/gernest/vince/pkg/apis/site/v1alpha1"
-	siteinformer "github.com/gernest/vince/pkg/gen/client/site/informers/externalversions"
-	sitelisterr "github.com/gernest/vince/pkg/gen/client/site/listers/site/v1alpha1"
+	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
+	siteinformer "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions"
+	sitelisterr "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
 	"github.com/gernest/vince/pkg/k8s"
 	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

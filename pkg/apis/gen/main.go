@@ -36,7 +36,7 @@ func make() {
 	GENERATE_SCRIPT = filepath.Join(CODEGEN_PKG, "generate-groups.sh")
 	tools.ExecPlain("chmod", "+x", GENERATE_SCRIPT)
 	println("##### Generating site client ######")
-	generate("site", "v1alpha1")
+	generate("vince", "v1alpha1")
 }
 
 func generate(resource string, versions ...string) {

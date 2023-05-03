@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/gernest/vince/pkg/gen/client/site/clientset/versioned"
+	"github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
 	"github.com/rs/zerolog"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

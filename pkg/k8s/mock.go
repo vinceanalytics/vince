@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	site "github.com/gernest/vince/pkg/apis/site/v1alpha1"
-	"github.com/gernest/vince/pkg/gen/client/site/clientset/versioned"
-	fake_site_client "github.com/gernest/vince/pkg/gen/client/site/clientset/versioned/fake"
+	site "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
+	"github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
+	fake_site_client "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	fake_kube_client "k8s.io/client-go/kubernetes/fake"
