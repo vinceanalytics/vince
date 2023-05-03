@@ -1,191 +1,121 @@
 {{define "_content"}}
 <div class="container-xl">
     <div class="container-lg">
-        <div class="Box">
-            <div class="Box-header">
-                <div class="d-flex flex-items-start">
-                    <div class="position-relative">
-                        <details id="date-range-selection-menu" class="details-reset details-overlay mr-0 mb-0 ">
-                            <summary class="btn css-truncate">
-                                <span class="css-truncate-target">today</span>
-                                <span class="dropdown-caret"></span>
-                            </summary>
-                            <div class="SelectMenu">
-                                <div class="SelectMenu-modal">
-                                    <div class="SelectMenu-list">
-                                        {{range Calendar}}
-                                        <label for="" class="SelectMenu-item">
-                                            <span class="text-normal">
-                                                {{.Name}}
-                                            </span>
-                                        </label>
-                                        {{end}}
-                                    </div>
-                                </div>
-                            </div>
-                        </details>
-                    </div>
-                </div>
-            </div>
-            <div class="Box-body">
-                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
-                    <div class="container-lg UnderlineNav-container">
-                        <div class="UnderlineNav-body">
-                            <button class="UnderlineNav-item px-3" role="tab">
-                                Visitors<span class="Counter">10</span>
-                            </button>
-                            <button class="UnderlineNav-item px-3 selected" role="tab" aria-selected="true">
-                                Views <span class="Counter">10</span>
-                            </button>
-                            <button class="UnderlineNav-item px-3" role="tab">
-                                Sessions <span class="Counter">10</span>
-                            </button>
-                            <button class="UnderlineNav-item px-3" role="tab">
-                                Bounce <span class="Counter">10</span>
-                            </button>
+        <div data-view-component="true" class="Subhead mt-3" style="border-color: #ff5354;">
+            <h2 data-view-component="true" class="Subhead-heading mt-3 mt-sm-0">April 26, 2023 <span
+                    class="dash">–</span> May 3, 2023</h2>
+            <div data-view-component="true" class="Subhead-actions mt-3 mt-sm-0">
+                <details class="details-reset details-overlay select-menu position-relative">
+                    <summary data-view-component="true" class="select-menu-button btn" aria-haspopup="menu"
+                        role="button"> <i>Period:</i>
+                        <span data-menu-button="">1 week</span>
+                    </summary> <details-menu class="select-menu-modal position-absolute right-0" style="z-index: 99"
+                        role="menu" data-focus-trap="active"><span class="sentinel" tabindex="0"
+                            aria-hidden="true"></span>
+                        <div class="select-menu-header">
+                            <span class="select-menu-title">Filter activity</span>
                         </div>
-                        <div class="UnderlineNav-actions">
-                            <a href="/{{SafeDomain .Site}}/settings" class="btn btn-link">
-                                {{Icon "gear" 16}}
-                                <span>
-                                    {{.Site.Domain}}
-                                </span>
+                        <div class="select-menu-list">
+                            <a class="select-menu-item " role="menuitem" aria-checked="false"
+                                href="/gernest/base32/pulse/daily" data-pjax="#js-repo-pjax-container">
+                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                                    data-view-component="true" class="octicon octicon-check select-menu-item-icon">
+                                    <path
+                                        d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z">
+                                    </path>
+                                </svg>
+                                <div class="select-menu-item-text" data-menu-button-text="">24 hours</div>
+                            </a>
+                            <a class="select-menu-item " role="menuitem" aria-checked="false"
+                                href="/gernest/base32/pulse/halfweekly" data-pjax="#js-repo-pjax-container">
+                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                                    data-view-component="true" class="octicon octicon-check select-menu-item-icon">
+                                    <path
+                                        d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z">
+                                    </path>
+                                </svg>
+                                <div class="select-menu-item-text" data-menu-button-text="">3 days</div>
+                            </a>
+                            <a class="select-menu-item selected" role="menuitem" aria-checked="true"
+                                href="/gernest/base32/pulse" data-pjax="#js-repo-pjax-container">
+                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                                    data-view-component="true" class="octicon octicon-check select-menu-item-icon">
+                                    <path
+                                        d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z">
+                                    </path>
+                                </svg>
+                                <div class="select-menu-item-text" data-menu-button-text="">1 week</div>
+                            </a>
+                            <a class="select-menu-item " role="menuitem" aria-checked="false"
+                                href="/gernest/base32/pulse/monthly" data-pjax="#js-repo-pjax-container">
+                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                                    data-view-component="true" class="octicon octicon-check select-menu-item-icon">
+                                    <path
+                                        d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z">
+                                    </path>
+                                </svg>
+                                <div class="select-menu-item-text" data-menu-button-text="">1 month</div>
                             </a>
                         </div>
-                    </div>
-                </nav>
+                        <span class="sentinel" tabindex="0" aria-hidden="true"></span>
+                    </details-menu>
+                </details>
+            </div>
+        </div>
+        <div class="Box">
+            <div class="Box-header">
+                <span class="h5">{{.Site.Domain}}</span>
+            </div>
+            <div class="Box-body">
+                <div class="Box-row p-0">
+                    <ul class="list-style-none text-center d-flex">
+                        <li
+                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                unique visitors
+                            </span>
+                        </li>
+                        <li
+                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                page views
+                            </span>
+                        </li>
+                        <li
+                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                sessions
+                            </span>
+                        </li>
+                        <li
+                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                bounce rate
+                            </span>
+                        </li>
+                        <li class="p-3 col-12 col-sm-6 col-md-3 border-bottom  border-md-bottom-0 color-border-muted">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                session duration
+                            </span>
+                        </li>
+                    </ul>
+                </div>
                 <div style="height: 400px;" class="width-full">
-                </div>
-            </div>
-            <div class="Box-row">
-                <div class="d-flex flex-row width-full">
-                    <div class="flex-1 flex-column">
-                        <div class="Box mr-3">
-                            <div class="Box-body">
-                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
-                                    <div class="UnderlineNav-container">
-                                        <div class="UnderlineNav-body">
-                                            <button class="UnderlineNav-item" role="tab">
-                                                Pages
-                                            </button>
-                                            <button class="UnderlineNav-item  selected" role="tab" aria-selected="true">
-                                                Entry Pages
-                                            </button>
-                                            <button class="UnderlineNav-item " role="tab">
-                                                ExitPage
-                                            </button>
-                                        </div>
-                                    </div>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex-1 flex-column">
-                        <div class="Box mr-3">
-                            <div class="Box-body">
-                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
-                                    <div class="UnderlineNav-container">
-                                        <div class="UnderlineNav-body">
-                                            <button class="UnderlineNav-item" role="tab">
-                                                Referrers
-                                            </button>
-                                            <button class="UnderlineNav-item  selected" role="tab" aria-selected="true">
-                                                Sources
-                                            </button>
-                                            <button class="UnderlineNav-item " role="tab">
-                                                Media
-                                            </button>
-                                            <button class="UnderlineNav-item " role="tab">
-                                                Campaigns
-                                            </button>
-                                        </div>
-                                    </div>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="Box-row">
-                <div class="d-flex flex-row width-full">
-                    <div class="flex-1 flex-column">
-                        <div class="Box mr-3">
-                            <div class="Box-body">
-                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
-                                    <div class="UnderlineNav-container">
-                                        <div class="UnderlineNav-body">
-                                            <button class="UnderlineNav-item px-3  selected" role="tab"
-                                                aria-selected="true">
-                                                Conversion Goals
-                                            </button>
-                                        </div>
-                                    </div>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex-1 flex-column">
-                        <div class="Box mr-3">
-                            <div class="Box-body">
-                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
-                                    <div class="UnderlineNav-container">
-                                        <div class="UnderlineNav-body">
-                                            <button class="UnderlineNav-item  px-3 selected" role="tab"
-                                                aria-selected="true">
-                                                Events
-                                            </button>
-                                        </div>
-                                    </div>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="Box-row">
-                <div class="d-flex flex-row width-full">
-                    <div class="flex-1 flex-column">
-                        <div class="Box mr-3">
-                            <div class="Box-body">
-                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
-                                    <div class="UnderlineNav-container">
-                                        <div class="UnderlineNav-body">
-                                            <button class="UnderlineNav-item" role="tab">
-                                                Countries
-                                            </button>
-                                            <button class="UnderlineNav-item  selected" role="tab" aria-selected="true">
-                                                Cities
-                                            </button>
-                                            <button class="UnderlineNav-item " role="tab">
-                                                Regions
-                                            </button>
-                                        </div>
-                                    </div>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex-1 flex-column">
-                        <div class="Box mr-3">
-                            <div class="Box-body">
-                                <nav class="UnderlineNav UnderlineNav--full" style="box-shadow: none;">
-                                    <div class="UnderlineNav-container">
-                                        <div class="UnderlineNav-body">
-                                            <button class="UnderlineNav-item" role="tab">
-                                                OS
-                                            </button>
-                                            <button class="UnderlineNav-item  selected" role="tab" aria-selected="true">
-                                                Browsers
-                                            </button>
-                                            <button class="UnderlineNav-item " role="tab">
-                                                Device
-                                            </button>
-                                        </div>
-                                    </div>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
