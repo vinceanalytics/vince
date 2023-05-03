@@ -16,12 +16,24 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=vince.vinceanalytics.com, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("ResourceDescription"):
+		return &sitev1alpha1.ResourceDescriptionApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Resources"):
+		return &sitev1alpha1.ResourcesApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Site"):
 		return &sitev1alpha1.SiteApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("SiteSpec"):
 		return &sitev1alpha1.SiteSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("SiteStatus"):
 		return &sitev1alpha1.SiteStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Vince"):
+		return &sitev1alpha1.VinceApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("VinceSpec"):
+		return &sitev1alpha1.VinceSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("VinceStatus"):
+		return &sitev1alpha1.VinceStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Volume"):
+		return &sitev1alpha1.VolumeApplyConfiguration{}
 
 	}
 	return nil

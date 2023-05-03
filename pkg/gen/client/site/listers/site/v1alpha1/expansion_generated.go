@@ -12,3 +12,11 @@ type SiteListerExpansion interface{}
 // SiteNamespaceListerExpansion allows custom methods to be added to
 // SiteNamespaceLister.
 type SiteNamespaceListerExpansion interface{}
+
+// VinceListerExpansion allows custom methods to be added to
+// VinceLister.
+type VinceListerExpansion interface{}
+
+// VinceNamespaceListerExpansion allows custom methods to be added to
+// VinceNamespaceLister.
+type VinceNamespaceListerExpansion interface{}

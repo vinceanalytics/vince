@@ -13,6 +13,8 @@ import (
 type Interface interface {
 	// Sites returns a SiteInformer.
 	Sites() SiteInformer
+	// Vinces returns a VinceInformer.
+	Vinces() VinceInformer
 }
 
 type version struct {
@@ -29,4 +31,9 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // Sites returns a SiteInformer.
 func (v *version) Sites() SiteInformer {
 	return &siteInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// Vinces returns a VinceInformer.
+func (v *version) Vinces() VinceInformer {
+	return &vinceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

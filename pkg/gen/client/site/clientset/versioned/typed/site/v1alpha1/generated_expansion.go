@@ -6,3 +6,5 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 package v1alpha1
 
 type SiteExpansion interface{}
+
+type VinceExpansion interface{}

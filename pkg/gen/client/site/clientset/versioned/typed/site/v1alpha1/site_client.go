@@ -16,6 +16,7 @@ import (
 type VinceV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	SitesGetter
+	VincesGetter
 }
 
 // VinceV1alpha1Client is used to interact with features provided by the vince.vinceanalytics.com group.
@@ -25,6 +26,10 @@ type VinceV1alpha1Client struct {
 
 func (c *VinceV1alpha1Client) Sites(namespace string) SiteInterface {
 	return newSites(c, namespace)
+}
+
+func (c *VinceV1alpha1Client) Vinces(namespace string) VinceInterface {
+	return newVinces(c, namespace)
 }
 
 // NewForConfig creates a new VinceV1alpha1Client for the given config.
