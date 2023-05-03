@@ -4,13 +4,14 @@ import (
 	"context"
 	"time"
 
-	vince "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	vince_informers "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions"
 	vince_listers "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
 	"github.com/gernest/vince/pkg/k8s"
 	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
 )
 
 type Options struct {
@@ -21,7 +22,7 @@ type Options struct {
 
 type Control struct {
 	opts   Options
-	work   chan *Work
+	queue  workqueue.RateLimitingInterface
 	form   Inform
 	list   List
 	filter *k8s.ResourceFilter
@@ -42,11 +43,11 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 		form: Inform{
 			vince: vince_informers.NewSharedInformerFactory(clients.Vince(), k8s.ResyncPeriod),
 		},
-		work: make(chan *Work, 2<<10),
 	}
+	x.queue = workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	handler := cache.FilteringResourceEventHandler{
 		FilterFunc: x.isWatchedResource,
-		Handler:    &enqueueWorkHandler{logger: log, workQueue: x.work},
+		Handler:    &enqueueWorkHandler{logger: log, queue: x.queue},
 	}
 	x.list.site = x.form.vince.Vince().V1alpha1().Sites().Lister()
 	x.list.vince = x.form.vince.Vince().V1alpha1().Vinces().Lister()
@@ -79,37 +80,26 @@ func (c *Control) Run(ctx context.Context) error {
 	}
 	c.ready()
 	c.log.Debug().Msg("Controller is ready")
-	for {
-		select {
-		case <-ctx.Done():
-			c.log.Debug().Msg("shutting down the controller")
-			return ctx.Err()
-		case w := <-c.work:
-			switch e := w.Item.(type) {
-			case *vince.Site:
-				switch w.Op {
-				case ADD:
-					c.log.Debug().
-						Str("name", e.Name).
-						Str("ns", e.Namespace).
-						Msg("adding site")
-				case Update:
-					c.log.Debug().
-						Str("name", e.Name).
-						Str("ns", e.Namespace).
-						Msg("updating site")
-				case Delete:
-					c.log.Debug().
-						Str("name", e.Name).
-						Str("ns", e.Namespace).
-						Msg("deleting site")
-				}
-			}
-		}
-	}
+	wait.Until(c.runWorker, time.Second, ctx.Done())
+	return nil
 }
 
 // isWatchedResource returns true if the given resource is not ignored, false otherwise.
 func (c *Control) isWatchedResource(obj interface{}) bool {
 	return !c.filter.IsIgnored(obj)
+}
+
+func (c *Control) process() bool {
+	key, quit := c.queue.Get()
+	if quit {
+		return false
+	}
+	defer c.queue.Done(key)
+	c.queue.Forget(key)
+	return true
+}
+
+func (c *Control) runWorker() {
+	for c.process() {
+	}
 }
