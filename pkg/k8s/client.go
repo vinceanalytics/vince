@@ -15,7 +15,7 @@ const ResyncPeriod = 5 * time.Minute
 
 type Client interface {
 	Kube() kubernetes.Interface
-	Site() versioned.Interface
+	Vince() versioned.Interface
 }
 
 func New(log *zerolog.Logger, masterURL, kubeConfig string) Client {
@@ -54,16 +54,16 @@ func config(log *zerolog.Logger, masterURL, kubeConfig string) *rest.Config {
 var _ Client = (*wrap)(nil)
 
 type wrap struct {
-	k8s  *kubernetes.Clientset
-	site *versioned.Clientset
+	k8s   *kubernetes.Clientset
+	vince *versioned.Clientset
 }
 
 func (w *wrap) Kube() kubernetes.Interface {
 	return w.k8s
 }
 
-func (w *wrap) Site() versioned.Interface {
-	return w.site
+func (w *wrap) Vince() versioned.Interface {
+	return w.vince
 }
 
 func build(log *zerolog.Logger, masterURL, kubeConfig string) *wrap {
@@ -79,5 +79,5 @@ func build(log *zerolog.Logger, masterURL, kubeConfig string) *wrap {
 	if err != nil {
 		log.Fatal().Msg("failed to build site client")
 	}
-	return &wrap{k8s: k8s, site: site}
+	return &wrap{k8s: k8s, vince: site}
 }

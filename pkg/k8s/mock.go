@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	site "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
+	vince "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	"github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
-	fake_site_client "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/fake"
+	fake_vince_client "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	fake_kube_client "k8s.io/client-go/kubernetes/fake"
@@ -16,8 +16,8 @@ import (
 )
 
 type Mock struct {
-	k8s  *fake_kube_client.Clientset
-	site *fake_site_client.Clientset
+	k8s   *fake_kube_client.Clientset
+	vince *fake_vince_client.Clientset
 }
 
 func NewMock(path string) *Mock {
@@ -27,13 +27,13 @@ func NewMock(path string) *Mock {
 	}
 	k0, so := mustParseYaml(yamlContent)
 	return &Mock{
-		k8s:  fake_kube_client.NewSimpleClientset(k0...),
-		site: fake_site_client.NewSimpleClientset(so...),
+		k8s:   fake_kube_client.NewSimpleClientset(k0...),
+		vince: fake_vince_client.NewSimpleClientset(so...),
 	}
 }
 
 func init() {
-	err := site.AddToScheme(scheme.Scheme)
+	err := vince.AddToScheme(scheme.Scheme)
 	if err != nil {
 		panic("failed to add site to scheme " + err.Error())
 	}
@@ -45,8 +45,8 @@ func (m *Mock) Kube() kubernetes.Interface {
 	return m.k8s
 }
 
-func (m *Mock) Site() versioned.Interface {
-	return m.site
+func (m *Mock) Vince() versioned.Interface {
+	return m.vince
 }
 
 func mustParseYaml(content []byte) (core, site []runtime.Object) {

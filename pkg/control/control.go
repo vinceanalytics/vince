@@ -4,23 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
-	siteinformer "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions"
-	sitelisterr "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
+	vince "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
+	vince_informers "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions"
+	vince_listers "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
 	"github.com/gernest/vince/pkg/k8s"
 	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
-)
-
-const (
-	// configRefreshKey is the work queue key used to indicate that config has to be refreshed.
-	configRefreshKey = "refresh"
-
-	// maxRetries is the number of times a work task will be retried before it is dropped out of the queue.
-	// With the current rate-limiter in use (5ms*2^(maxRetries-1)) the following numbers represent the times a
-	// work task is going to be re-queued: 5ms, 10ms, 20ms, 40ms, 80ms, 160ms, 320ms, 640ms, 1.3s, 2.6s, 5.1s, 10.2s.
-	maxRetries = 12
 )
 
 type Options struct {
@@ -50,7 +40,7 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 			k8s.IgnoreNamespaces(metav1.NamespaceSystem),
 		),
 		form: Inform{
-			site: siteinformer.NewSharedInformerFactory(clients.Site(), k8s.ResyncPeriod),
+			vince: vince_informers.NewSharedInformerFactory(clients.Vince(), k8s.ResyncPeriod),
 		},
 		work: make(chan *Work, 2<<10),
 	}
@@ -58,17 +48,20 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 		FilterFunc: x.isWatchedResource,
 		Handler:    &enqueueWorkHandler{logger: log, workQueue: x.work},
 	}
-	x.list.site = x.form.site.Vince().V1alpha1().Sites().Lister()
-	x.form.site.Vince().V1alpha1().Sites().Informer().AddEventHandler(handler)
+	x.list.site = x.form.vince.Vince().V1alpha1().Sites().Lister()
+	x.list.vince = x.form.vince.Vince().V1alpha1().Vinces().Lister()
+	x.form.vince.Vince().V1alpha1().Sites().Informer().AddEventHandler(handler)
+	x.form.vince.Vince().V1alpha1().Vinces().Informer().AddEventHandler(handler)
 	return &x
 }
 
 type Inform struct {
-	site siteinformer.SharedInformerFactory
+	vince vince_informers.SharedInformerFactory
 }
 
 type List struct {
-	site sitelisterr.SiteLister
+	site  vince_listers.SiteLister
+	vince vince_listers.VinceLister
 }
 
 func (c *Control) Run(ctx context.Context) error {
@@ -77,8 +70,8 @@ func (c *Control) Run(ctx context.Context) error {
 	{
 		timeout, _ := context.WithTimeout(context.Background(), 10*time.Second)
 		c.log.Debug().Msg("Starting sites informer")
-		c.form.site.Start(ctx.Done())
-		for _, ok := range c.form.site.WaitForCacheSync(timeout.Done()) {
+		c.form.vince.Start(ctx.Done())
+		for _, ok := range c.form.vince.WaitForCacheSync(timeout.Done()) {
 			if !ok {
 				c.log.Fatal().Msg("timed out waiting for controller caches to sync:")
 			}
@@ -93,7 +86,7 @@ func (c *Control) Run(ctx context.Context) error {
 			return ctx.Err()
 		case w := <-c.work:
 			switch e := w.Item.(type) {
-			case *v1alpha1.Site:
+			case *vince.Site:
 				switch w.Op {
 				case ADD:
 					c.log.Debug().
