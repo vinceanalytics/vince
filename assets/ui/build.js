@@ -5,6 +5,7 @@ const sharedConfig = {
     entryPoints: ["src/index.ts"],
     bundle: true,
     minify: true,
+    keep_names: true,
     external: Object.keys(dependencies),
 };
 
