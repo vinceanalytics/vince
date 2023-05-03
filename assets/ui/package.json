@@ -4,11 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node build.js"
   },
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "@primer/css": "^20.8.0",
+    "esbuild": "^0.17.18",
+    "typescript": "^5.0.4"
+  },
   "dependencies": {
-    "@primer/css": "^20.8.0"
+    "@github/catalyst": "^1.6.0"
   }
 }
