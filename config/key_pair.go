@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"os"
@@ -24,7 +25,7 @@ var AGE *age.X25519Identity
 func setupSecrets(c *Config) (err error) {
 	s := c.Secrets
 
-	b, err := os.ReadFile(s.Ed25519KeyPair.PublicKey)
+	b, err := readSecret(s.Ed25519KeyPair.PublicKey)
 	if err != nil {
 		return err
 	}
@@ -33,7 +34,7 @@ func setupSecrets(c *Config) (err error) {
 	if err != nil {
 		return err
 	}
-	b, err = os.ReadFile(s.Ed25519KeyPair.PrivateKey)
+	b, err = readSecret(s.Ed25519KeyPair.PrivateKey)
 	if err != nil {
 		return err
 	}
@@ -46,7 +47,7 @@ func setupSecrets(c *Config) (err error) {
 		Public:  pub.(ed25519.PublicKey),
 		Private: priv.(ed25519.PrivateKey),
 	}
-	ageFile, err := os.ReadFile(s.Age.PrivateKey)
+	ageFile, err := readSecret(s.Age.PrivateKey)
 	if err != nil {
 		return err
 	}
@@ -104,4 +105,26 @@ func generateAndSaveAge(dir string) (private, public string, err error) {
 		os.WriteFile(public, []byte(a.Recipient().String()), 0600),
 	)
 	return
+}
+
+// Handles base64 encoded files or strings(coming from env vars)
+func readSecret(path string) ([]byte, error) {
+	// First we check if it is a file.
+	f, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// It is not a file. We Try to decode it as base64
+			b, _ := base64.StdEncoding.DecodeString(path)
+			if b != nil {
+				return b, nil
+			}
+		}
+		return nil, err
+	}
+	// If we can decode as bas64 we do so else we return raw bytes.
+	b, _ := base64.StdEncoding.DecodeString(path)
+	if b != nil {
+		return b, nil
+	}
+	return f, nil
 }
