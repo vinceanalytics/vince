@@ -114,17 +114,18 @@ func readSecret(path string) ([]byte, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			// It is not a file. We Try to decode it as base64
-			b, _ := base64.StdEncoding.DecodeString(path)
-			if b != nil {
-				return b, nil
+			b, e := base64.StdEncoding.DecodeString(path)
+			if e != nil {
+				return nil, err
 			}
+			return b, nil
 		}
 		return nil, err
 	}
 	// If we can decode as bas64 we do so else we return raw bytes.
-	b, _ := base64.StdEncoding.DecodeString(string(f))
-	if b != nil {
-		return b, nil
+	b, err := base64.StdEncoding.DecodeString(string(f))
+	if err != nil {
+		return f, nil
 	}
-	return f, nil
+	return b, nil
 }
