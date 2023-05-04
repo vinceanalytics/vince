@@ -71,8 +71,6 @@ var Activate = template.Must(
 	),
 ).Lookup("focus")
 
-var Home = Layouts.Lookup("app")
-
 var Sites = template.Must(
 	layout().ParseFS(Files,
 		"plot/plot.html",

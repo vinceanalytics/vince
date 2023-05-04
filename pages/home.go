@@ -3,9 +3,7 @@ package pages
 import (
 	"net/http"
 
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/render"
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
@@ -14,5 +12,5 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/sites", http.StatusFound)
 		return
 	}
-	render.HTML(r.Context(), w, templates.Home, http.StatusOK)
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
