@@ -112,7 +112,7 @@ func readSecret(path string) ([]byte, error) {
 	// First we check if it is a file.
 	f, err := os.ReadFile(path)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if os.IsNotExist(err) && path != "" {
 			// It is not a file. We Try to decode it as base64
 			b, e := base64.StdEncoding.DecodeString(path)
 			if e != nil {
@@ -122,10 +122,13 @@ func readSecret(path string) ([]byte, error) {
 		}
 		return nil, err
 	}
-	// If we can decode as bas64 we do so else we return raw bytes.
-	b, err := base64.StdEncoding.DecodeString(string(f))
-	if err != nil {
-		return f, nil
+	if len(f) > 0 {
+		// If we can decode as bas64 we do so else we return raw bytes.
+		b, err := base64.StdEncoding.DecodeString(string(f))
+		if err != nil {
+			return f, nil
+		}
+		return b, nil
 	}
-	return b, nil
+	return f, nil
 }

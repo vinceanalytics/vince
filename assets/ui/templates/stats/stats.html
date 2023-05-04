@@ -68,52 +68,60 @@
             </div>
             <div class="Box-body">
                 <div class="Box-row p-0">
-                    <ul class="list-style-none text-center d-flex">
-                        <li
-                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                unique visitors
-                            </span>
-                        </li>
-                        <li
-                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                page views
-                            </span>
-                        </li>
-                        <li
-                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                sessions
-                            </span>
-                        </li>
-                        <li
-                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                bounce rate
-                            </span>
-                        </li>
-                        <li class="p-3 col-12 col-sm-6 col-md-3 border-bottom  border-md-bottom-0 color-border-muted">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                session duration
-                            </span>
-                        </li>
-                    </ul>
+                    <main-aggregate-list>
+                        <ul class="list-style-none text-center d-flex">
+                            <li class=" p-3 col-12 col-sm-6 col-md-3  border-right propertySelected"
+                                data-targets="main-aggregate-list.items" id="unique_visitore" type="button"
+                                data-action="click:main-aggregate-list#select">
+                                <span class="d-block h4 color-fg-default">
+                                    0
+                                </span>
+                                <span class="color-fg-muted">
+                                    unique visitors
+                                </span>
+                            </li>
+                            <li class="p-3 col-12 col-sm-6 col-md-3  border-right color-border-muted"
+                                data-targets="main-aggregate-list.items" id="page_views" type="button"
+                                data-action="click:main-aggregate-list#select">
+                                <span class="d-block h4 color-fg-default">
+                                    0
+                                </span>
+                                <span class="color-fg-muted">
+                                    page views
+                                </span>
+                            </li>
+                            <li class="p-3 col-12 col-sm-6 col-md-3  border-rightcolor-border-muted"
+                                data-targets="main-aggregate-list.items" id="sessions"
+                                data-action="click:main-aggregate-list#select">
+                                <span class="d-block h4 color-fg-default">
+                                    0
+                                </span>
+                                <span class="color-fg-muted">
+                                    sessions
+                                </span>
+                            </li>
+                            <li class="p-3 col-12 col-sm-6 col-md-3  border-right color-border-muted"
+                                data-targets="main-aggregate-list.items" id="bounce_rate" type="button"
+                                data-action="click:main-aggregate-list#select">
+                                <span class="d-block h4 color-fg-default">
+                                    0
+                                </span>
+                                <span class="color-fg-muted">
+                                    bounce rate
+                                </span>
+                            </li>
+                            <li class="p-3 col-12 col-sm-6 col-md-3" data-targets="main-aggregate-list.items"
+                                id="duration" type="button" data-action="click:main-aggregate-list#select">
+                                <span class="d-block h4 color-fg-default">
+                                    0
+                                </span>
+                                <span class="color-fg-muted">
+                                    session duration
+                                </span>
+                            </li>
+                        </ul>
+                    </main-aggregate-list>
+
                 </div>
                 <div style="height: 400px;" class="width-full">
                 </div>

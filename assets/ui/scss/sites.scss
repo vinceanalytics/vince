@@ -166,3 +166,9 @@
     position: relative;
     z-index: 10
 }
+
+.propertySelected {
+    border-bottom: var(--primer-borderWidth-thin, 1px) solid #ff5354 !important;
+    color: var(--color-fg-default);
+    font-weight: var(--base-text-weight-semibold, 600)
+}
