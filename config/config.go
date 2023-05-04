@@ -191,6 +191,11 @@ func Flags() []cli.Flag {
 			Usage:   "path to a file with  age private key",
 			EnvVars: []string{"VINCE_SECRET_AGE_PRIVATE"},
 		},
+		&cli.BoolFlag{
+			Name:    "enable-system-stats",
+			Usage:   "Collect and visualize system stats",
+			EnvVars: []string{"VINCE_ENABLE_SYSTEM_STATS"},
+		},
 	}
 }
 
@@ -232,6 +237,7 @@ func fromCli(ctx *cli.Context) *Config {
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
 		IsSelfHost:              ctx.Bool("self-host"),
 		BackupDir:               ctx.String("backup-dir"),
+		EnableSystemStats:       ctx.Bool("enable-system-stats"),
 		Secrets: &Secrets{
 			Ed25519KeyPair: &Secrets_KeyPair{
 				PrivateKey: ctx.String("secret-ed-priv"),

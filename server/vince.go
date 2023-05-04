@@ -96,7 +96,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	}))
 
 	ctx = models.Set(ctx, sqlDb)
-	ctx, ts, err := timeseries.Open(ctx, o.DataPath)
+	ctx, ts, err := timeseries.Open(ctx, o)
 	if err != nil {
 		resources.Close()
 		return err
@@ -135,7 +135,9 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		g.Go(worker.UpdateCacheSites(ctx, addHealth))
 		g.Go(worker.LogRotate(ctx, errorLog, addHealth))
 		g.Go(worker.SaveTimeseries(ctx, addHealth))
-		g.Go(worker.CollectSYstemMetrics(ctx, addHealth))
+		if o.EnableSystemStats {
+			g.Go(worker.CollectSYstemMetrics(ctx, addHealth))
+		}
 	}
 
 	resources = append(resources, h)

@@ -12,12 +12,13 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/gernest/vince/cities"
+	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/klauspost/compress/zstd"
 )
 
-func Open(ctx context.Context, dataPath string) (context.Context, io.Closer, error) {
-	dir := filepath.Join(dataPath, "ts")
+func Open(ctx context.Context, o *config.Config) (context.Context, io.Closer, error) {
+	dir := filepath.Join(o.DataPath, "ts")
 	mike, err := open(ctx, filepath.Join(dir, "mike"))
 	if err != nil {
 		return nil, nil, err
@@ -27,17 +28,22 @@ func Open(ctx context.Context, dataPath string) (context.Context, io.Closer, err
 		mike.Close()
 		return nil, nil, err
 	}
-	sys, err := openSystem(dataPath)
-	if err != nil {
-		mike.Close()
-		geo.Close()
-		return nil, nil, err
-	}
 	ctx = context.WithValue(ctx, mikeKey{}, mike)
 	ctx = context.WithValue(ctx, geoKey{}, geo)
-	ctx = context.WithValue(ctx, systemKey{}, sys)
 	ctx = SetMap(ctx, NewMap())
-	return ctx, resourceList{mike, geo, sys}, nil
+
+	resource := resourceList{mike, geo}
+	if o.EnableSystemStats {
+		sys, err := openSystem(o.DataPath)
+		if err != nil {
+			mike.Close()
+			geo.Close()
+			return nil, nil, err
+		}
+		ctx = context.WithValue(ctx, systemKey{}, sys)
+		resource = append(resource, sys)
+	}
+	return ctx, resource, nil
 }
 
 type resourceList []io.Closer
