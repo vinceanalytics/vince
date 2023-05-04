@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gernest/vince/tools"
 	_ "k8s.io/code-generator"
+	_ "sigs.k8s.io/controller-tools/pkg/crd"
 )
 
 const (
@@ -28,6 +30,7 @@ func main() {
 	}
 	println(">>> root:", root)
 	make()
+	buildCrd()
 }
 
 func make() {
@@ -66,4 +69,20 @@ func generate(resource string, versions ...string) {
 	tools.ExecPlain("cp", "-r",
 		filepath.Join(dir, rootPackage)+"/.",
 		root+"/")
+}
+
+func buildCrd() {
+	println("### Generating crds yaml ###")
+	src := filepath.Join(root, "pkg/apis/vince/v1alpha1")
+	pkg := tools.Package("sigs.k8s.io/controller-tools")
+	to := pkg.Path + "/cmd/controller-gen@" + pkg.Version
+	println(">> using ", to)
+	tools.ExecPlain("go", "install", to)
+	out := filepath.Join(root, "chart/crds")
+	tools.ExecPlain(
+		"controller-gen",
+		"crd",
+		fmt.Sprintf("paths=%s", src),
+		fmt.Sprintf("output:crd:artifacts:config=%s", out),
+	)
 }

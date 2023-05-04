@@ -190,18 +190,22 @@ func readJSON(path string, o any) {
 }
 
 func ModuleRoot(module string) string {
+	m := Package(module)
+	return fmt.Sprintf("%s/pkg/mod/%s@%s",
+		ExecCollect("go", "env", "GOPATH"),
+		m.Path, m.Version,
+	)
+}
+func Package(module string) *debug.Module {
 	build, ok := debug.ReadBuildInfo()
 	if !ok {
 		Exit("failed to read build info")
 	}
 	for _, m := range build.Deps {
 		if m.Path == module {
-			return fmt.Sprintf("%s/pkg/mod/%s@%s",
-				ExecCollect("go", "env", "GOPATH"),
-				m.Path, m.Version,
-			)
+			return m
 		}
 	}
 	Exit("no such module ", module)
-	return ""
+	return nil
 }
