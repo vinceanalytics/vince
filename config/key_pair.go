@@ -122,7 +122,7 @@ func readSecret(path string) ([]byte, error) {
 		return nil, err
 	}
 	// If we can decode as bas64 we do so else we return raw bytes.
-	b, _ := base64.StdEncoding.DecodeString(path)
+	b, _ := base64.StdEncoding.DecodeString(string(f))
 	if b != nil {
 		return b, nil
 	}
