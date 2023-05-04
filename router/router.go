@@ -132,7 +132,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.POST(`^/:website/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:website/stats$`, site.ResetStats),
 
-		sitePipe.GET(`^/:domain/csv$`, site.CsvExport),
 		sitePipe.GET(`^/:domain/stats$`, site.Stats),
 		NotFound,
 	}
