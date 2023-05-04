@@ -1,7 +1,7 @@
 import { controller, targets } from '@github/catalyst'
 
 @controller
-class MainAggregateListElement extends HTMLElement {
+class SelectionListElement extends HTMLElement {
     @targets items: HTMLElement[];
 
     connectedCallback() { }
@@ -17,10 +17,10 @@ class MainAggregateListElement extends HTMLElement {
 
 declare global {
     interface Window {
-        MainAggregateListElement: typeof MainAggregateListElement
+        SelectionListElement: typeof SelectionListElement
     }
 }
-if (!window.customElements.get('main-aggregate-list')) {
-    window.MainAggregateListElement = MainAggregateListElement
-    window.customElements.define('main-aggregate-list', MainAggregateListElement)
+if (!window.customElements.get('selection-list')) {
+    window.SelectionListElement = SelectionListElement
+    window.customElements.define('selection-list', SelectionListElement)
 }

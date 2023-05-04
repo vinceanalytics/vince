@@ -68,11 +68,11 @@
             </div>
             <div class="Box-body">
                 <div class="Box-row p-0">
-                    <main-aggregate-list>
+                    <selection-list>
                         <ul class="list-style-none text-center d-flex">
                             <li class=" p-3 col-12 col-sm-6 col-md-3  border-right propertySelected"
-                                data-targets="main-aggregate-list.items" id="unique_visitore" type="button"
-                                data-action="click:main-aggregate-list#select">
+                                data-targets="selection-list.items" id="unique_visitore" type="button"
+                                data-action="click:selection-list#select">
                                 <span class="d-block h4 color-fg-default">
                                     0
                                 </span>
@@ -81,8 +81,8 @@
                                 </span>
                             </li>
                             <li class="p-3 col-12 col-sm-6 col-md-3  border-right color-border-muted"
-                                data-targets="main-aggregate-list.items" id="page_views" type="button"
-                                data-action="click:main-aggregate-list#select">
+                                data-targets="selection-list.items" id="page_views" type="button"
+                                data-action="click:selection-list#select">
                                 <span class="d-block h4 color-fg-default">
                                     0
                                 </span>
@@ -90,9 +90,9 @@
                                     page views
                                 </span>
                             </li>
-                            <li class="p-3 col-12 col-sm-6 col-md-3  border-rightcolor-border-muted"
-                                data-targets="main-aggregate-list.items" id="sessions"
-                                data-action="click:main-aggregate-list#select">
+                            <li class="p-3 col-12 col-sm-6 col-md-3  border-right color-border-muted"
+                                data-targets="selection-list.items" id="sessions"
+                                data-action="click:selection-list#select">
                                 <span class="d-block h4 color-fg-default">
                                     0
                                 </span>
@@ -101,8 +101,8 @@
                                 </span>
                             </li>
                             <li class="p-3 col-12 col-sm-6 col-md-3  border-right color-border-muted"
-                                data-targets="main-aggregate-list.items" id="bounce_rate" type="button"
-                                data-action="click:main-aggregate-list#select">
+                                data-targets="selection-list.items" id="bounce_rate" type="button"
+                                data-action="click:selection-list#select">
                                 <span class="d-block h4 color-fg-default">
                                     0
                                 </span>
@@ -110,8 +110,8 @@
                                     bounce rate
                                 </span>
                             </li>
-                            <li class="p-3 col-12 col-sm-6 col-md-3" data-targets="main-aggregate-list.items"
-                                id="duration" type="button" data-action="click:main-aggregate-list#select">
+                            <li class="p-3 col-12 col-sm-6 col-md-3" data-targets="selection-list.items" id="duration"
+                                type="button" data-action="click:selection-list#select">
                                 <span class="d-block h4 color-fg-default">
                                     0
                                 </span>
@@ -120,7 +120,7 @@
                                 </span>
                             </li>
                         </ul>
-                    </main-aggregate-list>
+                    </selection-list>
 
                 </div>
                 <div style="height: 400px;" class="width-full">
@@ -131,18 +131,31 @@
                 <div class="d-flex">
                     <div class="col-6 pr-3">
                         <div class="Box">
-                            <div class="Box-header">
-                                <ul class="list-style-none  d-flex flex-justify-between flex-items-center">
-                                    <li>
-                                        Pages
-                                    </li>
-                                    <li>
-                                        Entry Pages
-                                    </li>
-                                    <li>
-                                        Exit Pages
-                                    </li>
-                                </ul>
+                            <div class="Box-row p-0">
+                                <selection-list>
+                                    <ul class="list-style-none text-center d-flex">
+                                        <li class=" p-3 col-4 border-right propertySelected"
+                                            data-targets="selection-list.items" id="pages" type="button"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Pages
+                                            </span>
+                                        </li>
+                                        <li class="p-3 col-4 border-right color-border-muted"
+                                            data-targets="selection-list.items" id="entry_pages" type="button"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Entry Pages
+                                            </span>
+                                        </li>
+                                        <li class="p-3 col-4" data-targets="selection-list.items" id="exit_pages"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Exit Pages
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </selection-list>
                             </div>
                             <div class="Box-row">
                                 a
@@ -156,21 +169,38 @@
                     </div>
                     <div class="col-6">
                         <div class="Box">
-                            <div class="Box-header">
-                                <ul class="list-style-none  d-flex flex-justify-between flex-items-center">
-                                    <li>
-                                        Referrers
-                                    </li>
-                                    <li>
-                                        Sources
-                                    </li>
-                                    <li>
-                                        Media
-                                    </li>
-                                    <li>
-                                        Campaigns
-                                    </li>
-                                </ul>
+                            <div class="Box-row p-0">
+                                <selection-list>
+                                    <ul class="list-style-none text-center d-flex">
+                                        <li class=" p-3 col-3 border-right propertySelected"
+                                            data-targets="selection-list.items" id="referrers" type="button"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Referrers
+                                            </span>
+                                        </li>
+                                        <li class="p-3 col-3 border-right color-border-muted"
+                                            data-targets="selection-list.items" id="sources" type="button"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Sources
+                                            </span>
+                                        </li>
+                                        <li class="p-3 col-3 border-right color-border-muted"
+                                            data-targets="selection-list.items" id="media" type="button"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Media
+                                            </span>
+                                        </li>
+                                        <li class="p-3 col-3" data-targets="selection-list.items" id="campaigns"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Campaigns
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </selection-list>
                             </div>
                             <div class="Box-row">
                                 a
@@ -216,18 +246,31 @@
                 <div class="d-flex">
                     <div class="col-6 pr-3">
                         <div class="Box">
-                            <div class="Box-header">
-                                <ul class="list-style-none  d-flex flex-justify-between flex-items-center">
-                                    <li>
-                                        Countries
-                                    </li>
-                                    <li>
-                                        Cities
-                                    </li>
-                                    <li>
-                                        Regions
-                                    </li>
-                                </ul>
+                            <div class="Box-row p-0">
+                                <selection-list>
+                                    <ul class="list-style-none text-center d-flex">
+                                        <li class=" p-3 col-4 border-right propertySelected"
+                                            data-targets="selection-list.items" id="countries" type="button"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Countries
+                                            </span>
+                                        </li>
+                                        <li class="p-3 col-4 border-right color-border-muted"
+                                            data-targets="selection-list.items" id="cities" type="button"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Cities
+                                            </span>
+                                        </li>
+                                        <li class="p-3 col-4" data-targets="selection-list.items" id="regions"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Regions
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </selection-list>
                             </div>
                             <div class="Box-row">
                                 a
@@ -236,23 +279,34 @@
                                 b
                             </div>
                         </div>
-
-
                     </div>
                     <div class="col-6">
                         <div class="Box">
-                            <div class="Box-header">
-                                <ul class="list-style-none  d-flex flex-justify-between flex-items-center">
-                                    <li>
-                                        Os
-                                    </li>
-                                    <li>
-                                        Browsers
-                                    </li>
-                                    <li>
-                                        Device
-                                    </li>
-                                </ul>
+                            <div class="Box-row p-0">
+                                <selection-list>
+                                    <ul class="list-style-none text-center d-flex">
+                                        <li class=" p-3 col-4 border-right propertySelected"
+                                            data-targets="selection-list.items" id="os" type="button"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Os
+                                            </span>
+                                        </li>
+                                        <li class="p-3 col-4 border-right color-border-muted"
+                                            data-targets="selection-list.items" id="browsers" type="button"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Browsers
+                                            </span>
+                                        </li>
+                                        <li class="p-3 col-4" data-targets="selection-list.items" id="devices"
+                                            data-action="click:selection-list#select">
+                                            <span class="color-fg-muted">
+                                                Devices
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </selection-list>
                             </div>
                             <div class="Box-row">
                                 a
@@ -262,6 +316,7 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
