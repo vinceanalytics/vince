@@ -17,7 +17,6 @@ import (
 )
 
 func Pipe(ctx context.Context) plug.Pipeline {
-	pipe0 := plug.Pipeline{plug.Firewall(ctx), plug.AuthorizeStatsAPI}
 	pipe1 := plug.Pipeline{plug.Firewall(ctx), plug.AuthorizeSiteAPI}
 	pipe2 := plug.SharedLink()
 	pipe4 := plug.API(ctx)
@@ -26,8 +25,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	return plug.Pipeline{
 		// add prefix matches on the top of the pipeline for faster lookups
 		pipe5.Prefix("/debug/pprof/", pprof.Index),
-
-		pipe0.PathGET("/api/v1/stats", site.Stats),
 
 		plug.PREFIX("/api/v1/sites",
 			pipe1.PathPOST("/api/v1/sites", sites.Create),
@@ -82,7 +79,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			pipe5.And(plug.RequireAccount).PathGET("/sites", site.Index),
 			pipe5.And(plug.RequireAccount).PathGET("/sites/new", site.New),
 			pipe5.And(plug.RequireAccount).PathPOST("/sites", site.CreateSite),
-			sitePipe.GET(`^/sites/stats/:domain$`, site.Stats),
 			sitePipe.POST(`^/sites/:website/make-public$`, site.MakePublic),
 			sitePipe.POST(`^/sites/:website/make-private$`, site.MakePrivate),
 			sitePipe.POST(`^/sites/:website/weekly-report/enable$`, site.EnableWeeklyReport),
