@@ -9,6 +9,7 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 package v1alpha1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -270,6 +271,11 @@ func (in *VinceStatus) DeepCopyInto(out *VinceStatus) {
 	if in.Pod != nil {
 		in, out := &in.Pod, &out.Pod
 		*out = new(v1.PodStatus)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Deployment != nil {
+		in, out := &in.Deployment, &out.Deployment
+		*out = new(appsv1.DeploymentStatus)
 		(*in).DeepCopyInto(*out)
 	}
 	return

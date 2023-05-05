@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	apppsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -54,6 +55,9 @@ type VinceStatus struct {
 	// We track the status of the pod linked to this vince resource deployment.
 	// +optional
 	Pod *v1.PodStatus `json:"pod,omitempty"`
+	// We track the status of the deployment linked to this vince resource deployment.
+	// +optional
+	Deployment *apppsv1.DeploymentStatus `json:"deployment,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
