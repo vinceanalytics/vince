@@ -14,7 +14,7 @@ import (
 // with apply.
 type VinceStatusApplyConfiguration struct {
 	Pod         *v1.PodStatus       `json:"pod,omitempty"`
-	StatefulSet *appsv1.StatefulSet `json:"deployment,omitempty"`
+	StatefulSet *appsv1.StatefulSet `json:"stateful_set,omitempty"`
 }
 
 // VinceStatusApplyConfiguration constructs an declarative configuration of the VinceStatus type for use with

@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	apppsv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -57,7 +57,7 @@ type VinceStatus struct {
 	Pod *v1.PodStatus `json:"pod,omitempty"`
 	// We track the status of the stateful set linked to this vince resource.
 	// +optional
-	StatefulSet *apppsv1.StatefulSet `json:"deployment,omitempty"`
+	StatefulSet *appsv1.StatefulSet `json:"stateful_set,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
