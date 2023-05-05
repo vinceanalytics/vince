@@ -5,10 +5,14 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 
 package v1alpha1
 
+import (
+	v1 "k8s.io/api/core/v1"
+)
+
 // VinceStatusApplyConfiguration represents an declarative configuration of the VinceStatus type for use
 // with apply.
 type VinceStatusApplyConfiguration struct {
-	Status *string `json:"status,omitempty"`
+	Pod *v1.PodStatus `json:"pod,omitempty"`
 }
 
 // VinceStatusApplyConfiguration constructs an declarative configuration of the VinceStatus type for use with
@@ -17,10 +21,10 @@ func VinceStatus() *VinceStatusApplyConfiguration {
 	return &VinceStatusApplyConfiguration{}
 }
 
-// WithStatus sets the Status field in the declarative configuration to the given value
+// WithPod sets the Pod field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Status field is set to the value of the last call.
-func (b *VinceStatusApplyConfiguration) WithStatus(value string) *VinceStatusApplyConfiguration {
-	b.Status = &value
+// If called multiple times, the Pod field is set to the value of the last call.
+func (b *VinceStatusApplyConfiguration) WithPod(value v1.PodStatus) *VinceStatusApplyConfiguration {
+	b.Pod = &value
 	return b
 }

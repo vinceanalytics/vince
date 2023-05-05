@@ -51,7 +51,9 @@ type Volume struct {
 }
 
 type VinceStatus struct {
-	Status string `json:"status"`
+	// We track the status of the pod linked to this vince resource deployment.
+	// +optional
+	Pod *v1.PodStatus `json:"pod,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
