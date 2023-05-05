@@ -8,6 +8,7 @@ import (
 	"github.com/gernest/vince/pkg/k8s"
 	apppsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	listers "k8s.io/client-go/listers/core/v1"
@@ -33,12 +34,12 @@ func (t *Topology) Build(filter *k8s.ResourceFilter) error {
 
 func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error) {
 	r := &Resources{
-		Services: make(map[types.NamespacedName]*corev1.Service),
-		Secrets:  make(map[types.NamespacedName]*corev1.Secret),
-		Configs:  make(map[types.NamespacedName]*corev1.ConfigMap),
-		Pods:     make(map[types.NamespacedName]*corev1.Pod),
-		Vinces:   make(map[types.NamespacedName]*v1alpha1.Vince),
-		Sites:    make(map[types.NamespacedName]*v1alpha1.Site),
+		Services: make(map[string]*corev1.Service),
+		Secrets:  make(map[string]*corev1.Secret),
+		Configs:  make(map[string]*corev1.ConfigMap),
+		Pods:     make(map[string]*corev1.Pod),
+		Vinces:   make(map[string]*v1alpha1.Vince),
+		Sites:    make(map[string]*v1alpha1.Site),
 	}
 	svc, err := t.serviceLister.List(labels.Everything())
 	if err != nil {
@@ -68,50 +69,48 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		if filter.IsIgnored(o) {
 			continue
 		}
-		r.Services[Key{Namespace: o.Namespace, Name: o.Name}] = o
+		r.Services[key(o)] = o
 	}
 	for _, o := range secrets {
 		if filter.IsIgnored(o) {
 			continue
 		}
-		r.Secrets[Key{Namespace: o.Namespace, Name: o.Name}] = o
+		r.Secrets[key(o)] = o
 	}
 	for _, o := range config {
 		if filter.IsIgnored(o) {
 			continue
 		}
-		r.Configs[Key{Namespace: o.Namespace, Name: o.Name}] = o
+		r.Configs[key(o)] = o
 	}
 	for _, o := range pods {
 		if filter.IsIgnored(o) {
 			continue
 		}
-		r.Pods[Key{Namespace: o.Namespace, Name: o.Name}] = o
+		r.Pods[key(o)] = o
 	}
 	for _, o := range vince {
 		if filter.IsIgnored(o) {
 			continue
 		}
-		r.Vinces[Key{Namespace: o.Namespace, Name: o.Name}] = o
+		r.Vinces[key(o)] = o
 	}
 	for _, o := range site {
 		if filter.IsIgnored(o) {
 			continue
 		}
-		r.Sites[Key{Namespace: o.Namespace, Name: o.Name}] = o
+		r.Sites[key(o)] = o
 	}
 	return r, nil
 }
 
-type Key = types.NamespacedName
-
 type Resources struct {
-	Services map[Key]*corev1.Service
-	Secrets  map[Key]*corev1.Secret
-	Configs  map[Key]*corev1.ConfigMap
-	Pods     map[Key]*corev1.Pod
-	Vinces   map[Key]*v1alpha1.Vince
-	Sites    map[Key]*v1alpha1.Site
+	Services map[string]*corev1.Service
+	Secrets  map[string]*corev1.Secret
+	Configs  map[string]*corev1.ConfigMap
+	Pods     map[string]*corev1.Pod
+	Vinces   map[string]*v1alpha1.Vince
+	Sites    map[string]*v1alpha1.Site
 }
 
 func (r *Resources) Resolve() *ChangeSet {
@@ -124,4 +123,12 @@ type ChangeSet struct {
 	Services     []*corev1.Service
 	VinceStatus  []v1alpha1.VinceStatus
 	StatefulSets []*apppsv1.StatefulSet
+}
+
+func key(o metav1.Object) string {
+	ts := types.NamespacedName{
+		Namespace: o.GetNamespace(),
+		Name:      o.GetName(),
+	}
+	return ts.String()
 }
