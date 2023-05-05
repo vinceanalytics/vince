@@ -273,9 +273,9 @@ func (in *VinceStatus) DeepCopyInto(out *VinceStatus) {
 		*out = new(v1.PodStatus)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.Deployment != nil {
-		in, out := &in.Deployment, &out.Deployment
-		*out = new(appsv1.DeploymentStatus)
+	if in.StatefulSet != nil {
+		in, out := &in.StatefulSet, &out.StatefulSet
+		*out = new(appsv1.StatefulSet)
 		(*in).DeepCopyInto(*out)
 	}
 	return

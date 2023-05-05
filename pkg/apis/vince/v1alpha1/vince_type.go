@@ -55,9 +55,9 @@ type VinceStatus struct {
 	// We track the status of the pod linked to this vince resource deployment.
 	// +optional
 	Pod *v1.PodStatus `json:"pod,omitempty"`
-	// We track the status of the deployment linked to this vince resource deployment.
+	// We track the status of the stateful set linked to this vince resource.
 	// +optional
-	Deployment *apppsv1.DeploymentStatus `json:"deployment,omitempty"`
+	StatefulSet *apppsv1.StatefulSet `json:"deployment,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

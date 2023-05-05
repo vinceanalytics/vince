@@ -119,9 +119,9 @@ func (r *Resources) Resolve() *ChangeSet {
 }
 
 type ChangeSet struct {
-	Secrets     []*corev1.Secret
-	Configs     []*corev1.ConfigMap
-	Services    []*corev1.Service
-	VinceStatus []v1alpha1.VinceStatus
-	Deployments []*apppsv1.Deployment
+	Secrets      []*corev1.Secret
+	Configs      []*corev1.ConfigMap
+	Services     []*corev1.Service
+	VinceStatus  []v1alpha1.VinceStatus
+	StatefulSets []*apppsv1.StatefulSet
 }
