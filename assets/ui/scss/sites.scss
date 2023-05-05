@@ -172,3 +172,11 @@
     color: var(--color-fg-default);
     font-weight: var(--base-text-weight-semibold, 600)
 }
+
+.selectionItem {
+    padding: var(--base-size-16, 16px) !important
+}
+
+.selectionItem:hover {
+    cursor: pointer
+}
