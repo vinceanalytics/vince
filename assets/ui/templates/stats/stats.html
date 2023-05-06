@@ -1,6 +1,6 @@
 {{define "_content"}}
 <div class="container-lg">
-    <div>
+    <vince-stats>
         <div class="Subhead mt-3" style="border-color: #ff5354;">
             <h2 class="Subhead-heading mt-3 mt-sm-0">April 26, 2023 <span class="dash">–</span> May 3, 2023</h2>
             <div class="Subhead-actions mt-3 mt-sm-0">
@@ -36,60 +36,57 @@
             </div>
             <div class="Box-body">
                 <div class="Box-row p-0">
-                    <selection-list>
-                        <ul class="list-style-none text-center d-flex">
-                            <li class=" selectionItem col-3  border-right propertySelected"
-                                data-targets="selection-list.items" id="unique_visitore" type="button"
-                                data-action="click:selection-list#select">
-                                <span class="d-block h4 color-fg-default">
-                                    0
-                                </span>
-                                <span class="color-fg-muted">
-                                    unique visitors
-                                </span>
-                            </li>
-                            <li class="selectionItem col-3 border-right color-border-muted"
-                                data-targets="selection-list.items" id="page_views" type="button"
-                                data-action="click:selection-list#select">
-                                <span class="d-block h4 color-fg-default">
-                                    0
-                                </span>
-                                <span class="color-fg-muted">
-                                    page views
-                                </span>
-                            </li>
-                            <li class="selectionItem col-3 border-right color-border-muted"
-                                data-targets="selection-list.items" id="sessions"
-                                data-action="click:selection-list#select">
-                                <span class="d-block h4 color-fg-default">
-                                    0
-                                </span>
-                                <span class="color-fg-muted">
-                                    sessions
-                                </span>
-                            </li>
-                            <li class="selectionItem col-3  border-right color-border-muted"
-                                data-targets="selection-list.items" id="bounce_rate" type="button"
-                                data-action="click:selection-list#select">
-                                <span class="d-block h4 color-fg-default">
-                                    0
-                                </span>
-                                <span class="color-fg-muted">
-                                    bounce rate
-                                </span>
-                            </li>
-                            <li class="selectionItem col-3" data-targets="selection-list.items" id="duration"
-                                type="button" data-action="click:selection-list#select">
-                                <span class="d-block h4 color-fg-default">
-                                    0
-                                </span>
-                                <span class="color-fg-muted">
-                                    session duration
-                                </span>
-                            </li>
-                        </ul>
-                    </selection-list>
-
+                    <ul class="list-style-none text-center d-flex" id="all_box">
+                        <li class=" selectionItem col-3  border-right propertySelected"
+                            data-targets="vince-stats.all_box" id="unique_visitore" type="button"
+                            data-action="click:vince-stats#selectAllBox">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                unique visitors
+                            </span>
+                        </li>
+                        <li class="selectionItem col-3 border-right color-border-muted"
+                            data-targets="vince-stats.all_box" id="page_views" type="button"
+                            data-action="click:vince-stats#selectAllBox">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                page views
+                            </span>
+                        </li>
+                        <li class="selectionItem col-3 border-right color-border-muted"
+                            data-targets="vince-stats.all_box" id="sessions"
+                            data-action="click:vince-stats#selectAllBox">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                sessions
+                            </span>
+                        </li>
+                        <li class="selectionItem col-3  border-right color-border-muted"
+                            data-targets="vince-stats.all_box" id="bounce_rate" type="button"
+                            data-action="click:vince-stats#selectAllBox">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                bounce rate
+                            </span>
+                        </li>
+                        <li class="selectionItem col-3" data-targets="vince-stats.all_box" id="duration" type="button"
+                            data-action="click:vince-stats#selectAllBox">
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                session duration
+                            </span>
+                        </li>
+                    </ul>
                 </div>
                 <div style="height: 400px;" class="width-full">
                 </div>
@@ -100,30 +97,28 @@
                     <div class="col-6 pr-3">
                         <div class="Box">
                             <div class="Box-row p-0">
-                                <selection-list>
-                                    <ul class="list-style-none text-center d-flex">
-                                        <li class="selectionItem col-4 propertySelected"
-                                            data-targets="selection-list.items" id="pages" type="button"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Pages
-                                            </span>
-                                        </li>
-                                        <li class="selectionItem col-4 color-border-muted"
-                                            data-targets="selection-list.items" id="entry_pages" type="button"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Entry Pages
-                                            </span>
-                                        </li>
-                                        <li class="selectionItem col-4" data-targets="selection-list.items"
-                                            id="exit_pages" data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Exit Pages
-                                            </span>
-                                        </li>
-                                    </ul>
-                                </selection-list>
+                                <ul class="list-style-none text-center d-flex" id="pages_box">
+                                    <li class="selectionItem col-4 propertySelected"
+                                        data-targets="vince-stats.pages_box" id="pages" type="button"
+                                        data-action="click:vince-stats#selectPagesBox">
+                                        <span class="color-fg-muted">
+                                            Pages
+                                        </span>
+                                    </li>
+                                    <li class="selectionItem col-4 color-border-muted"
+                                        data-targets="vince-stats.pages_box" id="entry_pages" type="button"
+                                        data-action="click:vince-stats#selectPagesBox">
+                                        <span class="color-fg-muted">
+                                            Entry Pages
+                                        </span>
+                                    </li>
+                                    <li class="selectionItem col-4" data-targets="vince-stats.pages_box" id="exit_pages"
+                                        data-action="click:vince-stats#selectPagesBox">
+                                        <span class="color-fg-muted">
+                                            Exit Pages
+                                        </span>
+                                    </li>
+                                </ul>
                             </div>
                             <div class="Box-row">
                                 a
@@ -138,37 +133,35 @@
                     <div class="col-6">
                         <div class="Box">
                             <div class="Box-row p-0">
-                                <selection-list>
-                                    <ul class="list-style-none text-center d-flex">
-                                        <li class="selectionItem col-3 propertySelected"
-                                            data-targets="selection-list.items" id="referrers" type="button"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Referrers
-                                            </span>
-                                        </li>
-                                        <li class="selectionItem col-3 color-border-muted"
-                                            data-targets="selection-list.items" id="sources" type="button"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Sources
-                                            </span>
-                                        </li>
-                                        <li class="selectionItem col-3 color-border-muted"
-                                            data-targets="selection-list.items" id="media" type="button"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Media
-                                            </span>
-                                        </li>
-                                        <li class="selectionItem col-3" data-targets="selection-list.items"
-                                            id="campaigns" data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Campaigns
-                                            </span>
-                                        </li>
-                                    </ul>
-                                </selection-list>
+                                <ul class="list-style-none text-center d-flex" id="referrer_box">
+                                    <li class="selectionItem col-3 propertySelected"
+                                        data-targets="vince-stats.referrer_box" id="referrers" type="button"
+                                        data-action="click:vince-stats#referrerBox">
+                                        <span class="color-fg-muted">
+                                            Referrers
+                                        </span>
+                                    </li>
+                                    <li class="selectionItem col-3 color-border-muted"
+                                        data-targets="vince-stats.referrer_box" id="sources" type="button"
+                                        data-action="click:vince-stats#referrerBox">
+                                        <span class="color-fg-muted">
+                                            Sources
+                                        </span>
+                                    </li>
+                                    <li class="selectionItem col-3 color-border-muted"
+                                        data-targets="vince-stats.referrer_box" id="media" type="button"
+                                        data-action="click:vince-stats#referrerBox">
+                                        <span class="color-fg-muted">
+                                            Media
+                                        </span>
+                                    </li>
+                                    <li class="selectionItem col-3" data-targets="vince-stats.referrer_box"
+                                        id="campaigns" data-action="click:vince-stats#referrerBox">
+                                        <span class="color-fg-muted">
+                                            Campaigns
+                                        </span>
+                                    </li>
+                                </ul>
                             </div>
                             <div class="Box-row">
                                 a
@@ -215,30 +208,28 @@
                     <div class="col-6 pr-3">
                         <div class="Box">
                             <div class="Box-row p-0">
-                                <selection-list>
-                                    <ul class="list-style-none text-center d-flex">
-                                        <li class="selectionItem col-4 propertySelected"
-                                            data-targets="selection-list.items" id="countries" type="button"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Countries
-                                            </span>
-                                        </li>
-                                        <li class="selectionItem col-4 color-border-muted"
-                                            data-targets="selection-list.items" id="cities" type="button"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Cities
-                                            </span>
-                                        </li>
-                                        <li class="selectionItem col-4" data-targets="selection-list.items" id="regions"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Regions
-                                            </span>
-                                        </li>
-                                    </ul>
-                                </selection-list>
+                                <ul class="list-style-none text-center d-flex" id="countries_box">
+                                    <li class="selectionItem col-4 propertySelected"
+                                        data-targets="vince-stats.countries_box" id="countries" type="button"
+                                        data-action="click:vince-stats#countriesBox">
+                                        <span class="color-fg-muted">
+                                            Countries
+                                        </span>
+                                    </li>
+                                    <li class="selectionItem col-4 color-border-muted"
+                                        data-targets="vince-stats.countries_box" id="cities" type="button"
+                                        data-action="click:vince-stats#countriesBox">
+                                        <span class="color-fg-muted">
+                                            Cities
+                                        </span>
+                                    </li>
+                                    <li class="selectionItem col-4" data-targets="vince-stats.countries_box"
+                                        id="regions" data-action="click:vince-stats#countriesBox">
+                                        <span class="color-fg-muted">
+                                            Regions
+                                        </span>
+                                    </li>
+                                </ul>
                             </div>
                             <div class="Box-row">
                                 a
@@ -251,30 +242,27 @@
                     <div class="col-6">
                         <div class="Box">
                             <div class="Box-row p-0">
-                                <selection-list>
-                                    <ul class="list-style-none text-center d-flex">
-                                        <li class="selectionItem col-4 propertySelected"
-                                            data-targets="selection-list.items" id="os" type="button"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Os
-                                            </span>
-                                        </li>
-                                        <li class="selectionItem col-4  color-border-muted"
-                                            data-targets="selection-list.items" id="browsers" type="button"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Browsers
-                                            </span>
-                                        </li>
-                                        <li class="selectionItem col-4" data-targets="selection-list.items" id="devices"
-                                            data-action="click:selection-list#select">
-                                            <span class="color-fg-muted">
-                                                Devices
-                                            </span>
-                                        </li>
-                                    </ul>
-                                </selection-list>
+                                <ul class="list-style-none text-center d-flex" id="os_box">
+                                    <li class="selectionItem col-4 propertySelected" data-targets="vince-stats.os_box"
+                                        id="os" type="button" data-action="click:vince-stats#osBox">
+                                        <span class="color-fg-muted">
+                                            Os
+                                        </span>
+                                    </li>
+                                    <li class="selectionItem col-4  color-border-muted"
+                                        data-targets="vince-stats.os_box" id="browsers" type="button"
+                                        data-action="click:vince-stats#osBox">
+                                        <span class="color-fg-muted">
+                                            Browsers
+                                        </span>
+                                    </li>
+                                    <li class="selectionItem col-4" data-targets="vince-stats.os_box" id="devices"
+                                        data-action="click:vince-stats#osBox">
+                                        <span class="color-fg-muted">
+                                            Devices
+                                        </span>
+                                    </li>
+                                </ul>
                             </div>
                             <div class="Box-row">
                                 a
@@ -287,6 +275,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </vince-stats>
 </div>
 {{end}}
