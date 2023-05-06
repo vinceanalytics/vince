@@ -39,6 +39,7 @@ export interface Summary {
     visitDuration?: Item[];
     viewsPerVisit?: Item[];
 }
+
 export interface Item {
     key: string;
     value: string;
