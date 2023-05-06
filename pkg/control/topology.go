@@ -1,4 +1,4 @@
-package topology
+package control
 
 import (
 	"fmt"
@@ -6,21 +6,23 @@ import (
 	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	vince_listers "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
 	"github.com/gernest/vince/pkg/k8s"
-	apppsv1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	stateful_listers "k8s.io/client-go/listers/apps/v1"
 	listers "k8s.io/client-go/listers/core/v1"
 )
 
 type Topology struct {
-	serviceLister listers.ServiceLister
-	vinceLister   vince_listers.VinceLister
-	siteLister    vince_listers.SiteLister
-	podLister     listers.PodLister
-	secretsLister listers.SecretLister
-	configLister  listers.ConfigMapLister
+	serviceLister     listers.ServiceLister
+	vinceLister       vince_listers.VinceLister
+	siteLister        vince_listers.SiteLister
+	podLister         listers.PodLister
+	secretsLister     listers.SecretLister
+	configLister      listers.ConfigMapLister
+	statefulSetLister stateful_listers.StatefulSetLister
 }
 
 func (t *Topology) Build(filter *k8s.ResourceFilter) error {
@@ -41,27 +43,41 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		Vinces:   make(map[string]*v1alpha1.Vince),
 		Sites:    make(map[string]*v1alpha1.Site),
 	}
-	svc, err := t.serviceLister.List(labels.Everything())
-	if err != nil {
-		return nil, fmt.Errorf("failed to list services %v", err)
-	}
-	secrets, err := t.secretsLister.List(labels.Everything())
-	if err != nil {
-		return nil, fmt.Errorf("failed to list secrets %v", err)
-	}
-	config, err := t.configLister.List(labels.Everything())
-	if err != nil {
-		return nil, fmt.Errorf("failed to list config maps %v", err)
-	}
-	pods, err := t.podLister.List(labels.Everything())
-	if err != nil {
-		return nil, fmt.Errorf("failed to list pods maps %v", err)
-	}
+
+	// First we load all vince resources. These are root resources, we derive any
+	// new managed resources from them.
 	vince, err := t.vinceLister.List(labels.Everything())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list vinces maps %v", err)
 	}
-	site, err := t.siteLister.List(labels.Everything())
+	for _, o := range vince {
+		if filter.IsIgnored(o) {
+			continue
+		}
+		r.Vinces[key(o)] = o
+	}
+	base := baseSelector()
+	svc, err := t.serviceLister.List(base)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list services %v", err)
+	}
+	secrets, err := t.secretsLister.List(base)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list secrets %v", err)
+	}
+	config, err := t.configLister.List(base)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list config maps %v", err)
+	}
+	pods, err := t.podLister.List(base)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list pods maps %v", err)
+	}
+	site, err := t.siteLister.List(base)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vinces maps %v", err)
+	}
+	stateful, err := t.statefulSetLister.List(base)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list vinces maps %v", err)
 	}
@@ -89,28 +105,30 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		}
 		r.Pods[key(o)] = o
 	}
-	for _, o := range vince {
-		if filter.IsIgnored(o) {
-			continue
-		}
-		r.Vinces[key(o)] = o
-	}
+
 	for _, o := range site {
 		if filter.IsIgnored(o) {
 			continue
 		}
 		r.Sites[key(o)] = o
 	}
+	for _, o := range stateful {
+		if filter.IsIgnored(o) {
+			continue
+		}
+		r.StatefulSets[key(o)] = o
+	}
 	return r, nil
 }
 
 type Resources struct {
-	Services map[string]*corev1.Service
-	Secrets  map[string]*corev1.Secret
-	Configs  map[string]*corev1.ConfigMap
-	Pods     map[string]*corev1.Pod
-	Vinces   map[string]*v1alpha1.Vince
-	Sites    map[string]*v1alpha1.Site
+	Services     map[string]*corev1.Service
+	Secrets      map[string]*corev1.Secret
+	Configs      map[string]*corev1.ConfigMap
+	Pods         map[string]*corev1.Pod
+	Vinces       map[string]*v1alpha1.Vince
+	Sites        map[string]*v1alpha1.Site
+	StatefulSets map[string]*appsv1.StatefulSet
 }
 
 func (r *Resources) Resolve() *ChangeSet {
@@ -122,7 +140,7 @@ type ChangeSet struct {
 	Configs      []*corev1.ConfigMap
 	Services     []*corev1.Service
 	VinceStatus  []v1alpha1.VinceStatus
-	StatefulSets []*apppsv1.StatefulSet
+	StatefulSets []*appsv1.StatefulSet
 }
 
 func key(o metav1.Object) string {

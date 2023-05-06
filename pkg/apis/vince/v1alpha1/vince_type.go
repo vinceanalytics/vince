@@ -51,7 +51,19 @@ type Volume struct {
 	VolumeType   string                `json:"type,omitempty"`
 }
 
+// VinceStatus tracks status of resources that are created from Vince.
 type VinceStatus struct {
+	// The state of the Secret resource used to configure the vince resource.
+	// +kubebuilder:validation:Enum=Created;Resolved
+	//+optional
+	Secret string `json:"secret,omitempty"`
+	// The state of ConfigMap resource used for configuring vince instance
+	// +kubebuilder:validation:Enum=Created;Resolved
+	//+optional
+	Config string `json:"config,omitempty"`
+	//The state of the Service resource exposing the Vince instance.
+	//+optional
+	Service *v1.ServiceStatus `json:"service,omitempty"`
 	// We track the status of the pod linked to this vince resource deployment.
 	// +optional
 	Pod *v1.PodStatus `json:"pod,omitempty"`

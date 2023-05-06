@@ -13,6 +13,9 @@ import (
 // VinceStatusApplyConfiguration represents an declarative configuration of the VinceStatus type for use
 // with apply.
 type VinceStatusApplyConfiguration struct {
+	Secret      *string             `json:"secret,omitempty"`
+	Config      *string             `json:"config,omitempty"`
+	Service     *v1.ServiceStatus   `json:"service,omitempty"`
 	Pod         *v1.PodStatus       `json:"pod,omitempty"`
 	StatefulSet *appsv1.StatefulSet `json:"stateful_set,omitempty"`
 }
@@ -21,6 +24,30 @@ type VinceStatusApplyConfiguration struct {
 // apply.
 func VinceStatus() *VinceStatusApplyConfiguration {
 	return &VinceStatusApplyConfiguration{}
+}
+
+// WithSecret sets the Secret field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Secret field is set to the value of the last call.
+func (b *VinceStatusApplyConfiguration) WithSecret(value string) *VinceStatusApplyConfiguration {
+	b.Secret = &value
+	return b
+}
+
+// WithConfig sets the Config field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Config field is set to the value of the last call.
+func (b *VinceStatusApplyConfiguration) WithConfig(value string) *VinceStatusApplyConfiguration {
+	b.Config = &value
+	return b
+}
+
+// WithService sets the Service field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Service field is set to the value of the last call.
+func (b *VinceStatusApplyConfiguration) WithService(value v1.ServiceStatus) *VinceStatusApplyConfiguration {
+	b.Service = &value
+	return b
 }
 
 // WithPod sets the Pod field in the declarative configuration to the given value
