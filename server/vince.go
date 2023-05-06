@@ -30,11 +30,11 @@ import (
 )
 
 func Serve(ctx *cli.Context) error {
-	conf, err := config.Load(ctx)
+	conf, goCtx, err := config.Load(ctx)
 	if err != nil {
 		return err
 	}
-	goCtx, cancel := context.WithCancel(context.Background())
+	goCtx, cancel := context.WithCancel(goCtx)
 	defer cancel()
 
 	// make sure we create log path
@@ -57,7 +57,6 @@ func Serve(ctx *cli.Context) error {
 		}
 	}
 	conf.LogLevel = config.Config_info
-	goCtx = config.Set(goCtx, conf)
 	return HTTP(goCtx, conf, errorLog)
 }
 

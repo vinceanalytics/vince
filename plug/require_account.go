@@ -13,7 +13,7 @@ func RequireAccount(h http.Handler) http.Handler {
 		if usr == nil {
 			session, r := sessions.Load(r)
 			session.Data.LoginDest = r.URL.Path
-			session.Save(w)
+			session.Save(r.Context(), w)
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}

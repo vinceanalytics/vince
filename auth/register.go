@@ -54,7 +54,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	ctx := models.SetUser(r.Context(), u)
 	session.Data.CurrentUserID = u.ID
 	session.Data.LoggedIn = true
-	session.Save(w)
+	session.Save(ctx, w)
 	if u.EmailVerified {
 		http.Redirect(w, r, "/new", http.StatusFound)
 	} else {

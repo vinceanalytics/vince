@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/x509"
@@ -18,41 +19,51 @@ type KeyPair struct {
 	Private ed25519.PrivateKey
 }
 
-var SECURITY *KeyPair
-
-var AGE *age.X25519Identity
-
-func setupSecrets(c *Config) (err error) {
+func setupSecrets(c *Config) (*KeyPair, *age.X25519Identity, error) {
 	s := c.Secrets
-
 	b, err := readSecret(s.Ed25519KeyPair.PublicKey)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	data, _ := pem.Decode(b)
 	pub, err := x509.ParsePKIXPublicKey(data.Bytes)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	b, err = readSecret(s.Ed25519KeyPair.PrivateKey)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	data, _ = pem.Decode(b)
 	priv, err := x509.ParsePKCS8PrivateKey(data.Bytes)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	SECURITY = &KeyPair{
+	sec := &KeyPair{
 		Public:  pub.(ed25519.PublicKey),
 		Private: priv.(ed25519.PrivateKey),
 	}
 	ageFile, err := readSecret(s.Age.PrivateKey)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	AGE, err = age.ParseX25519Identity(string(ageFile))
-	return
+	a, err := age.ParseX25519Identity(string(ageFile))
+	if err != nil {
+		return nil, nil, err
+	}
+	return sec, a, nil
+}
+
+type securityKey struct{}
+
+type ageKey struct{}
+
+func GetSecuritySecret(ctx context.Context) *KeyPair {
+	return ctx.Value(securityKey{}).(*KeyPair)
+}
+
+func GetAgeSecret(ctx context.Context) *age.X25519Identity {
+	return ctx.Value(ageKey{}).(*age.X25519Identity)
 }
 
 func generateAndSaveEd25519(dir string) (privPath, pubPath string, err error) {

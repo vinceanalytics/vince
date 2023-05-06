@@ -24,6 +24,6 @@ func DeleteGoal(w http.ResponseWriter, r *http.Request) {
 			Success: []string{"Goal deleted successfully"},
 		}
 	}
-	session.Save(w)
+	session.Save(ctx, w)
 	http.Redirect(w, r, to, http.StatusFound)
 }

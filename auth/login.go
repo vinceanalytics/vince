@@ -62,6 +62,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	session.Data.LoggedIn = true
 	dest := session.Data.LoginDest
 	session.Data.LoginDest = ""
-	session.Save(w)
+	session.Save(ctx, w)
 	http.Redirect(w, r, dest, http.StatusFound)
 }

@@ -19,7 +19,7 @@ func ResetStats(w http.ResponseWriter, r *http.Request) {
 	session.Data.Flash = &flash.Flash{
 		Success: []string{"site stats have been permanently deleted"},
 	}
-	session.Save(w)
+	session.Save(ctx, w)
 	http.Redirect(w, r, "/sites", http.StatusFound)
 
 }

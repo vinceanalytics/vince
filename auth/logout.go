@@ -13,6 +13,6 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	session, r := sessions.Load(r)
 	session.Data = sessions.Data{}
-	session.Save(w)
+	session.Save(r.Context(), w)
 	http.Redirect(w, r, redirect, http.StatusFound)
 }

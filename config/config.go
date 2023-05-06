@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -14,10 +15,6 @@ import (
 //go:generate protoc -I=. --go_out=paths=source_relative:. config.proto
 
 type configKey struct{}
-
-func Set(ctx context.Context, conf *Config) context.Context {
-	return context.WithValue(ctx, configKey{}, conf)
-}
 
 func Get(ctx context.Context) *Config {
 	return ctx.Value(configKey{}).(*Config)
@@ -199,17 +196,24 @@ func Flags() []cli.Flag {
 	}
 }
 
-func Load(ctx *cli.Context) (*Config, error) {
+func Load(ctx *cli.Context) (*Config, context.Context, error) {
 	base := fromCli(ctx)
 	conf, err := fromFile(ctx)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return nil, err
+			return nil, nil, err
 		}
 	} else {
 		proto.Merge(base, conf)
 	}
-	return base, setupSecrets(base)
+	sec, a, err := setupSecrets(base)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to setup secrets %v", err)
+	}
+	baseCtx := context.WithValue(context.Background(), configKey{}, base)
+	baseCtx = context.WithValue(baseCtx, securityKey{}, sec)
+	baseCtx = context.WithValue(baseCtx, ageKey{}, a)
+	return base, baseCtx, nil
 }
 
 func fromFile(ctx *cli.Context) (*Config, error) {

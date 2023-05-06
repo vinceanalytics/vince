@@ -38,7 +38,7 @@ func Issue(ctx context.Context, key *models.APIKey) string {
 		IssuedAt:  jwt.NewNumericDate(today),
 		ID:        strconv.FormatUint(key.ID, 10),
 	})
-	tokenString, err := token.SignedString(config.SECURITY.Private)
+	tokenString, err := token.SignedString(config.GetSecuritySecret(ctx).Private)
 	if err != nil {
 		db.Rollback()
 		log.Get(ctx).Err(err).Msg("failed to generate token")
@@ -61,7 +61,7 @@ func Issue(ctx context.Context, key *models.APIKey) string {
 
 func Validate(ctx context.Context, tokenString string) (*jwt.RegisteredClaims, bool) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return config.SECURITY.Public, nil
+		return config.GetSecuritySecret(ctx).Public, nil
 	})
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed to parse jwt token")

@@ -1,14 +1,14 @@
 package plans
 
 import (
+	"crypto/ed25519"
 	"strconv"
 
-	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/timex"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func IssueLicense(plan *Plan, emails []string, lid uint64) (string, error) {
+func IssueLicense(key ed25519.PrivateKey, plan *Plan, emails []string, lid uint64) (string, error) {
 	today := timex.Today()
 	yearDays := timex.DaysInAYear(today)
 	expires := today.AddDate(0, 0, yearDays)
@@ -21,5 +21,5 @@ func IssueLicense(plan *Plan, emails []string, lid uint64) (string, error) {
 		IssuedAt:  jwt.NewNumericDate(today),
 		ID:        strconv.FormatUint(lid, 10),
 	})
-	return token.SignedString(config.SECURITY.Private)
+	return token.SignedString(key)
 }

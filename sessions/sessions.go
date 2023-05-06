@@ -119,7 +119,7 @@ func (s *Session) Get(ctx context.Context, value string) []byte {
 	if err != nil {
 		return nil
 	}
-	r, err := age.Decrypt(bytes.NewReader(base), config.AGE)
+	r, err := age.Decrypt(bytes.NewReader(base), config.GetAgeSecret(ctx))
 	if err != nil {
 		// No need to log here. Bad Sessions will simply be ignored
 		return nil
@@ -131,9 +131,9 @@ func (s *Session) Get(ctx context.Context, value string) []byte {
 	return b
 }
 
-func (s *SessionContext) Save(w http.ResponseWriter) {
+func (s *SessionContext) Save(ctx context.Context, w http.ResponseWriter) {
 	b, _ := json.Marshal(s.Data)
-	value := s.s.Create(b)
+	value := s.s.Create(ctx, b)
 	cookie := &http.Cookie{
 		Path:    "/",
 		Name:    string(s.s),
@@ -143,9 +143,9 @@ func (s *SessionContext) Save(w http.ResponseWriter) {
 	http.SetCookie(w, cookie)
 }
 
-func (s *Session) Create(b []byte) string {
+func (s *Session) Create(ctx context.Context, b []byte) string {
 	var buf bytes.Buffer
-	w, err := age.Encrypt(&buf, config.AGE.Recipient())
+	w, err := age.Encrypt(&buf, config.GetAgeSecret(ctx).Recipient())
 	if err != nil {
 		panic("failed to encrypt session " + err.Error())
 	}
@@ -172,7 +172,7 @@ func SaveCaptcha(w http.ResponseWriter, r *http.Request) *http.Request {
 		return r
 	}
 	session.Data.Captcha = formatCaptchaSolution(solution)
-	session.Save(w)
+	session.Save(r.Context(), w)
 	return r.WithContext(templates.SetCaptcha(r.Context(),
 		template.HTMLAttr(fmt.Sprintf("src=%q", string(data))),
 	))
@@ -184,7 +184,7 @@ func SaveCsrf(w http.ResponseWriter, r *http.Request) *http.Request {
 	rand.Read(token)
 	csrf := base64.StdEncoding.EncodeToString(token)
 	session.Data.Csrf = csrf
-	session.Save(w)
+	session.Save(r.Context(), w)
 	return r.WithContext(templates.SetCSRF(r.Context(), template.HTML(csrf)))
 }
 

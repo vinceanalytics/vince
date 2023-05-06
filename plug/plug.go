@@ -49,7 +49,7 @@ func FetchFlash(h http.Handler) http.Handler {
 			r = r.WithContext(flash.Set(r.Context(), f))
 			// save session without the flashes
 			session.Data.Flash = nil
-			session.Save(w)
+			session.Save(r.Context(), w)
 		}
 		h.ServeHTTP(w, r)
 	})
@@ -78,7 +78,7 @@ func SessionTimeout(h http.Handler) http.Handler {
 			session.Data = sessions.Data{}
 		case session.Data.CurrentUserID != 0:
 			session.Data.TimeoutAt = now.Add(24 * 7 * 2 * time.Hour)
-			session.Save(w)
+			session.Save(r.Context(), w)
 		}
 		h.ServeHTTP(w, r)
 	})
@@ -92,7 +92,7 @@ func Auth(h http.Handler) http.Handler {
 				r = r.WithContext(models.SetUser(r.Context(), u))
 			} else {
 				session.Data = sessions.Data{}
-				session.Save(w)
+				session.Save(r.Context(), w)
 			}
 		}
 		h.ServeHTTP(w, r)
@@ -112,10 +112,10 @@ func LastSeen(h http.Handler) http.Handler {
 				log.Get(r.Context()).Err(err).Msg("failed to update last_seen")
 			}
 			session.Data.LastSeen = now
-			session.Save(w)
+			session.Save(r.Context(), w)
 		case usr != nil && session.Data.LastSeen.IsZero():
 			session.Data.LastSeen = now
-			session.Save(w)
+			session.Save(r.Context(), w)
 		}
 		h.ServeHTTP(w, r)
 	})

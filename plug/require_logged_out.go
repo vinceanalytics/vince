@@ -12,7 +12,7 @@ func RequireLoggedOut(h http.Handler) http.Handler {
 		if models.GetUser(r.Context()) != nil {
 			session, r := sessions.Load(r)
 			session.Data.LoggedIn = true
-			session.Save(w)
+			session.Save(r.Context(), w)
 			http.Redirect(w, r, "/sites", http.StatusFound)
 			return
 		}
