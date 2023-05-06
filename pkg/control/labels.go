@@ -8,9 +8,11 @@ import (
 )
 
 const (
-	APP       = "app"
-	COMPONENT = "component"
-	VERSION   = "version"
+	APP       = "app.kubernetes.io/name"
+	COMPONENT = "app.kubernetes.io/component"
+	VERSION   = "app.kubernetes.io/version"
+	PART      = "app.kubernetes.io/part-of"
+	MANAGED   = "app.kubernetes.io/managed-by"
 )
 
 var version string
@@ -25,8 +27,10 @@ func init() {
 func baseLabels() map[string]string {
 	return map[string]string{
 		APP:       "vince",
-		COMPONENT: "v8s",
+		COMPONENT: "server",
 		VERSION:   version,
+		MANAGED:   "v8s",
+		PART:      "vinceanalytics",
 	}
 }
 
