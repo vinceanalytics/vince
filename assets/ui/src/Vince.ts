@@ -37,6 +37,15 @@ class VinceStatsElement extends HTMLElement {
         }
         button.classList.add('propertySelected')
     }
+
+    #shortNumber(value: number): string {
+        let p = Math.floor(Math.log10(Math.abs(value)));
+        if (p <= 2) return value.toString();
+        let l = Math.floor(p / 3);
+        let shortened =
+            Math.pow(10, p - l * 3) * +(value / Math.pow(10, p)).toFixed(1);
+        return Math.round(shortened * 100) / 100 + " " + ["", "K", "M", "B", "T"][l];
+    }
 }
 
 declare global {
