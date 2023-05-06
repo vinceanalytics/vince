@@ -180,3 +180,47 @@
 .selectionItem:hover {
     cursor: pointer
 }
+
+.select-menu-modal {
+    width: 300px !important;
+    margin-top: 4px !important;
+    margin-bottom: 20px;
+    overflow: hidden;
+    font-size: 12px;
+    color: var(--color-fg-default) !important;
+    background-color: var(--color-canvas-overlay) !important;
+    background-clip: padding-box;
+    border: 1px solid var(--color-border-default) !important;
+    border-radius: 6px !important;
+    box-shadow: var(--color-shadow-large) !important;
+}
+
+.select-menu-item-text {
+    display: block;
+    text-align: left;
+}
+
+.select-menu-item-icon {
+    float: left;
+    margin-left: -20px;
+}
+
+.select-menu-item {
+    padding: 8px 8px 8px 30px !important;
+    cursor: pointer;
+    border-bottom: 1px solid var(--color-border-muted) !important;
+}
+
+.select-menu-header,
+.select-menu-divider {
+    padding: 8px 10px;
+    line-height: 16px;
+    background: var(--color-canvas-subtle);
+    border-bottom: 1px solid var(--color-border-muted);
+}
+
+.select-menu-header .select-menu-title,
+.select-menu-divider {
+    font-weight: var(--base-text-weight-semibold, 600);
+    color: var(--color-fg-default);
+}

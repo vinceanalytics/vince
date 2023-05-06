@@ -44,7 +44,7 @@ func yesterday() CalendarEntry {
 func monthToDate() CalendarEntry {
 	ts := time.Now()
 	return CalendarEntry{
-		Name:  "monthToDate",
+		Name:  "This month",
 		End:   ts,
 		Start: timex.BeginningOfMonth(ts),
 	}
@@ -54,7 +54,7 @@ func lastMonth() CalendarEntry {
 	ts := timex.BeginningOfMonth(time.Now())
 	lastMonthDays := timex.DaysInMonth(ts.Add(-time.Hour * 24))
 	return CalendarEntry{
-		Name:  "lastMonth",
+		Name:  "Last month",
 		End:   ts,
 		Start: ts.Add(-time.Hour * 24 * time.Duration(lastMonthDays)),
 	}
@@ -63,7 +63,7 @@ func lastMonth() CalendarEntry {
 func past7Days() CalendarEntry {
 	ts := timex.Today()
 	return CalendarEntry{
-		Name:  "past7Days",
+		Name:  "Past 7 days",
 		End:   ts,
 		Start: ts.Add(-time.Hour * 24 * 7),
 	}
@@ -72,7 +72,7 @@ func past7Days() CalendarEntry {
 func past14Days() CalendarEntry {
 	ts := timex.Today()
 	return CalendarEntry{
-		Name:  "past14Days",
+		Name:  "Past 14 days",
 		End:   ts,
 		Start: ts.Add(-time.Hour * 24 * 14),
 	}
@@ -81,7 +81,7 @@ func past14Days() CalendarEntry {
 func past30Days() CalendarEntry {
 	ts := timex.Today()
 	return CalendarEntry{
-		Name:  "past14Days",
+		Name:  "Past 30 days",
 		End:   ts,
 		Start: ts.Add(-time.Hour * 24 * 30),
 	}
