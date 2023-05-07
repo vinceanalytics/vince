@@ -110,7 +110,7 @@ It was late night, 1 year after I quit my job and took a sabbatical, I was liste
 to one of his album [Big Fish Theory](https://en.wikipedia.org/wiki/Big_Fish_Theory)
 . The song Big Fish inspired me to program again.
 
-The lirics that got me going.
+The lyrics that got me going.
 ```
 I was up late night ballin'
 Countin' up hundreds by the thousand

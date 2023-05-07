@@ -38,6 +38,7 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-ed-priv -r -d 'pa
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-ed-pub -r -d 'path to a file with  ed25519 public key'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-age-pub -r -d 'path to a file with  age public key'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-age-priv -r -d 'path to a file with  age private key'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-system-stats -d 'Collect and visualize system stats'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l help -s h -d 'show help'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l version -s v -d 'print the version'
 complete -c vince -n '__fish_seen_subcommand_from config' -f -l help -s h -d 'show help'
