@@ -151,7 +151,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	resources = append(resources, h)
 	ctx = health.Set(ctx, h)
 
-	svr := buildServer(ctx, cancel, &g, httpListener, Handle(ctx))
+	svr := buildServer(ctx, &g, httpListener, Handle(ctx))
 	// We start by shutting down the server before shutting everything else. So we
 	// prepend svr for it to be called first.
 	resources = append(resourceList{svr}, resources...)
@@ -176,7 +176,6 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 
 func buildServer(
 	ctx context.Context,
-	cancel context.CancelFunc,
 	g *errgroup.Group,
 	httpListener net.Listener,
 	h http.Handler,
@@ -188,7 +187,6 @@ func buildServer(
 		},
 	}
 	g.Go(func() error {
-		defer cancel()
 		return svr.Serve(httpListener)
 	})
 	return resourceList{svr}
