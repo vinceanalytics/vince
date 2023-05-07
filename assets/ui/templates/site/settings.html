@@ -1,0 +1,165 @@
+{{define "_content"}}
+<div class="container-md">
+    <div class="Subhead Subhead--spacious text-center settingsDivider">
+        <h2 class="Subhead-heading">Site Settings</h2>
+        <div class="Subhead-description">{{.Site.Domain}}</div>
+    </div>
+
+    <div class="Subhead border-0">
+        <h2 class="Subhead-heading">Javascript Snippet </h2>
+        <div class="Subhead-description">
+            Include this snippet in the <code>&lt;head&gt;</code> of your website.
+        </div>
+    </div>
+    <div class="Box pt-3">
+        <div class="Box-body">
+            <div class="markdown-body">
+                <pre><code>{{.Snippet}}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="Subhead border-bottom-0 border-top pt-3 mt-3 settingsDivider">
+        <h2 class="Subhead-heading">People</h2>
+        <div class="Subhead-description">Invite your friends or coworkers</div>
+        <div class="Subhead-action">
+            <a class="btn btn-primary" href="/sites/{{SafeDomain .Site}}/memberships/invite">
+                {{Icon "plus" 16}}
+                <span>Invite</span>
+            </a>
+        </div>
+    </div>
+    <div class="Box pt-3">
+        <div class="Box-body">
+            <div class="Box">
+                {{range .Site.SiteMemberships}}
+                <div class="Box-row">
+                    <div class="d-flex flex-items-center">
+                        <div class="flex-shrink-0 p-3">
+                            {{Avatar .User.ID 64 "rounded-full"}}
+                        </div>
+                        <div class="flex-1">
+                            <h1 class="text-normal lh-condensed">
+                                {{.User.Name}}
+                            </h1>
+                            <p class="h4 color-fg-muted text-normal mb-2">
+                                {{.User.Email}}
+                            </p>
+                        </div>
+                        <details class="details-reset details-overlay position-relative mt-1 mt-lg-0 mr-1"
+                            id="type-options">
+                            <summary aria-haspopup="menu" data-view-component="true" class="Label Label--large"
+                                role="button"> <span>{{.Role}}</span>
+                                <span class="dropdown-caret"></span>
+                            </summary>
+                            <details-menu class="SelectMenu right-lg-0" role="menu">
+                                <div class="SelectMenu-modal">
+                                    <header class="SelectMenu-header">
+                                        <span class="SelectMenu-title">Change Role</span>
+                                    </header>
+                                    <div class="SelectMenu-list">
+                                        <label class="SelectMenu-item" role="menuitemradio" aria-checked="true"
+                                            tabindex="0">
+                                            <input type="radio" name="type" id="type_" value="{{.Role}}" hidden="hidden"
+                                                data-autosubmit="true" checked="checked">
+                                            {{Icon "check" 16 "SelectMenu-icon SelectMenu-icon--check"}}
+                                            <span class="text-normal">{{.Role}}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </details-menu>
+                        </details>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+    <div class="Subhead border-bottom-0 border-top pt-3 mt-3 settingsDivider">
+        <h2 class="Subhead-heading">Visibility</h2>
+    </div>
+    <div class="Box color-border-danger">
+        <div class="Box-row d-flex flex-items-center">
+            <div class="flex-auto mb-md-0 mb-2">
+                <strong>
+                    Change site visibility
+                </strong>
+                <p class="mb-0">
+                    This site is currently {{if .Site.Public}}public{{else}}private{{end}}
+                </p>
+            </div>
+            <div class="flex-md-order-1 flex-order-2">
+                <form action="/sites/{{SafeDomain .Site}}/make-{{if .Site.Public}}private{{else}}public{{end}}"
+                    method="post">
+                    {{template "_csrf" .}}
+                    <button type="submit" class=" Button--danger Button--medium Button">
+                        <span class="Button-content">
+                            <span class="Button-label"> change to {{if .Site.Public}}private{{else}}public
+                                {{end}}</span>
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="Subhead border-bottom-0 border-top pt-3 mt-3 settingsDivider">
+        <h2 class="Subhead-heading">Goals</h2>
+        <div class="Subhead-description">You can start creating your goals now.</div>
+        <div class="Subhead-action">
+            <a class="btn btn-primary" href="/{{SafeDomain .Site}}/goals/new">
+                {{Icon "plus" 16}}
+                <span>Add goal</span>
+            </a>
+        </div>
+    </div>
+    {{$site := .Site}}
+    {{$ctx := .}}
+    <div class="Box">
+        <ul>
+            {{range .Goals}}
+            <li class="Box-row">
+                <div
+                    class="f4 d-flex width-full flex-items-baseline flex-justify-between lh-condensed text-bold color-fg-default">
+                    <span class="text-bold  d-inline-block">
+                        {{GoalName .}}
+                    </span>
+                    <div>
+                        <form action="/{{SafeDomain $site}}/goals/{{.ID}}/delete" method="post">
+                            {{template "_csrf" $ctx}}
+                            <button type="submit" class=" btn btn-danger">
+                                Remove
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            {{end}}
+        </ul>
+    </div>
+    <div class="Subhead border-bottom-0 border-top pt-3 mt-3 settingsDivider">
+        <h2 class="Subhead-heading">Danger Zone</h2>
+    </div>
+    <Div class="Box color-border-danger">
+        <div class="Box-row d-flex flex-items-center">
+            <div class="flex-auto mb-md-0 mb-2">
+                <strong>
+                    Delete this Site
+                </strong>
+                <p class="mb-0">
+                    There is no way to recover this action.
+                </p>
+            </div>
+            <div class="flex-md-order-1 flex-order-2">
+                <form action="/{{SafeDomain .Site}}/delete" method="post">
+                    {{template "_csrf" .}}
+                    <button type="submit" class=" Button--danger Button--medium Button">
+                        <span class="Button-content">
+                            <span class="Button-label">Delete this site</span>
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </Div>
+</div>
+{{end}}

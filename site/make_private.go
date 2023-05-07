@@ -15,6 +15,6 @@ func MakePrivate(w http.ResponseWriter, r *http.Request) {
 	session, r := sessions.Load(r)
 	session.SuccessFlash(fmt.Sprintf("Stats for %s are now private.", site.Domain))
 	session.Save(ctx, w)
-	to := fmt.Sprintf("/%s/settings/visibility", models.SafeDomain(site))
+	to := fmt.Sprintf("/%s/settings", models.SafeDomain(site))
 	http.Redirect(w, r, to, http.StatusFound)
 }

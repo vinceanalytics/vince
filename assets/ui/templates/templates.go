@@ -112,41 +112,11 @@ var UserSettings = template.Must(
 	),
 ).Lookup("app")
 
-var SiteSettingsGeneral = template.Must(
+var SiteSettings = template.Must(
 	layout().ParseFS(Files,
-		"site/settings_general.html",
+		"site/settings.html",
 	),
-).Lookup("site_settings")
-
-var SiteSettingsGoals = template.Must(
-	layout().ParseFS(Files,
-		"site/settings_goals.html",
-	),
-).Lookup("site_settings")
-
-var SiteSettingsPeople = template.Must(
-	layout().ParseFS(Files,
-		"site/settings_people.html",
-	),
-).Lookup("site_settings")
-
-var SiteSettingsVisibility = template.Must(
-	layout().ParseFS(Files,
-		"site/settings_visibility.html",
-	),
-).Lookup("site_settings")
-
-var SiteSettingsReports = template.Must(
-	layout().ParseFS(Files,
-		"site/settings_email_reports.html",
-	),
-).Lookup("site_settings")
-
-var SiteSettingsDanger = template.Must(
-	layout().ParseFS(Files,
-		"site/settings_danger_zone.html",
-	),
-).Lookup("site_settings")
+).Lookup("app")
 
 var SiteNewGoal = template.Must(
 	layout().ParseFS(Files,

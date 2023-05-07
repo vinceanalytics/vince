@@ -50,7 +50,7 @@ func InviteMember(w http.ResponseWriter, r *http.Request) {
 			models.LOG(ctx, err, "failed to save invite")
 		}
 		session.Save(ctx, w)
-		to := fmt.Sprintf("/%s/settings/people", models.SafeDomain(site))
+		to := fmt.Sprintf("/%s/settings", models.SafeDomain(site))
 		http.Redirect(w, r, to, http.StatusFound)
 		return
 	}

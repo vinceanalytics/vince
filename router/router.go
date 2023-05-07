@@ -112,12 +112,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 
 		sitePipe.GET(`^/:website/snippet$`, site.AddSnippet),
 		sitePipe.GET(`^/:website/settings$`, site.Settings),
-		sitePipe.GET(`^/:website/settings/general$`, site.SettingsGeneral),
-		sitePipe.GET(`^/:website/settings/people$`, site.SettingsPeople),
-		sitePipe.GET(`^/:website/settings/visibility$`, site.SettingsVisibility),
-		sitePipe.GET(`^/:website/settings/goals$`, site.SettingsGoals),
-		sitePipe.GET(`^/:website/settings/email-reports$`, site.SettingsEmailReports),
-		sitePipe.GET(`^/:website/settings/danger-zone$`, site.SettingsDangerZone),
 		sitePipe.GET(`^/:website/goals/new$`, site.NewGoal),
 		sitePipe.POST(`^/:website/goals$`, site.CreateGoal),
 		sitePipe.POST(`^/:website/goals/:id/delete$`, site.DeleteGoal),
