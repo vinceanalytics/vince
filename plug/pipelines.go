@@ -134,8 +134,6 @@ const domain = `(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`
 const website = `(?P<website>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`
 
 var replace = map[string]string{
-	":plan_id":       "(?P<plan_id>[^.]+)",
-	":new_plan_id":   "(?P<new_plan_id>[^.]+)",
 	":domain":        domain,
 	":website":       website,
 	":recipient":     "(?P<recipient>[^.]+)",

@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
-	"github.com/gernest/vince/internal/plans"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/octicon"
 )
@@ -276,26 +274,6 @@ func Logo(width, height int) template.HTML {
 		`<img alt="Vince Analytics logo" width=%d height=%d src=%q>`,
 		width, height, "/image/logo.svg",
 	))
-}
-
-func (t *Context) Format(n uint64) string {
-	switch {
-	case n >= 1_000 && n < 1_000_000:
-		thousands := (n / 100) / 10
-		return fmt.Sprintf("%dK", thousands)
-	case n >= 1_000_000 && n < 1_000_000_000:
-		millions := (n / 100_000) / 10
-		return fmt.Sprintf("%dM", millions)
-	case n >= 1_000_000_000 && n < 1_000_000_000_000:
-		billions := (n / 100_000_000) / 10
-		return fmt.Sprintf("%dB", billions)
-	default:
-		return strconv.FormatUint(n, 10)
-	}
-}
-
-func (Context) Plans() []plans.Plan {
-	return plans.All
 }
 
 func (Context) Slogan() string {
