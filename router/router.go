@@ -20,6 +20,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	pipe1 := plug.Pipeline{plug.Firewall(ctx), plug.AuthorizeSiteAPI}
 	pipe2 := plug.SharedLink()
 	pipe4 := plug.API(ctx)
+	browser := plug.Browser(ctx)
 	pipe5 := append(plug.Browser(ctx), plug.Protect()...)
 	sitePipe := pipe5.And(plug.RequireAccount, plug.AuthorizedSiteAccess("owner", "admin", "super_admin"))
 	return plug.Pipeline{
@@ -46,8 +47,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe4.PathGET("/health", api.Health),
 		pipe4.PathGET("/version", api.Version),
 
-		pipe5.PathGET("/", pages.Home),
-		pipe5.PathGET("/avatar", avatar.Serve),
+		browser.PathGET("/", pages.Home),
+		browser.PathGET("/avatar", avatar.Serve),
 		pipe5.And(plug.RequireLoggedOut).PathGET("/register", auth.RegisterForm),
 		pipe5.And(plug.RequireLoggedOut).PathPOST("/register", auth.Register),
 		pipe5.And(plug.RequireLoggedOut).GET(`^/register/invitation/:invitation_id$`, auth.RegisterFromInvitationForm),
