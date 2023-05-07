@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -79,6 +80,13 @@ func (r resourceList) Close() error {
 func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	// we start listeners early to make sure we can actually bind to the network.
+	// This saves us managing all long running goroutines we start in this process.
+	httpListener, err := net.Listen("tcp", o.ListenAddress)
+	if err != nil {
+		return fmt.Errorf("failed to bind to a network address %v", err)
+	}
 	var g errgroup.Group
 	ctx = group.Set(ctx, &g)
 
@@ -86,10 +94,11 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 
 	sqlDb, err := models.Open(models.Database(o))
 	if err != nil {
+		httpListener.Close()
 		return err
 	}
 	var resources resourceList
-	resources = append(resources, errorLog)
+	resources = append(resources, errorLog, httpListener)
 	resources = append(resources, resourceFunc(func() error {
 		return models.CloseDB(sqlDb)
 	}))
@@ -142,25 +151,18 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	resources = append(resources, h)
 	ctx = health.Set(ctx, h)
 
-	svr := &http.Server{
-		Addr:    o.ListenAddress,
-		Handler: Handle(ctx),
-		BaseContext: func(l net.Listener) context.Context {
-			return ctx
-		},
-	}
+	svr := buildServer(ctx, cancel, &g, httpListener, Handle(ctx))
 	// We start by shutting down the server before shutting everything else. So we
 	// prepend svr for it to be called first.
 	resources = append(resourceList{svr}, resources...)
 
-	g.Go(svr.ListenAndServe)
 	g.Go(func() error {
 		// Ensure we close the server.
 		<-ctx.Done()
 		log.Get(ctx).Debug().Msg("shutting down gracefully ")
 		return resources.Close()
 	})
-	log.Get(ctx).Debug().Str("address", svr.Addr).Msg("started serving traffic")
+	log.Get(ctx).Debug().Str("address", httpListener.Addr().String()).Msg("started serving traffic")
 	g.Go(func() error {
 		abort := make(chan os.Signal, 1)
 		signal.Notify(abort, os.Interrupt)
@@ -170,6 +172,26 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		return nil
 	})
 	return g.Wait()
+}
+
+func buildServer(
+	ctx context.Context,
+	cancel context.CancelFunc,
+	g *errgroup.Group,
+	httpListener net.Listener,
+	h http.Handler,
+) resourceList {
+	svr := &http.Server{
+		Handler: Handle(ctx),
+		BaseContext: func(l net.Listener) context.Context {
+			return ctx
+		},
+	}
+	g.Go(func() error {
+		defer cancel()
+		return svr.Serve(httpListener)
+	})
+	return resourceList{svr}
 }
 
 func Handle(ctx context.Context) http.Handler {
