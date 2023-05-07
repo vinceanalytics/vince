@@ -106,23 +106,11 @@ var SiteLocked = template.Must(
 	),
 ).Lookup("app")
 
-var UserSettingsProfile = template.Must(
+var UserSettings = template.Must(
 	layout().ParseFS(Files,
-		"auth/user_settings_profile.html",
+		"auth/user_settings.html",
 	),
-).Lookup("user_settings")
-
-var UserSettingsAccount = template.Must(
-	layout().ParseFS(Files,
-		"auth/user_settings_account.html",
-	),
-).Lookup("user_settings")
-
-var UserSettingsAPIKeys = template.Must(
-	layout().ParseFS(Files,
-		"auth/user_settings_api_keys.html",
-	),
-).Lookup("user_settings")
+).Lookup("app")
 
 var SiteSettingsGeneral = template.Must(
 	layout().ParseFS(Files,
