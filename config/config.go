@@ -193,6 +193,11 @@ func Flags() []cli.Flag {
 			Usage:   "Collect and visualize system stats",
 			EnvVars: []string{"VINCE_ENABLE_SYSTEM_STATS"},
 		},
+		&cli.BoolFlag{
+			Name:    "enable-auto-tls",
+			Usage:   "Enables using acme for automatic https.",
+			EnvVars: []string{"VINCE_AUTO_TLS"},
+		},
 	}
 }
 
@@ -242,6 +247,7 @@ func fromCli(ctx *cli.Context) *Config {
 		IsSelfHost:              ctx.Bool("self-host"),
 		BackupDir:               ctx.String("backup-dir"),
 		EnableSystemStats:       ctx.Bool("enable-system-stats"),
+		EnableAutoTls:           ctx.Bool("enable-auto-tls"),
 		Secrets: &Secrets{
 			Ed25519KeyPair: &Secrets_KeyPair{
 				PrivateKey: ctx.String("secret-ed-priv"),
