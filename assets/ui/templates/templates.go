@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
@@ -207,8 +206,6 @@ type Context struct {
 	NewSite       *NewSite
 	Error         *Errors
 	Page          string
-	Content       template.HTML
-	ModTime       time.Time
 	Site          *models.Site
 	Goals         []*models.Goal
 	IsFIrstSite   bool
