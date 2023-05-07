@@ -148,15 +148,18 @@ func CSRF(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
-			r = sessions.SaveCsrf(w, r)
-			h.ServeHTTP(w, r)
+			switch r.URL.Path {
+			case "/avatar":
+			default:
+				r = sessions.SaveCsrf(w, r)
+			}
 		default:
 			if !sessions.IsValidCSRF(r) {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			h.ServeHTTP(w, r)
 		}
+		h.ServeHTTP(w, r)
 	})
 }
 

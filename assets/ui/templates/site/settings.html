@@ -58,13 +58,11 @@
                                         <span class="SelectMenu-title">Change Role</span>
                                     </header>
                                     <div class="SelectMenu-list">
-                                        <label class="SelectMenu-item" role="menuitemradio" aria-checked="true"
+                                        <div class="SelectMenu-item" role="menuitemradio" aria-checked="true"
                                             tabindex="0">
-                                            <input type="radio" name="type" id="type_" value="{{.Role}}" hidden="hidden"
-                                                data-autosubmit="true" checked="checked">
                                             {{Icon "check" 16 "SelectMenu-icon SelectMenu-icon--check"}}
                                             <span class="text-normal">{{.Role}}</span>
-                                        </label>
+                                        </div>
                                     </div>
                                 </div>
                             </details-menu>
@@ -89,16 +87,16 @@
                 </p>
             </div>
             <div class="flex-md-order-1 flex-order-2">
-                <form action="/sites/{{SafeDomain .Site}}/make-{{if .Site.Public}}private{{else}}public{{end}}"
-                    method="post">
-                    {{template "_csrf" .}}
-                    <button type="submit" class=" Button--danger Button--medium Button">
+                <send-form>
+                    <button type="button" class=" Button--danger Button--medium Button" data-target="send-form.link"
+                        data-to="/sites/{{SafeDomain .Site}}/make-{{if .Site.Public}}private{{else}}public{{end}}"
+                        data-method="post" data-action="click:send-form#send" data-csrf="{{.CSRF}}">
                         <span class="Button-content">
                             <span class="Button-label"> change to {{if .Site.Public}}private{{else}}public
                                 {{end}}</span>
                         </span>
                     </button>
-                </form>
+                </send-form>
             </div>
         </div>
     </div>
@@ -124,12 +122,14 @@
                         {{GoalName .}}
                     </span>
                     <div>
-                        <form action="/{{SafeDomain $site}}/goals/{{.ID}}/delete" method="post">
-                            {{template "_csrf" $ctx}}
-                            <button type="submit" class=" btn btn-danger">
+                        <send-form>
+                            <button type="button" class=" btn btn-danger"
+                                data-to="/{{SafeDomain $site}}/goals/{{.ID}}/delete" data-method="post"
+                                data-action="click:send-form#send" data-csrf="{{$ctx.CSRF}}"
+                                data-target="send-form.link">
                                 Remove
                             </button>
-                        </form>
+                        </send-form>
                     </div>
                 </div>
             </li>
@@ -150,14 +150,15 @@
                 </p>
             </div>
             <div class="flex-md-order-1 flex-order-2">
-                <form action="/{{SafeDomain .Site}}/delete" method="post">
-                    {{template "_csrf" .}}
-                    <button type="submit" class=" Button--danger Button--medium Button">
+                <send-form>
+                    <button type="button" class=" Button--danger Button--medium Button" data-csrf="{{.CSRF}}"
+                        data-method="post" data-to="/{{SafeDomain .Site}}/delete" data-target="send-form.link"
+                        data-action="click:send-form#send">
                         <span class="Button-content">
                             <span class="Button-label">Delete this site</span>
                         </span>
                     </button>
-                </form>
+                </send-form>
             </div>
         </div>
     </Div>
