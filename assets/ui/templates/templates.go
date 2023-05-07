@@ -38,6 +38,7 @@ func base() *template.Template {
 		"ActiveItem": ActiveItem,
 		"GoalName":   models.GoalName,
 		"SafeDomain": models.SafeDomain,
+		"ThisYear":   thisYearFormat,
 	})
 }
 

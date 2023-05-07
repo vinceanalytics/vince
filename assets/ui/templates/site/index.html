@@ -13,7 +13,10 @@
                             class="Link--primary text-bold no-underline wb-break-all d-inline-block">
                             {{SafeDomain .Site}}
                         </a>
-                        <div class="d-flex BtnGroup float-right">
+                        <div class="d-flex BtnGroup float-right flex-items-baseline">
+                            <span class="d-inline-block f6 color-fg-muted mr-3">
+                                <span>{{ThisYear}}</span>
+                            </span>
                             <a href="/{{SafeDomain .Site}}/settings" class="btn btn-link">
                                 {{Icon "gear" 16}}
                             </a>
@@ -23,12 +26,44 @@
                         <div id="{{.Site.ID}}"></div>
                     </div>
                     <div class="f6 color-fg-muted mt-2 mb-0">
-                        <span class="d-inline-block color-fg-muted mr-3">
-                            <span>This year</span>
+                        <span class="d-inline-block mr-3">
+                            <span class="lh-condensed text-bold">
+                                10.1k
+                            </span>
+                            <span class="color-fg-muted">
+                                unique visitors
+                            </span>
                         </span>
                         <span class="d-inline-block mr-3">
                             <span class="lh-condensed text-bold">
-                                10.1k page views
+                                10.1k
+                            </span>
+                            <span class="color-fg-muted">
+                                page views
+                            </span>
+                        </span>
+                        <span class="d-inline-block mr-3">
+                            <span class="lh-condensed text-bold">
+                                1.2k
+                            </span>
+                            <span class="color-fg-muted">
+                                sessions
+                            </span>
+                        </span>
+                        <span class="d-inline-block mr-3">
+                            <span class="lh-condensed text-bold">
+                                50%
+                            </span>
+                            <span class="color-fg-muted">
+                                bounce rate
+                            </span>
+                        </span>
+                        <span class="d-inline-block mr-3">
+                            <span class="lh-condensed text-bold">
+                                40m2s
+                            </span>
+                            <span class="color-fg-muted">
+                                session duration
                             </span>
                         </span>
                     </div>

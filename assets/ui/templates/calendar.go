@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gernest/vince/timex"
@@ -20,6 +21,7 @@ func CalendarEntries() []CalendarEntry {
 		past7Days(),
 		past14Days(),
 		past30Days(),
+		thisYear(),
 	}
 }
 
@@ -85,4 +87,21 @@ func past30Days() CalendarEntry {
 		End:   ts,
 		Start: ts.Add(-time.Hour * 24 * 30),
 	}
+}
+
+func thisYear() CalendarEntry {
+	ts := timex.Today()
+	return CalendarEntry{
+		Name:  "This year",
+		End:   ts,
+		Start: timex.BeginningOfYear(ts),
+	}
+}
+
+func thisYearFormat() string {
+	ts := thisYear()
+	return fmt.Sprintf("%s - %s",
+		ts.Start.Format(timex.HumanDate),
+		ts.End.Format(timex.HumanDate),
+	)
 }

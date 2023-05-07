@@ -12,6 +12,8 @@ import (
 	"github.com/jinzhu/now"
 )
 
+const HumanDate = "Jan 02, 2006"
+
 func EndOfDay(ts time.Time) time.Time {
 	ts = ts.UTC()
 	y, m, d := ts.Date()
