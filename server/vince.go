@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"time"
 
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/caches"
@@ -83,9 +85,32 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 
 	// we start listeners early to make sure we can actually bind to the network.
 	// This saves us managing all long running goroutines we start in this process.
-	httpListener, err := net.Listen("tcp", o.ListenAddress)
+	httpListener, err := net.Listen("tcp", o.Listen)
 	if err != nil {
 		return fmt.Errorf("failed to bind to a network address %v", err)
+	}
+	var httpsListener net.Listener
+	// By default only http is used. Providing listen-tls enables https, but we still
+	// bind to http port, and redirect all traffick to https.
+	//
+	//  We do this to allow seam less integration with ACME for auto tls.
+	if o.ListenTls != "" {
+		if o.TlsCert == "" || o.TlsKey == "" {
+			log.Get(ctx).Warn().Msg("skipping https listen-tls is set but tls-key and tls-cert are missing")
+		} else {
+			cert, err := tls.LoadX509KeyPair(o.TlsCert, o.TlsKey)
+			if err != nil {
+				httpListener.Close()
+				return fmt.Errorf("failed to load https certificate %v", err)
+			}
+			config := tls.Config{}
+			config.Certificates = append(config.Certificates, cert)
+			httpsListener, err = tls.Listen("tcp", o.ListenTls, &config)
+			if err != nil {
+				httpListener.Close()
+				return fmt.Errorf("failed to bind https socket %v", err)
+			}
+		}
 	}
 	var g errgroup.Group
 	ctx = group.Set(ctx, &g)
@@ -95,10 +120,16 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	sqlDb, err := models.Open(models.Database(o))
 	if err != nil {
 		httpListener.Close()
+		if httpsListener != nil {
+			httpsListener.Close()
+		}
 		return err
 	}
 	var resources resourceList
 	resources = append(resources, errorLog, httpListener)
+	if httpsListener != nil {
+		resources = append(resources, httpsListener)
+	}
 	resources = append(resources, resourceFunc(func() error {
 		return models.CloseDB(sqlDb)
 	}))
@@ -151,7 +182,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	resources = append(resources, h)
 	ctx = health.Set(ctx, h)
 
-	svr := buildServer(ctx, &g, httpListener, Handle(ctx))
+	svr := buildServer(ctx, &g, httpListener, httpsListener, Handle(ctx))
 	// We start by shutting down the server before shutting everything else. So we
 	// prepend svr for it to be called first.
 	resources = append(resourceList{svr}, resources...)
@@ -162,7 +193,10 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		log.Get(ctx).Debug().Msg("shutting down gracefully ")
 		return resources.Close()
 	})
-	log.Get(ctx).Debug().Str("address", httpListener.Addr().String()).Msg("started serving traffic")
+	log.Get(ctx).Debug().Str("address", httpListener.Addr().String()).Msg("started serving  http traffic")
+	if httpsListener != nil {
+		log.Get(ctx).Debug().Str("address", httpsListener.Addr().String()).Msg("started serving  https traffic")
+	}
 	g.Go(func() error {
 		abort := make(chan os.Signal, 1)
 		signal.Notify(abort, os.Interrupt)
@@ -177,19 +211,43 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 func buildServer(
 	ctx context.Context,
 	g *errgroup.Group,
-	httpListener net.Listener,
+	httpListener, httpsListener net.Listener,
 	h http.Handler,
-) resourceList {
+) (r resourceList) {
 	svr := &http.Server{
-		Handler: Handle(ctx),
+		Handler:           h,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       5 * time.Second,
+		WriteTimeout:      5 * time.Second,
+		IdleTimeout:       5 * time.Second,
 		BaseContext: func(l net.Listener) context.Context {
 			return ctx
 		},
 	}
+	if httpsListener != nil {
+		svr.Handler = redirect(httpsListener.Addr().String())
+	}
 	g.Go(func() error {
 		return svr.Serve(httpListener)
 	})
-	return resourceList{svr}
+	r = append(r, svr)
+	if httpsListener != nil {
+		ssvr := &http.Server{
+			Handler:           h,
+			ReadHeaderTimeout: 10 * time.Second,
+			ReadTimeout:       30 * time.Second,
+			WriteTimeout:      2 * time.Minute,
+			IdleTimeout:       5 * time.Minute,
+			BaseContext: func(l net.Listener) context.Context {
+				return ctx
+			},
+		}
+		g.Go(func() error {
+			return ssvr.Serve(httpsListener)
+		})
+		r = append(r, ssvr)
+	}
+	return
 }
 
 func Handle(ctx context.Context) http.Handler {
@@ -207,4 +265,27 @@ func Handle(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTP(w, r)
 	})
+}
+
+func redirect(addr string) http.Handler {
+	_, port, _ := net.SplitHostPort(addr)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		toURL := "https://"
+		requestHost := hostOnly(r.Host)
+		toURL += requestHost + ":" + port
+		toURL += r.URL.RequestURI()
+		w.Header().Set("Connection", "close")
+		http.Redirect(w, r, toURL, http.StatusMovedPermanently)
+	})
+}
+
+// hostOnly returns only the host portion of hostport.
+// If there is no port or if there is an error splitting
+// the port off, the whole input string is returned.
+func hostOnly(hostport string) string {
+	host, _, err := net.SplitHostPort(hostport)
+	if err != nil {
+		return hostport // OK; probably had no port to begin with
+	}
+	return host
 }

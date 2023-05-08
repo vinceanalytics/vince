@@ -29,10 +29,26 @@ func Flags() []cli.Flag {
 			EnvVars: []string{"VINCE_CONFIG"},
 		},
 		&cli.StringFlag{
-			Name:    "listen-address",
-			Usage:   "bind the server to this port",
+			Name:    "listen",
+			Usage:   "http address to listen to",
 			Value:   ":8080",
-			EnvVars: []string{"VINCE_LISTEN_ADDRESS"},
+			EnvVars: []string{"VINCE_LISTEN"},
+		},
+		&cli.StringFlag{
+			Name:    "listen-tls",
+			Usage:   "https address to listen to. You must provide tls-key and tls-cert or configure auto-tls",
+			Value:   ":8443",
+			EnvVars: []string{"VINCE_LISTEN_TLS"},
+		},
+		&cli.StringFlag{
+			Name:    "tls-key",
+			Usage:   "Path to key file used for https",
+			EnvVars: []string{"VINCE_TLS_KEY"},
+		},
+		&cli.StringFlag{
+			Name:    "tls-cert",
+			Usage:   "Path to certificate file used for https",
+			EnvVars: []string{"VINCE_TLS_CERT"},
 		},
 		&cli.StringFlag{
 			Name:    "data",
@@ -240,7 +256,10 @@ func fromFile(ctx *cli.Context) (*Config, error) {
 
 func fromCli(ctx *cli.Context) *Config {
 	x := &Config{
-		ListenAddress:           ctx.String("listen-address"),
+		Listen:                  ctx.String("listen"),
+		ListenTls:               ctx.String("listen-tls"),
+		TlsKey:                  ctx.String("tls-key"),
+		TlsCert:                 ctx.String("tls-cert"),
 		Url:                     ctx.String("url"),
 		DataPath:                ctx.String("data"),
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
