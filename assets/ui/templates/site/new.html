@@ -1,9 +1,9 @@
 {{define "_content"}}
-<div class="d-flex">
-    <div class="container-md Box my-3">
-        <div class="Box-header">
-            Create new site
-        </div>
+<div class="container-md">
+    <div class="Subhead text-center settingsDivider mt-3">
+        <h2 class="Subhead-heading">Create Site</h2>
+    </div>
+    <div class="Box">
         <div class="Box-body">
             <form action="/sites" method="post">
                 <div class="form-group {{if .Errors.domain}}errored{{end}}">
@@ -34,5 +34,4 @@
         </div>
     </div>
 </div>
-
 {{end}}

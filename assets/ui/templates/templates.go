@@ -80,7 +80,7 @@ var SiteNew = template.Must(
 	layout().ParseFS(Files,
 		"site/new.html",
 	),
-).Lookup("app")
+).Lookup("focus")
 
 var AddSnippet = template.Must(
 	layout().ParseFS(Files,

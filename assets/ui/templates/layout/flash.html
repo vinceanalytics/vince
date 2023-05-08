@@ -1,7 +1,7 @@
 {{define "_flash"}}
 {{$root:=.}}
 {{with .Flash}}
-<div class="flash-messages">
+<div class="flash-messages container-lg">
     {{range .Success}}
     <div class="Box ">
         <div class="flash flash-full flash-success">
@@ -19,7 +19,6 @@
                 {{Icon "alert" 16}}
                 <span>{{.}}</span>
             </div>
-
         </div>
     </div>
     {{end}}
