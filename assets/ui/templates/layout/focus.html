@@ -13,8 +13,10 @@
         </a>
     </div>
     {{block "_flash" .}}{{end}}
-    {{block "_content" .}}{{end}}
-    {{template "_footer" .}}
+    <div class="d-flex flex-column height-full">
+        {{block "_content" .}}{{end}}
+        {{template "_footer" .}}
+    </div>
 </body>
 
 </html>
