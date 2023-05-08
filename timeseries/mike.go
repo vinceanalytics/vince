@@ -107,13 +107,10 @@ func Save(ctx context.Context, b *Buffer) {
 	meta := newMetaKey()
 	defer meta.Release()
 
-	sid := b.SID()
-	uid := b.UID()
-
-	id.SetSiteID(sid)
-	id.SetUserID(uid)
-	meta.SetSiteID(sid)
-	meta.SetUserID(uid)
+	// The first 16 bytes of ID and MetaKey are for user id and site id. We just copy it
+	// directly from the buffer.
+	copy(id[:], b.id[:])
+	copy(meta[:], b.id[:])
 
 	// Guarantee that aggregates are on per hour windows.
 	ent.Emit(func(el EntryList) {
@@ -129,9 +126,9 @@ func Save(ctx context.Context, b *Buffer) {
 		})
 		if err != nil {
 			log.Get(ctx).Err(err).
-				Uint64("uid", uid).
-				Uint64("sid", sid).
-				Msg("failed to save hourly stats ")
+				Uint64("uid", b.UID()).
+				Uint64("sid", b.SID()).
+				Msg("failed to save hourly stats")
 		}
 	})
 }
