@@ -24,6 +24,22 @@ func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
 	return b
 }
 
+func (b *Buffer) Clone() *Buffer {
+	o := bufPool.Get().(*Buffer)
+	copy(o.id[:], b.id[:])
+	o.entries = append(o.entries, b.entries...)
+	return o
+}
+
+// Clones b and save this to the data store in a separate goroutine. b is reset.
+func (b *Buffer) Save(ctx context.Context) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	klone := b.Clone()
+	b.entries = b.entries[:0]
+	go Save(ctx, klone)
+}
+
 func (b *Buffer) Sort() *Buffer {
 	sort.Slice(b.entries, func(i, j int) bool {
 		return b.entries[i].Timestamp < b.entries[j].Timestamp

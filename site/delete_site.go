@@ -21,7 +21,7 @@ func DeleteSite(w http.ResponseWriter, r *http.Request) {
 	caches.Site(ctx).Del(site.Domain)
 
 	// remove site events in collection  buffers
-	timeseries.GetMap(ctx).Delete(ctx, site.ID)
+	timeseries.GetMap(ctx).Delete(site.ID)
 
 	// permanently remove site stats
 	timeseries.DropSite(ctx, u.ID, site.ID)

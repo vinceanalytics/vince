@@ -16,5 +16,5 @@ func Check(ctx context.Context, domain string) (*timeseries.Buffer, bool) {
 	if !ok {
 		return nil, false
 	}
-	return timeseries.GetMap(ctx).Get(ctx, uid, sid), true
+	return timeseries.GetMap(ctx).Get(uid, sid), true
 }
