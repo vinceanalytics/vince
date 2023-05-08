@@ -1,75 +1,61 @@
 {{define "_content"}}
 <div>
-    <div class="container-md Box">
+    <div class="container-md">
+        <div class="Subhead text-center settingsDivider">
+            <h2 class="Subhead-heading">Create Goal</h2>
+            <div class="Subhead-description">{{.Site.Domain}}</div>
+        </div>
         <form action="/{{SafeDomain .Site}}/goals" method="post">
-            <div class="Box-header">
-                <h2>Add Goal for {{SafeDomain .Site}}</h2>
-            </div>
-            <div class="Box-body">
-                <div class="text-sm text-bold"> Goal Trigger</div>
-                <segmented-control data-catalyst="">
-                    <ul aria-label="Goal Type Selection" role="list"
-                        class="SegmentedControl SegmentedControl--fullWidth">
-                        <li class="SegmentedControl-item SegmentedControl-item--selected" role="listitem"
-                            data-targets="segmented-control.items">
-                            <button data-action="click:segmented-control#select" aria-current="true" type="button"
-                                id="event-tab" data-view-component="true"
-                                class="Button--invisible Button--medium Button Button--fullWidth"> <span
-                                    class="Button-content">
-                                    <span class="Button-label">Custom Events</span>
-                                </span>
-                            </button>
-                        </li>
-                        <li class="SegmentedControl-item" role="listitem" data-targets="segmented-control.items">
-                            <button data-action="click:segmented-control#select" aria-current="false" type="button"
-                                data-view-component="true" id="pageview-tab"
-                                class="Button--invisible Button--medium Button Button--fullWidth"> <span
-                                    class="Button-content">
-                                    <span class="Button-label">Page Views</span>
-                                </span></button>
-                        </li>
-                    </ul>
-                </segmented-control>
-                <div class=" my-3">
-                    <div id="event-fields">
-                        <div class="form-group">
-                            <div class="form-group-header">
-                                <label for="event_name"> Event name</label>
-                            </div>
-                            <div class="form-group-body">
-                                <input type="text" name="event_name" id="event_name" placeholder="SignUp"
-                                    class="form-control input-block border rounded">
+            <div class="Box">
+                <goal-selection>
+                    <div class="Box">
+                        <div class="Box-row p-0">
+                            <ul class="list-style-none text-center d-flex" id="pages_box">
+                                <li class="selectionItem col-6 propertySelected" data-target="goal-selection.event"
+                                    id="custom_events" type="button" data-action="click:goal-selection#selectEvent">
+                                    <span class="color-fg-muted">
+                                        Custom Events
+                                    </span>
+                                </li>
+                                <li class="selectionItem col-6 color-border-muted" data-target="goal-selection.path"
+                                    id="path" type="button" data-action="click:goal-selection#selectPath">
+                                    <span class="color-fg-muted">
+                                        Page Views
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="Box-row" data-target="goal-selection.event_fields">
+                            <div class="form-group">
+                                <div class="form-group-header">
+                                    <label for="event_name"> Event name</label>
+                                </div>
+                                <div class="form-group-body">
+                                    <input type="text" name="event_name" id="event_name" placeholder="SignUp"
+                                        class="form-control input-block border rounded">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div id="pageview-fields" class="d-none">
-                        <div class="form-group">
-                            <div class="form-group-header">
-                                <label for="page_path"> Page path </label>
-                            </div>
-                            <div class="form-group-body">
-                                <input type="text" name="page_path" id="page_path" placeholder="/success"
-                                    class="form-control input-block">
+                        <div class="Box-row d-none" data-target="goal-selection.path_fields">
+                            <div class="form-group">
+                                <div class="form-group-header">
+                                    <label for="page_path"> Page path </label>
+                                </div>
+                                <div class="form-group-body">
+                                    <input type="text" name="page_path" id="page_path" placeholder="/success"
+                                        class="form-control input-block">
+                                </div>
                             </div>
                         </div>
+                        <div class="mx-3 p-2">
+                            {{template "_csrf" .}}
+                            <input type="submit" class="btn btn-primary mt-4 btn-block" value="Add goal →">
+                        </div>
                     </div>
-                </div>
-                {{template "_csrf" .}}
-                <input type="submit" class="btn btn-primary mt-4 btn-block" value="Add goal →">
+                </goal-selection>
             </div>
         </form>
     </div>
 </div>
-<script>
-    document.getElementById('pageview-tab').onclick = function () {
-        document.getElementById('pageview-fields').classList.remove('d-none')
-        document.getElementById('event-fields').classList.add('d-none')
-        document.getElementById('event_name').value = ''
-    }
-    document.getElementById('event-tab').onclick = function () {
-        document.getElementById('event-fields').classList.remove('d-none')
-        document.getElementById('pageview-fields').classList.add('d-none')
-        document.getElementById('page_path').value = ''
-    }
-</script>
+
 {{end}}
