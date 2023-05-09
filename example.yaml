@@ -1,4 +1,4 @@
-apiVersion: vince.vinceanalytics.com/v1alpha1
+apiVersion: staples/v1alpha1
 kind: Site
 metadata:
   name: vince-io

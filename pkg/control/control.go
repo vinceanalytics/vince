@@ -49,10 +49,10 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 		FilterFunc: x.isWatchedResource,
 		Handler:    &enqueueWorkHandler{logger: log, queue: x.queue},
 	}
-	x.list.site = x.form.vince.Vince().V1alpha1().Sites().Lister()
-	x.list.vince = x.form.vince.Vince().V1alpha1().Vinces().Lister()
-	x.form.vince.Vince().V1alpha1().Sites().Informer().AddEventHandler(handler)
-	x.form.vince.Vince().V1alpha1().Vinces().Informer().AddEventHandler(handler)
+	x.list.site = x.form.vince.Staples().V1alpha1().Sites().Lister()
+	x.list.vince = x.form.vince.Staples().V1alpha1().Vinces().Lister()
+	x.form.vince.Staples().V1alpha1().Sites().Informer().AddEventHandler(handler)
+	x.form.vince.Staples().V1alpha1().Vinces().Informer().AddEventHandler(handler)
 	return &x
 }
 
