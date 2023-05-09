@@ -3,13 +3,14 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   description: "The Cloud Native Web Analytics Platform",
-  titleTemplate: false,
+  title: "- Cloud Native Web Analytics",
   themeConfig: {
     logo: '/logo.svg',
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Examples', link: '/markdown-examples' }
+      { text: 'guide', link: '/guide/' },
+      { text: 'k8s', link: '/k8s/' },
+      { text: 'blog', link: '/blog/' }
     ],
 
     sidebar: [
