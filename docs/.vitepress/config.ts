@@ -2,9 +2,10 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "vince analytics",
   description: "The Cloud Native Web Analytics Platform",
+  title: '- Cloud Native',
   themeConfig: {
+    logo: '/logo.svg',
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
@@ -13,10 +14,9 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: 'Examples',
+        text: 'Getting Started',
         items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
+          { text: 'Installation', link: '/getting-started/install' },
         ]
       }
     ],
@@ -24,8 +24,8 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/vinceanalytics/vince' }
     ],
-    footer:{
-      message:"Released under the AGPL-3.0 license",
+    footer: {
+      message: "Released under the AGPL-3.0 license",
       copyright: "Copyright @ 2023-present Geofrey Ernest"
     }
   }
