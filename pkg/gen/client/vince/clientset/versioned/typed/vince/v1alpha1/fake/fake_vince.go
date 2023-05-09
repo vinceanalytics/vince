@@ -21,7 +21,7 @@ import (
 
 // FakeVinces implements VinceInterface
 type FakeVinces struct {
-	Fake *FakeVinceV1alpha1
+	Fake *FakeStaplesV1alpha1
 	ns   string
 }
 

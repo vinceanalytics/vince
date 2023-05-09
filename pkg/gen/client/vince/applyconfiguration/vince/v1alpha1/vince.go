@@ -27,7 +27,7 @@ func Vince(name, namespace string) *VinceApplyConfiguration {
 	b.WithName(name)
 	b.WithNamespace(namespace)
 	b.WithKind("Vince")
-	b.WithAPIVersion("vince.vinceanalytics.com/v1alpha1")
+	b.WithAPIVersion("staples/v1alpha1")
 	return b
 }
 

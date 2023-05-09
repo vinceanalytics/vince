@@ -117,7 +117,7 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--ts-buffer**="": window for buffering timeseries in memory before savin them (default: 1m0s)
 
-**--url**="": url for the server on which vince is hosted(it shows up on emails) (default: vinceanalytics.com)
+**--url**="": url for the server on which vince is hosted(it shows up on emails)
 
 
 # COMMANDS

@@ -49,7 +49,7 @@ type vinces struct {
 }
 
 // newVinces returns a Vinces
-func newVinces(c *VinceV1alpha1Client, namespace string) *vinces {
+func newVinces(c *StaplesV1alpha1Client, namespace string) *vinces {
 	return &vinces{
 		client: c.RESTClient(),
 		ns:     namespace,

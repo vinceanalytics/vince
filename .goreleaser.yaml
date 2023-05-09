@@ -252,7 +252,6 @@ nfpms:
     id: vince
     builds:
       - vince
-    homepage: https://vinceanalytics.com
     description: The Cloud Native Web Analytics Platform
     maintainer: Geofrey Ernest <geofreyernest@live.com>
     license: AGPL-3.0
@@ -300,7 +299,6 @@ nfpms:
     id: v8s
     builds:
       - v8s
-    homepage: https://vinceanalytics.com
     description: kubernetes controller for vince- The Cloud Native Web Analytics Platform
     maintainer: Geofrey Ernest <geofreyernest@live.com>
     license: AGPL-3.0

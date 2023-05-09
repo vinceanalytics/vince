@@ -1,4 +1,4 @@
 // +k8s:deepcopy-gen=package
-// +groupName=vince.vinceanalytics.com
+// +groupName=staples
 
 package v1alpha1

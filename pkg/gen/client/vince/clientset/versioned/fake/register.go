@@ -6,7 +6,7 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 package fake
 
 import (
-	vincev1alpha1 "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
+	staplesv1alpha1 "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -18,7 +18,7 @@ var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 
 var localSchemeBuilder = runtime.SchemeBuilder{
-	vincev1alpha1.AddToScheme,
+	staplesv1alpha1.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

@@ -11,7 +11,6 @@ export default defineConfig({
     ["meta", { name: "twitter:site", content: "@gernesti" }],
     ["meta", { name: "twitter:title", content: "Vince analytics" }],
     ["meta", { name: "twitter:description", content: "The Cloud Native Web Analytics Platform." }],
-    ["meta", { name: "og:url", content: "https://vinceanalytics.com" }],
     ["meta", { name: "og:title", content: "Vince Analytics" }],
     ["meta", { name: "og:description", content: "The Cloud Native Web Analytics Platform." }],
     ["meta", { name: "og:type", content: "article" }],
