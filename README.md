@@ -15,6 +15,7 @@ The Cloud Native Web Analytics Platform.
 - Goal Tracking 
 - Event Tracking 
 - Cloud Native (seamless k8s integration)
+- Automatic TLS
 
 # Origins
 
