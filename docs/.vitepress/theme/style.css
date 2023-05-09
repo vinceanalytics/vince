@@ -90,3 +90,9 @@
 .DocSearch {
   --docsearch-primary-color: var(--vp-c-brand) !important;
 }
+
+.VPImage,
+.image-src {
+  max-height: 100% !important;
+  max-width: 100% !important;
+}

@@ -5,6 +5,9 @@ hero:
   name: "vince"
   text: "The Cloud Native Web Analytics Platform"
   tagline: Web Analytics for Everyone
+  image:
+    src: /hero.png
+    alt: Vince Analytics
   actions:
     - theme: brand
       text: Getting Started
