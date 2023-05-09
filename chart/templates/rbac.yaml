@@ -12,7 +12,7 @@ metadata:
     heritage: {{ .Release.Service | quote }}
 rules:
   - apiGroups:
-      - vince.vinceanalytics.com
+      - staples
     resources:
       - sites
     verbs:
