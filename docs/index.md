@@ -7,11 +7,11 @@ hero:
   tagline: Web Analytics for Everyone
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Getting Started
+      link: /guide/
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: k8s
+      link: /k8s/
 
 features:
   - title: Event tracking
