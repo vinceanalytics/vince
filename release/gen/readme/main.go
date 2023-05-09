@@ -37,7 +37,8 @@ func main() {
 		tools.Exit("failed to resolve root ", err.Error())
 	}
 	project = tools.Release(root)
-	readme()
+	readme("vince")
+	readme("v8s")
 
 	println(">>> building  pages")
 	mannPage(vince.App())
@@ -47,15 +48,16 @@ func main() {
 	completion()
 }
 
-func readme() {
+func readme(active string) {
 	var o bytes.Buffer
 	err := tpl.Execute(&o, map[string]any{
 		"Project": &project,
+		"Active":  active,
 	})
 	if err != nil {
 		tools.Exit("failed to render release readme", err.Error())
 	}
-	tools.WriteFile(filepath.Join(root, "docs", "guide", "install.md"), o.Bytes())
+	tools.WriteFile(filepath.Join(root, "docs", "guide", fmt.Sprintf("install-%s.md", active)), o.Bytes())
 }
 
 func releaseTable(artifacts []tools.Artifact) string {
@@ -150,5 +152,5 @@ func cliPage(app *cli.App) {
 	if err != nil {
 		tools.Exit(err.Error())
 	}
-	tools.WriteFile(filepath.Join(root, "docs", "guide", app.Name+"-cli.md"), []byte(m))
+	tools.WriteFile(filepath.Join(root, "docs", "guide", fmt.Sprintf("cli-%s.md", app.Name)), []byte(m))
 }

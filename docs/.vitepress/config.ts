@@ -29,10 +29,24 @@ export default defineConfig({
       {
         text: 'Getting Started',
         items: [
-          { text: 'Installation', link: '/guide/install' },
-          { text: 'Cli', link: '/guide/vince-cli' },
+          { text: 'Installation', link: '/guide/install-vince' },
+          { text: 'Cli', link: '/guide/cli-vince' },
         ]
-      }
+      },
+      {
+        text: 'Kubernetes',
+        items: [
+          {
+            text: 'Installation', items: [
+              {
+                text: 'Out of cluster',
+                link: '/guide/install-v8s'
+              },
+            ]
+          },
+          { text: 'Cli', link: '/guide/cli-v8s' },
+        ]
+      },
     ],
 
     socialLinks: [

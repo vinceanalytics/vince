@@ -1,36 +1,28 @@
 ---
-title: Installing vince analytics
+title: Installing {{.Active}}
 ---
 
-Vince is distributed in two flavors `vince` which is the application with all
-the features inteded for self hosting on VPS and `v8s` which is the vince controller
-for kuberenets.
-
-`v8s` automates deployment and management of `vince` instances on `k8s` using custom
-resources.
-
-
 ## Brew
-
-::: code-group
+{{$active := .Active}}
 {{range .Project.Artifacts}}
-```shell[{{.ID}}]
+{{if eq .ID $active}}
+```bash
 brew install vinceanalytics/tap/{{.ID}}
 ```
 {{end}}
-:::
+{{end}}
 
 
 ## Container Image
 
 {{- $version := .Project.Meta.Tag }}
-::: code-group
 {{range .Project.Artifacts}}
-```shell[{{.ID}}]
+{{if eq .ID $active}}
+```bash
 ghcr.io/vinceanalytics/{{.ID}}:{{$version}}
 ```
 {{end}}
-:::
+{{end}}
 
 ## Linux packages
 
@@ -46,7 +38,8 @@ RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
 ```
 
 {{range  .Project.Artifacts}}
-**{{.ID}}**
+{{if eq .ID $active}}
 {{releaseTable .Artifacts}}
+{{end}}
 {{end}}
 
