@@ -10,7 +10,10 @@ function __fish_vince_no_subcommand --description 'Test if there has been any su
 end
 
 complete -c vince -n '__fish_vince_no_subcommand' -f -l config -r -d 'configuration file in json format'
-complete -c vince -n '__fish_vince_no_subcommand' -f -l listen-address -r -d 'bind the server to this port'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l listen -r -d 'http address to listen to'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l listen-tls -r -d 'https address to listen to. You must provide tls-key and tls-cert or configure auto-tls'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l tls-key -r -d 'Path to key file used for https'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l tls-cert -r -d 'Path to certificate file used for https'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l data -r -d 'path to data directory'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l env -r -d 'environment on which vince is run (dev,staging,production)'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l url -r -d 'url for the server on which vince is hosted(it shows up on emails)'
@@ -39,6 +42,7 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-ed-pub -r -d 'pat
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-age-pub -r -d 'path to a file with  age public key'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-age-priv -r -d 'path to a file with  age private key'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-system-stats -d 'Collect and visualize system stats'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-auto-tls -d 'Enables using acme for automatic https.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l help -s h -d 'show help'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l version -s v -d 'print the version'
 complete -c vince -n '__fish_seen_subcommand_from config' -f -l help -s h -d 'show help'

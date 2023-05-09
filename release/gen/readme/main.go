@@ -18,7 +18,7 @@ import (
 
 var root string
 
-//go:embed README.tmpl
+//go:embed install.tmpl
 var readmeBytes []byte
 
 var tpl = template.Must(template.New("root").
@@ -39,9 +39,11 @@ func main() {
 	project = tools.Release(root)
 	readme()
 
-	println(">>> building man pages")
+	println(">>> building  pages")
 	mannPage(vince.App())
 	mannPage(v8s.App())
+	cliPage(vince.App())
+	cliPage(v8s.App())
 	completion()
 }
 
@@ -53,7 +55,7 @@ func readme() {
 	if err != nil {
 		tools.Exit("failed to render release readme", err.Error())
 	}
-	tools.WriteFile(filepath.Join(root, "README.md"), o.Bytes())
+	tools.WriteFile(filepath.Join(root, "docs", "guide", "install.md"), o.Bytes())
 }
 
 func releaseTable(artifacts []tools.Artifact) string {
@@ -141,4 +143,12 @@ func mannPage(app *cli.App) {
 		tools.Exit(err.Error())
 	}
 	tools.WriteFile(filepath.Join(root, "man", app.Name+".1"), []byte(m))
+}
+
+func cliPage(app *cli.App) {
+	m, err := app.ToMarkdown()
+	if err != nil {
+		tools.Exit(err.Error())
+	}
+	tools.WriteFile(filepath.Join(root, "docs", "guide", app.Name+"-cli.md"), []byte(m))
 }

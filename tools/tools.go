@@ -173,7 +173,8 @@ func Release(root string) (p Project) {
 		})
 	}
 	sort.Slice(p.Artifacts, func(i, j int) bool {
-		return p.Artifacts[i].ID < p.Artifacts[j].ID
+		// This is to ensure vince comes before v8s
+		return p.Artifacts[i].ID > p.Artifacts[j].ID
 	})
 	return
 }

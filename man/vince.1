@@ -18,10 +18,12 @@ vince
 [--cache-refresh]=[value]
 [--config]=[value]
 [--data]=[value]
+[--enable-auto-tls]
 [--enable-email-verification]
 [--enable-system-stats]
 [--env]=[value]
-[--listen-address]=[value]
+[--listen-tls]=[value]
+[--listen]=[value]
 [--log]=[value]
 [--mailer-address-name]=[value]
 [--mailer-address]=[value]
@@ -42,6 +44,8 @@ vince
 [--secret-ed-priv]=[value]
 [--secret-ed-pub]=[value]
 [--self-host]
+[--tls-cert]=[value]
+[--tls-key]=[value]
 [--ts-buffer]=[value]
 [--url]=[value]
 
@@ -75,6 +79,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--data\fP="": path to data directory (default: .vince)
 
 .PP
+\fB--enable-auto-tls\fP: Enables using acme for automatic https.
+
+.PP
 \fB--enable-email-verification\fP: send emails for account verification
 
 .PP
@@ -84,7 +91,10 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--env\fP="": environment on which vince is run (dev,staging,production) (default: dev)
 
 .PP
-\fB--listen-address\fP="": bind the server to this port (default: :8080)
+\fB--listen\fP="": http address to listen to (default: :8080)
+
+.PP
+\fB--listen-tls\fP="": https address to listen to. You must provide tls-key and tls-cert or configure auto-tls (default: :8443)
 
 .PP
 \fB--log\fP="": level of logging (default: info)
@@ -145,6 +155,12 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .PP
 \fB--self-host\fP: self hosted version
+
+.PP
+\fB--tls-cert\fP="": Path to certificate file used for https
+
+.PP
+\fB--tls-key\fP="": Path to key file used for https
 
 .PP
 \fB--ts-buffer\fP="": window for buffering timeseries in memory before savin them (default: 1m0s)

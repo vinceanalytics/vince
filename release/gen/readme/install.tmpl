@@ -1,0 +1,52 @@
+---
+title: Installing vince analytics
+---
+
+Vince is distributed in two flavors `vince` which is the application with all
+the features inteded for self hosting on VPS and `v8s` which is the vince controller
+for kuberenets.
+
+`v8s` automates deployment and management of `vince` instances on `k8s` using custom
+resources.
+
+
+## Brew
+
+::: code-group
+{{range .Project.Artifacts}}
+```shell[{{.ID}}]
+brew install vinceanalytics/tap/{{.ID}}
+```
+{{end}}
+:::
+
+
+## Container Image
+
+{{- $version := .Project.Meta.Tag }}
+::: code-group
+{{range .Project.Artifacts}}
+```shell[{{.ID}}]
+ghcr.io/vinceanalytics/{{.ID}}:{{$version}}
+```
+{{end}}
+:::
+
+## Linux packages
+
+Download the `.deb`, `.rpm` or `.apk` packages from tables below and install
+them with the appropriate tools
+
+
+## Downloads
+
+Files are signed with [minisign](https://jedisct1.github.io/minisign/) using this public key:
+```
+RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
+```
+
+{{range  .Project.Artifacts}}
+**{{.ID}}**
+{{releaseTable .Artifacts}}
+{{end}}
+

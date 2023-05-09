@@ -3,7 +3,8 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   description: "The Cloud Native Web Analytics Platform",
-  title: "- Cloud Native Web Analytics",
+  titleTemplate: false,
+  title: '+',
   head: [
     ["meta", { name: "msapplication-TileColor", content: "#bdfcff" }],
     ["meta", { name: "twitter:card", content: "product" }],
@@ -28,7 +29,8 @@ export default defineConfig({
       {
         text: 'Getting Started',
         items: [
-          { text: 'Installation', link: '/getting-started/install' },
+          { text: 'Installation', link: '/guide/install' },
+          { text: 'Cli', link: '/guide/vince-cli' },
         ]
       }
     ],
