@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/caddyserver/certmagic"
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
@@ -90,28 +91,58 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		return fmt.Errorf("failed to bind to a network address %v", err)
 	}
 	var httpsListener net.Listener
-	// By default only http is used. Providing listen-tls enables https, but we still
-	// bind to http port, and redirect all traffick to https.
-	//
-	//  We do this to allow seam less integration with ACME for auto tls.
-	if o.ListenTls != "" {
-		if o.TlsCert == "" || o.TlsKey == "" {
-			log.Get(ctx).Warn().Msg("skipping https listen-tls is set but tls-key and tls-cert are missing")
-		} else {
-			cert, err := tls.LoadX509KeyPair(o.TlsCert, o.TlsKey)
-			if err != nil {
-				httpListener.Close()
-				return fmt.Errorf("failed to load https certificate %v", err)
-			}
-			config := tls.Config{}
-			config.Certificates = append(config.Certificates, cert)
-			httpsListener, err = tls.Listen("tcp", o.ListenTls, &config)
-			if err != nil {
-				httpListener.Close()
-				return fmt.Errorf("failed to bind https socket %v", err)
+	var magic *certmagic.Config
+	if o.EnableTls {
+		if o.ListenTls != "" {
+			if o.TlsCert == "" || o.TlsKey == "" {
+				if o.EnableAutoTls {
+					// It is okay to omit tls-cert and tls-key if we are doing auto tls.
+					// we however make sure we  to validate acme configuration here.
+
+					magic = certmagic.NewDefault()
+					// we use file storage for certs
+					certsPath := filepath.Join(o.DataPath, "certs")
+					os.MkdirAll(certsPath, 0755)
+					magic.Storage = &certmagic.FileStorage{Path: certsPath}
+					if o.Acme == nil || o.Acme.Email == "" || o.Acme.Domain == "" {
+						return fmt.Errorf("missing acme settings for auto-tls")
+					}
+					myACME := certmagic.NewACMEIssuer(magic, certmagic.ACMEIssuer{
+						CA:     certmagic.LetsEncryptStagingCA,
+						Email:  o.Acme.Email,
+						Agreed: true,
+					})
+					magic.Issuers = append(magic.Issuers, myACME)
+					err = magic.ManageSync(ctx, []string{o.Acme.Domain})
+					if err != nil {
+						return fmt.Errorf("failed to sync acme domain %v", err)
+					}
+					httpsListener, err = net.Listen("tcp", o.ListenTls)
+					if err != nil {
+						return fmt.Errorf("failed to bind to https socket %v", err)
+					}
+				} else {
+					// There is no need to bail out. We just expose http endpoint as usual. We
+					// emit a warning to let the user know we didn't bind to a tls socket.
+					log.Get(ctx).Warn().Msg("skipping https listen-tls is set but tls-key and tls-cert are missing")
+				}
+			} else {
+				cert, err := tls.LoadX509KeyPair(o.TlsCert, o.TlsKey)
+				if err != nil {
+					httpListener.Close()
+					return fmt.Errorf("failed to load https certificate %v", err)
+				}
+				config := tls.Config{}
+				config.Certificates = append(config.Certificates, cert)
+				httpsListener, err = tls.Listen("tcp", o.ListenTls, &config)
+				if err != nil {
+					httpListener.Close()
+					return fmt.Errorf("failed to bind https socket %v", err)
+				}
 			}
 		}
 	}
+
 	var g errgroup.Group
 	ctx = group.Set(ctx, &g)
 
@@ -182,7 +213,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	resources = append(resources, h)
 	ctx = health.Set(ctx, h)
 
-	svr := buildServer(ctx, &g, httpListener, httpsListener, Handle(ctx))
+	svr := buildServer(ctx, &g, httpListener, httpsListener, magic, Handle(ctx))
 	// We start by shutting down the server before shutting everything else. So we
 	// prepend svr for it to be called first.
 	resources = append(resourceList{svr}, resources...)
@@ -212,9 +243,10 @@ func buildServer(
 	ctx context.Context,
 	g *errgroup.Group,
 	httpListener, httpsListener net.Listener,
+	magic *certmagic.Config,
 	h http.Handler,
 ) (r resourceList) {
-	svr := &http.Server{
+	httpSvr := &http.Server{
 		Handler:           h,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       5 * time.Second,
@@ -225,14 +257,20 @@ func buildServer(
 		},
 	}
 	if httpsListener != nil {
-		svr.Handler = redirect(httpsListener.Addr().String())
+		httpSvr.Handler = redirect(httpsListener.Addr().String())
+		if magic != nil {
+			// We are using tls with auto tls
+			httpSvr.Handler = magic.Issuers[0].(*certmagic.ACMEIssuer).HTTPChallengeHandler(
+				redirect(httpsListener.Addr().String()),
+			)
+		}
 	}
 	g.Go(func() error {
-		return svr.Serve(httpListener)
+		return httpSvr.Serve(httpListener)
 	})
-	r = append(r, svr)
+	r = append(r, httpSvr)
 	if httpsListener != nil {
-		ssvr := &http.Server{
+		httpsSvr := &http.Server{
 			Handler:           h,
 			ReadHeaderTimeout: 10 * time.Second,
 			ReadTimeout:       30 * time.Second,
@@ -242,10 +280,17 @@ func buildServer(
 				return ctx
 			},
 		}
+		if magic != nil {
+			// httpsListener is not wrapped with tls yet. We use certmagic to obtain
+			// tls Config and properly wrap it.
+			tlsConfig := magic.TLSConfig()
+			tlsConfig.NextProtos = append([]string{"h2", "http/1.1"}, tlsConfig.NextProtos...)
+			httpsListener = tls.NewListener(httpsListener, tlsConfig)
+		}
 		g.Go(func() error {
-			return ssvr.Serve(httpsListener)
+			return httpsSvr.Serve(httpsListener)
 		})
-		r = append(r, ssvr)
+		r = append(r, httpsSvr)
 	}
 	return
 }

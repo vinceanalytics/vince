@@ -34,6 +34,11 @@ func Flags() []cli.Flag {
 			Value:   ":8080",
 			EnvVars: []string{"VINCE_LISTEN"},
 		},
+		&cli.BoolFlag{
+			Name:    "enable-tls",
+			Usage:   "Enables serving https traffick. This will require listen-tls, tls-key, and tls-cert to be set.",
+			EnvVars: []string{"VINCE_ENABLE_TLS"},
+		},
 		&cli.StringFlag{
 			Name:    "listen-tls",
 			Usage:   "https address to listen to. You must provide tls-key and tls-cert or configure auto-tls",
@@ -256,6 +261,7 @@ func fromFile(ctx *cli.Context) (*Config, error) {
 func fromCli(ctx *cli.Context) *Config {
 	x := &Config{
 		Listen:                  ctx.String("listen"),
+		EnableTls:               ctx.Bool("enable-tls"),
 		ListenTls:               ctx.String("listen-tls"),
 		TlsKey:                  ctx.String("tls-key"),
 		TlsCert:                 ctx.String("tls-cert"),
