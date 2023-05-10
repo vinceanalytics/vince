@@ -225,7 +225,18 @@ func CreateApiKey(ctx context.Context, key, name string, uid uint64) {
 	}
 }
 
-func UpdateAPIKeyUse(ctx context.Context, aid string) {
+func VerifyAPIKey(ctx context.Context, key string) *APIKey {
+	hash := HashAPIKey(ctx, key)
+	var a APIKey
+	err := Get(ctx).Model(&APIKey{}).Where("key_hash = ?", hash).First(&a).Error
+	if err != nil {
+		LOG(ctx, err, "failed to get api key")
+		return nil
+	}
+	return &a
+}
+
+func UpdateAPIKeyUse(ctx context.Context, aid uint64) {
 	// aid is string because we use value we set in jwt token claims. No need to do
 	// extra decoding here.If its invalid value then an error will show up on logs
 	err := Get(ctx).Model(&APIKey{}).Where("id = ?", aid).
@@ -235,7 +246,7 @@ func UpdateAPIKeyUse(ctx context.Context, aid string) {
 	}
 }
 
-func APIKeyByID(ctx context.Context, aid string) (a *APIKey) {
+func APIKeyByID(ctx context.Context, aid uint64) (a *APIKey) {
 	var m APIKey
 	err := Get(ctx).Where("id = ?", aid).First(&m).Error
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gernest/vince/assets/ui/templates"
-	"github.com/gernest/vince/internal/tokens"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
 )
@@ -19,14 +18,14 @@ func AuthorizeSiteAPI(h http.Handler) http.Handler {
 			return
 		}
 		ctx := r.Context()
-		claims, ok := tokens.Validate(ctx, tokenString)
-		if !ok {
+		claims := models.VerifyAPIKey(ctx, tokenString)
+		if claims == nil {
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
 				ctx.Error.StatusText = "Missing API key. Please use a valid vince API key as a Bearer Token."
 			})
 			return
 		}
-		user := models.UserByID(ctx, claims.Subject)
+		user := models.UserByID(ctx, claims.UserID)
 		if user == nil {
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
 				ctx.Error.StatusText = "Missing API key. Please use a valid vince API key as a Bearer Token."

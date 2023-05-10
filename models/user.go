@@ -170,12 +170,12 @@ func UserByEmail(ctx context.Context, email string) *User {
 	return &u
 }
 
-func UserByID(ctx context.Context, uid string) (u *User) {
+func UserByID(ctx context.Context, uid uint64) (u *User) {
 	var m User
 	err := Get(ctx).Model(&User{}).Where("id = ?", uid).First(&m).Error
 	if err != nil {
 		LOG(ctx, err, "failed to get user by id", func(e *zerolog.Event) *zerolog.Event {
-			return e.Str("uid", uid)
+			return e.Uint64("uid", uid)
 		})
 		return
 	}

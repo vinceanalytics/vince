@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/params"
@@ -10,7 +11,8 @@ import (
 
 func DeleteAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	a := models.APIKeyByID(ctx, params.Get(ctx)["id"])
+	aid, _ := strconv.ParseUint(params.Get(ctx)["id"], 10, 64)
+	a := models.APIKeyByID(ctx, aid)
 	if a != nil {
 		err := models.Get(ctx).Delete(a).Error
 		if err != nil {
