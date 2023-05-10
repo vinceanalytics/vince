@@ -2,10 +2,8 @@ package models
 
 import (
 	"context"
-	"database/sql"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/pkg/log"
@@ -126,17 +124,6 @@ func NewUser(u *User, r *http.Request) (validation map[string]string, err error)
 		return nil, err
 	}
 	u.PasswordHash = string(b)
-	if conf.IsSelfHost {
-		u.TrialExpiryDate = sql.NullTime{
-			Time:  time.Now().AddDate(100, 0, 0),
-			Valid: true,
-		}
-	} else {
-		u.TrialExpiryDate = sql.NullTime{
-			Time:  time.Now().AddDate(0, 0, 30),
-			Valid: true,
-		}
-	}
 	if !conf.EnableEmailVerification {
 		u.EmailVerified = true
 	}

@@ -172,7 +172,6 @@ type User struct {
 	APIKeys                 []*APIKey
 	Subscription            *Subscription
 	LastSeen                time.Time
-	TrialExpiryDate         sql.NullTime
 	EmailVerified           bool `gorm:"not null;default:false"`
 	Invitations             []*Invitation
 }

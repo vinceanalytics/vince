@@ -78,12 +78,6 @@ func Flags() []cli.Flag {
 			Value:   true,
 			EnvVars: []string{"VINCE_ENABLE_EMAIL_VERIFICATION"},
 		},
-		&cli.BoolFlag{
-			Name:    "self-host",
-			Usage:   "self hosted version",
-			Value:   true,
-			EnvVars: []string{"VINCE_SELF_HOST"},
-		},
 		&cli.StringFlag{
 			Name:    "log",
 			Usage:   "level of logging",
@@ -268,7 +262,6 @@ func fromCli(ctx *cli.Context) *Config {
 		Url:                     ctx.String("url"),
 		DataPath:                ctx.String("data"),
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
-		IsSelfHost:              ctx.Bool("self-host"),
 		BackupDir:               ctx.String("backup-dir"),
 		EnableSystemStats:       ctx.Bool("enable-system-stats"),
 		EnableAutoTls:           ctx.Bool("enable-auto-tls"),
