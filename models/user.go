@@ -67,7 +67,7 @@ func Bootstrap(
 		log.Get(ctx).Fatal().Err(err).Msg("failed to hash password")
 	}
 	hash, prefix := ProcessAPIKey(ctx, key)
-	u := User{
+	u := &User{
 		Name:         name,
 		Email:        email,
 		PasswordHash: string(hashPasswd),
