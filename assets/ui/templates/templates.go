@@ -172,6 +172,7 @@ type Context struct {
 	Owner         *models.User
 	// Name of the email recipient
 	Recipient string
+	Key       string
 }
 
 func (t *Context) GreetRecipient() string {
