@@ -6,6 +6,7 @@ import (
 	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	vince_listers "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
 	"github.com/gernest/vince/pkg/k8s"
+	"github.com/gernest/vince/pkg/secrets"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -173,15 +174,10 @@ func createSecret(o *v1alpha1.Vince) *corev1.Secret {
 			Namespace: o.Namespace,
 			Labels:    baseLabels(),
 		},
+		Data: map[string][]byte{
+			secrets.API_KEY:    secrets.APIKey(),
+			secrets.AGE_KEY:    secrets.AGE(),
+			secrets.SECRET_KEY: secrets.ED25519(),
+		},
 	}
-}
-
-func merge(a ...map[string]string) map[string]string {
-	c := make(map[string]string)
-	for _, m := range a {
-		for k, v := range m {
-			c[k] = v
-		}
-	}
-	return c
 }

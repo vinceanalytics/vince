@@ -9,6 +9,15 @@ import (
 	"filippo.io/age"
 )
 
+const (
+	API_KEY        = "vince_api"
+	API_KEY_ENV    = "VINCE_BOOTSTRAP_KEY"
+	AGE_KEY        = "vince_age"
+	AGE_KEY_ENV    = "VINCE_SECRET_AGE"
+	SECRET_KEY     = "vince_secret"
+	SECRET_KEY_ENV = "VINCE_SECRET"
+)
+
 func APIKey() []byte {
 	k := make([]byte, 64)
 	rand.Read(k)
