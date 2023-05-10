@@ -212,6 +212,16 @@ func Flags() []cli.Flag {
 			Usage:   "Enables using acme for automatic https.",
 			EnvVars: []string{"VINCE_AUTO_TLS"},
 		},
+		&cli.StringFlag{
+			Name:    "acme-email",
+			Usage:   "Email address to use with letsencrypt.",
+			EnvVars: []string{"VINCE_ACME_EMAIL"},
+		},
+		&cli.StringFlag{
+			Name:    "acme-domain",
+			Usage:   "Domain to use with letsencrypt.",
+			EnvVars: []string{"VINCE_ACME_DOMAIN"},
+		},
 		&cli.BoolFlag{
 			Name:    "enable-bootstrap",
 			Usage:   "allows creating a user and api key on startup.",
@@ -290,7 +300,11 @@ func fromCli(ctx *cli.Context) *Config {
 		BackupDir:               ctx.String("backup-dir"),
 		EnableSystemStats:       ctx.Bool("enable-system-stats"),
 		EnableAutoTls:           ctx.Bool("enable-auto-tls"),
-		EnableBootstrap:         ctx.Bool("enable-bootstrap"),
+		Acme: &ACME{
+			Email:  ctx.String("acme-email"),
+			Domain: ctx.String("acme-domain"),
+		},
+		EnableBootstrap: ctx.Bool("enable-bootstrap"),
 		Bootstrap: &Bootstrap{
 			Name:     ctx.String("bootstrap-name"),
 			Email:    ctx.String("bootstrap-email"),
