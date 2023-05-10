@@ -131,15 +131,30 @@ type Resources struct {
 	StatefulSets map[string]*appsv1.StatefulSet
 }
 
-func (r *Resources) Resolve() *ChangeSet {
-	return nil
+func (r *Resources) Resolve() (c ChangeSet) {
+	for k, v := range r.Vinces {
+		status := v.Status
+		switch v.Status.Secret {
+		case "":
+			continue
+		case "Created":
+			if _, ok := r.Secrets[k]; !ok {
+				// Until we see the secret , no further action is done for this
+				// resource
+				// TODO: queue resource ?
+				continue
+			}
+			status.Secret = "Resolved"
+		}
+	}
+	return
 }
 
 type ChangeSet struct {
 	Secrets      []*corev1.Secret
 	Configs      []*corev1.ConfigMap
 	Services     []*corev1.Service
-	VinceStatus  []v1alpha1.VinceStatus
+	VinceStatus  []*v1alpha1.VinceStatus
 	StatefulSets []*appsv1.StatefulSet
 }
 
@@ -149,4 +164,24 @@ func key(o metav1.Object) string {
 		Name:      o.GetName(),
 	}
 	return ts.String()
+}
+
+func createSecret(o *v1alpha1.Vince) *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      o.Name,
+			Namespace: o.Namespace,
+			Labels:    baseLabels(),
+		},
+	}
+}
+
+func merge(a ...map[string]string) map[string]string {
+	c := make(map[string]string)
+	for _, m := range a {
+		for k, v := range m {
+			c[k] = v
+		}
+	}
+	return c
 }
