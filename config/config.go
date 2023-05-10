@@ -183,14 +183,9 @@ func Flags() []cli.Flag {
 
 		// secrets
 		&cli.StringFlag{
-			Name:    "secret-ed-priv",
+			Name:    "secret",
 			Usage:   "path to a file with  ed25519 private key",
-			EnvVars: []string{"VINCE_SECRET_ED25519_PRIVATE"},
-		},
-		&cli.StringFlag{
-			Name:    "secret-ed-pub",
-			Usage:   "path to a file with  ed25519 public key",
-			EnvVars: []string{"VINCE_SECRET_ED25519_PUBLIC"},
+			EnvVars: []string{"VINCE_SECRET"},
 		},
 		&cli.StringFlag{
 			Name:    "secret-age",
@@ -309,11 +304,8 @@ func fromCli(ctx *cli.Context) *Config {
 			Key:      ctx.String("bootstrap-key"),
 		},
 		Secrets: &Secrets{
-			Ed25519KeyPair: &Secrets_KeyPair{
-				PrivateKey: ctx.String("secret-ed-priv"),
-				PublicKey:  ctx.String("secret-ed-pub"),
-			},
-			Age: ctx.String("secret-age"),
+			Secret: ctx.String("secret"),
+			Age:    ctx.String("secret-age"),
 		},
 		Intervals: &Intervals{
 			SitesByDomainCacheRefreshInterval: durationpb.New(ctx.Duration("cache-refresh")),

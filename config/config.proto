@@ -110,16 +110,8 @@ message Intervals {
 }
 
 message Secrets {
-
-  // used for any crypto functions
-  KeyPair ed25519_key_pair = 1;
-
+  string secret = 1;
   string age = 2;
-
-  message KeyPair {
-    string public_key = 1;
-    string private_key = 2;
-  }
 }
 
 message Cors {

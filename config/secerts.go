@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,25 +27,20 @@ func ConfigCMD() *cli.Command {
 			if err != nil {
 				return err
 			}
-			priv, pub := secrets.ED25519()
-			if err != nil {
-				return err
-			}
-			age := secrets.AGE()
+			priv := base64.StdEncoding.EncodeToString(secrets.ED25519())
+			age := base64.StdEncoding.EncodeToString(secrets.AGE())
 			var o bytes.Buffer
 			for _, f := range Flags() {
 				switch e := f.(type) {
 				case *cli.StringFlag:
 					fmt.Fprintf(&o, "# %s\n", e.Usage)
 					switch e.EnvVars[0] {
-					case "VINCE_SECRET_ED25519_PRIVATE":
+					case "VINCE_SECRET":
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], priv)
-					case "VINCE_SECRET_ED25519_PUBLIC":
-						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], pub)
 					case "VINCE_SECRET_AGE":
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], age)
 					case "VINCE_BOOTSTRAP_KEY":
-						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], secrets.APIKey())
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], base64.StdEncoding.EncodeToString(secrets.APIKey()))
 					default:
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], e.Value)
 					}

@@ -19,31 +19,23 @@ type KeyPair struct {
 
 func setupSecrets(c *Config) (*KeyPair, *age.X25519Identity, error) {
 	s := c.Secrets
-	b, err := readSecret(s.Ed25519KeyPair.PublicKey)
+	b, err := readSecret(s.Secret)
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading public key %q %v", s.Ed25519KeyPair.PublicKey, err)
+		return nil, nil, fmt.Errorf("reading private key  %v", err)
 	}
 	data, _ := pem.Decode(b)
-	pub, err := x509.ParsePKIXPublicKey(data.Bytes)
-	if err != nil {
-		return nil, nil, fmt.Errorf("reading private key %q %v", s.Ed25519KeyPair.PrivateKey, err)
-	}
-	b, err = readSecret(s.Ed25519KeyPair.PrivateKey)
-	if err != nil {
-		return nil, nil, err
-	}
-	data, _ = pem.Decode(b)
 	priv, err := x509.ParsePKCS8PrivateKey(data.Bytes)
 	if err != nil {
 		return nil, nil, err
 	}
+	privateKey := priv.(ed25519.PrivateKey)
 	sec := &KeyPair{
-		Public:  pub.(ed25519.PublicKey),
-		Private: priv.(ed25519.PrivateKey),
+		Public:  privateKey.Public().(ed25519.PublicKey),
+		Private: privateKey,
 	}
 	ageFile, err := readSecret(s.Age)
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading age secret %q %v", s.Age, err)
+		return nil, nil, fmt.Errorf("reading age secret  %v", err)
 	}
 	a, err := age.ParseX25519Identity(string(ageFile))
 	if err != nil {
