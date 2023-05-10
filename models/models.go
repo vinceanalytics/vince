@@ -2,6 +2,10 @@ package models
 
 import (
 	"context"
+	crand "crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"math/rand"
 	"net/url"
 	"path/filepath"
@@ -190,6 +194,23 @@ type SpikeNotification = schema.SpikeNotification
 type SiteMembership = schema.SiteMembership
 
 type APIKey = schema.APIKey
+
+func GenerateAPIKey() string {
+	k := make([]byte, 64)
+	crand.Read(k)
+	return base64.URLEncoding.EncodeToString(k)
+}
+
+func HashAPIKey(ctx context.Context, key string) string {
+	h := sha256.New()
+	h.Write(config.GetSecuritySecret(ctx).Private)
+	h.Write([]byte(key))
+	return strings.ToLower(hex.EncodeToString(h.Sum(nil)))
+}
+
+func ProcessAPIKey(ctx context.Context, key string) (hash, prefix string) {
+	return key[:6], HashAPIKey(ctx, key)
+}
 
 func UpdateAPIKeyUse(ctx context.Context, aid string) {
 	// aid is string because we use value we set in jwt token claims. No need to do
