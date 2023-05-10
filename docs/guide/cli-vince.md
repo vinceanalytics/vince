@@ -39,8 +39,7 @@ vince
 [--mailer-smtp-port]=[value]
 [--rotation-check]=[value]
 [--scrape-interval]=[value]
-[--secret-age-priv]=[value]
-[--secret-age-pub]=[value]
+[--secret-age]=[value]
 [--secret-ed-priv]=[value]
 [--secret-ed-pub]=[value]
 [--tls-address]=[value]
@@ -122,9 +121,7 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--scrape-interval**="": system wide metrics collection interval (default: 1m0s)
 
-**--secret-age-priv**="": path to a file with  age private key
-
-**--secret-age-pub**="": path to a file with  age public key
+**--secret-age**="": path to file with age.X25519Identity
 
 **--secret-ed-priv**="": path to a file with  ed25519 private key
 
