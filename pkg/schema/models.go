@@ -70,6 +70,7 @@ type APIKey struct {
 	Scopes                string `gorm:"not null;default:stats:read:*"`
 	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
 	KeyPrefix             string
+	KeyHash               string
 	UsedAt                time.Time
 }
 

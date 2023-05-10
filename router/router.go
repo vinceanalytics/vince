@@ -69,9 +69,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe5.And(plug.RequireAccount).PathGET("/settings", auth.UserSettings),
 		pipe5.And(plug.RequireAccount).PathPUT("/settings", auth.SaveSettings),
 		pipe5.And(plug.RequireAccount).PathDELETE("/me", auth.DeleteMe),
-		pipe5.PathGET("/settings/api-keys/new", auth.NewAPIKey),
 		pipe5.PathPOST("/settings/api-keys", auth.CreateAPIKey),
-		pipe5.DELETE(`^/settings/api-keys/:id$`, auth.DeleteAPIKey),
+		pipe5.POST(`^/settings/api-keys/:id/delete$`, auth.DeleteAPIKey),
 
 		plug.PREFIX("/sites",
 			pipe5.And(plug.RequireAccount).PathGET("/sites", site.Index),

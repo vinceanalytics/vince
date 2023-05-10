@@ -1,7 +1,55 @@
 {{define "_content"}}
 <div class="container-md">
-    <div class="Subhead Subhead--spacious">
+    <div class="Subhead Subhead--spacious settingsDivider">
         <h2 class="Subhead-heading text-center">Your Account</h2>
+    </div>
+
+    <div class="Subhead border-0">
+        <h2 class="Subhead-heading">Personal API Tokens</h2>
+    </div>
+    <div class="Box" id="api-keys">
+        <div class="Box-body">
+            <form action="/settings/api-keys" method="post">
+                <div class="FormControl width-full">
+                    <input class="FormControl-input" type="text" name="key" id="key" value="{{.Key}}" readonly>
+                    <span class="FormControl-caption">
+                        Copy this and store it. It will never be shown again
+                    </span>
+                </div>
+                <div class="mt-3">
+                    <input class="FormControl-input" id="name" name="name" type="text" placeholder="Key Name"
+                        style="width: 75%;">
+                    {{template "_csrf" .}}
+                    <input class=" btn btn-primary" type="submit" value="Create New Key">
+                </div>
+            </form>
+        </div>
+        <ul>
+            {{$ctx := .}}
+            {{range .CurrentUser.APIKeys}}
+            <li class="Box-row">
+                <div class="f4 d-flex width-full flex-items-baseline flex-justify-between ">
+                    <div>
+                        <span class="text-bold mr-3">
+                            {{.Name}}
+                        </span>
+                        <span class="Label">
+                            {{.KeyPrefix}}
+                        </span>
+                    </div>
+                    <div>
+                        <send-form>
+                            <button type="button" class=" btn btn-danger" data-to="/settings/api-keys/{{.ID}}/delete"
+                                data-method="post" data-action="click:send-form#send" data-csrf="{{$ctx.CSRF}}"
+                                data-target="send-form.link">
+                                Remove
+                            </button>
+                        </send-form>
+                    </div>
+                </div>
+            </li>
+            {{end}}
+        </ul>
     </div>
 </div>
 {{end}}

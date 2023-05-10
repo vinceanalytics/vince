@@ -209,7 +209,20 @@ func HashAPIKey(ctx context.Context, key string) string {
 }
 
 func ProcessAPIKey(ctx context.Context, key string) (hash, prefix string) {
-	return key[:6], HashAPIKey(ctx, key)
+	return HashAPIKey(ctx, key), key[:6]
+}
+
+func CreateApiKey(ctx context.Context, key, name string, uid uint64) {
+	hash, prefix := ProcessAPIKey(ctx, key)
+	err := Get(ctx).Create(&APIKey{
+		Name:      name,
+		UserID:    uid,
+		KeyPrefix: prefix,
+		KeyHash:   hash,
+	}).Error
+	if err != nil {
+		LOG(ctx, err, "failed to create api token")
+	}
 }
 
 func UpdateAPIKeyUse(ctx context.Context, aid string) {
