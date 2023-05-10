@@ -22,7 +22,6 @@ type Topology struct {
 	siteLister        vince_listers.SiteLister
 	podLister         listers.PodLister
 	secretsLister     listers.SecretLister
-	configLister      listers.ConfigMapLister
 	statefulSetLister stateful_listers.StatefulSetLister
 }
 
@@ -39,7 +38,6 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 	r := &Resources{
 		Services: make(map[string]*corev1.Service),
 		Secrets:  make(map[string]*corev1.Secret),
-		Configs:  make(map[string]*corev1.ConfigMap),
 		Pods:     make(map[string]*corev1.Pod),
 		Vinces:   make(map[string]*v1alpha1.Vince),
 		Sites:    make(map[string]*v1alpha1.Site),
@@ -66,10 +64,7 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list secrets %v", err)
 	}
-	config, err := t.configLister.List(base)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list config maps %v", err)
-	}
+
 	pods, err := t.podLister.List(base)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list pods maps %v", err)
@@ -94,12 +89,7 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		}
 		r.Secrets[key(o)] = o
 	}
-	for _, o := range config {
-		if filter.IsIgnored(o) {
-			continue
-		}
-		r.Configs[key(o)] = o
-	}
+
 	for _, o := range pods {
 		if filter.IsIgnored(o) {
 			continue
@@ -125,7 +115,6 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 type Resources struct {
 	Services     map[string]*corev1.Service
 	Secrets      map[string]*corev1.Secret
-	Configs      map[string]*corev1.ConfigMap
 	Pods         map[string]*corev1.Pod
 	Vinces       map[string]*v1alpha1.Vince
 	Sites        map[string]*v1alpha1.Site
@@ -168,12 +157,14 @@ func key(o metav1.Object) string {
 }
 
 func createSecret(o *v1alpha1.Vince) *corev1.Secret {
+	var ok bool
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      o.Name,
 			Namespace: o.Namespace,
 			Labels:    baseLabels(),
 		},
+		Immutable: &ok,
 		Data: map[string][]byte{
 			secrets.API_KEY:    secrets.APIKey(),
 			secrets.AGE_KEY:    secrets.AGE(),

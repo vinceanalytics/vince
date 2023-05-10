@@ -57,14 +57,11 @@ type VinceStatus struct {
 	// +kubebuilder:validation:Enum=Created;Resolved
 	//+optional
 	Secret string `json:"secret,omitempty"`
-	// The state of ConfigMap resource used for configuring vince instance
-	// +kubebuilder:validation:Enum=Created;Resolved
-	//+optional
-	Config string `json:"config,omitempty"`
 	//The state of the Service resource exposing the Vince instance.
 	//+optional
 	Service *v1.ServiceStatus `json:"service,omitempty"`
 	// We track the status of the pod linked to this vince resource deployment.
+	// Calls for site management are made directly on this pod.
 	// +optional
 	Pod *v1.PodStatus `json:"pod,omitempty"`
 	// We track the status of the stateful set linked to this vince resource.
