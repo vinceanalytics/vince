@@ -43,6 +43,8 @@ func ConfigCMD() *cli.Command {
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], pub)
 					case "VINCE_SECRET_AGE":
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], age)
+					case "VINCE_BOOTSTRAP_KEY":
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], secrets.APIKey())
 					default:
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], e.Value)
 					}

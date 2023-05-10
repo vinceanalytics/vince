@@ -10,7 +10,7 @@ import (
 	"filippo.io/age"
 )
 
-func GenerateAPIKey() string {
+func APIKey() string {
 	k := make([]byte, 64)
 	rand.Read(k)
 	return base64.URLEncoding.EncodeToString(k)
