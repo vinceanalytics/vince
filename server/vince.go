@@ -83,6 +83,7 @@ func (r resourceList) Close() error {
 func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	var resources resourceList
 
 	// we start listeners early to make sure we can actually bind to the network.
 	// This saves us managing all long running goroutines we start in this process.
@@ -90,19 +91,23 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	if err != nil {
 		return fmt.Errorf("failed to bind to a network address %v", err)
 	}
+	resources = append(resources, httpListener)
 	var httpsListener net.Listener
 	var magic *certmagic.Config
 	if o.EnableTls {
 		if o.Tls.Address == "" {
+			resources.Close()
 			return errors.New("tls-address is required")
 		}
 		if o.Tls.Key == "" || o.Tls.Cert == "" {
 			if !o.EnableAutoTls {
+				resources.Close()
 				return errors.New("tls-key and tls-cert  are required")
 			}
 		}
 		if o.EnableAutoTls {
 			if o.Acme.Email == "" || o.Acme.Domain == "" {
+				resources.Close()
 				return errors.New("acme-email and acme-domain  are required")
 			}
 			magic = certmagic.NewDefault()
@@ -111,6 +116,7 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 			os.MkdirAll(certsPath, 0755)
 			magic.Storage = &certmagic.FileStorage{Path: certsPath}
 			if o.Acme == nil || o.Acme.Email == "" || o.Acme.Domain == "" {
+				resources.Close()
 				return fmt.Errorf("missing acme settings for auto-tls")
 			}
 			myACME := certmagic.NewACMEIssuer(magic, certmagic.ACMEIssuer{
@@ -121,25 +127,28 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 			magic.Issuers = append(magic.Issuers, myACME)
 			err = magic.ManageSync(ctx, []string{o.Acme.Domain})
 			if err != nil {
+				resources.Close()
 				return fmt.Errorf("failed to sync acme domain %v", err)
 			}
 			httpsListener, err = net.Listen("tcp", o.Tls.Address)
 			if err != nil {
+				resources.Close()
 				return fmt.Errorf("failed to bind to https socket %v", err)
 			}
 		} else {
 			cert, err := tls.LoadX509KeyPair(o.Tls.Cert, o.Tls.Key)
 			if err != nil {
-				httpListener.Close()
+				resources.Close()
 				return fmt.Errorf("failed to load https certificate %v", err)
 			}
 			config := tls.Config{}
 			config.Certificates = append(config.Certificates, cert)
 			httpsListener, err = tls.Listen("tcp", o.Tls.Address, &config)
 			if err != nil {
-				httpListener.Close()
+				resources.Close()
 				return fmt.Errorf("failed to bind https socket %v", err)
 			}
+			resources = append(resources, httpsListener)
 		}
 	}
 
@@ -150,22 +159,28 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 
 	sqlDb, err := models.Open(models.Database(o))
 	if err != nil {
-		httpListener.Close()
-		if httpsListener != nil {
-			httpsListener.Close()
-		}
+		resources.Close()
 		return err
 	}
-	var resources resourceList
-	resources = append(resources, errorLog, httpListener)
-	if httpsListener != nil {
-		resources = append(resources, httpsListener)
-	}
+	resources = append(resources, errorLog)
 	resources = append(resources, resourceFunc(func() error {
 		return models.CloseDB(sqlDb)
 	}))
 
 	ctx = models.Set(ctx, sqlDb)
+
+	if o.EnableBootstrap {
+		log.Get(ctx).Debug().Msg("bootstrapping user")
+		if o.Bootstrap.Name == "" ||
+			o.Bootstrap.Email == "" ||
+			o.Bootstrap.Password == "" ||
+			o.Bootstrap.Key == "" {
+			return errors.New("bootstrap-name, bootstrap-email, bootstrap-password, and bootstrap-key, are required")
+		}
+		models.Bootstrap(ctx,
+			o.Bootstrap.Name, o.Bootstrap.Email, o.Bootstrap.Password, o.Bootstrap.Key,
+		)
+	}
 	ctx, ts, err := timeseries.Open(ctx, o)
 	if err != nil {
 		resources.Close()
