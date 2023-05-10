@@ -195,7 +195,7 @@ type APIKey = schema.APIKey
 
 func HashAPIKey(ctx context.Context, key string) string {
 	h := sha256.New()
-	h.Write(config.GetSecuritySecret(ctx).Private)
+	h.Write(config.GetSecuritySecret(ctx))
 	h.Write([]byte(key))
 	return strings.ToLower(hex.EncodeToString(h.Sum(nil)))
 }

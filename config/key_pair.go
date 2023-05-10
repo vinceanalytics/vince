@@ -12,12 +12,7 @@ import (
 	"filippo.io/age"
 )
 
-type KeyPair struct {
-	Public  ed25519.PublicKey
-	Private ed25519.PrivateKey
-}
-
-func setupSecrets(c *Config) (*KeyPair, *age.X25519Identity, error) {
+func setupSecrets(c *Config) (ed25519.PrivateKey, *age.X25519Identity, error) {
 	s := c.Secrets
 	b, err := readSecret(s.Secret)
 	if err != nil {
@@ -29,10 +24,6 @@ func setupSecrets(c *Config) (*KeyPair, *age.X25519Identity, error) {
 		return nil, nil, err
 	}
 	privateKey := priv.(ed25519.PrivateKey)
-	sec := &KeyPair{
-		Public:  privateKey.Public().(ed25519.PublicKey),
-		Private: privateKey,
-	}
 	ageFile, err := readSecret(s.Age)
 	if err != nil {
 		return nil, nil, fmt.Errorf("reading age secret  %v", err)
@@ -41,15 +32,15 @@ func setupSecrets(c *Config) (*KeyPair, *age.X25519Identity, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return sec, a, nil
+	return privateKey, a, nil
 }
 
 type securityKey struct{}
 
 type ageKey struct{}
 
-func GetSecuritySecret(ctx context.Context) *KeyPair {
-	return ctx.Value(securityKey{}).(*KeyPair)
+func GetSecuritySecret(ctx context.Context) ed25519.PrivateKey {
+	return ctx.Value(securityKey{}).(ed25519.PrivateKey)
 }
 
 func GetAgeSecret(ctx context.Context) *age.X25519Identity {
