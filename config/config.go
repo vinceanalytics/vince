@@ -213,9 +213,29 @@ func Flags() []cli.Flag {
 			EnvVars: []string{"VINCE_AUTO_TLS"},
 		},
 		&cli.BoolFlag{
-			Name:    "bootstrap",
-			Usage:   "Creates a user and api key on startup.",
-			EnvVars: []string{"VINCE_BOOTSTRAP"},
+			Name:    "enable-bootstrap",
+			Usage:   "allows creating a user and api key on startup.",
+			EnvVars: []string{"VINCE_ENABLE_BOOTSTRAP"},
+		},
+		&cli.StringFlag{
+			Name:    "bootstrap-name",
+			Usage:   "Full name of the user to bootstrap.",
+			EnvVars: []string{"VINCE_BOOTSTRAP_NAME"},
+		},
+		&cli.StringFlag{
+			Name:    "bootstrap-email",
+			Usage:   "Email address of the user to bootstrap.",
+			EnvVars: []string{"VINCE_BOOTSTRAP_EMAIL"},
+		},
+		&cli.StringFlag{
+			Name:    "bootstrap-password",
+			Usage:   "Password of the user to bootstrap.",
+			EnvVars: []string{"VINCE_BOOTSTRAP_PASSWORD"},
+		},
+		&cli.StringFlag{
+			Name:    "bootstrap-key",
+			Usage:   "API Key of the user to bootstrap.",
+			EnvVars: []string{"VINCE_BOOTSTRAP_KEY"},
 		},
 	}
 }
@@ -270,7 +290,13 @@ func fromCli(ctx *cli.Context) *Config {
 		BackupDir:               ctx.String("backup-dir"),
 		EnableSystemStats:       ctx.Bool("enable-system-stats"),
 		EnableAutoTls:           ctx.Bool("enable-auto-tls"),
-		Bootstrap:               ctx.Bool("bootstrap"),
+		EnableBootstrap:         ctx.Bool("enable-bootstrap"),
+		Bootstrap: &Bootstrap{
+			Name:     ctx.String("bootstrap-name"),
+			Email:    ctx.String("bootstrap-email"),
+			Password: ctx.String("bootstrap-password"),
+			Key:      ctx.String("bootstrap-key"),
+		},
 		Secrets: &Secrets{
 			Ed25519KeyPair: &Secrets_KeyPair{
 				PrivateKey: ctx.String("secret-ed-priv"),

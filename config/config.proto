@@ -35,7 +35,8 @@ message Config {
   string tls_cert = 32;
   string tls_key = 33;
 
-  bool bootstrap = 34;
+  bool enable_bootstrap = 34;
+  Bootstrap bootstrap = 35;
 
   message Mailer {
     Address address = 1;
@@ -150,4 +151,11 @@ message Firewall {
 message ACME {
   string email = 1;
   string domain = 2;
+}
+
+message Bootstrap {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+  string key = 4;
 }
