@@ -8,12 +8,14 @@ vince
 
 ```
 [--backup-dir]=[value]
+[--bootstrap]
 [--cache-refresh]=[value]
 [--config]=[value]
 [--data]=[value]
 [--enable-auto-tls]
 [--enable-email-verification]
 [--enable-system-stats]
+[--enable-tls]
 [--env]=[value]
 [--listen-tls]=[value]
 [--listen]=[value]
@@ -36,7 +38,6 @@ vince
 [--secret-age-pub]=[value]
 [--secret-ed-priv]=[value]
 [--secret-ed-pub]=[value]
-[--self-host]
 [--tls-cert]=[value]
 [--tls-key]=[value]
 [--ts-buffer]=[value]
@@ -53,6 +54,8 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--backup-dir**="": directory where backups are stored
 
+**--bootstrap**: Creates a user and api key on startup.
+
 **--cache-refresh**="": window for refreshing sites cache (default: 15m0s)
 
 **--config**="": configuration file in json format (default: vince.json)
@@ -64,6 +67,8 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 **--enable-email-verification**: send emails for account verification
 
 **--enable-system-stats**: Collect and visualize system stats
+
+**--enable-tls**: Enables serving https traffick. This will require listen-tls, tls-key, and tls-cert to be set.
 
 **--env**="": environment on which vince is run (dev,staging,production) (default: dev)
 
@@ -108,8 +113,6 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 **--secret-ed-priv**="": path to a file with  ed25519 private key
 
 **--secret-ed-pub**="": path to a file with  ed25519 public key
-
-**--self-host**: self hosted version
 
 **--tls-cert**="": Path to certificate file used for https
 

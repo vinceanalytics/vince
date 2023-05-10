@@ -212,6 +212,11 @@ func Flags() []cli.Flag {
 			Usage:   "Enables using acme for automatic https.",
 			EnvVars: []string{"VINCE_AUTO_TLS"},
 		},
+		&cli.BoolFlag{
+			Name:    "bootstrap",
+			Usage:   "Creates a user and api key on startup.",
+			EnvVars: []string{"VINCE_BOOTSTRAP"},
+		},
 	}
 }
 
@@ -265,6 +270,7 @@ func fromCli(ctx *cli.Context) *Config {
 		BackupDir:               ctx.String("backup-dir"),
 		EnableSystemStats:       ctx.Bool("enable-system-stats"),
 		EnableAutoTls:           ctx.Bool("enable-auto-tls"),
+		Bootstrap:               ctx.Bool("bootstrap"),
 		Secrets: &Secrets{
 			Ed25519KeyPair: &Secrets_KeyPair{
 				PrivateKey: ctx.String("secret-ed-priv"),

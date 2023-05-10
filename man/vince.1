@@ -15,12 +15,14 @@ vince
 
 .nf
 [--backup-dir]=[value]
+[--bootstrap]
 [--cache-refresh]=[value]
 [--config]=[value]
 [--data]=[value]
 [--enable-auto-tls]
 [--enable-email-verification]
 [--enable-system-stats]
+[--enable-tls]
 [--env]=[value]
 [--listen-tls]=[value]
 [--listen]=[value]
@@ -43,7 +45,6 @@ vince
 [--secret-age-pub]=[value]
 [--secret-ed-priv]=[value]
 [--secret-ed-pub]=[value]
-[--self-host]
 [--tls-cert]=[value]
 [--tls-key]=[value]
 [--ts-buffer]=[value]
@@ -70,6 +71,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--backup-dir\fP="": directory where backups are stored
 
 .PP
+\fB--bootstrap\fP: Creates a user and api key on startup.
+
+.PP
 \fB--cache-refresh\fP="": window for refreshing sites cache (default: 15m0s)
 
 .PP
@@ -86,6 +90,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .PP
 \fB--enable-system-stats\fP: Collect and visualize system stats
+
+.PP
+\fB--enable-tls\fP: Enables serving https traffick. This will require listen-tls, tls-key, and tls-cert to be set.
 
 .PP
 \fB--env\fP="": environment on which vince is run (dev,staging,production) (default: dev)
@@ -152,9 +159,6 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .PP
 \fB--secret-ed-pub\fP="": path to a file with  ed25519 public key
-
-.PP
-\fB--self-host\fP: self hosted version
 
 .PP
 \fB--tls-cert\fP="": Path to certificate file used for https

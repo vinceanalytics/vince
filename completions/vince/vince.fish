@@ -11,6 +11,7 @@ end
 
 complete -c vince -n '__fish_vince_no_subcommand' -f -l config -r -d 'configuration file in json format'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l listen -r -d 'http address to listen to'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-tls -d 'Enables serving https traffick. This will require listen-tls, tls-key, and tls-cert to be set.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l listen-tls -r -d 'https address to listen to. You must provide tls-key and tls-cert or configure auto-tls'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l tls-key -r -d 'Path to key file used for https'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l tls-cert -r -d 'Path to certificate file used for https'
@@ -18,7 +19,6 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l data -r -d 'path to data
 complete -c vince -n '__fish_vince_no_subcommand' -f -l env -r -d 'environment on which vince is run (dev,staging,production)'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l url -r -d 'url for the server on which vince is hosted(it shows up on emails)'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-email-verification -d 'send emails for account verification'
-complete -c vince -n '__fish_vince_no_subcommand' -f -l self-host -d 'self hosted version'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l log -r -d 'level of logging'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l backup-dir -r -d 'directory where backups are stored'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l mailer-address -r -d 'email address used for the sender of outgoing emails '
@@ -43,6 +43,7 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-age-pub -r -d 'pa
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-age-priv -r -d 'path to a file with  age private key'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-system-stats -d 'Collect and visualize system stats'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-auto-tls -d 'Enables using acme for automatic https.'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap -d 'Creates a user and api key on startup.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l help -s h -d 'show help'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l version -s v -d 'print the version'
 complete -c vince -n '__fish_seen_subcommand_from config' -f -l help -s h -d 'show help'
