@@ -193,14 +193,9 @@ func Flags() []cli.Flag {
 			EnvVars: []string{"VINCE_SECRET_ED25519_PUBLIC"},
 		},
 		&cli.StringFlag{
-			Name:    "secret-age-pub",
-			Usage:   "path to a file with  age public key",
-			EnvVars: []string{"VINCE_SECRET_AGE_PUBLIC"},
-		},
-		&cli.StringFlag{
-			Name:    "secret-age-priv",
-			Usage:   "path to a file with  age private key",
-			EnvVars: []string{"VINCE_SECRET_AGE_PRIVATE"},
+			Name:    "secret-age",
+			Usage:   "path to file with age.X25519Identity",
+			EnvVars: []string{"VINCE_SECRET_AGE"},
 		},
 		&cli.BoolFlag{
 			Name:    "enable-system-stats",
@@ -318,10 +313,7 @@ func fromCli(ctx *cli.Context) *Config {
 				PrivateKey: ctx.String("secret-ed-priv"),
 				PublicKey:  ctx.String("secret-ed-pub"),
 			},
-			Age: &Secrets_KeyPair{
-				PrivateKey: ctx.String("secret-age-priv"),
-				PublicKey:  ctx.String("secret-age-pub"),
-			},
+			Age: ctx.String("secret-age"),
 		},
 		Intervals: &Intervals{
 			SitesByDomainCacheRefreshInterval: durationpb.New(ctx.Duration("cache-refresh")),

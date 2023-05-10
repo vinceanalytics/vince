@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/gernest/vince/pkg/secrets"
 	"github.com/urfave/cli/v3"
 )
 
@@ -25,14 +26,11 @@ func ConfigCMD() *cli.Command {
 			if err != nil {
 				return err
 			}
-			priv, pub, err := generateAndSaveEd25519(path)
+			priv, pub := secrets.ED25519()
 			if err != nil {
 				return err
 			}
-			agePriv, agePub, err := generateAndSaveAge(path)
-			if err != nil {
-				return err
-			}
+			age := secrets.AGE()
 			var o bytes.Buffer
 			for _, f := range Flags() {
 				switch e := f.(type) {
@@ -43,10 +41,8 @@ func ConfigCMD() *cli.Command {
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], priv)
 					case "VINCE_SECRET_ED25519_PUBLIC":
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], pub)
-					case "VINCE_SECRET_AGE_PRIVATE":
-						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], agePriv)
-					case "VINCE_SECRET_AGE_PUBLIC":
-						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], agePub)
+					case "VINCE_SECRET_AGE":
+						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], age)
 					default:
 						fmt.Fprintf(&o, "export  %s=%q\n", e.EnvVars[0], e.Value)
 					}

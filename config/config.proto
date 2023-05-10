@@ -114,8 +114,7 @@ message Secrets {
   // used for any crypto functions
   KeyPair ed25519_key_pair = 1;
 
-  // This is encryption keys used with the age tool/library
-  KeyPair age = 2;
+  string age = 2;
 
   message KeyPair {
     string public_key = 1;

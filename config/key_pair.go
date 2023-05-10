@@ -3,13 +3,11 @@ package config
 import (
 	"context"
 	"crypto/ed25519"
-	"crypto/rand"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
+	"fmt"
 	"os"
-	"path/filepath"
 
 	"filippo.io/age"
 )
@@ -23,12 +21,12 @@ func setupSecrets(c *Config) (*KeyPair, *age.X25519Identity, error) {
 	s := c.Secrets
 	b, err := readSecret(s.Ed25519KeyPair.PublicKey)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("reading public key %q %v", s.Ed25519KeyPair.PublicKey, err)
 	}
 	data, _ := pem.Decode(b)
 	pub, err := x509.ParsePKIXPublicKey(data.Bytes)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("reading private key %q %v", s.Ed25519KeyPair.PrivateKey, err)
 	}
 	b, err = readSecret(s.Ed25519KeyPair.PrivateKey)
 	if err != nil {
@@ -43,9 +41,9 @@ func setupSecrets(c *Config) (*KeyPair, *age.X25519Identity, error) {
 		Public:  pub.(ed25519.PublicKey),
 		Private: priv.(ed25519.PrivateKey),
 	}
-	ageFile, err := readSecret(s.Age.PrivateKey)
+	ageFile, err := readSecret(s.Age)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("reading age secret %q %v", s.Age, err)
 	}
 	a, err := age.ParseX25519Identity(string(ageFile))
 	if err != nil {
@@ -64,58 +62,6 @@ func GetSecuritySecret(ctx context.Context) *KeyPair {
 
 func GetAgeSecret(ctx context.Context) *age.X25519Identity {
 	return ctx.Value(ageKey{}).(*age.X25519Identity)
-}
-
-func generateAndSaveEd25519(dir string) (privPath, pubPath string, err error) {
-	pub, priv, err := ed25519.GenerateKey(rand.Reader)
-	if err != nil {
-		return "", "", err
-	}
-
-	b, err := x509.MarshalPKCS8PrivateKey(priv)
-	if err != nil {
-		return "", "", err
-	}
-
-	privBlock := &pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: b,
-	}
-
-	// public key
-	pubBytes, err := x509.MarshalPKIXPublicKey(pub)
-	if err != nil {
-		return
-	}
-	pubBlock := &pem.Block{
-		Type:  "PUBLIC KEY",
-		Bytes: pubBytes,
-	}
-
-	name := "vince_ed25519_key"
-	privPath = filepath.Join(dir, name)
-	pubPath = filepath.Join(dir, name+".pub")
-
-	err = errors.Join(
-		os.WriteFile(privPath, pem.EncodeToMemory(privBlock), 0600),
-		os.WriteFile(pubPath, pem.EncodeToMemory(pubBlock), 0644),
-	)
-	return
-}
-
-func generateAndSaveAge(dir string) (private, public string, err error) {
-	a, err := age.GenerateX25519Identity()
-	if err != nil {
-		return "", "", err
-	}
-	name := "vince_age_key"
-	private = filepath.Join(dir, name)
-	public = filepath.Join(dir, name+".pub")
-	err = errors.Join(
-		os.WriteFile(private, []byte(a.String()), 0600),
-		os.WriteFile(public, []byte(a.Recipient().String()), 0600),
-	)
-	return
 }
 
 // Handles base64 encoded files or strings(coming from env vars)
