@@ -126,6 +126,9 @@ func (r *Resources) Resolve() (c ChangeSet) {
 		status := v.Status
 		switch v.Status.Secret {
 		case "":
+			c.Secrets = append(c.Secrets, createSecret(v))
+			status.Secret = "Created"
+			c.VinceStatus = append(c.VinceStatus, &status)
 			continue
 		case "Created":
 			if _, ok := r.Secrets[k]; !ok {
@@ -135,6 +138,7 @@ func (r *Resources) Resolve() (c ChangeSet) {
 				continue
 			}
 			status.Secret = "Resolved"
+			c.VinceStatus = append(c.VinceStatus, &status)
 		}
 	}
 	return
