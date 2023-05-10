@@ -2,9 +2,7 @@ package models
 
 import (
 	"context"
-	crand "crypto/rand"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"math/rand"
 	"net/url"
@@ -194,12 +192,6 @@ type SpikeNotification = schema.SpikeNotification
 type SiteMembership = schema.SiteMembership
 
 type APIKey = schema.APIKey
-
-func GenerateAPIKey() string {
-	k := make([]byte, 64)
-	crand.Read(k)
-	return base64.URLEncoding.EncodeToString(k)
-}
 
 func HashAPIKey(ctx context.Context, key string) string {
 	h := sha256.New()
