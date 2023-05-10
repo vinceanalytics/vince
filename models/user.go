@@ -10,6 +10,7 @@ import (
 	"github.com/gernest/vince/pkg/schema"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type currentUserKey struct{}
@@ -48,6 +49,43 @@ func GetUser(ctx context.Context) *User {
 		return u.(*User)
 	}
 	return nil
+}
+
+// Create a user and API key. No validation is done. If A User exists no further
+// operations are done.
+func Bootstrap(
+	ctx context.Context,
+	name, email, password, key string,
+) {
+	if Exists(ctx, func(db *gorm.DB) *gorm.DB {
+		return db.Model(&User{}).Where("email = ?", email)
+	}) {
+		return
+	}
+	hashPasswd, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Get(ctx).Fatal().Err(err).Msg("failed to hash password")
+	}
+	hash, prefix := ProcessAPIKey(ctx, key)
+	u := User{
+		Name:         name,
+		Email:        email,
+		PasswordHash: string(hashPasswd),
+		APIKeys: []*APIKey{
+			{
+				Name:      name,
+				KeyPrefix: prefix,
+				KeyHash:   hash,
+			},
+		},
+	}
+	if config.Get(ctx).EnableEmailVerification {
+		u.EmailVerified = true
+	}
+	err = Get(ctx).Create(u).Error
+	if err != nil {
+		log.Get(ctx).Fatal().Err(err).Msg("failed to save bootstrapped user")
+	}
 }
 
 func UserByUID(ctx context.Context, uid uint64) (u *User) {
