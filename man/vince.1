@@ -14,17 +14,22 @@ vince
 .RS
 
 .nf
+[--acme-domain]=[value]
+[--acme-email]=[value]
 [--backup-dir]=[value]
-[--bootstrap]
+[--bootstrap-email]=[value]
+[--bootstrap-key]=[value]
+[--bootstrap-name]=[value]
+[--bootstrap-password]=[value]
 [--cache-refresh]=[value]
 [--config]=[value]
 [--data]=[value]
 [--enable-auto-tls]
+[--enable-bootstrap]
 [--enable-email-verification]
 [--enable-system-stats]
 [--enable-tls]
 [--env]=[value]
-[--listen-tls]=[value]
 [--listen]=[value]
 [--log]=[value]
 [--mailer-address-name]=[value]
@@ -45,6 +50,7 @@ vince
 [--secret-age-pub]=[value]
 [--secret-ed-priv]=[value]
 [--secret-ed-pub]=[value]
+[--tls-address]=[value]
 [--tls-cert]=[value]
 [--tls-key]=[value]
 [--ts-buffer]=[value]
@@ -68,10 +74,25 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .SH GLOBAL OPTIONS
 .PP
+\fB--acme-domain\fP="": Domain to use with letsencrypt.
+
+.PP
+\fB--acme-email\fP="": Email address to use with letsencrypt.
+
+.PP
 \fB--backup-dir\fP="": directory where backups are stored
 
 .PP
-\fB--bootstrap\fP: Creates a user and api key on startup.
+\fB--bootstrap-email\fP="": Email address of the user to bootstrap.
+
+.PP
+\fB--bootstrap-key\fP="": API Key of the user to bootstrap.
+
+.PP
+\fB--bootstrap-name\fP="": Full name of the user to bootstrap.
+
+.PP
+\fB--bootstrap-password\fP="": Password of the user to bootstrap.
 
 .PP
 \fB--cache-refresh\fP="": window for refreshing sites cache (default: 15m0s)
@@ -86,22 +107,22 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--enable-auto-tls\fP: Enables using acme for automatic https.
 
 .PP
+\fB--enable-bootstrap\fP: allows creating a user and api key on startup.
+
+.PP
 \fB--enable-email-verification\fP: send emails for account verification
 
 .PP
 \fB--enable-system-stats\fP: Collect and visualize system stats
 
 .PP
-\fB--enable-tls\fP: Enables serving https traffick. This will require listen-tls, tls-key, and tls-cert to be set.
+\fB--enable-tls\fP: Enables serving https traffick.
 
 .PP
 \fB--env\fP="": environment on which vince is run (dev,staging,production) (default: dev)
 
 .PP
 \fB--listen\fP="": http address to listen to (default: :8080)
-
-.PP
-\fB--listen-tls\fP="": https address to listen to. You must provide tls-key and tls-cert or configure auto-tls (default: :8443)
 
 .PP
 \fB--log\fP="": level of logging (default: info)
@@ -159,6 +180,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .PP
 \fB--secret-ed-pub\fP="": path to a file with  ed25519 public key
+
+.PP
+\fB--tls-address\fP="": https address to listen to. You must provide tls-key and tls-cert or configure auto-tls (default: :8443)
 
 .PP
 \fB--tls-cert\fP="": Path to certificate file used for https

@@ -7,17 +7,22 @@ vince - The Cloud Native Web Analytics Platform.
 vince
 
 ```
+[--acme-domain]=[value]
+[--acme-email]=[value]
 [--backup-dir]=[value]
-[--bootstrap]
+[--bootstrap-email]=[value]
+[--bootstrap-key]=[value]
+[--bootstrap-name]=[value]
+[--bootstrap-password]=[value]
 [--cache-refresh]=[value]
 [--config]=[value]
 [--data]=[value]
 [--enable-auto-tls]
+[--enable-bootstrap]
 [--enable-email-verification]
 [--enable-system-stats]
 [--enable-tls]
 [--env]=[value]
-[--listen-tls]=[value]
 [--listen]=[value]
 [--log]=[value]
 [--mailer-address-name]=[value]
@@ -38,6 +43,7 @@ vince
 [--secret-age-pub]=[value]
 [--secret-ed-priv]=[value]
 [--secret-ed-pub]=[value]
+[--tls-address]=[value]
 [--tls-cert]=[value]
 [--tls-key]=[value]
 [--ts-buffer]=[value]
@@ -52,9 +58,19 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 # GLOBAL OPTIONS
 
+**--acme-domain**="": Domain to use with letsencrypt.
+
+**--acme-email**="": Email address to use with letsencrypt.
+
 **--backup-dir**="": directory where backups are stored
 
-**--bootstrap**: Creates a user and api key on startup.
+**--bootstrap-email**="": Email address of the user to bootstrap.
+
+**--bootstrap-key**="": API Key of the user to bootstrap.
+
+**--bootstrap-name**="": Full name of the user to bootstrap.
+
+**--bootstrap-password**="": Password of the user to bootstrap.
 
 **--cache-refresh**="": window for refreshing sites cache (default: 15m0s)
 
@@ -64,17 +80,17 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--enable-auto-tls**: Enables using acme for automatic https.
 
+**--enable-bootstrap**: allows creating a user and api key on startup.
+
 **--enable-email-verification**: send emails for account verification
 
 **--enable-system-stats**: Collect and visualize system stats
 
-**--enable-tls**: Enables serving https traffick. This will require listen-tls, tls-key, and tls-cert to be set.
+**--enable-tls**: Enables serving https traffick.
 
 **--env**="": environment on which vince is run (dev,staging,production) (default: dev)
 
 **--listen**="": http address to listen to (default: :8080)
-
-**--listen-tls**="": https address to listen to. You must provide tls-key and tls-cert or configure auto-tls (default: :8443)
 
 **--log**="": level of logging (default: info)
 
@@ -113,6 +129,8 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 **--secret-ed-priv**="": path to a file with  ed25519 private key
 
 **--secret-ed-pub**="": path to a file with  ed25519 public key
+
+**--tls-address**="": https address to listen to. You must provide tls-key and tls-cert or configure auto-tls (default: :8443)
 
 **--tls-cert**="": Path to certificate file used for https
 
