@@ -93,52 +93,52 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	var httpsListener net.Listener
 	var magic *certmagic.Config
 	if o.EnableTls {
-		if o.ListenTls != "" {
-			if o.TlsCert == "" || o.TlsKey == "" {
-				if o.EnableAutoTls {
-					// It is okay to omit tls-cert and tls-key if we are doing auto tls.
-					// we however make sure we  to validate acme configuration here.
-
-					magic = certmagic.NewDefault()
-					// we use file storage for certs
-					certsPath := filepath.Join(o.DataPath, "certs")
-					os.MkdirAll(certsPath, 0755)
-					magic.Storage = &certmagic.FileStorage{Path: certsPath}
-					if o.Acme == nil || o.Acme.Email == "" || o.Acme.Domain == "" {
-						return fmt.Errorf("missing acme settings for auto-tls")
-					}
-					myACME := certmagic.NewACMEIssuer(magic, certmagic.ACMEIssuer{
-						CA:     certmagic.LetsEncryptStagingCA,
-						Email:  o.Acme.Email,
-						Agreed: true,
-					})
-					magic.Issuers = append(magic.Issuers, myACME)
-					err = magic.ManageSync(ctx, []string{o.Acme.Domain})
-					if err != nil {
-						return fmt.Errorf("failed to sync acme domain %v", err)
-					}
-					httpsListener, err = net.Listen("tcp", o.ListenTls)
-					if err != nil {
-						return fmt.Errorf("failed to bind to https socket %v", err)
-					}
-				} else {
-					// There is no need to bail out. We just expose http endpoint as usual. We
-					// emit a warning to let the user know we didn't bind to a tls socket.
-					log.Get(ctx).Warn().Msg("skipping https listen-tls is set but tls-key and tls-cert are missing")
-				}
-			} else {
-				cert, err := tls.LoadX509KeyPair(o.TlsCert, o.TlsKey)
-				if err != nil {
-					httpListener.Close()
-					return fmt.Errorf("failed to load https certificate %v", err)
-				}
-				config := tls.Config{}
-				config.Certificates = append(config.Certificates, cert)
-				httpsListener, err = tls.Listen("tcp", o.ListenTls, &config)
-				if err != nil {
-					httpListener.Close()
-					return fmt.Errorf("failed to bind https socket %v", err)
-				}
+		if o.Tls.Address == "" {
+			return errors.New("tls-address is required")
+		}
+		if o.Tls.Key == "" || o.Tls.Cert == "" {
+			if !o.EnableAutoTls {
+				return errors.New("tls-key and tls-cert  are required")
+			}
+		}
+		if o.EnableAutoTls {
+			if o.Acme.Email == "" || o.Acme.Domain == "" {
+				return errors.New("acme-email and acme-domain  are required")
+			}
+			magic = certmagic.NewDefault()
+			// we use file storage for certs
+			certsPath := filepath.Join(o.DataPath, "certs")
+			os.MkdirAll(certsPath, 0755)
+			magic.Storage = &certmagic.FileStorage{Path: certsPath}
+			if o.Acme == nil || o.Acme.Email == "" || o.Acme.Domain == "" {
+				return fmt.Errorf("missing acme settings for auto-tls")
+			}
+			myACME := certmagic.NewACMEIssuer(magic, certmagic.ACMEIssuer{
+				CA:     certmagic.LetsEncryptStagingCA,
+				Email:  o.Acme.Email,
+				Agreed: true,
+			})
+			magic.Issuers = append(magic.Issuers, myACME)
+			err = magic.ManageSync(ctx, []string{o.Acme.Domain})
+			if err != nil {
+				return fmt.Errorf("failed to sync acme domain %v", err)
+			}
+			httpsListener, err = net.Listen("tcp", o.Tls.Address)
+			if err != nil {
+				return fmt.Errorf("failed to bind to https socket %v", err)
+			}
+		} else {
+			cert, err := tls.LoadX509KeyPair(o.Tls.Cert, o.Tls.Key)
+			if err != nil {
+				httpListener.Close()
+				return fmt.Errorf("failed to load https certificate %v", err)
+			}
+			config := tls.Config{}
+			config.Certificates = append(config.Certificates, cert)
+			httpsListener, err = tls.Listen("tcp", o.Tls.Address, &config)
+			if err != nil {
+				httpListener.Close()
+				return fmt.Errorf("failed to bind https socket %v", err)
 			}
 		}
 	}

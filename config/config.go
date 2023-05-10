@@ -36,11 +36,11 @@ func Flags() []cli.Flag {
 		},
 		&cli.BoolFlag{
 			Name:    "enable-tls",
-			Usage:   "Enables serving https traffick. This will require listen-tls, tls-key, and tls-cert to be set.",
+			Usage:   "Enables serving https traffick.",
 			EnvVars: []string{"VINCE_ENABLE_TLS"},
 		},
 		&cli.StringFlag{
-			Name:    "listen-tls",
+			Name:    "tls-address",
 			Usage:   "https address to listen to. You must provide tls-key and tls-cert or configure auto-tls",
 			Value:   ":8443",
 			EnvVars: []string{"VINCE_LISTEN_TLS"},
@@ -289,11 +289,13 @@ func fromFile(ctx *cli.Context) (*Config, error) {
 
 func fromCli(ctx *cli.Context) *Config {
 	x := &Config{
-		Listen:                  ctx.String("listen"),
-		EnableTls:               ctx.Bool("enable-tls"),
-		ListenTls:               ctx.String("listen-tls"),
-		TlsKey:                  ctx.String("tls-key"),
-		TlsCert:                 ctx.String("tls-cert"),
+		Listen:    ctx.String("listen"),
+		EnableTls: ctx.Bool("enable-tls"),
+		Tls: &TLS{
+			Address: ctx.String("tls-address"),
+			Key:     ctx.String("tls-key"),
+			Cert:    ctx.String("tls-cert"),
+		},
 		Url:                     ctx.String("url"),
 		DataPath:                ctx.String("data"),
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
