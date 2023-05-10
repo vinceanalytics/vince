@@ -28,3 +28,6 @@ go tool nm -size -sort size ./vince
 
 * showcase 
 - pika.style
+
+* color palette
+Skip to Loafer
