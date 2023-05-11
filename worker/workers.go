@@ -22,7 +22,7 @@ func UpdateCacheSites(ctx context.Context, f func(*health.Ping)) func() error {
 
 func doSiteCacheUpdate(ctx context.Context, fn func(*models.CachedSite)) {
 	start := time.Now()
-	defer system.SiteCacheDuration.UpdateDuration(start)
+	defer system.SiteCacheDuration.Observe(time.Since(start).Seconds())
 	system.SitesInCache.Set(
 		models.QuerySitesToCache(ctx, fn),
 	)
@@ -106,42 +106,6 @@ func saveBuffer(ctx context.Context, ch health.PingChannel) func() error {
 				pong()
 			case <-tick.C:
 				m.Save(ctx)
-			}
-		}
-	}
-}
-
-func CollectSYstemMetrics(ctx context.Context, f func(*health.Ping)) func() error {
-	h := health.NewPing("system_metrics_collector")
-	f(h)
-	return collectSystemMetrics(ctx, h.Channel)
-}
-
-func collectSystemMetrics(ctx context.Context, ch health.PingChannel) func() error {
-	return func() error {
-		log.Get(ctx).Debug().Str("worker", "system_metrics_collector").Msg("started")
-		tick := time.NewTicker(config.Get(ctx).Intervals.SystemScrapeInterval.AsDuration())
-		defer tick.Stop()
-
-		// By default  we collect 24 hour windows into their own file.
-		persist := time.NewTicker(24 * time.Hour)
-		defer persist.Stop()
-
-		sys := timeseries.GetSystem(ctx)
-		collect := sys.Collect(ctx)
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case pong := <-ch:
-				pong()
-			case <-persist.C:
-				err := sys.Save()
-				if err != nil {
-					log.Get(ctx).Err(err).Msg("failed to save system metrics")
-				}
-			case ts := <-tick.C:
-				collect(system.Collect(ts), system.CollectHist(ts)...)
 			}
 		}
 	}

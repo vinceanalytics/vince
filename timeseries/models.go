@@ -33,16 +33,6 @@ func Open(ctx context.Context, o *config.Config) (context.Context, io.Closer, er
 	ctx = SetMap(ctx, NewMap())
 
 	resource := resourceList{mike, geo}
-	if o.EnableSystemStats {
-		sys, err := openSystem(o.DataPath)
-		if err != nil {
-			mike.Close()
-			geo.Close()
-			return nil, nil, err
-		}
-		ctx = context.WithValue(ctx, systemKey{}, sys)
-		resource = append(resource, sys)
-	}
 	return ctx, resource, nil
 }
 
@@ -94,16 +84,10 @@ type mikeKey struct{}
 
 type geoKey struct{}
 
-type systemKey struct{}
-
 func GetMike(ctx context.Context) *badger.DB {
 	return ctx.Value(mikeKey{}).(*badger.DB)
 }
 
 func GetGeo(ctx context.Context) *badger.DB {
 	return ctx.Value(geoKey{}).(*badger.DB)
-}
-
-func GetSystem(ctx context.Context) *AllSystem {
-	return ctx.Value(systemKey{}).(*AllSystem)
 }

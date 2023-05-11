@@ -1,66 +1,78 @@
 package system
 
 import (
-	"runtime"
-	"time"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // histograms
 var (
-	SaveDuration         = &histogramMetric{name: "mike_save_duration"}
-	DropSiteDuration     = &histogramMetric{name: "mike_drop_site_duration"}
-	MergeDuration        = &histogramMetric{name: "bob_merge_duration"}
-	SiteCacheDuration    = &histogramMetric{name: "sites_cache_update_duration"}
-	CalendarReadDuration = &histogramMetric{name: "calendar_read_duration"}
+	// buckets for seconds resolutions of histograms
+	buckets      = []float64{.25, .5, 1, 2.5, 5, 10}
+	SaveDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: "vince",
+			Name:      "events_save_duration_seconds",
+			Help:      "Time taken to persist events to the storage.",
+			Buckets:   buckets,
+		},
+	)
+	DropSiteDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: "vince",
+			Name:      "site_drop_duration_seconds",
+			Help:      "Time taken to permanently delete a site.",
+			Buckets:   buckets,
+		},
+	)
+	SiteCacheDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: "vince",
+			Name:      "site_cache_duration_seconds",
+			Help:      "Time taken to load sites to cache.",
+			Buckets:   buckets,
+		},
+	)
+	CalendarReadDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: "vince",
+			Name:      "calendar_read_duration_seconds",
+			Help:      "Time taken to read a calendar from storage.",
+			Buckets:   buckets,
+		},
+	)
 )
 
-// counters for the /api/event endpoint.
 var (
-	// DataPointReceived is cumulative total of calls to /api/event
-	DataPointReceived = &counterMetric{name: "data_point_received_total"}
-	// DataPointReceived is cumulative total of calls to /api/event that were successfully
-	// accepted and processed.
-	DataPointAccepted = &counterMetric{name: "data_point_accepted_total"}
-	// DataPointReceived is cumulative total of calls to /api/event that were rejected with
-	// bad request. We don't care about the actual reason, we need only an indication of something
-	// was not right.
-	DataPointRejectedBadRequest = &counterMetric{name: "data_point_rejected_bad_request_total"}
-	// DataPointReceived is cumulative total of calls to /api/event that were dropped. This happens
-	// when calls are made to deleted sites or sites with exceeded limits/quotas.
-	DataPointDropped = &counterMetric{name: "data_point_dropped_total"}
+	DataPoint = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "vince",
+			Name:      "data_point",
+			Help:      "Number of calls to /api/event",
+		},
+		[]string{"status"},
+	)
+	DataPointReceived = DataPoint.WithLabelValues("received")
+	DataPointRejected = DataPoint.WithLabelValues("rejected")
+	DataPointDropped  = DataPoint.WithLabelValues("dropped")
+	DataPointAccepted = DataPoint.WithLabelValues("accepted")
 )
 
 // gauges
 var (
-	SitesInCache = &gaugeMetric{name: "sites_in_cache"}
+	SitesInCache = prometheus.NewGauge(prometheus.GaugeOpts{
+		Namespace: "vince",
+		Name:      "sites_in_cache",
+		Help:      "Active sites in memory cache.",
+	})
 )
 
-var syncStats = &Sync{}
-
-type Sync struct {
-	ms    runtime.MemStats
-	stats Stats
-}
-
-func (s *Sync) read(ts time.Time) {
-	s.readGo(ts)
-}
-
-func (s *Sync) Collect(ts time.Time) Stats {
-	s.read(ts)
-	return s.stats
-}
-
-func Collect(ts time.Time) Stats {
-	return syncStats.Collect(ts)
-}
-
-func CollectHist(ts time.Time) []*Histogram {
-	return []*Histogram{
-		SaveDuration.Read(ts),
-		MergeDuration.Read(ts),
-		SiteCacheDuration.Read(ts),
-		DropSiteDuration.Read(ts),
-		CalendarReadDuration.Read(ts),
-	}
+func init() {
+	prometheus.DefaultRegisterer.MustRegister(
+		DataPoint,
+		SitesInCache,
+		SaveDuration,
+		DropSiteDuration,
+		SiteCacheDuration,
+		CalendarReadDuration,
+	)
 }

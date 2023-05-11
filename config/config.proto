@@ -24,9 +24,6 @@ message Config {
   // Only opearional data (sqlite) and timeseries data is backed up,
   string backup_dir = 17;
 
-  // When true we system stats will be collected,persisted  and visualized.
-  bool enable_system_stats = 18;
-
   bool enable_auto_tls = 19;
   ACME acme = 20;
 

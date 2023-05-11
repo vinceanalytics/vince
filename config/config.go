@@ -193,11 +193,6 @@ func Flags() []cli.Flag {
 			EnvVars: []string{"VINCE_SECRET_AGE"},
 		},
 		&cli.BoolFlag{
-			Name:    "enable-system-stats",
-			Usage:   "Collect and visualize system stats",
-			EnvVars: []string{"VINCE_ENABLE_SYSTEM_STATS"},
-		},
-		&cli.BoolFlag{
 			Name:    "enable-auto-tls",
 			Usage:   "Enables using acme for automatic https.",
 			EnvVars: []string{"VINCE_AUTO_TLS"},
@@ -290,7 +285,6 @@ func fromCli(ctx *cli.Context) *Config {
 		DataPath:                ctx.String("data"),
 		EnableEmailVerification: ctx.Bool("enable-email-verification"),
 		BackupDir:               ctx.String("backup-dir"),
-		EnableSystemStats:       ctx.Bool("enable-system-stats"),
 		EnableAutoTls:           ctx.Bool("enable-auto-tls"),
 		Acme: &ACME{
 			Email:  ctx.String("acme-email"),

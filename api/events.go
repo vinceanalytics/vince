@@ -66,14 +66,14 @@ var bufPool = &sync.Pool{
 
 // Events accepts events payloads from vince client script.
 func Events(w http.ResponseWriter, r *http.Request) {
-	system.DataPointReceived.Inc()
+	system.DataPoint.WithLabelValues("received").Inc()
 
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	xlg := log.Get(r.Context())
 	var req Request
 	err := req.Parse(r.Body)
 	if err != nil {
-		system.DataPointRejectedBadRequest.Inc()
+		system.DataPointRejected.Inc()
 		xlg.Err(err).Msg("Failed decoding json")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -81,19 +81,19 @@ func Events(w http.ResponseWriter, r *http.Request) {
 
 	remoteIp := remoteip.Get(r)
 	if req.URI == "" {
-		system.DataPointRejectedBadRequest.Inc()
+		system.DataPointRejected.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	uri, err := url.Parse(req.URI)
 	if err != nil {
-		system.DataPointRejectedBadRequest.Inc()
+		system.DataPointRejected.Inc()
 		xlg.Err(err).Msg("Failed parsing url")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if uri.Scheme == "data" {
-		system.DataPointRejectedBadRequest.Inc()
+		system.DataPointRejected.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -104,7 +104,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	reqReferrer := req.Referrer
 	refUrl, err := url.Parse(reqReferrer)
 	if err != nil {
-		system.DataPointRejectedBadRequest.Inc()
+		system.DataPointRejected.Inc()
 		xlg.Err(err).Msg("Failed parsing referrer url")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -114,17 +114,17 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		path += "#" + uri.Fragment
 	}
 	if len(path) > 2000 {
-		system.DataPointRejectedBadRequest.Inc()
+		system.DataPointRejected.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if req.EventName == "" {
-		system.DataPointRejectedBadRequest.Inc()
+		system.DataPointRejected.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if req.Domain == "" {
-		system.DataPointRejectedBadRequest.Inc()
+		system.DataPointRejected.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

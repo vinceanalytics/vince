@@ -14,9 +14,11 @@ import (
 	"github.com/gernest/vince/share"
 	"github.com/gernest/vince/site"
 	"github.com/gernest/vince/sites"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func Pipe(ctx context.Context) plug.Pipeline {
+	metrics := promhttp.Handler()
 	pipe1 := plug.Pipeline{plug.Firewall(ctx), plug.AuthorizeSiteAPI}
 	pipe2 := plug.SharedLink()
 	pipe4 := plug.API(ctx)
@@ -24,6 +26,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	pipe5 := append(plug.Browser(ctx), plug.Protect()...)
 	sitePipe := pipe5.And(plug.RequireAccount, plug.AuthorizedSiteAccess("owner", "admin", "super_admin"))
 	return plug.Pipeline{
+		browser.PathGET("/metrics", metrics.ServeHTTP),
 		// add prefix matches on the top of the pipeline for faster lookups
 		pipe5.Prefix("/debug/pprof/", pprof.Index),
 

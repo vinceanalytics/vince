@@ -62,7 +62,7 @@ func (g *aggregate) Release() {
 
 func DropSite(ctx context.Context, uid, sid uint64) {
 	start := time.Now()
-	defer system.DropSiteDuration.UpdateDuration(start)
+	defer system.DropSiteDuration.Observe(time.Since(start).Seconds())
 
 	db := GetMike(ctx)
 	id := newID()
@@ -96,7 +96,7 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 
 func Save(ctx context.Context, b *Buffer) {
 	start := time.Now()
-	defer system.SaveDuration.UpdateDuration(start)
+	defer system.SaveDuration.Observe(time.Since(start).Seconds())
 
 	db := GetMike(ctx)
 	defer b.Release()
@@ -248,7 +248,7 @@ func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []by
 
 func ReadCalendars(ctx context.Context, ts time.Time, uid, sid uint64) (data plot.Data) {
 	start := time.Now()
-	defer system.CalendarReadDuration.UpdateDuration(start)
+	defer system.CalendarReadDuration.Observe(time.Since(start).Seconds())
 	m := GetMike(ctx)
 	id := newID()
 	defer id.Release()

@@ -220,9 +220,6 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		g.Go(worker.UpdateCacheSites(ctx, addHealth))
 		g.Go(worker.LogRotate(ctx, errorLog, addHealth))
 		g.Go(worker.SaveTimeseries(ctx, addHealth))
-		if o.EnableSystemStats {
-			g.Go(worker.CollectSYstemMetrics(ctx, addHealth))
-		}
 	}
 
 	resources = append(resources, h)
