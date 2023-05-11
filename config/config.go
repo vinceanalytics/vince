@@ -232,6 +232,11 @@ func Flags() []cli.Flag {
 			Usage:   "API Key of the user to bootstrap.",
 			EnvVars: []string{"VINCE_BOOTSTRAP_KEY"},
 		},
+		&cli.BoolFlag{
+			Name:    "enable-profile",
+			Usage:   "Expose /debug/pprof endpoint",
+			EnvVars: []string{"VINCE_ENABLE_PROFILE"},
+		},
 	}
 }
 
@@ -338,6 +343,7 @@ func fromCli(ctx *cli.Context) *Config {
 			Methods:               []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 			SendPreflightResponse: true,
 		},
+		EnableProfile: ctx.Bool("enable-profile"),
 	}
 	var anon *Config_Mailer_Anonymous
 	var plain *Config_Mailer_Plain

@@ -144,3 +144,12 @@ var replace = map[string]string{
 	":site_id":       "(?P<site_id>[^.]+)",
 	":goal_id":       "(?P<goal_id>[^.]+)",
 }
+
+func Ok(ok bool, pipe Plug) Plug {
+	if ok {
+		return pipe
+	}
+	return func(h http.Handler) http.Handler {
+		return h
+	}
+}

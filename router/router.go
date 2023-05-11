@@ -8,6 +8,7 @@ import (
 	"github.com/gernest/vince/api"
 	"github.com/gernest/vince/auth"
 	"github.com/gernest/vince/avatar"
+	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/pages"
 	"github.com/gernest/vince/plug"
 	"github.com/gernest/vince/render"
@@ -28,8 +29,9 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	return plug.Pipeline{
 		browser.PathGET("/metrics", metrics.ServeHTTP),
 		// add prefix matches on the top of the pipeline for faster lookups
-		pipe5.Prefix("/debug/pprof/", pprof.Index),
-
+		plug.Ok(config.Get(ctx).EnableProfile,
+			pipe5.Prefix("/debug/pprof/", pprof.Index),
+		),
 		plug.PREFIX("/api/v1/sites",
 			pipe1.PathPOST("/api/v1/sites", sites.Create),
 			pipe1.PathPUT("/api/v1/sites/goals", sites.CreateGoal),

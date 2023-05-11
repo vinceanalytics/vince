@@ -32,6 +32,8 @@ message Config {
   bool enable_bootstrap = 34;
   Bootstrap bootstrap = 35;
 
+  bool enable_profile = 36;
+
   message Mailer {
     Address address = 1;
     Smtp smtp = 2;
