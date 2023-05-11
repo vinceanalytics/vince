@@ -222,7 +222,7 @@ func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []by
 			if err != nil {
 				return err
 			}
-			defer cache.Set(hash, &cal, store.CacheCost)
+			defer cache.Set(hash, cal, store.CacheCost)
 			b, err := cal.Message().MarshalPacked()
 			if err != nil {
 				return fmt.Errorf("failed to marshal calendar %v", err)
@@ -236,7 +236,7 @@ func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []by
 		if err != nil {
 			return err
 		}
-		defer cache.Set(hash, &cal, store.CacheCost)
+		defer cache.Set(hash, cal, store.CacheCost)
 		a.UpdateCalendar(ts, &cal)
 		b, err := cal.Message().MarshalPacked()
 		if err != nil {
