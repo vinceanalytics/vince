@@ -2,17 +2,20 @@ package site
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
+	"github.com/gernest/vince/timeseries"
 )
 
 func Stats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := models.GetSite(ctx)
 	role := models.GetRole(ctx)
+	owner := models.SiteOwner(ctx, site.ID)
 	var canSeeStats bool
 	switch role {
 	case "super_admin":
@@ -28,11 +31,14 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 			offer = session.Data.EmailReport[site.Domain]
 		}
 		hasGoals := models.SiteHasGoals(ctx, site.Domain)
+		ts := time.Now()
+		data := timeseries.ReadCalendars(ctx, ts, owner.ID, site.ID)
 		render.HTML(ctx, w, templates.Stats, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
 			ctx.Title = "Vince Analytics  · " + site.Domain
 			ctx.EmailReport = offer
 			ctx.HasGoals = hasGoals
+			ctx.Stats = &data
 		})
 	case site.StatsStartDate.IsZero() && canSeeStats:
 		render.HTML(ctx, w, templates.WaitingFirstPageView, http.StatusOK, func(ctx *templates.Context) {

@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"capnproto.org/go/capnp/v3"
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
@@ -232,7 +233,11 @@ func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []by
 		return err
 	}
 	return x.Value(func(val []byte) error {
-		cal, err := store.CalendarFromBytes(val)
+		msg, err := capnp.UnmarshalPacked(val)
+		if err != nil {
+			return err
+		}
+		cal, err := store.ReadRootCalendar(msg)
 		if err != nil {
 			return err
 		}
@@ -332,12 +337,9 @@ func readMetaCal(txn *badger.Txn, ts time.Time, prefix []byte, f func([]byte, *s
 		x := it.Item()
 		key := x.Key()
 		err := x.Value(func(val []byte) error {
-			cal, err := store.CalendarFromBytes(val)
-			if err != nil {
-				return err
-			}
-			defer cal.Message().Release()
-			return f(key[len(prefix):], &cal)
+			return store.CalendarFromBytes(val, func(c *store.Calendar) error {
+				return f(key[len(prefix):], c)
+			})
 		})
 		if err != nil {
 			return err
@@ -347,16 +349,16 @@ func readMetaCal(txn *badger.Txn, ts time.Time, prefix []byte, f func([]byte, *s
 }
 
 func readAllAggregate(txn *badger.Txn, ts time.Time, id *ID, data *plot.Data) error {
+	data.All = &plot.Aggregate{
+		Visitors:      &plot.Entry{},
+		Views:         &plot.Entry{},
+		Events:        &plot.Entry{},
+		Visits:        &plot.Entry{},
+		BounceRate:    &plot.Entry{},
+		VisitDuration: &plot.Entry{},
+		ViewsPerVisit: &plot.Entry{},
+	}
 	return readCal(txn, id[:], func(c *store.Calendar) error {
-		data.All = &plot.Aggregate{
-			Visitors:      &plot.Entry{},
-			Views:         &plot.Entry{},
-			Events:        &plot.Entry{},
-			Visits:        &plot.Entry{},
-			BounceRate:    &plot.Entry{},
-			VisitDuration: &plot.Entry{},
-			ViewsPerVisit: &plot.Entry{},
-		}
 		return errors.Join(
 			readEntry(ts, c.SeriesVisitors, &data.All.Visitors),
 			readEntry(ts, c.SeriesViews, &data.All.Views),
@@ -388,13 +390,7 @@ func readCal(txn *badger.Txn, key []byte, f func(*store.Calendar) error) error {
 		}
 		return err
 	}
-
 	return it.Value(func(val []byte) error {
-		cal, err := store.CalendarFromBytes(val)
-		if err != nil {
-			return err
-		}
-		defer cal.Message().Release()
-		return f(&cal)
+		return store.CalendarFromBytes(val, f)
 	})
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/octicon"
+	"github.com/gernest/vince/plot"
 )
 
 //go:embed layout  plot site stats auth error email
@@ -173,6 +174,7 @@ type Context struct {
 	// Name of the email recipient
 	Recipient string
 	Key       string
+	Stats     *plot.Data
 }
 
 func (t *Context) GreetRecipient() string {

@@ -32,13 +32,13 @@ func ZeroCalendar(ts time.Time, sum *Sum) (*Calendar, error) {
 	if err != nil {
 		return nil, err
 	}
-	calendar, err := NewCalendar(seg)
+	calendar, err := NewRootCalendar(seg)
 	if err != nil {
 		return nil, err
 	}
 	days := timex.CalendarHours(ts)
 	cal := &calendar
-	err = initFloats(int32(days), seg,
+	err = initFloats(days, seg,
 		cal.SetVisitors,
 		cal.SetViews,
 		cal.SetEvents,
@@ -54,10 +54,10 @@ func ZeroCalendar(ts time.Time, sum *Sum) (*Calendar, error) {
 	return cal, sum.UpdateCalendar(ts, cal)
 }
 
-func initFloats(n int32, seg *capnp.Segment, fn ...func(capnp.Float64List) error) error {
+func initFloats(n int, seg *capnp.Segment, fn ...func(capnp.Float64List) error) error {
 	var errs []error
 	for _, f := range fn {
-		ls, err := capnp.NewFloat64List(seg, n)
+		ls, err := capnp.NewFloat64List(seg, int32(n))
 		if err != nil {
 			return err
 		}
@@ -128,7 +128,6 @@ func series(f capnp.Float64List, from, to time.Time) (o []float64) {
 	}
 	start := timex.HourIndex(from)
 	end := timex.HourIndex(to)
-
 	o = make([]float64, end-start)
 	for i := 0; i < end-start; i += 1 {
 		o[i] = f.At(i + start)
@@ -136,12 +135,17 @@ func series(f capnp.Float64List, from, to time.Time) (o []float64) {
 	return
 }
 
-func CalendarFromBytes(b []byte) (Calendar, error) {
+func CalendarFromBytes(b []byte, f func(*Calendar) error) error {
 	msg, err := capnp.UnmarshalPacked(b)
 	if err != nil {
-		return Calendar{}, err
+		return err
 	}
-	return ReadRootCalendar(msg)
+	defer msg.Release()
+	cal, err := ReadRootCalendar(msg)
+	if err != nil {
+		return err
+	}
+	return f(&cal)
 }
 
 type Sum struct {
