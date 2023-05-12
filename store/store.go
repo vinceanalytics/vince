@@ -141,6 +141,10 @@ func series(f capnp.Float64List, from, to time.Time) (o []float64) {
 		start = 0
 		end = f.Len()
 	}
+	if end+1 < f.Len() {
+		// make filter inclusive if possible.
+		end += 1
+	}
 	diff := end - start
 	o = make([]float64, diff)
 	for i := 0; i < diff; i += 1 {
