@@ -65,11 +65,6 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 		switch {
 		case isSuperUser, isMember:
 			r = r.WithContext(models.SetSite(ctx, site))
-		case site.Locked:
-			render.ERROR(r.Context(), w, http.StatusPaymentRequired, func(ctx *templates.Context) {
-				ctx.Error.StatusText = "This Vince site is locked due to missing active subscription. In order to access it, the site owner should subscribe to a suitable plan"
-			})
-			return
 		default:
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
 				ctx.Error.StatusText = "Invalid API key or site ID. Please make sure you're using a valid API key with access to the site you've requested."

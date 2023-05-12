@@ -13,7 +13,12 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := models.GetSite(ctx)
 	role := models.GetRole(ctx)
-	canSeeStats := !site.Locked || role == "super_admin"
+	var canSeeStats bool
+	switch role {
+	case "super_admin":
+	default:
+		canSeeStats = true
+	}
 	switch {
 	case !site.StatsStartDate.IsZero() && canSeeStats:
 		w.Header().Set("x-robots-tag", "noindex")
@@ -32,12 +37,6 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 	case site.StatsStartDate.IsZero() && canSeeStats:
 		render.HTML(ctx, w, templates.WaitingFirstPageView, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
-		})
-	case site.Locked:
-		owner := models.SiteOwner(ctx, site.ID)
-		render.HTML(ctx, w, templates.SiteLocked, http.StatusOK, func(ctx *templates.Context) {
-			ctx.Site = site
-			ctx.Owner = owner
 		})
 	default:
 		render.ERROR(r.Context(), w, http.StatusInternalServerError)

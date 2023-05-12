@@ -13,7 +13,6 @@ type Site struct {
 	Public                      bool   `gorm:"not null;default:false"`
 	StatsStartDate              time.Time
 	HasStats                    bool   `gorm:"not null,default:false"`
-	Locked                      bool   `gorm:"not null,default:false"`
 	IngestRateLimitScaleSeconds uint64 `gorm:"not null;default:60"`
 	IngestRateLimitThreshold    sql.NullInt64
 
