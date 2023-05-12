@@ -126,10 +126,24 @@ func series(f capnp.Float64List, from, to time.Time) (o []float64) {
 	if from.Year() != to.Year() || to.Before(from) {
 		return
 	}
-	start := timex.HourIndex(from)
-	end := timex.HourIndex(to)
-	o = make([]float64, end-start)
-	for i := 0; i < end-start; i += 1 {
+	var start, end int
+	if from.IsZero() {
+		start = 0
+	} else {
+		start = timex.HourIndex(from)
+	}
+	if to.IsZero() {
+		end = f.Len()
+	} else {
+		end = timex.HourIndex(to)
+	}
+	if from.Equal(to) {
+		start = 0
+		end = f.Len()
+	}
+	diff := end - start
+	o = make([]float64, diff)
+	for i := 0; i < diff; i += 1 {
 		o[i] = f.At(i + start)
 	}
 	return

@@ -18,6 +18,7 @@ import (
 	"github.com/gernest/vince/plot"
 	"github.com/gernest/vince/store"
 	"github.com/gernest/vince/system"
+	"github.com/gernest/vince/timex"
 	"github.com/gernest/vince/ua"
 )
 
@@ -251,45 +252,93 @@ func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []by
 	})
 }
 
-func ReadCalendars(ctx context.Context, ts time.Time, uid, sid uint64) (data plot.Data) {
+type Range struct {
+	From, To time.Time
+}
+
+func (r *Range) ts() time.Time {
+	if r.From.IsZero() {
+		return r.To
+	}
+	if r.To.IsZero() {
+		return r.From
+	}
+	return r.From
+}
+
+func ReadCalendars(ctx context.Context, pick Range, uid, sid uint64) *plot.Data {
 	start := time.Now()
 	defer system.CalendarReadDuration.Observe(time.Since(start).Seconds())
 	m := GetMike(ctx)
 	id := newID()
 	defer id.Release()
-	id.Year(ts)
 	id.SetUserID(uid)
 	id.SetSiteID(sid)
 
 	meta := newMetaKey()
 	defer meta.Release()
 
-	meta.Year(ts)
 	meta.SetUserID(uid)
 	meta.SetSiteID(sid)
-
-	err := m.View(func(txn *badger.Txn) error {
-		return errors.Join(
-			readAllAggregate(txn, ts, id, &data),
-			readAllMeta(ctx, txn, ts, meta, &data),
-		)
-	})
-	if err != nil {
-		log.Get(ctx).Err(err).
-			Uint64("uid", uid).
-			Uint64("sid", sid).
-			Msg("failed to read stats calendar")
+	var data plot.Data
+	for _, r := range buildYearRanges(pick) {
+		ts := r.ts()
+		id.Year(ts)
+		meta.Year(ts)
+		err := readCalendar(ctx, pick, m, id, meta, &data)
+		if err != nil {
+			log.Get(ctx).Err(err).Msg("failed to read calendar")
+			return nil
+		}
 	}
-	data.Build()
-	return
+	return data.Build()
 }
 
-func readAllMeta(ctx context.Context, txn *badger.Txn, ts time.Time, id *MetaKey, data *plot.Data) error {
+func buildYearRanges(r Range) (o []Range) {
+	diff := r.To.Year() - r.From.Year()
+	if diff == 0 {
+		return []Range{r}
+	}
+	ts := timex.BeginningOfYear(r.From)
+	for i := 0; i < diff; i += 1 {
+		if i == 0 {
+			// starting year 0..from.
+			o = append(o, Range{
+				From: r.From,
+			})
+			continue
+		}
+		if i == diff-1 {
+			// last year to..
+			o = append(o, Range{
+				To: r.To,
+			})
+			continue
+		}
+		ts = ts.AddDate(i, 0, 0)
+		// full year calendar
+		o = append(o, Range{
+			From: ts,
+			To:   ts,
+		})
+	}
+	return
+}
+func readCalendar(ctx context.Context, pick Range, m *badger.DB, id *ID, meta *MetaKey, data *plot.Data) error {
+	return m.View(func(txn *badger.Txn) error {
+		return errors.Join(
+			readAllAggregate(txn, pick, id, data),
+			readAllMeta(ctx, txn, pick, meta, data),
+		)
+	})
+}
+
+func readAllMeta(ctx context.Context, txn *badger.Txn, pick Range, id *MetaKey, data *plot.Data) error {
 	var errList []error
 	for i := PROPS_NAME; i <= PROPS_CITY; i++ {
 		id.SetMeta(byte(i))
-		errList = append(errList, readMetaCal(txn, ts, id.Prefix(), func(b []byte, c *store.Calendar) error {
-			a, err := calToAggregate(ts, c)
+		errList = append(errList, readMetaCal(txn, id.Prefix(), func(b []byte, c *store.Calendar) error {
+			a, err := calToAggregate(pick, c)
 			if err != nil {
 				return err
 			}
@@ -300,21 +349,21 @@ func readAllMeta(ctx context.Context, txn *badger.Txn, ts time.Time, id *MetaKey
 	return errors.Join(errList...)
 }
 
-func calToAggregate(ts time.Time, c *store.Calendar) (o plot.AggregateValues, err error) {
+func calToAggregate(pick Range, c *store.Calendar) (o plot.AggregateValues, err error) {
 	err = errors.Join(
-		readAggregate(ts, c.SeriesVisitors, &o.Visitors),
-		readAggregate(ts, c.SeriesViews, &o.Views),
-		readAggregate(ts, c.SeriesEvents, &o.Events),
-		readAggregate(ts, c.SeriesVisits, &o.Visits),
-		readAggregate(ts, c.SeriesBounceRates, &o.BounceRate),
-		readAggregate(ts, c.SeriesVisitDuration, &o.VisitDuration),
-		readAggregate(ts, c.SeriesViewsPerVisit, &o.ViewsPerVisit),
+		readAggregate(pick, c.SeriesVisitors, &o.Visitors),
+		readAggregate(pick, c.SeriesViews, &o.Views),
+		readAggregate(pick, c.SeriesEvents, &o.Events),
+		readAggregate(pick, c.SeriesVisits, &o.Visits),
+		readAggregate(pick, c.SeriesBounceRates, &o.BounceRate),
+		readAggregate(pick, c.SeriesVisitDuration, &o.VisitDuration),
+		readAggregate(pick, c.SeriesViewsPerVisit, &o.ViewsPerVisit),
 	)
 	return
 }
 
-func readAggregate(ts time.Time, f func(time.Time, time.Time) ([]float64, error), o *[]float64) error {
-	v, err := f(ts, ts)
+func readAggregate(pick Range, f func(time.Time, time.Time) ([]float64, error), o *[]float64) error {
+	v, err := f(pick.From, pick.To)
 	if err != nil {
 		return err
 	}
@@ -322,7 +371,7 @@ func readAggregate(ts time.Time, f func(time.Time, time.Time) ([]float64, error)
 	return nil
 }
 
-func readMetaCal(txn *badger.Txn, ts time.Time, prefix []byte, f func([]byte, *store.Calendar) error) error {
+func readMetaCal(txn *badger.Txn, prefix []byte, f func([]byte, *store.Calendar) error) error {
 	o := badger.IteratorOptions{
 		PrefetchValues: true,
 		// be conservative. This should balance between high cardinality props with
@@ -348,7 +397,7 @@ func readMetaCal(txn *badger.Txn, ts time.Time, prefix []byte, f func([]byte, *s
 	return nil
 }
 
-func readAllAggregate(txn *badger.Txn, ts time.Time, id *ID, data *plot.Data) error {
+func readAllAggregate(txn *badger.Txn, pick Range, id *ID, data *plot.Data) error {
 	data.All = &plot.Aggregate{
 		Visitors:      &plot.Entry{},
 		Views:         &plot.Entry{},
@@ -360,19 +409,19 @@ func readAllAggregate(txn *badger.Txn, ts time.Time, id *ID, data *plot.Data) er
 	}
 	return readCal(txn, id[:], func(c *store.Calendar) error {
 		return errors.Join(
-			readEntry(ts, c.SeriesVisitors, &data.All.Visitors),
-			readEntry(ts, c.SeriesViews, &data.All.Views),
-			readEntry(ts, c.SeriesEvents, &data.All.Events),
-			readEntry(ts, c.SeriesVisits, &data.All.Visits),
-			readEntry(ts, c.SeriesBounceRates, &data.All.BounceRate),
-			readEntry(ts, c.SeriesVisitDuration, &data.All.VisitDuration),
-			readEntry(ts, c.SeriesViewsPerVisit, &data.All.ViewsPerVisit),
+			readEntry(pick, c.SeriesVisitors, &data.All.Visitors),
+			readEntry(pick, c.SeriesViews, &data.All.Views),
+			readEntry(pick, c.SeriesEvents, &data.All.Events),
+			readEntry(pick, c.SeriesVisits, &data.All.Visits),
+			readEntry(pick, c.SeriesBounceRates, &data.All.BounceRate),
+			readEntry(pick, c.SeriesVisitDuration, &data.All.VisitDuration),
+			readEntry(pick, c.SeriesViewsPerVisit, &data.All.ViewsPerVisit),
 		)
 	})
 }
 
-func readEntry(ts time.Time, f func(time.Time, time.Time) ([]float64, error), e **plot.Entry) error {
-	v, err := f(ts, ts)
+func readEntry(pick Range, f func(time.Time, time.Time) ([]float64, error), e **plot.Entry) error {
+	v, err := f(pick.From, pick.To)
 	if err != nil {
 		return err
 	}

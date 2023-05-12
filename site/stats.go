@@ -32,13 +32,17 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		}
 		hasGoals := models.SiteHasGoals(ctx, site.Domain)
 		ts := time.Now()
-		data := timeseries.ReadCalendars(ctx, ts, owner.ID, site.ID)
+		from := ts.Add(-24 * time.Hour)
+		data := timeseries.ReadCalendars(ctx, timeseries.Range{
+			From: from,
+			To:   ts,
+		}, owner.ID, site.ID)
 		render.HTML(ctx, w, templates.Stats, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
 			ctx.Title = "Vince Analytics  · " + site.Domain
 			ctx.EmailReport = offer
 			ctx.HasGoals = hasGoals
-			ctx.Stats = &data
+			ctx.Stats = data
 		})
 	case site.StatsStartDate.IsZero() && canSeeStats:
 		render.HTML(ctx, w, templates.WaitingFirstPageView, http.StatusOK, func(ctx *templates.Context) {
