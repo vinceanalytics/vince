@@ -37,9 +37,6 @@ Please see [Installation]() to choose the best method that works for you.
 For quick setup
 
 ```
-mkdir .vince
-```
-```
 vince config
 ```
 ```

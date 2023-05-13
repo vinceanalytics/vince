@@ -23,7 +23,19 @@ func ConfigCMD() *cli.Command {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			path, err := filepath.Abs(ctx.String("path"))
+			path := ctx.String("path")
+			_, err := os.Stat(path)
+			if err != nil {
+				if os.IsNotExist(err) {
+					err = os.MkdirAll(path, 0755)
+					if err != nil {
+						return fmt.Errorf("failed creating data path:%v", err)
+					}
+				} else {
+					return err
+				}
+			}
+			path, err = filepath.Abs(path)
 			if err != nil {
 				return err
 			}
