@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/caddyserver/certmagic"
+	"github.com/gernest/vince/alerts"
 	"github.com/gernest/vince/assets"
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/config"
@@ -180,6 +181,10 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		models.Bootstrap(ctx,
 			o.Bootstrap.Name, o.Bootstrap.Email, o.Bootstrap.Password, o.Bootstrap.Key,
 		)
+	}
+	if o.EnableAlerts {
+		log.Get(ctx).Debug().Msg("setup alerts")
+		ctx = alerts.Setup(ctx)
 	}
 	ctx, ts, err := timeseries.Open(ctx, o)
 	if err != nil {
