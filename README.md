@@ -28,6 +28,33 @@ We use
 - badger for persistance of aggregates
 
 
+# Install
+
+Please see [Installation]() to choose the best method that works for you.
+
+# Usage
+
+For quick setup
+
+```
+mkdir .vince
+```
+```
+vince config
+```
+```
+source .vince/secrets
+```
+```
+vince
+```
+
+
+This will get you up and running for a test drive. Vince will be running on port
+8080. You can go ahead and  see [Getting Started]() to guide you on creating your
+first site.
+
+
 # The name vince 
 
 Vince is named after [Vince Staples](https://en.wikipedia.org/wiki/Vince_Staples) , 
