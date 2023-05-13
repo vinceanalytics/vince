@@ -5,7 +5,7 @@ The Cloud Native Web Analytics Platform.
 
 # Features
 
-- Alert notification
+- Alert notification (Write Alerting Scripts in Typescript)
 - Time on site tracking
 - Conversion tracking 
 - Multiple site management
