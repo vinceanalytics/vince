@@ -7,26 +7,22 @@ import (
 
 type Site struct {
 	Model
-	Domain                      string `gorm:"uniqueIndex"`
-	Description                 string
-	Timezone                    string `gorm:"default:UTC"`
-	Public                      bool   `gorm:"not null;default:false"`
-	StatsStartDate              time.Time
-	HasStats                    bool   `gorm:"not null,default:false"`
-	IngestRateLimitScaleSeconds uint64 `gorm:"not null;default:60"`
-	IngestRateLimitThreshold    sql.NullInt64
+	Domain         string    `gorm:"uniqueIndex" json:"domain"`
+	Timezone       string    `gorm:"default:UTC" json:"timezone"`
+	Public         bool      `gorm:"not null;default:false" json:"public"`
+	StatsStartDate time.Time `json:"statsStartDate"`
 
-	Users              []*User `gorm:"many2many:site_memberships;"`
-	SentWeeklyReports  []*SentWeeklyReport
-	SentMonthlyReports []*SentMonthlyReport
+	Users              []*User              `gorm:"many2many:site_memberships;" json:"-"`
+	SentWeeklyReports  []*SentWeeklyReport  `json:"sentWeeklyReports,omitempty"`
+	SentMonthlyReports []*SentMonthlyReport `json:"sentMonthlyReports,omitempty"`
 
-	WeeklyReport      *WeeklyReport
-	MonthlyReports    *MonthlyReport
-	SpikeNotification *SpikeNotification `gorm:"constraint:OnDelete:CASCADE;"`
+	WeeklyReport      *WeeklyReport      `json:"weeklyReport,omitempty"`
+	MonthlyReports    *MonthlyReport     `json:"monthlyReports,omitempty"`
+	SpikeNotification *SpikeNotification `gorm:"constraint:OnDelete:CASCADE;" json:"spikeNotification,omitempty"`
 
-	Invitations     []*Invitation `gorm:"constraint:OnDelete:CASCADE;"`
-	SiteMemberships []*SiteMembership
-	SharedLinks     []*SharedLink
+	Invitations     []*Invitation     `gorm:"constraint:OnDelete:CASCADE;" json:"invitations,omitempty"`
+	SiteMemberships []*SiteMembership `json:"siteMemberships,omitempty"`
+	SharedLinks     []*SharedLink     `json:"sharedLinks,omitempty"`
 }
 
 type CreateSiteEmail struct {
@@ -150,9 +146,9 @@ type Invitation struct {
 }
 
 type Model struct {
-	ID        uint64 `gorm:"primarykey;autoIncrement:true"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uint64    `gorm:"primarykey;autoIncrement:true" json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type User struct {
