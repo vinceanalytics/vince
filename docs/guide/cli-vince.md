@@ -17,10 +17,11 @@ vince
 [--cache-refresh]=[value]
 [--config]=[value]
 [--data]=[value]
+[--enable-alerts]
 [--enable-auto-tls]
 [--enable-bootstrap]
 [--enable-email-verification]
-[--enable-system-stats]
+[--enable-profile]
 [--enable-tls]
 [--env]=[value]
 [--listen]=[value]
@@ -40,8 +41,7 @@ vince
 [--rotation-check]=[value]
 [--scrape-interval]=[value]
 [--secret-age]=[value]
-[--secret-ed-priv]=[value]
-[--secret-ed-pub]=[value]
+[--secret]=[value]
 [--tls-address]=[value]
 [--tls-cert]=[value]
 [--tls-key]=[value]
@@ -77,13 +77,15 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--data**="": path to data directory (default: .vince)
 
+**--enable-alerts**: allows loading and executing alerts
+
 **--enable-auto-tls**: Enables using acme for automatic https.
 
 **--enable-bootstrap**: allows creating a user and api key on startup.
 
 **--enable-email-verification**: send emails for account verification
 
-**--enable-system-stats**: Collect and visualize system stats
+**--enable-profile**: Expose /debug/pprof endpoint
 
 **--enable-tls**: Enables serving https traffick.
 
@@ -121,11 +123,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--scrape-interval**="": system wide metrics collection interval (default: 1m0s)
 
+**--secret**="": path to a file with  ed25519 private key
+
 **--secret-age**="": path to file with age.X25519Identity
-
-**--secret-ed-priv**="": path to a file with  ed25519 private key
-
-**--secret-ed-pub**="": path to a file with  ed25519 public key
 
 **--tls-address**="": https address to listen to. You must provide tls-key and tls-cert or configure auto-tls (default: :8443)
 

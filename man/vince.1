@@ -24,10 +24,11 @@ vince
 [--cache-refresh]=[value]
 [--config]=[value]
 [--data]=[value]
+[--enable-alerts]
 [--enable-auto-tls]
 [--enable-bootstrap]
 [--enable-email-verification]
-[--enable-system-stats]
+[--enable-profile]
 [--enable-tls]
 [--env]=[value]
 [--listen]=[value]
@@ -47,8 +48,7 @@ vince
 [--rotation-check]=[value]
 [--scrape-interval]=[value]
 [--secret-age]=[value]
-[--secret-ed-priv]=[value]
-[--secret-ed-pub]=[value]
+[--secret]=[value]
 [--tls-address]=[value]
 [--tls-cert]=[value]
 [--tls-key]=[value]
@@ -103,6 +103,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--data\fP="": path to data directory (default: .vince)
 
 .PP
+\fB--enable-alerts\fP: allows loading and executing alerts
+
+.PP
 \fB--enable-auto-tls\fP: Enables using acme for automatic https.
 
 .PP
@@ -112,7 +115,7 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--enable-email-verification\fP: send emails for account verification
 
 .PP
-\fB--enable-system-stats\fP: Collect and visualize system stats
+\fB--enable-profile\fP: Expose /debug/pprof endpoint
 
 .PP
 \fB--enable-tls\fP: Enables serving https traffick.
@@ -169,13 +172,10 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--scrape-interval\fP="": system wide metrics collection interval (default: 1m0s)
 
 .PP
+\fB--secret\fP="": path to a file with  ed25519 private key
+
+.PP
 \fB--secret-age\fP="": path to file with age.X25519Identity
-
-.PP
-\fB--secret-ed-priv\fP="": path to a file with  ed25519 private key
-
-.PP
-\fB--secret-ed-pub\fP="": path to a file with  ed25519 public key
 
 .PP
 \fB--tls-address\fP="": https address to listen to. You must provide tls-key and tls-cert or configure auto-tls (default: :8443)

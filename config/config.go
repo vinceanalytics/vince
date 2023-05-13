@@ -237,6 +237,11 @@ func Flags() []cli.Flag {
 			Usage:   "Expose /debug/pprof endpoint",
 			EnvVars: []string{"VINCE_ENABLE_PROFILE"},
 		},
+		&cli.BoolFlag{
+			Name:    "enable-alerts",
+			Usage:   "allows loading and executing alerts",
+			EnvVars: []string{"VINCE_ENABLE_ALERTS"},
+		},
 	}
 }
 
@@ -344,6 +349,7 @@ func fromCli(ctx *cli.Context) *Config {
 			SendPreflightResponse: true,
 		},
 		EnableProfile: ctx.Bool("enable-profile"),
+		EnableAlerts:  ctx.Bool("enable-alerts"),
 	}
 	var anon *Config_Mailer_Anonymous
 	var plain *Config_Mailer_Plain
