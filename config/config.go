@@ -175,13 +175,6 @@ func Flags() []cli.Flag {
 			Value:   time.Minute,
 			EnvVars: []string{"VINCE_TS_BUFFER_INTERVAL"},
 		},
-		&cli.DurationFlag{
-			Name:    "scrape-interval",
-			Usage:   "system wide metrics collection interval",
-			Value:   time.Minute,
-			EnvVars: []string{"VINCE_SCRAPE_INTERVAL"},
-		},
-
 		// secrets
 		&cli.StringFlag{
 			Name:    "secret",
@@ -319,7 +312,6 @@ func fromCli(ctx *cli.Context) *Config {
 			SitesByDomainCacheRefreshInterval: durationpb.New(ctx.Duration("cache-refresh")),
 			LogRotationCheckInterval:          durationpb.New(ctx.Duration("rotation-check")),
 			SaveTimeseriesBufferInterval:      durationpb.New(ctx.Duration("ts-buffer")),
-			SystemScrapeInterval:              durationpb.New(ctx.Duration("scrape-interval")),
 		},
 		Mailer: &Config_Mailer{
 			Address: &Config_Address{

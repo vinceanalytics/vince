@@ -103,10 +103,6 @@ message Intervals {
 
   // Duration for time series data is persisted in storage.
   google.protobuf.Duration save_timeseries_buffer_interval = 3;
-
-  // Duration to collect system metrics. This includes counters, gauages and
-  // histograms.
-  google.protobuf.Duration system_scrape_interval = 5;
 }
 
 message Secrets {
