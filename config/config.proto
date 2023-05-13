@@ -10,7 +10,7 @@ message Config {
   string url = 3;
   Mailer mailer = 4;
   string data_path = 5;
-  bool enable_email_verification = 6;
+  bool enable_email = 6;
   LogLevel log_level = 8;
   Secrets secrets = 9;
   Cors cors = 10;

@@ -186,6 +186,17 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		log.Get(ctx).Debug().Msg("setup alerts")
 		ctx = alerts.Setup(ctx)
 	}
+	if o.EnableEmail {
+		log.Get(ctx).Debug().Msg("setup mailer")
+		mailer, err := email.FromConfig(o)
+		if err != nil {
+			log.Get(ctx).Err(err).Msg("failed creating mailer")
+			resources.Close()
+			return err
+		}
+		resources = append(resources, mailer)
+		ctx = email.Set(ctx, mailer)
+	}
 	ctx, ts, err := timeseries.Open(ctx, o)
 	if err != nil {
 		resources.Close()
@@ -201,21 +212,13 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	resources = append(resources, resourceFunc(func() error {
 		return caches.Close(ctx)
 	}))
-	mailer, err := email.FromConfig(o)
-	if err != nil {
-		log.Get(ctx).Err(err).Msg("failed creating mailer")
-		resources.Close()
-		return err
-	}
-	resources = append(resources, mailer)
-	ctx = email.Set(ctx, mailer)
+
 	session := sessions.NewSession("_vince")
 	ctx = sessions.Set(ctx, session)
 	var h health.Health
 	addHealth := func(x *health.Ping) {
 		h = append(h, x)
 	}
-
 	h = append(h, health.Base{
 		Key:       "database",
 		CheckFunc: models.Check,

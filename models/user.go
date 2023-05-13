@@ -79,7 +79,7 @@ func Bootstrap(
 			},
 		},
 	}
-	if config.Get(ctx).EnableEmailVerification {
+	if !config.Get(ctx).EnableEmail {
 		u.EmailVerified = true
 	}
 	err = Get(ctx).Create(u).Error
@@ -162,7 +162,7 @@ func NewUser(u *User, r *http.Request) (validation map[string]string, err error)
 		return nil, err
 	}
 	u.PasswordHash = string(b)
-	if !conf.EnableEmailVerification {
+	if !conf.EnableEmail {
 		u.EmailVerified = true
 	}
 	return
