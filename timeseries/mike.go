@@ -15,7 +15,7 @@ import (
 	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/plot"
+	"github.com/gernest/vince/pkg/plot"
 	"github.com/gernest/vince/store"
 	"github.com/gernest/vince/system"
 	"github.com/gernest/vince/timex"

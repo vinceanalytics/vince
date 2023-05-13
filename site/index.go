@@ -5,7 +5,7 @@ import (
 
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/plot"
+	"github.com/gernest/vince/pkg/plot"
 	"github.com/gernest/vince/render"
 )
 

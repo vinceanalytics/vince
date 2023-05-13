@@ -1,6 +1,6 @@
 package models
 
-import "github.com/gernest/vince/plot"
+import "github.com/gernest/vince/pkg/plot"
 
 type SiteOverView struct {
 	Site *Site

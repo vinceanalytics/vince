@@ -12,7 +12,7 @@ import (
 	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/octicon"
-	"github.com/gernest/vince/plot"
+	"github.com/gernest/vince/pkg/plot"
 )
 
 //go:embed layout  plot site stats auth error email
