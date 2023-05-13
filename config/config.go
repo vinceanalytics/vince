@@ -2,10 +2,12 @@ package config
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"time"
 
+	"github.com/gernest/vince/pkg/secrets"
 	"github.com/urfave/cli/v3"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -184,11 +186,13 @@ func Flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    "secret",
 			Usage:   "path to a file with  ed25519 private key",
+			Value:   base64.StdEncoding.EncodeToString(secrets.ED25519()),
 			EnvVars: []string{"VINCE_SECRET"},
 		},
 		&cli.StringFlag{
 			Name:    "secret-age",
 			Usage:   "path to file with age.X25519Identity",
+			Value:   base64.StdEncoding.EncodeToString(secrets.AGE()),
 			EnvVars: []string{"VINCE_SECRET_AGE"},
 		},
 		&cli.BoolFlag{
@@ -229,6 +233,7 @@ func Flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    "bootstrap-key",
 			Usage:   "API Key of the user to bootstrap.",
+			Value:   base64.StdEncoding.EncodeToString(secrets.APIKey()),
 			EnvVars: []string{"VINCE_BOOTSTRAP_KEY"},
 		},
 		&cli.BoolFlag{
