@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gernest/vince/identicon"
+	"github.com/gernest/vince/pkg/identicon"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/render"
 )
