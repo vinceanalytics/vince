@@ -6,6 +6,6 @@ import (
 	"github.com/gernest/vince/render"
 )
 
-func Create(w http.ResponseWriter, r *http.Request) {
+func DeleteSite(w http.ResponseWriter, r *http.Request) {
 	render.ERROR(r.Context(), w, http.StatusNotImplemented)
 }

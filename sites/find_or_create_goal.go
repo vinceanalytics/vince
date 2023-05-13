@@ -6,6 +6,6 @@ import (
 	"github.com/gernest/vince/render"
 )
 
-func CreateGoal(w http.ResponseWriter, r *http.Request) {
+func FindOrCreateGoals(w http.ResponseWriter, r *http.Request) {
 	render.ERROR(r.Context(), w, http.StatusNotImplemented)
 }
