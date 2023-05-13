@@ -11,7 +11,7 @@ import (
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/octicon"
+	"github.com/gernest/vince/pkg/octicon"
 	"github.com/gernest/vince/pkg/plot"
 )
 
