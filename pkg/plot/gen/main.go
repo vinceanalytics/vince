@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gernest/vince/plot"
+	"github.com/gernest/vince/pkg/plot"
 	"github.com/gernest/vince/tools"
 	"github.com/invopop/jsonschema"
 )
