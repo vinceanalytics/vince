@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"capnproto.org/go/capnp/v3"
-	"github.com/gernest/vince/timex"
+	"github.com/gernest/vince/pkg/timex"
 )
 
 //go:generate go run gen/main.go

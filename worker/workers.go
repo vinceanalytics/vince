@@ -9,9 +9,9 @@ import (
 	"github.com/gernest/vince/health"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/pkg/log"
+	"github.com/gernest/vince/pkg/timex"
 	"github.com/gernest/vince/system"
 	"github.com/gernest/vince/timeseries"
-	"github.com/gernest/vince/timex"
 )
 
 func UpdateCacheSites(ctx context.Context, f func(*health.Ping)) func() error {

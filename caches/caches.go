@@ -7,7 +7,7 @@ import (
 
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/timex"
+	"github.com/gernest/vince/pkg/timex"
 	"golang.org/x/time/rate"
 )
 
