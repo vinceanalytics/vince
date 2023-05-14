@@ -313,7 +313,7 @@ func GoalName(g *Goal) string {
 	return "Visit " + g.PagePath
 }
 
-func CreateGoal(ctx context.Context, domain, event, path string) {
+func CreateGoal(ctx context.Context, domain, event, path string) *Goal {
 	// Support multiple goals to be set per site. We have removed unique constraint
 	// on goals table, so we perform UPSERT based on the goals fields to avoid
 	// creating multiple rows of same goals
@@ -326,6 +326,31 @@ func CreateGoal(ctx context.Context, domain, event, path string) {
 	if err != nil {
 		LOG(ctx, err, "failed to create a new goal")
 	}
+	return &o
+}
+
+func GoalByEvent(ctx context.Context, domain, event string) *Goal {
+	var g Goal
+	err := Get(ctx).Model(&Goal{}).Where("domain = ?", domain).
+		Where("event_name = ?", event).
+		Find(&g).Error
+	if err != nil {
+		LOG(ctx, err, "failed to find goal by event_name")
+		return nil
+	}
+	return &g
+}
+
+func GoalByPage(ctx context.Context, domain, page string) *Goal {
+	var g Goal
+	err := Get(ctx).Model(&Goal{}).Where("domain = ?", domain).
+		Where("page_path = ?", page).
+		Find(&g).Error
+	if err != nil {
+		LOG(ctx, err, "failed to find goal by page_path")
+		return nil
+	}
+	return &g
 }
 
 func Goals(ctx context.Context, domain string) (o []*Goal) {
