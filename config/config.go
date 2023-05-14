@@ -2,12 +2,10 @@ package config
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/gernest/vince/pkg/secrets"
 	"github.com/urfave/cli/v3"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -118,63 +116,63 @@ func Flags() []cli.Flag {
 			EnvVars:  []string{"VINCE_MAILER_ADDRESS_NAME"},
 		},
 		&cli.StringFlag{
-			Category: "email",
+			Category: "email smtp",
 			Name:     "mailer-smtp-host",
 			Usage:    "host address of the smtp server used for outgoing emails",
 			Value:    "localhost",
 			EnvVars:  []string{"VINCE_MAILER_SMTP_HOST"},
 		},
 		&cli.IntFlag{
-			Category: "email",
+			Category: "email smtp",
 			Name:     "mailer-smtp-port",
 			Usage:    "port address of the smtp server used for outgoing emails",
 			Value:    1025,
 			EnvVars:  []string{"VINCE_MAILER_SMTP_PORT"},
 		},
 		&cli.StringFlag{
-			Category: "email",
+			Category: "email smtp anonymous",
 			Name:     "mailer-smtp-anonymous",
 			Usage:    "trace value for anonymous smtp auth",
 			EnvVars:  []string{"VINCE_MAILER_SMTP_ANONYMOUS"},
 		},
 		&cli.StringFlag{
-			Category: "email",
+			Category: "email smtp plain",
 			Name:     "mailer-smtp-plain-identity",
 			Usage:    "identity value for plain smtp auth",
 			EnvVars:  []string{"VINCE_MAILER_SMTP_PLAIN_IDENTITY"},
 		},
 		&cli.StringFlag{
-			Category: "email",
+			Category: "email smtp plain",
 			Name:     "mailer-smtp-plain-username",
 			Usage:    "username value for plain smtp auth",
 			EnvVars:  []string{"VINCE_MAILER_SMTP_PLAIN_USERNAME"},
 		},
 		&cli.StringFlag{
-			Category: "email",
+			Category: "email smtp plain",
 			Name:     "mailer-smtp-plain-password",
 			Usage:    "password value for plain smtp auth",
 			EnvVars:  []string{"VINCE_MAILER_SMTP_PLAIN_PASSWORD"},
 		},
 		&cli.StringFlag{
-			Category: "email",
+			Category: "email smtp oauth",
 			Name:     "mailer-smtp-oauth-username",
 			Usage:    "username value for oauth bearer smtp auth",
 			EnvVars:  []string{"VINCE_MAILER_SMTP_OAUTH_USERNAME"},
 		},
 		&cli.StringFlag{
-			Category: "email",
+			Category: "email smtp oauth",
 			Name:     "mailer-smtp-oauth-token",
 			Usage:    "token value for oauth bearer smtp auth",
 			EnvVars:  []string{"VINCE_MAILER_SMTP_OAUTH_TOKEN"},
 		},
 		&cli.StringFlag{
-			Category: "email",
+			Category: "email smtp oauth",
 			Name:     "mailer-smtp-oauth-host",
 			Usage:    "host value for oauth bearer smtp auth",
 			EnvVars:  []string{"VINCE_MAILER_SMTP_OAUTH_HOST"},
 		},
 		&cli.IntFlag{
-			Category: "email",
+			Category: "email smtp oauth",
 			Name:     "mailer-smtp-oauth-port",
 			Usage:    "port value for oauth bearer smtp auth",
 			EnvVars:  []string{"VINCE_MAILER_SMTP_OAUTH_PORT"},
@@ -208,14 +206,12 @@ func Flags() []cli.Flag {
 			Category: "secrets",
 			Name:     "secret",
 			Usage:    "path to a file with  ed25519 private key",
-			Value:    base64.StdEncoding.EncodeToString(secrets.ED25519()),
 			EnvVars:  []string{"VINCE_SECRET"},
 		},
 		&cli.StringFlag{
 			Category: "secrets",
 			Name:     "secret-age",
 			Usage:    "path to file with age.X25519Identity",
-			Value:    base64.StdEncoding.EncodeToString(secrets.AGE()),
 			EnvVars:  []string{"VINCE_SECRET_AGE"},
 		},
 		&cli.BoolFlag{
@@ -264,7 +260,6 @@ func Flags() []cli.Flag {
 			Category: "bootstrap",
 			Name:     "bootstrap-key",
 			Usage:    "API Key of the user to bootstrap.",
-			Value:    base64.StdEncoding.EncodeToString(secrets.APIKey()),
 			EnvVars:  []string{"VINCE_BOOTSTRAP_KEY"},
 		},
 		&cli.BoolFlag{
