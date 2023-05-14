@@ -154,6 +154,27 @@ func SiteOwner(ctx context.Context, sid uint64) *User {
 	return &u
 }
 
+func SiteFor(ctx context.Context, uid uint64, domain string, roles ...string) *Site {
+	var site Site
+	err := Get(ctx).Model(&Site{}).
+		Joins("left join site_memberships on site_memberships.site_id = sites.id").
+		Where("site_memberships.user_id = ?", uid).
+		Where("sites.domain = ?", domain).
+		Where("site_memberships.role IN " + buildRoles(roles...)).First(&site).Error
+	if err != nil {
+		LOG(ctx, err, "failed to find site owner")
+		return nil
+	}
+	return &site
+}
+
+func buildRoles(roles ...string) string {
+	for i := range roles {
+		roles[i] = "'" + roles[i] + "'"
+	}
+	return "(" + strings.Join(roles, ", ") + ")"
+}
+
 func SiteHasGoals(ctx context.Context, domain string) bool {
 	return Exists(ctx, func(db *gorm.DB) *gorm.DB {
 		return db.Model(&Goal{}).Where("domain = ?", domain)
