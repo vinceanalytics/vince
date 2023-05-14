@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"math/rand"
 	"net/url"
 	"path/filepath"
@@ -17,7 +18,9 @@ import (
 	"github.com/gernest/vince/pkg/db"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/pkg/schema"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/rs/zerolog"
+	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/time/rate"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -285,6 +288,53 @@ func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *
 }
 
 type SharedLink = schema.SharedLink
+
+func CreateSharedLink(ctx context.Context, sid uint64, name, password string) *SharedLink {
+	id, err := gonanoid.New()
+	if err != nil {
+		log.Get(ctx).Fatal().Err(err).
+			Msg("failed to create id for shared link")
+	}
+	shared := &SharedLink{
+		Name: name,
+		Slug: id,
+	}
+	if password != "" {
+		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			log.Get(ctx).Fatal().Err(err).
+				Msg("failed to create id for hash shared password")
+		}
+		shared.PasswordHash = string(b)
+	}
+	err = Get(ctx).Create(shared).Error
+	if err != nil {
+		log.Get(ctx).Err(err).
+			Msg("failed to create shared link")
+		return nil
+	}
+	return shared
+}
+
+func SharedLinkURL(ctx context.Context, site *Site, link *SharedLink) string {
+	base := config.Get(ctx).Url
+	query := make(url.Values)
+	query.Set("auth", link.Slug)
+	return fmt.Sprintf("%s/share/%s?%s", base, url.PathEscape(site.Domain), query.Encode())
+}
+
+func GetSharedLink(ctx context.Context, sid uint64, name string) *SharedLink {
+	var shared SharedLink
+	err := Get(ctx).Model(&SharedLink{}).
+		Where("site_id = ?", sid).
+		Where("name = ?", name).
+		First(&shared).Error
+	if err != nil {
+		LOG(ctx, err, "failed to find shared link")
+		return nil
+	}
+	return &shared
+}
 
 type SentRenewalNotification = schema.SentRenewalNotification
 
