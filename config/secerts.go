@@ -23,6 +23,11 @@ func ConfigCMD() *cli.Command {
 				Usage: "directory to save configurations (including secrets)",
 				Value: ".vince",
 			},
+			&cli.BoolFlag{
+				Name:    "interactive",
+				Usage:   "Interactive configuration",
+				Aliases: []string{"i"},
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			var o bytes.Buffer
