@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"testing"
 	"time"
 
 	"github.com/gernest/vince/config"
@@ -496,19 +495,6 @@ func Open(path string) (*gorm.DB, error) {
 func CloseDB(db *gorm.DB) error {
 	x, _ := db.DB()
 	return x.Close()
-}
-
-func OpenTest(t *testing.T) *gorm.DB {
-	t.Helper()
-	db, err := Open(filepath.Join(t.TempDir(), "vince.db"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		r, _ := db.DB()
-		r.Close()
-	})
-	return db
 }
 
 func Set(ctx context.Context, dbs *gorm.DB) context.Context {
