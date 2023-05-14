@@ -16,6 +16,7 @@ The Cloud Native Web Analytics Platform.
 - Event Tracking 
 - Cloud Native (seamless k8s integration)
 - Automatic TLS
+- API for stats and sites management
 
 # Origins
 
