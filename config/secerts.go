@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gernest/vince/pkg/secrets"
 	"github.com/manifoldco/promptui"
@@ -32,14 +33,39 @@ func ConfigCMD() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			var o bytes.Buffer
 			for _, p := range build(ctx.App) {
-				a, err := p()
+				if !ctx.Bool("interactive") {
+					break
+				}
+				err := p()
 				if err != nil {
 					return err
 				}
-				for _, v := range a {
-					fmt.Fprintf(&o, "# %s\n", v.usage)
-					fmt.Fprintf(&o, "export  %s=%q\n", v.env, v.value)
+			}
+			for _, f := range ctx.App.Flags {
+				var usage, env, value string
+				switch e := f.(type) {
+				case *cli.StringFlag:
+					usage = e.Usage
+					env = e.EnvVars[0]
+					value = e.Value
+				case *cli.BoolFlag:
+					if e.Name == "help" {
+						continue
+					}
+					usage = e.Usage
+					env = e.EnvVars[0]
+					value = strconv.FormatBool(e.Value)
+				case *cli.IntFlag:
+					usage = e.Usage
+					env = e.EnvVars[0]
+					value = strconv.Itoa(e.Value)
+				case *cli.DurationFlag:
+					usage = e.Usage
+					env = e.EnvVars[0]
+					value = e.Value.String()
 				}
+				fmt.Fprintf(&o, "# %s\n", usage)
+				fmt.Fprintf(&o, "export  %s=%q\n", env, value)
 			}
 			path := ctx.String("path")
 			_, err := os.Stat(path)
@@ -62,11 +88,7 @@ func ConfigCMD() *cli.Command {
 	}
 }
 
-type Prompt = struct {
-	usage, name, value, env string
-}
-
-type promptCall func() ([]*Prompt, error)
+type promptCall func() error
 
 func build(a *cli.App) []promptCall {
 	stringFlags := make(map[string]*cli.StringFlag)
@@ -98,7 +120,6 @@ func build(a *cli.App) []promptCall {
 			buildString(stringFlags["bootstrap-name"]),
 			buildString(stringFlags["bootstrap-email"]),
 			buildString(stringFlags["bootstrap-password"], true),
-			buildStringNoPrompt(stringFlags["bootstrap-key"]),
 		),
 		buildString(stringFlags["config"]),
 		buildString(stringFlags["data"]),
@@ -108,8 +129,6 @@ func build(a *cli.App) []promptCall {
 		buildString(stringFlags["url"]),
 		buildBool(boolFlags["enable-profile"]),
 		buildBool(boolFlags["enable-alerts"]),
-		buildStringNoPrompt(stringFlags["secret"]),
-		buildStringNoPrompt(stringFlags["secret-age"]),
 		buildBool(boolFlags["enable-email"],
 			buildString(stringFlags["mailer-address"]),
 			buildString(stringFlags["mailer-address-name"]),
@@ -134,10 +153,9 @@ func build(a *cli.App) []promptCall {
 			),
 		),
 	}
-
 }
 func buildString(f *cli.StringFlag, mask ...bool) promptCall {
-	return func() ([]*Prompt, error) {
+	return func() error {
 		prompt := promptui.Prompt{
 			Label:   f.Name,
 			Default: f.Value,
@@ -147,100 +165,74 @@ func buildString(f *cli.StringFlag, mask ...bool) promptCall {
 		}
 		value, err := prompt.Run()
 		if err != nil {
-			return nil, fmt.Errorf("failed to read prompt %v", err)
+			return fmt.Errorf("failed to read prompt %v", err)
 		}
-		return []*Prompt{
-			{
-				usage: f.Usage,
-				name:  f.Name,
-				value: value,
-				env:   f.EnvVars[0],
-			},
-		}, nil
-	}
-}
-
-func buildStringNoPrompt(f *cli.StringFlag) promptCall {
-	return func() ([]*Prompt, error) {
-		return []*Prompt{
-			{
-				usage: f.Usage,
-				name:  f.Name,
-				value: f.Value,
-				env:   f.EnvVars[0],
-			},
-		}, nil
+		f.Value = value
+		return nil
 	}
 }
 
 func buildDuration(f *cli.DurationFlag) promptCall {
-	return func() ([]*Prompt, error) {
+	return func() error {
 		prompt := promptui.Prompt{
 			Label:   f.Name,
 			Default: f.Value.String(),
 		}
 		value, err := prompt.Run()
 		if err != nil {
-			return nil, fmt.Errorf("failed to read prompt %v", err)
+			return fmt.Errorf("failed to read prompt %v", err)
 		}
-		return []*Prompt{
-			{
-				usage: f.Usage,
-				name:  f.Name,
-				value: value,
-				env:   f.EnvVars[0],
-			},
-		}, nil
+		d, err := time.ParseDuration(value)
+		if err != nil {
+			return err
+		}
+		f.Value = d
+		return nil
 	}
 }
 func buildInt(f *cli.IntFlag) promptCall {
-	return func() ([]*Prompt, error) {
+	return func() error {
 		prompt := promptui.Prompt{
 			Label:   f.Name,
 			Default: strconv.Itoa(f.Value),
 		}
 		value, err := prompt.Run()
 		if err != nil {
-			return nil, fmt.Errorf("failed to read prompt %v", err)
+			return fmt.Errorf("failed to read prompt %v", err)
 		}
-		return []*Prompt{
-			{
-				usage: f.Usage,
-				name:  f.Name,
-				value: value,
-				env:   f.EnvVars[0],
-			},
-		}, nil
+		d, err := strconv.Atoi(value)
+		if err != nil {
+			return err
+		}
+		f.Value = d
+		return nil
 	}
 }
 
 func buildBool(f *cli.BoolFlag, next ...promptCall) promptCall {
-	return func() ([]*Prompt, error) {
+	return func() error {
 		prompt := promptui.Prompt{
 			Label:   f.Name,
 			Default: strconv.FormatBool(f.Value),
 		}
 		value, err := prompt.Run()
 		if err != nil {
-			return nil, fmt.Errorf("failed to read prompt %v", err)
+			return fmt.Errorf("failed to read prompt %v", err)
 		}
-		o := []*Prompt{
-			{
-				usage: f.Usage,
-				name:  f.Name,
-				value: value,
-				env:   f.EnvVars[0],
-			},
+		d, err := strconv.ParseBool(value)
+		if err != nil {
+			return err
 		}
-		if value == "true" {
+		f.Value = d
+
+		if f.Value {
 			for _, n := range next {
-				x, err := n()
+				err := n()
 				if err != nil {
-					return nil, err
+					return err
 				}
-				o = append(o, x...)
 			}
 		}
-		return o, nil
+		return nil
 	}
 }
