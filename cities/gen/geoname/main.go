@@ -41,6 +41,12 @@ type Feature struct {
 }
 
 func processCountry() {
+	// Badger backup is not idempotent. Make sure you really want to rebuild the
+	// backup
+	if os.Getenv("REBUILD") == "" {
+		println(">  skip building geoname index. Set env REBUILD=true if you wish to rebuild.")
+		return
+	}
 	r, err := zip.OpenReader(allCountriesURI)
 	if err != nil {
 		tools.Exit("failed to open zip file ", allCountriesURI, err.Error())
