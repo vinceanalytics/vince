@@ -6,20 +6,10 @@ import (
 	"github.com/gernest/vince/tools"
 )
 
-var root string
-
 func main() {
 	println("### Generating  assets ###")
-	var err error
-	root, err = filepath.Abs("../")
-	if err != nil {
-		tools.Exit("failed to resolve root")
-	}
+	root := tools.RootVince()
 	println(">>> root:", root)
-	sass()
-}
-
-func sass() {
 	tools.ExecPlain(
 		"sass", "-scompressed", "--no-source-map",
 		filepath.Join(root, "assets/ui/scss/main.scss"),

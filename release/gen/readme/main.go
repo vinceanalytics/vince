@@ -30,12 +30,8 @@ var tpl = template.Must(template.New("root").
 var project tools.Project
 
 func main() {
-	println("### Generating README.md with release info ###")
-	var err error
-	root, err = filepath.Abs("../")
-	if err != nil {
-		tools.Exit("failed to resolve root ", err.Error())
-	}
+	println("### Generating release files with release info ###")
+	root = tools.RootVince()
 	project = tools.Release(root)
 	readme("vince")
 	readme("v8s")
