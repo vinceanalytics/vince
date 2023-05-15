@@ -1,18 +1,16 @@
-package main
+package bot
 
 import (
 	"bytes"
 	"fmt"
 	"go/format"
+	"os"
+	"path/filepath"
 
 	"github.com/gernest/vince/tools"
 	"github.com/gernest/vince/ua"
+	"gopkg.in/yaml.v2"
 )
-
-func main() {
-	println("### Generating regex for bots ###")
-	make()
-}
 
 type Producer struct {
 	Name string `yaml:"name" json:"name"`
@@ -27,9 +25,9 @@ type Bot struct {
 	Producer Producer `yaml:"producer" json:"producer"`
 }
 
-func make() {
+func Make(root string) {
 	var r []*Bot
-	tools.ReadUA("bots.yml", &r)
+	readUA(root, "bots.yml", &r)
 
 	var s bytes.Buffer
 
@@ -66,4 +64,16 @@ func make() {
 		tools.Exit("failed to format go source ", err.Error())
 	}
 	tools.WriteFile("ua_bots.go", f)
+}
+
+func readUA(root, name string, out any) {
+	path := filepath.Join(root, name)
+	f, err := os.ReadFile(path)
+	if err != nil {
+		tools.Exit("failed to read ua file ", path)
+	}
+	err = yaml.Unmarshal(f, out)
+	if err != nil {
+		tools.Exit("failed to  decode ", path, err.Error())
+	}
 }

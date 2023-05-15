@@ -41,6 +41,17 @@ func ExecPlain(name string, args ...string) {
 	}
 }
 
+func ExecPlainWithWorkingPath(dir, name string, args ...string) {
+	cmd := exec.Command(name, args...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Dir = dir
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // ReadUA regex file by name from https://github.com/matomo-org/device-detector
 // root directory.
 //

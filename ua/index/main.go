@@ -1,11 +1,10 @@
-package main
+package index
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"go/format"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -13,7 +12,7 @@ import (
 	"github.com/gernest/vince/tools"
 )
 
-func main() {
+func Make() {
 	ls := []string{
 		"mobile",
 		"tablet",
@@ -26,21 +25,25 @@ func main() {
 		"laptop":  {},
 		"desktop": {},
 	}
-	err := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
+	dir, err := os.ReadDir(filepath.Join(tools.RootVince(), "ua"))
+	if err != nil {
+		tools.Exit(err.Error())
+	}
+	for _, v := range dir {
+		if v.IsDir() {
+			continue
 		}
-		if filepath.Ext(path) != ".json" {
-			return nil
+		if filepath.Ext(v.Name()) != ".json" {
+			continue
 		}
-		b, err := os.ReadFile(path)
+		b, err := os.ReadFile(v.Name())
 		if err != nil {
-			return err
+			tools.Exit(err.Error())
 		}
 		var o []string
 		err = json.Unmarshal(b, &o)
 		if err != nil {
-			return err
+			tools.Exit(fmt.Sprintf("decoding %s %v", v.Name(), err))
 		}
 		for _, v := range o {
 			if _, ok := seen[v]; ok {
@@ -49,10 +52,10 @@ func main() {
 			seen[v] = struct{}{}
 			ls = append(ls, v)
 		}
-		return tools.Remove(path)
-	})
-	if err != nil {
-		tools.Exit("failed building index ", err.Error())
+		err = tools.Remove(v.Name())
+		if err != nil {
+			tools.Exit(err.Error())
+		}
 	}
 	sort.Strings(ls)
 	var b bytes.Buffer
