@@ -23,11 +23,7 @@ var (
 
 func main() {
 	println("### Generating k8s client for crds ###")
-	var err error
-	root, err = filepath.Abs("../../")
-	if err != nil {
-		tools.Exit("failed to resolve root", err.Error())
-	}
+	root = tools.RootVince()
 	println(">>> root:", root)
 	make()
 	buildCrd()
