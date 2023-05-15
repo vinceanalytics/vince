@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 
 	"github.com/gernest/vince/tools"
-	"github.com/gernest/vince/ua/bot"
-	"github.com/gernest/vince/ua/client"
-	"github.com/gernest/vince/ua/device"
-	"github.com/gernest/vince/ua/index"
-	uos "github.com/gernest/vince/ua/os"
-	"github.com/gernest/vince/ua/vendorfragment"
+	"github.com/gernest/vince/ua/gen/bot"
+	"github.com/gernest/vince/ua/gen/client"
+	"github.com/gernest/vince/ua/gen/device"
+	"github.com/gernest/vince/ua/gen/index"
+	uos "github.com/gernest/vince/ua/gen/os"
+	"github.com/gernest/vince/ua/gen/vendorfragment"
 )
 
 const (
