@@ -5,6 +5,7 @@ import (
 )
 
 //go:generate go run gen/index/main.go
+//go:generate go run gen/geoname/main.go
 
 //go:embed city_geoname_db.zstd
 var GeonameIndex []byte

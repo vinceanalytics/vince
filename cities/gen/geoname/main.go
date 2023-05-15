@@ -20,16 +20,19 @@ import (
 var client = http.Client{}
 
 func main() {
-	println("### Generating index of cities geoname ID ###")
-	download()
-	processCountry()
-}
-
-func download() {
-	if os.Getenv("DOWNLOAD") == "" {
-		return
+	_, err := os.Stat(allCountriesURI)
+	if err != nil {
+		if os.IsNotExist(err) {
+			println(">  downloading " + allCountriesURI)
+			downloadCountries()
+		} else {
+			tools.Exit(err.Error())
+		}
+	} else {
+		// make sure we are up to date
+		println(">  using " + allCountriesURI)
 	}
-	downloadCountries()
+	processCountry()
 }
 
 type Feature struct {
@@ -40,11 +43,7 @@ type Feature struct {
 func processCountry() {
 	r, err := zip.OpenReader(allCountriesURI)
 	if err != nil {
-		if os.IsNotExist(err) {
-			tools.Exit("try DOWNLOAD=true go generate ./cities")
-		} else {
-			tools.Exit("failed to open zip file ", allCountriesURI, err.Error())
-		}
+		tools.Exit("failed to open zip file ", allCountriesURI, err.Error())
 	}
 	defer r.Close()
 
