@@ -197,6 +197,7 @@ func ModuleRoot(module string) string {
 		m.Path, m.Version,
 	)
 }
+
 func Package(module string) *debug.Module {
 	build, ok := debug.ReadBuildInfo()
 	if !ok {
@@ -209,4 +210,12 @@ func Package(module string) *debug.Module {
 	}
 	Exit("no such module ", module)
 	return nil
+}
+
+func RootVince() string {
+	return Root("github.com/gernest/vince")
+}
+
+func Root(pkg string) string {
+	return ExecCollect("go", "list", "-m", "-f", "{{.Dir}}", pkg)
 }
