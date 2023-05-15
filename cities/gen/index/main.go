@@ -7,22 +7,39 @@ import (
 	"go/format"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/gernest/vince/tools"
 )
 
+const (
+	repo = "git@github.com:dr5hn/countries-states-cities-database.git"
+	dir  = "countries-states-cities-database"
+)
+
 func main() {
-	println("### Generating index for countries short codes ###")
+	root := tools.RootVince()
+	_, err := os.Stat(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			println(">  downloading " + dir)
+			tools.ExecPlain("git", "clone", repo)
+		} else {
+			tools.Exit(err.Error())
+		}
+	} else {
+		// make sure we are up to date
+		println(">  updating " + dir)
+		tools.ExecPlainWithWorkingPath(
+			filepath.Join(root, "cities", dir),
+			"git", "pull",
+		)
+	}
 	make()
 }
 
 func make() {
-	src := os.Getenv("CITIES_DATA")
-	if src == "" {
-		println(">>> Missing  cities data json file source")
-		println(msg)
-		return
-	}
+	src := filepath.Join(dir, "countries+states+cities.json")
 	f, err := os.Open(src)
 	if err != nil {
 		log.Fatal(err)
@@ -93,10 +110,3 @@ type State struct {
 	Name string `json:"name"`
 	Code string `json:"state_code"`
 }
-
-const msg = `    You need to set CITIES_DATA env var to point to
-    https://github.com/dr5hn/countries-states-cities-database/blob/master/countries%2Bstates%2Bcities.json
-    before executing go generate
-    example
-    	CITIES_DATA=~/Downloads/countries+states+cities.json  go generate ./cities/
-`
