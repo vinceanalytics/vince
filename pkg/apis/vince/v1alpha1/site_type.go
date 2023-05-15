@@ -24,6 +24,16 @@ type Site struct {
 type SiteSpec struct {
 	Domain string `json:"domain"`
 	Public bool   `json:"public"`
+	Target string `json:"target"`
+}
+
+// Target is a reference to Vince crd resource that this site is attached to. We avoid
+// using selectors because there will always be 1:1 mapping between the sites and
+// vince instance.
+type Target struct {
+	//+optional
+	Namespace string `json:"namespace,omitempty"`
+	Name      string `json:"name"`
 }
 
 type SiteStatus struct {
@@ -34,6 +44,5 @@ type SiteStatus struct {
 type SiteList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
-
-	Items []Site `json:"items"`
+	Items           []Site `json:"items"`
 }
