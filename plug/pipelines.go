@@ -132,6 +132,7 @@ func PREFIX(prefix string, pipe ...Plug) Plug {
 
 const domain = `(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`
 const website = `(?P<website>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`
+const siteID = `(?P<site_id>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`
 
 var replace = map[string]string{
 	":domain":        domain,
@@ -141,7 +142,7 @@ var replace = map[string]string{
 	":id":            "(?P<id>[^.]+)",
 	":invitation_id": "(?P<id>[^.]+)",
 	":new_role":      "(?P<new_role>[^.]+)",
-	":site_id":       "(?P<site_id>[^.]+)",
+	":site_id":       siteID,
 	":goal_id":       "(?P<goal_id>[^.]+)",
 }
 

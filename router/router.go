@@ -34,11 +34,12 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		),
 		plug.PREFIX("/api/v1/sites",
 			pipe1.PathPOST("/api/v1/sites", sites.CreateSite),
+			pipe1.PathGET("/api/v1/sites", sites.ListSites),
 			pipe1.PathPUT("/api/v1/sites/goals", sites.FindOrCreateGoals),
 			pipe1.PathPUT("/api/v1/sites/shared-links", sites.FindOrCreateSharedLink),
+			pipe1.DELETE(`^/api/v1/sites/goals/:goal_id$`, sites.DeleteGoal),
 			pipe1.GET(`^/api/v1/sites/:site_id$`, sites.GetSite),
 			pipe1.DELETE(`^/api/v1/sites/:site_id$`, sites.DeleteSite),
-			pipe1.DELETE(`^/api/v1/sites/goals/:goal_id$`, sites.DeleteGoal),
 			NotFound,
 		),
 

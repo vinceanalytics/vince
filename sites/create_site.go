@@ -10,7 +10,7 @@ import (
 
 type CreateSiteRequest struct {
 	Domain string `json:"domain"`
-	Public bool   `json:"public"`
+	Public bool   `json:"public,omitempty"`
 }
 
 type Error struct {
