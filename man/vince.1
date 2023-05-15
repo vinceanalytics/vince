@@ -27,7 +27,7 @@ vince
 [--enable-alerts]
 [--enable-auto-tls]
 [--enable-bootstrap]
-[--enable-email-verification]
+[--enable-email]
 [--enable-profile]
 [--enable-tls]
 [--env]=[value]
@@ -46,7 +46,6 @@ vince
 [--mailer-smtp-plain-username]=[value]
 [--mailer-smtp-port]=[value]
 [--rotation-check]=[value]
-[--scrape-interval]=[value]
 [--secret-age]=[value]
 [--secret]=[value]
 [--tls-address]=[value]
@@ -112,7 +111,7 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--enable-bootstrap\fP: allows creating a user and api key on startup.
 
 .PP
-\fB--enable-email-verification\fP: send emails for account verification
+\fB--enable-email\fP: allows sending emails
 
 .PP
 \fB--enable-profile\fP: Expose /debug/pprof endpoint
@@ -169,9 +168,6 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--rotation-check\fP="": window for checking log rotation (default: 1h0m0s)
 
 .PP
-\fB--scrape-interval\fP="": system wide metrics collection interval (default: 1m0s)
-
-.PP
 \fB--secret\fP="": path to a file with  ed25519 private key
 
 .PP
@@ -197,6 +193,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 .SH config
 .PP
 generates configurations for vince
+
+.PP
+\fB--interactive, -i\fP: Interactive configuration
 
 .PP
 \fB--path\fP="": directory to save configurations (including secrets) (default: .vince)

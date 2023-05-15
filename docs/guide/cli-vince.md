@@ -20,7 +20,7 @@ vince
 [--enable-alerts]
 [--enable-auto-tls]
 [--enable-bootstrap]
-[--enable-email-verification]
+[--enable-email]
 [--enable-profile]
 [--enable-tls]
 [--env]=[value]
@@ -39,7 +39,6 @@ vince
 [--mailer-smtp-plain-username]=[value]
 [--mailer-smtp-port]=[value]
 [--rotation-check]=[value]
-[--scrape-interval]=[value]
 [--secret-age]=[value]
 [--secret]=[value]
 [--tls-address]=[value]
@@ -83,7 +82,7 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--enable-bootstrap**: allows creating a user and api key on startup.
 
-**--enable-email-verification**: send emails for account verification
+**--enable-email**: allows sending emails
 
 **--enable-profile**: Expose /debug/pprof endpoint
 
@@ -121,8 +120,6 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 **--rotation-check**="": window for checking log rotation (default: 1h0m0s)
 
-**--scrape-interval**="": system wide metrics collection interval (default: 1m0s)
-
 **--secret**="": path to a file with  ed25519 private key
 
 **--secret-age**="": path to file with age.X25519Identity
@@ -143,6 +140,8 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 ## config
 
 generates configurations for vince
+
+**--interactive, -i**: Interactive configuration
 
 **--path**="": directory to save configurations (including secrets) (default: .vince)
 

@@ -34,7 +34,7 @@ func main() {
 }
 
 func make() {
-	CODEGEN_PKG := tools.ModuleRoot("k8s.io/code-generator")
+	CODEGEN_PKG := tools.Root("k8s.io/code-generator")
 	println(">>> using codegen: ", CODEGEN_PKG)
 	GENERATE_SCRIPT = filepath.Join(CODEGEN_PKG, "generate-groups.sh")
 	tools.ExecPlain("chmod", "+x", GENERATE_SCRIPT)

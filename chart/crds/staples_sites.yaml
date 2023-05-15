@@ -38,9 +38,12 @@ spec:
                 type: string
               public:
                 type: boolean
+              target:
+                type: string
             required:
             - domain
             - public
+            - target
             type: object
           status:
             properties:

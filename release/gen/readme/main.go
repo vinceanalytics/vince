@@ -100,7 +100,7 @@ func size(n int) string {
 
 func completion() {
 	println("### Generating autocomplete scripts ###")
-	base := tools.ModuleRoot("github.com/urfave/cli/v3")
+	base := tools.Root("github.com/urfave/cli/v3")
 	println(">>> from ", base)
 	bashFile := filepath.Join(base, "autocomplete", "bash_autocomplete")
 	bash, err := os.ReadFile(bashFile)

@@ -11,7 +11,6 @@ import (
 func main() {
 	println("### Generating json schema for plot data ###")
 	root := tools.RootVince()
-	println(root)
 	j := jsonschema.Reflect(&plot.Data{})
 	b, _ := j.MarshalJSON()
 	tools.WriteFile(filepath.Join(root, "assets", "schema.json"), b)

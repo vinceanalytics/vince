@@ -190,14 +190,6 @@ func readJSON(path string, o any) {
 	}
 }
 
-func ModuleRoot(module string) string {
-	m := Package(module)
-	return fmt.Sprintf("%s/pkg/mod/%s@%s",
-		ExecCollect("go", "env", "GOPATH"),
-		m.Path, m.Version,
-	)
-}
-
 func Package(module string) *debug.Module {
 	build, ok := debug.ReadBuildInfo()
 	if !ok {
@@ -218,4 +210,8 @@ func RootVince() string {
 
 func Root(pkg string) string {
 	return ExecCollect("go", "list", "-m", "-f", "{{.Dir}}", pkg)
+}
+
+func Pkg(pkg string) string {
+	return ExecCollect("go", "list", "-m", pkg)
 }

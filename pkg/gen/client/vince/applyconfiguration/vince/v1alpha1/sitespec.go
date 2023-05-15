@@ -10,6 +10,7 @@ package v1alpha1
 type SiteSpecApplyConfiguration struct {
 	Domain *string `json:"domain,omitempty"`
 	Public *bool   `json:"public,omitempty"`
+	Target *string `json:"target,omitempty"`
 }
 
 // SiteSpecApplyConfiguration constructs an declarative configuration of the SiteSpec type for use with
@@ -31,5 +32,13 @@ func (b *SiteSpecApplyConfiguration) WithDomain(value string) *SiteSpecApplyConf
 // If called multiple times, the Public field is set to the value of the last call.
 func (b *SiteSpecApplyConfiguration) WithPublic(value bool) *SiteSpecApplyConfiguration {
 	b.Public = &value
+	return b
+}
+
+// WithTarget sets the Target field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Target field is set to the value of the last call.
+func (b *SiteSpecApplyConfiguration) WithTarget(value string) *SiteSpecApplyConfiguration {
+	b.Target = &value
 	return b
 }

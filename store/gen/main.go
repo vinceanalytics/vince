@@ -7,7 +7,7 @@ import (
 
 func main() {
 	println("### Generating capnp for store")
-	root := tools.ModuleRoot("capnproto.org/go/capnp/v3")
+	root := tools.Root("capnproto.org/go/capnp/v3")
 	println(">>> using codegen: ", root)
 	tools.ExecPlain("capnp",
 		"--verbose",
