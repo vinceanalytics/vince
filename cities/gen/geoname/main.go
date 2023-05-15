@@ -3,7 +3,6 @@ package main
 import (
 	"archive/zip"
 	"bufio"
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"log"
@@ -128,9 +127,6 @@ func downloadCountries() {
 const (
 	geonamesURL     = "http://download.geonames.org/export/dump/"
 	commentSymbol   = byte('#')
-	newLineSymbol   = byte('\n')
-	delimSymbol     = byte('\t')
-	boolTrue        = "1"
 	allCountriesURI = `allCountries.zip`
 )
 
@@ -157,26 +153,5 @@ func sParse(s *bufio.Scanner, headerLength uint, f func([]string) bool) {
 	}
 	if err = s.Err(); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func parse(data []byte, headerLength int, f func([][]byte) bool) {
-	rawSplit := bytes.Split(data, []byte{newLineSymbol})
-	var rawLineSplit [][]byte
-	for i := range rawSplit {
-		if headerLength != 0 {
-			headerLength--
-			continue
-		}
-		if len(rawSplit[i]) == 0 {
-			continue
-		}
-		if rawSplit[i][0] == commentSymbol {
-			continue
-		}
-		rawLineSplit = bytes.Split(rawSplit[i], []byte{delimSymbol})
-		if !f(rawLineSplit) {
-			break
-		}
 	}
 }
