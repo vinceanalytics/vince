@@ -252,21 +252,7 @@ func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []by
 	})
 }
 
-type Range struct {
-	From, To time.Time
-}
-
-func (r *Range) ts() time.Time {
-	if r.From.IsZero() {
-		return r.To
-	}
-	if r.To.IsZero() {
-		return r.From
-	}
-	return r.From
-}
-
-func ReadCalendars(ctx context.Context, pick Range, uid, sid uint64) *plot.Data {
+func ReadCalendars(ctx context.Context, pick timex.Range, uid, sid uint64) *plot.Data {
 	start := time.Now()
 	defer system.CalendarReadDuration.Observe(time.Since(start).Seconds())
 	m := GetMike(ctx)
@@ -281,8 +267,8 @@ func ReadCalendars(ctx context.Context, pick Range, uid, sid uint64) *plot.Data 
 	meta.SetUserID(uid)
 	meta.SetSiteID(sid)
 	var data plot.Data
-	for _, r := range buildYearRanges(pick) {
-		ts := r.ts()
+	for _, r := range pick.Build() {
+		ts := r.TS()
 		id.Year(ts)
 		meta.Year(ts)
 		err := readCalendar(ctx, pick, m, id, meta, &data)
@@ -291,40 +277,11 @@ func ReadCalendars(ctx context.Context, pick Range, uid, sid uint64) *plot.Data 
 			return nil
 		}
 	}
+	data.Timestamps = pick.Timestamps()
 	return data.Build()
 }
 
-func buildYearRanges(r Range) (o []Range) {
-	diff := r.To.Year() - r.From.Year()
-	if diff == 0 {
-		return []Range{r}
-	}
-	ts := timex.BeginningOfYear(r.From)
-	for i := 0; i < diff; i += 1 {
-		if i == 0 {
-			// starting year 0..from.
-			o = append(o, Range{
-				From: r.From,
-			})
-			continue
-		}
-		if i == diff-1 {
-			// last year to..
-			o = append(o, Range{
-				To: r.To,
-			})
-			continue
-		}
-		ts = ts.AddDate(i, 0, 0)
-		// full year calendar
-		o = append(o, Range{
-			From: ts,
-			To:   ts,
-		})
-	}
-	return
-}
-func readCalendar(ctx context.Context, pick Range, m *badger.DB, id *ID, meta *MetaKey, data *plot.Data) error {
+func readCalendar(ctx context.Context, pick timex.Range, m *badger.DB, id *ID, meta *MetaKey, data *plot.Data) error {
 	return m.View(func(txn *badger.Txn) error {
 		return errors.Join(
 			readAllAggregate(txn, pick, id, data),
@@ -333,7 +290,7 @@ func readCalendar(ctx context.Context, pick Range, m *badger.DB, id *ID, meta *M
 	})
 }
 
-func readAllMeta(ctx context.Context, txn *badger.Txn, pick Range, id *MetaKey, data *plot.Data) error {
+func readAllMeta(ctx context.Context, txn *badger.Txn, pick timex.Range, id *MetaKey, data *plot.Data) error {
 	var errList []error
 	for i := PROPS_NAME; i <= PROPS_CITY; i++ {
 		id.SetMeta(byte(i))
@@ -349,12 +306,7 @@ func readAllMeta(ctx context.Context, txn *badger.Txn, pick Range, id *MetaKey, 
 	return errors.Join(errList...)
 }
 
-func calToAggregate(pick Range, c *store.Calendar) (o plot.AggregateValues, err error) {
-	ts, err := c.TimestampRange(pick.From, pick.To)
-	if err != nil {
-		return plot.AggregateValues{}, err
-	}
-	o.Timestamps = ts
+func calToAggregate(pick timex.Range, c *store.Calendar) (o plot.AggregateValues, err error) {
 	err = errors.Join(
 		readAggregate(pick, c.SeriesVisitors, &o.Visitors),
 		readAggregate(pick, c.SeriesViews, &o.Views),
@@ -367,7 +319,7 @@ func calToAggregate(pick Range, c *store.Calendar) (o plot.AggregateValues, err 
 	return
 }
 
-func readAggregate(pick Range, f func(time.Time, time.Time) ([]float64, error), o *[]float64) error {
+func readAggregate(pick timex.Range, f func(time.Time, time.Time) ([]float64, error), o *[]float64) error {
 	v, err := f(pick.From, pick.To)
 	if err != nil {
 		return err
@@ -402,7 +354,7 @@ func readMetaCal(txn *badger.Txn, prefix []byte, f func([]byte, *store.Calendar)
 	return nil
 }
 
-func readAllAggregate(txn *badger.Txn, pick Range, id *ID, data *plot.Data) error {
+func readAllAggregate(txn *badger.Txn, pick timex.Range, id *ID, data *plot.Data) error {
 	data.All = &plot.Aggregate{
 		Visitors:      &plot.Entry{},
 		Views:         &plot.Entry{},
@@ -425,7 +377,7 @@ func readAllAggregate(txn *badger.Txn, pick Range, id *ID, data *plot.Data) erro
 	})
 }
 
-func readEntry(pick Range, f func(time.Time, time.Time) ([]float64, error), e **plot.Entry) error {
+func readEntry(pick timex.Range, f func(time.Time, time.Time) ([]float64, error), e **plot.Entry) error {
 	v, err := f(pick.From, pick.To)
 	if err != nil {
 		return err

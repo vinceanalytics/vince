@@ -6,6 +6,7 @@ import (
 
 	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/pkg/timex"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/timeseries"
@@ -33,7 +34,7 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		hasGoals := models.SiteHasGoals(ctx, site.Domain)
 		ts := time.Now()
 		from := ts.Add(-24 * time.Hour)
-		data := timeseries.ReadCalendars(ctx, timeseries.Range{
+		data := timeseries.ReadCalendars(ctx, timex.Range{
 			From: from,
 			To:   ts,
 		}, owner.ID, site.ID)

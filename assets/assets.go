@@ -19,10 +19,9 @@ var files = map[string]bool{
 	"/site.webmanifest":           true,
 	"/favicon-16x16.png":          true,
 	"/robots.txt":                 true,
-	"/schema.json":                true,
 }
 
-//go:embed css image js *.png *.ico *.webmanifest *.json
+//go:embed css image js *.png *.ico *.webmanifest
 var fs embed.FS
 
 func match(path string) bool {

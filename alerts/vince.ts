@@ -12,6 +12,7 @@ export interface Range {
 };
 
 export interface Data {
+    timestamps?: number[];
     all?: Aggregate;
     Event?: EntryMap;
     page?: EntryMap;

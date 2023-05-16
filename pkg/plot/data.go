@@ -43,6 +43,7 @@ const (
 )
 
 type Data struct {
+	Timestamps        []int64    `json:"timestamps,omitempty"`
 	All               *Aggregate `json:"all,omitempty"`
 	Event             *EntryMap  `json:"event,omitempty"`
 	Page              *EntryMap  `json:"page,omitempty"`
@@ -133,7 +134,6 @@ type Item struct {
 }
 
 type AggregateValues struct {
-	Timestamps    []int64   `json:"timestamps,omitempty"`
 	Visitors      []float64 `json:"visitors,omitempty"`
 	Views         []float64 `json:"views,omitempty"`
 	Events        []float64 `json:"events,omitempty"`
