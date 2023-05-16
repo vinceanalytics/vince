@@ -45,14 +45,8 @@ func Serve(ctx *cli.Context) error {
 	// make sure we create log path
 	logPath := filepath.Join(conf.DataPath, "logs")
 	os.MkdirAll(logPath, 0755)
-	errorLog, err := log.NewRotate(logPath)
-	if err != nil {
-		return err
-	}
 
-	xlg := zerolog.New(zerolog.MultiLevelWriter(
-		os.Stderr, errorLog,
-	)).Level(zerolog.Level(conf.LogLevel)).With().
+	xlg := zerolog.New(os.Stderr).Level(zerolog.Level(conf.LogLevel)).With().
 		Timestamp().Str("env", conf.Env.String()).Logger()
 	goCtx = log.Set(goCtx, &xlg)
 	if _, err = os.Stat(conf.DataPath); err != nil && os.IsNotExist(err) {
@@ -62,7 +56,7 @@ func Serve(ctx *cli.Context) error {
 		}
 	}
 	conf.LogLevel = config.Config_info
-	return HTTP(goCtx, conf, errorLog)
+	return HTTP(goCtx, conf)
 }
 
 type resourceList []io.Closer
@@ -81,7 +75,7 @@ func (r resourceList) Close() error {
 	return errors.Join(e...)
 }
 
-func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
+func HTTP(ctx context.Context, o *config.Config) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var resources resourceList
@@ -163,7 +157,6 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 		resources.Close()
 		return err
 	}
-	resources = append(resources, errorLog)
 	resources = append(resources, resourceFunc(func() error {
 		return models.CloseDB(sqlDb)
 	}))
@@ -226,7 +219,6 @@ func HTTP(ctx context.Context, o *config.Config, errorLog *log.Rotate) error {
 	{
 		// register and start workers
 		g.Go(worker.UpdateCacheSites(ctx, addHealth))
-		g.Go(worker.LogRotate(ctx, errorLog, addHealth))
 		g.Go(worker.SaveTimeseries(ctx, addHealth))
 	}
 
