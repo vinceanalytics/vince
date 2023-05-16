@@ -36,9 +36,20 @@ func ZeroCalendar(ts time.Time, sum *Sum) (*Calendar, error) {
 	if err != nil {
 		return nil, err
 	}
-	days := timex.CalendarHours(ts)
+	hours := timex.CalendarHours(ts)
 	cal := &calendar
-	err = initFloats(days, seg,
+	{
+		yts := timex.YearTimestamps(ts)
+		x, err := capnp.NewInt64List(seg, int32(len(yts)))
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range yts {
+			x.Set(k, v)
+		}
+		cal.SetTimestamps(x)
+	}
+	err = initFloats(hours, seg,
 		cal.SetVisitors,
 		cal.SetViews,
 		cal.SetEvents,
@@ -64,6 +75,23 @@ func initFloats(n int, seg *capnp.Segment, fn ...func(capnp.Float64List) error) 
 		errs = append(errs, f(ls))
 	}
 	return errors.Join(errs...)
+}
+
+func (c *Calendar) TimestampRange(from, to time.Time) ([]int64, error) {
+	ts, err := c.Timestamps()
+	if err != nil {
+		return nil, err
+	}
+	start, end := findRange(ts.Len(), from, to)
+	diff := end - start
+	if diff == 0 {
+		return []int64{}, nil
+	}
+	ls := make([]int64, 0, diff)
+	for i := start; i < end; i += 1 {
+		ls = append(ls, ts.At(i))
+	}
+	return ls, nil
 }
 
 func (c *Calendar) SeriesVisitors(from, to time.Time) ([]float64, error) {
@@ -122,7 +150,7 @@ func (c Calendar) SeriesViewsPerVisit(from, to time.Time) ([]float64, error) {
 	return series(ls, from, to), nil
 }
 
-func findRange(f capnp.Float64List, from, to time.Time) (start, end int) {
+func findRange(size int, from, to time.Time) (start, end int) {
 	if from.Year() != to.Year() || to.Before(from) {
 		return
 	}
@@ -132,15 +160,15 @@ func findRange(f capnp.Float64List, from, to time.Time) (start, end int) {
 		start = timex.HourIndex(from)
 	}
 	if to.IsZero() {
-		end = f.Len()
+		end = size
 	} else {
 		end = timex.HourIndex(to)
 	}
 	if from.Equal(to) {
 		start = 0
-		end = f.Len()
+		end = size
 	}
-	if end+1 < f.Len() {
+	if end+1 < size {
 		// make filter inclusive if possible.
 		end += 1
 	}
@@ -148,7 +176,7 @@ func findRange(f capnp.Float64List, from, to time.Time) (start, end int) {
 }
 
 func series(f capnp.Float64List, from, to time.Time) (o []float64) {
-	start, end := findRange(f, from, to)
+	start, end := findRange(f.Len(), from, to)
 	diff := end - start
 	o = make([]float64, diff)
 	for i := 0; i < diff; i += 1 {

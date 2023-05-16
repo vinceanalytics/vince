@@ -133,7 +133,7 @@ type Item struct {
 }
 
 type AggregateValues struct {
-	Timestamps    []uint64  `json:"timestamps,omitempty"`
+	Timestamps    []int64   `json:"timestamps,omitempty"`
 	Visitors      []float64 `json:"visitors,omitempty"`
 	Views         []float64 `json:"views,omitempty"`
 	Events        []float64 `json:"events,omitempty"`

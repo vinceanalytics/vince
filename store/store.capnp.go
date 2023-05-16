@@ -14,12 +14,12 @@ type Calendar capnp.Struct
 const Calendar_TypeID = 0xf8bd901143c99f61
 
 func NewCalendar(s *capnp.Segment) (Calendar, error) {
-	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 7})
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 8})
 	return Calendar(st), err
 }
 
 func NewRootCalendar(s *capnp.Segment) (Calendar, error) {
-	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 7})
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 8})
 	return Calendar(st), err
 }
 
@@ -55,17 +55,40 @@ func (s Calendar) Message() *capnp.Message {
 func (s Calendar) Segment() *capnp.Segment {
 	return capnp.Struct(s).Segment()
 }
-func (s Calendar) Visitors() (capnp.Float64List, error) {
+func (s Calendar) Timestamps() (capnp.Int64List, error) {
 	p, err := capnp.Struct(s).Ptr(0)
+	return capnp.Int64List(p.List()), err
+}
+
+func (s Calendar) HasTimestamps() bool {
+	return capnp.Struct(s).HasPtr(0)
+}
+
+func (s Calendar) SetTimestamps(v capnp.Int64List) error {
+	return capnp.Struct(s).SetPtr(0, v.ToPtr())
+}
+
+// NewTimestamps sets the timestamps field to a newly
+// allocated capnp.Int64List, preferring placement in s's segment.
+func (s Calendar) NewTimestamps(n int32) (capnp.Int64List, error) {
+	l, err := capnp.NewInt64List(capnp.Struct(s).Segment(), n)
+	if err != nil {
+		return capnp.Int64List{}, err
+	}
+	err = capnp.Struct(s).SetPtr(0, l.ToPtr())
+	return l, err
+}
+func (s Calendar) Visitors() (capnp.Float64List, error) {
+	p, err := capnp.Struct(s).Ptr(1)
 	return capnp.Float64List(p.List()), err
 }
 
 func (s Calendar) HasVisitors() bool {
-	return capnp.Struct(s).HasPtr(0)
+	return capnp.Struct(s).HasPtr(1)
 }
 
 func (s Calendar) SetVisitors(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(0, v.ToPtr())
+	return capnp.Struct(s).SetPtr(1, v.ToPtr())
 }
 
 // NewVisitors sets the visitors field to a newly
@@ -75,20 +98,20 @@ func (s Calendar) NewVisitors(n int32) (capnp.Float64List, error) {
 	if err != nil {
 		return capnp.Float64List{}, err
 	}
-	err = capnp.Struct(s).SetPtr(0, l.ToPtr())
+	err = capnp.Struct(s).SetPtr(1, l.ToPtr())
 	return l, err
 }
 func (s Calendar) Views() (capnp.Float64List, error) {
-	p, err := capnp.Struct(s).Ptr(1)
+	p, err := capnp.Struct(s).Ptr(2)
 	return capnp.Float64List(p.List()), err
 }
 
 func (s Calendar) HasViews() bool {
-	return capnp.Struct(s).HasPtr(1)
+	return capnp.Struct(s).HasPtr(2)
 }
 
 func (s Calendar) SetViews(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(1, v.ToPtr())
+	return capnp.Struct(s).SetPtr(2, v.ToPtr())
 }
 
 // NewViews sets the views field to a newly
@@ -98,20 +121,20 @@ func (s Calendar) NewViews(n int32) (capnp.Float64List, error) {
 	if err != nil {
 		return capnp.Float64List{}, err
 	}
-	err = capnp.Struct(s).SetPtr(1, l.ToPtr())
+	err = capnp.Struct(s).SetPtr(2, l.ToPtr())
 	return l, err
 }
 func (s Calendar) Events() (capnp.Float64List, error) {
-	p, err := capnp.Struct(s).Ptr(2)
+	p, err := capnp.Struct(s).Ptr(3)
 	return capnp.Float64List(p.List()), err
 }
 
 func (s Calendar) HasEvents() bool {
-	return capnp.Struct(s).HasPtr(2)
+	return capnp.Struct(s).HasPtr(3)
 }
 
 func (s Calendar) SetEvents(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(2, v.ToPtr())
+	return capnp.Struct(s).SetPtr(3, v.ToPtr())
 }
 
 // NewEvents sets the events field to a newly
@@ -121,20 +144,20 @@ func (s Calendar) NewEvents(n int32) (capnp.Float64List, error) {
 	if err != nil {
 		return capnp.Float64List{}, err
 	}
-	err = capnp.Struct(s).SetPtr(2, l.ToPtr())
+	err = capnp.Struct(s).SetPtr(3, l.ToPtr())
 	return l, err
 }
 func (s Calendar) Visits() (capnp.Float64List, error) {
-	p, err := capnp.Struct(s).Ptr(3)
+	p, err := capnp.Struct(s).Ptr(4)
 	return capnp.Float64List(p.List()), err
 }
 
 func (s Calendar) HasVisits() bool {
-	return capnp.Struct(s).HasPtr(3)
+	return capnp.Struct(s).HasPtr(4)
 }
 
 func (s Calendar) SetVisits(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(3, v.ToPtr())
+	return capnp.Struct(s).SetPtr(4, v.ToPtr())
 }
 
 // NewVisits sets the visits field to a newly
@@ -144,20 +167,20 @@ func (s Calendar) NewVisits(n int32) (capnp.Float64List, error) {
 	if err != nil {
 		return capnp.Float64List{}, err
 	}
-	err = capnp.Struct(s).SetPtr(3, l.ToPtr())
+	err = capnp.Struct(s).SetPtr(4, l.ToPtr())
 	return l, err
 }
 func (s Calendar) BounceRate() (capnp.Float64List, error) {
-	p, err := capnp.Struct(s).Ptr(4)
+	p, err := capnp.Struct(s).Ptr(5)
 	return capnp.Float64List(p.List()), err
 }
 
 func (s Calendar) HasBounceRate() bool {
-	return capnp.Struct(s).HasPtr(4)
+	return capnp.Struct(s).HasPtr(5)
 }
 
 func (s Calendar) SetBounceRate(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(4, v.ToPtr())
+	return capnp.Struct(s).SetPtr(5, v.ToPtr())
 }
 
 // NewBounceRate sets the bounceRate field to a newly
@@ -167,20 +190,20 @@ func (s Calendar) NewBounceRate(n int32) (capnp.Float64List, error) {
 	if err != nil {
 		return capnp.Float64List{}, err
 	}
-	err = capnp.Struct(s).SetPtr(4, l.ToPtr())
+	err = capnp.Struct(s).SetPtr(5, l.ToPtr())
 	return l, err
 }
 func (s Calendar) VisitDuration() (capnp.Float64List, error) {
-	p, err := capnp.Struct(s).Ptr(5)
+	p, err := capnp.Struct(s).Ptr(6)
 	return capnp.Float64List(p.List()), err
 }
 
 func (s Calendar) HasVisitDuration() bool {
-	return capnp.Struct(s).HasPtr(5)
+	return capnp.Struct(s).HasPtr(6)
 }
 
 func (s Calendar) SetVisitDuration(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(5, v.ToPtr())
+	return capnp.Struct(s).SetPtr(6, v.ToPtr())
 }
 
 // NewVisitDuration sets the visitDuration field to a newly
@@ -190,20 +213,20 @@ func (s Calendar) NewVisitDuration(n int32) (capnp.Float64List, error) {
 	if err != nil {
 		return capnp.Float64List{}, err
 	}
-	err = capnp.Struct(s).SetPtr(5, l.ToPtr())
+	err = capnp.Struct(s).SetPtr(6, l.ToPtr())
 	return l, err
 }
 func (s Calendar) ViewsPerVisit() (capnp.Float64List, error) {
-	p, err := capnp.Struct(s).Ptr(6)
+	p, err := capnp.Struct(s).Ptr(7)
 	return capnp.Float64List(p.List()), err
 }
 
 func (s Calendar) HasViewsPerVisit() bool {
-	return capnp.Struct(s).HasPtr(6)
+	return capnp.Struct(s).HasPtr(7)
 }
 
 func (s Calendar) SetViewsPerVisit(v capnp.Float64List) error {
-	return capnp.Struct(s).SetPtr(6, v.ToPtr())
+	return capnp.Struct(s).SetPtr(7, v.ToPtr())
 }
 
 // NewViewsPerVisit sets the viewsPerVisit field to a newly
@@ -213,7 +236,7 @@ func (s Calendar) NewViewsPerVisit(n int32) (capnp.Float64List, error) {
 	if err != nil {
 		return capnp.Float64List{}, err
 	}
-	err = capnp.Struct(s).SetPtr(6, l.ToPtr())
+	err = capnp.Struct(s).SetPtr(7, l.ToPtr())
 	return l, err
 }
 
@@ -222,7 +245,7 @@ type Calendar_List = capnp.StructList[Calendar]
 
 // NewCalendar creates a new list of Calendar.
 func NewCalendar_List(s *capnp.Segment, sz int32) (Calendar_List, error) {
-	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 7}, sz)
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 8}, sz)
 	return capnp.StructList[Calendar](l), err
 }
 
@@ -234,25 +257,27 @@ func (f Calendar_Future) Struct() (Calendar, error) {
 	return Calendar(p.Struct()), err
 }
 
-const schema_da1eebf4d7c0f83e = "x\xdad\xcc?K\xf3P\x14\xc7\xf1\xdf\xef\xde$}" +
-	"\x1e\xac\x7f.\xcd(V\xc1U\xa1NZD\x85:9" +
-	"\xf5\x1aqp\x8b\xf5\x0e\x01IJ\x92\xb6/C\xdf\x81" +
-	"\xbb\xb3\x8e\xa2\x8b`\x91\x82\x9b .\x82\x9b\x8b\x83B" +
-	"\xb7\xc8\xed\x98n\x87\xcf\xf7\x9c\xb3\xf0\xbc\xe74f\xef" +
-	"\x09\xa1}\xd7+\xc2\xabaK]\xde\x8d\xa1\xaa,v" +
-	"\xc6\x0f\xaf?_Kop+\x15@=^\xabQ\x05" +
-	"h\x0c/\x88\xb5\"\xcb\x93\xd4\xacwBv\xe3n\xb3" +
-	"\x15\x9e\x9b\xf9\xf8,L\xdb\xa4^\x94\x0e\xe0\x10P\xb7" +
-	"\x07\x80\xbe\x91\xd4/\x82\x8a\xf4iq\xb4\x01\xe8'I" +
-	"\xfd)\xa8\x84\xf0)\x00\xf5\xd1\x04\xf4\xbb\xa4\x1e\x0b*" +
-	")}J@\xfdZ\xfc\x96\x0c\xaa\x14T\x8e\xe3\xd3\x01" +
-	"j\xffy\x02\x04\xff(\x19\xacZw]\x9f.P[" +
-	"a\x0a\x04\xcb\xd6\xb7\xad{\x9eO\x0f\xa8mM|\xd3" +
-	"\xfa\x11\x05\x8b~\x94Ey\x92f\x008\x07\xb6%9" +
-	"\x03a\xc7z?2\x83\xac\x84\xbb\xa6o\xe2|J'" +
-	"_\xcaZ\x9c&\xbd\xb8c\x0eC\xc8\xdc\x94\xdb\xe4b" +
-	"\xbf\x97\xa2\x1e\xe6Q\x12Og3\xc8\xda&E\xfd\xd8" +
-	".\x96\xf2_\x00\x00\x00\xff\xff9\xa7R\x01"
+const schema_da1eebf4d7c0f83e = "x\xdad\xcc=O\xdbP\x14\xc6\xf1\xe7\xb9\xd7/\x95" +
+	"\xfa\x16\xcb\xb7R\xa7\xa6C\x97Jm\xa5t\x8c\xfa\x12" +
+	")\x9d:\xc5\x18\x10\xcaf\xc2\x1d,%\xb6e;\xc9" +
+	"W`\xe4\x1b\xb0\xf3\x1d\x10,\x08e@\x82\x09\x89\x85" +
+	"\x15\x04#C\x06$\xa3k\xc4\xe2lG\xbf\xff9\xa7" +
+	"u\xdd\xb3:o\x8f\x08\x11(\xdb\xa9\xa2\xfdE\xdf\xdb" +
+	";\\\xc2{\xc3\xea\xcf\xf2\xf8\xf2\xe1\xee\xd3\x15\xecW" +
+	".\xe0\x9d\x1cxg.\xd0Y\x9c\x12\xdf\xab\xa2Ls" +
+	"\xfdc\x141K\xb2n?\x1a\xeb\xf7\xc9N\x94\x0f\xc8" +
+	"\xe0\xb3\xb4\x00\x8b\x80w1\x04\x82s\xc9\xe0^\xd0#" +
+	"\x15\x0d\xde\xfe\x07\x82\x1b\xc9\xd0\xa2\xa0'\x84\xa2\x00|" +
+	"\xf2'\x10<J\x86\x1f\x0dK\xa9(\x01\xff\x03\xbb@" +
+	"\xd8\xa2d\xf8\xcd\xb8e)Z\x80\xff\xb5\xf6/\xc6{" +
+	"\xc6m[\xd1\x06\xfc\xdf\x1c\x02\xe1/\xe3[\xc6\x1dG" +
+	"\xd1\x01\xfc\x0d\xe6@\xb8n<3\xee\xba\x8a.\xe0O" +
+	"j\x1f\x1b\xdf\xa5`U\xc6\x13]\x94\xd1\x042+\xf8" +
+	"\x0e\x1cH\xd2\x860c5\x8b\x8b\xb8L\xf3\x02\xc0K" +
+	"z\xfd\x9c\xda\xb3X\xcf\x8b\x06\xfe\xd53\x9d\x94+Z" +
+	"\x7fij\xb5\x9dN\x93\x91^\x8b K\xddl\xf5\xc5" +
+	"\xbfi\x8evT\xc6i\xb2\x9a\xf5\xbc\x18\xe8\x1c\xedM" +
+	"\xb3\xd8\xc8O\x01\x00\x00\xff\xff\xc1 XO"
 
 func RegisterSchema(reg *schemas.Registry) {
 	reg.Register(&schemas.Schema{

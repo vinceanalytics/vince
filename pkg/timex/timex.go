@@ -67,7 +67,3 @@ func EndOfYear(ts time.Time) time.Time {
 func DaysInMonth(ts time.Time) int {
 	return EndOfMonth(ts).Day()
 }
-
-func DaysInAYear(ts time.Time) int {
-	return EndOfYear(ts).YearDay()
-}

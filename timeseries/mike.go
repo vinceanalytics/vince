@@ -350,6 +350,11 @@ func readAllMeta(ctx context.Context, txn *badger.Txn, pick Range, id *MetaKey, 
 }
 
 func calToAggregate(pick Range, c *store.Calendar) (o plot.AggregateValues, err error) {
+	ts, err := c.TimestampRange(pick.From, pick.To)
+	if err != nil {
+		return plot.AggregateValues{}, err
+	}
+	o.Timestamps = ts
 	err = errors.Join(
 		readAggregate(pick, c.SeriesVisitors, &o.Visitors),
 		readAggregate(pick, c.SeriesViews, &o.Views),
