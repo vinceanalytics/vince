@@ -82,5 +82,6 @@ export interface Entry {
 
 
 export function register(alert: Alert) {
+    // @ts-ignore
     VINCE.Register(alert.domain, alert);
 }
