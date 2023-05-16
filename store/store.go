@@ -122,11 +122,10 @@ func (c Calendar) SeriesViewsPerVisit(from, to time.Time) ([]float64, error) {
 	return series(ls, from, to), nil
 }
 
-func series(f capnp.Float64List, from, to time.Time) (o []float64) {
+func findRange(f capnp.Float64List, from, to time.Time) (start, end int) {
 	if from.Year() != to.Year() || to.Before(from) {
 		return
 	}
-	var start, end int
 	if from.IsZero() {
 		start = 0
 	} else {
@@ -145,6 +144,11 @@ func series(f capnp.Float64List, from, to time.Time) (o []float64) {
 		// make filter inclusive if possible.
 		end += 1
 	}
+	return
+}
+
+func series(f capnp.Float64List, from, to time.Time) (o []float64) {
+	start, end := findRange(f, from, to)
 	diff := end - start
 	o = make([]float64, diff)
 	for i := 0; i < diff; i += 1 {
