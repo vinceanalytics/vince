@@ -48,7 +48,7 @@ func Compile(dir string) (map[string][]byte, error) {
 		Outbase:       dir,
 		Bundle:        true,
 		AbsWorkingDir: dir,
-		LogLevel:      api.LogLevelInfo,
+		LogLevel:      api.LogLevelSilent,
 	})
 	if len(result.Errors) > 0 {
 		ls := make([]error, len(result.Errors))

@@ -77,3 +77,10 @@ export interface Entry {
     sum: number;
     values: number[];
 }
+
+
+
+
+export function register(alert: Alert) {
+    VINCE.Register(alert.domain, alert);
+}

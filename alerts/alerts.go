@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/dop251/goja"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/pkg/log"
 )
@@ -15,7 +16,7 @@ var vince []byte
 
 type Alerts struct {
 	Path    string
-	Scripts map[string][]byte
+	Scripts map[string]*Script
 }
 
 type alertsKey struct{}
@@ -41,8 +42,26 @@ func Setup(ctx context.Context) context.Context {
 	}
 	a := &Alerts{
 		Path:    path,
-		Scripts: scripts,
+		Scripts: make(map[string]*Script),
 	}
+	for k, v := range scripts {
+		g := goja.New()
+		m := &Script{m: make(map[string][]goja.Value)}
+		m.runtime = g
+		g.Set("VINCE", m)
+		_, err = g.RunString(string(v))
+		if err != nil {
+			log.Get(ctx).Fatal().Err(err).
+				Str("script", k).
+				Msg("failed to evaluate alert script")
+		}
+		if len(m.m) == 0 {
+			// No registration happened
+			continue
+		}
+		a.Scripts[k] = m
+	}
+
 	return context.WithValue(ctx, alertsKey{}, a)
 }
 
