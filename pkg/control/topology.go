@@ -2,7 +2,6 @@ package control
 
 import (
 	"fmt"
-	"runtime/debug"
 
 	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	vince_listers "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
@@ -18,6 +17,7 @@ import (
 )
 
 type Topology struct {
+	defaultImage      string
 	serviceLister     listers.ServiceLister
 	vinceLister       vince_listers.VinceLister
 	siteLister        vince_listers.SiteLister
@@ -186,7 +186,7 @@ func createSecret(o *v1alpha1.Vince) *corev1.Secret {
 	}
 }
 
-func createStatefulSet(o *v1alpha1.Vince) (*corev1.Service, *appsv1.StatefulSet) {
+func createStatefulSet(o *v1alpha1.Vince, defaultImage string) (*corev1.Service, *appsv1.StatefulSet) {
 	volume := o.Spec.Volume
 	if len(volume.AccessModes) == 0 {
 		volume.AccessModes = []corev1.PersistentVolumeAccessMode{
@@ -196,8 +196,7 @@ func createStatefulSet(o *v1alpha1.Vince) (*corev1.Service, *appsv1.StatefulSet)
 	container := o.Spec.Container
 	container.Name = "vince"
 	if container.Image == "" {
-		b, _ := debug.ReadBuildInfo()
-		container.Image = "ghcr.io/vinceanalytics/vince:" + b.Main.Version
+		container.Image = defaultImage
 	}
 	container.VolumeMounts = []corev1.VolumeMount{
 		{
@@ -209,6 +208,10 @@ func createStatefulSet(o *v1alpha1.Vince) (*corev1.Service, *appsv1.StatefulSet)
 		container.VolumeMounts[0].SubPath = o.Spec.VolumeSubPath
 	}
 	container.Env = append(container.Env,
+		corev1.EnvVar{
+			Name:  "VINCE_DATA",
+			Value: "/data",
+		},
 		corev1.EnvVar{
 			Name: secrets.API_KEY_ENV,
 			ValueFrom: &corev1.EnvVarSource{

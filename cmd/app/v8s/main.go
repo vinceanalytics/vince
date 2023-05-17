@@ -34,6 +34,12 @@ func App() *cli.App {
 				Usage:   "Path to a kubeconfig. Only required if out-of-cluster.",
 				EnvVars: []string{"KUBECONFIG"},
 			},
+			&cli.StringFlag{
+				Name:    "default-image",
+				Usage:   "Default image of vince to use",
+				Value:   "ghcr.io/vinceanalytics/vince:v0.0.0",
+				EnvVars: []string{"V8S_DEFAULT_VINCE_IMAGE"},
+			},
 			&cli.IntFlag{
 				Name:    "port",
 				Usage:   "controller api port",
@@ -58,7 +64,9 @@ func run(ctx *cli.Context) error {
 		Msg("Starting controller")
 	xk8 := k8s.New(&xlg, master, kubeconfig)
 	a := &api{}
-	xctr := control.New(&xlg, xk8, control.Options{}, a.Ready)
+	xctr := control.New(&xlg, xk8, control.Options{
+		Image: ctx.String("default-image"),
+	}, a.Ready)
 	base, cancel := context.WithCancel(context.Background())
 	var g errgroup.Group
 	svr := &http.Server{
