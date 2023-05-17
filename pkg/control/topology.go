@@ -12,18 +12,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	stateful_listers "k8s.io/client-go/listers/apps/v1"
 	listers "k8s.io/client-go/listers/core/v1"
 )
 
 type Topology struct {
-	defaultImage      string
-	serviceLister     listers.ServiceLister
-	vinceLister       vince_listers.VinceLister
-	siteLister        vince_listers.SiteLister
-	podLister         listers.PodLister
-	secretsLister     listers.SecretLister
-	statefulSetLister stateful_listers.StatefulSetLister
+	defaultImage  string
+	vinceLister   vince_listers.VinceLister
+	siteLister    vince_listers.SiteLister
+	podLister     listers.PodLister
+	secretsLister listers.SecretLister
 }
 
 func (t *Topology) Build(filter *k8s.ResourceFilter, requeue func(string)) error {
@@ -37,11 +34,10 @@ func (t *Topology) Build(filter *k8s.ResourceFilter, requeue func(string)) error
 
 func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error) {
 	r := &Resources{
-		Services: make(map[string]*corev1.Service),
-		Secrets:  make(map[string]*corev1.Secret),
-		Pods:     make(map[string]*corev1.Pod),
-		Vinces:   make(map[string]*v1alpha1.Vince),
-		Sites:    make(map[string]*v1alpha1.Site),
+		Secrets: make(map[string]*corev1.Secret),
+		Pods:    make(map[string]*corev1.Pod),
+		Vinces:  make(map[string]*v1alpha1.Vince),
+		Sites:   make(map[string]*v1alpha1.Site),
 	}
 
 	// First we load all vince resources. These are root resources, we derive any
@@ -57,10 +53,7 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		r.Vinces[key(o)] = o
 	}
 	base := baseSelector()
-	svc, err := t.serviceLister.List(base)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list services %v", err)
-	}
+
 	secrets, err := t.secretsLister.List(base)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list secrets %v", err)
@@ -74,16 +67,7 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list vinces maps %v", err)
 	}
-	stateful, err := t.statefulSetLister.List(base)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list vinces maps %v", err)
-	}
-	for _, o := range svc {
-		if filter.IsIgnored(o) {
-			continue
-		}
-		r.Services[key(o)] = o
-	}
+
 	for _, o := range secrets {
 		if filter.IsIgnored(o) {
 			continue
@@ -104,22 +88,14 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		}
 		r.Sites[key(o)] = o
 	}
-	for _, o := range stateful {
-		if filter.IsIgnored(o) {
-			continue
-		}
-		r.StatefulSets[key(o)] = o
-	}
 	return r, nil
 }
 
 type Resources struct {
-	Services     map[string]*corev1.Service
-	Secrets      map[string]*corev1.Secret
-	Pods         map[string]*corev1.Pod
-	Vinces       map[string]*v1alpha1.Vince
-	Sites        map[string]*v1alpha1.Site
-	StatefulSets map[string]*appsv1.StatefulSet
+	Secrets map[string]*corev1.Secret
+	Pods    map[string]*corev1.Pod
+	Vinces  map[string]*v1alpha1.Vince
+	Sites   map[string]*v1alpha1.Site
 }
 
 func (r *Resources) Resolve(requeue func(string)) (c ChangeSet) {
