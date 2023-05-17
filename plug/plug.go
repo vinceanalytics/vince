@@ -311,7 +311,7 @@ func RequestID(h http.Handler) http.Handler {
 		}
 		lg := log.Get(r.Context())
 		rg := lg.With().Str("request_id", r.Header.Get("x-request-id")).Logger()
-		r = r.WithContext(log.Set(r.Context(), &rg))
+		r = r.WithContext(rg.WithContext(r.Context()))
 		h.ServeHTTP(w, r)
 	})
 }

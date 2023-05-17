@@ -48,7 +48,7 @@ func Serve(ctx *cli.Context) error {
 
 	xlg := zerolog.New(os.Stderr).Level(zerolog.Level(conf.LogLevel)).With().
 		Timestamp().Str("env", conf.Env.String()).Logger()
-	goCtx = log.Set(goCtx, &xlg)
+	goCtx = xlg.WithContext(goCtx)
 	if _, err = os.Stat(conf.DataPath); err != nil && os.IsNotExist(err) {
 		err = os.MkdirAll(conf.DataPath, 0755)
 		if err != nil {
