@@ -19,6 +19,9 @@ func setupSecrets(c *Config) (ed25519.PrivateKey, *age.X25519Identity, error) {
 		return nil, nil, fmt.Errorf("reading private key  %v", err)
 	}
 	data, _ := pem.Decode(b)
+	if data == nil {
+		return nil, nil, fmt.Errorf("invalid secret key. Make sure you provide a PEM encoded  ed25519 private key")
+	}
 	priv, err := x509.ParsePKCS8PrivateKey(data.Bytes)
 	if err != nil {
 		return nil, nil, err
@@ -30,7 +33,7 @@ func setupSecrets(c *Config) (ed25519.PrivateKey, *age.X25519Identity, error) {
 	}
 	a, err := age.ParseX25519Identity(string(ageFile))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed parsing age key %v", err)
 	}
 	return privateKey, a, nil
 }
@@ -56,7 +59,15 @@ func readSecret(path string) ([]byte, error) {
 			// It is not a file. We Try to decode it as base64
 			b, e := base64.StdEncoding.DecodeString(path)
 			if e != nil {
-				return nil, err
+				// note(gernest)
+				// It was not a file and it was not a base64 encoded text. Return as it is
+				// a raw secret text. This is to handle secrets exposed as env var
+				// in k8s.
+				//
+				// There is further validation through parsing after this step so
+				// it is save to leave the secret parser to decide if it is valid
+				// text or not.
+				return []byte(path), nil
 			}
 			return b, nil
 		}
@@ -66,6 +77,7 @@ func readSecret(path string) ([]byte, error) {
 		// If we can decode as bas64 we do so else we return raw bytes.
 		b, err := base64.StdEncoding.DecodeString(string(f))
 		if err != nil {
+			// see note on similar block above.
 			return f, nil
 		}
 		return b, nil
