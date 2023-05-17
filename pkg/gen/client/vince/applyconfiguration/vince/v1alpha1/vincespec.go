@@ -7,20 +7,14 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // VinceSpecApplyConfiguration represents an declarative configuration of the VinceSpec type for use
 // with apply.
 type VinceSpecApplyConfiguration struct {
-	*VolumeApplyConfiguration    `json:"volume,omitempty"`
-	*ResourcesApplyConfiguration `json:"resources,omitempty"`
-	NodeAffinity                 *v1.NodeAffinity  `json:"nodeAffinity,omitempty"`
-	Tolerations                  []v1.Toleration   `json:"tolerations,omitempty"`
-	InitContainers               []v1.Container    `json:"initContainers,omitempty"`
-	PodAnnotations               map[string]string `json:"podAnnotations,omitempty"`
-	ServiceAnnotations           map[string]string `json:"serviceAnnotations,omitempty"`
-	Env                          []v1.EnvVar       `json:"env,omitempty"`
+	Volume        *v1.PersistentVolumeClaimSpec `json:"volume,omitempty"`
+	VolumeSubPath *string                       `json:"volume_subpath,omitempty"`
+	Container     *v1.Container                 `json:"container,omitempty"`
 }
 
 // VinceSpecApplyConfiguration constructs an declarative configuration of the VinceSpec type for use with
@@ -29,143 +23,26 @@ func VinceSpec() *VinceSpecApplyConfiguration {
 	return &VinceSpecApplyConfiguration{}
 }
 
-// WithSelector sets the Selector field in the declarative configuration to the given value
+// WithVolume sets the Volume field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Selector field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithSelector(value metav1.LabelSelector) *VinceSpecApplyConfiguration {
-	b.ensureVolumeApplyConfigurationExists()
-	b.Selector = &value
+// If called multiple times, the Volume field is set to the value of the last call.
+func (b *VinceSpecApplyConfiguration) WithVolume(value v1.PersistentVolumeClaimSpec) *VinceSpecApplyConfiguration {
+	b.Volume = &value
 	return b
 }
 
-// WithSize sets the Size field in the declarative configuration to the given value
+// WithVolumeSubPath sets the VolumeSubPath field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Size field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithSize(value string) *VinceSpecApplyConfiguration {
-	b.ensureVolumeApplyConfigurationExists()
-	b.Size = &value
+// If called multiple times, the VolumeSubPath field is set to the value of the last call.
+func (b *VinceSpecApplyConfiguration) WithVolumeSubPath(value string) *VinceSpecApplyConfiguration {
+	b.VolumeSubPath = &value
 	return b
 }
 
-// WithStorageClass sets the StorageClass field in the declarative configuration to the given value
+// WithContainer sets the Container field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the StorageClass field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithStorageClass(value string) *VinceSpecApplyConfiguration {
-	b.ensureVolumeApplyConfigurationExists()
-	b.StorageClass = &value
-	return b
-}
-
-// WithSubPath sets the SubPath field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the SubPath field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithSubPath(value string) *VinceSpecApplyConfiguration {
-	b.ensureVolumeApplyConfigurationExists()
-	b.SubPath = &value
-	return b
-}
-
-// WithIops sets the Iops field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Iops field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithIops(value int64) *VinceSpecApplyConfiguration {
-	b.ensureVolumeApplyConfigurationExists()
-	b.Iops = &value
-	return b
-}
-
-// WithThroughput sets the Throughput field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Throughput field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithThroughput(value int64) *VinceSpecApplyConfiguration {
-	b.ensureVolumeApplyConfigurationExists()
-	b.Throughput = &value
-	return b
-}
-
-// WithVolumeType sets the VolumeType field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the VolumeType field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithVolumeType(value string) *VinceSpecApplyConfiguration {
-	b.ensureVolumeApplyConfigurationExists()
-	b.VolumeType = &value
-	return b
-}
-
-func (b *VinceSpecApplyConfiguration) ensureVolumeApplyConfigurationExists() {
-	if b.VolumeApplyConfiguration == nil {
-		b.VolumeApplyConfiguration = &VolumeApplyConfiguration{}
-	}
-}
-
-func (b *VinceSpecApplyConfiguration) ensureResourcesApplyConfigurationExists() {
-	if b.ResourcesApplyConfiguration == nil {
-		b.ResourcesApplyConfiguration = &ResourcesApplyConfiguration{}
-	}
-}
-
-// WithNodeAffinity sets the NodeAffinity field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the NodeAffinity field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithNodeAffinity(value v1.NodeAffinity) *VinceSpecApplyConfiguration {
-	b.NodeAffinity = &value
-	return b
-}
-
-// WithTolerations adds the given value to the Tolerations field in the declarative configuration
-// and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, values provided by each call will be appended to the Tolerations field.
-func (b *VinceSpecApplyConfiguration) WithTolerations(values ...v1.Toleration) *VinceSpecApplyConfiguration {
-	for i := range values {
-		b.Tolerations = append(b.Tolerations, values[i])
-	}
-	return b
-}
-
-// WithInitContainers adds the given value to the InitContainers field in the declarative configuration
-// and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, values provided by each call will be appended to the InitContainers field.
-func (b *VinceSpecApplyConfiguration) WithInitContainers(values ...v1.Container) *VinceSpecApplyConfiguration {
-	for i := range values {
-		b.InitContainers = append(b.InitContainers, values[i])
-	}
-	return b
-}
-
-// WithPodAnnotations puts the entries into the PodAnnotations field in the declarative configuration
-// and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, the entries provided by each call will be put on the PodAnnotations field,
-// overwriting an existing map entries in PodAnnotations field with the same key.
-func (b *VinceSpecApplyConfiguration) WithPodAnnotations(entries map[string]string) *VinceSpecApplyConfiguration {
-	if b.PodAnnotations == nil && len(entries) > 0 {
-		b.PodAnnotations = make(map[string]string, len(entries))
-	}
-	for k, v := range entries {
-		b.PodAnnotations[k] = v
-	}
-	return b
-}
-
-// WithServiceAnnotations puts the entries into the ServiceAnnotations field in the declarative configuration
-// and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, the entries provided by each call will be put on the ServiceAnnotations field,
-// overwriting an existing map entries in ServiceAnnotations field with the same key.
-func (b *VinceSpecApplyConfiguration) WithServiceAnnotations(entries map[string]string) *VinceSpecApplyConfiguration {
-	if b.ServiceAnnotations == nil && len(entries) > 0 {
-		b.ServiceAnnotations = make(map[string]string, len(entries))
-	}
-	for k, v := range entries {
-		b.ServiceAnnotations[k] = v
-	}
-	return b
-}
-
-// WithEnv adds the given value to the Env field in the declarative configuration
-// and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, values provided by each call will be appended to the Env field.
-func (b *VinceSpecApplyConfiguration) WithEnv(values ...v1.EnvVar) *VinceSpecApplyConfiguration {
-	for i := range values {
-		b.Env = append(b.Env, values[i])
-	}
+// If called multiple times, the Container field is set to the value of the last call.
+func (b *VinceSpecApplyConfiguration) WithContainer(value v1.Container) *VinceSpecApplyConfiguration {
+	b.Container = &value
 	return b
 }

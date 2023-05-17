@@ -2,6 +2,7 @@ package control
 
 import (
 	"fmt"
+	"runtime/debug"
 
 	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	vince_listers "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
@@ -183,4 +184,132 @@ func createSecret(o *v1alpha1.Vince) *corev1.Secret {
 			secrets.SECRET_KEY: secrets.ED25519(),
 		},
 	}
+}
+
+func createStatefulSet(o *v1alpha1.Vince) (*corev1.Service, *appsv1.StatefulSet) {
+	volume := o.Spec.Volume
+	if len(volume.AccessModes) == 0 {
+		volume.AccessModes = []corev1.PersistentVolumeAccessMode{
+			corev1.ReadWriteOncePod,
+		}
+	}
+	container := o.Spec.Container
+	container.Name = "vince"
+	if container.Image == "" {
+		b, _ := debug.ReadBuildInfo()
+		container.Image = "ghcr.io/vinceanalytics/vince:" + b.Main.Version
+	}
+	container.VolumeMounts = []corev1.VolumeMount{
+		{
+			Name:      o.Name,
+			MountPath: "/data",
+		},
+	}
+	if o.Spec.VolumeSubPath != "" {
+		container.VolumeMounts[0].SubPath = o.Spec.VolumeSubPath
+	}
+	container.Env = append(container.Env,
+		corev1.EnvVar{
+			Name: secrets.API_KEY_ENV,
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: o.Name,
+					},
+					Key: secrets.API_KEY,
+				},
+			},
+		},
+		corev1.EnvVar{
+			Name: secrets.AGE_KEY_ENV,
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: o.Name,
+					},
+					Key: secrets.AGE_KEY,
+				},
+			},
+		},
+		corev1.EnvVar{
+			Name: secrets.SECRET_KEY_ENV,
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: o.Name,
+					},
+					Key: secrets.SECRET_KEY,
+				},
+			},
+		},
+		corev1.EnvVar{
+			Name:  "VINCE_LISTEN",
+			Value: ":80",
+		},
+		corev1.EnvVar{
+			Name:  "VINCE_LISTEN_TLS",
+			Value: ":443",
+		},
+	)
+	container.Ports = []corev1.ContainerPort{
+		{
+			Name:          "http",
+			ContainerPort: 80,
+		},
+		{
+			Name:          "https",
+			ContainerPort: 443,
+		},
+	}
+
+	return &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      o.Name,
+				Namespace: o.Namespace,
+				Labels:    baseLabels(),
+			},
+			Spec: corev1.ServiceSpec{
+				Selector: baseLabels(),
+				Ports: []corev1.ServicePort{
+					{
+						Name: "http",
+						Port: 80,
+					},
+					{
+						Name: "https",
+						Port: 443,
+					},
+				},
+			},
+		}, &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      o.Name,
+				Namespace: o.Namespace,
+				Labels:    baseLabels(),
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Selector: &metav1.LabelSelector{
+					MatchLabels: baseLabels(),
+				},
+				ServiceName: o.Name,
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: baseLabels(),
+					},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							container,
+						},
+					},
+				},
+				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: o.Name,
+						},
+						Spec: volume,
+					},
+				},
+			},
+		}
 }
