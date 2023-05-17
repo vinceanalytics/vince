@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -34,16 +33,6 @@ type VinceStatus struct {
 	// +kubebuilder:validation:Enum=Created;Resolved
 	//+optional
 	Secret string `json:"secret,omitempty"`
-	//The state of the Service resource exposing the Vince instance.
-	//+optional
-	Service *v1.ServiceStatus `json:"service,omitempty"`
-	// We track the status of the pod linked to this vince resource deployment.
-	// Calls for site management are made directly on this pod.
-	// +optional
-	Pod *v1.PodStatus `json:"pod,omitempty"`
-	// We track the status of the stateful set linked to this vince resource.
-	// +optional
-	StatefulSet *appsv1.StatefulSetStatus `json:"stateful_set,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

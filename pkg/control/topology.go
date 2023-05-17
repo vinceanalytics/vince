@@ -23,13 +23,12 @@ type Topology struct {
 	secretsLister listers.SecretLister
 }
 
-func (t *Topology) Build(filter *k8s.ResourceFilter, requeue func(string)) error {
+func (t *Topology) Build(filter *k8s.ResourceFilter, defaultImage string, requeue func(string)) (ChangeSet, error) {
 	r, err := t.loadResources(filter)
 	if err != nil {
-		return err
+		return ChangeSet{}, err
 	}
-	r.Resolve(requeue)
-	return nil
+	return r.Resolve(defaultImage, requeue), nil
 }
 
 func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error) {
@@ -98,7 +97,7 @@ type Resources struct {
 	Sites   map[string]*v1alpha1.Site
 }
 
-func (r *Resources) Resolve(requeue func(string)) (c ChangeSet) {
+func (r *Resources) Resolve(defaultImage string, requeue func(string)) (c ChangeSet) {
 	for k, v := range r.Vinces {
 		status := v.Status
 		switch v.Status.Secret {
@@ -124,14 +123,15 @@ func (r *Resources) Resolve(requeue func(string)) (c ChangeSet) {
 			// Unknown secret stats
 			continue
 		}
-
+		svc, set := createStatefulSet(v, defaultImage)
+		c.Services = append(c.Services, svc)
+		c.StatefulSets = append(c.StatefulSets, set)
 	}
 	return
 }
 
 type ChangeSet struct {
 	Secrets      []*corev1.Secret
-	Configs      []*corev1.ConfigMap
 	Services     []*corev1.Service
 	VinceStatus  []*v1alpha1.VinceStatus
 	StatefulSets []*appsv1.StatefulSet
