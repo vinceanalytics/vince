@@ -296,7 +296,7 @@ func (in *VinceStatus) DeepCopyInto(out *VinceStatus) {
 	}
 	if in.StatefulSet != nil {
 		in, out := &in.StatefulSet, &out.StatefulSet
-		*out = new(appsv1.StatefulSet)
+		*out = new(appsv1.StatefulSetStatus)
 		(*in).DeepCopyInto(*out)
 	}
 	return

@@ -13,10 +13,10 @@ import (
 // VinceStatusApplyConfiguration represents an declarative configuration of the VinceStatus type for use
 // with apply.
 type VinceStatusApplyConfiguration struct {
-	Secret      *string             `json:"secret,omitempty"`
-	Service     *v1.ServiceStatus   `json:"service,omitempty"`
-	Pod         *v1.PodStatus       `json:"pod,omitempty"`
-	StatefulSet *appsv1.StatefulSet `json:"stateful_set,omitempty"`
+	Secret      *string                   `json:"secret,omitempty"`
+	Service     *v1.ServiceStatus         `json:"service,omitempty"`
+	Pod         *v1.PodStatus             `json:"pod,omitempty"`
+	StatefulSet *appsv1.StatefulSetStatus `json:"stateful_set,omitempty"`
 }
 
 // VinceStatusApplyConfiguration constructs an declarative configuration of the VinceStatus type for use with
@@ -52,7 +52,7 @@ func (b *VinceStatusApplyConfiguration) WithPod(value v1.PodStatus) *VinceStatus
 // WithStatefulSet sets the StatefulSet field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the StatefulSet field is set to the value of the last call.
-func (b *VinceStatusApplyConfiguration) WithStatefulSet(value appsv1.StatefulSet) *VinceStatusApplyConfiguration {
+func (b *VinceStatusApplyConfiguration) WithStatefulSet(value appsv1.StatefulSetStatus) *VinceStatusApplyConfiguration {
 	b.StatefulSet = &value
 	return b
 }

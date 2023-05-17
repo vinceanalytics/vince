@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 )
@@ -28,6 +29,7 @@ type Control struct {
 	filter *k8s.ResourceFilter
 	ready  func()
 	log    *zerolog.Logger
+	top    Topology
 }
 
 func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Control {
@@ -42,6 +44,7 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 		),
 		form: Inform{
 			vince: vince_informers.NewSharedInformerFactory(clients.Vince(), k8s.ResyncPeriod),
+			k8s:   informers.NewSharedInformerFactory(clients.Kube(), k8s.ResyncPeriod),
 		},
 	}
 	x.queue = workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
@@ -53,11 +56,20 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 	x.list.vince = x.form.vince.Staples().V1alpha1().Vinces().Lister()
 	x.form.vince.Staples().V1alpha1().Sites().Informer().AddEventHandler(handler)
 	x.form.vince.Staples().V1alpha1().Vinces().Informer().AddEventHandler(handler)
+	x.top = Topology{
+		serviceLister:     x.form.k8s.Core().V1().Services().Lister(),
+		vinceLister:       x.form.vince.Staples().V1alpha1().Vinces().Lister(),
+		siteLister:        x.form.vince.Staples().V1alpha1().Sites().Lister(),
+		podLister:         x.form.k8s.Core().V1().Pods().Lister(),
+		secretsLister:     x.form.k8s.Core().V1().Secrets().Lister(),
+		statefulSetLister: x.form.k8s.Apps().V1().StatefulSets().Lister(),
+	}
 	return &x
 }
 
 type Inform struct {
 	vince vince_informers.SharedInformerFactory
+	k8s   informers.SharedInformerFactory
 }
 
 type List struct {

@@ -25,12 +25,12 @@ type Topology struct {
 	statefulSetLister stateful_listers.StatefulSetLister
 }
 
-func (t *Topology) Build(filter *k8s.ResourceFilter) error {
+func (t *Topology) Build(filter *k8s.ResourceFilter, requeue func(string)) error {
 	r, err := t.loadResources(filter)
 	if err != nil {
 		return err
 	}
-	r.Resolve()
+	r.Resolve(requeue)
 	return nil
 }
 
@@ -121,7 +121,7 @@ type Resources struct {
 	StatefulSets map[string]*appsv1.StatefulSet
 }
 
-func (r *Resources) Resolve() (c ChangeSet) {
+func (r *Resources) Resolve(requeue func(string)) (c ChangeSet) {
 	for k, v := range r.Vinces {
 		status := v.Status
 		switch v.Status.Secret {
@@ -133,13 +133,21 @@ func (r *Resources) Resolve() (c ChangeSet) {
 		case "Created":
 			if _, ok := r.Secrets[k]; !ok {
 				// Until we see the secret , no further action is done for this
-				// resource
-				// TODO: queue resource ?
-				continue
+				// resource. Reconciliation is sequential., it is safe to ignore
+				// everything until when we can proceed.
+				requeue(k)
+				return
 			}
 			status.Secret = "Resolved"
 			c.VinceStatus = append(c.VinceStatus, &status)
+			continue
+		case "Resolved":
+			// secret was properly resolved we are good to go.
+		default:
+			// Unknown secret stats
+			continue
 		}
+
 	}
 	return
 }
