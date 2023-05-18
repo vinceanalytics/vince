@@ -7,10 +7,11 @@ import (
 
 type Site struct {
 	Model
-	Domain         string    `gorm:"uniqueIndex" json:"domain"`
-	Timezone       string    `gorm:"default:UTC" json:"timezone"`
-	Public         bool      `gorm:"not null;default:false" json:"public"`
-	StatsStartDate time.Time `json:"statsStartDate"`
+	Domain          string    `gorm:"uniqueIndex" json:"domain"`
+	Timezone        string    `gorm:"default:UTC" json:"timezone"`
+	Public          bool      `gorm:"not null;default:false" json:"public"`
+	StatsStartDate  time.Time `json:"statsStartDate"`
+	IngestRateLimit sql.NullFloat64
 
 	Users              []*User              `gorm:"many2many:site_memberships;" json:"-"`
 	SentWeeklyReports  []*SentWeeklyReport  `json:"sentWeeklyReports,omitempty"`
