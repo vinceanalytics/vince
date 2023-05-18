@@ -170,8 +170,8 @@ func AllowSite(ctx context.Context, domain string) (uid, sid uint64, ok bool) {
 	return
 }
 
-// LoginRate limit to 5 login attempts per minute.
-var LoginRate = rate.Limit(5.0 / 60.0)
+// LoginRate limit to 2 login attempts per second.
+var LoginRate = rate.Limit(2.0)
 
 func AllowUseIDToLogin(ctx context.Context, uid uint64) bool {
 	r := User(ctx)
