@@ -295,8 +295,9 @@ func CreateSharedLink(ctx context.Context, sid uint64, name, password string) *S
 			Msg("failed to create id for shared link")
 	}
 	shared := &SharedLink{
-		Name: name,
-		Slug: id,
+		SiteID: sid,
+		Name:   name,
+		Slug:   id,
 	}
 	if password != "" {
 		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -315,8 +316,7 @@ func CreateSharedLink(ctx context.Context, sid uint64, name, password string) *S
 	return shared
 }
 
-func SharedLinkURL(ctx context.Context, site *Site, link *SharedLink) string {
-	base := config.Get(ctx).Url
+func SharedLinkURL(base string, site *Site, link *SharedLink) string {
 	query := make(url.Values)
 	query.Set("auth", link.Slug)
 	return fmt.Sprintf("%s/share/%s?%s", base, url.PathEscape(site.Domain), query.Encode())

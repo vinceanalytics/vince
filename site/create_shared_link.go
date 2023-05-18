@@ -1,11 +1,18 @@
 package site
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/gernest/vince/render"
+	"github.com/gernest/vince/models"
 )
 
 func CreateSharedLink(w http.ResponseWriter, r *http.Request) {
-	render.ERROR(r.Context(), w, http.StatusNotImplemented)
+	ctx := r.Context()
+	site := models.GetSite(ctx)
+	name := r.Form.Get("name")
+	password := r.Form.Get("password")
+	models.CreateSharedLink(ctx, site.ID, name, password)
+	to := fmt.Sprintf("/%s/settings#visibility", models.SafeDomain(site))
+	http.Redirect(w, r, to, http.StatusFound)
 }

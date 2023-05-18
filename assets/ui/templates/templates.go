@@ -137,6 +137,12 @@ var InviteMemberForm = template.Must(
 	),
 ).Lookup("focus")
 
+var SharedLinkForm = template.Must(
+	layout().ParseFS(Files,
+		"site/new_shared_link.html",
+	),
+).Lookup("focus")
+
 type NewSite struct {
 	IsFirstSite bool
 }
@@ -242,6 +248,10 @@ func (t *Context) Snippet() string {
 	track := fmt.Sprintf("%s/js/vince.js", t.Config.Url)
 	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", models.SafeDomain(t.Site), track)
 	return src
+}
+
+func (t *Context) SharedLinkURL(site *models.Site, link *models.SharedLink) string {
+	return models.SharedLinkURL(t.Config.Url, site, link)
 }
 
 func Avatar(uid uint64, size uint, class ...string) template.HTML {

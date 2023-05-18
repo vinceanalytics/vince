@@ -72,3 +72,12 @@
     border-width: 3px !important;
     border-color: #ffe0d8 !important;
 }
+
+.snippet pre {
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: var(--color-canvas-subtle);
+    border-radius: 6px
+}

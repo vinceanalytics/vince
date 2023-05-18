@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
 )
@@ -42,11 +43,11 @@ func FindOrCreateSharedLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	shared := models.GetSharedLink(ctx, site.ID, g.Name)
-	if shared != nil {
+	if shared == nil {
 		shared = models.CreateSharedLink(ctx, shared.ID, g.Name, g.Password)
 	}
 	render.JSON(w, http.StatusOK, map[string]any{
 		"name": shared.Name,
-		"url":  models.SharedLinkURL(ctx, site, shared),
+		"url":  models.SharedLinkURL(config.Get(ctx).Url, site, shared),
 	})
 }
