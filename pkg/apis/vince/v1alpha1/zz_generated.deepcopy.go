@@ -127,7 +127,11 @@ func (in *Vince) DeepCopyInto(out *Vince) {
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 	in.Spec.DeepCopyInto(&out.Spec)
-	out.Status = in.Status
+	if in.Status != nil {
+		in, out := &in.Status, &out.Status
+		*out = new(VinceStatus)
+		**out = **in
+	}
 	return
 }
 

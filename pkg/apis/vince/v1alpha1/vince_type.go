@@ -17,7 +17,7 @@ type Vince struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              VinceSpec `json:"spec"`
 	// +optional
-	Status VinceStatus `json:"status,omitempty"`
+	Status *VinceStatus `json:"status,omitempty"`
 }
 
 type VinceSpec struct {

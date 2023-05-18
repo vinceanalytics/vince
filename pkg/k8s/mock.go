@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
 	fake_vince_client "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/fake"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes"
 	fake_kube_client "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -20,16 +22,16 @@ type Mock struct {
 	vince *fake_vince_client.Clientset
 }
 
-func NewMock(path string) *Mock {
+func NewMock(path string) (*Mock, error) {
 	yamlContent, err := os.ReadFile(filepath.FromSlash("./testdata/" + path))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	k0, so := mustParseYaml(yamlContent)
 	return &Mock{
 		k8s:   fake_kube_client.NewSimpleClientset(k0...),
 		vince: fake_vince_client.NewSimpleClientset(so...),
-	}
+	}, nil
 }
 
 func init() {
@@ -61,7 +63,7 @@ func mustParseYaml(content []byte) (core, site []runtime.Object) {
 			panic(fmt.Sprintf("Error while decoding YAML object. Err was: %s", err))
 		}
 		switch groupVersionKind.Kind {
-		case "Site":
+		case "Site", "Vince":
 			site = append(site, obj)
 		case "Deployment", "Endpoints", "Service", "Ingress", "Secret", "Namespace", "Pod", "ConfigMap":
 			core = append(core, obj)
@@ -70,4 +72,16 @@ func mustParseYaml(content []byte) (core, site []runtime.Object) {
 		}
 	}
 	return
+}
+
+var serializer = json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+
+func Encode(w io.Writer, objects ...runtime.Object) error {
+	for _, o := range objects {
+		err := serializer.Encode(o, w)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

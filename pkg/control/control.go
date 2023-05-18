@@ -58,7 +58,6 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 	x.form.vince.Staples().V1alpha1().Sites().Informer().AddEventHandler(handler)
 	x.form.vince.Staples().V1alpha1().Vinces().Informer().AddEventHandler(handler)
 	x.top = Topology{
-		defaultImage:  o.Image,
 		vinceLister:   x.form.vince.Staples().V1alpha1().Vinces().Lister(),
 		siteLister:    x.form.vince.Staples().V1alpha1().Sites().Lister(),
 		podLister:     x.form.k8s.Core().V1().Pods().Lister(),

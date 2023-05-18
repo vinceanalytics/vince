@@ -16,7 +16,6 @@ import (
 )
 
 type Topology struct {
-	defaultImage  string
 	vinceLister   vince_listers.VinceLister
 	siteLister    vince_listers.SiteLister
 	podLister     listers.PodLister
@@ -99,30 +98,19 @@ type Resources struct {
 
 func (r *Resources) Resolve(defaultImage string, requeue func(string)) (c ChangeSet) {
 	for k, v := range r.Vinces {
-		status := v.Status
-		switch v.Status.Secret {
-		case "":
-			c.Secrets = append(c.Secrets, createSecret(v))
-			status.Secret = "Created"
-			c.VinceStatus = append(c.VinceStatus, &status)
-			continue
-		case "Created":
-			if _, ok := r.Secrets[k]; !ok {
-				// Until we see the secret , no further action is done for this
-				// resource. Reconciliation is sequential., it is safe to ignore
-				// everything until when we can proceed.
-				requeue(k)
-				return
+		_, ok := r.Secrets[k]
+		if !ok {
+			if v.Status == nil {
+				c.Secrets = append(c.Secrets, createSecret(v))
+				c.VinceStatus = append(c.VinceStatus, &v1alpha1.VinceStatus{
+					Secret: "Created",
+				})
 			}
-			status.Secret = "Resolved"
-			c.VinceStatus = append(c.VinceStatus, &status)
-			continue
-		case "Resolved":
-			// secret was properly resolved we are good to go.
-		default:
-			// Unknown secret stats
 			continue
 		}
+		c.VinceStatus = append(c.VinceStatus, &v1alpha1.VinceStatus{
+			Secret: "Resolved",
+		})
 		svc, set := createStatefulSet(v, defaultImage)
 		c.Services = append(c.Services, svc)
 		c.StatefulSets = append(c.StatefulSets, set)
