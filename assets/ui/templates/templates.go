@@ -238,10 +238,6 @@ func Logo(width, height int) template.HTML {
 	))
 }
 
-func (Context) Slogan() string {
-	return "Self hosted, single file ,privacy friendly web analytics platform"
-}
-
 func (t *Context) Snippet() string {
 	track := fmt.Sprintf("%s/js/vince.js", t.Config.Url)
 	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", models.SafeDomain(t.Site), track)
