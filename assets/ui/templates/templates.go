@@ -243,7 +243,7 @@ func (Context) Slogan() string {
 }
 
 func (t *Context) Snippet() string {
-	track := fmt.Sprintf("https://%s/js/vince.js", t.Config.Url)
+	track := fmt.Sprintf("%s/js/vince.js", t.Config.Url)
 	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", models.SafeDomain(t.Site), track)
 	return src
 }

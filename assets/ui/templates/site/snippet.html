@@ -1,30 +1,22 @@
 {{define "_content"}}
-<div class="container-md  Box text-center">
-    <div class=" Box-header">
-        Add JavaScript snippet
-    </div>
-    <div class=" Box-body">
-        <h3>
+<div class="container-md">
+    <div class="Subhead text-center settingsDivider mt-3">
+        <h2 class="Subhead-heading">Add Javascript Snippet</h2>
+        <div class="Subhead-description">
             Paste this snippet in the <code>&lt;head&gt;</code> of your website.
-        </h3>
-        <div class="position-relative">
+        </div>
+    </div>
+    <div class="Box">
+        <div class="Box-body">
             <div class="markdown-body">
                 <pre id="snippet_code">
                 {{- .Snippet -}}
                 </pre>
             </div>
-            <span class="position-absolute top-0 right-0" style="cursor: pointer;">
-                <clipboard-copy for="snippet_code" aria-label="Copy snippet to clipboard" data-view-component="true"
-                    tabindex="0" role="button">
-                    {{Icon "copy" 16 }}
-                    {{Icon "check" 16 "hide"}}
-                </clipboard-copy>
-            </span>
+            <a href="/{{SafeDomain .Site}}/stats" class="btn btn-primary btn-block my-2">
+                Start collecting data →
+            </a>
         </div>
-
-        <a href="/{{SafeDomain .Site}}/stats" class="btn btn-primary btn-block">
-            Start collecting data →
-        </a>
     </div>
 </div>
 {{end}}

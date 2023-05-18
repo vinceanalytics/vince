@@ -80,6 +80,7 @@ func Flags() []cli.Flag {
 			Category: "core",
 			Name:     "url",
 			Usage:    "url for the server on which vince is hosted(it shows up on emails)",
+			Value:    "http://localhost:8080",
 			EnvVars:  []string{"VINCE_URL"},
 		},
 		&cli.BoolFlag{
