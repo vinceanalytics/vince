@@ -2,8 +2,11 @@ apiVersion: v2
 name: v8s
 description: The Cloud Native Web Analytics Platform.
 type: application
-version: 0.1.0
-appVersion: 0.1.0
+# This chart is developed as part of vince repository. This means it follows the
+# same release as vince, as a result version and appVersion will always be the
+# same. All will reference the git tag.
+version: "v0.0.0"
+appVersion: "v0.0.0"
 keywords:
   - vince
   - v8s

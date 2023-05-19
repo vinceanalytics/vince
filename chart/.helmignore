@@ -23,4 +23,4 @@
 .vscode/
 gen/
 *.go
-repo
+*.tgz

@@ -1,22 +1,17 @@
 package main
 
 import (
+	"flag"
 	"os"
 
 	"github.com/gernest/vince/tools"
 )
 
 func main() {
+	flag.Parse()
 	os.RemoveAll("repo")
 	os.MkdirAll("repo", 0755)
-	version := os.Getenv("VERSION")
-	if version != "" {
-		tools.ExecPlain(
-			"helm", "package", ".", "-d", "repo", "--app-version", version,
-		)
-	} else {
-		tools.ExecPlain(
-			"helm", "package", ".", "-d", "repo",
-		)
-	}
+	tools.ExecPlain(
+		"helm", "package", ".",
+	)
 }
