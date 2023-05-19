@@ -8,10 +8,12 @@
         <h2 class="Subhead-heading">Personal API Tokens</h2>
     </div>
     <div class="Box" id="api-keys">
-        <div class="Box-body">
+        <div class="Box-row">
             <form action="/settings/api-keys" method="post">
                 <div class="FormControl width-full">
-                    <input class="FormControl-input" type="text" name="key" id="key" value="{{.Key}}" readonly>
+                    <div class="snippet">
+                        <pre><code>{{.Key}}</code></pre>
+                    </div>
                     <span class="FormControl-caption">
                         Copy this and store it. It will never be shown again
                     </span>
@@ -24,32 +26,30 @@
                 </div>
             </form>
         </div>
-        <ul>
-            {{$ctx := .}}
-            {{range .CurrentUser.APIKeys}}
-            <li class="Box-row">
-                <div class="f4 d-flex width-full flex-items-baseline flex-justify-between ">
-                    <div>
-                        <span class="text-bold mr-3">
-                            {{.Name}}
-                        </span>
-                        <span class="Label">
-                            {{.KeyPrefix}}
-                        </span>
-                    </div>
-                    <div>
-                        <send-form>
-                            <button type="button" class=" btn btn-danger" data-to="/settings/api-keys/{{.ID}}/delete"
-                                data-method="post" data-action="click:send-form#send" data-csrf="{{$ctx.CSRF}}"
-                                data-target="send-form.link">
-                                Remove
-                            </button>
-                        </send-form>
-                    </div>
+        {{$ctx := .}}
+        {{range .CurrentUser.APIKeys}}
+        <div class="Box-row">
+            <div class="f4 d-flex width-full flex-items-baseline flex-justify-between ">
+                <div>
+                    <span class="text-bold mr-3">
+                        {{.Name}}
+                    </span>
+                    <span class="Label">
+                        {{.KeyPrefix}}
+                    </span>
                 </div>
-            </li>
-            {{end}}
-        </ul>
+                <div>
+                    <send-form>
+                        <button type="button" class=" btn btn-danger" data-to="/settings/api-keys/{{.ID}}/delete"
+                            data-method="post" data-action="click:send-form#send" data-csrf="{{$ctx.CSRF}}"
+                            data-target="send-form.link">
+                            Remove
+                        </button>
+                    </send-form>
+                </div>
+            </div>
+        </div>
+        {{end}}
     </div>
 </div>
 {{end}}
