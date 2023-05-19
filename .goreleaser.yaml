@@ -335,6 +335,16 @@ nfpms:
       lintian_overrides:
         - statically-linked-binary
         - changelog-file-missing-in-native-package
+
+release:
+  mode: keep-existing
+  github:
+    owner: vinceanalytics
+    name: vince
+  disable: true
+  skip_upload: true
+  extra_files:
+    - glob: ./chart/*.tgz
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json

@@ -1,16 +1,25 @@
 package main
 
 import (
-	"flag"
 	"os"
+	"path/filepath"
 
 	"github.com/gernest/vince/tools"
 )
 
 func main() {
-	flag.Parse()
-	os.RemoveAll("repo")
-	os.MkdirAll("repo", 0755)
+	dir, err := os.ReadDir(".")
+	if err != nil {
+		tools.Exit(err.Error())
+	}
+	for _, f := range dir {
+		if f.IsDir() {
+			continue
+		}
+		if filepath.Ext(f.Name()) == ".tgz" {
+			tools.Remove(f.Name())
+		}
+	}
 	tools.ExecPlain(
 		"helm", "package", ".",
 	)
