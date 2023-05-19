@@ -1,11 +1,12 @@
 apiVersion: v2
-name: vince
+name: v8s
 description: The Cloud Native Web Analytics Platform.
 type: application
 version: 0.1.0
 appVersion: 0.1.0
 keywords:
   - vince
+  - v8s
   - web analytics
 sources:
   - https://github.com/vinceanalytics/vince
