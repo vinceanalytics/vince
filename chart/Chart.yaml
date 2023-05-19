@@ -1,6 +1,6 @@
 apiVersion: v2
 name: v8s
-description: The Cloud Native Web Analytics Platform.
+description: kubernetes controller for vince - The Cloud Native Web Analytics Platform.
 type: application
 # This chart is developed as part of vince repository. This means it follows the
 # same release as vince, as a result version and appVersion will always be the
