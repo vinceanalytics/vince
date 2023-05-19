@@ -335,6 +335,26 @@ func GetSharedLink(ctx context.Context, sid uint64, name string) *SharedLink {
 	return &shared
 }
 
+func GetSharedLinkWithSlug(ctx context.Context, sid uint64, slug string) *SharedLink {
+	var shared SharedLink
+	err := Get(ctx).Model(&SharedLink{}).
+		Where("site_id = ?", sid).
+		Where("slug = ?", slug).
+		First(&shared).Error
+	if err != nil {
+		LOG(ctx, err, "failed to find shared link")
+		return nil
+	}
+	return &shared
+}
+
+func DeleteSharedLink(ctx context.Context, shared *SharedLink) {
+	err := Get(ctx).Delete(shared).Error
+	if err != nil {
+		LOG(ctx, err, "failed to delete shared link")
+	}
+}
+
 type SentRenewalNotification = schema.SentRenewalNotification
 
 type WeeklyReport = schema.WeeklyReport
