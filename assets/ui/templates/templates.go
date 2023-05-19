@@ -143,6 +143,12 @@ var SharedLinkForm = template.Must(
 	),
 ).Lookup("focus")
 
+var EditSharedLinkForm = template.Must(
+	layout().ParseFS(Files,
+		"site/edit_shared_link.html",
+	),
+).Lookup("focus")
+
 type NewSite struct {
 	IsFirstSite bool
 }
@@ -177,10 +183,10 @@ type Context struct {
 	EmailReport   bool
 	HasGoals      bool
 	Owner         *models.User
-	// Name of the email recipient
-	Recipient string
-	Key       string
-	Stats     *plot.Data
+	Recipient     string
+	Key           string
+	Stats         *plot.Data
+	SharedLink    *models.SharedLink
 }
 
 func (t *Context) GreetRecipient() string {

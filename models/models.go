@@ -316,6 +316,25 @@ func CreateSharedLink(ctx context.Context, sid uint64, name, password string) *S
 	return shared
 }
 
+func UpdateSharedLink(ctx context.Context, shared *SharedLink, name, password string) {
+	if password != "" {
+		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			log.Get(ctx).Fatal().Err(err).
+				Msg("failed to create id for hash shared password")
+		}
+		shared.PasswordHash = string(b)
+	}
+	if name != "" {
+		shared.Name = name
+	}
+	err := Get(ctx).Save(shared).Error
+	if err != nil {
+		log.Get(ctx).Err(err).
+			Msg("failed to create shared link")
+	}
+}
+
 func SharedLinkURL(base string, site *Site, link *SharedLink) string {
 	query := make(url.Values)
 	query.Set("auth", link.Slug)

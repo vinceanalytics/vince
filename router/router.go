@@ -100,7 +100,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			sitePipe.GET(`^/sites/:website/shared-links/new$`, site.NewSharedLink),
 			sitePipe.POST(`^/sites/:website/shared-links$`, site.CreateSharedLink),
 			sitePipe.GET(`^/sites/:website/shared-links/:slug/edit$`, site.EditSharedLink),
-			sitePipe.PUT(`^/sites/:website/shared-links/:slug$`, site.UpdateSharedLink),
+			sitePipe.POST(`^/sites/:website/shared-links/:slug/update$`, site.UpdateSharedLink),
 			sitePipe.POST(`^/sites/:website/shared-links/:slug/delete$`, site.DeleteSharedLink),
 			sitePipe.GET(`^/sites/:website/memberships/invite$`, site.InviteMemberForm),
 			sitePipe.POST(`^/sites/:website/memberships/invite$`, site.InviteMember),

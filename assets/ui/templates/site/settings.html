@@ -138,7 +138,7 @@
                     <div class="BtnGroup">
                         <send-form>
                             <button type="button" class="BtnGroup-item btn"
-                                data-to="/sites/{{SafeDomain $site}}/shared-links/{{.Slug}}/delete" data-method="post"
+                                data-to="/sites/{{SafeDomain $site}}/shared-links/{{.Slug}}/edit" data-method="get"
                                 data-action="click:send-form#send" data-csrf="{{$ctx.CSRF}}"
                                 data-target="send-form.link">
                                 {{Icon "pencil" 16}}
