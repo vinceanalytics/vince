@@ -157,6 +157,40 @@ func (r *Resources) Resolve(ctx context.Context, defaultImage string, clients k8
 			}
 		}
 	}
+
+	for k, v := range r.StatefulSet {
+		if !v.DeletionTimestamp.IsZero() {
+			continue
+		}
+		_, ok := r.Vinces[k]
+		if !ok {
+			xapps.StatefulSets(v.Namespace).Delete(
+				ctx, v.Name, metav1.DeleteOptions{},
+			)
+		}
+	}
+	for k, v := range r.Service {
+		if !v.DeletionTimestamp.IsZero() {
+			continue
+		}
+		_, ok := r.Vinces[k]
+		if !ok {
+			xcore.Services(v.Namespace).Delete(
+				ctx, v.Name, metav1.DeleteOptions{},
+			)
+		}
+	}
+	for k, v := range r.Secrets {
+		if !v.DeletionTimestamp.IsZero() {
+			continue
+		}
+		_, ok := r.Vinces[k]
+		if !ok {
+			xcore.Secrets(v.Namespace).Delete(
+				ctx, v.Name, metav1.DeleteOptions{},
+			)
+		}
+	}
 	return nil
 }
 
