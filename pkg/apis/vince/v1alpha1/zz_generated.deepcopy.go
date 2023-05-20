@@ -232,7 +232,7 @@ func (in *VinceStatus) DeepCopyInto(out *VinceStatus) {
 	*out = *in
 	if in.Sites != nil {
 		in, out := &in.Sites, &out.Sites
-		*out = make([]Target, len(*in))
+		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
 	return

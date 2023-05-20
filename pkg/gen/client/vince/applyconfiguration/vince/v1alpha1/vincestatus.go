@@ -8,7 +8,7 @@ package v1alpha1
 // VinceStatusApplyConfiguration represents an declarative configuration of the VinceStatus type for use
 // with apply.
 type VinceStatusApplyConfiguration struct {
-	Sites []TargetApplyConfiguration `json:"sites,omitempty"`
+	Sites []string `json:"sites,omitempty"`
 }
 
 // VinceStatusApplyConfiguration constructs an declarative configuration of the VinceStatus type for use with
@@ -20,12 +20,9 @@ func VinceStatus() *VinceStatusApplyConfiguration {
 // WithSites adds the given value to the Sites field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Sites field.
-func (b *VinceStatusApplyConfiguration) WithSites(values ...*TargetApplyConfiguration) *VinceStatusApplyConfiguration {
+func (b *VinceStatusApplyConfiguration) WithSites(values ...string) *VinceStatusApplyConfiguration {
 	for i := range values {
-		if values[i] == nil {
-			panic("nil value passed to WithSites")
-		}
-		b.Sites = append(b.Sites, *values[i])
+		b.Sites = append(b.Sites, values[i])
 	}
 	return b
 }

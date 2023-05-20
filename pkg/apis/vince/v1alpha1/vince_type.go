@@ -46,7 +46,7 @@ type Container struct {
 type VinceStatus struct {
 	// A list of sites attached to this Vince instance.
 	//+optional
-	Sites []Target `json:"sites,omitempty"`
+	Sites []string `json:"sites,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

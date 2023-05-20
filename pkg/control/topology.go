@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sort"
 
 	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	vince_listers "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
@@ -124,40 +125,114 @@ type Resources struct {
 func (r *Resources) Resolve(ctx context.Context, defaultImage string, clients k8s.Client) error {
 	xcore := clients.Kube().CoreV1()
 	xapps := clients.Kube().AppsV1()
+	xstaple := clients.Vince().StaplesV1alpha1()
 	for k, v := range r.Vinces {
 		{
 			_, ok := r.Secrets[k]
 			if !ok {
-				xcore.Secrets(v.Namespace).Create(
+				_, err := xcore.Secrets(v.Namespace).Create(
 					ctx,
 					createSecret(v),
 					metav1.CreateOptions{},
 				)
+				if err != nil {
+					return err
+				}
 			}
-			// Once created secret for Vince instance is never updated.
+			// Once created, secret for Vince instance is never updated.
 		}
 		svc, set := createStatefulSet(v, defaultImage)
 		{
 			o, ok := r.Service[k]
 			if !ok {
-				xcore.Services(v.Namespace).Create(
+				_, err := xcore.Services(v.Namespace).Create(
 					ctx, svc, metav1.CreateOptions{},
 				)
+				if err != nil {
+					return err
+				}
 			} else {
 				if !reflect.DeepEqual(o.Spec, svc.Spec) {
-					xcore.Services(v.Namespace).Update(ctx, svc, metav1.UpdateOptions{})
+					_, err := xcore.Services(v.Namespace).Update(ctx, svc, metav1.UpdateOptions{})
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
 		{
 			o, ok := r.StatefulSet[k]
 			if !ok {
-				xapps.StatefulSets(v.Namespace).Create(
+				_, err := xapps.StatefulSets(v.Namespace).Create(
 					ctx, set, metav1.CreateOptions{},
 				)
+				if err != nil {
+					return err
+				}
 			} else {
 				if !reflect.DeepEqual(o.Spec, svc.Spec) {
-					xapps.StatefulSets(v.Namespace).Update(ctx, set, metav1.UpdateOptions{})
+					_, err := xapps.StatefulSets(v.Namespace).Update(ctx, set, metav1.UpdateOptions{})
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+		// resolve sites
+		{
+			_, ok := r.StatefulSet[k]
+			if !ok {
+				// Resources for Vince haven't't been created  yet.
+				continue
+			}
+			sites := r.Sites[k]
+			if len(sites) > 0 {
+				secret := r.Secrets[k]
+				attached := make(map[string]struct{})
+				for _, x := range v.Status.Sites {
+					attached[x] = struct{}{}
+				}
+				listed := make(map[string]struct{})
+				for _, x := range sites {
+					listed[x.Spec.Domain] = struct{}{}
+					if _, ok := attached[x.Spec.Domain]; ok {
+						// This site has already been created.
+						continue
+					}
+					err := clients.Site().Create(ctx, secret, x.Spec.Domain)
+					if err != nil {
+						return err
+					}
+				}
+				for x := range attached {
+					if _, ok := listed[x]; !ok {
+						err := clients.Site().Delete(ctx, secret, x)
+						if err != nil {
+							return err
+						}
+					}
+				}
+				statusChanged := len(attached) != len(listed)
+				if !statusChanged && len(listed) > 0 {
+					// len(listed) == len(attached) . Make sure all elements are
+					// equal as well.
+					for x := range listed {
+						if _, ok := attached[x]; !ok {
+							statusChanged = true
+							break
+						}
+					}
+				}
+				if statusChanged {
+					v.Status.Sites = make([]string, 0, len(listed))
+					for x := range listed {
+						v.Status.Sites = append(v.Status.Sites, x)
+					}
+					sort.Strings(v.Status.Sites)
+					_, err := xstaple.Vinces(v.Namespace).UpdateStatus(ctx, v, metav1.UpdateOptions{})
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -180,9 +255,12 @@ func (r *Resources) Resolve(ctx context.Context, defaultImage string, clients k8
 		}
 		_, ok := r.Vinces[k]
 		if !ok {
-			xcore.Services(v.Namespace).Delete(
+			err := xcore.Services(v.Namespace).Delete(
 				ctx, v.Name, metav1.DeleteOptions{},
 			)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	for k, v := range r.Secrets {
@@ -191,19 +269,15 @@ func (r *Resources) Resolve(ctx context.Context, defaultImage string, clients k8
 		}
 		_, ok := r.Vinces[k]
 		if !ok {
-			xcore.Secrets(v.Namespace).Delete(
+			err := xcore.Secrets(v.Namespace).Delete(
 				ctx, v.Name, metav1.DeleteOptions{},
 			)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
-}
-
-type ChangeSet struct {
-	Secrets      []*corev1.Secret
-	Services     []*corev1.Service
-	VinceStatus  []*v1alpha1.VinceStatus
-	StatefulSets []*appsv1.StatefulSet
 }
 
 func key(o metav1.Object) string {

@@ -12,7 +12,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	"github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
 	"github.com/gernest/vince/pkg/secrets"
 	"github.com/rs/zerolog"
@@ -31,8 +30,8 @@ type Client interface {
 }
 
 type SiteAPI interface {
-	Create(context.Context, *v1.Secret, *v1alpha1.Site) error
-	Delete(context.Context, *v1.Secret, *v1alpha1.Site) error
+	Create(ctx context.Context, secret *v1.Secret, domain string) error
+	Delete(ctx context.Context, secret *v1.Secret, domain string) error
 }
 
 func New(log *zerolog.Logger, masterURL, kubeConfig string) Client {
@@ -107,8 +106,8 @@ var httpClient = &http.Client{}
 
 type siteAPI struct{}
 
-func (siteAPI) request(secret *v1.Secret, site *v1alpha1.Site, method, path string, body io.Reader) (*http.Request, error) {
-	uri := fmt.Sprintf("http://%s.%s.svc.cluster.local:80/api/v1/sites%s", site.Spec.Target.Name, site.Spec.Target.Namespace, path)
+func (siteAPI) request(secret *v1.Secret, method, path string, body io.Reader) (*http.Request, error) {
+	uri := fmt.Sprintf("http://%s.%s.svc.cluster.local:80/api/v1/sites%s", secret.Name, secret.Namespace, path)
 	r, err := http.NewRequest(method, uri, body)
 	if err != nil {
 		return nil, err
@@ -118,20 +117,20 @@ func (siteAPI) request(secret *v1.Secret, site *v1alpha1.Site, method, path stri
 	return r, nil
 }
 
-func (siteAPI) Create(ctx context.Context, secret *v1.Secret, site *v1alpha1.Site) error {
-	domain, _ := json.Marshal(map[string]any{
-		"domain": site.Spec.Domain,
+func (siteAPI) Create(ctx context.Context, secret *v1.Secret, domain string) error {
+	b, _ := json.Marshal(map[string]any{
+		"domain": domain,
 	})
-	r, err := siteAPI{}.request(secret, site, http.MethodPost, "", bytes.NewReader(domain))
+	r, err := siteAPI{}.request(secret, http.MethodPost, "", bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
 	return siteAPI{}.do(r)
 }
 
-func (siteAPI) Delete(ctx context.Context, secret *v1.Secret, site *v1alpha1.Site) error {
-	domain := url.PathEscape(site.Spec.Domain)
-	r, err := siteAPI{}.request(secret, site, http.MethodDelete, "/"+domain, nil)
+func (siteAPI) Delete(ctx context.Context, secret *v1.Secret, domain string) error {
+	domain = url.PathEscape(domain)
+	r, err := siteAPI{}.request(secret, http.MethodDelete, "/"+domain, nil)
 	if err != nil {
 		return err
 	}
