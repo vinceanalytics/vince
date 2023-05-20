@@ -22,6 +22,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &vincev1alpha1.SiteSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("SiteStatus"):
 		return &vincev1alpha1.SiteStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Target"):
+		return &vincev1alpha1.TargetApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Vince"):
 		return &vincev1alpha1.VinceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("VinceSpec"):

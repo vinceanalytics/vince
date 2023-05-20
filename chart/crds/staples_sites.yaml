@@ -39,7 +39,18 @@ spec:
               public:
                 type: boolean
               target:
-                type: string
+                description: Target is a reference to Vince crd resource that this
+                  site is attached to. We avoid using selectors because there will
+                  always be 1:1 mapping between the sites and vince instance.
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
             required:
             - domain
             - public

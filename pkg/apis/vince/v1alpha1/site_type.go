@@ -24,15 +24,14 @@ type Site struct {
 type SiteSpec struct {
 	Domain string `json:"domain"`
 	Public bool   `json:"public"`
-	Target string `json:"target"`
+	Target Target `json:"target"`
 }
 
 // Target is a reference to Vince crd resource that this site is attached to. We avoid
 // using selectors because there will always be 1:1 mapping between the sites and
 // vince instance.
 type Target struct {
-	//+optional
-	Namespace string `json:"namespace,omitempty"`
+	Namespace string `json:"namespace"`
 	Name      string `json:"name"`
 }
 

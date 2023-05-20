@@ -40,7 +40,7 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		Secrets:     make(map[string]*corev1.Secret),
 		Service:     make(map[string]*corev1.Service),
 		Vinces:      make(map[string]*v1alpha1.Vince),
-		Sites:       make(map[string]*v1alpha1.Site),
+		Sites:       make(map[string][]*v1alpha1.Site),
 		StatefulSet: make(map[string]*appsv1.StatefulSet),
 	}
 
@@ -103,7 +103,11 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		if filter.IsIgnored(o) {
 			continue
 		}
-		r.Sites[key(o)] = o
+		k := types.NamespacedName{
+			Namespace: o.Spec.Target.Namespace,
+			Name:      o.Spec.Target.Name,
+		}.String()
+		r.Sites[k] = append(r.Sites[k], o)
 	}
 	return r, nil
 }
@@ -113,7 +117,7 @@ type Resources struct {
 	Service     map[string]*corev1.Service
 	StatefulSet map[string]*appsv1.StatefulSet
 	Vinces      map[string]*v1alpha1.Vince
-	Sites       map[string]*v1alpha1.Site
+	Sites       map[string][]*v1alpha1.Site
 }
 
 func (r *Resources) Resolve(ctx context.Context, defaultImage string, clients k8s.Client) error {

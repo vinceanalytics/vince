@@ -8,9 +8,9 @@ package v1alpha1
 // SiteSpecApplyConfiguration represents an declarative configuration of the SiteSpec type for use
 // with apply.
 type SiteSpecApplyConfiguration struct {
-	Domain *string `json:"domain,omitempty"`
-	Public *bool   `json:"public,omitempty"`
-	Target *string `json:"target,omitempty"`
+	Domain *string                   `json:"domain,omitempty"`
+	Public *bool                     `json:"public,omitempty"`
+	Target *TargetApplyConfiguration `json:"target,omitempty"`
 }
 
 // SiteSpecApplyConfiguration constructs an declarative configuration of the SiteSpec type for use with
@@ -38,7 +38,7 @@ func (b *SiteSpecApplyConfiguration) WithPublic(value bool) *SiteSpecApplyConfig
 // WithTarget sets the Target field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Target field is set to the value of the last call.
-func (b *SiteSpecApplyConfiguration) WithTarget(value string) *SiteSpecApplyConfiguration {
-	b.Target = &value
+func (b *SiteSpecApplyConfiguration) WithTarget(value *TargetApplyConfiguration) *SiteSpecApplyConfiguration {
+	b.Target = value
 	return b
 }
