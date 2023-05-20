@@ -97,20 +97,8 @@ type Resources struct {
 }
 
 func (r *Resources) Resolve(defaultImage string, requeue func(string)) (c ChangeSet) {
-	for k, v := range r.Vinces {
-		_, ok := r.Secrets[k]
-		if !ok {
-			if v.Status == nil {
-				c.Secrets = append(c.Secrets, createSecret(v))
-				c.VinceStatus = append(c.VinceStatus, &v1alpha1.VinceStatus{
-					Secret: "Created",
-				})
-			}
-			continue
-		}
-		c.VinceStatus = append(c.VinceStatus, &v1alpha1.VinceStatus{
-			Secret: "Resolved",
-		})
+	for _, v := range r.Vinces {
+		c.Secrets = append(c.Secrets, createSecret(v))
 		svc, set := createStatefulSet(v, defaultImage)
 		c.Services = append(c.Services, svc)
 		c.StatefulSets = append(c.StatefulSets, set)

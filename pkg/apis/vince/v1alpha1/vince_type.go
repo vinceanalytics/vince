@@ -28,12 +28,7 @@ type VinceSpec struct {
 }
 
 // VinceStatus tracks status of resources that are created from Vince.
-type VinceStatus struct {
-	// The state of the Secret resource used to configure the vince resource.
-	// +kubebuilder:validation:Enum=Created;Resolved
-	//+optional
-	Secret string `json:"secret,omitempty"`
-}
+type VinceStatus struct{}
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type VinceList struct {
