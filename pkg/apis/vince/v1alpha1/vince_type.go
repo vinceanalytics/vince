@@ -16,9 +16,8 @@ type Vince struct {
 	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              VinceSpec `json:"spec"`
-	// +optional
-	Status *VinceStatus `json:"status,omitempty"`
+	Spec              VinceSpec   `json:"spec"`
+	Status            VinceStatus `json:"status,omitempty"`
 }
 
 type VinceSpec struct {
@@ -44,7 +43,11 @@ type Container struct {
 }
 
 // VinceStatus tracks status of resources that are created from Vince.
-type VinceStatus struct{}
+type VinceStatus struct {
+	// A list of sites attached to this Vince instance.
+	//+optional
+	Sites []Target `json:"sites,omitempty"`
+}
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type VinceList struct {

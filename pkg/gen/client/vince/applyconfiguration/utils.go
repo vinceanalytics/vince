@@ -30,6 +30,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &vincev1alpha1.VinceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("VinceSpec"):
 		return &vincev1alpha1.VinceSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("VinceStatus"):
+		return &vincev1alpha1.VinceStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Volume"):
 		return &vincev1alpha1.VolumeApplyConfiguration{}
 
