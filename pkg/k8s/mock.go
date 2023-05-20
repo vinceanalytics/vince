@@ -51,6 +51,10 @@ func (m *Mock) Vince() versioned.Interface {
 	return m.vince
 }
 
+func (m *Mock) Site() SiteAPI {
+	return nil
+}
+
 func mustParseYaml(content []byte) (core, site []runtime.Object) {
 	files := strings.Split(string(content), "---")
 	for _, file := range files {
