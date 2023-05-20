@@ -2,6 +2,7 @@ package control
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"testing"
 
@@ -26,10 +27,12 @@ func build(clients k8s.Client) *Topology {
 	vince := vince_informers.NewSharedInformerFactory(clients.Vince(), k8s.ResyncPeriod)
 	k8s := informers.NewSharedInformerFactory(clients.Kube(), k8s.ResyncPeriod)
 	return &Topology{
-		vinceLister:   vince.Staples().V1alpha1().Vinces().Lister(),
-		siteLister:    vince.Staples().V1alpha1().Sites().Lister(),
-		serviceLister: k8s.Core().V1().Services().Lister(),
-		secretsLister: k8s.Core().V1().Secrets().Lister(),
+		clients:           clients,
+		vinceLister:       vince.Staples().V1alpha1().Vinces().Lister(),
+		siteLister:        vince.Staples().V1alpha1().Sites().Lister(),
+		serviceLister:     k8s.Core().V1().Services().Lister(),
+		secretsLister:     k8s.Core().V1().Secrets().Lister(),
+		statefulSetLister: k8s.Apps().V1().StatefulSets().Lister(),
 	}
 }
 
@@ -37,7 +40,7 @@ func TestFirstApply(t *testing.T) {
 	// Running apply to Vince crd for the first time.
 	clients := mock(t, "topology/first_apply.yml")
 	topo := build(clients)
-	_, err := topo.Build(&k8s.ResourceFilter{}, "vince", func(s string) {})
+	err := topo.Build(context.TODO(), &k8s.ResourceFilter{}, "vince")
 	if err != nil {
 		t.Error(err)
 	}

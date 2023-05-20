@@ -1,7 +1,9 @@
 package control
 
 import (
+	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	vince_listers "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
@@ -12,30 +14,34 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	app_listers "k8s.io/client-go/listers/apps/v1"
 	listers "k8s.io/client-go/listers/core/v1"
 )
 
 type Topology struct {
-	vinceLister   vince_listers.VinceLister
-	siteLister    vince_listers.SiteLister
-	serviceLister listers.ServiceLister
-	secretsLister listers.SecretLister
+	clients           k8s.Client
+	vinceLister       vince_listers.VinceLister
+	siteLister        vince_listers.SiteLister
+	statefulSetLister app_listers.StatefulSetLister
+	serviceLister     listers.ServiceLister
+	secretsLister     listers.SecretLister
 }
 
-func (t *Topology) Build(filter *k8s.ResourceFilter, defaultImage string, requeue func(string)) (ChangeSet, error) {
+func (t *Topology) Build(ctx context.Context, filter *k8s.ResourceFilter, defaultImage string) error {
 	r, err := t.loadResources(filter)
 	if err != nil {
-		return ChangeSet{}, err
+		return err
 	}
-	return r.Resolve(defaultImage, requeue), nil
+	return r.Resolve(ctx, defaultImage, t.clients)
 }
 
 func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error) {
 	r := &Resources{
-		Secrets: make(map[string]*corev1.Secret),
-		Service: make(map[string]*corev1.Service),
-		Vinces:  make(map[string]*v1alpha1.Vince),
-		Sites:   make(map[string]*v1alpha1.Site),
+		Secrets:     make(map[string]*corev1.Secret),
+		Service:     make(map[string]*corev1.Service),
+		Vinces:      make(map[string]*v1alpha1.Vince),
+		Sites:       make(map[string]*v1alpha1.Site),
+		StatefulSet: make(map[string]*appsv1.StatefulSet),
 	}
 
 	// First we load all vince resources. These are root resources, we derive any
@@ -59,11 +65,17 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 
 	svcs, err := t.serviceLister.List(base)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list pods maps %v", err)
+		return nil, fmt.Errorf("failed to list services %v", err)
 	}
+
+	sets, err := t.statefulSetLister.List(base)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list sets %v", err)
+	}
+
 	site, err := t.siteLister.List(base)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list vinces maps %v", err)
+		return nil, fmt.Errorf("failed to list sites %v", err)
 	}
 
 	for _, o := range secrets {
@@ -80,6 +92,13 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		r.Service[key(o)] = o
 	}
 
+	for _, o := range sets {
+		if filter.IsIgnored(o) {
+			continue
+		}
+		r.StatefulSet[key(o)] = o
+	}
+
 	for _, o := range site {
 		if filter.IsIgnored(o) {
 			continue
@@ -90,20 +109,55 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 }
 
 type Resources struct {
-	Secrets map[string]*corev1.Secret
-	Service map[string]*corev1.Service
-	Vinces  map[string]*v1alpha1.Vince
-	Sites   map[string]*v1alpha1.Site
+	Secrets     map[string]*corev1.Secret
+	Service     map[string]*corev1.Service
+	StatefulSet map[string]*appsv1.StatefulSet
+	Vinces      map[string]*v1alpha1.Vince
+	Sites       map[string]*v1alpha1.Site
 }
 
-func (r *Resources) Resolve(defaultImage string, requeue func(string)) (c ChangeSet) {
-	for _, v := range r.Vinces {
-		c.Secrets = append(c.Secrets, createSecret(v))
+func (r *Resources) Resolve(ctx context.Context, defaultImage string, clients k8s.Client) error {
+	xcore := clients.Kube().CoreV1()
+	xapps := clients.Kube().AppsV1()
+	for k, v := range r.Vinces {
+		{
+			_, ok := r.Secrets[k]
+			if !ok {
+				xcore.Secrets(v.Namespace).Create(
+					ctx,
+					createSecret(v),
+					metav1.CreateOptions{},
+				)
+			}
+			// Once created secret for Vince instance is never updated.
+		}
 		svc, set := createStatefulSet(v, defaultImage)
-		c.Services = append(c.Services, svc)
-		c.StatefulSets = append(c.StatefulSets, set)
+		{
+			o, ok := r.Service[k]
+			if !ok {
+				xcore.Services(v.Namespace).Create(
+					ctx, svc, metav1.CreateOptions{},
+				)
+			} else {
+				if !reflect.DeepEqual(o.Spec, svc.Spec) {
+					xcore.Services(v.Namespace).Update(ctx, svc, metav1.UpdateOptions{})
+				}
+			}
+		}
+		{
+			o, ok := r.StatefulSet[k]
+			if !ok {
+				xapps.StatefulSets(v.Namespace).Create(
+					ctx, set, metav1.CreateOptions{},
+				)
+			} else {
+				if !reflect.DeepEqual(o.Spec, svc.Spec) {
+					xapps.StatefulSets(v.Namespace).Update(ctx, set, metav1.UpdateOptions{})
+				}
+			}
+		}
 	}
-	return
+	return nil
 }
 
 type ChangeSet struct {

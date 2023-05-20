@@ -58,10 +58,12 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 	x.form.vince.Staples().V1alpha1().Sites().Informer().AddEventHandler(handler)
 	x.form.vince.Staples().V1alpha1().Vinces().Informer().AddEventHandler(handler)
 	x.top = Topology{
-		vinceLister:   x.form.vince.Staples().V1alpha1().Vinces().Lister(),
-		siteLister:    x.form.vince.Staples().V1alpha1().Sites().Lister(),
-		serviceLister: x.form.k8s.Core().V1().Services().Lister(),
-		secretsLister: x.form.k8s.Core().V1().Secrets().Lister(),
+		clients:           clients,
+		vinceLister:       x.form.vince.Staples().V1alpha1().Vinces().Lister(),
+		siteLister:        x.form.vince.Staples().V1alpha1().Sites().Lister(),
+		serviceLister:     x.form.k8s.Core().V1().Services().Lister(),
+		secretsLister:     x.form.k8s.Core().V1().Secrets().Lister(),
+		statefulSetLister: x.form.k8s.Apps().V1().StatefulSets().Lister(),
 	}
 	return &x
 }
