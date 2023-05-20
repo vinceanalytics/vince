@@ -28,7 +28,7 @@ func build(clients k8s.Client) *Topology {
 	return &Topology{
 		vinceLister:   vince.Staples().V1alpha1().Vinces().Lister(),
 		siteLister:    vince.Staples().V1alpha1().Sites().Lister(),
-		podLister:     k8s.Core().V1().Pods().Lister(),
+		serviceLister: k8s.Core().V1().Services().Lister(),
 		secretsLister: k8s.Core().V1().Secrets().Lister(),
 	}
 }

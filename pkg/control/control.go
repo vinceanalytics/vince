@@ -60,7 +60,7 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 	x.top = Topology{
 		vinceLister:   x.form.vince.Staples().V1alpha1().Vinces().Lister(),
 		siteLister:    x.form.vince.Staples().V1alpha1().Sites().Lister(),
-		podLister:     x.form.k8s.Core().V1().Pods().Lister(),
+		serviceLister: x.form.k8s.Core().V1().Services().Lister(),
 		secretsLister: x.form.k8s.Core().V1().Secrets().Lister(),
 	}
 	return &x

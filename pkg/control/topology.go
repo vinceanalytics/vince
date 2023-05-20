@@ -18,7 +18,7 @@ import (
 type Topology struct {
 	vinceLister   vince_listers.VinceLister
 	siteLister    vince_listers.SiteLister
-	podLister     listers.PodLister
+	serviceLister listers.ServiceLister
 	secretsLister listers.SecretLister
 }
 
@@ -33,7 +33,7 @@ func (t *Topology) Build(filter *k8s.ResourceFilter, defaultImage string, requeu
 func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error) {
 	r := &Resources{
 		Secrets: make(map[string]*corev1.Secret),
-		Pods:    make(map[string]*corev1.Pod),
+		Service: make(map[string]*corev1.Service),
 		Vinces:  make(map[string]*v1alpha1.Vince),
 		Sites:   make(map[string]*v1alpha1.Site),
 	}
@@ -57,7 +57,7 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		return nil, fmt.Errorf("failed to list secrets %v", err)
 	}
 
-	pods, err := t.podLister.List(base)
+	svcs, err := t.serviceLister.List(base)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list pods maps %v", err)
 	}
@@ -73,11 +73,11 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 		r.Secrets[key(o)] = o
 	}
 
-	for _, o := range pods {
+	for _, o := range svcs {
 		if filter.IsIgnored(o) {
 			continue
 		}
-		r.Pods[key(o)] = o
+		r.Service[key(o)] = o
 	}
 
 	for _, o := range site {
@@ -91,7 +91,7 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 
 type Resources struct {
 	Secrets map[string]*corev1.Secret
-	Pods    map[string]*corev1.Pod
+	Service map[string]*corev1.Service
 	Vinces  map[string]*v1alpha1.Vince
 	Sites   map[string]*v1alpha1.Site
 }
