@@ -9,7 +9,6 @@ import (
 	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	vince_informers "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions"
 	"github.com/gernest/vince/pkg/k8s"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/informers"
@@ -57,14 +56,9 @@ func TestFirstApply(t *testing.T) {
 				Labels:    baseLabels(),
 			},
 			Spec: v1alpha1.VinceSpec{
-				Volume: v1.PersistentVolumeClaimSpec{
-					Resources: v1.ResourceRequirements{
-						Requests: v1.ResourceList{
-							v1.ResourceStorage: resource.MustParse("1Gi"),
-						},
-					},
+				Volume: v1alpha1.Volume{
+					Size: resource.MustParse("1Gi"),
 				},
-				Container: v1.Container{},
 			},
 		},
 	)

@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -21,10 +22,25 @@ type Vince struct {
 }
 
 type VinceSpec struct {
-	Volume v1.PersistentVolumeClaimSpec `json:"volume"`
+	Volume    `json:"volume"`
+	Container `json:"container"`
+}
+
+type Volume struct {
+	Selector     *metav1.LabelSelector `json:"selector,omitempty"`
+	Size         resource.Quantity     `json:"size"`
+	StorageClass string                `json:"storageClass,omitempty"`
+	SubPath      string                `json:"subPath,omitempty"`
+}
+
+type Container struct {
 	//+optional
-	VolumeSubPath string       `json:"volume_subpath,omitempty"`
-	Container     v1.Container `json:"container"`
+	Image string `json:"image,omitempty"`
+
+	//+Optional
+	Env []v1.EnvVar `json:"env,omitempty"`
+
+	Resources v1.ResourceRequirements `json:"resources"`
 }
 
 // VinceStatus tracks status of resources that are created from Vince.

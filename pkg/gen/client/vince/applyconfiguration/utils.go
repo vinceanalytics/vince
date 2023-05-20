@@ -16,6 +16,8 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=staples, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("Container"):
+		return &vincev1alpha1.ContainerApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Site"):
 		return &vincev1alpha1.SiteApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("SiteSpec"):
@@ -28,6 +30,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &vincev1alpha1.VinceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("VinceSpec"):
 		return &vincev1alpha1.VinceSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Volume"):
+		return &vincev1alpha1.VolumeApplyConfiguration{}
 
 	}
 	return nil

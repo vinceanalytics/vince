@@ -11,6 +11,7 @@ import (
 	"github.com/gernest/vince/pkg/secrets"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -231,13 +232,26 @@ func createSecret(o *v1alpha1.Vince) *corev1.Secret {
 }
 
 func createStatefulSet(o *v1alpha1.Vince, defaultImage string) (*corev1.Service, *appsv1.StatefulSet) {
-	volume := o.Spec.Volume
-	if len(volume.AccessModes) == 0 {
-		volume.AccessModes = []corev1.PersistentVolumeAccessMode{
+	volume := v1.PersistentVolumeClaimSpec{
+		AccessModes: []corev1.PersistentVolumeAccessMode{
 			corev1.ReadWriteOncePod,
-		}
+		},
+		Resources: v1.ResourceRequirements{
+			Requests: v1.ResourceList{
+				v1.ResourceStorage: o.Spec.Size,
+			},
+		},
 	}
-	container := o.Spec.Container
+	if o.Spec.StorageClass != "" {
+		volume.StorageClassName = &o.Spec.StorageClass
+	}
+	container := v1.Container{
+		Name:  "vince",
+		Image: o.Spec.Image,
+	}
+	if container.Image == "" {
+		container.Image = defaultImage
+	}
 	container.Name = "vince"
 	if container.Image == "" {
 		container.Image = defaultImage
@@ -248,10 +262,10 @@ func createStatefulSet(o *v1alpha1.Vince, defaultImage string) (*corev1.Service,
 			MountPath: "/data",
 		},
 	}
-	if o.Spec.VolumeSubPath != "" {
-		container.VolumeMounts[0].SubPath = o.Spec.VolumeSubPath
+	if o.Spec.SubPath != "" {
+		container.VolumeMounts[0].SubPath = o.Spec.SubPath
 	}
-	container.Env = append(container.Env,
+	container.Env = append(o.Spec.Env,
 		corev1.EnvVar{
 			Name:  "VINCE_DATA",
 			Value: "/data",
