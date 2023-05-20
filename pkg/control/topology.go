@@ -245,6 +245,9 @@ func createStatefulSet(o *v1alpha1.Vince, defaultImage string) (*corev1.Service,
 	if o.Spec.StorageClass != "" {
 		volume.StorageClassName = &o.Spec.StorageClass
 	}
+	if o.Spec.Selector != nil {
+		volume.Selector = o.Spec.Selector
+	}
 	container := v1.Container{
 		Name:  "vince",
 		Image: o.Spec.Image,
