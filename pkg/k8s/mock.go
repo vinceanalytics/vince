@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -10,6 +11,7 @@ import (
 	vince "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
 	"github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
 	fake_vince_client "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/fake"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes"
@@ -52,6 +54,17 @@ func (m *Mock) Vince() versioned.Interface {
 }
 
 func (m *Mock) Site() SiteAPI {
+	return mockSite{}
+}
+
+var _ SiteAPI = (*mockSite)(nil)
+
+type mockSite struct{}
+
+func (mockSite) Create(ctx context.Context, secret *v1.Secret, domain string) error {
+	return nil
+}
+func (mockSite) Delete(ctx context.Context, secret *v1.Secret, domain string) error {
 	return nil
 }
 
