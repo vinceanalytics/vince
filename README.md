@@ -47,4 +47,5 @@ soon.
 
 ## WHy is the binary so big ?
 
-Assets are bundled with the binary.
+Assets are bundled with the binary. Also we ship esbuild so you can write alerts
+in typescript. Painless deployment and convenient features don't come cheap.
