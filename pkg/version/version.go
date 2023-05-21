@@ -1,13 +1,14 @@
 package version
 
 import (
+	"bytes"
+	_ "embed"
 	"runtime/debug"
 	"strings"
 )
 
-var (
-	BuildVersion = "0.0.0"
-)
+//go:embed VERSION.txt
+var BuildVersion []byte
 
 type Version struct {
 	Commit string
@@ -19,11 +20,11 @@ type Version struct {
 func (v *Version) String() string {
 	var s strings.Builder
 	s.WriteString("v")
-	s.WriteString(strings.TrimSpace(BuildVersion))
+	s.Write(bytes.TrimSpace(BuildVersion))
 	if !v.Valid {
 		s.WriteString("-ERR-BuildInfo")
 	} else {
-		s.WriteString(v.Date)
+		s.WriteString("-" + v.Date)
 		commit := v.Commit
 		if len(commit) > 9 {
 			commit = commit[:9]

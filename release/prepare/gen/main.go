@@ -55,4 +55,13 @@ func main() {
 		fmt.Fprintln(&o, text)
 	}
 	tools.WriteFile(filepath.Join(root, "chart/Chart.yaml"), o.Bytes())
+	app := tools.ReadFile(filepath.Join(root, "pkg/version/VERSION.txt"))
+	switch semver.Compare(v, string(app)) {
+	case 0:
+		println("> no version changes")
+		return
+	case -1:
+		tools.Exit("VERSION must be greater than", string(app))
+	}
+	tools.WriteFile(filepath.Join(root, "pkg/version/VERSION.txt"), []byte(v))
 }
