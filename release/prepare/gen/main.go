@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-	root := tools.RootVince()
 	v := os.Getenv("VERSION")
 	if v == "" {
 		tools.Exit("VERSION env must be set")
@@ -21,6 +20,11 @@ func main() {
 	if !semver.IsValid(v) {
 		tools.Exit("VERSION must be in vMAJOR[.MINOR[.PATCH[-PRERELEASE][+BUILD]]] format")
 	}
+	build(v)
+}
+
+func build(v string) {
+	root := tools.RootVince()
 	println("> using", v)
 	chart := tools.ReadFile(filepath.Join(root, "chart/Chart.yaml"))
 	var o bytes.Buffer
