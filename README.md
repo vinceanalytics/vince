@@ -42,3 +42,9 @@ Countin' up hundreds by the thousand
 
 So, enjoy the outcome of my late nights, hoping to be counting hundreds by the thousand
 soon.
+
+# FAQ
+
+## WHy is the binary so big ?
+
+Assets are bundled with the binary.
