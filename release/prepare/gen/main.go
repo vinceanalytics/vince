@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gernest/vince/tools"
@@ -13,14 +15,74 @@ import (
 )
 
 func main() {
-	v := os.Getenv("VERSION")
+	flag.Parse()
+	v := latestTag()
 	if v == "" {
-		tools.Exit("VERSION env must be set")
+		v = "v0.0.0"
 	}
 	if !semver.IsValid(v) {
 		tools.Exit("VERSION must be in vMAJOR[.MINOR[.PATCH[-PRERELEASE][+BUILD]]] format")
 	}
+	parts := breakDown(v)
+	switch os.Getenv("VERSION") {
+	case "major":
+		i, err := strconv.Atoi(strings.TrimPrefix(parts[0], "v"))
+		if err != nil {
+			tools.Exit("  failed parsing major version", parts[0], err.Error())
+		}
+		i++
+		parts[0] = "v" + strconv.Itoa(i)
+	case "minor":
+		i, err := strconv.Atoi(parts[1])
+		if err != nil {
+			tools.Exit("  failed parsing minor version", parts[1], err.Error())
+		}
+		i++
+		parts[1] = strconv.Itoa(i)
+	case "patch":
+		i, err := strconv.Atoi(parts[2])
+		if err != nil {
+			tools.Exit("  failed parsing patch version", parts[2], err.Error())
+		}
+		i++
+		parts[2] = strconv.Itoa(i)
+
+	}
+	pre := os.Getenv("PRERELEASE")
+	if pre != "" {
+		if len(parts) == 3 {
+			parts = append(parts, pre)
+		} else {
+			parts[3] = pre
+		}
+	}
+	v = format(parts)
 	build(v)
+	commit(v)
+	tag(v)
+}
+
+func format(p []string) string {
+	s := strings.Join(p[:3], ".")
+	if len(p) == 4 {
+		s += "-" + p[3]
+	}
+	return s
+}
+
+func breakDown(v string) (o []string) {
+	if !semver.IsValid(v) {
+		tools.Exit("VERSION must be in vMAJOR[.MINOR[.PATCH[-PRERELEASE][+BUILD]]] format")
+	}
+	a := semver.MajorMinor(v)
+	o = strings.Split(a, ".")
+	patch, rest, found := strings.Cut(strings.TrimPrefix(v, a), ".")
+	if found && patch != "" {
+		o = append(o, patch, rest)
+	} else {
+		o = append(o, rest)
+	}
+	return
 }
 
 func build(v string) {
@@ -68,4 +130,20 @@ func build(v string) {
 		tools.Exit("VERSION must be greater than", string(app))
 	}
 	tools.WriteFile(filepath.Join(root, "pkg/version/VERSION.txt"), []byte(v))
+}
+
+func commit(v string) {
+	tools.ExecPlain(
+		"git", "commit", "-am", "release "+v,
+	)
+}
+
+func tag(v string) {
+	tools.ExecPlain(
+		"git", "tag", "-a", v, "-m", "release "+v,
+	)
+}
+
+func latestTag() string {
+	return tools.ExecCollect("git", "describe", "--abbrev=0")
 }
