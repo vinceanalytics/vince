@@ -17,16 +17,14 @@ The Cloud Native Web Analytics Platform.
 - Cloud Native (seamless k8s integration)
 - Automatic TLS
 - API for stats and sites management
+- No runtime dependency (Static binary with everything you need)
 
 # Origins
 
 This started as a go port of [Plausible](https://github.com/plausible/analytics), with 
-the intention to remove clickhouse and postgresql dependency aiming for a self hosted solution
-used by all team sizes.
+the intention to remove clickhouse and postgresql dependency . I wanted a simpler
+deployment model and focusing on a single organization managing its own sites.
 
-We use 
-- sqlite for operational data (users,sites etc)
-- badger for persistance of aggregates
 
 
 # Install
