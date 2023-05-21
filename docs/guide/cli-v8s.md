@@ -7,6 +7,7 @@ v8s - kubernetes controller for vince - The Cloud Native Web Analytics Platform.
 v8s
 
 ```
+[--default-image]=[value]
 [--kubeconfig]=[value]
 [--master-url]=[value]
 [--port]=[value]
@@ -19,6 +20,8 @@ v8s [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 ```
 
 # GLOBAL OPTIONS
+
+**--default-image**="": Default image of vince to use (default: ghcr.io/vinceanalytics/vince:v0.0.0)
 
 **--kubeconfig**="": Path to a kubeconfig. Only required if out-of-cluster.
 

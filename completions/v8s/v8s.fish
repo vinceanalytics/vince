@@ -11,6 +11,7 @@ end
 
 complete -c v8s -n '__fish_v8s_no_subcommand' -f -l master-url -r -d 'The address of the Kubernetes API server. Overrides any value in kubeconfig.'
 complete -c v8s -n '__fish_v8s_no_subcommand' -f -l kubeconfig -r -d 'Path to a kubeconfig. Only required if out-of-cluster.'
+complete -c v8s -n '__fish_v8s_no_subcommand' -f -l default-image -r -d 'Default image of vince to use'
 complete -c v8s -n '__fish_v8s_no_subcommand' -f -l port -r -d 'controller api port'
 complete -c v8s -n '__fish_v8s_no_subcommand' -f -l help -s h -d 'show help'
 complete -c v8s -n '__fish_v8s_no_subcommand' -f -l version -s v -d 'print the version'

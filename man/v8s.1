@@ -14,6 +14,7 @@ v8s
 .RS
 
 .nf
+[--default-image]=[value]
 [--kubeconfig]=[value]
 [--master-url]=[value]
 [--port]=[value]
@@ -35,6 +36,9 @@ v8s [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 
 .SH GLOBAL OPTIONS
+.PP
+\fB--default-image\fP="": Default image of vince to use (default: ghcr.io/vinceanalytics/vince:v0.0.0)
+
 .PP
 \fB--kubeconfig\fP="": Path to a kubeconfig. Only required if out-of-cluster.
 
