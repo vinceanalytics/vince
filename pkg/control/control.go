@@ -30,7 +30,7 @@ type Control struct {
 	filter *k8s.ResourceFilter
 	ready  func()
 	log    *zerolog.Logger
-	top    Topology
+	top    *Topology
 }
 
 func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Control {
@@ -57,14 +57,14 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 	x.list.vince = x.form.vince.Staples().V1alpha1().Vinces().Lister()
 	x.form.vince.Staples().V1alpha1().Sites().Informer().AddEventHandler(handler)
 	x.form.vince.Staples().V1alpha1().Vinces().Informer().AddEventHandler(handler)
-	x.top = Topology{
-		clients:           clients,
-		vinceLister:       x.form.vince.Staples().V1alpha1().Vinces().Lister(),
-		siteLister:        x.form.vince.Staples().V1alpha1().Sites().Lister(),
-		serviceLister:     x.form.k8s.Core().V1().Services().Lister(),
-		secretsLister:     x.form.k8s.Core().V1().Secrets().Lister(),
-		statefulSetLister: x.form.k8s.Apps().V1().StatefulSets().Lister(),
-	}
+	x.top = NewTopology(
+		clients,
+		x.form.vince.Staples().V1alpha1().Vinces().Lister(),
+		x.form.vince.Staples().V1alpha1().Sites().Lister(),
+		x.form.k8s.Apps().V1().StatefulSets().Lister(),
+		x.form.k8s.Core().V1().Services().Lister(),
+		x.form.k8s.Core().V1().Secrets().Lister(),
+	)
 	return &x
 }
 

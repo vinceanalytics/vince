@@ -27,6 +27,26 @@ type Topology struct {
 	statefulSetLister app_listers.StatefulSetLister
 	serviceLister     listers.ServiceLister
 	secretsLister     listers.SecretLister
+	retry             *k8s.Retry
+}
+
+func NewTopology(
+	clients k8s.Client,
+	vinceLister vince_listers.VinceLister,
+	siteLister vince_listers.SiteLister,
+	statefulSetLister app_listers.StatefulSetLister,
+	serviceLister listers.ServiceLister,
+	secretsLister listers.SecretLister,
+) *Topology {
+	return &Topology{
+		clients:           clients,
+		vinceLister:       vinceLister,
+		siteLister:        siteLister,
+		statefulSetLister: statefulSetLister,
+		serviceLister:     serviceLister,
+		secretsLister:     secretsLister,
+		retry:             k8s.NewRetry(),
+	}
 }
 
 func (t *Topology) Build(ctx context.Context, filter *k8s.ResourceFilter, defaultImage string) error {
@@ -34,7 +54,7 @@ func (t *Topology) Build(ctx context.Context, filter *k8s.ResourceFilter, defaul
 	if err != nil {
 		return err
 	}
-	return r.Resolve(ctx, defaultImage, t.clients)
+	return r.Resolve(ctx, t.retry, defaultImage, t.clients)
 }
 
 func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error) {
@@ -122,7 +142,7 @@ type Resources struct {
 	Sites       map[string][]*v1alpha1.Site
 }
 
-func (r *Resources) Resolve(ctx context.Context, defaultImage string, clients k8s.Client) error {
+func (r *Resources) Resolve(ctx context.Context, retry *k8s.Retry, defaultImage string, clients k8s.Client) error {
 	xcore := clients.Kube().CoreV1()
 	xapps := clients.Kube().AppsV1()
 	xstaple := clients.Vince().StaplesV1alpha1()
@@ -130,11 +150,8 @@ func (r *Resources) Resolve(ctx context.Context, defaultImage string, clients k8
 		{
 			_, ok := r.Secrets[k]
 			if !ok {
-				_, err := xcore.Secrets(v.Namespace).Create(
-					ctx,
-					createSecret(v),
-					metav1.CreateOptions{},
-				)
+				secret := createSecret(v)
+				err := retry.CreateSecret(ctx, clients, secret)
 				if err != nil {
 					return err
 				}

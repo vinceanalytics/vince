@@ -25,14 +25,14 @@ func mock(t *testing.T, path string) *k8s.Mock {
 func build(clients k8s.Client) *Topology {
 	vince := vince_informers.NewSharedInformerFactory(clients.Vince(), k8s.ResyncPeriod)
 	k8s := informers.NewSharedInformerFactory(clients.Kube(), k8s.ResyncPeriod)
-	return &Topology{
-		clients:           clients,
-		vinceLister:       vince.Staples().V1alpha1().Vinces().Lister(),
-		siteLister:        vince.Staples().V1alpha1().Sites().Lister(),
-		serviceLister:     k8s.Core().V1().Services().Lister(),
-		secretsLister:     k8s.Core().V1().Secrets().Lister(),
-		statefulSetLister: k8s.Apps().V1().StatefulSets().Lister(),
-	}
+	return NewTopology(
+		clients,
+		vince.Staples().V1alpha1().Vinces().Lister(),
+		vince.Staples().V1alpha1().Sites().Lister(),
+		k8s.Apps().V1().StatefulSets().Lister(),
+		k8s.Core().V1().Services().Lister(),
+		k8s.Core().V1().Secrets().Lister(),
+	)
 }
 
 func TestFirstApply(t *testing.T) {
