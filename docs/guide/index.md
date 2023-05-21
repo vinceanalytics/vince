@@ -54,7 +54,7 @@ endpoints. This library is used throughout vince for many performance critical
 components.
 
 
-These are core components we ship with vince. All embedded in th single binary for yoru
+These are core components we ship with vince. All embedded in the single binary for yoru
 delight.
 
 
@@ -75,4 +75,4 @@ Countin' up hundreds by the thousand
 ```
 
 So, enjoy the outcome of my late nights, hoping to be counting hundreds by the thousand
-soon, or in my next life.
+soon.
