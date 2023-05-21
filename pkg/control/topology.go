@@ -143,9 +143,6 @@ type Resources struct {
 }
 
 func (r *Resources) Resolve(ctx context.Context, retry *k8s.Retry, defaultImage string, clients k8s.Client) error {
-	xcore := clients.Kube().CoreV1()
-	xapps := clients.Kube().AppsV1()
-	xstaple := clients.Vince().StaplesV1alpha1()
 	for k, v := range r.Vinces {
 		{
 			_, ok := r.Secrets[k]
@@ -162,15 +159,13 @@ func (r *Resources) Resolve(ctx context.Context, retry *k8s.Retry, defaultImage 
 		{
 			o, ok := r.Service[k]
 			if !ok {
-				_, err := xcore.Services(v.Namespace).Create(
-					ctx, svc, metav1.CreateOptions{},
-				)
+				err := retry.CreateService(ctx, clients, svc)
 				if err != nil {
 					return err
 				}
 			} else {
 				if !reflect.DeepEqual(o.Spec, svc.Spec) {
-					_, err := xcore.Services(v.Namespace).Update(ctx, svc, metav1.UpdateOptions{})
+					err := retry.UpdateService(ctx, clients, svc)
 					if err != nil {
 						return err
 					}
@@ -180,15 +175,13 @@ func (r *Resources) Resolve(ctx context.Context, retry *k8s.Retry, defaultImage 
 		{
 			o, ok := r.StatefulSet[k]
 			if !ok {
-				_, err := xapps.StatefulSets(v.Namespace).Create(
-					ctx, set, metav1.CreateOptions{},
-				)
+				err := retry.CreateStatefulSet(ctx, clients, set)
 				if err != nil {
 					return err
 				}
 			} else {
 				if !reflect.DeepEqual(o.Spec, svc.Spec) {
-					_, err := xapps.StatefulSets(v.Namespace).Update(ctx, set, metav1.UpdateOptions{})
+					err := retry.UpdateStatefulSet(ctx, clients, set)
 					if err != nil {
 						return err
 					}
@@ -241,15 +234,13 @@ func (r *Resources) Resolve(ctx context.Context, retry *k8s.Retry, defaultImage 
 					}
 				}
 				if statusChanged {
-					v.Status.Sites = make([]string, 0, len(listed))
+					clone := v.DeepCopy()
+					clone.Status.Sites = make([]string, 0, len(listed))
 					for x := range listed {
-						v.Status.Sites = append(v.Status.Sites, x)
+						clone.Status.Sites = append(v.Status.Sites, x)
 					}
-					sort.Strings(v.Status.Sites)
-					_, err := xstaple.Vinces(v.Namespace).UpdateStatus(ctx, v, metav1.UpdateOptions{})
-					if err != nil {
-						return err
-					}
+					sort.Strings(clone.Status.Sites)
+					retry.UpdateVinceStatus(ctx, clients, clone)
 				}
 			}
 		}
@@ -261,9 +252,7 @@ func (r *Resources) Resolve(ctx context.Context, retry *k8s.Retry, defaultImage 
 		}
 		_, ok := r.Vinces[k]
 		if !ok {
-			xapps.StatefulSets(v.Namespace).Delete(
-				ctx, v.Name, metav1.DeleteOptions{},
-			)
+			retry.DeleteStatefulSet(ctx, clients, v)
 		}
 	}
 	for k, v := range r.Service {
@@ -272,12 +261,7 @@ func (r *Resources) Resolve(ctx context.Context, retry *k8s.Retry, defaultImage 
 		}
 		_, ok := r.Vinces[k]
 		if !ok {
-			err := xcore.Services(v.Namespace).Delete(
-				ctx, v.Name, metav1.DeleteOptions{},
-			)
-			if err != nil {
-				return err
-			}
+			retry.DeleteService(ctx, clients, v)
 		}
 	}
 	for k, v := range r.Secrets {
@@ -286,12 +270,7 @@ func (r *Resources) Resolve(ctx context.Context, retry *k8s.Retry, defaultImage 
 		}
 		_, ok := r.Vinces[k]
 		if !ok {
-			err := xcore.Secrets(v.Namespace).Delete(
-				ctx, v.Name, metav1.DeleteOptions{},
-			)
-			if err != nil {
-				return err
-			}
+			retry.DeleteSecret(ctx, clients, v)
 		}
 	}
 	return nil
