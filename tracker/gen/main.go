@@ -75,7 +75,6 @@ func main() {
 		MinifyWhitespace:  true,
 		MinifyIdentifiers: true,
 		MinifySyntax:      true,
-		LogLevel:          api.LogLevelInfo,
 	})
 	if len(result.Errors) > 0 {
 		e := make([]string, len(result.Errors))
