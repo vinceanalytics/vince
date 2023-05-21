@@ -2,24 +2,24 @@
 title: Installing vince
 ---
 
+## From source
+
+```bash
+go install github.com/vinceanalytics/vince@latest
+```
+
 ## Brew
-
-
 
 ```bash
 brew install vinceanalytics/tap/vince
 ```
 
 
-
-
-
-
 ## Container Image
 
 
 ```bash
-ghcr.io/vinceanalytics/vince:v0.0.0
+docker pull ghcr.io/vinceanalytics/vince
 ```
 
 
@@ -28,36 +28,8 @@ ghcr.io/vinceanalytics/vince:v0.0.0
 
 ## Linux packages
 
-Download the `.deb`, `.rpm` or `.apk` packages from tables below and install
+Download the `.deb`, `.rpm` or `.apk` packages from [Release Page]() and install
 them with the appropriate tools
-
-
-## Downloads
-
-Files are signed with [minisign](https://jedisct1.github.io/minisign/) using this public key:
-```
-RWSA5ztaWA/0ny2xL3U6ZQBgmfbECNm7qCPZA1VEWeGCE51WuWkj9Tt4
-```
-
-
-
-|                                                                                                                                        filename|                                                                                                                 signature|size|
-|                                                                                                                                            ----|                                                                                                                      ----|----|
-|                             [vince_windows_arm64.zip](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_windows_arm64.zip)|               [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_windows_arm64.zip.minisig)|`60mb`|
-|                           [vince_windows_x86_64.zip](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_windows_x86_64.zip)|              [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_windows_x86_64.zip.minisig)|`61mb`|
-|                           [vince_linux_arm64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_arm64.tar.gz)|              [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_arm64.tar.gz.minisig)|`60mb`|
-|                         [vince_darwin_arm64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_darwin_arm64.tar.gz)|             [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_darwin_arm64.tar.gz.minisig)|`61mb`|
-|                         [vince_linux_x86_64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_x86_64.tar.gz)|             [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_linux_x86_64.tar.gz.minisig)|`60mb`|
-|                       [vince_darwin_x86_64.tar.gz](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_darwin_x86_64.tar.gz)|            [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_darwin_x86_64.tar.gz.minisig)|`61mb`|
-|                   [vince_v0.0.0_linux_arm64.deb](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_arm64.deb)|          [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_arm64.deb.minisig)|`61mb`|
-|                 [vince_v0.0.0_linux_x86_64.deb](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_x86_64.deb)|         [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_x86_64.deb.minisig)|`61mb`|
-|                   [vince_v0.0.0_linux_arm64.apk](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_arm64.apk)|          [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_arm64.apk.minisig)|`61mb`|
-|                 [vince_v0.0.0_linux_x86_64.apk](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_x86_64.apk)|         [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_x86_64.apk.minisig)|`61mb`|
-| [vince_v0.0.0_linux_x86_64.pkg.tar.zst](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_x86_64.pkg.tar.zst)| [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_x86_64.pkg.tar.zst.minisig)|`61mb`|
-|   [vince_v0.0.0_linux_arm64.pkg.tar.zst](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_arm64.pkg.tar.zst)|  [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_arm64.pkg.tar.zst.minisig)|`60mb`|
-|                   [vince_v0.0.0_linux_arm64.rpm](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_arm64.rpm)|          [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_arm64.rpm.minisig)|`61mb`|
-|                 [vince_v0.0.0_linux_x86_64.rpm](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_x86_64.rpm)|         [minisig](https://github.com/vinceanalytics/vince/releases/download/v0.0.0/vince_v0.0.0_linux_x86_64.rpm.minisig)|`61mb`|
-
 
 
 
