@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
 	"github.com/gernest/vince/pkg/secrets"
 	"github.com/rs/zerolog"
@@ -126,7 +127,7 @@ func (s *siteAPI) Create(ctx context.Context, secret *v1.Secret, domain string) 
 	if err != nil {
 		return err
 	}
-	return s.do(r)
+	return s.doRetry(r)
 }
 
 func (s *siteAPI) Delete(ctx context.Context, secret *v1.Secret, domain string) error {
@@ -135,7 +136,7 @@ func (s *siteAPI) Delete(ctx context.Context, secret *v1.Secret, domain string) 
 	if err != nil {
 		return err
 	}
-	return s.do(r)
+	return s.doRetry(r)
 }
 
 func (s *siteAPI) do(r *http.Request) error {
@@ -148,4 +149,10 @@ func (s *siteAPI) do(r *http.Request) error {
 		return fmt.Errorf(http.StatusText(res.StatusCode))
 	}
 	return nil
+}
+
+func (s *siteAPI) doRetry(r *http.Request) error {
+	return backoff.Retry(func() error {
+		return s.do(r.Clone(r.Context()))
+	}, backoff.NewExponentialBackOff())
 }

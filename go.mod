@@ -7,6 +7,7 @@ require (
 	filippo.io/age v1.1.1
 	github.com/RoaringBitmap/roaring v1.2.3
 	github.com/caddyserver/certmagic v0.17.2
+	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/cespare/xxhash/v2 v2.1.2
 	github.com/dchest/captcha v1.0.0
 	github.com/dchest/siphash v1.2.3
