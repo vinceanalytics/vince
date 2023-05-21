@@ -72,6 +72,7 @@ var _ Client = (*wrap)(nil)
 type wrap struct {
 	k8s   *kubernetes.Clientset
 	vince *versioned.Clientset
+	site  siteAPI
 }
 
 func (w *wrap) Kube() kubernetes.Interface {
@@ -83,7 +84,7 @@ func (w *wrap) Vince() versioned.Interface {
 }
 
 func (w *wrap) Site() SiteAPI {
-	return siteAPI{}
+	return &w.site
 }
 
 func build(log *zerolog.Logger, masterURL, kubeConfig string) *wrap {
@@ -102,11 +103,11 @@ func build(log *zerolog.Logger, masterURL, kubeConfig string) *wrap {
 	return &wrap{k8s: k8s, vince: site}
 }
 
-var httpClient = &http.Client{}
+type siteAPI struct {
+	client http.Client
+}
 
-type siteAPI struct{}
-
-func (siteAPI) request(secret *v1.Secret, method, path string, body io.Reader) (*http.Request, error) {
+func (s *siteAPI) request(secret *v1.Secret, method, path string, body io.Reader) (*http.Request, error) {
 	uri := fmt.Sprintf("http://%s.%s.svc.cluster.local:80/api/v1/sites%s", secret.Name, secret.Namespace, path)
 	r, err := http.NewRequest(method, uri, body)
 	if err != nil {
@@ -117,28 +118,28 @@ func (siteAPI) request(secret *v1.Secret, method, path string, body io.Reader) (
 	return r, nil
 }
 
-func (siteAPI) Create(ctx context.Context, secret *v1.Secret, domain string) error {
+func (s *siteAPI) Create(ctx context.Context, secret *v1.Secret, domain string) error {
 	b, _ := json.Marshal(map[string]any{
 		"domain": domain,
 	})
-	r, err := siteAPI{}.request(secret, http.MethodPost, "", bytes.NewReader(b))
+	r, err := s.request(secret, http.MethodPost, "", bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
-	return siteAPI{}.do(r)
+	return s.do(r)
 }
 
-func (siteAPI) Delete(ctx context.Context, secret *v1.Secret, domain string) error {
+func (s *siteAPI) Delete(ctx context.Context, secret *v1.Secret, domain string) error {
 	domain = url.PathEscape(domain)
-	r, err := siteAPI{}.request(secret, http.MethodDelete, "/"+domain, nil)
+	r, err := s.request(secret, http.MethodDelete, "/"+domain, nil)
 	if err != nil {
 		return err
 	}
-	return siteAPI{}.do(r)
+	return s.do(r)
 }
 
-func (siteAPI) do(r *http.Request) error {
-	res, err := httpClient.Do(r)
+func (s *siteAPI) do(r *http.Request) error {
+	res, err := s.client.Do(r)
 	if err != nil {
 		return err
 	}
