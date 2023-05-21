@@ -79,6 +79,15 @@ func WriteFile(path string, data []byte) {
 	println("    write: ", path)
 }
 
+func ReadFile(path string) []byte {
+	println("    read: ", path)
+	b, err := os.ReadFile(path)
+	if err != nil {
+		Exit("failed to read ", path, err.Error())
+	}
+	return b
+}
+
 func Remove(path string) error {
 	err := os.Remove(path)
 	if err != nil {
