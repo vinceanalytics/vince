@@ -26,7 +26,7 @@ function compilefile(input, output, templateVars = {}) {
   }
 }
 
-const base_variants = ["hash", "outbound-links", "exclusions", "compat", "local", "manual", "file-downloads", "dimensions", "tagged-events"]
+const base_variants = ["hash", "outbound-links", "exclusions", "local", "manual", "file-downloads", "dimensions", "tagged-events"]
 const variants = [...g.clone.powerSet(base_variants)].filter(a => a.length > 0).map(a => a.sort());
 
 compilefile(relPath('src/vince.js'), relPath('../assets/js/vince.js'))

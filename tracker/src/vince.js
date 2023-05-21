@@ -4,11 +4,7 @@
   var location = window.location
   var document = window.document
 
-  {{#if compat}}
-  var scriptEl = document.getElementById('vince');
-  {{else}}
   var scriptEl = document.currentScript;
-  {{/if}}
   var endpoint = scriptEl.getAttribute('data-api') || defaultEndpoint(scriptEl)
 
   function warn(reason) {
@@ -16,14 +12,7 @@
   }
 
   function defaultEndpoint(el) {
-    {{#if compat}}
-    var pathArray = el.src.split( '/' );
-    var protocol = pathArray[0];
-    var host = pathArray[2];
-    return protocol + '//' + host  + '/api/event';
-    {{else}}
     return new URL(el.src).origin + '/api/event'
-    {{/if}}
   }
 
 
