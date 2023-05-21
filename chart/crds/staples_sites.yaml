@@ -55,7 +55,6 @@ spec:
             required:
             - domain
             - public
-            - target
             type: object
           status:
             properties:

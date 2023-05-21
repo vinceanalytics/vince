@@ -102,7 +102,7 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 	}
 
 	for _, o := range site {
-		if filter.IsIgnored(o) {
+		if filter.IsIgnored(o) || o.Spec.Target == nil {
 			continue
 		}
 		k := types.NamespacedName{
