@@ -39,42 +39,54 @@ export default defineConfig({
         items: [
           {
             text: "Site Landing Page",
+            link: "/guide/site-landing-page",
           },
           {
             text: "Site Setting",
+            link: "/guide/site-setting",
           },
           {
             text: "Change Domain Name",
+            link: "/guide/change-domain-name",
           },
           {
             text: "Invite team members,assign roles and remove users",
+            link: "/guide/invite-team-members-assign-roles-and-remove-users",
           },
           {
             text: "Open site to the public",
+            link: "/guide/open-site-to-the-public",
           },
           {
             text: "Share your stats with a private and secure link",
+            link: "/guide/share-your-stats-with-a-private-and-secure-link",
           },
           {
             text: "Send reports via email",
-          },
-          {
-            text: "Alerts",
-            items: [],
+            link: "/guide/send-reports-via-email",
           },
           {
             text: "Exclude pages from being tracked",
+            link: "/guide/exclude-pages-from-being-tracked",
           },
           {
             text: "Transfer ownership of a site",
+            link: "/guide/transfer-ownership-of-a-site",
           },
           {
             text: "Reset your site data",
+            link: "/guide/reset-your-site-data",
           },
           {
             text: "Delete your site data and stats",
+            link: "/guide/delete-your-site-data-and-stats",
           },
         ],
+      },
+      {
+        text: "Alerts",
+        collapsed: true,
+        items: [],
       },
       {
         text: "Stats Dashboard",
@@ -82,7 +94,7 @@ export default defineConfig({
         items: [],
       },
       {
-        text: "Goals and Custom EVents",
+        text: "Goals and Custom Events",
         collapsed: true,
         items: [],
       },
@@ -91,13 +103,16 @@ export default defineConfig({
         collapsed: true,
         items: [
           {
-            text: "Stats API reference"
+            text: "Stats API reference",
+            link: "/guide/stats-api-reference",
           },
           {
-            text: "Events API reference"
+            text: "Events API reference",
+            link: "/guide/events-api-reference",
           },
           {
-            text: "Site Provisioning API reference"
+            text: "Site Provisioning API reference",
+            link: "/guide/site-provisioning-api-reference",
           },
         ],
       },
@@ -106,13 +121,16 @@ export default defineConfig({
         collapsed: true,
         items: [
           {
-            text: "Change your account email address"
+            text: "Change your account email address",
+            link: "/guide/change-your-account-email-address",
           },
           {
-            text: "Reset your account password"
+            text: "Reset your account password",
+            link: "/guide/reset-your-account-password",
           },
           {
-            text: "Delete your account"
+            text: "Delete your account",
+            link: "/guide/delete-your-account",
           },
         ],
       },
