@@ -22,6 +22,7 @@ type Site struct {
 }
 
 type SiteSpec struct {
+	//+kubebuilder:validation:Pattern=`(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`
 	Domain string `json:"domain"`
 	Public bool   `json:"public"`
 	Target Target `json:"target"`
