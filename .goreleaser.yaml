@@ -38,6 +38,7 @@ builds:
         {{- if eq .Os "darwin" }}-w -buildmode=pie {{end}}
     goarch:
       - amd64
+      - arm64
     id: vince
     main: main.go
     binary: vince
