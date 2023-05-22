@@ -4,8 +4,8 @@ builds:
       - CGO_ENABLED=1
       - >-
         {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-macos{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-macos{{- end }}
+          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-macos -F{{.Env.FOUNDATION}}{{- end }}
+          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-macos -F{{.Env.FOUNDATION}}{{- end }}
         {{- end }}
         {{- if eq .Os "windows" }}
           {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-windows{{- end }}
@@ -17,8 +17,8 @@ builds:
         {{- end }}
       - >-
         {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-macos{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-macos{{- end }}
+          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-macos -F{{.Env.FOUNDATION}}{{- end }}
+          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-macos -F{{.Env.FOUNDATION}}{{- end }}
         {{- end }}
         {{- if eq .Os "windows" }}
           {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-windows{{- end }}
@@ -34,6 +34,8 @@ builds:
       - windows
     ldflags:
       - -linkmode=external
+      - >-
+        {{- if eq .Os "darwin" }}-w -buildmode=pie {{end}}
     goarch:
       - amd64
     id: vince
