@@ -1,7 +1,7 @@
 project_name: vince
 builds:
   - env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
       - >-
         {{- if eq .Os "darwin" }}
           {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-macos-musl{{- end }}
