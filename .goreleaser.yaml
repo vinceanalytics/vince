@@ -8,8 +8,8 @@ builds:
           {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-macos{{- end }}
         {{- end }}
         {{- if eq .Os "windows" }}
-          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-windows-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-windows-musl{{- end }}
+          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-windows{{- end }}
+          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-windows{{- end }}
         {{- end }}
         {{- if eq .Os "linux" }}
           {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-linux-musl{{- end }}
@@ -17,12 +17,12 @@ builds:
         {{- end }}
       - >-
         {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-macos-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-macos-musl{{- end }}
+          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-macos{{- end }}
+          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-macos{{- end }}
         {{- end }}
         {{- if eq .Os "windows" }}
-          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-windows-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-windows-musl{{- end }}
+          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-windows{{- end }}
+          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-windows{{- end }}
         {{- end }}
         {{- if eq .Os "linux" }}
           {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-linux-musl{{- end }}
@@ -30,6 +30,10 @@ builds:
         {{- end }}
     goos:
       - darwin
+      - linux
+      - windows
+    ldflags:
+      - -linkmode=external
     goarch:
       - amd64
     id: vince
