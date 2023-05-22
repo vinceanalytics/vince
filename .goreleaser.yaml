@@ -34,8 +34,14 @@ builds:
       - windows
     ldflags:
       - -linkmode=external
+      - -extldflags -static
       - >-
         {{- if eq .Os "darwin" }}-w -buildmode=pie {{end}}
+    tags:
+      - static_build
+      - cgo
+      - netgo
+      - osusergo
     goarch:
       - amd64
       - arm64

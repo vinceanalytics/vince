@@ -17,11 +17,13 @@ import (
 	"github.com/gernest/vince/pkg/db"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/pkg/schema"
-	"github.com/gernest/vince/pkg/sqlite"
+
+	// "github.com/gernest/vince/pkg/sqlite"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/time/rate"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
