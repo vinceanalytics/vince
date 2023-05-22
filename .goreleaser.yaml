@@ -4,8 +4,8 @@ builds:
       - CGO_ENABLED=1
       - >-
         {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-macos-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-macos-musl{{- end }}
+          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-macos{{- end }}
+          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-macos{{- end }}
         {{- end }}
         {{- if eq .Os "windows" }}
           {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-windows-musl{{- end }}
@@ -17,24 +17,21 @@ builds:
         {{- end }}
       - >-
         {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CXX=zig cc -target x86_64-macos-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig cc -target aarch64-macos-musl{{- end }}
+          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-macos-musl{{- end }}
+          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-macos-musl{{- end }}
         {{- end }}
         {{- if eq .Os "windows" }}
-          {{- if eq .Arch "amd64"}}CXX=zig cc -target x86_64-windows-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig cc -target aarch64-windows-musl{{- end }}
+          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-windows-musl{{- end }}
+          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-windows-musl{{- end }}
         {{- end }}
         {{- if eq .Os "linux" }}
-          {{- if eq .Arch "amd64"}}CXX=zig cc -target x86_64-linux-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig cc -target aarch64-linux-musl{{- end }}
+          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-linux-musl{{- end }}
+          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-linux-musl{{- end }}
         {{- end }}
     goos:
-      - linux
-      - windows
       - darwin
     goarch:
       - amd64
-      - arm64
     id: vince
     main: main.go
     binary: vince
