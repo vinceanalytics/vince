@@ -12,22 +12,10 @@ import (
 const (
 	userOffset          = 0
 	siteOffset          = userOffset + 8
-	yearOffset          = siteOffset + 8
-	aggregateTypeOffset = yearOffset + 8
+	aggregateTypeOffset = siteOffset + 8
 	propOffset          = aggregateTypeOffset + 1
-	hashOffset          = propOffset + 1
-)
-
-type aggregateType byte
-
-const (
-	visitorsType aggregateType = iota
-	viewsType
-	eventsType
-	visitsType
-	bounceRateType
-	visitDurationType
-	viewsPerVisit
+	yearOffset          = propOffset + 1
+	hashOffset          = yearOffset + 8
 )
 
 // ID identifies a key that stores a single aggregate value. Keys are
@@ -49,7 +37,7 @@ func (id *ID) SetSiteID(u uint64) {
 	binary.BigEndian.PutUint64(id[siteOffset:], u)
 }
 
-func (id *ID) SetAggregateType(u aggregateType) *ID {
+func (id *ID) SetAggregateType(u METRIC_TYPE) *ID {
 	id[aggregateTypeOffset] = byte(u)
 	return id
 }
@@ -106,7 +94,7 @@ var metaKeyPool = &sync.Pool{
 // stores values for props
 type MetaKey [hashOffset + 4]byte
 
-func (id *MetaKey) SetAggregateType(u aggregateType) *MetaKey {
+func (id *MetaKey) SetAggregateType(u METRIC_TYPE) *MetaKey {
 	id[aggregateTypeOffset] = byte(u)
 	return id
 }
@@ -146,6 +134,10 @@ func (id *MetaKey) Prefix() []byte {
 
 func (id *MetaKey) String(s string) *bytes.Buffer {
 	b := smallBufferpool.Get().(*bytes.Buffer)
+	return id.StringBuffer(b, s)
+}
+
+func (id *MetaKey) StringBuffer(b *bytes.Buffer, s string) *bytes.Buffer {
 	b.Write(id[:])
 	b.WriteString(s)
 	return b

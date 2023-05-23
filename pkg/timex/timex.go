@@ -7,6 +7,7 @@
 package timex
 
 import (
+	"encoding/binary"
 	"time"
 
 	"github.com/jinzhu/now"
@@ -75,7 +76,8 @@ func Timestamp(ts time.Time) uint64 {
 	return uint64(d.Hours())
 }
 
-func FromTimestamp(ts uint64) int64 {
+func FromTimestamp(b []byte) int64 {
+	ts := binary.BigEndian.Uint64(b)
 	d := time.Duration(ts) * time.Hour
 	return int64(uint64(d.Seconds()))
 }

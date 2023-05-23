@@ -11,13 +11,9 @@ import (
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/dgraph-io/badger/v4"
-	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/pkg/plot"
-	"github.com/gernest/vince/pkg/timex"
 	"github.com/gernest/vince/store"
 	"github.com/gernest/vince/system"
-	"github.com/gernest/vince/ua"
 )
 
 type aggregate struct {
@@ -142,15 +138,17 @@ func Save(ctx context.Context, b *Buffer) {
 }
 
 func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
+	f := newCityFinder(ctx)
+	defer f.Release()
 	errs := make([]error, 0, PROPS_CITY)
 	for i := 1; i <= int(PROPS_CITY); i++ {
 		p := PROPS(i)
-		errs = append(errs, p.Save(ctx, ls, txn, el, g, x, ts))
+		errs = append(errs, p.Save(ctx, f, ls, txn, el, g, x, ts))
 	}
 	return errors.Join(errs...)
 }
 
-func (p PROPS) Save(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
+func (p PROPS) Save(ctx context.Context, f *CityFinder, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	switch p {
 	case PROPS_NAME, PROPS_PAGE, PROPS_ENTRY_PAGE, PROPS_EXIT_PAGE,
 		PROPS_REFERRER, PROPS_UTM_MEDIUM, PROPS_UTM_SOURCE,
@@ -169,44 +167,44 @@ func (p PROPS) Save(ctx context.Context, ls *metaList, txn *badger.Txn, el Entry
 		})
 	case PROPS_CITY:
 		return g.City(el, func(key uint32, sum *store.Sum) error {
-			return updateCalendarHash(ctx, ls, txn, ts, x.SetProp(byte(p)).HashU32(key), sum)
+			city := f.Get(ctx, key)
+			if city == "" {
+				return nil
+			}
+			return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), city, sum)
 		})
 	default:
 		return nil
 	}
 }
 
-func (p PROPS) Key(ctx context.Context, key []byte) (s string) {
-	switch p {
-	case PROPS_NAME, PROPS_PAGE, PROPS_ENTRY_PAGE, PROPS_EXIT_PAGE,
-		PROPS_REFERRER, PROPS_UTM_MEDIUM, PROPS_UTM_SOURCE,
-		PROPS_UTM_CAMPAIGN, PROPS_UTM_CONTENT, PROPS_UTM_TERM:
-		return string(key)
-	case PROPS_UTM_DEVICE, PROPS_UTM_BROWSER, PROPS_BROWSER_VERSION, PROPS_OS, PROPS_OS_VERSION:
-		return ua.FromIndex(binary.BigEndian.Uint16(key))
-	case PROPS_COUNTRY, PROPS_REGION:
-		return cities.NameFromIndex(binary.BigEndian.Uint16(key))
-	case PROPS_CITY:
-		err := GetGeo(ctx).View(func(txn *badger.Txn) error {
-			x, err := txn.Get(key)
-			if err != nil {
-				if errors.Is(err, badger.ErrKeyNotFound) {
-					return nil
-				}
-				return err
-			}
-			return x.Value(func(val []byte) error {
-				s = string(val)
-				return nil
-			})
-		})
-		if err != nil {
-			log.Get(ctx).Err(err).
-				Uint32("geoname_id", binary.BigEndian.Uint32(key)).
-				Msg("failed to get city by geoname id")
-		}
+type CityFinder struct {
+	txn *badger.Txn
+	key [4]byte
+}
+
+func (c *CityFinder) Release() {
+	c.txn.Discard()
+}
+
+func (c *CityFinder) Get(ctx context.Context, geoname uint32) (s string) {
+	binary.BigEndian.PutUint32(c.key[:], geoname)
+	x, err := c.txn.Get(c.key[:])
+	if err != nil {
+		log.Get(ctx).Err(err).Msg("failed to get city by geoname id")
+		return ""
 	}
+	x.Value(func(val []byte) error {
+		s = string(val)
+		return nil
+	})
 	return
+}
+
+func newCityFinder(ctx context.Context) *CityFinder {
+	return &CityFinder{
+		txn: GetGeo(ctx).NewTransaction(false),
+	}
 }
 
 func updateCalendarText(ctx context.Context,
@@ -214,39 +212,25 @@ func updateCalendarText(ctx context.Context,
 	txn *badger.Txn, ts time.Time,
 	m *MetaKey, text string, a *store.Sum) error {
 	return errors.Join(
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitorsType).String(text), a.Visitors),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(viewsType).String(text), a.Views),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(eventsType).String(text), a.Events),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitsType).String(text), a.Visits),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(bounceRateType).String(text), a.BounceRate),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitDurationType).String(text), a.VisitDuration),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(viewsPerVisit).String(text), a.ViewsPerVisit),
-	)
-}
-func updateCalendarHash(ctx context.Context,
-	ls *metaList,
-	txn *badger.Txn, ts time.Time,
-	m *MetaKey, a *store.Sum) error {
-	return errors.Join(
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitorsType).Copy(), a.Visitors),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(viewsType).Copy(), a.Views),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(eventsType).Copy(), a.Events),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitsType).Copy(), a.Visits),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(bounceRateType).Copy(), a.BounceRate),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitDurationType).Copy(), a.VisitDuration),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(viewsPerVisit).Copy(), a.ViewsPerVisit),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visitors).String(text), a.Visitors),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_views).String(text), a.Views),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_events).String(text), a.Events),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visits).String(text), a.Visits),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_bounce_rate).String(text), a.BounceRate),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visitDuration).String(text), a.VisitDuration),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_viewsPerVisit).String(text), a.ViewsPerVisit),
 	)
 }
 
 func updateRoot(ctx context.Context, ls *idList, txn *badger.Txn, ts time.Time, id *ID, a *store.Sum) error {
 	return errors.Join(
-		updateKey(ctx, ls, visitorsType, txn, id, a.Visitors),
-		updateKey(ctx, ls, viewsType, txn, id, a.Views),
-		updateKey(ctx, ls, eventsType, txn, id, a.Events),
-		updateKey(ctx, ls, visitsType, txn, id, a.Visits),
-		updateKey(ctx, ls, bounceRateType, txn, id, a.BounceRate),
-		updateKey(ctx, ls, visitDurationType, txn, id, a.VisitDuration),
-		updateKey(ctx, ls, viewsPerVisit, txn, id, a.ViewsPerVisit),
+		updateKey(ctx, ls, METRIC_TYPE_visitors, txn, id, a.Visitors),
+		updateKey(ctx, ls, METRIC_TYPE_views, txn, id, a.Views),
+		updateKey(ctx, ls, METRIC_TYPE_events, txn, id, a.Events),
+		updateKey(ctx, ls, METRIC_TYPE_visits, txn, id, a.Visits),
+		updateKey(ctx, ls, METRIC_TYPE_bounce_rate, txn, id, a.BounceRate),
+		updateKey(ctx, ls, METRIC_TYPE_visitDuration, txn, id, a.VisitDuration),
+		updateKey(ctx, ls, METRIC_TYPE_viewsPerVisit, txn, id, a.ViewsPerVisit),
 	)
 }
 
@@ -317,7 +301,7 @@ var smallBufferpool = &sync.Pool{
 	},
 }
 
-func updateKey(ctx context.Context, ls *idList, kind aggregateType, txn *badger.Txn, id *ID, a uint32) error {
+func updateKey(ctx context.Context, ls *idList, kind METRIC_TYPE, txn *badger.Txn, id *ID, a uint32) error {
 	clone := id.Clone().SetAggregateType(kind)
 	ls.ls = append(ls.ls, clone)
 	key := clone[:]
@@ -351,153 +335,4 @@ func updateMetaKey(ctx context.Context, ls *metaList, txn *badger.Txn, id *bytes
 	ls.ls = append(ls.ls, id)
 	key := id.Bytes()
 	return updateKeyRaw(ctx, txn, key, a)
-}
-
-func ReadCalendars(ctx context.Context, pick timex.Range, uid, sid uint64) *plot.Data {
-	start := time.Now()
-	defer system.CalendarReadDuration.Observe(time.Since(start).Seconds())
-	m := GetMike(ctx)
-	id := newID()
-	defer id.Release()
-	id.SetUserID(uid)
-	id.SetSiteID(sid)
-
-	meta := newMetaKey()
-	defer meta.Release()
-
-	meta.SetUserID(uid)
-	meta.SetSiteID(sid)
-	var data plot.Data
-	for _, r := range pick.Build() {
-		ts := r.TS()
-		id.Timestamp(ts)
-		meta.Timestamp(ts)
-		err := readCalendar(ctx, pick, m, id, meta, &data)
-		if err != nil {
-			log.Get(ctx).Err(err).Msg("failed to read calendar")
-			return nil
-		}
-	}
-	data.Timestamps = pick.Timestamps()
-	return data.Build()
-}
-
-func readCalendar(ctx context.Context, pick timex.Range, m *badger.DB, id *ID, meta *MetaKey, data *plot.Data) error {
-	return m.View(func(txn *badger.Txn) error {
-		return errors.Join(
-			readAllAggregate(txn, pick, id, data),
-			readAllMeta(ctx, txn, pick, meta, data),
-		)
-	})
-}
-
-func readAllMeta(ctx context.Context, txn *badger.Txn, pick timex.Range, id *MetaKey, data *plot.Data) error {
-	var errList []error
-	for i := PROPS_NAME; i <= PROPS_CITY; i++ {
-		id.SetProp(byte(i))
-		errList = append(errList, readMetaCal(txn, id.Prefix(), func(b []byte, c *store.Calendar) error {
-			a, err := calToAggregate(pick, c)
-			if err != nil {
-				return err
-			}
-			data.Set(plot.Property(i-1), i.Key(ctx, b), a)
-			return nil
-		}))
-	}
-	return errors.Join(errList...)
-}
-
-func calToAggregate(pick timex.Range, c *store.Calendar) (o plot.AggregateValues, err error) {
-	err = errors.Join(
-		readAggregate(pick, c.SeriesVisitors, &o.Visitors),
-		readAggregate(pick, c.SeriesViews, &o.Views),
-		readAggregate(pick, c.SeriesEvents, &o.Events),
-		readAggregate(pick, c.SeriesVisits, &o.Visits),
-		readAggregate(pick, c.SeriesBounceRates, &o.BounceRate),
-		readAggregate(pick, c.SeriesVisitDuration, &o.VisitDuration),
-		readAggregate(pick, c.SeriesViewsPerVisit, &o.ViewsPerVisit),
-	)
-	return
-}
-
-func readAggregate(pick timex.Range, f func(time.Time, time.Time) ([]float64, error), o *[]float64) error {
-	v, err := f(pick.From, pick.To)
-	if err != nil {
-		return err
-	}
-	*o = v
-	return nil
-}
-
-func readMetaCal(txn *badger.Txn, prefix []byte, f func([]byte, *store.Calendar) error) error {
-	o := badger.IteratorOptions{
-		PrefetchValues: true,
-		// be conservative. This should balance between high cardinality props with
-		// low cardinality ones.
-		PrefetchSize: 5,
-		Prefix:       prefix,
-	}
-	it := txn.NewIterator(o)
-	defer it.Close()
-
-	for it.Rewind(); it.Valid(); it.Next() {
-		x := it.Item()
-		key := x.Key()
-		err := x.Value(func(val []byte) error {
-			return store.CalendarFromBytes(val, func(c *store.Calendar) error {
-				return f(key[len(prefix):], c)
-			})
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func readAllAggregate(txn *badger.Txn, pick timex.Range, id *ID, data *plot.Data) error {
-	data.All = &plot.Aggregate{
-		Visitors:      &plot.Entry{},
-		Views:         &plot.Entry{},
-		Events:        &plot.Entry{},
-		Visits:        &plot.Entry{},
-		BounceRate:    &plot.Entry{},
-		VisitDuration: &plot.Entry{},
-		ViewsPerVisit: &plot.Entry{},
-	}
-	return readCal(txn, id[:], func(c *store.Calendar) error {
-		return errors.Join(
-			readEntry(pick, c.SeriesVisitors, &data.All.Visitors),
-			readEntry(pick, c.SeriesViews, &data.All.Views),
-			readEntry(pick, c.SeriesEvents, &data.All.Events),
-			readEntry(pick, c.SeriesVisits, &data.All.Visits),
-			readEntry(pick, c.SeriesBounceRates, &data.All.BounceRate),
-			readEntry(pick, c.SeriesVisitDuration, &data.All.VisitDuration),
-			readEntry(pick, c.SeriesViewsPerVisit, &data.All.ViewsPerVisit),
-		)
-	})
-}
-
-func readEntry(pick timex.Range, f func(time.Time, time.Time) ([]float64, error), e **plot.Entry) error {
-	v, err := f(pick.From, pick.To)
-	if err != nil {
-		return err
-	}
-	*e = &plot.Entry{
-		Values: v,
-	}
-	return nil
-}
-
-func readCal(txn *badger.Txn, key []byte, f func(*store.Calendar) error) error {
-	it, err := txn.Get(key)
-	if err != nil {
-		if errors.Is(err, badger.ErrKeyNotFound) {
-			return nil
-		}
-		return err
-	}
-	return it.Value(func(val []byte) error {
-		return store.CalendarFromBytes(val, f)
-	})
 }
