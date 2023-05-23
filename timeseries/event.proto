@@ -44,7 +44,7 @@ message Entry {
 }
 
 enum PROPS {
-  unknown = 0;
+  BASE = 0;
   NAME = 1;
   PAGE = 2;
   ENTRY_PAGE = 3;
