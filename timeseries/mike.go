@@ -30,29 +30,15 @@ var groupPool = &sync.Pool{
 	},
 }
 
-func (g *aggregate) Reset() {
-	g.u.Clear()
-	g.s.Clear()
-	g.sum = store.Sum{}
-}
-
 func (g *aggregate) Save(el EntryList) {
-	g.Reset()
 	el.Count(g.u, g.s, &g.sum)
 }
 
 func (g *aggregate) Prop(ctx context.Context, cf *CityFinder, el EntryList, by PROPS, f func(key string, sum *store.Sum) error) error {
-	g.Reset()
 	return el.EmitProp(ctx, cf, g.u, g.s, by, &g.sum, f)
 }
 
-func (g *aggregate) City(el EntryList, f func(key uint32, sum *store.Sum) error) error {
-	g.Reset()
-	return el.EmitCity(g.u, g.s, &g.sum, f)
-}
-
 func (g *aggregate) Release() {
-	g.Reset()
 	groupPool.Put(g)
 }
 
@@ -115,7 +101,6 @@ func Save(ctx context.Context, b *Buffer) {
 	// Guarantee that aggregates are on per hour windows.
 	ent.Emit(func(el EntryList) {
 		defer func() {
-			group.Reset()
 			ls.Reset()
 		}()
 		group.Save(el)

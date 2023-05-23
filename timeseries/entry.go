@@ -103,6 +103,9 @@ func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *store.Sum) {
 	if len(ls) == 0 {
 		return
 	}
+	*sum = store.Sum{}
+	u.Clear()
+	s.Clear()
 	var signSum, bounce, views, events, visitors int32
 	var duration float64
 	for _, e := range ls {
@@ -318,48 +321,18 @@ func (e EntryList) EmitProp(ctx context.Context, cf *CityFinder, u, s *roaring64
 			continue
 		}
 		if lastKey == "" {
-			// empty keys starts first. Here we have non empty key, we start counting
-			// for this key forward.
+			// e is sorted in ascending order. This guarantees empty strings will
+			// appear first on the list.
+			//
+			// Here current key is not empty but last key was empty. We mark this as
+			// the start of our iteration.
 			lastKey = currentKey
 			start = i
 			continue
 		}
 		if lastKey != currentKey {
-			// we have come across anew key, save the old key
-			e[start:i].Count(u, s, sum)
-			err := f(lastKey, sum)
-			if err != nil {
-				return err
-			}
-			start = i
-			lastKey = currentKey
-		}
-	}
-	if start < len(e)-1 {
-		e[start:].Count(u, s, sum)
-		return f(lastKey, sum)
-	}
-	return nil
-}
-
-func (e EntryList) EmitCity(u, s *roaring64.Bitmap, sum *store.Sum, f func(key uint32, sum *store.Sum) error) error {
-	e.Sort(PROPS_city)
-	var start int
-	var lastKey, currentKey uint32
-	for i := range e {
-		currentKey = e[i].CityGeoNameId
-		if currentKey == 0 {
-			continue
-		}
-		if lastKey == 0 {
-			// empty keys starts first. Here we have non empty key, we start counting
-			// for this key forward.
-			lastKey = currentKey
-			start = i
-			continue
-		}
-		if lastKey != currentKey {
-			// we have come across anew key, save the old key
+			// we have come across a new key. Aggregate the old key and call
+			// f on the result.
 			e[start:i].Count(u, s, sum)
 			err := f(lastKey, sum)
 			if err != nil {
