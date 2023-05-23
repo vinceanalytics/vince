@@ -23,16 +23,22 @@ func Open(ctx context.Context, o *config.Config) (context.Context, io.Closer, er
 	if err != nil {
 		return nil, nil, err
 	}
+	index, err := open(ctx, filepath.Join(dir, "index"))
+	if err != nil {
+		mike.Close()
+		return nil, nil, err
+	}
 	geo, err := openGeo(ctx, filepath.Join(dir, "geo"))
 	if err != nil {
 		mike.Close()
+		index.Close()
 		return nil, nil, err
 	}
 	ctx = context.WithValue(ctx, mikeKey{}, mike)
 	ctx = context.WithValue(ctx, geoKey{}, geo)
 	ctx = SetMap(ctx, NewMap())
 
-	resource := resourceList{mike, geo}
+	resource := resourceList{mike, index, geo}
 	return ctx, resource, nil
 }
 
@@ -84,10 +90,16 @@ type mikeKey struct{}
 
 type geoKey struct{}
 
+type indexKey struct{}
+
 func GetMike(ctx context.Context) *badger.DB {
 	return ctx.Value(mikeKey{}).(*badger.DB)
 }
 
 func GetGeo(ctx context.Context) *badger.DB {
 	return ctx.Value(geoKey{}).(*badger.DB)
+}
+
+func GetIndex(ctx context.Context) *badger.DB {
+	return ctx.Value(indexKey{}).(*badger.DB)
 }
