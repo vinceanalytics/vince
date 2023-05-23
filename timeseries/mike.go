@@ -56,26 +56,12 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 	defer system.DropSiteDuration.Observe(time.Since(start).Seconds())
 
 	db := GetMike(ctx)
-	id := newID()
+	id := newMetaKey()
 	defer id.Release()
-
 	id.SetUserID(uid)
 	id.SetSiteID(sid)
-
-	err := db.Update(func(txn *badger.Txn) error {
-		o := badger.IteratorOptions{
-			Prefix: id.SitePrefix(),
-		}
-		it := txn.NewIterator(o)
-		defer it.Close()
-		for it.Rewind(); it.Valid(); it.Next() {
-			err := txn.Delete(it.Item().KeyCopy(nil))
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	// remove all keys under /user_id/site_id/ prefix.
+	err := db.DropPrefix(id[:aggregateTypeOffset])
 	if err != nil {
 		log.Get(ctx).Err(err).
 			Uint64("uid", uid).
@@ -93,31 +79,26 @@ func Save(ctx context.Context, b *Buffer) {
 	defer b.Release()
 	group := groupPool.Get().(*aggregate)
 	ent := EntryList(b.entries)
-	id := newID()
-	defer id.Release()
 	meta := newMetaKey()
 	defer meta.Release()
-	ls := newIDList()
-	defer ls.Release()
 	mls := newMetaList()
 	defer mls.Release()
 
-	// The first 16 bytes of ID and MetaKey are for user id and site id. We just copy it
-	// directly from the buffer.
-	copy(id[:], b.id[:])
+	// Buffer.id has the same encoding as the first 16 bytes of meta. We just copy that
+	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
 
 	// Guarantee that aggregates are on per hour windows.
 	ent.Emit(func(el EntryList) {
 		defer func() {
-			ls.Reset()
+			mls.Reset()
 		}()
 		group.Save(el)
 		ts := time.Unix(el[0].Timestamp, 0)
+		meta.Timestamp(ts)
 		err := db.Update(func(txn *badger.Txn) error {
-			id.Timestamp(ts)
 			return errors.Join(
-				saveProp(ctx, mls, txn, ts, meta.SetProp(PROPS_base), "__root_", &group.sum),
+				saveProp(ctx, mls, txn, meta.SetProp(PROPS_base), "__root_", &group.sum),
 				updateMeta(ctx, mls, txn, el, group, meta, ts),
 			)
 		})
@@ -130,7 +111,7 @@ func Save(ctx context.Context, b *Buffer) {
 	})
 }
 
-func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
+func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *Key, ts time.Time) error {
 	f := newCityFinder(ctx)
 	defer f.Release()
 	errs := make([]error, 0, PROPS_city)
@@ -141,9 +122,9 @@ func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList
 	return errors.Join(errs...)
 }
 
-func (p PROPS) Save(ctx context.Context, f *CityFinder, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
+func (p PROPS) Save(ctx context.Context, f *CityFinder, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *Key, ts time.Time) error {
 	return g.Prop(ctx, f, el, p, func(key string, sum *Sum) error {
-		return saveProp(ctx, ls, txn, ts, x.SetProp(p), key, sum)
+		return saveProp(ctx, ls, txn, x.SetProp(p), key, sum)
 	})
 }
 
@@ -178,8 +159,8 @@ func newCityFinder(ctx context.Context) *CityFinder {
 
 func saveProp(ctx context.Context,
 	ls *metaList,
-	txn *badger.Txn, ts time.Time,
-	m *MetaKey, text string, a *Sum) error {
+	txn *badger.Txn,
+	m *Key, text string, a *Sum) error {
 	return errors.Join(
 		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visitors).String(text), a.Visitors),
 		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_views).String(text), a.Views),
@@ -189,36 +170,6 @@ func saveProp(ctx context.Context,
 		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visitDuration).String(text), a.VisitDuration),
 		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_viewsPerVisit).String(text), a.ViewsPerVisit),
 	)
-}
-
-// Transaction keep reference to keys. We need this to make sure we reuse ID and properly
-// release them back to the pool when done.
-type idList struct {
-	ls []*ID
-}
-
-func newIDList() *idList {
-	return idListPool.New().(*idList)
-}
-
-func (ls *idList) Reset() {
-	for _, v := range ls.ls {
-		v.Release()
-	}
-	ls.ls = ls.ls[:0]
-}
-
-func (ls *idList) Release() {
-	ls.Reset()
-	idListPool.Put(ls)
-}
-
-var idListPool = &sync.Pool{
-	New: func() any {
-		return &idList{
-			ls: make([]*ID, 0, 1<<10),
-		}
-	},
 }
 
 // Transaction keep reference to keys. We need this to make sure we reuse ID and properly
