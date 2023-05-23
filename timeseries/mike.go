@@ -233,14 +233,27 @@ var smallBufferpool = &sync.Pool{
 	},
 }
 
-func updateKeyRaw(ctx context.Context, sctx *saveContext, key []byte, a uint32) error {
+func updateKeyRaw(ctx context.Context, sctx *saveContext, id *IDToSave, a uint32) error {
 	txn := sctx.txn
+	key := id.mike.Bytes()
 	x, err := txn.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
 			b := make([]byte, 8)
 			binary.BigEndian.PutUint64(b, math.Float64bits(float64(a)))
-			return txn.Set(key, b)
+			err := txn.Set(key, b)
+			if err != nil {
+				return err
+			}
+			// We have successfully set the key, now we set the index. We only index
+			// new keys. Since keys are stable, there is no need to index again when
+			// doing update.
+			err = sctx.saveIndex(id.index)
+			if err != nil {
+				log.Get(ctx).Err(err).
+					Msg("failed to save index")
+			}
+			return err
 		}
 		return err
 	}
@@ -257,8 +270,7 @@ func updateKeyRaw(ctx context.Context, sctx *saveContext, key []byte, a uint32) 
 	return txn.Set(key, b)
 }
 
-func updateMetaKey(ctx context.Context, sctx *saveContext, id *bytes.Buffer, a uint32) error {
-	sctx.ls.ls = append(sctx.ls.ls, id)
-	key := id.Bytes()
-	return updateKeyRaw(ctx, sctx, key, a)
+func updateMetaKey(ctx context.Context, sctx *saveContext, id *IDToSave, a uint32) error {
+	sctx.ls.ls = append(sctx.ls.ls, id.mike, id.index)
+	return updateKeyRaw(ctx, sctx, id, a)
 }

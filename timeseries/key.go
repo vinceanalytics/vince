@@ -60,9 +60,18 @@ func (id *Key) Copy() *bytes.Buffer {
 	return b
 }
 
-func (id *Key) Key(s string) *bytes.Buffer {
+type IDToSave struct {
+	mike  *bytes.Buffer
+	index *bytes.Buffer
+}
+
+func (id *Key) Key(s string) *IDToSave {
 	b := smallBufferpool.Get().(*bytes.Buffer)
-	return id.KeyBuffer(b, s)
+	idx := smallBufferpool.Get().(*bytes.Buffer)
+	return &IDToSave{
+		mike:  id.KeyBuffer(b, s),
+		index: id.IndexBuffer(idx, s),
+	}
 }
 
 func (id *Key) KeyBuffer(b *bytes.Buffer, s string) *bytes.Buffer {
