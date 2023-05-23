@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/vince/store"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go/bloom/xxhash"
 	"google.golang.org/protobuf/proto"
@@ -99,11 +98,11 @@ func (e *Entries) List() EntryList {
 	return EntryList(e.Events)
 }
 
-func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *store.Sum) {
+func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *Sum) {
 	if len(ls) == 0 {
 		return
 	}
-	*sum = store.Sum{}
+	*sum = Sum{}
 	u.Clear()
 	s.Clear()
 	var signSum, bounce, views, events, visitors int32
@@ -234,7 +233,7 @@ func (e EntryList) Sort(by PROPS) {
 	sort.Slice(e, less)
 }
 
-func (e EntryList) EmitProp(ctx context.Context, cf *CityFinder, u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f func(key string, sum *store.Sum) error) error {
+func (e EntryList) EmitProp(ctx context.Context, cf *CityFinder, u, s *roaring64.Bitmap, by PROPS, sum *Sum, f func(key string, sum *Sum) error) error {
 	e.Sort(by)
 	var key func(*Entry) string
 	switch by {

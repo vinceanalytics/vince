@@ -12,13 +12,22 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/store"
 	"github.com/gernest/vince/system"
 )
 
+type Sum struct {
+	Visitors      uint32
+	Views         uint32
+	Events        uint32
+	Visits        uint32
+	BounceRate    uint32
+	VisitDuration uint32
+	ViewsPerVisit uint32
+}
+
 type aggregate struct {
 	u, s *roaring64.Bitmap
-	sum  store.Sum
+	sum  Sum
 }
 
 var groupPool = &sync.Pool{
@@ -34,7 +43,7 @@ func (g *aggregate) Save(el EntryList) {
 	el.Count(g.u, g.s, &g.sum)
 }
 
-func (g *aggregate) Prop(ctx context.Context, cf *CityFinder, el EntryList, by PROPS, f func(key string, sum *store.Sum) error) error {
+func (g *aggregate) Prop(ctx context.Context, cf *CityFinder, el EntryList, by PROPS, f func(key string, sum *Sum) error) error {
 	return el.EmitProp(ctx, cf, g.u, g.s, by, &g.sum, f)
 }
 
@@ -134,7 +143,7 @@ func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList
 }
 
 func (p PROPS) Save(ctx context.Context, f *CityFinder, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
-	return g.Prop(ctx, f, el, p, func(key string, sum *store.Sum) error {
+	return g.Prop(ctx, f, el, p, func(key string, sum *Sum) error {
 		return saveProp(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
 	})
 }
@@ -171,7 +180,7 @@ func newCityFinder(ctx context.Context) *CityFinder {
 func saveProp(ctx context.Context,
 	ls *metaList,
 	txn *badger.Txn, ts time.Time,
-	m *MetaKey, text string, a *store.Sum) error {
+	m *MetaKey, text string, a *Sum) error {
 	return errors.Join(
 		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visitors).String(text), a.Visitors),
 		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_views).String(text), a.Views),
@@ -183,7 +192,7 @@ func saveProp(ctx context.Context,
 	)
 }
 
-func updateRoot(ctx context.Context, ls *idList, txn *badger.Txn, ts time.Time, id *ID, a *store.Sum) error {
+func updateRoot(ctx context.Context, ls *idList, txn *badger.Txn, ts time.Time, id *ID, a *Sum) error {
 	return errors.Join(
 		updateKey(ctx, ls, METRIC_TYPE_visitors, txn, id, a.Visitors),
 		updateKey(ctx, ls, METRIC_TYPE_views, txn, id, a.Views),
