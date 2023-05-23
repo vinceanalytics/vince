@@ -94,7 +94,9 @@ func Save(ctx context.Context, b *Buffer) {
 
 	// Guarantee that aggregates are on per hour windows.
 	ent.Emit(func(el EntryList) {
+		// This ensures indexes are committed and resources reclaimed for reuse.
 		defer sctx.Reset(ctx)
+
 		group.Save(el)
 		ts := time.Unix(el[0].Timestamp, 0)
 		meta.Timestamp(ts)
