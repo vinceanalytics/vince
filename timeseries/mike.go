@@ -98,7 +98,7 @@ func Save(ctx context.Context, b *Buffer) {
 		meta.Timestamp(ts)
 		err := db.Update(func(txn *badger.Txn) error {
 			return errors.Join(
-				saveProp(ctx, mls, txn, meta.SetProp(PROPS_base), "__root_", &group.sum),
+				saveProp(ctx, mls, txn, meta.SetProp(PROPS_base), "__root__", &group.sum),
 				updateMeta(ctx, mls, txn, el, group, meta, ts),
 			)
 		})

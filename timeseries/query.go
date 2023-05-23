@@ -26,6 +26,7 @@ type QueryRequest struct {
 	UserID  uint64
 	SiteID  uint64
 	Range   timex.Range
+	NoRoot  bool
 	Metrics []METRIC_TYPE
 	Props   map[PROPS]*Match
 }
@@ -79,6 +80,12 @@ func Query(ctx context.Context, request QueryRequest) (r PropResult) {
 	}()
 	m.SetUserID(request.UserID)
 	m.SetSiteID(request.UserID)
+	if !request.NoRoot {
+		if request.Props == nil {
+			request.Props = make(map[PROPS]*Match)
+		}
+		request.Props[PROPS_base] = &Match{Text: "__root__"}
+	}
 	if len(request.Props) == 0 {
 		return
 	}

@@ -106,12 +106,6 @@ func (id *Key) Release() {
 	metaKeyPool.Put(id)
 }
 
-func (id *Key) Clone() *Key {
-	x := newMetaKey()
-	copy(x[:], id[:])
-	return x
-}
-
 func newMetaKey() *Key {
 	return metaKeyPool.Get().(*Key)
 }
