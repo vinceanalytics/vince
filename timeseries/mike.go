@@ -43,7 +43,7 @@ func (g *aggregate) Save(el EntryList) {
 	el.Count(g.u, g.s, &g.sum)
 }
 
-func (g *aggregate) Prop(ctx context.Context, cf *CityFinder, el EntryList, by PROPS, f func(key string, sum *Sum) error) error {
+func (g *aggregate) Prop(ctx context.Context, cf *saveContext, el EntryList, by PROPS, f func(key string, sum *Sum) error) error {
 	return el.EmitProp(ctx, cf, g.u, g.s, by, &g.sum, f)
 }
 
@@ -83,23 +83,26 @@ func Save(ctx context.Context, b *Buffer) {
 	defer meta.Release()
 	mls := newMetaList()
 	defer mls.Release()
-
+	sctx := &saveContext{}
+	sctx.Reset(ctx)
+	defer func() {
+		sctx.Release()
+	}()
 	// Buffer.id has the same encoding as the first 16 bytes of meta. We just copy that
 	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
 
 	// Guarantee that aggregates are on per hour windows.
 	ent.Emit(func(el EntryList) {
-		defer func() {
-			mls.Reset()
-		}()
+		defer sctx.Reset(ctx)
 		group.Save(el)
 		ts := time.Unix(el[0].Timestamp, 0)
 		meta.Timestamp(ts)
 		err := db.Update(func(txn *badger.Txn) error {
+			sctx.txn = txn
 			return errors.Join(
-				saveProp(ctx, mls, txn, meta.SetProp(PROPS_base), "__root__", &group.sum),
-				updateMeta(ctx, mls, txn, el, group, meta, ts),
+				saveProp(ctx, sctx, meta.SetProp(PROPS_base), "__root__", &group.sum),
+				updateMeta(ctx, sctx, el, group, meta, ts),
 			)
 		})
 		if err != nil {
@@ -111,35 +114,72 @@ func Save(ctx context.Context, b *Buffer) {
 	})
 }
 
-func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *Key, ts time.Time) error {
-	f := newCityFinder(ctx)
-	defer f.Release()
+func updateMeta(ctx context.Context, sctx *saveContext, el EntryList, g *aggregate, x *Key, ts time.Time) error {
 	errs := make([]error, 0, PROPS_city)
 	for i := 1; i <= int(PROPS_city); i++ {
 		p := PROPS(i)
-		errs = append(errs, p.Save(ctx, f, ls, txn, el, g, x, ts))
+		errs = append(errs, p.Save(ctx, sctx, el, g, x, ts))
 	}
 	return errors.Join(errs...)
 }
 
-func (p PROPS) Save(ctx context.Context, f *CityFinder, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *Key, ts time.Time) error {
-	return g.Prop(ctx, f, el, p, func(key string, sum *Sum) error {
-		return saveProp(ctx, ls, txn, x.SetProp(p), key, sum)
+func (p PROPS) Save(ctx context.Context, sctx *saveContext, el EntryList, g *aggregate, x *Key, ts time.Time) error {
+	return g.Prop(ctx, sctx, el, p, func(key string, sum *Sum) error {
+		return saveProp(ctx, sctx, x.SetProp(p), key, sum)
 	})
 }
 
-type CityFinder struct {
-	txn *badger.Txn
-	key [4]byte
+func saveProp(ctx context.Context,
+	sctx *saveContext,
+	m *Key, text string, a *Sum) error {
+	return errors.Join(
+		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_visitors).Key(text), a.Visitors),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_views).Key(text), a.Views),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_events).Key(text), a.Events),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_visits).Key(text), a.Visits),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_bounce_rate).Key(text), a.BounceRate),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_visitDuration).Key(text), a.VisitDuration),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_viewsPerVisit).Key(text), a.ViewsPerVisit),
+	)
 }
 
-func (c *CityFinder) Release() {
-	c.txn.Discard()
+type saveContext struct {
+	txn     *badger.Txn
+	ls      *metaList
+	idx     *badger.Txn
+	city    *badger.Txn
+	scratch [4]byte
 }
 
-func (c *CityFinder) Get(ctx context.Context, geoname uint32) (s string) {
-	binary.BigEndian.PutUint32(c.key[:], geoname)
-	x, err := c.txn.Get(c.key[:])
+func (ctx *saveContext) Reset(rctx context.Context) {
+	if ctx.ls != nil {
+		ctx.ls.Reset()
+	} else {
+		ctx.ls = newMetaList()
+	}
+	if ctx.idx != nil {
+		ctx.idx.Commit()
+		ctx.idx.Discard()
+	} else {
+		ctx.idx = GetIndex(rctx).NewTransaction(true)
+	}
+	if ctx.city != nil {
+		ctx.city.Discard()
+	} else {
+		ctx.city = GetGeo(rctx).NewTransaction(false)
+	}
+
+}
+
+func (ctx *saveContext) Release() {
+	ctx.idx.Discard()
+	ctx.city.Discard()
+	ctx.ls.Release()
+}
+
+func (c *saveContext) findCity(ctx context.Context, geoname uint32) (s string) {
+	binary.BigEndian.PutUint32(c.scratch[:], geoname)
+	x, err := c.city.Get(c.scratch[:])
 	if err != nil {
 		log.Get(ctx).Err(err).Msg("failed to get city by geoname id")
 		return ""
@@ -151,25 +191,9 @@ func (c *CityFinder) Get(ctx context.Context, geoname uint32) (s string) {
 	return
 }
 
-func newCityFinder(ctx context.Context) *CityFinder {
-	return &CityFinder{
-		txn: GetGeo(ctx).NewTransaction(false),
-	}
-}
-
-func saveProp(ctx context.Context,
-	ls *metaList,
-	txn *badger.Txn,
-	m *Key, text string, a *Sum) error {
-	return errors.Join(
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visitors).String(text), a.Visitors),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_views).String(text), a.Views),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_events).String(text), a.Events),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visits).String(text), a.Visits),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_bounce_rate).String(text), a.BounceRate),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visitDuration).String(text), a.VisitDuration),
-		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_viewsPerVisit).String(text), a.ViewsPerVisit),
-	)
+func (ctx *saveContext) saveIndex(key *bytes.Buffer) error {
+	ctx.ls.ls = append(ctx.ls.ls, key)
+	return ctx.idx.Set(key.Bytes(), []byte{})
 }
 
 // Transaction keep reference to keys. We need this to make sure we reuse ID and properly
@@ -209,7 +233,8 @@ var smallBufferpool = &sync.Pool{
 	},
 }
 
-func updateKeyRaw(ctx context.Context, txn *badger.Txn, key []byte, a uint32) error {
+func updateKeyRaw(ctx context.Context, sctx *saveContext, key []byte, a uint32) error {
+	txn := sctx.txn
 	x, err := txn.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
@@ -232,8 +257,8 @@ func updateKeyRaw(ctx context.Context, txn *badger.Txn, key []byte, a uint32) er
 	return txn.Set(key, b)
 }
 
-func updateMetaKey(ctx context.Context, ls *metaList, txn *badger.Txn, id *bytes.Buffer, a uint32) error {
-	ls.ls = append(ls.ls, id)
+func updateMetaKey(ctx context.Context, sctx *saveContext, id *bytes.Buffer, a uint32) error {
+	sctx.ls.ls = append(sctx.ls.ls, id)
 	key := id.Bytes()
-	return updateKeyRaw(ctx, txn, key, a)
+	return updateKeyRaw(ctx, sctx, key, a)
 }

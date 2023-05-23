@@ -15,7 +15,7 @@ const (
 	aggregateTypeOffset = siteOffset + 8
 	propOffset          = aggregateTypeOffset + 1
 	yearOffset          = propOffset + 1
-	hashOffset          = yearOffset + 8
+	keyOffset           = yearOffset + 8
 )
 
 // Key identifies a key that stores a single aggregate value. Keys are
@@ -27,7 +27,7 @@ const (
 //   - Type of Aggregate
 //
 // We store aggregates in  Hour chunks. So Time refers to hours since unix epoch.
-type Key [hashOffset + 4]byte
+type Key [keyOffset]byte
 
 var metaKeyPool = &sync.Pool{
 	New: func() any {
@@ -54,34 +54,29 @@ func (id *Key) SetSiteID(u uint64) {
 	binary.BigEndian.PutUint64(id[siteOffset:], u)
 }
 
-func (id *Key) HashU16(h uint16) []byte {
-	binary.BigEndian.PutUint16(id[hashOffset:], h)
-	return id[:][:hashOffset+2]
-}
-
-func (id *Key) HashU32(h uint32) *Key {
-	binary.BigEndian.PutUint32(id[hashOffset:], h)
-	return id
-}
-
 func (id *Key) Copy() *bytes.Buffer {
 	b := smallBufferpool.Get().(*bytes.Buffer)
 	b.Write(id[:])
 	return b
 }
 
-func (id *Key) Prefix() []byte {
-	return id[:hashOffset]
-}
-
-func (id *Key) String(s string) *bytes.Buffer {
+func (id *Key) Key(s string) *bytes.Buffer {
 	b := smallBufferpool.Get().(*bytes.Buffer)
-	return id.StringBuffer(b, s)
+	return id.KeyBuffer(b, s)
 }
 
-func (id *Key) StringBuffer(b *bytes.Buffer, s string) *bytes.Buffer {
+func (id *Key) KeyBuffer(b *bytes.Buffer, s string) *bytes.Buffer {
 	b.Write(id[:])
 	b.WriteString(s)
+	return b
+}
+
+// IndexBuffer returns a key with timestamp as a suffix. This allows for faster
+// key lookup without the knowledge of the timestamp.
+func (id *Key) IndexBuffer(b *bytes.Buffer, s string) *bytes.Buffer {
+	b.Write(id[:yearOffset])
+	b.WriteString(s)
+	b.Write(id[yearOffset:])
 	return b
 }
 

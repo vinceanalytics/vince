@@ -106,7 +106,7 @@ func Query(ctx context.Context, request QueryRequest) (r PropResult) {
 				m.SetAggregateType(mt)
 				if !v.IsRe {
 					// we are doing exact match
-					key := m.StringBuffer(b, v.Text).Bytes()
+					key := m.KeyBuffer(b, v.Text).Bytes()
 					x, err := txn.Get(key)
 					if err != nil {
 						if errors.Is(err, badger.ErrKeyNotFound) {
@@ -115,7 +115,7 @@ func Query(ctx context.Context, request QueryRequest) (r PropResult) {
 						return err
 					}
 					x.Value(func(val []byte) error {
-						ks := x.Key()[hashOffset:]
+						ks := x.Key()[keyOffset:]
 						value := math.Float64frombits(
 							binary.BigEndian.Uint64(val),
 						)
@@ -133,9 +133,9 @@ func Query(ctx context.Context, request QueryRequest) (r PropResult) {
 					for it.Rewind(); it.Valid(); it.Next() {
 						x := it.Item()
 						key := x.Key()
-						if v.Match(key[hashOffset:]) {
+						if v.Match(key[keyOffset:]) {
 							x.Value(func(val []byte) error {
-								xk := x.Key()[hashOffset:]
+								xk := x.Key()[keyOffset:]
 								value := math.Float64frombits(
 									binary.BigEndian.Uint64(val),
 								)

@@ -233,7 +233,7 @@ func (e EntryList) Sort(by PROPS) {
 	sort.Slice(e, less)
 }
 
-func (e EntryList) EmitProp(ctx context.Context, cf *CityFinder, u, s *roaring64.Bitmap, by PROPS, sum *Sum, f func(key string, sum *Sum) error) error {
+func (e EntryList) EmitProp(ctx context.Context, cf *saveContext, u, s *roaring64.Bitmap, by PROPS, sum *Sum, f func(key string, sum *Sum) error) error {
 	e.Sort(by)
 	var key func(*Entry) string
 	switch by {
@@ -307,7 +307,7 @@ func (e EntryList) EmitProp(ctx context.Context, cf *CityFinder, u, s *roaring64
 		}
 	case PROPS_city:
 		key = func(e *Entry) string {
-			return cf.Get(ctx, e.CityGeoNameId)
+			return cf.findCity(ctx, e.CityGeoNameId)
 		}
 	default:
 		return nil
