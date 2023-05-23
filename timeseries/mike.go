@@ -114,11 +114,10 @@ func Save(ctx context.Context, b *Buffer) {
 		}()
 		group.Save(el)
 		ts := time.Unix(el[0].Timestamp, 0)
-
 		err := db.Update(func(txn *badger.Txn) error {
 			id.Timestamp(ts)
 			return errors.Join(
-				updateRoot(ctx, ls, txn, ts, id, &group.sum),
+				saveProp(ctx, mls, txn, ts, meta.SetProp(PROPS_base), "__root_", &group.sum),
 				updateMeta(ctx, mls, txn, el, group, meta, ts),
 			)
 		})
@@ -144,7 +143,7 @@ func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList
 
 func (p PROPS) Save(ctx context.Context, f *CityFinder, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	return g.Prop(ctx, f, el, p, func(key string, sum *Sum) error {
-		return saveProp(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
+		return saveProp(ctx, ls, txn, ts, x.SetProp(p), key, sum)
 	})
 }
 
@@ -189,18 +188,6 @@ func saveProp(ctx context.Context,
 		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_bounce_rate).String(text), a.BounceRate),
 		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_visitDuration).String(text), a.VisitDuration),
 		updateMetaKey(ctx, ls, txn, m.SetAggregateType(METRIC_TYPE_viewsPerVisit).String(text), a.ViewsPerVisit),
-	)
-}
-
-func updateRoot(ctx context.Context, ls *idList, txn *badger.Txn, ts time.Time, id *ID, a *Sum) error {
-	return errors.Join(
-		updateKey(ctx, ls, METRIC_TYPE_visitors, txn, id, a.Visitors),
-		updateKey(ctx, ls, METRIC_TYPE_views, txn, id, a.Views),
-		updateKey(ctx, ls, METRIC_TYPE_events, txn, id, a.Events),
-		updateKey(ctx, ls, METRIC_TYPE_visits, txn, id, a.Visits),
-		updateKey(ctx, ls, METRIC_TYPE_bounce_rate, txn, id, a.BounceRate),
-		updateKey(ctx, ls, METRIC_TYPE_visitDuration, txn, id, a.VisitDuration),
-		updateKey(ctx, ls, METRIC_TYPE_viewsPerVisit, txn, id, a.ViewsPerVisit),
 	)
 }
 
@@ -269,13 +256,6 @@ var smallBufferpool = &sync.Pool{
 	New: func() any {
 		return new(bytes.Buffer)
 	},
-}
-
-func updateKey(ctx context.Context, ls *idList, kind METRIC_TYPE, txn *badger.Txn, id *ID, a uint32) error {
-	clone := id.Clone().SetAggregateType(kind)
-	ls.ls = append(ls.ls, clone)
-	key := clone[:]
-	return updateKeyRaw(ctx, txn, key, a)
 }
 
 func updateKeyRaw(ctx context.Context, txn *badger.Txn, key []byte, a uint32) error {

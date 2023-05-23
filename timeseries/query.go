@@ -83,7 +83,7 @@ func Query(ctx context.Context, request QueryRequest) (r PropResult) {
 		return
 	}
 	for k, v := range request.Props {
-		m.SetProp(byte(k))
+		m.SetProp(k)
 		// Passing this means we also include root stats
 		err := db.View(func(txn *badger.Txn) error {
 			o := badger.DefaultIteratorOptions
@@ -108,11 +108,11 @@ func Query(ctx context.Context, request QueryRequest) (r PropResult) {
 						return err
 					}
 					x.Value(func(val []byte) error {
-						ks := string(x.Key()[hashOffset:])
+						ks := x.Key()[hashOffset:]
 						value := math.Float64frombits(
 							binary.BigEndian.Uint64(val),
 						)
-						if mx, ok := agg[ks]; ok {
+						if mx, ok := agg[string(ks)]; ok {
 							mx[mt] = Value{
 								Timestamp: timex.FromTimestamp(key[yearOffset:]),
 								Value:     value,

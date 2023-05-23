@@ -3,12 +3,10 @@ module github.com/gernest/vince
 go 1.20
 
 require (
-	capnproto.org/go/capnp/v3 v3.0.0-alpha.26
 	filippo.io/age v1.1.1
 	github.com/RoaringBitmap/roaring v1.2.3
 	github.com/caddyserver/certmagic v0.17.2
 	github.com/cenkalti/backoff/v4 v4.1.3
-	github.com/cespare/xxhash/v2 v2.1.2
 	github.com/chanced/powerset v0.0.1
 	github.com/dchest/captcha v1.0.0
 	github.com/dchest/siphash v1.2.3
@@ -56,6 +54,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chzyer/readline v1.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -101,7 +100,6 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
@@ -122,5 +120,4 @@ require (
 	k8s.io/utils v0.0.0-20230209194617-a36077c30491 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
-	zenhack.net/go/util v0.0.0-20230327231740-da8cb323921c // indirect
 )

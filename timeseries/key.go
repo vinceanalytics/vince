@@ -99,8 +99,8 @@ func (id *MetaKey) SetAggregateType(u METRIC_TYPE) *MetaKey {
 	return id
 }
 
-func (id *MetaKey) SetProp(table byte) *MetaKey {
-	id[propOffset] = byte(table)
+func (id *MetaKey) SetProp(prop PROPS) *MetaKey {
+	id[propOffset] = byte(prop)
 	return id
 }
 
