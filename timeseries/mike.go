@@ -135,10 +135,6 @@ func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList
 
 func (p PROPS) Save(ctx context.Context, f *CityFinder, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	return g.Prop(ctx, f, el, p, func(key string, sum *store.Sum) error {
-		if key == "" {
-			// skip empty keys
-			return nil
-		}
 		return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
 	})
 }
