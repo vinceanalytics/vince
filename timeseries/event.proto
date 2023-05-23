@@ -44,25 +44,25 @@ message Entry {
 }
 
 enum PROPS {
-  BASE = 0;
-  NAME = 1;
-  PAGE = 2;
-  ENTRY_PAGE = 3;
-  EXIT_PAGE = 4;
-  REFERRER = 5;
-  UTM_MEDIUM = 6;
-  UTM_SOURCE = 7;
-  UTM_CAMPAIGN = 8;
-  UTM_CONTENT = 9;
-  UTM_TERM = 10;
-  UTM_DEVICE = 11;
-  UTM_BROWSER = 12;
-  BROWSER_VERSION = 13;
-  OS = 14;
-  OS_VERSION = 15;
-  COUNTRY = 16;
-  REGION = 17;
-  CITY = 18;
+  base = 0;
+  event = 1;
+  page = 2;
+  entryPage = 3;
+  exitPage = 4;
+  referrer = 5;
+  utmMedium = 6;
+  utmSource = 7;
+  utmCampaign = 8;
+  utmContent = 9;
+  utmTerm = 10;
+  utmDevice = 11;
+  utmBrowser = 12;
+  browserVersion = 13;
+  os = 14;
+  osVersion = 15;
+  country = 16;
+  region = 17;
+  city = 18;
 }
 
 enum METRIC_TYPE {

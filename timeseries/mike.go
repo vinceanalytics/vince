@@ -41,9 +41,9 @@ func (g *aggregate) Save(el EntryList) {
 	el.Count(g.u, g.s, &g.sum)
 }
 
-func (g *aggregate) Prop(el EntryList, by PROPS, f func(key string, sum *store.Sum) error) error {
+func (g *aggregate) Prop(ctx context.Context, cf *CityFinder, el EntryList, by PROPS, f func(key string, sum *store.Sum) error) error {
 	g.Reset()
-	return el.EmitProp(g.u, g.s, by, &g.sum, f)
+	return el.EmitProp(ctx, cf, g.u, g.s, by, &g.sum, f)
 }
 
 func (g *aggregate) City(el EntryList, f func(key uint32, sum *store.Sum) error) error {
@@ -140,8 +140,8 @@ func Save(ctx context.Context, b *Buffer) {
 func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	f := newCityFinder(ctx)
 	defer f.Release()
-	errs := make([]error, 0, PROPS_CITY)
-	for i := 1; i <= int(PROPS_CITY); i++ {
+	errs := make([]error, 0, PROPS_city)
+	for i := 1; i <= int(PROPS_city); i++ {
 		p := PROPS(i)
 		errs = append(errs, p.Save(ctx, f, ls, txn, el, g, x, ts))
 	}
@@ -149,33 +149,13 @@ func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList
 }
 
 func (p PROPS) Save(ctx context.Context, f *CityFinder, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
-	switch p {
-	case PROPS_NAME, PROPS_PAGE, PROPS_ENTRY_PAGE, PROPS_EXIT_PAGE,
-		PROPS_REFERRER, PROPS_UTM_MEDIUM, PROPS_UTM_SOURCE,
-		PROPS_UTM_CAMPAIGN, PROPS_UTM_CONTENT, PROPS_UTM_TERM:
-		return g.Prop(el, p, func(key string, sum *store.Sum) error {
-			return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
-		})
-		// properties from user agent
-	case PROPS_UTM_DEVICE, PROPS_UTM_BROWSER, PROPS_BROWSER_VERSION, PROPS_OS, PROPS_OS_VERSION:
-		return g.Prop(el, p, func(key string, sum *store.Sum) error {
-			return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
-		})
-	case PROPS_COUNTRY, PROPS_REGION:
-		return g.Prop(el, p, func(key string, sum *store.Sum) error {
-			return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
-		})
-	case PROPS_CITY:
-		return g.City(el, func(key uint32, sum *store.Sum) error {
-			city := f.Get(ctx, key)
-			if city == "" {
-				return nil
-			}
-			return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), city, sum)
-		})
-	default:
-		return nil
-	}
+	return g.Prop(ctx, f, el, p, func(key string, sum *store.Sum) error {
+		if key == "" {
+			// skip empty keys
+			return nil
+		}
+		return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
+	})
 }
 
 type CityFinder struct {

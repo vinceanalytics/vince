@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"context"
 	"math"
 	"sort"
 	"sync"
@@ -152,75 +153,75 @@ func (ls EntryList) Emit(f func(EntryList)) {
 func (e EntryList) Sort(by PROPS) {
 	var less func(i, j int) bool
 	switch by {
-	case PROPS_NAME:
+	case PROPS_event:
 		less = func(i, j int) bool {
 			return e[i].Name < e[j].Name
 		}
-	case PROPS_PAGE:
+	case PROPS_page:
 		less = func(i, j int) bool {
 			return e[i].Pathname < e[j].Pathname
 		}
-	case PROPS_ENTRY_PAGE:
+	case PROPS_entryPage:
 		less = func(i, j int) bool {
 			return e[i].EntryPage < e[j].EntryPage
 		}
-	case PROPS_EXIT_PAGE:
+	case PROPS_exitPage:
 		less = func(i, j int) bool {
 			return e[i].ExitPage < e[j].ExitPage
 		}
-	case PROPS_REFERRER:
+	case PROPS_referrer:
 		less = func(i, j int) bool {
 			return e[i].Referrer < e[j].Referrer
 		}
-	case PROPS_UTM_DEVICE:
+	case PROPS_utmDevice:
 		less = func(i, j int) bool {
 			return e[i].ScreenSize < e[j].ScreenSize
 		}
-	case PROPS_UTM_MEDIUM:
+	case PROPS_utmMedium:
 		less = func(i, j int) bool {
 			return e[i].UtmMedium < e[j].UtmMedium
 		}
-	case PROPS_UTM_SOURCE:
+	case PROPS_utmSource:
 		less = func(i, j int) bool {
 			return e[i].UtmSource < e[j].UtmSource
 		}
-	case PROPS_UTM_CAMPAIGN:
+	case PROPS_utmCampaign:
 		less = func(i, j int) bool {
 			return e[i].UtmCampaign < e[j].UtmCampaign
 		}
-	case PROPS_UTM_CONTENT:
+	case PROPS_utmContent:
 		less = func(i, j int) bool {
 			return e[i].UtmContent < e[j].UtmContent
 		}
-	case PROPS_UTM_TERM:
+	case PROPS_utmTerm:
 		less = func(i, j int) bool {
 			return e[i].UtmTerm < e[j].UtmTerm
 		}
-	case PROPS_OS:
+	case PROPS_os:
 		less = func(i, j int) bool {
 			return e[i].OperatingSystem < e[j].OperatingSystem
 		}
-	case PROPS_OS_VERSION:
+	case PROPS_osVersion:
 		less = func(i, j int) bool {
 			return e[i].OperatingSystemVersion < e[j].OperatingSystemVersion
 		}
-	case PROPS_UTM_BROWSER:
+	case PROPS_utmBrowser:
 		less = func(i, j int) bool {
 			return e[i].Browser < e[j].Browser
 		}
-	case PROPS_BROWSER_VERSION:
+	case PROPS_browserVersion:
 		less = func(i, j int) bool {
 			return e[i].BrowserVersion < e[j].BrowserVersion
 		}
-	case PROPS_REGION:
+	case PROPS_region:
 		less = func(i, j int) bool {
 			return e[i].Subdivision1Code < e[j].Subdivision1Code
 		}
-	case PROPS_COUNTRY:
+	case PROPS_country:
 		less = func(i, j int) bool {
 			return e[i].CountryCode < e[j].CountryCode
 		}
-	case PROPS_CITY:
+	case PROPS_city:
 		less = func(i, j int) bool {
 			return e[i].CityGeoNameId < e[j].CityGeoNameId
 		}
@@ -230,77 +231,81 @@ func (e EntryList) Sort(by PROPS) {
 	sort.Slice(e, less)
 }
 
-func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f func(key string, sum *store.Sum) error) error {
+func (e EntryList) EmitProp(ctx context.Context, cf *CityFinder, u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f func(key string, sum *store.Sum) error) error {
 	e.Sort(by)
 	var key func(*Entry) string
 	switch by {
-	case PROPS_NAME:
+	case PROPS_event:
 		key = func(e *Entry) string {
 			return e.Name
 		}
-	case PROPS_PAGE:
+	case PROPS_page:
 		key = func(e *Entry) string {
 			return e.Pathname
 		}
-	case PROPS_ENTRY_PAGE:
+	case PROPS_entryPage:
 		key = func(e *Entry) string {
 			return e.EntryPage
 		}
-	case PROPS_EXIT_PAGE:
+	case PROPS_exitPage:
 		key = func(e *Entry) string {
 			return e.ExitPage
 		}
-	case PROPS_REFERRER:
+	case PROPS_referrer:
 		key = func(e *Entry) string {
 			return e.Referrer
 		}
-	case PROPS_UTM_DEVICE:
+	case PROPS_utmDevice:
 		key = func(e *Entry) string {
 			return e.ScreenSize
 		}
-	case PROPS_UTM_MEDIUM:
+	case PROPS_utmMedium:
 		key = func(e *Entry) string {
 			return e.UtmMedium
 		}
-	case PROPS_UTM_SOURCE:
+	case PROPS_utmSource:
 		key = func(e *Entry) string {
 			return e.UtmSource
 		}
-	case PROPS_UTM_CAMPAIGN:
+	case PROPS_utmCampaign:
 		key = func(e *Entry) string {
 			return e.UtmCampaign
 		}
-	case PROPS_UTM_CONTENT:
+	case PROPS_utmContent:
 		key = func(e *Entry) string {
 			return e.UtmContent
 		}
-	case PROPS_UTM_TERM:
+	case PROPS_utmTerm:
 		key = func(e *Entry) string {
 			return e.UtmTerm
 		}
-	case PROPS_OS:
+	case PROPS_os:
 		key = func(e *Entry) string {
 			return e.OperatingSystem
 		}
-	case PROPS_OS_VERSION:
+	case PROPS_osVersion:
 		key = func(e *Entry) string {
 			return e.OperatingSystemVersion
 		}
-	case PROPS_UTM_BROWSER:
+	case PROPS_utmBrowser:
 		key = func(e *Entry) string {
 			return e.Browser
 		}
-	case PROPS_BROWSER_VERSION:
+	case PROPS_browserVersion:
 		key = func(e *Entry) string {
 			return e.BrowserVersion
 		}
-	case PROPS_REGION:
+	case PROPS_region:
 		key = func(e *Entry) string {
 			return e.Subdivision1Code
 		}
-	case PROPS_COUNTRY:
+	case PROPS_country:
 		key = func(e *Entry) string {
 			return e.CountryCode
+		}
+	case PROPS_city:
+		key = func(e *Entry) string {
+			return cf.Get(ctx, e.CityGeoNameId)
 		}
 	default:
 		return nil
@@ -338,7 +343,7 @@ func (e EntryList) EmitProp(u, s *roaring64.Bitmap, by PROPS, sum *store.Sum, f 
 }
 
 func (e EntryList) EmitCity(u, s *roaring64.Bitmap, sum *store.Sum, f func(key uint32, sum *store.Sum) error) error {
-	e.Sort(PROPS_CITY)
+	e.Sort(PROPS_city)
 	var start int
 	var lastKey, currentKey uint32
 	for i := range e {
