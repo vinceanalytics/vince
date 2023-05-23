@@ -135,7 +135,7 @@ func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList
 
 func (p PROPS) Save(ctx context.Context, f *CityFinder, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	return g.Prop(ctx, f, el, p, func(key string, sum *store.Sum) error {
-		return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
+		return saveProp(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
 	})
 }
 
@@ -168,7 +168,7 @@ func newCityFinder(ctx context.Context) *CityFinder {
 	}
 }
 
-func updateCalendarText(ctx context.Context,
+func saveProp(ctx context.Context,
 	ls *metaList,
 	txn *badger.Txn, ts time.Time,
 	m *MetaKey, text string, a *store.Sum) error {
