@@ -1,20 +1,45 @@
 package timeseries
 
 import (
+	"bytes"
 	"encoding/binary"
 	"sync"
 	"time"
+
+	"github.com/gernest/vince/pkg/timex"
 )
 
 const (
-	userOffset = 0
-	siteOffset = 8
-	yearOffset = 16
-	metaOffset = 18
-	hashOffset = 19
+	userOffset          = 0
+	siteOffset          = userOffset + 8
+	yearOffset          = siteOffset + 8
+	aggregateTypeOffset = yearOffset + 8
+	propOffset          = aggregateTypeOffset + 1
+	hashOffset          = propOffset + 1
 )
 
-type ID [19]byte
+type aggregateType byte
+
+const (
+	visitorsType aggregateType = iota
+	viewsType
+	eventsType
+	visitsType
+	bounceRateType
+	visitDurationType
+	viewsPerVisit
+)
+
+// ID identifies a key that stores a single aggregate value. Keys are
+// lexicographically sorted. We use this property to arrange the key in such a
+// way that it can be sorted by
+//   - User
+//   - Website
+//   - Time
+//   - Type of Aggregate
+//
+// We store aggregates in  Hour chunks. So Time refers to hours since unix epoch.
+type ID [hashOffset]byte
 
 func (id *ID) SetUserID(u uint64) {
 	binary.BigEndian.PutUint64(id[userOffset:], u)
@@ -22,6 +47,11 @@ func (id *ID) SetUserID(u uint64) {
 
 func (id *ID) SetSiteID(u uint64) {
 	binary.BigEndian.PutUint64(id[siteOffset:], u)
+}
+
+func (id *ID) SetAggregateType(u aggregateType) *ID {
+	id[aggregateTypeOffset] = byte(u)
+	return id
 }
 
 func (id *ID) GetUserID() uint64 {
@@ -36,8 +66,10 @@ func (id *ID) SitePrefix() []byte {
 	return id[:yearOffset]
 }
 
-func (id *ID) Year(ts time.Time) *ID {
-	binary.BigEndian.PutUint16(id[yearOffset:], uint16(ts.Year()))
+// Timestamp hours since unix epoch
+func (id *ID) Timestamp(ts time.Time) *ID {
+	hours := timex.Timestamp(ts)
+	binary.BigEndian.PutUint64(id[yearOffset:], hours)
 	return id
 }
 
@@ -72,10 +104,15 @@ var metaKeyPool = &sync.Pool{
 }
 
 // stores values for props
-type MetaKey [27]byte
+type MetaKey [hashOffset + 4]byte
 
-func (id *MetaKey) SetMeta(table byte) *MetaKey {
-	id[metaOffset] = byte(table)
+func (id *MetaKey) SetAggregateType(u aggregateType) *MetaKey {
+	id[aggregateTypeOffset] = byte(u)
+	return id
+}
+
+func (id *MetaKey) SetProp(table byte) *MetaKey {
+	id[propOffset] = byte(table)
 	return id
 }
 
@@ -92,17 +129,26 @@ func (id *MetaKey) HashU16(h uint16) []byte {
 	return id[:][:hashOffset+2]
 }
 
-func (id *MetaKey) HashU32(h uint32) []byte {
+func (id *MetaKey) HashU32(h uint32) *MetaKey {
 	binary.BigEndian.PutUint32(id[hashOffset:], h)
-	return id[:][:hashOffset+4]
+	return id
+}
+
+func (id *MetaKey) Copy() *bytes.Buffer {
+	b := smallBufferpool.Get().(*bytes.Buffer)
+	b.Write(id[:])
+	return b
 }
 
 func (id *MetaKey) Prefix() []byte {
 	return id[:hashOffset]
 }
 
-func (id *MetaKey) String(s string) []byte {
-	return append(id[:hashOffset], []byte(s)...)
+func (id *MetaKey) String(s string) *bytes.Buffer {
+	b := smallBufferpool.Get().(*bytes.Buffer)
+	b.Write(id[:])
+	b.WriteString(s)
+	return b
 }
 
 func (id *MetaKey) GetUserID() uint64 {
@@ -113,8 +159,9 @@ func (id *MetaKey) GetSiteID() uint64 {
 	return binary.BigEndian.Uint64(id[siteOffset:])
 }
 
-func (id *MetaKey) Year(ts time.Time) *MetaKey {
-	binary.BigEndian.PutUint16(id[yearOffset:], uint16(ts.Year()))
+func (id *MetaKey) Timestamp(ts time.Time) *MetaKey {
+	hours := timex.Timestamp(ts)
+	binary.BigEndian.PutUint64(id[yearOffset:], hours)
 	return id
 }
 

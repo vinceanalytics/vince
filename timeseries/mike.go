@@ -1,18 +1,16 @@
 package timeseries
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
+	"math"
 	"sync"
 	"time"
 
-	"capnproto.org/go/capnp/v3"
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
-	"github.com/gernest/vince/caches"
 	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/pkg/plot"
@@ -108,6 +106,10 @@ func Save(ctx context.Context, b *Buffer) {
 	defer id.Release()
 	meta := newMetaKey()
 	defer meta.Release()
+	ls := newIDList()
+	defer ls.Release()
+	mls := newMetaList()
+	defer mls.Release()
 
 	// The first 16 bytes of ID and MetaKey are for user id and site id. We just copy it
 	// directly from the buffer.
@@ -116,14 +118,18 @@ func Save(ctx context.Context, b *Buffer) {
 
 	// Guarantee that aggregates are on per hour windows.
 	ent.Emit(func(el EntryList) {
-		defer group.Reset()
+		defer func() {
+			group.Reset()
+			ls.Reset()
+		}()
 		group.Save(el)
 		ts := time.Unix(el[0].Timestamp, 0)
+
 		err := db.Update(func(txn *badger.Txn) error {
-			id.Year(ts)
+			id.Timestamp(ts)
 			return errors.Join(
-				updateCalendar(ctx, txn, ts, id[:], &group.sum),
-				updateMeta(ctx, txn, el, group, meta, ts),
+				updateRoot(ctx, ls, txn, ts, id, &group.sum),
+				updateMeta(ctx, mls, txn, el, group, meta, ts),
 			)
 		})
 		if err != nil {
@@ -135,35 +141,35 @@ func Save(ctx context.Context, b *Buffer) {
 	})
 }
 
-func updateMeta(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
+func updateMeta(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	errs := make([]error, 0, PROPS_CITY)
 	for i := 1; i <= int(PROPS_CITY); i++ {
 		p := PROPS(i)
-		errs = append(errs, p.Save(ctx, txn, el, g, x, ts))
+		errs = append(errs, p.Save(ctx, ls, txn, el, g, x, ts))
 	}
 	return errors.Join(errs...)
 }
 
-func (p PROPS) Save(ctx context.Context, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
+func (p PROPS) Save(ctx context.Context, ls *metaList, txn *badger.Txn, el EntryList, g *aggregate, x *MetaKey, ts time.Time) error {
 	switch p {
 	case PROPS_NAME, PROPS_PAGE, PROPS_ENTRY_PAGE, PROPS_EXIT_PAGE,
 		PROPS_REFERRER, PROPS_UTM_MEDIUM, PROPS_UTM_SOURCE,
 		PROPS_UTM_CAMPAIGN, PROPS_UTM_CONTENT, PROPS_UTM_TERM:
 		return g.Prop(el, p, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(p)).String(key), sum)
+			return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
 		})
 		// properties from user agent
 	case PROPS_UTM_DEVICE, PROPS_UTM_BROWSER, PROPS_BROWSER_VERSION, PROPS_OS, PROPS_OS_VERSION:
 		return g.Prop(el, p, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(p)).HashU16(ua.ToIndex(key)), sum)
+			return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
 		})
 	case PROPS_COUNTRY, PROPS_REGION:
 		return g.Prop(el, p, func(key string, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(p)).HashU16(cities.ToIndex(key)), sum)
+			return updateCalendarText(ctx, ls, txn, ts, x.SetProp(byte(p)), key, sum)
 		})
 	case PROPS_CITY:
 		return g.City(el, func(key uint32, sum *store.Sum) error {
-			return updateCalendar(ctx, txn, ts, x.SetMeta(byte(p)).HashU32(key), sum)
+			return updateCalendarHash(ctx, ls, txn, ts, x.SetProp(byte(p)).HashU32(key), sum)
 		})
 	default:
 		return nil
@@ -203,53 +209,148 @@ func (p PROPS) Key(ctx context.Context, key []byte) (s string) {
 	return
 }
 
-func updateCalendar(ctx context.Context, txn *badger.Txn, ts time.Time, key []byte, a *store.Sum) error {
-	cache := caches.Calendar(ctx)
-	hash := xxhash.Sum64(key)
-	if x, ok := cache.Get(hash); ok {
-		// The calendar was in cache we update it and save.
-		cal := x.(*store.Calendar)
-		a.UpdateCalendar(ts, cal)
-		b, err := cal.Message().MarshalPacked()
-		if err != nil {
-			return fmt.Errorf("failed to marshal calendar %v", err)
-		}
-		return txn.Set(key, b)
+func updateCalendarText(ctx context.Context,
+	ls *metaList,
+	txn *badger.Txn, ts time.Time,
+	m *MetaKey, text string, a *store.Sum) error {
+	return errors.Join(
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitorsType).String(text), a.Visitors),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(viewsType).String(text), a.Views),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(eventsType).String(text), a.Events),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitsType).String(text), a.Visits),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(bounceRateType).String(text), a.BounceRate),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitDurationType).String(text), a.VisitDuration),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(viewsPerVisit).String(text), a.ViewsPerVisit),
+	)
+}
+func updateCalendarHash(ctx context.Context,
+	ls *metaList,
+	txn *badger.Txn, ts time.Time,
+	m *MetaKey, a *store.Sum) error {
+	return errors.Join(
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitorsType).Copy(), a.Visitors),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(viewsType).Copy(), a.Views),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(eventsType).Copy(), a.Events),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitsType).Copy(), a.Visits),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(bounceRateType).Copy(), a.BounceRate),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(visitDurationType).Copy(), a.VisitDuration),
+		updateMetaKey(ctx, ls, txn, m.SetAggregateType(viewsPerVisit).Copy(), a.ViewsPerVisit),
+	)
+}
+
+func updateRoot(ctx context.Context, ls *idList, txn *badger.Txn, ts time.Time, id *ID, a *store.Sum) error {
+	return errors.Join(
+		updateKey(ctx, ls, visitorsType, txn, id, a.Visitors),
+		updateKey(ctx, ls, viewsType, txn, id, a.Views),
+		updateKey(ctx, ls, eventsType, txn, id, a.Events),
+		updateKey(ctx, ls, visitsType, txn, id, a.Visits),
+		updateKey(ctx, ls, bounceRateType, txn, id, a.BounceRate),
+		updateKey(ctx, ls, visitDurationType, txn, id, a.VisitDuration),
+		updateKey(ctx, ls, viewsPerVisit, txn, id, a.ViewsPerVisit),
+	)
+}
+
+// Transaction keep reference to keys. We need this to make sure we reuse ID and properly
+// release them back to the pool when done.
+type idList struct {
+	ls []*ID
+}
+
+func newIDList() *idList {
+	return idListPool.New().(*idList)
+}
+
+func (ls *idList) Reset() {
+	for _, v := range ls.ls {
+		v.Release()
 	}
+	ls.ls = ls.ls[:0]
+}
+
+func (ls *idList) Release() {
+	ls.Reset()
+	idListPool.Put(ls)
+}
+
+var idListPool = &sync.Pool{
+	New: func() any {
+		return &idList{
+			ls: make([]*ID, 0, 1<<10),
+		}
+	},
+}
+
+// Transaction keep reference to keys. We need this to make sure we reuse ID and properly
+// release them back to the pool when done.
+type metaList struct {
+	ls []*bytes.Buffer
+}
+
+func newMetaList() *metaList {
+	return metaKeyPool.New().(*metaList)
+}
+
+func (ls *metaList) Reset() {
+	for _, v := range ls.ls {
+		v.Reset()
+		smallBufferpool.Put(v)
+	}
+	ls.ls = ls.ls[:0]
+}
+
+func (ls *metaList) Release() {
+	ls.Reset()
+	metaListPool.Put(ls)
+}
+
+var metaListPool = &sync.Pool{
+	New: func() any {
+		return &metaList{
+			ls: make([]*bytes.Buffer, 0, 1<<10),
+		}
+	},
+}
+
+var smallBufferpool = &sync.Pool{
+	New: func() any {
+		return new(bytes.Buffer)
+	},
+}
+
+func updateKey(ctx context.Context, ls *idList, kind aggregateType, txn *badger.Txn, id *ID, a uint32) error {
+	clone := id.Clone().SetAggregateType(kind)
+	ls.ls = append(ls.ls, clone)
+	key := clone[:]
+	return updateKeyRaw(ctx, txn, key, a)
+}
+
+func updateKeyRaw(ctx context.Context, txn *badger.Txn, key []byte, a uint32) error {
 	x, err := txn.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
-			// new entry we store a
-			cal, err := store.ZeroCalendar(ts, a)
-			if err != nil {
-				return err
-			}
-			defer cache.Set(hash, cal, store.CacheCost)
-			b, err := cal.Message().MarshalPacked()
-			if err != nil {
-				return fmt.Errorf("failed to marshal calendar %v", err)
-			}
+			b := make([]byte, 8)
+			binary.BigEndian.PutUint64(b, math.Float64bits(float64(a)))
 			return txn.Set(key, b)
 		}
 		return err
 	}
-	return x.Value(func(val []byte) error {
-		msg, err := capnp.UnmarshalPacked(val)
-		if err != nil {
-			return err
-		}
-		cal, err := store.ReadRootCalendar(msg)
-		if err != nil {
-			return err
-		}
-		defer cache.Set(hash, cal, store.CacheCost)
-		a.UpdateCalendar(ts, &cal)
-		b, err := cal.Message().MarshalPacked()
-		if err != nil {
-			return fmt.Errorf("failed to marshal calendar %v", err)
-		}
-		return txn.Set(key, b)
+	var read float64
+	x.Value(func(val []byte) error {
+		read = math.Float64frombits(
+			binary.BigEndian.Uint64(val),
+		)
+		return nil
 	})
+	read += float64(a)
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, math.Float64bits(read))
+	return txn.Set(key, b)
+}
+
+func updateMetaKey(ctx context.Context, ls *metaList, txn *badger.Txn, id *bytes.Buffer, a uint32) error {
+	ls.ls = append(ls.ls, id)
+	key := id.Bytes()
+	return updateKeyRaw(ctx, txn, key, a)
 }
 
 func ReadCalendars(ctx context.Context, pick timex.Range, uid, sid uint64) *plot.Data {
@@ -269,8 +370,8 @@ func ReadCalendars(ctx context.Context, pick timex.Range, uid, sid uint64) *plot
 	var data plot.Data
 	for _, r := range pick.Build() {
 		ts := r.TS()
-		id.Year(ts)
-		meta.Year(ts)
+		id.Timestamp(ts)
+		meta.Timestamp(ts)
 		err := readCalendar(ctx, pick, m, id, meta, &data)
 		if err != nil {
 			log.Get(ctx).Err(err).Msg("failed to read calendar")
@@ -293,7 +394,7 @@ func readCalendar(ctx context.Context, pick timex.Range, m *badger.DB, id *ID, m
 func readAllMeta(ctx context.Context, txn *badger.Txn, pick timex.Range, id *MetaKey, data *plot.Data) error {
 	var errList []error
 	for i := PROPS_NAME; i <= PROPS_CITY; i++ {
-		id.SetMeta(byte(i))
+		id.SetProp(byte(i))
 		errList = append(errList, readMetaCal(txn, id.Prefix(), func(b []byte, c *store.Calendar) error {
 			a, err := calToAggregate(pick, c)
 			if err != nil {
