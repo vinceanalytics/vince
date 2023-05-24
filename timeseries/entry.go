@@ -13,39 +13,39 @@ import (
 )
 
 type Entry struct {
-	Timestamp              int64
-	Name                   string
+	UtmMedium              string
+	Referrer               string
 	Domain                 string
-	UserId                 uint64
-	SessionId              uint64
+	ExitPage               string
+	EntryPage              string
 	Hostname               string
 	Pathname               string
-	Referrer               string
+	UtmSource              string
 	ReferrerSource         string
 	CountryCode            string
 	Subdivision1Code       string
 	Subdivision2Code       string
-	CityGeoNameId          uint32
-	ScreenSize             string
+	TransferredFrom        string
+	UtmCampaign            string
 	OperatingSystem        string
 	Browser                string
-	UtmMedium              string
-	UtmSource              string
-	UtmCampaign            string
+	UtmTerm                string
+	Name                   string
+	ScreenSize             string
 	BrowserVersion         string
 	OperatingSystemVersion string
 	UtmContent             string
-	UtmTerm                string
-	TransferredFrom        string
-	EntryPage              string
-	ExitPage               string
+	UserId                 uint64
+	SessionId              uint64
+	Timestamp              int64
+	Duration               float64
+	Start                  int64
+	CityGeoNameId          uint32
 	PageViews              int32
 	Events                 int32
 	Sign                   int32
-	IsBounce               bool
-	Duration               float64
-	Start                  int64
 	HourIndex              int32
+	IsBounce               bool
 }
 
 var entryPool = &sync.Pool{
