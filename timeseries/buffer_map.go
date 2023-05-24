@@ -26,8 +26,7 @@ func GetMap(ctx context.Context) *Map {
 	return ctx.Value(mapKey{}).(*Map)
 }
 
-// Get returns a *Buffer belonging to a user with uid. Expired buffers are released
-// first before creating new one.
+// Get returns a *Buffer belonging to a user with uid who owns site with id sid.
 func (m *Map) Get(uid, sid uint64) *Buffer {
 	if b, ok := m.m.Load(sid); ok {
 		return b.(*Buffer)
