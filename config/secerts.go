@@ -35,7 +35,7 @@ func ConfigCMD() *cli.Command {
 					if e.Name == "help" {
 						continue
 					}
-					usage, env, value = e.GetUsage(), e.GetEnvVars()[0], e.GetValue()
+					usage, env, value = e.GetUsage(), e.GetEnvVars()[0], strconv.FormatBool(e.Value)
 				case *cli.IntFlag:
 					usage, env, value = e.GetUsage(), e.GetEnvVars()[0], e.GetValue()
 				case *cli.DurationFlag:
