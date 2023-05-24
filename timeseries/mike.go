@@ -43,7 +43,7 @@ func (g *aggregate) Save(el EntryList) {
 	el.Count(g.u, g.s, &g.sum)
 }
 
-func (g *aggregate) Prop(ctx context.Context, cf *saveContext, el EntryList, by PROPS, f func(key string, sum *Sum) error) error {
+func (g *aggregate) Prop(ctx context.Context, cf *saveContext, el EntryList, by Property, f func(key string, sum *Sum) error) error {
 	return el.EmitProp(ctx, cf, g.u, g.s, by, &g.sum, f)
 }
 
@@ -103,7 +103,7 @@ func Save(ctx context.Context, b *Buffer) {
 		err := db.Update(func(txn *badger.Txn) error {
 			sctx.txn = txn
 			return errors.Join(
-				saveProp(ctx, sctx, meta.SetProp(PROPS_base), "__root__", &group.sum),
+				saveProp(ctx, sctx, meta.SetProp(Base), "__root__", &group.sum),
 				updateMeta(ctx, sctx, el, group, meta, ts),
 			)
 		})
@@ -117,15 +117,15 @@ func Save(ctx context.Context, b *Buffer) {
 }
 
 func updateMeta(ctx context.Context, sctx *saveContext, el EntryList, g *aggregate, x *Key, ts time.Time) error {
-	errs := make([]error, 0, PROPS_city)
-	for i := 1; i <= int(PROPS_city); i++ {
-		p := PROPS(i)
+	errs := make([]error, 0, City)
+	for i := 1; i <= int(City); i++ {
+		p := Property(i)
 		errs = append(errs, p.Save(ctx, sctx, el, g, x, ts))
 	}
 	return errors.Join(errs...)
 }
 
-func (p PROPS) Save(ctx context.Context, sctx *saveContext, el EntryList, g *aggregate, x *Key, ts time.Time) error {
+func (p Property) Save(ctx context.Context, sctx *saveContext, el EntryList, g *aggregate, x *Key, ts time.Time) error {
 	return g.Prop(ctx, sctx, el, p, func(key string, sum *Sum) error {
 		return saveProp(ctx, sctx, x.SetProp(p), key, sum)
 	})
@@ -135,13 +135,13 @@ func saveProp(ctx context.Context,
 	sctx *saveContext,
 	m *Key, text string, a *Sum) error {
 	return errors.Join(
-		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_visitors).Key(text), a.Visitors),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_views).Key(text), a.Views),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_events).Key(text), a.Events),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_visits).Key(text), a.Visits),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_bounce_rate).Key(text), a.BounceRate),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_visitDuration).Key(text), a.VisitDuration),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(METRIC_TYPE_viewsPerVisit).Key(text), a.ViewsPerVisit),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(Visitors).Key(text), a.Visitors),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(Views).Key(text), a.Views),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(Events).Key(text), a.Events),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(Visits).Key(text), a.Visits),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(BounceRate).Key(text), a.BounceRate),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(VisitDuration).Key(text), a.VisitDuration),
+		updateMetaKey(ctx, sctx, m.SetAggregateType(ViewsPerVisit).Key(text), a.ViewsPerVisit),
 	)
 }
 

@@ -122,7 +122,7 @@ type EntryItem struct {
 type EntryItemList []EntryItem
 
 type EntryItems struct {
-	ls [PROPS_city + 1]EntryItemList
+	ls [City + 1]EntryItemList
 }
 
 func (e *EntryItems) Reset() {
@@ -133,58 +133,58 @@ func (e *EntryItems) Reset() {
 
 func (e *EntryItems) Build(ctx context.Context, ls []*Entry, city func(context.Context, uint32) string) {
 	for _, v := range ls {
-		e.ls[PROPS_event] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[Event] = append(e.ls[Event], EntryItem{
 			Text: v.Name,
 		})
-		e.ls[PROPS_page] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[Page] = append(e.ls[Event], EntryItem{
 			Text: v.Pathname,
 		})
-		e.ls[PROPS_entryPage] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[EntryPage] = append(e.ls[Event], EntryItem{
 			Text: v.EntryPage,
 		})
-		e.ls[PROPS_exitPage] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[ExitPage] = append(e.ls[Event], EntryItem{
 			Text: v.ExitPage,
 		})
-		e.ls[PROPS_referrer] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[Referrer] = append(e.ls[Event], EntryItem{
 			Text: v.Referrer,
 		})
-		e.ls[PROPS_utmDevice] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[UtmDevice] = append(e.ls[Event], EntryItem{
 			Text: v.ScreenSize,
 		})
-		e.ls[PROPS_utmMedium] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[UtmMedium] = append(e.ls[Event], EntryItem{
 			Text: v.UtmMedium,
 		})
-		e.ls[PROPS_utmSource] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[UtmSource] = append(e.ls[Event], EntryItem{
 			Text: v.UtmSource,
 		})
-		e.ls[PROPS_utmCampaign] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[UtmCampaign] = append(e.ls[Event], EntryItem{
 			Text: v.UtmCampaign,
 		})
-		e.ls[PROPS_utmContent] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[UtmContent] = append(e.ls[Event], EntryItem{
 			Text: v.UtmContent,
 		})
-		e.ls[PROPS_utmTerm] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[UtmTerm] = append(e.ls[Event], EntryItem{
 			Text: v.UtmTerm,
 		})
-		e.ls[PROPS_os] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[Os] = append(e.ls[Event], EntryItem{
 			Text: v.OperatingSystem,
 		})
-		e.ls[PROPS_osVersion] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[OsVersion] = append(e.ls[Event], EntryItem{
 			Text: v.OperatingSystemVersion,
 		})
-		e.ls[PROPS_utmBrowser] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[UtmBrowser] = append(e.ls[Event], EntryItem{
 			Text: v.Browser,
 		})
-		e.ls[PROPS_browserVersion] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[BrowserVersion] = append(e.ls[Event], EntryItem{
 			Text: v.BrowserVersion,
 		})
-		e.ls[PROPS_region] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[Region] = append(e.ls[Event], EntryItem{
 			Text: v.Subdivision1Code,
 		})
-		e.ls[PROPS_country] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[Country] = append(e.ls[Event], EntryItem{
 			Text: v.CountryCode,
 		})
-		e.ls[PROPS_city] = append(e.ls[PROPS_event], EntryItem{
+		e.ls[City] = append(e.ls[Event], EntryItem{
 			Text: v.CountryCode,
 		})
 	}

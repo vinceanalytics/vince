@@ -36,12 +36,12 @@ var metaKeyPool = &sync.Pool{
 	},
 }
 
-func (id *Key) SetAggregateType(u METRIC_TYPE) *Key {
+func (id *Key) SetAggregateType(u Metric) *Key {
 	id[aggregateTypeOffset] = byte(u)
 	return id
 }
 
-func (id *Key) SetProp(prop PROPS) *Key {
+func (id *Key) SetProp(prop Property) *Key {
 	id[propOffset] = byte(prop)
 	return id
 }

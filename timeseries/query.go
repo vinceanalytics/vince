@@ -14,21 +14,21 @@ import (
 	"github.com/gernest/vince/pkg/timex"
 )
 
-func (a METRIC_TYPE) MarshalJSON() ([]byte, error) {
+func (a Metric) MarshalJSON() ([]byte, error) {
 	return []byte(a.String()), nil
 }
 
-func (a PROPS) MarshalJSON() ([]byte, error) {
+func (a Property) MarshalJSON() ([]byte, error) {
 	return []byte(a.String()), nil
 }
 
 type QueryRequest struct {
-	UserID  uint64
-	SiteID  uint64
-	Range   timex.Range
-	NoRoot  bool
-	Metrics []METRIC_TYPE
-	Props   map[PROPS]*Match
+	UserID   uint64
+	SiteID   uint64
+	Range    timex.Range
+	NoRoot   bool
+	Metrics  []Metric
+	Property map[Property]*Match
 }
 
 type Match struct {
@@ -45,14 +45,14 @@ func (m *Match) Match(o []byte) bool {
 }
 
 // AggregateResult is a map of AggregateType to the value it represent.
-type AggregateResult map[METRIC_TYPE]Value
+type AggregateResult map[Metric]Value
 
 type Value struct {
 	Timestamp int64
 	Value     float64
 }
 
-type PropResult map[PROPS]PropValues
+type PropResult map[Property]PropValues
 
 type PropValues map[string]AggregateResult
 
@@ -81,15 +81,15 @@ func Query(ctx context.Context, request QueryRequest) (r PropResult) {
 	m.SetUserID(request.UserID)
 	m.SetSiteID(request.UserID)
 	if !request.NoRoot {
-		if request.Props == nil {
-			request.Props = make(map[PROPS]*Match)
+		if request.Property == nil {
+			request.Property = make(map[Property]*Match)
 		}
-		request.Props[PROPS_base] = &Match{Text: "__root__"}
+		request.Property[Base] = &Match{Text: "__root__"}
 	}
-	if len(request.Props) == 0 {
+	if len(request.Property) == 0 {
 		return
 	}
-	for k, v := range request.Props {
+	for k, v := range request.Property {
 		m.SetProp(k)
 		// Passing this means we also include root stats
 		err := db.View(func(txn *badger.Txn) error {

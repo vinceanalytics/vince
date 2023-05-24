@@ -45,35 +45,3 @@ message Session {
   uint64 user_id = 1;
   uint64 session_id = 2;
 }
-
-enum PROPS {
-  base = 0;
-  event = 1;
-  page = 2;
-  entryPage = 3;
-  exitPage = 4;
-  referrer = 5;
-  utmMedium = 6;
-  utmSource = 7;
-  utmCampaign = 8;
-  utmContent = 9;
-  utmTerm = 10;
-  utmDevice = 11;
-  utmBrowser = 12;
-  browserVersion = 13;
-  os = 14;
-  osVersion = 15;
-  country = 16;
-  region = 17;
-  city = 18;
-}
-
-enum METRIC_TYPE {
-  visitors = 0;
-  views = 1;
-  events = 2;
-  visits = 3;
-  bounce_rate = 4;
-  visitDuration = 5;
-  viewsPerVisit = 6;
-}

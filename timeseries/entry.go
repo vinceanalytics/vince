@@ -152,78 +152,78 @@ func (ls EntryList) Emit(f func(EntryList)) {
 	}
 }
 
-func (e EntryList) Sort(by PROPS) {
+func (e EntryList) Sort(by Property) {
 	var less func(i, j int) bool
 	switch by {
-	case PROPS_event:
+	case Event:
 		less = func(i, j int) bool {
 			return e[i].Name < e[j].Name
 		}
-	case PROPS_page:
+	case Page:
 		less = func(i, j int) bool {
 			return e[i].Pathname < e[j].Pathname
 		}
-	case PROPS_entryPage:
+	case EntryPage:
 		less = func(i, j int) bool {
 			return e[i].EntryPage < e[j].EntryPage
 		}
-	case PROPS_exitPage:
+	case ExitPage:
 		less = func(i, j int) bool {
 			return e[i].ExitPage < e[j].ExitPage
 		}
-	case PROPS_referrer:
+	case Referrer:
 		less = func(i, j int) bool {
 			return e[i].Referrer < e[j].Referrer
 		}
-	case PROPS_utmDevice:
+	case UtmDevice:
 		less = func(i, j int) bool {
 			return e[i].ScreenSize < e[j].ScreenSize
 		}
-	case PROPS_utmMedium:
+	case UtmMedium:
 		less = func(i, j int) bool {
 			return e[i].UtmMedium < e[j].UtmMedium
 		}
-	case PROPS_utmSource:
+	case UtmSource:
 		less = func(i, j int) bool {
 			return e[i].UtmSource < e[j].UtmSource
 		}
-	case PROPS_utmCampaign:
+	case UtmCampaign:
 		less = func(i, j int) bool {
 			return e[i].UtmCampaign < e[j].UtmCampaign
 		}
-	case PROPS_utmContent:
+	case UtmContent:
 		less = func(i, j int) bool {
 			return e[i].UtmContent < e[j].UtmContent
 		}
-	case PROPS_utmTerm:
+	case UtmTerm:
 		less = func(i, j int) bool {
 			return e[i].UtmTerm < e[j].UtmTerm
 		}
-	case PROPS_os:
+	case Os:
 		less = func(i, j int) bool {
 			return e[i].OperatingSystem < e[j].OperatingSystem
 		}
-	case PROPS_osVersion:
+	case OsVersion:
 		less = func(i, j int) bool {
 			return e[i].OperatingSystemVersion < e[j].OperatingSystemVersion
 		}
-	case PROPS_utmBrowser:
+	case UtmBrowser:
 		less = func(i, j int) bool {
 			return e[i].Browser < e[j].Browser
 		}
-	case PROPS_browserVersion:
+	case BrowserVersion:
 		less = func(i, j int) bool {
 			return e[i].BrowserVersion < e[j].BrowserVersion
 		}
-	case PROPS_region:
+	case Region:
 		less = func(i, j int) bool {
 			return e[i].Subdivision1Code < e[j].Subdivision1Code
 		}
-	case PROPS_country:
+	case Country:
 		less = func(i, j int) bool {
 			return e[i].CountryCode < e[j].CountryCode
 		}
-	case PROPS_city:
+	case City:
 		less = func(i, j int) bool {
 			return e[i].CityGeoNameId < e[j].CityGeoNameId
 		}
@@ -233,79 +233,79 @@ func (e EntryList) Sort(by PROPS) {
 	sort.Slice(e, less)
 }
 
-func (e EntryList) EmitProp(ctx context.Context, cf *saveContext, u, s *roaring64.Bitmap, by PROPS, sum *Sum, f func(key string, sum *Sum) error) error {
+func (e EntryList) EmitProp(ctx context.Context, cf *saveContext, u, s *roaring64.Bitmap, by Property, sum *Sum, f func(key string, sum *Sum) error) error {
 	e.Sort(by)
 	var key func(*Entry) string
 	switch by {
-	case PROPS_event:
+	case Event:
 		key = func(e *Entry) string {
 			return e.Name
 		}
-	case PROPS_page:
+	case Page:
 		key = func(e *Entry) string {
 			return e.Pathname
 		}
-	case PROPS_entryPage:
+	case EntryPage:
 		key = func(e *Entry) string {
 			return e.EntryPage
 		}
-	case PROPS_exitPage:
+	case ExitPage:
 		key = func(e *Entry) string {
 			return e.ExitPage
 		}
-	case PROPS_referrer:
+	case Referrer:
 		key = func(e *Entry) string {
 			return e.Referrer
 		}
-	case PROPS_utmDevice:
+	case UtmDevice:
 		key = func(e *Entry) string {
 			return e.ScreenSize
 		}
-	case PROPS_utmMedium:
+	case UtmMedium:
 		key = func(e *Entry) string {
 			return e.UtmMedium
 		}
-	case PROPS_utmSource:
+	case UtmSource:
 		key = func(e *Entry) string {
 			return e.UtmSource
 		}
-	case PROPS_utmCampaign:
+	case UtmCampaign:
 		key = func(e *Entry) string {
 			return e.UtmCampaign
 		}
-	case PROPS_utmContent:
+	case UtmContent:
 		key = func(e *Entry) string {
 			return e.UtmContent
 		}
-	case PROPS_utmTerm:
+	case UtmTerm:
 		key = func(e *Entry) string {
 			return e.UtmTerm
 		}
-	case PROPS_os:
+	case Os:
 		key = func(e *Entry) string {
 			return e.OperatingSystem
 		}
-	case PROPS_osVersion:
+	case OsVersion:
 		key = func(e *Entry) string {
 			return e.OperatingSystemVersion
 		}
-	case PROPS_utmBrowser:
+	case UtmBrowser:
 		key = func(e *Entry) string {
 			return e.Browser
 		}
-	case PROPS_browserVersion:
+	case BrowserVersion:
 		key = func(e *Entry) string {
 			return e.BrowserVersion
 		}
-	case PROPS_region:
+	case Region:
 		key = func(e *Entry) string {
 			return e.Subdivision1Code
 		}
-	case PROPS_country:
+	case Country:
 		key = func(e *Entry) string {
 			return e.CountryCode
 		}
-	case PROPS_city:
+	case City:
 		key = func(e *Entry) string {
 			return cf.findCity(ctx, e.CityGeoNameId)
 		}
