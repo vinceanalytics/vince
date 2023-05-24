@@ -21,10 +21,12 @@ type Alerts struct {
 
 type alertsKey struct{}
 
-func Setup(ctx context.Context) context.Context {
-	o := config.Get(ctx)
-	path := filepath.Join(o.DataPath, "alerts")
-	os.MkdirAll(path, 0755)
+func Setup(ctx context.Context, o *config.Options) context.Context {
+	path := o.Alerts.Source
+	if path == "" {
+		path := filepath.Join(o.DataPath, "alerts")
+		os.MkdirAll(path, 0755)
+	}
 	vinceTS := filepath.Join(path, "vince.ts")
 	err := os.WriteFile(vinceTS, vince, 0600)
 	if err != nil {

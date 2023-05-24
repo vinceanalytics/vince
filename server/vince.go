@@ -30,33 +30,31 @@ import (
 	"github.com/gernest/vince/userid"
 	"github.com/gernest/vince/worker"
 	"github.com/rs/zerolog"
-	"github.com/urfave/cli/v3"
 	"golang.org/x/sync/errgroup"
 )
 
-func Serve(ctx *cli.Context) error {
-	conf, goCtx, err := config.Load(ctx)
+func Serve(o *config.Options) error {
+	ctx, err := config.Load(o)
 	if err != nil {
 		return err
 	}
-	goCtx, cancel := context.WithCancel(goCtx)
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	// make sure we create log path
-	logPath := filepath.Join(conf.DataPath, "logs")
+	logPath := filepath.Join(o.DataPath, "logs")
 	os.MkdirAll(logPath, 0755)
-
-	xlg := zerolog.New(os.Stderr).Level(zerolog.Level(conf.LogLevel)).With().
-		Timestamp().Str("env", conf.Env.String()).Logger()
-	goCtx = xlg.WithContext(goCtx)
-	if _, err = os.Stat(conf.DataPath); err != nil && os.IsNotExist(err) {
-		err = os.MkdirAll(conf.DataPath, 0755)
+	ll, _ := zerolog.ParseLevel(o.LogLevel)
+	xlg := zerolog.New(os.Stderr).Level(zerolog.Level(ll)).With().
+		Timestamp().Str("env", o.Env).Logger()
+	ctx = xlg.WithContext(ctx)
+	if _, err = os.Stat(o.DataPath); err != nil && os.IsNotExist(err) {
+		err = os.MkdirAll(o.DataPath, 0755)
 		if err != nil {
 			return err
 		}
 	}
-	conf.LogLevel = config.Config_info
-	return HTTP(goCtx, conf)
+	return HTTP(ctx, o)
 }
 
 type resourceList []io.Closer
@@ -75,7 +73,7 @@ func (r resourceList) Close() error {
 	return errors.Join(e...)
 }
 
-func HTTP(ctx context.Context, o *config.Config) error {
+func HTTP(ctx context.Context, o *config.Options) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var resources resourceList
@@ -89,18 +87,18 @@ func HTTP(ctx context.Context, o *config.Config) error {
 	resources = append(resources, httpListener)
 	var httpsListener net.Listener
 	var magic *certmagic.Config
-	if o.EnableTls {
-		if o.Tls.Address == "" {
+	if o.TLS.Enabled {
+		if o.TLS.Address == "" {
 			resources.Close()
 			return errors.New("tls-address is required")
 		}
-		if o.Tls.Key == "" || o.Tls.Cert == "" {
-			if !o.EnableAutoTls {
+		if o.TLS.Key == "" || o.TLS.Cert == "" {
+			if !o.Acme.Enabled {
 				resources.Close()
 				return errors.New("tls-key and tls-cert  are required")
 			}
 		}
-		if o.EnableAutoTls {
+		if o.Acme.Enabled {
 			if o.Acme.Email == "" || o.Acme.Domain == "" {
 				resources.Close()
 				return errors.New("acme-email and acme-domain  are required")
@@ -110,10 +108,6 @@ func HTTP(ctx context.Context, o *config.Config) error {
 			certsPath := filepath.Join(o.DataPath, "certs")
 			os.MkdirAll(certsPath, 0755)
 			magic.Storage = &certmagic.FileStorage{Path: certsPath}
-			if o.Acme == nil || o.Acme.Email == "" || o.Acme.Domain == "" {
-				resources.Close()
-				return fmt.Errorf("missing acme settings for auto-tls")
-			}
 			myACME := certmagic.NewACMEIssuer(magic, certmagic.ACMEIssuer{
 				CA:     certmagic.LetsEncryptStagingCA,
 				Email:  o.Acme.Email,
@@ -125,20 +119,20 @@ func HTTP(ctx context.Context, o *config.Config) error {
 				resources.Close()
 				return fmt.Errorf("failed to sync acme domain %v", err)
 			}
-			httpsListener, err = net.Listen("tcp", o.Tls.Address)
+			httpsListener, err = net.Listen("tcp", o.TLS.Address)
 			if err != nil {
 				resources.Close()
 				return fmt.Errorf("failed to bind to https socket %v", err)
 			}
 		} else {
-			cert, err := tls.LoadX509KeyPair(o.Tls.Cert, o.Tls.Key)
+			cert, err := tls.LoadX509KeyPair(o.TLS.Cert, o.TLS.Key)
 			if err != nil {
 				resources.Close()
 				return fmt.Errorf("failed to load https certificate %v", err)
 			}
 			config := tls.Config{}
 			config.Certificates = append(config.Certificates, cert)
-			httpsListener, err = tls.Listen("tcp", o.Tls.Address, &config)
+			httpsListener, err = tls.Listen("tcp", o.TLS.Address, &config)
 			if err != nil {
 				resources.Close()
 				return fmt.Errorf("failed to bind https socket %v", err)
@@ -163,7 +157,7 @@ func HTTP(ctx context.Context, o *config.Config) error {
 
 	ctx = models.Set(ctx, sqlDb)
 
-	if o.EnableBootstrap {
+	if o.Bootstrap.Enabled {
 		log.Get(ctx).Debug().Msg("bootstrapping user")
 		if o.Bootstrap.Name == "" ||
 			o.Bootstrap.Email == "" ||
@@ -175,9 +169,9 @@ func HTTP(ctx context.Context, o *config.Config) error {
 			o.Bootstrap.Name, o.Bootstrap.Email, o.Bootstrap.Password, o.Bootstrap.Key,
 		)
 	}
-	if o.EnableAlerts {
+	if o.Alerts.Enabled {
 		log.Get(ctx).Debug().Msg("setup alerts")
-		ctx = alerts.Setup(ctx)
+		ctx = alerts.Setup(ctx, o)
 	}
 	if o.EnableEmail {
 		log.Get(ctx).Debug().Msg("setup mailer")

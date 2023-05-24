@@ -471,7 +471,7 @@ func DeleteGoal(ctx context.Context, gid, domain string) bool {
 
 type Invitation = schema.Invitation
 
-func Database(cfg *config.Config) string {
+func Database(cfg *config.Options) string {
 	return filepath.Join(cfg.DataPath, "vince.db")
 }
 

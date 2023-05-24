@@ -163,10 +163,10 @@ func CORS(h http.Handler) http.Handler {
 	var allowedHeaders http.Header
 	var once sync.Once
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cors := config.Get(r.Context()).Cors
+		cors := config.Get(r.Context())
 		once.Do(func() {
 			allowedHeaders = make(http.Header)
-			for _, v := range cors.Headers {
+			for _, v := range cors.Cors.Headers {
 				// we use set as value so we can check if .Get method returns ""
 				// will mean the header was not set.
 				allowedHeaders.Set(v, "set")
@@ -188,7 +188,7 @@ func CORS(h http.Handler) http.Handler {
 			case !isMethodAllowed(cors, r.Header.Get("Access-Control-Request-Method")):
 			case !isHeadersAllowed(allowedHeaders, reqHeaders):
 			default:
-				if cors.Origin == "*" {
+				if cors.Cors.Origin == "*" {
 					headers.Set("Access-Control-Allow-Origin", "*")
 				} else {
 					headers.Set("Access-Control-Allow-Origin", origin)
@@ -200,8 +200,8 @@ func CORS(h http.Handler) http.Handler {
 				if r.Header.Get("Access-Control-Request-Private-Network") == "true" {
 					headers.Set("Access-Control-Allow-Private-Network", "true")
 				}
-				if cors.MaxAge > 0 {
-					headers.Set("Access-Control-Max-Age", strconv.Itoa(int(cors.MaxAge)))
+				if cors.Cors.MaxAge > 0 {
+					headers.Set("Access-Control-Max-Age", strconv.Itoa(cors.Cors.MaxAge))
 				}
 			}
 			w.WriteHeader(http.StatusNoContent)
@@ -215,15 +215,15 @@ func CORS(h http.Handler) http.Handler {
 		case !isOriginAllowed(cors, origin):
 		case !isMethodAllowed(cors, r.Method):
 		default:
-			if cors.Origin == "*" {
+			if cors.Cors.Origin == "*" {
 				headers.Set("Access-Control-Allow-Origin", "*")
 			} else {
 				headers.Set("Access-Control-Allow-Origin", origin)
 			}
-			if len(cors.Expose) > 0 {
-				headers.Set("Access-Control-Expose-Headers", strings.Join(cors.Expose, ", "))
+			if len(cors.Cors.Expose) > 0 {
+				headers.Set("Access-Control-Expose-Headers", strings.Join(cors.Cors.Expose, ", "))
 			}
-			if cors.Credentials {
+			if cors.Cors.Credentials {
 				headers.Set("Access-Control-Allow-Credentials", "true")
 			}
 		}
@@ -231,16 +231,16 @@ func CORS(h http.Handler) http.Handler {
 	})
 }
 
-func isOriginAllowed(c *config.Cors, o string) bool {
-	if c.Origin == "*" {
+func isOriginAllowed(c *config.Options, o string) bool {
+	if c.Cors.Origin == "*" {
 		return true
 	}
-	ok, _ := path.Match(c.Origin, o)
+	ok, _ := path.Match(c.Cors.Origin, o)
 	return ok
 }
-func isMethodAllowed(c *config.Cors, m string) bool {
-	for i := range c.Methods {
-		if c.Methods[i] == m {
+func isMethodAllowed(c *config.Options, m string) bool {
+	for i := range c.Cors.Methods {
+		if c.Cors.Methods[i] == m {
 			return true
 		}
 	}

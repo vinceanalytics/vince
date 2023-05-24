@@ -32,6 +32,9 @@ func (f IP) Allow(r *http.Request) bool {
 type List []Wall
 
 func (f List) Allow(r *http.Request) bool {
+	if f == nil {
+		return true
+	}
 	for _, v := range f {
 		if !v.Allow(r) {
 			return false

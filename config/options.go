@@ -49,6 +49,7 @@ type Options struct {
 	}
 	SuperUserId []uint64
 	Firewall    struct {
+		Enabled bool
 		BlockIP []string
 		AllowIP []string
 	}
@@ -67,8 +68,7 @@ type Options struct {
 		Enabled            bool
 		Address, Key, Cert string
 	}
-	EnableBootstrap bool
-	Bootstrap       struct {
+	Bootstrap struct {
 		Enabled                    bool
 		Name, Email, Password, Key string
 	}
@@ -256,13 +256,6 @@ func (o *Options) Flags() []cli.Flag {
 		},
 		&cli.StringFlag{
 			Category:    "core.mailer.smtp.auth.oauth",
-			Name:        "mailer-smtp-oauth-username",
-			Usage:       "username value for oauth bearer smtp auth",
-			Destination: &o.Mailer.SMTP.AuthOAUTHBearer.Username,
-			EnvVars:     []string{"VINCE_MAILER_SMTP_OAUTH_USERNAME"},
-		},
-		&cli.StringFlag{
-			Category:    "core.mailer.smtp.auth.oauth",
 			Name:        "mailer-smtp-oauth-token",
 			Usage:       "token value for oauth bearer smtp auth",
 			Destination: &o.Mailer.SMTP.AuthOAUTHBearer.Token,
@@ -442,5 +435,42 @@ func (o *Options) Flags() []cli.Flag {
 			Destination: &o.Cors.SendPreflightResponse,
 			EnvVars:     []string{"VINCE_CORS_SEND_PREFLIGHT_RESPONSE"},
 		},
+		&cli.Uint64SliceFlag{
+			Category:    "core",
+			Name:        "super-users",
+			Usage:       "a list of user ID with super privilege",
+			Destination: &o.SuperUserId,
+			EnvVars:     []string{"VINCE_SUPER_USERS"},
+		},
+		&cli.BoolFlag{
+			Category:    "core.firewall",
+			Name:        "enable-firewall",
+			Usage:       "allow blocking ip address",
+			Destination: &o.Firewall.Enabled,
+			EnvVars:     []string{"VINCE_ENABLE_FIREWALL"},
+		},
+		&cli.StringSliceFlag{
+			Category:    "core.firewall",
+			Name:        "firewall-block-list",
+			Usage:       "block  ip address from this list",
+			Destination: &o.Firewall.BlockIP,
+			EnvVars:     []string{"VINCE_FIREWALL_BLOCK_LIST"},
+		},
+		&cli.StringSliceFlag{
+			Category:    "core.firewall",
+			Name:        "firewall-allow-list",
+			Usage:       "allow  ip address from this list",
+			Destination: &o.Firewall.AllowIP,
+			EnvVars:     []string{"VINCE_FIREWALL_ALLOW_LIST"},
+		},
 	}
+}
+
+func (o *Options) IsSuperUser(uid uint64) bool {
+	for _, v := range o.SuperUserId {
+		if v == uid {
+			return true
+		}
+	}
+	return false
 }

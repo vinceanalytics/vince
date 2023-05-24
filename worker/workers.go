@@ -31,7 +31,7 @@ func updateCachedSites(ctx context.Context, ch health.PingChannel) func() error 
 	return func() error {
 		log.Get(ctx).Debug().Str("worker", "sites_to_domain_cache").
 			Msg("started")
-		interval := config.Get(ctx).Intervals.SitesByDomainCacheRefreshInterval.AsDuration()
+		interval := config.Get(ctx).Intervals.SiteCache
 		// On startup , fill the cache first before the next interval. Ensures we are
 		// operational  on the get go.
 		setSite := caches.SetSite(ctx, interval)
@@ -60,7 +60,7 @@ func SaveTimeseries(ctx context.Context, f func(*health.Ping)) func() error {
 func saveBuffer(ctx context.Context, ch health.PingChannel) func() error {
 	return func() error {
 		log.Get(ctx).Debug().Str("worker", "timeseries_writer").Msg("started")
-		tick := time.NewTicker(config.Get(ctx).Intervals.SaveTimeseriesBufferInterval.AsDuration())
+		tick := time.NewTicker(config.Get(ctx).Intervals.TSSync)
 		m := timeseries.GetMap(ctx)
 		defer tick.Stop()
 		for {

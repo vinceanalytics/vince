@@ -169,7 +169,7 @@ type Context struct {
 	Errors        map[string]string
 	Form          url.Values
 	Code          uint64
-	Config        *config.Config
+	Config        *config.Options
 	HasInvitation bool
 	HasPin        bool
 	Flash         *flash.Flash

@@ -2,7 +2,6 @@ package email
 
 import (
 	"context"
-	"fmt"
 	"html/template"
 	"io"
 	"time"
@@ -71,12 +70,12 @@ func (s *SMTP) From() *mail.Address {
 	}
 }
 
-func FromConfig(conf *config.Config) (Mailer, error) {
+func FromConfig(o *config.Options) (Mailer, error) {
 	s := &SMTP{
-		address: fmt.Sprintf("%s:%d", conf.Mailer.Smtp.Host, conf.Mailer.Smtp.Port),
+		address: o.Mailer.SMTP.Address,
 		from: &mail.Address{
-			Name:    conf.Mailer.Address.Name,
-			Address: conf.Mailer.Address.Email,
+			Name:    o.Mailer.Name,
+			Address: o.Mailer.Address,
 		},
 	}
 	c, err := smtp.Dial(s.address)
@@ -84,24 +83,24 @@ func FromConfig(conf *config.Config) (Mailer, error) {
 		return nil, err
 	}
 	c.Close()
-	if conf.Mailer.Smtp.Auth != nil {
-		switch a := conf.Mailer.Smtp.Auth.(type) {
-		case *config.Config_Mailer_Smtp_Anonymous:
-			s.auth = sasl.NewAnonymousClient(a.Anonymous.Trace)
-		case *config.Config_Mailer_Smtp_OauthBearer:
-			s.auth = sasl.NewOAuthBearerClient(&sasl.OAuthBearerOptions{
-				Username: a.OauthBearer.Username,
-				Token:    a.OauthBearer.Token,
-				Host:     a.OauthBearer.Host,
-				Port:     int(a.OauthBearer.Port),
-			})
-		case *config.Config_Mailer_Smtp_Plain:
-			s.auth = sasl.NewPlainClient(
-				a.Plain.Identity, a.Plain.Username, a.Plain.Password,
-			)
-		}
+	if o.Mailer.SMTP.AuthAnonymous.Enabled {
+		s.auth = sasl.NewAnonymousClient(o.Mailer.SMTP.AuthAnonymous.Trace)
+	} else if o.Mailer.SMTP.AuthOAUTHBearer.Enabled {
+		s.auth = sasl.NewOAuthBearerClient(&sasl.OAuthBearerOptions{
+			Username: o.Mailer.SMTP.AuthOAUTHBearer.Username,
+			Token:    o.Mailer.SMTP.AuthOAUTHBearer.Token,
+			Host:     o.Mailer.SMTP.AuthOAUTHBearer.Host,
+			Port:     o.Mailer.SMTP.AuthOAUTHBearer.Port,
+		})
+	} else if o.Mailer.SMTP.AuthPlain.Enabled {
+		s.auth = sasl.NewPlainClient(
+			o.Mailer.SMTP.AuthPlain.Identity,
+			o.Mailer.SMTP.AuthPlain.Username,
+			o.Mailer.SMTP.AuthPlain.Password,
+		)
 	}
-	if conf.Env == config.Config_dev {
+
+	if o.Mailer.SMTP.EnableMailHog {
 		return &MailHog{SMTP: s}, nil
 	}
 	return s, nil

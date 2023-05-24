@@ -17,7 +17,7 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
-func Open(ctx context.Context, o *config.Config) (context.Context, io.Closer, error) {
+func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, error) {
 	dir := filepath.Join(o.DataPath, "ts")
 	mike, err := open(ctx, filepath.Join(dir, "mike"))
 	if err != nil {

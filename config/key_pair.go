@@ -12,7 +12,7 @@ import (
 	"filippo.io/age"
 )
 
-func setupSecrets(c *Config) (ed25519.PrivateKey, *age.X25519Identity, error) {
+func setupSecrets(c *Options) (ed25519.PrivateKey, *age.X25519Identity, error) {
 	s := c.Secrets
 	b, err := readSecret(s.Secret)
 	if err != nil {
