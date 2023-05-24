@@ -10,12 +10,51 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/google/uuid"
 	"github.com/segmentio/parquet-go/bloom/xxhash"
-	"google.golang.org/protobuf/proto"
 )
+
+type Entry struct {
+	Timestamp              int64
+	Name                   string
+	Domain                 string
+	Id                     Session
+	Hostname               string
+	Pathname               string
+	Referrer               string
+	ReferrerSource         string
+	CountryCode            string
+	Subdivision1Code       string
+	Subdivision2Code       string
+	CityGeoNameId          uint32
+	ScreenSize             string
+	OperatingSystem        string
+	Browser                string
+	UtmMedium              string
+	UtmSource              string
+	UtmCampaign            string
+	BrowserVersion         string
+	OperatingSystemVersion string
+	UtmContent             string
+	UtmTerm                string
+	TransferredFrom        string
+	EntryPage              string
+	ExitPage               string
+	PageViews              int32
+	Events                 int32
+	Sign                   int32
+	IsBounce               bool
+	Duration               float64
+	Start                  int64
+	HourIndex              int32
+}
+
+type Session struct {
+	UserId    uint64
+	SessionId uint64
+}
 
 var entryPool = &sync.Pool{
 	New: func() any {
-		return &Entry{Id: &Session{}}
+		return new(Entry)
 	},
 }
 
@@ -24,7 +63,7 @@ func NewEntry() *Entry {
 }
 
 func (e *Entry) Release() {
-	e.Reset()
+	*e = Entry{}
 	entryPool.Put(e)
 }
 
@@ -52,7 +91,8 @@ func (e *Entry) Bounce() (n int32) {
 }
 
 func (s *Entry) Update(e *Entry) *Entry {
-	ss := proto.Clone(s).(*Entry)
+	ss := NewEntry()
+	*ss = *s
 	ss.Id.UserId = e.Id.UserId
 	ss.Timestamp = e.Timestamp
 	ss.ExitPage = e.Pathname
@@ -93,10 +133,6 @@ func (s *Entry) Update(e *Entry) *Entry {
 }
 
 type EntryList []*Entry
-
-func (e *Entries) List() EntryList {
-	return EntryList(e.Events)
-}
 
 func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *Sum) {
 	if len(ls) == 0 {
