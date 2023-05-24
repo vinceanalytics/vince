@@ -217,7 +217,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		}
 		userID := uid.Hash(remoteIp, userAgent, domain, host)
 		e := timeseries.NewEntry()
-		e.Id.UserId = userID
+		e.UserId = userID
 		e.Name = req.EventName
 		e.Hostname = host
 		e.Domain = domain

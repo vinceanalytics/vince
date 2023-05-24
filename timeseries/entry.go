@@ -16,7 +16,8 @@ type Entry struct {
 	Timestamp              int64
 	Name                   string
 	Domain                 string
-	Id                     Session
+	UserId                 uint64
+	SessionId              uint64
 	Hostname               string
 	Pathname               string
 	Referrer               string
@@ -47,11 +48,6 @@ type Entry struct {
 	HourIndex              int32
 }
 
-type Session struct {
-	UserId    uint64
-	SessionId uint64
-}
-
 var entryPool = &sync.Pool{
 	New: func() any {
 		return new(Entry)
@@ -71,7 +67,7 @@ func (e *Entry) Release() {
 func (e *Entry) Session() *Entry {
 	e.Sign = 1
 	session := uuid.New()
-	e.Id.SessionId = xxhash.Sum64(session[:])
+	e.SessionId = xxhash.Sum64(session[:])
 	e.EntryPage = e.Pathname
 	e.ExitPage = e.Pathname
 	e.IsBounce = true
@@ -93,7 +89,7 @@ func (e *Entry) Bounce() (n int32) {
 func (s *Entry) Update(e *Entry) *Entry {
 	ss := NewEntry()
 	*ss = *s
-	ss.Id.UserId = e.Id.UserId
+	ss.UserId = e.UserId
 	ss.Timestamp = e.Timestamp
 	ss.ExitPage = e.Pathname
 	ss.IsBounce = false
@@ -148,9 +144,9 @@ func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *Sum) {
 		bounce += e.Bounce() * e.Sign
 		views += e.PageViews * e.Sign
 		events += e.Events * e.Sign
-		if !u.Contains(e.Id.UserId) {
+		if !u.Contains(e.UserId) {
 			visitors += 1
-			u.Add(e.Id.UserId)
+			u.Add(e.UserId)
 		}
 		duration += e.Duration * float64(e.Sign)
 	}

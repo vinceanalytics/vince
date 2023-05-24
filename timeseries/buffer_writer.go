@@ -70,7 +70,7 @@ func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	var s *Entry
-	s = b.find(ctx, e, e.Id.UserId)
+	s = b.find(ctx, e, e.UserId)
 	if s == nil {
 		s = b.find(ctx, e, prevUserId)
 	}
@@ -111,12 +111,12 @@ func (b *Buffer) key(domain string, uid uint64) string {
 }
 
 func (b *Buffer) persist(ctx context.Context, s *Entry) {
-	caches.Session(ctx).SetWithTTL(b.key(s.Domain, s.Id.UserId), s, 1, 30*time.Minute)
+	caches.Session(ctx).SetWithTTL(b.key(s.Domain, s.UserId), s, 1, 30*time.Minute)
 }
 
 type EntryItem struct {
-	UserID, SessionID uint64
-	Text              string
+	Index int
+	Text  string
 }
 
 type EntryItemList []EntryItem
@@ -132,60 +132,78 @@ func (e *EntryItems) Reset() {
 }
 
 func (e *EntryItems) Build(ctx context.Context, ls []*Entry, city func(context.Context, uint32) string) {
-	for _, v := range ls {
+	for i, v := range ls {
 		e.ls[Event] = append(e.ls[Event], EntryItem{
-			Text: v.Name,
+			Index: i,
+			Text:  v.Name,
 		})
 		e.ls[Page] = append(e.ls[Event], EntryItem{
-			Text: v.Pathname,
+			Index: i,
+			Text:  v.Pathname,
 		})
 		e.ls[EntryPage] = append(e.ls[Event], EntryItem{
-			Text: v.EntryPage,
+			Index: i,
+			Text:  v.EntryPage,
 		})
 		e.ls[ExitPage] = append(e.ls[Event], EntryItem{
-			Text: v.ExitPage,
+			Index: i,
+			Text:  v.ExitPage,
 		})
 		e.ls[Referrer] = append(e.ls[Event], EntryItem{
-			Text: v.Referrer,
+			Index: i,
+			Text:  v.Referrer,
 		})
 		e.ls[UtmDevice] = append(e.ls[Event], EntryItem{
-			Text: v.ScreenSize,
+			Index: i,
+			Text:  v.ScreenSize,
 		})
 		e.ls[UtmMedium] = append(e.ls[Event], EntryItem{
-			Text: v.UtmMedium,
+			Index: i,
+			Text:  v.UtmMedium,
 		})
 		e.ls[UtmSource] = append(e.ls[Event], EntryItem{
-			Text: v.UtmSource,
+			Index: i,
+			Text:  v.UtmSource,
 		})
 		e.ls[UtmCampaign] = append(e.ls[Event], EntryItem{
-			Text: v.UtmCampaign,
+			Index: i,
+			Text:  v.UtmCampaign,
 		})
 		e.ls[UtmContent] = append(e.ls[Event], EntryItem{
-			Text: v.UtmContent,
+			Index: i,
+			Text:  v.UtmContent,
 		})
 		e.ls[UtmTerm] = append(e.ls[Event], EntryItem{
-			Text: v.UtmTerm,
+			Index: i,
+			Text:  v.UtmTerm,
 		})
 		e.ls[Os] = append(e.ls[Event], EntryItem{
-			Text: v.OperatingSystem,
+			Index: i,
+			Text:  v.OperatingSystem,
 		})
 		e.ls[OsVersion] = append(e.ls[Event], EntryItem{
-			Text: v.OperatingSystemVersion,
+			Index: i,
+			Text:  v.OperatingSystemVersion,
 		})
 		e.ls[UtmBrowser] = append(e.ls[Event], EntryItem{
-			Text: v.Browser,
+			Index: i,
+			Text:  v.Browser,
 		})
 		e.ls[BrowserVersion] = append(e.ls[Event], EntryItem{
-			Text: v.BrowserVersion,
+			Index: i,
+			Text:  v.BrowserVersion,
 		})
 		e.ls[Region] = append(e.ls[Event], EntryItem{
-			Text: v.Subdivision1Code,
+			Index: i,
+			Text:  v.Subdivision1Code,
 		})
 		e.ls[Country] = append(e.ls[Event], EntryItem{
-			Text: v.CountryCode,
+			Index: i,
+			Text:  v.CountryCode,
 		})
 		e.ls[City] = append(e.ls[Event], EntryItem{
-			Text: v.CountryCode,
+			Index: i,
+			Text:  v.CountryCode,
 		})
 	}
 }
