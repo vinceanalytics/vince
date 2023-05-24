@@ -381,7 +381,7 @@ func createStatefulSet(o *v1alpha1.Vince, defaultImage string) (*corev1.Service,
 			Value: ":80",
 		},
 		corev1.EnvVar{
-			Name:  "VINCE_LISTEN_TLS",
+			Name:  "VINCE_TLS_LISTEN",
 			Value: ":443",
 		},
 	)
