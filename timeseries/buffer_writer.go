@@ -113,3 +113,79 @@ func (b *Buffer) key(domain string, uid uint64) string {
 func (b *Buffer) persist(ctx context.Context, s *Entry) {
 	caches.Session(ctx).SetWithTTL(b.key(s.Domain, s.UserId), s, 1, 30*time.Minute)
 }
+
+type EntryItem struct {
+	UserID, SessionID uint64
+	Text              string
+}
+
+type EntryItemList []EntryItem
+
+type EntryItems struct {
+	ls [PROPS_city + 1]EntryItemList
+}
+
+func (e *EntryItems) Reset() {
+	for i := 0; i < len(e.ls); i++ {
+		e.ls[i] = e.ls[i][:0]
+	}
+}
+
+func (e *EntryItems) Build(ctx context.Context, ls []*Entry, city func(context.Context, uint32) string) {
+	for _, v := range ls {
+		e.ls[PROPS_event] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.Name,
+		})
+		e.ls[PROPS_page] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.Pathname,
+		})
+		e.ls[PROPS_entryPage] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.EntryPage,
+		})
+		e.ls[PROPS_exitPage] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.ExitPage,
+		})
+		e.ls[PROPS_referrer] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.Referrer,
+		})
+		e.ls[PROPS_utmDevice] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.ScreenSize,
+		})
+		e.ls[PROPS_utmMedium] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.UtmMedium,
+		})
+		e.ls[PROPS_utmSource] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.UtmSource,
+		})
+		e.ls[PROPS_utmCampaign] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.UtmCampaign,
+		})
+		e.ls[PROPS_utmContent] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.UtmContent,
+		})
+		e.ls[PROPS_utmTerm] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.UtmTerm,
+		})
+		e.ls[PROPS_os] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.OperatingSystem,
+		})
+		e.ls[PROPS_osVersion] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.OperatingSystemVersion,
+		})
+		e.ls[PROPS_utmBrowser] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.Browser,
+		})
+		e.ls[PROPS_browserVersion] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.BrowserVersion,
+		})
+		e.ls[PROPS_region] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.Subdivision1Code,
+		})
+		e.ls[PROPS_country] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.CountryCode,
+		})
+		e.ls[PROPS_city] = append(e.ls[PROPS_event], EntryItem{
+			Text: v.CountryCode,
+		})
+	}
+}
