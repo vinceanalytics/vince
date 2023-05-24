@@ -146,11 +146,9 @@ func saveProp(ctx context.Context,
 }
 
 type saveContext struct {
-	txn     *badger.Txn
-	ls      *metaList
-	idx     *badger.Txn
-	city    *badger.Txn
-	scratch [4]byte
+	txn *badger.Txn
+	ls  *metaList
+	idx *badger.Txn
 }
 
 func (ctx *saveContext) Reset(rctx context.Context) {
@@ -165,32 +163,11 @@ func (ctx *saveContext) Reset(rctx context.Context) {
 	} else {
 		ctx.idx = GetIndex(rctx).NewTransaction(true)
 	}
-	if ctx.city != nil {
-		ctx.city.Discard()
-	} else {
-		ctx.city = GetGeo(rctx).NewTransaction(false)
-	}
-
 }
 
 func (ctx *saveContext) Release() {
 	ctx.idx.Discard()
-	ctx.city.Discard()
 	ctx.ls.Release()
-}
-
-func (c *saveContext) findCity(ctx context.Context, geoname uint32) (s string) {
-	binary.BigEndian.PutUint32(c.scratch[:], geoname)
-	x, err := c.city.Get(c.scratch[:])
-	if err != nil {
-		log.Get(ctx).Err(err).Msg("failed to get city by geoname id")
-		return ""
-	}
-	x.Value(func(val []byte) error {
-		s = string(val)
-		return nil
-	})
-	return
 }
 
 func (ctx *saveContext) saveIndex(key *bytes.Buffer) error {

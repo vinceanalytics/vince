@@ -40,7 +40,7 @@ type Entry struct {
 	Timestamp              int64
 	Duration               float64
 	Start                  int64
-	CityGeoNameId          uint32
+	City                   string
 	PageViews              int32
 	Events                 int32
 	Sign                   int32
@@ -100,8 +100,8 @@ func (s *Entry) Update(e *Entry) *Entry {
 	if ss.CountryCode == "" {
 		ss.CountryCode = e.CountryCode
 	}
-	if ss.CityGeoNameId == 0 {
-		ss.CityGeoNameId = e.CityGeoNameId
+	if ss.City == "" {
+		ss.City = e.City
 	}
 	if ss.Subdivision1Code == "" {
 		ss.Subdivision1Code = e.Subdivision1Code
@@ -257,7 +257,7 @@ func (e EntryList) Sort(by Property) {
 		}
 	case City:
 		less = func(i, j int) bool {
-			return e[i].CityGeoNameId < e[j].CityGeoNameId
+			return e[i].City < e[j].City
 		}
 	default:
 		return
@@ -339,7 +339,7 @@ func (e EntryList) EmitProp(ctx context.Context, cf *saveContext, u, s *roaring6
 		}
 	case City:
 		key = func(e *Entry) string {
-			return cf.findCity(ctx, e.CityGeoNameId)
+			return e.City
 		}
 	default:
 		return nil

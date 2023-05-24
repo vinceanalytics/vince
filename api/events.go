@@ -236,7 +236,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.CountryCode = countryCode
 		e.Subdivision1Code = subdivision1
 		e.Subdivision2Code = subdivision2
-		e.CityGeoNameId = uint32(cityGeonameId)
+		e.City = timeseries.FindCity(ctx, uint32(cityGeonameId))
 		e.ScreenSize = screenSize
 		e.Timestamp = unix
 		e.HourIndex = int32(hours)
