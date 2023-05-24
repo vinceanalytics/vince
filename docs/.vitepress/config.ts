@@ -30,6 +30,7 @@ export default defineConfig({
         collapsed: true,
         items: [
           { text: 'Installation', link: '/guide/install-vince' },
+          { text: 'Usage', link: '/guide/usage' },
           { text: 'Cli', link: '/guide/cli-vince' },
         ]
       },
