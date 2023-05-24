@@ -16,42 +16,55 @@ vince
 .nf
 [--acme-domain]=[value]
 [--acme-email]=[value]
+[--alerts-source]=[value]
 [--backup-dir]=[value]
 [--bootstrap-email]=[value]
 [--bootstrap-key]=[value]
 [--bootstrap-name]=[value]
 [--bootstrap-password]=[value]
-[--cache-refresh]=[value]
-[--config]=[value]
+[--cache-refresh-interval]=[value]
+[--cors-credentials]
+[--cors-expose]=[value]
+[--cors-headers]=[value]
+[--cors-max-age]=[value]
+[--cors-methods]=[value]
+[--cors-origin]=[value]
+[--cors-send-preflight-response]
 [--data]=[value]
 [--enable-alerts]
 [--enable-auto-tls]
+[--enable-backup]
 [--enable-bootstrap]
 [--enable-email]
+[--enable-firewall]
 [--enable-profile]
 [--enable-tls]
 [--env]=[value]
+[--firewall-allow-list]=[value]
+[--firewall-block-list]=[value]
 [--listen]=[value]
-[--log]=[value]
+[--log-level]=[value]
 [--mailer-address-name]=[value]
 [--mailer-address]=[value]
-[--mailer-smtp-anonymous]=[value]
-[--mailer-smtp-host]=[value]
+[--mailer-smtp-address]=[value]
+[--mailer-smtp-anonymous-enable]
+[--mailer-smtp-anonymous-trace]=[value]
+[--mailer-smtp-enable-mailhog]
 [--mailer-smtp-oauth-host]=[value]
 [--mailer-smtp-oauth-port]=[value]
 [--mailer-smtp-oauth-token]=[value]
-[--mailer-smtp-oauth-username]=[value]
+[--mailer-smtp-oauth-username]
+[--mailer-smtp-plain-enabled]
 [--mailer-smtp-plain-identity]=[value]
 [--mailer-smtp-plain-password]=[value]
 [--mailer-smtp-plain-username]=[value]
-[--mailer-smtp-port]=[value]
-[--rotation-check]=[value]
 [--secret-age]=[value]
 [--secret]=[value]
+[--super-users]=[value]
 [--tls-address]=[value]
 [--tls-cert]=[value]
 [--tls-key]=[value]
-[--ts-buffer]=[value]
+[--ts-buffer-sync-interval]=[value]
 [--url]=[value]
 
 .fi
@@ -78,6 +91,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--acme-email\fP="": Email address to use with letsencrypt.
 
 .PP
+\fB--alerts-source\fP="": path to directory with alerts scripts
+
+.PP
 \fB--backup-dir\fP="": directory where backups are stored
 
 .PP
@@ -93,10 +109,28 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--bootstrap-password\fP="": Password of the user to bootstrap.
 
 .PP
-\fB--cache-refresh\fP="": window for refreshing sites cache (default: 15m0s)
+\fB--cache-refresh-interval\fP="": window for refreshing sites cache (default: 15m0s)
 
 .PP
-\fB--config\fP="": configuration file in json format (default: vince.json)
+\fB--cors-credentials\fP:
+
+.PP
+\fB--cors-expose\fP="":  (default: [])
+
+.PP
+\fB--cors-headers\fP="":  (default: [Authorization Content-Type Accept Origin User-Agent DNT Cache-Control X-Mx-ReqToken Keep-Alive X-Requested-With If-Modified-Since X-CSRF-Token])
+
+.PP
+\fB--cors-max-age\fP="":  (default: 1728000)
+
+.PP
+\fB--cors-methods\fP="":  (default: [GET POST PUT PATCH DELETE OPTIONS])
+
+.PP
+\fB--cors-origin\fP="":  (default: *)
+
+.PP
+\fB--cors-send-preflight-response\fP:
 
 .PP
 \fB--data\fP="": path to data directory (default: .vince)
@@ -108,25 +142,37 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--enable-auto-tls\fP: Enables using acme for automatic https.
 
 .PP
+\fB--enable-backup\fP: Allows backing up and restoring
+
+.PP
 \fB--enable-bootstrap\fP: allows creating a user and api key on startup.
 
 .PP
 \fB--enable-email\fP: allows sending emails
 
 .PP
+\fB--enable-firewall\fP: allow blocking ip address
+
+.PP
 \fB--enable-profile\fP: Expose /debug/pprof endpoint
 
 .PP
-\fB--enable-tls\fP: Enables serving https traffick.
+\fB--enable-tls\fP: Enables serving https traffic.
 
 .PP
 \fB--env\fP="": environment on which vince is run (dev,staging,production) (default: dev)
 
 .PP
+\fB--firewall-allow-list\fP="": allow  ip address from this list (default: [])
+
+.PP
+\fB--firewall-block-list\fP="": block  ip address from this list (default: [])
+
+.PP
 \fB--listen\fP="": http address to listen to (default: :8080)
 
 .PP
-\fB--log\fP="": level of logging (default: info)
+\fB--log-level\fP="": log level, values are (trace,debug,info,warn,error,fatal,panic) (default: debug)
 
 .PP
 \fB--mailer-address\fP="": email address used for the sender of outgoing emails  (default: vince@mailhog.example)
@@ -135,10 +181,16 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--mailer-address-name\fP="": email address name  used for the sender of outgoing emails  (default: gernest from vince analytics)
 
 .PP
-\fB--mailer-smtp-anonymous\fP="": trace value for anonymous smtp auth
+\fB--mailer-smtp-address\fP="": host:port address of the smtp server used for outgoing emails (default: localhost:1025)
 
 .PP
-\fB--mailer-smtp-host\fP="": host address of the smtp server used for outgoing emails (default: localhost)
+\fB--mailer-smtp-anonymous-enable\fP: enables anonymous authenticating smtp client
+
+.PP
+\fB--mailer-smtp-anonymous-trace\fP="": trace value for anonymous smtp auth
+
+.PP
+\fB--mailer-smtp-enable-mailhog\fP: port address of the smtp server used for outgoing emails
 
 .PP
 \fB--mailer-smtp-oauth-host\fP="": host value for oauth bearer smtp auth
@@ -150,7 +202,10 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--mailer-smtp-oauth-token\fP="": token value for oauth bearer smtp auth
 
 .PP
-\fB--mailer-smtp-oauth-username\fP="": username value for oauth bearer smtp auth
+\fB--mailer-smtp-oauth-username\fP: allows oauth authentication on smtp client
+
+.PP
+\fB--mailer-smtp-plain-enabled\fP: enables PLAIN authentication of smtp client
 
 .PP
 \fB--mailer-smtp-plain-identity\fP="": identity value for plain smtp auth
@@ -162,16 +217,13 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--mailer-smtp-plain-username\fP="": username value for plain smtp auth
 
 .PP
-\fB--mailer-smtp-port\fP="": port address of the smtp server used for outgoing emails (default: 1025)
-
-.PP
-\fB--rotation-check\fP="": window for checking log rotation (default: 1h0m0s)
-
-.PP
 \fB--secret\fP="": path to a file with  ed25519 private key
 
 .PP
 \fB--secret-age\fP="": path to file with age.X25519Identity
+
+.PP
+\fB--super-users\fP="": a list of user ID with super privilege (default: [])
 
 .PP
 \fB--tls-address\fP="": https address to listen to. You must provide tls-key and tls-cert or configure auto-tls (default: :8443)
@@ -183,7 +235,7 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--tls-key\fP="": Path to key file used for https
 
 .PP
-\fB--ts-buffer\fP="": window for buffering timeseries in memory before savin them (default: 1m0s)
+\fB--ts-buffer-sync-interval\fP="": window for buffering timeseries in memory before savin them (default: 1m0s)
 
 .PP
 \fB--url\fP="": url for the server on which vince is hosted(it shows up on emails) (default: http://localhost:8080)
@@ -193,12 +245,6 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 .SH config
 .PP
 generates configurations for vince
-
-.PP
-\fB--interactive, -i\fP: Interactive configuration
-
-.PP
-\fB--path\fP="": directory to save configurations (including secrets) (default: .vince)
 
 .SH version
 .PP
