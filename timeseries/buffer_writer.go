@@ -70,7 +70,7 @@ func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	var s *Entry
-	s = b.find(ctx, e, e.UserId)
+	s = b.find(ctx, e, e.Id.UserId)
 	if s == nil {
 		s = b.find(ctx, e, prevUserId)
 	}
@@ -111,7 +111,7 @@ func (b *Buffer) key(domain string, uid uint64) string {
 }
 
 func (b *Buffer) persist(ctx context.Context, s *Entry) {
-	caches.Session(ctx).SetWithTTL(b.key(s.Domain, s.UserId), s, 1, 30*time.Minute)
+	caches.Session(ctx).SetWithTTL(b.key(s.Domain, s.Id.UserId), s, 1, 30*time.Minute)
 }
 
 type EntryItem struct {

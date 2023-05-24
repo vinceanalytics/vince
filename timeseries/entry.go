@@ -15,7 +15,7 @@ import (
 
 var entryPool = &sync.Pool{
 	New: func() any {
-		return new(Entry)
+		return &Entry{Id: &Session{}}
 	},
 }
 
@@ -32,7 +32,7 @@ func (e *Entry) Release() {
 func (e *Entry) Session() *Entry {
 	e.Sign = 1
 	session := uuid.New()
-	e.SessionId = xxhash.Sum64(session[:])
+	e.Id.SessionId = xxhash.Sum64(session[:])
 	e.EntryPage = e.Pathname
 	e.ExitPage = e.Pathname
 	e.IsBounce = true
@@ -53,7 +53,7 @@ func (e *Entry) Bounce() (n int32) {
 
 func (s *Entry) Update(e *Entry) *Entry {
 	ss := proto.Clone(s).(*Entry)
-	ss.UserId = e.UserId
+	ss.Id.UserId = e.Id.UserId
 	ss.Timestamp = e.Timestamp
 	ss.ExitPage = e.Pathname
 	ss.IsBounce = false
@@ -112,9 +112,9 @@ func (ls EntryList) Count(u, s *roaring64.Bitmap, sum *Sum) {
 		bounce += e.Bounce() * e.Sign
 		views += e.PageViews * e.Sign
 		events += e.Events * e.Sign
-		if !u.Contains(e.UserId) {
+		if !u.Contains(e.Id.UserId) {
 			visitors += 1
-			u.Add(e.UserId)
+			u.Add(e.Id.UserId)
 		}
 		duration += e.Duration * float64(e.Sign)
 	}

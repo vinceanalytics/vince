@@ -9,8 +9,7 @@ message Entry {
   int64 timestamp = 1;
   string name = 2;
   string domain = 3;
-  uint64 user_id = 4;
-  uint64 session_id = 5;
+  Session id = 5;
   string hostname = 6;
   string pathname = 7;
   string referrer = 8;
@@ -41,6 +40,10 @@ message Entry {
   double duration = 31;
   int64 start = 32;
   int32 hour_index = 33;
+}
+message Session {
+  uint64 user_id = 1;
+  uint64 session_id = 2;
 }
 
 enum PROPS {
