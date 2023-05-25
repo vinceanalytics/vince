@@ -1,6 +1,14 @@
 package timeseries
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 type Property uint8
+
+var _ json.Marshaler = (*Property)(nil)
+var _ json.Unmarshaler = (*Property)(nil)
 
 const (
 	Base           Property = 0
@@ -76,7 +84,23 @@ func (p Property) String() string {
 	return _prop_name[uint8(p)]
 }
 
+func (p Property) MarshalJSON() ([]byte, error) {
+	return []byte(p.String()), nil
+}
+
+func (p *Property) UnmarshalJSON(b []byte) error {
+	v, ok := _prop_value[string(b)]
+	if !ok {
+		return fmt.Errorf("unknown property value %q", string(b))
+	}
+	*p = Property(v)
+	return nil
+}
+
 type Metric uint8
+
+var _ json.Marshaler = (*Metric)(nil)
+var _ json.Unmarshaler = (*Metric)(nil)
 
 const (
 	Visitors      Metric = 0
@@ -112,4 +136,17 @@ var (
 
 func (m Metric) String() string {
 	return _metric_name[uint8(m)]
+}
+
+func (m Metric) MarshalJSON() ([]byte, error) {
+	return []byte(m.String()), nil
+}
+
+func (m *Metric) UnmarshalJSON(b []byte) error {
+	v, ok := _metric_value[string(b)]
+	if !ok {
+		return fmt.Errorf("unknown metric value %q", string(b))
+	}
+	*m = Metric(v)
+	return nil
 }

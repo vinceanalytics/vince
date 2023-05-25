@@ -66,7 +66,7 @@ func Save(ctx context.Context, b *Buffer) {
 	copy(meta[:], b.id[:])
 	err := db.Update(func(txn *badger.Txn) error {
 		svc.txn = txn
-		return b.Build(func(p Property, key string, ts uint64, sum *Sum) error {
+		return b.Build(ctx, func(p Property, key string, ts uint64, sum *Sum) error {
 			return saveProperty(ctx, svc, meta, key, sum)
 		})
 	})
@@ -116,6 +116,12 @@ type metaList struct {
 
 func newMetaList() *metaList {
 	return metaKeyPool.New().(*metaList)
+}
+
+func (ls *metaList) Get() *bytes.Buffer {
+	b := smallBufferpool.Get().(*bytes.Buffer)
+	ls.ls = append(ls.ls, b)
+	return b
 }
 
 func (ls *metaList) Reset() {

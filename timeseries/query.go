@@ -14,14 +14,6 @@ import (
 	"github.com/gernest/vince/pkg/timex"
 )
 
-func (a Metric) MarshalJSON() ([]byte, error) {
-	return []byte(a.String()), nil
-}
-
-func (a Property) MarshalJSON() ([]byte, error) {
-	return []byte(a.String()), nil
-}
-
 type QueryRequest struct {
 	UserID   uint64
 	SiteID   uint64

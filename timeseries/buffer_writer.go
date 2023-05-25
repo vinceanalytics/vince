@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"errors"
 	"math"
 	"sort"
 	"strconv"
 	"sync"
 	"time"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
+	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/caches"
+	"github.com/gernest/vince/pkg/log"
 )
 
 type Buffer struct {
@@ -119,29 +121,52 @@ func (b *Buffer) persist(ctx context.Context, s *Entry) {
 	caches.Session(ctx).SetWithTTL(b.key(s.Domain, s.UserId), s, 1, 30*time.Minute)
 }
 
-func (b *Buffer) Build(f func(p Property, key string, ts uint64, sum *Sum) error) error {
-	return b.segments.Build(b.entries, f)
-}
-
-type EntryItem struct {
-	Index int
-	Text  string
+func (b *Buffer) Build(ctx context.Context, f func(p Property, key string, ts uint64, sum *Sum) error) error {
+	return b.segments.Build(ctx, b.entries, f)
 }
 
 type Segments struct {
-	ls   [City + 1][]int
-	uniq roaring64.Bitmap
-	sum  Sum
+	ls  [City + 1][]int
+	key [4]byte
+	sum Sum
 }
 
 func (e *Segments) Reset() {
 	for i := 0; i < len(e.ls); i++ {
 		e.ls[i] = e.ls[i][:0]
 	}
-	e.uniq.Clear()
 }
 
-func (e *Segments) Build(ls []*Entry, f func(Property, string, uint64, *Sum) error) error {
+func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *metaList) func(id uint64) bool {
+	return func(id uint64) bool {
+		binary.BigEndian.PutUint64(buf, id)
+		_, err := txn.Get(buf)
+		if err != nil {
+			if errors.Is(err, badger.ErrKeyNotFound) {
+				b := mls.Get()
+				b.Write(buf)
+				txn.Set(b.Bytes(), []byte{})
+			} else {
+				log.Get(ctx).Err(err).Msg("failed to get key from unique index")
+			}
+			return false
+		}
+		return true
+	}
+}
+
+func (e *Segments) Build(ctx context.Context, ls []*Entry, f func(Property, string, uint64, *Sum) error) error {
+	txn := GetUnique(ctx).NewTransaction(true)
+	mls := newMetaList()
+	defer func() {
+		err := txn.Commit()
+		if err != nil {
+			log.Get(ctx).Err(err).Msg("failed to commit transaction for unique index")
+		}
+		txn.Discard()
+		mls.Release()
+	}()
+	uniq := seen(ctx, txn, e.key[:], mls)
 	for i, v := range ls {
 		e.ls[Base] = append(e.ls[Base], i)
 		if v.Name != "" {
@@ -150,7 +175,6 @@ func (e *Segments) Build(ls []*Entry, f func(Property, string, uint64, *Sum) err
 		if v.Pathname != "" {
 			e.ls[Page] = append(e.ls[Event], i)
 		}
-
 		if v.EntryPage != "" {
 			e.ls[EntryPage] = append(e.ls[Event], i)
 		}
@@ -225,7 +249,7 @@ func (e *Segments) Build(ls []*Entry, f func(Property, string, uint64, *Sum) err
 			})
 		}
 		err := chunk(e.ls[i], ls, func(u uint64, i []int) error {
-			e.compute(i, ls)
+			e.compute(uniq, i, ls)
 			return f(p, p.Index(ls[i[0]]), u, &e.sum)
 		})
 		if err != nil {
@@ -256,8 +280,7 @@ func chunk(a []int, ls []*Entry, f func(uint64, []int) error) error {
 	return nil
 }
 
-func (e *Segments) compute(a []int, ls []*Entry) {
-	e.uniq.Clear()
+func (e *Segments) compute(seen func(uint64) bool, a []int, ls []*Entry) {
 	e.sum = Sum{}
 	sum := &e.sum
 
@@ -269,9 +292,8 @@ func (e *Segments) compute(a []int, ls []*Entry) {
 		bounce += ee.Bounce() * ee.Sign
 		views += ee.PageViews * ee.Sign
 		events += ee.Events * ee.Sign
-		if !e.uniq.Contains(ee.UserId) {
+		if !seen(ee.UserId) {
 			visitors += 1
-			e.uniq.Add(ee.UserId)
 		}
 		duration += ee.Duration * float64(ee.Sign)
 	}
