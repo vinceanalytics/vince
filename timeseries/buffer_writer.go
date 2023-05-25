@@ -137,25 +137,47 @@ func (e *Segments) Reset() {
 	}
 }
 
-func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *metaList) func(id uint64) bool {
-	return func(id uint64) bool {
-		binary.BigEndian.PutUint64(buf, id)
-		_, err := txn.Get(buf)
-		if err != nil {
-			if errors.Is(err, badger.ErrKeyNotFound) {
-				b := mls.Get()
-				b.Write(buf)
-				txn.Set(b.Bytes(), []byte{})
-			} else {
-				log.Get(ctx).Err(err).Msg("failed to get key from unique index")
+func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *metaList) seenFunc {
+	use := func(x *badger.Txn) func(uint64) bool {
+		return func(u uint64) bool {
+			binary.BigEndian.PutUint64(buf, u)
+			_, err := x.Get(buf)
+			if err != nil {
+				if errors.Is(err, badger.ErrKeyNotFound) {
+					b := mls.Get()
+					b.Write(buf)
+					txn.Set(b.Bytes(), []byte{})
+				} else {
+					log.Get(ctx).Err(err).Msg("failed to get key from unique index")
+				}
+				return false
 			}
-			return false
+			return true
 		}
-		return true
+	}
+	return func(p Property) (func(uint64) bool, func()) {
+		if p == Base {
+			return use(txn), func() {}
+		}
+		x := GetUnique(ctx).NewTransaction(true)
+		return use(x), func() {
+			x.Discard()
+		}
 	}
 }
 
 func (e *Segments) Build(ctx context.Context, ls []*Entry, f func(Property, string, uint64, *Sum) error) error {
+	// We capitalize on badger Transaction to globally track unique visitors in
+	// this entries batch.
+	//
+	// txn holds visible user_id seen on Base property. This ensure we correctly account
+	// for all buffered entries.
+	//
+	// seen function will use this for Base property. All other properties create a new
+	// transaction before calling e.compute and the transaction is discarded there
+	// after to ensure we only commit Base user_id but still be able to correctly
+	// detect unique visitors within e.compute calls (Which operate on unique entry keys
+	// over the same hour window)
 	txn := GetUnique(ctx).NewTransaction(true)
 	mls := newMetaList()
 	defer func() {
@@ -240,17 +262,27 @@ func (e *Segments) Build(ctx context.Context, ls []*Entry, f func(Property, stri
 		}
 	}
 	for i := 0; i < len(e.ls); i++ {
-		a := e.ls[i]
 		p := Property(i)
-		if i != 0 {
-			// sort non Base properties
-			sort.Slice(a, func(i, j int) bool {
-				return p.Index(ls[a[i]]) < p.Index(ls[a[j]])
+		err := chunk(e.ls[i], ls, func(hs []int) error {
+			// First we group all entries by .Hours
+			if p != Base {
+				// sort non Base properties before chunking them by property.
+				sort.Slice(hs, func(i, j int) bool {
+					return p.Index(ls[hs[i]]) < p.Index(ls[hs[j]])
+				})
+			}
+			// Then we group  hs by Property.Index and emitting each observed
+			// Property.Index to the callback.
+			return chunkPropKey(p, hs, ls, func(cp []int) error {
+				// The cp list contains entries
+				// - Occurring in the same hour
+				// - Belonging to the same Property.Index
+				el := ls[cp[0]]
+				uq, done := uniq(p)
+				e.compute(uq, cp, ls)
+				done()
+				return f(p, p.Index(el), el.Hours, &e.sum)
 			})
-		}
-		err := chunk(e.ls[i], ls, func(u uint64, i []int) error {
-			e.compute(uniq, i, ls)
-			return f(p, p.Index(ls[i[0]]), u, &e.sum)
 		})
 		if err != nil {
 			return err
@@ -259,7 +291,9 @@ func (e *Segments) Build(ctx context.Context, ls []*Entry, f func(Property, stri
 	return nil
 }
 
-func chunk(a []int, ls []*Entry, f func(uint64, []int) error) error {
+type seenFunc func(Property) (func(uint64) bool, func())
+
+func chunk(a []int, ls []*Entry, f func([]int) error) error {
 	if len(ls) < 2 {
 		return nil
 	}
@@ -269,13 +303,38 @@ func chunk(a []int, ls []*Entry, f func(uint64, []int) error) error {
 		e := ls[v]
 		curr = e.Hours
 		if i > 0 && curr != last {
-			f(ls[a[pos]].Hours, a[pos:i])
+			f(a[pos:i])
 			pos = i
 		}
 		last = curr
 	}
 	if pos < len(ls) {
-		return f(ls[a[pos]].Hours, a[pos:])
+		return f(a[pos:])
+	}
+	return nil
+}
+
+func chunkPropKey(p Property, a []int, ls []*Entry, f func([]int) error) error {
+	if len(ls) < 2 {
+		return nil
+	}
+	if p == Base {
+		return f(a)
+	}
+
+	var pos int
+	var last, curr uint64
+	for i, v := range a {
+		e := ls[v]
+		curr = e.Hours
+		if i > 0 && curr != last {
+			f(a[pos:i])
+			pos = i
+		}
+		last = curr
+	}
+	if pos < len(ls) {
+		return f(a[pos:])
 	}
 	return nil
 }
