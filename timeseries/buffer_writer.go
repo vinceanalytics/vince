@@ -119,8 +119,8 @@ func (b *Buffer) persist(ctx context.Context, s *Entry) {
 	caches.Session(ctx).SetWithTTL(b.key(s.Domain, s.UserId), s, 1, 30*time.Minute)
 }
 
-func (b *Buffer) Build(f func(p Property, key string, ts uint64, sum *Sum)) {
-	b.segments.Build(b.entries, f)
+func (b *Buffer) Build(f func(p Property, key string, ts uint64, sum *Sum) error) error {
+	return b.segments.Build(b.entries, f)
 }
 
 type EntryItem struct {
@@ -141,7 +141,7 @@ func (e *Segments) Reset() {
 	e.uniq.Clear()
 }
 
-func (e *Segments) Build(ls []*Entry, f func(Property, string, uint64, *Sum)) {
+func (e *Segments) Build(ls []*Entry, f func(Property, string, uint64, *Sum) error) error {
 	for i, v := range ls {
 		e.ls[Base] = append(e.ls[Base], i)
 		if v.Name != "" {
@@ -224,16 +224,20 @@ func (e *Segments) Build(ls []*Entry, f func(Property, string, uint64, *Sum)) {
 				return p.Index(ls[a[i]]) < p.Index(ls[a[j]])
 			})
 		}
-		chunk(e.ls[i], ls, func(u uint64, i []int) {
+		err := chunk(e.ls[i], ls, func(u uint64, i []int) error {
 			e.compute(i, ls)
-			f(p, p.Index(ls[i[0]]), u, &e.sum)
+			return f(p, p.Index(ls[i[0]]), u, &e.sum)
 		})
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func chunk(a []int, ls []*Entry, f func(uint64, []int)) {
+func chunk(a []int, ls []*Entry, f func(uint64, []int) error) error {
 	if len(ls) < 2 {
-		return
+		return nil
 	}
 	var pos int
 	var last, curr uint64
@@ -247,8 +251,9 @@ func chunk(a []int, ls []*Entry, f func(uint64, []int)) {
 		last = curr
 	}
 	if pos < len(ls)-1 {
-		f(ls[a[pos]].Hours, a[pos:])
+		return f(ls[a[pos]].Hours, a[pos:])
 	}
+	return nil
 }
 
 func (e *Segments) compute(a []int, ls []*Entry) {

@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/system"
@@ -23,32 +22,6 @@ type Sum struct {
 	BounceRate    uint32
 	VisitDuration uint32
 	ViewsPerVisit uint32
-}
-
-type aggregate struct {
-	u, s *roaring64.Bitmap
-	sum  Sum
-}
-
-var groupPool = &sync.Pool{
-	New: func() any {
-		return &aggregate{
-			u: roaring64.New(),
-			s: roaring64.New(),
-		}
-	},
-}
-
-func (g *aggregate) Save(el EntryList) {
-	el.Count(g.u, g.s, &g.sum)
-}
-
-func (g *aggregate) Prop(ctx context.Context, cf *saveContext, el EntryList, by Property, f func(key string, sum *Sum) error) error {
-	return el.EmitProp(ctx, cf, g.u, g.s, by, &g.sum, f)
-}
-
-func (g *aggregate) Release() {
-	groupPool.Put(g)
 }
 
 func DropSite(ctx context.Context, uid, sid uint64) {
@@ -76,72 +49,51 @@ func Save(ctx context.Context, b *Buffer) {
 	defer system.SaveDuration.Observe(time.Since(start).Seconds())
 
 	db := GetMike(ctx)
-	defer b.Release()
-	group := groupPool.Get().(*aggregate)
-	ent := EntryList(b.entries)
 	meta := newMetaKey()
-	defer meta.Release()
-	mls := newMetaList()
-	defer mls.Release()
-	sctx := &saveContext{}
-	sctx.Reset(ctx)
+
 	defer func() {
-		sctx.Release()
+		b.Release()
+		meta.Release()
 	}()
+
+	svc := &saveContext{
+		ls:  newMetaList(),
+		idx: GetIndex(ctx).NewTransaction(true),
+	}
+
 	// Buffer.id has the same encoding as the first 16 bytes of meta. We just copy that
 	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
-
-	// Guarantee that aggregates are on per hour windows.
-	ent.Emit(func(el EntryList) {
-		// This ensures indexes are committed and resources reclaimed for reuse.
-		defer sctx.Reset(ctx)
-
-		group.Save(el)
-		ts := time.Unix(el[0].Timestamp, 0)
-		meta.Timestamp(ts)
-		err := db.Update(func(txn *badger.Txn) error {
-			sctx.txn = txn
-			return errors.Join(
-				saveProp(ctx, sctx, meta.SetProp(Base), "__root__", &group.sum),
-				updateMeta(ctx, sctx, el, group, meta, ts),
-			)
+	err := db.Update(func(txn *badger.Txn) error {
+		svc.txn = txn
+		return b.Build(func(p Property, key string, ts uint64, sum *Sum) error {
+			return saveProperty(ctx, svc, meta, key, sum)
 		})
+	})
+	if err != nil {
+		// Transaction was discarded. We discard index transaction as well.
+		svc.idx.Discard()
+		log.Get(ctx).Err(err).Msg("failed to save ts buffer")
+	} else {
+		err := svc.idx.Commit()
 		if err != nil {
-			log.Get(ctx).Err(err).
-				Uint64("uid", b.UID()).
-				Uint64("sid", b.SID()).
-				Msg("failed to save hourly stats")
+			log.Get(ctx).Err(err).Msg("failed to commit to ts index")
 		}
-	})
-}
-
-func updateMeta(ctx context.Context, sctx *saveContext, el EntryList, g *aggregate, x *Key, ts time.Time) error {
-	errs := make([]error, 0, City)
-	for i := 1; i <= int(City); i++ {
-		p := Property(i)
-		errs = append(errs, p.Save(ctx, sctx, el, g, x, ts))
+		svc.idx.Discard()
 	}
-	return errors.Join(errs...)
 }
 
-func (p Property) Save(ctx context.Context, sctx *saveContext, el EntryList, g *aggregate, x *Key, ts time.Time) error {
-	return g.Prop(ctx, sctx, el, p, func(key string, sum *Sum) error {
-		return saveProp(ctx, sctx, x.SetProp(p), key, sum)
-	})
-}
-
-func saveProp(ctx context.Context,
-	sctx *saveContext,
+func saveProperty(ctx context.Context,
+	svc *saveContext,
 	m *Key, text string, a *Sum) error {
 	return errors.Join(
-		updateMetaKey(ctx, sctx, m.SetAggregateType(Visitors).Key(text), a.Visitors),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(Views).Key(text), a.Views),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(Events).Key(text), a.Events),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(Visits).Key(text), a.Visits),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(BounceRate).Key(text), a.BounceRate),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(VisitDuration).Key(text), a.VisitDuration),
-		updateMetaKey(ctx, sctx, m.SetAggregateType(ViewsPerVisit).Key(text), a.ViewsPerVisit),
+		savePropertyKey(ctx, svc, m.Metric(Visitors).Key(text), a.Visitors),
+		savePropertyKey(ctx, svc, m.Metric(Views).Key(text), a.Views),
+		savePropertyKey(ctx, svc, m.Metric(Events).Key(text), a.Events),
+		savePropertyKey(ctx, svc, m.Metric(Visits).Key(text), a.Visits),
+		savePropertyKey(ctx, svc, m.Metric(BounceRate).Key(text), a.BounceRate),
+		savePropertyKey(ctx, svc, m.Metric(VisitDuration).Key(text), a.VisitDuration),
+		savePropertyKey(ctx, svc, m.Metric(ViewsPerVisit).Key(text), a.ViewsPerVisit),
 	)
 }
 
@@ -149,25 +101,6 @@ type saveContext struct {
 	txn *badger.Txn
 	ls  *metaList
 	idx *badger.Txn
-}
-
-func (ctx *saveContext) Reset(rctx context.Context) {
-	if ctx.ls != nil {
-		ctx.ls.Reset()
-	} else {
-		ctx.ls = newMetaList()
-	}
-	if ctx.idx != nil {
-		ctx.idx.Commit()
-		ctx.idx.Discard()
-	} else {
-		ctx.idx = GetIndex(rctx).NewTransaction(true)
-	}
-}
-
-func (ctx *saveContext) Release() {
-	ctx.idx.Discard()
-	ctx.ls.Release()
 }
 
 func (ctx *saveContext) saveIndex(key *bytes.Buffer) error {
@@ -212,8 +145,9 @@ var smallBufferpool = &sync.Pool{
 	},
 }
 
-func updateKeyRaw(ctx context.Context, sctx *saveContext, id *IDToSave, a uint32) error {
-	txn := sctx.txn
+func savePropertyKey(ctx context.Context, svc *saveContext, id *IDToSave, a uint32) error {
+	svc.ls.ls = append(svc.ls.ls, id.mike, id.index)
+	txn := svc.txn
 	key := id.mike.Bytes()
 	x, err := txn.Get(key)
 	if err != nil {
@@ -227,7 +161,7 @@ func updateKeyRaw(ctx context.Context, sctx *saveContext, id *IDToSave, a uint32
 			// We have successfully set the key, now we set the index. We only index
 			// new keys. Since keys are stable, there is no need to index again when
 			// doing update.
-			err = sctx.saveIndex(id.index)
+			err = svc.saveIndex(id.index)
 			if err != nil {
 				log.Get(ctx).Err(err).
 					Msg("failed to save index")
@@ -247,9 +181,4 @@ func updateKeyRaw(ctx context.Context, sctx *saveContext, id *IDToSave, a uint32
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, math.Float64bits(read))
 	return txn.Set(key, b)
-}
-
-func updateMetaKey(ctx context.Context, sctx *saveContext, id *IDToSave, a uint32) error {
-	sctx.ls.ls = append(sctx.ls.ls, id.mike, id.index)
-	return updateKeyRaw(ctx, sctx, id, a)
 }

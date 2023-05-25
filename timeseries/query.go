@@ -90,7 +90,7 @@ func Query(ctx context.Context, request QueryRequest) (r PropResult) {
 		return
 	}
 	for k, v := range request.Property {
-		m.SetProp(k)
+		m.Prop(k)
 		// Passing this means we also include root stats
 		err := db.View(func(txn *badger.Txn) error {
 			o := badger.DefaultIteratorOptions
@@ -103,7 +103,7 @@ func Query(ctx context.Context, request QueryRequest) (r PropResult) {
 			for _, mt := range request.Metrics {
 				b.Reset()
 				n := o
-				m.SetAggregateType(mt)
+				m.Metric(mt)
 				if !v.IsRe {
 					// we are doing exact match
 					key := m.KeyBuffer(b, v.Text).Bytes()

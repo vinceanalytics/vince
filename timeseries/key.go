@@ -36,12 +36,12 @@ var metaKeyPool = &sync.Pool{
 	},
 }
 
-func (id *Key) SetAggregateType(u Metric) *Key {
+func (id *Key) Metric(u Metric) *Key {
 	id[aggregateTypeOffset] = byte(u)
 	return id
 }
 
-func (id *Key) SetProp(prop Property) *Key {
+func (id *Key) Prop(prop Property) *Key {
 	id[propOffset] = byte(prop)
 	return id
 }
@@ -99,6 +99,11 @@ func (id *Key) GetSiteID() uint64 {
 
 func (id *Key) Timestamp(ts time.Time) *Key {
 	hours := timex.Timestamp(ts)
+	binary.BigEndian.PutUint64(id[yearOffset:], hours)
+	return id
+}
+
+func (id *Key) Hours(hours uint64) *Key {
 	binary.BigEndian.PutUint64(id[yearOffset:], hours)
 	return id
 }
