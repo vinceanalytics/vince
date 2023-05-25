@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -12,10 +13,11 @@ import (
 )
 
 type Buffer struct {
-	entries []*Entry
-	mu      sync.Mutex
-	buf     bytes.Buffer
-	id      [16]byte
+	entries  []*Entry
+	mu       sync.Mutex
+	buf      bytes.Buffer
+	segments Segments
+	id       [16]byte
 }
 
 func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
@@ -45,6 +47,7 @@ func (b *Buffer) Reset() *Buffer {
 		e.Release()
 	}
 	b.buf.Reset()
+	b.segments.Reset()
 	b.entries = b.entries[:0]
 	return b
 }
@@ -119,91 +122,148 @@ type EntryItem struct {
 	Text  string
 }
 
-type EntryItemList []EntryItem
-
-type EntryItems struct {
-	ls [City + 1]EntryItemList
+type Segments struct {
+	ls [City + 1][]EntryItem
 }
 
-func (e *EntryItems) Reset() {
+func (e *Segments) Reset() {
 	for i := 0; i < len(e.ls); i++ {
 		e.ls[i] = e.ls[i][:0]
 	}
 }
 
-func (e *EntryItems) Build(ctx context.Context, ls []*Entry, city func(context.Context, uint32) string) {
+func (e *Segments) Build(ls []*Entry) {
 	for i, v := range ls {
-		e.ls[Event] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.Name,
-		})
-		e.ls[Page] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.Pathname,
-		})
-		e.ls[EntryPage] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.EntryPage,
-		})
-		e.ls[ExitPage] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.ExitPage,
-		})
-		e.ls[Referrer] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.Referrer,
-		})
-		e.ls[UtmDevice] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.ScreenSize,
-		})
-		e.ls[UtmMedium] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.UtmMedium,
-		})
-		e.ls[UtmSource] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.UtmSource,
-		})
-		e.ls[UtmCampaign] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.UtmCampaign,
-		})
-		e.ls[UtmContent] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.UtmContent,
-		})
-		e.ls[UtmTerm] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.UtmTerm,
-		})
-		e.ls[Os] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.OperatingSystem,
-		})
-		e.ls[OsVersion] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.OperatingSystemVersion,
-		})
-		e.ls[UtmBrowser] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.Browser,
-		})
-		e.ls[BrowserVersion] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.BrowserVersion,
-		})
-		e.ls[Region] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.Subdivision1Code,
-		})
-		e.ls[Country] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.CountryCode,
-		})
-		e.ls[City] = append(e.ls[Event], EntryItem{
-			Index: i,
-			Text:  v.CountryCode,
+		if v.Name != "" {
+			e.ls[Event] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.Name,
+			})
+		}
+		if v.Pathname != "" {
+			e.ls[Page] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.Pathname,
+			})
+		}
+
+		if v.EntryPage != "" {
+			e.ls[EntryPage] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.EntryPage,
+			})
+		}
+
+		if v.ExitPage != "" {
+			e.ls[ExitPage] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.ExitPage,
+			})
+		}
+
+		if v.Referrer != "" {
+			e.ls[Referrer] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.Referrer,
+			})
+		}
+
+		if v.ScreenSize != "" {
+			e.ls[UtmDevice] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.ScreenSize,
+			})
+		}
+
+		if v.UtmMedium != "" {
+			e.ls[UtmMedium] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.UtmMedium,
+			})
+		}
+
+		if v.UtmSource != "" {
+			e.ls[UtmSource] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.UtmSource,
+			})
+		}
+
+		if v.UtmCampaign != "" {
+			e.ls[UtmCampaign] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.UtmCampaign,
+			})
+		}
+
+		if v.UtmContent != "" {
+			e.ls[UtmContent] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.UtmContent,
+			})
+		}
+
+		if v.UtmTerm != "" {
+			e.ls[UtmTerm] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.UtmTerm,
+			})
+		}
+
+		if v.OperatingSystem != "" {
+			e.ls[Os] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.OperatingSystem,
+			})
+		}
+
+		if v.OperatingSystemVersion != "" {
+			e.ls[OsVersion] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.OperatingSystemVersion,
+			})
+		}
+
+		if v.Browser != "" {
+			e.ls[UtmBrowser] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.Browser,
+			})
+		}
+
+		if v.BrowserVersion != "" {
+			e.ls[BrowserVersion] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.BrowserVersion,
+			})
+		}
+
+		if v.Subdivision1Code != "" {
+			e.ls[Region] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.Subdivision1Code,
+			})
+		}
+
+		if v.CountryCode != "" {
+			e.ls[Country] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.CountryCode,
+			})
+		}
+
+		if v.City != "" {
+			e.ls[City] = append(e.ls[Event], EntryItem{
+				Index: i,
+				Text:  v.City,
+			})
+		}
+
+	}
+	for i := 0; i < len(e.ls); i++ {
+		a := e.ls[i]
+		sort.Slice(a, func(i, j int) bool {
+			return a[i].Text < a[j].Text
 		})
 	}
 }
