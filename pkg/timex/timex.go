@@ -13,6 +13,10 @@ import (
 	"github.com/jinzhu/now"
 )
 
+type Range struct {
+	From, To time.Time
+}
+
 const HumanDate = "Jan 02, 2006"
 
 func EndOfDay(ts time.Time) time.Time {
