@@ -44,7 +44,7 @@ type Entry struct {
 	PageViews              int32
 	Events                 int32
 	Sign                   int32
-	HourIndex              int32
+	Hours                  uint64
 	IsBounce               bool
 }
 
@@ -163,16 +163,16 @@ func (ls EntryList) Emit(f func(EntryList)) {
 	if len(ls) < 2 {
 		return
 	}
-	if ls[0].HourIndex == ls[len(ls)-1].HourIndex {
+	if ls[0].Hours == ls[len(ls)-1].Hours {
 		// ls is stats for the hour. Return early. We don't need to check dates here
 		// we know collection windows are short.
 		f(ls)
 		return
 	}
 	var pos int
-	var last, curr int32
+	var last, curr uint64
 	for i := range ls {
-		curr = ls[i].HourIndex
+		curr = ls[i].Hours
 		if i > 0 && curr != last {
 			f(ls[pos : i-1])
 			pos = i

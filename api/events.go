@@ -206,7 +206,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	var dropped int
 	ts := time.Now()
 	unix := ts.Unix()
-	hours := timex.HourIndex(ts)
+	hours := timex.Timestamp(ts)
 	ctx := r.Context()
 	uid := userid.Get(ctx)
 	for _, domain := range domains {
@@ -239,7 +239,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.City = timeseries.FindCity(ctx, uint32(cityGeonameId))
 		e.ScreenSize = screenSize
 		e.Timestamp = unix
-		e.HourIndex = int32(hours)
+		e.Hours = hours
 		previousUUserID := uid.HashPrevious(remoteIp, userAgent, domain, host)
 		b.Register(r.Context(), e, previousUUserID)
 	}

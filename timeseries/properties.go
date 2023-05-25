@@ -24,6 +24,8 @@ const (
 	City           Property = 18
 )
 
+const BaseKey = "__root__"
+
 // Enum value maps for Property.
 var (
 	_prop_name = map[uint8]string{

@@ -85,11 +85,3 @@ func CalendarHours(now time.Time) int {
 	diff := end.Sub(ts).Truncate(time.Hour).Hours()
 	return int(diff + 1)
 }
-
-// HourIndex returns the index in calendar year array where the hour for ts is
-// found.
-func HourIndex(ts time.Time) int {
-	begin := BeginningOfYear(ts).Truncate(time.Hour)
-	ts = ts.Truncate(time.Hour)
-	return int(ts.Sub(begin).Truncate(time.Hour).Hours())
-}
