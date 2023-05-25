@@ -269,12 +269,12 @@ func chunk(a []int, ls []*Entry, f func(uint64, []int) error) error {
 		e := ls[v]
 		curr = e.Hours
 		if i > 0 && curr != last {
-			f(ls[a[pos]].Hours, a[pos:i-1])
+			f(ls[a[pos]].Hours, a[pos:i])
 			pos = i
 		}
 		last = curr
 	}
-	if pos < len(ls)-1 {
+	if pos < len(ls) {
 		return f(ls[a[pos]].Hours, a[pos:])
 	}
 	return nil
