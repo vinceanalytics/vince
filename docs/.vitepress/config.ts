@@ -3,8 +3,8 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   description: "The Cloud Native Web Analytics Platform",
-  titleTemplate: false,
-  title: '+',
+  titleTemplate: true,
+  title: 'vince',
   head: [
     ["meta", { name: "msapplication-TileColor", content: "#bdfcff" }],
     ["meta", { name: "twitter:card", content: "product" }],
@@ -16,7 +16,6 @@ export default defineConfig({
     ["meta", { name: "og:type", content: "article" }],
   ],
   themeConfig: {
-    logo: '/logo.svg',
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'guide', link: '/guide/' },
