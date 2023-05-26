@@ -266,7 +266,7 @@ func (t *Context) SiteIndex() (o [][]models.SiteOverView) {
 	var m []models.SiteOverView
 	for _, v := range t.SitesOverview {
 		m = append(m, v)
-		if len(m) == 4 {
+		if len(m) == 3 {
 			o = append(o, m)
 			m = nil
 		}
