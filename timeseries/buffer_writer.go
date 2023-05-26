@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"math"
-	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -17,11 +16,17 @@ import (
 )
 
 type Buffer struct {
-	entries  []*Entry
 	mu       sync.Mutex
 	buf      bytes.Buffer
-	segments Segments
+	segments MultiEntry
 	id       [16]byte
+}
+
+func (b *Buffer) AddEntry(e ...*Entry) {
+	for _, v := range e {
+		b.segments.Append(v)
+		v.Release()
+	}
 }
 
 func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
@@ -32,8 +37,8 @@ func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
 
 func (b *Buffer) Clone() *Buffer {
 	o := bigBufferPool.Get().(*Buffer)
+	o.segments.Copy(&b.segments)
 	copy(o.id[:], b.id[:])
-	o.entries = append(o.entries, b.entries...)
 	return o
 }
 
@@ -42,17 +47,13 @@ func (b *Buffer) Save(ctx context.Context) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	clone := b.Clone()
-	b.entries = b.entries[:0]
+	b.segments.Reset()
 	go Save(ctx, clone)
 }
 
 func (b *Buffer) Reset() *Buffer {
-	for _, e := range b.entries {
-		e.Release()
-	}
 	b.buf.Reset()
 	b.segments.Reset()
-	b.entries = b.entries[:0]
 	return b
 }
 
@@ -87,12 +88,12 @@ func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
 		updated := s.Update(e)
 		updated.Sign = 1
 		s.Sign = -1
-		b.entries = append(b.entries, updated, s)
+		b.AddEntry(updated, s)
 		b.persist(ctx, updated)
 		return
 	}
 	newSession := e.Session()
-	b.entries = append(b.entries, newSession)
+	b.AddEntry(newSession)
 	b.persist(ctx, newSession)
 }
 
@@ -122,7 +123,7 @@ func (b *Buffer) persist(ctx context.Context, s *Entry) {
 }
 
 func (b *Buffer) Build(ctx context.Context, f func(p Property, key string, ts uint64, sum *Sum) error) error {
-	return b.segments.Build(ctx, b.entries, f)
+	return b.segments.Build(ctx, f)
 }
 
 type MultiEntry struct {
@@ -236,6 +237,42 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.IsBounce = append(m.IsBounce, e.IsBounce)
 }
 
+func (m *MultiEntry) Copy(e *MultiEntry) {
+	m.UtmMedium = append(m.UtmMedium, e.UtmMedium...)
+	m.Referrer = append(m.Referrer, e.Referrer...)
+	m.Domain = append(m.Domain, e.Domain...)
+	m.ExitPage = append(m.ExitPage, e.ExitPage...)
+	m.EntryPage = append(m.EntryPage, e.EntryPage...)
+	m.Hostname = append(m.Hostname, e.Hostname...)
+	m.Pathname = append(m.Pathname, e.Pathname...)
+	m.UtmSource = append(m.UtmSource, e.UtmSource...)
+	m.ReferrerSource = append(m.ReferrerSource, e.ReferrerSource...)
+	m.CountryCode = append(m.CountryCode, e.CountryCode...)
+	m.Subdivision1Code = append(m.Subdivision1Code, e.Subdivision1Code...)
+	m.Subdivision2Code = append(m.Subdivision2Code, e.Subdivision2Code...)
+	m.TransferredFrom = append(m.TransferredFrom, e.TransferredFrom...)
+	m.UtmCampaign = append(m.UtmCampaign, e.UtmCampaign...)
+	m.OperatingSystem = append(m.OperatingSystem, e.OperatingSystem...)
+	m.Browser = append(m.Browser, e.Browser...)
+	m.UtmTerm = append(m.UtmTerm, e.UtmTerm...)
+	m.Name = append(m.Name, e.Name...)
+	m.ScreenSize = append(m.ScreenSize, e.ScreenSize...)
+	m.BrowserVersion = append(m.BrowserVersion, e.BrowserVersion...)
+	m.OperatingSystemVersion = append(m.OperatingSystemVersion, e.OperatingSystemVersion...)
+	m.UtmContent = append(m.UtmContent, e.UtmContent...)
+	m.UserId = append(m.UserId, e.UserId...)
+	m.SessionId = append(m.SessionId, e.SessionId...)
+	m.Timestamp = append(m.Timestamp, e.Timestamp...)
+	m.Duration = append(m.Duration, e.Duration...)
+	m.Start = append(m.Start, e.Start...)
+	m.City = append(m.City, e.City...)
+	m.PageViews = append(m.PageViews, e.PageViews...)
+	m.Events = append(m.Events, e.Events...)
+	m.Sign = append(m.Sign, e.Sign...)
+	m.Hours = append(m.Hours, e.Hours...)
+	m.IsBounce = append(m.IsBounce, e.IsBounce...)
+}
+
 // Chunk finds same m.Hours values and call f with the index range. m.Hours are
 // guaranteed to be sorted in ascending order.
 func (m *MultiEntry) Chunk(f func(m *MultiEntry, start, end int) error) error {
@@ -274,6 +311,44 @@ func (c *computed) Sum(sum *Sum) {
 	sum.Visitors = uint32(c.visitors)
 	sum.VisitDuration = uint32(math.Round(c.duration / float64(c.signSum)))
 	sum.ViewsPerVisit = uint32(math.Round(float64(c.views) / float64(c.signSum)))
+}
+
+func (m *MultiEntry) Build(ctx context.Context, f func(p Property, key string, ts uint64, sum *Sum) error) error {
+	// We capitalize on badger Transaction to globally track unique visitors in
+	// this entries batch.
+	//
+	// txn holds visible user_id seen on Base property. This ensure we correctly account
+	// for all buffered entries.
+	//
+	// seen function will use this for Base property. All other properties create a new
+	// transaction before calling e.compute and the transaction is discarded there
+	// after to ensure we only commit Base user_id but still be able to correctly
+	// detect unique visitors within e.compute calls (Which operate on unique entry keys
+	// over the same hour window)
+	txn := GetUnique(ctx).NewTransaction(true)
+	mls := newMetaList()
+	defer func() {
+		err := txn.Commit()
+		if err != nil {
+			log.Get(ctx).Err(err).Msg("failed to commit transaction for unique index")
+		}
+		txn.Discard()
+		mls.Release()
+	}()
+	uniq := seen(ctx, txn, m.key[:], mls)
+	return m.Chunk(func(m *MultiEntry, start, end int) error {
+		for i := Base; i <= City; i++ {
+			uq, done := uniq(i)
+			err := m.Compute(start, end, PickProp(i), uq, func(u uint64, s1 string, s2 *Sum) error {
+				return f(i, s1, u, s2)
+			})
+			done()
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (m *MultiEntry) Compute(
@@ -315,7 +390,7 @@ func (m *MultiEntry) Compute(
 	return nil
 }
 
-func PickProp(ctx context.Context, p Property) func(m *MultiEntry, i int) (string, bool) {
+func PickProp(p Property) func(m *MultiEntry, i int) (string, bool) {
 	switch p {
 	case Base:
 		return func(m *MultiEntry, i int) (string, bool) {
@@ -470,18 +545,6 @@ func PickProp(ctx context.Context, p Property) func(m *MultiEntry, i int) (strin
 	}
 }
 
-type Segments struct {
-	ls  [City + 1][]int
-	key [4]byte
-	sum Sum
-}
-
-func (e *Segments) Reset() {
-	for i := 0; i < len(e.ls); i++ {
-		e.ls[i] = e.ls[i][:0]
-	}
-}
-
 func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *metaList) seenFunc {
 	use := func(x *badger.Txn) func(uint64) bool {
 		return func(u uint64) bool {
@@ -511,246 +574,4 @@ func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *metaList) seenF
 	}
 }
 
-func (e *Segments) Build(ctx context.Context, ls []*Entry, f func(Property, string, uint64, *Sum) error) error {
-	// We capitalize on badger Transaction to globally track unique visitors in
-	// this entries batch.
-	//
-	// txn holds visible user_id seen on Base property. This ensure we correctly account
-	// for all buffered entries.
-	//
-	// seen function will use this for Base property. All other properties create a new
-	// transaction before calling e.compute and the transaction is discarded there
-	// after to ensure we only commit Base user_id but still be able to correctly
-	// detect unique visitors within e.compute calls (Which operate on unique entry keys
-	// over the same hour window)
-	txn := GetUnique(ctx).NewTransaction(true)
-	mls := newMetaList()
-	defer func() {
-		err := txn.Commit()
-		if err != nil {
-			log.Get(ctx).Err(err).Msg("failed to commit transaction for unique index")
-		}
-		txn.Discard()
-		mls.Release()
-	}()
-	uniq := seen(ctx, txn, e.key[:], mls)
-	for i, v := range ls {
-		e.ls[Base] = append(e.ls[Base], i)
-		if v.Name != "" {
-			e.ls[Event] = append(e.ls[Event], i)
-		}
-		if v.Pathname != "" {
-			e.ls[Page] = append(e.ls[Event], i)
-		}
-		if v.EntryPage != "" {
-			e.ls[EntryPage] = append(e.ls[Event], i)
-		}
-
-		if v.ExitPage != "" {
-			e.ls[ExitPage] = append(e.ls[Event], i)
-		}
-
-		if v.Referrer != "" {
-			e.ls[Referrer] = append(e.ls[Event], i)
-		}
-
-		if v.ScreenSize != "" {
-			e.ls[UtmDevice] = append(e.ls[Event], i)
-		}
-
-		if v.UtmMedium != "" {
-			e.ls[UtmMedium] = append(e.ls[Event], i)
-		}
-
-		if v.UtmSource != "" {
-			e.ls[UtmSource] = append(e.ls[Event], i)
-		}
-
-		if v.UtmCampaign != "" {
-			e.ls[UtmCampaign] = append(e.ls[Event], i)
-		}
-
-		if v.UtmContent != "" {
-			e.ls[UtmContent] = append(e.ls[Event], i)
-		}
-
-		if v.UtmTerm != "" {
-			e.ls[UtmTerm] = append(e.ls[Event], i)
-		}
-
-		if v.OperatingSystem != "" {
-			e.ls[Os] = append(e.ls[Event], i)
-		}
-
-		if v.OperatingSystemVersion != "" {
-			e.ls[OsVersion] = append(e.ls[Event], i)
-		}
-
-		if v.Browser != "" {
-			e.ls[UtmBrowser] = append(e.ls[Event], i)
-		}
-
-		if v.BrowserVersion != "" {
-			e.ls[BrowserVersion] = append(e.ls[Event], i)
-		}
-
-		if v.Subdivision1Code != "" {
-			e.ls[Region] = append(e.ls[Event], i)
-		}
-
-		if v.CountryCode != "" {
-			e.ls[Country] = append(e.ls[Event], i)
-		}
-
-		if v.City != "" {
-			e.ls[City] = append(e.ls[Event], i)
-		}
-	}
-	for i := 0; i < len(e.ls); i++ {
-		p := Property(i)
-		err := chunk(e.ls[i], ls, func(hs []int) error {
-			// First we group all entries by .Hours
-			if p != Base {
-				// sort non Base properties before chunking them by property.
-				sort.Slice(hs, func(i, j int) bool {
-					return p.Index(ls[hs[i]]) < p.Index(ls[hs[j]])
-				})
-			}
-			// Then we group  hs by Property.Index and emitting each observed
-			// Property.Index to the callback.
-			return chunkPropKey(p, hs, ls, func(cp []int) error {
-				// The cp list contains entries
-				// - Occurring in the same hour
-				// - Belonging to the same Property.Index
-				el := ls[cp[0]]
-				uq, done := uniq(p)
-				e.compute(uq, cp, ls)
-				done()
-				return f(p, p.Index(el), el.Hours, &e.sum)
-			})
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 type seenFunc func(Property) (func(uint64) bool, func())
-
-func chunk(a []int, ls []*Entry, f func([]int) error) error {
-	if len(ls) < 2 {
-		return nil
-	}
-	var pos int
-	var last, curr uint64
-	for i, v := range a {
-		e := ls[v]
-		curr = e.Hours
-		if i > 0 && curr != last {
-			f(a[pos:i])
-			pos = i
-		}
-		last = curr
-	}
-	if pos < len(ls) {
-		return f(a[pos:])
-	}
-	return nil
-}
-
-func chunkPropKey(p Property, a []int, ls []*Entry, f func([]int) error) error {
-	if len(ls) < 2 {
-		return nil
-	}
-	if p == Base {
-		return f(a)
-	}
-
-	var pos int
-	var last, curr uint64
-	for i, v := range a {
-		e := ls[v]
-		curr = e.Hours
-		if i > 0 && curr != last {
-			f(a[pos:i])
-			pos = i
-		}
-		last = curr
-	}
-	if pos < len(ls) {
-		return f(a[pos:])
-	}
-	return nil
-}
-
-func (e *Segments) compute(seen func(uint64) bool, a []int, ls []*Entry) {
-	e.sum = Sum{}
-	sum := &e.sum
-
-	var signSum, bounce, views, events, visitors int32
-	var duration float64
-	for _, i := range a {
-		ee := ls[i]
-		signSum += ee.Sign
-		bounce += ee.Bounce() * ee.Sign
-		views += ee.PageViews * ee.Sign
-		events += ee.Events * ee.Sign
-		if !seen(ee.UserId) {
-			visitors += 1
-		}
-		duration += ee.Duration * float64(ee.Sign)
-	}
-	sum.BounceRate = uint32(math.Round(float64(bounce) / float64(signSum) * 100))
-	sum.Visits = uint32(signSum)
-	sum.Views = uint32(views)
-	sum.Events = uint32(events)
-	sum.Visitors = uint32(visitors)
-	sum.VisitDuration = uint32(math.Round(duration / float64(signSum)))
-	sum.ViewsPerVisit = uint32(math.Round(float64(views) / float64(signSum)))
-}
-
-func (p Property) Index(e *Entry) string {
-	switch p {
-	case Base:
-		return BaseKey
-	case Event:
-		return e.Name
-	case Page:
-		return e.Pathname
-	case EntryPage:
-		return e.EntryPage
-	case ExitPage:
-		return e.ExitPage
-	case Referrer:
-		return e.Referrer
-	case UtmMedium:
-		return e.UtmMedium
-	case UtmSource:
-		return e.UtmSource
-	case UtmCampaign:
-		return e.UtmCampaign
-	case UtmContent:
-		return e.UtmContent
-	case UtmTerm:
-		return e.UtmTerm
-	case UtmDevice:
-		return e.ScreenSize
-	case UtmBrowser:
-		return e.Browser
-	case BrowserVersion:
-		return e.BrowserVersion
-	case Os:
-		return e.OperatingSystem
-	case OsVersion:
-		return e.OperatingSystemVersion
-	case Country:
-		return e.CountryCode
-	case Region:
-		return e.Referrer
-	case City:
-		return e.City
-	default:
-		return ""
-	}
-}
