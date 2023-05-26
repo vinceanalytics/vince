@@ -12,7 +12,6 @@ import (
 	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/pkg/octicon"
-	"github.com/gernest/vince/pkg/plot"
 )
 
 //go:embed layout  plot site stats auth error email
@@ -185,7 +184,6 @@ type Context struct {
 	Owner         *models.User
 	Recipient     string
 	Key           string
-	Stats         *plot.Data
 	SharedLink    *models.SharedLink
 }
 
@@ -271,4 +269,19 @@ func ActiveItem(ctx *Context, key string) string {
 		return "ActionListItem--navActive"
 	}
 	return ""
+}
+
+func (t *Context) SiteIndex() (o [][]models.SiteOverView) {
+	var m []models.SiteOverView
+	for _, v := range t.SitesOverview {
+		m = append(m, v)
+		if len(m) == 4 {
+			o = append(o, m)
+			m = nil
+		}
+	}
+	if len(m) > 0 {
+		o = append(o, m)
+	}
+	return
 }
