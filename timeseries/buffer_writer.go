@@ -301,6 +301,8 @@ func (m *MultiEntry) Chunk(f func(m *MultiEntry, start, end int) error) error {
 type computed struct {
 	signSum, bounce, views, events, visitors int32
 	duration                                 float64
+	uniq                                     func(uint64) bool
+	done                                     func()
 }
 
 func (c *computed) Sum(sum *Sum) {
@@ -321,9 +323,9 @@ func (m *MultiEntry) Build(ctx context.Context, f func(p Property, key string, t
 	// for all buffered entries.
 	//
 	// seen function will use this for Base property. All other properties create a new
-	// transaction before calling e.compute and the transaction is discarded there
+	// transaction before calling m.Compute and the transaction is discarded there
 	// after to ensure we only commit Base user_id but still be able to correctly
-	// detect unique visitors within e.compute calls (Which operate on unique entry keys
+	// detect unique visitors within m.Compute calls (Which operate on unique entry keys
 	// over the same hour window)
 	txn := GetUnique(ctx).NewTransaction(true)
 	mls := newMetaList()
@@ -338,11 +340,9 @@ func (m *MultiEntry) Build(ctx context.Context, f func(p Property, key string, t
 	uniq := seen(ctx, txn, m.key[:], mls)
 	return m.Chunk(func(m *MultiEntry, start, end int) error {
 		for i := Base; i <= City; i++ {
-			uq, done := uniq(i)
-			err := m.Compute(start, end, PickProp(i), uq, func(u uint64, s1 string, s2 *Sum) error {
+			err := m.Compute(i, start, end, PickProp(i), uniq, func(u uint64, s1 string, s2 *Sum) error {
 				return f(i, s1, u, s2)
 			})
-			done()
 			if err != nil {
 				return err
 			}
@@ -352,12 +352,18 @@ func (m *MultiEntry) Build(ctx context.Context, f func(p Property, key string, t
 }
 
 func (m *MultiEntry) Compute(
+	prop Property,
 	start, end int,
 	pick func(*MultiEntry, int) (string, bool),
-	seen func(uint64) bool,
+	seen seenFunc,
 	f func(uint64, string, *Sum) error,
 ) error {
 	seg := make(map[string]*computed)
+	defer func() {
+		for _, v := range seg {
+			v.done()
+		}
+	}()
 	for i := start; i < end; i++ {
 		key, ok := pick(m, i)
 		if !ok {
@@ -365,7 +371,11 @@ func (m *MultiEntry) Compute(
 		}
 		e, ok := seg[key]
 		if !ok {
-			e = &computed{}
+			uq, done := seen(prop)
+			e = &computed{
+				uniq: uq,
+				done: done,
+			}
 			seg[key] = e
 		}
 		e.signSum += m.Sign[i]
@@ -374,7 +384,7 @@ func (m *MultiEntry) Compute(
 		}
 		e.views += m.PageViews[i] * m.Sign[i]
 		e.events += m.Events[i] * m.Sign[i]
-		if !seen(m.UserId[i]) {
+		if !e.uniq(m.UserId[i]) {
 			e.visitors += 1
 		}
 		e.duration += m.Duration[i] * float64(m.Sign[i])
