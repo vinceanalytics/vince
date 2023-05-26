@@ -13,7 +13,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	u := models.GetUser(ctx)
 	models.PreloadUser(ctx, u, "Sites")
 	render.HTML(ctx, w, templates.Sites, http.StatusOK, func(ctx *templates.Context) {
-		ctx.Page = "sites"
 		ctx.SitesOverview = make([]models.SiteOverView, len(u.Sites))
 		for i := range u.Sites {
 			ctx.SitesOverview[i] = models.SiteOverView{

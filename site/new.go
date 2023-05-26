@@ -15,6 +15,5 @@ func New(w http.ResponseWriter, r *http.Request) {
 		ctx.NewSite = &templates.NewSite{
 			IsFirstSite: owned == 0,
 		}
-		ctx.Page = "add_site"
 	})
 }

@@ -35,7 +35,6 @@ func base() *template.Template {
 		"Avatar":     Avatar,
 		"Logo":       Logo,
 		"Calendar":   CalendarEntries,
-		"ActiveItem": ActiveItem,
 		"GoalName":   models.GoalName,
 		"SafeDomain": models.SafeDomain,
 		"ThisYear":   thisYearFormat,
@@ -174,7 +173,6 @@ type Context struct {
 	Flash         *flash.Flash
 	NewSite       *NewSite
 	Error         *Errors
-	Page          string
 	Site          *models.Site
 	Goals         []*models.Goal
 	IsFIrstSite   bool
@@ -262,13 +260,6 @@ func Avatar(uid uint64, size uint, class ...string) template.HTML {
 	return template.HTML(fmt.Sprintf(`<img class=%q src="/avatar?u=%d&s=%d">`,
 		strings.Join(class, " "), uid, size,
 	))
-}
-
-func ActiveItem(ctx *Context, key string) string {
-	if ctx.Page == key {
-		return "ActionListItem--navActive"
-	}
-	return ""
 }
 
 func (t *Context) SiteIndex() (o [][]models.SiteOverView) {
