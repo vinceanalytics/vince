@@ -54,7 +54,12 @@ soon.
 Assets are bundled with the binary. Also we ship esbuild so you can write alerts
 in typescript. Painless deployment and convenient features don't come cheap.
 
-## Why PR , Issues and Discussions are disabled
+## Why  Issues and Discussions are disabled ?
+
+I'm recovering from burnout, I'm not taking any chances.
+
+
+## Extra ?
 
 This is requiem for my defunct web analytics startup dream. If you are reading this,
 [tigerbeetledb/tigerbeetle](https://github.com/tigerbeetledb/tigerbeetle) team, I am
