@@ -60,7 +60,7 @@ with the email and password you set above.
 ## Step 1 -
 
 There is no step 1. Congratulation , you have successful deployed vince. What
-follows after this is just modifying `.env` to your heart's desire the load the
-env on the shell and run `vince`.
+follows after this is just modifying `.env` to your heart's desire , load the
+`.env` file  on the shell and run `vince`.
 
 Thanks , and Welcome.
