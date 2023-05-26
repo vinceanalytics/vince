@@ -55,6 +55,12 @@ func NewEntry() *Entry {
 	return entryPool.Get().(*Entry)
 }
 
+func (e *Entry) Clone() *Entry {
+	clone := NewEntry()
+	*clone = *e
+	return clone
+}
+
 func (e *Entry) Release() {
 	*e = Entry{}
 	entryPool.Put(e)

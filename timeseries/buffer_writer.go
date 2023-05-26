@@ -89,12 +89,12 @@ func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
 		updated.Sign = 1
 		s.Sign = -1
 		b.AddEntry(updated, s)
-		b.persist(ctx, updated)
+		b.persist(ctx, updated.Clone())
 		return
 	}
 	newSession := e.Session()
 	b.AddEntry(newSession)
-	b.persist(ctx, newSession)
+	b.persist(ctx, newSession.Clone())
 }
 
 var bigBufferPool = &sync.Pool{
