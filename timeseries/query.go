@@ -28,13 +28,6 @@ type Match struct {
 	re   *regexp.Regexp
 }
 
-func (m *Match) Match(o []byte) bool {
-	if m.IsRe {
-		return m.re.Match(o)
-	}
-	return m.Text == string(o)
-}
-
 // AggregateResult is a map of AggregateType to the value it represent.
 type AggregateResult map[Metric][]Value
 
