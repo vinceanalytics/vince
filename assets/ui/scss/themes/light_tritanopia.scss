@@ -1,6 +1,0 @@
-@import '../../node_modules/@primer/css/support';
-@import '../../node_modules/@primer/primitives/dist/scss/colors/light_tritanopia';
-
-@include color-mode-theme(light_tritanopia) {
-    @include primer-colors-light_tritanopia;
-}

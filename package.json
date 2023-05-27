@@ -2,9 +2,19 @@
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "build": "node frontend/build.js",
+    "ui:copy_primer": "cp node_modules/@primer/css/dist/primer.css assets/css/",
+    "scss": "sass -scompressed --no-source-map frontend/scss/main.scss  assets/css/app.css"
   },
   "devDependencies": {
+    "@primer/css": "^20.8.3",
+    "esbuild": "^0.17.18",
+    "sass": "^1.62.1",
+    "typescript": "^5.0.4",
     "vitepress": "^1.0.0-alpha.75"
+  },
+  "dependencies": {
+    "@github/catalyst": "^1.6.0"
   }
 }
