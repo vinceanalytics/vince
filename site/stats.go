@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/pkg/timex"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
+	"github.com/gernest/vince/templates"
 	"github.com/gernest/vince/timeseries"
 )
 

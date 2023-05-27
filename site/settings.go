@@ -3,9 +3,9 @@ package site
 import (
 	"net/http"
 
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
+	"github.com/gernest/vince/templates"
 )
 
 func Settings(w http.ResponseWriter, r *http.Request) {

@@ -17,10 +17,10 @@ import (
 
 	"filippo.io/age"
 	"github.com/dchest/captcha"
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
 	"github.com/gernest/vince/pkg/log"
+	"github.com/gernest/vince/templates"
 	"github.com/lestrrat-go/dataurl"
 )
 

@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
+	"github.com/gernest/vince/templates"
 	"gorm.io/gorm"
 )
 

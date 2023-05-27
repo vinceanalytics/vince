@@ -7,8 +7,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/pkg/log"
+	"github.com/gernest/vince/templates"
 )
 
 func JSON(w http.ResponseWriter, code int, data any) {

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gernest/vince/assets/ui/templates"
 	"github.com/gernest/vince/models"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
+	"github.com/gernest/vince/templates"
 )
 
 func InviteMember(w http.ResponseWriter, r *http.Request) {
