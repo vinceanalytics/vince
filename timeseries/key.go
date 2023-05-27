@@ -89,6 +89,25 @@ func (id *Key) IndexBuffer(b *bytes.Buffer, s string) *bytes.Buffer {
 	return b
 }
 
+func (id *Key) IndexBufferPrefix(b *bytes.Buffer, s string) *bytes.Buffer {
+	b.Write(id[:yearOffset])
+	b.WriteString(s)
+	return b
+}
+
+// Converts index idx to a mike key. Mike keys ends with the text while index
+// keys ends with timestamps.
+func IndexToKey(idx []byte, o *bytes.Buffer) (mike *bytes.Buffer, text []byte, ts []byte) {
+	mike = o
+	// The last 4 bytes are for the timestamp
+	ts = idx[len(idx)-4:]
+	text = idx[yearOffset : len(idx)-4]
+	o.Write(idx[:yearOffset])
+	o.Write(ts)
+	o.Write(text)
+	return
+}
+
 func (id *Key) GetUserID() uint64 {
 	return binary.BigEndian.Uint64(id[userOffset:])
 }
@@ -99,11 +118,6 @@ func (id *Key) GetSiteID() uint64 {
 
 func (id *Key) Timestamp(ts time.Time) *Key {
 	hours := timex.Timestamp(ts)
-	binary.BigEndian.PutUint64(id[yearOffset:], hours)
-	return id
-}
-
-func (id *Key) Hours(hours uint64) *Key {
 	binary.BigEndian.PutUint64(id[yearOffset:], hours)
 	return id
 }
