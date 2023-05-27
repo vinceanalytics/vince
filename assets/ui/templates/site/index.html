@@ -2,8 +2,11 @@
 
 {{define "_content"}}
 <div class="body">
-    {{if .SitesOverview}}
-    <div class="container-md mt-2">
+    <div class="container-md">
+        <div class="Subhead Subhead--spacious text-center settingsDivider">
+            <h2 class="Subhead-heading">My Sites</h2>
+        </div>
+        {{if .SitesOverview}}
         {{range .SiteIndex}}
         <div class="d-flex">
             {{range .}}
@@ -40,10 +43,7 @@
             {{end}}
         </div>
         {{end}}
-    </div>
-
-    {{else}}
-    <div class="container-lg">
+        {{else}}
         <div class="blankslate">
             <h3 class="blankslate-heading">You don’t seem to have any sites.</h3>
             <div class="blankslate-action">
@@ -52,8 +52,8 @@
                 </a>
             </div>
         </div>
+        {{end}}
     </div>
-    {{end}}
 </div>
 </div>
 {{end}}
