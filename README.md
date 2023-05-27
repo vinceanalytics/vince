@@ -23,6 +23,11 @@ The Cloud Native Web Analytics Platform.
 
 [DOcumentation]()
 
+## Contributing
+
+[COntributing]()
+
+
 # Origins
 
 This started as a go port of [Plausible](https://github.com/plausible/analytics), with 
