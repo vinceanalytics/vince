@@ -1,280 +1,140 @@
 {{define "_content"}}
 <div class="container-lg">
-    <vince-stats>
-        <div class="Subhead mt-3" style="border-color: #ff5354;">
-            <h2 class="Subhead-heading mt-3 mt-sm-0">April 26, 2023 <span class="dash">–</span> May 3, 2023</h2>
-            <div class="Subhead-actions mt-3 mt-sm-0">
-                <details data-view-component="true" class="dropdown details-overlay details-reset d-inline-block">
-                    <summary role="button" data-view-component="true" class="btn">
-                        <i>Period:</i>
-                        Dropdown
-                        {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
-                    </summary>
-                    <div data-view-component="true">
-                        <details-menu role="menu" data-view-component="true"
-                            class="dropdown-menu select-menu-modal dropdown-menu-sw">
-                            <div class="select-menu-header">
-                                <div class="select-menu-title">
-                                    Select time ranges
-                                </div>
+    <div class="Subhead Subhead--spacious text-center settingsDivider">
+        <h2 class="Subhead-heading mt-3 mt-sm-0">April 26, 2023 <span class="dash">–</span> May 3, 2023</h2>
+        <div class="Subhead-actions mt-3 mt-sm-0">
+            <details data-view-component="true" class="dropdown details-overlay details-reset d-inline-block">
+                <summary role="button" data-view-component="true" class="btn">
+                    <i>Period:</i>
+                    Dropdown
+                    {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
+                </summary>
+                <div data-view-component="true">
+                    <details-menu role="menu" data-view-component="true"
+                        class="dropdown-menu select-menu-modal dropdown-menu-sw">
+                        <div class="select-menu-header">
+                            <div class="select-menu-title">
+                                Select time ranges
                             </div>
-                            {{range Calendar}}
-                            <a role="menuitem" data-view-component="true" class="dropdown-item select-menu-item">
-                                <span class="select-menu-item-text">
-                                    {{.Name}}
-                                </span>
-                            </a>
-                            {{end}}
-                        </details-menu>
-                    </div>
-                </details>
-            </div>
+                        </div>
+                        {{range Calendar}}
+                        <a role="menuitem" data-view-component="true" class="dropdown-item select-menu-item">
+                            <span class="select-menu-item-text">
+                                {{.Name}}
+                            </span>
+                        </a>
+                        {{end}}
+                    </details-menu>
+                </div>
+            </details>
         </div>
-        <div class="Box">
-            <div class="Box-header">
-                <span class="h5">{{.Site.Domain}}</span>
-            </div>
-            <div class="Box-body">
-                <div class="Box-row p-0">
-                    <ul class="list-style-none text-center d-flex" id="all_box">
-                        <li class=" selectionItem col-3  border-right propertySelected"
-                            data-targets="vince-stats.all_box" id="unique_visitore" type="button"
-                            data-action="click:vince-stats#selectAllBox">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                unique visitors
-                            </span>
-                        </li>
-                        <li class="selectionItem col-3 border-right color-border-muted"
-                            data-targets="vince-stats.all_box" id="page_views" type="button"
-                            data-action="click:vince-stats#selectAllBox">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                page views
-                            </span>
-                        </li>
-                        <li class="selectionItem col-3 border-right color-border-muted"
-                            data-targets="vince-stats.all_box" id="sessions"
-                            data-action="click:vince-stats#selectAllBox">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                sessions
-                            </span>
-                        </li>
-                        <li class="selectionItem col-3  border-right color-border-muted"
-                            data-targets="vince-stats.all_box" id="bounce_rate" type="button"
-                            data-action="click:vince-stats#selectAllBox">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                bounce rate
-                            </span>
-                        </li>
-                        <li class="selectionItem col-3" data-targets="vince-stats.all_box" id="duration" type="button"
-                            data-action="click:vince-stats#selectAllBox">
-                            <span class="d-block h4 color-fg-default">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                session duration
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-                <div style="height: 400px;" class="width-full">
-                </div>
-
-            </div>
-            <div class="Box-row">
-                <div class="d-flex">
-                    <div class="col-6 pr-3">
-                        <div class="Box">
-                            <div class="Box-row p-0">
-                                <ul class="list-style-none text-center d-flex" id="pages_box">
-                                    <li class="selectionItem col-4 propertySelected"
-                                        data-targets="vince-stats.pages_box" id="pages" type="button"
-                                        data-action="click:vince-stats#selectPagesBox">
-                                        <span class="color-fg-muted">
-                                            Pages
-                                        </span>
-                                    </li>
-                                    <li class="selectionItem col-4 color-border-muted"
-                                        data-targets="vince-stats.pages_box" id="entry_pages" type="button"
-                                        data-action="click:vince-stats#selectPagesBox">
-                                        <span class="color-fg-muted">
-                                            Entry Pages
-                                        </span>
-                                    </li>
-                                    <li class="selectionItem col-4" data-targets="vince-stats.pages_box" id="exit_pages"
-                                        data-action="click:vince-stats#selectPagesBox">
-                                        <span class="color-fg-muted">
-                                            Exit Pages
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="Box-row">
-                                a
-                            </div>
-                            <div class="Box-row">
-                                b
-                            </div>
-                        </div>
-
-
-                    </div>
-                    <div class="col-6">
-                        <div class="Box">
-                            <div class="Box-row p-0">
-                                <ul class="list-style-none text-center d-flex" id="referrer_box">
-                                    <li class="selectionItem col-3 propertySelected"
-                                        data-targets="vince-stats.referrer_box" id="referrers" type="button"
-                                        data-action="click:vince-stats#referrerBox">
-                                        <span class="color-fg-muted">
-                                            Referrers
-                                        </span>
-                                    </li>
-                                    <li class="selectionItem col-3 color-border-muted"
-                                        data-targets="vince-stats.referrer_box" id="sources" type="button"
-                                        data-action="click:vince-stats#referrerBox">
-                                        <span class="color-fg-muted">
-                                            Sources
-                                        </span>
-                                    </li>
-                                    <li class="selectionItem col-3 color-border-muted"
-                                        data-targets="vince-stats.referrer_box" id="media" type="button"
-                                        data-action="click:vince-stats#referrerBox">
-                                        <span class="color-fg-muted">
-                                            Media
-                                        </span>
-                                    </li>
-                                    <li class="selectionItem col-3" data-targets="vince-stats.referrer_box"
-                                        id="campaigns" data-action="click:vince-stats#referrerBox">
-                                        <span class="color-fg-muted">
-                                            Campaigns
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="Box-row">
-                                a
-                            </div>
-                            <div class="Box-row">
-                                b
-                            </div>
-                        </div>
+    </div>
+    <div class="d-flex">
+        <div class="col-2">
+            <div class="Box text-center">
+                <div class="Box-row">
+                    <div>
+                        <span class="d-block h4 color-fg-default">
+                            0
+                        </span>
+                        <span class="color-fg-muted">
+                            Unique Visitors
+                        </span>
                     </div>
                 </div>
-            </div>
-            <div class="Box-row">
-                <div class="d-flex">
-                    <div class="col-6 pr-3">
-                        <div class="Box">
-                            <div class="Box-header">
-                                <h4 class="color-fg-muted">Conversion Goals</h4>
-                            </div>
-                            <div class="Box-row">
-                                a
-                            </div>
-                            <div class="Box-row">
-                                b
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 ">
-                        <div class="Box">
-                            <div class="Box-header">
-                                <h4 class="color-fg-muted">Events</h4>
-                            </div>
-                            <div class="Box-row">
-                                a
-                            </div>
-                            <div class="Box-row">
-                                b
-                            </div>
-                        </div>
+                <div class="Box-row">
+                    <div>
+                        <span class="d-block h4 color-fg-default">
+                            0
+                        </span>
+                        <span class="color-fg-muted">
+                            Page Views
+                        </span>
                     </div>
                 </div>
-            </div>
-            <div class="Box-row">
-                <div class="d-flex">
-                    <div class="col-6 pr-3">
-                        <div class="Box">
-                            <div class="Box-row p-0">
-                                <ul class="list-style-none text-center d-flex" id="countries_box">
-                                    <li class="selectionItem col-4 propertySelected"
-                                        data-targets="vince-stats.countries_box" id="countries" type="button"
-                                        data-action="click:vince-stats#countriesBox">
-                                        <span class="color-fg-muted">
-                                            Countries
-                                        </span>
-                                    </li>
-                                    <li class="selectionItem col-4 color-border-muted"
-                                        data-targets="vince-stats.countries_box" id="cities" type="button"
-                                        data-action="click:vince-stats#countriesBox">
-                                        <span class="color-fg-muted">
-                                            Cities
-                                        </span>
-                                    </li>
-                                    <li class="selectionItem col-4" data-targets="vince-stats.countries_box"
-                                        id="regions" data-action="click:vince-stats#countriesBox">
-                                        <span class="color-fg-muted">
-                                            Regions
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="Box-row">
-                                a
-                            </div>
-                            <div class="Box-row">
-                                b
-                            </div>
-                        </div>
+                <div class="Box-row">
+                    <div>
+                        <span class="d-block h4 color-fg-default">
+                            0
+                        </span>
+                        <span class="color-fg-muted">
+                            Unique Sessions
+                        </span>
                     </div>
-                    <div class="col-6">
-                        <div class="Box">
-                            <div class="Box-row p-0">
-                                <ul class="list-style-none text-center d-flex" id="os_box">
-                                    <li class="selectionItem col-4 propertySelected" data-targets="vince-stats.os_box"
-                                        id="os" type="button" data-action="click:vince-stats#osBox">
-                                        <span class="color-fg-muted">
-                                            Os
-                                        </span>
-                                    </li>
-                                    <li class="selectionItem col-4  color-border-muted"
-                                        data-targets="vince-stats.os_box" id="browsers" type="button"
-                                        data-action="click:vince-stats#osBox">
-                                        <span class="color-fg-muted">
-                                            Browsers
-                                        </span>
-                                    </li>
-                                    <li class="selectionItem col-4" data-targets="vince-stats.os_box" id="devices"
-                                        data-action="click:vince-stats#osBox">
-                                        <span class="color-fg-muted">
-                                            Devices
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="Box-row">
-                                a
-                            </div>
-                            <div class="Box-row">
-                                b
-                            </div>
-                        </div>
+                </div>
+                <div class="Box-row">
+                    <div>
+                        <span class="d-block h4 color-fg-default">
+                            0
+                        </span>
+                        <span class="color-fg-muted">
+                            Bounce Rate
+                        </span>
+                    </div>
+                </div>
+                <div class="Box-row">
+                    <div>
+                        <span class="d-block h4 color-fg-default">
+                            0
+                        </span>
+                        <span class="color-fg-muted">
+                            Session Duration
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
-    </vince-stats>
+        <div class="col-9">
+        </div>
+        <div class="col-2">
+            <div class="Box border-0">
+                <div class="Box-row border-0 p-0">
+                    Pages
+                </div>
+                <div class="Box-row border-0 p-0">
+                    Entry Pages
+                </div>
+                <div class="Box-row border-0 p-0">
+                    Exit Pages
+                </div>
+                <div class="Box-row settingsDivider p-0">
+                    Referrers
+                </div>
+                <div class="Box-row border-0 p-0">
+                    Sources
+                </div>
+                <div class="Box-row border-0 p-0">
+                    Media
+                </div>
+                <div class="Box-row border-0 p-0">
+                    Campaigns
+                </div>
+                <div class="Box-row settingsDivider p-0">
+                    Conversions
+                </div>
+                <div class="Box-row border-0 p-0">
+                    Events
+                </div>
+                <div class="Box-row settingsDivider p-0">
+                    Countries
+                </div>
+                <div class="Box-row  border-0 p-0">
+                    Cities
+                </div>
+                <div class="Box-row  border-0 p-0">
+                    Regions
+                </div>
+                <div class="Box-row settingsDivider  p-0">
+                    Os
+                </div>
+                <div class="Box-row border-0  p-0">
+                    Browser
+                </div>
+                <div class="Box-row border-0  p-0">
+                    Device
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {{end}}
