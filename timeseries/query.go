@@ -91,7 +91,7 @@ func Query(ctx context.Context, r QueryRequest) (result PropResult) {
 		o.SinceTs = startTS
 	}
 	// make sure all iterations are in /user_id/site_id/ scope
-	o.Prefix = m[:aggregateTypeOffset]
+	o.Prefix = m[:metricOffset]
 	it := txn.NewIterator(o)
 	defer it.Close()
 
@@ -105,7 +105,7 @@ func Query(ctx context.Context, r QueryRequest) (result PropResult) {
 				if !match.IsRe {
 					text = match.Text
 				}
-				// /user_id/site_id/prop/metric/text/
+				// /user_id/site_id/metric/prop/text/
 				prefix := m.IndexBufferPrefix(b, text).Bytes()
 				for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 					x := it.Item()

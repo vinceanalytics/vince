@@ -10,12 +10,12 @@ import (
 )
 
 const (
-	userOffset          = 0
-	siteOffset          = userOffset + 8
-	aggregateTypeOffset = siteOffset + 8
-	propOffset          = aggregateTypeOffset + 1
-	yearOffset          = propOffset + 1
-	keyOffset           = yearOffset + 8
+	userOffset   = 0
+	siteOffset   = userOffset + 8
+	metricOffset = siteOffset + 8
+	propOffset   = metricOffset + 1
+	yearOffset   = propOffset + 1
+	keyOffset    = yearOffset + 8
 )
 
 // Key identifies a key that stores a single aggregate value. Keys are
@@ -37,7 +37,7 @@ var metaKeyPool = &sync.Pool{
 }
 
 func (id *Key) Metric(u Metric) *Key {
-	id[aggregateTypeOffset] = byte(u)
+	id[metricOffset] = byte(u)
 	return id
 }
 

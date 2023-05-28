@@ -34,7 +34,7 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 	id.SetUserID(uid)
 	id.SetSiteID(sid)
 	// remove all keys under /user_id/site_id/ prefix.
-	err := db.DropPrefix(id[:aggregateTypeOffset])
+	err := db.DropPrefix(id[:metricOffset])
 	if err != nil {
 		log.Get(ctx).Err(err).
 			Uint64("uid", uid).
