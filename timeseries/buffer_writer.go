@@ -161,7 +161,7 @@ type MultiEntry struct {
 	Hours                  []uint64
 	IsBounce               []bool
 
-	key [4]byte
+	key [8]byte
 	sum Sum
 }
 
