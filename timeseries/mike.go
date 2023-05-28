@@ -115,7 +115,7 @@ type metaList struct {
 }
 
 func newMetaList() *metaList {
-	return metaKeyPool.New().(*metaList)
+	return metaListPool.New().(*metaList)
 }
 
 func (ls *metaList) Get() *bytes.Buffer {
