@@ -56,12 +56,6 @@ func (id *Key) SetSiteID(u uint64) {
 	binary.BigEndian.PutUint64(id[siteOffset:], u)
 }
 
-func (id *Key) Copy() *bytes.Buffer {
-	b := smallBufferpool.Get().(*bytes.Buffer)
-	b.Write(id[:])
-	return b
-}
-
 type IDToSave struct {
 	mike  *bytes.Buffer
 	index *bytes.Buffer
@@ -108,14 +102,6 @@ func IndexToKey(idx []byte, o *bytes.Buffer) (mike *bytes.Buffer, text []byte, t
 	o.Write(ts)
 	o.Write(text)
 	return
-}
-
-func (id *Key) GetUserID() uint64 {
-	return binary.BigEndian.Uint64(id[userOffset:])
-}
-
-func (id *Key) GetSiteID() uint64 {
-	return binary.BigEndian.Uint64(id[siteOffset:])
 }
 
 func (id *Key) Timestamp(ts time.Time) *Key {
