@@ -23,8 +23,10 @@ const (
 // way that it can be sorted by
 //   - User
 //   - Website
+//   - Metric (  visitors ... etc)
+//   - Property ( event, page ... etc)
 //   - Time
-//   - Type of Aggregate
+//   - Key Text
 //
 // We store aggregates in  Hour chunks. So Time refers to hours since unix epoch.
 type Key [keyOffset]byte
