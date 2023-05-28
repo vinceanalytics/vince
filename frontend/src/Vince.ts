@@ -4,6 +4,8 @@ import { controller, targets, target } from '@github/catalyst'
 class VinceStatsElement extends HTMLElement {
     @targets periods: HTMLElement[];
     @target period_label: HTMLElement;
+    @targets metrics: HTMLElement[];
+    @targets props: HTMLElement[];
 
     connectedCallback() { }
 
@@ -19,6 +21,28 @@ class VinceStatsElement extends HTMLElement {
             querySelector(".select-menu-item-icon")?.
             classList.remove("d-none")
         this.period_label.innerText = a?.dataset.name!;
+    }
+
+    changeMetrics(e: Event) {
+        const target = e.target as HTMLElement;
+        this.metrics.forEach((metric) => {
+            metric.parentElement?.
+                classList.remove("navigation-focus")
+        });
+        const a = target.parentElement;
+        a?.classList.add("navigation-focus");
+    }
+
+    changeProps(e: Event) {
+        const target = e.target as HTMLElement;
+        this.props.forEach((prop) => {
+            prop.
+                classList.remove("activeProps")
+            prop.
+                classList.add("border-0")
+        });
+        target.classList.add("activeProps");
+        target.classList.remove("border-0");
     }
 
 

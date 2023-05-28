@@ -61,3 +61,8 @@
     background-color: var(--color-canvas-subtle);
     border-radius: 6px
 }
+
+.activeProps {
+    border-top: 0 !important;
+    border-bottom: var(--primer-borderWidth-thin, 2px) solid #ffe0d8 !important;
+}
