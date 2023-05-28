@@ -22,6 +22,11 @@ type QueryRequest struct {
 	Property map[Property]*Match
 }
 
+type QueryResult struct {
+	ELapsed time.Duration
+	Result  PropResult
+}
+
 type Match struct {
 	Text string
 	IsRe bool
@@ -56,7 +61,8 @@ func (a PropResult) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o)
 }
 
-func Query(ctx context.Context, r QueryRequest) (result PropResult) {
+func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
+	start := time.Now()
 	txn := GetMike(ctx).NewTransaction(false)
 	idx := GetIndex(ctx).NewTransaction(false)
 	var startTS, endTS uint64
@@ -68,9 +74,10 @@ func Query(ctx context.Context, r QueryRequest) (result PropResult) {
 	}
 	m := newMetaKey()
 	defer func() {
-		defer m.Release()
+		m.Release()
 		txn.Discard()
 		idx.Discard()
+		result.ELapsed = time.Since(start)
 	}()
 	m.SetUserID(r.UserID)
 	m.SetSiteID(r.UserID)
@@ -85,7 +92,7 @@ func Query(ctx context.Context, r QueryRequest) (result PropResult) {
 		smallBufferpool.Put(b)
 		smallBufferpool.Put(key)
 	}()
-	result = make(PropResult)
+	result.Result = make(PropResult)
 	o := badger.IteratorOptions{}
 	if !r.Range.From.IsZero() {
 		o.SinceTs = startTS
@@ -140,7 +147,7 @@ func Query(ctx context.Context, r QueryRequest) (result PropResult) {
 				}
 			}
 		}
-		result[p] = values
+		result.Result[p] = values
 	}
 	return
 }
