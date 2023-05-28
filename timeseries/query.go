@@ -86,6 +86,15 @@ func Query(ctx context.Context, r QueryRequest) (result PropResult) {
 		smallBufferpool.Put(key)
 	}()
 	result = make(PropResult)
+	o := badger.IteratorOptions{}
+	if !r.Range.From.IsZero() {
+		o.SinceTs = startTS
+	}
+	// make sure all iterations are in /user_id/site_id/ scope
+	o.Prefix = m[:aggregateTypeOffset]
+	it := txn.NewIterator(o)
+	defer it.Close()
+
 	for p, match := range r.Property {
 		values := make(PropValues)
 		for _, metric := range r.Metrics {
@@ -96,14 +105,9 @@ func Query(ctx context.Context, r QueryRequest) (result PropResult) {
 				if !match.IsRe {
 					text = match.Text
 				}
+				// /user_id/site_id/prop/metric/text/
 				prefix := m.IndexBufferPrefix(b, text).Bytes()
-				o := badger.IteratorOptions{}
-				o.Prefix = prefix
-				if !r.Range.From.IsZero() {
-					o.SinceTs = startTS
-				}
-				it := txn.NewIterator(o)
-				for it.Rewind(); it.Valid(); it.Next() {
+				for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 					x := it.Item()
 					if endTS != 0 && x.Version() > endTS {
 						// We have reached the end of iteration
@@ -134,7 +138,6 @@ func Query(ctx context.Context, r QueryRequest) (result PropResult) {
 						return nil
 					})
 				}
-				it.Close()
 			}
 		}
 		result[p] = values
