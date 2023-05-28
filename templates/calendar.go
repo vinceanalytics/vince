@@ -12,6 +12,14 @@ type CalendarEntry struct {
 	Start, End time.Time
 }
 
+func (c *CalendarEntry) From() string {
+	return c.Start.Format(time.RFC3339)
+}
+
+func (c *CalendarEntry) To() string {
+	return c.End.Format(time.RFC3339)
+}
+
 func CalendarEntries() []CalendarEntry {
 	return []CalendarEntry{
 		today(),

@@ -1,45 +1,24 @@
 import { controller, targets } from '@github/catalyst'
-import { Aggregate, Entry, EntryMap } from './Data';
 
 @controller
 class VinceStatsElement extends HTMLElement {
-    @targets all_box: HTMLElement[];
-    @targets pages_box: HTMLElement[];
-    @targets referrer_box: HTMLElement[];
-    @targets countries_box: HTMLElement[];
-    @targets os_box: HTMLElement[];
-
-    state: State = {};
+    @targets periods: HTMLElement[];
 
     connectedCallback() { }
 
-    selectAllBox(event: Event) {
-        this.#select(event, this.all_box);
+
+    changePeriod(e: Event) {
+        const target = e.target as HTMLElement;
+        this.periods.forEach((period) => {
+            period.querySelector(".select-menu-item-icon")?.
+                classList.add("d-none")
+        });
+        const a = target.parentElement;
+        a?.
+            querySelector(".select-menu-item-icon")?.
+            classList.remove("d-none")
     }
 
-    selectPagesBox(event: Event) {
-        this.#select(event, this.pages_box);
-    }
-
-    referrerBox(event: Event) {
-        this.#select(event, this.referrer_box);
-    }
-
-    countriesBox(event: Event) {
-        this.#select(event, this.countries_box);
-    }
-
-    osBox(event: Event) {
-        this.#select(event, this.os_box);
-    }
-
-    #select(event: Event, elements: HTMLElement[]) {
-        const button = event.currentTarget as HTMLButtonElement
-        for (const item of elements) {
-            item.classList.remove('propertySelected')
-        }
-        button.classList.add('propertySelected')
-    }
 
     #shortNumber(value: number): string {
         let p = Math.floor(Math.log10(Math.abs(value)));
@@ -52,16 +31,9 @@ class VinceStatsElement extends HTMLElement {
 }
 
 interface State {
-    timestamps?: number[];
-    all_box?: Aggregate;
-    all_box_plot?: Entry;
-    pages_box?: EntryMap;
-    referrer_box?: EntryMap;
-    countries_box?: EntryMap;
-    os_box?: EntryMap;
-    goals_box?: EntryMap;
-    events_box?: EntryMap;
+
 }
+
 
 declare global {
     interface Window {

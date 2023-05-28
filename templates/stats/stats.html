@@ -1,140 +1,145 @@
 {{define "_content"}}
 <div class="container-lg">
-    <div class="Subhead Subhead--spacious text-center settingsDivider">
-        <h2 class="Subhead-heading mt-3 mt-sm-0">April 26, 2023 <span class="dash">–</span> May 3, 2023</h2>
-        <div class="Subhead-actions mt-3 mt-sm-0">
-            <details data-view-component="true" class="dropdown details-overlay details-reset d-inline-block">
-                <summary role="button" data-view-component="true" class="btn">
-                    <i>Period:</i>
-                    Dropdown
-                    {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
-                </summary>
-                <div data-view-component="true">
-                    <details-menu role="menu" data-view-component="true"
-                        class="dropdown-menu select-menu-modal dropdown-menu-sw">
-                        <div class="select-menu-header">
-                            <div class="select-menu-title">
-                                Select time ranges
+    <vince-stats>
+        <div class="Subhead Subhead--spacious text-center settingsDivider">
+            <h2 class="Subhead-heading mt-3 mt-sm-0">April 26, 2023 <span class="dash">–</span> May 3, 2023</h2>
+            <div class="Subhead-actions mt-3 mt-sm-0">
+                <details data-view-component="true" class="dropdown details-overlay details-reset d-inline-block">
+                    <summary role="button" data-view-component="true" class="btn">
+                        <i>Period:</i>
+                        Dropdown
+                        {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
+                    </summary>
+                    <div data-view-component="true">
+                        <details-menu role="menu" data-view-component="true"
+                            class="dropdown-menu select-menu-modal dropdown-menu-sw">
+                            <div class="select-menu-header">
+                                <div class="select-menu-title">
+                                    Select time ranges
+                                </div>
                             </div>
-                        </div>
-                        {{range Calendar}}
-                        <a role="menuitem" data-view-component="true" class="dropdown-item select-menu-item">
-                            <span class="select-menu-item-text">
-                                {{.Name}}
+                            {{range Calendar}}
+                            <a role="menuitem" data-from="{{.From}}" data-to="{{.To}}"
+                                data-targets="vince-stats.periods" data-action="click:vince-stats#changePeriod"
+                                class="dropdown-item select-menu-item select-menu-item-text">
+                                {{Icon "check" 16 "d-none select-menu-item-icon"}}
+                                <span class="select-menu-item-text">
+                                    {{.Name}}
+                                </span>
+                            </a>
+                            {{end}}
+                        </details-menu>
+                    </div>
+                </details>
+            </div>
+        </div>
+        <div class="d-flex">
+            <div class="col-2">
+                <div class="Box text-center">
+                    <div class="Box-row">
+                        <div>
+                            <span class="d-block h4 color-fg-default">
+                                0
                             </span>
-                        </a>
-                        {{end}}
-                    </details-menu>
-                </div>
-            </details>
-        </div>
-    </div>
-    <div class="d-flex">
-        <div class="col-2">
-            <div class="Box text-center">
-                <div class="Box-row">
-                    <div>
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="color-fg-muted">
-                            Unique Visitors
-                        </span>
+                            <span class="color-fg-muted">
+                                Unique Visitors
+                            </span>
+                        </div>
+                    </div>
+                    <div class="Box-row">
+                        <div>
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                Page Views
+                            </span>
+                        </div>
+                    </div>
+                    <div class="Box-row">
+                        <div>
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                Unique Sessions
+                            </span>
+                        </div>
+                    </div>
+                    <div class="Box-row">
+                        <div>
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                Bounce Rate
+                            </span>
+                        </div>
+                    </div>
+                    <div class="Box-row">
+                        <div>
+                            <span class="d-block h4 color-fg-default">
+                                0
+                            </span>
+                            <span class="color-fg-muted">
+                                Session Duration
+                            </span>
+                        </div>
                     </div>
                 </div>
-                <div class="Box-row">
-                    <div>
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="color-fg-muted">
-                            Page Views
-                        </span>
+            </div>
+            <div class="col-9">
+            </div>
+            <div class="col-2">
+                <div class="Box border-0">
+                    <div class="Box-row border-0 p-0">
+                        Pages
                     </div>
-                </div>
-                <div class="Box-row">
-                    <div>
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="color-fg-muted">
-                            Unique Sessions
-                        </span>
+                    <div class="Box-row border-0 p-0">
+                        Entry Pages
                     </div>
-                </div>
-                <div class="Box-row">
-                    <div>
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="color-fg-muted">
-                            Bounce Rate
-                        </span>
+                    <div class="Box-row border-0 p-0">
+                        Exit Pages
                     </div>
-                </div>
-                <div class="Box-row">
-                    <div>
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="color-fg-muted">
-                            Session Duration
-                        </span>
+                    <div class="Box-row settingsDivider p-0">
+                        Referrers
+                    </div>
+                    <div class="Box-row border-0 p-0">
+                        Sources
+                    </div>
+                    <div class="Box-row border-0 p-0">
+                        Media
+                    </div>
+                    <div class="Box-row border-0 p-0">
+                        Campaigns
+                    </div>
+                    <div class="Box-row settingsDivider p-0">
+                        Conversions
+                    </div>
+                    <div class="Box-row border-0 p-0">
+                        Events
+                    </div>
+                    <div class="Box-row settingsDivider p-0">
+                        Countries
+                    </div>
+                    <div class="Box-row  border-0 p-0">
+                        Cities
+                    </div>
+                    <div class="Box-row  border-0 p-0">
+                        Regions
+                    </div>
+                    <div class="Box-row settingsDivider  p-0">
+                        Os
+                    </div>
+                    <div class="Box-row border-0  p-0">
+                        Browser
+                    </div>
+                    <div class="Box-row border-0  p-0">
+                        Device
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-9">
-        </div>
-        <div class="col-2">
-            <div class="Box border-0">
-                <div class="Box-row border-0 p-0">
-                    Pages
-                </div>
-                <div class="Box-row border-0 p-0">
-                    Entry Pages
-                </div>
-                <div class="Box-row border-0 p-0">
-                    Exit Pages
-                </div>
-                <div class="Box-row settingsDivider p-0">
-                    Referrers
-                </div>
-                <div class="Box-row border-0 p-0">
-                    Sources
-                </div>
-                <div class="Box-row border-0 p-0">
-                    Media
-                </div>
-                <div class="Box-row border-0 p-0">
-                    Campaigns
-                </div>
-                <div class="Box-row settingsDivider p-0">
-                    Conversions
-                </div>
-                <div class="Box-row border-0 p-0">
-                    Events
-                </div>
-                <div class="Box-row settingsDivider p-0">
-                    Countries
-                </div>
-                <div class="Box-row  border-0 p-0">
-                    Cities
-                </div>
-                <div class="Box-row  border-0 p-0">
-                    Regions
-                </div>
-                <div class="Box-row settingsDivider  p-0">
-                    Os
-                </div>
-                <div class="Box-row border-0  p-0">
-                    Browser
-                </div>
-                <div class="Box-row border-0  p-0">
-                    Device
-                </div>
-            </div>
-        </div>
-    </div>
+    </vince-stats>
 </div>
 {{end}}
