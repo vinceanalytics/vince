@@ -1,8 +1,9 @@
-import { controller, targets } from '@github/catalyst'
+import { controller, targets, target } from '@github/catalyst'
 
 @controller
 class VinceStatsElement extends HTMLElement {
     @targets periods: HTMLElement[];
+    @target period_label: HTMLElement;
 
     connectedCallback() { }
 
@@ -17,6 +18,7 @@ class VinceStatsElement extends HTMLElement {
         a?.
             querySelector(".select-menu-item-icon")?.
             classList.remove("d-none")
+        this.period_label.innerText = a?.dataset.name!;
     }
 
 

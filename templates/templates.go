@@ -38,6 +38,12 @@ func base() *template.Template {
 		"GoalName":   models.GoalName,
 		"SafeDomain": models.SafeDomain,
 		"ThisYear":   thisYearFormat,
+		"SelectedPeriod": func(i int) string {
+			if i != 0 {
+				return "d-none"
+			}
+			return ""
+		},
 	})
 }
 

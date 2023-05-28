@@ -1,13 +1,17 @@
 {{define "_content"}}
 <div class="container-lg">
     <vince-stats>
+        {{$calendar:= Calendar}}
+        {{$today:= index $calendar 0}}
         <div class="Subhead Subhead--spacious text-center settingsDivider">
             <h2 class="Subhead-heading mt-3 mt-sm-0">April 26, 2023 <span class="dash">–</span> May 3, 2023</h2>
             <div class="Subhead-actions mt-3 mt-sm-0">
                 <details data-view-component="true" class="dropdown details-overlay details-reset d-inline-block">
-                    <summary role="button" data-view-component="true" class="btn">
+                    <summary role="button" class="btn">
                         <i>Period:</i>
-                        Dropdown
+                        <span data-target="vince-stats.period_label">
+                            {{$today.Name}}
+                        </span>
                         {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
                     </summary>
                     <div data-view-component="true">
@@ -18,13 +22,15 @@
                                     Select time ranges
                                 </div>
                             </div>
-                            {{range Calendar}}
-                            <a role="menuitem" data-from="{{.From}}" data-to="{{.To}}"
-                                data-targets="vince-stats.periods" data-action="click:vince-stats#changePeriod"
+                            {{range $index,$period:= $calendar}}
+                            <a role="menuitem" data-from="{{$period.From}}" data-to="{{$period.To}}"
+                                data-name="{{$period.Name}}" data-targets="vince-stats.periods"
+                                data-action="click:vince-stats#changePeriod"
                                 class="dropdown-item select-menu-item select-menu-item-text">
-                                {{Icon "check" 16 "d-none select-menu-item-icon"}}
+                                {{$selected:=SelectedPeriod $index}}
+                                {{Icon "check" 16 "select-menu-item-icon" $selected}}
                                 <span class="select-menu-item-text">
-                                    {{.Name}}
+                                    {{$period.Name}}
                                 </span>
                             </a>
                             {{end}}
