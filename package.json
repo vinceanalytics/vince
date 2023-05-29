@@ -1,16 +1,30 @@
 {
+  "type": "module",
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
+    "docs:serve": "vitepress serve docs",
     "docs:preview": "vitepress preview docs",
+    "blog:dev": "vitepress dev blog",
+    "blog:build": "vitepress build blog",
+    "blog:serve": "vitepress serve blog",
+    "blog:preview": "vitepress preview blog",
     "build": "node frontend/build.js"
   },
   "devDependencies": {
     "@primer/css": "^20.8.3",
+    "@tailwindcss/typography": "^0.5.4",
+    "@types/markdown-it": "^12.2.3",
+    "@types/node": "^18.7.13",
     "esbuild": "^0.17.18",
+    "feed": "^4.2.1",
+    "gray-matter": "^4.0.2",
+    "postcss": "^8.4.24",
     "sass": "^1.62.1",
+    "tailwindcss": "^3.1.8",
     "typescript": "^5.0.4",
-    "vitepress": "^1.0.0-alpha.75"
+    "vitepress": "^1.0.0-alpha.75",
+    "vue": "^3.2.47"
   },
   "dependencies": {
     "@github/catalyst": "^1.6.0"

@@ -13,6 +13,8 @@ loadgen
 tmp
 dist/
 *.zip
+
 node_modules
+.vitepress/caches
 package-lock.json
 .env
