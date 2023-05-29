@@ -10,10 +10,7 @@ const { frontmatter: data } = useData()
 const route = useRoute()
 
 function findCurrentIndex() {
-  return posts.findIndex((p) => {
-    console.log(p.url, route.path);
-    return p.url === route.path;
-  })
+  return posts.findIndex((p) => p.url === route.path)
 }
 
 // use the customData date which contains pre-resolved date info
