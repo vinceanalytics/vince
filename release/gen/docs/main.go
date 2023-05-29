@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	_ "embed"
 
@@ -11,6 +15,7 @@ import (
 	"github.com/gernest/vince/cmd/app/vince"
 	"github.com/gernest/vince/tools"
 	"github.com/urfave/cli/v3"
+	"moul.io/http2curl"
 )
 
 func main() {
@@ -20,6 +25,7 @@ func main() {
 	cliPage(root, vince.App())
 	cliPage(root, v8s.App())
 	completion(root)
+	guides(root)
 }
 
 func completion(root string) {
@@ -69,4 +75,35 @@ func cliPage(root string, app *cli.App) {
 		tools.Exit(err.Error())
 	}
 	tools.WriteFile(filepath.Join(root, "docs", "guide", fmt.Sprintf("cli-%s.md", app.Name)), []byte(m))
+}
+
+func guides(root string) {
+	guideCreateSite(root)
+}
+
+const (
+	host   = "http://localhost:8080"
+	bearer = "$VINCE_BOOTSTRAP_KEY"
+	domain = "vince.example.com"
+)
+
+func guideCreateSite(root string) {
+	b, _ := json.Marshal(map[string]string{
+		"domain": domain,
+	})
+	r, _ := http.NewRequest(http.MethodPost, host+"/api/v1/sites", bytes.NewReader(b))
+	r.Header.Set("Authorization", "Bearer "+bearer)
+
+	write(filepath.Join(root, "docs/guide/files/create_site.sh"), r)
+}
+
+func write(path string, r *http.Request) {
+	cmd, _ := http2curl.GetCurlCommand(r)
+	tools.WriteFile(path, []byte(breakDown(cmd.String())))
+}
+
+func breakDown(a string) string {
+	a = strings.ReplaceAll(a, "' -d '", "' \\\n\t-d '")
+	a = strings.ReplaceAll(a, "' -H '", "' \\\n\t-H '")
+	return a
 }

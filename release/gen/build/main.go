@@ -23,6 +23,6 @@ func main() {
 				fmt.Sprintf("FOUNDATION=%s", sdk),
 			)
 		},
-		"goreleaser", "release", "--snapshot", "--clean",
+		"goreleaser", "release", "--clean",
 	)
 }
