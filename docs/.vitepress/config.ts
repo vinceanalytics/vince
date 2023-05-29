@@ -27,7 +27,6 @@ export default defineConfig({
     sidebar: [
       {
         text: 'Getting Started',
-        collapsed: true,
         items: [
           { text: 'Installation', link: '/guide/install-vince' },
           { text: 'Usage', link: '/guide/usage' },
@@ -37,7 +36,6 @@ export default defineConfig({
       },
       {
         text: "Site Settings",
-        collapsed: true,
         items: [
           {
             text: "Site Landing Page",
@@ -87,22 +85,18 @@ export default defineConfig({
       },
       {
         text: "Alerts",
-        collapsed: true,
         items: [],
       },
       {
         text: "Stats Dashboard",
-        collapsed: true,
         items: [],
       },
       {
         text: "Goals and Custom Events",
-        collapsed: true,
         items: [],
       },
       {
         text: "API",
-        collapsed: true,
         items: [
           {
             text: "Stats API reference",
@@ -120,7 +114,6 @@ export default defineConfig({
       },
       {
         text: "Account Settings",
-        collapsed: true,
         items: [
           {
             text: "Change your account email address",
@@ -139,7 +132,6 @@ export default defineConfig({
 
       {
         text: 'Kubernetes',
-        collapsed: true,
         items: [
           {
             text: 'Installation', items: [
@@ -157,7 +149,6 @@ export default defineConfig({
       },
       {
         text: "Contribute",
-        collapsed: true,
         items: [],
       },
     ],

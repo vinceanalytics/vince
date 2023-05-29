@@ -2,11 +2,11 @@
   "type": "module",
   "scripts": {
     "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
+    "docs:build": "vitepress build  docs --mpa",
     "docs:serve": "vitepress serve docs",
     "docs:preview": "vitepress preview docs",
     "blog:dev": "vitepress dev blog",
-    "blog:build": "vitepress build blog",
+    "blog:build": "vitepress build blog --mpa",
     "blog:serve": "vitepress serve blog",
     "blog:preview": "vitepress preview blog",
     "build": "node frontend/build.js"

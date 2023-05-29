@@ -110,6 +110,16 @@ func Remove(path string) error {
 	return nil
 }
 
+func CopyFile(src, dest string) {
+	println("    copy: ", src, "=>", dest)
+	ExecPlain("cp", src, dest)
+}
+
+func CopyDir(src, dest string) {
+	println("    copy: ", src, "=>", dest)
+	ExecPlain("cp", "-r", src, dest)
+}
+
 func Exit(a ...string) {
 	println(">>> ", strings.Join(a, " "))
 	os.Exit(1)

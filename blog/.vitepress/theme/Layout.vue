@@ -11,7 +11,7 @@ const { page, frontmatter } = useData()
   <div class="antialiased dark:bg-slate-900">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 xl:max-w-5xl xl:px-0">
       <nav class="flex justify-between items-center py-10 font-bold">
-        <a class="text-xl" href="/" aria-label="Vince Analytics">
+        <a class="text-xl" href="/blog" aria-label="Vince Analytics">
 
           <span v-if="!frontmatter.index" class="hidden md:inline dark:text-white">Vince Analytics Blog</span>
         </a>
@@ -19,8 +19,8 @@ const { page, frontmatter } = useData()
           <a class="hover:text-gray-700 dark:hover:text-gray-200" href="/blog/feed.rss">RSS<span class="hidden sm:inline">
               Feed</span></a>
           <span class="mr-2 ml-2">·</span>
-          <a class="hover:text-gray-700 dark:hover:text-gray-200" href="https://vinceanalytics.github.io" target="_blank"
-            rel="noopener">vince→</a>
+          <a class="hover:text-gray-700 dark:hover:text-gray-200" href="/" target="_blank"
+            rel="noopener">vinceanalytics.github.io→</a>
         </div>
       </nav>
     </div>
