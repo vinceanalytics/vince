@@ -5,6 +5,7 @@ export default defineConfig({
   title: 'Vince Analytics Blog',
   description: 'The official blog for the vince project',
   cleanUrls: true,
+  base: "/blog/",
   head: [
     ['meta', { name: 'twitter:site', content: '@gernesti' }],
     ['meta', { name: 'twitter:card', content: 'summary' }],

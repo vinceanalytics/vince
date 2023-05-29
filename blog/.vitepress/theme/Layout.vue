@@ -16,10 +16,10 @@ const { page, frontmatter } = useData()
           <span v-if="!frontmatter.index" class="hidden md:inline dark:text-white">Vince Analytics Blog</span>
         </a>
         <div class="text-sm text-gray-500 dark:text-white leading-5">
-          <a class="hover:text-gray-700 dark:hover:text-gray-200" href="/feed.rss">RSS<span class="hidden sm:inline">
+          <a class="hover:text-gray-700 dark:hover:text-gray-200" href="/blog/feed.rss">RSS<span class="hidden sm:inline">
               Feed</span></a>
           <span class="mr-2 ml-2">·</span>
-          <a class="hover:text-gray-700 dark:hover:text-gray-200" href="https://vince.tz" target="_blank"
+          <a class="hover:text-gray-700 dark:hover:text-gray-200" href="https://vinceanalytics.github.io" target="_blank"
             rel="noopener">vince→</a>
         </div>
       </nav>
