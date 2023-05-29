@@ -31,8 +31,8 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 	db := GetMike(ctx)
 	id := newMetaKey()
 	defer id.Release()
-	id.SetUserID(uid)
-	id.SetSiteID(sid)
+	id.uid(uid)
+	id.sid(sid)
 	// remove all keys under /user_id/site_id/ prefix.
 	err := db.DropPrefix(id[:metricOffset])
 	if err != nil {
@@ -91,13 +91,13 @@ func saveProperty(ctx context.Context,
 	svc *saveContext,
 	m *Key, text string, a *Sum) error {
 	return errors.Join(
-		savePropertyKey(ctx, svc, m.Metric(Visitors).Key(text, svc.ls), a.Visitors),
-		savePropertyKey(ctx, svc, m.Metric(Views).Key(text, svc.ls), a.Views),
-		savePropertyKey(ctx, svc, m.Metric(Events).Key(text, svc.ls), a.Events),
-		savePropertyKey(ctx, svc, m.Metric(Visits).Key(text, svc.ls), a.Visits),
-		savePropertyKey(ctx, svc, m.Metric(BounceRate).Key(text, svc.ls), a.BounceRate),
-		savePropertyKey(ctx, svc, m.Metric(VisitDuration).Key(text, svc.ls), a.VisitDuration),
-		savePropertyKey(ctx, svc, m.Metric(ViewsPerVisit).Key(text, svc.ls), a.ViewsPerVisit),
+		savePropertyKey(ctx, svc, m.metric(Visitors).key(text, svc.ls), a.Visitors),
+		savePropertyKey(ctx, svc, m.metric(Views).key(text, svc.ls), a.Views),
+		savePropertyKey(ctx, svc, m.metric(Events).key(text, svc.ls), a.Events),
+		savePropertyKey(ctx, svc, m.metric(Visits).key(text, svc.ls), a.Visits),
+		savePropertyKey(ctx, svc, m.metric(BounceRate).key(text, svc.ls), a.BounceRate),
+		savePropertyKey(ctx, svc, m.metric(VisitDuration).key(text, svc.ls), a.VisitDuration),
+		savePropertyKey(ctx, svc, m.metric(ViewsPerVisit).key(text, svc.ls), a.ViewsPerVisit),
 	)
 }
 

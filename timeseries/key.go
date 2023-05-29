@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"sync"
-	"time"
-
-	"github.com/gernest/vince/pkg/timex"
 )
 
 const (
@@ -38,22 +35,22 @@ var metaKeyPool = &sync.Pool{
 	},
 }
 
-func (id *Key) Metric(u Metric) *Key {
+func (id *Key) metric(u Metric) *Key {
 	id[metricOffset] = byte(u)
 	return id
 }
 
-func (id *Key) Prop(prop Property) *Key {
-	id[propOffset] = byte(prop)
+func (id *Key) prop(p Property) *Key {
+	id[propOffset] = byte(p)
 	return id
 }
 
-func (id *Key) SetUserID(u uint64) {
+func (id *Key) uid(u uint64) {
 	binary.BigEndian.PutUint64(id[userOffset:], u)
 }
 
-func (id *Key) SetSiteID(u uint64) {
-	binary.BigEndian.PutUint64(id[siteOffset:], u)
+func (id *Key) sid(s uint64) {
+	binary.BigEndian.PutUint64(id[siteOffset:], s)
 }
 
 type IDToSave struct {
@@ -61,28 +58,20 @@ type IDToSave struct {
 	index *bytes.Buffer
 }
 
-func (id *Key) Key(s string, ls *txnBufferList) *IDToSave {
-	b := ls.Get()
+func (id *Key) key(s string, ls *txnBufferList) *IDToSave {
+	k := ls.Get()
+	k.Write(id[:])
+	k.WriteString(s)
+
 	idx := ls.Get()
+	idx.Write(id[:yearOffset])
+	idx.WriteString(s)
+	idx.Write(id[yearOffset:])
+
 	return &IDToSave{
-		mike:  id.KeyBuffer(b, s),
-		index: id.IndexBuffer(idx, s),
+		mike:  k,
+		index: idx,
 	}
-}
-
-func (id *Key) KeyBuffer(b *bytes.Buffer, s string) *bytes.Buffer {
-	b.Write(id[:])
-	b.WriteString(s)
-	return b
-}
-
-// IndexBuffer returns a key with timestamp as a suffix. This allows for faster
-// key lookup without the knowledge of the timestamp.
-func (id *Key) IndexBuffer(b *bytes.Buffer, s string) *bytes.Buffer {
-	b.Write(id[:yearOffset])
-	b.WriteString(s)
-	b.Write(id[yearOffset:])
-	return b
 }
 
 func (id *Key) IndexBufferPrefix(b *bytes.Buffer, s string) *bytes.Buffer {
@@ -102,12 +91,6 @@ func IndexToKey(idx []byte, o *bytes.Buffer) (mike *bytes.Buffer, text []byte, t
 	o.Write(ts)
 	o.Write(text)
 	return
-}
-
-func (id *Key) Timestamp(ts time.Time) *Key {
-	hours := timex.Timestamp(ts)
-	binary.BigEndian.PutUint64(id[yearOffset:], hours)
-	return id
 }
 
 func (id *Key) Release() {

@@ -81,8 +81,8 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 		result.ELapsed = time.Since(start)
 		system.QueryDuration.Observe(result.ELapsed.Seconds())
 	}()
-	m.SetUserID(r.UserID)
-	m.SetSiteID(r.UserID)
+	m.uid(r.UserID)
+	m.sid(r.UserID)
 	if len(r.Property) == 0 || len(r.Metrics) == 0 {
 		return
 	}
@@ -108,7 +108,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 		values := make(PropValues)
 		for _, metric := range r.Metrics {
 			b.Reset()
-			m.Prop(p).Metric(metric)
+			m.prop(p).metric(metric)
 			if !match.IsRe {
 				var text string
 				if !match.IsRe {
