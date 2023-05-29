@@ -49,7 +49,7 @@ func Save(ctx context.Context, b *Buffer) {
 
 	db := GetMike(ctx)
 	meta := newMetaKey()
-	ls := newMetaList()
+	ls := newTxnBufferList()
 	defer func() {
 		log.Get(ctx).Debug().Int(
 			"__size__", len(b.segments.Timestamp),
@@ -91,19 +91,19 @@ func saveProperty(ctx context.Context,
 	svc *saveContext,
 	m *Key, text string, a *Sum) error {
 	return errors.Join(
-		savePropertyKey(ctx, svc, m.Metric(Visitors).Key(text), a.Visitors),
-		savePropertyKey(ctx, svc, m.Metric(Views).Key(text), a.Views),
-		savePropertyKey(ctx, svc, m.Metric(Events).Key(text), a.Events),
-		savePropertyKey(ctx, svc, m.Metric(Visits).Key(text), a.Visits),
-		savePropertyKey(ctx, svc, m.Metric(BounceRate).Key(text), a.BounceRate),
-		savePropertyKey(ctx, svc, m.Metric(VisitDuration).Key(text), a.VisitDuration),
-		savePropertyKey(ctx, svc, m.Metric(ViewsPerVisit).Key(text), a.ViewsPerVisit),
+		savePropertyKey(ctx, svc, m.Metric(Visitors).Key(text, svc.ls), a.Visitors),
+		savePropertyKey(ctx, svc, m.Metric(Views).Key(text, svc.ls), a.Views),
+		savePropertyKey(ctx, svc, m.Metric(Events).Key(text, svc.ls), a.Events),
+		savePropertyKey(ctx, svc, m.Metric(Visits).Key(text, svc.ls), a.Visits),
+		savePropertyKey(ctx, svc, m.Metric(BounceRate).Key(text, svc.ls), a.BounceRate),
+		savePropertyKey(ctx, svc, m.Metric(VisitDuration).Key(text, svc.ls), a.VisitDuration),
+		savePropertyKey(ctx, svc, m.Metric(ViewsPerVisit).Key(text, svc.ls), a.ViewsPerVisit),
 	)
 }
 
 type saveContext struct {
 	txn *badger.Txn
-	ls  *metaList
+	ls  *txnBufferList
 	idx *badger.Txn
 }
 
@@ -114,21 +114,21 @@ func (ctx *saveContext) saveIndex(key *bytes.Buffer) error {
 
 // Transaction keep reference to keys. We need this to make sure we reuse ID and properly
 // release them back to the pool when done.
-type metaList struct {
+type txnBufferList struct {
 	ls []*bytes.Buffer
 }
 
-func newMetaList() *metaList {
-	return metaListPool.New().(*metaList)
+func newTxnBufferList() *txnBufferList {
+	return txnBufferListPool.New().(*txnBufferList)
 }
 
-func (ls *metaList) Get() *bytes.Buffer {
+func (ls *txnBufferList) Get() *bytes.Buffer {
 	b := smallBufferpool.Get().(*bytes.Buffer)
 	ls.ls = append(ls.ls, b)
 	return b
 }
 
-func (ls *metaList) Reset() {
+func (ls *txnBufferList) Reset() {
 	for _, v := range ls.ls {
 		v.Reset()
 		smallBufferpool.Put(v)
@@ -136,14 +136,14 @@ func (ls *metaList) Reset() {
 	ls.ls = ls.ls[:0]
 }
 
-func (ls *metaList) Release() {
+func (ls *txnBufferList) Release() {
 	ls.Reset()
-	metaListPool.Put(ls)
+	txnBufferListPool.Put(ls)
 }
 
-var metaListPool = &sync.Pool{
+var txnBufferListPool = &sync.Pool{
 	New: func() any {
-		return &metaList{
+		return &txnBufferList{
 			ls: make([]*bytes.Buffer, 0, 1<<10),
 		}
 	},
@@ -162,9 +162,11 @@ func savePropertyKey(ctx context.Context, svc *saveContext, id *IDToSave, a uint
 	x, err := txn.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
-			b := make([]byte, 8)
-			binary.BigEndian.PutUint64(b, math.Float64bits(float64(a)))
-			err := txn.Set(key, b)
+			b := svc.ls.Get()
+			b.Grow(8)
+			value := b.Next(8)
+			binary.BigEndian.PutUint64(value, math.Float64bits(float64(a)))
+			err := txn.Set(key, value)
 			if err != nil {
 				return err
 			}
@@ -188,7 +190,9 @@ func savePropertyKey(ctx context.Context, svc *saveContext, id *IDToSave, a uint
 		return nil
 	})
 	read += float64(a)
-	b := make([]byte, 8)
-	binary.BigEndian.PutUint64(b, math.Float64bits(read))
-	return txn.Set(key, b)
+	b := svc.ls.Get()
+	b.Grow(8)
+	value := b.Next(8)
+	binary.BigEndian.PutUint64(value, math.Float64bits(read))
+	return txn.Set(key, value)
 }

@@ -61,9 +61,9 @@ type IDToSave struct {
 	index *bytes.Buffer
 }
 
-func (id *Key) Key(s string) *IDToSave {
-	b := smallBufferpool.Get().(*bytes.Buffer)
-	idx := smallBufferpool.Get().(*bytes.Buffer)
+func (id *Key) Key(s string, ls *txnBufferList) *IDToSave {
+	b := ls.Get()
+	idx := ls.Get()
 	return &IDToSave{
 		mike:  id.KeyBuffer(b, s),
 		index: id.IndexBuffer(idx, s),

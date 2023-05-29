@@ -312,7 +312,7 @@ func (m *MultiEntry) Build(ctx context.Context, f func(p Property, key string, t
 	// detect unique visitors within m.Compute calls (Which operate on unique entry keys
 	// over the same hour window)
 	txn := GetUnique(ctx).NewTransaction(true)
-	mls := newMetaList()
+	mls := newTxnBufferList()
 	defer func() {
 		err := txn.Commit()
 		if err != nil {
@@ -539,7 +539,7 @@ func PickProp(p Property) func(m *MultiEntry, i int) (string, bool) {
 	}
 }
 
-func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *metaList) seenFunc {
+func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) seenFunc {
 	use := func(x *badger.Txn) func(uint64) bool {
 		return func(u uint64) bool {
 			binary.BigEndian.PutUint64(buf, u)
