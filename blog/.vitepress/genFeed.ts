@@ -3,7 +3,7 @@ import { writeFileSync } from 'fs'
 import { Feed } from 'feed'
 import { createContentLoader, type SiteConfig } from 'vitepress'
 
-const baseUrl = `https://blog.vince.tz`
+const baseUrl = `https://vinceanalytics.github.io/blog/`
 
 export async function genFeed(config: SiteConfig) {
   const feed = new Feed({
