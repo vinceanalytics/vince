@@ -16,6 +16,14 @@ var (
 			Buckets:   buckets,
 		},
 	)
+	QueryDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: "vince",
+			Name:      "events_query_duration_seconds",
+			Help:      "Time taken to query.",
+			Buckets:   buckets,
+		},
+	)
 	DropSiteDuration = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
 			Namespace: "vince",

@@ -12,6 +12,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/pkg/timex"
+	"github.com/gernest/vince/system"
 )
 
 type QueryRequest struct {
@@ -78,6 +79,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 		txn.Discard()
 		idx.Discard()
 		result.ELapsed = time.Since(start)
+		system.QueryDuration.Observe(result.ELapsed.Seconds())
 	}()
 	m.SetUserID(r.UserID)
 	m.SetSiteID(r.UserID)
