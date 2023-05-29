@@ -28,7 +28,7 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 		mike.Close()
 		return nil, nil, err
 	}
-	unique, err := open(ctx, filepath.Join(dir, "unique_user"))
+	unique, err := open(ctx, filepath.Join(dir, "unique"))
 	if err != nil {
 		mike.Close()
 		index.Close()
