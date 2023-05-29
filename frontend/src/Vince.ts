@@ -4,8 +4,12 @@ import { controller, targets, target } from '@github/catalyst'
 class VinceStatsElement extends HTMLElement {
     @targets periods: HTMLElement[];
     @target period_label: HTMLElement;
+    @target period_range_from_label: HTMLElement;
+    @target period_range_to_label: HTMLElement;
+
     @targets metrics: HTMLElement[];
     @targets props: HTMLElement[];
+
 
     connectedCallback() { }
 
@@ -20,7 +24,10 @@ class VinceStatsElement extends HTMLElement {
         a?.
             querySelector(".select-menu-item-icon")?.
             classList.remove("d-none")
-        this.period_label.innerText = a?.dataset.name!;
+        const ds = a?.dataset;
+        this.period_label.innerText = ds?.name!;
+        this.period_range_from_label.innerText = ds?.fromLabel!;
+        this.period_range_to_label.innerText = ds?.toLabel!;
     }
 
     changeMetrics(e: Event) {

@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/gernest/vince/config"
 	"github.com/gernest/vince/flash"
@@ -37,7 +38,10 @@ func base() *template.Template {
 		"Calendar":   CalendarEntries,
 		"GoalName":   models.GoalName,
 		"SafeDomain": models.SafeDomain,
-		"ThisYear":   thisYearFormat,
+		"PeriodLabel": func(ts time.Time) string {
+			return ts.Format("Jan 02, 2006")
+		},
+		"ThisYear": thisYearFormat,
 		"SelectedPeriod": func(i int) string {
 			if i != 0 {
 				return "d-none"

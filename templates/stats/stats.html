@@ -4,7 +4,15 @@
         {{$calendar:= Calendar}}
         {{$today:= index $calendar 0}}
         <div class="Subhead Subhead--spacious text-center settingsDivider">
-            <h2 class="Subhead-heading mt-3 mt-sm-0">April 26, 2023 <span class="dash">–</span> May 3, 2023</h2>
+            <h2 class="Subhead-heading mt-3 mt-sm-0">
+                <span data-target="vince-stats.period_range_from_label">
+                    April 26, 2023
+                </span>
+                <span class="dash">–</span>
+                <span data-target="vince-stats.period_range_to_label">
+                    May 3, 2023
+                </span>
+            </h2>
             <div class="Subhead-actions mt-3 mt-sm-0">
                 <details data-view-component="true" class="dropdown details-overlay details-reset d-inline-block">
                     <summary role="button" class="btn">
@@ -24,8 +32,9 @@
                             </div>
                             {{range $index,$period:= $calendar}}
                             <a role="menuitem" data-from="{{$period.From}}" data-to="{{$period.To}}"
-                                data-name="{{$period.Name}}" data-targets="vince-stats.periods"
-                                data-action="click:vince-stats#changePeriod"
+                                data-from-label="{{PeriodLabel $period.Start}}"
+                                data-to-label="{{PeriodLabel $period.End}}" data-name="{{$period.Name}}"
+                                data-targets="vince-stats.periods" data-action="click:vince-stats#changePeriod"
                                 class="dropdown-item select-menu-item select-menu-item-text">
                                 {{$selected:=SelectedPeriod $index}}
                                 {{Icon "check" 16 "select-menu-item-icon" $selected}}
