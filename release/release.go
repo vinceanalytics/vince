@@ -17,3 +17,4 @@ package release
 //go:generate go run gen/docs/main.go
 //go:generate go run gen/tag/main.go
 //go:generate go run gen/build/main.go
+//go:generate go run gen/publish/main.go
