@@ -5,6 +5,7 @@ export default defineConfig({
   description: "The Cloud Native Web Analytics Platform",
   titleTemplate: true,
   title: 'vince',
+  ignoreDeadLinks: 'localhostLinks',
   head: [
     ["meta", { name: "msapplication-TileColor", content: "#bdfcff" }],
     ["meta", { name: "twitter:card", content: "product" }],
