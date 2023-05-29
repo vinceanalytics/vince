@@ -35,22 +35,6 @@ func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
 	return b
 }
 
-func (b *Buffer) Clone() *Buffer {
-	o := bigBufferPool.Get().(*Buffer)
-	o.segments.Copy(&b.segments)
-	copy(o.id[:], b.id[:])
-	return o
-}
-
-// Clones b and save this to the data store in a separate goroutine. b is reset.
-func (b *Buffer) Save(ctx context.Context) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	clone := b.Clone()
-	b.segments.Reset()
-	go Save(ctx, clone)
-}
-
 func (b *Buffer) Reset() *Buffer {
 	b.buf.Reset()
 	b.segments.Reset()

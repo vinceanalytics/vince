@@ -46,18 +46,22 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 
 func Save(ctx context.Context, b *Buffer) {
 	start := time.Now()
-	defer system.SaveDuration.Observe(time.Since(start).Seconds())
 
 	db := GetMike(ctx)
 	meta := newMetaKey()
-
+	ls := newMetaList()
 	defer func() {
+		log.Get(ctx).Debug().Int(
+			"__size__", len(b.segments.Timestamp),
+		).Msg("saved stats")
 		b.Release()
 		meta.Release()
+		ls.Release()
+		system.SaveDuration.Observe(time.Since(start).Seconds())
 	}()
 
 	svc := &saveContext{
-		ls:  newMetaList(),
+		ls:  ls,
 		idx: GetIndex(ctx).NewTransaction(true),
 	}
 
