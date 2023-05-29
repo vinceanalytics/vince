@@ -64,7 +64,6 @@ func (a PropResult) MarshalJSON() ([]byte, error) {
 func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	start := time.Now()
 	txn := GetMike(ctx).NewTransaction(false)
-	idx := GetIndex(ctx).NewTransaction(false)
 	var startTS, endTS uint64
 	if !r.Range.From.IsZero() {
 		startTS = uint64(r.Range.From.Truncate(time.Hour).Unix())
@@ -76,25 +75,20 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	defer func() {
 		m.Release()
 		txn.Discard()
-		idx.Discard()
 		result.ELapsed = time.Since(start)
 		system.QueryDuration.Observe(result.ELapsed.Seconds())
 	}()
-	m.uid(r.UserID)
-	m.sid(r.UserID)
+	m.uid(r.UserID, r.SiteID)
 	if len(r.Property) == 0 || len(r.Metrics) == 0 {
 		return
 	}
 	b := smallBufferpool.Get().(*bytes.Buffer)
-	key := smallBufferpool.Get().(*bytes.Buffer)
 	defer func() {
 		b.Reset()
-		key.Reset()
 		smallBufferpool.Put(b)
-		smallBufferpool.Put(key)
 	}()
 	result.Result = make(PropResult)
-	o := badger.IteratorOptions{}
+	o := badger.DefaultIteratorOptions
 	if !r.Range.From.IsZero() {
 		o.SinceTs = startTS
 	}
@@ -114,15 +108,20 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 					text = match.Text
 				}
 				// /user_id/site_id/metric/prop/text/
-				prefix := m.IndexBufferPrefix(b, text).Bytes()
+				prefix := m.idx(b, text).Bytes()
 				for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 					x := it.Item()
 					if endTS != 0 && x.Version() > endTS {
-						// We have reached the end of iteration
+						// We have reached the end of iteration. Range actually
+						// reflects on the version we are interested in.
 						break
 					}
-					key.Reset()
-					mike, txt, ts := IndexToKey(x.Key(), key)
+					kb := x.Key()
+
+					// last 6 bytes of the key are for the timestamp
+					ts := kb[len(kb)-6:]
+					// text comes before the timestamp
+					txt := kb[keyOffset : len(kb)-6]
 					if match.IsRe && !match.re.Match(txt) {
 						continue
 					}
@@ -131,18 +130,16 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 						xv = make(AggregateResult)
 						values[string(txt)] = xv
 					}
-					mv, err := txn.Get(mike.Bytes())
-					if err != nil {
-						log.Get(ctx).Err(err).Msg("failed to get mike value")
-						continue
-					}
-					mv.Value(func(val []byte) error {
+					err := x.Value(func(val []byte) error {
 						xv[metric] = append(xv[metric], Value{
 							Timestamp: Time(ts),
 							Value:     binary.BigEndian.Uint32(val),
 						})
 						return nil
 					})
+					if err != nil {
+						log.Get(ctx).Err(err).Msg("failed to read value from kv store")
+					}
 				}
 			}
 		}

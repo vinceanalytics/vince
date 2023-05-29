@@ -30,8 +30,7 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 	db := GetMike(ctx)
 	id := newMetaKey()
 	defer id.Release()
-	id.uid(uid)
-	id.sid(sid)
+	id.uid(uid, sid)
 	// remove all keys under /user_id/site_id/ prefix.
 	err := db.DropPrefix(id[:metricOffset])
 	if err != nil {
@@ -60,8 +59,7 @@ func Save(ctx context.Context, b *Buffer) {
 	}()
 
 	svc := &saveContext{
-		ls:  ls,
-		idx: GetIndex(ctx).NewTransaction(true),
+		ls: ls,
 	}
 
 	// Buffer.id has the same encoding as the first 16 bytes of meta. We just copy that
@@ -71,45 +69,32 @@ func Save(ctx context.Context, b *Buffer) {
 	err := db.Update(func(txn *badger.Txn) error {
 		svc.txn = txn
 		return b.Build(ctx, func(p Property, key string, ts uint64, sum *Sum) error {
-			return saveProperty(ctx, svc, meta.ts(ts), key, sum)
+			return saveProperty(ctx, svc, ts, meta.prop(p), key, sum)
 		})
 	})
 	if err != nil {
-		// Transaction was discarded. We discard index transaction as well.
-		svc.idx.Discard()
 		log.Get(ctx).Err(err).Msg("failed to save ts buffer")
-	} else {
-		err := svc.idx.Commit()
-		if err != nil {
-			log.Get(ctx).Err(err).Msg("failed to commit to ts index")
-		}
-		svc.idx.Discard()
 	}
 }
 
 func saveProperty(ctx context.Context,
 	svc *saveContext,
+	ts uint64,
 	m *Key, text string, a *Sum) error {
 	return errors.Join(
-		savePropertyKey(ctx, svc, m.metric(Visitors).key(text, svc.ls), a.Visitors),
-		savePropertyKey(ctx, svc, m.metric(Views).key(text, svc.ls), a.Views),
-		savePropertyKey(ctx, svc, m.metric(Events).key(text, svc.ls), a.Events),
-		savePropertyKey(ctx, svc, m.metric(Visits).key(text, svc.ls), a.Visits),
-		savePropertyKey(ctx, svc, m.metric(BounceRate).key(text, svc.ls), a.BounceRate),
-		savePropertyKey(ctx, svc, m.metric(VisitDuration).key(text, svc.ls), a.VisitDuration),
-		savePropertyKey(ctx, svc, m.metric(ViewsPerVisit).key(text, svc.ls), a.ViewsPerVisit),
+		savePropertyKey(ctx, svc, m.metric(Visitors).key(ts, text, svc.ls), a.Visitors),
+		savePropertyKey(ctx, svc, m.metric(Views).key(ts, text, svc.ls), a.Views),
+		savePropertyKey(ctx, svc, m.metric(Events).key(ts, text, svc.ls), a.Events),
+		savePropertyKey(ctx, svc, m.metric(Visits).key(ts, text, svc.ls), a.Visits),
+		savePropertyKey(ctx, svc, m.metric(BounceRate).key(ts, text, svc.ls), a.BounceRate),
+		savePropertyKey(ctx, svc, m.metric(VisitDuration).key(ts, text, svc.ls), a.VisitDuration),
+		savePropertyKey(ctx, svc, m.metric(ViewsPerVisit).key(ts, text, svc.ls), a.ViewsPerVisit),
 	)
 }
 
 type saveContext struct {
 	txn *badger.Txn
 	ls  *txnBufferList
-	idx *badger.Txn
-}
-
-func (ctx *saveContext) saveIndex(key *bytes.Buffer) error {
-	ctx.ls.ls = append(ctx.ls.ls, key)
-	return ctx.idx.Set(key.Bytes(), []byte{})
 }
 
 // Transaction keep reference to keys. We need this to make sure we reuse ID and properly
@@ -155,10 +140,9 @@ var smallBufferpool = &sync.Pool{
 	},
 }
 
-func savePropertyKey(ctx context.Context, svc *saveContext, id *IDToSave, a uint32) error {
-	svc.ls.ls = append(svc.ls.ls, id.mike, id.index)
+func savePropertyKey(ctx context.Context, svc *saveContext, mike *bytes.Buffer, a uint32) error {
 	txn := svc.txn
-	key := id.mike.Bytes()
+	key := mike.Bytes()
 	x, err := txn.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
@@ -170,15 +154,6 @@ func savePropertyKey(ctx context.Context, svc *saveContext, id *IDToSave, a uint
 			if err != nil {
 				return err
 			}
-			// We have successfully set the key, now we set the index. We only index
-			// new keys. Since keys are stable, there is no need to index again when
-			// doing update.
-			err = svc.saveIndex(id.index)
-			if err != nil {
-				log.Get(ctx).Err(err).
-					Msg("failed to save index")
-			}
-			return err
 		}
 		return err
 	}

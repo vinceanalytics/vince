@@ -23,31 +23,23 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 	if err != nil {
 		return nil, nil, err
 	}
-	index, err := open(ctx, filepath.Join(dir, "index"))
-	if err != nil {
-		mike.Close()
-		return nil, nil, err
-	}
 	unique, err := open(ctx, filepath.Join(dir, "unique"))
 	if err != nil {
 		mike.Close()
-		index.Close()
 		return nil, nil, err
 	}
 	geo, err := openGeo(ctx, filepath.Join(dir, "geo"))
 	if err != nil {
 		mike.Close()
-		index.Close()
 		unique.Close()
 		return nil, nil, err
 	}
 	ctx = context.WithValue(ctx, mikeKey{}, mike)
-	ctx = context.WithValue(ctx, indexKey{}, index)
 	ctx = context.WithValue(ctx, uniqueKey{}, unique)
 	ctx = context.WithValue(ctx, geoKey{}, geo)
 	ctx = SetMap(ctx, NewMap())
 
-	resource := resourceList{mike, index, geo}
+	resource := resourceList{mike, geo}
 	return ctx, resource, nil
 }
 
@@ -99,8 +91,6 @@ type mikeKey struct{}
 
 type geoKey struct{}
 
-type indexKey struct{}
-
 type uniqueKey struct{}
 
 func GetMike(ctx context.Context) *badger.DB {
@@ -109,10 +99,6 @@ func GetMike(ctx context.Context) *badger.DB {
 
 func GetGeo(ctx context.Context) *badger.DB {
 	return ctx.Value(geoKey{}).(*badger.DB)
-}
-
-func GetIndex(ctx context.Context) *badger.DB {
-	return ctx.Value(indexKey{}).(*badger.DB)
 }
 
 func GetUnique(ctx context.Context) *badger.DB {

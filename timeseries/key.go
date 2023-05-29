@@ -11,21 +11,9 @@ const (
 	siteOffset   = userOffset + 8
 	metricOffset = siteOffset + 8
 	propOffset   = metricOffset + 1
-	timeOffset   = propOffset + 1
-	keyOffset    = timeOffset + 6
+	keyOffset    = propOffset + 1
 )
 
-// Key identifies a key that stores a single aggregate value. Keys are
-// lexicographically sorted. We use this property to arrange the key in such a
-// way that it can be sorted by
-//   - User
-//   - Website
-//   - Metric (  visitors ... etc)
-//   - Property ( event, page ... etc)
-//   - Time
-//   - Key Text
-//
-// Time is in milliseconds since unix epoch truncated to the nearest Hour.
 type Key [keyOffset]byte
 
 var metaKeyPool = &sync.Pool{
@@ -45,22 +33,18 @@ func (id *Key) prop(p Property) *Key {
 	return id
 }
 
-func (id *Key) uid(u uint64) {
+func (id *Key) uid(u, s uint64) {
 	binary.BigEndian.PutUint64(id[userOffset:], u)
-}
-
-func (id *Key) sid(s uint64) {
 	binary.BigEndian.PutUint64(id[siteOffset:], s)
 }
 
-func (id *Key) ts(ms uint64) *Key {
-	(*id)[timeOffset+0] = byte(ms >> 40)
-	(*id)[timeOffset+1] = byte(ms >> 32)
-	(*id)[timeOffset+2] = byte(ms >> 24)
-	(*id)[timeOffset+3] = byte(ms >> 16)
-	(*id)[timeOffset+4] = byte(ms >> 8)
-	(*id)[timeOffset+5] = byte(ms)
-	return id
+func setTs(b []byte, ms uint64) {
+	b[0] = byte(ms >> 40)
+	b[1] = byte(ms >> 32)
+	b[2] = byte(ms >> 24)
+	b[3] = byte(ms >> 16)
+	b[4] = byte(ms >> 8)
+	b[5] = byte(ms)
 }
 
 func Time(id []byte) uint64 {
@@ -69,46 +53,19 @@ func Time(id []byte) uint64 {
 		uint64(id[1])<<32 | uint64(id[0])<<40
 }
 
-type IDToSave struct {
-	mike  *bytes.Buffer
-	index *bytes.Buffer
-}
-
-func (id *Key) key(s string, ls *txnBufferList) *IDToSave {
-
+func (id *Key) key(ts uint64, s string, ls *txnBufferList) *bytes.Buffer {
 	k := ls.Get()
 	k.Write(id[:])
+	k.Grow(6)
+	setTs(k.Next(6), ts)
 	k.WriteString(s)
-
-	// Index [ Txt/Time ]
-	idx := ls.Get()
-	idx.Write(id[:timeOffset])
-	idx.WriteString(s)
-	idx.Write(id[timeOffset:])
-
-	return &IDToSave{
-		mike:  k,
-		index: idx,
-	}
+	return k
 }
 
-func (id *Key) IndexBufferPrefix(b *bytes.Buffer, s string) *bytes.Buffer {
-	b.Write(id[:timeOffset])
+func (id *Key) idx(b *bytes.Buffer, s string) *bytes.Buffer {
+	b.Write(id[:])
 	b.WriteString(s)
 	return b
-}
-
-// Converts index idx to a mike key. Mike keys ends with the text while index
-// keys ends with timestamps.
-func IndexToKey(idx []byte, o *bytes.Buffer) (mike *bytes.Buffer, text []byte, ts []byte) {
-	mike = o
-	// The last 6 bytes are for the timestamp
-	ts = idx[len(idx)-6:]
-	text = idx[timeOffset : len(idx)-6]
-	o.Write(idx[:timeOffset])
-	o.Write(ts)
-	o.Write(text)
-	return
 }
 
 func (id *Key) Release() {
