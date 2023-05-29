@@ -37,7 +37,7 @@ type Match struct {
 type AggregateResult map[Metric][]Value
 
 type Value struct {
-	Timestamp int64
+	Timestamp uint64
 	Value     uint32
 }
 
@@ -138,7 +138,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 					}
 					mv.Value(func(val []byte) error {
 						xv[metric] = append(xv[metric], Value{
-							Timestamp: timex.FromTimestamp(ts),
+							Timestamp: Time(ts),
 							Value:     binary.BigEndian.Uint32(val),
 						})
 						return nil

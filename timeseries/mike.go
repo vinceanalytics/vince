@@ -67,10 +67,11 @@ func Save(ctx context.Context, b *Buffer) {
 	// Buffer.id has the same encoding as the first 16 bytes of meta. We just copy that
 	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
+
 	err := db.Update(func(txn *badger.Txn) error {
 		svc.txn = txn
 		return b.Build(ctx, func(p Property, key string, ts uint64, sum *Sum) error {
-			return saveProperty(ctx, svc, meta, key, sum)
+			return saveProperty(ctx, svc, meta.ts(ts), key, sum)
 		})
 	})
 	if err != nil {

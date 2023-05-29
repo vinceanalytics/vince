@@ -7,7 +7,6 @@
 package timex
 
 import (
-	"encoding/binary"
 	"time"
 
 	"github.com/jinzhu/now"
@@ -75,13 +74,5 @@ func DaysInMonth(ts time.Time) int {
 
 // Timestamp returns ts as duration in hours since the unix epoch.
 func Timestamp(ts time.Time) uint64 {
-	ts = ts.Truncate(time.Hour)
-	d := time.Duration(ts.UnixNano()) * time.Nanosecond
-	return uint64(d.Hours())
-}
-
-func FromTimestamp(b []byte) int64 {
-	ts := binary.BigEndian.Uint64(b)
-	d := time.Duration(ts) * time.Hour
-	return int64(uint64(d.Seconds()))
+	return uint64(ts.UTC().Truncate(time.Hour).UnixMilli())
 }
