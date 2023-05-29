@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"math"
 	"sync"
 	"time"
 
@@ -163,9 +162,9 @@ func savePropertyKey(ctx context.Context, svc *saveContext, id *IDToSave, a uint
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
 			b := svc.ls.Get()
-			b.Grow(8)
-			value := b.Next(8)
-			binary.BigEndian.PutUint64(value, math.Float64bits(float64(a)))
+			b.Grow(4)
+			value := b.Next(4)
+			binary.BigEndian.PutUint32(value, a)
 			err := txn.Set(key, value)
 			if err != nil {
 				return err
@@ -182,17 +181,15 @@ func savePropertyKey(ctx context.Context, svc *saveContext, id *IDToSave, a uint
 		}
 		return err
 	}
-	var read float64
+	var read uint32
 	x.Value(func(val []byte) error {
-		read = math.Float64frombits(
-			binary.BigEndian.Uint64(val),
-		)
+		read = binary.BigEndian.Uint32(val)
 		return nil
 	})
-	read += float64(a)
+	read += a
 	b := svc.ls.Get()
-	b.Grow(8)
-	value := b.Next(8)
-	binary.BigEndian.PutUint64(value, math.Float64bits(read))
+	b.Grow(4)
+	value := b.Next(4)
+	binary.BigEndian.PutUint32(value, read)
 	return txn.Set(key, value)
 }

@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
-	"math"
 	"regexp"
 	"time"
 
@@ -39,7 +38,7 @@ type AggregateResult map[Metric][]Value
 
 type Value struct {
 	Timestamp int64
-	Value     float64
+	Value     uint32
 }
 
 type PropResult map[Property]PropValues
@@ -140,9 +139,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 					mv.Value(func(val []byte) error {
 						xv[metric] = append(xv[metric], Value{
 							Timestamp: timex.FromTimestamp(ts),
-							Value: math.Float64frombits(
-								binary.BigEndian.Uint64(val),
-							),
+							Value:     binary.BigEndian.Uint32(val),
 						})
 						return nil
 					})
