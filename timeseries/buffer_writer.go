@@ -24,7 +24,7 @@ type Buffer struct {
 
 func (b *Buffer) AddEntry(e ...*Entry) {
 	for _, v := range e {
-		b.segments.Append(v)
+		b.segments.append(v)
 		v.Release()
 	}
 }
@@ -37,7 +37,7 @@ func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
 
 func (b *Buffer) Reset() *Buffer {
 	b.buf.Reset()
-	b.segments.Reset()
+	b.segments.reset()
 	return b
 }
 
@@ -107,7 +107,7 @@ func (b *Buffer) persist(ctx context.Context, s *Entry) {
 }
 
 func (b *Buffer) Build(ctx context.Context, f func(p Property, key string, ts uint64, sum *Sum) error) error {
-	return b.segments.Build(ctx, f)
+	return b.segments.build(ctx, f)
 }
 
 type MultiEntry struct {
@@ -149,7 +149,7 @@ type MultiEntry struct {
 	sum Sum
 }
 
-func (m *MultiEntry) Reset() {
+func (m *MultiEntry) reset() {
 	m.UtmMedium = m.UtmMedium[:0]
 	m.Referrer = m.Referrer[:0]
 	m.Domain = m.Domain[:0]
@@ -185,7 +185,7 @@ func (m *MultiEntry) Reset() {
 	m.IsBounce = m.IsBounce[:0]
 }
 
-func (m *MultiEntry) Append(e *Entry) {
+func (m *MultiEntry) append(e *Entry) {
 	m.UtmMedium = append(m.UtmMedium, e.UtmMedium)
 	m.Referrer = append(m.Referrer, e.Referrer)
 	m.Domain = append(m.Domain, e.Domain)
@@ -220,45 +220,9 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.IsBounce = append(m.IsBounce, e.IsBounce)
 }
 
-func (m *MultiEntry) Copy(e *MultiEntry) {
-	m.UtmMedium = append(m.UtmMedium, e.UtmMedium...)
-	m.Referrer = append(m.Referrer, e.Referrer...)
-	m.Domain = append(m.Domain, e.Domain...)
-	m.ExitPage = append(m.ExitPage, e.ExitPage...)
-	m.EntryPage = append(m.EntryPage, e.EntryPage...)
-	m.Hostname = append(m.Hostname, e.Hostname...)
-	m.Pathname = append(m.Pathname, e.Pathname...)
-	m.UtmSource = append(m.UtmSource, e.UtmSource...)
-	m.ReferrerSource = append(m.ReferrerSource, e.ReferrerSource...)
-	m.CountryCode = append(m.CountryCode, e.CountryCode...)
-	m.Region = append(m.Region, e.Region...)
-	m.Subdivision2Code = append(m.Subdivision2Code, e.Subdivision2Code...)
-	m.TransferredFrom = append(m.TransferredFrom, e.TransferredFrom...)
-	m.UtmCampaign = append(m.UtmCampaign, e.UtmCampaign...)
-	m.OperatingSystem = append(m.OperatingSystem, e.OperatingSystem...)
-	m.Browser = append(m.Browser, e.Browser...)
-	m.UtmTerm = append(m.UtmTerm, e.UtmTerm...)
-	m.Name = append(m.Name, e.Name...)
-	m.ScreenSize = append(m.ScreenSize, e.ScreenSize...)
-	m.BrowserVersion = append(m.BrowserVersion, e.BrowserVersion...)
-	m.OperatingSystemVersion = append(m.OperatingSystemVersion, e.OperatingSystemVersion...)
-	m.UtmContent = append(m.UtmContent, e.UtmContent...)
-	m.UserId = append(m.UserId, e.UserId...)
-	m.SessionId = append(m.SessionId, e.SessionId...)
-	m.Timestamp = append(m.Timestamp, e.Timestamp...)
-	m.Duration = append(m.Duration, e.Duration...)
-	m.Start = append(m.Start, e.Start...)
-	m.City = append(m.City, e.City...)
-	m.PageViews = append(m.PageViews, e.PageViews...)
-	m.Events = append(m.Events, e.Events...)
-	m.Sign = append(m.Sign, e.Sign...)
-	m.Hours = append(m.Hours, e.Hours...)
-	m.IsBounce = append(m.IsBounce, e.IsBounce...)
-}
-
-// Chunk finds same m.Hours values and call f with the index range. m.Hours are
+// chunk finds same m.Hours values and call f with the index range. m.Hours are
 // guaranteed to be sorted in ascending order.
-func (m *MultiEntry) Chunk(f func(m *MultiEntry, start, end int) error) error {
+func (m *MultiEntry) chunk(f func(m *MultiEntry, start, end int) error) error {
 	if len(m.Hours) < 2 {
 		return nil
 	}
@@ -298,7 +262,7 @@ func (c *computed) Sum(sum *Sum) {
 	sum.ViewsPerVisit = uint32(math.Round(float64(c.views) / float64(c.signSum)))
 }
 
-func (m *MultiEntry) Build(ctx context.Context, f func(p Property, key string, ts uint64, sum *Sum) error) error {
+func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, ts uint64, sum *Sum) error) error {
 	// We capitalize on badger Transaction to globally track unique visitors in
 	// this entries batch.
 	//
@@ -321,9 +285,9 @@ func (m *MultiEntry) Build(ctx context.Context, f func(p Property, key string, t
 		mls.Release()
 	}()
 	uniq := seen(ctx, txn, m.key[:], mls)
-	return m.Chunk(func(m *MultiEntry, start, end int) error {
+	return m.chunk(func(m *MultiEntry, start, end int) error {
 		for i := Base; i <= City; i++ {
-			err := m.Compute(i, start, end, PickProp(i), uniq, func(u uint64, s1 string, s2 *Sum) error {
+			err := m.compute(i, start, end, choose(i), uniq, func(u uint64, s1 string, s2 *Sum) error {
 				return f(i, s1, u, s2)
 			})
 			if err != nil {
@@ -334,10 +298,19 @@ func (m *MultiEntry) Build(ctx context.Context, f func(p Property, key string, t
 	})
 }
 
-func (m *MultiEntry) Compute(
+// On the given start ... end key range, calculate Sum for Property prop , group
+// by result of calling pick
+//   - if  key != "" then  key will be used as group key. Each unique key will have
+//     unique Sum
+//   - if  key == "" the key is ignored.
+//
+// seen is used to compute unique users in each grouped key over the range.
+//
+// f is called on each key:Sum result. The order of the keys is not guaranteed.
+func (m *MultiEntry) compute(
 	prop Property,
 	start, end int,
-	pick func(*MultiEntry, int) (string, bool),
+	pick func(*MultiEntry, int) string,
 	seen seenFunc,
 	f func(uint64, string, *Sum) error,
 ) error {
@@ -348,8 +321,8 @@ func (m *MultiEntry) Compute(
 		}
 	}()
 	for i := start; i < end; i++ {
-		key, ok := pick(m, i)
-		if !ok {
+		key := pick(m, i)
+		if key == "" {
 			continue
 		}
 		e, ok := seg[key]
@@ -383,155 +356,86 @@ func (m *MultiEntry) Compute(
 	return nil
 }
 
-func PickProp(p Property) func(m *MultiEntry, i int) (string, bool) {
+// returns a function that chooses a key from MultiEntry based on Property p.
+// All keys are strings, empty keys are ignored. Base property uses __root__ as
+// its key.
+func choose(p Property) func(m *MultiEntry, i int) string {
 	switch p {
 	case Base:
-		return func(m *MultiEntry, i int) (string, bool) {
-			return BaseKey, true
+		return func(m *MultiEntry, i int) string {
+			return BaseKey
 		}
 	case Event:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.Name[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.Name[i]
 		}
 	case Page:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.Pathname[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.Pathname[i]
 		}
 	case EntryPage:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.EntryPage[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.EntryPage[i]
 		}
 	case ExitPage:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.ExitPage[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.ExitPage[i]
 		}
 	case Referrer:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.Referrer[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.Referrer[i]
 		}
 	case UtmMedium:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.UtmMedium[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.UtmMedium[i]
 		}
 	case UtmSource:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.UtmSource[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.UtmSource[i]
 		}
 	case UtmCampaign:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.UtmCampaign[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.UtmCampaign[i]
 		}
 	case UtmContent:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.UtmContent[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.UtmContent[i]
 		}
 	case UtmTerm:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.UtmTerm[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.UtmTerm[i]
 		}
 	case UtmDevice:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.ScreenSize[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.ScreenSize[i]
 		}
 	case UtmBrowser:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.Browser[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.Browser[i]
 		}
 	case BrowserVersion:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.BrowserVersion[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.BrowserVersion[i]
 		}
 	case Os:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.OperatingSystem[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.OperatingSystem[i]
 		}
 	case OsVersion:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.OperatingSystemVersion[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.OperatingSystemVersion[i]
 		}
 	case Country:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.CountryCode[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.CountryCode[i]
 		}
 	case Region:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.Region[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.Region[i]
 		}
 	case City:
-		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.City[i]
-			if key == "" {
-				return "", false
-			}
-			return key, true
+		return func(m *MultiEntry, i int) string {
+			return m.City[i]
 		}
 	default:
 		panic("Unknown property value")
