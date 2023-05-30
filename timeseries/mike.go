@@ -49,7 +49,7 @@ func Save(ctx context.Context, b *Buffer) {
 	meta := newMetaKey()
 	ls := newTxnBufferList()
 
-	svc := &saveContext{}
+	svc := saveContext{}
 
 	defer func() {
 		log.Get(ctx).Debug().Int(
@@ -70,7 +70,7 @@ func Save(ctx context.Context, b *Buffer) {
 	err := db.Update(func(txn *badger.Txn) error {
 		svc.txn = txn
 		return b.Build(ctx, func(p Property, key string, ts uint64, sum *Sum) error {
-			return saveProperty(ctx, svc, ts, meta.prop(p), key, sum)
+			return saveProperty(ctx, &svc, ts, meta.prop(p), key, sum)
 		})
 	})
 	if err != nil {
