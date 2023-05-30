@@ -252,14 +252,14 @@ type computed struct {
 	done                                     func()
 }
 
-func (c *computed) Sum(sum *Sum) {
-	sum.BounceRate = uint32(math.Round(float64(c.bounce) / float64(c.signSum) * 100))
-	sum.Visits = uint32(c.signSum)
-	sum.Views = uint32(c.views)
-	sum.Events = uint32(c.events)
-	sum.Visitors = uint32(c.visitors)
-	sum.VisitDuration = uint32(math.Round(c.duration / float64(c.signSum)))
-	sum.ViewsPerVisit = uint32(math.Round(float64(c.views) / float64(c.signSum)))
+func (c *computed) sum(s *Sum) {
+	s.BounceRate = uint32(math.Round(float64(c.bounce) / float64(c.signSum) * 100))
+	s.Visits = uint32(c.signSum)
+	s.Views = uint32(c.views)
+	s.Events = uint32(c.events)
+	s.Visitors = uint32(c.visitors)
+	s.VisitDuration = uint32(math.Round(c.duration / float64(c.signSum)))
+	s.ViewsPerVisit = uint32(math.Round(float64(c.views) / float64(c.signSum)))
 }
 
 func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, ts uint64, sum *Sum) error) error {
@@ -334,10 +334,19 @@ func (m *MultiEntry) compute(
 			}
 			seg[key] = e
 		}
+		// When a new Event is received sign is set to 1, when an event is in the same
+		// session a new Event with updated details is created with sign 1 and a clone
+		// of the found Event is updated with sign -1. At any given time an Entry
+		// exists with up to date stats fro the session.
+		//
+		// This means we can correctly track different measurements depending on the
+		// Sign of the Entry
 		e.signSum += m.Sign[i]
+		var bounce int32
 		if m.IsBounce[i] {
-			e.bounce += m.Sign[i]
+			bounce = 1
 		}
+		e.bounce += bounce * m.Sign[i]
 		e.views += m.PageViews[i] * m.Sign[i]
 		e.events += m.Events[i] * m.Sign[i]
 		if !e.uniq(m.UserId[i]) {
@@ -347,7 +356,7 @@ func (m *MultiEntry) compute(
 	}
 	h := m.Hours[start]
 	for k, v := range seg {
-		v.Sum(&m.sum)
+		v.sum(&m.sum)
 		err := f(h, k, &m.sum)
 		if err != nil {
 			return err
