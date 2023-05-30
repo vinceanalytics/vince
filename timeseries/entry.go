@@ -19,9 +19,8 @@ type Entry struct {
 	Pathname               string
 	UtmSource              string
 	ReferrerSource         string
-	CountryCode            string
-	Subdivision1Code       string
-	Subdivision2Code       string
+	Country                string
+	Region                 string
 	TransferredFrom        string
 	UtmCampaign            string
 	OperatingSystem        string
@@ -100,17 +99,14 @@ func (s *Entry) Update(e *Entry) *Entry {
 	if e.Name == "pageview" {
 		ss.PageViews++
 	}
-	if ss.CountryCode == "" {
-		ss.CountryCode = e.CountryCode
+	if ss.Country == "" {
+		ss.Country = e.Country
 	}
 	if ss.City == "" {
 		ss.City = e.City
 	}
-	if ss.Subdivision1Code == "" {
-		ss.Subdivision1Code = e.Subdivision1Code
-	}
-	if ss.Subdivision2Code == "" {
-		ss.Subdivision2Code = e.Subdivision2Code
+	if ss.Region == "" {
+		ss.Region = e.Region
 	}
 	if ss.OperatingSystem == "" {
 		ss.OperatingSystem = e.OperatingSystem

@@ -121,7 +121,7 @@ type MultiEntry struct {
 	UtmSource              []string
 	ReferrerSource         []string
 	CountryCode            []string
-	Subdivision1Code       []string
+	Region                 []string
 	Subdivision2Code       []string
 	TransferredFrom        []string
 	UtmCampaign            []string
@@ -160,7 +160,7 @@ func (m *MultiEntry) Reset() {
 	m.UtmSource = m.UtmSource[:0]
 	m.ReferrerSource = m.ReferrerSource[:0]
 	m.CountryCode = m.CountryCode[:0]
-	m.Subdivision1Code = m.Subdivision1Code[:0]
+	m.Region = m.Region[:0]
 	m.Subdivision2Code = m.Subdivision2Code[:0]
 	m.TransferredFrom = m.TransferredFrom[:0]
 	m.UtmCampaign = m.UtmCampaign[:0]
@@ -195,9 +195,8 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.Pathname = append(m.Pathname, e.Pathname)
 	m.UtmSource = append(m.UtmSource, e.UtmSource)
 	m.ReferrerSource = append(m.ReferrerSource, e.ReferrerSource)
-	m.CountryCode = append(m.CountryCode, e.CountryCode)
-	m.Subdivision1Code = append(m.Subdivision1Code, e.Subdivision1Code)
-	m.Subdivision2Code = append(m.Subdivision2Code, e.Subdivision2Code)
+	m.CountryCode = append(m.CountryCode, e.Country)
+	m.Region = append(m.Region, e.Region)
 	m.TransferredFrom = append(m.TransferredFrom, e.TransferredFrom)
 	m.UtmCampaign = append(m.UtmCampaign, e.UtmCampaign)
 	m.OperatingSystem = append(m.OperatingSystem, e.OperatingSystem)
@@ -232,7 +231,7 @@ func (m *MultiEntry) Copy(e *MultiEntry) {
 	m.UtmSource = append(m.UtmSource, e.UtmSource...)
 	m.ReferrerSource = append(m.ReferrerSource, e.ReferrerSource...)
 	m.CountryCode = append(m.CountryCode, e.CountryCode...)
-	m.Subdivision1Code = append(m.Subdivision1Code, e.Subdivision1Code...)
+	m.Region = append(m.Region, e.Region...)
 	m.Subdivision2Code = append(m.Subdivision2Code, e.Subdivision2Code...)
 	m.TransferredFrom = append(m.TransferredFrom, e.TransferredFrom...)
 	m.UtmCampaign = append(m.UtmCampaign, e.UtmCampaign...)
@@ -520,7 +519,7 @@ func PickProp(p Property) func(m *MultiEntry, i int) (string, bool) {
 		}
 	case Region:
 		return func(m *MultiEntry, i int) (string, bool) {
-			key := m.Subdivision1Code[i]
+			key := m.Region[i]
 			if key == "" {
 				return "", false
 			}

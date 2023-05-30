@@ -15,7 +15,7 @@ import (
 
 //go:generate go run download/make_mmdb.go
 
-//go:embed dbip-country.mmdb
+//go:embed city.mmdb
 var data []byte
 
 var (
@@ -58,6 +58,21 @@ func Reader() *maxminddb.Reader {
 	return reader
 }
 
-func Lookup(ip net.IP) (*geoip2.City, error) {
-	return Get().City(ip)
+type Info struct {
+	City    string
+	Country string
+	Region  string
+}
+
+func Lookup(ip net.IP) Info {
+	x, err := Get().City(ip)
+	if err != nil {
+		// log error
+		return Info{}
+	}
+	return Info{
+		City:    x.City.Names["en"],
+		Country: x.Country.Names["en"],
+		Region:  x.Subdivisions[0].Names["en"],
+	}
 }

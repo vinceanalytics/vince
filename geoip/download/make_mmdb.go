@@ -11,7 +11,7 @@ import (
 )
 
 const dateFormat = "2006-01-02T15:04:05-0700"
-const urlFmt = "https://download.db-ip.com/free/dbip-country-lite-%s.mmdb.gz"
+const urlFmt = "https://download.db-ip.com/free/dbip-city-lite-%s.mmdb.gz"
 
 func main() {
 	now := time.Now()
@@ -43,7 +43,7 @@ func main() {
 	}
 	defer res.Body.Close()
 	if res.StatusCode == http.StatusOK {
-		f, err := os.Create("dbip-country.mmdb")
+		f, err := os.Create("city.mmdb")
 		if err != nil {
 			log.Fatal(err)
 		}

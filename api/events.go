@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gernest/vince/cities"
 	"github.com/gernest/vince/gate"
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/pkg/log"
@@ -155,42 +154,10 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	}
 	reqReferrer = cleanReferrer(reqReferrer)
 
-	var countryCode, subdivision1, subdivision2 string
-	var cityGeonameId uint
+	var city geoip.Info
 	if remoteIp != "" {
 		ip := net.ParseIP(remoteIp)
-		city, err := geoip.Lookup(ip)
-		if err == nil {
-			countryCode = city.Country.IsoCode
-			switch countryCode {
-			case
-				// Worldwide
-				"ZZ",
-				// Disputed territory
-				"XX",
-				// Tor exit node
-				"T1":
-				countryCode = ""
-			}
-			if countryCode != "" {
-				cityGeonameId = city.City.GeoNameID
-				if cityGeonameId != 0 {
-					cityGeonameId = cities.Get(cityGeonameId)
-				}
-			}
-			if len(city.Subdivisions) > 0 {
-				subdivision1 = city.Subdivisions[0].IsoCode
-				if subdivision1 != "" {
-					subdivision1 = countryCode + "-" + subdivision1
-				}
-			}
-			if len(city.Subdivisions) > 1 {
-				subdivision2 = city.Subdivisions[1].IsoCode
-				if subdivision2 != "" {
-					subdivision2 = countryCode + "-" + subdivision2
-				}
-			}
-		}
+		city = geoip.Lookup(ip)
 	}
 	var screenSize string
 	switch {
@@ -233,10 +200,9 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.BrowserVersion = agent.BrowserVersion
 		e.ReferrerSource = source
 		e.Referrer = reqReferrer
-		e.CountryCode = countryCode
-		e.Subdivision1Code = subdivision1
-		e.Subdivision2Code = subdivision2
-		e.City = timeseries.FindCity(ctx, uint32(cityGeonameId))
+		e.Country = city.Country
+		e.Region = city.Region
+		e.City = city.City
 		e.ScreenSize = screenSize
 		e.Timestamp = unix
 		e.Hours = hours
