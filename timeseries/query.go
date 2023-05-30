@@ -27,8 +27,8 @@ type QueryRequest struct {
 }
 
 type QueryResult struct {
-	ELapsed time.Duration
-	Result  []Result
+	ELapsed time.Duration `json:"elapsed"`
+	Result  []Result      `json:"result"`
 }
 
 type Match struct {
@@ -38,13 +38,13 @@ type Match struct {
 }
 
 type Value struct {
-	Timestamp uint64
-	Value     uint32
+	Timestamp uint64 `json:"timestamp"`
+	Value     uint32 `json:"value"`
 }
 
 type Result struct {
-	Metric Metric
-	Values map[string][]Value
+	Metric Metric             `json:"metric"`
+	Values map[string][]Value `json:"values"`
 }
 
 func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
