@@ -37,9 +37,11 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		timeseries.Query(ctx, timeseries.QueryRequest{
 			UserID: owner.ID,
 			SiteID: site.ID,
-			Range: timex.Range{
-				From: from,
-				To:   ts,
+			BaseQuery: timeseries.BaseQuery{
+				Range: timex.Range{
+					From: from,
+					To:   ts,
+				},
 			},
 		})
 

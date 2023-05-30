@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
-	"encoding/json"
 	"regexp"
 	"time"
 
@@ -14,51 +13,38 @@ import (
 	"github.com/gernest/vince/system"
 )
 
+type BaseQuery struct {
+	Range    timex.Range `json:"range"`
+	Metrics  []Metric    `json:"metrics"`
+	Property Property    `json:"prop"`
+	Match    Match       `json:"match"`
+}
+
 type QueryRequest struct {
-	UserID   uint64
-	SiteID   uint64
-	Range    timex.Range
-	Metrics  []Metric
-	Property map[Property]*Match
+	UserID uint64
+	SiteID uint64
+	BaseQuery
 }
 
 type QueryResult struct {
 	ELapsed time.Duration
-	Result  PropResult
+	Result  []Result
 }
 
 type Match struct {
-	Text string
-	IsRe bool
-	re   *regexp.Regexp
+	Text string         `json:"text"`
+	IsRe bool           `json:"isRe"`
+	Re   *regexp.Regexp `json:"-"`
 }
-
-// AggregateResult is a map of AggregateType to the value it represent.
-type AggregateResult map[Metric][]Value
 
 type Value struct {
 	Timestamp uint64
 	Value     uint32
 }
 
-type PropResult map[Property]PropValues
-
-type PropValues map[string]AggregateResult
-
-func (a AggregateResult) MarshalJSON() ([]byte, error) {
-	o := make(map[string][]Value)
-	for k, v := range a {
-		o[k.String()] = v
-	}
-	return json.Marshal(o)
-}
-
-func (a PropResult) MarshalJSON() ([]byte, error) {
-	o := make(map[string]PropValues)
-	for k, v := range a {
-		o[k.String()] = v
-	}
-	return json.Marshal(o)
+type Result struct {
+	Metric Metric
+	Values map[string][]Value
 }
 
 func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
@@ -78,8 +64,8 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 		result.ELapsed = time.Since(start)
 		system.QueryDuration.Observe(result.ELapsed.Seconds())
 	}()
-	m.uid(r.UserID, r.SiteID)
-	if len(r.Property) == 0 || len(r.Metrics) == 0 {
+	m.uid(r.UserID, r.SiteID).prop(r.Property)
+	if len(r.Metrics) == 0 {
 		return
 	}
 	b := smallBufferpool.Get().(*bytes.Buffer)
@@ -87,7 +73,6 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 		b.Reset()
 		smallBufferpool.Put(b)
 	}()
-	result.Result = make(PropResult)
 	o := badger.DefaultIteratorOptions
 	if !r.Range.From.IsZero() {
 		o.SinceTs = startTS
@@ -96,54 +81,50 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	o.Prefix = m[:metricOffset]
 	it := txn.NewIterator(o)
 	defer it.Close()
-
-	for p, match := range r.Property {
-		values := make(PropValues)
+	for _, metric := range r.Metrics {
+		values := make(map[string][]Value)
 		for _, metric := range r.Metrics {
 			b.Reset()
-			m.prop(p).metric(metric)
-			if !match.IsRe {
-				var text string
-				if !match.IsRe {
-					text = match.Text
+			m.metric(metric)
+			var text string
+			if !r.Match.IsRe {
+				text = r.Match.Text
+			}
+			// /user_id/site_id/metric/prop/text/
+			prefix := m.idx(b, text).Bytes()
+			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+				x := it.Item()
+				if endTS != 0 && x.Version() > endTS {
+					// We have reached the end of iteration. Range actually
+					// reflects on the version we are interested in.
+					break
 				}
-				// /user_id/site_id/metric/prop/text/
-				prefix := m.idx(b, text).Bytes()
-				for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-					x := it.Item()
-					if endTS != 0 && x.Version() > endTS {
-						// We have reached the end of iteration. Range actually
-						// reflects on the version we are interested in.
-						break
-					}
-					kb := x.Key()
+				kb := x.Key()
 
-					// last 6 bytes of the key are for the timestamp
-					ts := kb[len(kb)-6:]
-					// text comes before the timestamp
-					txt := kb[keyOffset : len(kb)-6]
-					if match.IsRe && !match.re.Match(txt) {
-						continue
-					}
-					xv, ok := values[string(txt)]
-					if !ok {
-						xv = make(AggregateResult)
-						values[string(txt)] = xv
-					}
-					err := x.Value(func(val []byte) error {
-						xv[metric] = append(xv[metric], Value{
-							Timestamp: Time(ts),
-							Value:     binary.BigEndian.Uint32(val),
-						})
-						return nil
+				// last 6 bytes of the key are for the timestamp
+				ts := kb[len(kb)-6:]
+				// text comes before the timestamp
+				txt := kb[keyOffset : len(kb)-6]
+				if r.Match.IsRe && !r.Match.Re.Match(txt) {
+					continue
+				}
+				err := x.Value(func(val []byte) error {
+					values[string(txt)] = append(values[string(txt)], Value{
+						Timestamp: Time(ts),
+						Value:     binary.BigEndian.Uint32(val),
 					})
-					if err != nil {
-						log.Get(ctx).Err(err).Msg("failed to read value from kv store")
-					}
+					return nil
+				})
+				if err != nil {
+					log.Get(ctx).Err(err).Msg("failed to read value from kv store")
 				}
 			}
+
 		}
-		result.Result[p] = values
+		result.Result = append(result.Result, Result{
+			Metric: metric,
+			Values: values,
+		})
 	}
 	return
 }

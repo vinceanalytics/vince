@@ -33,9 +33,10 @@ func (id *Key) prop(p Property) *Key {
 	return id
 }
 
-func (id *Key) uid(u, s uint64) {
+func (id *Key) uid(u, s uint64) *Key {
 	binary.BigEndian.PutUint64(id[userOffset:], u)
 	binary.BigEndian.PutUint64(id[siteOffset:], s)
+	return id
 }
 
 func setTs(b []byte, ms uint64) {

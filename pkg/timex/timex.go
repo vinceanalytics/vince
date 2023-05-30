@@ -13,7 +13,8 @@ import (
 )
 
 type Range struct {
-	From, To time.Time
+	From time.Time `json:"from"`
+	To   time.Time `json:"to"`
 }
 
 const HumanDate = "Jan 02, 2006"

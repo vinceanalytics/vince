@@ -15,6 +15,7 @@ import (
 	"github.com/gernest/vince/share"
 	"github.com/gernest/vince/site"
 	"github.com/gernest/vince/sites"
+	"github.com/gernest/vince/stats"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -23,6 +24,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	pipe1 := plug.Pipeline{plug.Firewall(ctx), plug.AuthorizeSiteAPI}
 	pipe2 := plug.SharedLink()
 	pipe4 := plug.API(ctx)
+	pipe6 := plug.InternalStatsAPI()
 	browser := plug.Browser(ctx)
 	pipe5 := append(plug.Browser(ctx), plug.Protect()...)
 	sitePipe := pipe5.And(plug.RequireAccount, plug.AuthorizedSiteAccess("owner", "admin", "super_admin"))
@@ -32,6 +34,12 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		plug.Ok(config.Get(ctx).EnableProfile,
 			pipe5.Prefix("/debug/pprof/", pprof.Index),
 		),
+
+		plug.PREFIX("/api/stats",
+			pipe6.GET("/api/stats/:website", stats.Query),
+			NotFound,
+		),
+
 		plug.PREFIX("/api/v1/sites",
 			pipe1.PathPOST("/api/v1/sites", sites.CreateSite),
 			pipe1.PathGET("/api/v1/sites", sites.ListSites),
@@ -124,7 +132,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.PUT(`^/:website/settings$`, site.UpdateSettings),
 		sitePipe.POST(`^/:website/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:website/stats$`, site.ResetStats),
-
 		sitePipe.GET(`^/:domain/stats$`, site.Stats),
 		NotFound,
 	}

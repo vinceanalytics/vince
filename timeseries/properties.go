@@ -85,13 +85,18 @@ func (p Property) String() string {
 }
 
 func (p Property) MarshalJSON() ([]byte, error) {
-	return []byte(p.String()), nil
+	return json.Marshal(p.String())
 }
 
 func (p *Property) UnmarshalJSON(b []byte) error {
-	v, ok := _prop_value[string(b)]
+	var s string
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return err
+	}
+	v, ok := _prop_value[s]
 	if !ok {
-		return fmt.Errorf("unknown property value %q", string(b))
+		return fmt.Errorf("unknown property value %q", s)
 	}
 	*p = Property(v)
 	return nil
@@ -139,13 +144,18 @@ func (m Metric) String() string {
 }
 
 func (m Metric) MarshalJSON() ([]byte, error) {
-	return []byte(m.String()), nil
+	return json.Marshal(m.String())
 }
 
 func (m *Metric) UnmarshalJSON(b []byte) error {
-	v, ok := _metric_value[string(b)]
+	var s string
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return err
+	}
+	v, ok := _metric_value[s]
 	if !ok {
-		return fmt.Errorf("unknown metric value %q", string(b))
+		return fmt.Errorf("unknown metric value %q", s)
 	}
 	*m = Metric(v)
 	return nil
