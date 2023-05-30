@@ -1,87 +1,79 @@
 
 
-export interface Alert {
-    readonly domain: string;
-    query(): Range;
-    alert(data: Data): void;
-};
+// Register alert function exec for domain. exec will be called after each
+// interval.
+//
+// Note that exec can't exceed one minute, it will be automatically cancelled. Alert
+// functions are only for logic actual processing happens async on wrapper around
+// VINCE object.
+export function register(domain: string, interval: string, exec: () => void): void {
+    // @ts-ignore
+    VINCE.Register(domain, interval, interval, exec);
+}
+
+
+export type Property =
+    | "base"
+    | "event"
+    | "page"
+    | "entryPage"
+    | "exitPage"
+    | "referrer"
+    | "UtmMedium"
+    | "UtmSource"
+    | "UtmCampaign"
+    | "UtmContent"
+    | "UtmTerm"
+    | "UtmDevice"
+    | "UtmBrowser"
+    | "browserVersion"
+    | "os"
+    | "osVersion"
+    | "country"
+    | "region"
+    | "city";
+
+export type Metric =
+    | "visitors"
+    | "views"
+    | "events"
+    | "visits"
+    | "bounceRate"
+    | "visitDuration"
+    | "viewsPerVisit";
+
+export interface Query {
+    range: Range;
+    metrics: Metric[];
+    prop: Property;
+    match: Match;
+}
 
 export interface Range {
-    start: Date,
-    end: Date,
-};
-
-export interface Data {
-    timestamps?: number[];
-    all?: Aggregate;
-    Event?: EntryMap;
-    page?: EntryMap;
-    entryPage?: EntryMap;
-    exitPage?: EntryMap;
-    referrer?: EntryMap;
-    utmMedium?: EntryMap;
-    utmSource?: EntryMap;
-    utmCampaign?: EntryMap;
-    utmContent?: EntryMap;
-    utmTerm?: EntryMap;
-    utmDevice?: EntryMap;
-    utmBrowser?: EntryMap;
-    utmBrowserVersion?: EntryMap;
-    os?: EntryMap;
-    osVersion?: EntryMap;
-    country?: EntryMap;
-    region?: EntryMap;
-    city?: EntryMap;
+    from: Date;
+    to: Date;
 }
 
-export interface EntryMap {
-    entries?: Entries;
-    sum?: Summary;
-    percent?: Summary,
+export interface Match {
+    text: string;
+    isRe: boolean;
 }
 
-export interface Entries {
-    [key: string]: AggregateEntry;
+export interface QueryResult {
+    elapsed: string;
+    result: Result[];
 }
 
-export interface Summary {
-    visitors?: Item[];
-    views?: Item[];
-    events?: Item[];
-    visits?: Item[];
-    bounceRate?: Item[];
-    visitDuration?: Item[];
-    viewsPerVisit?: Item[];
+export interface Result {
+    metric: Metric;
+    values: Values;
 }
 
-export interface Item {
-    key: string;
-    value: string;
+export interface Values {
+    [key: string]: Value[]
 }
 
-export interface AggregateEntry {
-    aggregate: Aggregate,
-}
-
-export interface Aggregate {
-    visitors?: Entry;
-    views?: Entry;
-    events?: Entry;
-    visits?: Entry;
-    bounceRate?: Entry;
-    visitDuration?: Entry;
-    viewsPerVisit?: Entry;
-}
-
-export interface Entry {
-    sum: number;
-    values: number[];
-}
-
-
-
-
-export function register(alert: Alert) {
-    // @ts-ignore
-    VINCE.Register(alert.domain, alert);
+export interface Value {
+    timestamp: number;
+    value: number;
 }
