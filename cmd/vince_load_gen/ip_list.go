@@ -4,10 +4,10 @@ import (
 	"bytes"
 	_ "embed"
 	"encoding/json"
+	"math/rand"
 	"sync"
 
 	"github.com/klauspost/compress/zstd"
-	"golang.org/x/exp/rand"
 )
 
 //go:embed ip_list.zstd
@@ -17,6 +17,7 @@ var ipList []string
 var ipOnce sync.Once
 
 func GetIP() string {
+
 	ipOnce.Do(func() {
 		r, err := zstd.NewReader(bytes.NewReader(ipListFile))
 		if err != nil {

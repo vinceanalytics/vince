@@ -70,9 +70,13 @@ func Lookup(ip net.IP) Info {
 		// log error
 		return Info{}
 	}
+	var region string
+	if len(x.Subdivisions) > 0 {
+		region = x.Subdivisions[0].Names["en"]
+	}
 	return Info{
 		City:    x.City.Names["en"],
 		Country: x.Country.Names["en"],
-		Region:  x.Subdivisions[0].Names["en"],
+		Region:  region,
 	}
 }
