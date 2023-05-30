@@ -14,7 +14,7 @@ import (
 func Query(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := models.GetSite(ctx)
-	u := models.GetUser(ctx)
+	u := models.SiteOwner(ctx, site.ID)
 	var base timeseries.BaseQuery
 	err := json.NewDecoder(r.Body).Decode(&base)
 	if err != nil {
