@@ -8,7 +8,7 @@
 // VINCE object.
 export function register(domain: string, interval: string, exec: () => void): void {
     // @ts-ignore
-    VINCE.Register(domain, interval, interval, exec);
+    VINCE.Register(domain, interval, exec);
 }
 
 
