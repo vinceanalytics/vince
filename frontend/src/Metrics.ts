@@ -50,8 +50,15 @@ class MetricValueElement extends HTMLElement {
             m.classList.remove("navigation-focus")
         })
         const a = e.target as HTMLElement;
-        a.classList.add("navigation-focus");
-        a.dispatchEvent(new CustomEvent("change"))
+        if (a.classList.contains("Box-row--focus-blue")) {
+            a.classList.add("navigation-focus");
+            a.dispatchEvent(new CustomEvent("change"))
+        } else {
+            // child elements were clicked
+            const p = a.parentElement!
+            p.classList.add("navigation-focus");
+            p.dispatchEvent(new CustomEvent("change"))
+        }
     }
 }
 
