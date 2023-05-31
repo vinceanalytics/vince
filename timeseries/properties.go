@@ -108,13 +108,13 @@ var _ json.Marshaler = (*Metric)(nil)
 var _ json.Unmarshaler = (*Metric)(nil)
 
 const (
-	Visitors      Metric = 0
-	Views         Metric = 1
-	Events        Metric = 2
-	Visits        Metric = 3
-	BounceRate    Metric = 4
-	VisitDuration Metric = 5
-	ViewsPerVisit Metric = 6
+	Visitors       Metric = 0
+	Views          Metric = 1
+	Events         Metric = 2
+	Visits         Metric = 3
+	BounceRates    Metric = 4
+	VisitDurations Metric = 5
+	ViewsPerVisits Metric = 6
 )
 
 // Enum value maps for Metric.
@@ -124,18 +124,18 @@ var (
 		1: "views",
 		2: "events",
 		3: "visits",
-		4: "bounceRate",
-		5: "visitDuration",
-		6: "viewsPerVisit",
+		4: "bounceRates",
+		5: "visitDurations",
+		6: "viewsPerVisits",
 	}
 	_metric_value = map[string]uint8{
-		"visitors":      0,
-		"views":         1,
-		"events":        2,
-		"visits":        3,
-		"bounceRate":    4,
-		"visitDuration": 5,
-		"viewsPerVisit": 6,
+		"visitors":       0,
+		"views":          1,
+		"events":         2,
+		"visits":         3,
+		"bounceRates":    4,
+		"visitDurations": 5,
+		"viewsPerVisits": 6,
 	}
 )
 

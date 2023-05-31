@@ -38,9 +38,9 @@ export type Metric =
     | "views"
     | "events"
     | "visits"
-    | "bounceRate"
-    | "visitDuration"
-    | "viewsPerVisit";
+    | "bounceRates"
+    | "visitDurations"
+    | "viewsPerVisits";
 
 export interface Query {
     range: Range;

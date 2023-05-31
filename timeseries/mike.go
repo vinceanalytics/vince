@@ -87,9 +87,9 @@ func saveProperty(ctx context.Context,
 		savePropertyKey(ctx, svc, m.metric(Views).key(ts, text, svc.ls), a.Views),
 		savePropertyKey(ctx, svc, m.metric(Events).key(ts, text, svc.ls), a.Events),
 		savePropertyKey(ctx, svc, m.metric(Visits).key(ts, text, svc.ls), a.Visits),
-		savePropertyKey(ctx, svc, m.metric(BounceRate).key(ts, text, svc.ls), a.BounceRate),
-		savePropertyKey(ctx, svc, m.metric(VisitDuration).key(ts, text, svc.ls), a.VisitDuration),
-		savePropertyKey(ctx, svc, m.metric(ViewsPerVisit).key(ts, text, svc.ls), a.ViewsPerVisit),
+		savePropertyKey(ctx, svc, m.metric(BounceRates).key(ts, text, svc.ls), a.BounceRate),
+		savePropertyKey(ctx, svc, m.metric(VisitDurations).key(ts, text, svc.ls), a.VisitDuration),
+		savePropertyKey(ctx, svc, m.metric(ViewsPerVisits).key(ts, text, svc.ls), a.ViewsPerVisit),
 	)
 }
 

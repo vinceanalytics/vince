@@ -51,51 +51,72 @@
         <div class="d-flex">
             <div class="col-2">
                 <div class="Box text-center">
-                    <div class="Box-row Box-row--focus-blue">
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="Link Link--muted" data-targets="vince-stats.metrics"
-                            data-action="click:vince-stats#changeMetrics">
-                            Unique Visitors
-                        </span>
-                    </div>
-                    <div class="Box-row Box-row--focus-blue">
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="Link Link--muted" data-targets="vince-stats.metrics"
-                            data-action="click:vince-stats#changeMetrics">
-                            Page Views
-                        </span>
-                    </div>
-                    <div class="Box-row Box-row--focus-blue">
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="Link Link--muted" data-targets="vince-stats.metrics"
-                            data-action="click:vince-stats#changeMetrics">
-                            Unique Sessions
-                        </span>
-                    </div>
-                    <div class="Box-row Box-row--focus-blue">
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="Link Link--muted" data-targets="vince-stats.metrics"
-                            data-action="click:vince-stats#changeMetrics">
-                            Bounce Rate
-                        </span>
-                    </div>
-                    <div class="Box-row Box-row--focus-blue">
-                        <span class="d-block h4 color-fg-default">
-                            0
-                        </span>
-                        <span class="Link Link--muted" data-targets="vince-stats.metrics"
-                            data-action="click:vince-stats#changeMetrics">
-                            Session Duration
-                        </span>
-                    </div>
+                    <metric-value>
+                        <div id="visitors" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
+                            data-action="click:metric-value#selectMetric">
+                            <span class="d-block h4 color-fg-default" data-target="metric-value.visitor">
+                                0
+                            </span>
+                            <span class="Link Link--muted">
+                                Unique Visitors
+                            </span>
+                        </div>
+                        <div id="views" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
+                            data-action="click:metric-value#selectMetric">
+                            <span class="d-block h4 color-fg-default" data-target="metric-value.view">
+                                0
+                            </span>
+                            <span class="Link Link--muted">
+                                Page Views
+                            </span>
+                        </div>
+                        <div id="visits" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
+                            data-action="click:metric-value#selectMetric">
+                            <span class="d-block h4 color-fg-default" data-target="metric-value.visit">
+                                0
+                            </span>
+                            <span class="Link Link--muted">
+                                Unique Sessions
+                            </span>
+                        </div>
+                        <div id="events" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
+                            data-action="click:metric-value#selectMetric">
+                            <span class="d-block h4 color-fg-default" data-target="metric-value.event">
+                                0
+                            </span>
+                            <span class="Link Link--muted">
+                                Events
+                            </span>
+                        </div>
+                        <div id="bounceRates" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
+                            data-action="click:metric-value#selectMetric">
+                            <span class="d-block h4 color-fg-default" data-target="metric-value.bounceRate">
+                                0
+                            </span>
+                            <span class="Link Link--muted">
+                                Bounce Rates
+                            </span>
+                        </div>
+                        <div id="visitDurations" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
+                            data-action="click:metric-value#selectMetric">
+                            <span class="d-block h4 color-fg-default" data-target="metric-value.visitDuration">
+                                0
+                            </span>
+                            <span class="Link Link--muted">
+                                Session Duration
+                            </span>
+                        </div>
+                        <div id="viewsPerVisits" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
+                            data-action="click:metric-value#selectMetric">
+                            <span class="d-block h4 color-fg-default" data-target="metric-value.viewsPerVisits">
+                                0
+                            </span>
+                            <span class="Link Link--muted">
+                                Views Per Session
+                            </span>
+                        </div>
+                    </metric-value>
+
                 </div>
             </div>
             <div class="col-9">
