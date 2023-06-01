@@ -9,7 +9,6 @@ class MetricValueElement extends HTMLElement {
     @attr visits = 0;
     @attr bounceRates = 0;
     @attr visitDurations = 0;
-    @attr viewsPerVisits = 0;
 
     @target visitor: HTMLElement;
     @target view: HTMLElement;
@@ -17,7 +16,6 @@ class MetricValueElement extends HTMLElement {
     @target visit: HTMLElement;
     @target bounceRate: HTMLElement;
     @target visitDuration: HTMLElement;
-    @target viewsPerVisit: HTMLElement;
 
     @targets items: HTMLElement[];
 
@@ -39,9 +37,6 @@ class MetricValueElement extends HTMLElement {
         }
         if (this.visitDuration) {
             this.visitDuration.textContent = `${this.visitDurations}`
-        }
-        if (this.viewsPerVisit) {
-            this.viewsPerVisit.textContent = `${this.viewsPerVisits}`
         }
     }
 

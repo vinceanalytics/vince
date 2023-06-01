@@ -1,7 +1,6 @@
 package timeseries
 
 import (
-	"math"
 	"sync"
 	"time"
 
@@ -34,7 +33,7 @@ type Entry struct {
 	UserId                 uint64
 	SessionId              uint64
 	Timestamp              int64
-	Duration               float64
+	Duration               time.Duration
 	Start                  int64
 	City                   string
 	PageViews              int32
@@ -94,7 +93,7 @@ func (s *Entry) Update(e *Entry) *Entry {
 	ss.Timestamp = e.Timestamp
 	ss.ExitPage = e.Pathname
 	ss.IsBounce = false
-	ss.Duration = math.Abs(time.Unix(e.Timestamp, 0).Sub(time.Unix(ss.Start, 0)).Seconds())
+	ss.Duration = time.Unix(e.Timestamp, 0).Sub(time.Unix(ss.Start, 0))
 	if e.Name == "pageview" {
 		ss.PageViews++
 	}

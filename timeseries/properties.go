@@ -114,7 +114,6 @@ const (
 	Visits         Metric = 3
 	BounceRates    Metric = 4
 	VisitDurations Metric = 5
-	ViewsPerVisits Metric = 6
 )
 
 // Enum value maps for Metric.
@@ -126,7 +125,6 @@ var (
 		3: "visits",
 		4: "bounceRates",
 		5: "visitDurations",
-		6: "viewsPerVisits",
 	}
 	_metric_value = map[string]uint8{
 		"visitors":       0,
@@ -135,7 +133,6 @@ var (
 		"visits":         3,
 		"bounceRates":    4,
 		"visitDurations": 5,
-		"viewsPerVisits": 6,
 	}
 )
 

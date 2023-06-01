@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
+	"math"
 	"sync"
 	"time"
 
@@ -14,13 +15,12 @@ import (
 )
 
 type Sum struct {
-	Visitors      uint32
-	Views         uint32
-	Events        uint32
-	Visits        uint32
-	BounceRate    uint32
-	VisitDuration uint32
-	ViewsPerVisit uint32
+	Visitors      float64
+	Views         float64
+	Events        float64
+	Visits        float64
+	BounceRate    float64
+	VisitDuration float64
 }
 
 func DropSite(ctx context.Context, uid, sid uint64) {
@@ -91,7 +91,6 @@ func saveProperty(ctx context.Context,
 		savePropertyKey(ctx, svc, m.metric(Visits).key(ts, text, svc.ls), a.Visits),
 		savePropertyKey(ctx, svc, m.metric(BounceRates).key(ts, text, svc.ls), a.BounceRate),
 		savePropertyKey(ctx, svc, m.metric(VisitDurations).key(ts, text, svc.ls), a.VisitDuration),
-		savePropertyKey(ctx, svc, m.metric(ViewsPerVisits).key(ts, text, svc.ls), a.ViewsPerVisit),
 	)
 }
 
@@ -152,7 +151,7 @@ var smallBufferpool = &sync.Pool{
 //
 // TODO:(gernest) In theory it must be a good approach however, benchmarks must
 // support this. Is an extra copy better than extra allocation in this scenario ?
-var base [4]byte
+var base [8]byte
 
 // saves mike to the badger key value store. For existing keys a is added to the
 // existing value and the updated value is stored.
@@ -162,12 +161,12 @@ var base [4]byte
 // transaction that called this function. These buffers are not freed, it is the
 // caller's responsibility to ensure svc.ls.Release() is called, which must be
 // outside the transaction svc.txn (meaning after svc.txn.Commit())
-func savePropertyKey(ctx context.Context, svc *saveContext, mike *bytes.Buffer, a uint32) error {
+func savePropertyKey(ctx context.Context, svc *saveContext, mike *bytes.Buffer, a float64) error {
 	svc.keys++
 	key := mike.Bytes()
 	b := svc.ls.Get()
 	b.Write(base[:])
-	value := b.Next(4)
-	binary.BigEndian.PutUint32(value, a)
+	value := b.Next(8)
+	binary.BigEndian.PutUint64(value, math.Float64bits(a))
 	return svc.txn.Set(key, value)
 }

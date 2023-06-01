@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"math"
 	"strconv"
 	"sync"
 	"time"
@@ -136,7 +135,7 @@ type MultiEntry struct {
 	UserId                 []uint64
 	SessionId              []uint64
 	Timestamp              []int64
-	Duration               []float64
+	Duration               []time.Duration
 	Start                  []int64
 	City                   []string
 	PageViews              []int32
@@ -218,20 +217,9 @@ func (m *MultiEntry) append(e *Entry) {
 }
 
 type computed struct {
-	signSum, bounce, views, events, visitors int32
-	duration                                 float64
-	uniq                                     func(uint64) bool
-	done                                     func()
-}
-
-func (c *computed) sum(s *Sum) {
-	s.BounceRate = uint32(math.Round(float64(c.bounce) / float64(c.signSum) * 100))
-	s.Visits = uint32(c.signSum)
-	s.Views = uint32(c.views)
-	s.Events = uint32(c.events)
-	s.Visitors = uint32(c.visitors)
-	s.VisitDuration = uint32(math.Round(c.duration / float64(c.signSum)))
-	s.ViewsPerVisit = uint32(math.Round(float64(c.views) / float64(c.signSum)))
+	Sum
+	uniq func(uint64) bool
+	done func()
 }
 
 func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, sum *Sum) error) error {
@@ -309,22 +297,21 @@ func (m *MultiEntry) compute(
 		//
 		// This means we can correctly track different measurements depending on the
 		// Sign of the Entry
-		e.signSum += m.Sign[i]
+		e.Visits += float64(m.Sign[i])
 		var bounce int32
 		if m.IsBounce[i] {
 			bounce = 1
 		}
-		e.bounce += bounce * m.Sign[i]
-		e.views += m.PageViews[i] * m.Sign[i]
-		e.events += m.Events[i] * m.Sign[i]
+		e.BounceRate += float64(bounce * m.Sign[i])
+		e.Views += float64(m.PageViews[i] * m.Sign[i])
+		e.Events += float64(m.Events[i] * m.Sign[i])
 		if !e.uniq(m.UserId[i]) {
-			e.visitors += 1
+			e.Visitors += 1
 		}
-		e.duration += m.Duration[i] * float64(m.Sign[i])
+		e.VisitDuration += float64(m.Duration[i] * time.Duration(m.Sign[i]))
 	}
 	for k, v := range seg {
-		v.sum(&m.sum)
-		err := f(k, &m.sum)
+		err := f(k, &v.Sum)
 		if err != nil {
 			return err
 		}
