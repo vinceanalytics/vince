@@ -293,7 +293,7 @@ type SharedLink = schema.SharedLink
 func CreateSharedLink(ctx context.Context, sid uint64, name, password string) *SharedLink {
 	id, err := gonanoid.New()
 	if err != nil {
-		log.Get(ctx).Fatal().Err(err).
+		log.Get().Fatal().Err(err).
 			Msg("failed to create id for shared link")
 	}
 	shared := &SharedLink{
@@ -304,14 +304,14 @@ func CreateSharedLink(ctx context.Context, sid uint64, name, password string) *S
 	if password != "" {
 		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
-			log.Get(ctx).Fatal().Err(err).
+			log.Get().Fatal().Err(err).
 				Msg("failed to create id for hash shared password")
 		}
 		shared.PasswordHash = string(b)
 	}
 	err = Get(ctx).Create(shared).Error
 	if err != nil {
-		log.Get(ctx).Err(err).
+		log.Get().Err(err).
 			Msg("failed to create shared link")
 		return nil
 	}
@@ -322,7 +322,7 @@ func UpdateSharedLink(ctx context.Context, shared *SharedLink, name, password st
 	if password != "" {
 		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
-			log.Get(ctx).Fatal().Err(err).
+			log.Get().Fatal().Err(err).
 				Msg("failed to create id for hash shared password")
 		}
 		shared.PasswordHash = string(b)
@@ -332,7 +332,7 @@ func UpdateSharedLink(ctx context.Context, shared *SharedLink, name, password st
 	}
 	err := Get(ctx).Save(shared).Error
 	if err != nil {
-		log.Get(ctx).Err(err).
+		log.Get().Err(err).
 			Msg("failed to create shared link")
 	}
 }
@@ -454,7 +454,7 @@ func Goals(ctx context.Context, domain string) (o []*Goal) {
 func DeleteGoal(ctx context.Context, gid, domain string) bool {
 	id, err := strconv.ParseUint(gid, 10, 64)
 	if err != nil {
-		log.Get(ctx).Err(err).
+		log.Get().Err(err).
 			Str("domain", domain).
 			Str("id", gid).Msg("failed parsing goal id")
 		return false

@@ -42,7 +42,7 @@ func Favicon(klient Client) Plug {
 				req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain.(string)), nil)
 				res, err := klient.Do(req)
 				if err != nil {
-					log.Get(r.Context()).Err(err).Str("domain", domain.(string)).
+					log.Get().Err(err).Str("domain", domain.(string)).
 						Msg("failed getting icon from duckduckgo")
 					placeholder(w)
 					return

@@ -29,7 +29,6 @@ import (
 	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/userid"
 	"github.com/gernest/vince/worker"
-	"github.com/rs/zerolog"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -40,20 +39,6 @@ func Serve(o *config.Options) error {
 	}
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	// make sure we create log path
-	logPath := filepath.Join(o.DataPath, "logs")
-	os.MkdirAll(logPath, 0755)
-	ll, _ := zerolog.ParseLevel(o.LogLevel)
-	xlg := zerolog.New(os.Stderr).Level(zerolog.Level(ll)).With().
-		Timestamp().Str("env", o.Env).Logger()
-	ctx = xlg.WithContext(ctx)
-	if _, err = os.Stat(o.DataPath); err != nil && os.IsNotExist(err) {
-		err = os.MkdirAll(o.DataPath, 0755)
-		if err != nil {
-			return err
-		}
-	}
 	return HTTP(ctx, o)
 }
 
@@ -158,7 +143,7 @@ func HTTP(ctx context.Context, o *config.Options) error {
 	ctx = models.Set(ctx, sqlDb)
 
 	if o.Bootstrap.Enabled {
-		log.Get(ctx).Debug().Msg("bootstrapping user")
+		log.Get().Debug().Msg("bootstrapping user")
 		if o.Bootstrap.Name == "" ||
 			o.Bootstrap.Email == "" ||
 			o.Bootstrap.Password == "" ||
@@ -170,14 +155,14 @@ func HTTP(ctx context.Context, o *config.Options) error {
 		)
 	}
 	if o.Alerts.Enabled {
-		log.Get(ctx).Debug().Msg("setup alerts")
+		log.Get().Debug().Msg("setup alerts")
 		ctx = alerts.Setup(ctx, o)
 	}
 	if o.EnableEmail {
-		log.Get(ctx).Debug().Msg("setup mailer")
+		log.Get().Debug().Msg("setup mailer")
 		mailer, err := email.FromConfig(o)
 		if err != nil {
-			log.Get(ctx).Err(err).Msg("failed creating mailer")
+			log.Get().Err(err).Msg("failed creating mailer")
 			resources.Close()
 			return err
 		}
@@ -192,7 +177,7 @@ func HTTP(ctx context.Context, o *config.Options) error {
 	resources = append(resources, ts)
 	ctx, err = caches.Open(ctx)
 	if err != nil {
-		log.Get(ctx).Err(err).Msg("failed to open caches")
+		log.Get().Err(err).Msg("failed to open caches")
 		resources.Close()
 		return err
 	}
@@ -227,18 +212,18 @@ func HTTP(ctx context.Context, o *config.Options) error {
 	g.Go(func() error {
 		// Ensure we close the server.
 		<-ctx.Done()
-		log.Get(ctx).Debug().Msg("shutting down gracefully ")
+		log.Get().Debug().Msg("shutting down gracefully ")
 		return resources.Close()
 	})
-	log.Get(ctx).Debug().Str("address", httpListener.Addr().String()).Msg("started serving  http traffic")
+	log.Get().Debug().Str("address", httpListener.Addr().String()).Msg("started serving  http traffic")
 	if httpsListener != nil {
-		log.Get(ctx).Debug().Str("address", httpsListener.Addr().String()).Msg("started serving  https traffic")
+		log.Get().Debug().Str("address", httpsListener.Addr().String()).Msg("started serving  https traffic")
 	}
 	g.Go(func() error {
 		abort := make(chan os.Signal, 1)
 		signal.Notify(abort, os.Interrupt)
 		sig := <-abort
-		log.Get(ctx).Info().Msgf("received signal %s shutting down the server", sig)
+		log.Get().Info().Msgf("received signal %s shutting down the server", sig)
 		cancel()
 		return nil
 	})

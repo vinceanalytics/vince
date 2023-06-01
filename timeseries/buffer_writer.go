@@ -279,7 +279,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, t
 	defer func() {
 		err := txn.Commit()
 		if err != nil {
-			log.Get(ctx).Err(err).Msg("failed to commit transaction for unique index")
+			log.Get().Err(err).Msg("failed to commit transaction for unique index")
 		}
 		txn.Discard()
 		mls.Release()
@@ -462,7 +462,7 @@ func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) 
 					b.Write(buf)
 					txn.Set(b.Bytes(), []byte{})
 				} else {
-					log.Get(ctx).Err(err).Msg("failed to get key from unique index")
+					log.Get().Err(err).Msg("failed to get key from unique index")
 				}
 				return false
 			}

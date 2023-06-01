@@ -105,7 +105,7 @@ func (s Session) Load(r *http.Request) (*SessionContext, *http.Request) {
 	if g := s.Get(r.Context(), cookie.Value); g != nil {
 		err := json.Unmarshal(g, &rs.Data)
 		if err != nil {
-			log.Get(r.Context()).Err(err).Msg("failed to decode session value")
+			log.Get().Err(err).Msg("failed to decode session value")
 		}
 	}
 	return rs, r
@@ -168,7 +168,7 @@ func SaveCaptcha(w http.ResponseWriter, r *http.Request) *http.Request {
 	img.WriteTo(&b)
 	data, err := dataurl.Encode(b.Bytes(), dataurl.WithBase64Encoding(true), dataurl.WithMediaType("image/png"))
 	if err != nil {
-		log.Get(r.Context()).Err(err).Msg("failed to encode captcha image")
+		log.Get().Err(err).Msg("failed to encode captcha image")
 		return r
 	}
 	session.Data.Captcha = formatCaptchaSolution(solution)

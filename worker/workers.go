@@ -29,7 +29,7 @@ func doSiteCacheUpdate(ctx context.Context, fn func(*models.CachedSite)) {
 
 func updateCachedSites(ctx context.Context, ch health.PingChannel) func() error {
 	return func() error {
-		log.Get(ctx).Debug().Str("worker", "sites_to_domain_cache").
+		log.Get().Debug().Str("worker", "sites_to_domain_cache").
 			Msg("started")
 		interval := config.Get(ctx).Intervals.SiteCache
 		// On startup , fill the cache first before the next interval. Ensures we are
@@ -59,7 +59,7 @@ func SaveTimeseries(ctx context.Context, f func(*health.Ping)) func() error {
 
 func saveBuffer(ctx context.Context, ch health.PingChannel) func() error {
 	return func() error {
-		log.Get(ctx).Debug().Str("worker", "timeseries_writer").Msg("started")
+		log.Get().Debug().Str("worker", "timeseries_writer").Msg("started")
 		tick := time.NewTicker(config.Get(ctx).Intervals.TSSync)
 		m := timeseries.GetMap(ctx)
 		defer tick.Stop()

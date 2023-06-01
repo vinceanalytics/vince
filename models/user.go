@@ -31,7 +31,7 @@ func SetPassword(ctx context.Context, pwd string) (err string) {
 	b, e := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
 	if e != nil {
 		// It is fatal if we can no longer hash passwords terminate the process
-		log.Get(ctx).Fatal().AnErr("err", e).Msg("failed hashing password")
+		log.Get().Fatal().AnErr("err", e).Msg("failed hashing password")
 	}
 	e = Get(ctx).Model(u).Update("password_hash", string(b)).Error
 	if e != nil {
@@ -64,7 +64,7 @@ func Bootstrap(
 	}
 	hashPasswd, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Get(ctx).Fatal().Err(err).Msg("failed to hash password")
+		log.Get().Fatal().Err(err).Msg("failed to hash password")
 	}
 	hash, prefix := ProcessAPIKey(ctx, key)
 	u := &User{
@@ -84,7 +84,7 @@ func Bootstrap(
 	}
 	err = Get(ctx).Create(u).Error
 	if err != nil {
-		log.Get(ctx).Fatal().Err(err).Msg("failed to save bootstrapped user")
+		log.Get().Fatal().Err(err).Msg("failed to save bootstrapped user")
 	}
 }
 

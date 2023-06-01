@@ -109,7 +109,7 @@ func LastSeen(h http.Handler) http.Handler {
 			usr.LastSeen = now
 			err := models.Get(r.Context()).Model(usr).Update("last_seen", now).Error
 			if err != nil {
-				log.Get(r.Context()).Err(err).Msg("failed to update last_seen")
+				log.Get().Err(err).Msg("failed to update last_seen")
 			}
 			session.Data.LastSeen = now
 			session.Save(r.Context(), w)
@@ -309,7 +309,7 @@ func RequestID(h http.Handler) http.Handler {
 		if r.Header.Get("x-request-id") == "" {
 			r.Header.Set("x-request-id", ulid.Make().String())
 		}
-		lg := log.Get(r.Context())
+		lg := log.Get()
 		rg := lg.With().Str("request_id", r.Header.Get("x-request-id")).Logger()
 		r = r.WithContext(rg.WithContext(r.Context()))
 		h.ServeHTTP(w, r)

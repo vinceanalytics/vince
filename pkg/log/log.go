@@ -1,15 +1,17 @@
 package log
 
 import (
-	"context"
+	"os"
 
 	"github.com/rs/zerolog"
 )
+
+var Logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
 
 func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 }
 
-func Get(ctx context.Context) *zerolog.Logger {
-	return zerolog.Ctx(ctx)
+func Get() *zerolog.Logger {
+	return &Logger
 }

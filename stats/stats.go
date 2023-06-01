@@ -18,14 +18,14 @@ func Query(w http.ResponseWriter, r *http.Request) {
 	var base timeseries.BaseQuery
 	err := json.NewDecoder(r.Body).Decode(&base)
 	if err != nil {
-		log.Get(ctx).Err(err).Msg("failed to decode query body")
+		log.Get().Err(err).Msg("failed to decode query body")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 	if base.Match.IsRe {
 		base.Match.Re, err = regexp.Compile(base.Match.Text)
 		if err != nil {
-			log.Get(ctx).Err(err).Msg("failed to compile query match re")
+			log.Get().Err(err).Msg("failed to compile query match re")
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}

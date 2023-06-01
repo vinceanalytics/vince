@@ -17,7 +17,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	u := new(models.User)
 	m, err := models.NewUser(u, r)
 	if err != nil {
-		log.Get(r.Context()).Err(err).Msg("Failed decoding new user from")
+		log.Get().Err(err).Msg("Failed decoding new user from")
 		render.ERROR(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
@@ -38,7 +38,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := models.Get(r.Context()).Save(u).Error; err != nil {
-		log.Get(r.Context()).Err(err).Msg("failed saving new user")
+		log.Get().Err(err).Msg("failed saving new user")
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			r = sessions.SaveCsrf(w, r)
 			r = sessions.SaveCaptcha(w, r)
@@ -60,7 +60,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	} else {
 		err := SendVerificationEmail(ctx, u)
 		if err != nil {
-			log.Get(r.Context()).Err(err).Msg("failed sending email message")
+			log.Get().Err(err).Msg("failed sending email message")
 		}
 		http.Redirect(w, r, "/activate", http.StatusFound)
 	}

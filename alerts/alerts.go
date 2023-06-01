@@ -30,14 +30,14 @@ func Setup(ctx context.Context, o *config.Options) context.Context {
 	vinceTS := filepath.Join(path, "vince.ts")
 	err := os.WriteFile(vinceTS, vince, 0600)
 	if err != nil {
-		log.Get(ctx).Fatal().Err(err).
+		log.Get().Fatal().Err(err).
 			Str("path", vinceTS).
 			Msg("failed to write vince.ts in the alerts path")
 	}
 	scripts, err := Compile(path)
 	if err != nil {
 		if err != nil {
-			log.Get(ctx).Fatal().Err(err).
+			log.Get().Fatal().Err(err).
 				Str("path", vinceTS).
 				Msg("failed to compile alerts")
 		}
@@ -53,7 +53,7 @@ func Setup(ctx context.Context, o *config.Options) context.Context {
 		g.Set("VINCE", m)
 		_, err = g.RunString(string(v))
 		if err != nil {
-			log.Get(ctx).Fatal().Err(err).
+			log.Get().Fatal().Err(err).
 				Str("script", k).
 				Msg("failed to evaluate alert script")
 		}

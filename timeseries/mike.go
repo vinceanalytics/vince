@@ -34,7 +34,7 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 	// remove all keys under /user_id/site_id/ prefix.
 	err := db.DropPrefix(id[:metricOffset])
 	if err != nil {
-		log.Get(ctx).Err(err).
+		log.Get().Err(err).
 			Uint64("uid", uid).
 			Uint64("sid", sid).
 			Msg("failed to delete site from stats storage")
@@ -52,7 +52,7 @@ func Save(ctx context.Context, b *Buffer) {
 	svc := saveContext{}
 
 	defer func() {
-		log.Get(ctx).Debug().Int(
+		log.Get().Debug().Int(
 			"__size__", len(b.segments.Timestamp),
 		).Int("__keys__", svc.keys).
 			Msg("saved stats")
@@ -74,7 +74,7 @@ func Save(ctx context.Context, b *Buffer) {
 		})
 	})
 	if err != nil {
-		log.Get(ctx).Err(err).Msg("failed to save ts buffer")
+		log.Get().Err(err).Msg("failed to save ts buffer")
 	}
 }
 

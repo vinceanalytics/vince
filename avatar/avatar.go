@@ -24,7 +24,7 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 	var o bytes.Buffer
 	err := create(query.Get("s"), query.Get("u"), &o)
 	if err != nil {
-		log.Get(r.Context()).Err(err).Msg("failed to generate avatar")
+		log.Get().Err(err).Msg("failed to generate avatar")
 		render.ERROR(r.Context(), w, http.StatusNotFound)
 		return
 	}

@@ -14,7 +14,7 @@ type badgerLogger struct {
 }
 
 func Badger(ctx context.Context) badger.Logger {
-	return &badgerLogger{lg: Get(ctx).Level(zerolog.WarnLevel)}
+	return &badgerLogger{lg: Get().Level(zerolog.WarnLevel)}
 }
 
 func (b *badgerLogger) Errorf(format string, args ...interface{}) {

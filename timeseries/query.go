@@ -116,7 +116,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 					return nil
 				})
 				if err != nil {
-					log.Get(ctx).Err(err).Msg("failed to read value from kv store")
+					log.Get().Err(err).Msg("failed to read value from kv store")
 				}
 			}
 

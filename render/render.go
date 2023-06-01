@@ -22,7 +22,7 @@ func HTML(ctx context.Context, w http.ResponseWriter, tpl *template.Template, co
 	w.WriteHeader(code)
 	err := EXEC(ctx, w, tpl, f...)
 	if err != nil {
-		log.Get(ctx).Err(err).Str("template", tpl.Name()).Msg("Failed to render")
+		log.Get().Err(err).Str("template", tpl.Name()).Msg("Failed to render")
 	}
 }
 

@@ -48,21 +48,21 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 			err := txn.Model(usr).Update("email_verified", true).Error
 			if err != nil {
 				txn.Rollback()
-				log.Get(ctx).Err(err).Msg("failed to update user.email_verified")
+				log.Get().Err(err).Msg("failed to update user.email_verified")
 				render.ERROR(ctx, w, http.StatusInternalServerError)
 				return
 			}
 			err = txn.Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID).Update("user_id", nil).Error
 			if err != nil {
 				txn.Rollback()
-				log.Get(ctx).Err(err).Msg("failed to update email_verification_codes.user_id")
+				log.Get().Err(err).Msg("failed to update email_verification_codes.user_id")
 				render.ERROR(ctx, w, http.StatusInternalServerError)
 				return
 			}
 			err = txn.Commit().Error
 			if err != nil {
 				txn.Rollback()
-				log.Get(ctx).Err(err).Msg("failed to commit email_verification_codes transaction")
+				log.Get().Err(err).Msg("failed to commit email_verification_codes transaction")
 				render.ERROR(ctx, w, http.StatusInternalServerError)
 				return
 			}

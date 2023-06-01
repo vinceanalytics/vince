@@ -68,7 +68,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	system.DataPoint.WithLabelValues("received").Inc()
 
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	xlg := log.Get(r.Context())
+	xlg := log.Get()
 	var req Request
 	err := req.Parse(r.Body)
 	if err != nil {

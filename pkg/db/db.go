@@ -44,8 +44,8 @@ func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *
 		return
 	}
 	if len(f) > 0 {
-		f[0](log.Get(ctx).Err(err)).Msg(msg)
+		f[0](log.Get().Err(err)).Msg(msg)
 	} else {
-		log.Get(ctx).Err(err).Msg(msg)
+		log.Get().Err(err).Msg(msg)
 	}
 }
