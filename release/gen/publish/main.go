@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/gernest/vince/tools"
 )
@@ -18,8 +17,8 @@ func main() {
 			root,
 			"npm", "run", "blog:build",
 		)
-		from := filepath.Join(root, "blog/.vitepress/dist/") + "/"
-		to := filepath.Join(root, "docs/.vitepress/dist/blog/")
-		tools.CopyDir(from, to)
+		from := "blog/.vitepress/dist/"
+		to := "docs/.vitepress/dist/blog/"
+		tools.CopyDir(from, to, root)
 	}
 }

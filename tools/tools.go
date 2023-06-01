@@ -107,13 +107,15 @@ func Remove(path string) {
 }
 
 func CopyFile(src, dest string) {
-	println("    copy: ", src, "=>", dest)
-	ExecPlain("cp", src, dest)
+	ExecPlain("cp", "-v", src, dest)
 }
 
-func CopyDir(src, dest string) {
-	println("    copy: ", src, "=>", dest)
-	ExecPlain("cp", "-r", src, dest)
+func CopyDir(src, dest string, workingDir ...string) {
+	if len(workingDir) > 0 {
+		ExecPlainWithWorkingPath(workingDir[0], "cp", "-rv", src, dest)
+	} else {
+		ExecPlain("cp", "-rv", src, dest)
+	}
 }
 
 func Exit(a ...string) {
