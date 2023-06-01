@@ -27,7 +27,6 @@ type Buffer struct {
 func (b *Buffer) AddEntry(e ...*entry.Entry) {
 	for _, v := range e {
 		b.segments.append(v)
-		v.Release()
 	}
 }
 
@@ -89,12 +88,13 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 			// happen concurrently.
 			updated := s.Update(e)
 			old.Sign = -1
-			b.AddEntry(updated.Clone(), old)
+			b.AddEntry(updated, old)
+			old.Release()
 			return
 		}
 	}
 	newSession := e.Session()
-	b.AddEntry(newSession.Clone())
+	b.AddEntry(newSession)
 	x.SetWithTTL(b.key(newSession.Domain, newSession.UserId), newSession, 1, SessionTime)
 }
 
