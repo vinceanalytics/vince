@@ -21,6 +21,6 @@ func main() {
 		}
 	}
 	tools.ExecPlain(
-		"helm", "package", ".",
+		"helm", "package", ".", "-d", "charts",
 	)
 }
