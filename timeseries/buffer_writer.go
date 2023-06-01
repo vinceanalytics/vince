@@ -11,8 +11,11 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/caches"
+	"github.com/gernest/vince/pkg/entry"
 	"github.com/gernest/vince/pkg/log"
 )
+
+const SessionTime = time.Minute * 10
 
 type Buffer struct {
 	mu       sync.Mutex
@@ -21,7 +24,7 @@ type Buffer struct {
 	id       [16]byte
 }
 
-func (b *Buffer) AddEntry(e ...*Entry) {
+func (b *Buffer) AddEntry(e ...*entry.Entry) {
 	for _, v := range e {
 		b.segments.append(v)
 		v.Release()
@@ -57,27 +60,43 @@ func NewBuffer(uid, sid uint64, ttl time.Duration) *Buffer {
 	return bigBufferPool.Get().(*Buffer).Init(uid, sid, ttl)
 }
 
-func (b *Buffer) Register(ctx context.Context, e *Entry, prevUserId uint64) {
+func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	var s *Entry
-	s = b.find(ctx, e, e.UserId)
-	if s == nil {
-		s = b.find(ctx, e, prevUserId)
+	var s *entry.Entry
+	x := caches.Session(ctx)
+
+	if o, ok := x.Get(b.key(e.Domain, e.UserId)); ok {
+		s = o.(*entry.Entry)
 	}
+	if s == nil {
+		if o, ok := x.Get(b.key(e.Domain, prevUserId)); ok {
+			s = o.(*entry.Entry)
+		}
+	}
+
 	if s != nil {
-		// free e since we don't use it when doing updates
-		defer e.Release()
-		updated := s.Update(e)
-		updated.Sign = 1
-		s.Sign = -1
-		b.AddEntry(updated, s)
-		b.persist(ctx, updated.Clone())
-		return
+		// There are cases where the key is expired but still present in the cache
+		// waiting for eviction.
+		//
+		// We make sure the key is not expired yet before updating it.
+		if ttl, ok := x.GetTTL(b); ttl != 0 && ok {
+			// free e since we don't use it when doing updates
+			defer e.Release()
+			// we take the a copy of session s set Sign to -1. This ensures we mark the session as
+			old := s.Clone()
+			// Update modifies s which is still in cache. It is illegal for a session to
+			// happen concurrently.
+			updated := s.Update(e)
+			old.Sign = -1
+			b.AddEntry(updated.Clone(), old)
+			return
+		}
 	}
 	newSession := e.Session()
 	b.AddEntry(newSession)
-	b.persist(ctx, newSession.Clone())
+	n := newSession.Clone()
+	x.SetWithTTL(b.key(n.Domain, n.UserId), n, 1, SessionTime)
 }
 
 var bigBufferPool = &sync.Pool{
@@ -86,23 +105,11 @@ var bigBufferPool = &sync.Pool{
 	},
 }
 
-func (b *Buffer) find(ctx context.Context, e *Entry, userId uint64) *Entry {
-	v, _ := caches.Session(ctx).Get(b.key(e.Domain, userId))
-	if v != nil {
-		return v.(*Entry)
-	}
-	return nil
-}
-
 func (b *Buffer) key(domain string, uid uint64) string {
 	b.buf.Reset()
 	b.buf.WriteString(domain)
 	b.buf.WriteString(strconv.FormatUint(uid, 10))
 	return b.buf.String()
-}
-
-func (b *Buffer) persist(ctx context.Context, s *Entry) {
-	caches.Session(ctx).SetWithTTL(b.key(s.Domain, s.UserId), s, 1, 30*time.Minute)
 }
 
 func (b *Buffer) Build(ctx context.Context, f func(p Property, key string, sum *Sum) error) error {
@@ -182,7 +189,7 @@ func (m *MultiEntry) reset() {
 	m.IsBounce = m.IsBounce[:0]
 }
 
-func (m *MultiEntry) append(e *Entry) {
+func (m *MultiEntry) append(e *entry.Entry) {
 	m.UtmMedium = append(m.UtmMedium, e.UtmMedium)
 	m.Referrer = append(m.Referrer, e.Referrer)
 	m.Domain = append(m.Domain, e.Domain)

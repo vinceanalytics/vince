@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/pkg/timex"
 	"github.com/gernest/vince/render"
 	"github.com/gernest/vince/sessions"
 	"github.com/gernest/vince/templates"
@@ -33,15 +32,12 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		}
 		hasGoals := models.SiteHasGoals(ctx, site.Domain)
 		ts := time.Now()
-		from := ts.Add(-24 * time.Hour)
 		timeseries.Query(ctx, timeseries.QueryRequest{
 			UserID: owner.ID,
 			SiteID: site.ID,
 			BaseQuery: timeseries.BaseQuery{
-				Range: timex.Range{
-					From: from,
-					To:   ts,
-				},
+				Start:  ts,
+				Offset: 24 * time.Hour,
 			},
 		})
 

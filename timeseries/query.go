@@ -10,15 +10,17 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/pkg/timex"
 	"github.com/gernest/vince/system"
 )
 
 type BaseQuery struct {
-	Range    timex.Range `json:"range"`
-	Metrics  []Metric    `json:"metrics"`
-	Property Property    `json:"prop"`
-	Match    Match       `json:"match"`
+	Start    time.Time     `json:"start,omitempty"`
+	Offset   time.Duration `json:"offset,omitempty"`
+	Step     time.Duration `json:"step,omitempty"`
+	Window   time.Duration `json:"window,omitempty"`
+	Metrics  []Metric      `json:"metrics"`
+	Property Property      `json:"prop"`
+	Match    Match         `json:"match"`
 }
 
 type QueryRequest struct {
@@ -29,7 +31,7 @@ type QueryRequest struct {
 
 type QueryResult struct {
 	ELapsed time.Duration `json:"elapsed"`
-	Result  []Result      `json:"result"`
+	Result  Output        `json:"result"`
 }
 
 type Match struct {
@@ -43,26 +45,64 @@ type Value struct {
 	Value     []float64 `json:"value"`
 }
 
-type Result struct {
-	Metric Metric            `json:"metric"`
-	Values map[string]*Value `json:"values"`
+var (
+	defaultStep = time.Minute * 5
+)
+
+type Output struct {
+	Timestamps     []int64  `json:"timestamps"`
+	Visitors       OutValue `json:"visitors,omitempty"`
+	Views          OutValue `json:"views,omitempty"`
+	Events         OutValue `json:"events,omitempty"`
+	Visits         OutValue `json:"visits,omitempty"`
+	BounceRates    OutValue `json:"bounceRates,omitempty"`
+	VisitDurations OutValue `json:"visitDurations,omitempty"`
 }
 
+type OutValue map[string][]float64
+
 func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
-	start := time.Now()
+	currentTime := time.Now()
+	ct := currentTime.Truncate(time.Second).Unix()
+
+	start := ct
+	if !r.Start.IsZero() {
+		start = r.Start.Truncate(time.Second).Unix()
+	}
+	step := int64(defaultStep)
+	if r.Step > 0 {
+		step = int64(r.Step)
+	}
+
+	var window, offset int64
+	if r.Window > 0 {
+		window = int64(r.Window)
+	}
+	if window == 0 {
+		// default to session ttl
+		window = int64(time.Minute * 30)
+	}
+	if r.Offset > 0 {
+		offset = int64(r.Offset)
+	}
+	start -= offset
+	end := start
+	start = end - window
+	start++
+	if end < start {
+		end = start
+	}
+
+	shared := sharedTS(start, end, step)
+	result.Result.Timestamps = shared
+
 	txn := GetMike(ctx).NewTransaction(false)
-	var startTS, endTS uint64
-	if !r.Range.From.IsZero() {
-		startTS = uint64(r.Range.From.Truncate(time.Hour).Unix())
-	}
-	if !r.Range.To.IsZero() {
-		endTS = uint64(r.Range.To.Truncate(time.Hour).Unix())
-	}
+
 	m := newMetaKey()
 	defer func() {
 		m.Release()
 		txn.Discard()
-		result.ELapsed = time.Since(start)
+		result.ELapsed = time.Since(currentTime)
 		system.QueryDuration.Observe(result.ELapsed.Seconds())
 	}()
 	m.uid(r.UserID, r.SiteID).prop(r.Property)
@@ -75,9 +115,8 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 		smallBufferpool.Put(b)
 	}()
 	o := badger.DefaultIteratorOptions
-	if !r.Range.From.IsZero() {
-		o.SinceTs = startTS
-	}
+	o.SinceTs = uint64(start)
+
 	// make sure all iterations are in /user_id/site_id/ scope
 	o.Prefix = m[:metricOffset]
 	it := txn.NewIterator(o)
@@ -95,7 +134,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 			prefix := m.idx(b, text).Bytes()
 			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 				x := it.Item()
-				if endTS != 0 && x.Version() > endTS {
+				if x.Version() > uint64(end) {
 					// We have reached the end of iteration. Range actually
 					// reflects on the version we are interested in.
 					break
@@ -124,10 +163,31 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 			}
 
 		}
-		result.Result = append(result.Result, Result{
-			Metric: metric,
-			Values: values,
-		})
+		o := make(OutValue)
+		for k, v := range values {
+			o[k] = rollUp(window, v.Value, v.Timestamp, shared, func(ro *rollOptions) float64 {
+				var x float64
+				for _, xx := range ro.values {
+					x += xx
+				}
+				return x
+			})
+		}
+		result.Result.Views = o
+		switch metric {
+		case Visitors:
+			result.Result.Visitors = o
+		case Views:
+			result.Result.Views = o
+		case Events:
+			result.Result.Events = o
+		case Visits:
+			result.Result.Visits = o
+		case BounceRates:
+			result.Result.BounceRates = o
+		case VisitDurations:
+			result.Result.VisitDurations = o
+		}
 	}
 	return
 }

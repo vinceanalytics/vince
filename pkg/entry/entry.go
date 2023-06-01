@@ -1,4 +1,4 @@
-package timeseries
+package entry
 
 import (
 	"sync"
@@ -79,48 +79,40 @@ func (e *Entry) Session() *Entry {
 	return e
 }
 
-func (e *Entry) Bounce() (n int32) {
-	if e.IsBounce {
-		n = 1
-	}
-	return
-}
-
 func (s *Entry) Update(e *Entry) *Entry {
-	ss := NewEntry()
-	*ss = *s
-	ss.UserId = e.UserId
-	ss.Timestamp = e.Timestamp
-	ss.ExitPage = e.Pathname
-	ss.IsBounce = false
-	ss.Duration = time.Unix(e.Timestamp, 0).Sub(time.Unix(ss.Start, 0))
+	s.Sign = 1
+	s.UserId = e.UserId
+	s.Timestamp = e.Timestamp
+	s.ExitPage = e.Pathname
+	s.IsBounce = false
+	s.Duration = time.Unix(e.Timestamp, 0).Sub(time.Unix(s.Start, 0))
 	if e.Name == "pageview" {
-		ss.PageViews++
+		s.PageViews++
 	}
-	if ss.Country == "" {
-		ss.Country = e.Country
+	if s.Country == "" {
+		s.Country = e.Country
 	}
-	if ss.City == "" {
-		ss.City = e.City
+	if s.City == "" {
+		s.City = e.City
 	}
-	if ss.Region == "" {
-		ss.Region = e.Region
+	if s.Region == "" {
+		s.Region = e.Region
 	}
-	if ss.OperatingSystem == "" {
-		ss.OperatingSystem = e.OperatingSystem
+	if s.OperatingSystem == "" {
+		s.OperatingSystem = e.OperatingSystem
 	}
-	if ss.OperatingSystemVersion == "" {
-		ss.OperatingSystemVersion = e.OperatingSystemVersion
+	if s.OperatingSystemVersion == "" {
+		s.OperatingSystemVersion = e.OperatingSystemVersion
 	}
-	if ss.Browser == "" {
-		ss.Browser = e.Browser
+	if s.Browser == "" {
+		s.Browser = e.Browser
 	}
-	if ss.BrowserVersion == "" {
-		ss.BrowserVersion = e.BrowserVersion
+	if s.BrowserVersion == "" {
+		s.BrowserVersion = e.BrowserVersion
 	}
-	if ss.ScreenSize == "" {
-		ss.ScreenSize = e.ScreenSize
+	if s.ScreenSize == "" {
+		s.ScreenSize = e.ScreenSize
 	}
-	ss.Events += 1
-	return ss
+	s.Events += 1
+	return s
 }

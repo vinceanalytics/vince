@@ -7,6 +7,7 @@ import (
 
 	"github.com/dgraph-io/ristretto"
 	"github.com/gernest/vince/models"
+	"github.com/gernest/vince/pkg/entry"
 	"github.com/gernest/vince/pkg/timex"
 	"golang.org/x/time/rate"
 )
@@ -16,13 +17,15 @@ type sitesKey struct{}
 type userKey struct{}
 type ipKey struct{}
 type apiKey struct{}
-type calendarKey struct{}
 
 func Open(ctx context.Context) (context.Context, error) {
 	session, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1e7,
 		MaxCost:     2 << 20,
 		BufferItems: 64,
+		OnEvict: func(item *ristretto.Item) {
+			item.Value.(*entry.Entry).Release()
+		},
 	})
 	if err != nil {
 		return nil, err
@@ -69,13 +72,7 @@ func Open(ctx context.Context) (context.Context, error) {
 		ip.Close()
 		return nil, err
 	}
-	calendar, err := ristretto.NewCache(&ristretto.Config{
-		NumCounters: 1e7,
-		// We set boundary as 1 GB , we use the size of zero calendar as cost for
-		// adding items to the cache.
-		MaxCost:     1 << 30,
-		BufferItems: 64,
-	})
+
 	if err != nil {
 		session.Close()
 		sites.Close()
@@ -89,7 +86,6 @@ func Open(ctx context.Context) (context.Context, error) {
 	ctx = context.WithValue(ctx, userKey{}, users)
 	ctx = context.WithValue(ctx, ipKey{}, ip)
 	ctx = context.WithValue(ctx, apiKey{}, api)
-	ctx = context.WithValue(ctx, calendarKey{}, calendar)
 	return ctx, nil
 }
 
@@ -99,7 +95,6 @@ func Close(ctx context.Context) error {
 	User(ctx).Close()
 	IP(ctx).Close()
 	API(ctx).Close()
-	Calendar(ctx).Close()
 	return nil
 }
 
@@ -121,10 +116,6 @@ func IP(ctx context.Context) *ristretto.Cache {
 
 func API(ctx context.Context) *ristretto.Cache {
 	return ctx.Value(apiKey{}).(*ristretto.Cache)
-}
-
-func Calendar(ctx context.Context) *ristretto.Cache {
-	return ctx.Value(calendarKey{}).(*ristretto.Cache)
 }
 
 type SiteRate struct {

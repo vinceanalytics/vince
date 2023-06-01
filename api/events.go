@@ -14,11 +14,11 @@ import (
 
 	"github.com/gernest/vince/gate"
 	"github.com/gernest/vince/geoip"
+	"github.com/gernest/vince/pkg/entry"
 	"github.com/gernest/vince/pkg/log"
 	"github.com/gernest/vince/referrer"
 	"github.com/gernest/vince/remoteip"
 	"github.com/gernest/vince/system"
-	"github.com/gernest/vince/timeseries"
 	"github.com/gernest/vince/ua"
 	"github.com/gernest/vince/userid"
 	jsoniter "github.com/json-iterator/go"
@@ -181,7 +181,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		userID := uid.Hash(remoteIp, userAgent, domain, host)
-		e := timeseries.NewEntry()
+		e := entry.NewEntry()
 		e.UserId = userID
 		e.Name = req.EventName
 		e.Hostname = host
