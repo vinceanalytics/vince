@@ -94,9 +94,8 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 		}
 	}
 	newSession := e.Session()
-	b.AddEntry(newSession)
-	n := newSession.Clone()
-	x.SetWithTTL(b.key(n.Domain, n.UserId), n, 1, SessionTime)
+	b.AddEntry(newSession.Clone())
+	x.SetWithTTL(b.key(newSession.Domain, newSession.UserId), newSession, 1, SessionTime)
 }
 
 var bigBufferPool = &sync.Pool{
