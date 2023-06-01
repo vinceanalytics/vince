@@ -132,17 +132,11 @@ export default defineConfig({
 
       {
         text: 'Kubernetes',
+        link: "/k8s/",
         items: [
           {
-            text: 'Installation', items: [
-              {
-                text: 'Out of cluster',
-                link: '/guide/install-v8s'
-              },
-              {
-                text: 'Using helm',
-              },
-            ]
+            text: 'Installation',
+            link: "/k8s/install"
           },
           { text: 'Cli', link: '/guide/cli-v8s' },
         ]
