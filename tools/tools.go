@@ -101,13 +101,9 @@ func ReadFile(path string) []byte {
 	return b
 }
 
-func Remove(path string) error {
-	err := os.Remove(path)
-	if err != nil {
-		Exit("failed to delete file ", path, err.Error())
-	}
+func Remove(path string) {
 	println("    delete: ", path)
-	return nil
+	ExecPlain("rm", "-f", path)
 }
 
 func CopyFile(src, dest string) {

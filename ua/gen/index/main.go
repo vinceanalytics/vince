@@ -52,10 +52,7 @@ func Make() {
 			seen[v] = struct{}{}
 			ls = append(ls, v)
 		}
-		err = tools.Remove(v.Name())
-		if err != nil {
-			tools.Exit(err.Error())
-		}
+		tools.Remove(v.Name())
 	}
 	sort.Strings(ls)
 	var b bytes.Buffer
