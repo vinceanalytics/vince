@@ -149,7 +149,6 @@ type MultiEntry struct {
 	IsBounce               []bool
 
 	key [8]byte
-	sum Sum
 }
 
 func (m *MultiEntry) reset() {
