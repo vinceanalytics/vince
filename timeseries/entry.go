@@ -40,7 +40,6 @@ type Entry struct {
 	PageViews              int32
 	Events                 int32
 	Sign                   int32
-	Hours                  uint64
 	IsBounce               bool
 }
 

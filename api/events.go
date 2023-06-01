@@ -15,7 +15,6 @@ import (
 	"github.com/gernest/vince/gate"
 	"github.com/gernest/vince/geoip"
 	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/pkg/timex"
 	"github.com/gernest/vince/referrer"
 	"github.com/gernest/vince/remoteip"
 	"github.com/gernest/vince/system"
@@ -173,7 +172,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	var dropped int
 	ts := time.Now()
 	unix := ts.Unix()
-	hours := timex.Timestamp(ts)
 	ctx := r.Context()
 	uid := userid.Get(ctx)
 	for _, domain := range domains {
@@ -205,7 +203,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.City = city.City
 		e.ScreenSize = screenSize
 		e.Timestamp = unix
-		e.Hours = hours
 		previousUUserID := uid.HashPrevious(remoteIp, userAgent, domain, host)
 		b.Register(r.Context(), e, previousUUserID)
 	}

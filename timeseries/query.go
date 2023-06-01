@@ -38,13 +38,13 @@ type Match struct {
 }
 
 type Value struct {
-	Timestamp uint64 `json:"timestamp"`
-	Value     uint32 `json:"value"`
+	Timestamp []int64   `json:"timestamp"`
+	Value     []float64 `json:"value"`
 }
 
 type Result struct {
-	Metric Metric             `json:"metric"`
-	Values map[string][]Value `json:"values"`
+	Metric Metric            `json:"metric"`
+	Values map[string]*Value `json:"values"`
 }
 
 func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
@@ -82,7 +82,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	it := txn.NewIterator(o)
 	defer it.Close()
 	for _, metric := range r.Metrics {
-		values := make(map[string][]Value)
+		values := make(map[string]*Value)
 		for _, metric := range r.Metrics {
 			b.Reset()
 			m.metric(metric)
@@ -100,19 +100,19 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 					break
 				}
 				kb := x.Key()
-
-				// last 6 bytes of the key are for the timestamp
-				ts := kb[len(kb)-6:]
-				// text comes before the timestamp
-				txt := kb[keyOffset : len(kb)-6]
+				// text comes after the key offset
+				txt := kb[keyOffset:]
 				if r.Match.IsRe && !r.Match.Re.Match(txt) {
 					continue
 				}
+				v, ok := values[string(text)]
+				if !ok {
+					v = &Value{}
+					values[string(text)] = v
+				}
 				err := x.Value(func(val []byte) error {
-					values[string(txt)] = append(values[string(txt)], Value{
-						Timestamp: Time(ts),
-						Value:     binary.BigEndian.Uint32(val),
-					})
+					v.Timestamp = append(v.Timestamp, int64(x.Version()))
+					v.Value = append(v.Value, float64(binary.BigEndian.Uint32(val)))
 					return nil
 				})
 				if err != nil {

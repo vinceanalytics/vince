@@ -106,7 +106,7 @@ func (b *Buffer) persist(ctx context.Context, s *Entry) {
 	caches.Session(ctx).SetWithTTL(b.key(s.Domain, s.UserId), s, 1, 30*time.Minute)
 }
 
-func (b *Buffer) Build(ctx context.Context, f func(p Property, key string, ts uint64, sum *Sum) error) error {
+func (b *Buffer) Build(ctx context.Context, f func(p Property, key string, sum *Sum) error) error {
 	return b.segments.build(ctx, f)
 }
 
@@ -142,7 +142,6 @@ type MultiEntry struct {
 	PageViews              []int32
 	Events                 []int32
 	Sign                   []int32
-	Hours                  []uint64
 	IsBounce               []bool
 
 	key [8]byte
@@ -181,7 +180,6 @@ func (m *MultiEntry) reset() {
 	m.PageViews = m.PageViews[:0]
 	m.Events = m.Events[:0]
 	m.Sign = m.Sign[:0]
-	m.Hours = m.Hours[:0]
 	m.IsBounce = m.IsBounce[:0]
 }
 
@@ -216,33 +214,7 @@ func (m *MultiEntry) append(e *Entry) {
 	m.PageViews = append(m.PageViews, e.PageViews)
 	m.Events = append(m.Events, e.Events)
 	m.Sign = append(m.Sign, e.Sign)
-	m.Hours = append(m.Hours, e.Hours)
 	m.IsBounce = append(m.IsBounce, e.IsBounce)
-}
-
-// chunk finds same m.Hours values and call f with the index range. m.Hours are
-// guaranteed to be sorted in ascending order.
-func (m *MultiEntry) chunk(f func(m *MultiEntry, start, end int) error) error {
-	if len(m.Hours) < 2 {
-		return nil
-	}
-	var pos int
-	var last, curr uint64
-	for i, v := range m.Hours {
-		curr = v
-		if i > 0 && curr != last {
-			err := f(m, pos, i)
-			if err != nil {
-				return err
-			}
-			pos = i
-		}
-		last = curr
-	}
-	if pos < len(m.Hours) {
-		return f(m, pos, len(m.Hours))
-	}
-	return nil
 }
 
 type computed struct {
@@ -262,7 +234,7 @@ func (c *computed) sum(s *Sum) {
 	s.ViewsPerVisit = uint32(math.Round(float64(c.views) / float64(c.signSum)))
 }
 
-func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, ts uint64, sum *Sum) error) error {
+func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, sum *Sum) error) error {
 	// We capitalize on badger Transaction to globally track unique visitors in
 	// this entries batch.
 	//
@@ -272,8 +244,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, t
 	// seen function will use this for Base property. All other properties create a new
 	// transaction before calling m.Compute and the transaction is discarded there
 	// after to ensure we only commit Base user_id but still be able to correctly
-	// detect unique visitors within m.Compute calls (Which operate on unique entry keys
-	// over the same hour window)
+	// detect unique visitors within m.Compute calls.
 	txn := GetUnique(ctx).NewTransaction(true)
 	mls := newTxnBufferList()
 	defer func() {
@@ -285,17 +256,15 @@ func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, t
 		mls.Release()
 	}()
 	uniq := seen(ctx, txn, m.key[:], mls)
-	return m.chunk(func(m *MultiEntry, start, end int) error {
-		for i := Base; i <= City; i++ {
-			err := m.compute(i, start, end, choose(i), uniq, func(u uint64, s1 string, s2 *Sum) error {
-				return f(i, s1, u, s2)
-			})
-			if err != nil {
-				return err
-			}
+	for i := Base; i <= City; i++ {
+		err := m.compute(i, choose(i), uniq, func(s1 string, s2 *Sum) error {
+			return f(i, s1, s2)
+		})
+		if err != nil {
+			return err
 		}
-		return nil
-	})
+	}
+	return nil
 }
 
 // On the given start ... end key range, calculate Sum for Property prop , group
@@ -309,10 +278,9 @@ func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, t
 // f is called on each key:Sum result. The order of the keys is not guaranteed.
 func (m *MultiEntry) compute(
 	prop Property,
-	start, end int,
 	pick func(*MultiEntry, int) string,
 	seen seenFunc,
-	f func(uint64, string, *Sum) error,
+	f func(string, *Sum) error,
 ) error {
 	seg := make(map[string]*computed)
 	defer func() {
@@ -320,7 +288,7 @@ func (m *MultiEntry) compute(
 			v.done()
 		}
 	}()
-	for i := start; i < end; i++ {
+	for i := 0; i < len(m.Timestamp); i++ {
 		key := pick(m, i)
 		if key == "" {
 			continue
@@ -354,10 +322,9 @@ func (m *MultiEntry) compute(
 		}
 		e.duration += m.Duration[i] * float64(m.Sign[i])
 	}
-	h := m.Hours[start]
 	for k, v := range seg {
 		v.sum(&m.sum)
-		err := f(h, k, &m.sum)
+		err := f(k, &m.sum)
 		if err != nil {
 			return err
 		}

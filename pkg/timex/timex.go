@@ -72,8 +72,3 @@ func EndOfYear(ts time.Time) time.Time {
 func DaysInMonth(ts time.Time) int {
 	return EndOfMonth(ts).Day()
 }
-
-// Timestamp returns ts as duration in hours since the unix epoch.
-func Timestamp(ts time.Time) uint64 {
-	return uint64(ts.UTC().Truncate(time.Hour).UnixMilli())
-}

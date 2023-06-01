@@ -66,11 +66,13 @@ func Save(ctx context.Context, b *Buffer) {
 	// Buffer.id has the same encoding as the first 16 bytes of meta. We just copy that
 	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
+	var tsBytes [6]byte
+	setTs(tsBytes[:], uint64(start.UnixMilli()))
 
 	err := db.Update(func(txn *badger.Txn) error {
 		svc.txn = txn
-		return b.Build(ctx, func(p Property, key string, ts uint64, sum *Sum) error {
-			return saveProperty(ctx, &svc, ts, meta.prop(p), key, sum)
+		return b.Build(ctx, func(p Property, key string, sum *Sum) error {
+			return saveProperty(ctx, &svc, tsBytes[:], meta.prop(p), key, sum)
 		})
 	})
 	if err != nil {
@@ -80,7 +82,7 @@ func Save(ctx context.Context, b *Buffer) {
 
 func saveProperty(ctx context.Context,
 	svc *saveContext,
-	ts uint64,
+	ts []byte,
 	m *Key, text string, a *Sum) error {
 	return errors.Join(
 		savePropertyKey(ctx, svc, m.metric(Visitors).key(ts, text, svc.ls), a.Visitors),
@@ -162,32 +164,10 @@ var base [4]byte
 // outside the transaction svc.txn (meaning after svc.txn.Commit())
 func savePropertyKey(ctx context.Context, svc *saveContext, mike *bytes.Buffer, a uint32) error {
 	svc.keys++
-	txn := svc.txn
 	key := mike.Bytes()
-	x, err := txn.Get(key)
-	if err != nil {
-		if errors.Is(err, badger.ErrKeyNotFound) {
-			b := svc.ls.Get()
-			b.Write(base[:])
-			value := b.Next(4)
-			binary.BigEndian.PutUint32(value, a)
-			err := txn.Set(key, value)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-		return err
-	}
-	var read uint32
-	x.Value(func(val []byte) error {
-		read = binary.BigEndian.Uint32(val)
-		return nil
-	})
-	read += a
 	b := svc.ls.Get()
 	b.Write(base[:])
 	value := b.Next(4)
-	binary.BigEndian.PutUint32(value, read)
-	return txn.Set(key, value)
+	binary.BigEndian.PutUint32(value, a)
+	return svc.txn.Set(key, value)
 }

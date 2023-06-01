@@ -54,12 +54,11 @@ func Time(id []byte) uint64 {
 		uint64(id[1])<<32 | uint64(id[0])<<40
 }
 
-func (id *Key) key(ts uint64, s string, ls *txnBufferList) *bytes.Buffer {
+func (id *Key) key(ts []byte, s string, ls *txnBufferList) *bytes.Buffer {
 	k := ls.Get()
 	k.Write(id[:])
-	k.Grow(6)
-	setTs(k.Next(6), ts)
 	k.WriteString(s)
+	k.Write(ts)
 	return k
 }
 
