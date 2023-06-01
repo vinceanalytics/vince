@@ -214,7 +214,7 @@ brews:
     name: vince
     skip_upload: true
     folder: Formula
-    homepage: https://winceanalytics.com
+    homepage: httpd://vinceanalytics.github.io
     description: The Cloud Native Web Analytics Platform
     license: AGPL-3.0
     ids:
@@ -236,7 +236,7 @@ brews:
     name: v8s
     skip_upload: true
     folder: Formula
-    homepage: https://winceanalytics.com
+    homepage: httpd://vinceanalytics.github.io
     description: kubernetes controller for vince- The Cloud Native Web Analytics Platform
     license: AGPL-3.0
     ids:
