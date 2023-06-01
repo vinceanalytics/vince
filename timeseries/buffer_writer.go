@@ -82,7 +82,6 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 		if ttl, ok := x.GetTTL(b); ttl != 0 && ok {
 			// free e since we don't use it when doing updates
 			defer e.Release()
-			// we take the a copy of session s set Sign to -1. This ensures we mark the session as
 			old := s.Clone()
 			// Update modifies s which is still in cache. It is illegal for a session to
 			// happen concurrently.
