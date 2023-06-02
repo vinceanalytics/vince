@@ -10,6 +10,7 @@ var (
 	nan = math.NaN()
 )
 
+// This function was ported from VictoriaMetrics project.
 func rollUp(window int64, values []float64, ts []int64, shared []int64, f func(*rollOptions) float64) (o []float64) {
 	o = make([]float64, 0, len(shared))
 	i := 0

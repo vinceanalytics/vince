@@ -15,7 +15,7 @@ import (
 
 func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, error) {
 	dir := filepath.Join(o.DataPath, "ts")
-	mike, err := open(ctx, filepath.Join(dir, "mike"))
+	mike, err := openMike(ctx, filepath.Join(dir, "mike"))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,6 +40,14 @@ func (r resourceList) Close() error {
 		err[i] = r[i].Close()
 	}
 	return errors.Join(err...)
+}
+
+func openMike(ctx context.Context, path string) (*badger.DB, error) {
+	os.MkdirAll(path, 0755)
+	o := badger.DefaultOptions(path).
+		WithLogger(log.Badger(ctx)).
+		WithCompression(options.ZSTD)
+	return badger.OpenManaged(o)
 }
 
 func open(ctx context.Context, path string) (*badger.DB, error) {

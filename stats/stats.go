@@ -3,7 +3,6 @@ package stats
 import (
 	"encoding/json"
 	"net/http"
-	"regexp"
 
 	"github.com/vinceanalytics/vince/models"
 	"github.com/vinceanalytics/vince/pkg/log"
@@ -22,13 +21,10 @@ func Query(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	if base.Match.IsRe {
-		base.Match.Re, err = regexp.Compile(base.Match.Text)
-		if err != nil {
-			log.Get().Err(err).Msg("failed to compile query match re")
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			return
-		}
+	if err := base.Filters.Validate(); err != nil {
+		log.Get().Err(err).Msg("failed query filters validation")
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	o := timeseries.Query(ctx, timeseries.QueryRequest{
 		UserID:    u.ID,

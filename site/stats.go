@@ -40,7 +40,6 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 				Offset: 24 * time.Hour,
 			},
 		})
-
 		render.HTML(ctx, w, templates.Stats, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
 			ctx.Title = "Vince Analytics  · " + site.Domain

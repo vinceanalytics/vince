@@ -43,7 +43,8 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 }
 
 func Save(ctx context.Context, b *Buffer) {
-	start := time.Now()
+	start := time.Now().UTC().Truncate(time.Millisecond)
+	startMs := uint64(start.UnixMilli())
 
 	db := GetMike(ctx)
 	meta := newMetaKey()
@@ -67,16 +68,20 @@ func Save(ctx context.Context, b *Buffer) {
 	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
 	var tsBytes [6]byte
-	setTs(tsBytes[:], uint64(start.UnixMilli()))
-
-	err := db.Update(func(txn *badger.Txn) error {
-		svc.txn = txn
-		return b.Build(ctx, func(p Property, key string, sum *Sum) error {
-			return saveProperty(ctx, &svc, tsBytes[:], meta.prop(p), key, sum)
-		})
+	setTs(tsBytes[:], startMs)
+	svc.txn = db.NewTransactionAt(startMs, true)
+	err := b.Build(ctx, func(p Property, key string, sum *Sum) error {
+		return saveProperty(ctx, &svc, tsBytes[:], meta.prop(p), key, sum)
 	})
 	if err != nil {
 		log.Get().Err(err).Msg("failed to save ts buffer")
+		svc.txn.Discard()
+	} else {
+		err = svc.txn.CommitAt(startMs, nil)
+		if err != nil {
+			// Failing to commit transaction is fatal
+			log.Get().Fatal().Err(err).Msg("failed to commit transaction")
+		}
 	}
 }
 
