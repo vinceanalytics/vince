@@ -115,6 +115,7 @@ changelog:
   filters:
     exclude:
       - "^chore"
+      - "^release"
       - "merge conflict"
       - Merge pull request
       - Merge remote-tracking branch
