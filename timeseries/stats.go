@@ -40,6 +40,9 @@ type RootOptions struct {
 }
 
 func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
+	if opts.Prop == Base {
+		opts.Key = BaseKey
+	}
 	q := Query(ctx, QueryRequest{
 		UserID: uid,
 		SiteID: sid,
