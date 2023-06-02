@@ -30,7 +30,7 @@ func sum(ls []float64) (o float64) {
 	return
 }
 
-func RootQuery(ctx context.Context,
+func Root(ctx context.Context,
 	uid, sid uint64, selectedMetric Metric,
 	selectedProp Property,
 	key string,
