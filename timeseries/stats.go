@@ -9,8 +9,13 @@ import (
 
 type Stats struct {
 	Timestamps []int64
-	Metrics    map[string]FloatValue
-	Props      map[string][]StatValue
+	Aggregate  Aggregate
+	Timeseries []float64
+}
+
+type Aggregate struct {
+	Metrics map[string]FloatValue
+	Props   map[string][]StatValue
 }
 
 type StatValue struct {
@@ -41,16 +46,23 @@ func RootQuery(ctx context.Context,
 		},
 	})
 	o.Timestamps = q.Timestamps
-	o.Metrics = make(map[string]FloatValue)
+	o.Aggregate = Aggregate{
+		Metrics: make(map[string]FloatValue),
+		Props:   make(map[string][]StatValue),
+	}
 	// calculate base stats
 	base := q.Result[selectedProp.String()]
 	for i := Visitors; i <= VisitDurations; i++ {
-		o.Metrics[i.String()] = FloatValue(sum(base[i.String()][BaseKey]))
+		o.Aggregate.Metrics[i.String()] = FloatValue(sum(base[i.String()][key]))
 	}
-
+	o.Timeseries = base[selectedMetric.String()][key]
+	if len(o.Timeseries) == 0 {
+		// no key was found, make sure time/value aligns for the graph.
+		o.Timeseries = make([]float64, len(o.Timestamps))
+	}
 	for i := Event; i <= City; i++ {
 		for k, v := range q.Result[i.String()][selectedMetric.String()] {
-			o.Props[i.String()] = append(o.Props[i.String()], StatValue{
+			o.Aggregate.Props[i.String()] = append(o.Aggregate.Props[i.String()], StatValue{
 				Key:   k,
 				Value: FloatValue(sum(v)),
 			})
@@ -58,11 +70,11 @@ func RootQuery(ctx context.Context,
 	}
 
 	// calculate bounce rate
-	visits := o.Metrics[Visits.String()]
+	visits := o.Aggregate.Metrics[Visits.String()]
 	if visits != 0 {
 		// avoid dividing by zero, thats why whe check visits != 0
-		o.Metrics[BounceRates.String()] =
-			(o.Metrics[BounceRates.String()] / visits) * 100
+		o.Aggregate.Metrics[BounceRates.String()] =
+			(o.Aggregate.Metrics[BounceRates.String()] / visits) * 100
 	}
 	return
 }
