@@ -90,4 +90,7 @@ func tag(v string) {
 	tools.ExecPlain(
 		"git", "tag", "-a", v, "-m", "release "+v,
 	)
+	tools.ExecPlain(
+		"git", "push",
+	)
 }
