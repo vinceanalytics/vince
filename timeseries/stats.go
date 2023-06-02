@@ -43,6 +43,9 @@ func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 	if opts.Prop == Base {
 		opts.Key = BaseKey
 	}
+	if opts.Offset == 0 {
+		opts.Offset = time.Hour * 24
+	}
 	q := Query(ctx, QueryRequest{
 		UserID: uid,
 		SiteID: sid,
