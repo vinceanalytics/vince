@@ -16,6 +16,12 @@ const (
 func main() {
 	root := tools.RootVince()
 	if os.Getenv("SITE") != "" {
+		// make sure we have latest changes to the main repo
+		tools.ExecPlainWithWorkingPath(
+			filepath.Join(root, "docs", repo),
+			"git", "pull",
+		)
+
 		tools.ExecPlainWithWorkingPath(
 			root,
 			"npm", "run", "docs:build",
@@ -62,6 +68,10 @@ func main() {
 		// commit changes to the repository.
 		tools.ExecPlainWithWorkingPath(
 			filepath.Join(root, "docs", repo),
+			"git", "pull",
+		)
+		tools.ExecPlainWithWorkingPath(
+			filepath.Join(root, "docs", repo),
 			"git", "add", ".",
 		)
 		rev := tools.ExecCollect(
@@ -71,6 +81,11 @@ func main() {
 		tools.ExecPlainWithWorkingPath(
 			filepath.Join(root, "docs", repo),
 			"git", "commit", "-m", msg,
+		)
+
+		tools.ExecPlainWithWorkingPath(
+			filepath.Join(root, "docs", repo),
+			"git", "push",
 		)
 
 	}
