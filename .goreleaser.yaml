@@ -111,7 +111,6 @@ signs:
       - v8s
 changelog:
   sort: asc
-  use: github
   filters:
     exclude:
       - "^chore"
