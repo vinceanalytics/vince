@@ -31,12 +31,12 @@ func sum(ls []float64) (o float64) {
 }
 
 type RootOptions struct {
-	Metric Metric        `json:"metric"`
-	Prop   Property      `json:"prop"`
-	Key    string        `json:"key"`
-	Start  time.Time     `json:"start"`
-	Window time.Duration `json:"window"`
-	Offset time.Duration `json:"offset"`
+	Metric Metric        `json:"metric,omitempty"`
+	Prop   Property      `json:"prop,omitempty"`
+	Key    string        `json:"key,omitempty"`
+	Start  time.Time     `json:"start,omitempty"`
+	Window time.Duration `json:"window,omitempty"`
+	Offset time.Duration `json:"offset,omitempty"`
 }
 
 func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
