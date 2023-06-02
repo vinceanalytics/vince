@@ -21,11 +21,11 @@ The Cloud Native Web Analytics Platform.
 
 ## Usage
 
-[DOcumentation]()
+[Documentation](https://vinceanalytics.github.io/guide)
 
 ## Contributing
 
-[COntributing]()
+[Contributing](https://vinceanalytics.github.io/contibuting)
 
 
 # Origins
@@ -51,24 +51,3 @@ Countin' up hundreds by the thousand
 
 So, enjoy the outcome of my late nights, hoping to be counting hundreds by the thousand
 soon.
-
-# FAQ
-
-## WHy is the binary so big ?
-
-Assets are bundled with the binary. Also we ship esbuild so you can write alerts
-in typescript. Painless deployment and convenient features don't come cheap.
-
-## Why  Issues and Discussions are disabled ?
-
-I'm recovering from burnout, I'm not taking any chances.
-
-
-## Extra ?
-
-This is requiem for my defunct web analytics startup dream. If you are reading this,
-[tigerbeetledb/tigerbeetle](https://github.com/tigerbeetledb/tigerbeetle) team, I am
-more than happy to support your `vince` deployment if you ever need to use it.
-
-I lack the technical chops to be part of your team, but I will always root for your success.
-Your code was a therapy to me, with all my heart, Thank you.
