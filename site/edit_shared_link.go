@@ -3,10 +3,10 @@ package site
 import (
 	"net/http"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/params"
-	"github.com/gernest/vince/render"
-	"github.com/gernest/vince/templates"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/params"
+	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/templates"
 )
 
 func EditSharedLink(w http.ResponseWriter, r *http.Request) {

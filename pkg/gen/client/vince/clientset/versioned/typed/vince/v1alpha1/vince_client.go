@@ -8,8 +8,8 @@ package v1alpha1
 import (
 	"net/http"
 
-	v1alpha1 "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
-	"github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/scheme"
+	v1alpha1 "github.com/vinceanalytics/vince/pkg/apis/vince/v1alpha1"
+	"github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

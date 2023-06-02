@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/params"
-	"github.com/gernest/vince/sessions"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/params"
+	"github.com/vinceanalytics/vince/sessions"
 )
 
 func DeleteAPIKey(w http.ResponseWriter, r *http.Request) {

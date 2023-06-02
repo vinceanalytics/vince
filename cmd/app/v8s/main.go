@@ -7,11 +7,11 @@ import (
 	"os"
 	"sync/atomic"
 
-	"github.com/gernest/vince/cmd/version"
-	"github.com/gernest/vince/pkg/control"
-	"github.com/gernest/vince/pkg/k8s"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/cmd/version"
+	"github.com/vinceanalytics/vince/pkg/control"
+	"github.com/vinceanalytics/vince/pkg/k8s"
 	"golang.org/x/sync/errgroup"
 )
 

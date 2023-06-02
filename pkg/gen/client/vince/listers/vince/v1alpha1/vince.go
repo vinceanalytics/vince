@@ -6,7 +6,7 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
+	v1alpha1 "github.com/vinceanalytics/vince/pkg/apis/vince/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"

@@ -246,7 +246,7 @@ func Package(module string) *debug.Module {
 }
 
 func RootVince() string {
-	return Root("github.com/gernest/vince")
+	return Root("github.com/vinceanalytics/vince")
 }
 
 func Root(pkg string) string {

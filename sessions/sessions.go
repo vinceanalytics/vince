@@ -17,11 +17,11 @@ import (
 
 	"filippo.io/age"
 	"github.com/dchest/captcha"
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/flash"
-	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/templates"
 	"github.com/lestrrat-go/dataurl"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/flash"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/templates"
 )
 
 const MaxAge = 60 * 60 * 24 * 365 * 5

@@ -3,8 +3,8 @@ package sites
 import (
 	"net/http"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/render"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/render"
 )
 
 func ListSites(w http.ResponseWriter, r *http.Request) {

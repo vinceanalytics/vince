@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/pkg/schema"
 	"github.com/rs/zerolog"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/schema"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

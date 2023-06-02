@@ -11,10 +11,10 @@ import (
 
 	_ "embed"
 
-	"github.com/gernest/vince/cmd/app/v8s"
-	"github.com/gernest/vince/cmd/app/vince"
-	"github.com/gernest/vince/tools"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/cmd/app/v8s"
+	"github.com/vinceanalytics/vince/cmd/app/vince"
+	"github.com/vinceanalytics/vince/tools"
 	"moul.io/http2curl"
 )
 

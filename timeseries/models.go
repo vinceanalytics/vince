@@ -9,8 +9,8 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/pkg/log"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, error) {

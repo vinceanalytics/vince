@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/gernest/vince/caches"
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/health"
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/system"
-	"github.com/gernest/vince/timeseries"
+	"github.com/vinceanalytics/vince/caches"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/health"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/system"
+	"github.com/vinceanalytics/vince/timeseries"
 )
 
 func UpdateCacheSites(ctx context.Context, f func(*health.Ping)) func() error {

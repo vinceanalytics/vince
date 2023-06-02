@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"net/http"
 
-	staplesv1alpha1 "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
+	staplesv1alpha1 "github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

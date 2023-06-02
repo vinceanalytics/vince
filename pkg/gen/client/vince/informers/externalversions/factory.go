@@ -10,9 +10,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
-	internalinterfaces "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions/internalinterfaces"
-	vince "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions/vince"
+	versioned "github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned"
+	internalinterfaces "github.com/vinceanalytics/vince/pkg/gen/client/vince/informers/externalversions/internalinterfaces"
+	vince "github.com/vinceanalytics/vince/pkg/gen/client/vince/informers/externalversions/vince"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

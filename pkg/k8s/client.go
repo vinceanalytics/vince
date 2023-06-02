@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
-	"github.com/gernest/vince/pkg/secrets"
 	"github.com/rs/zerolog"
+	"github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned"
+	"github.com/vinceanalytics/vince/pkg/secrets"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

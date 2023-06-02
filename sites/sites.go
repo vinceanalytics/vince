@@ -3,8 +3,8 @@ package sites
 import (
 	"context"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/pkg/log"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 func Role(ctx context.Context, userId uint64, siteId uint64) (role string) {

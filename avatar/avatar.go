@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gernest/vince/pkg/identicon"
-	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/render"
+	"github.com/vinceanalytics/vince/pkg/identicon"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/render"
 )
 
 // Generates and server avatar in png format. Accepts query params

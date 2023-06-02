@@ -3,9 +3,9 @@ package plug
 import (
 	"net/http"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/render"
-	"github.com/gernest/vince/templates"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/templates"
 )
 
 func AuthorizeSiteAPI(h http.Handler) http.Handler {

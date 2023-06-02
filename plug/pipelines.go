@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gernest/vince/params"
+	"github.com/vinceanalytics/vince/params"
 )
 
 func Browser(ctx context.Context) Pipeline {

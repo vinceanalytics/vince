@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gernest/vince/pkg/secrets"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/pkg/secrets"
 )
 
 func ConfigCMD() *cli.Command {

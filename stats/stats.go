@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/render"
-	"github.com/gernest/vince/timeseries"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/timeseries"
 )
 
 func Query(w http.ResponseWriter, r *http.Request) {

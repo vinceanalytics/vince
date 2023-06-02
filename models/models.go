@@ -13,12 +13,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/pkg/db"
-	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/pkg/schema"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/pkg/db"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/schema"
 
-	// "github.com/gernest/vince/pkg/sqlite"
+	// "github.com/vinceanalytics/vince/pkg/sqlite"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"

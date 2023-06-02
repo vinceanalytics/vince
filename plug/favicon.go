@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/referrer"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/referrer"
 )
 
 //go:embed placeholder_favicon.ico

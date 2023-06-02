@@ -3,7 +3,7 @@ package timeseries
 import (
 	"math"
 
-	"github.com/gernest/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 var (

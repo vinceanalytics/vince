@@ -3,7 +3,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/gernest/vince/sessions"
+	"github.com/vinceanalytics/vince/sessions"
 )
 
 func Logout(w http.ResponseWriter, r *http.Request) {

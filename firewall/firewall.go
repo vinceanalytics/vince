@@ -3,7 +3,7 @@ package firewall
 import (
 	"net/http"
 
-	"github.com/gernest/vince/remoteip"
+	"github.com/vinceanalytics/vince/remoteip"
 )
 
 type Wall interface {

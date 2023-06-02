@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/firewall"
-	"github.com/gernest/vince/render"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/firewall"
+	"github.com/vinceanalytics/vince/render"
 )
 
 func Firewall(ctx context.Context) Plug {

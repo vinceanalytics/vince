@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
-	"github.com/gernest/vince/render"
-	"github.com/gernest/vince/templates"
+	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/templates"
 )
 
 func RegisterForm(w http.ResponseWriter, r *http.Request) {

@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gernest/vince/caches"
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/render"
-	"github.com/gernest/vince/templates"
+	"github.com/vinceanalytics/vince/caches"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/templates"
 )
 
 func AuthorizeStatsAPI(h http.Handler) http.Handler {

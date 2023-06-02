@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gernest/vince/pkg/version"
-	"github.com/gernest/vince/tools"
+	"github.com/vinceanalytics/vince/pkg/version"
+	"github.com/vinceanalytics/vince/tools"
 )
 
 const (

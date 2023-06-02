@@ -3,8 +3,8 @@ package gate
 import (
 	"context"
 
-	"github.com/gernest/vince/caches"
-	"github.com/gernest/vince/timeseries"
+	"github.com/vinceanalytics/vince/caches"
+	"github.com/vinceanalytics/vince/timeseries"
 )
 
 // Check ensure that domain is part of registered sites. Returns *timeseries.Buffer

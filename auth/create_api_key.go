@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/sessions"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/sessions"
 )
 
 func CreateAPIKey(w http.ResponseWriter, r *http.Request) {

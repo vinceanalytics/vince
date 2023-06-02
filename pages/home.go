@@ -3,7 +3,7 @@ package pages
 import (
 	"net/http"
 
-	"github.com/gernest/vince/models"
+	"github.com/vinceanalytics/vince/models"
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {

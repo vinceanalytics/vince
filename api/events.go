@@ -12,16 +12,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gernest/vince/gate"
-	"github.com/gernest/vince/geoip"
-	"github.com/gernest/vince/pkg/entry"
-	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/referrer"
-	"github.com/gernest/vince/remoteip"
-	"github.com/gernest/vince/system"
-	"github.com/gernest/vince/ua"
-	"github.com/gernest/vince/userid"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/vinceanalytics/vince/gate"
+	"github.com/vinceanalytics/vince/geoip"
+	"github.com/vinceanalytics/vince/pkg/entry"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/referrer"
+	"github.com/vinceanalytics/vince/remoteip"
+	"github.com/vinceanalytics/vince/system"
+	"github.com/vinceanalytics/vince/ua"
+	"github.com/vinceanalytics/vince/userid"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

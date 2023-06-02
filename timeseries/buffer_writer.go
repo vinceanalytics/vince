@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/gernest/vince/caches"
-	"github.com/gernest/vince/pkg/entry"
-	"github.com/gernest/vince/pkg/log"
+	"github.com/vinceanalytics/vince/caches"
+	"github.com/vinceanalytics/vince/pkg/entry"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 const SessionTime = time.Minute * 10

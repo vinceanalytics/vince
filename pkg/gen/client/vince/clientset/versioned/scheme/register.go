@@ -6,7 +6,7 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 package scheme
 
 import (
-	staplesv1alpha1 "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
+	staplesv1alpha1 "github.com/vinceanalytics/vince/pkg/apis/vince/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

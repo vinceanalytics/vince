@@ -6,8 +6,8 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 package applyconfiguration
 
 import (
-	v1alpha1 "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
-	vincev1alpha1 "github.com/gernest/vince/pkg/gen/client/vince/applyconfiguration/vince/v1alpha1"
+	v1alpha1 "github.com/vinceanalytics/vince/pkg/apis/vince/v1alpha1"
+	vincev1alpha1 "github.com/vinceanalytics/vince/pkg/gen/client/vince/applyconfiguration/vince/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 

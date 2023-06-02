@@ -11,7 +11,7 @@ import (
 
 	"github.com/chanced/powerset"
 	"github.com/evanw/esbuild/pkg/api"
-	"github.com/gernest/vince/tools"
+	"github.com/vinceanalytics/vince/tools"
 )
 
 //go:embed track.tmpl

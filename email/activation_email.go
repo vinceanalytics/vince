@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/mail"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/templates"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/templates"
 )
 
 func SendActivation(ctx context.Context, code uint64) error {

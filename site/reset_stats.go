@@ -3,10 +3,10 @@ package site
 import (
 	"net/http"
 
-	"github.com/gernest/vince/flash"
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/sessions"
-	"github.com/gernest/vince/timeseries"
+	"github.com/vinceanalytics/vince/flash"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/sessions"
+	"github.com/vinceanalytics/vince/timeseries"
 )
 
 func ResetStats(w http.ResponseWriter, r *http.Request) {

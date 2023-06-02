@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gernest/vince/tools"
+	"github.com/vinceanalytics/vince/tools"
 	"golang.org/x/mod/semver"
 )
 

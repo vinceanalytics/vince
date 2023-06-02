@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	vince_informers "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions"
-	vince_listers "github.com/gernest/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
-	"github.com/gernest/vince/pkg/k8s"
 	"github.com/rs/zerolog"
+	vince_informers "github.com/vinceanalytics/vince/pkg/gen/client/vince/informers/externalversions"
+	vince_listers "github.com/vinceanalytics/vince/pkg/gen/client/vince/listers/vince/v1alpha1"
+	"github.com/vinceanalytics/vince/pkg/k8s"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"

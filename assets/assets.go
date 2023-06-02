@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gernest/vince/plug"
+	"github.com/vinceanalytics/vince/plug"
 )
 
 //go:generate go run gen/main.go app ../../assets/

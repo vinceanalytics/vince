@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/flash"
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/pkg/octicon"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/flash"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/pkg/octicon"
 )
 
 //go:embed layout  plot site stats auth error email

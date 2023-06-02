@@ -3,11 +3,11 @@ package sites
 import (
 	"net/http"
 
-	"github.com/gernest/vince/caches"
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/params"
-	"github.com/gernest/vince/render"
-	"github.com/gernest/vince/timeseries"
+	"github.com/vinceanalytics/vince/caches"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/params"
+	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/timeseries"
 )
 
 func DeleteSite(w http.ResponseWriter, r *http.Request) {

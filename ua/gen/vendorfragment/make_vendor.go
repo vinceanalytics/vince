@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/gernest/vince/tools"
-	"github.com/gernest/vince/ua"
+	"github.com/vinceanalytics/vince/tools"
+	"github.com/vinceanalytics/vince/ua"
 	"gopkg.in/yaml.v2"
 )
 

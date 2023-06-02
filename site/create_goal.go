@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/render"
-	"github.com/gernest/vince/sessions"
-	"github.com/gernest/vince/templates"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/sessions"
+	"github.com/vinceanalytics/vince/templates"
 )
 
 func CreateGoal(w http.ResponseWriter, r *http.Request) {

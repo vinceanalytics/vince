@@ -6,9 +6,9 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 package fake
 
 import (
-	clientset "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
-	staplesv1alpha1 "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
-	fakestaplesv1alpha1 "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/typed/vince/v1alpha1/fake"
+	clientset "github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned"
+	staplesv1alpha1 "github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
+	fakestaplesv1alpha1 "github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned/typed/vince/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

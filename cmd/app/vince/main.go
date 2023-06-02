@@ -1,10 +1,10 @@
 package vince
 
 import (
-	"github.com/gernest/vince/cmd/version"
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/server"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/cmd/version"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/server"
 )
 
 func App() *cli.App {

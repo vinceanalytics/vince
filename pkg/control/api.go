@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 
-	"github.com/gernest/vince/pkg/schema"
+	"github.com/vinceanalytics/vince/pkg/schema"
 )
 
 type VinceAPI interface {

@@ -8,12 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/flash"
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/pkg/log"
-	"github.com/gernest/vince/sessions"
 	"github.com/oklog/ulid/v2"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/flash"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/sessions"
 )
 
 type Plug func(http.Handler) http.Handler

@@ -7,8 +7,8 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/gernest/vince/pkg/log"
 	"github.com/rs/zerolog"
+	"github.com/vinceanalytics/vince/pkg/log"
 	"gorm.io/gorm"
 )
 

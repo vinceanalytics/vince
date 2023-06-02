@@ -6,8 +6,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/gernest/vince/geoip"
 	"github.com/klauspost/compress/zstd"
+	"github.com/vinceanalytics/vince/geoip"
 )
 
 var ps = map[string]struct{}{}

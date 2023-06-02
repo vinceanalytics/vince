@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/render"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/render"
 )
 
 type SharedLinkRequest struct {

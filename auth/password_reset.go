@@ -3,7 +3,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/gernest/vince/render"
+	"github.com/vinceanalytics/vince/render"
 )
 
 func PasswordReset(w http.ResponseWriter, r *http.Request) {

@@ -9,9 +9,9 @@ import (
 	"github.com/emersion/go-message/mail"
 	"github.com/emersion/go-sasl"
 	"github.com/emersion/go-smtp"
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/render"
-	"github.com/gernest/vince/templates"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/templates"
 )
 
 func Compose(ctx context.Context,

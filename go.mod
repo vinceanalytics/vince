@@ -1,4 +1,4 @@
-module github.com/gernest/vince
+module github.com/vinceanalytics/vince
 
 go 1.20
 

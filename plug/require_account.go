@@ -3,8 +3,8 @@ package plug
 import (
 	"net/http"
 
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/sessions"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/sessions"
 )
 
 func RequireAccount(h http.Handler) http.Handler {

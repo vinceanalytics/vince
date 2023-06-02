@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"github.com/gernest/vince/render"
+	"github.com/vinceanalytics/vince/render"
 )
 
 func Version(w http.ResponseWriter, r *http.Request) {

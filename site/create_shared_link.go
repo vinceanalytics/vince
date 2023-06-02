@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gernest/vince/models"
+	"github.com/vinceanalytics/vince/models"
 )
 
 func CreateSharedLink(w http.ResponseWriter, r *http.Request) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gernest/vince/pkg/timex"
+	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
 type CalendarEntry struct {

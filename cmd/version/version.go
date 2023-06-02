@@ -3,8 +3,8 @@ package version
 import (
 	"os"
 
-	"github.com/gernest/vince/pkg/version"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/pkg/version"
 )
 
 func Version() *cli.Command {

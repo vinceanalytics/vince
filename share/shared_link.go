@@ -3,7 +3,7 @@ package share
 import (
 	"net/http"
 
-	"github.com/gernest/vince/render"
+	"github.com/vinceanalytics/vince/render"
 )
 
 func SharedLink(w http.ResponseWriter, r *http.Request) {

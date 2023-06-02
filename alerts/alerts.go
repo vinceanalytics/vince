@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/dop251/goja"
-	"github.com/gernest/vince/config"
-	"github.com/gernest/vince/pkg/log"
+	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 //go:embed vince.ts

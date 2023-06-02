@@ -11,9 +11,9 @@ import (
 	"fmt"
 	"time"
 
-	v1alpha1 "github.com/gernest/vince/pkg/apis/vince/v1alpha1"
-	vincev1alpha1 "github.com/gernest/vince/pkg/gen/client/vince/applyconfiguration/vince/v1alpha1"
-	scheme "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/scheme"
+	v1alpha1 "github.com/vinceanalytics/vince/pkg/apis/vince/v1alpha1"
+	vincev1alpha1 "github.com/vinceanalytics/vince/pkg/gen/client/vince/applyconfiguration/vince/v1alpha1"
+	scheme "github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

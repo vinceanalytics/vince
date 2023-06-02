@@ -8,7 +8,7 @@ package internalinterfaces
 import (
 	time "time"
 
-	versioned "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned"
+	versioned "github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	cache "k8s.io/client-go/tools/cache"

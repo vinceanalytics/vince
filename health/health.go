@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gernest/vince/render"
+	"github.com/vinceanalytics/vince/render"
 )
 
 type Component interface {

@@ -7,13 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gernest/vince/tools"
+	"github.com/vinceanalytics/vince/tools"
 	_ "k8s.io/code-generator"
 	_ "sigs.k8s.io/controller-tools/pkg/crd"
 )
 
 const (
-	rootPackage = "github.com/gernest/vince"
+	rootPackage = "github.com/vinceanalytics/vince"
 )
 
 var (

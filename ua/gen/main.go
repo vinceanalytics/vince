@@ -4,13 +4,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gernest/vince/tools"
-	"github.com/gernest/vince/ua/gen/bot"
-	"github.com/gernest/vince/ua/gen/client"
-	"github.com/gernest/vince/ua/gen/device"
-	"github.com/gernest/vince/ua/gen/index"
-	uos "github.com/gernest/vince/ua/gen/os"
-	"github.com/gernest/vince/ua/gen/vendorfragment"
+	"github.com/vinceanalytics/vince/tools"
+	"github.com/vinceanalytics/vince/ua/gen/bot"
+	"github.com/vinceanalytics/vince/ua/gen/client"
+	"github.com/vinceanalytics/vince/ua/gen/device"
+	"github.com/vinceanalytics/vince/ua/gen/index"
+	uos "github.com/vinceanalytics/vince/ua/gen/os"
+	"github.com/vinceanalytics/vince/ua/gen/vendorfragment"
 )
 
 const (

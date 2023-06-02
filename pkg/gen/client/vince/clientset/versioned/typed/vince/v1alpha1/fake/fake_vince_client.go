@@ -6,7 +6,7 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 package fake
 
 import (
-	v1alpha1 "github.com/gernest/vince/pkg/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
+	v1alpha1 "github.com/vinceanalytics/vince/pkg/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

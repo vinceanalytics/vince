@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gernest/vince/flash"
-	"github.com/gernest/vince/models"
-	"github.com/gernest/vince/params"
-	"github.com/gernest/vince/sessions"
+	"github.com/vinceanalytics/vince/flash"
+	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/params"
+	"github.com/vinceanalytics/vince/sessions"
 )
 
 func DeleteGoal(w http.ResponseWriter, r *http.Request) {

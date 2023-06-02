@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gernest/vince/pkg/apis/vince/v1alpha1"
-	vince_informers "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions"
-	"github.com/gernest/vince/pkg/k8s"
+	"github.com/vinceanalytics/vince/pkg/apis/vince/v1alpha1"
+	vince_informers "github.com/vinceanalytics/vince/pkg/gen/client/vince/informers/externalversions"
+	"github.com/vinceanalytics/vince/pkg/k8s"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/informers"

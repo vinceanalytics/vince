@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/gernest/vince/email"
-	"github.com/gernest/vince/models"
+	"github.com/vinceanalytics/vince/email"
+	"github.com/vinceanalytics/vince/models"
 )
 
 func IssueEmailVerification(ctx context.Context, usr *models.User) (uint64, error) {

@@ -6,8 +6,8 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 package vince
 
 import (
-	internalinterfaces "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/gernest/vince/pkg/gen/client/vince/informers/externalversions/vince/v1alpha1"
+	internalinterfaces "github.com/vinceanalytics/vince/pkg/gen/client/vince/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/vinceanalytics/vince/pkg/gen/client/vince/informers/externalversions/vince/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

@@ -3,7 +3,7 @@ package main
 import (
 	"path/filepath"
 
-	"github.com/gernest/vince/tools"
+	"github.com/vinceanalytics/vince/tools"
 )
 
 func main() {

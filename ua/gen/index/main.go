@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/gernest/vince/tools"
+	"github.com/vinceanalytics/vince/tools"
 )
 
 func Make() {

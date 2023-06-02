@@ -3,7 +3,7 @@ package site
 import (
 	"net/http"
 
-	"github.com/gernest/vince/render"
+	"github.com/vinceanalytics/vince/render"
 )
 
 func DisableWeeklyReport(w http.ResponseWriter, r *http.Request) {
