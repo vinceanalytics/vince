@@ -31,7 +31,6 @@ require (
 	github.com/segmentio/parquet-go v0.0.0-20230404173032-05ed5ed000b1
 	github.com/urfave/cli/v3 v3.0.0-alpha2
 	golang.org/x/crypto v0.4.0
-	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
 	golang.org/x/mod v0.10.0
 	golang.org/x/net v0.9.0
 	golang.org/x/sync v0.1.0
