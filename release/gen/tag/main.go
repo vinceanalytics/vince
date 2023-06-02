@@ -36,7 +36,7 @@ func updateVersionPackage(root, v string) {
 		println("> no version changes")
 		os.Exit(0)
 	case -1:
-		tools.Exit("VERSION must be greater than", string(app))
+		tools.Exit(v, "VERSION must be greater than", string(app))
 	}
 	tools.WriteFile(filepath.Join(root, "pkg/version/VERSION.txt"), []byte(v))
 }
