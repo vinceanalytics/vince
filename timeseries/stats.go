@@ -35,6 +35,7 @@ type RootOptions struct {
 	Prop   Property      `json:"prop"`
 	Key    string        `json:"key"`
 	Start  time.Time     `json:"start"`
+	Window time.Duration `json:"window"`
 	Offset time.Duration `json:"offset"`
 }
 
@@ -43,6 +44,7 @@ func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 		UserID: uid,
 		SiteID: sid,
 		BaseQuery: BaseQuery{
+			Window:  opts.Window,
 			Offset:  opts.Offset,
 			Start:   opts.Start,
 			Metrics: allMetrics,
