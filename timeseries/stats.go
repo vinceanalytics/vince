@@ -36,7 +36,7 @@ func RootQuery(ctx context.Context,
 		SiteID: sid,
 		BaseQuery: BaseQuery{
 			Offset:  offset,
-			Metrics: allMetrics(),
+			Metrics: allMetrics,
 			Filters: allProperties(selectedMetric, selectedProp, key),
 		},
 	})
@@ -67,12 +67,13 @@ func RootQuery(ctx context.Context,
 	return
 }
 
-func allMetrics() []Metric {
-	o := make([]Metric, VisitDurations+1)
-	for i := range o {
-		o[i] = Metric(i)
-	}
-	return o
+var allMetrics = []Metric{
+	Visitors,
+	Views,
+	Events,
+	Visits,
+	BounceRates,
+	VisitDurations,
 }
 
 func allProperties(selected Metric, selectedProp Property, key string) []*Filter {
