@@ -1,4 +1,5 @@
 project_name: vince
+report_sizes: true
 builds:
   - env:
       - CGO_ENABLED=1
@@ -97,9 +98,7 @@ archives:
       - completions/v8s/*
       - LICENSE
 checksum:
-  disable: true
-snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  name_template: "checksums.txt"
 signs:
   - signature: "${artifact}.minisig"
     cmd: minisign
@@ -111,14 +110,45 @@ signs:
       - vince
       - v8s
 changelog:
-  skip: true
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^chore"
+      - "merge conflict"
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+      - go mod tidy
+      - cleanup
+  groups:
+    - title: Dependency updates
+      regexp: '^.*?(feat|fix)\(deps\)!?:.+$'
+      order: 300
+    - title: "New Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 100
+    - title: "Security updates"
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 150
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 200
+    - title: "Documentation updates"
+      regexp: ^.*?docs(\([[:word:]]+\))??!?:.+$
+      order: 400
+    - title: "Build process updates"
+      regexp: ^.*?build(\([[:word:]]+\))??!?:.+$
+      order: 400
+    - title: "Other work"
+      order: 9999
+
 dockers:
   - id: vince-amd64
     ids:
       - vince
     image_templates:
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
-    skip_push: true
     goos: linux
     goarch: amd64
     dockerfile: "vince.Dockerfile"
@@ -134,7 +164,6 @@ dockers:
       - vince
     image_templates:
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
-    skip_push: true
     goos: linux
     goarch: arm64
     dockerfile: "vince.Dockerfile"
@@ -151,7 +180,6 @@ dockers:
       - v8s
     image_templates:
       - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-amd64"
-    skip_push: true
     goos: linux
     goarch: amd64
     dockerfile: "v8s.Dockerfile"
@@ -167,7 +195,6 @@ dockers:
       - v8s
     image_templates:
       - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-arm64"
-    skip_push: true
     goos: linux
     goarch: arm64
     dockerfile: "v8s.Dockerfile"
@@ -185,25 +212,21 @@ docker_manifests:
     image_templates:
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
-    skip_push: true
   - id: v8s
     name_template: "ghcr.io/vinceanalytics/v8s:{{.Tag}}"
     image_templates:
       - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-amd64"
       - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-arm64"
-    skip_push: true
   - id: vince-latest
     name_template: "ghcr.io/vinceanalytics/vince:latest"
     image_templates:
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
-    skip_push: true
   - id: v8s-latest
     name_template: "ghcr.io/vinceanalytics/v8s:latest"
     image_templates:
       - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-amd64"
       - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-arm64"
-    skip_push: true
 brews:
   - tap:
       owner: vinceanalytics
@@ -212,7 +235,6 @@ brews:
       name: Geofrey Ernest
       email: geofreyernest@live.com
     name: vince
-    skip_upload: true
     folder: Formula
     homepage: httpd://vinceanalytics.github.io
     description: The Cloud Native Web Analytics Platform
@@ -234,7 +256,6 @@ brews:
       name: Geofrey Ernest
       email: geofreyernest@live.com
     name: v8s
-    skip_upload: true
     folder: Formula
     homepage: httpd://vinceanalytics.github.io
     description: kubernetes controller for vince- The Cloud Native Web Analytics Platform
@@ -347,12 +368,9 @@ nfpms:
         - changelog-file-missing-in-native-package
 
 release:
-  mode: keep-existing
   github:
     owner: vinceanalytics
     name: vince
-  disable: true
-  skip_upload: true
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
