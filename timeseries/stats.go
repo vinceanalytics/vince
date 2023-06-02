@@ -30,19 +30,23 @@ func sum(ls []float64) (o float64) {
 	return
 }
 
-func Root(ctx context.Context,
-	uid, sid uint64, selectedMetric Metric,
-	selectedProp Property,
-	key string,
-	offset time.Duration,
-) (o Stats) {
+type RootOptions struct {
+	Metric Metric        `json:"metric"`
+	Prop   Property      `json:"prop"`
+	Key    string        `json:"key"`
+	Start  time.Time     `json:"start"`
+	Offset time.Duration `json:"offset"`
+}
+
+func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 	q := Query(ctx, QueryRequest{
 		UserID: uid,
 		SiteID: sid,
 		BaseQuery: BaseQuery{
-			Offset:  offset,
+			Offset:  opts.Offset,
+			Start:   opts.Start,
 			Metrics: allMetrics,
-			Filters: allProperties(selectedMetric, selectedProp, key),
+			Filters: allProperties(opts.Metric, opts.Prop, opts.Key),
 		},
 	})
 	o.Timestamps = q.Timestamps
@@ -51,17 +55,17 @@ func Root(ctx context.Context,
 		Props:   make(map[string][]StatValue),
 	}
 	// calculate base stats
-	base := q.Result[selectedProp.String()]
+	base := q.Result[opts.Prop.String()]
 	for i := Visitors; i <= VisitDurations; i++ {
-		o.Aggregate.Metrics[i.String()] = FloatValue(sum(base[i.String()][key]))
+		o.Aggregate.Metrics[i.String()] = FloatValue(sum(base[i.String()][opts.Key]))
 	}
-	o.Timeseries = base[selectedMetric.String()][key]
+	o.Timeseries = base[opts.Metric.String()][opts.Key]
 	if len(o.Timeseries) == 0 {
 		// no key was found, make sure time/value aligns for the graph.
 		o.Timeseries = make([]float64, len(o.Timestamps))
 	}
 	for i := Event; i <= City; i++ {
-		for k, v := range q.Result[i.String()][selectedMetric.String()] {
+		for k, v := range q.Result[i.String()][opts.Metric.String()] {
 			o.Aggregate.Props[i.String()] = append(o.Aggregate.Props[i.String()], StatValue{
 				Key:   k,
 				Value: FloatValue(sum(v)),
@@ -88,7 +92,7 @@ var allMetrics = []Metric{
 	VisitDurations,
 }
 
-func allProperties(selected Metric, selectedProp Property, key string) []*Filter {
+func allProperties(selected Metric, selectedProp Property, key string) FilterList {
 	if selectedProp != Base {
 		// No need to select other properties if its not for the base. This is the
 		// case when we are searching based on a key
