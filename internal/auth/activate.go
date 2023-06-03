@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/render"
 	"github.com/vinceanalytics/vince/sessions"
 	"github.com/vinceanalytics/vince/templates"
 	"gorm.io/gorm"

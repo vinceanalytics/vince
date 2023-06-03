@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/health"
-	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/internal/render"
 )
 
 func Health(w http.ResponseWriter, r *http.Request) {

@@ -12,7 +12,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/pages"
 	"github.com/vinceanalytics/vince/internal/plug"
-	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/share"
 	"github.com/vinceanalytics/vince/site"
 	"github.com/vinceanalytics/vince/sites"

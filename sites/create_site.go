@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/internal/render"
 )
 
 type CreateSiteRequest struct {

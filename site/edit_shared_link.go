@@ -5,7 +5,7 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/params"
-	"github.com/vinceanalytics/vince/render"
+	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/templates"
 )
 
