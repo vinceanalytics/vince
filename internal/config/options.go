@@ -32,10 +32,9 @@ type Options struct {
 			EnableMailHog bool
 		}
 	}
-	DataPath    string
-	EnableEmail bool
-	LogLevel    string
-	Secrets     struct {
+	DataPath string
+	LogLevel string
+	Secrets  struct {
 		Age, Secret string
 	}
 	Cors struct {
@@ -201,7 +200,6 @@ func (o *Options) Flags() []cli.Flag {
 			Category:    "core.mailer.smtp",
 			Name:        "mailer-smtp-enable-mailhog",
 			Usage:       "port address of the smtp server used for outgoing emails",
-			Value:       true,
 			Destination: &o.Mailer.SMTP.EnableMailHog,
 			EnvVars:     []string{"VINCE_MAILER_SMTP_ENABLE_MAILHOG"},
 		},

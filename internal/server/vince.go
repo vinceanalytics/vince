@@ -158,7 +158,7 @@ func HTTP(ctx context.Context, o *config.Options) error {
 		log.Get().Debug().Msg("setup alerts")
 		ctx = alerts.Setup(ctx, o)
 	}
-	if o.EnableEmail {
+	if o.Mailer.Enabled {
 		log.Get().Debug().Msg("setup mailer")
 		mailer, err := email.FromConfig(o)
 		if err != nil {
