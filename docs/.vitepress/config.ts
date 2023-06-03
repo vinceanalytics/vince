@@ -6,6 +6,7 @@ export default defineConfig({
   titleTemplate: true,
   title: 'vince',
   ignoreDeadLinks: 'localhostLinks',
+  appearance: 'dark',
   head: [
     ["meta", { name: "msapplication-TileColor", content: "#bdfcff" }],
     ["meta", { name: "twitter:card", content: "product" }],
