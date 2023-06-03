@@ -3,7 +3,7 @@ title: Using vince
 ----
 
 Vince uses environment variables and commandline arguments for configuration  
-[see CLI](./cli-vince.md) for full list of options and their meaning.
+[see CLI](../cli/index.md) for full list of options and their meaning.
 
 In this guide we will setup a simple vince instance.
 
