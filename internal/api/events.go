@@ -13,8 +13,8 @@ import (
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
-	"github.com/vinceanalytics/vince/geoip"
 	"github.com/vinceanalytics/vince/internal/gate"
+	"github.com/vinceanalytics/vince/internal/geoip"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/referrer"

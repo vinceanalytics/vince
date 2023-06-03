@@ -7,7 +7,7 @@ import (
 	"sort"
 
 	"github.com/klauspost/compress/zstd"
-	"github.com/vinceanalytics/vince/geoip"
+	"github.com/vinceanalytics/vince/internal/geoip"
 )
 
 var ps = map[string]struct{}{}
