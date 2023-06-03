@@ -32,13 +32,6 @@ type hostDom struct {
 	dom  *Domains
 }
 
-type Name struct {
-	name   string
-	domain string
-}
-
-var names []*Name
-
 const (
 	repo = "git@github.com:snowplow-referer-parser/referer-parser.git"
 	dir  = "referer-parser"
@@ -66,15 +59,10 @@ func main() {
 		for metaName, xo := range o {
 			xd := xo["domains"]
 			x := Domains{
-				Type:    metaType,
-				Name:    metaName,
-				Domains: xd,
+				Type: metaType,
+				Name: metaName,
 			}
-			names = append(names, &Name{
-				name:   x.Name,
-				domain: x.Domains[0],
-			})
-			for _, d := range x.Domains {
+			for _, d := range xd {
 				refs[d] = struct{}{}
 				u, _ := url.Parse("http://" + d)
 				host := strings.TrimPrefix(u.Host, "www.")
@@ -92,9 +80,13 @@ func main() {
 				}
 				x.Hosts = append(x.Hosts, host)
 				index[host] = true
+				x.Domains = append(x.Domains, d)
 			}
 			sort.Strings(x.Hosts)
-			domains = append(domains, &x)
+			sort.Strings(x.Domains)
+			if len(x.Domains) > 0 {
+				domains = append(domains, &x)
+			}
 		}
 	}
 
@@ -105,11 +97,15 @@ func main() {
 	fmt.Fprintln(&b, " import \"sync\"")
 	fmt.Fprintln(&b, " var Favicon =&sync.Map{}")
 	fmt.Fprintln(&b, " func init() {")
-	sort.SliceStable(names, func(i, j int) bool {
-		return names[i].name < names[j].name
+
+	sort.SliceStable(domains, func(i, j int) bool {
+		return domains[i].Name < domains[j].Name &&
+			domains[i].Type < domains[j].Type &&
+			domains[i].Domains[0] < domains[j].Domains[0]
 	})
-	for _, v := range names {
-		fmt.Fprintf(&b, " Favicon.Store(%q,%q)\n", v.name, v.domain)
+
+	for _, v := range domains {
+		fmt.Fprintf(&b, " Favicon.Store(%q,%q)\n", v.Name, v.Domains[0])
 	}
 	fmt.Fprintln(&b, " }")
 	fmt.Fprintf(&b, " const minReferrerSize=%d\n", minLen)
@@ -127,13 +123,8 @@ func main() {
 	})
 
 	var hosts []*hostDom
-	seenHost := make(map[string]struct{})
 	for _, m := range domains {
 		for _, h := range m.Hosts {
-			if _, ok := seenHost[h]; ok {
-				continue
-			}
-			seenHost[h] = struct{}{}
 			hosts = append(hosts, &hostDom{
 				host: h,
 				dom:  m,
