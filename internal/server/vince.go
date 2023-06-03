@@ -19,6 +19,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/email"
+	"github.com/vinceanalytics/vince/internal/group"
 	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/plug"
@@ -27,7 +28,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/internal/userid"
 	"github.com/vinceanalytics/vince/internal/worker"
-	"github.com/vinceanalytics/vince/pkg/group"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"golang.org/x/sync/errgroup"
 )
