@@ -19,9 +19,9 @@ import (
 	"github.com/vinceanalytics/vince/internal/remoteip"
 	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/internal/ua"
+	"github.com/vinceanalytics/vince/internal/userid"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/userid"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

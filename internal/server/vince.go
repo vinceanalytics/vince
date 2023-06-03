@@ -25,9 +25,9 @@ import (
 	"github.com/vinceanalytics/vince/internal/router"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/timeseries"
+	"github.com/vinceanalytics/vince/internal/userid"
 	"github.com/vinceanalytics/vince/pkg/group"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/userid"
 	"github.com/vinceanalytics/vince/worker"
 	"golang.org/x/sync/errgroup"
 )
