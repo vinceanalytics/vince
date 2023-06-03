@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 
 	"github.com/vinceanalytics/vince/internal/ua/gen/bot"
@@ -20,22 +19,10 @@ const (
 
 func main() {
 	root := tools.RootVince()
-	_, err := os.Stat(dir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			println(">  downloading device-detector")
-			tools.ExecPlain("git", "clone", repo)
-		} else {
-			tools.Exit(err.Error())
-		}
-	} else {
-		// make sure we are up to date
-		println(">  updating device-detector")
-		tools.ExecPlainWithWorkingPath(
-			filepath.Join(root, "/internal/ua", dir),
-			"git", "pull",
-		)
-	}
+	tools.EnsureRepo(
+		filepath.Join(root, "internal", "ua"),
+		repo, dir,
+	)
 	rootRegex := filepath.Join(root, "/internal/ua", dir, "regexes")
 	bot.Make(rootRegex)
 	client.Make(rootRegex)

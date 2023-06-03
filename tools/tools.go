@@ -326,3 +326,21 @@ func breakDown(v string) (o []string) {
 func latestTag() string {
 	return ExecCollect("git", "describe", "--abbrev=0")
 }
+
+func EnsureRepo(root, repo, dir string) {
+	_, err := os.Stat(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			println(">  downloading", dir)
+			ExecPlain("git", "clone", repo)
+		} else {
+			Exit(err.Error())
+		}
+	} else {
+		println(">  updating", dir)
+		ExecPlainWithWorkingPath(
+			filepath.Join(root, dir),
+			"git", "pull",
+		)
+	}
+}

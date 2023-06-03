@@ -6,402 +6,406 @@ import "sync"
 var Favicon = &sync.Map{}
 
 func init() {
-	Favicon.Store("Google", "support.google.com")
-	Favicon.Store("Yandex Maps", "maps.yandex.ru")
-	Favicon.Store("Yahoo!", "finance.yahoo.com")
-	Favicon.Store("TalkTalk", "www.talktalk.co.uk")
+	Favicon.Store("1&1", "search.1and1.com")
 	Favicon.Store("1.cz", "1.cz")
-	Favicon.Store("Softonic", "search.softonic.com")
-	Favicon.Store("GAIS", "gais.cs.ccu.edu.tw")
-	Favicon.Store("Freecause", "search.freecause.com")
-	Favicon.Store("360.cn", "so.360.cn")
-	Favicon.Store("RPMFind", "rpmfind.net")
-	Favicon.Store("Comcast", "serach.comcast.net")
-	Favicon.Store("Voila", "search.ke.voila.fr")
-	Favicon.Store("Nifty", "search.nifty.com")
-	Favicon.Store("Atlas", "searchatlas.centrum.cz")
-	Favicon.Store("2gis", "2gis.ru")
-	Favicon.Store("Lo.st", "lo.st")
-	Favicon.Store("DasTelefonbuch", "www1.dastelefonbuch.de")
-	Favicon.Store("Fireball", "www.fireball.de")
+	Favicon.Store("126 Mail", "mail.126.com")
+	Favicon.Store("163 Mail", "mail.163.com")
 	Favicon.Store("1und1", "search.1und1.de")
-	Favicon.Store("Virgilio", "ricerca.virgilio.it")
-	Favicon.Store("Telstra", "search.media.telstra.com.au")
-	Favicon.Store("Web.nl", "www.web.nl")
-	Favicon.Store("Plazoo", "www.plazoo.com")
-	Favicon.Store("Goyellow.de", "www.goyellow.de")
-	Favicon.Store("AOL", "search.aol.com")
-	Favicon.Store("Acoon", "www.acoon.de")
-	Favicon.Store("Free", "search.free.fr")
-	Favicon.Store("Apollo Latvia", "apollo.lv/portal/search/")
-	Favicon.Store("HighBeam", "www.highbeam.com")
-	Favicon.Store("I-play", "start.iplay.com")
-	Favicon.Store("FriendFeed", "friendfeed.com")
-	Favicon.Store("Yasni", "www.yasni.de")
-	Favicon.Store("Gigablast", "www.gigablast.com")
-	Favicon.Store("Liveinternet", "liveinternet.ru")
-	Favicon.Store("arama", "arama.com")
-	Favicon.Store("Fixsuche", "www.fixsuche.de")
-	Favicon.Store("Apontador", "apontador.com.br")
-	Favicon.Store("Search.com", "www.search.com")
-	Favicon.Store("Monstercrawler", "www.monstercrawler.com")
-	Favicon.Store("Google Images", "google.ac/imgres")
+	Favicon.Store("2degrees", "webmail.2degreesbroadband.co.nz")
+	Favicon.Store("2gis", "2gis.ru")
+	Favicon.Store("360.cn", "so.360.cn")
 	Favicon.Store("ABCsøk", "abcsolk.no")
-	Favicon.Store("Google Product Search", "google.ac/products")
-	Favicon.Store("DasOertliche", "www.dasoertliche.de")
-	Favicon.Store("InfoSpace", "infospace.com")
-	Favicon.Store("Weborama", "www.weborama.com")
+	Favicon.Store("ADFOX", "adfox.ru")
+	Favicon.Store("AOL", "search.aol.com")
+	Favicon.Store("AOL Mail", "mail.aol.com")
+	Favicon.Store("APOLL07", "apollo7.de")
+	Favicon.Store("Abacho", "www.abacho.de")
+	Favicon.Store("Acoon", "www.acoon.de")
+	Favicon.Store("Acuity Ads", "acuityplatform.com")
+	Favicon.Store("AdNET", "adnet.de")
+	Favicon.Store("AdRoll", "adroll.com")
+	Favicon.Store("AdSpirit", "adspirit.de")
+	Favicon.Store("Adam Internet", "webmail.adam.com.au")
+	Favicon.Store("Adform", "adform.net")
+	Favicon.Store("Adition", "adition.com")
+	Favicon.Store("Alexa", "alexa.com")
+	Favicon.Store("Alice Adsl", "rechercher.aliceadsl.fr")
+	Favicon.Store("AllTheWeb", "www.alltheweb.com")
+	Favicon.Store("Altavista", "www.altavista.com")
+	Favicon.Store("Amazon", "amazon.com")
+	Favicon.Store("Apollo Latvia", "apollo.lv/portal/search/")
+	Favicon.Store("Apontador", "apontador.com.br")
+	Favicon.Store("Aport", "sm.aport.ru")
+	Favicon.Store("AppNexus", "ib.adnxs.com")
+	Favicon.Store("Arcor", "www.arcor.de")
+	Favicon.Store("Arianna", "arianna.libero.it")
+	Favicon.Store("Ask", "ask.com")
+	Favicon.Store("Ask Toolbar", "search.tb.ask.com")
+	Favicon.Store("Atlas", "searchatlas.centrum.cz")
+	Favicon.Store("AudienceScience", "wunderloop.net")
+	Favicon.Store("Austronaut", "www2.austronaut.at")
+	Favicon.Store("Babylon", "search.babylon.com")
+	Favicon.Store("Badoo", "badoo.com")
+	Favicon.Store("Baidu", "www.baidu.com")
+	Favicon.Store("Bebo", "bebo.com")
+	Favicon.Store("Beeline", "post.ru")
+	Favicon.Store("BidSwitch", "bidswitch.net")
+	Favicon.Store("Biglobe", "cgi.search.biglobe.ne.jp")
+	Favicon.Store("Bigpond", "webmail.bigpond.com")
+	Favicon.Store("Bing", "bing.com")
+	Favicon.Store("Bing Images", "bing.com/images/search")
+	Favicon.Store("BlackPlanet", "blackplanet.com")
+	Favicon.Store("Blogdigger", "www.blogdigger.com")
+	Favicon.Store("Blogpulse", "www.blogpulse.com")
 	Favicon.Store("Bluewin", "search.bluewin.ch")
 	Favicon.Store("British Telecommunications", "search.bt.com")
-	Favicon.Store("Neti", "www.neti.ee")
-	Favicon.Store("Nigma", "nigma.ru")
-	Favicon.Store("Yahoo! Images", "image.yahoo.cn")
-	Favicon.Store("Exalead", "www.exalead.fr")
-	Favicon.Store("Teoma", "www.teoma.com")
-	Favicon.Store("Needtofind", "ko.search.need2find.com")
-	Favicon.Store("Looksmart", "www.looksmart.com")
-	Favicon.Store("Flyingbird", "inspsearch.com")
-	Favicon.Store("Everyclick", "www.everyclick.com")
-	Favicon.Store("Wirtualna Polska", "szukaj.wp.pl")
-	Favicon.Store("Toolbarhome", "www.toolbarhome.com")
-	Favicon.Store("Searchalot", "searchalot.com")
-	Favicon.Store("Yandex", "yandex.ru")
-	Favicon.Store("canoe.ca", "web.canoe.ca")
-	Favicon.Store("Compuserve", "websearch.cs.com")
-	Favicon.Store("Blogdigger", "www.blogdigger.com")
-	Favicon.Store("Startpagina", "startgoogle.startpagina.nl")
-	Favicon.Store("eo", "eo.st")
-	Favicon.Store("Zhongsou", "p.zhongsou.com")
-	Favicon.Store("La Toile Du Quebec Via Google", "www.toile.com")
-	Favicon.Store("Paperball", "www.paperball.de")
-	Favicon.Store("Jungle Spider", "www.jungle-spider.de")
-	Favicon.Store("PeoplePC", "search.peoplepc.com")
-	Favicon.Store("The Smart Search", "thesmartsearch.net")
-	Favicon.Store("MetaCrawler.de", "s1.metacrawler.de")
-	Favicon.Store("Orange", "busca.orange.es")
-	Favicon.Store("Gule Sider", "www.gulesider.no")
-	Favicon.Store("I.ua", "search.i.ua")
-	Favicon.Store("Francite", "recherche.francite.com")
-	Favicon.Store("Ask Toolbar", "search.tb.ask.com")
-	Favicon.Store("Tut.by", "search.tut.by")
-	Favicon.Store("Trusted-Search", "www.trusted--search.com")
-	Favicon.Store("goo", "search.goo.ne.jp")
-	Favicon.Store("Fast Browser Search", "www.fastbrowsersearch.com")
-	Favicon.Store("kununu", "kununu.com")
-	Favicon.Store("Volny", "web.volny.cz")
-	Favicon.Store("Icerockeet", "blogs.icerocket.com")
-	Favicon.Store("Terra", "buscador.terra.es")
-	Favicon.Store("Amazon", "amazon.com")
-	Favicon.Store("Onet", "szukaj.onet.pl")
-	Favicon.Store("Digg", "digg.com")
-	Favicon.Store("Abacho", "www.abacho.de")
-	Favicon.Store("maailm", "www.maailm.com")
-	Favicon.Store("Flix", "www.flix.de")
-	Favicon.Store("Inbox.com", "inbox.com/search/")
-	Favicon.Store("Freenet", "suche.freenet.de")
-	Favicon.Store("Suchnase", "www.suchnase.de")
-	Favicon.Store("Dodo", "google.dodo.com.au")
-	Favicon.Store("Google Blogsearch", "blogsearch.google.ac")
-	Favicon.Store("Poisk.ru", "poisk.ru")
-	Favicon.Store("Sharelook", "www.sharelook.fr")
-	Favicon.Store("Finderoo", "www.finderoo.com")
-	Favicon.Store("Najdi", "www.najdi.si")
-	Favicon.Store("Picsearch", "www.picsearch.com")
-	Favicon.Store("Mail.ru", "mail.ru")
-	Favicon.Store("Alexa", "alexa.com")
-	Favicon.Store("Metager", "meta.rrzn.uni-hannover.de")
-	Favicon.Store("Technorati", "technorati.com")
-	Favicon.Store("Globososo", "searches.globososo.com")
-	Favicon.Store("WWW", "search.www.ee")
-	Favicon.Store("Trouvez.com", "www.trouvez.com")
-	Favicon.Store("IXquick", "ixquick.com")
-	Favicon.Store("Naver Images", "image.search.naver.com")
-	Favicon.Store("Zapmeta", "www.zapmeta.com")
-	Favicon.Store("Yippy", "search.yippy.com")
-	Favicon.Store("Clix", "pesquisa.clix.pt")
-	Favicon.Store("Walhello", "www.walhello.info")
-	Favicon.Store("Meta", "meta.ua")
-	Favicon.Store("Skynet", "www.skynet.be")
-	Favicon.Store("Searchy", "www.searchy.co.uk")
-	Favicon.Store("Findwide", "search.findwide.com")
-	Favicon.Store("WebSearch", "www.websearch.com")
-	Favicon.Store("Rambler", "nova.rambler.ru")
-	Favicon.Store("Latne", "www.latne.lv")
-	Favicon.Store("MySearch", "mysearch.com")
-	Favicon.Store("Cuil", "www.cuil.com")
-	Favicon.Store("Tixuma", "www.tixuma.de")
-	Favicon.Store("Sapo", "pesquisa.sapo.pt")
-	Favicon.Store("Gnadenmeer", "www.gnadenmeer.de")
-	Favicon.Store("Arcor", "www.arcor.de")
-	Favicon.Store("Naver", "search.naver.com")
-	Favicon.Store("Zoeken", "www.zoeken.nl")
-	Favicon.Store("Startsiden", "www.startsiden.no")
-	Favicon.Store("Yam", "search.yam.com")
-	Favicon.Store("Eniro", "www.eniro.se")
-	Favicon.Store("APOLL07", "apollo7.de")
-	Favicon.Store("Biglobe", "cgi.search.biglobe.ne.jp")
-	Favicon.Store("Mozbot", "www.mozbot.fr")
-	Favicon.Store("ICQ", "www.icq.com")
-	Favicon.Store("Baidu", "www.baidu.com")
-	Favicon.Store("Conduit", "search.conduit.com")
-	Favicon.Store("Vindex", "www.vindex.nl")
-	Favicon.Store("Babylon", "search.babylon.com")
-	Favicon.Store("TrovaRapido", "www.trovarapido.com")
-	Favicon.Store("Winamp", "search.winamp.com")
-	Favicon.Store("Suchmaschine.com", "www.suchmaschine.com")
-	Favicon.Store("Lycos", "search.lycos.com")
-	Favicon.Store("Vinden", "www.vinden.nl")
-	Favicon.Store("Altavista", "www.altavista.com")
-	Favicon.Store("dmoz", "dmoz.org")
-	Favicon.Store("Ecosia", "ecosia.org")
-	Favicon.Store("Maxwebsearch", "maxwebsearch.com")
-	Favicon.Store("Euroseek", "www.euroseek.com")
-	Favicon.Store("Qwant", "www.qwant.com")
-	Favicon.Store("X-recherche", "www.x-recherche.com")
-	Favicon.Store("Yandex Images", "images.yandex.ru")
-	Favicon.Store("GMX", "suche.gmx.net")
-	Favicon.Store("Daemon search", "daemon-search.com")
-	Favicon.Store("Shenma", "so.m.sm.cn")
-	Favicon.Store("Firstfind", "www.firstsfind.com")
-	Favicon.Store("Crawler", "www.crawler.com")
-	Favicon.Store("Holmes", "holmes.ge")
-	Favicon.Store("Charter", "www.charter.net")
-	Favicon.Store("Ilse", "www.ilse.nl")
-	Favicon.Store("earthlink", "search.earthlink.net")
-	Favicon.Store("Qualigo", "www.qualigo.at")
-	Favicon.Store("El Mundo", "ariadna.elmundo.es")
-	Favicon.Store("Metager2", "metager2.de")
-	Favicon.Store("Forestle", "forestle.org")
-	Favicon.Store("Search.ch", "www.search.ch")
-	Favicon.Store("Meinestadt", "www.meinestadt.de")
-	Favicon.Store("Freshweather", "www.fresh-weather.com")
-	Favicon.Store("AllTheWeb", "www.alltheweb.com")
-	Favicon.Store("Snapdo", "search.snapdo.com")
-	Favicon.Store("UKR.net", "search.ukr.net")
-	Favicon.Store("Zoek", "www3.zoek.nl")
-	Favicon.Store("Daum", "search.daum.net")
-	Favicon.Store("Marktplaats", "www.marktplaats.nl")
-	Favicon.Store("suche.info", "suche.info")
-	Favicon.Store("Google News", "news.google.ac")
-	Favicon.Store("Zoohoo", "zoohoo.cz")
-	Favicon.Store("Seznam", "search.seznam.cz")
-	Favicon.Store("Online.no", "online.no")
-	Favicon.Store("Eurip", "www.eurip.com")
-	Favicon.Store("all.by", "all.by")
-	Favicon.Store("Road Runner Search", "search.rr.com")
-	Favicon.Store("Opplysningen 1881", "www.1881.no")
-	Favicon.Store("YouGoo", "www.yougoo.fr")
-	Favicon.Store("Bing Images", "bing.com/images/search")
-	Favicon.Store("Geona", "geona.net")
-	Favicon.Store("Nate", "search.nate.com")
-	Favicon.Store("Search This", "www.searchthis.com")
-	Favicon.Store("DuckDuckGo", "duckduckgo.com")
-	Favicon.Store("Hotbot", "www.hotbot.com")
-	Favicon.Store("Kvasir", "www.kvasir.no")
-	Favicon.Store("Austronaut", "www2.austronaut.at")
-	Favicon.Store("SoSoDesk", "sosodesktop.com")
-	Favicon.Store("Excite", "search.excite.it")
-	Favicon.Store("1&1", "search.1and1.com")
-	Favicon.Store("qip", "search.qip.ru")
-	Favicon.Store("Certified-Toolbar", "search.certified-toolbar.com")
-	Favicon.Store("Yahoo!", "search.yahoo.com")
-	Favicon.Store("URL.ORGanizier", "www.url.org")
-	Favicon.Store("Witch", "www.witch.de")
-	Favicon.Store("Mister Wong", "www.mister-wong.com")
-	Favicon.Store("Aport", "sm.aport.ru")
-	Favicon.Store("Web.de", "suche.web.de")
-	Favicon.Store("Ask", "ask.com")
+	Favicon.Store("Buzznet", "buzznet.com")
+	Favicon.Store("Casale Media", "casalemedia.com")
 	Favicon.Store("Centrum", "serach.centrum.cz")
-	Favicon.Store("Bing", "bing.com")
-	Favicon.Store("Google Video", "video.google.com")
+	Favicon.Store("Certified-Toolbar", "search.certified-toolbar.com")
+	Favicon.Store("Charter", "www.charter.net")
+	Favicon.Store("Classmates", "classmates.com")
+	Favicon.Store("Clix", "pesquisa.clix.pt")
+	Favicon.Store("Comcast", "serach.comcast.net")
+	Favicon.Store("Commander", "webmail.commander.net.au")
+	Favicon.Store("Compuserve", "websearch.cs.com")
+	Favicon.Store("Conduit", "search.conduit.com")
+	Favicon.Store("Crawler", "www.crawler.com")
+	Favicon.Store("Criteo", "cas.jp.as.criteo.com")
+	Favicon.Store("Cuil", "www.cuil.com")
+	Favicon.Store("Cyworld", "global.cyworld.com")
+	Favicon.Store("Daemon search", "daemon-search.com")
+	Favicon.Store("Dalesearch", "www.dalesearch.com")
+	Favicon.Store("DasOertliche", "www.dasoertliche.de")
+	Favicon.Store("DasTelefonbuch", "www1.dastelefonbuch.de")
+	Favicon.Store("Daum", "search.daum.net")
+	Favicon.Store("Daum Mail", "mail2.daum.net")
 	Favicon.Store("Delfi", "otsing.delfi.ee")
-	Favicon.Store("blekko", "blekko.com")
+	Favicon.Store("Delfi latvia", "smart.delfi.lv")
+	Favicon.Store("Delicious", "delicious.com")
+	Favicon.Store("Digg", "digg.com")
+	Favicon.Store("Disqus", "redirect.disqus.com")
+	Favicon.Store("Dodo", "webmail.dodo.com.au")
+	Favicon.Store("Dodo", "google.dodo.com.au")
+	Favicon.Store("Donanimhaber", "donanimhaber.com")
+	Favicon.Store("Douban", "douban.com")
+	Favicon.Store("Doubleclick", "ad.doubleclick.net")
+	Favicon.Store("DuckDuckGo", "duckduckgo.com")
+	Favicon.Store("E1.ru", "mail.e1.ru")
+	Favicon.Store("Ecosia", "ecosia.org")
+	Favicon.Store("Eksi Sozluk", "Sozluk.com")
+	Favicon.Store("El Mundo", "ariadna.elmundo.es")
+	Favicon.Store("Eniro", "www.eniro.se")
+	Favicon.Store("Eurip", "www.eurip.com")
+	Favicon.Store("Euroseek", "www.euroseek.com")
+	Favicon.Store("Everyclick", "www.everyclick.com")
+	Favicon.Store("Exalead", "www.exalead.fr")
+	Favicon.Store("Excite", "search.excite.it")
+	Favicon.Store("Eyeota", "eyeota.net")
+	Favicon.Store("Facebook", "facebook.com")
+	Favicon.Store("Fast Browser Search", "www.fastbrowsersearch.com")
+	Favicon.Store("Finderoo", "www.finderoo.com")
+	Favicon.Store("Findwide", "search.findwide.com")
+	Favicon.Store("Fireball", "www.fireball.de")
+	Favicon.Store("Firstfind", "www.firstsfind.com")
+	Favicon.Store("Fixsuche", "www.fixsuche.de")
+	Favicon.Store("Flashtalking", "flashtalking.com")
+	Favicon.Store("Flickr", "flickr.com")
+	Favicon.Store("Flix", "www.flix.de")
+	Favicon.Store("Flixster", "flixster.com")
+	Favicon.Store("Fluct", "adingo.jp")
+	Favicon.Store("Flyingbird", "inspsearch.com")
+	Favicon.Store("Forestle", "forestle.org")
+	Favicon.Store("Fotolog", "fotolog.com")
+	Favicon.Store("Foursquare", "foursquare.com")
+	Favicon.Store("Francite", "recherche.francite.com")
+	Favicon.Store("Free", "search.free.fr")
+	Favicon.Store("Freecause", "search.freecause.com")
+	Favicon.Store("Freenet", "webmail.freenet.de")
+	Favicon.Store("Freenet", "suche.freenet.de")
+	Favicon.Store("Freshweather", "www.fresh-weather.com")
+	Favicon.Store("FriendFeed", "friendfeed.com")
+	Favicon.Store("Friends Reunited", "friendsreunited.com")
+	Favicon.Store("Friendster", "friendster.com")
+	Favicon.Store("GAIS", "gais.cs.ccu.edu.tw")
+	Favicon.Store("GMX", "suche.gmx.net")
+	Favicon.Store("Gaia Online", "gaiaonline.com")
+	Favicon.Store("Geni", "geni.com")
+	Favicon.Store("Genieo", "search.genieo.com")
+	Favicon.Store("Geona", "geona.net")
+	Favicon.Store("Gigablast", "www.gigablast.com")
+	Favicon.Store("GitHub", "github.com")
+	Favicon.Store("Globososo", "searches.globososo.com")
+	Favicon.Store("Gmail", "mail.google.com")
+	Favicon.Store("Gnadenmeer", "www.gnadenmeer.de")
+	Favicon.Store("Gomeo", "www.gomeo.com")
+	Favicon.Store("Google", "support.google.com")
+	Favicon.Store("Google", "www.google.com")
+	Favicon.Store("Google", "www.googleadservices.com")
+	Favicon.Store("Google Blogsearch", "blogsearch.google.ac")
+	Favicon.Store("Google Images", "google.ac/imgres")
+	Favicon.Store("Google News", "news.google.ac")
+	Favicon.Store("Google Product Search", "google.ac/products")
+	Favicon.Store("Google Video", "video.google.com")
+	Favicon.Store("Google+", "url.google.com")
+	Favicon.Store("Goyellow.de", "www.goyellow.de")
+	Favicon.Store("Gule Sider", "www.gulesider.no")
+	Favicon.Store("Habbo", "habbo.com")
+	Favicon.Store("Hacker News", "news.ycombinator.com")
+	Favicon.Store("HighBeam", "www.highbeam.com")
+	Favicon.Store("Hit-Parade", "req.-hit-parade.com")
+	Favicon.Store("Hocam.com", "hocam.com")
+	Favicon.Store("Holmes", "holmes.ge")
+	Favicon.Store("Hooseek.com", "www.hooseek.com")
+	Favicon.Store("Hotbot", "www.hotbot.com")
+	Favicon.Store("Hyves", "hyves.nl")
+	Favicon.Store("I-play", "start.iplay.com")
+	Favicon.Store("I.ua", "search.i.ua")
+	Favicon.Store("ICQ", "www.icq.com")
+	Favicon.Store("ITU Sozluk", "itusozluk.com")
+	Favicon.Store("IXquick", "ixquick.com")
+	Favicon.Store("Icerockeet", "blogs.icerocket.com")
+	Favicon.Store("Identi.ca", "identi.ca")
+	Favicon.Store("Ilse", "www.ilse.nl")
+	Favicon.Store("Inbox.com", "inbox.com")
+	Favicon.Store("Inbox.com", "inbox.com/search/")
+	Favicon.Store("Inci Sozluk", "inci.sozlukspot.com")
+	Favicon.Store("Indeed", "de.indeed.com")
+	Favicon.Store("InfoSpace", "infospace.com")
+	Favicon.Store("Instagram", "instagram.com")
+	Favicon.Store("Instela", "instela.com")
+	Favicon.Store("Interia", "www.google.interia.pl")
+	Favicon.Store("Jivox", "jivox.com")
+	Favicon.Store("Jungle Key", "junglekey.com")
+	Favicon.Store("Jungle Spider", "www.jungle-spider.de")
 	Favicon.Store("Jyxo", "jyxo.1188.cz")
 	Favicon.Store("Kataweb", "www.kataweb.it")
-	Favicon.Store("uol.com.br", "busca.uol.com.br")
-	Favicon.Store("Arianna", "arianna.libero.it")
-	Favicon.Store("Mamma", "www.mamma.com")
-	Favicon.Store("Yatedo", "www.yatedo.com")
-	Favicon.Store("Twingly", "www.twingly.com")
-	Favicon.Store("Delfi latvia", "smart.delfi.lv")
-	Favicon.Store("PriceRunner", "www.pricerunner.co.uk")
-	Favicon.Store("Rakuten", "websearch.rakuten.co.jp")
-	Favicon.Store("Google", "www.google.com")
-	Favicon.Store("Blogpulse", "www.blogpulse.com")
-	Favicon.Store("Hooseek.com", "www.hooseek.com")
-	Favicon.Store("Dalesearch", "www.dalesearch.com")
-	Favicon.Store("Alice Adsl", "rechercher.aliceadsl.fr")
-	Favicon.Store("T-Online", "suche.t-online.de")
-	Favicon.Store("Sogou", "www.sougou.com")
-	Favicon.Store("Hit-Parade", "req.-hit-parade.com")
-	Favicon.Store("SearchCanvas", "www.searchcanvas.com")
-	Favicon.Store("Jungle Key", "junglekey.com")
-	Favicon.Store("Interia", "www.google.interia.pl")
-	Favicon.Store("Genieo", "search.genieo.com")
-	Favicon.Store("Tiscali", "search.tiscali.it")
-	Favicon.Store("Gomeo", "www.gomeo.com")
-	Favicon.Store("Bigpond", "webmail.bigpond.com")
-	Favicon.Store("Naver Mail", "mail.naver.com")
-	Favicon.Store("Zoho", "mail.zoho.com")
-	Favicon.Store("Virgin", "webmail.virginbroadband.com.au")
-	Favicon.Store("Yahoo! Mail", "mail.yahoo.net")
-	Favicon.Store("iiNet", "webmail.iinet.net.au")
-	Favicon.Store("E1.ru", "mail.e1.ru")
-	Favicon.Store("Vodafone", "webmail.vodafone.co.nz")
-	Favicon.Store("126 Mail", "mail.126.com")
-	Favicon.Store("Inbox.com", "inbox.com")
-	Favicon.Store("iPrimus", "webmail.iprimus.com.au")
-	Favicon.Store("QQ Mail", "mail.qq.com")
-	Favicon.Store("QIP", "mail.qip.ru")
-	Favicon.Store("Sibmail", "sibmail.com")
-	Favicon.Store("Freenet", "webmail.freenet.de")
-	Favicon.Store("Seznam Mail", "email.seznam.cz")
-	Favicon.Store("Westnet", "webmail.westnet.com.au")
-	Favicon.Store("Outlook.com", "mail.live.com")
-	Favicon.Store("Dodo", "webmail.dodo.com.au")
-	Favicon.Store("2degrees", "webmail.2degreesbroadband.co.nz")
-	Favicon.Store("Daum Mail", "mail2.daum.net")
-	Favicon.Store("Beeline", "post.ru")
-	Favicon.Store("Mail.ru", "e.mail.ru")
-	Favicon.Store("Adam Internet", "webmail.adam.com.au")
-	Favicon.Store("Orange Webmail", "orange.fr/webmail")
-	Favicon.Store("AOL Mail", "mail.aol.com")
-	Favicon.Store("Netspace", "webmail.netspace.net.au")
-	Favicon.Store("Optus Zoo", "webmail.optuszoo.com.au")
-	Favicon.Store("Commander", "webmail.commander.net.au")
-	Favicon.Store("Mastermail", "mastermail.ru")
-	Favicon.Store("Yandex", "mail.yandex.ru")
-	Favicon.Store("163 Mail", "mail.163.com")
-	Favicon.Store("Ukr.net", "mail.ukr.net")
-	Favicon.Store("Rambler", "mail.rambler.ru")
-	Favicon.Store("Mynet Mail", "mail.mynet.com")
-	Favicon.Store("Gmail", "mail.google.com")
-	Favicon.Store("AdSpirit", "adspirit.de")
-	Favicon.Store("Flashtalking", "flashtalking.com")
-	Favicon.Store("AudienceScience", "wunderloop.net")
-	Favicon.Store("Outbrain", "paid.outbrain.com")
-	Favicon.Store("Yieldmo", "yieldmo.com")
-	Favicon.Store("Mozo", "mozo.com.au")
-	Favicon.Store("Acuity Ads", "acuityplatform.com")
-	Favicon.Store("LifeStreet", "lfstmedia.com")
-	Favicon.Store("MicroAd", "microad.jp")
-	Favicon.Store("Taboola", "trc.taboola.com")
-	Favicon.Store("Doubleclick", "ad.doubleclick.net")
-	Favicon.Store("Adform", "adform.net")
-	Favicon.Store("Sizmek", "bs.serving-sys.com")
-	Favicon.Store("Criteo", "cas.jp.as.criteo.com")
-	Favicon.Store("Fluct", "adingo.jp")
-	Favicon.Store("LowerMyBills", "lowermybills.com")
-	Favicon.Store("White Pages", "www.whitepages.com.au")
-	Favicon.Store("Neustar AdAdvisor", "adadvisor.net")
-	Favicon.Store("ONE by AOL", "nexage.com")
-	Favicon.Store("Mixpo", "mixpo.com")
-	Favicon.Store("Rubicon Project", "optimized-by.rubiconproject.com")
-	Favicon.Store("PubMatic", "sshowads.pubmatic.com")
-	Favicon.Store("Jivox", "jivox.com")
-	Favicon.Store("BidSwitch", "bidswitch.net")
-	Favicon.Store("Sonobi", "sonobi.com")
-	Favicon.Store("SteelHouse", "steelhousemedia.com")
-	Favicon.Store("AdRoll", "adroll.com")
-	Favicon.Store("AdNET", "adnet.de")
-	Favicon.Store("Tribal Fusion", "cdnx.tribalfusion.com")
-	Favicon.Store("Yandex.Market", "market.yandex.ru")
-	Favicon.Store("StickyADS.tv", "stickyadstv.com")
-	Favicon.Store("ZEDO", "zedo.com")
-	Favicon.Store("Plista", "farm.plista.com")
-	Favicon.Store("AppNexus", "ib.adnxs.com")
-	Favicon.Store("Sovrn", "lijit.com")
-	Favicon.Store("Google", "www.googleadservices.com")
-	Favicon.Store("Eyeota", "eyeota.net")
-	Favicon.Store("Price.ru", "price.ru")
-	Favicon.Store("OpenX", "us-ads.openx.net")
-	Favicon.Store("Casale Media", "casalemedia.com")
-	Favicon.Store("Adition", "adition.com")
-	Favicon.Store("Yandex.Direct", "an.yandex.ru")
-	Favicon.Store("ADFOX", "adfox.ru")
-	Favicon.Store("Torg.Mail.ru", "torg.mail.ru")
-	Favicon.Store("Sociomantic Labs", "sociomantic.com")
-	Favicon.Store("hi5", "hi5.com")
-	Favicon.Store("Friendster", "friendster.com")
-	Favicon.Store("Weibo", "weibo.com")
-	Favicon.Store("Xanga", "xanga.com")
-	Favicon.Store("Myspace", "myspace.com")
-	Favicon.Store("Buzznet", "buzznet.com")
-	Favicon.Store("MyLife", "mylife.ru")
-	Favicon.Store("Flickr", "flickr.com")
-	Favicon.Store("Whirlpool", "forums.whirlpool.net.au")
-	Favicon.Store("Sonico.com", "sonico.com")
-	Favicon.Store("Odnoklassniki", "odnoklassniki.ru")
-	Favicon.Store("GitHub", "github.com")
-	Favicon.Store("Classmates", "classmates.com")
-	Favicon.Store("Friends Reunited", "friendsreunited.com")
-	Favicon.Store("Renren", "renren.com")
-	Favicon.Store("Quora", "quora.com")
-	Favicon.Store("Gaia Online", "gaiaonline.com")
-	Favicon.Store("Netlog", "netlog.com")
-	Favicon.Store("Orkut", "orkut.com")
-	Favicon.Store("MyHeritage", "myheritage.com")
-	Favicon.Store("Multiply", "multiply.com")
-	Favicon.Store("myYearbook", "myyearbook.com")
-	Favicon.Store("WeeWorld", "weeworld.com")
-	Favicon.Store("Vimeo", "vimeo.com")
-	Favicon.Store("Eksi Sozluk", "Sozluk.com")
-	Favicon.Store("Geni", "geni.com")
-	Favicon.Store("Uludag Sozluk", "uludagsozluk.com")
-	Favicon.Store("SourceForge", "sourceforge.net")
-	Favicon.Store("Plaxo", "plaxo.com")
-	Favicon.Store("Taringa!", "taringa.net")
-	Favicon.Store("Tagged", "login.tagged.com")
-	Favicon.Store("XING", "xing.com")
-	Favicon.Store("Instagram", "instagram.com")
-	Favicon.Store("Vkontakte", "m.vk.com")
-	Favicon.Store("Twitter", "twitter.com")
-	Favicon.Store("vKruguDruzei.ru", "vkrugudruzei.ru")
-	Favicon.Store("Donanimhaber", "donanimhaber.com")
-	Favicon.Store("WAYN", "wayn.com")
-	Favicon.Store("Skype", "web.skype.com")
-	Favicon.Store("Mail.ru", "my.mail.ru")
-	Favicon.Store("Badoo", "badoo.com")
-	Favicon.Store("Instela", "instela.com")
-	Favicon.Store("Habbo", "habbo.com")
-	Favicon.Store("Pinterest", "pinterest.com")
-	Favicon.Store("LinkedIn", "linkedin.com")
-	Favicon.Store("Foursquare", "foursquare.com")
-	Favicon.Store("Flixster", "flixster.com")
-	Favicon.Store("Windows Live Spaces", "login.live.com")
-	Favicon.Store("BlackPlanet", "blackplanet.com")
-	Favicon.Store("Cyworld", "global.cyworld.com")
-	Favicon.Store("Pocket", "getpocket.com")
-	Favicon.Store("Skyrock", "skyrock.com")
-	Favicon.Store("Facebook", "facebook.com")
-	Favicon.Store("WhatsApp", "web.whatsapp.com")
-	Favicon.Store("Disqus", "redirect.disqus.com")
-	Favicon.Store("StudiVZ", "studivz.net")
-	Favicon.Store("Fotolog", "fotolog.com")
-	Favicon.Store("ITU Sozluk", "itusozluk.com")
-	Favicon.Store("Google+", "url.google.com")
-	Favicon.Store("Nasza-klasa.pl", "nk.pl")
-	Favicon.Store("Qzone", "qzone.qq.com")
-	Favicon.Store("Douban", "douban.com")
-	Favicon.Store("Bebo", "bebo.com")
-	Favicon.Store("Tuenti", "tuenti.com")
-	Favicon.Store("Youtube", "youtube.com")
-	Favicon.Store("Reddit", "reddit.com")
-	Favicon.Store("Identi.ca", "identi.ca")
-	Favicon.Store("StackOverflow", "stackoverflow.com")
-	Favicon.Store("Mixi", "mixi.jp")
-	Favicon.Store("StumbleUpon", "stumbleupon.com")
-	Favicon.Store("Inci Sozluk", "inci.sozlukspot.com")
-	Favicon.Store("Viadeo", "viadeo.com")
+	Favicon.Store("Kvasir", "www.kvasir.no")
+	Favicon.Store("La Toile Du Quebec Via Google", "www.toile.com")
 	Favicon.Store("Last.fm", "lastfm.ru")
+	Favicon.Store("Latne", "www.latne.lv")
+	Favicon.Store("LifeStreet", "lfstmedia.com")
+	Favicon.Store("Lilo", "search.lilo.org")
+	Favicon.Store("LinkedIn", "linkedin.com")
 	Favicon.Store("LiveJournal", "livejournal.ru")
-	Favicon.Store("Tumblr", "tumblr.com")
-	Favicon.Store("Hacker News", "news.ycombinator.com")
-	Favicon.Store("Hocam.com", "hocam.com")
-	Favicon.Store("Delicious", "delicious.com")
-	Favicon.Store("Hyves", "hyves.nl")
-	Favicon.Store("Paper.li", "paper.li")
+	Favicon.Store("Liveinternet", "liveinternet.ru")
+	Favicon.Store("Lo.st", "lo.st")
+	Favicon.Store("Looksmart", "www.looksmart.com")
+	Favicon.Store("LowerMyBills", "lowermybills.com")
+	Favicon.Store("Lycos", "search.lycos.com")
+	Favicon.Store("Mail.ru", "e.mail.ru")
+	Favicon.Store("Mail.ru", "my.mail.ru")
+	Favicon.Store("Mail.ru", "mail.ru")
+	Favicon.Store("Mamma", "www.mamma.com")
+	Favicon.Store("Marktplaats", "www.marktplaats.nl")
+	Favicon.Store("Mastermail", "mastermail.ru")
+	Favicon.Store("Maxwebsearch", "maxwebsearch.com")
+	Favicon.Store("Meinestadt", "www.meinestadt.de")
+	Favicon.Store("Meta", "meta.ua")
+	Favicon.Store("MetaCrawler.de", "s1.metacrawler.de")
+	Favicon.Store("Metager", "meta.rrzn.uni-hannover.de")
+	Favicon.Store("Metager2", "metager2.de")
+	Favicon.Store("MicroAd", "microad.jp")
+	Favicon.Store("Mister Wong", "www.mister-wong.com")
+	Favicon.Store("Mixi", "mixi.jp")
+	Favicon.Store("Mixpo", "mixpo.com")
 	Favicon.Store("MoiKrug.ru", "moikrug.ru")
+	Favicon.Store("Monster", "www.monster.be")
+	Favicon.Store("Monstercrawler", "www.monstercrawler.com")
+	Favicon.Store("Mozbot", "www.mozbot.fr")
+	Favicon.Store("Mozo", "mozo.com.au")
+	Favicon.Store("Multiply", "multiply.com")
+	Favicon.Store("MyHeritage", "myheritage.com")
+	Favicon.Store("MyLife", "mylife.ru")
+	Favicon.Store("MySearch", "mysearch.com")
+	Favicon.Store("Mynet Mail", "mail.mynet.com")
+	Favicon.Store("Myspace", "myspace.com")
+	Favicon.Store("Najdi", "www.najdi.si")
+	Favicon.Store("Nasza-klasa.pl", "nk.pl")
+	Favicon.Store("Nate", "search.nate.com")
+	Favicon.Store("Naver", "search.naver.com")
+	Favicon.Store("Naver Images", "image.search.naver.com")
+	Favicon.Store("Naver Mail", "mail.naver.com")
+	Favicon.Store("Needtofind", "ko.search.need2find.com")
+	Favicon.Store("Neti", "www.neti.ee")
+	Favicon.Store("Netlog", "netlog.com")
+	Favicon.Store("Netspace", "webmail.netspace.net.au")
+	Favicon.Store("Neustar AdAdvisor", "adadvisor.net")
+	Favicon.Store("Nifty", "search.nifty.com")
+	Favicon.Store("Nigma", "nigma.ru")
+	Favicon.Store("ONE by AOL", "nexage.com")
+	Favicon.Store("Odnoklassniki", "odnoklassniki.ru")
+	Favicon.Store("Onet", "szukaj.onet.pl")
+	Favicon.Store("Online.no", "online.no")
+	Favicon.Store("OpenX", "us-ads.openx.net")
+	Favicon.Store("Opplysningen 1881", "www.1881.no")
+	Favicon.Store("Optus Zoo", "webmail.optuszoo.com.au")
+	Favicon.Store("Orange", "busca.orange.es")
+	Favicon.Store("Orange Webmail", "orange.fr/webmail")
+	Favicon.Store("Orkut", "orkut.com")
+	Favicon.Store("Outbrain", "paid.outbrain.com")
+	Favicon.Store("Outlook.com", "mail.live.com")
+	Favicon.Store("Paper.li", "paper.li")
+	Favicon.Store("Paperball", "www.paperball.de")
+	Favicon.Store("PeoplePC", "search.peoplepc.com")
+	Favicon.Store("Picsearch", "www.picsearch.com")
+	Favicon.Store("Pinterest", "pinterest.com")
+	Favicon.Store("Plaxo", "plaxo.com")
+	Favicon.Store("Plazoo", "www.plazoo.com")
+	Favicon.Store("Plista", "farm.plista.com")
+	Favicon.Store("Pocket", "getpocket.com")
+	Favicon.Store("Poisk.ru", "poisk.ru")
+	Favicon.Store("Price.ru", "price.ru")
+	Favicon.Store("PriceRunner", "www.pricerunner.co.uk")
+	Favicon.Store("PubMatic", "sshowads.pubmatic.com")
+	Favicon.Store("QIP", "mail.qip.ru")
+	Favicon.Store("QQ Mail", "mail.qq.com")
+	Favicon.Store("Qualigo", "www.qualigo.at")
+	Favicon.Store("Quora", "quora.com")
+	Favicon.Store("Qwant", "www.qwant.com")
+	Favicon.Store("Qzone", "qzone.qq.com")
+	Favicon.Store("RPMFind", "rpmfind.net")
+	Favicon.Store("Rakuten", "websearch.rakuten.co.jp")
+	Favicon.Store("Rambler", "mail.rambler.ru")
+	Favicon.Store("Rambler", "nova.rambler.ru")
+	Favicon.Store("Reddit", "reddit.com")
+	Favicon.Store("Renren", "renren.com")
+	Favicon.Store("Road Runner Search", "search.rr.com")
+	Favicon.Store("Rubicon Project", "optimized-by.rubiconproject.com")
+	Favicon.Store("Sapo", "pesquisa.sapo.pt")
+	Favicon.Store("Search This", "www.searchthis.com")
+	Favicon.Store("Search.ch", "www.search.ch")
+	Favicon.Store("Search.com", "www.search.com")
+	Favicon.Store("SearchCanvas", "www.searchcanvas.com")
+	Favicon.Store("Searchalot", "searchalot.com")
+	Favicon.Store("Searchy", "www.searchy.co.uk")
+	Favicon.Store("Seznam", "search.seznam.cz")
+	Favicon.Store("Seznam Mail", "email.seznam.cz")
+	Favicon.Store("Sharelook", "www.sharelook.fr")
+	Favicon.Store("Shenma", "so.m.sm.cn")
+	Favicon.Store("Sibmail", "sibmail.com")
+	Favicon.Store("Sizmek", "bs.serving-sys.com")
+	Favicon.Store("Skynet", "www.skynet.be")
+	Favicon.Store("Skype", "web.skype.com")
+	Favicon.Store("Skyrock", "skyrock.com")
+	Favicon.Store("Snapdo", "search.snapdo.com")
+	Favicon.Store("SoSoDesk", "sosodesktop.com")
+	Favicon.Store("Sociomantic Labs", "sociomantic.com")
+	Favicon.Store("Softonic", "search.softonic.com")
+	Favicon.Store("Sogou", "www.sougou.com")
+	Favicon.Store("Sonico.com", "sonico.com")
+	Favicon.Store("Sonobi", "sonobi.com")
+	Favicon.Store("SourceForge", "sourceforge.net")
+	Favicon.Store("Sovrn", "lijit.com")
+	Favicon.Store("StackOverflow", "stackoverflow.com")
+	Favicon.Store("Startpagina", "startgoogle.startpagina.nl")
+	Favicon.Store("Startsiden", "www.startsiden.no")
+	Favicon.Store("SteelHouse", "steelhousemedia.com")
+	Favicon.Store("StepStone", "www.stepstone.de")
+	Favicon.Store("StickyADS.tv", "stickyadstv.com")
+	Favicon.Store("StudiVZ", "studivz.net")
+	Favicon.Store("StumbleUpon", "stumbleupon.com")
+	Favicon.Store("Suchmaschine.com", "www.suchmaschine.com")
+	Favicon.Store("Suchnase", "www.suchnase.de")
+	Favicon.Store("T-Online", "suche.t-online.de")
+	Favicon.Store("Taboola", "trc.taboola.com")
+	Favicon.Store("Tagged", "login.tagged.com")
+	Favicon.Store("TalkTalk", "www.talktalk.co.uk")
+	Favicon.Store("Taringa!", "taringa.net")
+	Favicon.Store("Technorati", "technorati.com")
+	Favicon.Store("Telstra", "search.media.telstra.com.au")
+	Favicon.Store("Teoma", "www.teoma.com")
+	Favicon.Store("Terra", "buscador.terra.es")
+	Favicon.Store("The Smart Search", "thesmartsearch.net")
+	Favicon.Store("Tiscali", "search.tiscali.it")
+	Favicon.Store("Tixuma", "www.tixuma.de")
+	Favicon.Store("Toolbarhome", "www.toolbarhome.com")
+	Favicon.Store("Torg.Mail.ru", "torg.mail.ru")
+	Favicon.Store("Tribal Fusion", "cdnx.tribalfusion.com")
+	Favicon.Store("Trouvez.com", "www.trouvez.com")
+	Favicon.Store("TrovaRapido", "www.trovarapido.com")
+	Favicon.Store("Trusted-Search", "www.trusted--search.com")
+	Favicon.Store("Tuenti", "tuenti.com")
+	Favicon.Store("Tumblr", "tumblr.com")
+	Favicon.Store("Tut.by", "search.tut.by")
+	Favicon.Store("Twingly", "www.twingly.com")
+	Favicon.Store("Twitter", "twitter.com")
+	Favicon.Store("UKR.net", "search.ukr.net")
+	Favicon.Store("URL.ORGanizier", "www.url.org")
+	Favicon.Store("Ukr.net", "mail.ukr.net")
+	Favicon.Store("Uludag Sozluk", "uludagsozluk.com")
+	Favicon.Store("Viadeo", "viadeo.com")
+	Favicon.Store("Vimeo", "vimeo.com")
+	Favicon.Store("Vinden", "www.vinden.nl")
+	Favicon.Store("Vindex", "www.vindex.nl")
+	Favicon.Store("Virgilio", "ricerca.virgilio.it")
+	Favicon.Store("Virgin", "webmail.virginbroadband.com.au")
+	Favicon.Store("Vkontakte", "m.vk.com")
+	Favicon.Store("Vodafone", "webmail.vodafone.co.nz")
+	Favicon.Store("Voila", "search.ke.voila.fr")
+	Favicon.Store("Volny", "web.volny.cz")
+	Favicon.Store("WAYN", "wayn.com")
+	Favicon.Store("WWW", "search.www.ee")
+	Favicon.Store("Walhello", "www.walhello.info")
+	Favicon.Store("Web.de", "suche.web.de")
+	Favicon.Store("Web.nl", "www.web.nl")
+	Favicon.Store("WebSearch", "www.websearch.com")
+	Favicon.Store("Weborama", "www.weborama.com")
+	Favicon.Store("WeeWorld", "weeworld.com")
+	Favicon.Store("Weibo", "weibo.com")
+	Favicon.Store("Westnet", "webmail.westnet.com.au")
+	Favicon.Store("WhatsApp", "web.whatsapp.com")
+	Favicon.Store("Whirlpool", "forums.whirlpool.net.au")
+	Favicon.Store("White Pages", "www.whitepages.com.au")
+	Favicon.Store("Winamp", "search.winamp.com")
+	Favicon.Store("Windows Live Spaces", "login.live.com")
+	Favicon.Store("Wirtualna Polska", "szukaj.wp.pl")
+	Favicon.Store("Witch", "www.witch.de")
+	Favicon.Store("X-recherche", "www.x-recherche.com")
+	Favicon.Store("XING", "xing.com")
+	Favicon.Store("Xanga", "xanga.com")
+	Favicon.Store("Yahoo!", "finance.yahoo.com")
+	Favicon.Store("Yahoo!", "search.yahoo.com")
+	Favicon.Store("Yahoo! Images", "image.yahoo.cn")
+	Favicon.Store("Yahoo! Mail", "mail.yahoo.net")
+	Favicon.Store("Yam", "search.yam.com")
+	Favicon.Store("Yandex", "mail.yandex.ru")
+	Favicon.Store("Yandex", "yandex.ru")
+	Favicon.Store("Yandex Images", "images.yandex.ru")
+	Favicon.Store("Yandex Maps", "maps.yandex.ru")
+	Favicon.Store("Yandex.Direct", "an.yandex.ru")
+	Favicon.Store("Yandex.Market", "market.yandex.ru")
+	Favicon.Store("Yasni", "www.yasni.de")
+	Favicon.Store("Yatedo", "www.yatedo.com")
+	Favicon.Store("Yieldmo", "yieldmo.com")
+	Favicon.Store("Yippy", "search.yippy.com")
+	Favicon.Store("YouGoo", "www.yougoo.fr")
+	Favicon.Store("Youtube", "youtube.com")
+	Favicon.Store("ZEDO", "zedo.com")
+	Favicon.Store("Zapmeta", "www.zapmeta.com")
+	Favicon.Store("Zhongsou", "p.zhongsou.com")
+	Favicon.Store("Zoek", "www3.zoek.nl")
+	Favicon.Store("Zoeken", "www.zoeken.nl")
+	Favicon.Store("Zoho", "mail.zoho.com")
+	Favicon.Store("Zoohoo", "zoohoo.cz")
+	Favicon.Store("all.by", "all.by")
+	Favicon.Store("arama", "arama.com")
+	Favicon.Store("blekko", "blekko.com")
+	Favicon.Store("canoe.ca", "web.canoe.ca")
+	Favicon.Store("dmoz", "dmoz.org")
+	Favicon.Store("earthlink", "search.earthlink.net")
+	Favicon.Store("eo", "eo.st")
+	Favicon.Store("goo", "search.goo.ne.jp")
+	Favicon.Store("hi5", "hi5.com")
+	Favicon.Store("iPrimus", "webmail.iprimus.com.au")
+	Favicon.Store("iiNet", "webmail.iinet.net.au")
+	Favicon.Store("kununu", "kununu.com")
+	Favicon.Store("maailm", "www.maailm.com")
+	Favicon.Store("myYearbook", "myyearbook.com")
+	Favicon.Store("qip", "search.qip.ru")
+	Favicon.Store("suche.info", "suche.info")
+	Favicon.Store("uol.com.br", "busca.uol.com.br")
+	Favicon.Store("vKruguDruzei.ru", "vkrugudruzei.ru")
 }
 
 const minReferrerSize = 2
@@ -413,948 +417,1018 @@ type Medium struct {
 }
 
 var refList = map[string]*Medium{
-	"com.google.support":              {Type: "unknown", Name: "Google"},
-	"com.google.developers":           {Type: "unknown", Name: "Google"},
-	"com.google.maps":                 {Type: "unknown", Name: "Google"},
+	"de.freenet.webmail":              {Type: "email", Name: "Freenet"},
 	"com.google.accounts":             {Type: "unknown", Name: "Google"},
+	"com.google.developers":           {Type: "unknown", Name: "Google"},
 	"com.google.drive":                {Type: "unknown", Name: "Google"},
-	"com.google.sites":                {Type: "unknown", Name: "Google"},
 	"com.google.groups":               {Type: "unknown", Name: "Google"},
+	"com.google.maps":                 {Type: "unknown", Name: "Google"},
+	"com.google.sites":                {Type: "unknown", Name: "Google"},
+	"com.google.support":              {Type: "unknown", Name: "Google"},
 	"uk.co.google.groups":             {Type: "unknown", Name: "Google"},
-	"ru.yandex.maps":                  {Type: "unknown", Name: "Yandex Maps"},
-	"ua.yandex.maps":                  {Type: "unknown", Name: "Yandex Maps"},
-	"com.yandex.maps":                 {Type: "unknown", Name: "Yandex Maps"},
-	"by.yandex.maps":                  {Type: "unknown", Name: "Yandex Maps"},
-	"ru.yandex.maps.n":                {Type: "unknown", Name: "Yandex Maps"},
-	"com.yahoo.finance":               {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.news":                  {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.eurosport":             {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.sports":                {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.astrology":             {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.travel":                {Type: "unknown", Name: "Yahoo!"},
 	"com.yahoo.answers":               {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.screen":                {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.weather":               {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.messenger":             {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.games":                 {Type: "unknown", Name: "Yahoo!"},
-	"net.yahoo.shopping":              {Type: "unknown", Name: "Yahoo!"},
-	"com.yahoo.movies":                {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.astrology":             {Type: "unknown", Name: "Yahoo!"},
 	"com.yahoo.cars":                  {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.eurosport":             {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.finance":               {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.games":                 {Type: "unknown", Name: "Yahoo!"},
 	"com.yahoo.lifestyle":             {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.messenger":             {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.movies":                {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.news":                  {Type: "unknown", Name: "Yahoo!"},
 	"com.yahoo.omg":                   {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.screen":                {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.sports":                {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.travel":                {Type: "unknown", Name: "Yahoo!"},
+	"com.yahoo.weather":               {Type: "unknown", Name: "Yahoo!"},
 	"net.yahoo.match":                 {Type: "unknown", Name: "Yahoo!"},
-	"uk.co.talktalk":                  {Type: "search", Name: "TalkTalk"},
-	"cz.1":                            {Type: "search", Name: "1.cz"},
-	"com.softonic.search":             {Type: "search", Name: "Softonic"},
-	"tw.edu.ccu.cs.gais":              {Type: "search", Name: "GAIS"},
-	"com.freecause.search":            {Type: "search", Name: "Freecause"},
-	"cn.360.so":                       {Type: "search", Name: "360.cn"},
-	"com.so":                          {Type: "search", Name: "360.cn"},
-	"net.rpmfind":                     {Type: "search", Name: "RPMFind"},
-	"net.rpmfind.fr2":                 {Type: "search", Name: "RPMFind"},
-	"net.comcast.serach":              {Type: "search", Name: "Comcast"},
-	"fr.voila.ke.search":              {Type: "search", Name: "Voila"},
-	"fr.lemoteur":                     {Type: "search", Name: "Voila"},
-	"com.nifty.search":                {Type: "search", Name: "Nifty"},
-	"cz.centrum.searchatlas":          {Type: "search", Name: "Atlas"},
-	"ru.2gis":                         {Type: "search", Name: "2gis"},
-	"ru.2gis.link":                    {Type: "search", Name: "2gis"},
-	"st.lo":                           {Type: "search", Name: "Lo.st"},
-	"de.dastelefonbuch.www1":          {Type: "search", Name: "DasTelefonbuch"},
-	"de.fireball":                     {Type: "search", Name: "Fireball"},
-	"de.1und1.search":                 {Type: "search", Name: "1und1"},
-	"it.virgilio.ricerca":             {Type: "search", Name: "Virgilio"},
-	"it.virgilio.ricercaimmagini":     {Type: "search", Name: "Virgilio"},
-	"it.virgilio.ricercavideo":        {Type: "search", Name: "Virgilio"},
-	"it.virgilio.ricercanews":         {Type: "search", Name: "Virgilio"},
-	"it.virgilio.mobile":              {Type: "search", Name: "Virgilio"},
-	"au.com.telstra.media.search":     {Type: "search", Name: "Telstra"},
-	"nl.web":                          {Type: "search", Name: "Web.nl"},
-	"com.plazoo":                      {Type: "search", Name: "Plazoo"},
-	"de.goyellow":                     {Type: "search", Name: "Goyellow.de"},
-	"com.aol.search":                  {Type: "search", Name: "AOL"},
-	"it.aol.search":                   {Type: "search", Name: "AOL"},
-	"com.aol.aolsearch":               {Type: "search", Name: "AOL"},
-	"com.aolsearch":                   {Type: "search", Name: "AOL"},
-	"fr.aol.aolrecherche":             {Type: "search", Name: "AOL"},
-	"fr.aol.aolrecherches":            {Type: "search", Name: "AOL"},
-	"fr.aol.aolimages":                {Type: "search", Name: "AOL"},
-	"com.aol.search.aim":              {Type: "search", Name: "AOL"},
-	"fr.aol.recherche":                {Type: "search", Name: "AOL"},
-	"com.aol.web.find":                {Type: "search", Name: "AOL"},
-	"ca.aol.recherche":                {Type: "search", Name: "AOL"},
-	"uk.co.aol.aolsearch":             {Type: "search", Name: "AOL"},
-	"uk.co.aol.search":                {Type: "search", Name: "AOL"},
-	"de.aol.sucheaol":                 {Type: "search", Name: "AOL"},
-	"de.aol.suche":                    {Type: "search", Name: "AOL"},
-	"de.aolsvc.suche":                 {Type: "search", Name: "AOL"},
-	"mx.com.aol.aolbusqueda":          {Type: "search", Name: "AOL"},
-	"de.aol.alicesuche":               {Type: "search", Name: "AOL"},
-	"de.aol.alicesuchet":              {Type: "search", Name: "AOL"},
-	"de.aol.suchet2":                  {Type: "search", Name: "AOL"},
-	"au.com.aol.my.hp.search":         {Type: "search", Name: "AOL"},
-	"de.aol.my.hp.search":             {Type: "search", Name: "AOL"},
-	"it.aol.my.hp.search":             {Type: "search", Name: "AOL"},
-	"com.netscape.search-intl":        {Type: "search", Name: "AOL"},
-	"de.acoon":                        {Type: "search", Name: "Acoon"},
-	"fr.free.search":                  {Type: "search", Name: "Free"},
-	"fr.free.search1-2":               {Type: "search", Name: "Free"},
-	"fr.free.search1-1":               {Type: "search", Name: "Free"},
-	"lv.apollo":                       {Type: "search", Name: "Apollo Latvia"},
-	"com.highbeam":                    {Type: "search", Name: "HighBeam"},
-	"com.iplay.start":                 {Type: "search", Name: "I-play"},
-	"com.friendfeed":                  {Type: "search", Name: "FriendFeed"},
-	"de.yasni":                        {Type: "search", Name: "Yasni"},
-	"com.yasni":                       {Type: "search", Name: "Yasni"},
-	"uk.co.yasni":                     {Type: "search", Name: "Yasni"},
-	"ch.yasni":                        {Type: "search", Name: "Yasni"},
-	"at.yasni":                        {Type: "search", Name: "Yasni"},
-	"com.gigablast":                   {Type: "search", Name: "Gigablast"},
-	"com.gigablast.dir":               {Type: "search", Name: "Gigablast"},
-	"ru.liveinternet":                 {Type: "search", Name: "Liveinternet"},
-	"com.arama":                       {Type: "search", Name: "arama"},
-	"de.fixsuche":                     {Type: "search", Name: "Fixsuche"},
-	"br.com.apontador":                {Type: "search", Name: "Apontador"},
-	"com.search":                      {Type: "search", Name: "Search.com"},
-	"com.monstercrawler":              {Type: "search", Name: "Monstercrawler"},
-	"ac.google":                       {Type: "search", Name: "Google Images"},
-	"ad.google":                       {Type: "search", Name: "Google Images"},
-	"ae.google":                       {Type: "search", Name: "Google Images"},
-	"am.google":                       {Type: "search", Name: "Google Images"},
-	"as.google":                       {Type: "search", Name: "Google Images"},
-	"at.google":                       {Type: "search", Name: "Google Images"},
-	"az.google":                       {Type: "search", Name: "Google Images"},
-	"ba.google":                       {Type: "search", Name: "Google Images"},
-	"be.google":                       {Type: "search", Name: "Google Images"},
-	"bf.google":                       {Type: "search", Name: "Google Images"},
-	"bg.google":                       {Type: "search", Name: "Google Images"},
-	"bi.google":                       {Type: "search", Name: "Google Images"},
-	"bj.google":                       {Type: "search", Name: "Google Images"},
-	"bs.google":                       {Type: "search", Name: "Google Images"},
-	"by.google":                       {Type: "search", Name: "Google Images"},
-	"ca.google":                       {Type: "search", Name: "Google Images"},
-	"cat.google":                      {Type: "search", Name: "Google Images"},
-	"cc.google":                       {Type: "search", Name: "Google Images"},
-	"cd.google":                       {Type: "search", Name: "Google Images"},
-	"cf.google":                       {Type: "search", Name: "Google Images"},
-	"cg.google":                       {Type: "search", Name: "Google Images"},
-	"ch.google":                       {Type: "search", Name: "Google Images"},
-	"ci.google":                       {Type: "search", Name: "Google Images"},
-	"cl.google":                       {Type: "search", Name: "Google Images"},
-	"cm.google":                       {Type: "search", Name: "Google Images"},
-	"cn.google":                       {Type: "search", Name: "Google Images"},
-	"bw.co.google":                    {Type: "search", Name: "Google Images"},
-	"ck.co.google":                    {Type: "search", Name: "Google Images"},
-	"cr.co.google":                    {Type: "search", Name: "Google Images"},
-	"id.co.google":                    {Type: "search", Name: "Google Images"},
-	"il.co.google":                    {Type: "search", Name: "Google Images"},
-	"in.co.google":                    {Type: "search", Name: "Google Images"},
-	"jp.co.google":                    {Type: "search", Name: "Google Images"},
-	"ke.co.google":                    {Type: "search", Name: "Google Images"},
-	"kr.co.google":                    {Type: "search", Name: "Google Images"},
-	"ls.co.google":                    {Type: "search", Name: "Google Images"},
-	"ma.co.google":                    {Type: "search", Name: "Google Images"},
-	"mz.co.google":                    {Type: "search", Name: "Google Images"},
-	"nz.co.google":                    {Type: "search", Name: "Google Images"},
-	"th.co.google":                    {Type: "search", Name: "Google Images"},
-	"tz.co.google":                    {Type: "search", Name: "Google Images"},
-	"ug.co.google":                    {Type: "search", Name: "Google Images"},
-	"uk.co.google":                    {Type: "search", Name: "Google Images"},
-	"uz.co.google":                    {Type: "search", Name: "Google Images"},
-	"ve.co.google":                    {Type: "search", Name: "Google Images"},
-	"vi.co.google":                    {Type: "search", Name: "Google Images"},
-	"za.co.google":                    {Type: "search", Name: "Google Images"},
-	"zm.co.google":                    {Type: "search", Name: "Google Images"},
-	"zw.co.google":                    {Type: "search", Name: "Google Images"},
-	"com.google":                      {Type: "search", Name: "Google Images"},
-	"af.com.google":                   {Type: "search", Name: "Google Images"},
-	"ag.com.google":                   {Type: "search", Name: "Google Images"},
-	"ai.com.google":                   {Type: "search", Name: "Google Images"},
-	"ar.com.google":                   {Type: "search", Name: "Google Images"},
-	"au.com.google":                   {Type: "search", Name: "Google Images"},
-	"bd.com.google":                   {Type: "search", Name: "Google Images"},
-	"bh.com.google":                   {Type: "search", Name: "Google Images"},
-	"bn.com.google":                   {Type: "search", Name: "Google Images"},
-	"bo.com.google":                   {Type: "search", Name: "Google Images"},
-	"br.com.google":                   {Type: "search", Name: "Google Images"},
-	"by.com.google":                   {Type: "search", Name: "Google Images"},
-	"bz.com.google":                   {Type: "search", Name: "Google Images"},
-	"co.com.google":                   {Type: "search", Name: "Google Images"},
-	"cu.com.google":                   {Type: "search", Name: "Google Images"},
-	"cy.com.google":                   {Type: "search", Name: "Google Images"},
-	"do.com.google":                   {Type: "search", Name: "Google Images"},
-	"ec.com.google":                   {Type: "search", Name: "Google Images"},
-	"eg.com.google":                   {Type: "search", Name: "Google Images"},
-	"et.com.google":                   {Type: "search", Name: "Google Images"},
-	"fj.com.google":                   {Type: "search", Name: "Google Images"},
-	"gh.com.google":                   {Type: "search", Name: "Google Images"},
-	"gi.com.google":                   {Type: "search", Name: "Google Images"},
-	"gt.com.google":                   {Type: "search", Name: "Google Images"},
-	"hk.com.google":                   {Type: "search", Name: "Google Images"},
-	"jm.com.google":                   {Type: "search", Name: "Google Images"},
-	"kh.com.google":                   {Type: "search", Name: "Google Images"},
-	"kw.com.google":                   {Type: "search", Name: "Google Images"},
-	"lb.com.google":                   {Type: "search", Name: "Google Images"},
-	"lc.com.google":                   {Type: "search", Name: "Google Images"},
-	"ly.com.google":                   {Type: "search", Name: "Google Images"},
-	"mt.com.google":                   {Type: "search", Name: "Google Images"},
-	"mx.com.google":                   {Type: "search", Name: "Google Images"},
-	"my.com.google":                   {Type: "search", Name: "Google Images"},
-	"na.com.google":                   {Type: "search", Name: "Google Images"},
-	"nf.com.google":                   {Type: "search", Name: "Google Images"},
-	"ng.com.google":                   {Type: "search", Name: "Google Images"},
-	"ni.com.google":                   {Type: "search", Name: "Google Images"},
-	"np.com.google":                   {Type: "search", Name: "Google Images"},
-	"om.com.google":                   {Type: "search", Name: "Google Images"},
-	"pa.com.google":                   {Type: "search", Name: "Google Images"},
-	"pe.com.google":                   {Type: "search", Name: "Google Images"},
-	"ph.com.google":                   {Type: "search", Name: "Google Images"},
-	"pk.com.google":                   {Type: "search", Name: "Google Images"},
-	"pr.com.google":                   {Type: "search", Name: "Google Images"},
-	"py.com.google":                   {Type: "search", Name: "Google Images"},
-	"qa.com.google":                   {Type: "search", Name: "Google Images"},
-	"sa.com.google":                   {Type: "search", Name: "Google Images"},
-	"sb.com.google":                   {Type: "search", Name: "Google Images"},
-	"sg.com.google":                   {Type: "search", Name: "Google Images"},
-	"sl.com.google":                   {Type: "search", Name: "Google Images"},
-	"sv.com.google":                   {Type: "search", Name: "Google Images"},
-	"tj.com.google":                   {Type: "search", Name: "Google Images"},
-	"tn.com.google":                   {Type: "search", Name: "Google Images"},
-	"tr.com.google":                   {Type: "search", Name: "Google Images"},
-	"tw.com.google":                   {Type: "search", Name: "Google Images"},
-	"ua.com.google":                   {Type: "search", Name: "Google Images"},
-	"uy.com.google":                   {Type: "search", Name: "Google Images"},
-	"vc.com.google":                   {Type: "search", Name: "Google Images"},
-	"vn.com.google":                   {Type: "search", Name: "Google Images"},
-	"cv.google":                       {Type: "search", Name: "Google Images"},
-	"cz.google":                       {Type: "search", Name: "Google Images"},
-	"de.google":                       {Type: "search", Name: "Google Images"},
-	"dj.google":                       {Type: "search", Name: "Google Images"},
-	"dk.google":                       {Type: "search", Name: "Google Images"},
-	"dm.google":                       {Type: "search", Name: "Google Images"},
-	"dz.google":                       {Type: "search", Name: "Google Images"},
-	"ee.google":                       {Type: "search", Name: "Google Images"},
-	"es.google":                       {Type: "search", Name: "Google Images"},
-	"fi.google":                       {Type: "search", Name: "Google Images"},
-	"fm.google":                       {Type: "search", Name: "Google Images"},
-	"fr.google":                       {Type: "search", Name: "Google Images"},
-	"ga.google":                       {Type: "search", Name: "Google Images"},
-	"gd.google":                       {Type: "search", Name: "Google Images"},
-	"ge.google":                       {Type: "search", Name: "Google Images"},
-	"gf.google":                       {Type: "search", Name: "Google Images"},
-	"gg.google":                       {Type: "search", Name: "Google Images"},
-	"gl.google":                       {Type: "search", Name: "Google Images"},
-	"gm.google":                       {Type: "search", Name: "Google Images"},
-	"gp.google":                       {Type: "search", Name: "Google Images"},
-	"gr.google":                       {Type: "search", Name: "Google Images"},
-	"gy.google":                       {Type: "search", Name: "Google Images"},
-	"hn.google":                       {Type: "search", Name: "Google Images"},
-	"hr.google":                       {Type: "search", Name: "Google Images"},
-	"ht.google":                       {Type: "search", Name: "Google Images"},
-	"hu.google":                       {Type: "search", Name: "Google Images"},
-	"ie.google":                       {Type: "search", Name: "Google Images"},
-	"im.google":                       {Type: "search", Name: "Google Images"},
-	"io.google":                       {Type: "search", Name: "Google Images"},
-	"iq.google":                       {Type: "search", Name: "Google Images"},
-	"is.google":                       {Type: "search", Name: "Google Images"},
-	"it.google":                       {Type: "search", Name: "Google Images"},
-	"ao.it.google":                    {Type: "search", Name: "Google Images"},
-	"je.google":                       {Type: "search", Name: "Google Images"},
-	"jo.google":                       {Type: "search", Name: "Google Images"},
-	"kg.google":                       {Type: "search", Name: "Google Images"},
-	"ki.google":                       {Type: "search", Name: "Google Images"},
-	"kz.google":                       {Type: "search", Name: "Google Images"},
-	"la.google":                       {Type: "search", Name: "Google Images"},
-	"li.google":                       {Type: "search", Name: "Google Images"},
-	"lk.google":                       {Type: "search", Name: "Google Images"},
-	"lt.google":                       {Type: "search", Name: "Google Images"},
-	"lu.google":                       {Type: "search", Name: "Google Images"},
-	"lv.google":                       {Type: "search", Name: "Google Images"},
-	"md.google":                       {Type: "search", Name: "Google Images"},
-	"me.google":                       {Type: "search", Name: "Google Images"},
-	"mg.google":                       {Type: "search", Name: "Google Images"},
-	"mk.google":                       {Type: "search", Name: "Google Images"},
-	"ml.google":                       {Type: "search", Name: "Google Images"},
-	"mn.google":                       {Type: "search", Name: "Google Images"},
-	"ms.google":                       {Type: "search", Name: "Google Images"},
-	"mu.google":                       {Type: "search", Name: "Google Images"},
-	"mv.google":                       {Type: "search", Name: "Google Images"},
-	"mw.google":                       {Type: "search", Name: "Google Images"},
-	"ne.google":                       {Type: "search", Name: "Google Images"},
-	"nl.google":                       {Type: "search", Name: "Google Images"},
-	"no.google":                       {Type: "search", Name: "Google Images"},
-	"nr.google":                       {Type: "search", Name: "Google Images"},
-	"nu.google":                       {Type: "search", Name: "Google Images"},
-	"pl.google":                       {Type: "search", Name: "Google Images"},
-	"pn.google":                       {Type: "search", Name: "Google Images"},
-	"ps.google":                       {Type: "search", Name: "Google Images"},
-	"pt.google":                       {Type: "search", Name: "Google Images"},
-	"ro.google":                       {Type: "search", Name: "Google Images"},
-	"rs.google":                       {Type: "search", Name: "Google Images"},
-	"ru.google":                       {Type: "search", Name: "Google Images"},
-	"rw.google":                       {Type: "search", Name: "Google Images"},
-	"sc.google":                       {Type: "search", Name: "Google Images"},
-	"se.google":                       {Type: "search", Name: "Google Images"},
-	"sh.google":                       {Type: "search", Name: "Google Images"},
-	"si.google":                       {Type: "search", Name: "Google Images"},
-	"sk.google":                       {Type: "search", Name: "Google Images"},
-	"sm.google":                       {Type: "search", Name: "Google Images"},
-	"sn.google":                       {Type: "search", Name: "Google Images"},
-	"so.google":                       {Type: "search", Name: "Google Images"},
-	"st.google":                       {Type: "search", Name: "Google Images"},
-	"td.google":                       {Type: "search", Name: "Google Images"},
-	"tg.google":                       {Type: "search", Name: "Google Images"},
-	"tk.google":                       {Type: "search", Name: "Google Images"},
-	"tl.google":                       {Type: "search", Name: "Google Images"},
-	"tm.google":                       {Type: "search", Name: "Google Images"},
-	"to.google":                       {Type: "search", Name: "Google Images"},
-	"tt.google":                       {Type: "search", Name: "Google Images"},
-	"us.google":                       {Type: "search", Name: "Google Images"},
-	"vg.google":                       {Type: "search", Name: "Google Images"},
-	"vu.google":                       {Type: "search", Name: "Google Images"},
-	"ws.google.images":                {Type: "search", Name: "Google Images"},
-	"ac.google.images":                {Type: "search", Name: "Google Images"},
-	"ad.google.images":                {Type: "search", Name: "Google Images"},
-	"ae.google.images":                {Type: "search", Name: "Google Images"},
-	"am.google.images":                {Type: "search", Name: "Google Images"},
-	"as.google.images":                {Type: "search", Name: "Google Images"},
-	"at.google.images":                {Type: "search", Name: "Google Images"},
-	"az.google.images":                {Type: "search", Name: "Google Images"},
-	"ba.google.images":                {Type: "search", Name: "Google Images"},
-	"be.google.images":                {Type: "search", Name: "Google Images"},
-	"bf.google.images":                {Type: "search", Name: "Google Images"},
-	"bg.google.images":                {Type: "search", Name: "Google Images"},
-	"bi.google.images":                {Type: "search", Name: "Google Images"},
-	"bj.google.images":                {Type: "search", Name: "Google Images"},
-	"bs.google.images":                {Type: "search", Name: "Google Images"},
-	"by.google.images":                {Type: "search", Name: "Google Images"},
-	"ca.google.images":                {Type: "search", Name: "Google Images"},
-	"cat.google.images":               {Type: "search", Name: "Google Images"},
-	"cc.google.images":                {Type: "search", Name: "Google Images"},
-	"cd.google.images":                {Type: "search", Name: "Google Images"},
-	"cf.google.images":                {Type: "search", Name: "Google Images"},
-	"cg.google.images":                {Type: "search", Name: "Google Images"},
-	"ch.google.images":                {Type: "search", Name: "Google Images"},
-	"ci.google.images":                {Type: "search", Name: "Google Images"},
-	"cl.google.images":                {Type: "search", Name: "Google Images"},
-	"cm.google.images":                {Type: "search", Name: "Google Images"},
-	"cn.google.images":                {Type: "search", Name: "Google Images"},
-	"bw.co.google.images":             {Type: "search", Name: "Google Images"},
-	"ck.co.google.images":             {Type: "search", Name: "Google Images"},
-	"cr.co.google.images":             {Type: "search", Name: "Google Images"},
-	"id.co.google.images":             {Type: "search", Name: "Google Images"},
-	"il.co.google.images":             {Type: "search", Name: "Google Images"},
-	"in.co.google.images":             {Type: "search", Name: "Google Images"},
-	"jp.co.google.images":             {Type: "search", Name: "Google Images"},
-	"ke.co.google.images":             {Type: "search", Name: "Google Images"},
-	"kr.co.google.images":             {Type: "search", Name: "Google Images"},
-	"ls.co.google.images":             {Type: "search", Name: "Google Images"},
-	"ma.co.google.images":             {Type: "search", Name: "Google Images"},
-	"mz.co.google.images":             {Type: "search", Name: "Google Images"},
-	"nz.co.google.images":             {Type: "search", Name: "Google Images"},
-	"th.co.google.images":             {Type: "search", Name: "Google Images"},
-	"tz.co.google.images":             {Type: "search", Name: "Google Images"},
-	"ug.co.google.images":             {Type: "search", Name: "Google Images"},
-	"uk.co.google.images":             {Type: "search", Name: "Google Images"},
-	"uz.co.google.images":             {Type: "search", Name: "Google Images"},
-	"ve.co.google.images":             {Type: "search", Name: "Google Images"},
-	"vi.co.google.images":             {Type: "search", Name: "Google Images"},
-	"za.co.google.images":             {Type: "search", Name: "Google Images"},
-	"zm.co.google.images":             {Type: "search", Name: "Google Images"},
-	"zw.co.google.images":             {Type: "search", Name: "Google Images"},
-	"com.google.images":               {Type: "search", Name: "Google Images"},
-	"af.com.google.images":            {Type: "search", Name: "Google Images"},
-	"ag.com.google.images":            {Type: "search", Name: "Google Images"},
-	"ai.com.google.images":            {Type: "search", Name: "Google Images"},
-	"ar.com.google.images":            {Type: "search", Name: "Google Images"},
-	"au.com.google.images":            {Type: "search", Name: "Google Images"},
-	"bd.com.google.images":            {Type: "search", Name: "Google Images"},
-	"bh.com.google.images":            {Type: "search", Name: "Google Images"},
-	"bn.com.google.images":            {Type: "search", Name: "Google Images"},
-	"bo.com.google.images":            {Type: "search", Name: "Google Images"},
-	"br.com.google.images":            {Type: "search", Name: "Google Images"},
-	"by.com.google.images":            {Type: "search", Name: "Google Images"},
-	"bz.com.google.images":            {Type: "search", Name: "Google Images"},
-	"co.com.google.images":            {Type: "search", Name: "Google Images"},
-	"cu.com.google.images":            {Type: "search", Name: "Google Images"},
-	"cy.com.google.images":            {Type: "search", Name: "Google Images"},
-	"do.com.google.images":            {Type: "search", Name: "Google Images"},
-	"ec.com.google.images":            {Type: "search", Name: "Google Images"},
-	"eg.com.google.images":            {Type: "search", Name: "Google Images"},
-	"et.com.google.images":            {Type: "search", Name: "Google Images"},
-	"fj.com.google.images":            {Type: "search", Name: "Google Images"},
-	"gh.com.google.images":            {Type: "search", Name: "Google Images"},
-	"gi.com.google.images":            {Type: "search", Name: "Google Images"},
-	"gt.com.google.images":            {Type: "search", Name: "Google Images"},
-	"hk.com.google.images":            {Type: "search", Name: "Google Images"},
-	"jm.com.google.images":            {Type: "search", Name: "Google Images"},
-	"kh.com.google.images":            {Type: "search", Name: "Google Images"},
-	"kw.com.google.images":            {Type: "search", Name: "Google Images"},
-	"lb.com.google.images":            {Type: "search", Name: "Google Images"},
-	"lc.com.google.images":            {Type: "search", Name: "Google Images"},
-	"ly.com.google.images":            {Type: "search", Name: "Google Images"},
-	"mt.com.google.images":            {Type: "search", Name: "Google Images"},
-	"mx.com.google.images":            {Type: "search", Name: "Google Images"},
-	"my.com.google.images":            {Type: "search", Name: "Google Images"},
-	"na.com.google.images":            {Type: "search", Name: "Google Images"},
-	"nf.com.google.images":            {Type: "search", Name: "Google Images"},
-	"ng.com.google.images":            {Type: "search", Name: "Google Images"},
-	"ni.com.google.images":            {Type: "search", Name: "Google Images"},
-	"np.com.google.images":            {Type: "search", Name: "Google Images"},
-	"om.com.google.images":            {Type: "search", Name: "Google Images"},
-	"pa.com.google.images":            {Type: "search", Name: "Google Images"},
-	"pe.com.google.images":            {Type: "search", Name: "Google Images"},
-	"ph.com.google.images":            {Type: "search", Name: "Google Images"},
-	"pk.com.google.images":            {Type: "search", Name: "Google Images"},
-	"pr.com.google.images":            {Type: "search", Name: "Google Images"},
-	"py.com.google.images":            {Type: "search", Name: "Google Images"},
-	"qa.com.google.images":            {Type: "search", Name: "Google Images"},
-	"sa.com.google.images":            {Type: "search", Name: "Google Images"},
-	"sb.com.google.images":            {Type: "search", Name: "Google Images"},
-	"sg.com.google.images":            {Type: "search", Name: "Google Images"},
-	"sl.com.google.images":            {Type: "search", Name: "Google Images"},
-	"sv.com.google.images":            {Type: "search", Name: "Google Images"},
-	"tj.com.google.images":            {Type: "search", Name: "Google Images"},
-	"tn.com.google.images":            {Type: "search", Name: "Google Images"},
-	"tr.com.google.images":            {Type: "search", Name: "Google Images"},
-	"tw.com.google.images":            {Type: "search", Name: "Google Images"},
-	"ua.com.google.images":            {Type: "search", Name: "Google Images"},
-	"uy.com.google.images":            {Type: "search", Name: "Google Images"},
-	"vc.com.google.images":            {Type: "search", Name: "Google Images"},
-	"vn.com.google.images":            {Type: "search", Name: "Google Images"},
-	"cv.google.images":                {Type: "search", Name: "Google Images"},
-	"cz.google.images":                {Type: "search", Name: "Google Images"},
-	"de.google.images":                {Type: "search", Name: "Google Images"},
-	"dj.google.images":                {Type: "search", Name: "Google Images"},
-	"dk.google.images":                {Type: "search", Name: "Google Images"},
-	"dm.google.images":                {Type: "search", Name: "Google Images"},
-	"dz.google.images":                {Type: "search", Name: "Google Images"},
-	"ee.google.images":                {Type: "search", Name: "Google Images"},
-	"es.google.images":                {Type: "search", Name: "Google Images"},
-	"fi.google.images":                {Type: "search", Name: "Google Images"},
-	"fm.google.images":                {Type: "search", Name: "Google Images"},
-	"fr.google.images":                {Type: "search", Name: "Google Images"},
-	"ga.google.images":                {Type: "search", Name: "Google Images"},
-	"gd.google.images":                {Type: "search", Name: "Google Images"},
-	"ge.google.images":                {Type: "search", Name: "Google Images"},
-	"gf.google.images":                {Type: "search", Name: "Google Images"},
-	"gg.google.images":                {Type: "search", Name: "Google Images"},
-	"gl.google.images":                {Type: "search", Name: "Google Images"},
-	"gm.google.images":                {Type: "search", Name: "Google Images"},
-	"gp.google.images":                {Type: "search", Name: "Google Images"},
-	"gr.google.images":                {Type: "search", Name: "Google Images"},
-	"gy.google.images":                {Type: "search", Name: "Google Images"},
-	"hn.google.images":                {Type: "search", Name: "Google Images"},
-	"hr.google.images":                {Type: "search", Name: "Google Images"},
-	"ht.google.images":                {Type: "search", Name: "Google Images"},
-	"hu.google.images":                {Type: "search", Name: "Google Images"},
-	"ie.google.images":                {Type: "search", Name: "Google Images"},
-	"im.google.images":                {Type: "search", Name: "Google Images"},
-	"io.google.images":                {Type: "search", Name: "Google Images"},
-	"iq.google.images":                {Type: "search", Name: "Google Images"},
-	"is.google.images":                {Type: "search", Name: "Google Images"},
-	"it.google.images":                {Type: "search", Name: "Google Images"},
-	"ao.it.google.images":             {Type: "search", Name: "Google Images"},
-	"je.google.images":                {Type: "search", Name: "Google Images"},
-	"jo.google.images":                {Type: "search", Name: "Google Images"},
-	"kg.google.images":                {Type: "search", Name: "Google Images"},
-	"ki.google.images":                {Type: "search", Name: "Google Images"},
-	"kz.google.images":                {Type: "search", Name: "Google Images"},
-	"la.google.images":                {Type: "search", Name: "Google Images"},
-	"li.google.images":                {Type: "search", Name: "Google Images"},
-	"lk.google.images":                {Type: "search", Name: "Google Images"},
-	"lt.google.images":                {Type: "search", Name: "Google Images"},
-	"lu.google.images":                {Type: "search", Name: "Google Images"},
-	"lv.google.images":                {Type: "search", Name: "Google Images"},
-	"md.google.images":                {Type: "search", Name: "Google Images"},
-	"me.google.images":                {Type: "search", Name: "Google Images"},
-	"mg.google.images":                {Type: "search", Name: "Google Images"},
-	"mk.google.images":                {Type: "search", Name: "Google Images"},
-	"ml.google.images":                {Type: "search", Name: "Google Images"},
-	"mn.google.images":                {Type: "search", Name: "Google Images"},
-	"ms.google.images":                {Type: "search", Name: "Google Images"},
-	"mu.google.images":                {Type: "search", Name: "Google Images"},
-	"mv.google.images":                {Type: "search", Name: "Google Images"},
-	"mw.google.images":                {Type: "search", Name: "Google Images"},
-	"ne.google.images":                {Type: "search", Name: "Google Images"},
-	"nl.google.images":                {Type: "search", Name: "Google Images"},
-	"no.google.images":                {Type: "search", Name: "Google Images"},
-	"nr.google.images":                {Type: "search", Name: "Google Images"},
-	"nu.google.images":                {Type: "search", Name: "Google Images"},
-	"pl.google.images":                {Type: "search", Name: "Google Images"},
-	"pn.google.images":                {Type: "search", Name: "Google Images"},
-	"ps.google.images":                {Type: "search", Name: "Google Images"},
-	"pt.google.images":                {Type: "search", Name: "Google Images"},
-	"ro.google.images":                {Type: "search", Name: "Google Images"},
-	"rs.google.images":                {Type: "search", Name: "Google Images"},
-	"ru.google.images":                {Type: "search", Name: "Google Images"},
-	"rw.google.images":                {Type: "search", Name: "Google Images"},
-	"sc.google.images":                {Type: "search", Name: "Google Images"},
-	"se.google.images":                {Type: "search", Name: "Google Images"},
-	"sh.google.images":                {Type: "search", Name: "Google Images"},
-	"si.google.images":                {Type: "search", Name: "Google Images"},
-	"sk.google.images":                {Type: "search", Name: "Google Images"},
-	"sm.google.images":                {Type: "search", Name: "Google Images"},
-	"sn.google.images":                {Type: "search", Name: "Google Images"},
-	"so.google.images":                {Type: "search", Name: "Google Images"},
-	"st.google.images":                {Type: "search", Name: "Google Images"},
-	"td.google.images":                {Type: "search", Name: "Google Images"},
-	"tg.google.images":                {Type: "search", Name: "Google Images"},
-	"tk.google.images":                {Type: "search", Name: "Google Images"},
-	"tl.google.images":                {Type: "search", Name: "Google Images"},
-	"tm.google.images":                {Type: "search", Name: "Google Images"},
-	"to.google.images":                {Type: "search", Name: "Google Images"},
-	"tt.google.images":                {Type: "search", Name: "Google Images"},
-	"us.google.images":                {Type: "search", Name: "Google Images"},
-	"vg.google.images":                {Type: "search", Name: "Google Images"},
-	"vu.google.images":                {Type: "search", Name: "Google Images"},
-	"no.abcsolk":                      {Type: "search", Name: "ABCsøk"},
-	"no.abcsok.verden":                {Type: "search", Name: "ABCsøk"},
-	"ws.google":                       {Type: "search", Name: "Google Product Search"},
-	"de.dasoertliche":                 {Type: "search", Name: "DasOertliche"},
-	"com.infospace":                   {Type: "search", Name: "InfoSpace"},
-	"com.dogpile":                     {Type: "search", Name: "InfoSpace"},
-	"com.metacrawler":                 {Type: "search", Name: "InfoSpace"},
-	"com.webfetch":                    {Type: "search", Name: "InfoSpace"},
-	"com.webcrawler":                  {Type: "search", Name: "InfoSpace"},
-	"com.kiwee.search":                {Type: "search", Name: "InfoSpace"},
-	"com.babylon.isearch":             {Type: "search", Name: "InfoSpace"},
-	"com.facemoods.start":             {Type: "search", Name: "InfoSpace"},
-	"com.magnetic.search":             {Type: "search", Name: "InfoSpace"},
-	"com.searchcompletion.search":     {Type: "search", Name: "InfoSpace"},
-	"com.clusty":                      {Type: "search", Name: "InfoSpace"},
-	"com.weborama":                    {Type: "search", Name: "Weborama"},
-	"ch.bluewin.search":               {Type: "search", Name: "Bluewin"},
-	"com.bt.search":                   {Type: "search", Name: "British Telecommunications"},
-	"ee.neti":                         {Type: "search", Name: "Neti"},
-	"ru.nigma":                        {Type: "search", Name: "Nigma"},
-	"cn.yahoo.image":                  {Type: "search", Name: "Yahoo! Images"},
-	"com.yahoo.search.images":         {Type: "search", Name: "Yahoo! Images"},
-	"fr.exalead":                      {Type: "search", Name: "Exalead"},
-	"com.exalead":                     {Type: "search", Name: "Exalead"},
-	"com.teoma":                       {Type: "search", Name: "Teoma"},
-	"com.need2find.search.ko":         {Type: "search", Name: "Needtofind"},
-	"com.looksmart":                   {Type: "search", Name: "Looksmart"},
-	"com.inspsearch":                  {Type: "search", Name: "Flyingbird"},
-	"com.inspsearch.viview":           {Type: "search", Name: "Flyingbird"},
-	"com.everyclick":                  {Type: "search", Name: "Everyclick"},
-	"pl.wp.szukaj":                    {Type: "search", Name: "Wirtualna Polska"},
-	"com.toolbarhome":                 {Type: "search", Name: "Toolbarhome"},
-	"com.toolbarhome.vshare":          {Type: "search", Name: "Toolbarhome"},
-	"com.searchalot":                  {Type: "search", Name: "Searchalot"},
-	"ru.yandex":                       {Type: "search", Name: "Yandex"},
-	"ua.yandex":                       {Type: "search", Name: "Yandex"},
-	"com.yandex":                      {Type: "search", Name: "Yandex"},
-	"by.yandex":                       {Type: "search", Name: "Yandex"},
-	"ru.yandex.clck":                  {Type: "search", Name: "Yandex"},
-	"ua.yandex.clck":                  {Type: "search", Name: "Yandex"},
-	"com.yandex.clck":                 {Type: "search", Name: "Yandex"},
-	"by.yandex.clck":                  {Type: "search", Name: "Yandex"},
-	"ca.canoe.web":                    {Type: "search", Name: "canoe.ca"},
-	"com.cs.websearch":                {Type: "search", Name: "Compuserve"},
-	"com.blogdigger":                  {Type: "search", Name: "Blogdigger"},
-	"nl.startpagina.startgoogle":      {Type: "search", Name: "Startpagina"},
-	"st.eo":                           {Type: "search", Name: "eo"},
-	"com.zhongsou.p":                  {Type: "search", Name: "Zhongsou"},
-	"com.toile":                       {Type: "search", Name: "La Toile Du Quebec Via Google"},
-	"com.toile.web":                   {Type: "search", Name: "La Toile Du Quebec Via Google"},
-	"de.paperball":                    {Type: "search", Name: "Paperball"},
-	"de.jungle-spider":                {Type: "search", Name: "Jungle Spider"},
-	"com.peoplepc.search":             {Type: "search", Name: "PeoplePC"},
-	"net.thesmartsearch":              {Type: "search", Name: "The Smart Search"},
-	"de.metacrawler.s1":               {Type: "search", Name: "MetaCrawler.de"},
-	"de.metacrawler.s2":               {Type: "search", Name: "MetaCrawler.de"},
-	"de.metacrawler.s3":               {Type: "search", Name: "MetaCrawler.de"},
-	"es.orange.busca":                 {Type: "search", Name: "Orange"},
-	"uk.co.orange.search":             {Type: "search", Name: "Orange"},
-	"fr.orange.lemoteur":              {Type: "search", Name: "Orange"},
-	"no.gulesider":                    {Type: "search", Name: "Gule Sider"},
-	"ua.i.search":                     {Type: "search", Name: "I.ua"},
-	"com.francite.recherche":          {Type: "search", Name: "Francite"},
-	"com.ask.tb.search":               {Type: "search", Name: "Ask Toolbar"},
-	"by.tut.search":                   {Type: "search", Name: "Tut.by"},
-	"com.trusted--search":             {Type: "search", Name: "Trusted-Search"},
-	"jp.ne.goo.search":                {Type: "search", Name: "goo"},
-	"jp.ne.goo.ocnsearch":             {Type: "search", Name: "goo"},
-	"com.fastbrowsersearch":           {Type: "search", Name: "Fast Browser Search"},
-	"com.kununu":                      {Type: "search", Name: "kununu"},
-	"cz.volny.web":                    {Type: "search", Name: "Volny"},
-	"com.icerocket.blogs":             {Type: "search", Name: "Icerockeet"},
-	"es.terra.buscador":               {Type: "search", Name: "Terra"},
-	"cl.terra.buscador":               {Type: "search", Name: "Terra"},
-	"br.com.terra.buscador":           {Type: "search", Name: "Terra"},
-	"com.amazon":                      {Type: "search", Name: "Amazon"},
-	"pl.onet.szukaj":                  {Type: "search", Name: "Onet"},
-	"com.digg":                        {Type: "search", Name: "Digg"},
-	"de.abacho":                       {Type: "search", Name: "Abacho"},
-	"com.abacho":                      {Type: "search", Name: "Abacho"},
-	"uk.co.abacho":                    {Type: "search", Name: "Abacho"},
-	"com.abacho.se":                   {Type: "search", Name: "Abacho"},
-	"com.abacho.tr":                   {Type: "search", Name: "Abacho"},
-	"at.abacho":                       {Type: "search", Name: "Abacho"},
-	"fr.abacho":                       {Type: "search", Name: "Abacho"},
-	"es.abacho":                       {Type: "search", Name: "Abacho"},
-	"ch.abacho":                       {Type: "search", Name: "Abacho"},
-	"it.abacho":                       {Type: "search", Name: "Abacho"},
-	"com.maailm":                      {Type: "search", Name: "maailm"},
-	"de.flix":                         {Type: "search", Name: "Flix"},
-	"com.inbox":                       {Type: "search", Name: "Inbox.com"},
+	"net.yahoo.shopping":              {Type: "unknown", Name: "Yahoo!"},
+	"by.yandex.maps":                  {Type: "unknown", Name: "Yandex Maps"},
+	"com.yandex.maps":                 {Type: "unknown", Name: "Yandex Maps"},
+	"ru.yandex.maps":                  {Type: "unknown", Name: "Yandex Maps"},
+	"ru.yandex.maps.n":                {Type: "unknown", Name: "Yandex Maps"},
+	"ua.yandex.maps":                  {Type: "unknown", Name: "Yandex Maps"},
+	"au.net.iinet.mail":               {Type: "email", Name: "iiNet"},
+	"au.net.iinet.webmail":            {Type: "email", Name: "iiNet"},
+	"com.naver.mail":                  {Type: "email", Name: "Naver Mail"},
+	"com.google.inbox":                {Type: "email", Name: "Gmail"},
+	"com.google.mail":                 {Type: "email", Name: "Gmail"},
+	"ru.rambler.mail":                 {Type: "email", Name: "Rambler"},
+	"au.com.adam.webmail":             {Type: "email", Name: "Adam Internet"},
+	"ru.post":                         {Type: "email", Name: "Beeline"},
+	"au.net.commander.webmail":        {Type: "email", Name: "Commander"},
+	"au.net.netspace.webmail":         {Type: "email", Name: "Netspace"},
+	"au.com.westnet.webmail":          {Type: "email", Name: "Westnet"},
+	"com.163.mail":                    {Type: "email", Name: "163 Mail"},
+	"au.com.dodo.webmail":             {Type: "email", Name: "Dodo"},
+	"ru.mastermail":                   {Type: "email", Name: "Mastermail"},
+	"ru.mastermail.m":                 {Type: "email", Name: "Mastermail"},
+	"fr.orange":                       {Type: "email", Name: "Orange Webmail"},
+	"nz.co.vodafone.webmail":          {Type: "email", Name: "Vodafone"},
+	"com.live.mail":                   {Type: "email", Name: "Outlook.com"},
+	"com.live.outlook":                {Type: "email", Name: "Outlook.com"},
+	"com.yahoo.mail":                  {Type: "email", Name: "Yahoo! Mail"},
+	"jp.co.yahoo.mail":                {Type: "email", Name: "Yahoo! Mail"},
+	"net.yahoo.mail":                  {Type: "email", Name: "Yahoo! Mail"},
+	"uk.co.yahoo.mail":                {Type: "email", Name: "Yahoo! Mail"},
+	"com.126.mail":                    {Type: "email", Name: "126 Mail"},
+	"com.bigpond.messaging.basic":     {Type: "email", Name: "Bigpond"},
+	"com.bigpond.webmail":             {Type: "email", Name: "Bigpond"},
+	"com.bigpond.webmail2":            {Type: "email", Name: "Bigpond"},
+	"com.telstra.email":               {Type: "email", Name: "Bigpond"},
+	"com.inbox":                       {Type: "email", Name: "Inbox.com"},
+	"nz.co.2degreesbroadband.webmail": {Type: "email", Name: "2degrees"},
+	"com.sibmail":                     {Type: "email", Name: "Sibmail"},
+	"com.zoho.mail":                   {Type: "email", Name: "Zoho"},
+	"ru.qip.mail":                     {Type: "email", Name: "QIP"},
+	"com.qq.exmail":                   {Type: "email", Name: "QQ Mail"},
+	"com.qq.mail":                     {Type: "email", Name: "QQ Mail"},
+	"cz.seznam.email":                 {Type: "email", Name: "Seznam Mail"},
+	"net.ukr.mail":                    {Type: "email", Name: "Ukr.net"},
+	"com.aol.mail":                    {Type: "email", Name: "AOL Mail"},
+	"net.daum.mail":                   {Type: "email", Name: "Daum Mail"},
+	"net.daum.mail2":                  {Type: "email", Name: "Daum Mail"},
+	"ru.e1.mail":                      {Type: "email", Name: "E1.ru"},
+	"au.com.optusnet.webmail":         {Type: "email", Name: "Optus Zoo"},
+	"au.com.optuszoo.webmail":         {Type: "email", Name: "Optus Zoo"},
+	"au.com.virginbroadband.webmail":  {Type: "email", Name: "Virgin"},
+	"by.yandex.mail":                  {Type: "email", Name: "Yandex"},
+	"com.yandex.mail":                 {Type: "email", Name: "Yandex"},
+	"kz.yandex.mail":                  {Type: "email", Name: "Yandex"},
+	"ru.yandex.mail":                  {Type: "email", Name: "Yandex"},
+	"ua.yandex.mail":                  {Type: "email", Name: "Yandex"},
+	"au.com.iprimus.webmail":          {Type: "email", Name: "iPrimus"},
+	"ru.mail.e":                       {Type: "email", Name: "Mail.ru"},
+	"ru.mail.touch":                   {Type: "email", Name: "Mail.ru"},
+	"com.mynet.mail":                  {Type: "email", Name: "Mynet Mail"},
 	"de.freenet.suche":                {Type: "search", Name: "Freenet"},
-	"de.suchnase":                     {Type: "search", Name: "Suchnase"},
-	"au.com.dodo.google":              {Type: "search", Name: "Dodo"},
-	"ac.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ad.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ae.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"am.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"as.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"at.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"az.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ba.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"be.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"bf.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"bg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"bi.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"bj.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"bs.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"by.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ca.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"cat.google.blogsearch":           {Type: "search", Name: "Google Blogsearch"},
-	"cc.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"cd.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"cf.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"cg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ch.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ci.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"cl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"cm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"cn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"bw.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"ck.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"cr.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"id.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"il.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"in.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"jp.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"ke.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"kr.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"ls.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"ma.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"mz.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"nz.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"th.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"tz.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"ug.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"uk.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"uz.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"ve.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"vi.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"za.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"zm.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"zw.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"com.google.blogsearch":           {Type: "search", Name: "Google Blogsearch"},
-	"af.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"ag.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"ai.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"ar.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"au.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"bd.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"bh.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"bn.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"bo.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"br.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"by.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"bz.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"co.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"cu.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"cy.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"do.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"ec.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"eg.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"et.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"fj.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"gh.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"gi.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"gt.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"hk.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"jm.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"kh.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"kw.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"lb.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"lc.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"ly.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"mt.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"mx.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"my.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"na.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"nf.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"ng.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"ni.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"np.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"om.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"pa.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"pe.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"ph.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"pk.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"pr.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"py.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"qa.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"sa.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"sb.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"sg.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"sl.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"sv.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"tj.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"tn.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"tr.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"tw.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"ua.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"uy.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"vc.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"vn.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
-	"cv.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"cz.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"de.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"dj.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"dk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"dm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"dz.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ee.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"es.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"fi.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"fm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"fr.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ga.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"gd.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ge.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"gf.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"gg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"gl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"gm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"gp.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"gr.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"gy.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"hn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"hr.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ht.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"hu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ie.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"im.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"io.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"iq.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"is.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"it.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ao.it.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
-	"je.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"jo.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"kg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ki.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"kz.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"la.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"li.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"lk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"lt.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"lu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"lv.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"md.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"me.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"mg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"mk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ml.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"mn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ms.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"mu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"mv.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"mw.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ne.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"nl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"no.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"nr.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"nu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"pl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"pn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ps.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"pt.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ro.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"rs.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ru.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"rw.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"sc.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"se.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"sh.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"si.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"sk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"sm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"sn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"so.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"st.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"td.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"tg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"tk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"tl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"tm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"to.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"tt.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"us.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"vg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"vu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
-	"ws.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"pl.nk":                           {Type: "social", Name: "Nasza-klasa.pl"},
 	"ru.poisk":                        {Type: "search", Name: "Poisk.ru"},
-	"fr.sharelook":                    {Type: "search", Name: "Sharelook"},
-	"com.finderoo":                    {Type: "search", Name: "Finderoo"},
-	"si.najdi":                        {Type: "search", Name: "Najdi"},
-	"com.picsearch":                   {Type: "search", Name: "Picsearch"},
-	"ru.mail":                         {Type: "search", Name: "Mail.ru"},
-	"ru.mail.m":                       {Type: "search", Name: "Mail.ru"},
-	"ru.mail.go":                      {Type: "search", Name: "Mail.ru"},
-	"com.alexa":                       {Type: "search", Name: "Alexa"},
-	"com.alexa.toolbars.search":       {Type: "search", Name: "Alexa"},
-	"de.uni-hannover.rrzn.meta":       {Type: "search", Name: "Metager"},
-	"de.metager":                      {Type: "search", Name: "Metager"},
-	"com.technorati":                  {Type: "search", Name: "Technorati"},
-	"com.globososo.searches":          {Type: "search", Name: "Globososo"},
-	"com.globososo.search":            {Type: "search", Name: "Globososo"},
-	"ee.www.search":                   {Type: "search", Name: "WWW"},
-	"com.trouvez":                     {Type: "search", Name: "Trouvez.com"},
-	"com.ixquick":                     {Type: "search", Name: "IXquick"},
-	"com.ixquick.eu":                  {Type: "search", Name: "IXquick"},
-	"de.ixquick":                      {Type: "search", Name: "IXquick"},
-	"com.ixquick.us":                  {Type: "search", Name: "IXquick"},
-	"com.ixquick.us.s1":               {Type: "search", Name: "IXquick"},
-	"com.ixquick.us.s2":               {Type: "search", Name: "IXquick"},
-	"com.ixquick.us.s3":               {Type: "search", Name: "IXquick"},
-	"com.ixquick.us.s4":               {Type: "search", Name: "IXquick"},
-	"com.ixquick.us.s5":               {Type: "search", Name: "IXquick"},
-	"com.ixquick.s8-eu":               {Type: "search", Name: "IXquick"},
-	"de.ixquick.s1-eu":                {Type: "search", Name: "IXquick"},
-	"com.naver.search.image":          {Type: "search", Name: "Naver Images"},
-	"com.naver.imagesearch":           {Type: "search", Name: "Naver Images"},
-	"com.zapmeta":                     {Type: "search", Name: "Zapmeta"},
-	"nl.zapmeta":                      {Type: "search", Name: "Zapmeta"},
-	"de.zapmeta":                      {Type: "search", Name: "Zapmeta"},
-	"com.zapmeta.uk":                  {Type: "search", Name: "Zapmeta"},
-	"com.yippy.search":                {Type: "search", Name: "Yippy"},
-	"pt.clix.pesquisa":                {Type: "search", Name: "Clix"},
-	"info.walhello":                   {Type: "search", Name: "Walhello"},
-	"com.walhello":                    {Type: "search", Name: "Walhello"},
-	"de.walhello":                     {Type: "search", Name: "Walhello"},
-	"nl.walhello":                     {Type: "search", Name: "Walhello"},
-	"ua.meta":                         {Type: "search", Name: "Meta"},
-	"be.skynet":                       {Type: "search", Name: "Skynet"},
-	"uk.co.searchy":                   {Type: "search", Name: "Searchy"},
-	"com.findwide.search":             {Type: "search", Name: "Findwide"},
-	"com.websearch":                   {Type: "search", Name: "WebSearch"},
-	"ru.rambler.nova":                 {Type: "search", Name: "Rambler"},
-	"lv.latne":                        {Type: "search", Name: "Latne"},
-	"com.mysearch":                    {Type: "search", Name: "MySearch"},
-	"com.mysearch.ms114":              {Type: "search", Name: "MySearch"},
-	"com.mysearch.ms146":              {Type: "search", Name: "MySearch"},
-	"com.myway.mysearch.kf":           {Type: "search", Name: "MySearch"},
-	"com.myway.mysearch.ki":           {Type: "search", Name: "MySearch"},
-	"com.myway.search":                {Type: "search", Name: "MySearch"},
-	"com.mywebsearch.search":          {Type: "search", Name: "MySearch"},
-	"com.cuil":                        {Type: "search", Name: "Cuil"},
-	"de.tixuma":                       {Type: "search", Name: "Tixuma"},
-	"pt.sapo.pesquisa":                {Type: "search", Name: "Sapo"},
-	"de.gnadenmeer":                   {Type: "search", Name: "Gnadenmeer"},
-	"de.arcor":                        {Type: "search", Name: "Arcor"},
-	"com.naver.search":                {Type: "search", Name: "Naver"},
-	"nl.zoeken":                       {Type: "search", Name: "Zoeken"},
-	"no.startsiden":                   {Type: "search", Name: "Startsiden"},
-	"com.yam.search":                  {Type: "search", Name: "Yam"},
-	"se.eniro":                        {Type: "search", Name: "Eniro"},
-	"de.apollo7":                      {Type: "search", Name: "APOLL07"},
-	"jp.ne.biglobe.search.cgi":        {Type: "search", Name: "Biglobe"},
-	"fr.mozbot":                       {Type: "search", Name: "Mozbot"},
-	"uk.co.mozbot":                    {Type: "search", Name: "Mozbot"},
-	"com.mozbot":                      {Type: "search", Name: "Mozbot"},
-	"com.icq":                         {Type: "search", Name: "ICQ"},
-	"com.icq.search":                  {Type: "search", Name: "ICQ"},
-	"com.baidu":                       {Type: "search", Name: "Baidu"},
-	"com.baidu.www1":                  {Type: "search", Name: "Baidu"},
-	"com.baidu.zhidao":                {Type: "search", Name: "Baidu"},
-	"com.baidu.tieba":                 {Type: "search", Name: "Baidu"},
-	"com.baidu.news":                  {Type: "search", Name: "Baidu"},
-	"com.gougou.web":                  {Type: "search", Name: "Baidu"},
-	"com.baidu.m":                     {Type: "search", Name: "Baidu"},
-	"com.conduit.search":              {Type: "search", Name: "Conduit"},
-	"nl.vindex":                       {Type: "search", Name: "Vindex"},
-	"nl.vindex.search":                {Type: "search", Name: "Vindex"},
-	"com.babylon.search":              {Type: "search", Name: "Babylon"},
-	"com.babylon.searchassist":        {Type: "search", Name: "Babylon"},
-	"com.trovarapido":                 {Type: "search", Name: "TrovaRapido"},
-	"com.winamp.search":               {Type: "search", Name: "Winamp"},
-	"com.suchmaschine":                {Type: "search", Name: "Suchmaschine.com"},
-	"com.lycos.search":                {Type: "search", Name: "Lycos"},
-	"com.lycos":                       {Type: "search", Name: "Lycos"},
-	"nl.vinden":                       {Type: "search", Name: "Vinden"},
-	"com.altavista":                   {Type: "search", Name: "Altavista"},
-	"com.altavista.search":            {Type: "search", Name: "Altavista"},
-	"com.altavista.listings":          {Type: "search", Name: "Altavista"},
-	"de.altavista":                    {Type: "search", Name: "Altavista"},
-	"fr.altavista":                    {Type: "search", Name: "Altavista"},
-	"com.altavista.be-nl":             {Type: "search", Name: "Altavista"},
-	"com.altavista.be-fr":             {Type: "search", Name: "Altavista"},
-	"org.dmoz":                        {Type: "search", Name: "dmoz"},
-	"org.dmoz.editors":                {Type: "search", Name: "dmoz"},
-	"org.ecosia":                      {Type: "search", Name: "Ecosia"},
-	"com.maxwebsearch":                {Type: "search", Name: "Maxwebsearch"},
-	"com.euroseek":                    {Type: "search", Name: "Euroseek"},
-	"com.qwant":                       {Type: "search", Name: "Qwant"},
-	"com.qwant.lite":                  {Type: "search", Name: "Qwant"},
-	"com.x-recherche":                 {Type: "search", Name: "X-recherche"},
+	"com.steelhousemedia":             {Type: "paid", Name: "SteelHouse"},
+	"ru.mail.torg":                    {Type: "paid", Name: "Torg.Mail.ru"},
+	"com.yieldmo":                     {Type: "paid", Name: "Yieldmo"},
+	"com.zedo":                        {Type: "paid", Name: "ZEDO"},
+	"com.zedo.z1":                     {Type: "paid", Name: "ZEDO"},
+	"com.acuityplatform":              {Type: "paid", Name: "Acuity Ads"},
+	"ru.adfox":                        {Type: "paid", Name: "ADFOX"},
+	"ru.adfox.ads":                    {Type: "paid", Name: "ADFOX"},
+	"com.nexage":                      {Type: "paid", Name: "ONE by AOL"},
+	"ru.price":                        {Type: "paid", Name: "Price.ru"},
+	"ru.price.v":                      {Type: "paid", Name: "Price.ru"},
+	"com.sosodesktop":                 {Type: "search", Name: "SoSoDesk"},
+	"com.sosodesktop.search":          {Type: "search", Name: "SoSoDesk"},
+	"lv.apollo":                       {Type: "search", Name: "Apollo Latvia"},
+	"by.yandex.images":                {Type: "search", Name: "Yandex Images"},
+	"com.yandex.images":               {Type: "search", Name: "Yandex Images"},
 	"ru.yandex.images":                {Type: "search", Name: "Yandex Images"},
 	"ua.yandex.images":                {Type: "search", Name: "Yandex Images"},
-	"com.yandex.images":               {Type: "search", Name: "Yandex Images"},
-	"by.yandex.images":                {Type: "search", Name: "Yandex Images"},
-	"net.gmx.suche":                   {Type: "search", Name: "GMX"},
-	"com.daemon-search":               {Type: "search", Name: "Daemon search"},
-	"com.daemon-search.my":            {Type: "search", Name: "Daemon search"},
+	"ru.rambler.nova":                 {Type: "search", Name: "Rambler"},
+	"com.soso":                        {Type: "search", Name: "Sogou"},
+	"com.sougou":                      {Type: "search", Name: "Sogou"},
+	"com.alexa":                       {Type: "search", Name: "Alexa"},
+	"com.alexa.toolbars.search":       {Type: "search", Name: "Alexa"},
+	"fr.aliceadsl.rechercher":         {Type: "search", Name: "Alice Adsl"},
+	"com.serving-sys.bs":              {Type: "paid", Name: "Sizmek"},
+	"com.sociomantic":                 {Type: "paid", Name: "Sociomantic Labs"},
+	"com.stickyadstv":                 {Type: "paid", Name: "StickyADS.tv"},
+	"com.stickyadstv.sfx":             {Type: "paid", Name: "StickyADS.tv"},
+	"com.taboola":                     {Type: "paid", Name: "Taboola"},
+	"com.taboola.api":                 {Type: "paid", Name: "Taboola"},
+	"com.taboola.trc":                 {Type: "paid", Name: "Taboola"},
+	"com.adroll":                      {Type: "paid", Name: "AdRoll"},
+	"com.duckduckgo":                  {Type: "search", Name: "DuckDuckGo"},
+	"nl.marktplaats":                  {Type: "search", Name: "Marktplaats"},
+	"nl.vinden":                       {Type: "search", Name: "Vinden"},
+	"br.com.apontador":                {Type: "search", Name: "Apontador"},
+	"ru.aport.sm":                     {Type: "search", Name: "Aport"},
+	"net.bidswitch":                   {Type: "paid", Name: "BidSwitch"},
+	"pl.interia.google":               {Type: "search", Name: "Interia"},
+	"com.cs.websearch":                {Type: "search", Name: "Compuserve"},
+	"de.gnadenmeer":                   {Type: "search", Name: "Gnadenmeer"},
+	"com.twingly":                     {Type: "search", Name: "Twingly"},
+	"pt.clix.pesquisa":                {Type: "search", Name: "Clix"},
+	"com.flashtalking":                {Type: "paid", Name: "Flashtalking"},
+	"com.flashtalking.servedby":       {Type: "paid", Name: "Flashtalking"},
+	"de.goyellow":                     {Type: "search", Name: "Goyellow.de"},
+	"com.lowermybills":                {Type: "paid", Name: "LowerMyBills"},
+	"by.yandex.yabs":                  {Type: "paid", Name: "Yandex.Direct"},
+	"com.yandex.yabs":                 {Type: "paid", Name: "Yandex.Direct"},
+	"ru.yandex.an":                    {Type: "paid", Name: "Yandex.Direct"},
+	"ru.yandex.yabs":                  {Type: "paid", Name: "Yandex.Direct"},
+	"ua.yandex.yabs":                  {Type: "paid", Name: "Yandex.Direct"},
+	"jp.adingo":                       {Type: "paid", Name: "Fluct"},
+	"net.adadvisor":                   {Type: "paid", Name: "Neustar AdAdvisor"},
+	"com.plista.farm":                 {Type: "paid", Name: "Plista"},
+	"com.outbrain.paid":               {Type: "paid", Name: "Outbrain"},
+	"com.pubmatic.sshowads":           {Type: "paid", Name: "PubMatic"},
+	"de.adnet":                        {Type: "paid", Name: "AdNET"},
+	"net.2mdn.s0":                     {Type: "paid", Name: "Doubleclick"},
+	"net.2mdn.s1":                     {Type: "paid", Name: "Doubleclick"},
+	"net.doubleclick.ad":              {Type: "paid", Name: "Doubleclick"},
+	"net.doubleclick.ad-apac":         {Type: "paid", Name: "Doubleclick"},
+	"net.doubleclick.g.dp":            {Type: "paid", Name: "Doubleclick"},
+	"net.doubleclick.g.pubads":        {Type: "paid", Name: "Doubleclick"},
+	"com.googleadservices":            {Type: "paid", Name: "Google"},
+	"com.googleadservices.partner":    {Type: "paid", Name: "Google"},
+	"com.googleapis.imasdk":           {Type: "paid", Name: "Google"},
+	"com.googlesyndication.tpc":       {Type: "paid", Name: "Google"},
+	"net.doubleclick.g.googleads":     {Type: "paid", Name: "Google"},
+	"com.openxenterprise":             {Type: "paid", Name: "OpenX"},
+	"com.servedbyopenx":               {Type: "paid", Name: "OpenX"},
+	"net.openx":                       {Type: "paid", Name: "OpenX"},
+	"net.openx.us-ads":                {Type: "paid", Name: "OpenX"},
+	"com.jivox":                       {Type: "paid", Name: "Jivox"},
+	"au.com.mozo":                     {Type: "paid", Name: "Mozo"},
+	"au.com.mozo.a":                   {Type: "paid", Name: "Mozo"},
+	"com.need2find.search.ko":         {Type: "search", Name: "Needtofind"},
+	"com.rubiconproject.optimized-by": {Type: "paid", Name: "Rubicon Project"},
+	"com.sonobi":                      {Type: "paid", Name: "Sonobi"},
+	"net.adform":                      {Type: "paid", Name: "Adform"},
+	"com.plusperformance":             {Type: "paid", Name: "AdSpirit"},
+	"com.rtbcity":                     {Type: "paid", Name: "AdSpirit"},
+	"de.adspirit":                     {Type: "paid", Name: "AdSpirit"},
+	"com.247realmedia":                {Type: "paid", Name: "AppNexus"},
+	"com.adnxs":                       {Type: "paid", Name: "AppNexus"},
+	"com.adnxs.ib":                    {Type: "paid", Name: "AppNexus"},
+	"net.eyeota":                      {Type: "paid", Name: "Eyeota"},
+	"com.tribalfusion.cdnx":           {Type: "paid", Name: "Tribal Fusion"},
+	"com.lijit":                       {Type: "paid", Name: "Sovrn"},
+	"com.adition":                     {Type: "paid", Name: "Adition"},
+	"net.wunderloop":                  {Type: "paid", Name: "AudienceScience"},
+	"com.casalemedia":                 {Type: "paid", Name: "Casale Media"},
+	"com.geni":                        {Type: "social", Name: "Geni"},
+	"com.wayn":                        {Type: "social", Name: "WAYN"},
+	"com.vimeo":                       {Type: "social", Name: "Vimeo"},
+	"com.viadeo":                      {Type: "social", Name: "Viadeo"},
+	"com.cyworld.global":              {Type: "social", Name: "Cyworld"},
+	"com.itusozluk":                   {Type: "social", Name: "ITU Sozluk"},
+	"com.flixster":                    {Type: "social", Name: "Flixster"},
+	"ru.lastfm":                       {Type: "social", Name: "Last.fm"},
+	"com.myheritage":                  {Type: "social", Name: "MyHeritage"},
+	"ru.livejournal":                  {Type: "social", Name: "LiveJournal"},
+	"nl.hyves":                        {Type: "social", Name: "Hyves"},
+	"com.stackoverflow":               {Type: "social", Name: "StackOverflow"},
+	"com.ycombinator.news":            {Type: "social", Name: "Hacker News"},
+	"com.Sozluk":                      {Type: "social", Name: "Eksi Sozluk"},
+	"org.sourtimes":                   {Type: "social", Name: "Eksi Sozluk"},
+	"st.lo":                           {Type: "search", Name: "Lo.st"},
+	"com.skyrock":                     {Type: "social", Name: "Skyrock"},
+	"com.fotolog":                     {Type: "social", Name: "Fotolog"},
+	"com.friendsreunited":             {Type: "social", Name: "Friends Reunited"},
+	"cc.incisozluk":                   {Type: "social", Name: "Inci Sozluk"},
+	"com.incisozluk":                  {Type: "social", Name: "Inci Sozluk"},
+	"com.sozlukspot.inci":             {Type: "social", Name: "Inci Sozluk"},
+	"com.donanimhaber":                {Type: "social", Name: "Donanimhaber"},
+	"nl.zoek.www3":                    {Type: "search", Name: "Zoek"},
+	"no.online":                       {Type: "search", Name: "Online.no"},
+	"br.com.terra.buscador":           {Type: "search", Name: "Terra"},
+	"cl.terra.buscador":               {Type: "search", Name: "Terra"},
+	"es.terra.buscador":               {Type: "search", Name: "Terra"},
+	"au.com.dodo.google":              {Type: "search", Name: "Dodo"},
+	"fr.lemoteur":                     {Type: "search", Name: "Voila"},
+	"fr.voila.ke.search":              {Type: "search", Name: "Voila"},
+	"de.metager":                      {Type: "search", Name: "Metager"},
+	"de.uni-hannover.rrzn.meta":       {Type: "search", Name: "Metager"},
+	"com.search":                      {Type: "search", Name: "Search.com"},
+	"uk.co.searchy":                   {Type: "search", Name: "Searchy"},
+	"by.all":                          {Type: "search", Name: "all.by"},
+	"se.eniro":                        {Type: "search", Name: "Eniro"},
+	"org.lilo.search":                 {Type: "search", Name: "Lilo"},
+	"com.yatedo":                      {Type: "search", Name: "Yatedo"},
+	"fr.yatedo":                       {Type: "search", Name: "Yatedo"},
+	"com.zhongsou.p":                  {Type: "search", Name: "Zhongsou"},
+	"de.fireball":                     {Type: "search", Name: "Fireball"},
+	"com.inspsearch":                  {Type: "search", Name: "Flyingbird"},
+	"com.inspsearch.viview":           {Type: "search", Name: "Flyingbird"},
+	"ch.search":                       {Type: "search", Name: "Search.ch"},
+	"st.eo":                           {Type: "search", Name: "eo"},
+	"com.highbeam":                    {Type: "search", Name: "HighBeam"},
+	"com.bing":                        {Type: "search", Name: "Bing"},
+	"com.bing.m":                      {Type: "search", Name: "Bing"},
+	"com.bingj.cc":                    {Type: "search", Name: "Bing"},
+	"com.msn.it.dizionario":           {Type: "search", Name: "Bing"},
+	"com.msn.msnbc":                   {Type: "search", Name: "Bing"},
+	"com.certified-toolbar.search":    {Type: "search", Name: "Certified-Toolbar"},
+	"lv.delfi.smart":                  {Type: "search", Name: "Delfi latvia"},
+	"ru.mail.my":                      {Type: "social", Name: "Mail.ru"},
+	"net.thesmartsearch":              {Type: "search", Name: "The Smart Search"},
+	"by.tut.search":                   {Type: "search", Name: "Tut.by"},
+	"by.yandex":                       {Type: "search", Name: "Yandex"},
+	"by.yandex.clck":                  {Type: "search", Name: "Yandex"},
+	"com.yandex":                      {Type: "search", Name: "Yandex"},
+	"com.yandex.clck":                 {Type: "search", Name: "Yandex"},
+	"ru.yandex":                       {Type: "search", Name: "Yandex"},
+	"ru.yandex.clck":                  {Type: "search", Name: "Yandex"},
+	"ua.yandex":                       {Type: "search", Name: "Yandex"},
+	"ua.yandex.clck":                  {Type: "search", Name: "Yandex"},
+	"ca.canoe.web":                    {Type: "search", Name: "canoe.ca"},
+	"com.gomeo":                       {Type: "search", Name: "Gomeo"},
+	"cz.seznam.search":                {Type: "search", Name: "Seznam"},
+	"com.zapmeta":                     {Type: "search", Name: "Zapmeta"},
+	"com.zapmeta.uk":                  {Type: "search", Name: "Zapmeta"},
+	"de.zapmeta":                      {Type: "search", Name: "Zapmeta"},
+	"nl.zapmeta":                      {Type: "search", Name: "Zapmeta"},
+	"au.com.aol.my.hp.search":         {Type: "search", Name: "AOL"},
+	"ca.aol.recherche":                {Type: "search", Name: "AOL"},
+	"com.aol.aolsearch":               {Type: "search", Name: "AOL"},
+	"com.aol.search":                  {Type: "search", Name: "AOL"},
+	"com.aol.search.aim":              {Type: "search", Name: "AOL"},
+	"com.aol.web.find":                {Type: "search", Name: "AOL"},
+	"com.aolsearch":                   {Type: "search", Name: "AOL"},
+	"com.netscape.search-intl":        {Type: "search", Name: "AOL"},
+	"de.aol.alicesuche":               {Type: "search", Name: "AOL"},
+	"de.aol.alicesuchet":              {Type: "search", Name: "AOL"},
+	"de.aol.my.hp.search":             {Type: "search", Name: "AOL"},
+	"de.aol.suche":                    {Type: "search", Name: "AOL"},
+	"de.aol.sucheaol":                 {Type: "search", Name: "AOL"},
+	"de.aol.suchet2":                  {Type: "search", Name: "AOL"},
+	"de.aolsvc.suche":                 {Type: "search", Name: "AOL"},
+	"fr.aol.aolimages":                {Type: "search", Name: "AOL"},
+	"fr.aol.aolrecherche":             {Type: "search", Name: "AOL"},
+	"fr.aol.aolrecherches":            {Type: "search", Name: "AOL"},
+	"fr.aol.recherche":                {Type: "search", Name: "AOL"},
+	"it.aol.my.hp.search":             {Type: "search", Name: "AOL"},
+	"it.aol.search":                   {Type: "search", Name: "AOL"},
+	"mx.com.aol.aolbusqueda":          {Type: "search", Name: "AOL"},
+	"uk.co.aol.aolsearch":             {Type: "search", Name: "AOL"},
+	"uk.co.aol.search":                {Type: "search", Name: "AOL"},
+	"com.hooseek":                     {Type: "search", Name: "Hooseek.com"},
+	"no.startsiden":                   {Type: "search", Name: "Startsiden"},
+	"net.geona":                       {Type: "search", Name: "Geona"},
+	"com.euroseek":                    {Type: "search", Name: "Euroseek"},
+	"com.alot.search":                 {Type: "search", Name: "Google"},
+	"com.avg.isearch":                 {Type: "search", Name: "Google"},
+	"com.avg.search":                  {Type: "search", Name: "Google"},
+	"com.cnn":                         {Type: "search", Name: "Google"},
+	"com.darkoogle":                   {Type: "search", Name: "Google"},
+	"com.darkoogle.search":            {Type: "search", Name: "Google"},
+	"com.foxtab.search":               {Type: "search", Name: "Google"},
+	"com.google.encrypted":            {Type: "search", Name: "Google"},
+	"com.googlesyndicatedsearch":      {Type: "search", Name: "Google"},
+	"com.googleusercontent.webcache":  {Type: "search", Name: "Google"},
+	"com.gooofullsearch":              {Type: "search", Name: "Google"},
+	"com.hiyo.search":                 {Type: "search", Name: "Google"},
+	"com.incredibar.search":           {Type: "search", Name: "Google"},
+	"com.incredimail.search":          {Type: "search", Name: "Google"},
+	"com.incredimail.search1":         {Type: "search", Name: "Google"},
+	"com.incredimail.search2":         {Type: "search", Name: "Google"},
+	"com.incredimail.search3":         {Type: "search", Name: "Google"},
+	"com.incredimail.search4":         {Type: "search", Name: "Google"},
+	"com.juno.search":                 {Type: "search", Name: "Google"},
+	"com.sweetim.search":              {Type: "search", Name: "Google"},
+	"com.verizon.searchresults":       {Type: "search", Name: "Google"},
+	"de.googleearth":                  {Type: "search", Name: "Google"},
+	"dk.tdc.find":                     {Type: "search", Name: "Google"},
+	"fr.googleearth":                  {Type: "search", Name: "Google"},
+	"il.co.walla.search":              {Type: "search", Name: "Google"},
+	"it.fastweb":                      {Type: "search", Name: "Google"},
+	"tn.google":                       {Type: "search", Name: "Google"},
+	"ws.google":                       {Type: "search", Name: "Google"},
+	"com.mister-wong":                 {Type: "search", Name: "Mister Wong"},
+	"de.mister-wong":                  {Type: "search", Name: "Mister Wong"},
+	"com.yippy.search":                {Type: "search", Name: "Yippy"},
+	"at.abacho":                       {Type: "search", Name: "Abacho"},
+	"ch.abacho":                       {Type: "search", Name: "Abacho"},
+	"com.abacho":                      {Type: "search", Name: "Abacho"},
+	"com.abacho.se":                   {Type: "search", Name: "Abacho"},
+	"com.abacho.tr":                   {Type: "search", Name: "Abacho"},
+	"de.abacho":                       {Type: "search", Name: "Abacho"},
+	"es.abacho":                       {Type: "search", Name: "Abacho"},
+	"fr.abacho":                       {Type: "search", Name: "Abacho"},
+	"it.abacho":                       {Type: "search", Name: "Abacho"},
+	"uk.co.abacho":                    {Type: "search", Name: "Abacho"},
+	"com.blogpulse":                   {Type: "search", Name: "Blogpulse"},
+	"com.cuil":                        {Type: "search", Name: "Cuil"},
+	"com.friendfeed":                  {Type: "search", Name: "FriendFeed"},
+	"com.picsearch":                   {Type: "search", Name: "Picsearch"},
+	"pl.wp.szukaj":                    {Type: "search", Name: "Wirtualna Polska"},
+	"com.altavista":                   {Type: "search", Name: "Altavista"},
+	"com.altavista.be-fr":             {Type: "search", Name: "Altavista"},
+	"com.altavista.be-nl":             {Type: "search", Name: "Altavista"},
+	"com.altavista.listings":          {Type: "search", Name: "Altavista"},
+	"com.altavista.search":            {Type: "search", Name: "Altavista"},
+	"de.altavista":                    {Type: "search", Name: "Altavista"},
+	"fr.altavista":                    {Type: "search", Name: "Altavista"},
+	"de.dastelefonbuch.www1":          {Type: "search", Name: "DasTelefonbuch"},
+	"org.dmoz":                        {Type: "search", Name: "dmoz"},
+	"org.dmoz.editors":                {Type: "search", Name: "dmoz"},
+	"cn.sm.m":                         {Type: "search", Name: "Shenma"},
 	"cn.sm.m.so":                      {Type: "search", Name: "Shenma"},
 	"cn.sm.m.yz":                      {Type: "search", Name: "Shenma"},
-	"cn.sm.m":                         {Type: "search", Name: "Shenma"},
 	"cn.sm.quark":                     {Type: "search", Name: "Shenma"},
 	"cn.sm.sp.m":                      {Type: "search", Name: "Shenma"},
-	"cn.sm.yz2.m":                     {Type: "search", Name: "Shenma"},
 	"cn.sm.yz.m":                      {Type: "search", Name: "Shenma"},
-	"com.firstsfind":                  {Type: "search", Name: "Firstfind"},
+	"cn.sm.yz2.m":                     {Type: "search", Name: "Shenma"},
+	"com.alltheweb":                   {Type: "search", Name: "AllTheWeb"},
+	"com.freecause.search":            {Type: "search", Name: "Freecause"},
+	"com.habbo":                       {Type: "social", Name: "Habbo"},
+	"no.1881":                         {Type: "search", Name: "Opplysningen 1881"},
+	"de.apollo7":                      {Type: "search", Name: "APOLL07"},
+	"ru.mail":                         {Type: "search", Name: "Mail.ru"},
+	"ru.mail.go":                      {Type: "search", Name: "Mail.ru"},
+	"ru.mail.m":                       {Type: "search", Name: "Mail.ru"},
+	"com.rr.search":                   {Type: "search", Name: "Road Runner Search"},
+	"com.suchmaschine":                {Type: "search", Name: "Suchmaschine.com"},
+	"com.mirostart.ys":                {Type: "search", Name: "Yahoo!"},
+	"com.offerbox.search":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo":                       {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.ar":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.au":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.br":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.ca":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.cade":                  {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.chinese":               {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.cn":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.cn.one":                {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.de":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.dk":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.es":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.espanol":               {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.fr":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.hk":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.ie":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.in":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.it":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.kr":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.mx":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.no":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.nz":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.qc":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.ru":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.se":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search":                {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.ar":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.au":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.br":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.ca":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.cn":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.de":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.dk":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.es":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.fr":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.hk":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.ie":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.in":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.it":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.kr":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.mx":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.no":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.nz":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.qc":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.ru":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.se":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.tw":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.uk":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.search.us":             {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.searcharch.search":     {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.searchde.cade":         {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.searchinese.chinese":   {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.searchn.one":           {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.searchpanol.espanol":   {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.tw":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.uk":                    {Type: "search", Name: "Yahoo!"},
+	"com.yahoo.us":                    {Type: "search", Name: "Yahoo!"},
+	"it.cercato":                      {Type: "search", Name: "Yahoo!"},
+	"jp.co.yahoo":                     {Type: "search", Name: "Yahoo!"},
+	"jp.co.yahoo.search":              {Type: "search", Name: "Yahoo!"},
+	"com.naver.search":                {Type: "search", Name: "Naver"},
+	"cn.360.so":                       {Type: "search", Name: "360.cn"},
+	"com.so":                          {Type: "search", Name: "360.cn"},
+	"com.hotbot":                      {Type: "search", Name: "Hotbot"},
+	"com.fresh-weather":               {Type: "search", Name: "Freshweather"},
+	"com.softonic.search":             {Type: "search", Name: "Softonic"},
+	"fr.free.search":                  {Type: "search", Name: "Free"},
+	"fr.free.search1-1":               {Type: "search", Name: "Free"},
+	"fr.free.search1-2":               {Type: "search", Name: "Free"},
+	"com.mixpo":                       {Type: "paid", Name: "Mixpo"},
+	"net.rpmfind":                     {Type: "search", Name: "RPMFind"},
+	"net.rpmfind.fr2":                 {Type: "search", Name: "RPMFind"},
+	"be.skynet":                       {Type: "search", Name: "Skynet"},
+	"com.toolbarhome":                 {Type: "search", Name: "Toolbarhome"},
+	"com.toolbarhome.vshare":          {Type: "search", Name: "Toolbarhome"},
+	"at.astronaut.www1":               {Type: "search", Name: "Austronaut"},
+	"at.austronaut.www2":              {Type: "search", Name: "Austronaut"},
 	"com.crawler":                     {Type: "search", Name: "Crawler"},
-	"ge.holmes":                       {Type: "search", Name: "Holmes"},
-	"net.charter":                     {Type: "search", Name: "Charter"},
-	"nl.ilse":                         {Type: "search", Name: "Ilse"},
 	"net.earthlink.search":            {Type: "search", Name: "earthlink"},
+	"uk.co.pricerunner":               {Type: "search", Name: "PriceRunner"},
+	"de.witch":                        {Type: "search", Name: "Witch"},
+	"com.firstsfind":                  {Type: "search", Name: "Firstfind"},
+	"com.genieo.search":               {Type: "search", Name: "Genieo"},
+	"com.maxwebsearch":                {Type: "search", Name: "Maxwebsearch"},
+	"au.com.telstra.media.search":     {Type: "search", Name: "Telstra"},
+	"de.t-online.brisbane":            {Type: "search", Name: "T-Online"},
+	"de.t-online.navigationshilfe":    {Type: "search", Name: "T-Online"},
+	"de.t-online.suche":               {Type: "search", Name: "T-Online"},
+	"com.digg":                        {Type: "search", Name: "Digg"},
+	"com.toile":                       {Type: "search", Name: "La Toile Du Quebec Via Google"},
+	"com.toile.web":                   {Type: "search", Name: "La Toile Du Quebec Via Google"},
+	"com.lfstmedia":                   {Type: "paid", Name: "LifeStreet"},
+	"jp.microad":                      {Type: "paid", Name: "MicroAd"},
+	"com.tagged.login":                {Type: "social", Name: "Tagged"},
+	"com.xanga":                       {Type: "social", Name: "Xanga"},
+	"com.gaiaonline":                  {Type: "social", Name: "Gaia Online"},
+	"com.sonico":                      {Type: "social", Name: "Sonico.com"},
+	"com.github":                      {Type: "social", Name: "GitHub"},
+	"com.plaxo":                       {Type: "social", Name: "Plaxo"},
+	"com.tumblr":                      {Type: "social", Name: "Tumblr"},
+	"com.umblr.t":                     {Type: "social", Name: "Tumblr"},
+	"com.getpocket":                   {Type: "social", Name: "Pocket"},
+	"net.sourceforge":                 {Type: "social", Name: "SourceForge"},
+	"com.hocam":                       {Type: "social", Name: "Hocam.com"},
+	"be.youtu":                        {Type: "social", Name: "Youtube"},
+	"com.youtube":                     {Type: "social", Name: "Youtube"},
+	"com.linkedin":                    {Type: "social", Name: "LinkedIn"},
+	"in.lnkd":                         {Type: "social", Name: "LinkedIn"},
+	"com.vk":                          {Type: "social", Name: "Vkontakte"},
+	"com.vk.away":                     {Type: "social", Name: "Vkontakte"},
+	"com.vk.m":                        {Type: "social", Name: "Vkontakte"},
+	"ru.vkontakte":                    {Type: "social", Name: "Vkontakte"},
+	"com.classmates":                  {Type: "social", Name: "Classmates"},
+	"ru.odnoklassniki":                {Type: "social", Name: "Odnoklassniki"},
+	"ru.ok":                           {Type: "social", Name: "Odnoklassniki"},
+	"com.buzznet":                     {Type: "social", Name: "Buzznet"},
+	"ru.vkrugudruzei":                 {Type: "social", Name: "vKruguDruzei.ru"},
+	"com.badoo":                       {Type: "social", Name: "Badoo"},
+	"com.flickr":                      {Type: "social", Name: "Flickr"},
+	"nl.zoeken":                       {Type: "search", Name: "Zoeken"},
+	"de.metager2":                     {Type: "search", Name: "Metager2"},
+	"com.peoplepc.search":             {Type: "search", Name: "PeoplePC"},
+	"com.icerocket.blogs":             {Type: "search", Name: "Icerockeet"},
+	"com.monstercrawler":              {Type: "search", Name: "Monstercrawler"},
+	"com.blogdigger":                  {Type: "search", Name: "Blogdigger"},
+	"cz.centrum.morfeo":               {Type: "search", Name: "Centrum"},
+	"cz.centrum.serach":               {Type: "search", Name: "Centrum"},
+	"ge.holmes":                       {Type: "search", Name: "Holmes"},
+	"de.meinestadt":                   {Type: "search", Name: "Meinestadt"},
+	"com.myyearbook":                  {Type: "social", Name: "myYearbook"},
+	"au.com.pinterest":                {Type: "social", Name: "Pinterest"},
+	"ca.pinterest":                    {Type: "social", Name: "Pinterest"},
+	"com.pinterest":                   {Type: "social", Name: "Pinterest"},
+	"com.xing":                        {Type: "social", Name: "XING"},
+	"com.skype.web":                   {Type: "social", Name: "Skype"},
+	"com.whatsapp.web":                {Type: "social", Name: "WhatsApp"},
+	"au.net.whirlpool.forums":         {Type: "social", Name: "Whirlpool"},
+	"com.weeworld":                    {Type: "social", Name: "WeeWorld"},
+	"com.foursquare":                  {Type: "social", Name: "Foursquare"},
+	"com.reddit":                      {Type: "social", Name: "Reddit"},
+	"ca.identi":                       {Type: "social", Name: "Identi.ca"},
+	"com.disqus":                      {Type: "social", Name: "Disqus"},
+	"com.disqus.redirect":             {Type: "social", Name: "Disqus"},
+	"us.disq":                         {Type: "social", Name: "Disqus"},
+	"com.blackplanet":                 {Type: "social", Name: "BlackPlanet"},
+	"com.multiply":                    {Type: "social", Name: "Multiply"},
+	"com.google.plus":                 {Type: "social", Name: "Google+"},
+	"com.google.url":                  {Type: "social", Name: "Google+"},
+	"ru.moikrug":                      {Type: "social", Name: "MoiKrug.ru"},
+	"com.instela":                     {Type: "social", Name: "Instela"},
+	"com.nifty.search":                {Type: "search", Name: "Nifty"},
+	"de.jungle-spider":                {Type: "search", Name: "Jungle Spider"},
+	"com.mamma":                       {Type: "search", Name: "Mamma"},
+	"com.mamma.mamma75":               {Type: "search", Name: "Mamma"},
+	"co.t":                            {Type: "social", Name: "Twitter"},
+	"com.twitter":                     {Type: "social", Name: "Twitter"},
+	"com.live.login":                  {Type: "social", Name: "Windows Live Spaces"},
+	"com.bebo":                        {Type: "social", Name: "Bebo"},
+	"com.myspace":                     {Type: "social", Name: "Myspace"},
+	"jp.mixi":                         {Type: "social", Name: "Mixi"},
+	"net.studivz":                     {Type: "social", Name: "StudiVZ"},
+	"com.orkut":                       {Type: "social", Name: "Orkut"},
+	"net.taringa":                     {Type: "social", Name: "Taringa!"},
+	"com.stumbleupon":                 {Type: "social", Name: "StumbleUpon"},
+	"com.friendster":                  {Type: "social", Name: "Friendster"},
+	"com.tuenti":                      {Type: "social", Name: "Tuenti"},
+	"cn.t":                            {Type: "social", Name: "Weibo"},
+	"com.weibo":                       {Type: "social", Name: "Weibo"},
+	"com.delicious":                   {Type: "social", Name: "Delicious"},
+	"com.uludagsozluk":                {Type: "social", Name: "Uludag Sozluk"},
+	"com.ulusozluk":                   {Type: "social", Name: "Uludag Sozluk"},
+	"com.facebook":                    {Type: "social", Name: "Facebook"},
+	"com.facebook.l":                  {Type: "social", Name: "Facebook"},
+	"com.facebook.lm":                 {Type: "social", Name: "Facebook"},
+	"com.facebook.m":                  {Type: "social", Name: "Facebook"},
+	"me.fb":                           {Type: "social", Name: "Facebook"},
+	"ac.google":                       {Type: "search", Name: "Google Images"},
+	"ac.google.images":                {Type: "search", Name: "Google Images"},
+	"ad.google":                       {Type: "search", Name: "Google Images"},
+	"ad.google.images":                {Type: "search", Name: "Google Images"},
+	"ae.google":                       {Type: "search", Name: "Google Images"},
+	"ae.google.images":                {Type: "search", Name: "Google Images"},
+	"af.com.google":                   {Type: "search", Name: "Google Images"},
+	"af.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ag.com.google":                   {Type: "search", Name: "Google Images"},
+	"ag.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ai.com.google":                   {Type: "search", Name: "Google Images"},
+	"ai.com.google.images":            {Type: "search", Name: "Google Images"},
+	"am.google":                       {Type: "search", Name: "Google Images"},
+	"am.google.images":                {Type: "search", Name: "Google Images"},
+	"ao.it.google":                    {Type: "search", Name: "Google Images"},
+	"ao.it.google.images":             {Type: "search", Name: "Google Images"},
+	"ar.com.google":                   {Type: "search", Name: "Google Images"},
+	"ar.com.google.images":            {Type: "search", Name: "Google Images"},
+	"as.google":                       {Type: "search", Name: "Google Images"},
+	"as.google.images":                {Type: "search", Name: "Google Images"},
+	"at.google":                       {Type: "search", Name: "Google Images"},
+	"at.google.images":                {Type: "search", Name: "Google Images"},
+	"au.com.google":                   {Type: "search", Name: "Google Images"},
+	"au.com.google.images":            {Type: "search", Name: "Google Images"},
+	"az.google":                       {Type: "search", Name: "Google Images"},
+	"az.google.images":                {Type: "search", Name: "Google Images"},
+	"ba.google":                       {Type: "search", Name: "Google Images"},
+	"ba.google.images":                {Type: "search", Name: "Google Images"},
+	"bd.com.google":                   {Type: "search", Name: "Google Images"},
+	"bd.com.google.images":            {Type: "search", Name: "Google Images"},
+	"be.google":                       {Type: "search", Name: "Google Images"},
+	"be.google.images":                {Type: "search", Name: "Google Images"},
+	"bf.google":                       {Type: "search", Name: "Google Images"},
+	"bf.google.images":                {Type: "search", Name: "Google Images"},
+	"bg.google":                       {Type: "search", Name: "Google Images"},
+	"bg.google.images":                {Type: "search", Name: "Google Images"},
+	"bh.com.google":                   {Type: "search", Name: "Google Images"},
+	"bh.com.google.images":            {Type: "search", Name: "Google Images"},
+	"bi.google":                       {Type: "search", Name: "Google Images"},
+	"bi.google.images":                {Type: "search", Name: "Google Images"},
+	"bj.google":                       {Type: "search", Name: "Google Images"},
+	"bj.google.images":                {Type: "search", Name: "Google Images"},
+	"bn.com.google":                   {Type: "search", Name: "Google Images"},
+	"bn.com.google.images":            {Type: "search", Name: "Google Images"},
+	"bo.com.google":                   {Type: "search", Name: "Google Images"},
+	"bo.com.google.images":            {Type: "search", Name: "Google Images"},
+	"br.com.google":                   {Type: "search", Name: "Google Images"},
+	"br.com.google.images":            {Type: "search", Name: "Google Images"},
+	"bs.google":                       {Type: "search", Name: "Google Images"},
+	"bs.google.images":                {Type: "search", Name: "Google Images"},
+	"bw.co.google":                    {Type: "search", Name: "Google Images"},
+	"bw.co.google.images":             {Type: "search", Name: "Google Images"},
+	"by.com.google":                   {Type: "search", Name: "Google Images"},
+	"by.com.google.images":            {Type: "search", Name: "Google Images"},
+	"by.google":                       {Type: "search", Name: "Google Images"},
+	"by.google.images":                {Type: "search", Name: "Google Images"},
+	"bz.com.google":                   {Type: "search", Name: "Google Images"},
+	"bz.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ca.google":                       {Type: "search", Name: "Google Images"},
+	"ca.google.images":                {Type: "search", Name: "Google Images"},
+	"cat.google":                      {Type: "search", Name: "Google Images"},
+	"cat.google.images":               {Type: "search", Name: "Google Images"},
+	"cc.google":                       {Type: "search", Name: "Google Images"},
+	"cc.google.images":                {Type: "search", Name: "Google Images"},
+	"cd.google":                       {Type: "search", Name: "Google Images"},
+	"cd.google.images":                {Type: "search", Name: "Google Images"},
+	"cf.google":                       {Type: "search", Name: "Google Images"},
+	"cf.google.images":                {Type: "search", Name: "Google Images"},
+	"cg.google":                       {Type: "search", Name: "Google Images"},
+	"cg.google.images":                {Type: "search", Name: "Google Images"},
+	"ch.google":                       {Type: "search", Name: "Google Images"},
+	"ch.google.images":                {Type: "search", Name: "Google Images"},
+	"ci.google":                       {Type: "search", Name: "Google Images"},
+	"ci.google.images":                {Type: "search", Name: "Google Images"},
+	"ck.co.google":                    {Type: "search", Name: "Google Images"},
+	"ck.co.google.images":             {Type: "search", Name: "Google Images"},
+	"cl.google":                       {Type: "search", Name: "Google Images"},
+	"cl.google.images":                {Type: "search", Name: "Google Images"},
+	"cm.google":                       {Type: "search", Name: "Google Images"},
+	"cm.google.images":                {Type: "search", Name: "Google Images"},
+	"cn.google":                       {Type: "search", Name: "Google Images"},
+	"cn.google.images":                {Type: "search", Name: "Google Images"},
+	"co.com.google":                   {Type: "search", Name: "Google Images"},
+	"co.com.google.images":            {Type: "search", Name: "Google Images"},
+	"com.google":                      {Type: "search", Name: "Google Images"},
+	"com.google.images":               {Type: "search", Name: "Google Images"},
+	"cr.co.google":                    {Type: "search", Name: "Google Images"},
+	"cr.co.google.images":             {Type: "search", Name: "Google Images"},
+	"cu.com.google":                   {Type: "search", Name: "Google Images"},
+	"cu.com.google.images":            {Type: "search", Name: "Google Images"},
+	"cv.google":                       {Type: "search", Name: "Google Images"},
+	"cv.google.images":                {Type: "search", Name: "Google Images"},
+	"cy.com.google":                   {Type: "search", Name: "Google Images"},
+	"cy.com.google.images":            {Type: "search", Name: "Google Images"},
+	"cz.google":                       {Type: "search", Name: "Google Images"},
+	"cz.google.images":                {Type: "search", Name: "Google Images"},
+	"de.google":                       {Type: "search", Name: "Google Images"},
+	"de.google.images":                {Type: "search", Name: "Google Images"},
+	"dj.google":                       {Type: "search", Name: "Google Images"},
+	"dj.google.images":                {Type: "search", Name: "Google Images"},
+	"dk.google":                       {Type: "search", Name: "Google Images"},
+	"dk.google.images":                {Type: "search", Name: "Google Images"},
+	"dm.google":                       {Type: "search", Name: "Google Images"},
+	"dm.google.images":                {Type: "search", Name: "Google Images"},
+	"do.com.google":                   {Type: "search", Name: "Google Images"},
+	"do.com.google.images":            {Type: "search", Name: "Google Images"},
+	"dz.google":                       {Type: "search", Name: "Google Images"},
+	"dz.google.images":                {Type: "search", Name: "Google Images"},
+	"ec.com.google":                   {Type: "search", Name: "Google Images"},
+	"ec.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ee.google":                       {Type: "search", Name: "Google Images"},
+	"ee.google.images":                {Type: "search", Name: "Google Images"},
+	"eg.com.google":                   {Type: "search", Name: "Google Images"},
+	"eg.com.google.images":            {Type: "search", Name: "Google Images"},
+	"es.google":                       {Type: "search", Name: "Google Images"},
+	"es.google.images":                {Type: "search", Name: "Google Images"},
+	"et.com.google":                   {Type: "search", Name: "Google Images"},
+	"et.com.google.images":            {Type: "search", Name: "Google Images"},
+	"fi.google":                       {Type: "search", Name: "Google Images"},
+	"fi.google.images":                {Type: "search", Name: "Google Images"},
+	"fj.com.google":                   {Type: "search", Name: "Google Images"},
+	"fj.com.google.images":            {Type: "search", Name: "Google Images"},
+	"fm.google":                       {Type: "search", Name: "Google Images"},
+	"fm.google.images":                {Type: "search", Name: "Google Images"},
+	"fr.google":                       {Type: "search", Name: "Google Images"},
+	"fr.google.images":                {Type: "search", Name: "Google Images"},
+	"ga.google":                       {Type: "search", Name: "Google Images"},
+	"ga.google.images":                {Type: "search", Name: "Google Images"},
+	"gd.google":                       {Type: "search", Name: "Google Images"},
+	"gd.google.images":                {Type: "search", Name: "Google Images"},
+	"ge.google":                       {Type: "search", Name: "Google Images"},
+	"ge.google.images":                {Type: "search", Name: "Google Images"},
+	"gf.google":                       {Type: "search", Name: "Google Images"},
+	"gf.google.images":                {Type: "search", Name: "Google Images"},
+	"gg.google":                       {Type: "search", Name: "Google Images"},
+	"gg.google.images":                {Type: "search", Name: "Google Images"},
+	"gh.com.google":                   {Type: "search", Name: "Google Images"},
+	"gh.com.google.images":            {Type: "search", Name: "Google Images"},
+	"gi.com.google":                   {Type: "search", Name: "Google Images"},
+	"gi.com.google.images":            {Type: "search", Name: "Google Images"},
+	"gl.google":                       {Type: "search", Name: "Google Images"},
+	"gl.google.images":                {Type: "search", Name: "Google Images"},
+	"gm.google":                       {Type: "search", Name: "Google Images"},
+	"gm.google.images":                {Type: "search", Name: "Google Images"},
+	"gp.google":                       {Type: "search", Name: "Google Images"},
+	"gp.google.images":                {Type: "search", Name: "Google Images"},
+	"gr.google":                       {Type: "search", Name: "Google Images"},
+	"gr.google.images":                {Type: "search", Name: "Google Images"},
+	"gt.com.google":                   {Type: "search", Name: "Google Images"},
+	"gt.com.google.images":            {Type: "search", Name: "Google Images"},
+	"gy.google":                       {Type: "search", Name: "Google Images"},
+	"gy.google.images":                {Type: "search", Name: "Google Images"},
+	"hk.com.google":                   {Type: "search", Name: "Google Images"},
+	"hk.com.google.images":            {Type: "search", Name: "Google Images"},
+	"hn.google":                       {Type: "search", Name: "Google Images"},
+	"hn.google.images":                {Type: "search", Name: "Google Images"},
+	"hr.google":                       {Type: "search", Name: "Google Images"},
+	"hr.google.images":                {Type: "search", Name: "Google Images"},
+	"ht.google":                       {Type: "search", Name: "Google Images"},
+	"ht.google.images":                {Type: "search", Name: "Google Images"},
+	"hu.google":                       {Type: "search", Name: "Google Images"},
+	"hu.google.images":                {Type: "search", Name: "Google Images"},
+	"id.co.google":                    {Type: "search", Name: "Google Images"},
+	"id.co.google.images":             {Type: "search", Name: "Google Images"},
+	"ie.google":                       {Type: "search", Name: "Google Images"},
+	"ie.google.images":                {Type: "search", Name: "Google Images"},
+	"il.co.google":                    {Type: "search", Name: "Google Images"},
+	"il.co.google.images":             {Type: "search", Name: "Google Images"},
+	"im.google":                       {Type: "search", Name: "Google Images"},
+	"im.google.images":                {Type: "search", Name: "Google Images"},
+	"in.co.google":                    {Type: "search", Name: "Google Images"},
+	"in.co.google.images":             {Type: "search", Name: "Google Images"},
+	"io.google":                       {Type: "search", Name: "Google Images"},
+	"io.google.images":                {Type: "search", Name: "Google Images"},
+	"iq.google":                       {Type: "search", Name: "Google Images"},
+	"iq.google.images":                {Type: "search", Name: "Google Images"},
+	"is.google":                       {Type: "search", Name: "Google Images"},
+	"is.google.images":                {Type: "search", Name: "Google Images"},
+	"it.google":                       {Type: "search", Name: "Google Images"},
+	"it.google.images":                {Type: "search", Name: "Google Images"},
+	"je.google":                       {Type: "search", Name: "Google Images"},
+	"je.google.images":                {Type: "search", Name: "Google Images"},
+	"jm.com.google":                   {Type: "search", Name: "Google Images"},
+	"jm.com.google.images":            {Type: "search", Name: "Google Images"},
+	"jo.google":                       {Type: "search", Name: "Google Images"},
+	"jo.google.images":                {Type: "search", Name: "Google Images"},
+	"jp.co.google":                    {Type: "search", Name: "Google Images"},
+	"jp.co.google.images":             {Type: "search", Name: "Google Images"},
+	"ke.co.google":                    {Type: "search", Name: "Google Images"},
+	"ke.co.google.images":             {Type: "search", Name: "Google Images"},
+	"kg.google":                       {Type: "search", Name: "Google Images"},
+	"kg.google.images":                {Type: "search", Name: "Google Images"},
+	"kh.com.google":                   {Type: "search", Name: "Google Images"},
+	"kh.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ki.google":                       {Type: "search", Name: "Google Images"},
+	"ki.google.images":                {Type: "search", Name: "Google Images"},
+	"kr.co.google":                    {Type: "search", Name: "Google Images"},
+	"kr.co.google.images":             {Type: "search", Name: "Google Images"},
+	"kw.com.google":                   {Type: "search", Name: "Google Images"},
+	"kw.com.google.images":            {Type: "search", Name: "Google Images"},
+	"kz.google":                       {Type: "search", Name: "Google Images"},
+	"kz.google.images":                {Type: "search", Name: "Google Images"},
+	"la.google":                       {Type: "search", Name: "Google Images"},
+	"la.google.images":                {Type: "search", Name: "Google Images"},
+	"lb.com.google":                   {Type: "search", Name: "Google Images"},
+	"lb.com.google.images":            {Type: "search", Name: "Google Images"},
+	"lc.com.google":                   {Type: "search", Name: "Google Images"},
+	"lc.com.google.images":            {Type: "search", Name: "Google Images"},
+	"li.google":                       {Type: "search", Name: "Google Images"},
+	"li.google.images":                {Type: "search", Name: "Google Images"},
+	"lk.google":                       {Type: "search", Name: "Google Images"},
+	"lk.google.images":                {Type: "search", Name: "Google Images"},
+	"ls.co.google":                    {Type: "search", Name: "Google Images"},
+	"ls.co.google.images":             {Type: "search", Name: "Google Images"},
+	"lt.google":                       {Type: "search", Name: "Google Images"},
+	"lt.google.images":                {Type: "search", Name: "Google Images"},
+	"lu.google":                       {Type: "search", Name: "Google Images"},
+	"lu.google.images":                {Type: "search", Name: "Google Images"},
+	"lv.google":                       {Type: "search", Name: "Google Images"},
+	"lv.google.images":                {Type: "search", Name: "Google Images"},
+	"ly.com.google":                   {Type: "search", Name: "Google Images"},
+	"ly.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ma.co.google":                    {Type: "search", Name: "Google Images"},
+	"ma.co.google.images":             {Type: "search", Name: "Google Images"},
+	"md.google":                       {Type: "search", Name: "Google Images"},
+	"md.google.images":                {Type: "search", Name: "Google Images"},
+	"me.google":                       {Type: "search", Name: "Google Images"},
+	"me.google.images":                {Type: "search", Name: "Google Images"},
+	"mg.google":                       {Type: "search", Name: "Google Images"},
+	"mg.google.images":                {Type: "search", Name: "Google Images"},
+	"mk.google":                       {Type: "search", Name: "Google Images"},
+	"mk.google.images":                {Type: "search", Name: "Google Images"},
+	"ml.google":                       {Type: "search", Name: "Google Images"},
+	"ml.google.images":                {Type: "search", Name: "Google Images"},
+	"mn.google":                       {Type: "search", Name: "Google Images"},
+	"mn.google.images":                {Type: "search", Name: "Google Images"},
+	"ms.google":                       {Type: "search", Name: "Google Images"},
+	"ms.google.images":                {Type: "search", Name: "Google Images"},
+	"mt.com.google":                   {Type: "search", Name: "Google Images"},
+	"mt.com.google.images":            {Type: "search", Name: "Google Images"},
+	"mu.google":                       {Type: "search", Name: "Google Images"},
+	"mu.google.images":                {Type: "search", Name: "Google Images"},
+	"mv.google":                       {Type: "search", Name: "Google Images"},
+	"mv.google.images":                {Type: "search", Name: "Google Images"},
+	"mw.google":                       {Type: "search", Name: "Google Images"},
+	"mw.google.images":                {Type: "search", Name: "Google Images"},
+	"mx.com.google":                   {Type: "search", Name: "Google Images"},
+	"mx.com.google.images":            {Type: "search", Name: "Google Images"},
+	"my.com.google":                   {Type: "search", Name: "Google Images"},
+	"my.com.google.images":            {Type: "search", Name: "Google Images"},
+	"mz.co.google":                    {Type: "search", Name: "Google Images"},
+	"mz.co.google.images":             {Type: "search", Name: "Google Images"},
+	"na.com.google":                   {Type: "search", Name: "Google Images"},
+	"na.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ne.google":                       {Type: "search", Name: "Google Images"},
+	"ne.google.images":                {Type: "search", Name: "Google Images"},
+	"nf.com.google":                   {Type: "search", Name: "Google Images"},
+	"nf.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ng.com.google":                   {Type: "search", Name: "Google Images"},
+	"ng.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ni.com.google":                   {Type: "search", Name: "Google Images"},
+	"ni.com.google.images":            {Type: "search", Name: "Google Images"},
+	"nl.google":                       {Type: "search", Name: "Google Images"},
+	"nl.google.images":                {Type: "search", Name: "Google Images"},
+	"no.google":                       {Type: "search", Name: "Google Images"},
+	"no.google.images":                {Type: "search", Name: "Google Images"},
+	"np.com.google":                   {Type: "search", Name: "Google Images"},
+	"np.com.google.images":            {Type: "search", Name: "Google Images"},
+	"nr.google":                       {Type: "search", Name: "Google Images"},
+	"nr.google.images":                {Type: "search", Name: "Google Images"},
+	"nu.google":                       {Type: "search", Name: "Google Images"},
+	"nu.google.images":                {Type: "search", Name: "Google Images"},
+	"nz.co.google":                    {Type: "search", Name: "Google Images"},
+	"nz.co.google.images":             {Type: "search", Name: "Google Images"},
+	"om.com.google":                   {Type: "search", Name: "Google Images"},
+	"om.com.google.images":            {Type: "search", Name: "Google Images"},
+	"pa.com.google":                   {Type: "search", Name: "Google Images"},
+	"pa.com.google.images":            {Type: "search", Name: "Google Images"},
+	"pe.com.google":                   {Type: "search", Name: "Google Images"},
+	"pe.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ph.com.google":                   {Type: "search", Name: "Google Images"},
+	"ph.com.google.images":            {Type: "search", Name: "Google Images"},
+	"pk.com.google":                   {Type: "search", Name: "Google Images"},
+	"pk.com.google.images":            {Type: "search", Name: "Google Images"},
+	"pl.google":                       {Type: "search", Name: "Google Images"},
+	"pl.google.images":                {Type: "search", Name: "Google Images"},
+	"pn.google":                       {Type: "search", Name: "Google Images"},
+	"pn.google.images":                {Type: "search", Name: "Google Images"},
+	"pr.com.google":                   {Type: "search", Name: "Google Images"},
+	"pr.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ps.google":                       {Type: "search", Name: "Google Images"},
+	"ps.google.images":                {Type: "search", Name: "Google Images"},
+	"pt.google":                       {Type: "search", Name: "Google Images"},
+	"pt.google.images":                {Type: "search", Name: "Google Images"},
+	"py.com.google":                   {Type: "search", Name: "Google Images"},
+	"py.com.google.images":            {Type: "search", Name: "Google Images"},
+	"qa.com.google":                   {Type: "search", Name: "Google Images"},
+	"qa.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ro.google":                       {Type: "search", Name: "Google Images"},
+	"ro.google.images":                {Type: "search", Name: "Google Images"},
+	"rs.google":                       {Type: "search", Name: "Google Images"},
+	"rs.google.images":                {Type: "search", Name: "Google Images"},
+	"ru.google":                       {Type: "search", Name: "Google Images"},
+	"ru.google.images":                {Type: "search", Name: "Google Images"},
+	"rw.google":                       {Type: "search", Name: "Google Images"},
+	"rw.google.images":                {Type: "search", Name: "Google Images"},
+	"sa.com.google":                   {Type: "search", Name: "Google Images"},
+	"sa.com.google.images":            {Type: "search", Name: "Google Images"},
+	"sb.com.google":                   {Type: "search", Name: "Google Images"},
+	"sb.com.google.images":            {Type: "search", Name: "Google Images"},
+	"sc.google":                       {Type: "search", Name: "Google Images"},
+	"sc.google.images":                {Type: "search", Name: "Google Images"},
+	"se.google":                       {Type: "search", Name: "Google Images"},
+	"se.google.images":                {Type: "search", Name: "Google Images"},
+	"sg.com.google":                   {Type: "search", Name: "Google Images"},
+	"sg.com.google.images":            {Type: "search", Name: "Google Images"},
+	"sh.google":                       {Type: "search", Name: "Google Images"},
+	"sh.google.images":                {Type: "search", Name: "Google Images"},
+	"si.google":                       {Type: "search", Name: "Google Images"},
+	"si.google.images":                {Type: "search", Name: "Google Images"},
+	"sk.google":                       {Type: "search", Name: "Google Images"},
+	"sk.google.images":                {Type: "search", Name: "Google Images"},
+	"sl.com.google":                   {Type: "search", Name: "Google Images"},
+	"sl.com.google.images":            {Type: "search", Name: "Google Images"},
+	"sm.google":                       {Type: "search", Name: "Google Images"},
+	"sm.google.images":                {Type: "search", Name: "Google Images"},
+	"sn.google":                       {Type: "search", Name: "Google Images"},
+	"sn.google.images":                {Type: "search", Name: "Google Images"},
+	"so.google":                       {Type: "search", Name: "Google Images"},
+	"so.google.images":                {Type: "search", Name: "Google Images"},
+	"st.google":                       {Type: "search", Name: "Google Images"},
+	"st.google.images":                {Type: "search", Name: "Google Images"},
+	"sv.com.google":                   {Type: "search", Name: "Google Images"},
+	"sv.com.google.images":            {Type: "search", Name: "Google Images"},
+	"td.google":                       {Type: "search", Name: "Google Images"},
+	"td.google.images":                {Type: "search", Name: "Google Images"},
+	"tg.google":                       {Type: "search", Name: "Google Images"},
+	"tg.google.images":                {Type: "search", Name: "Google Images"},
+	"th.co.google":                    {Type: "search", Name: "Google Images"},
+	"th.co.google.images":             {Type: "search", Name: "Google Images"},
+	"tj.com.google":                   {Type: "search", Name: "Google Images"},
+	"tj.com.google.images":            {Type: "search", Name: "Google Images"},
+	"tk.google":                       {Type: "search", Name: "Google Images"},
+	"tk.google.images":                {Type: "search", Name: "Google Images"},
+	"tl.google":                       {Type: "search", Name: "Google Images"},
+	"tl.google.images":                {Type: "search", Name: "Google Images"},
+	"tm.google":                       {Type: "search", Name: "Google Images"},
+	"tm.google.images":                {Type: "search", Name: "Google Images"},
+	"tn.com.google":                   {Type: "search", Name: "Google Images"},
+	"tn.com.google.images":            {Type: "search", Name: "Google Images"},
+	"to.google":                       {Type: "search", Name: "Google Images"},
+	"to.google.images":                {Type: "search", Name: "Google Images"},
+	"tr.com.google":                   {Type: "search", Name: "Google Images"},
+	"tr.com.google.images":            {Type: "search", Name: "Google Images"},
+	"tt.google":                       {Type: "search", Name: "Google Images"},
+	"tt.google.images":                {Type: "search", Name: "Google Images"},
+	"tw.com.google":                   {Type: "search", Name: "Google Images"},
+	"tw.com.google.images":            {Type: "search", Name: "Google Images"},
+	"tz.co.google":                    {Type: "search", Name: "Google Images"},
+	"tz.co.google.images":             {Type: "search", Name: "Google Images"},
+	"ua.com.google":                   {Type: "search", Name: "Google Images"},
+	"ua.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ug.co.google":                    {Type: "search", Name: "Google Images"},
+	"ug.co.google.images":             {Type: "search", Name: "Google Images"},
+	"uk.co.google":                    {Type: "search", Name: "Google Images"},
+	"uk.co.google.images":             {Type: "search", Name: "Google Images"},
+	"us.google":                       {Type: "search", Name: "Google Images"},
+	"us.google.images":                {Type: "search", Name: "Google Images"},
+	"uy.com.google":                   {Type: "search", Name: "Google Images"},
+	"uy.com.google.images":            {Type: "search", Name: "Google Images"},
+	"uz.co.google":                    {Type: "search", Name: "Google Images"},
+	"uz.co.google.images":             {Type: "search", Name: "Google Images"},
+	"vc.com.google":                   {Type: "search", Name: "Google Images"},
+	"vc.com.google.images":            {Type: "search", Name: "Google Images"},
+	"ve.co.google":                    {Type: "search", Name: "Google Images"},
+	"ve.co.google.images":             {Type: "search", Name: "Google Images"},
+	"vg.google":                       {Type: "search", Name: "Google Images"},
+	"vg.google.images":                {Type: "search", Name: "Google Images"},
+	"vi.co.google":                    {Type: "search", Name: "Google Images"},
+	"vi.co.google.images":             {Type: "search", Name: "Google Images"},
+	"vn.com.google":                   {Type: "search", Name: "Google Images"},
+	"vn.com.google.images":            {Type: "search", Name: "Google Images"},
+	"vu.google":                       {Type: "search", Name: "Google Images"},
+	"vu.google.images":                {Type: "search", Name: "Google Images"},
+	"ws.google.images":                {Type: "search", Name: "Google Images"},
+	"za.co.google":                    {Type: "search", Name: "Google Images"},
+	"za.co.google.images":             {Type: "search", Name: "Google Images"},
+	"zm.co.google":                    {Type: "search", Name: "Google Images"},
+	"zm.co.google.images":             {Type: "search", Name: "Google Images"},
+	"zw.co.google":                    {Type: "search", Name: "Google Images"},
+	"zw.co.google.images":             {Type: "search", Name: "Google Images"},
+	"com.qq.qzone":                    {Type: "social", Name: "Qzone"},
+	"com.hi5":                         {Type: "social", Name: "hi5"},
+	"com.netlog":                      {Type: "social", Name: "Netlog"},
+	"com.douban":                      {Type: "social", Name: "Douban"},
+	"com.instagram":                   {Type: "social", Name: "Instagram"},
+	"com.instagram.l":                 {Type: "social", Name: "Instagram"},
 	"at.qualigo":                      {Type: "search", Name: "Qualigo"},
 	"ch.qualigo":                      {Type: "search", Name: "Qualigo"},
 	"de.qualigo":                      {Type: "search", Name: "Qualigo"},
 	"nl.qualigo":                      {Type: "search", Name: "Qualigo"},
-	"es.elmundo.ariadna":              {Type: "search", Name: "El Mundo"},
-	"de.metager2":                     {Type: "search", Name: "Metager2"},
-	"org.forestle":                    {Type: "search", Name: "Forestle"},
+	"jp.co.rakuten.websearch":         {Type: "search", Name: "Rakuten"},
+	"cz.1188.jyxo":                    {Type: "search", Name: "Jyxo"},
+	"no.kvasir":                       {Type: "search", Name: "Kvasir"},
+	"ru.nigma":                        {Type: "search", Name: "Nigma"},
+	"nl.vindex":                       {Type: "search", Name: "Vindex"},
+	"nl.vindex.search":                {Type: "search", Name: "Vindex"},
+	"com.francite.recherche":          {Type: "search", Name: "Francite"},
+	"com.finderoo":                    {Type: "search", Name: "Finderoo"},
 	"mobi.forestle":                   {Type: "search", Name: "Forestle"},
-	"ch.search":                       {Type: "search", Name: "Search.ch"},
-	"de.meinestadt":                   {Type: "search", Name: "Meinestadt"},
-	"com.fresh-weather":               {Type: "search", Name: "Freshweather"},
-	"com.alltheweb":                   {Type: "search", Name: "AllTheWeb"},
+	"org.forestle":                    {Type: "search", Name: "Forestle"},
+	"si.najdi":                        {Type: "search", Name: "Najdi"},
+	"com.searchalot":                  {Type: "search", Name: "Searchalot"},
+	"cz.centrum.searchatlas":          {Type: "search", Name: "Atlas"},
+	"com.google.video":                {Type: "search", Name: "Google Video"},
+	"com.bt.search":                   {Type: "search", Name: "British Telecommunications"},
+	"com.babylon.isearch":             {Type: "search", Name: "InfoSpace"},
+	"com.clusty":                      {Type: "search", Name: "InfoSpace"},
+	"com.dogpile":                     {Type: "search", Name: "InfoSpace"},
+	"com.facemoods.start":             {Type: "search", Name: "InfoSpace"},
+	"com.infospace":                   {Type: "search", Name: "InfoSpace"},
+	"com.kiwee.search":                {Type: "search", Name: "InfoSpace"},
+	"com.magnetic.search":             {Type: "search", Name: "InfoSpace"},
+	"com.metacrawler":                 {Type: "search", Name: "InfoSpace"},
+	"com.searchcompletion.search":     {Type: "search", Name: "InfoSpace"},
+	"com.webcrawler":                  {Type: "search", Name: "InfoSpace"},
+	"com.webfetch":                    {Type: "search", Name: "InfoSpace"},
+	"com.arama":                       {Type: "search", Name: "arama"},
+	"no.gulesider":                    {Type: "search", Name: "Gule Sider"},
+	"com.renren":                      {Type: "social", Name: "Renren"},
+	"ru.mylife":                       {Type: "social", Name: "MyLife"},
+	"li.paper":                        {Type: "social", Name: "Paper.li"},
+	"org.url":                         {Type: "search", Name: "URL.ORGanizier"},
+	"com.blekko":                      {Type: "search", Name: "blekko"},
+	"com.looksmart":                   {Type: "search", Name: "Looksmart"},
+	"fr.yougoo":                       {Type: "search", Name: "YouGoo"},
+	"com.trusted--search":             {Type: "search", Name: "Trusted-Search"},
+	"ua.meta":                         {Type: "search", Name: "Meta"},
+	"com.quora":                       {Type: "social", Name: "Quora"},
 	"com.snapdo.search":               {Type: "search", Name: "Snapdo"},
-	"net.ukr.search":                  {Type: "search", Name: "UKR.net"},
-	"nl.zoek.www3":                    {Type: "search", Name: "Zoek"},
-	"net.daum.search":                 {Type: "search", Name: "Daum"},
-	"nl.marktplaats":                  {Type: "search", Name: "Marktplaats"},
-	"info.suche":                      {Type: "search", Name: "suche.info"},
+	"com.trovarapido":                 {Type: "search", Name: "TrovaRapido"},
+	"be.monster":                      {Type: "search", Name: "Monster"},
+	"ch.monster":                      {Type: "search", Name: "Monster"},
+	"cz.monster":                      {Type: "search", Name: "Monster"},
+	"de.monster":                      {Type: "search", Name: "Monster"},
+	"fi.monster":                      {Type: "search", Name: "Monster"},
+	"fr.monster":                      {Type: "search", Name: "Monster"},
+	"ie.monster":                      {Type: "search", Name: "Monster"},
+	"it.monster":                      {Type: "search", Name: "Monster"},
+	"lu.monster":                      {Type: "search", Name: "Monster"},
+	"uk.co.monster":                   {Type: "search", Name: "Monster"},
+	"de.paperball":                    {Type: "search", Name: "Paperball"},
+	"nl.startpagina.startgoogle":      {Type: "search", Name: "Startpagina"},
 	"ac.google.news":                  {Type: "search", Name: "Google News"},
 	"ad.google.news":                  {Type: "search", Name: "Google News"},
 	"ae.google.news":                  {Type: "search", Name: "Google News"},
+	"af.com.google.news":              {Type: "search", Name: "Google News"},
+	"ag.com.google.news":              {Type: "search", Name: "Google News"},
+	"ai.com.google.news":              {Type: "search", Name: "Google News"},
 	"am.google.news":                  {Type: "search", Name: "Google News"},
+	"ao.it.google.news":               {Type: "search", Name: "Google News"},
+	"ar.com.google.news":              {Type: "search", Name: "Google News"},
 	"as.google.news":                  {Type: "search", Name: "Google News"},
 	"at.google.news":                  {Type: "search", Name: "Google News"},
+	"au.com.google.news":              {Type: "search", Name: "Google News"},
 	"az.google.news":                  {Type: "search", Name: "Google News"},
 	"ba.google.news":                  {Type: "search", Name: "Google News"},
+	"bd.com.google.news":              {Type: "search", Name: "Google News"},
 	"be.google.news":                  {Type: "search", Name: "Google News"},
 	"bf.google.news":                  {Type: "search", Name: "Google News"},
 	"bg.google.news":                  {Type: "search", Name: "Google News"},
+	"bh.com.google.news":              {Type: "search", Name: "Google News"},
 	"bi.google.news":                  {Type: "search", Name: "Google News"},
 	"bj.google.news":                  {Type: "search", Name: "Google News"},
+	"bn.com.google.news":              {Type: "search", Name: "Google News"},
+	"bo.com.google.news":              {Type: "search", Name: "Google News"},
+	"br.com.google.news":              {Type: "search", Name: "Google News"},
 	"bs.google.news":                  {Type: "search", Name: "Google News"},
+	"bw.co.google.news":               {Type: "search", Name: "Google News"},
+	"by.com.google.news":              {Type: "search", Name: "Google News"},
 	"by.google.news":                  {Type: "search", Name: "Google News"},
+	"bz.com.google.news":              {Type: "search", Name: "Google News"},
 	"ca.google.news":                  {Type: "search", Name: "Google News"},
 	"cat.google.news":                 {Type: "search", Name: "Google News"},
 	"cc.google.news":                  {Type: "search", Name: "Google News"},
@@ -1363,102 +1437,30 @@ var refList = map[string]*Medium{
 	"cg.google.news":                  {Type: "search", Name: "Google News"},
 	"ch.google.news":                  {Type: "search", Name: "Google News"},
 	"ci.google.news":                  {Type: "search", Name: "Google News"},
+	"ck.co.google.news":               {Type: "search", Name: "Google News"},
 	"cl.google.news":                  {Type: "search", Name: "Google News"},
 	"cm.google.news":                  {Type: "search", Name: "Google News"},
 	"cn.google.news":                  {Type: "search", Name: "Google News"},
-	"bw.co.google.news":               {Type: "search", Name: "Google News"},
-	"ck.co.google.news":               {Type: "search", Name: "Google News"},
-	"cr.co.google.news":               {Type: "search", Name: "Google News"},
-	"id.co.google.news":               {Type: "search", Name: "Google News"},
-	"il.co.google.news":               {Type: "search", Name: "Google News"},
-	"in.co.google.news":               {Type: "search", Name: "Google News"},
-	"jp.co.google.news":               {Type: "search", Name: "Google News"},
-	"ke.co.google.news":               {Type: "search", Name: "Google News"},
-	"kr.co.google.news":               {Type: "search", Name: "Google News"},
-	"ls.co.google.news":               {Type: "search", Name: "Google News"},
-	"ma.co.google.news":               {Type: "search", Name: "Google News"},
-	"mz.co.google.news":               {Type: "search", Name: "Google News"},
-	"nz.co.google.news":               {Type: "search", Name: "Google News"},
-	"th.co.google.news":               {Type: "search", Name: "Google News"},
-	"tz.co.google.news":               {Type: "search", Name: "Google News"},
-	"ug.co.google.news":               {Type: "search", Name: "Google News"},
-	"uk.co.google.news":               {Type: "search", Name: "Google News"},
-	"uz.co.google.news":               {Type: "search", Name: "Google News"},
-	"ve.co.google.news":               {Type: "search", Name: "Google News"},
-	"vi.co.google.news":               {Type: "search", Name: "Google News"},
-	"za.co.google.news":               {Type: "search", Name: "Google News"},
-	"zm.co.google.news":               {Type: "search", Name: "Google News"},
-	"zw.co.google.news":               {Type: "search", Name: "Google News"},
-	"com.google.news":                 {Type: "search", Name: "Google News"},
-	"af.com.google.news":              {Type: "search", Name: "Google News"},
-	"ag.com.google.news":              {Type: "search", Name: "Google News"},
-	"ai.com.google.news":              {Type: "search", Name: "Google News"},
-	"ar.com.google.news":              {Type: "search", Name: "Google News"},
-	"au.com.google.news":              {Type: "search", Name: "Google News"},
-	"bd.com.google.news":              {Type: "search", Name: "Google News"},
-	"bh.com.google.news":              {Type: "search", Name: "Google News"},
-	"bn.com.google.news":              {Type: "search", Name: "Google News"},
-	"bo.com.google.news":              {Type: "search", Name: "Google News"},
-	"br.com.google.news":              {Type: "search", Name: "Google News"},
-	"by.com.google.news":              {Type: "search", Name: "Google News"},
-	"bz.com.google.news":              {Type: "search", Name: "Google News"},
 	"co.com.google.news":              {Type: "search", Name: "Google News"},
+	"com.google.news":                 {Type: "search", Name: "Google News"},
+	"cr.co.google.news":               {Type: "search", Name: "Google News"},
 	"cu.com.google.news":              {Type: "search", Name: "Google News"},
-	"cy.com.google.news":              {Type: "search", Name: "Google News"},
-	"do.com.google.news":              {Type: "search", Name: "Google News"},
-	"ec.com.google.news":              {Type: "search", Name: "Google News"},
-	"eg.com.google.news":              {Type: "search", Name: "Google News"},
-	"et.com.google.news":              {Type: "search", Name: "Google News"},
-	"fj.com.google.news":              {Type: "search", Name: "Google News"},
-	"gh.com.google.news":              {Type: "search", Name: "Google News"},
-	"gi.com.google.news":              {Type: "search", Name: "Google News"},
-	"gt.com.google.news":              {Type: "search", Name: "Google News"},
-	"hk.com.google.news":              {Type: "search", Name: "Google News"},
-	"jm.com.google.news":              {Type: "search", Name: "Google News"},
-	"kh.com.google.news":              {Type: "search", Name: "Google News"},
-	"kw.com.google.news":              {Type: "search", Name: "Google News"},
-	"lb.com.google.news":              {Type: "search", Name: "Google News"},
-	"lc.com.google.news":              {Type: "search", Name: "Google News"},
-	"ly.com.google.news":              {Type: "search", Name: "Google News"},
-	"mt.com.google.news":              {Type: "search", Name: "Google News"},
-	"mx.com.google.news":              {Type: "search", Name: "Google News"},
-	"my.com.google.news":              {Type: "search", Name: "Google News"},
-	"na.com.google.news":              {Type: "search", Name: "Google News"},
-	"nf.com.google.news":              {Type: "search", Name: "Google News"},
-	"ng.com.google.news":              {Type: "search", Name: "Google News"},
-	"ni.com.google.news":              {Type: "search", Name: "Google News"},
-	"np.com.google.news":              {Type: "search", Name: "Google News"},
-	"om.com.google.news":              {Type: "search", Name: "Google News"},
-	"pa.com.google.news":              {Type: "search", Name: "Google News"},
-	"pe.com.google.news":              {Type: "search", Name: "Google News"},
-	"ph.com.google.news":              {Type: "search", Name: "Google News"},
-	"pk.com.google.news":              {Type: "search", Name: "Google News"},
-	"pr.com.google.news":              {Type: "search", Name: "Google News"},
-	"py.com.google.news":              {Type: "search", Name: "Google News"},
-	"qa.com.google.news":              {Type: "search", Name: "Google News"},
-	"sa.com.google.news":              {Type: "search", Name: "Google News"},
-	"sb.com.google.news":              {Type: "search", Name: "Google News"},
-	"sg.com.google.news":              {Type: "search", Name: "Google News"},
-	"sl.com.google.news":              {Type: "search", Name: "Google News"},
-	"sv.com.google.news":              {Type: "search", Name: "Google News"},
-	"tj.com.google.news":              {Type: "search", Name: "Google News"},
-	"tn.com.google.news":              {Type: "search", Name: "Google News"},
-	"tr.com.google.news":              {Type: "search", Name: "Google News"},
-	"tw.com.google.news":              {Type: "search", Name: "Google News"},
-	"ua.com.google.news":              {Type: "search", Name: "Google News"},
-	"uy.com.google.news":              {Type: "search", Name: "Google News"},
-	"vc.com.google.news":              {Type: "search", Name: "Google News"},
-	"vn.com.google.news":              {Type: "search", Name: "Google News"},
 	"cv.google.news":                  {Type: "search", Name: "Google News"},
+	"cy.com.google.news":              {Type: "search", Name: "Google News"},
 	"cz.google.news":                  {Type: "search", Name: "Google News"},
 	"de.google.news":                  {Type: "search", Name: "Google News"},
 	"dj.google.news":                  {Type: "search", Name: "Google News"},
 	"dk.google.news":                  {Type: "search", Name: "Google News"},
 	"dm.google.news":                  {Type: "search", Name: "Google News"},
+	"do.com.google.news":              {Type: "search", Name: "Google News"},
 	"dz.google.news":                  {Type: "search", Name: "Google News"},
+	"ec.com.google.news":              {Type: "search", Name: "Google News"},
 	"ee.google.news":                  {Type: "search", Name: "Google News"},
+	"eg.com.google.news":              {Type: "search", Name: "Google News"},
 	"es.google.news":                  {Type: "search", Name: "Google News"},
+	"et.com.google.news":              {Type: "search", Name: "Google News"},
 	"fi.google.news":                  {Type: "search", Name: "Google News"},
+	"fj.com.google.news":              {Type: "search", Name: "Google News"},
 	"fm.google.news":                  {Type: "search", Name: "Google News"},
 	"fr.google.news":                  {Type: "search", Name: "Google News"},
 	"ga.google.news":                  {Type: "search", Name: "Google News"},
@@ -1466,33 +1468,50 @@ var refList = map[string]*Medium{
 	"ge.google.news":                  {Type: "search", Name: "Google News"},
 	"gf.google.news":                  {Type: "search", Name: "Google News"},
 	"gg.google.news":                  {Type: "search", Name: "Google News"},
+	"gh.com.google.news":              {Type: "search", Name: "Google News"},
+	"gi.com.google.news":              {Type: "search", Name: "Google News"},
 	"gl.google.news":                  {Type: "search", Name: "Google News"},
 	"gm.google.news":                  {Type: "search", Name: "Google News"},
 	"gp.google.news":                  {Type: "search", Name: "Google News"},
 	"gr.google.news":                  {Type: "search", Name: "Google News"},
+	"gt.com.google.news":              {Type: "search", Name: "Google News"},
 	"gy.google.news":                  {Type: "search", Name: "Google News"},
+	"hk.com.google.news":              {Type: "search", Name: "Google News"},
 	"hn.google.news":                  {Type: "search", Name: "Google News"},
 	"hr.google.news":                  {Type: "search", Name: "Google News"},
 	"ht.google.news":                  {Type: "search", Name: "Google News"},
 	"hu.google.news":                  {Type: "search", Name: "Google News"},
+	"id.co.google.news":               {Type: "search", Name: "Google News"},
 	"ie.google.news":                  {Type: "search", Name: "Google News"},
+	"il.co.google.news":               {Type: "search", Name: "Google News"},
 	"im.google.news":                  {Type: "search", Name: "Google News"},
+	"in.co.google.news":               {Type: "search", Name: "Google News"},
 	"io.google.news":                  {Type: "search", Name: "Google News"},
 	"iq.google.news":                  {Type: "search", Name: "Google News"},
 	"is.google.news":                  {Type: "search", Name: "Google News"},
 	"it.google.news":                  {Type: "search", Name: "Google News"},
-	"ao.it.google.news":               {Type: "search", Name: "Google News"},
 	"je.google.news":                  {Type: "search", Name: "Google News"},
+	"jm.com.google.news":              {Type: "search", Name: "Google News"},
 	"jo.google.news":                  {Type: "search", Name: "Google News"},
+	"jp.co.google.news":               {Type: "search", Name: "Google News"},
+	"ke.co.google.news":               {Type: "search", Name: "Google News"},
 	"kg.google.news":                  {Type: "search", Name: "Google News"},
+	"kh.com.google.news":              {Type: "search", Name: "Google News"},
 	"ki.google.news":                  {Type: "search", Name: "Google News"},
+	"kr.co.google.news":               {Type: "search", Name: "Google News"},
+	"kw.com.google.news":              {Type: "search", Name: "Google News"},
 	"kz.google.news":                  {Type: "search", Name: "Google News"},
 	"la.google.news":                  {Type: "search", Name: "Google News"},
+	"lb.com.google.news":              {Type: "search", Name: "Google News"},
+	"lc.com.google.news":              {Type: "search", Name: "Google News"},
 	"li.google.news":                  {Type: "search", Name: "Google News"},
 	"lk.google.news":                  {Type: "search", Name: "Google News"},
+	"ls.co.google.news":               {Type: "search", Name: "Google News"},
 	"lt.google.news":                  {Type: "search", Name: "Google News"},
 	"lu.google.news":                  {Type: "search", Name: "Google News"},
 	"lv.google.news":                  {Type: "search", Name: "Google News"},
+	"ly.com.google.news":              {Type: "search", Name: "Google News"},
+	"ma.co.google.news":               {Type: "search", Name: "Google News"},
 	"md.google.news":                  {Type: "search", Name: "Google News"},
 	"me.google.news":                  {Type: "search", Name: "Google News"},
 	"mg.google.news":                  {Type: "search", Name: "Google News"},
@@ -1500,453 +1519,464 @@ var refList = map[string]*Medium{
 	"ml.google.news":                  {Type: "search", Name: "Google News"},
 	"mn.google.news":                  {Type: "search", Name: "Google News"},
 	"ms.google.news":                  {Type: "search", Name: "Google News"},
+	"mt.com.google.news":              {Type: "search", Name: "Google News"},
 	"mu.google.news":                  {Type: "search", Name: "Google News"},
 	"mv.google.news":                  {Type: "search", Name: "Google News"},
 	"mw.google.news":                  {Type: "search", Name: "Google News"},
+	"mx.com.google.news":              {Type: "search", Name: "Google News"},
+	"my.com.google.news":              {Type: "search", Name: "Google News"},
+	"mz.co.google.news":               {Type: "search", Name: "Google News"},
+	"na.com.google.news":              {Type: "search", Name: "Google News"},
 	"ne.google.news":                  {Type: "search", Name: "Google News"},
+	"nf.com.google.news":              {Type: "search", Name: "Google News"},
+	"ng.com.google.news":              {Type: "search", Name: "Google News"},
+	"ni.com.google.news":              {Type: "search", Name: "Google News"},
 	"nl.google.news":                  {Type: "search", Name: "Google News"},
 	"no.google.news":                  {Type: "search", Name: "Google News"},
+	"np.com.google.news":              {Type: "search", Name: "Google News"},
 	"nr.google.news":                  {Type: "search", Name: "Google News"},
 	"nu.google.news":                  {Type: "search", Name: "Google News"},
+	"nz.co.google.news":               {Type: "search", Name: "Google News"},
+	"om.com.google.news":              {Type: "search", Name: "Google News"},
+	"pa.com.google.news":              {Type: "search", Name: "Google News"},
+	"pe.com.google.news":              {Type: "search", Name: "Google News"},
+	"ph.com.google.news":              {Type: "search", Name: "Google News"},
+	"pk.com.google.news":              {Type: "search", Name: "Google News"},
 	"pl.google.news":                  {Type: "search", Name: "Google News"},
 	"pn.google.news":                  {Type: "search", Name: "Google News"},
+	"pr.com.google.news":              {Type: "search", Name: "Google News"},
 	"ps.google.news":                  {Type: "search", Name: "Google News"},
 	"pt.google.news":                  {Type: "search", Name: "Google News"},
+	"py.com.google.news":              {Type: "search", Name: "Google News"},
+	"qa.com.google.news":              {Type: "search", Name: "Google News"},
 	"ro.google.news":                  {Type: "search", Name: "Google News"},
 	"rs.google.news":                  {Type: "search", Name: "Google News"},
 	"ru.google.news":                  {Type: "search", Name: "Google News"},
 	"rw.google.news":                  {Type: "search", Name: "Google News"},
+	"sa.com.google.news":              {Type: "search", Name: "Google News"},
+	"sb.com.google.news":              {Type: "search", Name: "Google News"},
 	"sc.google.news":                  {Type: "search", Name: "Google News"},
 	"se.google.news":                  {Type: "search", Name: "Google News"},
+	"sg.com.google.news":              {Type: "search", Name: "Google News"},
 	"sh.google.news":                  {Type: "search", Name: "Google News"},
 	"si.google.news":                  {Type: "search", Name: "Google News"},
 	"sk.google.news":                  {Type: "search", Name: "Google News"},
+	"sl.com.google.news":              {Type: "search", Name: "Google News"},
 	"sm.google.news":                  {Type: "search", Name: "Google News"},
 	"sn.google.news":                  {Type: "search", Name: "Google News"},
 	"so.google.news":                  {Type: "search", Name: "Google News"},
 	"st.google.news":                  {Type: "search", Name: "Google News"},
+	"sv.com.google.news":              {Type: "search", Name: "Google News"},
 	"td.google.news":                  {Type: "search", Name: "Google News"},
 	"tg.google.news":                  {Type: "search", Name: "Google News"},
+	"th.co.google.news":               {Type: "search", Name: "Google News"},
+	"tj.com.google.news":              {Type: "search", Name: "Google News"},
 	"tk.google.news":                  {Type: "search", Name: "Google News"},
 	"tl.google.news":                  {Type: "search", Name: "Google News"},
 	"tm.google.news":                  {Type: "search", Name: "Google News"},
+	"tn.com.google.news":              {Type: "search", Name: "Google News"},
 	"to.google.news":                  {Type: "search", Name: "Google News"},
+	"tr.com.google.news":              {Type: "search", Name: "Google News"},
 	"tt.google.news":                  {Type: "search", Name: "Google News"},
+	"tw.com.google.news":              {Type: "search", Name: "Google News"},
+	"tz.co.google.news":               {Type: "search", Name: "Google News"},
+	"ua.com.google.news":              {Type: "search", Name: "Google News"},
+	"ug.co.google.news":               {Type: "search", Name: "Google News"},
+	"uk.co.google.news":               {Type: "search", Name: "Google News"},
 	"us.google.news":                  {Type: "search", Name: "Google News"},
+	"uy.com.google.news":              {Type: "search", Name: "Google News"},
+	"uz.co.google.news":               {Type: "search", Name: "Google News"},
+	"vc.com.google.news":              {Type: "search", Name: "Google News"},
+	"ve.co.google.news":               {Type: "search", Name: "Google News"},
 	"vg.google.news":                  {Type: "search", Name: "Google News"},
+	"vi.co.google.news":               {Type: "search", Name: "Google News"},
+	"vn.com.google.news":              {Type: "search", Name: "Google News"},
 	"vu.google.news":                  {Type: "search", Name: "Google News"},
 	"ws.google.news":                  {Type: "search", Name: "Google News"},
-	"cz.zoohoo":                       {Type: "search", Name: "Zoohoo"},
-	"cz.seznam.search":                {Type: "search", Name: "Seznam"},
-	"no.online":                       {Type: "search", Name: "Online.no"},
-	"com.eurip":                       {Type: "search", Name: "Eurip"},
-	"by.all":                          {Type: "search", Name: "all.by"},
-	"com.rr.search":                   {Type: "search", Name: "Road Runner Search"},
-	"no.1881":                         {Type: "search", Name: "Opplysningen 1881"},
-	"fr.yougoo":                       {Type: "search", Name: "YouGoo"},
-	"com.bing":                        {Type: "search", Name: "Bing Images"},
-	"net.geona":                       {Type: "search", Name: "Geona"},
-	"com.nate.search":                 {Type: "search", Name: "Nate"},
-	"com.searchthis":                  {Type: "search", Name: "Search This"},
-	"com.duckduckgo":                  {Type: "search", Name: "DuckDuckGo"},
-	"com.hotbot":                      {Type: "search", Name: "Hotbot"},
-	"no.kvasir":                       {Type: "search", Name: "Kvasir"},
-	"at.austronaut.www2":              {Type: "search", Name: "Austronaut"},
-	"at.astronaut.www1":               {Type: "search", Name: "Austronaut"},
-	"com.sosodesktop":                 {Type: "search", Name: "SoSoDesk"},
-	"com.sosodesktop.search":          {Type: "search", Name: "SoSoDesk"},
-	"it.excite.search":                {Type: "search", Name: "Excite"},
-	"fr.excite.search":                {Type: "search", Name: "Excite"},
-	"de.excite.search":                {Type: "search", Name: "Excite"},
-	"uk.co.excite.search":             {Type: "search", Name: "Excite"},
-	"es.excite.serach":                {Type: "search", Name: "Excite"},
-	"nl.excite.search":                {Type: "search", Name: "Excite"},
-	"com.excite.msxml":                {Type: "search", Name: "Excite"},
-	"jp.co.excite":                    {Type: "search", Name: "Excite"},
-	"com.1and1.search":                {Type: "search", Name: "1&1"},
-	"ru.qip.search":                   {Type: "search", Name: "qip"},
-	"com.certified-toolbar.search":    {Type: "search", Name: "Certified-Toolbar"},
-	"com.yahoo.search":                {Type: "search", Name: "Yahoo!"},
-	"com.yahoo":                       {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.ar":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.ar":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.au":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.au":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.br":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.br":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.ca":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.ca":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.searchde.cade":         {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.cade":                  {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.searchinese.chinese":   {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.chinese":               {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.cn":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.cn":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.de":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.de":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.dk":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.dk":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.es":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.es":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.searchpanol.espanol":   {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.espanol":               {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.fr":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.fr":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.hk":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.hk":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.ie":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.ie":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.in":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.in":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.it":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.it":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.kr":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.kr":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.mx":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.mx":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.no":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.no":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.nz":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.nz":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.cn.one":                {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.searchn.one":           {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.qc":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.qc":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.ru":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.ru":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.se":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.se":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.searcharch.search":     {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.tw":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.tw":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.uk":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.uk":                    {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.search.us":             {Type: "search", Name: "Yahoo!"},
-	"com.yahoo.us":                    {Type: "search", Name: "Yahoo!"},
-	"jp.co.yahoo":                     {Type: "search", Name: "Yahoo!"},
-	"jp.co.yahoo.search":              {Type: "search", Name: "Yahoo!"},
-	"it.cercato":                      {Type: "search", Name: "Yahoo!"},
-	"com.offerbox.search":             {Type: "search", Name: "Yahoo!"},
-	"com.mirostart.ys":                {Type: "search", Name: "Yahoo!"},
-	"org.url":                         {Type: "search", Name: "URL.ORGanizier"},
-	"de.witch":                        {Type: "search", Name: "Witch"},
-	"com.mister-wong":                 {Type: "search", Name: "Mister Wong"},
-	"de.mister-wong":                  {Type: "search", Name: "Mister Wong"},
-	"ru.aport.sm":                     {Type: "search", Name: "Aport"},
-	"de.web.suche":                    {Type: "search", Name: "Web.de"},
+	"za.co.google.news":               {Type: "search", Name: "Google News"},
+	"zm.co.google.news":               {Type: "search", Name: "Google News"},
+	"zw.co.google.news":               {Type: "search", Name: "Google News"},
+	"nl.ilse":                         {Type: "search", Name: "Ilse"},
+	"com.iplay.start":                 {Type: "search", Name: "I-play"},
+	"es.orange.busca":                 {Type: "search", Name: "Orange"},
+	"fr.orange.lemoteur":              {Type: "search", Name: "Orange"},
+	"uk.co.orange.search":             {Type: "search", Name: "Orange"},
 	"com.ask":                         {Type: "search", Name: "Ask"},
-	"com.ask.web":                     {Type: "search", Name: "Ask"},
+	"com.ask.images":                  {Type: "search", Name: "Ask"},
 	"com.ask.int":                     {Type: "search", Name: "Ask"},
+	"com.ask.iwon":                    {Type: "search", Name: "Ask"},
 	"com.ask.mws":                     {Type: "search", Name: "Ask"},
 	"com.ask.uk":                      {Type: "search", Name: "Ask"},
-	"com.ask.images":                  {Type: "search", Name: "Ask"},
-	"com.reference.ask":               {Type: "search", Name: "Ask"},
+	"com.ask.web":                     {Type: "search", Name: "Ask"},
 	"com.askkids":                     {Type: "search", Name: "Ask"},
-	"com.ask.iwon":                    {Type: "search", Name: "Ask"},
-	"uk.co.ask":                       {Type: "search", Name: "Ask"},
 	"com.qbyrd":                       {Type: "search", Name: "Ask"},
+	"com.reference.ask":               {Type: "search", Name: "Ask"},
 	"com.search-results":              {Type: "search", Name: "Ask"},
-	"com.search-results.uk":           {Type: "search", Name: "Ask"},
 	"com.search-results.int":          {Type: "search", Name: "Ask"},
-	"cz.centrum.serach":               {Type: "search", Name: "Centrum"},
-	"cz.centrum.morfeo":               {Type: "search", Name: "Centrum"},
-	"com.msn.msnbc":                   {Type: "search", Name: "Bing"},
-	"com.msn.it.dizionario":           {Type: "search", Name: "Bing"},
-	"com.bingj.cc":                    {Type: "search", Name: "Bing"},
-	"com.bing.m":                      {Type: "search", Name: "Bing"},
-	"com.google.video":                {Type: "search", Name: "Google Video"},
-	"ee.delfi.otsing":                 {Type: "search", Name: "Delfi"},
-	"com.blekko":                      {Type: "search", Name: "blekko"},
-	"cz.1188.jyxo":                    {Type: "search", Name: "Jyxo"},
+	"com.search-results.uk":           {Type: "search", Name: "Ask"},
+	"uk.co.ask":                       {Type: "search", Name: "Ask"},
+	"com.excite.msxml":                {Type: "search", Name: "Excite"},
+	"de.excite.search":                {Type: "search", Name: "Excite"},
+	"es.excite.serach":                {Type: "search", Name: "Excite"},
+	"fr.excite.search":                {Type: "search", Name: "Excite"},
+	"it.excite.search":                {Type: "search", Name: "Excite"},
+	"jp.co.excite":                    {Type: "search", Name: "Excite"},
+	"nl.excite.search":                {Type: "search", Name: "Excite"},
+	"uk.co.excite.search":             {Type: "search", Name: "Excite"},
+	"de.flix":                         {Type: "search", Name: "Flix"},
+	"pt.sapo.pesquisa":                {Type: "search", Name: "Sapo"},
+	"de.web.suche":                    {Type: "search", Name: "Web.de"},
+	"cn.yahoo.image":                  {Type: "search", Name: "Yahoo! Images"},
+	"com.yahoo.search.images":         {Type: "search", Name: "Yahoo! Images"},
+	"ru.qip.search":                   {Type: "search", Name: "qip"},
+	"cz.1":                            {Type: "search", Name: "1.cz"},
 	"it.kataweb":                      {Type: "search", Name: "Kataweb"},
-	"br.com.uol.busca":                {Type: "search", Name: "uol.com.br"},
-	"it.libero.arianna":               {Type: "search", Name: "Arianna"},
-	"com.arianna":                     {Type: "search", Name: "Arianna"},
-	"com.mamma":                       {Type: "search", Name: "Mamma"},
-	"com.mamma.mamma75":               {Type: "search", Name: "Mamma"},
-	"com.yatedo":                      {Type: "search", Name: "Yatedo"},
-	"fr.yatedo":                       {Type: "search", Name: "Yatedo"},
-	"com.twingly":                     {Type: "search", Name: "Twingly"},
-	"lv.delfi.smart":                  {Type: "search", Name: "Delfi latvia"},
-	"uk.co.pricerunner":               {Type: "search", Name: "PriceRunner"},
-	"jp.co.rakuten.websearch":         {Type: "search", Name: "Rakuten"},
-	"tn.google":                       {Type: "search", Name: "Google"},
-	"com.avg.search":                  {Type: "search", Name: "Google"},
-	"com.avg.isearch":                 {Type: "search", Name: "Google"},
-	"com.cnn":                         {Type: "search", Name: "Google"},
-	"com.darkoogle":                   {Type: "search", Name: "Google"},
-	"com.darkoogle.search":            {Type: "search", Name: "Google"},
-	"com.foxtab.search":               {Type: "search", Name: "Google"},
-	"com.gooofullsearch":              {Type: "search", Name: "Google"},
-	"com.hiyo.search":                 {Type: "search", Name: "Google"},
-	"com.incredimail.search":          {Type: "search", Name: "Google"},
-	"com.incredimail.search1":         {Type: "search", Name: "Google"},
-	"com.incredimail.search2":         {Type: "search", Name: "Google"},
-	"com.incredimail.search3":         {Type: "search", Name: "Google"},
-	"com.incredimail.search4":         {Type: "search", Name: "Google"},
-	"com.incredibar.search":           {Type: "search", Name: "Google"},
-	"com.sweetim.search":              {Type: "search", Name: "Google"},
-	"it.fastweb":                      {Type: "search", Name: "Google"},
-	"com.juno.search":                 {Type: "search", Name: "Google"},
-	"dk.tdc.find":                     {Type: "search", Name: "Google"},
-	"com.verizon.searchresults":       {Type: "search", Name: "Google"},
-	"il.co.walla.search":              {Type: "search", Name: "Google"},
-	"com.alot.search":                 {Type: "search", Name: "Google"},
-	"de.googleearth":                  {Type: "search", Name: "Google"},
-	"fr.googleearth":                  {Type: "search", Name: "Google"},
-	"com.googleusercontent.webcache":  {Type: "search", Name: "Google"},
-	"com.google.encrypted":            {Type: "search", Name: "Google"},
-	"com.googlesyndicatedsearch":      {Type: "search", Name: "Google"},
-	"com.blogpulse":                   {Type: "search", Name: "Blogpulse"},
-	"com.hooseek":                     {Type: "search", Name: "Hooseek.com"},
-	"com.dalesearch":                  {Type: "search", Name: "Dalesearch"},
-	"fr.aliceadsl.rechercher":         {Type: "search", Name: "Alice Adsl"},
-	"de.t-online.suche":               {Type: "search", Name: "T-Online"},
-	"de.t-online.brisbane":            {Type: "search", Name: "T-Online"},
-	"de.t-online.navigationshilfe":    {Type: "search", Name: "T-Online"},
-	"com.sougou":                      {Type: "search", Name: "Sogou"},
-	"com.soso":                        {Type: "search", Name: "Sogou"},
-	"com.-hit-parade.req":             {Type: "search", Name: "Hit-Parade"},
-	"com.hit-parade.class":            {Type: "search", Name: "Hit-Parade"},
-	"com.hit-parade":                  {Type: "search", Name: "Hit-Parade"},
-	"com.searchcanvas":                {Type: "search", Name: "SearchCanvas"},
-	"com.junglekey":                   {Type: "search", Name: "Jungle Key"},
-	"fr.junglekey":                    {Type: "search", Name: "Jungle Key"},
-	"pl.interia.google":               {Type: "search", Name: "Interia"},
-	"com.genieo.search":               {Type: "search", Name: "Genieo"},
+	"com.mozbot":                      {Type: "search", Name: "Mozbot"},
+	"fr.mozbot":                       {Type: "search", Name: "Mozbot"},
+	"uk.co.mozbot":                    {Type: "search", Name: "Mozbot"},
+	"de.fixsuche":                     {Type: "search", Name: "Fixsuche"},
+	"ee.neti":                         {Type: "search", Name: "Neti"},
+	"nl.web":                          {Type: "search", Name: "Web.nl"},
+	"net.comcast.serach":              {Type: "search", Name: "Comcast"},
+	"de.suchnase":                     {Type: "search", Name: "Suchnase"},
+	"it.virgilio.mobile":              {Type: "search", Name: "Virgilio"},
+	"it.virgilio.ricerca":             {Type: "search", Name: "Virgilio"},
+	"it.virgilio.ricercaimmagini":     {Type: "search", Name: "Virgilio"},
+	"it.virgilio.ricercanews":         {Type: "search", Name: "Virgilio"},
+	"it.virgilio.ricercavideo":        {Type: "search", Name: "Virgilio"},
+	"com.icq":                         {Type: "search", Name: "ICQ"},
+	"com.icq.search":                  {Type: "search", Name: "ICQ"},
+	"cz.tiscali.hledani":              {Type: "search", Name: "Tiscali"},
 	"it.tiscali.search":               {Type: "search", Name: "Tiscali"},
 	"it.tiscali.search-dyn":           {Type: "search", Name: "Tiscali"},
-	"cz.tiscali.hledani":              {Type: "search", Name: "Tiscali"},
-	"com.gomeo":                       {Type: "search", Name: "Gomeo"},
-	"com.bigpond.webmail":             {Type: "email", Name: "Bigpond"},
-	"com.bigpond.webmail2":            {Type: "email", Name: "Bigpond"},
-	"com.telstra.email":               {Type: "email", Name: "Bigpond"},
-	"com.bigpond.messaging.basic":     {Type: "email", Name: "Bigpond"},
-	"com.naver.mail":                  {Type: "email", Name: "Naver Mail"},
-	"com.zoho.mail":                   {Type: "email", Name: "Zoho"},
-	"au.com.virginbroadband.webmail":  {Type: "email", Name: "Virgin"},
-	"net.yahoo.mail":                  {Type: "email", Name: "Yahoo! Mail"},
-	"com.yahoo.mail":                  {Type: "email", Name: "Yahoo! Mail"},
-	"uk.co.yahoo.mail":                {Type: "email", Name: "Yahoo! Mail"},
-	"jp.co.yahoo.mail":                {Type: "email", Name: "Yahoo! Mail"},
-	"au.net.iinet.webmail":            {Type: "email", Name: "iiNet"},
-	"au.net.iinet.mail":               {Type: "email", Name: "iiNet"},
-	"ru.e1.mail":                      {Type: "email", Name: "E1.ru"},
-	"nz.co.vodafone.webmail":          {Type: "email", Name: "Vodafone"},
-	"com.126.mail":                    {Type: "email", Name: "126 Mail"},
-	"au.com.iprimus.webmail":          {Type: "email", Name: "iPrimus"},
-	"com.qq.mail":                     {Type: "email", Name: "QQ Mail"},
-	"com.qq.exmail":                   {Type: "email", Name: "QQ Mail"},
-	"ru.qip.mail":                     {Type: "email", Name: "QIP"},
-	"com.sibmail":                     {Type: "email", Name: "Sibmail"},
-	"de.freenet.webmail":              {Type: "email", Name: "Freenet"},
-	"cz.seznam.email":                 {Type: "email", Name: "Seznam Mail"},
-	"au.com.westnet.webmail":          {Type: "email", Name: "Westnet"},
-	"com.live.mail":                   {Type: "email", Name: "Outlook.com"},
-	"com.live.outlook":                {Type: "email", Name: "Outlook.com"},
-	"au.com.dodo.webmail":             {Type: "email", Name: "Dodo"},
-	"nz.co.2degreesbroadband.webmail": {Type: "email", Name: "2degrees"},
-	"net.daum.mail2":                  {Type: "email", Name: "Daum Mail"},
-	"net.daum.mail":                   {Type: "email", Name: "Daum Mail"},
-	"ru.post":                         {Type: "email", Name: "Beeline"},
-	"ru.mail.e":                       {Type: "email", Name: "Mail.ru"},
-	"ru.mail.touch":                   {Type: "email", Name: "Mail.ru"},
-	"au.com.adam.webmail":             {Type: "email", Name: "Adam Internet"},
-	"fr.orange":                       {Type: "email", Name: "Orange Webmail"},
-	"com.aol.mail":                    {Type: "email", Name: "AOL Mail"},
-	"au.net.netspace.webmail":         {Type: "email", Name: "Netspace"},
-	"au.com.optuszoo.webmail":         {Type: "email", Name: "Optus Zoo"},
-	"au.com.optusnet.webmail":         {Type: "email", Name: "Optus Zoo"},
-	"au.net.commander.webmail":        {Type: "email", Name: "Commander"},
-	"ru.mastermail":                   {Type: "email", Name: "Mastermail"},
-	"ru.mastermail.m":                 {Type: "email", Name: "Mastermail"},
-	"ru.yandex.mail":                  {Type: "email", Name: "Yandex"},
-	"com.yandex.mail":                 {Type: "email", Name: "Yandex"},
-	"kz.yandex.mail":                  {Type: "email", Name: "Yandex"},
-	"ua.yandex.mail":                  {Type: "email", Name: "Yandex"},
-	"by.yandex.mail":                  {Type: "email", Name: "Yandex"},
-	"com.163.mail":                    {Type: "email", Name: "163 Mail"},
-	"net.ukr.mail":                    {Type: "email", Name: "Ukr.net"},
-	"ru.rambler.mail":                 {Type: "email", Name: "Rambler"},
-	"com.mynet.mail":                  {Type: "email", Name: "Mynet Mail"},
-	"com.google.mail":                 {Type: "email", Name: "Gmail"},
-	"com.google.inbox":                {Type: "email", Name: "Gmail"},
-	"de.adspirit":                     {Type: "paid", Name: "AdSpirit"},
-	"com.rtbcity":                     {Type: "paid", Name: "AdSpirit"},
-	"com.plusperformance":             {Type: "paid", Name: "AdSpirit"},
-	"com.flashtalking":                {Type: "paid", Name: "Flashtalking"},
-	"com.flashtalking.servedby":       {Type: "paid", Name: "Flashtalking"},
-	"net.wunderloop":                  {Type: "paid", Name: "AudienceScience"},
-	"com.outbrain.paid":               {Type: "paid", Name: "Outbrain"},
-	"com.yieldmo":                     {Type: "paid", Name: "Yieldmo"},
-	"au.com.mozo":                     {Type: "paid", Name: "Mozo"},
-	"au.com.mozo.a":                   {Type: "paid", Name: "Mozo"},
-	"com.acuityplatform":              {Type: "paid", Name: "Acuity Ads"},
-	"com.lfstmedia":                   {Type: "paid", Name: "LifeStreet"},
-	"jp.microad":                      {Type: "paid", Name: "MicroAd"},
-	"com.taboola.trc":                 {Type: "paid", Name: "Taboola"},
-	"com.taboola.api":                 {Type: "paid", Name: "Taboola"},
-	"com.taboola":                     {Type: "paid", Name: "Taboola"},
-	"net.doubleclick.ad":              {Type: "paid", Name: "Doubleclick"},
-	"net.doubleclick.ad-apac":         {Type: "paid", Name: "Doubleclick"},
-	"net.2mdn.s0":                     {Type: "paid", Name: "Doubleclick"},
-	"net.2mdn.s1":                     {Type: "paid", Name: "Doubleclick"},
-	"net.doubleclick.g.dp":            {Type: "paid", Name: "Doubleclick"},
-	"net.doubleclick.g.pubads":        {Type: "paid", Name: "Doubleclick"},
-	"net.adform":                      {Type: "paid", Name: "Adform"},
-	"com.serving-sys.bs":              {Type: "paid", Name: "Sizmek"},
-	"com.criteo.as.jp.cas":            {Type: "paid", Name: "Criteo"},
-	"com.criteo.cas":                  {Type: "paid", Name: "Criteo"},
-	"jp.adingo":                       {Type: "paid", Name: "Fluct"},
-	"com.lowermybills":                {Type: "paid", Name: "LowerMyBills"},
+	"ee.www.search":                   {Type: "search", Name: "WWW"},
+	"com.babylon.search":              {Type: "search", Name: "Babylon"},
+	"com.babylon.searchassist":        {Type: "search", Name: "Babylon"},
+	"com.everyclick":                  {Type: "search", Name: "Everyclick"},
+	"jp.ne.goo.ocnsearch":             {Type: "search", Name: "goo"},
+	"jp.ne.goo.search":                {Type: "search", Name: "goo"},
+	"com.1and1.search":                {Type: "search", Name: "1&1"},
+	"ch.bluewin.search":               {Type: "search", Name: "Bluewin"},
+	"at.stepstone":                    {Type: "search", Name: "StepStone"},
+	"be.stepstone":                    {Type: "search", Name: "StepStone"},
+	"de.stepstone":                    {Type: "search", Name: "StepStone"},
+	"dk.stepstone":                    {Type: "search", Name: "StepStone"},
+	"fr.stepstone":                    {Type: "search", Name: "StepStone"},
+	"nl.stepstone":                    {Type: "search", Name: "StepStone"},
+	"se.stepstone":                    {Type: "search", Name: "StepStone"},
+	"com.dalesearch":                  {Type: "search", Name: "Dalesearch"},
+	"com.exalead":                     {Type: "search", Name: "Exalead"},
+	"fr.exalead":                      {Type: "search", Name: "Exalead"},
+	"es.elmundo.ariadna":              {Type: "search", Name: "El Mundo"},
+	"com.x-recherche":                 {Type: "search", Name: "X-recherche"},
+	"net.charter":                     {Type: "search", Name: "Charter"},
+	"com.indeed.at":                   {Type: "search", Name: "Indeed"},
+	"com.indeed.au":                   {Type: "search", Name: "Indeed"},
+	"com.indeed.ch":                   {Type: "search", Name: "Indeed"},
+	"com.indeed.de":                   {Type: "search", Name: "Indeed"},
+	"com.indeed.fr":                   {Type: "search", Name: "Indeed"},
+	"com.indeed.it":                   {Type: "search", Name: "Indeed"},
+	"com.junglekey":                   {Type: "search", Name: "Jungle Key"},
+	"fr.junglekey":                    {Type: "search", Name: "Jungle Key"},
+	"com.lycos":                       {Type: "search", Name: "Lycos"},
+	"com.lycos.search":                {Type: "search", Name: "Lycos"},
+	"com.nate.search":                 {Type: "search", Name: "Nate"},
+	"com.searchcanvas":                {Type: "search", Name: "SearchCanvas"},
+	"fr.sharelook":                    {Type: "search", Name: "Sharelook"},
+	"tw.edu.ccu.cs.gais":              {Type: "search", Name: "GAIS"},
+	"ua.i.search":                     {Type: "search", Name: "I.ua"},
+	"com.trouvez":                     {Type: "search", Name: "Trouvez.com"},
+	"com.daemon-search":               {Type: "search", Name: "Daemon search"},
+	"com.daemon-search.my":            {Type: "search", Name: "Daemon search"},
+	"com.naver.imagesearch":           {Type: "search", Name: "Naver Images"},
+	"com.naver.search.image":          {Type: "search", Name: "Naver Images"},
+	"uk.co.talktalk":                  {Type: "search", Name: "TalkTalk"},
+	"com.ixquick":                     {Type: "search", Name: "IXquick"},
+	"com.ixquick.eu":                  {Type: "search", Name: "IXquick"},
+	"com.ixquick.s8-eu":               {Type: "search", Name: "IXquick"},
+	"com.ixquick.us":                  {Type: "search", Name: "IXquick"},
+	"com.ixquick.us.s1":               {Type: "search", Name: "IXquick"},
+	"com.ixquick.us.s2":               {Type: "search", Name: "IXquick"},
+	"com.ixquick.us.s3":               {Type: "search", Name: "IXquick"},
+	"com.ixquick.us.s4":               {Type: "search", Name: "IXquick"},
+	"com.ixquick.us.s5":               {Type: "search", Name: "IXquick"},
+	"de.ixquick":                      {Type: "search", Name: "IXquick"},
+	"de.ixquick.s1-eu":                {Type: "search", Name: "IXquick"},
+	"com.qwant":                       {Type: "search", Name: "Qwant"},
+	"com.qwant.lite":                  {Type: "search", Name: "Qwant"},
+	"com.searchthis":                  {Type: "search", Name: "Search This"},
+	"com.technorati":                  {Type: "search", Name: "Technorati"},
+	"com.walhello":                    {Type: "search", Name: "Walhello"},
+	"de.walhello":                     {Type: "search", Name: "Walhello"},
+	"info.walhello":                   {Type: "search", Name: "Walhello"},
+	"nl.walhello":                     {Type: "search", Name: "Walhello"},
+	"com.fastbrowsersearch":           {Type: "search", Name: "Fast Browser Search"},
+	"com.findwide.search":             {Type: "search", Name: "Findwide"},
+	"com.globososo.search":            {Type: "search", Name: "Globososo"},
+	"com.globososo.searches":          {Type: "search", Name: "Globososo"},
+	"ac.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ad.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ae.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"af.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ag.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ai.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"am.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ao.it.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"ar.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"as.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"at.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"au.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"az.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ba.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"bd.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"be.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"bf.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"bg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"bh.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"bi.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"bj.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"bn.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"bo.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"br.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"bs.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"bw.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"by.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"by.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"bz.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ca.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"cat.google.blogsearch":           {Type: "search", Name: "Google Blogsearch"},
+	"cc.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"cd.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"cf.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"cg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ch.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ci.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ck.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"cl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"cm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"cn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"co.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"com.google.blogsearch":           {Type: "search", Name: "Google Blogsearch"},
+	"cr.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"cu.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"cv.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"cy.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"cz.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"de.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"dj.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"dk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"dm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"do.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"dz.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ec.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ee.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"eg.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"es.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"et.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"fi.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"fj.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"fm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"fr.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ga.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"gd.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ge.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"gf.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"gg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"gh.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"gi.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"gl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"gm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"gp.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"gr.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"gt.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"gy.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"hk.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"hn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"hr.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ht.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"hu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"id.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"ie.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"il.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"im.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"in.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"io.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"iq.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"is.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"it.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"je.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"jm.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"jo.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"jp.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"ke.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"kg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"kh.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ki.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"kr.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"kw.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"kz.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"la.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"lb.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"lc.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"li.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"lk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ls.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"lt.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"lu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"lv.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ly.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ma.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"md.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"me.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"mg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"mk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ml.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"mn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ms.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"mt.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"mu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"mv.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"mw.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"mx.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"my.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"mz.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"na.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ne.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"nf.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ng.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ni.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"nl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"no.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"np.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"nr.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"nu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"nz.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"om.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"pa.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"pe.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ph.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"pk.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"pl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"pn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"pr.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ps.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"pt.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"py.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"qa.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ro.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"rs.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ru.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"rw.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"sa.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"sb.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"sc.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"se.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"sg.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"sh.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"si.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"sk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"sl.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"sm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"sn.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"so.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"st.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"sv.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"td.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"tg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"th.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"tj.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"tk.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"tl.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"tm.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"tn.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"to.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"tr.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"tt.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"tw.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"tz.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"ua.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ug.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"uk.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"us.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"uy.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"uz.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"vc.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"ve.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"vg.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"vi.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"vn.com.google.blogsearch":        {Type: "search", Name: "Google Blogsearch"},
+	"vu.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"ws.google.blogsearch":            {Type: "search", Name: "Google Blogsearch"},
+	"za.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"zm.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"zw.co.google.blogsearch":         {Type: "search", Name: "Google Blogsearch"},
+	"com.mysearch":                    {Type: "search", Name: "MySearch"},
+	"com.mysearch.ms114":              {Type: "search", Name: "MySearch"},
+	"com.mysearch.ms146":              {Type: "search", Name: "MySearch"},
+	"com.myway.mysearch.kf":           {Type: "search", Name: "MySearch"},
+	"com.myway.mysearch.ki":           {Type: "search", Name: "MySearch"},
+	"com.myway.search":                {Type: "search", Name: "MySearch"},
+	"com.mywebsearch.search":          {Type: "search", Name: "MySearch"},
+	"info.suche":                      {Type: "search", Name: "suche.info"},
+	"de.1und1.search":                 {Type: "search", Name: "1und1"},
+	"com.amazon":                      {Type: "search", Name: "Amazon"},
+	"com.arianna":                     {Type: "search", Name: "Arianna"},
+	"it.libero.arianna":               {Type: "search", Name: "Arianna"},
+	"com.teoma":                       {Type: "search", Name: "Teoma"},
+	"net.ukr.search":                  {Type: "search", Name: "UKR.net"},
+	"com.weborama":                    {Type: "search", Name: "Weborama"},
+	"de.dasoertliche":                 {Type: "search", Name: "DasOertliche"},
+	"com.-hit-parade.req":             {Type: "search", Name: "Hit-Parade"},
+	"com.hit-parade":                  {Type: "search", Name: "Hit-Parade"},
+	"com.hit-parade.class":            {Type: "search", Name: "Hit-Parade"},
+	"com.kununu":                      {Type: "search", Name: "kununu"},
+	"br.com.uol.busca":                {Type: "search", Name: "uol.com.br"},
+	"com.winamp.search":               {Type: "search", Name: "Winamp"},
+	"no.abcsok.verden":                {Type: "search", Name: "ABCsøk"},
+	"no.abcsolk":                      {Type: "search", Name: "ABCsøk"},
+	"com.maailm":                      {Type: "search", Name: "maailm"},
+	"com.gigablast":                   {Type: "search", Name: "Gigablast"},
+	"com.gigablast.dir":               {Type: "search", Name: "Gigablast"},
+	"pl.onet.szukaj":                  {Type: "search", Name: "Onet"},
 	"au.com.whitepages":               {Type: "paid", Name: "White Pages"},
 	"au.com.whitepages.mobile":        {Type: "paid", Name: "White Pages"},
-	"net.adadvisor":                   {Type: "paid", Name: "Neustar AdAdvisor"},
-	"com.nexage":                      {Type: "paid", Name: "ONE by AOL"},
-	"com.mixpo":                       {Type: "paid", Name: "Mixpo"},
-	"com.rubiconproject.optimized-by": {Type: "paid", Name: "Rubicon Project"},
-	"com.pubmatic.sshowads":           {Type: "paid", Name: "PubMatic"},
-	"com.jivox":                       {Type: "paid", Name: "Jivox"},
-	"net.bidswitch":                   {Type: "paid", Name: "BidSwitch"},
-	"com.sonobi":                      {Type: "paid", Name: "Sonobi"},
-	"com.steelhousemedia":             {Type: "paid", Name: "SteelHouse"},
-	"com.adroll":                      {Type: "paid", Name: "AdRoll"},
-	"de.adnet":                        {Type: "paid", Name: "AdNET"},
-	"com.tribalfusion.cdnx":           {Type: "paid", Name: "Tribal Fusion"},
+	"at.yasni":                        {Type: "search", Name: "Yasni"},
+	"ch.yasni":                        {Type: "search", Name: "Yasni"},
+	"com.yasni":                       {Type: "search", Name: "Yasni"},
+	"de.yasni":                        {Type: "search", Name: "Yasni"},
+	"uk.co.yasni":                     {Type: "search", Name: "Yasni"},
+	"com.yam.search":                  {Type: "search", Name: "Yam"},
+	"cz.zoohoo":                       {Type: "search", Name: "Zoohoo"},
+	"de.tixuma":                       {Type: "search", Name: "Tixuma"},
+	"de.arcor":                        {Type: "search", Name: "Arcor"},
+	"com.baidu":                       {Type: "search", Name: "Baidu"},
+	"com.baidu.m":                     {Type: "search", Name: "Baidu"},
+	"com.baidu.news":                  {Type: "search", Name: "Baidu"},
+	"com.baidu.tieba":                 {Type: "search", Name: "Baidu"},
+	"com.baidu.www1":                  {Type: "search", Name: "Baidu"},
+	"com.baidu.zhidao":                {Type: "search", Name: "Baidu"},
+	"com.gougou.web":                  {Type: "search", Name: "Baidu"},
+	"jp.ne.biglobe.search.cgi":        {Type: "search", Name: "Biglobe"},
+	"org.ecosia":                      {Type: "search", Name: "Ecosia"},
+	"com.eurip":                       {Type: "search", Name: "Eurip"},
+	"de.metacrawler.s1":               {Type: "search", Name: "MetaCrawler.de"},
+	"de.metacrawler.s2":               {Type: "search", Name: "MetaCrawler.de"},
+	"de.metacrawler.s3":               {Type: "search", Name: "MetaCrawler.de"},
+	"de.acoon":                        {Type: "search", Name: "Acoon"},
+	"net.daum.search":                 {Type: "search", Name: "Daum"},
+	"ee.delfi.otsing":                 {Type: "search", Name: "Delfi"},
+	"com.websearch":                   {Type: "search", Name: "WebSearch"},
+	"com.conduit.search":              {Type: "search", Name: "Conduit"},
+	"lv.latne":                        {Type: "search", Name: "Latne"},
+	"com.plazoo":                      {Type: "search", Name: "Plazoo"},
+	"net.gmx.suche":                   {Type: "search", Name: "GMX"},
+	"ru.liveinternet":                 {Type: "search", Name: "Liveinternet"},
+	"cz.volny.web":                    {Type: "search", Name: "Volny"},
+	"ru.2gis":                         {Type: "search", Name: "2gis"},
+	"ru.2gis.link":                    {Type: "search", Name: "2gis"},
+	"com.ask.tb.search":               {Type: "search", Name: "Ask Toolbar"},
 	"ru.yandex.market":                {Type: "paid", Name: "Yandex.Market"},
 	"ru.yandex.market.m":              {Type: "paid", Name: "Yandex.Market"},
-	"com.stickyadstv":                 {Type: "paid", Name: "StickyADS.tv"},
-	"com.stickyadstv.sfx":             {Type: "paid", Name: "StickyADS.tv"},
-	"com.zedo":                        {Type: "paid", Name: "ZEDO"},
-	"com.zedo.z1":                     {Type: "paid", Name: "ZEDO"},
-	"com.plista.farm":                 {Type: "paid", Name: "Plista"},
-	"com.adnxs.ib":                    {Type: "paid", Name: "AppNexus"},
-	"com.adnxs":                       {Type: "paid", Name: "AppNexus"},
-	"com.247realmedia":                {Type: "paid", Name: "AppNexus"},
-	"com.lijit":                       {Type: "paid", Name: "Sovrn"},
-	"com.googleadservices":            {Type: "paid", Name: "Google"},
-	"com.googleadservices.partner":    {Type: "paid", Name: "Google"},
-	"net.doubleclick.g.googleads":     {Type: "paid", Name: "Google"},
-	"com.googlesyndication.tpc":       {Type: "paid", Name: "Google"},
-	"com.googleapis.imasdk":           {Type: "paid", Name: "Google"},
-	"net.eyeota":                      {Type: "paid", Name: "Eyeota"},
-	"ru.price":                        {Type: "paid", Name: "Price.ru"},
-	"ru.price.v":                      {Type: "paid", Name: "Price.ru"},
-	"net.openx.us-ads":                {Type: "paid", Name: "OpenX"},
-	"net.openx":                       {Type: "paid", Name: "OpenX"},
-	"com.servedbyopenx":               {Type: "paid", Name: "OpenX"},
-	"com.openxenterprise":             {Type: "paid", Name: "OpenX"},
-	"com.casalemedia":                 {Type: "paid", Name: "Casale Media"},
-	"com.adition":                     {Type: "paid", Name: "Adition"},
-	"ru.yandex.an":                    {Type: "paid", Name: "Yandex.Direct"},
-	"ru.yandex.yabs":                  {Type: "paid", Name: "Yandex.Direct"},
-	"ua.yandex.yabs":                  {Type: "paid", Name: "Yandex.Direct"},
-	"com.yandex.yabs":                 {Type: "paid", Name: "Yandex.Direct"},
-	"by.yandex.yabs":                  {Type: "paid", Name: "Yandex.Direct"},
-	"ru.adfox":                        {Type: "paid", Name: "ADFOX"},
-	"ru.adfox.ads":                    {Type: "paid", Name: "ADFOX"},
-	"ru.mail.torg":                    {Type: "paid", Name: "Torg.Mail.ru"},
-	"com.sociomantic":                 {Type: "paid", Name: "Sociomantic Labs"},
-	"com.hi5":                         {Type: "social", Name: "hi5"},
-	"com.friendster":                  {Type: "social", Name: "Friendster"},
-	"com.weibo":                       {Type: "social", Name: "Weibo"},
-	"cn.t":                            {Type: "social", Name: "Weibo"},
-	"com.xanga":                       {Type: "social", Name: "Xanga"},
-	"com.myspace":                     {Type: "social", Name: "Myspace"},
-	"com.buzznet":                     {Type: "social", Name: "Buzznet"},
-	"ru.mylife":                       {Type: "social", Name: "MyLife"},
-	"com.flickr":                      {Type: "social", Name: "Flickr"},
-	"au.net.whirlpool.forums":         {Type: "social", Name: "Whirlpool"},
-	"com.sonico":                      {Type: "social", Name: "Sonico.com"},
-	"ru.odnoklassniki":                {Type: "social", Name: "Odnoklassniki"},
-	"ru.ok":                           {Type: "social", Name: "Odnoklassniki"},
-	"com.github":                      {Type: "social", Name: "GitHub"},
-	"com.classmates":                  {Type: "social", Name: "Classmates"},
-	"com.friendsreunited":             {Type: "social", Name: "Friends Reunited"},
-	"com.renren":                      {Type: "social", Name: "Renren"},
-	"com.quora":                       {Type: "social", Name: "Quora"},
-	"com.gaiaonline":                  {Type: "social", Name: "Gaia Online"},
-	"com.netlog":                      {Type: "social", Name: "Netlog"},
-	"com.orkut":                       {Type: "social", Name: "Orkut"},
-	"com.myheritage":                  {Type: "social", Name: "MyHeritage"},
-	"com.multiply":                    {Type: "social", Name: "Multiply"},
-	"com.myyearbook":                  {Type: "social", Name: "myYearbook"},
-	"com.weeworld":                    {Type: "social", Name: "WeeWorld"},
-	"com.vimeo":                       {Type: "social", Name: "Vimeo"},
-	"com.Sozluk":                      {Type: "social", Name: "Eksi Sozluk"},
-	"org.sourtimes":                   {Type: "social", Name: "Eksi Sozluk"},
-	"com.geni":                        {Type: "social", Name: "Geni"},
-	"com.uludagsozluk":                {Type: "social", Name: "Uludag Sozluk"},
-	"com.ulusozluk":                   {Type: "social", Name: "Uludag Sozluk"},
-	"net.sourceforge":                 {Type: "social", Name: "SourceForge"},
-	"com.plaxo":                       {Type: "social", Name: "Plaxo"},
-	"net.taringa":                     {Type: "social", Name: "Taringa!"},
-	"com.tagged.login":                {Type: "social", Name: "Tagged"},
-	"com.xing":                        {Type: "social", Name: "XING"},
-	"com.instagram":                   {Type: "social", Name: "Instagram"},
-	"com.instagram.l":                 {Type: "social", Name: "Instagram"},
-	"com.vk.m":                        {Type: "social", Name: "Vkontakte"},
-	"com.vk":                          {Type: "social", Name: "Vkontakte"},
-	"com.vk.away":                     {Type: "social", Name: "Vkontakte"},
-	"ru.vkontakte":                    {Type: "social", Name: "Vkontakte"},
-	"com.twitter":                     {Type: "social", Name: "Twitter"},
-	"co.t":                            {Type: "social", Name: "Twitter"},
-	"ru.vkrugudruzei":                 {Type: "social", Name: "vKruguDruzei.ru"},
-	"com.donanimhaber":                {Type: "social", Name: "Donanimhaber"},
-	"com.wayn":                        {Type: "social", Name: "WAYN"},
-	"com.skype.web":                   {Type: "social", Name: "Skype"},
-	"ru.mail.my":                      {Type: "social", Name: "Mail.ru"},
-	"com.badoo":                       {Type: "social", Name: "Badoo"},
-	"com.instela":                     {Type: "social", Name: "Instela"},
-	"com.habbo":                       {Type: "social", Name: "Habbo"},
-	"com.pinterest":                   {Type: "social", Name: "Pinterest"},
-	"com.linkedin":                    {Type: "social", Name: "LinkedIn"},
-	"in.lnkd":                         {Type: "social", Name: "LinkedIn"},
-	"com.foursquare":                  {Type: "social", Name: "Foursquare"},
-	"com.flixster":                    {Type: "social", Name: "Flixster"},
-	"com.live.login":                  {Type: "social", Name: "Windows Live Spaces"},
-	"com.blackplanet":                 {Type: "social", Name: "BlackPlanet"},
-	"com.cyworld.global":              {Type: "social", Name: "Cyworld"},
-	"com.getpocket":                   {Type: "social", Name: "Pocket"},
-	"com.skyrock":                     {Type: "social", Name: "Skyrock"},
-	"com.facebook":                    {Type: "social", Name: "Facebook"},
-	"me.fb":                           {Type: "social", Name: "Facebook"},
-	"com.facebook.m":                  {Type: "social", Name: "Facebook"},
-	"com.facebook.l":                  {Type: "social", Name: "Facebook"},
-	"com.facebook.lm":                 {Type: "social", Name: "Facebook"},
-	"com.whatsapp.web":                {Type: "social", Name: "WhatsApp"},
-	"com.disqus.redirect":             {Type: "social", Name: "Disqus"},
-	"us.disq":                         {Type: "social", Name: "Disqus"},
-	"com.disqus":                      {Type: "social", Name: "Disqus"},
-	"net.studivz":                     {Type: "social", Name: "StudiVZ"},
-	"com.fotolog":                     {Type: "social", Name: "Fotolog"},
-	"com.itusozluk":                   {Type: "social", Name: "ITU Sozluk"},
-	"com.google.url":                  {Type: "social", Name: "Google+"},
-	"com.google.plus":                 {Type: "social", Name: "Google+"},
-	"pl.nk":                           {Type: "social", Name: "Nasza-klasa.pl"},
-	"com.qq.qzone":                    {Type: "social", Name: "Qzone"},
-	"com.douban":                      {Type: "social", Name: "Douban"},
-	"com.bebo":                        {Type: "social", Name: "Bebo"},
-	"com.tuenti":                      {Type: "social", Name: "Tuenti"},
-	"com.youtube":                     {Type: "social", Name: "Youtube"},
-	"be.youtu":                        {Type: "social", Name: "Youtube"},
-	"com.reddit":                      {Type: "social", Name: "Reddit"},
-	"ca.identi":                       {Type: "social", Name: "Identi.ca"},
-	"com.stackoverflow":               {Type: "social", Name: "StackOverflow"},
-	"jp.mixi":                         {Type: "social", Name: "Mixi"},
-	"com.stumbleupon":                 {Type: "social", Name: "StumbleUpon"},
-	"com.sozlukspot.inci":             {Type: "social", Name: "Inci Sozluk"},
-	"com.incisozluk":                  {Type: "social", Name: "Inci Sozluk"},
-	"cc.incisozluk":                   {Type: "social", Name: "Inci Sozluk"},
-	"com.viadeo":                      {Type: "social", Name: "Viadeo"},
-	"ru.lastfm":                       {Type: "social", Name: "Last.fm"},
-	"ru.livejournal":                  {Type: "social", Name: "LiveJournal"},
-	"com.tumblr":                      {Type: "social", Name: "Tumblr"},
-	"com.umblr.t":                     {Type: "social", Name: "Tumblr"},
-	"com.ycombinator.news":            {Type: "social", Name: "Hacker News"},
-	"com.hocam":                       {Type: "social", Name: "Hocam.com"},
-	"com.delicious":                   {Type: "social", Name: "Delicious"},
-	"nl.hyves":                        {Type: "social", Name: "Hyves"},
-	"li.paper":                        {Type: "social", Name: "Paper.li"},
-	"ru.moikrug":                      {Type: "social", Name: "MoiKrug.ru"},
+	"com.criteo.as.jp.cas":            {Type: "paid", Name: "Criteo"},
+	"com.criteo.cas":                  {Type: "paid", Name: "Criteo"},
 }
