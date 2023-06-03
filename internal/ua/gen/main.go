@@ -4,13 +4,13 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/vinceanalytics/vince/internal/ua/gen/bot"
+	"github.com/vinceanalytics/vince/internal/ua/gen/client"
+	"github.com/vinceanalytics/vince/internal/ua/gen/device"
+	"github.com/vinceanalytics/vince/internal/ua/gen/index"
+	uos "github.com/vinceanalytics/vince/internal/ua/gen/os"
+	"github.com/vinceanalytics/vince/internal/ua/gen/vendorfragment"
 	"github.com/vinceanalytics/vince/tools"
-	"github.com/vinceanalytics/vince/ua/gen/bot"
-	"github.com/vinceanalytics/vince/ua/gen/client"
-	"github.com/vinceanalytics/vince/ua/gen/device"
-	"github.com/vinceanalytics/vince/ua/gen/index"
-	uos "github.com/vinceanalytics/vince/ua/gen/os"
-	"github.com/vinceanalytics/vince/ua/gen/vendorfragment"
 )
 
 const (
@@ -32,11 +32,11 @@ func main() {
 		// make sure we are up to date
 		println(">  updating device-detector")
 		tools.ExecPlainWithWorkingPath(
-			filepath.Join(root, "ua", dir),
+			filepath.Join(root, "/internal/ua", dir),
 			"git", "pull",
 		)
 	}
-	rootRegex := filepath.Join(root, "ua", dir, "regexes")
+	rootRegex := filepath.Join(root, "/internal/ua", dir, "regexes")
 	bot.Make(rootRegex)
 	client.Make(rootRegex)
 	device.Make(rootRegex)

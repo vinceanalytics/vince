@@ -25,7 +25,7 @@ func Make() {
 		"laptop":  {},
 		"desktop": {},
 	}
-	dir, err := os.ReadDir(filepath.Join(tools.RootVince(), "ua"))
+	dir, err := os.ReadDir(filepath.Join(tools.RootVince(), "internal/ua"))
 	if err != nil {
 		tools.Exit(err.Error())
 	}

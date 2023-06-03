@@ -16,11 +16,11 @@ import (
 	"github.com/vinceanalytics/vince/internal/gate"
 	"github.com/vinceanalytics/vince/internal/geoip"
 	"github.com/vinceanalytics/vince/internal/referrer"
+	"github.com/vinceanalytics/vince/internal/ua"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/remoteip"
 	"github.com/vinceanalytics/vince/system"
-	"github.com/vinceanalytics/vince/ua"
 	"github.com/vinceanalytics/vince/userid"
 )
 

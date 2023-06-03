@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/vinceanalytics/vince/internal/ua"
 	"github.com/vinceanalytics/vince/tools"
-	"github.com/vinceanalytics/vince/ua"
 	"gopkg.in/yaml.v2"
 )
 
