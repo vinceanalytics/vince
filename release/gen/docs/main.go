@@ -11,9 +11,9 @@ import (
 	_ "embed"
 
 	"github.com/urfave/cli/v3"
-	"github.com/vinceanalytics/vince/cmd/app/v8s"
 	"github.com/vinceanalytics/vince/internal/cmd/vince"
 	"github.com/vinceanalytics/vince/tools"
+	"github.com/vinceanalytics/vince/v8s/cmd/v8s"
 	"moul.io/http2curl"
 )
 

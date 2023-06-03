@@ -2,9 +2,9 @@ package vince
 
 import (
 	"github.com/urfave/cli/v3"
-	"github.com/vinceanalytics/vince/cmd/version"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/server"
+	"github.com/vinceanalytics/vince/pkg/version"
 )
 
 func App() *cli.App {
@@ -15,7 +15,7 @@ func App() *cli.App {
 		Flags: o.Flags(),
 		Commands: []*cli.Command{
 			config.ConfigCMD(),
-			version.Version(),
+			version.VersionCmd(),
 		},
 		EnableShellCompletion: true,
 		Action: func(ctx *cli.Context) error {

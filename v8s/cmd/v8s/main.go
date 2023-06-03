@@ -9,9 +9,9 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
-	"github.com/vinceanalytics/vince/cmd/version"
 	"github.com/vinceanalytics/vince/pkg/control"
 	"github.com/vinceanalytics/vince/pkg/k8s"
+	"github.com/vinceanalytics/vince/pkg/version"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -20,7 +20,7 @@ func App() *cli.App {
 		Name:  "v8s",
 		Usage: "kubernetes controller for vince - The Cloud Native Web Analytics Platform.",
 		Commands: []*cli.Command{
-			version.Version(),
+			version.VersionCmd(),
 		},
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{

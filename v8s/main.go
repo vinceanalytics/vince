@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/vinceanalytics/vince/cmd/app/v8s"
 	"github.com/vinceanalytics/vince/pkg/run"
+	"github.com/vinceanalytics/vince/v8s/cmd/v8s"
 )
 
 func main() {
