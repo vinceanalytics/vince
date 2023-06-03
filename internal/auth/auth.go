@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/vinceanalytics/vince/email"
+	"github.com/vinceanalytics/vince/internal/email"
 	"github.com/vinceanalytics/vince/models"
 )
 
