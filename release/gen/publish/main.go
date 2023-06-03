@@ -17,22 +17,24 @@ func main() {
 	root := tools.RootVince()
 	if os.Getenv("SITE") != "" {
 		// make sure we have latest changes to the main repo
+		website := filepath.Join(root, "website")
+		git := filepath.Join(website, repo)
 		tools.ExecPlainWithWorkingPath(
-			filepath.Join(root, "docs", repo),
+			git,
 			"git", "pull",
 		)
 
 		tools.ExecPlainWithWorkingPath(
-			root,
+			website,
 			"npm", "run", "docs:build",
 		)
 		tools.ExecPlainWithWorkingPath(
-			root,
+			website,
 			"npm", "run", "blog:build",
 		)
 		from := "blog/.vitepress/dist/"
 		to := "docs/.vitepress/dist/blog/"
-		tools.CopyDir(from, to, root)
+		tools.CopyDir(from, to, website)
 
 		// We also deploy v8s helm chart as part of the documentation website under
 		// the /charts/ path
@@ -53,25 +55,25 @@ func main() {
 			"go", "generate", "./chart",
 		)
 		//[1]
-		tools.CopyDir("chart/charts", "docs/.vitepress/dist/", root)
+		tools.CopyDir("chart/charts", "docs/.vitepress/dist/", website)
 		//[2]
 		tools.CopyDir(
 			"docs/.vitepress/dist/",
-			filepath.Join("docs", repo),
-			root)
+			repo,
+			website)
 		//[3]
 		tools.ExecPlainWithWorkingPath(
-			filepath.Join(root, "docs", repo, "charts"),
+			filepath.Join(git, "charts"),
 			"helm", "repo", "index", ".", "--url", "https://vinceanalytics.github.io/charts/",
 		)
 
 		// commit changes to the repository.
 		tools.ExecPlainWithWorkingPath(
-			filepath.Join(root, "docs", repo),
+			git,
 			"git", "pull",
 		)
 		tools.ExecPlainWithWorkingPath(
-			filepath.Join(root, "docs", repo),
+			git,
 			"git", "add", ".",
 		)
 		rev := tools.ExecCollect(
@@ -79,15 +81,14 @@ func main() {
 		)
 		msg := fmt.Sprintf("Build %s-%s", string(version.BuildVersion), rev)
 		tools.ExecPlainWithWorkingPath(
-			filepath.Join(root, "docs", repo),
+			git,
 			"git", "commit", "-m", msg,
 		)
 
 		tools.ExecPlainWithWorkingPath(
-			filepath.Join(root, "docs", repo),
+			git,
 			"git", "push",
 		)
-
 	}
 
 }
