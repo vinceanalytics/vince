@@ -206,14 +206,14 @@ func (o *Options) Flags() []cli.Flag {
 			EnvVars:     []string{"VINCE_MAILER_SMTP_ENABLE_MAILHOG"},
 		},
 		&cli.BoolFlag{
-			Category:    "core.smtp.auth.anonymous",
+			Category:    "core.mailer.smtp.auth.anonymous",
 			Name:        "mailer-smtp-anonymous-enable",
 			Usage:       "enables anonymous authenticating smtp client",
 			Destination: &o.Mailer.SMTP.AuthAnonymous.Enabled,
 			EnvVars:     []string{"VINCE_MAILER_SMTP_ANONYMOUS_ENABLED"},
 		},
 		&cli.StringFlag{
-			Category:    "core.smtp.auth.anonymous",
+			Category:    "core.mailer.smtp.auth.anonymous",
 			Name:        "mailer-smtp-anonymous-trace",
 			Usage:       "trace value for anonymous smtp auth",
 			Destination: &o.Mailer.SMTP.AuthAnonymous.Trace,
