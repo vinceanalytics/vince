@@ -3,7 +3,7 @@ package site
 import (
 	"net/http"
 
-	"github.com/vinceanalytics/vince/flash"
+	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/models"
 	"github.com/vinceanalytics/vince/sessions"
 	"github.com/vinceanalytics/vince/timeseries"

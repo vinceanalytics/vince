@@ -18,8 +18,8 @@ import (
 	"filippo.io/age"
 	"github.com/dchest/captcha"
 	"github.com/lestrrat-go/dataurl"
-	"github.com/vinceanalytics/vince/flash"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/templates"
 )
