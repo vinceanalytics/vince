@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/system"
 )
 
 type Sum struct {
