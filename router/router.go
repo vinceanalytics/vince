@@ -7,9 +7,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vinceanalytics/vince/api"
-	"github.com/vinceanalytics/vince/avatar"
 	"github.com/vinceanalytics/vince/config"
 	"github.com/vinceanalytics/vince/internal/auth"
+	"github.com/vinceanalytics/vince/internal/avatar"
 	"github.com/vinceanalytics/vince/pages"
 	"github.com/vinceanalytics/vince/plug"
 	"github.com/vinceanalytics/vince/render"
