@@ -3,7 +3,7 @@ package gate
 import (
 	"context"
 
-	"github.com/vinceanalytics/vince/caches"
+	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/timeseries"
 )
 

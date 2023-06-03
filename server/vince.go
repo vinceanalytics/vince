@@ -15,11 +15,11 @@ import (
 
 	"github.com/caddyserver/certmagic"
 	"github.com/vinceanalytics/vince/assets"
-	"github.com/vinceanalytics/vince/caches"
 	"github.com/vinceanalytics/vince/config"
 	"github.com/vinceanalytics/vince/email"
 	"github.com/vinceanalytics/vince/health"
 	"github.com/vinceanalytics/vince/internal/alerts"
+	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/models"
 	"github.com/vinceanalytics/vince/pkg/group"
 	"github.com/vinceanalytics/vince/pkg/log"
