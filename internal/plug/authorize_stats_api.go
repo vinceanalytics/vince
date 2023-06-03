@@ -9,7 +9,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/templates"
+	"github.com/vinceanalytics/vince/internal/templates"
 )
 
 func AuthorizeStatsAPI(h http.Handler) http.Handler {

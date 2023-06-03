@@ -20,8 +20,8 @@ import (
 	"github.com/lestrrat-go/dataurl"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/flash"
+	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/templates"
 )
 
 const MaxAge = 60 * 60 * 24 * 365 * 5

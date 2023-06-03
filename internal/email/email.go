@@ -11,7 +11,7 @@ import (
 	"github.com/emersion/go-smtp"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/templates"
+	"github.com/vinceanalytics/vince/internal/templates"
 )
 
 func Compose(ctx context.Context,

@@ -7,7 +7,7 @@ import (
 	"net/mail"
 
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/templates"
+	"github.com/vinceanalytics/vince/internal/templates"
 )
 
 func SendActivation(ctx context.Context, code uint64) error {

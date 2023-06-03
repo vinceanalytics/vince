@@ -6,7 +6,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/params"
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/templates"
+	"github.com/vinceanalytics/vince/internal/templates"
 )
 
 func EditSharedLink(w http.ResponseWriter, r *http.Request) {

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/templates"
+	"github.com/vinceanalytics/vince/internal/templates"
 )
 
 func RegisterForm(w http.ResponseWriter, r *http.Request) {
