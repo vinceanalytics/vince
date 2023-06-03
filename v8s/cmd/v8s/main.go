@@ -9,9 +9,9 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
-	"github.com/vinceanalytics/vince/pkg/control"
-	"github.com/vinceanalytics/vince/pkg/k8s"
 	"github.com/vinceanalytics/vince/pkg/version"
+	"github.com/vinceanalytics/vince/v8s/control"
+	"github.com/vinceanalytics/vince/v8s/k8s"
 	"golang.org/x/sync/errgroup"
 )
 
