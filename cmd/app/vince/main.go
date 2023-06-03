@@ -4,7 +4,7 @@ import (
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/cmd/version"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/server"
+	"github.com/vinceanalytics/vince/internal/server"
 )
 
 func App() *cli.App {
