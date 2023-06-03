@@ -12,7 +12,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/cmd/app/v8s"
-	"github.com/vinceanalytics/vince/cmd/app/vince"
+	"github.com/vinceanalytics/vince/internal/cmd/vince"
 	"github.com/vinceanalytics/vince/tools"
 	"moul.io/http2curl"
 )
