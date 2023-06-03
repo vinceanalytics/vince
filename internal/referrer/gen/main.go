@@ -27,6 +27,11 @@ type Domains struct {
 
 var domains []*Domains
 
+type hostDom struct {
+	host string
+	dom  *Domains
+}
+
 type Name struct {
 	name   string
 	domain string
@@ -120,10 +125,22 @@ func main() {
 		return domains[i].Type < domains[j].Type &&
 			domains[i].Name < domains[j].Name
 	})
+
+	var hosts []*hostDom
+
 	for _, m := range domains {
 		for _, h := range m.Hosts {
-			fmt.Fprintf(&b, "%q:{Type:%q,Name:%q},\n", h, m.Type, m.Name)
+			hosts = append(hosts, &hostDom{
+				host: h,
+				dom:  m,
+			})
 		}
+	}
+	sort.SliceStable(hosts, func(i, j int) bool {
+		return hosts[i].host < hosts[j].host
+	})
+	for _, h := range hosts {
+		fmt.Fprintf(&b, "%q:{Type:%q,Name:%q},\n", h.host, h.dom.Type, h.dom.Name)
 	}
 	fmt.Fprintln(&b, "}")
 
