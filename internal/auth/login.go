@@ -5,10 +5,10 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/remoteip"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/templates"
-	"github.com/vinceanalytics/vince/remoteip"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
