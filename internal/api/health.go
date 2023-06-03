@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/vinceanalytics/vince/health"
+	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/render"
 )
 

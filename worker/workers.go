@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/vinceanalytics/vince/health"
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/models"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/system"
