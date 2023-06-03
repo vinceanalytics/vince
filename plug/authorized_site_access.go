@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/params"
 	"github.com/vinceanalytics/vince/render"
 	"github.com/vinceanalytics/vince/sites"

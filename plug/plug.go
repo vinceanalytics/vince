@@ -11,7 +11,7 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/flash"
-	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/sessions"
 )

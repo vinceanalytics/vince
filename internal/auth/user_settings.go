@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"net/http"
 
-	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/pkg/secrets"
 	"github.com/vinceanalytics/vince/render"
 	"github.com/vinceanalytics/vince/templates"

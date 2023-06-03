@@ -7,7 +7,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/health"
-	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/system"
 	"github.com/vinceanalytics/vince/timeseries"

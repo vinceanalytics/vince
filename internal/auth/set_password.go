@@ -3,7 +3,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/render"
 	"github.com/vinceanalytics/vince/sessions"
 	"github.com/vinceanalytics/vince/templates"

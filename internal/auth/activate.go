@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/render"
 	"github.com/vinceanalytics/vince/sessions"

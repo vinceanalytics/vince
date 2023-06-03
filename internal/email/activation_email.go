@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/mail"
 
-	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/templates"
 )
 

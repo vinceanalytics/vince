@@ -3,7 +3,7 @@ package sites
 import (
 	"net/http"
 
-	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/render"
 )
 

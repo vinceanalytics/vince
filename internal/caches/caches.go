@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/ristretto"
-	"github.com/vinceanalytics/vince/models"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/timex"
 	"golang.org/x/time/rate"
