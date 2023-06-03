@@ -6,7 +6,7 @@ import (
 	"net/http/pprof"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/vinceanalytics/vince/api"
+	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/auth"
 	"github.com/vinceanalytics/vince/internal/avatar"
 	"github.com/vinceanalytics/vince/internal/config"
