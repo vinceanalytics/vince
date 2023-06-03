@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/dop251/goja"
-	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 

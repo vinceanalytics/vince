@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/vinceanalytics/vince/config"
 	"github.com/vinceanalytics/vince/firewall"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/render"
 )
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
-	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/schema"
 	"golang.org/x/crypto/bcrypt"

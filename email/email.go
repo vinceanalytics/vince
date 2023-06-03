@@ -9,7 +9,7 @@ import (
 	"github.com/emersion/go-message/mail"
 	"github.com/emersion/go-sasl"
 	"github.com/emersion/go-smtp"
-	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/render"
 	"github.com/vinceanalytics/vince/templates"
 )

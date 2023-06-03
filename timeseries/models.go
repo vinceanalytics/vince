@@ -9,7 +9,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
-	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 

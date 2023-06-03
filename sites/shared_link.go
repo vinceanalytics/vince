@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/models"
 	"github.com/vinceanalytics/vince/render"
 )

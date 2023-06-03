@@ -3,7 +3,7 @@ package vince
 import (
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/cmd/version"
-	"github.com/vinceanalytics/vince/config"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/server"
 )
 
