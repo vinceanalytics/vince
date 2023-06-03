@@ -51,7 +51,7 @@ builds:
     binary: vince
 
   - id: v8s
-    main: ./cmd/v8s/main.go
+    main: ./v8s/main.go
     binary: v8s
     goos:
       - linux
