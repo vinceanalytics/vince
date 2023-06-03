@@ -157,6 +157,12 @@ var EditSharedLinkForm = template.Must(
 	),
 ).Lookup("focus")
 
+var PasswordResetRequestForm = template.Must(
+	layout().ParseFS(Files,
+		"auth/password_reset_request_form.html",
+	),
+).Lookup("focus")
+
 type NewSite struct {
 	IsFirstSite bool
 }
