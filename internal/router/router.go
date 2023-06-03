@@ -16,7 +16,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/share"
 	"github.com/vinceanalytics/vince/internal/site"
 	"github.com/vinceanalytics/vince/internal/sites"
-	"github.com/vinceanalytics/vince/stats"
+	"github.com/vinceanalytics/vince/internal/stats"
 )
 
 func Pipe(ctx context.Context) plug.Pipeline {
