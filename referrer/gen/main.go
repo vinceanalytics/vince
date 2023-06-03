@@ -10,8 +10,11 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/vinceanalytics/vince/tools"
 )
 
 //go:embed referrer.json
@@ -152,10 +155,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = os.WriteFile("../cmd/load/domains.go", r, 0600)
-	if err != nil {
-		log.Fatal(err)
-	}
+	tools.WriteFile(
+		filepath.Join(tools.RootVince(), "cmd/vince_load_gen/domains.go"),
+		r)
 }
 
 type StringSlice []string

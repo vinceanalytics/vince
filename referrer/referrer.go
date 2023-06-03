@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-//go:generate go run gen/make_referrer.go
+//go:generate go run gen/main.go
 
 func ParseReferrer(host string) *Medium {
 	host = strings.TrimPrefix(host, "www.")
