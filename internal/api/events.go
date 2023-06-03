@@ -143,12 +143,9 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		source = query.Get("ref")
 	}
 	if source == "" {
-		if ref != nil {
-			if ref.Type == "unknown" {
-				source = sanitizeHost(refUrl.Host)
-			} else {
-				source = ref.Type
-			}
+		source = ref
+		if source == "" {
+			source = sanitizeHost(refUrl.Host)
 		}
 	}
 	reqReferrer = cleanReferrer(reqReferrer)

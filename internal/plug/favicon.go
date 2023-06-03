@@ -34,15 +34,15 @@ func Favicon(klient Client) Plug {
 				matches := source.FindStringSubmatch(r.URL.Path)
 				src := matches[source.SubexpIndex("source")]
 				src, _ = url.QueryUnescape(src)
-				domain, ok := referrer.Favicon.Load(src)
-				if !ok {
+				domain := referrer.Favicon(src)
+				if domain == "" {
 					placeholder(w)
 					return
 				}
-				req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain.(string)), nil)
+				req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain), nil)
 				res, err := klient.Do(req)
 				if err != nil {
-					log.Get().Err(err).Str("domain", domain.(string)).
+					log.Get().Err(err).Str("domain", domain).
 						Msg("failed getting icon from duckduckgo")
 					placeholder(w)
 					return
