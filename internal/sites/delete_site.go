@@ -7,7 +7,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/params"
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/timeseries"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
 func DeleteSite(w http.ResponseWriter, r *http.Request) {

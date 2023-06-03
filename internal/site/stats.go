@@ -8,7 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/templates"
-	"github.com/vinceanalytics/vince/timeseries"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
 func Stats(w http.ResponseWriter, r *http.Request) {

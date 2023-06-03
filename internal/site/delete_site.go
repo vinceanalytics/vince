@@ -6,7 +6,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/sessions"
-	"github.com/vinceanalytics/vince/timeseries"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
 func DeleteSite(w http.ResponseWriter, r *http.Request) {

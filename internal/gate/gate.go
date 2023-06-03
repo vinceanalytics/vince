@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/vinceanalytics/vince/internal/caches"
-	"github.com/vinceanalytics/vince/timeseries"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
 // Check ensure that domain is part of registered sites. Returns *timeseries.Buffer

@@ -6,8 +6,8 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/timeseries"
 )
 
 func Query(w http.ResponseWriter, r *http.Request) {

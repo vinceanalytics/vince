@@ -6,7 +6,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/sessions"
-	"github.com/vinceanalytics/vince/timeseries"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
 func ResetStats(w http.ResponseWriter, r *http.Request) {
