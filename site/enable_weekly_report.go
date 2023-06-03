@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/sessions"
+	"github.com/vinceanalytics/vince/internal/sessions"
 )
 
 func EnableWeeklyReport(w http.ResponseWriter, r *http.Request) {
