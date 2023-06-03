@@ -11,7 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/avatar"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/pages"
-	"github.com/vinceanalytics/vince/plug"
+	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/render"
 	"github.com/vinceanalytics/vince/share"
 	"github.com/vinceanalytics/vince/site"
