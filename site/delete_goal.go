@@ -6,7 +6,7 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/params"
+	"github.com/vinceanalytics/vince/internal/params"
 	"github.com/vinceanalytics/vince/sessions"
 )
 
