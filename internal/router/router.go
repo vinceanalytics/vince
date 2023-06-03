@@ -15,7 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/share"
 	"github.com/vinceanalytics/vince/internal/site"
-	"github.com/vinceanalytics/vince/sites"
+	"github.com/vinceanalytics/vince/internal/sites"
 	"github.com/vinceanalytics/vince/stats"
 )
 

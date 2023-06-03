@@ -8,7 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/params"
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/sites"
+	"github.com/vinceanalytics/vince/internal/sites"
 )
 
 func AuthorizedSiteAccess(allowed ...string) Plug {
