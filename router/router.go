@@ -10,7 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/auth"
 	"github.com/vinceanalytics/vince/internal/avatar"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/pages"
+	"github.com/vinceanalytics/vince/internal/pages"
 	"github.com/vinceanalytics/vince/plug"
 	"github.com/vinceanalytics/vince/render"
 	"github.com/vinceanalytics/vince/share"
