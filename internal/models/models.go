@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/pkg/db"
+	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/schema"
 
