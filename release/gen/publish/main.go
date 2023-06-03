@@ -55,7 +55,7 @@ func main() {
 			"go", "generate", "./chart",
 		)
 		//[1]
-		tools.CopyDir("chart/charts", "docs/.vitepress/dist/", website)
+		tools.CopyDir("chart/charts", "website/docs/.vitepress/dist/", root)
 		//[2]
 		tools.CopyDir(
 			"docs/.vitepress/dist/",
