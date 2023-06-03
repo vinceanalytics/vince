@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -22,8 +21,6 @@ func main() {
 	root := tools.RootVince()
 	mannPage(root, vince.App())
 	mannPage(root, v8s.App())
-	cliPage(root, vince.App())
-	cliPage(root, v8s.App())
 	completion(root)
 	guides(root)
 }
@@ -66,15 +63,6 @@ func mannPage(root string, app *cli.App) {
 		tools.Exit(err.Error())
 	}
 	tools.WriteFile(filepath.Join(root, "man", app.Name+".1"), []byte(m))
-}
-
-func cliPage(root string, app *cli.App) {
-	println("> cli ", app.Name)
-	m, err := app.ToMarkdown()
-	if err != nil {
-		tools.Exit(err.Error())
-	}
-	tools.WriteFile(filepath.Join(root, "docs", "guide", fmt.Sprintf("cli-%s.md", app.Name)), []byte(m))
 }
 
 func guides(root string) {

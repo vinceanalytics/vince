@@ -31,7 +31,20 @@ export default defineConfig({
           { text: 'Installation', link: '/guide/install-vince' },
           { text: 'Usage', link: '/guide/usage' },
           { text: 'Adding your first site', link: '/guide/adding-first-website' },
-          { text: 'Cli', link: '/guide/cli-vince' },
+          {
+            text: 'Cli', link: '/cli/', items: [
+              { text: "Alerts", link: '/cli/alerts' },
+              { text: "Backup", link: '/cli/backup' },
+              { text: "Bootstrap", link: '/cli/bootstrap' },
+              { text: "Core", link: '/cli/core' },
+              { text: "CORS", link: '/cli/cors' },
+              { text: "Firewall", link: '/cli/firewall' },
+              { text: "Intervals", link: '/cli/intervals' },
+              { text: "Mailer", link: '/cli/mailer' },
+              { text: "Secrets", link: '/cli/secrets' },
+              { text: "TLS", link: '/cli/tls' },
+            ]
+          },
         ]
       },
       {
