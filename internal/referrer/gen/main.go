@@ -127,9 +127,13 @@ func main() {
 	})
 
 	var hosts []*hostDom
-
+	seenHost := make(map[string]struct{})
 	for _, m := range domains {
 		for _, h := range m.Hosts {
+			if _, ok := seenHost[h]; ok {
+				continue
+			}
+			seenHost[h] = struct{}{}
 			hosts = append(hosts, &hostDom{
 				host: h,
 				dom:  m,
