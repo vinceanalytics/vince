@@ -82,7 +82,7 @@ func guideCreateSite(root string) {
 	r, _ := http.NewRequest(http.MethodPost, host+"/api/v1/sites", bytes.NewReader(b))
 	r.Header.Set("Authorization", "Bearer "+bearer)
 
-	write(filepath.Join(root, "docs/guide/files/create_site.sh"), r)
+	write(filepath.Join(root, "website/docs/guide/files/create_site.sh"), r)
 }
 
 func write(path string, r *http.Request) {
