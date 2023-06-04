@@ -135,6 +135,9 @@ changelog:
     - title: "Bug fixes"
       regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 200
+    - title: "Kubernetes Controller"
+      regexp: '^.*?k8s(\([[:word:]]+\))??!?:.+$'
+      order: 200
     - title: "Documentation updates"
       regexp: ^.*?docs(\([[:word:]]+\))??!?:.+$
       order: 400
