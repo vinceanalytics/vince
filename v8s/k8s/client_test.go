@@ -30,7 +30,7 @@ func TestSiteAPI(t *testing.T) {
 				secrets.API_KEY: []byte("secret"),
 			},
 		}
-		err := a.Create(context.TODO(), &secret, "example.com")
+		err := a.Create(context.TODO(), &secret, "example.com", false)
 		if err != nil {
 			t.Fatal(err)
 		}
