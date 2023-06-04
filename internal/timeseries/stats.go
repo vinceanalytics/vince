@@ -37,6 +37,10 @@ type RootOptions struct {
 	Start  time.Time     `json:"start,omitempty"`
 	Window time.Duration `json:"window,omitempty"`
 	Offset time.Duration `json:"offset,omitempty"`
+	// When set to true and Prop is Base, other props will not be queried. This is
+	// useful to query only base aggregates aggregates. Like the one used on sites
+	// index.
+	NoProps bool `json:"noProps,omitempty"`
 }
 
 func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
@@ -54,7 +58,7 @@ func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 			Offset:  opts.Offset,
 			Start:   opts.Start,
 			Metrics: allMetrics,
-			Filters: allProperties(opts.Metric, opts.Prop, opts.Key),
+			Filters: allProperties(opts),
 		},
 	})
 	o.Timestamps = q.Timestamps
@@ -100,20 +104,20 @@ var allMetrics = []Metric{
 	VisitDurations,
 }
 
-func allProperties(selected Metric, selectedProp Property, key string) FilterList {
-	if selectedProp != Base {
+func allProperties(opt RootOptions) FilterList {
+	if opt.Prop != Base || opt.NoProps {
 		// No need to select other properties if its not for the base. This is the
 		// case when we are searching based on a key
 		return []*Filter{
-			{Property: selectedProp, Expr: FilterExpr{
-				Text: key,
+			{Property: opt.Prop, Expr: FilterExpr{
+				Text: opt.Key,
 			}},
 		}
 	}
 	o := make([]*Filter, City+1)
 	a := make([]Metric, 0, VisitDurations+1)
 	for i := Visitors; i <= VisitDurations; i++ {
-		if i == selected {
+		if i == opt.Metric {
 			continue
 		}
 		a = append(a, i)
