@@ -50,6 +50,24 @@ func App() *cli.App {
 				Destination: &o.Port,
 				EnvVars:     []string{"V8S_API_PORT"},
 			},
+			&cli.StringFlag{
+				Name:        "namespace",
+				Usage:       "default namespace where resource managed by v8s will be deployed",
+				Destination: &o.Namespace,
+				EnvVars:     []string{"V8S_NAMESPACE"},
+			},
+			&cli.StringSliceFlag{
+				Name:        "watch-namespaces",
+				Usage:       "namespaces to watch for Vince and Site custom resources",
+				Destination: &o.WatchNamespaces,
+				EnvVars:     []string{"V8S_WATCH_NAMESPACES"},
+			},
+			&cli.StringSliceFlag{
+				Name:        "ignore-namespaces",
+				Usage:       "namespaces to ignore for Vince and Site custom resources",
+				Destination: &o.IgnoreNamespaces,
+				EnvVars:     []string{"V8S_IGNORE_NAMESPACES"},
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			return run(o)
