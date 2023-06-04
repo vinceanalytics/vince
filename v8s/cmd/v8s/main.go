@@ -4,11 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"sync/atomic"
 
-	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/version"
 	"github.com/vinceanalytics/vince/v8s/control"
 	"github.com/vinceanalytics/vince/v8s/k8s"
@@ -16,6 +15,7 @@ import (
 )
 
 func App() *cli.App {
+	o := &control.Options{}
 	return &cli.App{
 		Name:  "v8s",
 		Usage: "kubernetes controller for vince - The Cloud Native Web Analytics Platform.",
@@ -25,53 +25,52 @@ func App() *cli.App {
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "master-url",
-				Usage:   "The address of the Kubernetes API server. Overrides any value in kubeconfig.",
-				EnvVars: []string{"V8S_MASTER_URL"},
+				Name:        "master-url",
+				Usage:       "The address of the Kubernetes API server. Overrides any value in kubeconfig.",
+				Destination: &o.MasterURL,
+				EnvVars:     []string{"V8S_MASTER_URL"},
 			},
 			&cli.StringFlag{
-				Name:    "kubeconfig",
-				Usage:   "Path to a kubeconfig. Only required if out-of-cluster.",
-				EnvVars: []string{"KUBECONFIG"},
+				Name:        "kubeconfig",
+				Usage:       "Path to a kubeconfig. Only required if out-of-cluster.",
+				Destination: &o.KubeConfig,
+				EnvVars:     []string{"KUBECONFIG"},
 			},
 			&cli.StringFlag{
-				Name:    "default-image",
-				Usage:   "Default image of vince to use",
-				Value:   "ghcr.io/vinceanalytics/vince:v0.0.0",
-				EnvVars: []string{"V8S_DEFAULT_VINCE_IMAGE"},
+				Name:        "default-image",
+				Usage:       "Default image of vince to use",
+				Value:       fmt.Sprintf("ghcr.io/vinceanalytics/vince:%s", string(version.BuildVersion)),
+				Destination: &o.Image,
+				EnvVars:     []string{"V8S_VINCE_IMAGE"},
 			},
 			&cli.IntFlag{
-				Name:    "port",
-				Usage:   "controller api port",
-				EnvVars: []string{"V8S_API_PORT"},
-				Value:   9000,
+				Name:        "port",
+				Usage:       "controller api port",
+				Value:       9000,
+				Destination: &o.Port,
+				EnvVars:     []string{"V8S_API_PORT"},
 			},
 		},
-		Action: run,
+		Action: func(ctx *cli.Context) error {
+			return run(o)
+		},
 	}
 
 }
 
-func run(ctx *cli.Context) error {
-	xlg := zerolog.New(os.Stderr)
-	master := ctx.String("master-url")
-	kubeconfig := ctx.String("kubeconfig")
-	port := ctx.Int("port")
+func run(o *control.Options) error {
+	xlg := log.Get()
 	xlg.Debug().
-		Str("master-url", master).
-		Str("kubeconfig", kubeconfig).
-		Int("port", port).
+		Int("port", o.Port).
 		Msg("Starting controller")
-	xk8 := k8s.New(&xlg, master, kubeconfig)
+	xk8 := k8s.New(xlg, o.MasterURL, o.KubeConfig)
 	a := &api{}
-	xctr := control.New(&xlg, xk8, control.Options{
-		Image: ctx.String("default-image"),
-	}, a.Ready)
+	xctr := control.New(xlg, xk8, *o, a.Ready)
 	base, cancel := context.WithCancel(context.Background())
 	var g errgroup.Group
 	svr := &http.Server{
 		Handler: a,
-		Addr:    fmt.Sprintf(":%d", port),
+		Addr:    fmt.Sprintf(":%d", o.Port),
 	}
 	g.Go(func() error {
 		defer cancel()
