@@ -209,7 +209,12 @@ func (r *Resources) Resolve(ctx context.Context, retry *k8s.Retry, defaultImage 
 						// This site has already been created.
 						continue
 					}
-					err := clients.Site().Create(ctx, secret, x.Spec.Domain)
+					// default to always private
+					var public bool
+					if x.Spec.Public != nil {
+						public = *x.Spec.Public
+					}
+					err := clients.Site().Create(ctx, secret, x.Spec.Domain, public)
 					if err != nil {
 						return err
 					}

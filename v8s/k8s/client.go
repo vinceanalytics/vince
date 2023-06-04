@@ -31,7 +31,7 @@ type Client interface {
 }
 
 type SiteAPI interface {
-	Create(ctx context.Context, secret *v1.Secret, domain string) error
+	Create(ctx context.Context, secret *v1.Secret, domain string, public bool) error
 	Delete(ctx context.Context, secret *v1.Secret, domain string) error
 }
 
@@ -119,9 +119,10 @@ func (s *siteAPI) request(secret *v1.Secret, method, path string, body io.Reader
 	return r, nil
 }
 
-func (s *siteAPI) Create(ctx context.Context, secret *v1.Secret, domain string) error {
+func (s *siteAPI) Create(ctx context.Context, secret *v1.Secret, domain string, public bool) error {
 	b, _ := json.Marshal(map[string]any{
 		"domain": domain,
+		"public": public,
 	})
 	r, err := s.request(secret, http.MethodPost, "", bytes.NewReader(b))
 	if err != nil {

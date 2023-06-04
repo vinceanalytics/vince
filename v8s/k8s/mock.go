@@ -61,7 +61,7 @@ var _ SiteAPI = (*mockSite)(nil)
 
 type mockSite struct{}
 
-func (mockSite) Create(ctx context.Context, secret *v1.Secret, domain string) error {
+func (mockSite) Create(ctx context.Context, secret *v1.Secret, domain string, public bool) error {
 	return nil
 }
 func (mockSite) Delete(ctx context.Context, secret *v1.Secret, domain string) error {

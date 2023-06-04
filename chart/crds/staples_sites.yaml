@@ -54,7 +54,6 @@ spec:
                 type: object
             required:
             - domain
-            - public
             type: object
           status:
             properties:
