@@ -83,7 +83,7 @@ func run(o *control.Options) error {
 		Msg("Starting controller")
 	xk8 := k8s.New(xlg, o.MasterURL, o.KubeConfig)
 	a := &api{}
-	xctr := control.New(xlg, xk8, *o, a.Ready)
+	xctr := control.New(xk8, *o, a.Ready)
 	base, cancel := context.WithCancel(context.Background())
 	var g errgroup.Group
 	svr := &http.Server{

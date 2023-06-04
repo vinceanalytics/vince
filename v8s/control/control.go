@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/rs/zerolog"
+	"github.com/vinceanalytics/vince/pkg/log"
 	vince_informers "github.com/vinceanalytics/vince/v8s/gen/client/vince/informers/externalversions"
 	vince_listers "github.com/vinceanalytics/vince/v8s/gen/client/vince/listers/vince/v1alpha1"
 	"github.com/vinceanalytics/vince/v8s/k8s"
@@ -32,14 +32,12 @@ type Control struct {
 	list   List
 	filter *k8s.ResourceFilter
 	ready  func()
-	log    *zerolog.Logger
 	top    *Topology
 }
 
-func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Control {
+func New(clients k8s.Client, o Options, ready func()) *Control {
 	x := Control{
 		ready: ready,
-		log:   log,
 		opts:  o,
 		filter: k8s.NewResourceFilter(
 			k8s.WatchNamespaces(o.WatchNamespaces...),
@@ -54,7 +52,7 @@ func New(log *zerolog.Logger, clients k8s.Client, o Options, ready func()) *Cont
 	x.queue = workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	handler := cache.FilteringResourceEventHandler{
 		FilterFunc: x.isWatchedResource,
-		Handler:    &enqueueWorkHandler{logger: log, queue: x.queue},
+		Handler:    &enqueueWorkHandler{queue: x.queue},
 	}
 	x.list.site = x.form.vince.Staples().V1alpha1().Sites().Lister()
 	x.list.vince = x.form.vince.Staples().V1alpha1().Vinces().Lister()
@@ -82,20 +80,20 @@ type List struct {
 }
 
 func (c *Control) Run(ctx context.Context) error {
-	c.log.Debug().Msg("Initializing vince controller")
+	log.Get().Debug().Msg("Initializing vince controller")
 	// we only watch Site resources
 	{
 		timeout, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		c.log.Debug().Msg("Starting sites informer")
+		log.Get().Debug().Msg("Starting sites informer")
 		c.form.vince.Start(ctx.Done())
 		for _, ok := range c.form.vince.WaitForCacheSync(timeout.Done()) {
 			if !ok {
-				c.log.Fatal().Msg("timed out waiting for controller caches to sync:")
+				log.Get().Fatal().Msg("timed out waiting for controller caches to sync:")
 			}
 		}
 	}
 	c.ready()
-	c.log.Debug().Msg("Controller is ready")
+	log.Get().Debug().Msg("Controller is ready")
 	wait.Until(c.runWorker, time.Second, ctx.Done())
 	return nil
 }

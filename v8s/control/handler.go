@@ -1,15 +1,14 @@
 package control
 
 import (
-	"github.com/rs/zerolog"
+	"github.com/vinceanalytics/vince/pkg/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 )
 
 type enqueueWorkHandler struct {
-	logger *zerolog.Logger
-	queue  workqueue.RateLimitingInterface
+	queue workqueue.RateLimitingInterface
 }
 
 // OnAdd is called when an object is added to the informers cache.
@@ -37,7 +36,7 @@ func (h *enqueueWorkHandler) OnDelete(obj interface{}) {
 func (h *enqueueWorkHandler) enqueueWork(obj interface{}) {
 	key, err := cache.MetaNamespaceKeyFunc(obj)
 	if err != nil {
-		h.logger.Err(err).Msg("failed to get meta key")
+		log.Get().Err(err).Msg("failed to get meta key")
 		return
 	}
 	h.queue.Add(key)
