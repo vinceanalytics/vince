@@ -34,7 +34,7 @@ func TestSiteAPI(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		expect, err := os.ReadFile("./testdata/create_api")
+		expect, err := os.ReadFile("./testdata/create_api.txt")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -66,7 +66,7 @@ func TestSiteAPI(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		expect, err := os.ReadFile("./testdata/delete_api")
+		expect, err := os.ReadFile("./testdata/delete_api.txt")
 		if err != nil {
 			t.Fatal(err)
 		}
