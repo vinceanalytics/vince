@@ -216,7 +216,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	result.Timestamps = shared
 	result.Result = make(PropertiesResult)
 
-	txn := GetMike(ctx).NewTransaction(false)
+	txn := GetMike(ctx).NewTransactionAt(uint64(start), false)
 
 	m := newMetaKey()
 	defer func() {

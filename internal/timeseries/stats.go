@@ -3,6 +3,7 @@ package timeseries
 import (
 	"context"
 	"math"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -10,17 +11,34 @@ import (
 type Stats struct {
 	Timestamps []int64
 	Aggregate  Aggregate
-	Timeseries []float64
+	Timeseries PropertiesResult
 }
 
-type Aggregate struct {
-	Metrics map[string]FloatValue
-	Props   map[string][]StatValue
-}
+type Aggregate map[string]AggregateMetricsStatValue
+
+// AggregateValue maps keys to value for a specific metric
+type AggregateValue map[string]FloatValue
+
+type AggregateMetricsStatValue map[string]StatList
 
 type StatValue struct {
 	Key   string
 	Value FloatValue
+}
+
+var _ sort.Interface = (*StatList)(nil)
+
+type StatList []StatValue
+
+func (s StatList) Len() int {
+	return len(s)
+}
+func (s StatList) Less(i, j int) bool {
+	return s[i].Value < s[j].Value
+}
+
+func (s StatList) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
 }
 
 func sum(ls []float64) (o float64) {
@@ -57,51 +75,55 @@ func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 			Window:  opts.Window,
 			Offset:  opts.Offset,
 			Start:   opts.Start,
-			Metrics: allMetrics,
+			Metrics: allMetrics(opts),
 			Filters: allProperties(opts),
 		},
 	})
 	o.Timestamps = q.Timestamps
-	o.Aggregate = Aggregate{
-		Metrics: make(map[string]FloatValue),
-		Props:   make(map[string][]StatValue),
-	}
-	// calculate base stats
-	base := q.Result[opts.Prop.String()]
-	for i := Visitors; i <= VisitDurations; i++ {
-		o.Aggregate.Metrics[i.String()] = FloatValue(sum(base[i.String()][opts.Key]))
-	}
-	o.Timeseries = base[opts.Metric.String()][opts.Key]
-	if len(o.Timeseries) == 0 {
-		// no key was found, make sure time/value aligns for the graph.
-		o.Timeseries = make([]float64, len(o.Timestamps))
-	}
-	for i := Event; i <= City; i++ {
-		for k, v := range q.Result[i.String()][opts.Metric.String()] {
-			o.Aggregate.Props[i.String()] = append(o.Aggregate.Props[i.String()], StatValue{
-				Key:   k,
-				Value: FloatValue(sum(v)),
-			})
+	o.Aggregate = make(Aggregate)
+	o.Timeseries = q.Result
+	for k, v := range q.Result {
+		am := make(AggregateMetricsStatValue)
+		for m, mv := range v {
+			ls := make(StatList, 0, len(mv))
+			for ok, ov := range mv {
+				st := StatValue{
+					Key:   ok,
+					Value: FloatValue(sum(ov)),
+				}
+				ls = append(ls, st)
+			}
+			// sort in ascending order.
+			sort.Sort(sort.Reverse(ls))
+			am[m] = ls
 		}
+		o.Aggregate[k] = am
 	}
 
-	// calculate bounce rate
-	visits := o.Aggregate.Metrics[Visits.String()]
-	if visits != 0 {
-		// avoid dividing by zero, thats why whe check visits != 0
-		o.Aggregate.Metrics[BounceRates.String()] =
-			(o.Aggregate.Metrics[BounceRates.String()] / visits) * 100
-	}
 	return
 }
 
-var allMetrics = []Metric{
+var allMetricsLs = []Metric{
 	Visitors,
 	Views,
 	Events,
 	Visits,
 	BounceRates,
 	VisitDurations,
+}
+
+func allMetrics(opt RootOptions) []Metric {
+	if opt.Prop == Base {
+		if opt.NoProps {
+			return []Metric{
+				opt.Metric,
+			}
+		}
+		return allMetricsLs
+	}
+	return []Metric{
+		opt.Metric,
+	}
 }
 
 func allProperties(opt RootOptions) FilterList {
