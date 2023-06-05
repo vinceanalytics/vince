@@ -10,6 +10,10 @@ import (
 	"github.com/vinceanalytics/vince/internal/render"
 )
 
+type Config struct {
+	Health
+}
+
 type Component interface {
 	Name() string
 	Check(context.Context) bool
@@ -65,12 +69,12 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 type healthKey struct{}
 
-func Set(ctx context.Context, h Health) context.Context {
+func Set(ctx context.Context, h *Config) context.Context {
 	return context.WithValue(ctx, healthKey{}, h)
 }
 
-func Get(ctx context.Context) Health {
-	return ctx.Value(healthKey{}).(Health)
+func Get(ctx context.Context) *Config {
+	return ctx.Value(healthKey{}).(*Config)
 }
 
 type PingChannel chan func()

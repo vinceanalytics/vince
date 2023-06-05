@@ -187,11 +187,11 @@ func HTTP(ctx context.Context, o *config.Options) error {
 
 	session := sessions.NewSession("_vince")
 	ctx = sessions.Set(ctx, session)
-	var h health.Health
+	h := &health.Config{}
 	addHealth := func(x *health.Ping) {
-		h = append(h, x)
+		h.Health = append(h.Health, x)
 	}
-	h = append(h, health.Base{
+	h.Health = append(h.Health, health.Base{
 		Key:       "database",
 		CheckFunc: models.Check,
 	})
