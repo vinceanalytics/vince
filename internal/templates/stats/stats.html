@@ -1,422 +1,192 @@
 {{define "_content"}}
 <div class="container-lg">
-    <vince-stats>
-        {{$calendar:= Calendar}}
-        {{$today:= index $calendar 0}}
-        <div class="Subhead Subhead--spacious text-center settingsDivider">
-            <h2 class="Subhead-heading mt-3 mt-sm-0">
-                <span data-target="vince-stats.period_range_from_label">
-                    April 26, 2023
-                </span>
-                <span class="dash">–</span>
-                <span data-target="vince-stats.period_range_to_label">
-                    May 3, 2023
-                </span>
-            </h2>
-            <div class="Subhead-actions mt-3 mt-sm-0">
-                <details data-view-component="true" class="dropdown details-overlay details-reset d-inline-block">
-                    <summary role="button" class="btn">
-                        <i>Period:</i>
-                        <span data-target="vince-stats.period_label">
-                            {{$today.Name}}
-                        </span>
-                        {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
-                    </summary>
-                    <div data-view-component="true">
-                        <details-menu role="menu" data-view-component="true"
-                            class="dropdown-menu select-menu-modal dropdown-menu-sw">
-                            <div class="select-menu-header">
-                                <div class="select-menu-title">
-                                    Select time ranges
+    {{$calendar:= Calendar}}
+    {{$today:= index $calendar 0}}
+    <div class="Subhead Subhead--spacious text-center settingsDivider">
+        <h2 class="Subhead-heading mt-3 mt-sm-0">
+            <span data-target="vince-stats.period_range_from_label">
+                April 26, 2023
+            </span>
+            <span class="dash">–</span>
+            <span data-target="vince-stats.period_range_to_label">
+                May 3, 2023
+            </span>
+        </h2>
+        <div class="Subhead-actions mt-3 mt-sm-0">
+            <details data-view-component="true" class="dropdown details-overlay details-reset d-inline-block">
+                <summary role="button" class="btn">
+                    <i>Period:</i>
+                    <span data-target="vince-stats.period_label">
+                        {{$today.Name}}
+                    </span>
+                    {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
+                </summary>
+                <div data-view-component="true">
+                    <details-menu role="menu" data-view-component="true"
+                        class="dropdown-menu select-menu-modal dropdown-menu-sw">
+                        <div class="select-menu-header">
+                            <div class="select-menu-title">
+                                Select time ranges
+                            </div>
+                        </div>
+                        {{range $index,$period:= $calendar}}
+                        <a role="menuitem" data-from="{{$period.From}}" data-to="{{$period.To}}"
+                            data-from-label="{{PeriodLabel $period.Start}}" data-to-label="{{PeriodLabel $period.End}}"
+                            data-name="{{$period.Name}}" data-targets="vince-stats.periods"
+                            data-action="click:vince-stats#changePeriod"
+                            class="dropdown-item select-menu-item select-menu-item-text">
+                            {{$selected:=SelectedPeriod $index}}
+                            {{Icon "check" 16 "select-menu-item-icon" $selected}}
+                            <span class="select-menu-item-text">
+                                {{$period.Name}}
+                            </span>
+                        </a>
+                        {{end}}
+                    </details-menu>
+                </div>
+            </details>
+        </div>
+    </div>
+    <div class="Box mb-2 border-0">
+        <tab-container>
+            <div class="UnderlineNav p-2" aria-label="Foo bar">
+                <ul role="tablist" class="UnderlineNav-body list-style-none">
+                    <li>
+                        <button id="visitors" role="tab" aria-selected="true" class="UnderlineNav-item px-3">
+                            <span>Unique Visitors</span>
+                            <span class="Counter">10</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button id="views" role="tab" class="UnderlineNav-item px-3">
+                            <span>Page Views</span>
+                            <span class="Counter">10</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button id="visits" role="tab" class="UnderlineNav-item px-3">
+                            <span>Sessions</span>
+                            <span class="Counter">10</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button id="bounceRates" role="tab" class="UnderlineNav-item px-3">
+                            <span>Bounce Rate</span>
+                            <span class="Counter">10</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button id="visitDurations" role="tab" class="UnderlineNav-item px-3">
+                            <span>Visits Duration</span>
+                            <span class="Counter">10</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="Box-body border-0" style="height: 260px;">
+                <div id="visitor" role="tabpanel" aria-labelledby="visitors">
+                    Visitors
+                </div>
+                <div id="view" role="tabpanel" aria-labelledby="views" hidden>
+                    Views
+                </div>
+                <div id="visit" role="tabpanel" aria-labelledby="visits" hidden>
+                    Visits
+                </div>
+                <div id="bounceRate" role="tabpanel" aria-labelledby="bounceRates" hidden>
+                    Bounce Rates
+                </div>
+                <div id="visitDuration" role="tabpanel" aria-labelledby="visitDurations" hidden>
+                    Visit Duration
+                </div>
+            </div>
+        </tab-container>
+    </div>
+    <div class="d-flex">
+        <div class="col-6 pr-2">
+            <div class="Box">
+                <tab-container>
+                    <div class="Box-header p-2">
+                        <ul role="tablist" class="tabnav-tabs">
+                            <li role="presentation">
+                                <button type="button" id="pages" role="tab" aria-selected="true"
+                                    class="tabnav-tab">Pages</button>
+                            </li>
+                            <li role="presentation">
+                                <button type="button" id="entryPages" role="tab" tabindex="-1" class="tabnav-tab">
+                                    Entry Pages</button>
+                            </li>
+                            <li role="presentation">
+                                <button type="button" id="exitPages" role="tab" tabindex="-1" class="tabnav-tab">
+                                    Exit Pages</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div role="tabpanel" aria-labelledby="pages">
+                        <div class="Box-row">
+                            <a href="#" class="Box-row-link">/</a>
+                        </div>
+                    </div>
+                    <div role="tabpanel" aria-labelledby="entryPages" hidden>
+                        <div class="Box-row">
+                            <div class="d-flex">
+                                <div style="width: 80%;">
+                                    <a href="#" class="Box-row-link width-full">/</a>
+                                </div>
+                                <div style="width: 20%;" class="text-center">
+                                    914
                                 </div>
                             </div>
-                            {{range $index,$period:= $calendar}}
-                            <a role="menuitem" data-from="{{$period.From}}" data-to="{{$period.To}}"
-                                data-from-label="{{PeriodLabel $period.Start}}"
-                                data-to-label="{{PeriodLabel $period.End}}" data-name="{{$period.Name}}"
-                                data-targets="vince-stats.periods" data-action="click:vince-stats#changePeriod"
-                                class="dropdown-item select-menu-item select-menu-item-text">
-                                {{$selected:=SelectedPeriod $index}}
-                                {{Icon "check" 16 "select-menu-item-icon" $selected}}
-                                <span class="select-menu-item-text">
-                                    {{$period.Name}}
-                                </span>
-                            </a>
-                            {{end}}
-                        </details-menu>
+                        </div>
                     </div>
-                </details>
+                    <div role="tabpanel" aria-labelledby="exitPages" hidden>
+                        <div class="Box-row">
+                            <a href="#" class="Box-row-link">/</a>
+                        </div>
+                    </div>
+                </tab-container>
             </div>
         </div>
-        <div class="d-flex">
-            <div class="col-2">
-                <div class="Box text-center">
-                    <metric-value>
-                        <div id="visitors" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
-                            data-action="click:metric-value#selectMetric" style="cursor: pointer;">
-                            <div class="h4 color-fg-default" data-target="metric-value.visitor">
-                                0
-                            </div>
-                            <div class="color-fg-muted">
-                                Unique Visitors
-                            </div>
-                        </div>
-                        <div id="views" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
-                            data-action="click:metric-value#selectMetric" style="cursor: pointer;">
-                            <span class="d-block h4 color-fg-default" data-target="metric-value.view">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                Page Views
-                            </span>
-                        </div>
-                        <div id="visits" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
-                            data-action="click:metric-value#selectMetric" style="cursor: pointer;">
-                            <span class="d-block h4 color-fg-default" data-target="metric-value.visit">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                Unique Sessions
-                            </span>
-                        </div>
-                        <div id="events" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
-                            data-action="click:metric-value#selectMetric" style="cursor: pointer;">
-                            <span class="d-block h4 color-fg-default" data-target="metric-value.event">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                Events
-                            </span>
-                        </div>
-                        <div id="bounceRates" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
-                            data-action="click:metric-value#selectMetric" style="cursor: pointer;">
-                            <span class="d-block h4 color-fg-default" data-target="metric-value.bounceRate">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                Bounce Rate
-                            </span>
-                        </div>
-                        <div id="visitDurations" class="Box-row Box-row--focus-blue" data-targets="metric-value.items"
-                            data-action="click:metric-value#selectMetric" style="cursor: pointer;">
-                            <span class="d-block h4 color-fg-default" data-target="metric-value.visitDuration">
-                                0
-                            </span>
-                            <span class="color-fg-muted">
-                                Session Duration
-                            </span>
-                        </div>
-                    </metric-value>
-                </div>
-            </div>
-            <div class="col-8">
-            </div>
-            <div class="col-3">
-                <div class="Box border-0 props">
-                    <div class="Box Box--condensed">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Pages
-                            </h3>
-                        </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">/</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">/login</td>
-                                            <td class="middle">224</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">/pricing</td>
-                                            <td class="middle">174</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+        <div class="col-6">
+            <div class="Box">
+                <tab-container>
+                    <div class="Box-header p-2">
+                        <ul role="tablist" class="tabnav-tabs">
+                            <li role="presentation">
+                                <button type="button" id="referrers" role="tab" aria-selected="true"
+                                    class="tabnav-tab">Referrers</button>
+                            </li>
+                            <li role="presentation">
+                                <button type="button" id="sources" role="tab" tabindex="-1" class="tabnav-tab">
+                                    Sources</button>
+                            </li>
+                            <li role="presentation">
+                                <button type="button" id="media" role="tab" tabindex="-1" class="tabnav-tab">
+                                    Media</button>
+                            </li>
+                            <li role="presentation">
+                                <button type="button" id="campaigns" role="tab" tabindex="-1" class="tabnav-tab">
+                                    Campaigns</button>
                             </li>
                         </ul>
                     </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Entry Pages
-                            </h3>
+                    <div class="Box-body">
+                        <div role="tabpanel" aria-labelledby="referrers">
+                            Referrers
                         </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">/</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">/login</td>
-                                            <td class="middle">224</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">/pricing</td>
-                                            <td class="middle">174</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Exit Pages
-                            </h3>
+                        <div role="tabpanel" aria-labelledby="sources" hidden>
+                            Sources
                         </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">/</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">/login</td>
-                                            <td class="middle">224</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">/pricing</td>
-                                            <td class="middle">174</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Referrers
-                            </h3>
+                        <div role="tabpanel" aria-labelledby="media" hidden>
+                            Media
                         </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">Google</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">Twitter</td>
-                                            <td class="middle">224</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">Hacker news</td>
-                                            <td class="middle">174</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Sources
-                            </h3>
+                        <div role="tabpanel" aria-labelledby="campaigns" hidden>
+                            Campaigns
                         </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">Social Media</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
                     </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Campaigns
-                            </h3>
-                        </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">Email+Marketing+Demo</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Conversions
-                            </h3>
-                        </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">Read article on our blog</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Events
-                            </h3>
-                        </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">Logged In</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">Affiliate</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">Registration</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Countries
-                            </h3>
-                        </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">Germany</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">United States Of merica</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">India</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Cities
-                            </h3>
-                        </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">Berlin</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">Bengaluru</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">Sydney</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Os
-                            </h3>
-                        </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">Mac</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">Windows</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">iOS</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box Box--condensed mt-3">
-                        <div class="Box-header">
-                            <h3 class="Box-title">
-                                Platform
-                            </h3>
-                        </div>
-                        <ul>
-                            <li class="Box-row">
-                                <table class="capped-list">
-                                    <tbody>
-                                        <tr>
-                                            <td class="capped-list-label">Desktop</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">Mobile</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="capped-list-label">iOS</td>
-                                            <td class="middle">914</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </li>
-                        </ul>
-                    </div>
-
-                </div>
+                </tab-container>
             </div>
         </div>
-    </vince-stats>
+    </div>
 </div>
 {{end}}
