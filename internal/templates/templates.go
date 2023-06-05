@@ -12,6 +12,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/octicon"
 )
 
@@ -199,6 +200,7 @@ type Context struct {
 	Recipient     string
 	Key           string
 	SharedLink    *models.SharedLink
+	Stats         *timeseries.Stats
 }
 
 func (t *Context) GreetRecipient() string {
