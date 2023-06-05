@@ -42,7 +42,7 @@ func Serve(o *config.Options) error {
 	return HTTP(ctx, o)
 }
 
-type resourceList []io.Closer
+type ResourceList []io.Closer
 
 type resourceFunc func() error
 
@@ -50,7 +50,7 @@ func (r resourceFunc) Close() error {
 	return r()
 }
 
-func (r resourceList) Close() error {
+func (r ResourceList) Close() error {
 	e := make([]error, len(r))
 	for i, f := range r {
 		e[i] = f.Close()
@@ -61,7 +61,7 @@ func (r resourceList) Close() error {
 func HTTP(ctx context.Context, o *config.Options) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	var resources resourceList
+	var resources ResourceList
 
 	// we start listeners early to make sure we can actually bind to the network.
 	// This saves us managing all long running goroutines we start in this process.
@@ -156,7 +156,12 @@ func HTTP(ctx context.Context, o *config.Options) error {
 	}
 	if o.Alerts.Enabled {
 		log.Get().Debug().Msg("setup alerts")
-		ctx = alerts.Setup(ctx, o)
+		a, err := alerts.Setup(o)
+		if err != nil {
+			resources.Close()
+			return err
+		}
+		ctx = alerts.Set(ctx, a)
 	}
 	if o.Mailer.Enabled {
 		log.Get().Debug().Msg("setup mailer")
@@ -207,7 +212,7 @@ func HTTP(ctx context.Context, o *config.Options) error {
 	svr := buildServer(ctx, &g, httpListener, httpsListener, magic, Handle(ctx))
 	// We start by shutting down the server before shutting everything else. So we
 	// prepend svr for it to be called first.
-	resources = append(resourceList{svr}, resources...)
+	resources = append(ResourceList{svr}, resources...)
 
 	g.Go(func() error {
 		// Ensure we close the server.
@@ -238,7 +243,7 @@ func buildServer(
 	httpListener, httpsListener net.Listener,
 	magic *certmagic.Config,
 	h http.Handler,
-) (r resourceList) {
+) (r ResourceList) {
 	httpSvr := &http.Server{
 		Handler:           h,
 		ReadHeaderTimeout: 5 * time.Second,

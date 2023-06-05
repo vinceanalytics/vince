@@ -3,43 +3,40 @@ package alerts
 import (
 	"context"
 	_ "embed"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/dop251/goja"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/pkg/log"
 )
-
-//go:embed vince.ts
-var vince []byte
 
 type Alerts struct {
 	Path    string
 	Scripts map[string]*Script
 }
 
+func (a *Alerts) Close() error {
+	e := make([]error, 0, len(a.Scripts))
+	for _, v := range a.Scripts {
+		e = append(e, v.Close())
+	}
+	return errors.Join(e...)
+}
+
 type alertsKey struct{}
 
-func Setup(ctx context.Context, o *config.Options) context.Context {
+func Setup(o *config.Options) (*Alerts, error) {
 	path := o.Alerts.Source
 	if path == "" {
 		path := filepath.Join(o.DataPath, "alerts")
 		os.MkdirAll(path, 0755)
 	}
-	vinceTS := filepath.Join(path, "vince.ts")
-	err := os.WriteFile(vinceTS, vince, 0600)
-	if err != nil {
-		log.Get().Fatal().Err(err).
-			Str("path", vinceTS).
-			Msg("failed to write vince.ts in the alerts path")
-	}
 	scripts, err := Compile(path)
 	if err != nil {
 		if err != nil {
-			log.Get().Fatal().Err(err).
-				Str("path", vinceTS).
-				Msg("failed to compile alerts")
+			return nil, fmt.Errorf("failed to compile alerts :%v", err)
 		}
 	}
 	a := &Alerts{
@@ -53,9 +50,7 @@ func Setup(ctx context.Context, o *config.Options) context.Context {
 		g.Set("VINCE", m)
 		_, err = g.RunString(string(v))
 		if err != nil {
-			log.Get().Fatal().Err(err).
-				Str("script", k).
-				Msg("failed to evaluate alert script")
+			return nil, fmt.Errorf("script:%q failed to evaluate %v", k, err)
 		}
 		if len(m.m) == 0 {
 			// No registration happened
@@ -63,10 +58,12 @@ func Setup(ctx context.Context, o *config.Options) context.Context {
 		}
 		a.Scripts[k] = m
 	}
-
-	return context.WithValue(ctx, alertsKey{}, a)
+	return a, nil
 }
 
+func Set(ctx context.Context, a *Alerts) context.Context {
+	return context.WithValue(ctx, alertsKey{}, a)
+}
 func Get(ctx context.Context) *Alerts {
 	return ctx.Value(alertsKey{}).(*Alerts)
 }

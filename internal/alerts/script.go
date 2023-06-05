@@ -10,3 +10,7 @@ type Script struct {
 func (s *Script) Register(domain string, o goja.Value) {
 	s.m[domain] = append(s.m[domain], o)
 }
+
+func (s *Script) Close() error {
+	return nil
+}
