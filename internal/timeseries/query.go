@@ -33,6 +33,8 @@ type QueryRequest struct {
 
 type QueryResult struct {
 	ELapsed    time.Duration    `json:"elapsed"`
+	Start      time.Time        `json:"start"`
+	End        time.Time        `json:"end"`
 	Timestamps []int64          `json:"timestamps"`
 	Result     PropertiesResult `json:"result"`
 }
@@ -210,6 +212,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	}
 	start := startTS.UnixMilli()
 	end := endTS.UnixMilli()
+	result.Start, result.End = startTS, endTS
 	windowMs := window.Milliseconds()
 
 	shared := sharedTS(start, end, step.Milliseconds())
