@@ -6,9 +6,12 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
 type Stats struct {
+	Start, End string
 	Timestamps []int64
 	Aggregate  Aggregate
 	Timeseries PropertiesResult
@@ -79,7 +82,12 @@ func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 			Filters: allProperties(opts),
 		},
 	})
+
+	o.Start = q.Start.Format(timex.HumanDate)
+	o.End = q.End.Format(timex.HumanDate)
+
 	o.Timestamps = q.Timestamps
+
 	o.Aggregate = make(Aggregate)
 	o.Timeseries = q.Result
 	for k, v := range q.Result {
