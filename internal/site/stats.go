@@ -22,8 +22,7 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 	default:
 		canSeeStats = true
 	}
-	switch {
-	case !site.StatsStartDate.IsZero() && canSeeStats:
+	if canSeeStats {
 		w.Header().Set("x-robots-tag", "noindex")
 		var offer bool
 		session, _ := sessions.Load(r)
@@ -46,11 +45,7 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 			ctx.EmailReport = offer
 			ctx.HasGoals = hasGoals
 		})
-	case site.StatsStartDate.IsZero() && canSeeStats:
-		render.HTML(ctx, w, templates.WaitingFirstPageView, http.StatusOK, func(ctx *templates.Context) {
-			ctx.Site = site
-		})
-	default:
-		render.ERROR(r.Context(), w, http.StatusInternalServerError)
+		return
 	}
+	render.ERROR(ctx, w, http.StatusUnauthorized)
 }

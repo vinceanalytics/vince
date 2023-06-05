@@ -104,18 +104,6 @@ var Stats = template.Must(
 	),
 ).Lookup("app")
 
-var WaitingFirstPageView = template.Must(
-	layout().ParseFS(Files,
-		"stats/stats.html",
-	),
-).Lookup("app")
-
-var SiteLocked = template.Must(
-	layout().ParseFS(Files,
-		"stats/site_locked.html",
-	),
-).Lookup("app")
-
 var UserSettings = template.Must(
 	layout().ParseFS(Files,
 		"auth/user_settings.html",
