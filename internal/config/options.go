@@ -479,13 +479,16 @@ func (o *Options) IsSuperUser(uid uint64) bool {
 
 // Test returns Options with initialized values. This rely only on env Variables
 // for flags.
-func (o *Options) Test() *Options {
+func (o *Options) Test(fn ...func(*Options)) *Options {
 	set := flag.NewFlagSet("vince", flag.ContinueOnError)
 	for _, f := range o.Flags() {
 		err := f.Apply(set)
 		if err != nil {
 			log.Get().Fatal().Err(err).Msg("failed to apply flag")
 		}
+	}
+	for _, f := range fn {
+		f(o)
 	}
 	return o
 }
