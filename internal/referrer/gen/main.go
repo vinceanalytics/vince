@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/vinceanalytics/vince/tools"
 	"gopkg.in/yaml.v2"
@@ -124,12 +125,13 @@ func main() {
 	seen := make(map[string]struct{})
 	os.Mkdir("icons", 0755)
 	for _, v := range domains {
-		if _, ok := seen[v.Name]; ok {
-			continue
-		}
-		seen[v.Name] = struct{}{}
 		key := strings.ToLower(v.Name)
 		key = strings.Replace(key, " ", "-", -1)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+
 		ok := writeIcon(key, v.Domains)
 		if !ok {
 			continue
@@ -137,6 +139,7 @@ func main() {
 		fmt.Fprintf(&b, "%q:{},\n", key)
 	}
 	fmt.Fprintln(&b, "}")
+	fmt.Fprintf(&b, " var modTime =%d\n", time.Now().UTC().Unix())
 	fmt.Fprintf(&b, " const minReferrerSize=%d\n", minLen)
 	fmt.Fprintf(&b, " const maxReferrerSize=%d\n", maxLen)
 	fmt.Fprintln(&b, "var refList=map[string]string{")
@@ -205,7 +208,6 @@ func getFavicon(key, site string) bool {
 	defer r.Body.Close()
 
 	if r.StatusCode != http.StatusOK {
-		println(">", u, r.Status)
 		if r.StatusCode == http.StatusNotFound {
 			return false
 		}
@@ -215,9 +217,6 @@ func getFavicon(key, site string) bool {
 	if err != nil {
 		tools.Exit(err.Error())
 	}
-	if !bytes.Contains(b, []byte{137, 80, 78, 71, 13, 10, 26, 10}) {
-		println(">", u, "xxxxxx special case")
-	}
-	tools.WriteFile(filepath.Join("icons", key), b)
+	tools.WriteFile(filepath.Join("icons", key+".ico"), b)
 	return true
 }

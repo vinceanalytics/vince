@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/vinceanalytics/vince/pkg/log"
 )
@@ -43,13 +44,12 @@ func ServeFavicon(key string, w http.ResponseWriter, r *http.Request) bool {
 	if _, ok := favicon[key]; !ok {
 		return ok
 	}
-	file := "icons/" + key
+	file := "icons/" + key + ".ico"
 	f, err := Icons.Open(file)
 	if err != nil {
 		log.Get().Err(err).Msg("failed getting icon file")
 		return false
 	}
-	i, _ := f.Stat()
-	http.ServeContent(w, r, file+".ico", i.ModTime(), f.(io.ReadSeeker))
+	http.ServeContent(w, r, file, time.Unix(int64(modTime), 0).UTC(), f.(io.ReadSeeker))
 	return true
 }
