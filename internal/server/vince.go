@@ -18,8 +18,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/alerts"
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/email"
-	"github.com/vinceanalytics/vince/internal/group"
 	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/plug"
@@ -37,9 +37,11 @@ func Serve(o *config.Options) error {
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	return HTTP(ctx, o)
+	ctx, resources, err := Configure(ctx, o)
+	if err != nil {
+		return err
+	}
+	return Run(ctx, resources)
 }
 
 type ResourceList []io.Closer
@@ -58,35 +60,34 @@ func (r ResourceList) Close() error {
 	return errors.Join(e...)
 }
 
-func HTTP(ctx context.Context, o *config.Options) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList, error) {
 	var resources ResourceList
 
 	// we start listeners early to make sure we can actually bind to the network.
 	// This saves us managing all long running goroutines we start in this process.
 	httpListener, err := net.Listen("tcp", o.Listen)
 	if err != nil {
-		return fmt.Errorf("failed to bind to a network address %v", err)
+		return nil, nil, fmt.Errorf("failed to bind to a network address %v", err)
 	}
 	resources = append(resources, httpListener)
+	ctx = core.SetHTTPListener(ctx, httpListener)
 	var httpsListener net.Listener
 	var magic *certmagic.Config
 	if o.TLS.Enabled {
 		if o.TLS.Address == "" {
 			resources.Close()
-			return errors.New("tls-address is required")
+			return nil, nil, errors.New("tls-address is required")
 		}
 		if o.TLS.Key == "" || o.TLS.Cert == "" {
 			if !o.Acme.Enabled {
 				resources.Close()
-				return errors.New("tls-key and tls-cert  are required")
+				return nil, nil, errors.New("tls-key and tls-cert  are required")
 			}
 		}
 		if o.Acme.Enabled {
 			if o.Acme.Email == "" || o.Acme.Domain == "" {
 				resources.Close()
-				return errors.New("acme-email and acme-domain  are required")
+				return nil, nil, errors.New("acme-email and acme-domain  are required")
 			}
 			magic = certmagic.NewDefault()
 			// we use file storage for certs
@@ -102,39 +103,39 @@ func HTTP(ctx context.Context, o *config.Options) error {
 			err = magic.ManageSync(ctx, []string{o.Acme.Domain})
 			if err != nil {
 				resources.Close()
-				return fmt.Errorf("failed to sync acme domain %v", err)
+				return nil, nil, fmt.Errorf("failed to sync acme domain %v", err)
 			}
 			httpsListener, err = net.Listen("tcp", o.TLS.Address)
 			if err != nil {
 				resources.Close()
-				return fmt.Errorf("failed to bind to https socket %v", err)
+				return nil, nil, fmt.Errorf("failed to bind to https socket %v", err)
 			}
 		} else {
 			cert, err := tls.LoadX509KeyPair(o.TLS.Cert, o.TLS.Key)
 			if err != nil {
 				resources.Close()
-				return fmt.Errorf("failed to load https certificate %v", err)
+				return nil, nil, fmt.Errorf("failed to load https certificate %v", err)
 			}
 			config := tls.Config{}
 			config.Certificates = append(config.Certificates, cert)
 			httpsListener, err = tls.Listen("tcp", o.TLS.Address, &config)
 			if err != nil {
 				resources.Close()
-				return fmt.Errorf("failed to bind https socket %v", err)
+				return nil, nil, fmt.Errorf("failed to bind https socket %v", err)
 			}
-			resources = append(resources, httpsListener)
 		}
 	}
-
-	var g errgroup.Group
-	ctx = group.Set(ctx, &g)
+	if httpsListener != nil {
+		resources = append(resources, httpsListener)
+		ctx = core.SetHTTPSListener(ctx, httpsListener)
+	}
 
 	ctx = userid.Open(ctx)
 
 	sqlDb, err := models.Open(models.Database(o))
 	if err != nil {
 		resources.Close()
-		return err
+		return nil, nil, err
 	}
 	resources = append(resources, resourceFunc(func() error {
 		return models.CloseDB(sqlDb)
@@ -148,7 +149,8 @@ func HTTP(ctx context.Context, o *config.Options) error {
 			o.Bootstrap.Email == "" ||
 			o.Bootstrap.Password == "" ||
 			o.Bootstrap.Key == "" {
-			return errors.New("bootstrap-name, bootstrap-email, bootstrap-password, and bootstrap-key, are required")
+			resources.Close()
+			return nil, nil, errors.New("bootstrap-name, bootstrap-email, bootstrap-password, and bootstrap-key, are required")
 		}
 		models.Bootstrap(ctx,
 			o.Bootstrap.Name, o.Bootstrap.Email, o.Bootstrap.Password, o.Bootstrap.Key,
@@ -159,7 +161,7 @@ func HTTP(ctx context.Context, o *config.Options) error {
 		a, err := alerts.Setup(o)
 		if err != nil {
 			resources.Close()
-			return err
+			return nil, nil, err
 		}
 		ctx = alerts.Set(ctx, a)
 	}
@@ -169,7 +171,7 @@ func HTTP(ctx context.Context, o *config.Options) error {
 		if err != nil {
 			log.Get().Err(err).Msg("failed creating mailer")
 			resources.Close()
-			return err
+			return nil, nil, err
 		}
 		resources = append(resources, mailer)
 		ctx = email.Set(ctx, mailer)
@@ -177,14 +179,14 @@ func HTTP(ctx context.Context, o *config.Options) error {
 	ctx, ts, err := timeseries.Open(ctx, o)
 	if err != nil {
 		resources.Close()
-		return err
+		return nil, nil, err
 	}
 	resources = append(resources, ts)
 	ctx, err = caches.Open(ctx)
 	if err != nil {
 		log.Get().Err(err).Msg("failed to open caches")
 		resources.Close()
-		return err
+		return nil, nil, err
 	}
 	resources = append(resources, resourceFunc(func() error {
 		return caches.Close(ctx)
@@ -193,59 +195,12 @@ func HTTP(ctx context.Context, o *config.Options) error {
 	session := sessions.NewSession("_vince")
 	ctx = sessions.Set(ctx, session)
 	h := &health.Config{}
-	addHealth := func(x *health.Ping) {
-		h.Health = append(h.Health, x)
-	}
-	h.Health = append(h.Health, health.Base{
-		Key:       "database",
-		CheckFunc: models.Check,
-	})
-	{
-		// register and start workers
-		g.Go(worker.UpdateCacheSites(ctx, addHealth))
-		g.Go(worker.SaveTimeseries(ctx, addHealth))
-	}
-
 	resources = append(resources, h)
 	ctx = health.Set(ctx, h)
 
-	svr := buildServer(ctx, &g, httpListener, httpsListener, magic, Handle(ctx))
-	// We start by shutting down the server before shutting everything else. So we
-	// prepend svr for it to be called first.
-	resources = append(ResourceList{svr}, resources...)
-
-	g.Go(func() error {
-		// Ensure we close the server.
-		<-ctx.Done()
-		log.Get().Debug().Msg("shutting down gracefully ")
-		return resources.Close()
-	})
-	log.Get().Debug().Str("address", httpListener.Addr().String()).Msg("started serving  http traffic")
-	if httpsListener != nil {
-		log.Get().Debug().Str("address", httpsListener.Addr().String()).Msg("started serving  https traffic")
-	}
-	if !o.NoSignal {
-		g.Go(func() error {
-			abort := make(chan os.Signal, 1)
-			signal.Notify(abort, os.Interrupt)
-			sig := <-abort
-			log.Get().Info().Msgf("received signal %s shutting down the server", sig)
-			cancel()
-			return nil
-		})
-	}
-	return g.Wait()
-}
-
-func buildServer(
-	ctx context.Context,
-	g *errgroup.Group,
-	httpListener, httpsListener net.Listener,
-	magic *certmagic.Config,
-	h http.Handler,
-) (r ResourceList) {
+	// configure http server
 	httpSvr := &http.Server{
-		Handler:           h,
+		Handler:           Handle(ctx),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       5 * time.Second,
 		WriteTimeout:      5 * time.Second,
@@ -263,13 +218,13 @@ func buildServer(
 			)
 		}
 	}
-	g.Go(func() error {
-		return httpSvr.Serve(httpListener)
-	})
-	r = append(r, httpSvr)
+	ctx = core.SetHTTPServer(ctx, httpSvr)
+	svr := ResourceList{httpSvr}
+
 	if httpsListener != nil {
+		//configure https server
 		httpsSvr := &http.Server{
-			Handler:           h,
+			Handler:           Handle(ctx),
 			ReadHeaderTimeout: 10 * time.Second,
 			ReadTimeout:       30 * time.Second,
 			WriteTimeout:      2 * time.Minute,
@@ -284,13 +239,64 @@ func buildServer(
 			tlsConfig := magic.TLSConfig()
 			tlsConfig.NextProtos = append([]string{"h2", "http/1.1"}, tlsConfig.NextProtos...)
 			httpsListener = tls.NewListener(httpsListener, tlsConfig)
+			ctx = core.SetHTTPSListener(ctx, httpsListener)
 		}
-		g.Go(func() error {
-			return httpsSvr.Serve(httpsListener)
-		})
-		r = append(r, httpsSvr)
+		ctx = core.SetHTTPSServer(ctx, httpsSvr)
+		svr = append(svr, httpsSvr)
+
 	}
-	return
+	resources = append(svr, resources...)
+	return ctx, resources, nil
+}
+
+func Run(ctx context.Context, resources ResourceList) error {
+	var cancel context.CancelFunc
+	if config.Get(ctx).NoSignal {
+		ctx, cancel = context.WithCancel(ctx)
+	} else {
+		ctx, cancel = signal.NotifyContext(ctx, os.Interrupt)
+	}
+	defer cancel()
+
+	h := health.Get(ctx)
+	var g errgroup.Group
+	addHealth := func(x *health.Ping) {
+		h.Health = append(h.Health, x)
+	}
+	h.Health = append(h.Health, health.Base{
+		Key:       "database",
+		CheckFunc: models.Check,
+	})
+	{
+		// register and start workers
+		g.Go(worker.UpdateCacheSites(ctx, addHealth))
+		g.Go(worker.SaveTimeseries(ctx, addHealth))
+	}
+
+	plain := core.GetHTTPServer(ctx)
+	secure := core.GetHTTPSServer(ctx)
+	plainLS := core.GetHTTPListener(ctx)
+	secureLS := core.GetHTTPSListener(ctx)
+
+	g.Go(func() error {
+		return plain.Serve(plainLS)
+	})
+	if secure != nil {
+		g.Go(func() error {
+			return secure.Serve(secureLS)
+		})
+	}
+	g.Go(func() error {
+		// Ensure we close the servers.
+		<-ctx.Done()
+		log.Get().Debug().Msg("shutting down gracefully ")
+		return resources.Close()
+	})
+	log.Get().Debug().Str("address", plainLS.Addr().String()).Msg("started serving  http traffic")
+	if secureLS != nil {
+		log.Get().Debug().Str("address", secureLS.Addr().String()).Msg("started serving  https traffic")
+	}
+	return g.Wait()
 }
 
 func Handle(ctx context.Context) http.Handler {
