@@ -1,16 +1,12 @@
 package plug
 
 import (
-	"bytes"
 	_ "embed"
-	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"regexp"
 
 	"github.com/vinceanalytics/vince/internal/referrer"
-	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 //go:embed placeholder_favicon.ico
@@ -34,50 +30,13 @@ func Favicon(klient Client) Plug {
 				matches := source.FindStringSubmatch(r.URL.Path)
 				src := matches[source.SubexpIndex("source")]
 				src, _ = url.QueryUnescape(src)
-				domain := referrer.Favicon(src)
-				if domain == "" {
+				if !referrer.ServeFavicon(src, w, r) {
 					placeholder(w)
-					return
 				}
-				req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain), nil)
-				res, err := klient.Do(req)
-				if err != nil {
-					log.Get().Err(err).Str("domain", domain).
-						Msg("failed getting icon from duckduckgo")
-					placeholder(w)
-					return
-				}
-				defer res.Body.Close()
-				if res.StatusCode == http.StatusOK {
-					var b bytes.Buffer
-					io.Copy(&b, res.Body)
-					if !bytes.Contains(b.Bytes(), []byte{137, 80, 78, 71, 13, 10, 26, 10}) {
-						// set forward headers
-						h := []string{"content-type", "cache-control", "expires"}
-						for _, v := range h {
-							if x := res.Header.Get(v); x != "" {
-								w.Header().Set(v, x)
-							}
-						}
-						if bytes.HasPrefix(b.Bytes(), []byte("<svg")) {
-							w.Header().Set("content-type", "image/svg+xml")
-						} else {
-							w.Header().Set("content-type", res.Header.Get("content-type"))
-						}
-						w.Header().Set("content-security-policy", "script-src 'none'")
-						w.Header().Set("content-disposition", "attachment")
-						w.WriteHeader(http.StatusOK)
-						w.Write(b.Bytes())
-						return
-					}
-
-				}
-				placeholder(w)
 				return
 			}
 			h.ServeHTTP(w, r)
 		})
-
 	}
 }
 
