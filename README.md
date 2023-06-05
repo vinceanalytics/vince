@@ -1,6 +1,9 @@
 # vince
 
-The Cloud Native Web Analytics Platform.
+The Cloud Native Web Analytics Platform. Built on a persistent and fast key
+value store that support ACID transactions with serializable snapshot isolation
+(SSI) guarantees.
+
 
 
 # Features
@@ -31,8 +34,9 @@ The Cloud Native Web Analytics Platform.
 # Origins
 
 This started as a go port of [Plausible](https://github.com/plausible/analytics), with 
-the intention to remove clickhouse and postgresql dependency . I wanted a simpler
-deployment model and focusing on a single organization managing its own sites.
+the intention to remove clickhouse and postgresql dependency . **Vince** is
+built on `sqlite` for operational data and [badger](https://github.com/dgraph-io/badger)
+for timeseries.
 
 # The name vince 
 
