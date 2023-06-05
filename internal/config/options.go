@@ -78,6 +78,8 @@ type Options struct {
 		Source  string
 	}
 	EnableProfile bool
+	// If true don't listen on os.Interrupt signal.
+	NoSignal bool
 }
 
 func (o *Options) Flags() []cli.Flag {

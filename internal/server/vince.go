@@ -219,14 +219,16 @@ func HTTP(ctx context.Context, o *config.Options) error {
 	if httpsListener != nil {
 		log.Get().Debug().Str("address", httpsListener.Addr().String()).Msg("started serving  https traffic")
 	}
-	g.Go(func() error {
-		abort := make(chan os.Signal, 1)
-		signal.Notify(abort, os.Interrupt)
-		sig := <-abort
-		log.Get().Info().Msgf("received signal %s shutting down the server", sig)
-		cancel()
-		return nil
-	})
+	if !o.NoSignal {
+		g.Go(func() error {
+			abort := make(chan os.Signal, 1)
+			signal.Notify(abort, os.Interrupt)
+			sig := <-abort
+			log.Get().Info().Msgf("received signal %s shutting down the server", sig)
+			cancel()
+			return nil
+		})
+	}
 	return g.Wait()
 }
 
