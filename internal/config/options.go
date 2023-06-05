@@ -1,9 +1,11 @@
 package config
 
 import (
+	"flag"
 	"time"
 
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 type Options struct {
@@ -471,4 +473,17 @@ func (o *Options) IsSuperUser(uid uint64) bool {
 		}
 	}
 	return false
+}
+
+// Test returns Options with initialized values. This rely only on env Variables
+// for flags.
+func (o *Options) Test() *Options {
+	set := flag.NewFlagSet("vince", flag.ContinueOnError)
+	for _, f := range o.Flags() {
+		err := f.Apply(set)
+		if err != nil {
+			log.Get().Fatal().Err(err).Msg("failed to apply flag")
+		}
+	}
+	return o
 }
