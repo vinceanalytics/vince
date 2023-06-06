@@ -12,7 +12,7 @@ import (
 
 var once sync.Once
 
-const driveBinary = "vince_load_gen"
+const driveBinary = "vlg"
 
 // Returns the binary for vince_load_gen
 func binary() string {
@@ -20,7 +20,7 @@ func binary() string {
 		tools.ExecPlainWithWorkingPath(
 			tools.RootVince(),
 			"go", "install",
-			"./tools/vince_load_gen",
+			"./tools/vlg",
 		)
 	})
 	return driveBinary
