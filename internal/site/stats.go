@@ -2,9 +2,7 @@ package site
 
 import (
 	"net/http"
-	"time"
 
-	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
@@ -31,20 +29,13 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 			offer = session.Data.EmailReport[site.Domain]
 		}
 		hasGoals := models.SiteHasGoals(ctx, site.Domain)
-		ts := core.Now(ctx)
-		timeseries.Query(ctx, timeseries.QueryRequest{
-			UserID: owner.ID,
-			SiteID: site.ID,
-			BaseQuery: timeseries.BaseQuery{
-				Start:  ts,
-				Offset: 24 * time.Hour,
-			},
-		})
+		stats := timeseries.Root(ctx, owner.ID, site.ID, timeseries.RootOptions{})
 		render.HTML(ctx, w, templates.Stats, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
 			ctx.Title = "Vince Analytics  · " + site.Domain
 			ctx.EmailReport = offer
 			ctx.HasGoals = hasGoals
+			ctx.Stats = &stats
 		})
 		return
 	}
