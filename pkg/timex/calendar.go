@@ -10,7 +10,7 @@ type Duration uint8
 
 const (
 	Unknown Duration = iota
-	TODAY
+	Today
 	ThisWeek
 	ThisMonth
 	ThisYear
@@ -18,13 +18,13 @@ const (
 
 var (
 	_cal_name = map[Duration]string{
-		TODAY:     "Today",
+		Today:     "Today",
 		ThisWeek:  "This week",
 		ThisMonth: "This month",
 		ThisYear:  "This year",
 	}
 	_cal_value = map[string]Duration{
-		"Today":      TODAY,
+		"Today":      Today,
 		"This week":  ThisWeek,
 		"This month": ThisMonth,
 		"This year":  ThisYear,
@@ -48,7 +48,7 @@ func (c Duration) Offset(now core.NowFunc) time.Duration {
 	switch c {
 	case Unknown:
 		return time.Duration(0)
-	case TODAY:
+	case Today:
 		return ts.Sub(beginningOfDay(ts))
 	case ThisWeek:
 		return ts.Sub(beginningOfWeek(ts))
