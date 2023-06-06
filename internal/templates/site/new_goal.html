@@ -8,24 +8,23 @@
         <div class="Box">
             <div class="Box">
                 <tab-container>
-                    <div class="UnderlineNav">
-                        <ul role="tablist" class="UnderlineNav-body list-style-none">
-                            <li>
-                                <button id="custom-events" role="tab" aria-selected="true"
-                                    class="UnderlineNav-item px-3">
-                                    {{Icon "issue-opened" 16 "UnderlineNav-octicon"}}
-                                    <span>Custom Events</span>
-                                </button>
-                            </li>
-                            <li>
-                                <button id="path" role="tab" class="UnderlineNav-item px-3">
-                                    {{Icon "issue-opened" 16 "UnderlineNav-octicon"}}
-                                    <span>Page Views</span>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
                     <div class="Box-body">
+                        <div class="UnderlineNav">
+                            <ul role="tablist" class="UnderlineNav-body list-style-none">
+                                <li>
+                                    <button id="custom-events" role="tab" aria-selected="true"
+                                        class="UnderlineNav-item px-3">
+                                        <span>Custom Events</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="path" role="tab" class="UnderlineNav-item px-3">
+                                        <span>Page Views</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
                         <form action="/{{SafeDomain .Site}}/goals" method="post">
                             <div class="form-group" id="custom_event" role="tabpanel" aria-labelledby="custom-events">
                                 <div class="form-group-header">
@@ -33,7 +32,7 @@
                                 </div>
                                 <div class="form-group-body">
                                     <input type="text" name="event_name" id="event_name" placeholder="SignUp"
-                                        class="form-control input-block border rounded">
+                                        class="form-control input-lg input-block">
                                 </div>
                             </div>
                             <div class="form-group" id="page_view" role="tabpanel" aria-labelledby="path" hidden>
@@ -45,12 +44,11 @@
                                         class="form-control input-block">
                                 </div>
                             </div>
-                            <div class="mx-3 p-2">
+                            <div class="form-actions pt-2">
                                 {{template "_csrf" .}}
-                                <input type="submit" class="btn btn-primary mt-4 btn-block" value="Add goal →">
+                                <button type="submit" class="btn btn-primary btn-large  btn-block">Add goal →</button>
                             </div>
                         </form>
-
                     </div>
                 </tab-container>
 
