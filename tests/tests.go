@@ -33,6 +33,9 @@ func Drive(t *testing.T, script string, f ...func(*exec.Cmd)) string {
 	cmd := exec.Command(binary(), script)
 	cmd.Stderr = &o
 	cmd.Stdout = &o
+	for _, fn := range f {
+		fn(cmd)
+	}
 	err := cmd.Run()
 	if err != nil {
 		t.Fatalf("failed executing driver %s", cmd)
