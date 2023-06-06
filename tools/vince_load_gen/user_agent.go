@@ -13,9 +13,9 @@ import (
 var uaZip []byte
 
 type UserAgent struct {
-	UserAgent   string  `json:"userAgent"`
+	UserAgent   string  `json:"user_gent"`
 	Weight      float64 `json:"weight"`
-	ScreenWidth int     `json:"screenWidth"`
+	ScreenWidth int     `json:"screen_width"`
 }
 
 var userAgents []UserAgent
@@ -41,10 +41,11 @@ func init() {
 	}
 }
 
-func GetUserAgent() UserAgent {
+func GetUserAgent() *UserAgent {
 	r := rand.Float64()
 	idx := sort.Search(len(weightIndex), func(i int) bool {
 		return weightIndex[i] > r
 	})
-	return userAgents[idx]
+	a := userAgents[idx]
+	return &a
 }

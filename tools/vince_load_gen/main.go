@@ -3,88 +3,57 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
-	"net/http/httputil"
 	"os"
 
+	"github.com/dop251/goja"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	o := &Options{}
 	a := &cli.App{
 		Name:  "load_gen",
 		Usage: "generates web analytics events",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:        "domain,d",
-				Value:       "vince.io",
-				Destination: &o.Domain,
-			},
-			&cli.StringFlag{
-				Name:        "host,h,d",
-				Value:       "http://localhost:8080",
-				Destination: &o.Host,
-			},
-			&cli.StringFlag{
-				Name:        "path,h,p",
-				Value:       "/",
-				Destination: &o.Path,
-			},
-			&cli.StringFlag{
-				Name:        "event,h,e",
-				Value:       "pageviews",
-				Destination: &o.Event,
-			},
-			&cli.StringFlag{
-				Name:        "referrer,h,r",
-				Value:       GetReferrer(),
-				Destination: &o.Referrer,
-			},
-			&cli.StringFlag{
-				Name:        "website,h,w",
-				Destination: &o.Website,
-			},
-		},
 		Action: func(ctx *cli.Context) error {
-			a := GetUserAgent()
-			ip := GetIP()
-			b, _ := json.Marshal(Request{
-				EventName:   o.Event,
-				Domain:      o.Domain,
-				Referrer:    o.Referrer,
-				URI:         o.Website + o.Path,
-				ScreenWidth: a.ScreenWidth,
-			})
-			println(string(b))
-			r, _ := http.NewRequest(http.MethodPost, o.Host+"/api/event", bytes.NewReader(b))
-			r.Header.Set("x-forwarded-for", ip)
-			r.Header.Set("user-agent", a.UserAgent)
-			r.Header.Set("content-type", "text/plain")
-			res, err := client.Do(r)
+			vm := goja.New()
+			b, err := os.ReadFile(ctx.Args().First())
 			if err != nil {
 				return err
 			}
-			s, _ := httputil.DumpResponse(res, true)
-			println(string(s))
-			return res.Body.Close()
+			vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
+			vm.Set("println", fmt.Println)
+			create := func(call goja.ConstructorCall) *goja.Object {
+				s := &Session{
+					UserAgent: GetUserAgent(),
+					IP:        GetIP(),
+					Domain:    "vince.io",
+					Host:      "http://localhost:8080",
+					Path:      "/",
+					Event:     "pageviews",
+					Referrer:  GetReferrer(),
+				}
+				a := vm.ToValue(s).(*goja.Object)
+				a.SetPrototype(call.This.Prototype())
+				return a
+			}
+			vm.Set("Session", create)
+			vm.Set("ip", GetIP)
+			vm.Set("referer", GetReferrer)
+			vm.Set("userAgent", GetUserAgent)
+			_, err = vm.RunString(string(b))
+			if err != nil {
+				return err
+			}
+			return nil
 		},
 	}
 	err := a.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-type Options struct {
-	Host     string
-	Website  string
-	Domain   string
-	Path     string
-	Event    string
-	Referrer string
 }
 
 var client = &http.Client{}
@@ -99,4 +68,59 @@ type Request struct {
 
 func GetReferrer() string {
 	return domains[rand.Intn(len(domains))]
+}
+
+type Session struct {
+	UserAgent *UserAgent `json:"user_agent"`
+	IP        string     `json:"ip"`
+	Host      string     `json:"host"`
+	Website   string     `json:"website"`
+	Domain    string     `json:"domain"`
+	Path      string     `json:"path"`
+	Event     string     `json:"event"`
+	Referrer  string     `json:"referer"`
+}
+
+func (s *Session) With(key, value string) *Session {
+	o := *s
+	a := *s.UserAgent
+	o.UserAgent = &a
+	switch key {
+	case "host":
+		o.Host = value
+	case "website":
+		o.Website = value
+	case "domain":
+		o.Domain = value
+	case "path":
+		o.Path = value
+	case "event":
+		o.Event = value
+	}
+	return &o
+}
+
+func (o *Session) RequestBody() *Request {
+	return &Request{
+		EventName:   o.Event,
+		Domain:      o.Domain,
+		Referrer:    o.Referrer,
+		URI:         o.Website + o.Path,
+		ScreenWidth: o.UserAgent.ScreenWidth,
+	}
+}
+
+func (o *Session) Send() {
+	b, _ := json.Marshal(o.RequestBody())
+	r, _ := http.NewRequest(http.MethodPost, o.Host+"/api/event", bytes.NewReader(b))
+	r.Header.Set("x-forwarded-for", o.IP)
+	r.Header.Set("user-agent", o.UserAgent.UserAgent)
+	r.Header.Set("content-type", "text/plain")
+	res, err := client.Do(r)
+	if err != nil {
+		println("> failed sending request", err.Error())
+		return
+	}
+	defer res.Body.Close()
+	println(res.Status)
 }
