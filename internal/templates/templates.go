@@ -15,6 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/octicon"
+	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
 //go:embed layout  plot site stats auth error email
@@ -41,6 +42,9 @@ func base() *template.Template {
 		"SafeDomain": models.SafeDomain,
 		"PeriodLabel": func(ts time.Time) string {
 			return ts.Format("Jan 02, 2006")
+		},
+		"HumanDate": func(ts time.Time) string {
+			return ts.Format(timex.HumanDate)
 		},
 	})
 }
