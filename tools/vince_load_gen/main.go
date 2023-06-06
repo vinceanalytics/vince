@@ -17,6 +17,13 @@ func main() {
 	a := &cli.App{
 		Name:  "load_gen",
 		Usage: "generates web analytics events",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "host",
+				Value:   "http://localhost:8080",
+				EnvVars: []string{"VLG_HOST"},
+			},
+		},
 		Action: func(ctx *cli.Context) error {
 			vm := goja.New()
 			b, err := os.ReadFile(ctx.Args().First())
@@ -30,7 +37,7 @@ func main() {
 					UserAgent: GetUserAgent(),
 					IP:        GetIP(),
 					Domain:    "vince.io",
-					Host:      "http://localhost:8080",
+					Host:      ctx.String("host"),
 					Path:      "/",
 					Event:     "pageviews",
 					Referrer:  GetReferrer(),
