@@ -66,9 +66,17 @@ func SetNow(ctx context.Context, now NowFunc) context.Context {
 	return context.WithValue(ctx, nowKey{}, now)
 }
 
-func Now(ctx context.Context) time.Time {
+func GetNow(ctx context.Context) NowFunc {
 	if v := ctx.Value(nowKey{}); v != nil {
-		return v.(NowFunc)()
+		return v.(NowFunc)
 	}
-	return time.Now()
+	return fallback
+}
+
+func fallback() time.Time {
+	return time.Now().UTC()
+}
+
+func Now(ctx context.Context) time.Time {
+	return GetNow(ctx)()
 }

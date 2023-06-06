@@ -1,14 +1,12 @@
 {{define "_content"}}
 <div class="container-lg">
-    {{$calendar:= Calendar}}
-    {{$today:= index $calendar 0}}
     <div class="Subhead Subhead--spacious text-center settingsDivider">
         <h2 class="Subhead-heading mt-3 mt-sm-0">
-            <span data-target="vince-stats.period_range_from_label">
+            <span>
                 April 26, 2023
             </span>
             <span class="dash">–</span>
-            <span data-target="vince-stats.period_range_to_label">
+            <span>
                 May 3, 2023
             </span>
         </h2>
@@ -17,7 +15,7 @@
                 <summary role="button" class="btn">
                     <i>Period:</i>
                     <span data-target="vince-stats.period_label">
-                        {{$today.Name}}
+                        Today
                     </span>
                     {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
                 </summary>
@@ -29,19 +27,6 @@
                                 Select time ranges
                             </div>
                         </div>
-                        {{range $index,$period:= $calendar}}
-                        <a role="menuitem" data-from="{{$period.From}}" data-to="{{$period.To}}"
-                            data-from-label="{{PeriodLabel $period.Start}}" data-to-label="{{PeriodLabel $period.End}}"
-                            data-name="{{$period.Name}}" data-targets="vince-stats.periods"
-                            data-action="click:vince-stats#changePeriod"
-                            class="dropdown-item select-menu-item select-menu-item-text">
-                            {{$selected:=SelectedPeriod $index}}
-                            {{Icon "check" 16 "select-menu-item-icon" $selected}}
-                            <span class="select-menu-item-text">
-                                {{$period.Name}}
-                            </span>
-                        </a>
-                        {{end}}
                     </details-menu>
                 </div>
             </details>

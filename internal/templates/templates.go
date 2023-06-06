@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/timeseries"
@@ -36,18 +37,10 @@ func base() *template.Template {
 		"Icon":       octicon.IconTemplateFunc,
 		"Avatar":     Avatar,
 		"Logo":       Logo,
-		"Calendar":   CalendarEntries,
 		"GoalName":   models.GoalName,
 		"SafeDomain": models.SafeDomain,
 		"PeriodLabel": func(ts time.Time) string {
 			return ts.Format("Jan 02, 2006")
-		},
-		"ThisYear": thisYearFormat,
-		"SelectedPeriod": func(i int) string {
-			if i != 0 {
-				return "d-none"
-			}
-			return ""
 		},
 	})
 }
@@ -189,6 +182,7 @@ type Context struct {
 	Key           string
 	SharedLink    *models.SharedLink
 	Stats         *timeseries.Stats
+	Now           core.NowFunc
 }
 
 func (t *Context) GreetRecipient() string {
@@ -208,6 +202,7 @@ func New(ctx context.Context, f ...func(c *Context)) *Context {
 		Flash:       flash.Get(ctx),
 		Errors:      make(map[string]string),
 		Form:        make(url.Values),
+		Now:         core.GetNow(ctx),
 	}
 	if len(f) > 0 {
 		f[0](c)
