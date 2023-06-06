@@ -14,6 +14,12 @@ type Config struct {
 	Health
 }
 
+func (c *Config) Ping(name string) *Ping {
+	p := NewPing(name)
+	c.Health = append(c.Health, p)
+	return p
+}
+
 type Component interface {
 	Name() string
 	Check(context.Context) bool

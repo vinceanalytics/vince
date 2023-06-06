@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/caches"
-	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/internal/models"
@@ -14,65 +13,41 @@ import (
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
-func UpdateCacheSites(ctx context.Context, f func(*health.Ping)) func() error {
-	h := health.NewPing("sites_to_domain_cache")
-	f(h)
-	return updateCachedSites(ctx, h.Channel)
-}
-
-func doSiteCacheUpdate(ctx context.Context, fn func(*models.CachedSite)) {
+// SiteCacheUpdate updates cache of active sites.
+func SiteCacheUpdate(ctx context.Context, interval time.Duration) {
 	start := core.Now(ctx)
 	defer system.SiteCacheDuration.Observe(time.Since(start).Seconds())
+	setSite := caches.SetSite(ctx, interval)
 	system.SitesInCache.Set(
-		models.QuerySitesToCache(ctx, fn),
+		models.QuerySitesToCache(ctx, setSite),
 	)
 }
 
-func updateCachedSites(ctx context.Context, ch health.PingChannel) func() error {
+func Periodic(
+	ctx context.Context,
+	ping *health.Ping,
+	interval time.Duration,
+	work func(context.Context, time.Duration)) func() error {
+	tick := time.NewTicker(interval)
+	log.Get().Debug().Str("worker", ping.Key).
+		Str("every", interval.String()).
+		Msg("started")
 	return func() error {
-		log.Get().Debug().Str("worker", "sites_to_domain_cache").
-			Msg("started")
-		interval := config.Get(ctx).Intervals.SiteCache
-		// On startup , fill the cache first before the next interval. Ensures we are
-		// operational  on the get go.
-		setSite := caches.SetSite(ctx, interval)
-		doSiteCacheUpdate(ctx, setSite)
-		tick := time.NewTicker(interval)
 		defer tick.Stop()
 		for {
 			select {
 			case <-ctx.Done():
 				return nil
-			case pong := <-ch:
+			case pong := <-ping.Channel:
 				pong()
 			case <-tick.C:
-				doSiteCacheUpdate(ctx, setSite)
+				work(ctx, interval)
 			}
 		}
 	}
 }
 
-func SaveTimeseries(ctx context.Context, f func(*health.Ping)) func() error {
-	h := health.NewPing("timeseries_writer")
-	f(h)
-	return saveBuffer(ctx, h.Channel)
-}
-
-func saveBuffer(ctx context.Context, ch health.PingChannel) func() error {
-	return func() error {
-		log.Get().Debug().Str("worker", "timeseries_writer").Msg("started")
-		tick := time.NewTicker(config.Get(ctx).Intervals.TSSync)
-		m := timeseries.GetMap(ctx)
-		defer tick.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case pong := <-ch:
-				pong()
-			case <-tick.C:
-				m.Save(ctx)
-			}
-		}
-	}
+// SaveBuffers persists collected Entry Buffers to the timeseries storage.
+func SaveBuffers(ctx context.Context, interval time.Duration) {
+	timeseries.GetMap(ctx).Save(ctx)
 }

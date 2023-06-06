@@ -141,14 +141,13 @@ func (s *SiteRate) Allow(ctx context.Context) (uint64, uint64, bool) {
 func SetSite(ctx context.Context, ttl time.Duration) func(*models.CachedSite) {
 	cache := Site(ctx)
 	return func(cs *models.CachedSite) {
-		var ok atomic.Bool
-		ok.Store(!cs.StatsStartDate.IsZero())
-		cache.SetWithTTL(cs.Domain, &SiteRate{
-			SID:        cs.ID,
-			UID:        cs.UserID,
-			HasStarted: ok,
-			Rate:       rate.NewLimiter(models.CacheRateLimit(cs)),
-		}, 1, ttl)
+		s := &SiteRate{
+			SID:  cs.ID,
+			UID:  cs.UserID,
+			Rate: rate.NewLimiter(models.CacheRateLimit(cs)),
+		}
+		s.HasStarted.Store(cs.StatsStartDate.IsZero())
+		cache.SetWithTTL(cs.Domain, s, 1, ttl)
 	}
 }
 

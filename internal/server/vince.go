@@ -260,17 +260,15 @@ func Run(ctx context.Context, resources ResourceList) error {
 
 	h := health.Get(ctx)
 	var g errgroup.Group
-	addHealth := func(x *health.Ping) {
-		h.Health = append(h.Health, x)
-	}
 	h.Health = append(h.Health, health.Base{
 		Key:       "database",
 		CheckFunc: models.Check,
 	})
 	{
+		o := config.Get(ctx).Intervals
 		// register and start workers
-		g.Go(worker.UpdateCacheSites(ctx, addHealth))
-		g.Go(worker.SaveTimeseries(ctx, addHealth))
+		g.Go(worker.Periodic(ctx, h.Ping("site_cache"), o.SiteCache, worker.SiteCacheUpdate))
+		g.Go(worker.Periodic(ctx, h.Ping("timeseries"), o.TSSync, worker.SaveBuffers))
 	}
 
 	plain := core.GetHTTPServer(ctx)
