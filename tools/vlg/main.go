@@ -11,6 +11,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/pkg/entry"
 )
 
 func main() {
@@ -65,33 +66,38 @@ func main() {
 
 var client = &http.Client{}
 
-type Request struct {
-	EventName   string `json:"n"`
-	URI         string `json:"url"`
-	Referrer    string `json:"r"`
-	Domain      string `json:"d"`
-	ScreenWidth int    `json:"w"`
-}
-
 func GetReferrer() string {
 	return domains[rand.Intn(len(domains))]
 }
 
 type Session struct {
-	UserAgent *UserAgent `json:"user_agent"`
-	IP        string     `json:"ip"`
-	Host      string     `json:"host"`
-	Website   string     `json:"website"`
-	Domain    string     `json:"domain"`
-	Path      string     `json:"path"`
-	Event     string     `json:"event"`
-	Referrer  string     `json:"referer"`
+	// When this is true send will not send http request buf instead will buffer
+	// it, this is useful to generate fixtures to use in testing.
+	Fixture   bool      `json:"fixture"`
+	Requests  Requests  `json:"requests"`
+	UserAgent UserAgent `json:"user_agent"`
+	IP        string    `json:"ip"`
+	Host      string    `json:"host"`
+	Website   string    `json:"website"`
+	Domain    string    `json:"domain"`
+	Path      string    `json:"path"`
+	Event     string    `json:"event"`
+	Referrer  string    `json:"referer"`
+}
+
+type Requests []*entry.Request
+
+func (r Requests) Dump() string {
+	b, _ := json.Marshal(r)
+	return string(b)
 }
 
 func (s *Session) With(key, value string) *Session {
 	o := *s
-	a := *s.UserAgent
-	o.UserAgent = &a
+	if o.Fixture && len(o.Requests) > 0 {
+		o.Requests = make(Requests, len(s.Requests))
+		copy(o.Requests, s.Requests)
+	}
 	switch key {
 	case "host":
 		o.Host = value
@@ -107,18 +113,27 @@ func (s *Session) With(key, value string) *Session {
 	return &o
 }
 
-func (o *Session) RequestBody() *Request {
-	return &Request{
-		EventName:   o.Event,
-		Domain:      o.Domain,
-		Referrer:    o.Referrer,
-		URI:         o.Website + o.Path,
-		ScreenWidth: o.UserAgent.ScreenWidth,
+func (o *Session) RequestBody() *entry.Request {
+	r := entry.NewRequest()
+	r.EventName = o.Event
+	r.Domain = o.Domain
+	r.Referrer = o.Referrer
+	r.URI = o.Website + o.Path
+	r.ScreenWidth = o.UserAgent.ScreenWidth
+	if o.Fixture {
+		r.IP = o.IP
+		r.UserAgent = o.UserAgent.UserAgent
 	}
+	return r
 }
 
-func (o *Session) Send() {
-	b, _ := json.Marshal(o.RequestBody())
+func (o *Session) Send() *Session {
+	rb := o.RequestBody()
+	if o.Fixture {
+		o.Requests = append(o.Requests, rb)
+		return o
+	}
+	b, _ := json.Marshal(rb)
 	r, _ := http.NewRequest(http.MethodPost, o.Host+"/api/event", bytes.NewReader(b))
 	r.Header.Set("x-forwarded-for", o.IP)
 	r.Header.Set("user-agent", o.UserAgent.UserAgent)
@@ -126,8 +141,9 @@ func (o *Session) Send() {
 	res, err := client.Do(r)
 	if err != nil {
 		println("> failed sending request", err.Error())
-		return
+		return o
 	}
 	defer res.Body.Close()
 	println(res.Status)
+	return o
 }

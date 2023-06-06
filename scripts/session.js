@@ -1,3 +1,4 @@
 const session = new Session();
 
-session.send();
+session.fixture = true;
+println(session.send().requests.dump());

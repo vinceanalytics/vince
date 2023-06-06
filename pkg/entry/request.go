@@ -21,7 +21,12 @@ type Request struct {
 	Domain      string `json:"d"`
 	ScreenWidth int    `json:"w"`
 	HashMode    bool   `json:"h"`
-	b           bytes.Buffer
+
+	// Used in tests
+	IP        string `json:"ip,omitempty"`
+	UserAgent string `json:"ua,omitempty"`
+
+	b bytes.Buffer
 }
 
 // Parse opportunistic parses request body to r object. This is crucial method
