@@ -1,18 +1,13 @@
 package api
 
 import (
-	"bytes"
-	"errors"
-	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/vinceanalytics/vince/internal/gate"
 	"github.com/vinceanalytics/vince/internal/geoip"
 	"github.com/vinceanalytics/vince/internal/referrer"
@@ -24,51 +19,15 @@ import (
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
-
-var ErrBadJSON = errors.New("api: invalid json ")
-
-// Request is sent by the vince script embedded in client websites. For faster
-// performance we use simd if available
-type Request struct {
-	EventName   string `json:"n"`
-	URI         string `json:"url"`
-	Referrer    string `json:"r"`
-	Domain      string `json:"d"`
-	ScreenWidth int    `json:"w"`
-	HashMode    bool   `json:"h"`
-}
-
-// Parse opportunistic parses request body to r object. This is crucial method
-// any gains here translates to smooth  events ingestion pipeline.
-//
-// A hard size limitation of 32kb is imposed. This is arbitrary value, any change
-// to it must be be supported with statistics.
-func (r *Request) Parse(body io.Reader) error {
-	b := bufPool.Get().(*bytes.Buffer)
-	defer func() {
-		b.Reset()
-		bufPool.Put(b)
-	}()
-	// My mom used to say, don't trust the internet. Never stream decode payloads
-	// directly from strangers. We copy just enough then we  process.
-	b.ReadFrom(io.LimitReader(body, 32<<10))
-	return json.Unmarshal(b.Bytes(), r)
-}
-
-var bufPool = &sync.Pool{
-	New: func() any {
-		return new(bytes.Buffer)
-	},
-}
-
 // Events accepts events payloads from vince client script.
 func Events(w http.ResponseWriter, r *http.Request) {
 	system.DataPoint.WithLabelValues("received").Inc()
 
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	xlg := log.Get()
-	var req Request
+	req := entry.NewRequest()
+	defer req.Release()
+
 	err := req.Parse(r.Body)
 	if err != nil {
 		system.DataPointRejected.Inc()
