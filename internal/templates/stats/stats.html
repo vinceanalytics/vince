@@ -96,66 +96,57 @@
         <div class="col-6 pr-2">
             <div class="Box">
                 <tab-container>
-                    <div class="Box-header p-2">
-                        <ul role="tablist" class="tabnav-tabs list-style-none">
+                    <div class="UnderlineNav px-3">
+                        <ul role="tablist" class="UnderlineNav-body list-style-none">
                             <li role="presentation">
                                 <button type="button" id="pages" role="tab" aria-selected="true"
-                                    class="tabnav-tab">Pages</button>
+                                    class="UnderlineNav-item">Pages</button>
                             </li>
                             <li role="presentation">
-                                <button type="button" id="entryPages" role="tab" tabindex="-1" class="tabnav-tab">
+                                <button type="button" id="entryPages" role="tab" tabindex="-1"
+                                    class="UnderlineNav-item">
                                     Entry Pages</button>
                             </li>
                             <li role="presentation">
-                                <button type="button" id="exitPages" role="tab" tabindex="-1" class="tabnav-tab">
+                                <button type="button" id="exitPages" role="tab" tabindex="-1" class="UnderlineNav-item">
                                     Exit Pages</button>
                             </li>
                         </ul>
                     </div>
-                    <div role="tabpanel" aria-labelledby="pages">
-                        <div class="Box-row">
-                            <a href="#" class="Box-row-link">/</a>
+                    <div class="Box-body">
+                        <div role="tabpanel" aria-labelledby="pages">
+                            Pages
+                        </div>
+                        <div role="tabpanel" aria-labelledby="entryPages" hidden>
+                            Entry Pages
+                        </div>
+                        <div role="tabpanel" aria-labelledby="exitPages" hidden>
+                            Exit Pages
                         </div>
                     </div>
-                    <div role="tabpanel" aria-labelledby="entryPages" hidden>
-                        <div class="Box-row">
-                            <div class="d-flex">
-                                <div style="width: 80%;">
-                                    <a href="#" class="Box-row-link width-full">/</a>
-                                </div>
-                                <div style="width: 20%;" class="text-center">
-                                    914
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div role="tabpanel" aria-labelledby="exitPages" hidden>
-                        <div class="Box-row">
-                            <a href="#" class="Box-row-link">/</a>
-                        </div>
-                    </div>
+
                 </tab-container>
             </div>
         </div>
         <div class="col-6">
             <div class="Box">
                 <tab-container>
-                    <div class="Box-header p-2">
-                        <ul role="tablist" class="tabnav-tabs list-style-none">
+                    <div class="UnderlineNav px-3">
+                        <ul role="tablist" class="UnderlineNav-body list-style-none">
                             <li role="presentation">
                                 <button type="button" id="referrers" role="tab" aria-selected="true"
-                                    class="tabnav-tab">Referrers</button>
+                                    class="UnderlineNav-item">Referrers</button>
                             </li>
                             <li role="presentation">
-                                <button type="button" id="sources" role="tab" tabindex="-1" class="tabnav-tab">
+                                <button type="button" id="sources" role="tab" tabindex="-1" class="UnderlineNav-item">
                                     Sources</button>
                             </li>
                             <li role="presentation">
-                                <button type="button" id="media" role="tab" tabindex="-1" class="tabnav-tab">
+                                <button type="button" id="media" role="tab" tabindex="-1" class="UnderlineNav-item">
                                     Media</button>
                             </li>
                             <li role="presentation">
-                                <button type="button" id="campaigns" role="tab" tabindex="-1" class="tabnav-tab">
+                                <button type="button" id="campaigns" role="tab" tabindex="-1" class="UnderlineNav-item">
                                     Campaigns</button>
                             </li>
                         </ul>
