@@ -12,13 +12,13 @@ import (
 //go:embed user_agents.json.gz
 var uaZip []byte
 
-type UserAgent struct {
+type UA struct {
 	UserAgent   string
 	Weight      float64
 	ScreenWidth int
 }
 
-var userAgents []UserAgent
+var agents []UA
 var weightIndex []float64
 
 func init() {
@@ -26,25 +26,25 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	err = json.NewDecoder(r).Decode(&userAgents)
+	err = json.NewDecoder(r).Decode(&agents)
 	if err != nil {
 		panic(err)
 	}
 	var totalWeight float64
-	for i := 0; i < len(userAgents); i++ {
-		totalWeight += userAgents[i].Weight
+	for i := 0; i < len(agents); i++ {
+		totalWeight += agents[i].Weight
 	}
 	var sum float64
-	for i := 0; i < len(userAgents); i++ {
-		sum += userAgents[i].Weight / totalWeight
+	for i := 0; i < len(agents); i++ {
+		sum += agents[i].Weight / totalWeight
 		weightIndex = append(weightIndex, sum)
 	}
 }
 
-func GetUserAgent() UserAgent {
+func ua() UA {
 	r := rand.Float64()
 	idx := sort.Search(len(weightIndex), func(i int) bool {
 		return weightIndex[i] > r
 	})
-	return userAgents[idx]
+	return agents[idx]
 }

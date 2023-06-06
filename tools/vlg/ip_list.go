@@ -16,7 +16,7 @@ var ipListFile []byte
 var ipList []string
 var ipOnce sync.Once
 
-func GetIP() string {
+func ip() string {
 
 	ipOnce.Do(func() {
 		r, err := zstd.NewReader(bytes.NewReader(ipListFile))

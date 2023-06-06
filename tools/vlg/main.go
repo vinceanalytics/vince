@@ -16,7 +16,7 @@ import (
 
 func main() {
 	a := &cli.App{
-		Name:  "load_gen",
+		Name:  "vlg",
 		Usage: "generates web analytics events",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -35,22 +35,22 @@ func main() {
 			vm.Set("println", fmt.Println)
 			create := func(call goja.ConstructorCall) *goja.Object {
 				s := &Session{
-					UserAgent: GetUserAgent(),
-					IP:        GetIP(),
+					UserAgent: ua(),
+					IP:        ip(),
 					Domain:    "vince.io",
 					Host:      ctx.String("host"),
 					Path:      "/",
 					Event:     "pageviews",
-					Referrer:  GetReferrer(),
+					Referrer:  referrer(),
 				}
 				a := vm.ToValue(s).(*goja.Object)
 				a.SetPrototype(call.This.Prototype())
 				return a
 			}
 			vm.Set("Session", create)
-			vm.Set("ip", GetIP)
-			vm.Set("referer", GetReferrer)
-			vm.Set("userAgent", GetUserAgent)
+			vm.Set("ip", ip)
+			vm.Set("referer", referrer)
+			vm.Set("userAgent", ua)
 			_, err = vm.RunString(string(b))
 			if err != nil {
 				return err
@@ -66,23 +66,23 @@ func main() {
 
 var client = &http.Client{}
 
-func GetReferrer() string {
+func referrer() string {
 	return domains[rand.Intn(len(domains))]
 }
 
 type Session struct {
 	// When this is true send will not send http request buf instead will buffer
 	// it, this is useful to generate fixtures to use in testing.
-	Fixture   bool      `json:"fixture"`
-	Requests  Requests  `json:"requests"`
-	UserAgent UserAgent `json:"user_agent"`
-	IP        string    `json:"ip"`
-	Host      string    `json:"host"`
-	Website   string    `json:"website"`
-	Domain    string    `json:"domain"`
-	Path      string    `json:"path"`
-	Event     string    `json:"event"`
-	Referrer  string    `json:"referer"`
+	Fixture   bool     `json:"fixture"`
+	Requests  Requests `json:"requests"`
+	UserAgent UA       `json:"user_agent"`
+	IP        string   `json:"ip"`
+	Host      string   `json:"host"`
+	Website   string   `json:"website"`
+	Domain    string   `json:"domain"`
+	Path      string   `json:"path"`
+	Event     string   `json:"event"`
+	Referrer  string   `json:"referer"`
 }
 
 type Requests []*entry.Request
