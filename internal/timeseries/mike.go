@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
@@ -24,7 +25,7 @@ type Sum struct {
 }
 
 func DropSite(ctx context.Context, uid, sid uint64) {
-	start := time.Now()
+	start := core.Now(ctx)
 	defer system.DropSiteDuration.Observe(time.Since(start).Seconds())
 
 	db := GetMike(ctx)
@@ -43,7 +44,7 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 }
 
 func Save(ctx context.Context, b *Buffer) {
-	start := time.Now().UTC().Truncate(time.Millisecond)
+	start := core.Now(ctx).UTC().Truncate(time.Millisecond)
 	startMs := uint64(start.UnixMilli())
 
 	db := GetMike(ctx)

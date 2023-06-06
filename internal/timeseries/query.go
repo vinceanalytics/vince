@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
@@ -181,7 +182,7 @@ type MetricResult map[string]OutValue
 type OutValue map[string][]float64
 
 func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
-	currentTime := time.Now().UTC()
+	currentTime := core.Now(ctx).UTC()
 	startTS := currentTime.Truncate(time.Millisecond)
 	if !r.Start.IsZero() {
 		startTS = r.Start.UTC().Truncate(time.Millisecond)

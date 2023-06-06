@@ -6,6 +6,7 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/system"
@@ -20,7 +21,7 @@ func UpdateCacheSites(ctx context.Context, f func(*health.Ping)) func() error {
 }
 
 func doSiteCacheUpdate(ctx context.Context, fn func(*models.CachedSite)) {
-	start := time.Now()
+	start := core.Now(ctx)
 	defer system.SiteCacheDuration.Observe(time.Since(start).Seconds())
 	system.SitesInCache.Set(
 		models.QuerySitesToCache(ctx, fn),

@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/gate"
 	"github.com/vinceanalytics/vince/internal/geoip"
 	"github.com/vinceanalytics/vince/internal/referrer"
@@ -125,10 +125,11 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	case req.ScreenWidth >= 1440:
 		screenSize = "desktop"
 	}
-	var dropped int
-	ts := time.Now()
-	unix := ts.Unix()
 	ctx := r.Context()
+	var dropped int
+	ts := core.Now(ctx)
+	unix := ts.Unix()
+
 	uid := userid.Get(ctx)
 	for _, domain := range domains {
 		b, pass := gate.Check(r.Context(), domain)

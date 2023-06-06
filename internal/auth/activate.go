@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
@@ -33,7 +34,7 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	for _, codes := range usr.EmailVerificationCodes {
 		if codes.Code == uint64(code) {
 			// we found a match
-			if codes.UpdatedAt.Before(time.Now().Add(-4 * time.Hour)) {
+			if codes.UpdatedAt.Before(core.Now(ctx).Add(-4 * time.Hour)) {
 				// verification code has expired
 				r = sessions.SaveCsrf(w, r)
 				render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {

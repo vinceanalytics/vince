@@ -4,12 +4,12 @@ import (
 	"context"
 	"html/template"
 	"io"
-	"time"
 
 	"github.com/emersion/go-message/mail"
 	"github.com/emersion/go-sasl"
 	"github.com/emersion/go-smtp"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/templates"
 )
@@ -18,7 +18,7 @@ func Compose(ctx context.Context,
 	out io.Writer, tpl *template.Template,
 	from, to *mail.Address, subject string, f ...func(*templates.Context)) error {
 	var h mail.Header
-	h.SetDate(time.Now())
+	h.SetDate(core.Now(ctx))
 	h.SetAddressList("From", []*mail.Address{from})
 	h.SetAddressList("To", []*mail.Address{to})
 	h.SetSubject(subject)

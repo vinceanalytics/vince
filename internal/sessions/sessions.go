@@ -19,6 +19,7 @@ import (
 	"github.com/dchest/captcha"
 	"github.com/lestrrat-go/dataurl"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/pkg/log"
@@ -138,7 +139,7 @@ func (s *SessionContext) Save(ctx context.Context, w http.ResponseWriter) {
 		Path:    "/",
 		Name:    string(s.s),
 		Value:   value,
-		Expires: time.Now().Add(time.Duration(MaxAge) * time.Second),
+		Expires: core.Now(ctx).Add(time.Duration(MaxAge) * time.Second),
 	}
 	http.SetCookie(w, cookie)
 }

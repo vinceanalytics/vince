@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"net/http"
+	"time"
 )
 
 type httpListenerKey struct{}
@@ -54,4 +55,20 @@ func GetHTTPSServer(ctx context.Context) *http.Server {
 		return v.(*http.Server)
 	}
 	return nil
+}
+
+// NowFunc a functions that returns the current time.
+type NowFunc func() time.Time
+
+type nowKey struct{}
+
+func SetNow(ctx context.Context, now NowFunc) context.Context {
+	return context.WithValue(ctx, nowKey{}, now)
+}
+
+func Now(ctx context.Context) time.Time {
+	if v := ctx.Value(nowKey{}); v != nil {
+		return v.(NowFunc)()
+	}
+	return time.Now()
 }

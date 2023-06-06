@@ -10,6 +10,7 @@ import (
 
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/sessions"
@@ -72,7 +73,7 @@ func Track() Plug {
 func SessionTimeout(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
-		now := time.Now()
+		now := core.Now(r.Context())
 		switch {
 		case session.Data.CurrentUserID != 0 && !session.Data.TimeoutAt.IsZero() && now.After(session.Data.TimeoutAt):
 			session.Data = sessions.Data{}
@@ -103,7 +104,7 @@ func LastSeen(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
 		usr := models.GetUser(r.Context())
-		now := time.Now()
+		now := core.Now(r.Context())
 		switch {
 		case usr != nil && !session.Data.LastSeen.IsZero() && now.Add(-4*time.Hour).After(session.Data.LastSeen):
 			usr.LastSeen = now

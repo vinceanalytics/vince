@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/dgraph-io/ristretto"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/pkg/entry"
-	"github.com/vinceanalytics/vince/pkg/timex"
 	"golang.org/x/time/rate"
 )
 
@@ -131,7 +131,7 @@ func (s *SiteRate) Allow(ctx context.Context) (uint64, uint64, bool) {
 		// we have allowed this event tp be processed. We need to update site with
 		// the date which we accepted the first event
 		if !s.HasStarted.Load() {
-			models.UpdateSiteStartDate(ctx, s.SID, timex.Today())
+			models.UpdateSiteStartDate(ctx, s.SID, core.Now(ctx))
 			s.HasStarted.Store(true)
 		}
 	}

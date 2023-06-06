@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/schema"
@@ -257,7 +258,7 @@ func UpdateAPIKeyUse(ctx context.Context, aid uint64) {
 	// aid is string because we use value we set in jwt token claims. No need to do
 	// extra decoding here.If its invalid value then an error will show up on logs
 	err := Get(ctx).Model(&APIKey{}).Where("id = ?", aid).
-		Update("used_at", time.Now()).Error
+		Update("used_at", core.Now(ctx)).Error
 	if err != nil {
 		LOG(ctx, err, "failed to update used at time")
 	}
