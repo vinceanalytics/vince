@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
 	"strings"
 	"sync"
@@ -37,4 +38,11 @@ func Drive(t *testing.T, script string, f ...func(*exec.Cmd)) string {
 		t.Fatalf("failed executing driver %s", cmd)
 	}
 	return strings.TrimSpace(o.String())
+}
+
+// Host is like Drive but customize the target host for the driver
+func Host(t *testing.T, host, script string) string {
+	return Drive(t, script, func(c *exec.Cmd) {
+		c.Env = append(c.Env, fmt.Sprintf("VLG_HOST=%s", host))
+	})
 }
