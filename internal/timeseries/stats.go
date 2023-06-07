@@ -57,7 +57,7 @@ type RootOptions struct {
 	Window time.Duration `json:"window,omitempty"`
 	Offset time.Duration `json:"offset,omitempty"`
 	// When set to true and Prop is Base, other props will not be queried. This is
-	// useful to query only base aggregates aggregates. Like the one used on sites
+	// useful to query only base aggregates . Like the one used on sites
 	// index.
 	NoProps bool `json:"noProps,omitempty"`
 }
