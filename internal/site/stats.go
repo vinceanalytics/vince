@@ -3,11 +3,13 @@ package site
 import (
 	"net/http"
 
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/internal/timeseries"
+	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
 func Stats(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +31,21 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 			offer = session.Data.EmailReport[site.Domain]
 		}
 		hasGoals := models.SiteHasGoals(ctx, site.Domain)
-		stats := timeseries.Root(ctx, owner.ID, site.ID, timeseries.RootOptions{})
+		q := r.URL.Query()
+		period := timex.Parse(q.Get("o"))
+		key := q.Get("k")
+		prop := timeseries.ParseProperty(q.Get("p"))
+		start := core.Now(ctx)
+		window := period.Window(start)
+		stats := timeseries.Root(ctx, owner.ID, site.ID, timeseries.RootOptions{
+			Start:  start,
+			Window: window,
+			Key:    key,
+		})
+		stats.Period = period
+		stats.Domain = site.Domain
+		stats.Key = key
+		stats.Prop = prop
 		render.HTML(ctx, w, templates.Stats, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
 			ctx.Title = "Vince Analytics  · " + site.Domain

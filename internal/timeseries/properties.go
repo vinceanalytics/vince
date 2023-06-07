@@ -84,6 +84,14 @@ func (p Property) String() string {
 	return _prop_name[uint8(p)]
 }
 
+func ParseProperty(k string) Property {
+	p, ok := _prop_value[k]
+	if !ok {
+		return Base
+	}
+	return Property(p)
+}
+
 func (p Property) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.String())
 }

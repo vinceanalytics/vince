@@ -2,8 +2,6 @@ package timex
 
 import (
 	"time"
-
-	"github.com/vinceanalytics/vince/internal/core"
 )
 
 type Duration uint8
@@ -34,7 +32,7 @@ var (
 func Parse(s string) Duration {
 	v, ok := _cal_value[s]
 	if !ok {
-		return Unknown
+		return Today
 	}
 	return v
 }
@@ -43,12 +41,9 @@ func (c Duration) String() string {
 	return _cal_name[c]
 }
 
-func (c Duration) Offset(now core.NowFunc) time.Duration {
-	ts := now()
+func (c Duration) Window(ts time.Time) time.Duration {
 	switch c {
-	case Unknown:
-		return time.Duration(0)
-	case Today:
+	case Unknown, Today:
 		return ts.Sub(beginningOfDay(ts))
 	case ThisWeek:
 		return ts.Sub(beginningOfWeek(ts))

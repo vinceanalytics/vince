@@ -182,10 +182,10 @@ type MetricResult map[string]OutValue
 type OutValue map[string][]float64
 
 func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
-	currentTime := core.Now(ctx).UTC()
+	currentTime := core.Now(ctx)
 	startTS := currentTime.Truncate(time.Millisecond)
 	if !r.Start.IsZero() {
-		startTS = r.Start.UTC().Truncate(time.Millisecond)
+		startTS = r.Start.Truncate(time.Millisecond)
 	}
 
 	step := defaultStep

@@ -1,5 +1,6 @@
 {{define "_content"}}
 <div class="container-lg">
+    {{$stats:=.Stats}}
     <div class="Subhead Subhead--spacious text-center settingsDivider">
         <h2 class="Subhead-heading mt-3 mt-sm-0">
             <span>
@@ -11,11 +12,11 @@
             </span>
         </h2>
         <div class="Subhead-actions mt-3 mt-sm-0">
-            <details data-view-component="true" class="dropdown details-overlay details-reset d-inline-block">
+            <details class="dropdown details-overlay details-reset d-inline-block">
                 <summary role="button" class="btn">
                     <i>Period:</i>
-                    <span data-target="vince-stats.period_label">
-                        Today
+                    <span data-menu-button>
+                        {{.Stats.Period}}
                     </span>
                     {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
                 </summary>
@@ -27,6 +28,16 @@
                                 Select time ranges
                             </div>
                         </div>
+                        {{range Periods}}
+                        <a role="menuitem" class="dropdown-item select-menu-item select-menu-item-text"
+                            href="{{$stats.QueryPeriod .}}">
+                            {{$selected := SelectedPeriod $stats.Period .}}
+                            {{Icon "check" 16 "select-menu-item-icon" $selected}}
+                            <span class="select-menu-item-text">
+                                {{.}}
+                            </span>
+                        </a>
+                        {{end}}
                     </details-menu>
                 </div>
             </details>

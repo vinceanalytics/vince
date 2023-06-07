@@ -40,11 +40,22 @@ func base() *template.Template {
 		"Logo":       Logo,
 		"GoalName":   models.GoalName,
 		"SafeDomain": models.SafeDomain,
-		"PeriodLabel": func(ts time.Time) string {
-			return ts.Format("Jan 02, 2006")
-		},
 		"HumanDate": func(ts time.Time) string {
 			return ts.Format(timex.HumanDate)
+		},
+		"Periods": func() []timex.Duration {
+			return []timex.Duration{
+				timex.Today,
+				timex.ThisWeek,
+				timex.ThisMonth,
+				timex.ThisYear,
+			}
+		},
+		"SelectedPeriod": func(a, b timex.Duration) string {
+			if a != b {
+				return "d-none"
+			}
+			return ""
 		},
 	})
 }

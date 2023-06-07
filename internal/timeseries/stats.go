@@ -2,17 +2,33 @@ package timeseries
 
 import (
 	"context"
+	"fmt"
 	"math"
+	"net/url"
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
 type Stats struct {
 	Start, End time.Time
+	Period     timex.Duration
+	Domain     string
+	Key        string
+	Prop       Property
 	Timestamps []int64
 	Aggregate  Aggregate
 	Timeseries PropertiesResult
+}
+
+func (s *Stats) QueryPeriod(period timex.Duration) string {
+	q := make(url.Values)
+	q.Set("o", period.String())
+	q.Set("k", s.Key)
+	q.Set("p", s.Prop.String())
+	return fmt.Sprintf("/%s/stats?%s", url.PathEscape(s.Domain), q.Encode())
 }
 
 type Aggregate map[string]AggregateMetricsStatValue
@@ -66,7 +82,7 @@ func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 	if opts.Prop == Base {
 		opts.Key = BaseKey
 	}
-	if opts.Offset == 0 {
+	if opts.Window == 0 {
 		opts.Offset = time.Hour * 24
 	}
 	q := Query(ctx, QueryRequest{
