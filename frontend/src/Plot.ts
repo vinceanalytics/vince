@@ -28,6 +28,7 @@ class PlotStatElement extends HTMLElement {
                     fill: "#ffe0d8"
                 },
             ],
+            ms: 1
         }
     }
 
