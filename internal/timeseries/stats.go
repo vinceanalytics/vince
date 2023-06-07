@@ -2,11 +2,13 @@ package timeseries
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"net/url"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/vinceanalytics/vince/pkg/timex"
@@ -29,6 +31,27 @@ func (s *Stats) QueryPeriod(period timex.Duration) string {
 	q.Set("k", s.Key)
 	q.Set("p", s.Prop.String())
 	return fmt.Sprintf("/%s/stats?%s", url.PathEscape(s.Domain), q.Encode())
+}
+
+func (s *Stats) PlotTime() (string, error) {
+	b, err := json.Marshal(s.Timestamps)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func (s *Stats) PlotValue(metric string) (string, error) {
+	metric = strings.TrimSpace(metric)
+	o := s.Timeseries[s.Prop.String()][metric][s.Key]
+	if len(o) == 0 {
+		o = make([]float64, len(s.Timeseries))
+	}
+	b, err := json.Marshal(o)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 type Aggregate map[string]AggregateMetricsStatValue

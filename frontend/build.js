@@ -26,6 +26,8 @@ copyFileSync("node_modules/@primer/css/dist/primer.css", "../assets/css/primer.c
 copyFileSync("node_modules/@primer/css/dist/primer.css.map", "../assets/css/primer.css.map")
 copyFileSync("node_modules/@primer/view-components/app/assets/styles/primer_view_components.css", "../assets/css/primer_view_components.css")
 copyFileSync("node_modules/@primer/view-components/app/assets/styles/primer_view_components.css.map", "../assets/css/primer_view_components.css.map")
+copyFileSync("node_modules/uplot/dist/uPlot.min.css", "../assets/css/uPlot.min.css")
+
 
 
 //copy js

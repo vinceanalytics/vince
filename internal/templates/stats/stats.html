@@ -43,7 +43,7 @@
             </details>
         </div>
     </div>
-    <div class="Box mb-2 border-0">
+    <div class="Box mb-3 border-0">
         <tab-container>
             <div class="UnderlineNav px-3">
                 <ul role="tablist" class="UnderlineNav-body list-style-none">
@@ -79,21 +79,32 @@
                     </li>
                 </ul>
             </div>
-            <div class="Box-body border-0" style="height: 260px;">
+            <div class="Box-body border-0 p-3">
                 <div id="visitor" role="tabpanel" aria-labelledby="visitors">
-                    Visitors
+                    <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts="{{$stats.PlotTime}}"
+                        data-value="{{$stats.PlotValue " visitors"}}">
+                    </plot-stat>
                 </div>
+
                 <div id="view" role="tabpanel" aria-labelledby="views" hidden>
-                    Views
+                    <plot-stat data-height="450" data-width="980" data-label="views" data-ts="{{$stats.PlotTime}}"
+                        data-value="{{$stats.PlotValue " views"}}">
+                    </plot-stat>
                 </div>
                 <div id="visit" role="tabpanel" aria-labelledby="visits" hidden>
-                    Visits
+                    <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts="{{$stats.PlotTime}}"
+                        data-value="{{$stats.PlotValue " visits"}}">
+                    </plot-stat>
                 </div>
                 <div id="bounceRate" role="tabpanel" aria-labelledby="bounceRates" hidden>
-                    Bounce Rates
+                    <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts="{{$stats.PlotTime}}"
+                        data-value="{{$stats.PlotValue " bounceRates"}}">
+                    </plot-stat>
                 </div>
                 <div id="visitDuration" role="tabpanel" aria-labelledby="visitDurations" hidden>
-                    Visit Duration
+                    <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts="{{$stats.PlotTime}}"
+                        data-value="{{$stats.PlotValue " visitDuration"}}">
+                    </plot-stat>
                 </div>
             </div>
         </tab-container>

@@ -1,7 +1,9 @@
 package site
 
 import (
+	"encoding/json"
 	"net/http"
+	"os"
 
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
@@ -53,6 +55,8 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 			ctx.HasGoals = hasGoals
 			ctx.Stats = &stats
 		})
+		b, _ := json.Marshal(stats)
+		os.WriteFile("o.json", b, 0600)
 		return
 	}
 	render.ERROR(ctx, w, http.StatusUnauthorized)
