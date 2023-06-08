@@ -1,12 +1,14 @@
 package config
 
 import (
+	"encoding/base64"
 	"flag"
 	"net"
 	"time"
 
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/secrets"
 )
 
 type Options struct {
@@ -494,6 +496,11 @@ func Test(fn ...func(*Options)) *Options {
 	o.Listen = randomAddress()
 	o.TLS.Address = randomAddress()
 	o.Mailer.SMTP.Address = randomAddress()
+
+	// setup secrets
+	o.Bootstrap.Key = base64.StdEncoding.EncodeToString(secrets.APIKey())
+	o.Secrets.Secret = base64.StdEncoding.EncodeToString(secrets.ED25519())
+	o.Secrets.Age = base64.StdEncoding.EncodeToString(secrets.AGE())
 	for _, f := range fn {
 		f(o)
 	}
