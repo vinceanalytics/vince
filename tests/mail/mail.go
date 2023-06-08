@@ -19,7 +19,7 @@ type Backend struct {
 	OnMessage func(*Message)
 }
 
-func New(addr string) *Backend {
+func New(addr string, f ...func(*smtp.Server)) *Backend {
 	be := &Backend{Msg: make(map[string]Message)}
 	be.Server = smtp.NewServer(be)
 	be.Addr = addr
@@ -29,6 +29,9 @@ func New(addr string) *Backend {
 	be.MaxMessageBytes = 1024 * 1024
 	be.MaxRecipients = 50
 	be.AllowInsecureAuth = true
+	for _, fn := range f {
+		fn(be.Server)
+	}
 	return be
 }
 
