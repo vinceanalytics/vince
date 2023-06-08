@@ -18,11 +18,13 @@ import (
 )
 
 func main() {
-	root := tools.RootVince()
-	mannPage(root, vince.App())
-	mannPage(root, v8s.App())
-	completion(root)
-	guides(root)
+	if os.Getenv("DOCS") != "" {
+		root := tools.RootVince()
+		mannPage(root, vince.App())
+		mannPage(root, v8s.App())
+		completion(root)
+		guides(root)
+	}
 }
 
 func completion(root string) {

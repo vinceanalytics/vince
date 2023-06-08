@@ -1,17 +1,26 @@
-// Package release executes a go script that prepares a vince release. Releases
-// follow semver versioning. Use environment variable VERSION to control which
-// version to release.
+// Package release executes a go scripts that prepares a vince release.
+// When preparing release you can follow these step
 //
-//	VERSION = major | minor | patch
+//	DOCS=true go generate ./release
 //
-// This dictate which component for semver to increment. Say, the latest tag is
-// v0.0.0 setting VERSION=major will increment major component yielding v1.0.0.
+// Generates any automatic documentation, such as man pages and completions
+// which are packaged with the release.
 //
-// PRERELEASE env var is used to set prerelease/build part of the version.
+// Commit  any changes on the files from this step before going to the next one.
 //
-// To execute this run this on the root of the project.
+//	VERSION=(major |minor|patch) go generate ./release
 //
-//	VERSION=patch go generate ./release/prepare
+// Creates annotated tag and push to remote.
+//
+//	BUILD=true go generate ./release
+//
+// Builds the binaries/docker images/ apk packages/brew formula and upload them
+// to github.
+//
+//	SITE=true go generate ./release
+//
+// Generates documentation ,blog and helm repository. The generated static site
+// is pushed to github that deploy the site on https://vinceanalytics.github.io
 package release
 
 //go:generate go run gen/docs/main.go
