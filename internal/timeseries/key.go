@@ -56,6 +56,20 @@ func DebugKey(id []byte) string {
 	return o
 }
 
+func DebugPrefix(id []byte) string {
+	uid := binary.BigEndian.Uint64(id[userOffset:])
+	sid := binary.BigEndian.Uint64(id[userOffset:])
+	metric := Metric(id[metricOffset])
+	prop := Property(id[propOffset])
+	key := id[keyOffset:]
+	g := smallBufferpool.Get().(*bytes.Buffer)
+	fmt.Fprintf(g, "/%d/%d/%s/%s/%s", uid, sid, metric, prop, string(key))
+	o := g.String()
+	g.Reset()
+	smallBufferpool.Put(g)
+	return o
+}
+
 func setTs(b []byte, ms uint64) {
 	b[0] = byte(ms >> 40)
 	b[1] = byte(ms >> 32)
