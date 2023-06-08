@@ -3,7 +3,9 @@ package timeseries
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"sync"
+	"time"
 )
 
 const (
@@ -39,6 +41,21 @@ func (id *Key) uid(u, s uint64) *Key {
 	return id
 }
 
+func DebugKey(id []byte) string {
+	uid := binary.BigEndian.Uint64(id[userOffset:])
+	sid := binary.BigEndian.Uint64(id[userOffset:])
+	metric := Metric(id[metricOffset])
+	prop := Property(id[propOffset])
+	key := id[keyOffset : len(id)-6]
+	ts := Time(id[len(id)-6:])
+	g := smallBufferpool.Get().(*bytes.Buffer)
+	fmt.Fprintf(g, "/%s/%d/%d/%s/%s/%s", ts.Format(time.DateTime), uid, sid, metric, prop, string(key))
+	o := g.String()
+	g.Reset()
+	smallBufferpool.Put(g)
+	return o
+}
+
 func setTs(b []byte, ms uint64) {
 	b[0] = byte(ms >> 40)
 	b[1] = byte(ms >> 32)
@@ -48,10 +65,13 @@ func setTs(b []byte, ms uint64) {
 	b[5] = byte(ms)
 }
 
-func Time(id []byte) uint64 {
-	return uint64(id[5]) | uint64(id[4])<<8 |
+func Time(id []byte) time.Time {
+	ms := uint64(id[5]) | uint64(id[4])<<8 |
 		uint64(id[3])<<16 | uint64(id[2])<<24 |
 		uint64(id[1])<<32 | uint64(id[0])<<40
+	s := int64(ms / 1e3)
+	ns := int64((ms % 1e3) * 1e6)
+	return time.Unix(s, ns)
 }
 
 func (id *Key) key(ts []byte, s string, ls *txnBufferList) *bytes.Buffer {

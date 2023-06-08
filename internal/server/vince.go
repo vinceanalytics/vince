@@ -267,8 +267,8 @@ func Run(ctx context.Context, resources ResourceList) error {
 	{
 		o := config.Get(ctx).Intervals
 		// register and start workers
-		g.Go(worker.Periodic(ctx, h.Ping("site_cache"), o.SiteCache, worker.SiteCacheUpdate))
-		g.Go(worker.Periodic(ctx, h.Ping("timeseries"), o.TSSync, worker.SaveBuffers))
+		g.Go(worker.Periodic(ctx, h.Ping("site_cache"), o.SiteCache, true, worker.SiteCacheUpdate))
+		g.Go(worker.Periodic(ctx, h.Ping("timeseries"), o.TSSync, false, worker.SaveBuffers))
 	}
 
 	plain := core.GetHTTPServer(ctx)

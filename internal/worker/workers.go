@@ -27,11 +27,15 @@ func Periodic(
 	ctx context.Context,
 	ping *health.Ping,
 	interval time.Duration,
+	warm bool, // if true calls work before starting the loop
 	work func(context.Context, time.Duration)) func() error {
 	tick := time.NewTicker(interval)
 	log.Get().Debug().Str("worker", ping.Key).
 		Str("every", interval.String()).
 		Msg("started")
+	if warm {
+		work(ctx, interval)
+	}
 	return func() error {
 		defer tick.Stop()
 		for {
