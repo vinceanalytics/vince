@@ -11,6 +11,12 @@ import (
 	"github.com/vinceanalytics/vince/pkg/secrets"
 )
 
+const (
+	TestName     = "Jane Done"
+	TestEmail    = "jane@example.com"
+	TestPassword = "1234"
+)
+
 type Options struct {
 	Listen string
 	Env    string
@@ -501,6 +507,12 @@ func Test(fn ...func(*Options)) *Options {
 	o.Bootstrap.Key = base64.StdEncoding.EncodeToString(secrets.APIKey())
 	o.Secrets.Secret = base64.StdEncoding.EncodeToString(secrets.ED25519())
 	o.Secrets.Age = base64.StdEncoding.EncodeToString(secrets.AGE())
+
+	// setup default user. We don't enable bootstrapping
+	o.Bootstrap.Name = TestName
+	o.Bootstrap.Email = TestEmail
+	o.Bootstrap.Password = TestPassword
+
 	for _, f := range fn {
 		f(o)
 	}
