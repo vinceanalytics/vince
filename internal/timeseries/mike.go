@@ -170,7 +170,7 @@ var base [8]byte
 func savePropertyKey(ctx context.Context, svc *saveContext, mike *bytes.Buffer, a float64) error {
 	svc.keys++
 	key := mike.Bytes()
-	println(">", DebugKey(key), int64(a))
+	// println(">", DebugKey(key), int64(a))
 	b := svc.ls.Get()
 	b.Write(base[:])
 	value := b.Next(8)
