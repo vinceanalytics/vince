@@ -58,10 +58,12 @@ func Save(ctx context.Context, b *Buffer) {
 			"__size__", len(b.segments.Timestamp),
 		).Int("__keys__", svc.keys).
 			Msg("saved stats")
+		system.EntriesPerBufferSave.Observe(float64(len(b.segments.Timestamp)))
+		system.KeysPerBufferSave.Observe(float64(svc.keys))
+		system.SaveDuration.Observe(time.Since(start).Seconds())
 		b.Release()
 		meta.Release()
 		ls.Release()
-		system.SaveDuration.Observe(time.Since(start).Seconds())
 	}()
 	svc.ls = ls
 
