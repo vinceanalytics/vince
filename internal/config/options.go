@@ -490,15 +490,16 @@ func (o *Options) Test(fn ...func(*Options)) *Options {
 		}
 	}
 	// setup http and https listeners
-	o.Listen = randomListener()
-	o.TLS.Address = randomListener()
+	o.Listen = randomAddress()
+	o.TLS.Address = randomAddress()
+	o.Mailer.SMTP.Address = randomAddress()
 	for _, f := range fn {
 		f(o)
 	}
 	return o
 }
 
-func randomListener() string {
+func randomAddress() string {
 	ls, err := net.Listen("tcp", ":0")
 	if err != nil {
 		log.Get().Fatal().Err(err).Msg("failed creating random listener")
