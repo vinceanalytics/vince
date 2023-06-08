@@ -26,6 +26,10 @@ https://pirsch.io/
 go tool nm -size -sort size ./vince
 ```
 
+* clean docker images 
+```
+docker system prune -a --volumes
+```
 * showcase 
 - pika.style
 
