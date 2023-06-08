@@ -31,50 +31,44 @@
             </a>
         </div>
     </div>
-    <div class="Box pt-3">
-        <div class="Box-body">
-            <div class="Box">
-                {{range .Site.SiteMemberships}}
-                <div class="Box-row">
-                    <div class="d-flex flex-items-center">
-                        <div class="flex-shrink-0 p-3">
-                            {{Avatar .User.ID 64 "rounded-full"}}
-                        </div>
-                        <div class="flex-1">
-                            <h1 class="text-normal lh-condensed">
-                                {{.User.Name}}
-                            </h1>
-                            <p class="h4 color-fg-muted text-normal mb-2">
-                                {{.User.Email}}
-                            </p>
-                        </div>
-                        <details class="details-reset details-overlay position-relative mt-1 mt-lg-0 mr-1"
-                            id="type-options">
-                            <summary aria-haspopup="menu" data-view-component="true" class="Label Label--large"
-                                role="button"> <span>{{.Role}}</span>
-                                <span class="dropdown-caret"></span>
-                            </summary>
-                            <details-menu class="SelectMenu right-lg-0" role="menu">
-                                <div class="SelectMenu-modal">
-                                    <header class="SelectMenu-header">
-                                        <span class="SelectMenu-title">Change Role</span>
-                                    </header>
-                                    <div class="SelectMenu-list">
-                                        <div class="SelectMenu-item" role="menuitemradio" aria-checked="true"
-                                            tabindex="0">
-                                            {{Icon "check" 16 "SelectMenu-icon SelectMenu-icon--check"}}
-                                            <span class="text-normal">{{.Role}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details-menu>
-                        </details>
-                    </div>
-                </div>
-                {{end}}
+    <ul class="border-top">
+        {{range .Site.SiteMemberships}}
+        <li class="d-flex flex-items-center flex-justify-end member-list-item  border border-top-0 ">
+            <div class="py-3 pl-3 pr-0 text-center flex-shrink-0">
+                <a class="d-inline-block">
+                    {{Avatar .User.ID 64 "avatar avatar-user"}}
+                </a>
             </div>
-        </div>
-    </div>
+            <div class="py-3 css-truncate pl-3 flex-auto">
+                <span class="f4 d-block">
+                    {{.User.Name}}
+                </span>
+                <span class="color-fg-default">
+                    {{.User.Email}}
+                </span>
+            </div>
+            <details class="details-reset details-overlay position-relative mt-1 mt-lg-0 mr-1 pr-3">
+                <summary aria-haspopup="menu" class="Label Label--large" role="button">
+                    <span>{{.Role}}</span>
+                    <span class="dropdown-caret"></span>
+                </summary>
+                <details-menu class="SelectMenu right-lg-0" role="menu">
+                    <div class="SelectMenu-modal">
+                        <header class="SelectMenu-header">
+                            <span class="SelectMenu-title">Change Role</span>
+                        </header>
+                        <div class="SelectMenu-list">
+                            <div class="SelectMenu-item" role="menuitemradio" aria-checked="true" tabindex="0">
+                                {{Icon "check" 16 "SelectMenu-icon SelectMenu-icon--check"}}
+                                <span class="text-normal">{{.Role}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </details-menu>
+            </details>
+        </li>
+        {{end}}
+    </ul>
     <div class="Subhead border-bottom-0 border-top pt-3 mt-3 settingsDivider">
         <h2 class="Subhead-heading" id="visibility">Visibility</h2>
     </div>
