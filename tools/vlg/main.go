@@ -40,7 +40,7 @@ func main() {
 					Domain:    "vince.io",
 					Host:      ctx.String("host"),
 					Path:      "/",
-					Event:     "pageviews",
+					Event:     "pageview",
 					Referrer:  referrer(),
 				}
 				a := vm.ToValue(s).(*goja.Object)
