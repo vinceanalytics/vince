@@ -3,6 +3,7 @@ package mail
 import (
 	"io"
 	"io/ioutil"
+	"sync"
 	"time"
 
 	"github.com/emersion/go-smtp"
@@ -13,6 +14,7 @@ var _ smtp.Session = (*Session)(nil)
 
 type Backend struct {
 	*smtp.Server
+	mu        sync.Mutex
 	Msg       map[string]Message
 	OnMessage func(*Message)
 }
@@ -59,10 +61,12 @@ func (s *Session) Data(r io.Reader) error {
 		return err
 	}
 	s.msg.Data = string(b)
+	s.b.mu.Lock()
 	s.b.Msg[s.msg.From] = s.msg
 	if s.b.OnMessage != nil {
 		s.b.OnMessage(&s.msg)
 	}
+	s.b.mu.Unlock()
 	s.msg = Message{}
 	return nil
 }
