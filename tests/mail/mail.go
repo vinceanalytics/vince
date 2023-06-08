@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/emersion/go-smtp"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 var _ smtp.Backend = (*Backend)(nil)
@@ -33,6 +34,13 @@ func New(addr string, f ...func(*smtp.Server)) *Backend {
 		fn(be.Server)
 	}
 	return be
+}
+
+func (b *Backend) Start() {
+	err := b.ListenAndServe()
+	if err != nil {
+		log.Get().Err(err).Msg("exiting smt server")
+	}
 }
 
 func (b *Backend) NewSession(_ *smtp.Conn) (smtp.Session, error) {

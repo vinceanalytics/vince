@@ -2,12 +2,17 @@ package tests
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
 	"sync"
 	"testing"
 
+	"github.com/emersion/go-smtp"
+	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/server"
+	"github.com/vinceanalytics/vince/tests/mail"
 	"github.com/vinceanalytics/vince/tools"
 )
 
@@ -48,4 +53,37 @@ func Host(t *testing.T, host, script string) string {
 	return Drive(t, script, func(c *exec.Cmd) {
 		c.Env = append(c.Env, fmt.Sprintf("VLG_HOST=%s", host))
 	})
+}
+
+type Options struct {
+	StartSMTP bool
+	SMTPOpts  []func(*smtp.Server)
+	VinceOpts []func(*config.Options)
+}
+
+// Vince configures vince instance and returns context.Context of configured
+// values. A lot of vince features support notification via email thats why we
+// also return mail.Backend, this email server is not started unless you
+// explicitly set o.StartSMTP to true.
+//
+// Resources are automatically released when the test function is done.
+func Vince(t *testing.T, o Options) (context.Context, *mail.Backend) {
+	t.Helper()
+	vOpts := append(o.VinceOpts, func(o *config.Options) {
+		o.DataPath = t.TempDir()
+	})
+	vo := config.Test(vOpts...)
+	be := mail.New(vo.Mailer.SMTP.Address, o.SMTPOpts...)
+	ctx, r, err := server.Configure(context.Background(), vo)
+	if err != nil {
+		t.Fatalf("failed to configure vince instance %v", err)
+	}
+	if o.StartSMTP {
+		go be.Start()
+		r = append(r, be)
+	}
+	t.Cleanup(func() {
+		r.Close()
+	})
+	return ctx, be
 }
