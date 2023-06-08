@@ -50,8 +50,9 @@
             <details class="details-reset details-overlay position-relative mt-1 mt-lg-0 mr-1 pr-3">
                 <summary aria-haspopup="menu" class="Label Label--large" role="button">
                     <span>{{.Role}}</span>
-                    <span class="dropdown-caret"></span>
+                    {{if ne .Role "owner"}} <span class="dropdown-caret"></span>{{end}}
                 </summary>
+                {{if ne .Role "owner"}}
                 <details-menu class="SelectMenu right-lg-0" role="menu">
                     <div class="SelectMenu-modal">
                         <header class="SelectMenu-header">
@@ -65,6 +66,7 @@
                         </div>
                     </div>
                 </details-menu>
+                {{end}}
             </details>
         </li>
         {{end}}
