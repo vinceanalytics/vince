@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"net"
 	"time"
 
 	"github.com/urfave/cli/v3"
@@ -488,8 +489,21 @@ func (o *Options) Test(fn ...func(*Options)) *Options {
 			log.Get().Fatal().Err(err).Msg("failed to apply flag")
 		}
 	}
+	// setup http and https listeners
+	o.Listen = randomListener()
+	o.TLS.Address = randomListener()
 	for _, f := range fn {
 		f(o)
 	}
 	return o
+}
+
+func randomListener() string {
+	ls, err := net.Listen("tcp", ":0")
+	if err != nil {
+		log.Get().Fatal().Err(err).Msg("failed creating random listener")
+	}
+	a := ls.Addr().String()
+	ls.Close()
+	return a
 }
