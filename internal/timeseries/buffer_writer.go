@@ -79,7 +79,7 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 		// waiting for eviction.
 		//
 		// We make sure the key is not expired yet before updating it.
-		if ttl, ok := x.GetTTL(b); ttl != 0 && ok {
+		if ttl, ok := x.GetTTL(b.key(s.Domain, s.UserId)); ttl != 0 && ok {
 			// free e since we don't use it when doing updates
 			defer e.Release()
 			old := s.Clone()
