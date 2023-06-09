@@ -80,7 +80,6 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 		//
 		// We make sure the key is not expired yet before updating it.
 		if ttl, ok := x.GetTTL(b.key(s.Domain, s.UserId)); ttl != 0 && ok {
-			// free e since we don't use it when doing updates
 			defer e.Release()
 			old := s.Clone()
 			// Update modifies s which is still in cache. It is illegal for a session to
@@ -92,9 +91,17 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 			return
 		}
 	}
-	newSession := e.Session()
-	b.AddEntry(newSession)
-	x.SetWithTTL(b.key(newSession.Domain, newSession.UserId), newSession, 1, SessionTime)
+
+	// Generate a new session based on event e. This includes creating a new
+	// session id and associate it with the user id. Sessions allows us to track
+	// bounce rate without fingerprinting the user.
+	//
+	// Note that this is best case estimates. The new session is cached with
+	// expiring value of 10 minutes.
+	session := e.Session()
+	key := b.key(session.Domain, session.UserId)
+	b.AddEntry(session)
+	x.SetWithTTL(key, session, 1, SessionTime)
 }
 
 var bigBufferPool = &sync.Pool{
