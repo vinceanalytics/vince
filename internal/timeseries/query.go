@@ -220,7 +220,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	result.Timestamps = shared
 	result.Result = make(PropertiesResult)
 
-	txn := GetMike(ctx).NewTransactionAt(uint64(start), false)
+	txn := GetMike(ctx).NewTransactionAt(uint64(currentTime.UnixMilli()), false)
 
 	m := newMetaKey()
 	defer func() {
@@ -245,7 +245,6 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	o.Prefix = m[:metricOffset]
 	it := txn.NewIterator(o)
 	defer it.Close()
-
 	props := make(map[Property]*Filter)
 	for _, e := range r.Filters {
 		props[e.Property] = e
@@ -276,11 +275,11 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 					}
 					kb := x.Key()
 					// text comes after the key offset
-					txt := kb[keyOffset:]
+					txt := kb[keyOffset : len(kb)-6]
 					if !f.Expr.Match(txt) {
 						continue
 					}
-					v, ok := values[string(text)]
+					v, ok := values[string(txt)]
 					if !ok {
 						v = &Value{}
 						values[string(text)] = v

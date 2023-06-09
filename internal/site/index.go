@@ -30,7 +30,7 @@ func visitors(ctx context.Context, uid, sid uint64) string {
 	q := timeseries.Root(ctx, uid, sid, timeseries.RootOptions{
 		Metric:  timeseries.Visitors,
 		Prop:    timeseries.Base,
-		Offset:  time.Hour * 24,
+		Window:  time.Hour * 24,
 		NoProps: true,
 	})
 	a := q.Aggregate[timeseries.Base.String()][timeseries.Visitors.String()]
