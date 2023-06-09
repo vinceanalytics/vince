@@ -293,6 +293,10 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 					log.Get().Err(err).Msg("failed to read value from kv store")
 				}
 			}
+			if len(values) == 0 {
+				// No need to include empty metrics
+				continue
+			}
 			o := make(OutValue)
 			for k, v := range values {
 				o[k] = rollUp(v.Value, v.Timestamp, shared, func(ro *rollOptions) float64 {
@@ -304,6 +308,9 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 				})
 			}
 			out[metric.String()] = o
+		}
+		if len(out) == 0 {
+			continue
 		}
 		result.Result[p.String()] = out
 	}
