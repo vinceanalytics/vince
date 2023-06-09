@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/dop251/goja"
 	"github.com/urfave/cli/v3"
@@ -146,4 +147,9 @@ func (o *Session) Send() *Session {
 	defer res.Body.Close()
 	println(res.Status)
 	return o
+}
+
+func (s *Session) Wait(n int) *Session {
+	time.Sleep(time.Millisecond * time.Duration(n))
+	return s
 }
