@@ -5,6 +5,7 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/property"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/templates"
@@ -37,7 +38,7 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		if key == "" {
 			key = timeseries.BaseKey
 		}
-		prop := timeseries.ParseProperty(q.Get("p"))
+		prop := property.ParseProperty(q.Get("p"))
 		start := core.Now(ctx)
 		window := period.Window(start)
 		stats := timeseries.Root(ctx, owner.ID, site.ID, timeseries.RootOptions{
