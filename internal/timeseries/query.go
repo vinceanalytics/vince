@@ -82,6 +82,9 @@ type FilterExpr struct {
 
 func (m *FilterExpr) ExactMatch() bool {
 	return m.Text != "" &&
+		// * is a special case where we match any key. This is an optimization to
+		// avoid glob or compiling regular expression.
+		m.Text != "*" &&
 		len(m.And) == 0 && len(m.Or) == 0 && !m.IsRe && !m.IsGlob
 }
 

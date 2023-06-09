@@ -31,6 +31,7 @@ func (s *Stats) QueryPeriod(period timex.Duration) string {
 	q.Set("p", s.Prop.String())
 	return fmt.Sprintf("/%s/stats?%s", url.PathEscape(s.Domain), q.Encode())
 }
+
 func (s *Stats) QueryProp(prop, metric, key string) string {
 	q := make(url.Values)
 	q.Set("w", s.Period.String())

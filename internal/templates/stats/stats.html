@@ -113,7 +113,7 @@
         <div class="d-flex">
             <div class="col-6 pr-2">
                 <div class="Box">
-                    <prop-panels data-targets="stat-panels.items">
+                    <prop-panels data-targets="stat-panels.items" data-active="page" data-metric="visitors">
                         <tab-container data-action="tab-container-change:prop-panels#change">
                             <div class="UnderlineNav px-3">
                                 <ul role="tablist" class="UnderlineNav-body list-style-none">
@@ -134,14 +134,16 @@
                                 </ul>
                             </div>
                             <div class="Box-body">
-                                <div role="tabpanel" aria-labelledby="pages" data-target="prop-panels.active"
+                                <div role="tabpanel" aria-labelledby="pages" data-targets="prop-panels.panels"
                                     data-prop="page">
                                     {{template "panel" $stats.Panel "page"}}
                                 </div>
-                                <div role="tabpanel" data-prop="entryPage" aria-labelledby="entryPages" hidden>
+                                <div role="tabpanel" data-prop="entryPage" data-targets="prop-panels.panels"
+                                    aria-labelledby="entryPages" hidden>
                                     {{template "panel" $stats.Panel "entryPage"}}
                                 </div>
-                                <div role="tabpanel" data-prop="exitPage" aria-labelledby="exitPages" hidden>
+                                <div role="tabpanel" data-prop="exitPage" data-targets="prop-panels.panels"
+                                    aria-labelledby="exitPages" hidden>
                                     {{template "panel" $stats.Panel "exitPage"}}
                                 </div>
                             </div>
@@ -152,7 +154,7 @@
             </div>
             <div class="col-6">
                 <div class="Box">
-                    <prop-panels data-targets="stat-panels.items">
+                    <prop-panels data-targets="stat-panels.items" data-active="referrer" data-metric="visitors">
                         <tab-container data-action="tab-container-change:prop-panels#change">
                             <div class="UnderlineNav px-3">
                                 <ul role="tablist" class="UnderlineNav-body list-style-none">
@@ -178,17 +180,20 @@
                                 </ul>
                             </div>
                             <div class="Box-body">
-                                <div role="tabpanel" data-prop="referrer" data-target="prop-panels.active"
+                                <div role="tabpanel" data-prop="referrer" data-targets="prop-panels.panels"
                                     aria-labelledby="referrers">
                                     {{template "panel" $stats.Panel "referrer"}}
                                 </div>
-                                <div role="tabpanel" data-prop="utmSource" aria-labelledby="sources" hidden>
+                                <div role="tabpanel" data-prop="utmSource" data-targets="prop-panels.panels"
+                                    aria-labelledby="sources" hidden>
                                     {{template "panel" $stats.Panel "utmSource"}}
                                 </div>
-                                <div role="tabpanel" data-prop="utmMedium" aria-labelledby="media" hidden>
+                                <div role="tabpanel" data-prop="utmMedium" data-targets="prop-panels.panels"
+                                    aria-labelledby="media" hidden>
                                     {{template "panel" $stats.Panel "utmMedium"}}
                                 </div>
-                                <div role="tabpanel" data-prop="utmCampaign" aria-labelledby="campaigns" hidden>
+                                <div role="tabpanel" data-prop="utmCampaign" data-targets="prop-panels.panels"
+                                    aria-labelledby="campaigns" hidden>
                                     {{template "panel" $stats.Panel "utmCampaign"}}
                                 </div>
                             </div>

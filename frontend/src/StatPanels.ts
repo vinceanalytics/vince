@@ -1,5 +1,5 @@
 
-import { controller, target, targets } from '@github/catalyst'
+import { attr, controller, target, targets } from '@github/catalyst'
 
 @controller
 export class StatPanelsElement extends HTMLElement {
@@ -21,23 +21,31 @@ export class StatPanelsElement extends HTMLElement {
 @controller
 export class PropPanelsElement extends HTMLElement {
     @targets items: HTMLElement[];
-    @target active: HTMLElement;
+    @targets panels: HTMLElement[];
+    @attr active: string;
+    @attr metric: string;
 
     change(event: Event) {
         const e = event as CustomEvent;
         const target = e.detail.relatedTarget as HTMLElement;
-        this.active = target;
+        this.active = target.dataset.prop!;
+        this.select(this.metric);
     }
 
     select(metric: string) {
-        for (let e of this.active.children!) {
-            const el = e as HTMLElement;
-            if (el.dataset.metric == metric) {
-                el.hidden = false
-            } else {
-                el.hidden = true;
+        this.metric = metric;
+        this.panels.forEach(element => {
+            if (element.dataset.prop == this.active) {
+                for (let e of element.children!) {
+                    const el = e as HTMLElement;
+                    if (el.dataset.metric == metric) {
+                        el.hidden = false
+                    } else {
+                        el.hidden = true;
+                    }
+                }
             }
-        }
+        });
     }
 }
 
