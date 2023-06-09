@@ -172,7 +172,7 @@ type Value struct {
 }
 
 var (
-	defaultStep = time.Minute * 5
+	defaultStep = time.Hour
 )
 
 type PropertiesResult map[string]MetricResult
