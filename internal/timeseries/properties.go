@@ -36,60 +36,56 @@ const BaseKey = "__root__"
 
 // Enum value maps for Property.
 var (
-	_prop_name = map[uint8]string{
-		0:  "base",
-		1:  "event",
-		2:  "page",
-		3:  "entryPage",
-		4:  "exitPage",
-		5:  "referrer",
-		6:  "UtmMedium",
-		7:  "UtmSource",
-		8:  "UtmCampaign",
-		9:  "UtmContent",
-		10: "UtmTerm",
-		11: "UtmDevice",
-		12: "UtmBrowser",
-		13: "browserVersion",
-		14: "os",
-		15: "osVersion",
-		16: "country",
-		17: "region",
-		18: "city",
+	_prop_name = map[Property]string{
+		Base:           "base",
+		Event:          "event",
+		Page:           "page",
+		EntryPage:      "entryPage",
+		ExitPage:       "exitPage",
+		Referrer:       "referrer",
+		UtmMedium:      "utmMedium",
+		UtmSource:      "utmSource",
+		UtmCampaign:    "utmCampaign",
+		UtmContent:     "utmContent",
+		UtmTerm:        "utmTerm",
+		UtmDevice:      "UtmDevice",
+		UtmBrowser:     "utmBrowser",
+		BrowserVersion: "browserVersion",
+		Os:             "os",
+		OsVersion:      "osVersion",
+		Country:        "country",
+		Region:         "region",
+		City:           "city",
 	}
-	_prop_value = map[string]uint8{
-		"base":           0,
-		"event":          1,
-		"page":           2,
-		"entryPage":      3,
-		"exitPage":       4,
-		"referrer":       5,
-		"UtmMedium":      6,
-		"UtmSource":      7,
-		"UtmCampaign":    8,
-		"UtmContent":     9,
-		"UtmTerm":        10,
-		"UtmDevice":      11,
-		"UtmBrowser":     12,
-		"browserVersion": 13,
-		"os":             14,
-		"osVersion":      15,
-		"country":        16,
-		"region":         17,
-		"city":           18,
+	_prop_value = map[string]Property{
+		"base":           Base,
+		"event":          Event,
+		"page":           Page,
+		"entryPage":      EntryPage,
+		"exitPage":       ExitPage,
+		"referrer":       Referrer,
+		"utmMedium":      UtmMedium,
+		"utmSource":      UtmSource,
+		"utmCampaign":    UtmCampaign,
+		"utmContent":     UtmContent,
+		"utmTerm":        UtmTerm,
+		"utmDevice":      UtmDevice,
+		"utmBrowser":     UtmBrowser,
+		"browserVersion": BrowserVersion,
+		"os":             Os,
+		"osVersion":      OsVersion,
+		"country":        Country,
+		"region":         Region,
+		"city":           City,
 	}
 )
 
 func (p Property) String() string {
-	return _prop_name[uint8(p)]
+	return _prop_name[p]
 }
 
 func ParseProperty(k string) Property {
-	p, ok := _prop_value[k]
-	if !ok {
-		return Base
-	}
-	return Property(p)
+	return _prop_value[k]
 }
 
 func (p Property) MarshalJSON() ([]byte, error) {
