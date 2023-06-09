@@ -133,7 +133,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <div class="Box-body">
+                            <div class="Box Box--condensed border-0">
                                 <div role="tabpanel" aria-labelledby="pages" data-targets="prop-panels.panels"
                                     data-prop="page">
                                     {{template "panel" $stats.Panel "page"}}
@@ -179,7 +179,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <div class="Box-body">
+                            <div class="Box Box--condensed border-0">
                                 <div role="tabpanel" data-prop="referrer" data-targets="prop-panels.panels"
                                     aria-labelledby="referrers">
                                     {{template "panel" $stats.Panel "referrer"}}
@@ -211,13 +211,19 @@
 {{$prop:=.Prop}}
 
 {{range $name,$value :=.Metrics}}
-<ul data-metric={{$name}} {{if ne $name "visitors" }}hidden{{end}}>
+<ul class="list-style-none" data-metric={{$name}} {{if ne $name "visitors" }}hidden{{end}}>
     {{range $value}}
-    <li>
-        <a href={{$stats.QueryProp $prop $name .Key}}>
-            <span>{{.Key}}</span>
-            <span>{{.Value}}</span>
-        </a>
+    <li class="Box-row">
+        <div class="d-flex">
+            <div class="col-10">
+                <a href={{$stats.QueryProp $prop $name .Key}}>
+                    {{.Key}}
+                </a>
+            </div>
+            <div class="col-2 text-center">
+                <span>{{.Value}}</span>
+            </div>
+        </div>
     </li>
     {{end}}
 </ul>

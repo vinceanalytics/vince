@@ -61,39 +61,3 @@
     background-color: var(--color-canvas-subtle);
     border-radius: 6px
 }
-
-.activeProps {
-    border-top: 0 !important;
-    border-bottom: var(--primer-borderWidth-thin, 2px) solid #ffe0d8 !important;
-}
-
-.props {
-    overflow-x: hidden;
-    overflow-y: scroll;
-    width: 100%;
-    height: 550px;
-}
-
-table.capped-list td {
-    padding: 8px;
-    font-size: 12px;
-    vertical-align: middle;
-    border-bottom: 1px solid var(--color-border-muted);
-}
-
-table.capped-list th.middle,
-table.capped-list td.middle {
-    text-align: center;
-}
-
-table.capped-list {
-    width: 100%;
-    line-height: 100%;
-}
-
-.capped-list-label {
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
