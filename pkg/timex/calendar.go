@@ -44,7 +44,7 @@ func (c Duration) String() string {
 func (c Duration) Window(ts time.Time) time.Duration {
 	switch c {
 	case Unknown, Today:
-		return ts.Sub(beginningOfDay(ts))
+		return time.Hour * 24
 	case ThisWeek:
 		return ts.Sub(beginningOfWeek(ts))
 	case ThisMonth:

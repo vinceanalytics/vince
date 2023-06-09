@@ -41,6 +41,18 @@ func (s *Stats) PlotTime() (string, error) {
 	return string(b), nil
 }
 
+func (s *Stats) Count(metric string) FloatValue {
+	metric = strings.TrimSpace(metric)
+	o := s.Aggregate[s.Prop.String()][metric]
+	for _, v := range o {
+		if v.Key == s.Key {
+			return v.Value
+		}
+	}
+
+	return FloatValue(0)
+}
+
 func (s *Stats) PlotValue(metric string) (string, error) {
 	metric = strings.TrimSpace(metric)
 	o := s.Timeseries[s.Prop.String()][metric][s.Key]
@@ -106,7 +118,7 @@ func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 		opts.Key = BaseKey
 	}
 	if opts.Window == 0 {
-		opts.Offset = time.Hour * 24
+		opts.Window = time.Hour * 24
 	}
 	q := Query(ctx, QueryRequest{
 		UserID: uid,

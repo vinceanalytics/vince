@@ -34,6 +34,9 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 		period := timex.Parse(q.Get("o"))
 		key := q.Get("k")
+		if key == "" {
+			key = timeseries.BaseKey
+		}
 		prop := timeseries.ParseProperty(q.Get("p"))
 		start := core.Now(ctx)
 		window := period.Window(start)

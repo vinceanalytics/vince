@@ -49,31 +49,31 @@
                     <li>
                         <button id="visitors" role="tab" aria-selected="true" class="UnderlineNav-item px-3">
                             <span>Unique Visitors</span>
-                            <span class="Counter">10</span>
+                            <span class="Counter">{{$stats.Count "visitors"}}</span>
                         </button>
                     </li>
                     <li>
                         <button id="views" role="tab" class="UnderlineNav-item px-3">
                             <span>Page Views</span>
-                            <span class="Counter">10</span>
+                            <span class="Counter">{{$stats.Count "views"}}</span>
                         </button>
                     </li>
                     <li>
                         <button id="visits" role="tab" class="UnderlineNav-item px-3">
                             <span>Sessions</span>
-                            <span class="Counter">10</span>
+                            <span class="Counter">{{$stats.Count "visits"}}</span>
                         </button>
                     </li>
                     <li>
                         <button id="bounceRates" role="tab" class="UnderlineNav-item px-3">
                             <span>Bounce Rate</span>
-                            <span class="Counter">10</span>
+                            <span class="Counter">{{$stats.Count "bounceRates"}}</span>
                         </button>
                     </li>
                     <li>
                         <button id="visitDurations" role="tab" class="UnderlineNav-item px-3">
                             <span>Visits Duration</span>
-                            <span class="Counter">10</span>
+                            <span class="Counter">{{$stats.Count "visitDurations"}}</span>
                         </button>
                     </li>
                 </ul>

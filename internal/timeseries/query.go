@@ -214,7 +214,6 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	start := startTS.UnixMilli()
 	end := endTS.UnixMilli()
 	result.Start, result.End = startTS, endTS
-	windowMs := window.Milliseconds()
 
 	shared := sharedTS(start, end, step.Milliseconds())
 	result.Timestamps = shared
@@ -257,49 +256,46 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 				continue
 			}
 			values := make(map[string]*Value)
-			for _, metric := range r.Metrics {
-				b.Reset()
-				m.metric(metric)
-				var text string
-				if f.Expr.ExactMatch() {
-					text = f.Expr.Text
+			b.Reset()
+			m.metric(metric)
+			var text string
+			if f.Expr.ExactMatch() {
+				text = f.Expr.Text
+			}
+			// /user_id/site_id/metric/prop/text/
+			prefix := m.idx(b, text).Bytes()
+			for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+				x := it.Item()
+				if x.Version() > uint64(end) {
+					// We have reached the end of iteration. Range actually
+					// reflects on the version we are interested in.
+					break
 				}
-				// /user_id/site_id/metric/prop/text/
-				prefix := m.idx(b, text).Bytes()
-				for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-					x := it.Item()
-					if x.Version() > uint64(end) {
-						// We have reached the end of iteration. Range actually
-						// reflects on the version we are interested in.
-						break
-					}
-					kb := x.Key()
-					// text comes after the key offset
-					txt := kb[keyOffset : len(kb)-6]
-					if !f.Expr.Match(txt) {
-						continue
-					}
-					v, ok := values[string(txt)]
-					if !ok {
-						v = &Value{}
-						values[string(text)] = v
-					}
-					err := x.Value(func(val []byte) error {
-						v.Timestamp = append(v.Timestamp, int64(x.Version()))
-						v.Value = append(v.Value,
-							math.Float64frombits(binary.BigEndian.Uint64(val)),
-						)
-						return nil
-					})
-					if err != nil {
-						log.Get().Err(err).Msg("failed to read value from kv store")
-					}
+				kb := x.Key()
+				// text comes after the key offset
+				txt := kb[keyOffset : len(kb)-6]
+				if !f.Expr.Match(txt) {
+					continue
 				}
-
+				v, ok := values[string(txt)]
+				if !ok {
+					v = &Value{}
+					values[string(txt)] = v
+				}
+				err := x.Value(func(val []byte) error {
+					v.Timestamp = append(v.Timestamp, int64(x.Version()))
+					v.Value = append(v.Value,
+						math.Float64frombits(binary.BigEndian.Uint64(val)),
+					)
+					return nil
+				})
+				if err != nil {
+					log.Get().Err(err).Msg("failed to read value from kv store")
+				}
 			}
 			o := make(OutValue)
 			for k, v := range values {
-				o[k] = rollUp(windowMs, v.Value, v.Timestamp, shared, func(ro *rollOptions) float64 {
+				o[k] = rollUp(v.Value, v.Timestamp, shared, func(ro *rollOptions) float64 {
 					var x float64
 					for _, xx := range ro.values {
 						x += xx

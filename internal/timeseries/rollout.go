@@ -2,6 +2,7 @@ package timeseries
 
 import (
 	"math"
+	"time"
 
 	"github.com/vinceanalytics/vince/pkg/log"
 )
@@ -11,14 +12,15 @@ var (
 )
 
 // This function was ported from VictoriaMetrics project.
-func rollUp(window int64, values []float64, ts []int64, shared []int64, f func(*rollOptions) float64) (o []float64) {
-	o = make([]float64, 0, len(shared))
+func rollUp(values []float64, ts []int64, shared []int64, f func(*rollOptions) float64) (o []float64) {
+	o = make([]float64, len(shared))
+	window := time.Hour.Milliseconds()
 	i := 0
 	j := 0
 	ni := 0
 	nj := 0
 	var r rollOptions
-	for _, tEnd := range shared {
+	for idx, tEnd := range shared {
 		tStart := tEnd - window
 		ni = seekFirstTimestampIdxAfter(ts[i:], tStart, ni)
 		i += ni
@@ -46,7 +48,7 @@ func rollUp(window int64, values []float64, ts []int64, shared []int64, f func(*
 		}
 		r.currTimestamp = tEnd
 		value := f(&r)
-		o = append(o, value)
+		o[idx] = value
 	}
 	return
 }
