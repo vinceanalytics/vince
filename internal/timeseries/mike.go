@@ -170,6 +170,9 @@ var base [8]byte
 // caller's responsibility to ensure svc.ls.Release() is called, which must be
 // outside the transaction svc.txn (meaning after svc.txn.Commit())
 func savePropertyKey(ctx context.Context, svc *saveContext, mike *bytes.Buffer, a float64) error {
+	if a == 0 {
+		return nil
+	}
 	svc.keys++
 	key := mike.Bytes()
 	// println(">", DebugKey(key), int64(a))
