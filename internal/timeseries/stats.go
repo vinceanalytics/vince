@@ -26,9 +26,16 @@ type Stats struct {
 
 func (s *Stats) QueryPeriod(period timex.Duration) string {
 	q := make(url.Values)
-	q.Set("o", period.String())
+	q.Set("w", period.String())
 	q.Set("k", s.Key)
 	q.Set("p", s.Prop.String())
+	return fmt.Sprintf("/%s/stats?%s", url.PathEscape(s.Domain), q.Encode())
+}
+func (s *Stats) QueryProp(prop, metric, key string) string {
+	q := make(url.Values)
+	q.Set("w", s.Period.String())
+	q.Set("k", key)
+	q.Set("p", prop)
 	return fmt.Sprintf("/%s/stats?%s", url.PathEscape(s.Domain), q.Encode())
 }
 
@@ -48,6 +55,20 @@ func (s *Stats) Count(metric string) FloatValue {
 		}
 	}
 	return FloatValue(0)
+}
+
+type Panel struct {
+	Stats   *Stats
+	Prop    string
+	Metrics AggregateMetricsStatValue
+}
+
+func (s *Stats) Panel(prop string) Panel {
+	return Panel{
+		Stats:   s,
+		Prop:    prop,
+		Metrics: s.Aggregate[prop],
+	}
 }
 
 func (s *Stats) PlotValue(metric string) (string, error) {

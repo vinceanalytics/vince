@@ -32,7 +32,7 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		}
 		hasGoals := models.SiteHasGoals(ctx, site.Domain)
 		q := r.URL.Query()
-		period := timex.Parse(q.Get("o"))
+		period := timex.Parse(q.Get("w"))
 		key := q.Get("k")
 		if key == "" {
 			key = timeseries.BaseKey
