@@ -162,7 +162,7 @@ func main() {
 	fmt.Fprintln(&b, " package main")
 	var ls []string
 	for _, d := range domains {
-		ls = append(ls, d.Hosts...)
+		ls = append(ls, d.Domains...)
 	}
 	fmt.Fprintf(&b, " var domains=[%d]string{\n", len(ls))
 	sort.Strings(ls)
@@ -179,7 +179,7 @@ func main() {
 		log.Fatal(err)
 	}
 	tools.WriteFile(
-		filepath.Join(tools.RootVince(), "tools", "vince_load_gen", "domains.go"),
+		filepath.Join(tools.RootVince(), "tools", "vlg", "domains.go"),
 		r)
 }
 
