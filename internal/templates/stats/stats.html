@@ -1,189 +1,213 @@
 {{define "_content"}}
 <div class="container-lg">
     {{$stats:=.Stats}}
-    <div class="Subhead Subhead--spacious text-center settingsDivider">
-        <h2 class="Subhead-heading mt-3 mt-sm-0">
-            <span>
-                {{HumanDate .Stats.Start}}
-            </span>
-            <span class="dash">–</span>
-            <span>
-                {{HumanDate .Stats.End}}
-            </span>
-        </h2>
-        <div class="Subhead-actions mt-3 mt-sm-0">
-            <details class="dropdown details-overlay details-reset d-inline-block">
-                <summary role="button" class="btn">
-                    <i>Period:</i>
-                    <span data-menu-button>
-                        {{.Stats.Period}}
-                    </span>
-                    {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
-                </summary>
-                <div>
-                    <details-menu role="menu" class="dropdown-menu select-menu-modal dropdown-menu-sw">
-                        <div class="select-menu-header">
-                            <div class="select-menu-title">
-                                Select time ranges
+    <stat-panels>
+        <div class="Subhead Subhead--spacious text-center settingsDivider">
+            <h2 class="Subhead-heading mt-3 mt-sm-0">
+                <span>
+                    {{HumanDate .Stats.Start}}
+                </span>
+                <span class="dash">–</span>
+                <span>
+                    {{HumanDate .Stats.End}}
+                </span>
+            </h2>
+            <div class="Subhead-actions mt-3 mt-sm-0">
+                <details class="dropdown details-overlay details-reset d-inline-block">
+                    <summary role="button" class="btn">
+                        <i>Period:</i>
+                        <span data-menu-button>
+                            {{.Stats.Period}}
+                        </span>
+                        {{Icon "triangle-down" 16 "ml-2 mr-n1"}}
+                    </summary>
+                    <div>
+                        <details-menu role="menu" class="dropdown-menu select-menu-modal dropdown-menu-sw">
+                            <div class="select-menu-header">
+                                <div class="select-menu-title">
+                                    Select time ranges
+                                </div>
+                            </div>
+                            {{range Periods}}
+                            <a role="menuitem" class="dropdown-item select-menu-item select-menu-item-text"
+                                href="{{$stats.QueryPeriod .}}">
+                                {{$selected := SelectedPeriod $stats.Period .}}
+                                {{Icon "check" 16 "select-menu-item-icon" $selected}}
+                                <span class="select-menu-item-text">
+                                    {{.}}
+                                </span>
+                            </a>
+                            {{end}}
+                        </details-menu>
+                    </div>
+                </details>
+            </div>
+        </div>
+        <div class="Box mb-3 border-0">
+            <tab-container data-action="tab-container-change:stat-panels#change">
+                <div class="UnderlineNav px-3">
+                    <ul role="tablist" class="UnderlineNav-body list-style-none">
+                        <li>
+                            <button id="visitors" role="tab" aria-selected="true" class="UnderlineNav-item px-3">
+                                <span>Unique Visitors</span>
+                                <span class="Counter">{{$stats.Count "visitors"}}</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button id="views" role="tab" class="UnderlineNav-item px-3">
+                                <span>Page Views</span>
+                                <span class="Counter">{{$stats.Count "views"}}</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button id="visits" role="tab" class="UnderlineNav-item px-3">
+                                <span>Sessions</span>
+                                <span class="Counter">{{$stats.Count "visits"}}</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button id="bounceRates" role="tab" class="UnderlineNav-item px-3">
+                                <span>Bounce Rate</span>
+                                <span class="Counter">{{$stats.Count "bounceRates"}}</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button id="visitDurations" role="tab" class="UnderlineNav-item px-3">
+                                <span>Visits Duration</span>
+                                <span class="Counter">{{$stats.Count "visitDurations"}}</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="Box-body border-0 p-3">
+                    <div id="visitor" data-metric="visitors" role="tabpanel" aria-labelledby="visitors">
+                        <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
+                            data-value={{$stats.PlotValue "visitors" }}>
+                        </plot-stat>
+                    </div>
+
+                    <div id="view" role="tabpanel" data-metric="views" aria-labelledby="views" hidden>
+                        <plot-stat data-height="450" data-width="980" data-label="views" data-ts={{$stats.PlotTime}}
+                            data-value={{$stats.PlotValue "views" }}>
+                        </plot-stat>
+                    </div>
+                    <div id="visit" role="tabpanel" data-metric="visits" aria-labelledby="visits" hidden>
+                        <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
+                            data-value={{$stats.PlotValue "visits" }}>
+                        </plot-stat>
+                    </div>
+                    <div id="bounceRate" role="tabpanel" data-metric="bounceRates" aria-labelledby="bounceRates" hidden>
+                        <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
+                            data-value={{$stats.PlotValue "bounceRates" }}>
+                        </plot-stat>
+                    </div>
+                    <div id="visitDuration" role="tabpanel" data-metric="visitDurations"
+                        aria-labelledby="visitDurations" hidden>
+                        <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
+                            data-value={{$stats.PlotValue "visitDuration" }}>
+                        </plot-stat>
+                    </div>
+                </div>
+            </tab-container>
+        </div>
+        <div class="d-flex">
+            <div class="col-6 pr-2">
+                <div class="Box">
+                    <prop-panels data-targets="stat-panels.items">
+                        <tab-container data-action="tab-container-change:prop-panels#change">
+                            <div class="UnderlineNav px-3">
+                                <ul role="tablist" class="UnderlineNav-body list-style-none">
+                                    <li role="presentation">
+                                        <button type="button" id="pages" role="tab" aria-selected="true"
+                                            class="UnderlineNav-item">Pages</button>
+                                    </li>
+                                    <li role="presentation">
+                                        <button type="button" id="entryPages" role="tab" tabindex="-1"
+                                            class="UnderlineNav-item">
+                                            Entry Pages</button>
+                                    </li>
+                                    <li role="presentation">
+                                        <button type="button" id="exitPages" role="tab" tabindex="-1"
+                                            class="UnderlineNav-item">
+                                            Exit Pages</button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="Box-body">
+                                <div role="tabpanel" aria-labelledby="pages" data-target="prop-panels.active"
+                                    data-prop="page">
+                                    <ul data-metric="visitors">
+                                        <li>visitors</li>
+                                    </ul>
+                                    <ul data-metric="views" hidden>
+                                        <li>views</li>
+                                    </ul>
+                                    <ul data-metric="visits" hidden>
+                                        <li>visits</li>
+                                    </ul>
+                                    <ul data-metric="bounceRates" hidden>
+                                        <li>bounceRates</li>
+                                    </ul>
+                                    <ul data-metric="visitDurations" hidden>
+                                        <li>visitDurations</li>
+                                    </ul>
+                                </div>
+                                <div role="tabpanel" data-prop="entryPage" aria-labelledby="entryPages" hidden>
+                                    Entry Pages
+                                </div>
+                                <div role="tabpanel" data-prop="exitPage" aria-labelledby="exitPages" hidden>
+                                    Exit Pages
+                                </div>
+                            </div>
+
+                        </tab-container>
+                    </prop-panels>
+
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="Box">
+                    <tab-container>
+                        <div class="UnderlineNav px-3">
+                            <ul role="tablist" class="UnderlineNav-body list-style-none">
+                                <li role="presentation">
+                                    <button type="button" id="referrers" role="tab" aria-selected="true"
+                                        class="UnderlineNav-item">Referrers</button>
+                                </li>
+                                <li role="presentation">
+                                    <button type="button" id="sources" role="tab" tabindex="-1"
+                                        class="UnderlineNav-item">
+                                        Sources</button>
+                                </li>
+                                <li role="presentation">
+                                    <button type="button" id="media" role="tab" tabindex="-1" class="UnderlineNav-item">
+                                        Media</button>
+                                </li>
+                                <li role="presentation">
+                                    <button type="button" id="campaigns" role="tab" tabindex="-1"
+                                        class="UnderlineNav-item">
+                                        Campaigns</button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="Box-body">
+                            <div role="tabpanel" data-prop="referrer" aria-labelledby="referrers">
+                                Referrers
+                            </div>
+                            <div role="tabpanel" data-prop="utmSource" aria-labelledby="sources" hidden>
+                                Sources
+                            </div>
+                            <div role="tabpanel" data-prop="utmMedium" aria-labelledby="media" hidden>
+                                Media
+                            </div>
+                            <div role="tabpanel" data-prop="utmCampaign" aria-labelledby="campaigns" hidden>
+                                Campaigns
                             </div>
                         </div>
-                        {{range Periods}}
-                        <a role="menuitem" class="dropdown-item select-menu-item select-menu-item-text"
-                            href="{{$stats.QueryPeriod .}}">
-                            {{$selected := SelectedPeriod $stats.Period .}}
-                            {{Icon "check" 16 "select-menu-item-icon" $selected}}
-                            <span class="select-menu-item-text">
-                                {{.}}
-                            </span>
-                        </a>
-                        {{end}}
-                    </details-menu>
+                    </tab-container>
                 </div>
-            </details>
-        </div>
-    </div>
-    <div class="Box mb-3 border-0">
-        <tab-container>
-            <div class="UnderlineNav px-3">
-                <ul role="tablist" class="UnderlineNav-body list-style-none">
-                    <li>
-                        <button id="visitors" role="tab" aria-selected="true" class="UnderlineNav-item px-3">
-                            <span>Unique Visitors</span>
-                            <span class="Counter">{{$stats.Count "visitors"}}</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button id="views" role="tab" class="UnderlineNav-item px-3">
-                            <span>Page Views</span>
-                            <span class="Counter">{{$stats.Count "views"}}</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button id="visits" role="tab" class="UnderlineNav-item px-3">
-                            <span>Sessions</span>
-                            <span class="Counter">{{$stats.Count "visits"}}</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button id="bounceRates" role="tab" class="UnderlineNav-item px-3">
-                            <span>Bounce Rate</span>
-                            <span class="Counter">{{$stats.Count "bounceRates"}}</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button id="visitDurations" role="tab" class="UnderlineNav-item px-3">
-                            <span>Visits Duration</span>
-                            <span class="Counter">{{$stats.Count "visitDurations"}}</span>
-                        </button>
-                    </li>
-                </ul>
-            </div>
-            <div class="Box-body border-0 p-3">
-                <div id="visitor" role="tabpanel" aria-labelledby="visitors">
-                    <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
-                        data-value={{$stats.PlotValue "visitors" }}>
-                    </plot-stat>
-                </div>
-
-                <div id="view" role="tabpanel" aria-labelledby="views" hidden>
-                    <plot-stat data-height="450" data-width="980" data-label="views" data-ts={{$stats.PlotTime}}
-                        data-value={{$stats.PlotValue "views" }}>
-                    </plot-stat>
-                </div>
-                <div id="visit" role="tabpanel" aria-labelledby="visits" hidden>
-                    <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
-                        data-value={{$stats.PlotValue "visits" }}>
-                    </plot-stat>
-                </div>
-                <div id="bounceRate" role="tabpanel" aria-labelledby="bounceRates" hidden>
-                    <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
-                        data-value={{$stats.PlotValue "bounceRates" }}>
-                    </plot-stat>
-                </div>
-                <div id="visitDuration" role="tabpanel" aria-labelledby="visitDurations" hidden>
-                    <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
-                        data-value={{$stats.PlotValue "visitDuration" }}>
-                    </plot-stat>
-                </div>
-            </div>
-        </tab-container>
-    </div>
-    <div class="d-flex">
-        <div class="col-6 pr-2">
-            <div class="Box">
-                <tab-container>
-                    <div class="UnderlineNav px-3">
-                        <ul role="tablist" class="UnderlineNav-body list-style-none">
-                            <li role="presentation">
-                                <button type="button" id="pages" role="tab" aria-selected="true"
-                                    class="UnderlineNav-item">Pages</button>
-                            </li>
-                            <li role="presentation">
-                                <button type="button" id="entryPages" role="tab" tabindex="-1"
-                                    class="UnderlineNav-item">
-                                    Entry Pages</button>
-                            </li>
-                            <li role="presentation">
-                                <button type="button" id="exitPages" role="tab" tabindex="-1" class="UnderlineNav-item">
-                                    Exit Pages</button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box-body">
-                        <div role="tabpanel" aria-labelledby="pages">
-                            Pages
-                        </div>
-                        <div role="tabpanel" aria-labelledby="entryPages" hidden>
-                            Entry Pages
-                        </div>
-                        <div role="tabpanel" aria-labelledby="exitPages" hidden>
-                            Exit Pages
-                        </div>
-                    </div>
-
-                </tab-container>
             </div>
         </div>
-        <div class="col-6">
-            <div class="Box">
-                <tab-container>
-                    <div class="UnderlineNav px-3">
-                        <ul role="tablist" class="UnderlineNav-body list-style-none">
-                            <li role="presentation">
-                                <button type="button" id="referrers" role="tab" aria-selected="true"
-                                    class="UnderlineNav-item">Referrers</button>
-                            </li>
-                            <li role="presentation">
-                                <button type="button" id="sources" role="tab" tabindex="-1" class="UnderlineNav-item">
-                                    Sources</button>
-                            </li>
-                            <li role="presentation">
-                                <button type="button" id="media" role="tab" tabindex="-1" class="UnderlineNav-item">
-                                    Media</button>
-                            </li>
-                            <li role="presentation">
-                                <button type="button" id="campaigns" role="tab" tabindex="-1" class="UnderlineNav-item">
-                                    Campaigns</button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="Box-body">
-                        <div role="tabpanel" aria-labelledby="referrers">
-                            Referrers
-                        </div>
-                        <div role="tabpanel" aria-labelledby="sources" hidden>
-                            Sources
-                        </div>
-                        <div role="tabpanel" aria-labelledby="media" hidden>
-                            Media
-                        </div>
-                        <div role="tabpanel" aria-labelledby="campaigns" hidden>
-                            Campaigns
-                        </div>
-                    </div>
-                </tab-container>
-            </div>
-        </div>
-    </div>
+    </stat-panels>
 </div>
 {{end}}
