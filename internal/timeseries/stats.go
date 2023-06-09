@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/vinceanalytics/vince/pkg/timex"
@@ -42,19 +41,16 @@ func (s *Stats) PlotTime() (string, error) {
 }
 
 func (s *Stats) Count(metric string) FloatValue {
-	metric = strings.TrimSpace(metric)
 	o := s.Aggregate[s.Prop.String()][metric]
 	for _, v := range o {
 		if v.Key == s.Key {
 			return v.Value
 		}
 	}
-
 	return FloatValue(0)
 }
 
 func (s *Stats) PlotValue(metric string) (string, error) {
-	metric = strings.TrimSpace(metric)
 	o := s.Timeseries[s.Prop.String()][metric][s.Key]
 	if len(o) == 0 {
 		o = make([]float64, len(s.Timeseries))
