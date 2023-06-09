@@ -5,11 +5,11 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/property"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/internal/timeseries"
+	"github.com/vinceanalytics/vince/pkg/property"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
 

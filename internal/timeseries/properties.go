@@ -1,8 +1,6 @@
 package timeseries
 
-import (
-	"github.com/vinceanalytics/vince/internal/property"
-)
+import "github.com/vinceanalytics/vince/pkg/property"
 
 type Property = property.Property
 
