@@ -2,5 +2,5 @@ package models
 
 type SiteOverView struct {
 	Site     *Site
-	Visitors string
+	Visitors uint32
 }

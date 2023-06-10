@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/url"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/vinceanalytics/vince/pkg/timex"
@@ -48,14 +46,14 @@ func (s *Stats) PlotTime() (string, error) {
 	return string(b), nil
 }
 
-func (s *Stats) Count(metric string) FloatValue {
+func (s *Stats) Count(metric string) uint32 {
 	o := s.Aggregate[s.Prop.String()][metric]
 	for _, v := range o {
 		if v.Key == s.Key {
 			return v.Value
 		}
 	}
-	return FloatValue(0)
+	return 0
 }
 
 type Panel struct {
@@ -75,7 +73,7 @@ func (s *Stats) Panel(prop string) Panel {
 func (s *Stats) PlotValue(metric string) (string, error) {
 	o := s.Timeseries[s.Prop.String()][metric][s.Key]
 	if len(o) == 0 {
-		o = make([]float64, len(s.Timeseries))
+		o = make([]uint32, len(s.Timeseries))
 	}
 	b, err := json.Marshal(o)
 	if err != nil {
@@ -87,13 +85,13 @@ func (s *Stats) PlotValue(metric string) (string, error) {
 type Aggregate map[string]AggregateMetricsStatValue
 
 // AggregateValue maps keys to value for a specific metric
-type AggregateValue map[string]FloatValue
+type AggregateValue map[string]uint32
 
 type AggregateMetricsStatValue map[string]StatList
 
 type StatValue struct {
 	Key   string
-	Value FloatValue
+	Value uint32
 }
 
 var _ sort.Interface = (*StatList)(nil)
@@ -111,7 +109,7 @@ func (s StatList) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func sum(ls []float64) (o float64) {
+func sum(ls []uint32) (o uint32) {
 	for _, v := range ls {
 		o += v
 	}
@@ -164,7 +162,7 @@ func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 			for ok, ov := range mv {
 				st := StatValue{
 					Key:   ok,
-					Value: FloatValue(sum(ov)),
+					Value: sum(ov),
 				}
 				ls = append(ls, st)
 			}
@@ -174,7 +172,6 @@ func Root(ctx context.Context, uid, sid uint64, opts RootOptions) (o Stats) {
 		}
 		o.Aggregate[k] = am
 	}
-
 	return
 }
 
@@ -239,19 +236,4 @@ func allProperties(opt RootOptions) FilterList {
 		}
 	}
 	return o
-}
-
-type FloatValue float64
-
-func (v FloatValue) String() string {
-	f := float64(v)
-	p := math.Floor(math.Log10(math.Abs(f)))
-	if p <= 2 {
-		return strconv.FormatFloat(f, 'f', -1, 64)
-	}
-	x := math.Floor(p / 3)
-	s := math.Pow(10, p-x*3) * +(f / math.Pow(10, p))
-	s = math.Round(s*100) / 100
-	k := []string{"", "K", "M", "B", "T"}
-	return strconv.FormatFloat(s, 'f', -1, 64) + k[int(x)]
 }

@@ -26,7 +26,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func visitors(ctx context.Context, uid, sid uint64) string {
+func visitors(ctx context.Context, uid, sid uint64) uint32 {
 	q := timeseries.Root(ctx, uid, sid, timeseries.RootOptions{
 		Metric:  timeseries.Visitors,
 		Prop:    timeseries.Base,
@@ -36,8 +36,8 @@ func visitors(ctx context.Context, uid, sid uint64) string {
 	a := q.Aggregate[timeseries.Base.String()][timeseries.Visitors.String()]
 	for _, v := range a {
 		if v.Key == timeseries.BaseKey {
-			return v.Value.String()
+			return v.Value
 		}
 	}
-	return "0"
+	return 0
 }

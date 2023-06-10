@@ -12,14 +12,13 @@ var (
 )
 
 // This function was ported from VictoriaMetrics project.
-func rollUp(values []float64, ts []int64, shared []int64, f func(*rollOptions) float64) (o []float64) {
-	o = make([]float64, len(shared))
+func rollUp(values []uint16, ts []int64, shared []int64, f func([]uint16) uint32) (o []uint32) {
+	o = make([]uint32, len(shared))
 	window := time.Hour.Milliseconds()
 	i := 0
 	j := 0
 	ni := 0
 	nj := 0
-	var r rollOptions
 	for idx, tEnd := range shared {
 		tStart := tEnd - window
 		ni = seekFirstTimestampIdxAfter(ts[i:], tStart, ni)
@@ -29,38 +28,9 @@ func rollUp(values []float64, ts []int64, shared []int64, f func(*rollOptions) f
 		}
 		nj = seekFirstTimestampIdxAfter(ts[j:], tEnd, nj)
 		j += nj
-
-		r.prevValue = nan
-		r.prevTimestamp = tStart
-		if i < len(ts) && i > 0 && ts[i-1] > r.prevTimestamp {
-			r.prevValue = values[i-1]
-			r.prevTimestamp = ts[i-1]
-		}
-		r.values = values[i:j]
-		r.ts = ts[i:j]
-		r.realPrevValue = nan
-		if i > 0 {
-			r.realPrevValue = values[i-1]
-		}
-		r.realNextValue = nan
-		if j < len(values) {
-			r.realNextValue = values[j]
-		}
-		r.currTimestamp = tEnd
-		value := f(&r)
-		o[idx] = value
+		o[idx] = f(values[i:j])
 	}
 	return
-}
-
-type rollOptions struct {
-	prevValue     float64
-	prevTimestamp int64
-	values        []float64
-	ts            []int64
-	realPrevValue float64
-	realNextValue float64
-	currTimestamp int64
 }
 
 func sharedTS(start, end, step int64) []int64 {

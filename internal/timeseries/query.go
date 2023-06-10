@@ -173,6 +173,11 @@ type Value struct {
 	Value     []float64 `json:"value"`
 }
 
+type internalValue struct {
+	Timestamp []int64  `json:"timestamp"`
+	Value     []uint16 `json:"value"`
+}
+
 var (
 	defaultStep = time.Hour
 )
@@ -181,7 +186,7 @@ type PropertiesResult map[string]MetricResult
 
 type MetricResult map[string]OutValue
 
-type OutValue map[string][]float64
+type OutValue map[string][]uint32
 
 func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	currentTime := core.Now(ctx)
@@ -257,7 +262,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 			if !f.Accept(metric) {
 				continue
 			}
-			values := make(map[string]*Value)
+			values := make(map[string]*internalValue)
 			b.Reset()
 			m.metric(metric)
 			var text string
@@ -281,13 +286,13 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 				}
 				v, ok := values[string(txt)]
 				if !ok {
-					v = &Value{}
+					v = &internalValue{}
 					values[string(txt)] = v
 				}
 				err := x.Value(func(val []byte) error {
 					v.Timestamp = append(v.Timestamp, int64(x.Version()))
 					v.Value = append(v.Value,
-						float64(binary.BigEndian.Uint16(val)),
+						binary.BigEndian.Uint16(val),
 					)
 					return nil
 				})
@@ -301,10 +306,10 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 			}
 			o := make(OutValue)
 			for k, v := range values {
-				o[k] = rollUp(v.Value, v.Timestamp, shared, func(ro *rollOptions) float64 {
-					var x float64
-					for _, xx := range ro.values {
-						x += xx
+				o[k] = rollUp(v.Value, v.Timestamp, shared, func(u []uint16) uint32 {
+					var x uint32
+					for _, n := range u {
+						x += uint32(n)
 					}
 					return x
 				})
