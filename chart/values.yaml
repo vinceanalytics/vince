@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/vinceanalytics/vince
+  repository: ghcr.io/vinceanalytics/v8s
   pullPolicy: IfNotPresent
 
 resources:

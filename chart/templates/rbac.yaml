@@ -2,12 +2,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: vince-controller-role
+  name: v8s-role
   namespace: {{ .Release.Namespace }}
   labels:
     app: vince
     component: controller
-    chart: {{ include "vince.chart" .  | quote }}
+    chart: {{ include "v8s.chart" .  | quote }}
     release: {{ .Release.Name | quote }}
     heritage: {{ .Release.Service | quote }}
 rules:
@@ -15,6 +15,7 @@ rules:
       - staples
     resources:
       - sites
+      - vinces
     verbs:
       - get
       - list
@@ -24,19 +25,19 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: vince-controller
+  name: v8s
   namespace: {{ .Release.Namespace }}
   labels:
     app: vince
     component: controller
-    chart: {{ include "vince.chart" .  | quote }}
+    chart: {{ include "v8s.chart" .  | quote }}
     release: {{ .Release.Name | quote }}
     heritage: {{ .Release.Service | quote }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: vince-controller-role
+  name: v8s-role
 subjects:
 - kind: ServiceAccount
-  name: vince-controller
+  name: v8s
   namespace: {{ .Release.Namespace }}

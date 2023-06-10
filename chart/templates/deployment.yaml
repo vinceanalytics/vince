@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vince-controller
+  name: v8s
   nospace: {{ .Release.Namespace }}
   labels:
     app: vince
     component: controller
-    chart: {{ include "vince.chart" .  | quote }}
+    chart: {{ include "v8s.chart" .  | quote }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     release: {{ .Release.Name | quote }}
 spec:
@@ -24,12 +24,12 @@ spec:
         release: {{ .Release.Name | quote }}
 
     spec:
-      serviceAccountName: vince-controller
+      serviceAccountName: v8s
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
       containers:
-        - name: vince-contoller
+        - name: v8s
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
