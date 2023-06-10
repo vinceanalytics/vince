@@ -36,15 +36,15 @@ export default defineConfig({
           {
             text: 'Cli', link: '/cli/', items: [
               { text: "Core", link: '/cli/core' },
-              { text: "Alerts", link: '/cli/alerts' },
-              { text: "Backup", link: '/cli/backup' },
-              { text: "Bootstrap", link: '/cli/bootstrap' },
-              { text: "CORS", link: '/cli/cors' },
-              { text: "Firewall", link: '/cli/firewall' },
-              { text: "Intervals", link: '/cli/intervals' },
-              { text: "Mailer", link: '/cli/mailer' },
               { text: "Secrets", link: '/cli/secrets' },
               { text: "TLS", link: '/cli/tls' },
+              { text: "Bootstrap", link: '/cli/bootstrap' },
+              { text: "Intervals", link: '/cli/intervals' },
+              { text: "CORS", link: '/cli/cors' },
+              { text: "Firewall", link: '/cli/firewall' },
+              { text: "Mailer", link: '/cli/mailer' },
+              { text: "Alerts", link: '/cli/alerts' },
+              { text: "Backup", link: '/cli/backup' },
             ]
           },
         ]
