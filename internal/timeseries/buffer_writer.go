@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/pkg/entry"
@@ -15,12 +14,10 @@ import (
 )
 
 type Buffer struct {
-	mu          sync.Mutex
-	segments    MultiEntry
-	digest      *xxhash.Digest
-	cacheKeyBuf [8]byte
-	id          [16]byte
-	ttl         time.Duration
+	mu       sync.Mutex
+	segments MultiEntry
+	id       [16]byte
+	ttl      time.Duration
 }
 
 func (b *Buffer) AddEntry(e ...*entry.Entry) {
@@ -32,7 +29,6 @@ func (b *Buffer) AddEntry(e ...*entry.Entry) {
 func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
 	binary.BigEndian.PutUint64(b.id[:8], uid)
 	binary.BigEndian.PutUint64(b.id[8:], sid)
-	b.digest = xxhash.New()
 	b.ttl = ttl
 	return b
 }
@@ -43,7 +39,6 @@ func (b *Buffer) hasEntries() bool {
 
 func (b *Buffer) Reset() *Buffer {
 	b.segments.reset()
-	b.digest.Reset()
 	return b
 }
 
@@ -69,12 +64,12 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 	defer b.mu.Unlock()
 	var s *entry.Entry
 	x := caches.Session(ctx)
-	cacheKey := b.key(e.Domain, e.UserId)
+	cacheKey := e.UserId
 	if o, ok := x.Get(cacheKey); ok {
 		s = o.(*entry.Entry)
 	}
 	if s == nil {
-		cacheKey = b.key(e.Domain, prevUserId)
+		cacheKey = prevUserId
 		if o, ok := x.Get(cacheKey); ok {
 			s = o.(*entry.Entry)
 		}
@@ -98,21 +93,13 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 	//
 	// Note that this is best case estimates.
 	e.Session()
-	key := b.key(e.Domain, e.UserId)
-	x.SetWithTTL(key, e, 1, b.ttl)
+	x.SetWithTTL(e.UserId, e, 1, b.ttl)
 }
 
 var bigBufferPool = &sync.Pool{
 	New: func() any {
 		return new(Buffer)
 	},
-}
-
-func (b *Buffer) key(domain string, uid uint64) uint64 {
-	b.digest.Reset()
-	b.digest.WriteString(domain)
-	b.digest.Write(binary.BigEndian.AppendUint64(b.cacheKeyBuf[:], uid))
-	return b.digest.Sum64()
 }
 
 func (b *Buffer) Build(ctx context.Context, f func(p Property, key string, sum *Sum) error) error {
