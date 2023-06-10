@@ -128,17 +128,19 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var dropped int
 	ts := core.Now(ctx)
-	unix := ts.Unix()
+	unix := ts.UnixMilli()
 
 	uid := userid.Get(ctx)
 	for _, domain := range domains {
-		b, pass := gate.Check(r.Context(), domain)
+		b, xuid, xsid, pass := gate.Check(r.Context(), domain)
 		if !pass {
 			dropped += 1
 			continue
 		}
 		userID := uid.Hash(remoteIp, userAgent, domain, host)
 		e := entry.NewEntry()
+		e.UID = xuid
+		e.SID = xsid
 		e.UserId = userID
 		e.Name = req.EventName
 		e.Hostname = host

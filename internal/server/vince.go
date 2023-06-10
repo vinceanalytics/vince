@@ -182,7 +182,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		return nil, nil, err
 	}
 	resources = append(resources, ts)
-	ctx, err = caches.Open(ctx)
+	ctx, err = caches.Open(ctx, timeseries.Collect)
 	if err != nil {
 		log.Get().Err(err).Msg("failed to open caches")
 		resources.Close()

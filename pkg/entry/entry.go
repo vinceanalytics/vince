@@ -9,6 +9,7 @@ import (
 )
 
 type Entry struct {
+	UID, SID               uint64
 	UtmMedium              string
 	Referrer               string
 	Domain                 string
@@ -66,6 +67,7 @@ func (e *Entry) Release() {
 // Session creates a new session from entry
 func (e *Entry) Session() *Entry {
 	e.Sign = 1
+	e.Start = e.Timestamp
 	session := uuid.New()
 	e.SessionId = xxhash.Sum64(session[:])
 	e.EntryPage = e.Pathname

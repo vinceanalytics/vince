@@ -1,27 +1,26 @@
 package timeseries
 
 import (
-	"bytes"
 	"context"
 	"encoding/binary"
 	"errors"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
-const SessionTime = time.Minute * 10
-
 type Buffer struct {
-	mu       sync.Mutex
-	buf      bytes.Buffer
-	segments MultiEntry
-	id       [16]byte
+	mu          sync.Mutex
+	segments    MultiEntry
+	digest      *xxhash.Digest
+	cacheKeyBuf [8]byte
+	id          [16]byte
+	ttl         time.Duration
 }
 
 func (b *Buffer) AddEntry(e ...*entry.Entry) {
@@ -33,12 +32,18 @@ func (b *Buffer) AddEntry(e ...*entry.Entry) {
 func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
 	binary.BigEndian.PutUint64(b.id[:8], uid)
 	binary.BigEndian.PutUint64(b.id[8:], sid)
+	b.digest = xxhash.New()
+	b.ttl = ttl
 	return b
 }
 
+func (b *Buffer) hasEntries() bool {
+	return len(b.segments.Timestamp) > 0
+}
+
 func (b *Buffer) Reset() *Buffer {
-	b.buf.Reset()
 	b.segments.reset()
+	b.digest.Reset()
 	return b
 }
 
@@ -81,13 +86,7 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 		// We make sure the key is not expired yet before updating it.
 		if ttl, ok := x.GetTTL(b.key(s.Domain, s.UserId)); ttl != 0 && ok {
 			defer e.Release()
-			old := s.Clone()
-			// Update modifies s which is still in cache. It is illegal for a session to
-			// happen concurrently.
-			updated := s.Update(e)
-			old.Sign = -1
-			b.AddEntry(updated, old)
-			old.Release()
+			s.Update(e)
 			return
 		}
 	}
@@ -96,12 +95,10 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 	// session id and associate it with the user id. Sessions allows us to track
 	// bounce rate without fingerprinting the user.
 	//
-	// Note that this is best case estimates. The new session is cached with
-	// expiring value of 10 minutes.
+	// Note that this is best case estimates.
 	session := e.Session()
 	key := b.key(session.Domain, session.UserId)
-	b.AddEntry(session)
-	x.SetWithTTL(key, session, 1, SessionTime)
+	x.SetWithTTL(key, session, 1, b.ttl)
 }
 
 var bigBufferPool = &sync.Pool{
@@ -110,11 +107,11 @@ var bigBufferPool = &sync.Pool{
 	},
 }
 
-func (b *Buffer) key(domain string, uid uint64) string {
-	b.buf.Reset()
-	b.buf.WriteString(domain)
-	b.buf.WriteString(strconv.FormatUint(uid, 10))
-	return b.buf.String()
+func (b *Buffer) key(domain string, uid uint64) uint64 {
+	b.digest.Reset()
+	b.digest.WriteString(domain)
+	b.digest.Write(binary.BigEndian.AppendUint64(b.cacheKeyBuf[:], uid))
+	return b.digest.Sum64()
 }
 
 func (b *Buffer) Build(ctx context.Context, f func(p Property, key string, sum *Sum) error) error {

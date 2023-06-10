@@ -26,7 +26,7 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 	}
 	ctx = context.WithValue(ctx, mikeKey{}, mike)
 	ctx = context.WithValue(ctx, uniqueKey{}, unique)
-	ctx = SetMap(ctx, NewMap())
+	ctx = SetMap(ctx, NewMap(o.Intervals.TSSync))
 
 	resource := resourceList{mike, unique}
 	return ctx, resource, nil
