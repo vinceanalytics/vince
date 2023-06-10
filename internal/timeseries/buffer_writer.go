@@ -96,9 +96,9 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 	// bounce rate without fingerprinting the user.
 	//
 	// Note that this is best case estimates.
-	session := e.Session()
-	key := b.key(session.Domain, session.UserId)
-	x.SetWithTTL(key, session, 1, b.ttl)
+	e.Session()
+	key := b.key(e.Domain, e.UserId)
+	x.SetWithTTL(key, e, 1, b.ttl)
 }
 
 var bigBufferPool = &sync.Pool{
@@ -149,7 +149,6 @@ type MultiEntry struct {
 	City                   []string
 	PageViews              []int32
 	Events                 []int32
-	Sign                   []int32
 	IsBounce               []bool
 
 	key [8]byte
@@ -186,7 +185,6 @@ func (m *MultiEntry) reset() {
 	m.City = m.City[:0]
 	m.PageViews = m.PageViews[:0]
 	m.Events = m.Events[:0]
-	m.Sign = m.Sign[:0]
 	m.IsBounce = m.IsBounce[:0]
 }
 
@@ -220,7 +218,6 @@ func (m *MultiEntry) append(e *entry.Entry) {
 	m.City = append(m.City, e.City)
 	m.PageViews = append(m.PageViews, e.PageViews)
 	m.Events = append(m.Events, e.Events)
-	m.Sign = append(m.Sign, e.Sign)
 	m.IsBounce = append(m.IsBounce, e.IsBounce)
 }
 
@@ -298,27 +295,23 @@ func (m *MultiEntry) compute(
 			}
 			seg[key] = e
 		}
-		// When a new Event is received sign is set to 1, when an event is in the same
-		// session a new Event with updated details is created with sign 1 and a clone
-		// of the found Event is updated with sign -1. At any given time an Entry
-		// exists with up to date stats fro the session.
-		//
-		// This means we can correctly track different measurements depending on the
-		// Sign of the Entry
-		e.Visits += float64(m.Sign[i])
-		var bounce int32
+		e.Visits += 1
 		if m.IsBounce[i] {
-			bounce = 1
+			e.BounceRate += 1
 		}
-		e.BounceRate += float64(bounce * m.Sign[i])
-		e.Views += float64(m.PageViews[i] * m.Sign[i])
-		e.Events += float64(m.Events[i] * m.Sign[i])
+		e.Views += float64(m.PageViews[i])
+		e.Events += float64(m.Events[i])
 		if !e.uniq(m.UserId[i]) {
 			e.Visitors += 1
 		}
-		e.VisitDuration += float64(m.Duration[i] * time.Duration(m.Sign[i]))
+		e.VisitDuration += float64(m.Duration[i])
 	}
 	for k, v := range seg {
+		// Visit duration is average. Compute the average before calling f. Avoid
+		// division by zero bugs.
+		if len(m.Timestamp) > 0 {
+			v.Sum.VisitDuration = v.Sum.VisitDuration / float64(len(m.Timestamp))
+		}
 		err := f(k, &v.Sum)
 		if err != nil {
 			return err

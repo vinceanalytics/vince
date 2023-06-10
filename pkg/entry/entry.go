@@ -39,7 +39,6 @@ type Entry struct {
 	City                   string
 	PageViews              int32
 	Events                 int32
-	Sign                   int32
 	IsBounce               bool
 }
 
@@ -65,8 +64,7 @@ func (e *Entry) Release() {
 }
 
 // Session creates a new session from entry
-func (e *Entry) Session() *Entry {
-	e.Sign = 1
+func (e *Entry) Session() {
 	e.Start = e.Timestamp
 	session := uuid.New()
 	e.SessionId = xxhash.Sum64(session[:])
@@ -78,11 +76,9 @@ func (e *Entry) Session() *Entry {
 		e.PageViews = 1
 	}
 	e.Events = 1
-	return e
 }
 
-func (s *Entry) Update(e *Entry) *Entry {
-	s.Sign = 1
+func (s *Entry) Update(e *Entry) {
 	s.UserId = e.UserId
 	s.Timestamp = e.Timestamp
 	s.ExitPage = e.Pathname
@@ -116,5 +112,4 @@ func (s *Entry) Update(e *Entry) *Entry {
 		s.ScreenSize = e.ScreenSize
 	}
 	s.Events += 1
-	return s
 }
