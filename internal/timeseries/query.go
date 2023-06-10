@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"math"
 	"path"
 	"regexp"
 	"time"
@@ -288,7 +287,7 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 				err := x.Value(func(val []byte) error {
 					v.Timestamp = append(v.Timestamp, int64(x.Version()))
 					v.Value = append(v.Value,
-						math.Float64frombits(binary.BigEndian.Uint64(val)),
+						float64(binary.BigEndian.Uint16(val)),
 					)
 					return nil
 				})

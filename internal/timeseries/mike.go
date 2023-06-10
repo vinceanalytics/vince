@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"math"
 	"sync"
 	"time"
 
@@ -16,11 +15,11 @@ import (
 )
 
 type Sum struct {
-	Visitors      float64
-	Views         float64
-	Events        float64
-	Visits        float64
-	BounceRate    float64
+	Visitors,
+	Views,
+	Events,
+	Visits,
+	BounceRate uint16
 	VisitDuration time.Duration
 }
 
@@ -98,7 +97,7 @@ func saveProperty(ctx context.Context,
 		savePropertyKey(ctx, svc, m.metric(Events).key(ts, text, svc.ls), a.Events),
 		savePropertyKey(ctx, svc, m.metric(Visits).key(ts, text, svc.ls), a.Visits),
 		savePropertyKey(ctx, svc, m.metric(BounceRates).key(ts, text, svc.ls), a.BounceRate),
-		savePropertyKey(ctx, svc, m.metric(VisitDurations).key(ts, text, svc.ls), a.VisitDuration.Seconds()),
+		savePropertyKey(ctx, svc, m.metric(VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration.Milliseconds())),
 	)
 }
 
@@ -159,7 +158,7 @@ var smallBufferpool = &sync.Pool{
 //
 // TODO:(gernest) In theory it must be a good approach however, benchmarks must
 // support this. Is an extra copy better than extra allocation in this scenario ?
-var base [8]byte
+var base [2]byte
 
 // saves mike to the badger key value store. For existing keys a is added to the
 // existing value and the updated value is stored.
@@ -169,7 +168,7 @@ var base [8]byte
 // transaction that called this function. These buffers are not freed, it is the
 // caller's responsibility to ensure svc.ls.Release() is called, which must be
 // outside the transaction svc.txn (meaning after svc.txn.Commit())
-func savePropertyKey(ctx context.Context, svc *saveContext, mike *bytes.Buffer, a float64) error {
+func savePropertyKey(ctx context.Context, svc *saveContext, mike *bytes.Buffer, a uint16) error {
 	if a == 0 {
 		return nil
 	}
@@ -178,7 +177,7 @@ func savePropertyKey(ctx context.Context, svc *saveContext, mike *bytes.Buffer, 
 	// println(">", DebugKey(key), int64(a))
 	b := svc.ls.Get()
 	b.Write(base[:])
-	value := b.Next(8)
-	binary.BigEndian.PutUint64(value, math.Float64bits(a))
+	value := b.Next(2)
+	binary.BigEndian.PutUint16(value, a)
 	return svc.txn.Set(key, value)
 }

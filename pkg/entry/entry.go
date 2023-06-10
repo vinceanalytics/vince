@@ -3,9 +3,6 @@ package entry
 import (
 	"sync"
 	"time"
-
-	"github.com/google/uuid"
-	"github.com/segmentio/parquet-go/bloom/xxhash"
 )
 
 type Entry struct {
@@ -32,13 +29,12 @@ type Entry struct {
 	OperatingSystemVersion string
 	UtmContent             string
 	UserId                 uint64
-	SessionId              uint64
 	Timestamp              int64
 	Duration               time.Duration
 	Start                  int64
 	City                   string
-	PageViews              int32
-	Events                 int32
+	PageViews              uint16
+	Events                 uint16
 	IsBounce               bool
 }
 
@@ -66,8 +62,6 @@ func (e *Entry) Release() {
 // Session creates a new session from entry
 func (e *Entry) Session() {
 	e.Start = e.Timestamp
-	session := uuid.New()
-	e.SessionId = xxhash.Sum64(session[:])
 	e.EntryPage = e.Pathname
 	e.ExitPage = e.Pathname
 	e.IsBounce = true

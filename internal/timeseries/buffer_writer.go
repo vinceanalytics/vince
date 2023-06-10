@@ -130,13 +130,12 @@ type MultiEntry struct {
 	OperatingSystemVersion []string
 	UtmContent             []string
 	UserId                 []uint64
-	SessionId              []uint64
 	Timestamp              []int64
 	Duration               []time.Duration
 	Start                  []int64
 	City                   []string
-	PageViews              []int32
-	Events                 []int32
+	PageViews              []uint16
+	Events                 []uint16
 	IsBounce               []bool
 
 	key [8]byte
@@ -166,7 +165,6 @@ func (m *MultiEntry) reset() {
 	m.OperatingSystemVersion = m.OperatingSystemVersion[:0]
 	m.UtmContent = m.UtmContent[:0]
 	m.UserId = m.UserId[:0]
-	m.SessionId = m.SessionId[:0]
 	m.Timestamp = m.Timestamp[:0]
 	m.Duration = m.Duration[:0]
 	m.Start = m.Start[:0]
@@ -199,7 +197,6 @@ func (m *MultiEntry) append(e *entry.Entry) {
 	m.OperatingSystemVersion = append(m.OperatingSystemVersion, e.OperatingSystemVersion)
 	m.UtmContent = append(m.UtmContent, e.UtmContent)
 	m.UserId = append(m.UserId, e.UserId)
-	m.SessionId = append(m.SessionId, e.SessionId)
 	m.Timestamp = append(m.Timestamp, e.Timestamp)
 	m.Duration = append(m.Duration, e.Duration)
 	m.Start = append(m.Start, e.Start)
@@ -287,8 +284,8 @@ func (m *MultiEntry) compute(
 		if m.IsBounce[i] {
 			e.BounceRate += 1
 		}
-		e.Views += float64(m.PageViews[i])
-		e.Events += float64(m.Events[i])
+		e.Views += m.PageViews[i]
+		e.Events += m.Events[i]
 		if !e.uniq(m.UserId[i]) {
 			e.Visitors += 1
 		}
