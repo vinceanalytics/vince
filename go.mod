@@ -9,7 +9,7 @@ require (
 	github.com/chanced/powerset v0.0.1
 	github.com/dchest/captcha v1.0.0
 	github.com/dchest/siphash v1.2.3
-	github.com/dgraph-io/badger/v4 v4.0.1
+	github.com/dgraph-io/badger/v4 v4.1.0
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/dop251/goja v0.0.0-20230427124612-428fc442ff5f
