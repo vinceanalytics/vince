@@ -66,17 +66,10 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 			s = o.(*entry.Entry)
 		}
 	}
-
 	if s != nil {
-		// There are cases where the key is expired but still present in the cache
-		// waiting for eviction.
-		//
-		// We make sure the key is not expired yet before updating it.
-		if ttl, ok := x.GetTTL(cacheKey); ttl != 0 && ok {
-			s.Update(e)
-			e.Release()
-			return
-		}
+		s.Update(e)
+		e.Release()
+		return
 	}
 
 	// Generate a new session based on event e. This includes creating a new
