@@ -86,8 +86,8 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 		//
 		// We make sure the key is not expired yet before updating it.
 		if ttl, ok := x.GetTTL(cacheKey); ttl != 0 && ok {
-			defer e.Release()
 			s.Update(e)
+			e.Release()
 			return
 		}
 	}
