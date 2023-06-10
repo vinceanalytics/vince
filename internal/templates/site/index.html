@@ -3,8 +3,13 @@
 {{define "_content"}}
 <div class="body">
     <div class="container-md">
-        <div class="Subhead Subhead--spacious text-center settingsDivider">
+        <div class="Subhead Subhead--spacious settingsDivider">
             <h2 class="Subhead-heading">My Sites</h2>
+            <div class="Subhead-action">
+                <a class="btn-octicon" type="button" href="/sites/new">
+                    {{Icon "plus" 16}}
+                </a>
+            </div>
         </div>
         {{if .SitesOverview}}
         {{range .SiteIndex}}
