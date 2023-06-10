@@ -35,10 +35,10 @@ export default defineConfig({
           { text: 'Adding your first site', link: '/guide/adding-first-website' },
           {
             text: 'Cli', link: '/cli/', items: [
+              { text: "Core", link: '/cli/core' },
               { text: "Alerts", link: '/cli/alerts' },
               { text: "Backup", link: '/cli/backup' },
               { text: "Bootstrap", link: '/cli/bootstrap' },
-              { text: "Core", link: '/cli/core' },
               { text: "CORS", link: '/cli/cors' },
               { text: "Firewall", link: '/cli/firewall' },
               { text: "Intervals", link: '/cli/intervals' },
