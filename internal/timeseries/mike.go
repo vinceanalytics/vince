@@ -21,7 +21,7 @@ type Sum struct {
 	Events        float64
 	Visits        float64
 	BounceRate    float64
-	VisitDuration float64
+	VisitDuration time.Duration
 }
 
 func DropSite(ctx context.Context, uid, sid uint64) {
@@ -98,7 +98,7 @@ func saveProperty(ctx context.Context,
 		savePropertyKey(ctx, svc, m.metric(Events).key(ts, text, svc.ls), a.Events),
 		savePropertyKey(ctx, svc, m.metric(Visits).key(ts, text, svc.ls), a.Visits),
 		savePropertyKey(ctx, svc, m.metric(BounceRates).key(ts, text, svc.ls), a.BounceRate),
-		savePropertyKey(ctx, svc, m.metric(VisitDurations).key(ts, text, svc.ls), a.VisitDuration),
+		savePropertyKey(ctx, svc, m.metric(VisitDurations).key(ts, text, svc.ls), a.VisitDuration.Seconds()),
 	)
 }
 

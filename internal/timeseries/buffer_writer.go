@@ -292,13 +292,13 @@ func (m *MultiEntry) compute(
 		if !e.uniq(m.UserId[i]) {
 			e.Visitors += 1
 		}
-		e.VisitDuration += float64(m.Duration[i])
+		e.VisitDuration += m.Duration[i]
 	}
 	for k, v := range seg {
 		// Visit duration is average. Compute the average before calling f. Avoid
 		// division by zero bugs.
 		if len(m.Timestamp) > 0 {
-			v.Sum.VisitDuration = v.Sum.VisitDuration / float64(len(m.Timestamp))
+			v.Sum.VisitDuration = v.Sum.VisitDuration / time.Duration(len(m.Timestamp))
 		}
 		err := f(k, &v.Sum)
 		if err != nil {
