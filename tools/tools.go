@@ -92,6 +92,10 @@ func WriteFile(path string, data []byte) {
 	println("    write: ", path)
 }
 
+func MkDir(path string) {
+	ExecPlain("mkdir", "-pv", path)
+}
+
 func ReadFile(path string) []byte {
 	println("    read: ", path)
 	b, err := os.ReadFile(path)

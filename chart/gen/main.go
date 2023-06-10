@@ -1,6 +1,8 @@
 package main
 
 import (
+	"path/filepath"
+
 	"github.com/vinceanalytics/vince/tools"
 )
 
@@ -9,5 +11,7 @@ func main() {
 		"helm", "package", ".", "-d", "charts",
 	)
 	o := tools.ExecCollect("helm", "template", ".")
-	tools.WriteFile("charts/v8s.yaml", []byte(o))
+	dir := " website/docs/.vitepress/dist/kustomize"
+	tools.MkDir(dir)
+	tools.WriteFile(filepath.Join(dir, "v8s.yaml"), []byte(o))
 }
