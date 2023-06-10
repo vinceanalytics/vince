@@ -11,7 +11,7 @@ func main() {
 		"helm", "package", ".", "-d", "charts",
 	)
 	o := tools.ExecCollect("helm", "template", ".")
-	dir := " website/docs/.vitepress/dist/kustomize"
+	dir := filepath.Join(tools.RootVince(), "website/docs/.vitepress/dist/kustomize")
 	tools.MkDir(dir)
 	tools.WriteFile(filepath.Join(dir, "v8s.yaml"), []byte(o))
 }
