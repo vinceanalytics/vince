@@ -42,14 +42,6 @@ func (b *Buffer) Reset() *Buffer {
 	return b
 }
 
-func (b *Buffer) UID() uint64 {
-	return binary.BigEndian.Uint64(b.id[:8])
-}
-
-func (b *Buffer) SID() uint64 {
-	return binary.BigEndian.Uint64(b.id[8:])
-}
-
 func (b *Buffer) Release() {
 	b.Reset()
 	bigBufferPool.Put(b)
