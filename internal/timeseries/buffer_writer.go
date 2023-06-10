@@ -69,12 +69,13 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 	defer b.mu.Unlock()
 	var s *entry.Entry
 	x := caches.Session(ctx)
-
-	if o, ok := x.Get(b.key(e.Domain, e.UserId)); ok {
+	cacheKey := b.key(e.Domain, e.UserId)
+	if o, ok := x.Get(cacheKey); ok {
 		s = o.(*entry.Entry)
 	}
 	if s == nil {
-		if o, ok := x.Get(b.key(e.Domain, prevUserId)); ok {
+		cacheKey = b.key(e.Domain, prevUserId)
+		if o, ok := x.Get(cacheKey); ok {
 			s = o.(*entry.Entry)
 		}
 	}
@@ -84,7 +85,7 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 		// waiting for eviction.
 		//
 		// We make sure the key is not expired yet before updating it.
-		if ttl, ok := x.GetTTL(b.key(s.Domain, s.UserId)); ttl != 0 && ok {
+		if ttl, ok := x.GetTTL(cacheKey); ttl != 0 && ok {
 			defer e.Release()
 			s.Update(e)
 			return
