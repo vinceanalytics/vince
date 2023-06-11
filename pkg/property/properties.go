@@ -11,25 +11,25 @@ var _ json.Marshaler = (*Property)(nil)
 var _ json.Unmarshaler = (*Property)(nil)
 
 const (
-	Base           Property = 0
-	Event          Property = 1
-	Page           Property = 2
-	EntryPage      Property = 3
-	ExitPage       Property = 4
-	Referrer       Property = 5
-	UtmMedium      Property = 6
-	UtmSource      Property = 7
-	UtmCampaign    Property = 8
-	UtmContent     Property = 9
-	UtmTerm        Property = 10
-	UtmDevice      Property = 11
-	UtmBrowser     Property = 12
-	BrowserVersion Property = 13
-	Os             Property = 14
-	OsVersion      Property = 15
-	Country        Property = 16
-	Region         Property = 17
-	City           Property = 18
+	Base Property = iota
+	Event
+	Page
+	EntryPage
+	ExitPage
+	Referrer
+	UtmMedium
+	UtmSource
+	UtmCampaign
+	UtmContent
+	UtmTerm
+	UtmDevice
+	UtmBrowser
+	BrowserVersion
+	Os
+	OsVersion
+	Country
+	Region
+	City
 )
 
 const BaseKey = "__root__"
@@ -112,48 +112,48 @@ var _ json.Marshaler = (*Metric)(nil)
 var _ json.Unmarshaler = (*Metric)(nil)
 
 const (
-	Visitors       Metric = 0
-	Views          Metric = 1
-	Events         Metric = 2
-	Visits         Metric = 3
-	BounceRates    Metric = 4
-	VisitDurations Metric = 5
+	Visitors Metric = iota
+	Views
+	Events
+	Visits
+	BounceRates
+	VisitDurations
 )
 
 // Enum value maps for Metric.
 var (
-	_metric_name = map[uint8]string{
-		0: "visitors",
-		1: "views",
-		2: "events",
-		3: "visits",
-		4: "bounceRates",
-		5: "visitDurations",
+	_metric_name = map[Metric]string{
+		Visitors:       "visitors",
+		Views:          "views",
+		Events:         "events",
+		Visits:         "visits",
+		BounceRates:    "bounceRates",
+		VisitDurations: "visitDurations",
 	}
-	_metric_label = map[uint8]string{
-		0: "Unique Visitors",
-		1: "Page Views",
-		2: "Events",
-		3: "Sessions",
-		4: "Bounce Rates",
-		5: "Session Duration",
+	_metric_label = map[Metric]string{
+		Visitors:       "Unique Visitors",
+		Views:          "Page Views",
+		Events:         "Events",
+		Visits:         "Sessions",
+		BounceRates:    "Bounce Rates",
+		VisitDurations: "Session Duration",
 	}
-	_metric_value = map[string]uint8{
-		"visitors":       0,
-		"views":          1,
-		"events":         2,
-		"visits":         3,
-		"bounceRates":    4,
-		"visitDurations": 5,
+	_metric_value = map[string]Metric{
+		"visitors":       Visitors,
+		"views":          Views,
+		"events":         Events,
+		"visits":         Visits,
+		"bounceRates":    BounceRates,
+		"visitDurations": VisitDurations,
 	}
 )
 
 func (m Metric) String() string {
-	return _metric_name[uint8(m)]
+	return _metric_name[m]
 }
 
 func (m Metric) Label() string {
-	return _metric_label[uint8(m)]
+	return _metric_label[m]
 }
 
 func (m Metric) Selected() bool {
