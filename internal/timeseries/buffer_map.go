@@ -60,6 +60,16 @@ func (m *Map) Delete(sid uint64) {
 	m.mu.Unlock()
 }
 
+func (m *Map) Close() error {
+	m.mu.Lock()
+	for k, v := range m.m {
+		delete(m.m, k)
+		v.Release()
+	}
+	m.mu.Unlock()
+	return nil
+}
+
 func (m *Map) Save(ctx context.Context) {
 	m.mu.Lock()
 	for k, v := range m.m {
