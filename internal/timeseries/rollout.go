@@ -24,6 +24,10 @@ func rollUp(values []uint16, ts []int64, shared []int64, f func([]uint16) uint32
 		}
 		nj = seekFirstTimestampIdxAfter(ts[j:], tEnd, nj)
 		j += nj
+		if len(values) == 1 {
+			o[idx] = f(values[i:])
+			return
+		}
 		o[idx] = f(values[i:j])
 	}
 	return
