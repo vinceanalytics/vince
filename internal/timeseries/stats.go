@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/url"
 	"sort"
 	"strconv"
@@ -64,7 +63,7 @@ func (s *Stats) Series() []*Plot {
 		case VisitDurations:
 			if v.Sum != 0 && r[Visits].Sum > 0 {
 				f := float64(v.Sum) / float64(r[Visits].Sum)
-				d := time.Duration(math.Trunc(f)) * time.Millisecond
+				d := time.Duration(f)
 				v.Count = d.String()
 			} else {
 				v.Count = "0"
