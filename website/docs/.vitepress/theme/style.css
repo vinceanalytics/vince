@@ -17,14 +17,6 @@
   --vp-c-brand-dimm: rgba(100, 108, 255, 0.08);
 }
 
-.VPHome {
-  background-color: #bdfcff;
-}
-
-.dark .VPHome {
-  background-color: #1e1e20;
-}
-
 /**
  * Component: Button
  * -------------------------------------------------------------------------- */
