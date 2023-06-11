@@ -189,10 +189,10 @@ type MetricResult map[string]OutValue
 type OutValue map[string][]uint32
 
 func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
-	currentTime := core.Now(ctx)
-	startTS := currentTime.Truncate(time.Millisecond)
+	currentTime := core.Now(ctx).UTC()
+	startTS := currentTime
 	if !r.Start.IsZero() {
-		startTS = r.Start.Truncate(time.Millisecond)
+		startTS = r.Start.UTC()
 	}
 
 	step := defaultStep
@@ -203,10 +203,6 @@ func Query(ctx context.Context, r QueryRequest) (result QueryResult) {
 	var window, offset time.Duration
 	if r.Window > 0 {
 		window = r.Window
-	}
-	if window == 0 {
-		// default to session ttl
-		window = time.Minute * 30
 	}
 	if r.Offset > 0 {
 		offset = r.Offset

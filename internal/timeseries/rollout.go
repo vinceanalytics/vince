@@ -1,26 +1,22 @@
 package timeseries
 
 import (
-	"math"
 	"time"
 
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
-var (
-	nan = math.NaN()
-)
+var rolloutWindow = time.Hour.Milliseconds()
 
 // This function was ported from VictoriaMetrics project.
 func rollUp(values []uint16, ts []int64, shared []int64, f func([]uint16) uint32) (o []uint32) {
 	o = make([]uint32, len(shared))
-	window := time.Hour.Milliseconds()
 	i := 0
 	j := 0
 	ni := 0
 	nj := 0
 	for idx, tEnd := range shared {
-		tStart := tEnd - window
+		tStart := tEnd - rolloutWindow
 		ni = seekFirstTimestampIdxAfter(ts[i:], tStart, ni)
 		i += ni
 		if j < i {
