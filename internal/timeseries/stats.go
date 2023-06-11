@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/url"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/vinceanalytics/vince/pkg/property"
@@ -28,24 +30,50 @@ type Plot struct {
 	Prop   Property
 	Values []uint32
 	Sum    uint32
+	Count  string
 }
 
-func (s *Stats) Series() []Plot {
+func (s *Stats) Series() []*Plot {
 	o := s.Timeseries[s.Prop.String()]
-	r := make([]Plot, 0, len(o))
-	for k, v := range o {
-		x := v[s.Key]
-		r = append(r, Plot{
-			Metric: property.ParsMetric(k),
+	var r [VisitDurations + 1]*Plot
+	for k := range r {
+		r[k] = &Plot{
+			Metric: property.Metric(k),
 			Prop:   s.Prop,
-			Values: x,
-			Sum:    sum(x),
-		})
+		}
+		p := r[k]
+		x, ok := o[p.Metric.String()]
+		if !ok {
+			continue
+		}
+		p.Values = x[s.Key]
+		p.Sum = sum(p.Values)
 	}
-	sort.Slice(r, func(i, j int) bool {
-		return r[i].Metric < r[j].Metric
-	})
-	return r
+	for _, v := range r {
+		switch v.Metric {
+		case BounceRates:
+			if v.Sum != 0 && r[Visits].Sum > 0 {
+				f := float64(v.Sum) / float64(r[Visits].Sum)
+				f *= 100
+				v.Count = strconv.FormatFloat(
+					f, 'f', 1, 64,
+				) + "%"
+			} else {
+				v.Count = "0"
+			}
+		case VisitDurations:
+			if v.Sum != 0 && r[Visits].Sum > 0 {
+				f := float64(v.Sum) / float64(r[Visits].Sum)
+				d := time.Duration(math.Trunc(f)) * time.Millisecond
+				v.Count = d.String()
+			} else {
+				v.Count = "0"
+			}
+		default:
+			v.Count = strconv.Itoa(int(v.Sum))
+		}
+	}
+	return r[:]
 }
 
 func (s *Stats) ActiveSeries() []uint32 {
