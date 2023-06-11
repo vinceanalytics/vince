@@ -8,6 +8,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/vinceanalytics/vince/pkg/property"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
@@ -20,6 +21,39 @@ type Stats struct {
 	Timestamps []int64
 	Aggregate  Aggregate
 	Timeseries PropertiesResult
+}
+
+type Plot struct {
+	Metric Metric
+	Prop   Property
+	Values []uint32
+	Sum    uint32
+}
+
+func (s *Stats) Series() []Plot {
+	o := s.Timeseries[s.Prop.String()]
+	r := make([]Plot, 0, len(o))
+	for k, v := range o {
+		x := v[s.Key]
+		r = append(r, Plot{
+			Metric: property.ParsMetric(k),
+			Prop:   s.Prop,
+			Values: x,
+			Sum:    sum(x),
+		})
+	}
+	sort.Slice(r, func(i, j int) bool {
+		return r[i].Metric < r[j].Metric
+	})
+	return r
+}
+
+func (s *Stats) ActiveSeries() []uint32 {
+	return s.Timeseries[s.Prop.String()][property.Visitors.String()][s.Key]
+}
+
+func (s *Stats) Value(o OutValue) []uint32 {
+	return o[s.Key]
 }
 
 func (s *Stats) QueryPeriod(period timex.Duration) string {

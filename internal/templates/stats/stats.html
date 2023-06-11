@@ -43,70 +43,30 @@
                 </details>
             </div>
         </div>
-        <div class="Box mb-3 border-0">
+        <div class="Box mb-2">
             <tab-container data-action="tab-container-change:stat-panels#change">
+                {{$series:=.Stats.Series}}
                 <div class="UnderlineNav px-3">
                     <ul role="tablist" class="UnderlineNav-body list-style-none">
+                        {{range $series}}
                         <li>
-                            <button id="visitors" role="tab" aria-selected="true" class="UnderlineNav-item px-3">
-                                <span>Unique Visitors</span>
-                                <span class="Counter">{{$stats.Count "visitors"}}</span>
+                            <button id={{.Metric}} role="tab" {{if .Metric.Selected}} aria-selected="true" {{end}}
+                                class="UnderlineNav-item px-3">
+                                <span>{{.Metric.Label}}</span>
+                                <span class="Counter">{{.Sum}}</span>
                             </button>
                         </li>
-                        <li>
-                            <button id="views" role="tab" class="UnderlineNav-item px-3">
-                                <span>Page Views</span>
-                                <span class="Counter">{{$stats.Count "views"}}</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button id="visits" role="tab" class="UnderlineNav-item px-3">
-                                <span>Sessions</span>
-                                <span class="Counter">{{$stats.Count "visits"}}</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button id="bounceRates" role="tab" class="UnderlineNav-item px-3">
-                                <span>Bounce Rate</span>
-                                <span class="Counter">{{$stats.Count "bounceRates"}}</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button id="visitDurations" role="tab" class="UnderlineNav-item px-3">
-                                <span>Visits Duration</span>
-                                <span class="Counter">{{$stats.Count "visitDurations"}}</span>
-                            </button>
-                        </li>
+                        {{end}}
                     </ul>
                 </div>
-                <div class="Box-body border-0 p-3">
-                    <div id="visitor" data-metric="visitors" role="tabpanel" aria-labelledby="visitors">
-                        <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
-                            data-value={{$stats.PlotValue "visitors" }}>
-                        </plot-stat>
-                    </div>
-
-                    <div id="view" role="tabpanel" data-metric="views" aria-labelledby="views" hidden>
-                        <plot-stat data-height="450" data-width="980" data-label="views" data-ts={{$stats.PlotTime}}
-                            data-value={{$stats.PlotValue "views" }}>
-                        </plot-stat>
-                    </div>
-                    <div id="visit" role="tabpanel" data-metric="visits" aria-labelledby="visits" hidden>
-                        <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
-                            data-value={{$stats.PlotValue "visits" }}>
-                        </plot-stat>
-                    </div>
-                    <div id="bounceRate" role="tabpanel" data-metric="bounceRates" aria-labelledby="bounceRates" hidden>
-                        <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
-                            data-value={{$stats.PlotValue "bounceRates" }}>
-                        </plot-stat>
-                    </div>
-                    <div id="visitDuration" role="tabpanel" data-metric="visitDurations"
-                        aria-labelledby="visitDurations" hidden>
-                        <plot-stat data-height="450" data-width="980" data-label="visitors" data-ts={{$stats.PlotTime}}
-                            data-value={{$stats.PlotValue "visitDuration" }}>
-                        </plot-stat>
-                    </div>
+                <div class="Box-body">
+                    {{$active := index $series 0}}
+                    <plot-stat data-label={{$active.Metric.Label}} data-height="240" data-ts={{JSON .Stats.Timestamps}}
+                        data-values={{JSON $active.Values}} data-target="stat-panels.plot"></plot-stat>
+                    {{range $series}}
+                    <template data-metric={{.Metric}} data-label={{.Metric.Label}} data-prop={{.Prop}}
+                        data-values={{JSON .Values}} role="tabpanel" aria-labelledby={{.Metric}}></template>
+                    {{end}}
                 </div>
             </tab-container>
         </div>

@@ -3,6 +3,7 @@ package templates
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/url"
@@ -56,6 +57,13 @@ func base() *template.Template {
 				return "d-none"
 			}
 			return ""
+		},
+		"JSON": func(a any) (string, error) {
+			b, err := json.Marshal(a)
+			if err != nil {
+				return "", err
+			}
+			return string(b), nil
 		},
 	})
 }

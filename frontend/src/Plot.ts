@@ -5,53 +5,91 @@ import uPlot from 'uplot';
 
 @controller
 class PlotStatElement extends HTMLElement {
-    @attr width: number;
-    @attr height: number;
-    @attr label: string;
-    @attr ts: string;
-    @attr value: string;
+    ts: number[];
     plot: uPlot;
 
     connectedCallback() {
-        this.plot = new uPlot(this.#options(), this.#data(), this);
+        this.ts = JSON.parse(this.dataset.ts!) as number[];
+        this.change(this.dataset);
     }
 
-    #options(): Options {
-        uPlot.clipGaps
-        return {
-            width: this.width,
-            height: this.height,
+    change(set: DOMStringMap) {
+        if (this.plot) {
+            this.plot.destroy();
+        }
+        const y = JSON.parse(set.values!) as number[];
+        this.plot = new uPlot({
+            width: this.parentElement?.scrollWidth!,
+            height: 240,
             series: [
                 {},
                 {
-                    label: this.label,
+                    label: set.label,
                     fill: "#ffe0d8"
                 },
             ],
             ms: 1
-        }
-    }
-
-    #data(): AlignedData {
-        const x = JSON.parse(this.ts) as number[];
-        const y = JSON.parse(this.value) as number[];
-        return [x, y];
+        }, [this.ts, y], this)
     }
 
 }
 
-function shortNumber(value: number): string {
-    let p = Math.floor(Math.log10(Math.abs(value)));
-    if (p <= 2) return value.toString();
-    let l = Math.floor(p / 3);
-    let shortened =
-        Math.pow(10, p - l * 3) * +(value / Math.pow(10, p)).toFixed(1);
-    return Math.round(shortened * 100) / 100 + " " + ["", "K", "M", "B", "T"][l];
+@controller
+export class StatPanelsElement extends HTMLElement {
+    @targets items: PropPanelsElement[];
+    @target plot: PlotStatElement;
+
+    change(event: Event) {
+        const e = event as CustomEvent;
+        const target = e.detail.relatedTarget as HTMLElement;
+        this.plot.change(target.dataset);
+        this.select(target.dataset.metric!);
+    }
+
+    select(metric: string) {
+        this.items.forEach((e) => {
+            e.select(metric)
+        })
+    }
 }
+
+@controller
+export class PropPanelsElement extends HTMLElement {
+    @targets items: HTMLElement[];
+    @targets panels: HTMLElement[];
+    @attr active: string;
+    @attr metric: string;
+
+    change(event: Event) {
+        const e = event as CustomEvent;
+        const target = e.detail.relatedTarget as HTMLElement;
+        this.active = target.dataset.prop!;
+        this.select(this.metric);
+    }
+
+    select(metric: string) {
+        this.metric = metric;
+        this.panels.forEach(element => {
+            if (element.dataset.prop == this.active) {
+                for (let e of element.children!) {
+                    const el = e as HTMLElement;
+                    if (el.dataset.metric == metric) {
+                        el.hidden = false
+                    } else {
+                        el.hidden = true;
+                    }
+                }
+            }
+        });
+    }
+}
+
 
 declare global {
     interface Window {
         PlotStatElement: typeof PlotStatElement
+        StatPanelsElement: typeof StatPanelsElement
+        PropPanelsElement: typeof PropPanelsElement
     }
 }
 
@@ -61,4 +99,11 @@ if (!window.customElements.get('plot-stat')) {
     window.PlotStatElement = PlotStatElement
     window.customElements.define('plot-stat', PlotStatElement)
 }
-
+if (!window.customElements.get('stat-panels')) {
+    window.StatPanelsElement = StatPanelsElement
+    window.customElements.define('stat-panels', StatPanelsElement)
+}
+if (!window.customElements.get('prop-panels')) {
+    window.PropPanelsElement = PropPanelsElement
+    window.customElements.define('prop-panels', PropPanelsElement)
+}

@@ -130,6 +130,14 @@ var (
 		4: "bounceRates",
 		5: "visitDurations",
 	}
+	_metric_label = map[uint8]string{
+		0: "Unique Visitors",
+		1: "Page Views",
+		2: "Events",
+		3: "Sessions",
+		4: "Bounce Rates",
+		5: "Session Duration",
+	}
 	_metric_value = map[string]uint8{
 		"visitors":       0,
 		"views":          1,
@@ -142,6 +150,18 @@ var (
 
 func (m Metric) String() string {
 	return _metric_name[uint8(m)]
+}
+
+func (m Metric) Label() string {
+	return _metric_label[uint8(m)]
+}
+
+func (m Metric) Selected() bool {
+	return m == Visitors
+}
+
+func ParsMetric(k string) Metric {
+	return Metric(_metric_value[k])
 }
 
 func (m Metric) MarshalJSON() ([]byte, error) {
