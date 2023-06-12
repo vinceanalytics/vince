@@ -89,6 +89,12 @@ var ActivationEmail = template.Must(
 	),
 ).Lookup("base_email")
 
+var PasswordResetEmail = template.Must(
+	layout().ParseFS(Files,
+		"email/password_reset_email.html",
+	),
+).Lookup("base_email")
+
 var Activate = template.Must(
 	layout().ParseFS(Files,
 		"auth/activate.html",
@@ -168,6 +174,18 @@ var PasswordResetRequestForm = template.Must(
 	),
 ).Lookup("focus")
 
+var PasswordResetRequestSuccess = template.Must(
+	layout().ParseFS(Files,
+		"auth/password_reset_request_success.html",
+	),
+).Lookup("focus")
+
+var PasswordResetForm = template.Must(
+	layout().ParseFS(Files,
+		"auth/password_reset_form.html",
+	),
+).Lookup("focus")
+
 type NewSite struct {
 	IsFirstSite bool
 }
@@ -188,6 +206,9 @@ type Context struct {
 	Errors        map[string]string
 	Form          url.Values
 	Code          uint64
+	ResetLink     string
+	Token         string
+	Email         string
 	Config        *config.Options
 	HasInvitation bool
 	HasPin        bool
@@ -271,13 +292,13 @@ func Logo(width, height int) template.HTML {
 }
 
 func (t *Context) Snippet() string {
-	track := fmt.Sprintf("%s/js/vince.js", t.Config.Url)
+	track := fmt.Sprintf("%s/js/vince.js", t.Config.URL)
 	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", models.SafeDomain(t.Site), track)
 	return src
 }
 
 func (t *Context) SharedLinkURL(site *models.Site, link *models.SharedLink) string {
-	return models.SharedLinkURL(t.Config.Url, site, link)
+	return models.SharedLinkURL(t.Config.URL, site, link)
 }
 
 func Avatar(uid uint64, size uint, class ...string) template.HTML {

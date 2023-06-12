@@ -48,6 +48,6 @@ func FindOrCreateSharedLink(w http.ResponseWriter, r *http.Request) {
 	}
 	render.JSON(w, http.StatusOK, map[string]any{
 		"name": shared.Name,
-		"url":  models.SharedLinkURL(config.Get(ctx).Url, site, shared),
+		"url":  models.SharedLinkURL(config.Get(ctx).URL, site, shared),
 	})
 }

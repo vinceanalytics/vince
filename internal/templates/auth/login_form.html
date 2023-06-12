@@ -31,18 +31,25 @@
                 </div>
                 {{template "_csrf" .}}
                 {{template "_captcha" .}}
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-block">Sign In →</button>
+
+                <div class="p-2">
+                    <ul class="list-style-none">
+                        <li>
+                            {{Icon "chevron-right" 16}}
+                            <a href="/password/request-reset" class="label-link ">
+                                Forgot password ?
+                            </a>
+                        </li>
+                        <li>
+                            {{Icon "chevron-right" 16}}
+                            <span>
+                                New to VINCE ?<a href="/register"> Create an account</a>
+                            </span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="form-actions py-3">
-                    <a href="/password/request-reset" class="label-link ">
-                        Forgot password ?
-                    </a>
-                </div>
                 <div class="form-actions">
-                    <p>
-                        New to VINCE ?<a href="/register"> Create an account</a>
-                    </p>
+                    <button type="submit" class="btn btn-primary">Sign In →</button>
                 </div>
             </form>
         </div>

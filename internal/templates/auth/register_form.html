@@ -59,11 +59,18 @@
                 </div>
                 {{template "_csrf" .}}
                 {{template "_captcha" .}}
-                <div class="form-actions">
-                    <input type="submit" value="Create my account →" name="submit" class="btn btn-primary btn-block">
+                <div class="p-2">
+                    <ul class="list-style-none">
+                        <li>
+                            {{Icon "chevron-right" 16}}
+                            <span>
+                                Have an account? <a href="/login"> Sign In</a>
+                            </span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="form-actions text-center">
-                    Have an account? <a href="/login"> Sign In</a>
+                <div class="form-actions">
+                    <input type="submit" value="Create my account →" name="submit" class="btn btn-primary">
                 </div>
             </form>
         </div>

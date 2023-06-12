@@ -157,15 +157,20 @@ func NewUser(u *User, r *http.Request) (validation map[string]string, err error)
 	if len(validation) != 0 {
 		return
 	}
-	b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, err
-	}
-	u.PasswordHash = string(b)
+
+	u.PasswordHash = HashPassword(password)
 	if !conf.Mailer.Enabled {
 		u.EmailVerified = true
 	}
 	return
+}
+
+func HashPassword(password string) string {
+	b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Get().Fatal().Err(err).Msg("failed to hash password")
+	}
+	return string(b)
 }
 
 func PasswordMatch(u *User, pwd string) bool {

@@ -19,7 +19,7 @@ const (
 
 type Options struct {
 	Listen string
-	Url    string
+	URL    string
 	Mailer struct {
 		Enabled       bool
 		Name, Address string
@@ -150,7 +150,7 @@ func (o *Options) Flags() []cli.Flag {
 			Name:        "url",
 			Usage:       "url for the server on which vince is hosted(it shows up on emails)",
 			Value:       "http://localhost:8080",
-			Destination: &o.Url,
+			Destination: &o.URL,
 			EnvVars:     []string{"VINCE_URL"},
 		},
 		&cli.BoolFlag{
