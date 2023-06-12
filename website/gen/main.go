@@ -40,18 +40,6 @@ func main() {
 		"go", "generate", "./chart")
 	//[1]
 	tools.CopyDir("chart/charts", "website/docs/.vitepress/dist/", root)
-	//[2]
-	tools.CopyDir(
-		"docs/.vitepress/dist/",
-		repo,
-	)
-	//[3]
-	// Index from the repo charts file, we need old helm releases to show up on the
-	// index as well.
-	tools.ExecPlainWithWorkingPath(
-		filepath.Join(repo, "charts"),
-		"helm", "repo", "index", ".", "--url", "https://vinceanalytics.github.io/charts/",
-	)
 	commit()
 	if m := os.Getenv("RUN"); m != "" {
 		tools.ExecPlain("npm", "run", m)
@@ -60,20 +48,36 @@ func main() {
 
 func commit() {
 	if os.Getenv("SITE") != "" {
-		tools.ExecPlain(
+		//[2]
+		tools.CopyDir(
+			"docs/.vitepress/dist/",
+			repo,
+		)
+		tools.ExecPlainWithWorkingPath(
+			repo,
 			"git", "pull",
 		)
-		tools.ExecPlain(
+		//[3]
+		// Index from the repo charts file, we need old helm releases to show up on the
+		// index as well.
+		tools.ExecPlainWithWorkingPath(
+			filepath.Join(repo, "charts"),
+			"helm", "repo", "index", ".", "--url", "https://vinceanalytics.github.io/charts/",
+		)
+		tools.ExecPlainWithWorkingPath(
+			repo,
 			"git", "add", ".",
 		)
 		rev := tools.ExecCollect(
 			"git", "rev-parse", "--short", "HEAD",
 		)
 		msg := fmt.Sprintf("Build %s-%s", string(version.BuildVersion), rev)
-		tools.ExecPlain(
+		tools.ExecPlainWithWorkingPath(
+			repo,
 			"git", "commit", "-m", msg,
 		)
-		tools.ExecPlain(
+		tools.ExecPlainWithWorkingPath(
+			repo,
 			"git", "push",
 		)
 	}
