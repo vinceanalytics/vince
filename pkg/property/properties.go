@@ -131,12 +131,12 @@ var (
 		VisitDurations: "visitDurations",
 	}
 	_metric_label = map[Metric]string{
-		Visitors:       "Unique Visitors",
-		Views:          "Page Views",
+		Visitors:       " Visitors",
+		Views:          "Views",
 		Events:         "Events",
 		Visits:         "Sessions",
-		BounceRates:    "Bounce Rates",
-		VisitDurations: "Session Duration",
+		BounceRates:    "Bounce",
+		VisitDurations: "Duration",
 	}
 	_metric_value = map[string]Metric{
 		"visitors":       Visitors,
