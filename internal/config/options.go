@@ -19,7 +19,6 @@ const (
 
 type Options struct {
 	Listen string
-	Env    string
 	Url    string
 	Mailer struct {
 		Enabled       bool
@@ -145,14 +144,6 @@ func (o *Options) Flags() []cli.Flag {
 			Value:       ".vince",
 			Destination: &o.DataPath,
 			EnvVars:     []string{"VINCE_DATA"},
-		},
-		&cli.StringFlag{
-			Category:    "core",
-			Name:        "env",
-			Usage:       "environment on which vince is run (dev,staging,production)",
-			Value:       "dev",
-			Destination: &o.Env,
-			EnvVars:     []string{"VINCE_ENV"},
 		},
 		&cli.StringFlag{
 			Category:    "core",

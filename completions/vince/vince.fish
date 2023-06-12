@@ -16,7 +16,6 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l tls-address -r -d 'https
 complete -c vince -n '__fish_vince_no_subcommand' -f -l tls-key -r -d 'Path to key file used for https'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l tls-cert -r -d 'Path to certificate file used for https'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l data -r -d 'path to data directory'
-complete -c vince -n '__fish_vince_no_subcommand' -f -l env -r -d 'environment on which vince is run (dev,staging,production)'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l url -r -d 'url for the server on which vince is hosted(it shows up on emails)'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-backup -d 'Allows backing up and restoring'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l backup-dir -r -d 'directory where backups are stored'
