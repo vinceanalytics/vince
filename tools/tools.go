@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"golang.org/x/mod/semver"
-	"gopkg.in/yaml.v2"
 )
 
 func ExecCollect(name string, args ...string) string {
@@ -67,25 +66,6 @@ func ExecPlainWith(f func(*exec.Cmd), name string, args ...string) {
 	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-// ReadUA regex file by name from https://github.com/matomo-org/device-detector
-// root directory.
-//
-// Env var DEVICE_DETECTOR_ROOT is used to set the root path.
-func ReadUA(name string, out any) {
-	path := filepath.Join(os.Getenv("DEVICE_DETECTOR_ROOT"), "regexes", name)
-	f, err := os.ReadFile(path)
-	if err != nil {
-		println(">>> failed to read  ", path, err.Error())
-		println("    set DEVICE_DETECTOR_ROOT")
-		println("    to path where you cloned ", "https://github.com/matomo-org/device-detector")
-		os.Exit(1)
-	}
-	err = yaml.Unmarshal(f, out)
-	if err != nil {
-		Exit("failed to  decode ", path, err.Error())
 	}
 }
 
