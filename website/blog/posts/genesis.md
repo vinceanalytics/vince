@@ -3,6 +3,7 @@ title: 'Vince v0.1.0 '
 date: 2023-01-01
 author: Geofrey Ernest
 twitter: '@gernesti'
+avatar: /blog/avatar.jpeg
 ---
 
 I'm very pleased to announce the release of **vince** **v0.1.0** to the public.
