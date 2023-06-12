@@ -71,11 +71,11 @@ func Save(ctx context.Context, b *Buffer) {
 	// Buffer.id has the same encoding as the first 16 bytes of meta. We just copy that
 	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
-	var tsBytes [6]byte
+	tsBytes := svc.slice.get(8)
 	setTs(tsBytes[:], startMs)
 	svc.txn = db.NewTransactionAt(startMs, true)
 	err := b.Build(ctx, func(p Property, key string, sum *Sum) error {
-		return saveProperty(ctx, &svc, tsBytes[:], meta.prop(p), key, sum)
+		return saveProperty(ctx, &svc, tsBytes, meta.prop(p), key, sum)
 	})
 	if err != nil {
 		log.Get().Err(err).Msg("failed to save ts buffer")
@@ -181,20 +181,20 @@ func newSlice() *slice {
 }
 
 func (s *slice) u16(v uint16) []byte {
-	o := s.grow()
+	o := s.get(2)
 	binary.BigEndian.PutUint16(o, v)
 	return o
 }
 
-func (s *slice) grow() []byte {
-	if cap(s.d) < s.pos+2 {
+func (s *slice) get(n int) []byte {
+	if cap(s.d) < s.pos+n {
 		o := make([]byte, cap(s.d)*2)
 		copy(o, s.d)
 		s.d = o
 	}
-	s.d = s.d[:s.pos+2]
+	s.d = s.d[:s.pos+n]
 	o := s.pos
-	s.pos += 2
+	s.pos += n
 	return s.d[o:]
 }
 
