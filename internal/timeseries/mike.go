@@ -54,52 +54,53 @@ func Save(ctx context.Context, b *Buffer) {
 		ls:    newTxnBufferList(),
 	}
 
-	defer func() {
-		log.Get().Debug().Int(
-			"__size__", len(b.segments.Timestamp),
-		).Int("__keys__", svc.keys).
-			Msg("saved stats")
-		system.EntriesPerBufferSave.Observe(float64(len(b.segments.Timestamp)))
-		system.KeysPerBufferSave.Observe(float64(svc.keys))
-		system.SaveDuration.Observe(time.Since(start).Seconds())
-		b.Release()
-		meta.Release()
-		svc.ls.Release()
-		svc.slice.release()
-	}()
-
-	// Buffer.id has the same encoding as the first 16 bytes of meta. We just copy that
+	// b.id has the same encoding as the first 16 bytes of meta. We just copy that
 	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
-	tsBytes := svc.slice.get(8)
+	tsBytes := svc.slice.get(6)
 	setTs(tsBytes[:], startMs)
 	svc.txn = db.NewTransactionAt(startMs, true)
 	err := b.Build(ctx, func(p Property, key string, sum *Sum) error {
-		return saveProperty(ctx, &svc, tsBytes, meta.prop(p), key, sum)
+		return transaction(&svc, tsBytes, meta.prop(p), key, sum)
 	})
-	if err != nil {
-		log.Get().Err(err).Msg("failed to save ts buffer")
-		svc.txn.Discard()
-	} else {
-		err = svc.txn.CommitAt(startMs, nil)
-		if err != nil {
-			// Failing to commit transaction is fatal
-			log.Get().Fatal().Err(err).Msg("failed to commit transaction")
-		}
-	}
+	svc.commit(ctx, startMs, err)
+
+	log.Get().Debug().Int(
+		"__size__", len(b.segments.Timestamp),
+	).Int("__keys__", svc.keys).
+		Msg("saved stats")
+	system.EntriesPerBufferSave.Observe(float64(len(b.segments.Timestamp)))
+	system.KeysPerBufferSave.Observe(float64(svc.keys))
+	system.SaveDuration.Observe(time.Since(start).Seconds())
+	b.Release()
+	meta.Release()
 }
 
-func saveProperty(ctx context.Context,
+// save aggregate a to active transaction associated with svc. Th active
+// transaction is never committed. It is up to the caller to manually commit the
+// transaction.
+//
+// all keys are suffixed with encoded timestamp ts. This is specifically to
+// provide context aware uniqueness for the keys. This is done to avoid managing
+// extra versions of the same key. It comes with a cost of bigger keys, ts has
+// no other use than this so it should be an active area when we need to optimize
+// for space ( we can take first 4 bytes, since ts encodes significant bits
+// first) saving 2 bytes per key.
+//
+// memory for keys and values is never released, values use svc.slice and keys
+// use svc.ls for memory buffers. svc.ls svc.slice must be released after the
+// transaction has been committed/discarded.
+func transaction(
 	svc *saveContext,
 	ts []byte,
 	m *Key, text string, a *Sum) error {
 	return errors.Join(
-		savePropertyKey(ctx, svc, m.metric(Visitors).key(ts, text, svc.ls), a.Visitors),
-		savePropertyKey(ctx, svc, m.metric(Views).key(ts, text, svc.ls), a.Views),
-		savePropertyKey(ctx, svc, m.metric(Events).key(ts, text, svc.ls), a.Events),
-		savePropertyKey(ctx, svc, m.metric(Visits).key(ts, text, svc.ls), a.Visits),
-		savePropertyKey(ctx, svc, m.metric(BounceRates).key(ts, text, svc.ls), a.BounceRate),
-		savePropertyKey(ctx, svc, m.metric(VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration.Milliseconds())),
+		save(svc, m.metric(Visitors).key(ts, text, svc.ls), a.Visitors),
+		save(svc, m.metric(Views).key(ts, text, svc.ls), a.Views),
+		save(svc, m.metric(Events).key(ts, text, svc.ls), a.Events),
+		save(svc, m.metric(Visits).key(ts, text, svc.ls), a.Visits),
+		save(svc, m.metric(BounceRates).key(ts, text, svc.ls), a.BounceRate),
+		save(svc, m.metric(VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration.Milliseconds())),
 	)
 }
 
@@ -110,7 +111,23 @@ type saveContext struct {
 	keys  int
 }
 
-// Transaction keep reference to keys. We need this to make sure we reuse ID and properly
+func (svc *saveContext) commit(ctx context.Context, ms uint64, err error) {
+	if err != nil {
+		log.Get().Err(err).Msg("failed to save ts buffer")
+		svc.txn.Discard()
+	} else {
+		err = svc.txn.CommitAt(ms, nil)
+		if err != nil {
+			// Failing to commit transaction is fatal. We don't want the app to run if we
+			// can't commit changes to our permanent storage.
+			log.Get().Fatal().Err(err).Msg("failed to commit transaction")
+		}
+	}
+	svc.ls.release()
+	svc.slice.release()
+}
+
+// keeps reference to keys. We need this to make sure we reuse ID and properly
 // release them back to the pool when done.
 type txnBufferList struct {
 	ls []*bytes.Buffer
@@ -134,7 +151,7 @@ func (ls *txnBufferList) Reset() {
 	ls.ls = ls.ls[:0]
 }
 
-func (ls *txnBufferList) Release() {
+func (ls *txnBufferList) release() {
 	ls.Reset()
 	txnBufferListPool.Put(ls)
 }
@@ -153,7 +170,9 @@ var smallBufferpool = &sync.Pool{
 	},
 }
 
-func savePropertyKey(ctx context.Context, svc *saveContext, key *bytes.Buffer, a uint16) error {
+// stores key and aggregate value a into the transaction associated with svc. If
+// a is 0 this is a No Op call.
+func save(svc *saveContext, key *bytes.Buffer, a uint16) error {
 	if a == 0 {
 		return nil
 	}

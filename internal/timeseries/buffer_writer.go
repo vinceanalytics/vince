@@ -216,7 +216,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, s
 			log.Get().Err(err).Msg("failed to commit transaction for unique index")
 		}
 		txn.Discard()
-		mls.Release()
+		mls.release()
 	}()
 	uniq := seen(ctx, txn, m.key[:], mls)
 	for i := Base; i <= City; i++ {
