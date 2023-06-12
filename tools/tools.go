@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"text/tabwriter"
 	"time"
 
@@ -253,8 +254,14 @@ func Package(module string) *debug.Module {
 	return nil
 }
 
+var root string
+var once sync.Once
+
 func RootVince() string {
-	return Root("github.com/vinceanalytics/vince")
+	once.Do(func() {
+		root = Root("github.com/vinceanalytics/vince")
+	})
+	return root
 }
 
 func Root(pkg string) string {
