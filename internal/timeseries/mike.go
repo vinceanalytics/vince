@@ -100,7 +100,7 @@ func transaction(
 		save(svc, m.metric(Events).key(ts, text, svc.ls), a.Events),
 		save(svc, m.metric(Visits).key(ts, text, svc.ls), a.Visits),
 		save(svc, m.metric(BounceRates).key(ts, text, svc.ls), a.BounceRate),
-		save(svc, m.metric(VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration.Milliseconds())),
+		save(svc, m.metric(VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration)),
 	)
 }
 
