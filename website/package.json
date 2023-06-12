@@ -9,7 +9,8 @@
     "blog:build": "vitepress build blog --mpa",
     "blog:serve": "vitepress serve blog",
     "blog:preview": "vitepress preview blog",
-    "build": "node frontend/build.js"
+    "build": "node frontend/build.js",
+    "copy": ""
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.4",

@@ -1,5 +1,0 @@
----
-title: vince analytics blog
----
-
-
