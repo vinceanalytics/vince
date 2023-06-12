@@ -159,7 +159,7 @@ func savePropertyKey(ctx context.Context, svc *saveContext, key *bytes.Buffer, a
 	}
 	svc.keys++
 	k := key.Bytes()
-	println(">", DebugKey(k), a)
+	// println(">", DebugKey(k), a)
 	return svc.txn.Set(k, svc.slice.u16(a))
 }
 
