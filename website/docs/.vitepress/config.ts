@@ -26,141 +26,10 @@ export default defineConfig({
       { text: 'blog', link: '/blog/' }
     ],
 
-    sidebar: [
-      {
-        text: 'Getting Started',
-        items: [
-          { text: 'Installation', link: '/guide/install-vince' },
-          { text: 'Usage', link: '/guide/usage' },
-          { text: 'Adding your first site', link: '/guide/adding-first-website' },
-          {
-            text: 'Cli', link: '/cli/', items: [
-              { text: "Core", link: '/cli/core' },
-              { text: "Secrets", link: '/cli/secrets' },
-              { text: "TLS", link: '/cli/tls' },
-              { text: "Bootstrap", link: '/cli/bootstrap' },
-              { text: "Intervals", link: '/cli/intervals' },
-              { text: "CORS", link: '/cli/cors' },
-              { text: "Firewall", link: '/cli/firewall' },
-              { text: "Mailer", link: '/cli/mailer' },
-              { text: "Alerts", link: '/cli/alerts' },
-              { text: "Backup", link: '/cli/backup' },
-            ]
-          },
-        ]
-      },
-      {
-        text: "Site Settings",
-        items: [
-          {
-            text: "Site Landing Page",
-            link: "/guide/site-landing-page",
-          },
-          {
-            text: "Site Setting",
-            link: "/guide/site-setting",
-          },
-          {
-            text: "Change Domain Name",
-            link: "/guide/change-domain-name",
-          },
-          {
-            text: "Invite team members,assign roles and remove users",
-            link: "/guide/invite-team-members-assign-roles-and-remove-users",
-          },
-          {
-            text: "Open site to the public",
-            link: "/guide/open-site-to-the-public",
-          },
-          {
-            text: "Share your stats with a private and secure link",
-            link: "/guide/share-your-stats-with-a-private-and-secure-link",
-          },
-          {
-            text: "Send reports via email",
-            link: "/guide/send-reports-via-email",
-          },
-          {
-            text: "Exclude pages from being tracked",
-            link: "/guide/exclude-pages-from-being-tracked",
-          },
-          {
-            text: "Transfer ownership of a site",
-            link: "/guide/transfer-ownership-of-a-site",
-          },
-          {
-            text: "Reset your site data",
-            link: "/guide/reset-your-site-data",
-          },
-          {
-            text: "Delete your site data and stats",
-            link: "/guide/delete-your-site-data-and-stats",
-          },
-        ],
-      },
-      {
-        text: "Alerts",
-        items: [],
-      },
-      {
-        text: "Stats Dashboard",
-        items: [],
-      },
-      {
-        text: "Goals and Custom Events",
-        items: [],
-      },
-      {
-        text: "API",
-        items: [
-          {
-            text: "Stats API reference",
-            link: "/guide/stats-api-reference",
-          },
-          {
-            text: "Events API reference",
-            link: "/guide/events-api-reference",
-          },
-          {
-            text: "Site Provisioning API reference",
-            link: "/guide/site-provisioning-api-reference",
-          },
-        ],
-      },
-      {
-        text: "Account Settings",
-        items: [
-          {
-            text: "Change your account email address",
-            link: "/guide/change-your-account-email-address",
-          },
-          {
-            text: "Reset your account password",
-            link: "/guide/reset-your-account-password",
-          },
-          {
-            text: "Delete your account",
-            link: "/guide/delete-your-account",
-          },
-        ],
-      },
-
-      {
-        text: 'Kubernetes',
-        link: "/k8s/",
-        items: [
-          {
-            text: 'Installation',
-            link: "/k8s/install"
-          },
-          { text: 'Cli', link: '/guide/cli-v8s' },
-        ]
-      },
-      {
-        text: "Contribute",
-        items: [],
-      },
-    ],
+    sidebar: {
+      "/guide/": guide(),
+      "/k8s/": k8s(),
+    },
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/vinceanalytics/vince' }
@@ -171,3 +40,146 @@ export default defineConfig({
     }
   }
 })
+
+function guide() {
+  return [
+    {
+      text: 'Getting Started',
+      items: [
+        { text: 'Installation', link: '/guide/install-vince' },
+        { text: 'Usage', link: '/guide/usage' },
+        { text: 'Adding your first site', link: '/guide/adding-first-website' },
+        {
+          text: 'Cli', link: '/cli/', items: [
+            { text: "Core", link: '/cli/core' },
+            { text: "Secrets", link: '/cli/secrets' },
+            { text: "TLS", link: '/cli/tls' },
+            { text: "Bootstrap", link: '/cli/bootstrap' },
+            { text: "Intervals", link: '/cli/intervals' },
+            { text: "CORS", link: '/cli/cors' },
+            { text: "Firewall", link: '/cli/firewall' },
+            { text: "Mailer", link: '/cli/mailer' },
+            { text: "Alerts", link: '/cli/alerts' },
+            { text: "Backup", link: '/cli/backup' },
+          ]
+        },
+      ]
+    },
+    {
+      text: "Site Settings",
+      items: [
+        {
+          text: "Site Landing Page",
+          link: "/guide/site-landing-page",
+        },
+        {
+          text: "Site Setting",
+          link: "/guide/site-setting",
+        },
+        {
+          text: "Change Domain Name",
+          link: "/guide/change-domain-name",
+        },
+        {
+          text: "Invite team members,assign roles and remove users",
+          link: "/guide/invite-team-members-assign-roles-and-remove-users",
+        },
+        {
+          text: "Open site to the public",
+          link: "/guide/open-site-to-the-public",
+        },
+        {
+          text: "Share your stats with a private and secure link",
+          link: "/guide/share-your-stats-with-a-private-and-secure-link",
+        },
+        {
+          text: "Send reports via email",
+          link: "/guide/send-reports-via-email",
+        },
+        {
+          text: "Exclude pages from being tracked",
+          link: "/guide/exclude-pages-from-being-tracked",
+        },
+        {
+          text: "Transfer ownership of a site",
+          link: "/guide/transfer-ownership-of-a-site",
+        },
+        {
+          text: "Reset your site data",
+          link: "/guide/reset-your-site-data",
+        },
+        {
+          text: "Delete your site data and stats",
+          link: "/guide/delete-your-site-data-and-stats",
+        },
+      ],
+    },
+    {
+      text: "Alerts",
+      items: [],
+    },
+    {
+      text: "Stats Dashboard",
+      items: [],
+    },
+    {
+      text: "Goals and Custom Events",
+      items: [],
+    },
+    {
+      text: "API",
+      items: [
+        {
+          text: "Stats API reference",
+          link: "/guide/stats-api-reference",
+        },
+        {
+          text: "Events API reference",
+          link: "/guide/events-api-reference",
+        },
+        {
+          text: "Site Provisioning API reference",
+          link: "/guide/site-provisioning-api-reference",
+        },
+      ],
+    },
+    {
+      text: "Account Settings",
+      items: [
+        {
+          text: "Change your account email address",
+          link: "/guide/change-your-account-email-address",
+        },
+        {
+          text: "Reset your account password",
+          link: "/guide/reset-your-account-password",
+        },
+        {
+          text: "Delete your account",
+          link: "/guide/delete-your-account",
+        },
+      ],
+    },
+    {
+      text: "Contribute",
+      items: [],
+    },
+  ]
+}
+
+
+function k8s() {
+  return [
+    {
+      text: 'Kubernetes',
+      link: "/k8s/",
+      items: [
+        {
+          text: 'Installation',
+          link: "/k8s/install"
+        },
+        { text: 'Cli', link: '/guide/cli-v8s' },
+      ]
+    },
+  ]
+}
