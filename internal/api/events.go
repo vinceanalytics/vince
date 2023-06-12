@@ -58,8 +58,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	host := sanitizeHost(uri.Host)
 	userAgent := r.UserAgent()
 
-	reqReferrer := req.Referrer
-	refUrl, err := url.Parse(reqReferrer)
+	ref, src, err := refSource(r.URL.Query(), req.Referrer)
 	if err != nil {
 		system.DataPointRejected.Inc()
 		xlg.Err(err).Msg("Failed parsing referrer url")
@@ -92,22 +91,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 
 	query := uri.Query()
 	agent := ua.Parse(userAgent)
-	// handle referrer
-	ref := referrer.ParseReferrer(req.Referrer)
-	source := query.Get("utm_source")
-	if source == "" {
-		source = query.Get("source")
-	}
-	if source == "" {
-		source = query.Get("ref")
-	}
-	if source == "" {
-		source = ref
-		if source == "" {
-			source = sanitizeHost(refUrl.Host)
-		}
-	}
-	reqReferrer = cleanReferrer(reqReferrer)
 
 	var city geoip.Info
 	if remoteIp != "" {
@@ -155,8 +138,8 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.OperatingSystemVersion = agent.OsVersion
 		e.Browser = agent.Browser
 		e.BrowserVersion = agent.BrowserVersion
-		e.ReferrerSource = source
-		e.Referrer = reqReferrer
+		e.ReferrerSource = src
+		e.Referrer = ref
 		e.Country = city.Country
 		e.Region = city.Region
 		e.City = city.City
@@ -180,9 +163,24 @@ func sanitizeHost(s string) string {
 	return strings.TrimPrefix(strings.TrimSpace(s), "www.")
 }
 
-func cleanReferrer(s string) string {
-	r, _ := url.Parse(s)
+func refSource(q url.Values, u string) (ref, source string, err error) {
+	r, err := url.Parse(u)
+	if err != nil {
+		return "", "", err
+	}
 	r.Host = sanitizeHost(r.Host)
-	r.Path = strings.TrimSuffix(s, "/")
-	return r.String()
+	r.Path = strings.TrimSuffix(r.Path, "/")
+	ref = r.String()
+	source = q.Get("utm_source")
+	if source == "" {
+		source = q.Get("source")
+	}
+	if source == "" {
+		source = q.Get("ref")
+	}
+	if source != "" {
+		return
+	}
+	source = referrer.Parse(r.Host)
+	return
 }

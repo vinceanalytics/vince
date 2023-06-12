@@ -68,7 +68,7 @@ func main() {
 var client = &http.Client{}
 
 func referrer() string {
-	return domains[rand.Intn(len(domains))]
+	return "https://" + domains[rand.Intn(len(domains))]
 }
 
 type Session struct {

@@ -177,7 +177,18 @@
         <div class="d-flex">
             <div class="col-10">
                 <a href={{$stats.QueryProp $prop $name .Key}}>
+
+                    {{if eq $prop "referrer"}}
+                    <div class="d-inline-flex flex-items-center">
+                        <img src={{.Icon}} alt={{.Key}} height="16" width="16" class="mr-2">
+                        <span>
+                            {{.Key}}
+                        </span>
+                    </div>
+                    {{else}}
                     {{.Key}}
+                    {{end}}
+
                 </a>
             </div>
             <div class="col-2 text-center">

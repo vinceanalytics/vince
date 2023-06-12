@@ -317,7 +317,7 @@ func choose(p Property) func(m *MultiEntry, i int) string {
 		}
 	case Referrer:
 		return func(m *MultiEntry, i int) string {
-			return m.Referrer[i]
+			return m.ReferrerSource[i]
 		}
 	case UtmMedium:
 		return func(m *MultiEntry, i int) string {

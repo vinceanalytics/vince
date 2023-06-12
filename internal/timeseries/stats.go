@@ -155,6 +155,14 @@ type StatValue struct {
 	Value uint32
 }
 
+func (s StatValue) Icon() string {
+	source := s.Key
+	if source == "" {
+		source = "placeholder"
+	}
+	return "/favicon/sources/" + url.PathEscape(s.Key)
+}
+
 var _ sort.Interface = (*StatList)(nil)
 
 type StatList []StatValue

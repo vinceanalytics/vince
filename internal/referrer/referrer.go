@@ -16,7 +16,7 @@ import (
 //go:embed icons
 var Icons embed.FS
 
-func ParseReferrer(host string) string {
+func Parse(host string) string {
 	host = strings.TrimPrefix(host, "www.")
 	parts := strings.Split(host, ".")
 	sort.Sort(sort.Reverse(stringSlice(parts)))
