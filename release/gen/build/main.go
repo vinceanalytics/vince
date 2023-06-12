@@ -19,7 +19,6 @@ func main() {
 		tools.ExecPlainWith(
 			func(c *exec.Cmd) {
 				c.Dir = tools.RootVince()
-				c.Env = os.Environ()
 				c.Env = append(c.Env,
 					fmt.Sprintf("FOUNDATION=%s", sdk),
 				)

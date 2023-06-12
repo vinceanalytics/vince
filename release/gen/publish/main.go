@@ -12,7 +12,7 @@ func main() {
 	if os.Getenv("SITE") != "" {
 		tools.ExecPlainWith(func(c *exec.Cmd) {
 			c.Dir = root
-			c.Env = append(os.Environ(), "SITE=true")
+			c.Env = append(c.Env, "SITE=true")
 		},
 			"go", "generate", "./website",
 		)

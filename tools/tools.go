@@ -24,6 +24,7 @@ import (
 func ExecCollect(name string, args ...string) string {
 	var o bytes.Buffer
 	cmd := exec.Command(name, args...)
+	cmd.Env = os.Environ()
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = &o
 	err := cmd.Run()
@@ -35,6 +36,7 @@ func ExecCollect(name string, args ...string) string {
 
 func ExecPlain(name string, args ...string) {
 	cmd := exec.Command(name, args...)
+	cmd.Env = os.Environ()
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
@@ -45,6 +47,7 @@ func ExecPlain(name string, args ...string) {
 
 func ExecPlainWithWorkingPath(dir, name string, args ...string) {
 	cmd := exec.Command(name, args...)
+	cmd.Env = os.Environ()
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Dir = dir
@@ -56,6 +59,7 @@ func ExecPlainWithWorkingPath(dir, name string, args ...string) {
 
 func ExecPlainWith(f func(*exec.Cmd), name string, args ...string) {
 	cmd := exec.Command(name, args...)
+	cmd.Env = os.Environ()
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	f(cmd)
