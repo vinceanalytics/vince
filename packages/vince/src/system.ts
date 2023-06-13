@@ -11,3 +11,101 @@ export function schedule(interval: string, call: () => void) {
     //@ts-ignore
     __schedule__(interval, call);
 }
+
+
+export type Property =
+    | "base"
+    | "event"
+    | "page"
+    | "entryPage"
+    | "exitPage"
+    | "referrer"
+    | "UtmMedium"
+    | "UtmSource"
+    | "UtmCampaign"
+    | "UtmContent"
+    | "UtmTerm"
+    | "UtmDevice"
+    | "UtmBrowser"
+    | "browserVersion"
+    | "os"
+    | "osVersion"
+    | "country"
+    | "region"
+    | "city";
+
+export type Metric =
+    | "visitors"
+    | "views"
+    | "events"
+    | "visits"
+    | "bounceRates"
+    | "visitDurations"
+
+
+export type SelectKind =
+    | "exact"
+    | "re"
+    | "glob"
+
+
+export type Prop = {
+    [key in Property]: Metric;
+};
+
+export type Metrics = {
+    [key in Metric]: Select;
+};
+
+export type Select = {
+    [key in SelectKind]: string;
+};
+
+
+export interface Query {
+    offset?: string;
+    window?: string;
+    props: Prop;
+}
+
+function build(query: Query) {
+    //@ts-ignore
+    const o = new __Query__();
+    //@ts-ignore
+    if (query.offset) o.offset = new __Duration__(query.offset);
+    //@ts-ignore
+    if (query.window) o.window = new __Duration__(query.window);
+    //@ts-ignore
+    o.props = new __Props__();
+    Object.entries(query.props).forEach(([key, value]) => {
+        //@ts-ignore
+        o.props[key] = buildMetric(value)
+    });
+}
+
+function buildMetric(metrics: Metrics) {
+    //@ts-ignore
+    const o = new __Metrics__();
+    Object.entries(metrics).forEach(([key, value]) => {
+        o[key] = buildSelect(value)
+    });
+    return o
+}
+
+function buildSelect(select: Select) {
+    for (let key in select) {
+        switch (key) {
+            case "exact":
+                //@ts-ignore
+                return new __SelectExact__(select[key]);
+            case "glob":
+                //@ts-ignore
+                return new __SelectGlob__(select[key]);
+            case "re":
+                //@ts-ignore
+                return new __SelectRe__(select[key]);
+            default:
+                break;
+        }
+    }
+}
