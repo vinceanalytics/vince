@@ -8,7 +8,7 @@ value store that support ACID transactions with serializable snapshot isolation
 
 # Features
 
-- Alert notification (Write Alerting Scripts in Typescript)
+- Programmable alerting using javascript (ECMAScript 5.1(+))
 - Time on site tracking
 - Conversion tracking 
 - Multiple site management
