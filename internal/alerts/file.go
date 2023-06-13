@@ -29,7 +29,7 @@ func Create(js string) (*File, error) {
 		calls:   make(map[time.Duration]*Unit),
 	}
 	s.runtime.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
-	s.runtime.Set("schedule", s.Schedule)
+	s.runtime.Set("__schedule__", s.Schedule)
 	_, err := s.runtime.RunString(js)
 	if err != nil {
 		return nil, err

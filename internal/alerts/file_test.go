@@ -8,7 +8,7 @@ import (
 func TestCreate(t *testing.T) {
 	a, err := Create(`
 	let g =1;
-	schedule(100,()=>{g+=1;});
+	__schedule__(100,()=>{g+=1;});
 	`)
 	if err != nil {
 		t.Fatal(err)
