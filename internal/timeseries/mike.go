@@ -170,6 +170,15 @@ var smallBufferpool = &sync.Pool{
 	},
 }
 
+func get() *bytes.Buffer {
+	return smallBufferpool.Get().(*bytes.Buffer)
+}
+
+func put(b *bytes.Buffer) {
+	b.Reset()
+	smallBufferpool.Put(b)
+}
+
 // stores key and aggregate value a into the transaction associated with svc. If
 // a is 0 this is a No Op call.
 func save(svc *saveContext, key *bytes.Buffer, a uint16) error {

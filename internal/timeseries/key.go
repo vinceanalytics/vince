@@ -35,6 +35,12 @@ func (id *Key) prop(p Property) *Key {
 	return id
 }
 
+func (id *Key) clone() *Key {
+	o := newMetaKey()
+	copy(o[:], id[:])
+	return o
+}
+
 func (id *Key) uid(u, s uint64) *Key {
 	binary.BigEndian.PutUint64(id[userOffset:], u)
 	binary.BigEndian.PutUint64(id[siteOffset:], s)
