@@ -8,7 +8,6 @@ import (
 
 type Query struct {
 	Offset *Duration `json:"offset,omitempty"`
-	Step   *Duration `json:"step,omitempty"`
 	Window *Duration `json:"window,omitempty"`
 	Props  *Props    `json:"props,omitempty"`
 }
@@ -58,6 +57,42 @@ type Duration struct {
 	Value time.Duration `json:"value"`
 }
 
+type QueryResult struct {
+	Timestamps []int64     `json:"timestamps"`
+	Props      PropsResult `json:"props"`
+}
+
+type PropsResult struct {
+	Base           *MetricsResult `json:"base,omitempty"`
+	Event          *MetricsResult `json:"event,omitempty"`
+	Page           *MetricsResult `json:"page,omitempty"`
+	EntryPage      *MetricsResult `json:"entryPage,omitempty"`
+	ExitPage       *MetricsResult `json:"exitPage,omitempty"`
+	Referrer       *MetricsResult `json:"referrer,omitempty"`
+	UtmMedium      *MetricsResult `json:"utmMedium,omitempty"`
+	UtmSource      *MetricsResult `json:"utmSource,omitempty"`
+	UtmCampaign    *MetricsResult `json:"utmCampaign,omitempty"`
+	UtmContent     *MetricsResult `json:"utmContent,omitempty"`
+	UtmTerm        *MetricsResult `json:"utmTerm,omitempty"`
+	UtmDevice      *MetricsResult `json:"UtmDevice,omitempty"`
+	UtmBrowser     *MetricsResult `json:"utmBrowser,omitempty"`
+	BrowserVersion *MetricsResult `json:"browserVersion,omitempty"`
+	Os             *MetricsResult `json:"os,omitempty"`
+	OsVersion      *MetricsResult `json:"osVersion,omitempty"`
+	Country        *MetricsResult `json:"country,omitempty"`
+	Region         *MetricsResult `json:"region,omitempty"`
+	City           *MetricsResult `json:"city,omitempty"`
+}
+
+type MetricsResult struct {
+	Visitors       map[string][]uint32 `json:"visitors,omitempty"`
+	Views          map[string][]uint32 `json:"views,omitempty"`
+	Events         map[string][]uint32 `json:"events,omitempty"`
+	Visits         map[string][]uint32 `json:"visits,omitempty"`
+	BounceRates    map[string][]uint32 `json:"bounceRates,omitempty"`
+	VisitDurations map[string][]uint32 `json:"visitDurations,omitempty"`
+}
+
 func Register(vm *goja.Runtime) {
 	vm.Set("__Duration__", func(call goja.ConstructorCall) *goja.Object {
 		o, err := time.ParseDuration(call.Arguments[0].String())
@@ -87,8 +122,32 @@ func Register(vm *goja.Runtime) {
 		v.SetPrototype(call.This.Prototype())
 		return v
 	})
-	vm.Set("__Select__", func(call goja.ConstructorCall) *goja.Object {
-		r := &Select{}
+	vm.Set("__SelectExact__", func(call goja.ConstructorCall) *goja.Object {
+		r := &Select{
+			Exact: &Value{
+				Value: call.Arguments[0].String(),
+			},
+		}
+		v := vm.ToValue(r).(*goja.Object)
+		v.SetPrototype(call.This.Prototype())
+		return v
+	})
+	vm.Set("__SelectRe__", func(call goja.ConstructorCall) *goja.Object {
+		r := &Select{
+			Re: &Value{
+				Value: call.Arguments[0].String(),
+			},
+		}
+		v := vm.ToValue(r).(*goja.Object)
+		v.SetPrototype(call.This.Prototype())
+		return v
+	})
+	vm.Set("__SelectGlob__", func(call goja.ConstructorCall) *goja.Object {
+		r := &Select{
+			Glob: &Value{
+				Value: call.Arguments[0].String(),
+			},
+		}
 		v := vm.ToValue(r).(*goja.Object)
 		v.SetPrototype(call.This.Prototype())
 		return v
