@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 type File struct {
@@ -37,8 +38,12 @@ func Create(js string) (*File, error) {
 	return s, nil
 }
 
-func (s *File) Schedule(ms int64, cb goja.Callable) {
-	x := time.Duration(ms) * time.Millisecond
+func (s *File) Schedule(dur string, cb goja.Callable) {
+	x, err := time.ParseDuration(dur)
+	if err != nil {
+		log.Get().Err(err).Str("duration", dur).Msg("invalid duration string")
+		return
+	}
 	u, ok := s.calls[x]
 	if !ok {
 		u = &Unit{file: s}
