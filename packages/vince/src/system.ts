@@ -49,8 +49,8 @@ export type SelectKind =
     | "glob"
 
 
-export type Prop = {
-    [key in Property]: Metric;
+export type Props = {
+    [key in Property]: Metrics;
 };
 
 export type Metrics = {
@@ -65,7 +65,25 @@ export type Select = {
 export interface Query {
     offset?: string;
     window?: string;
-    props: Prop;
+    props: Props;
+}
+
+export type PropsResult = {
+    [key in Property]: MetricsResult;
+};
+
+
+export type MetricsResult = {
+    [key in Metric]: Result;
+};
+
+export interface Result {
+    [key: string]: number[]
+}
+
+export interface QueryResult {
+    timestamps: number[];
+    props: PropsResult;
 }
 
 function build(query: Query) {
@@ -78,7 +96,6 @@ function build(query: Query) {
     //@ts-ignore
     o.props = new __Props__();
     Object.entries(query.props).forEach(([key, value]) => {
-        //@ts-ignore
         o.props[key] = buildMetric(value)
     });
 }
