@@ -55,7 +55,7 @@ type Value struct {
 }
 
 type Duration struct {
-	Value time.Duration
+	Value time.Duration `json:"value"`
 }
 
 func Register(vm *goja.Runtime) {
