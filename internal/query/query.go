@@ -1,6 +1,8 @@
 package query
 
 import (
+	"path"
+	"regexp"
 	"time"
 
 	"github.com/dop251/goja"
@@ -47,6 +49,24 @@ type Select struct {
 	Exact *Value `json:"exact,omitempty"`
 	Re    *Value `json:"re,omitempty"`
 	Glob  *Value `json:"glob,omitempty"`
+	re    *regexp.Regexp
+}
+
+func (s *Select) Match(txt []byte) bool {
+	if s.Exact != nil {
+		return s.Exact.Value == string(txt)
+	}
+	if s.Glob != nil {
+		ok, _ := path.Match(s.Glob.Value, string(txt))
+		return ok
+	}
+	if s.Re != nil {
+		if s.re == nil {
+			s.re = regexp.MustCompile(s.Re.Value)
+		}
+		return s.re.Match(txt)
+	}
+	return true
 }
 
 type Value struct {
@@ -137,6 +157,11 @@ func Register(vm *goja.Runtime) {
 			Re: &Value{
 				Value: call.Arguments[0].String(),
 			},
+		}
+		var err error
+		r.re, err = regexp.Compile(r.Re.Value)
+		if err != nil {
+			return vm.NewGoError(err)
 		}
 		v := vm.ToValue(r).(*goja.Object)
 		v.SetPrototype(call.This.Prototype())
