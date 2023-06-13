@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/internal/timeseries"
+	"github.com/vinceanalytics/vince/pkg/property"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -27,17 +29,21 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func visitors(ctx context.Context, uid, sid uint64) uint32 {
-	q := timeseries.Root(ctx, uid, sid, timeseries.RootOptions{
-		Metric:  timeseries.Visitors,
-		Prop:    timeseries.Base,
-		Window:  time.Hour * 24,
-		NoProps: true,
+	q := timeseries.Query(ctx, uid, sid, query.Query{
+		Window: &query.Duration{
+			Value: time.Hour * 24,
+		},
+		Props: &query.Props{
+			Base: &query.Metrics{
+				Visitors: &query.Select{
+					Exact: &query.Value{
+						Value: property.BaseKey,
+					},
+				},
+			},
+		},
 	})
-	a := q.Aggregate[timeseries.Base.String()][timeseries.Visitors.String()]
-	for _, v := range a {
-		if v.Key == timeseries.BaseKey {
-			return v.Value
-		}
-	}
-	return 0
+	return timeseries.Sum(
+		q.Props.Base.Visitors[property.BaseKey],
+	)
 }

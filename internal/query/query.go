@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 type Query struct {
@@ -36,6 +37,90 @@ type Props struct {
 	City           *Metrics `json:"city,omitempty"`
 }
 
+func (p *Props) Set(prop string, m *Metrics) {
+	switch prop {
+	case "base":
+		p.Base = m
+	case "event":
+		p.Event = m
+	case "page":
+		p.Page = m
+	case "entryPage":
+		p.EntryPage = m
+	case "exitPage":
+		p.ExitPage = m
+	case "referrer":
+		p.Referrer = m
+	case "utmMedium":
+		p.UtmMedium = m
+	case "utmSource":
+		p.UtmSource = m
+	case "utmCampaign":
+		p.UtmCampaign = m
+	case "utmContent":
+		p.UtmContent = m
+	case "utmTerm":
+		p.UtmTerm = m
+	case "utmDevice":
+		p.UtmDevice = m
+	case "utmBrowser":
+		p.UtmBrowser = m
+	case "browserVersion":
+		p.BrowserVersion = m
+	case "os":
+		p.Os = m
+	case "osVersion":
+		p.OsVersion = m
+	case "country":
+		p.Country = m
+	case "region":
+		p.Region = m
+	case "city":
+		p.City = m
+	}
+}
+
+func (p *Props) All(f func(string, *Metrics)) {
+	p.Base = &Metrics{}
+	f("base", p.Page)
+	p.Event = &Metrics{}
+	f("base", p.Event)
+	p.Page = &Metrics{}
+	f("base", p.Page)
+	p.EntryPage = &Metrics{}
+	f("EntryPage", p.EntryPage)
+	p.ExitPage = &Metrics{}
+	f("ExitPage", p.ExitPage)
+	p.Referrer = &Metrics{}
+	f("Referrer", p.Referrer)
+	p.UtmMedium = &Metrics{}
+	f("UtmMedium", p.UtmMedium)
+	p.UtmSource = &Metrics{}
+	f("UtmSource", p.UtmSource)
+	p.UtmCampaign = &Metrics{}
+	f("UtmCampaign", p.UtmCampaign)
+	p.UtmContent = &Metrics{}
+	f("UtmContent", p.UtmContent)
+	p.UtmTerm = &Metrics{}
+	f("UtmTerm", p.UtmTerm)
+	p.UtmDevice = &Metrics{}
+	f("UtmDevice", p.UtmDevice)
+	p.UtmBrowser = &Metrics{}
+	f("UtmBrowser", p.UtmBrowser)
+	p.BrowserVersion = &Metrics{}
+	f("BrowserVersion", p.BrowserVersion)
+	p.Os = &Metrics{}
+	f("Os", p.Os)
+	p.OsVersion = &Metrics{}
+	f("OsVersion", p.OsVersion)
+	p.Country = &Metrics{}
+	f("Country", p.Country)
+	p.Region = &Metrics{}
+	f("Region", p.Region)
+	p.City = &Metrics{}
+	f("City", p.City)
+}
+
 type Metrics struct {
 	Visitors       *Select `json:"visitors,omitempty"`
 	Views          *Select `json:"views,omitempty"`
@@ -45,14 +130,35 @@ type Metrics struct {
 	VisitDurations *Select `json:"visitDurations,omitempty"`
 }
 
+func (m *Metrics) Set(key string, sel *Select) {
+	switch key {
+	case "visitors":
+		m.Visitors = sel
+	case "views":
+		m.Views = sel
+	case "events":
+		m.Events = sel
+	case "visits":
+		m.Visits = sel
+	case "bounceRates":
+		m.BounceRates = sel
+	case "visitDurations":
+		m.VisitDurations = sel
+	}
+}
+
 type Select struct {
-	Exact *Value `json:"exact,omitempty"`
-	Re    *Value `json:"re,omitempty"`
-	Glob  *Value `json:"glob,omitempty"`
-	re    *regexp.Regexp
+	Exact   *Value `json:"exact,omitempty"`
+	Re      *Value `json:"re,omitempty"`
+	Glob    *Value `json:"glob,omitempty"`
+	re      *regexp.Regexp
+	invalid bool
 }
 
 func (s *Select) Match(txt []byte) bool {
+	if s.invalid {
+		return false
+	}
 	if s.Exact != nil {
 		return s.Exact.Value == string(txt)
 	}
@@ -62,7 +168,15 @@ func (s *Select) Match(txt []byte) bool {
 	}
 	if s.Re != nil {
 		if s.re == nil {
-			s.re = regexp.MustCompile(s.Re.Value)
+			var err error
+			s.re, err = regexp.Compile(s.Re.Value)
+			if err != nil {
+				log.Get().Err(err).
+					Str("pattern", s.Re.Value).
+					Msg("failed to compile regular expression for selector")
+				s.invalid = true
+				return false
+			}
 		}
 		return s.re.Match(txt)
 	}

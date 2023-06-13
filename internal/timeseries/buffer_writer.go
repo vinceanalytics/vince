@@ -87,7 +87,7 @@ var bigBufferPool = &sync.Pool{
 	},
 }
 
-func (b *Buffer) Build(ctx context.Context, f func(p Property, key string, sum *Sum) error) error {
+func (b *Buffer) build(ctx context.Context, f func(p Property, key string, sum *aggr) error) error {
 	return b.segments.build(ctx, f)
 }
 
@@ -192,12 +192,12 @@ func (m *MultiEntry) append(e *entry.Entry) {
 }
 
 type computed struct {
-	Sum
+	aggr
 	uniq func(uint64) bool
 	done func()
 }
 
-func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, sum *Sum) error) error {
+func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, sum *aggr) error) error {
 	// We capitalize on badger Transaction to globally track unique visitors in
 	// this entries batch.
 	//
@@ -220,7 +220,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, s
 	}()
 	uniq := seen(ctx, txn, m.key[:], mls)
 	for i := Base; i <= City; i++ {
-		err := m.compute(i, choose(i), uniq, func(s1 string, s2 *Sum) error {
+		err := m.compute(i, choose(i), uniq, func(s1 string, s2 *aggr) error {
 			return f(i, s1, s2)
 		})
 		if err != nil {
@@ -243,7 +243,7 @@ func (m *MultiEntry) compute(
 	prop Property,
 	pick func(*MultiEntry, int) string,
 	seen seenFunc,
-	f func(string, *Sum) error,
+	f func(string, *aggr) error,
 ) error {
 	seg := make(map[string]*computed)
 	defer func() {
@@ -280,9 +280,9 @@ func (m *MultiEntry) compute(
 		// Visit duration is average. Compute the average before calling f. Avoid
 		// division by zero bugs.
 		if len(m.Timestamp) > 0 {
-			v.Sum.VisitDuration = v.Sum.VisitDuration / time.Duration(len(m.Timestamp))
+			v.aggr.VisitDuration = v.aggr.VisitDuration / time.Duration(len(m.Timestamp))
 		}
-		err := f(k, &v.Sum)
+		err := f(k, &v.aggr)
 		if err != nil {
 			return err
 		}

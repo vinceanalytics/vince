@@ -14,7 +14,7 @@ import (
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
-type Sum struct {
+type aggr struct {
 	Visitors,
 	Views,
 	Events,
@@ -60,7 +60,7 @@ func Save(ctx context.Context, b *Buffer) {
 	tsBytes := svc.slice.get(6)
 	setTs(tsBytes[:], startMs)
 	svc.txn = db.NewTransactionAt(startMs, true)
-	err := b.Build(ctx, func(p Property, key string, sum *Sum) error {
+	err := b.build(ctx, func(p Property, key string, sum *aggr) error {
 		return transaction(&svc, tsBytes, meta.prop(p), key, sum)
 	})
 	svc.commit(ctx, startMs, err)
@@ -93,7 +93,7 @@ func Save(ctx context.Context, b *Buffer) {
 func transaction(
 	svc *saveContext,
 	ts []byte,
-	m *Key, text string, a *Sum) error {
+	m *Key, text string, a *aggr) error {
 	return errors.Join(
 		save(svc, m.metric(Visitors).key(ts, text, svc.ls), a.Visitors),
 		save(svc, m.metric(Views).key(ts, text, svc.ls), a.Views),

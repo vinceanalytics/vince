@@ -2,9 +2,11 @@ package site
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/templates"
@@ -41,11 +43,10 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		prop := property.ParseProperty(q.Get("p"))
 		start := core.Now(ctx)
 		window := period.Window(start)
-		stats := timeseries.Root(ctx, owner.ID, site.ID, timeseries.RootOptions{
-			Start:  start,
-			Window: window,
-			Key:    key,
-		})
+		var stats timeseries.Stats
+		stats.Result = timeseries.Query(ctx, owner.ID, site.ID,
+			buildQuery(window, prop, key),
+		)
 		stats.Period = period
 		stats.Domain = site.Domain
 		stats.Key = key
@@ -60,4 +61,48 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	render.ERROR(ctx, w, http.StatusUnauthorized)
+}
+
+func buildQuery(
+	window time.Duration,
+	prop property.Property,
+	key string,
+) query.Query {
+	m := &query.Metrics{
+		Visitors:       &query.Select{Exact: &query.Value{Value: key}},
+		Views:          &query.Select{Exact: &query.Value{Value: key}},
+		Events:         &query.Select{Exact: &query.Value{Value: key}},
+		Visits:         &query.Select{Exact: &query.Value{Value: key}},
+		BounceRates:    &query.Select{Exact: &query.Value{Value: key}},
+		VisitDurations: &query.Select{Exact: &query.Value{Value: key}},
+	}
+	if prop != property.Base {
+		p := &query.Props{}
+		p.Set(prop.String(), m)
+		return query.Query{
+			Window: &query.Duration{Value: window},
+			Props:  p,
+		}
+	}
+	all := &query.Metrics{
+		Visitors:       &query.Select{},
+		Views:          &query.Select{},
+		Events:         &query.Select{},
+		Visits:         &query.Select{},
+		BounceRates:    &query.Select{},
+		VisitDurations: &query.Select{},
+	}
+	p := &query.Props{}
+	p.All(func(s string, mq *query.Metrics) {
+		if s == property.Base.String() {
+			// Optimize this by doing exact match.
+			*mq = *mq
+		} else {
+			*mq = *all
+		}
+	})
+	return query.Query{
+		Window: &query.Duration{Value: window},
+		Props:  p,
+	}
 }
