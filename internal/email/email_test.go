@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"net/http"
 	"net/mail"
 	"os"
 	"strings"
@@ -52,7 +53,7 @@ func TestSend_simple(t *testing.T) {
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 	Register(ctx, vm)
 	b, _ := os.ReadFile("testdata/simple_email.js")
-	_, err = vm.RunString(string(b))
+	r, err := vm.RunString(string(b))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,6 +62,9 @@ func TestSend_simple(t *testing.T) {
 	got := removeBoundary(m.Bytes())
 	if !bytes.Equal(want, got) {
 		t.Fatal("mismatch on generated email")
+	}
+	if got, want := r.ToInteger(), http.StatusOK; got != int64(want) {
+		t.Errorf("expected %d got %d", want, got)
 	}
 }
 func TestSend_missing_mailer(t *testing.T) {
