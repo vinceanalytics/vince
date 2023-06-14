@@ -42,19 +42,6 @@ func Register(ctx context.Context, vm *goja.Runtime) {
 		v.SetPrototype(call.This.Prototype())
 		return v
 	})
-	vm.Set("__Address__", func(call goja.ConstructorCall) *goja.Object {
-		r := &Address{}
-		switch len(call.Arguments) {
-		case 1:
-			r.Address = call.Arguments[0].String()
-		case 2:
-			r.Name = call.Arguments[0].String()
-			r.Address = call.Arguments[1].String()
-		}
-		v := vm.ToValue(r).(*goja.Object)
-		v.SetPrototype(call.This.Prototype())
-		return v
-	})
 	vm.Set("__sendMail__", Send(ctx))
 }
 
