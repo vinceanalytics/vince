@@ -166,7 +166,7 @@ export function sendMail(mail: Email): number | EmailError {
     let o: number;
     try {
         //@ts-ignore
-        o = __sendMail__(buildMai(mail));
+        o = __sendMail__(buildMail(mail));
     } catch (error) {
         //@ts-ignore
         return error.message as EmailError;
@@ -177,10 +177,10 @@ export function sendMail(mail: Email): number | EmailError {
 function buildMail(e: Email) {
     //@ts-ignore
     let m = new __Email__();
-    //@ts-ignore
-    m.from = new __Address__(e.from.name, e.from.address);
-    //@ts-ignore
-    m.to = new __Address__(e.to.name, e.to.address);
+    m.from.name = e.from.name;
+    m.from.address = e.from.address;
+    m.to.name = e.to.name;
+    m.to.address = e.to.address;
     m.subject = e.subject;
     m.contentType = e.contentType;
     m.msg = e.msg;
