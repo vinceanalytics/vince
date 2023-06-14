@@ -116,18 +116,19 @@ function build(query: Query) {
     if (query.window) o.window = new __Duration__(query.window);
     //@ts-ignore
     o.props = new __Props__();
-    Object.entries(query.props).forEach(([key, value]) => {
-        o.props[key] = buildMetric(value)
-    });
+    Object.keys(query.props).forEach((key) => {
+        o.props[key] = buildMetric(query.props[key as Property])
+    })
     return o;
 }
 
 function buildMetric(metrics: Metrics) {
     //@ts-ignore
     const o = new __Metrics__();
-    Object.entries(metrics).forEach(([key, value]) => {
-        o[key] = buildSelect(value)
-    });
+    Object.keys(metrics).forEach((key) => {
+        o[key] = buildSelect(metrics[key as Metric])
+
+    })
     return o
 }
 

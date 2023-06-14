@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "incremental": true, /* Save .tsbuildinfo files to allow for incremental compilation of projects. */
-    "target": "es2017", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "target": "es2015", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     "module": "commonjs", /* Specify what module code is generated. */
     "declaration": true, /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
     "outDir": "./dist", /* Specify an output folder for all emitted files. */
