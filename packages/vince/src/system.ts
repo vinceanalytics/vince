@@ -89,6 +89,24 @@ export interface QueryResult {
     props: PropsResult;
 }
 
+export interface Email {
+    from: Address;
+    to: Address;
+    subject: string;
+    contentType: string;
+    msg: string;
+}
+
+export interface Address {
+    name: string;
+    address: string;
+}
+
+export type EmailError =
+    | "Mailer not configured"
+    | "Email creation failed"
+    | "Email sending failed"
+
 function build(query: Query) {
     //@ts-ignore
     const o = new __Query__();
@@ -140,4 +158,29 @@ export function query(domain: string, request: Query): QueryResult | QueryError 
         return error as QueryError;
     }
     return o as QueryResult;
+}
+
+
+export function sendMail(mail: Email): number | EmailError {
+    let o: number;
+    try {
+        //@ts-ignore
+        o = __sendMail__(buildMai(mail));
+    } catch (error) {
+        return error as EmailError;
+    }
+    return o;
+}
+
+function buildMail(e: Email) {
+    //@ts-ignore
+    let m = new __Email__();
+    //@ts-ignore
+    m.from = new __Address__(e.from.name, e.from.address);
+    //@ts-ignore
+    m.to = new __Address__(e.to.name, e.to.address);
+    m.subject = e.subject;
+    m.contentType = e.contentType;
+    m.msg = e.msg;
+    return m;
 }

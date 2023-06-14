@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
+	"github.com/vinceanalytics/vince/internal/email"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/internal/timeseries"
@@ -34,6 +35,7 @@ func Create(ctx context.Context, js string) (*File, error) {
 	}
 	s.runtime.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 	query.Register(s.runtime)
+	email.Register(ctx, s.runtime)
 	s.runtime.Set("__schedule__", s.Schedule)
 	s.runtime.Set("__query__", queryStats(ctx))
 	_, err := s.runtime.RunString(js)

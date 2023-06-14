@@ -1,10 +1,13 @@
 package email
 
 import (
+	"bytes"
 	"context"
 	"html/template"
 	"io"
+	"net/http"
 
+	"github.com/dop251/goja"
 	"github.com/emersion/go-message/mail"
 	"github.com/emersion/go-sasl"
 	"github.com/emersion/go-smtp"
@@ -12,7 +15,91 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/templates"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
+
+type Email struct {
+	From        *Address `json:"from"`
+	To          *Address `json:"name"`
+	Subject     string   `json:"subject"`
+	ContentType string   `json:"contentType"`
+	Message     string   `json:"msg"`
+}
+
+type Address struct {
+	Name    string `json:"name"`
+	Address string `json:"address"`
+}
+
+func Register(ctx context.Context, vm *goja.Runtime) {
+	vm.Set("__Mail__", func(call goja.ConstructorCall) *goja.Object {
+		r := &Email{}
+		v := vm.ToValue(r).(*goja.Object)
+		v.SetPrototype(call.This.Prototype())
+		return v
+	})
+	vm.Set("__Address__", func(call goja.ConstructorCall) *goja.Object {
+		r := &Address{}
+		switch len(call.Arguments) {
+		case 1:
+			r.Address = call.Arguments[0].String()
+		case 2:
+			r.Name = call.Arguments[0].String()
+			r.Address = call.Arguments[1].String()
+		}
+		v := vm.ToValue(r).(*goja.Object)
+		v.SetPrototype(call.This.Prototype())
+		return v
+	})
+	vm.Set("__sendMail__", Send(ctx))
+}
+
+func Send(ctx context.Context) func(e *Email) int {
+	mailer := Get(ctx)
+	if mailer == nil {
+		return func(e *Email) int {
+			panic("Mailer not configured")
+		}
+	}
+	var o bytes.Buffer
+
+	return func(e *Email) int {
+		o.Reset()
+		var h mail.Header
+		h.SetDate(core.Now(ctx))
+		h.SetAddressList("From", []*mail.Address{
+			{Name: e.From.Name, Address: e.From.Address},
+		})
+		h.SetAddressList("To", []*mail.Address{
+			{Name: e.To.Name, Address: e.To.Address},
+		})
+		h.SetSubject(e.Subject)
+		mw, err := mail.CreateWriter(&o, h)
+		if err != nil {
+			log.Get().Err(err).Msg("failed to create email writer")
+			panic("Email creation failed")
+		}
+		if e.ContentType == "" {
+			e.ContentType = "text/plain"
+		}
+		var th mail.InlineHeader
+		th.Set("Content-Type", e.ContentType)
+		w, err := mw.CreateSingleInline(th)
+		if err != nil {
+			log.Get().Err(err).Msg("failed to create email")
+			panic("Email creation failed")
+		}
+		w.Write([]byte(e.Message))
+		w.Close()
+		mw.Close()
+		err = mailer.SendMail(e.From.Address, []string{e.To.Address}, &o)
+		if err != nil {
+			log.Get().Err(err).Msg("failed to send email")
+			panic("Email sending failed")
+		}
+		return http.StatusOK
+	}
+}
 
 func Compose(ctx context.Context,
 	out io.Writer, tpl *template.Template,
@@ -126,5 +213,8 @@ func Set(ctx context.Context, m Mailer) context.Context {
 }
 
 func Get(ctx context.Context) Mailer {
-	return ctx.Value(mailerKey{}).(Mailer)
+	if v := ctx.Value(ctx); v != nil {
+		return v.(Mailer)
+	}
+	return nil
 }
