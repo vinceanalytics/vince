@@ -3,6 +3,7 @@ package email
 import (
 	"bytes"
 	"context"
+	"errors"
 	"html/template"
 	"io"
 	"net/http"
@@ -20,7 +21,7 @@ import (
 
 type Email struct {
 	From        *Address `json:"from"`
-	To          *Address `json:"name"`
+	To          *Address `json:"to"`
 	Subject     string   `json:"subject"`
 	ContentType string   `json:"contentType"`
 	Message     string   `json:"msg"`
@@ -32,8 +33,11 @@ type Address struct {
 }
 
 func Register(ctx context.Context, vm *goja.Runtime) {
-	vm.Set("__Mail__", func(call goja.ConstructorCall) *goja.Object {
-		r := &Email{}
+	vm.Set("__Email__", func(call goja.ConstructorCall) *goja.Object {
+		r := &Email{
+			From: &Address{},
+			To:   &Address{},
+		}
 		v := vm.ToValue(r).(*goja.Object)
 		v.SetPrototype(call.This.Prototype())
 		return v
@@ -54,16 +58,22 @@ func Register(ctx context.Context, vm *goja.Runtime) {
 	vm.Set("__sendMail__", Send(ctx))
 }
 
-func Send(ctx context.Context) func(e *Email) int {
+var (
+	ErrMailerNotConfigured = errors.New("Mailer not configured")
+	ErrEmailCreationFailed = errors.New("Email creation failed")
+	ErrEmailSendingFailed  = errors.New("Email sending failed")
+)
+
+func Send(ctx context.Context) func(e *Email) (int, error) {
 	mailer := Get(ctx)
 	if mailer == nil {
-		return func(e *Email) int {
-			panic("Mailer not configured")
+		return func(e *Email) (int, error) {
+			return 0, ErrMailerNotConfigured
 		}
 	}
 	var o bytes.Buffer
 
-	return func(e *Email) int {
+	return func(e *Email) (int, error) {
 		o.Reset()
 		var h mail.Header
 		h.SetDate(core.Now(ctx))
@@ -77,7 +87,7 @@ func Send(ctx context.Context) func(e *Email) int {
 		mw, err := mail.CreateWriter(&o, h)
 		if err != nil {
 			log.Get().Err(err).Msg("failed to create email writer")
-			panic("Email creation failed")
+			return 0, ErrEmailCreationFailed
 		}
 		if e.ContentType == "" {
 			e.ContentType = "text/plain"
@@ -87,7 +97,7 @@ func Send(ctx context.Context) func(e *Email) int {
 		w, err := mw.CreateSingleInline(th)
 		if err != nil {
 			log.Get().Err(err).Msg("failed to create email")
-			panic("Email creation failed")
+			return 0, ErrEmailCreationFailed
 		}
 		w.Write([]byte(e.Message))
 		w.Close()
@@ -95,9 +105,9 @@ func Send(ctx context.Context) func(e *Email) int {
 		err = mailer.SendMail(e.From.Address, []string{e.To.Address}, &o)
 		if err != nil {
 			log.Get().Err(err).Msg("failed to send email")
-			panic("Email sending failed")
+			return 0, ErrEmailSendingFailed
 		}
-		return http.StatusOK
+		return http.StatusOK, nil
 	}
 }
 
@@ -213,7 +223,7 @@ func Set(ctx context.Context, m Mailer) context.Context {
 }
 
 func Get(ctx context.Context) Mailer {
-	if v := ctx.Value(ctx); v != nil {
+	if v := ctx.Value(mailerKey{}); v != nil {
 		return v.(Mailer)
 	}
 	return nil
