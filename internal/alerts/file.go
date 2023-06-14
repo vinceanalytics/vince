@@ -2,6 +2,7 @@ package alerts
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"time"
 
@@ -59,15 +60,17 @@ func (s *File) Schedule(dur string, cb goja.Callable) {
 	u.calls = append(u.calls, cb)
 }
 
-func queryStats(ctx context.Context) func(string, *query.Query) *query.QueryResult {
-	return func(s string, q *query.Query) *query.QueryResult {
+var ErrDomainNotFound = errors.New("Domain not found")
+
+func queryStats(ctx context.Context) func(string, *query.Query) (*query.QueryResult, error) {
+	return func(s string, q *query.Query) (*query.QueryResult, error) {
 		site := models.SiteByDomain(ctx, s)
 		if site == nil {
-			panic("Domain not found")
+			return nil, ErrDomainNotFound
 		}
 		u := models.SiteOwner(ctx, site.ID)
 		o := timeseries.Query(ctx, u.ID, site.ID, *q)
-		return &o
+		return &o, nil
 	}
 }
 

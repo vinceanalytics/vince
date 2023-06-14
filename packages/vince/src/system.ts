@@ -49,7 +49,7 @@ export type SelectKind =
     | "glob"
 
 export type QueryError =
-    | "Domain not found"
+    | "domain not found"
 
 
 export type Props = {
