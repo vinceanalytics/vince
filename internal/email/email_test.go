@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/mail"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,7 +38,7 @@ func (m *MockMailer) Close() error {
 	return nil
 }
 
-func TestSend(t *testing.T) {
+func TestSend_simple(t *testing.T) {
 	now, err := time.Parse(time.RFC822Z, time.RFC822Z)
 	if err != nil {
 		t.Fatal(err)
@@ -60,6 +61,19 @@ func TestSend(t *testing.T) {
 	got := removeBoundary(m.Bytes())
 	if !bytes.Equal(want, got) {
 		t.Fatal("mismatch on generated email")
+	}
+}
+func TestSend_missing_mailer(t *testing.T) {
+	vm := goja.New()
+	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
+	Register(context.TODO(), vm)
+	b, _ := os.ReadFile("testdata/missing_mailer.js")
+	_, err := vm.RunString(string(b))
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	if !strings.Contains(err.Error(), "true") {
+		t.Errorf("expected %v to contain true", err)
 	}
 }
 
