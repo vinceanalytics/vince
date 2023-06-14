@@ -60,7 +60,7 @@ func (s *File) Schedule(dur string, cb goja.Callable) {
 	u.calls = append(u.calls, cb)
 }
 
-var ErrDomainNotFound = errors.New("Domain not found")
+var ErrDomainNotFound = errors.New("domain not found")
 
 func queryStats(ctx context.Context) func(string, *query.Query) (*query.QueryResult, error) {
 	return func(s string, q *query.Query) (*query.QueryResult, error) {
