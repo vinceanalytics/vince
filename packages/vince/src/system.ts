@@ -155,7 +155,8 @@ export function query(domain: string, request: Query): QueryResult | QueryError 
         //@ts-ignore
         o = __query__(domain, build(request));
     } catch (error) {
-        return error as QueryError;
+        //@ts-ignore
+        return error.message as QueryError;
     }
     return o as QueryResult;
 }
@@ -167,7 +168,8 @@ export function sendMail(mail: Email): number | EmailError {
         //@ts-ignore
         o = __sendMail__(buildMai(mail));
     } catch (error) {
-        return error as EmailError;
+        //@ts-ignore
+        return error.message as EmailError;
     }
     return o;
 }
