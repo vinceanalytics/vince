@@ -48,6 +48,9 @@ export type SelectKind =
     | "re"
     | "glob"
 
+export type QueryError =
+    | "Domain not found"
+
 
 export type Props = {
     [key in Property]: Metrics;
@@ -98,6 +101,7 @@ function build(query: Query) {
     Object.entries(query.props).forEach(([key, value]) => {
         o.props[key] = buildMetric(value)
     });
+    return o;
 }
 
 function buildMetric(metrics: Metrics) {
@@ -125,4 +129,15 @@ function buildSelect(select: Select) {
                 break;
         }
     }
+}
+
+export function query(domain: string, request: Query): QueryResult | QueryError {
+    let o: QueryResult;
+    try {
+        //@ts-ignore
+        o = __query__(domain, build(request));
+    } catch (error) {
+        return error as QueryError;
+    }
+    return o as QueryResult;
 }

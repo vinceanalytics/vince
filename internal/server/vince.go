@@ -156,15 +156,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 			o.Bootstrap.Name, o.Bootstrap.Email, o.Bootstrap.Password, o.Bootstrap.Key,
 		)
 	}
-	if o.Alerts.Enabled {
-		log.Get().Debug().Msg("setup alerts")
-		a, err := alerts.Setup(o)
-		if err != nil {
-			resources.Close()
-			return nil, nil, err
-		}
-		ctx = alerts.Set(ctx, a)
-	}
+
 	if o.Mailer.Enabled {
 		log.Get().Debug().Msg("setup mailer")
 		mailer, err := email.FromConfig(o)
@@ -180,6 +172,17 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 	if err != nil {
 		resources.Close()
 		return nil, nil, err
+	}
+	if o.Alerts.Enabled {
+		// alerts support querying and email. Make sure we initialize after email and
+		// timeseries has been set on ctx.
+		log.Get().Debug().Msg("setup alerts")
+		a, err := alerts.Setup(ctx, o)
+		if err != nil {
+			resources.Close()
+			return nil, nil, err
+		}
+		ctx = alerts.Set(ctx, a)
 	}
 	resources = append(resources, ts)
 	ctx, err = caches.Open(ctx, timeseries.Collect)

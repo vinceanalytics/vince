@@ -22,7 +22,7 @@ func (a *Alerts) Close() error {
 
 type alertsKey struct{}
 
-func Setup(o *config.Options) (*Alerts, error) {
+func Setup(ctx context.Context, o *config.Options) (*Alerts, error) {
 	path := o.Alerts.Source
 	if path == "" {
 		path := filepath.Join(o.DataPath, "alerts")
@@ -40,7 +40,7 @@ func Setup(o *config.Options) (*Alerts, error) {
 		scheduler: newScheduler(),
 	}
 	for k, v := range scripts {
-		s, err := Create(string(v))
+		s, err := Create(ctx, string(v))
 		if err != nil {
 			return nil, fmt.Errorf("script:%q failed to create File instance  %v", k, err)
 		}

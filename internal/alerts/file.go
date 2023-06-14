@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
+	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/query"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
@@ -24,13 +27,15 @@ func (u *Unit) Call() {
 	u.file.exec(u.calls)
 }
 
-func Create(js string) (*File, error) {
+func Create(ctx context.Context, js string) (*File, error) {
 	s := &File{
 		runtime: goja.New(),
 		calls:   make(map[time.Duration]*Unit),
 	}
 	s.runtime.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
+	query.Register(s.runtime)
 	s.runtime.Set("__schedule__", s.Schedule)
+	s.runtime.Set("__query__", queryStats(ctx))
 	_, err := s.runtime.RunString(js)
 	if err != nil {
 		return nil, err
@@ -50,6 +55,18 @@ func (s *File) Schedule(dur string, cb goja.Callable) {
 		s.calls[x] = u
 	}
 	u.calls = append(u.calls, cb)
+}
+
+func queryStats(ctx context.Context) func(string, *query.Query) *query.QueryResult {
+	return func(s string, q *query.Query) *query.QueryResult {
+		site := models.SiteByDomain(ctx, s)
+		if site == nil {
+			panic("Domain not found")
+		}
+		u := models.SiteOwner(ctx, site.ID)
+		o := timeseries.Query(ctx, u.ID, site.ID, *q)
+		return &o
+	}
 }
 
 func (s *File) exec(calls []goja.Callable) {

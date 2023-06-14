@@ -1,12 +1,13 @@
 package alerts
 
 import (
+	"context"
 	"testing"
 	"time"
 )
 
 func TestCreate(t *testing.T) {
-	a, err := Create(`
+	a, err := Create(context.TODO(), `
 	let g =1;
 	__schedule__("100ms",()=>{g+=1;});
 	`)
