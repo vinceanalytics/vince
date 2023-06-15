@@ -32,7 +32,7 @@ value store that support ACID transactions with serializable snapshot isolation
 
 ## Credits
 
-All credits goes to @plausible/analytics. I am not affiliated with the project, if you love vince and want a managed version I recommend you try them out.
+All credits goes to @plausible/analytics . I am not affiliated with the project, if you love vince and want a managed version I recommend you try them out.
 
 
 # Origins
