@@ -134,12 +134,13 @@ func (s *Scheduler) Add(r Runnable) {
 
 func (s *Scheduler) Run(ctx context.Context) {
 	for k, v := range s.units {
+		s.g.Add(1)
 		go s.schedule(ctx, k, v)
 	}
+	s.g.Wait()
 }
 
 func (s *Scheduler) schedule(ctx context.Context, i time.Duration, calls []Runnable) {
-	s.g.Add(1)
 	defer s.g.Done()
 	t := time.NewTicker(i)
 	defer t.Stop()

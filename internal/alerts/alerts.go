@@ -8,12 +8,13 @@ import (
 	"path/filepath"
 
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/js"
 )
 
 type Alerts struct {
 	path      string
-	files     map[string]*File
-	scheduler *Scheduler
+	file      *js.File
+	scheduler *js.Scheduler
 }
 
 func (a *Alerts) Close() error {
@@ -28,7 +29,7 @@ func Setup(ctx context.Context, o *config.Options) (*Alerts, error) {
 		path := filepath.Join(o.DataPath, "alerts")
 		os.MkdirAll(path, 0755)
 	}
-	scripts, err := Compile(path)
+	scripts, err := js.Compile(ctx, path)
 	if err != nil {
 		if err != nil {
 			return nil, fmt.Errorf("failed to compile alerts :%v", err)
@@ -36,19 +37,11 @@ func Setup(ctx context.Context, o *config.Options) (*Alerts, error) {
 	}
 	a := &Alerts{
 		path:      path,
-		files:     make(map[string]*File),
-		scheduler: newScheduler(),
+		file:      scripts,
+		scheduler: js.NewScheduler(),
 	}
-	for k, v := range scripts {
-		s, err := Create(ctx, string(v))
-		if err != nil {
-			return nil, fmt.Errorf("script:%q failed to create File instance  %v", k, err)
-		}
-		if len(s.calls) == 0 {
-			continue
-		}
-		a.files[k] = s
-		a.scheduler.add(s.calls)
+	for _, u := range a.file.Units() {
+		a.scheduler.Add(u)
 	}
 	return a, nil
 }
@@ -59,4 +52,15 @@ func Set(ctx context.Context, a *Alerts) context.Context {
 
 func Get(ctx context.Context) *Alerts {
 	return ctx.Value(alertsKey{}).(*Alerts)
+}
+
+func (a *Alerts) Run(ctx context.Context) {
+	a.scheduler.Run(ctx)
+}
+
+func (a *Alerts) Work(ctx context.Context) func() error {
+	return func() error {
+		a.Run(ctx)
+		return nil
+	}
 }

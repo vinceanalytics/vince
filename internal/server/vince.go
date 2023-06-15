@@ -268,10 +268,14 @@ func Run(ctx context.Context, resources ResourceList) error {
 		CheckFunc: models.Check,
 	})
 	{
-		o := config.Get(ctx).Intervals
+		o := config.Get(ctx)
 		// register and start workers
-		g.Go(worker.Periodic(ctx, h.Ping("site_cache"), o.SiteCache, true, worker.SiteCacheUpdate))
-		g.Go(worker.Periodic(ctx, h.Ping("timeseries"), o.TSSync, false, worker.SaveBuffers))
+		g.Go(worker.Periodic(ctx, h.Ping("site_cache"), o.Intervals.SiteCache, true, worker.SiteCacheUpdate))
+		g.Go(worker.Periodic(ctx, h.Ping("timeseries"), o.Intervals.TSSync, false, worker.SaveBuffers))
+		// schedule alerts
+		if o.Alerts.Enabled {
+			g.Go(alerts.Get(ctx).Work(ctx))
+		}
 	}
 
 	plain := core.GetHTTPServer(ctx)
