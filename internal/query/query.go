@@ -11,6 +11,7 @@ import (
 
 type Query struct {
 	Offset *Duration `json:"offset,omitempty"`
+	Sum    bool      `json:"sum,omitempty"`
 	Window *Duration `json:"window,omitempty"`
 	Props  *Props    `json:"props,omitempty"`
 }

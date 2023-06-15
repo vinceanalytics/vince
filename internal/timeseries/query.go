@@ -49,6 +49,10 @@ func Query(ctx context.Context, uid, sid uint64, r query.Query) (result query.Qu
 
 	shared := sharedTS(start, end, step.Milliseconds())
 	result.Timestamps = shared
+	if r.Sum {
+		// for sum only use single timestamp
+		result.Timestamps = []int64{shared[len(shared)-1]}
+	}
 
 	m := newMetaKey()
 	defer func() {
@@ -61,25 +65,25 @@ func Query(ctx context.Context, uid, sid uint64, r query.Query) (result query.Qu
 	now := uint64(currentTime.UnixMilli())
 	p := r.Props
 	rs := &result.Props
-	do(ctx, Base, p.Base, &rs.Base, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, Event, p.Event, &rs.Event, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, Page, p.Page, &rs.Page, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, EntryPage, p.EntryPage, &rs.EntryPage, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, ExitPage, p.ExitPage, &rs.ExitPage, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, Referrer, p.Referrer, &rs.Referrer, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, UtmMedium, p.UtmMedium, &rs.UtmMedium, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, UtmSource, p.UtmSource, &rs.UtmSource, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, UtmCampaign, p.UtmCampaign, &rs.UtmCampaign, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, UtmContent, p.UtmContent, &rs.UtmContent, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, UtmTerm, p.UtmTerm, &rs.UtmTerm, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, UtmDevice, p.UtmDevice, &rs.UtmDevice, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, UtmBrowser, p.UtmBrowser, &rs.UtmBrowser, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, BrowserVersion, p.BrowserVersion, &rs.BrowserVersion, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, Os, p.Os, &rs.Os, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, OsVersion, p.OsVersion, &rs.OsVersion, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, Country, p.Country, &rs.Country, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, Region, p.Region, &rs.Region, &wg, shared, now, uint64(start), uint64(end), m.clone())
-	do(ctx, City, p.City, &rs.City, &wg, shared, now, uint64(start), uint64(end), m.clone())
+	do(ctx, Base, p.Base, &rs.Base, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, Event, p.Event, &rs.Event, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, Page, p.Page, &rs.Page, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, EntryPage, p.EntryPage, &rs.EntryPage, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, ExitPage, p.ExitPage, &rs.ExitPage, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, Referrer, p.Referrer, &rs.Referrer, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, UtmMedium, p.UtmMedium, &rs.UtmMedium, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, UtmSource, p.UtmSource, &rs.UtmSource, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, UtmCampaign, p.UtmCampaign, &rs.UtmCampaign, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, UtmContent, p.UtmContent, &rs.UtmContent, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, UtmTerm, p.UtmTerm, &rs.UtmTerm, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, UtmDevice, p.UtmDevice, &rs.UtmDevice, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, UtmBrowser, p.UtmBrowser, &rs.UtmBrowser, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, BrowserVersion, p.BrowserVersion, &rs.BrowserVersion, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, Os, p.Os, &rs.Os, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, OsVersion, p.OsVersion, &rs.OsVersion, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, Country, p.Country, &rs.Country, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, Region, p.Region, &rs.Region, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	do(ctx, City, p.City, &rs.City, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
 	wg.Wait()
 	return
 }
@@ -93,13 +97,14 @@ func do(
 	shared []int64,
 	now, start, end uint64,
 	m *Key,
+	sum bool,
 ) {
 	if metrics == nil {
 		m.Release()
 		return
 	}
 	wg.Add(1)
-	go doQuery(ctx, prop, metrics, result, wg, shared, now, start, end, m)
+	go doQuery(ctx, prop, metrics, result, wg, shared, now, start, end, m, sum)
 }
 
 func doQuery(
@@ -111,6 +116,7 @@ func doQuery(
 	shared []int64,
 	now, start, end uint64,
 	m *Key,
+	sum bool,
 ) {
 	defer func() {
 		m.Release()
@@ -129,18 +135,18 @@ func doQuery(
 	defer it.Close()
 	b := get()
 	defer put(b)
-	getMetric(Visitors, metrics.Visitors, end, shared, it, b, m, &r.Visitors)
-	getMetric(Views, metrics.Views, end, shared, it, b, m, &r.Views)
-	getMetric(Events, metrics.Events, end, shared, it, b, m, &r.Events)
-	getMetric(Visits, metrics.Visits, end, shared, it, b, m, &r.Visits)
+	getMetric(sum, Visitors, metrics.Visitors, end, shared, it, b, m, &r.Visitors)
+	getMetric(sum, Views, metrics.Views, end, shared, it, b, m, &r.Views)
+	getMetric(sum, Events, metrics.Events, end, shared, it, b, m, &r.Events)
+	getMetric(sum, Visits, metrics.Visits, end, shared, it, b, m, &r.Visits)
 	// bounce rate is a percentage of bounce to visits. We only save bounce counts,
 	// so we must calculate the rate here.
-	getMetric(BounceRates, metrics.BounceRates, end, shared, it, b, m, &r.BounceRates)
+	getMetric(sum, BounceRates, metrics.BounceRates, end, shared, it, b, m, &r.BounceRates)
 	if metrics.BounceRates != nil {
 		o := r.Visits
 		if metrics.Visits == nil || !metrics.Visits.Equal(metrics.BounceRates) {
 			o = make(map[string][]uint32)
-			getMetric(Visits, metrics.BounceRates, end, shared, it, b, m, &o)
+			getMetric(sum, Visits, metrics.BounceRates, end, shared, it, b, m, &o)
 		}
 		for k, v := range r.BounceRates {
 			xv, ok := o[k]
@@ -150,7 +156,7 @@ func doQuery(
 			percent(v, xv)
 		}
 	}
-	getMetric(VisitDurations, metrics.VisitDurations, end, shared, it, b, m, &r.VisitDurations)
+	getMetric(sum, VisitDurations, metrics.VisitDurations, end, shared, it, b, m, &r.VisitDurations)
 }
 
 func percent(a, b []uint32) {
@@ -165,6 +171,7 @@ func percent(a, b []uint32) {
 	}
 }
 func getMetric(
+	sum bool,
 	metric Metric,
 	sel *query.Select,
 	end uint64,
@@ -217,7 +224,11 @@ func getMetric(
 	}
 	o := *result
 	for k, v := range values {
-		o[k] = rollUp(v.Value, v.Timestamp, shared, Sum16)
+		if sum {
+			o[k] = []uint32{Sum16(v.Value)}
+		} else {
+			o[k] = rollUp(v.Value, v.Timestamp, shared, Sum16)
+		}
 	}
 }
 
