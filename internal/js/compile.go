@@ -1,28 +1,44 @@
 package js
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 
+	"github.com/dop251/goja"
 	"github.com/evanw/esbuild/pkg/api"
+	"github.com/vinceanalytics/vince/packages"
 )
 
-type File struct {
+type file struct {
 	Path string
 	Data []byte
 }
 
-func Compile(dir string, files []string) ([]*File, error) {
+const vinceFile = "__vince__.ts"
+
+func Compile(ctx context.Context, dir string) (*File, error) {
+	err := os.WriteFile(filepath.Join(dir, vinceFile), packages.VINCE, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write __vince__ file %v", err)
+	}
+	defer func() {
+		os.Remove(filepath.Join(dir, vinceFile))
+	}()
 	var scripts []string
-	err := filepath.Walk(dir, func(path string, info fs.FileInfo, e error) error {
+	err = filepath.Walk(dir, func(path string, info fs.FileInfo, e error) error {
 		if e != nil {
 			return e
 		}
 		if info.IsDir() {
 			return nil
 		}
-		if filepath.Ext(path) != ".ts" {
+		switch filepath.Ext(path) {
+		case ".ts", ".js":
+		default:
 			return nil
 		}
 		rel, err := filepath.Rel(dir, path)
@@ -35,20 +51,16 @@ func Compile(dir string, files []string) ([]*File, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(scripts) == 0 {
-		return []*File{}, nil
-	}
 	dir, err = filepath.Abs(dir)
 	if err != nil {
 		return nil, err
 	}
 	result := api.Build(api.BuildOptions{
-		Target:        api.ES2015,
-		EntryPoints:   files,
+		EntryPoints:   scripts,
 		Outdir:        dir,
 		Outbase:       dir,
-		Bundle:        true,
 		AbsWorkingDir: dir,
+		Format:        api.FormatCommonJS,
 		LogLevel:      api.LogLevelSilent,
 	})
 	if len(result.Errors) > 0 {
@@ -58,13 +70,40 @@ func Compile(dir string, files []string) ([]*File, error) {
 		}
 		return nil, errors.Join(ls...)
 	}
-	var o []*File
+	var o []*file
+	var vincePkg []byte
 	for _, v := range result.OutputFiles {
 		rel, _ := filepath.Rel(dir, v.Path)
-		o = append(o, &File{
+		base := filepath.Base(rel)
+		if base == vinceFile {
+			vincePkg = v.Contents
+			continue
+		}
+		o = append(o, &file{
 			Path: rel,
 			Data: v.Contents,
 		})
 	}
-	return o, nil
+	vm := create(ctx)
+	pkg := vm.runtime.NewObject()
+	vm.runtime.Set("module", pkg)
+	_, err = vm.runtime.RunString(string(vincePkg))
+	if err != nil {
+		return nil, err
+	}
+
+	vm.runtime.Set("require", func(a goja.Value) goja.Value {
+		if a.String() == "@vinceanalytics/vince" {
+			return pkg.Get("exports")
+		}
+		return goja.Undefined()
+	})
+
+	for _, m := range o {
+		_, err = vm.runtime.RunString(string(m.Data))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return vm, nil
 }
