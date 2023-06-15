@@ -336,10 +336,10 @@ func redirect(addr string) http.Handler {
 // hostOnly returns only the host portion of hostport.
 // If there is no port or if there is an error splitting
 // the port off, the whole input string is returned.
-func hostOnly(hostport string) string {
-	host, _, err := net.SplitHostPort(hostport)
+func hostOnly(hostPort string) string {
+	host, _, err := net.SplitHostPort(hostPort)
 	if err != nil {
-		return hostport // OK; probably had no port to begin with
+		return hostPort // OK; probably had no port to begin with
 	}
 	return host
 }
