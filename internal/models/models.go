@@ -64,30 +64,6 @@ func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 	}
 }
 
-func EnableWeeklyReport(ctx context.Context, site *Site, usr *User) {
-	PreloadSite(ctx, site, "WeeklyReport")
-	if site.WeeklyReport != nil {
-		// This is a work around for storing arrays in sqlite. We use comma separated
-		// list for emails.
-		site.WeeklyReport.Recipients += "," + usr.Email
-		err := Get(ctx).Save(site.WeeklyReport).Error
-		if err != nil {
-			LOG(ctx, err, "failed to update weekly update recipients", func(e *zerolog.Event) *zerolog.Event {
-				return e.Uint64("sid", site.ID).Uint64("uid", usr.ID)
-			})
-		}
-		return
-	}
-	err := Get(ctx).Model(site).Association("WeeklyReport").Append(&WeeklyReport{
-		Recipients: usr.Email,
-	})
-	if err != nil {
-		LOG(ctx, err, "failed to create weekly report for site", func(e *zerolog.Event) *zerolog.Event {
-			return e.Uint64("sid", site.ID).Uint64("uid", usr.ID)
-		})
-	}
-}
-
 func DeleteSite(ctx context.Context, site *Site) {
 	err := Get(ctx).Select("SiteMemberships").Delete(site).Error
 	if err != nil {
@@ -209,11 +185,7 @@ func UserIsMember(ctx context.Context, uid, sid uint64) bool {
 
 type CreateSiteEmail = schema.CreateSiteEmail
 
-type CheckStatEmail = schema.CheckStatEmail
-
 type EmailVerificationCode = schema.EmailVerificationCode
-
-type SpikeNotification = schema.SpikeNotification
 
 type SiteMembership = schema.SiteMembership
 
@@ -282,8 +254,6 @@ func APIRateLimit(ak *APIKey) (rate.Limit, int) {
 type IntroEmail = schema.IntroEmail
 
 type FeedbackEmail = schema.FeedbackEmail
-
-type Subscription = schema.Subscription
 
 func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *zerolog.Event) {
 	db.LOG(ctx, err, msg, f...)
@@ -376,16 +346,6 @@ func DeleteSharedLink(ctx context.Context, shared *SharedLink) {
 		LOG(ctx, err, "failed to delete shared link")
 	}
 }
-
-type SentRenewalNotification = schema.SentRenewalNotification
-
-type WeeklyReport = schema.WeeklyReport
-
-type SentWeeklyReport = schema.SentWeeklyReport
-
-type MonthlyReport = schema.MonthlyReport
-
-type SentMonthlyReport = schema.SentMonthlyReport
 
 type Goal = schema.Goal
 
@@ -486,24 +446,16 @@ func Open(path string) (*gorm.DB, error) {
 	db.SetupJoinTable(&Site{}, "Users", &SiteMembership{})
 	err = db.AutoMigrate(
 		&APIKey{},
-		&CheckStatEmail{},
 		&CreateSiteEmail{},
 		&EmailVerificationCode{},
 		&FeedbackEmail{},
 		&Goal{},
 		&IntroEmail{},
 		&Invitation{},
-		&MonthlyReport{},
-		&SentMonthlyReport{},
-		&SentRenewalNotification{},
-		&SentWeeklyReport{},
 		&SharedLink{},
 		&SiteMembership{},
 		&Site{},
-		&SpikeNotification{},
-		&Subscription{},
 		&User{},
-		&WeeklyReport{},
 	)
 	if err != nil {
 		return nil, err
