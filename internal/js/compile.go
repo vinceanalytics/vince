@@ -100,7 +100,7 @@ func Compile(ctx context.Context, dir string) (*File, error) {
 	})
 
 	for _, m := range o {
-		_, err = vm.runtime.RunString(string(m.Data))
+		_, err = vm.runtime.RunScript(m.Path, string(m.Data))
 		if err != nil {
 			return nil, err
 		}
