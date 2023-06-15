@@ -183,8 +183,6 @@ func UserIsMember(ctx context.Context, uid, sid uint64) bool {
 	return Role(ctx, uid, sid) != ""
 }
 
-type CreateSiteEmail = schema.CreateSiteEmail
-
 type EmailVerificationCode = schema.EmailVerificationCode
 
 type SiteMembership = schema.SiteMembership
@@ -250,10 +248,6 @@ func APIRateLimit(ak *APIKey) (rate.Limit, int) {
 	r := rate.Limit(float64(ak.HourlyAPIRequestLimit) / time.Hour.Seconds())
 	return r, 10
 }
-
-type IntroEmail = schema.IntroEmail
-
-type FeedbackEmail = schema.FeedbackEmail
 
 func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *zerolog.Event) {
 	db.LOG(ctx, err, msg, f...)
@@ -446,11 +440,8 @@ func Open(path string) (*gorm.DB, error) {
 	db.SetupJoinTable(&Site{}, "Users", &SiteMembership{})
 	err = db.AutoMigrate(
 		&APIKey{},
-		&CreateSiteEmail{},
 		&EmailVerificationCode{},
-		&FeedbackEmail{},
 		&Goal{},
-		&IntroEmail{},
 		&Invitation{},
 		&SharedLink{},
 		&SiteMembership{},

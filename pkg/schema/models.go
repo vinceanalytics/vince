@@ -20,11 +20,6 @@ type Site struct {
 	SharedLinks     []*SharedLink     `json:"sharedLinks,omitempty"`
 }
 
-type CreateSiteEmail struct {
-	Model
-	UserID uint64
-}
-
 type EmailVerificationCode struct {
 	Model
 	Code   uint64
@@ -49,16 +44,6 @@ type APIKey struct {
 	KeyPrefix             string
 	KeyHash               string
 	UsedAt                time.Time
-}
-
-type IntroEmail struct {
-	Model
-	UserID uint64
-}
-
-type FeedbackEmail struct {
-	Model
-	UserID uint64
 }
 
 type SharedLink struct {
@@ -98,9 +83,6 @@ type User struct {
 	Sites        []*Site `gorm:"many2many:site_memberships;"`
 
 	EmailVerificationCodes []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
-	IntroEmails            []*IntroEmail            `gorm:"constraint:OnDelete:CASCADE;"`
-	FeedbackEmails         []*FeedbackEmail         `gorm:"constraint:OnDelete:CASCADE;"`
-	CreateSiteEmails       []*CreateSiteEmail       `gorm:"constraint:OnDelete:CASCADE;"`
 	APIKeys                []*APIKey
 	LastSeen               time.Time
 	EmailVerified          bool `gorm:"not null;default:false"`
