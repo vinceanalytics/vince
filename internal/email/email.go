@@ -20,7 +20,6 @@ import (
 )
 
 type Email struct {
-	From        *Address `json:"from"`
 	To          *Address `json:"to"`
 	Subject     string   `json:"subject"`
 	ContentType string   `json:"contentType"`
@@ -35,8 +34,7 @@ type Address struct {
 func Register(ctx context.Context, vm *goja.Runtime) {
 	vm.Set("__Email__", func(call goja.ConstructorCall) *goja.Object {
 		r := &Email{
-			From: &Address{},
-			To:   &Address{},
+			To: &Address{},
 		}
 		v := vm.ToValue(r).(*goja.Object)
 		v.SetPrototype(call.This.Prototype())
@@ -59,13 +57,13 @@ func Send(ctx context.Context) func(e *Email) (int, error) {
 		}
 	}
 	var o bytes.Buffer
-
+	from := mailer.From()
 	return func(e *Email) (int, error) {
 		o.Reset()
 		var h mail.Header
 		h.SetDate(core.Now(ctx))
 		h.SetAddressList("From", []*mail.Address{
-			{Name: e.From.Name, Address: e.From.Address},
+			from,
 		})
 		h.SetAddressList("To", []*mail.Address{
 			{Name: e.To.Name, Address: e.To.Address},
@@ -89,7 +87,7 @@ func Send(ctx context.Context) func(e *Email) (int, error) {
 		w.Write([]byte(e.Message))
 		w.Close()
 		mw.Close()
-		err = mailer.SendMail(e.From.Address, []string{e.To.Address}, &o)
+		err = mailer.SendMail(from.Address, []string{e.To.Address}, &o)
 		if err != nil {
 			log.Get().Err(err).Msg("failed to send email")
 			return 0, ErrEmailSendingFailed

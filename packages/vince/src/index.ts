@@ -90,7 +90,6 @@ export interface QueryResult {
 }
 
 export interface Email {
-    from: Address;
     to: Address;
     subject: string;
     contentType: string;
@@ -178,8 +177,6 @@ export function sendMail(mail: Email): number | EmailError {
 function buildMail(e: Email) {
     //@ts-ignore
     let m = new __Email__();
-    m.from.name = e.from.name;
-    m.from.address = e.from.address;
     m.to.name = e.to.name;
     m.to.address = e.to.address;
     m.subject = e.subject;

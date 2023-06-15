@@ -32,7 +32,10 @@ func (m *MockMailer) SendMail(from string, to []string, msg io.Reader) error {
 }
 
 func (m *MockMailer) From() *mail.Address {
-	return nil
+	return &mail.Address{
+		Name:    "jane",
+		Address: "jane@example.com",
+	}
 }
 
 func (m *MockMailer) Close() error {
