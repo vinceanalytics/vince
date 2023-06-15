@@ -8,7 +8,7 @@ value store that support ACID transactions with serializable snapshot isolation
 
 # Features
 
-- Programmable alerting (using Typescript or modern Javascript)
+- Programmable alerting (using Typescript or modern Javascript ECMAScript 2022)
 - Time on site tracking
 - Conversion tracking 
 - Multiple site management
