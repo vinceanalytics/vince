@@ -186,6 +186,18 @@ var PasswordResetForm = template.Must(
 	),
 ).Lookup("focus")
 
+var InviteExistingUser = template.Must(
+	layout().ParseFS(Files,
+		"email/existing_user_invitation.html",
+	),
+).Lookup("base_email")
+
+var InviteNewUser = template.Must(
+	layout().ParseFS(Files,
+		"email/new_user_invitation.html",
+	),
+).Lookup("base_email")
+
 type NewSite struct {
 	IsFirstSite bool
 }
@@ -227,6 +239,19 @@ type Context struct {
 	SharedLink    *models.SharedLink
 	Stats         *timeseries.Stats
 	Now           core.NowFunc
+	Invite        *Invite
+}
+
+type Invite struct {
+	Email string
+	ID    uint64
+}
+
+func (t *Context) InviteURL() string {
+	if t.Invite.ID == 0 {
+		return fmt.Sprintf("%s/sites", t.Config.URL)
+	}
+	return fmt.Sprintf("%s/register/invitation/%d", t.Config.URL, t.Invite.ID)
 }
 
 func (t *Context) GreetRecipient() string {
