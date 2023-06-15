@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"math"
 	"sync"
 	"time"
 
@@ -128,22 +129,49 @@ func doQuery(
 	defer it.Close()
 	b := get()
 	defer put(b)
-	getMetric(Visitors, end, shared, it, b, m, metrics.Visitors, &r.Visitors)
-	getMetric(Views, end, shared, it, b, m, metrics.Visitors, &r.Views)
-	getMetric(Events, end, shared, it, b, m, metrics.Visitors, &r.Events)
-	getMetric(Visits, end, shared, it, b, m, metrics.Visitors, &r.Visits)
-	getMetric(BounceRates, end, shared, it, b, m, metrics.Visitors, &r.BounceRates)
-	getMetric(VisitDurations, end, shared, it, b, m, metrics.Visitors, &r.VisitDurations)
+	getMetric(Visitors, metrics.Visitors, end, shared, it, b, m, &r.Visitors)
+	getMetric(Views, metrics.Views, end, shared, it, b, m, &r.Views)
+	getMetric(Events, metrics.Events, end, shared, it, b, m, &r.Events)
+	getMetric(Visits, metrics.Visits, end, shared, it, b, m, &r.Visits)
+	// bounce rate is a percentage of bounce to visits. We only save bounce counts,
+	// so we must calculate the rate here.
+	getMetric(BounceRates, metrics.BounceRates, end, shared, it, b, m, &r.BounceRates)
+	if metrics.BounceRates != nil {
+		o := r.Visits
+		if metrics.Visits == nil || !metrics.Visits.Equal(metrics.BounceRates) {
+			o = make(map[string][]uint32)
+			getMetric(Visits, metrics.BounceRates, end, shared, it, b, m, &o)
+		}
+		for k, v := range r.BounceRates {
+			xv, ok := o[k]
+			if !ok {
+				continue
+			}
+			percent(v, xv)
+		}
+	}
+	getMetric(VisitDurations, metrics.VisitDurations, end, shared, it, b, m, &r.VisitDurations)
 }
 
+func percent(a, b []uint32) {
+	for i := range a {
+		if b[i] == 0 || a[i] == 0 {
+			// avoid dividing by zero
+			continue
+		}
+		x := float64(a[i]) / float64(b[i])
+		x = math.Round(x)
+		a[i] = uint32(x)
+	}
+}
 func getMetric(
 	metric Metric,
+	sel *query.Select,
 	end uint64,
 	shared []int64,
 	it *badger.Iterator,
 	b *bytes.Buffer,
 	m *Key,
-	sel *query.Select,
 	result *map[string][]uint32,
 ) {
 	if sel == nil {

@@ -155,6 +155,19 @@ type Select struct {
 	invalid bool
 }
 
+func (s *Select) Equal(o *Select) bool {
+	if s.Exact != nil && o.Exact != nil {
+		return s.Exact.Value == o.Exact.Value
+	}
+	if s.Re != nil && o.Re != nil {
+		return s.Re.Value == o.Re.Value
+	}
+	if s.Glob != nil && o.Glob != nil {
+		return s.Glob.Value == o.Glob.Value
+	}
+	return false
+}
+
 func (s *Select) Match(txt []byte) bool {
 	if s.invalid {
 		return false
