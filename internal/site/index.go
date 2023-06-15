@@ -30,6 +30,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 func visitors(ctx context.Context, uid, sid uint64) uint32 {
 	q := timeseries.Query(ctx, uid, sid, query.Query{
+		Sum: true,
 		Window: &query.Duration{
 			Value: time.Hour * 24,
 		},
@@ -43,7 +44,5 @@ func visitors(ctx context.Context, uid, sid uint64) uint32 {
 			},
 		},
 	})
-	return timeseries.Sum(
-		q.Props.Base.Visitors[property.BaseKey],
-	)
+	return q.Props.Base.Visitors[property.BaseKey][0]
 }
