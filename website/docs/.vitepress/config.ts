@@ -50,17 +50,17 @@ function guide() {
         { text: 'Usage', link: '/guide/usage' },
         { text: 'Adding your first site', link: '/guide/adding-first-website' },
         {
-          text: 'Cli', link: '/cli/', items: [
-            { text: "Core", link: '/cli/core' },
-            { text: "Secrets", link: '/cli/secrets' },
-            { text: "TLS", link: '/cli/tls' },
-            { text: "Bootstrap", link: '/cli/bootstrap' },
-            { text: "Intervals", link: '/cli/intervals' },
-            { text: "CORS", link: '/cli/cors' },
-            { text: "Firewall", link: '/cli/firewall' },
-            { text: "Mailer", link: '/cli/mailer' },
-            { text: "Alerts", link: '/cli/alerts' },
-            { text: "Backup", link: '/cli/backup' },
+          text: 'Configuration', link: '/guide/config', items: [
+            { text: "Core", link: '/guide/config#core' },
+            { text: "Secrets", link: '/guide/config#secrets' },
+            { text: "TLS", link: '/guide/config#tls' },
+            { text: "Bootstrap", link: '/guide/config#bootstrap' },
+            { text: "Intervals", link: '/guide/config#intervals' },
+            { text: "CORS", link: '/guide/config#cors' },
+            { text: "Firewall", link: '/guide/config#firewall' },
+            { text: "Mailer", link: '/guide/config#mailer' },
+            { text: "Alerts", link: '/guide/config#alerts' },
+            { text: "Backup", link: '/guide/config#backup' },
           ]
         },
       ]
