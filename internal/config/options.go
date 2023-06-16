@@ -348,14 +348,6 @@ func (o *Options) Flags() []cli.Flag {
 		},
 		&cli.StringFlag{
 			Category:    "tls.acme.issuer",
-			Name:        "acme-issuer-ca",
-			Usage:       "The endpoint of the directory for the ACME  CA",
-			Destination: &o.Acme.Issuer.CA,
-			Value:       certmagic.LetsEncryptProductionCA,
-			EnvVars:     []string{"VINCE_ACME_ISSUER_CA"},
-		},
-		&cli.StringFlag{
-			Category:    "tls.acme.issuer",
 			Name:        "acme-issuer-test-ca",
 			Usage:       "The endpoint of the directory for the ACME  CA to use to test domain validation",
 			Destination: &o.Acme.Issuer.TestCA,
