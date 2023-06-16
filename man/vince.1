@@ -14,8 +14,17 @@ vince
 .RS
 
 .nf
+[--acme-certs-path]=[value]
 [--acme-domain]=[value]
-[--acme-email]=[value]
+[--acme-issuer-account-key-pem]=[value]
+[--acme-issuer-agreed]
+[--acme-issuer-ca]=[value]
+[--acme-issuer-disable-http-challenge]
+[--acme-issuer-disable-tls-alpn-challenge]
+[--acme-issuer-email]=[value]
+[--acme-issuer-external-account-key-id]=[value]
+[--acme-issuer-external-account-mac-key]=[value]
+[--acme-issuer-test-ca]=[value]
 [--alerts-source]=[value]
 [--backup-dir]=[value]
 [--bootstrap-email]=[value]
@@ -84,10 +93,37 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .SH GLOBAL OPTIONS
 .PP
+\fB--acme-certs-path\fP="": Patch where issued certs will be stored
+
+.PP
 \fB--acme-domain\fP="": Domain to use with letsencrypt.
 
 .PP
-\fB--acme-email\fP="": Email address to use with letsencrypt.
+\fB--acme-issuer-account-key-pem\fP="": The PEM-encoded private key of the ACME account to use
+
+.PP
+\fB--acme-issuer-agreed\fP: Agree to CA's subscriber agreement
+
+.PP
+\fB--acme-issuer-ca\fP="": The endpoint of the directory for the ACME  CA (default: https://acme-v02.api.letsencrypt.org/directory)
+
+.PP
+\fB--acme-issuer-disable-http-challenge\fP:
+
+.PP
+\fB--acme-issuer-disable-tls-alpn-challenge\fP:
+
+.PP
+\fB--acme-issuer-email\fP="": The email address to use when creating or selecting an existing ACME server account
+
+.PP
+\fB--acme-issuer-external-account-key-id\fP="":
+
+.PP
+\fB--acme-issuer-external-account-mac-key\fP="":
+
+.PP
+\fB--acme-issuer-test-ca\fP="": The endpoint of the directory for the ACME  CA to use to test domain validation (default: https://acme-staging-v02.api.letsencrypt.org/directory)
 
 .PP
 \fB--alerts-source\fP="": path to directory with alerts scripts

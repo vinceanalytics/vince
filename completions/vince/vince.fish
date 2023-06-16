@@ -39,8 +39,17 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l ts-buffer-sync-interval 
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret -r -d 'path to a file with  ed25519 private key'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-age -r -d 'path to file with age.X25519Identity'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-auto-tls -d 'Enables using acme for automatic https.'
-complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-email -r -d 'Email address to use with letsencrypt.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-domain -r -d 'Domain to use with letsencrypt.'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-certs-path -r -d 'Patch where issued certs will be stored'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-ca -r -d 'The endpoint of the directory for the ACME  CA'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-test-ca -r -d 'The endpoint of the directory for the ACME  CA to use to test domain validation'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-email -r -d 'The email address to use when creating or selecting an existing ACME server account'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-account-key-pem -r -d 'The PEM-encoded private key of the ACME account to use'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-agreed -d 'Agree to CA\'s subscriber agreement'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-external-account-key-id -r
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-external-account-mac-key -r
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-disable-http-challenge
+complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-disable-tls-alpn-challenge
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-bootstrap -d 'allows creating a user and api key on startup.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-name -r -d 'Full name of the user to bootstrap.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-email -r -d 'Email address of the user to bootstrap.'
