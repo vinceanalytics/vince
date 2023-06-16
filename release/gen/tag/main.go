@@ -94,6 +94,10 @@ func npm(root, v string) {
 		fmt.Fprintln(&o, text)
 	}
 	tools.WriteFile(file, o.Bytes())
+	tools.ExecPlainWithWorkingPath(
+		filepath.Join(root, "packages/vince"),
+		"npm", "publish",
+	)
 }
 
 func commit(v string) {
