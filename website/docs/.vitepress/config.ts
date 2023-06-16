@@ -161,6 +161,10 @@ function guide() {
       ],
     },
     {
+      text: "Downloads",
+      link: "/guide/downloads"
+    },
+    {
       text: "Contribute",
       items: [],
     },
