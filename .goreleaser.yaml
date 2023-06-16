@@ -33,6 +33,9 @@ builds:
       - darwin
       - linux
       - windows
+    ignore:
+      - goos: windows
+        goarch: arm64
     ldflags:
       - -linkmode=external
       - -extldflags -static
@@ -60,6 +63,9 @@ builds:
     goarch:
       - amd64
       - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
     env:
       - CGO_ENABLED=0
 archives:
