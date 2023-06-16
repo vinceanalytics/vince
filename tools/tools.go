@@ -161,6 +161,7 @@ type Artifact struct {
 	Arch  string `json:"goarch"`
 	Extra struct {
 		ID           string `json:"id"`
+		Size         int
 		DockerConfig struct {
 			ID string `json:"id"`
 		} `json:"DockerConfig"`
