@@ -29,11 +29,11 @@ func main() {
 		mannPage(root, v8s.App())
 		completion(root)
 		guides(root)
-		usage(vince.App())
+		config(vince.App())
 	}
 }
 
-func usage(a *cli.App) {
+func config(a *cli.App) {
 	var b bytes.Buffer
 	b.WriteString(`---
 title: Configuration
