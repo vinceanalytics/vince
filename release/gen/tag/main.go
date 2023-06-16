@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,21 +13,23 @@ import (
 )
 
 func main() {
-	flag.Parse()
-	v := tools.Version()
-	build(v)
-	commit(v)
-	tag(v)
+	if os.Getenv("VERSION") != "" {
+		v := tools.Version()
+		update(v)
+		commit(v)
+		tag(v)
+	}
 }
 
-func build(v string) {
+func update(v string) {
 	root := tools.RootVince()
 	println("> using", v)
-	updateVersionPackage(root, v)
-	updateHelmCharts(root, v)
+	vince(root, v)
+	helm(root, v)
+	npm(root, v)
 }
 
-func updateVersionPackage(root, v string) {
+func vince(root, v string) {
 	println("> update vince version")
 	app := tools.ReadFile(filepath.Join(root, "pkg/version/VERSION.txt"))
 	switch semver.Compare(v, string(app)) {
@@ -41,7 +42,7 @@ func updateVersionPackage(root, v string) {
 	tools.WriteFile(filepath.Join(root, "pkg/version/VERSION.txt"), []byte(v))
 }
 
-func updateHelmCharts(root, v string) {
+func helm(root, v string) {
 	println("> update helm charts")
 	chart := tools.ReadFile(filepath.Join(root, "chart/Chart.yaml"))
 	var o bytes.Buffer
@@ -76,6 +77,23 @@ func updateHelmCharts(root, v string) {
 		fmt.Fprintln(&o, text)
 	}
 	tools.WriteFile(filepath.Join(root, "chart/Chart.yaml"), o.Bytes())
+}
+
+func npm(root, v string) {
+	println("> update npm package")
+	file := filepath.Join(root, "packages/vince/package.json")
+	chart := tools.ReadFile(file)
+	var o bytes.Buffer
+	s := bufio.NewScanner(bytes.NewReader(chart))
+	packageVersion := `  "version": `
+	for s.Scan() {
+		text := s.Text()
+		if strings.HasPrefix(text, packageVersion) {
+			text = fmt.Sprintf("%s%q,", packageVersion, v)
+		}
+		fmt.Fprintln(&o, text)
+	}
+	tools.WriteFile(file, o.Bytes())
 }
 
 func commit(v string) {
