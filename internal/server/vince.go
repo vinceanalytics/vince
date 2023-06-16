@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"time"
 
 	"github.com/caddyserver/certmagic"
@@ -85,21 +84,11 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 			}
 		}
 		if o.Acme.Enabled {
-			if o.Acme.Email == "" || o.Acme.Domain == "" {
+			if o.Acme.Issuer.Email == "" || o.Acme.Domain == "" {
 				resources.Close()
 				return nil, nil, errors.New("acme-email and acme-domain  are required")
 			}
-			magic = certmagic.NewDefault()
-			// we use file storage for certs
-			certsPath := filepath.Join(o.DataPath, "certs")
-			os.MkdirAll(certsPath, 0755)
-			magic.Storage = &certmagic.FileStorage{Path: certsPath}
-			myACME := certmagic.NewACMEIssuer(magic, certmagic.ACMEIssuer{
-				CA:     certmagic.LetsEncryptStagingCA,
-				Email:  o.Acme.Email,
-				Agreed: true,
-			})
-			magic.Issuers = append(magic.Issuers, myACME)
+			magic = o.Magic()
 			err = magic.ManageSync(ctx, []string{o.Acme.Domain})
 			if err != nil {
 				resources.Close()

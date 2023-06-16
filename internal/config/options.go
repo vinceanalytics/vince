@@ -4,8 +4,11 @@ import (
 	"encoding/base64"
 	"flag"
 	"net"
+	"path/filepath"
 	"time"
 
+	"github.com/caddyserver/certmagic"
+	"github.com/mholt/acmez/acme"
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/secrets"
@@ -70,8 +73,11 @@ type Options struct {
 		Dir     string
 	}
 	Acme struct {
-		Enabled       bool
-		Email, Domain string
+		Enabled         bool
+		Domain          string
+		CertsPath       string
+		Issuer          certmagic.ACMEIssuer
+		ExternalAccount acme.EAB
 	}
 	TLS struct {
 		Enabled            bool
@@ -320,17 +326,87 @@ func (o *Options) Flags() []cli.Flag {
 		},
 		&cli.StringFlag{
 			Category:    "tls.acme",
-			Name:        "acme-email",
-			Usage:       "Email address to use with letsencrypt.",
-			Destination: &o.Acme.Email,
-			EnvVars:     []string{"VINCE_ACME_EMAIL"},
-		},
-		&cli.StringFlag{
-			Category:    "tls.acme",
 			Name:        "acme-domain",
 			Usage:       "Domain to use with letsencrypt.",
 			Destination: &o.Acme.Domain,
 			EnvVars:     []string{"VINCE_ACME_DOMAIN"},
+		},
+		&cli.StringFlag{
+			Category:    "tls.acme",
+			Name:        "acme-certs-path",
+			Usage:       "Patch where issued certs will be stored",
+			Destination: &o.Acme.CertsPath,
+			EnvVars:     []string{"VINCE_ACME_CERTS_PATH"},
+		},
+		&cli.StringFlag{
+			Category:    "tls.acme.issuer",
+			Name:        "acme-issuer-ca",
+			Usage:       "The endpoint of the directory for the ACME  CA",
+			Destination: &o.Acme.Issuer.CA,
+			Value:       certmagic.LetsEncryptProductionCA,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_CA"},
+		},
+		&cli.StringFlag{
+			Category:    "tls.acme.issuer",
+			Name:        "acme-issuer-ca",
+			Usage:       "The endpoint of the directory for the ACME  CA",
+			Destination: &o.Acme.Issuer.CA,
+			Value:       certmagic.LetsEncryptProductionCA,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_CA"},
+		},
+		&cli.StringFlag{
+			Category:    "tls.acme.issuer",
+			Name:        "acme-issuer-test-ca",
+			Usage:       "The endpoint of the directory for the ACME  CA to use to test domain validation",
+			Destination: &o.Acme.Issuer.TestCA,
+			Value:       certmagic.LetsEncryptStagingCA,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_TEST_CA"},
+		},
+		&cli.StringFlag{
+			Category:    "tls.acme.issuer",
+			Name:        "acme-issuer-email",
+			Usage:       "The email address to use when creating or selecting an existing ACME server account",
+			Destination: &o.Acme.Issuer.Email,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_EMAIL"},
+		},
+		&cli.StringFlag{
+			Category:    "tls.acme.issuer",
+			Name:        "acme-issuer-account-key-pem",
+			Usage:       "The PEM-encoded private key of the ACME account to use",
+			Destination: &o.Acme.Issuer.AccountKeyPEM,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_ACCOUNT_KEY_PEM"},
+		},
+		&cli.BoolFlag{
+			Category:    "tls.acme.issuer",
+			Name:        "acme-issuer-agreed",
+			Usage:       "Agree to CA's subscriber agreement",
+			Destination: &o.Acme.Issuer.Agreed,
+			Value:       true,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_AGREED"},
+		},
+		&cli.StringFlag{
+			Category:    "tls.acme.issuer.external-account",
+			Name:        "acme-issuer-external-account-key-id",
+			Destination: &o.Acme.ExternalAccount.KeyID,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_EXTERNAL_ACCOUNT_KEY_ID"},
+		},
+		&cli.StringFlag{
+			Category:    "tls.acme.issuer.external-account",
+			Name:        "acme-issuer-external-account-mac-key",
+			Destination: &o.Acme.ExternalAccount.MACKey,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_EXTERNAL_ACCOUNT_MAC_KEY"},
+		},
+		&cli.BoolFlag{
+			Category:    "tls.acme.issuer",
+			Name:        "acme-issuer-disable-http-challenge",
+			Destination: &o.Acme.Issuer.DisableHTTPChallenge,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_DISABLE_HTTP_CHALLENGE"},
+		},
+		&cli.BoolFlag{
+			Category:    "tls.acme.issuer",
+			Name:        "acme-issuer-disable-tls-alpn-challenge",
+			Destination: &o.Acme.Issuer.DisableTLSALPNChallenge,
+			EnvVars:     []string{"VINCE_ACME_ISSUER_DISABLE_TLS_ALPN_CHALLENGE"},
 		},
 		&cli.BoolFlag{
 			Category:    "bootstrap",
@@ -518,4 +594,22 @@ func randomAddress() string {
 	a := ls.Addr().String()
 	ls.Close()
 	return a
+}
+
+func (o *Options) Magic() *certmagic.Config {
+	magic := certmagic.NewDefault()
+	path := o.Acme.CertsPath
+	if path == "" {
+		// Default to the data directory
+		path = filepath.Join(o.DataPath, "certs")
+	}
+	magic.Storage = &certmagic.FileStorage{Path: path}
+	issuer := o.Acme.Issuer
+	if o.Acme.ExternalAccount.KeyID != "" {
+		issuer.ExternalAccount = &o.Acme.ExternalAccount
+	}
+	magic.Issuers = append(magic.Issuers,
+		certmagic.NewACMEIssuer(magic, issuer),
+	)
+	return magic
 }
