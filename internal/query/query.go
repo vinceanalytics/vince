@@ -83,7 +83,7 @@ func (p *Props) Set(prop string, m *Metrics) {
 
 func (p *Props) All(f func(string, *Metrics)) {
 	p.Base = &Metrics{}
-	f("base", p.Page)
+	f("base", p.Base)
 	p.Event = &Metrics{}
 	f("base", p.Event)
 	p.Page = &Metrics{}

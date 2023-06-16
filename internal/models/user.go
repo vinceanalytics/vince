@@ -95,7 +95,6 @@ func UserByUID(ctx context.Context, uid uint64) (u *User) {
 		LOG(ctx, err, "failed to get a user")
 		return
 	}
-	PreloadUser(ctx, &m, "Subscription")
 	return &m
 }
 

@@ -44,5 +44,9 @@ func visitors(ctx context.Context, uid, sid uint64) uint32 {
 			},
 		},
 	})
-	return q.Props.Base.Visitors[property.BaseKey][0]
+	o := q.Props.Base.Visitors[property.BaseKey]
+	if len(o) > 0 {
+		return o[0]
+	}
+	return 0
 }

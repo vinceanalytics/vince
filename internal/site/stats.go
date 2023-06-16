@@ -96,7 +96,7 @@ func buildQuery(
 	p.All(func(s string, mq *query.Metrics) {
 		if s == property.Base.String() {
 			// Optimize this by doing exact match.
-			*mq = *mq
+			*mq = *m
 		} else {
 			*mq = *all
 		}
