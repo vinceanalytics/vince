@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/names"
 	"github.com/vinceanalytics/vince/pkg/schema"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -128,6 +129,9 @@ func NewUser(ctx context.Context, u *User, password, passwordConfirm string) (va
 	validation = make(map[string]string)
 	validate("name", u.Name, "required", validation, func(s string) bool {
 		return s != ""
+	})
+	validate("name", u.Name, "required", validation, func(s string) bool {
+		return names.Valid(s)
 	})
 	validate("email", u.Email, "required", validation, func(s string) bool {
 		return s != ""
