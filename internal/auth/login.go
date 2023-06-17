@@ -57,7 +57,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if session.Data.LoginDest == "" {
 		session.Data.LoginDest = "/sites"
 	}
-	session.Data.CurrentUserID = u.ID
+	session.Data.USER = u.ID
 	session.Data.LoggedIn = true
 	dest := session.Data.LoginDest
 	session.Data.LoginDest = ""

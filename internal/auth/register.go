@@ -50,7 +50,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx = models.SetUser(ctx, u)
-	session.Data.CurrentUserID = u.ID
+	session.Data.USER = u.ID
 	session.Data.LoggedIn = true
 	session.Save(ctx, w)
 	if u.EmailVerified {

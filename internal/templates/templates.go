@@ -231,7 +231,6 @@ type Context struct {
 	Goals         []*models.Goal
 	IsFIrstSite   bool
 	SitesOverview []models.SiteOverView
-	EmailReport   bool
 	HasGoals      bool
 	Owner         *models.User
 	Recipient     string

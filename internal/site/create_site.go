@@ -35,10 +35,6 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ss, r := sessions.Load(r)
-	if ss.Data.EmailReport == nil {
-		ss.Data.EmailReport = make(map[string]bool)
-	}
-	ss.Data.EmailReport[domain] = true
 	ss.Save(ctx, w)
 	to := fmt.Sprintf("/%s/snippet", url.PathEscape(domain))
 	http.Redirect(w, r, to, http.StatusFound)

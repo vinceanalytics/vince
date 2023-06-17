@@ -75,9 +75,9 @@ func SessionTimeout(h http.Handler) http.Handler {
 		session, r := sessions.Load(r)
 		now := core.Now(r.Context())
 		switch {
-		case session.Data.CurrentUserID != 0 && !session.Data.TimeoutAt.IsZero() && now.After(session.Data.TimeoutAt):
+		case session.Data.USER != 0 && !session.Data.TimeoutAt.IsZero() && now.After(session.Data.TimeoutAt):
 			session.Data = sessions.Data{}
-		case session.Data.CurrentUserID != 0:
+		case session.Data.USER != 0:
 			session.Data.TimeoutAt = now.Add(24 * 7 * 2 * time.Hour)
 			session.Save(r.Context(), w)
 		}
@@ -88,8 +88,8 @@ func SessionTimeout(h http.Handler) http.Handler {
 func Auth(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, r := sessions.Load(r)
-		if session.Data.CurrentUserID != 0 {
-			if u := models.UserByUID(r.Context(), session.Data.CurrentUserID); u != nil {
+		if session.Data.USER != 0 {
+			if u := models.UserByUID(r.Context(), session.Data.USER); u != nil {
 				r = r.WithContext(models.SetUser(r.Context(), u))
 			} else {
 				session.Data = sessions.Data{}

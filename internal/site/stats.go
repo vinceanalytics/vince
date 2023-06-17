@@ -8,7 +8,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/property"
@@ -28,11 +27,6 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 	}
 	if canSeeStats {
 		w.Header().Set("x-robots-tag", "noindex")
-		var offer bool
-		session, _ := sessions.Load(r)
-		if session.Data.EmailReport != nil {
-			offer = session.Data.EmailReport[site.Domain]
-		}
 		hasGoals := models.SiteHasGoals(ctx, site.Domain)
 		q := r.URL.Query()
 		period := timex.Parse(q.Get("w"))
@@ -54,7 +48,6 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		render.HTML(ctx, w, templates.Stats, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
 			ctx.Title = "Vince Analytics  · " + site.Domain
-			ctx.EmailReport = offer
 			ctx.HasGoals = hasGoals
 			ctx.Stats = &stats
 		})
