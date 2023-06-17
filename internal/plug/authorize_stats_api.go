@@ -22,20 +22,14 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			})
 			return
 		}
-		claims := models.VerifyAPIKey(ctx, tokenString)
-		if claims == nil {
+		key := models.VerifyAPIKey(ctx, tokenString)
+		if key == nil {
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
 				ctx.Error.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
 			})
 			return
 		}
-		key := models.APIKeyByID(ctx, claims.ID)
-		if key == nil {
-			render.ERROR(ctx, w, http.StatusUnauthorized, func(ctx *templates.Context) {
-				ctx.Error.StatusText = "Missing API key. Please use a valid Vince API key as a Bearer Token."
-			})
-			return
-		}
+
 		rate, burst := models.APIRateLimit(key)
 		if !caches.AllowAPI(ctx, key.ID, rate, burst) {
 			render.ERROR(r.Context(), w, http.StatusTooManyRequests, func(ctx *templates.Context) {
@@ -71,7 +65,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			})
 			return
 		}
-		models.UpdateAPIKeyUse(ctx, claims.ID)
+		models.UpdateAPIKeyUse(ctx, key.ID)
 		h.ServeHTTP(w, r)
 	})
 }
