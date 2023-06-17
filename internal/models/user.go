@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"net/http"
 	"strings"
 
 	"github.com/rs/zerolog"
@@ -122,12 +121,8 @@ func CountOwnedSites(ctx context.Context, uid uint64) int64 {
 	return o
 }
 
-func NewUser(u *User, r *http.Request) (validation map[string]string, err error) {
-	conf := config.Get(r.Context())
-	u.Name = r.Form.Get("name")
-	u.Email = r.Form.Get("email")
-	password := r.Form.Get("password")
-	passwordConfirm := r.Form.Get("password_confirmation")
+func NewUser(ctx context.Context, u *User, password, passwordConfirm string) (validation map[string]string) {
+	conf := config.Get(ctx)
 	validation = make(map[string]string)
 	validate("name", u.Name, "required", validation, func(s string) bool {
 		return s != ""

@@ -12,16 +12,14 @@ import (
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	session, r := sessions.Load(r)
 	r.ParseForm()
-	u := new(models.User)
-	m, err := models.NewUser(u, r)
-	if err != nil {
-		log.Get().Err(err).Msg("Failed decoding new user from")
-		render.ERROR(r.Context(), w, http.StatusInternalServerError)
-		return
+	u := &models.User{
+		Name:  r.Form.Get("name"),
+		Email: r.Form.Get("email"),
 	}
-
+	m := models.NewUser(ctx, u, r.Form.Get("password"), r.Form.Get("password_confirmation"))
 	validCaptcha := session.VerifyCaptchaSolution(r)
 	if len(m) > 0 || !validCaptcha {
 		r = sessions.SaveCsrf(w, r)
@@ -51,7 +49,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(r.Context(), w, http.StatusInternalServerError)
 		return
 	}
-	ctx := models.SetUser(r.Context(), u)
+	ctx = models.SetUser(ctx, u)
 	session.Data.CurrentUserID = u.ID
 	session.Data.LoggedIn = true
 	session.Save(ctx, w)
