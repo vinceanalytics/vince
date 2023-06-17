@@ -19,7 +19,7 @@ import (
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
-//go:embed layout  plot site stats auth error email
+//go:embed layout  plot site stats auth error email user
 var Files embed.FS
 
 var Layouts = template.Must(
@@ -38,7 +38,7 @@ func base() *template.Template {
 	return template.New("root").Funcs(template.FuncMap{
 		"Icon":       octicon.IconTemplateFunc,
 		"Avatar":     Avatar,
-		"Logo":       Logo,
+		"Logo":       LogoText,
 		"GoalName":   models.GoalName,
 		"SafeDomain": models.SafeDomain,
 		"HumanDate": func(ts time.Time) string {
@@ -198,6 +198,12 @@ var InviteNewUser = template.Must(
 	),
 ).Lookup("base_email")
 
+var Profile = template.Must(
+	layout().ParseFS(Files,
+		"user/profile.html",
+	),
+).Lookup("app")
+
 type NewSite struct {
 	IsFirstSite bool
 }
@@ -306,13 +312,6 @@ func getCaptcha(ctx context.Context) template.HTMLAttr {
 
 func (t *Context) VinceURL() template.HTML {
 	return template.HTML("http://localhost:8080")
-}
-
-func Logo(width, height int) template.HTML {
-	return template.HTML(fmt.Sprintf(
-		`<img alt="Vince Analytics logo" width=%d height=%d src=%q>`,
-		width, height, "/image/logo.svg",
-	))
 }
 
 func (t *Context) Snippet() string {
