@@ -50,7 +50,7 @@ type SessionContext struct {
 
 type Data struct {
 	TimeoutAt time.Time    `json:",omitempty"`
-	USER      uint64       `json:",omitempty"`
+	USER      string       `json:",omitempty"`
 	LastSeen  time.Time    `json:",omitempty"`
 	LoggedIn  bool         `json:",omitempty"`
 	Captcha   string       `json:",omitempty"`
