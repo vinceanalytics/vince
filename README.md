@@ -1,3 +1,6 @@
+
+![logo](./assets/image/logo.svg)
+
 # vince
 
 The Cloud Native Web Analytics Platform. Built on a persistent and fast key
