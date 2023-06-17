@@ -45,6 +45,10 @@ the intention to remove clickhouse and postgresql dependency . **Vince** is
 built on `sqlite` for operational data and [badger](https://github.com/dgraph-io/badger)
 for timeseries.
 
+The frontend is built with [@primer](https://github.com/primer) and web components.
+
+
+
 # The name vince 
 
 Vince is named after [Vince Staples](https://en.wikipedia.org/wiki/Vince_Staples) , 
