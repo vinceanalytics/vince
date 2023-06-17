@@ -36,7 +36,7 @@ func PasswordResetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	usr := models.UserByEmail(r.Context(), address)
+	usr := models.QueryUserByNameOrEmail(r.Context(), address)
 	if usr != nil {
 		token, err := createResetToken(ctx, address)
 		if err != nil {

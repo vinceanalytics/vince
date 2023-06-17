@@ -41,7 +41,7 @@ func PasswordReset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	claims := token.Claims.(*jwt.RegisteredClaims)
-	usr := models.UserByEmail(ctx, claims.Audience[0])
+	usr := models.QueryUserByNameOrEmail(ctx, claims.Audience[0])
 	if usr != nil {
 		usr.PasswordHash = models.HashPassword(password)
 		err = models.Get(ctx).Save(usr).Error

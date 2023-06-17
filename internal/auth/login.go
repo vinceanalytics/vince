@@ -19,11 +19,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	email := r.Form.Get("email")
+	nameOrEmail := r.Form.Get("name-or-email")
 	password := r.Form.Get("password")
-	u := models.UserByEmail(ctx, email)
+	u := models.QueryUserByNameOrEmail(ctx, nameOrEmail)
 	session, r := sessions.Load(r)
-
 	validCaptcha := session.VerifyCaptchaSolution(r)
 
 	if !validCaptcha || u == nil {

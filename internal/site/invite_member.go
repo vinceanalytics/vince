@@ -19,7 +19,7 @@ func InviteMember(w http.ResponseWriter, r *http.Request) {
 	user := models.GetUser(ctx)
 	mail := r.Form.Get("email")
 	role := r.Form.Get("role")
-	usr := models.UserByEmail(ctx, mail)
+	usr := models.QueryUserByNameOrEmail(ctx, mail)
 	if usr != nil && models.UserIsMember(ctx, usr.ID, site.ID) {
 		r = sessions.SaveCsrf(w, r)
 		render.HTML(ctx, w, templates.InviteMemberForm, http.StatusOK, func(ctx *templates.Context) {

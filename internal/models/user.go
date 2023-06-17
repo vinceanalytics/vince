@@ -190,9 +190,12 @@ func Role(ctx context.Context, uid, sid uint64) (role string) {
 	return
 }
 
-func UserByEmail(ctx context.Context, email string) *User {
+func QueryUserByNameOrEmail(ctx context.Context, nameOrEmail string) *User {
 	var u User
-	err := Get(ctx).Model(&User{}).Where("email = ?", email).First(&u).Error
+	err := Get(ctx).Model(&User{}).
+		Where("name = ?", nameOrEmail).
+		Or("email = ?", nameOrEmail).
+		First(&u).Error
 	if err != nil {
 		LOG(ctx, err, "failed to get user by email")
 		return nil
