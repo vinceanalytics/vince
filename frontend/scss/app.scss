@@ -1,0 +1,547 @@
+.AppHeader {
+    --AppHeader-bg: var(--color-canvas-inset);
+    color: var(--color-fg-default);
+    background: var(--AppHeader-bg);
+    box-shadow: inset 0 calc(var(--borderWidth-thin, 1px)*-1) var(--color-border-default)
+}
+
+.AppHeader .AppHeader-globalBar {
+    display: flex;
+    padding: var(--base-size-16, 16px);
+    gap: var(--base-size-12, 12px)
+}
+
+.AppHeader .AppHeader-globalBar.second-row {
+    display: block
+}
+
+.AppHeader .AppHeader-globalBar.second-row .AppHeader-search {
+    display: block
+}
+
+.AppHeader .AppHeader-globalBar.search-expanded .AppHeader-globalBar-start,
+.AppHeader .AppHeader-globalBar.always-expanded .AppHeader-globalBar-start {
+    flex: none
+}
+
+.AppHeader .AppHeader-globalBar.search-expanded .AppHeader-context,
+.AppHeader .AppHeader-globalBar.always-expanded .AppHeader-context {
+    display: none
+}
+
+.AppHeader .AppHeader-globalBar.search-expanded .AppHeader-search .AppHeader-search-whenRegular,
+.AppHeader .AppHeader-globalBar.always-expanded .AppHeader-search .AppHeader-search-whenRegular {
+    max-width: 100%
+}
+
+.AppHeader .AppHeader-globalBar.search-expanded .AppHeader-globalBar-end,
+.AppHeader .AppHeader-globalBar.always-expanded .AppHeader-globalBar-end {
+    flex: 1 1 auto
+}
+
+@media(max-width: 1011.98px) {
+    .AppHeader .AppHeader-globalBar.search-expanded .AppHeader-search {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%
+    }
+
+    .AppHeader .AppHeader-globalBar.search-expanded .AppHeader-globalBar-end {
+        flex: none
+    }
+
+    .AppHeader .AppHeader-globalBar.search-expanded .search-suggestions {
+        left: 0;
+        top: 0;
+        width: 100% !important
+    }
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-globalBar-start {
+    flex: 1 1 auto;
+    display: flex;
+    gap: var(--base-size-8, 8px)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-globalBar-end {
+    flex: 0 1 auto;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--controlStack-medium-gap-auto, 8px)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-logo {
+    border: 0;
+    width: var(--base-size-32, 32px);
+    height: var(--base-size-32, 32px);
+    outline-offset: 2px
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-logo svg {
+    width: var(--base-size-32, 32px);
+    height: var(--base-size-32, 32px)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-user {
+    position: relative;
+    background: var(--color-neutral-muted);
+    border-radius: 50%
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-user img {
+    position: relative;
+    border-radius: 50%
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context {
+    min-width: 0;
+    height: var(--base-size-32, 32px);
+    flex: 1 1 auto
+}
+
+@media(min-width: 768px) {
+    .AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-compact {
+        display: none
+    }
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-compact .AppHeader-context-compact-trigger {
+    display: grid;
+    width: 100%;
+    height: var(--base-size-48, 48px);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    background-color: transparent;
+    border: 0;
+    border-radius: var(--borderRadius-medium, 6px);
+    margin-block: calc(var(--base-size-8, 8px)*-1);
+    padding-block: var(--control-medium-paddingBlock, 6px);
+    padding-inline: var(--control-medium-paddingInline-condensed, 8px);
+    -webkit-appearance: none;
+    appearance: none;
+    align-items: center
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-compact .AppHeader-context-compact-trigger:hover {
+    background-color: var(--color-action-list-item-default-hover-bg)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-compact .AppHeader-context-compact-trigger:active {
+    background-color: var(--color-action-list-item-default-active-bg)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-compact .AppHeader-context-compact-lead {
+    display: grid;
+    width: -moz-fit-content;
+    width: fit-content;
+    font-size: var(--text-caption-size, 12px);
+    line-height: var(--text-caption-lineHeight, 1.3333333333);
+    color: var(--color-fg-muted);
+    grid-auto-flow: column;
+    align-items: center
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-compact .AppHeader-context-compact-parentItem {
+    display: inline;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-compact .AppHeader-context-compact-separator {
+    white-space: nowrap
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-compact .AppHeader-context-compact-mainItem {
+    display: block;
+    overflow: hidden;
+    line-height: var(--text-body-lineHeight-medium, 1.4285714286);
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full {
+    display: inline-flex;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden
+}
+
+@media(max-width: 767.98px) {
+    .AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full {
+        display: none
+    }
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full nav {
+    width: 100%
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full ul,
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full li {
+    list-style: none
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full ul {
+    display: flex;
+    flex-direction: row
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full li {
+    display: inline-grid;
+    grid-auto-flow: column;
+    align-items: center;
+    flex: 0 99999 auto
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full li:first-child {
+    flex: 0 100 max-content
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full li:last-child {
+    flex: 0 1 max-content
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-full li:last-child .AppHeader-context-item {
+    font-weight: var(--base-text-weight-semibold, 600)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-item {
+    display: flex;
+    align-items: center;
+    min-width: 3ch;
+    line-height: var(--text-body-lineHeight-medium, 1.4285714286);
+    color: inherit;
+    text-decoration: none !important;
+    border-radius: var(--borderRadius-medium, 6px);
+    padding-inline: var(--control-medium-paddingInline-condensed, 8px);
+    padding-block: var(--control-medium-paddingBlock, 6px)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-item .AppHeader-context-item-label {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context a.AppHeader-context-item:hover {
+    background: var(--color-action-list-item-default-hover-bg)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context a.AppHeader-context-item:active {
+    background: var(--color-action-list-item-default-active-bg)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-context .AppHeader-context-item-separator {
+    color: var(--color-fg-muted);
+    white-space: nowrap
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    justify-content: flex-end
+}
+
+@media(min-width: 1012px) {
+    .AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-whenNarrow {
+        display: none
+    }
+}
+
+@media(max-width: 1011.98px) {
+    .AppHeader .AppHeader-globalBar .AppHeader-search {
+        flex-grow: 0
+    }
+
+    .AppHeader .AppHeader-globalBar .AppHeader-search .search-input {
+        width: auto
+    }
+
+    .AppHeader .AppHeader-globalBar .AppHeader-search .search-input-container {
+        margin: 0 !important
+    }
+
+    .AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-whenRegular {
+        display: none
+    }
+
+    .AppHeader .AppHeader-globalBar .AppHeader-search .header-search {
+        max-width: 100%
+    }
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-whenRegular {
+    min-width: 12rem;
+    max-width: 24rem;
+    flex: 1 1 auto
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-wrap {
+    display: grid
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-wrap.AppHeader-search-wrap--hasTrailing input[type=search] {
+    padding-inline-end: calc(var(--control-medium-paddingInline-condensed, 8px) + var(--base-size-16, 16px) + var(--control-medium-gap, 8px) - var(--borderWidth-thin, 1px))
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .search-input-container {
+    height: auto
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-kbd {
+    display: inline-grid;
+    width: var(--base-size-12, 12px);
+    height: var(--base-size-16, 16px);
+    padding: 0;
+    font-size: var(--text-caption-size, 12px);
+    line-height: var(--text-caption-lineHeight, 1.3333333333);
+    color: inherit;
+    vertical-align: baseline;
+    background: transparent;
+    border: var(--borderWidth-thin, 1px) solid var(--color-fg-subtle);
+    border-radius: var(--borderRadius-small, 3px);
+    box-shadow: none;
+    align-items: center;
+    justify-content: center
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-placeholder {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    font-weight: var(--base-text-weight-normal, 400);
+    line-height: var(--text-body-lineHeight-medium, 20px);
+    color: var(--color-fg-subtle);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    grid-area: 1/1;
+    padding-block: var(--control-medium-paddingBlock, 6px);
+    padding-inline: calc(var(--control-medium-paddingInline-condensed, 8px) + var(--base-size-16, 16px) + var(--control-medium-gap, 8px))
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-control {
+    grid-area: 1/1;
+    position: relative;
+    overflow: hidden
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-visual--leading {
+    position: absolute;
+    top: var(--base-size-8, 8px);
+    left: var(--base-size-8, 8px);
+    display: block;
+    width: var(--base-size-16, 16px);
+    height: var(--base-size-16, 16px);
+    color: var(--color-fg-muted);
+    pointer-events: none
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-visual--leading svg {
+    display: block !important
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-searchButton {
+    background: transparent
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search input[type=search],
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-searchButton {
+    width: 100%;
+    padding-block: calc(var(--control-medium-paddingBlock, 6px) - var(--borderWidth-thin, 1px));
+    padding-inline-start: calc(var(--control-medium-paddingInline-condensed, 8px) + var(--base-size-16, 16px) + var(--control-medium-gap, 8px) - var(--borderWidth-thin, 1px));
+    padding-inline-end: var(--control-medium-paddingInline-condensed, 40px);
+    transition: none
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search input[type=search]:placeholder-shown {
+    background: transparent
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search input[type=search]:not(:placeholder-shown) {
+    background: var(--color-canvas-default)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search input[type=search]::placeholder {
+    color: transparent;
+    opacity: 1
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search input[type=search]:focus {
+    background: var(--color-canvas-default)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search input[type=search]:focus::placeholder {
+    color: var(--color-fg-subtle)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search input[type=search]:focus:placeholder {
+    color: var(--color-fg-subtle);
+    opacity: 1
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-action--trailing {
+    position: absolute;
+    top: var(--base-size-4, 4px);
+    right: var(--base-size-4, 4px);
+    display: grid;
+    width: var(--control-xsmall-size, 24px);
+    height: var(--control-xsmall-size, 24px);
+    padding: 0;
+    color: var(--color-fg-muted);
+    background: transparent;
+    border: none;
+    border-radius: var(--borderRadius-small, 3px);
+    align-items: center;
+    justify-content: center
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-action--trailing:hover {
+    background: var(--color-action-list-item-default-hover-bg)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-action--trailing:active {
+    background: var(--color-action-list-item-default-active-bg)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-action--trailing::before {
+    position: absolute;
+    top: calc((var(--control-xsmall-size, 24px) - var(--base-size-16, 16px))/2);
+    left: calc(var(--base-size-4, 4px)*-1);
+    display: block;
+    width: var(--borderWidth-thin, 1px);
+    height: var(--base-size-16, 16px);
+    content: "";
+    background: var(--color-border-default)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-action--trailing::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    min-height: var(--control-medium-size, 32px);
+    content: "";
+    transform: translateX(-50%) translateY(-50%);
+    min-width: var(--control-medium-size, 32px)
+}
+
+@media(pointer: coarse) {
+    .AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-action--trailing::after {
+        min-width: var(--control-minTarget-coarse, 44px);
+        min-height: var(--control-minTarget-coarse, 44px)
+    }
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-search .AppHeader-search-action--trailing svg {
+    color: inherit
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-divider {
+    width: var(--borderWidth-thin, 1px);
+    height: var(--base-size-20, 20px);
+    height: var(--base-size-20, 20px);
+    margin: calc((var(--control-medium-size, 32px) - var(--base-size-20, 20px))/2) 0;
+    background: var(--color-border-default)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-actions {
+    display: grid;
+    grid-auto-flow: column;
+    gap: var(--controlStack-medium-gap-auto, 8px)
+}
+
+.AppHeader .AppHeader-globalBar .AppHeader-actions::before {
+    display: block;
+    width: var(--borderWidth-thin, 1px);
+    height: var(--base-size-20, 20px);
+    height: var(--base-size-20, 20px);
+    content: "";
+    background: var(--color-border-default);
+    margin-block: calc((var(--control-medium-size, 32px) - var(--base-size-20, 20px))/2)
+}
+
+@media(pointer: fine) {
+    .AppHeader .AppHeader-globalBar .AppHeader-actions::before {
+        margin-inline: var(--base-size-4, 4px)
+    }
+}
+
+@media(max-width: 543.98px) {
+    .AppHeader .AppHeader-globalBar .AppHeader-actions {
+        display: none
+    }
+}
+
+.AppHeader .AppHeader-localBar {
+    padding: 0 var(--base-size-16, 16px)
+}
+
+.AppHeader .AppHeader-item {
+    flex: 0 0 auto;
+    background: #ffb6c1
+}
+
+.AppHeader .AppHeader-item--full {
+    flex-grow: 1
+}
+
+.AppHeader .AppHeader-button {
+    position: relative;
+    display: grid;
+    grid-auto-columns: max-content;
+    width: var(--base-size-32, 32px);
+    height: var(--base-size-32, 32px);
+    color: var(--color-fg-muted);
+    background: transparent;
+    border: var(--borderWidth-thin, 1px) solid var(--color-border-default);
+    border-radius: var(--borderRadius-medium, 6px);
+    align-items: center;
+    justify-content: center
+}
+
+.AppHeader .AppHeader-button svg {
+    color: inherit !important
+}
+
+.AppHeader .AppHeader-button:hover {
+    background: var(--color-action-list-item-default-hover-bg)
+}
+
+.AppHeader .AppHeader-button:active {
+    background: var(--color-action-list-item-default-active-bg)
+}
+
+@media(pointer: coarse) {
+    .AppHeader .AppHeader-button::after {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        min-height: var(--control-minTarget-coarse, 44px);
+        content: "";
+        transform: translateX(-50%) translateY(-50%);
+        min-width: var(--control-minTarget-coarse, 44px)
+    }
+}
+
+.AppHeader .AppHeader-button.AppHeader-button--hasIndicator::before {
+    position: absolute;
+    top: calc(var(--base-size-4, 4px)/-2);
+    right: calc(var(--base-size-4, 4px)/-2);
+    display: block;
+    width: var(--base-size-8, 8px);
+    height: var(--base-size-8, 8px);
+    content: "";
+    background: var(--color-accent-fg);
+    border-radius: 50%;
+    box-shadow: 0 0 0 calc(var(--base-size-4, 4px)/2) var(--AppHeader-bg)
+}

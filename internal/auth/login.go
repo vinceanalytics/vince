@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/caches"
@@ -55,7 +56,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if session.Data.LoginDest == "" {
-		session.Data.LoginDest = "/sites"
+		session.Data.LoginDest = fmt.Sprintf("/%s", u.Name)
 	}
 	session.Data.USER = u.Name
 	session.Data.LoggedIn = true

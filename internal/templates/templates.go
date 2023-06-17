@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -217,6 +218,7 @@ type Errors struct {
 
 type Context struct {
 	Title         string
+	Header        Header
 	CurrentUser   *models.User
 	Data          map[string]any
 	CSRF          template.HTML
@@ -245,6 +247,11 @@ type Context struct {
 	Stats         *timeseries.Stats
 	Now           core.NowFunc
 	Invite        *Invite
+}
+
+type Header struct {
+	Context    string
+	ContextRef string
 }
 
 type Invite struct {
@@ -310,8 +317,8 @@ func getCaptcha(ctx context.Context) template.HTMLAttr {
 	return template.HTMLAttr("")
 }
 
-func (t *Context) VinceURL() template.HTML {
-	return template.HTML("http://localhost:8080")
+func (t *Context) Home() string {
+	return t.Config.URL + "/"
 }
 
 func (t *Context) Snippet() string {
@@ -324,9 +331,13 @@ func (t *Context) SharedLinkURL(site *models.Site, link *models.SharedLink) stri
 	return models.SharedLinkURL(t.Config.URL, site, link)
 }
 
-func Avatar(uid uint64, size uint, class ...string) template.HTML {
-	return template.HTML(fmt.Sprintf(`<img class=%q src="/avatar?u=%d&s=%d">`,
-		strings.Join(class, " "), uid, size,
+func Avatar(size uint, uid string, class ...string) template.HTML {
+	q := make(url.Values)
+	q.Set("u", uid)
+	q.Set("s", strconv.Itoa(int(size)))
+	u := "/avatar?" + q.Encode()
+	return template.HTML(fmt.Sprintf(`<img class=%q src=%q>`,
+		strings.Join(class, " "), u,
 	))
 }
 

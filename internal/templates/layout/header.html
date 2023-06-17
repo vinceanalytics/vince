@@ -1,50 +1,631 @@
 {{define "_header"}}
-{{if not .CurrentUser}}
-<nav class="UnderlineNav UnderlineNav--full UnderlineNav--right">
-    <div class="container-lg UnderlineNav-container">
-        <div class="UnderlineNav-actions">
-            <a href="/">
-                {{Logo 120 60}}
+<header class="AppHeader">
+    <div class="AppHeader-globalBar pb-2 js-global-bar">
+        <div class="AppHeader-globalBar-start">
+            <a class="AppHeader-logo ml-2" href="/" data-hotkey="g d" aria-label="Homepage " data-turbo="false">
+                {{Logo 32 "v-align-middle color-fg-default"}}
             </a>
+            <div class="AppHeader-context">
+                <div class="AppHeader-context-compact">
+                    <a class="AppHeader-context-compact-trigger no-underline" href="{{.Header.ContextRef}}"
+                        aria-current="page"
+                        data-analytics-event="{&quot;category&quot;:&quot;SiteHeaderComponent&quot;,&quot;action&quot;:&quot;compact_context_region_dialog_button&quot;,&quot;label&quot;:&quot;gernest&quot;}">
+                        <strong class="AppHeader-context-compact-mainItem d-flex flex-items-center Truncate">
+                            <span class="Truncate-text ">{{.Header.Context}}</span>
+                        </strong>
+                    </a>
+                </div>
+
+                <div class="AppHeader-context-full">
+                    <nav role="navigation" aria-label="Page context">
+                        <ul role="list" class="list-style-none">
+                            <li>
+                                <a href="{{.Header.ContextRef}}" class="AppHeader-context-item">
+                                    <span class="AppHeader-context-item-label  ">
+                                        {{.Header.Context}}
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+
+                    </nav>
+                </div>
+            </div>
+
         </div>
-        <div class="UnderlineNav-body">
-            <a class="UnderlineNav-item" href="/login">Sign In</a>
-            <a class="UnderlineNav-item color-fg-success" href="/register">
-                Register
-            </a>
+        <div class="AppHeader-globalBar-end">
+            <div class="AppHeader-actions">
+            </div>
+            <div class="AppHeader-user">
+                <deferred-side-panel
+                    data-url="/_side-panels/user?memex_enabled=true&amp;user=gernest&amp;user_can_create_organizations=true&amp;user_id=6039952"
+                    data-catalyst="">
+                    <include-fragment data-target="deferred-side-panel.fragment">
+                        <user-drawer-side-panel data-catalyst="">
+                            <button aria-label="Open user account menu"
+                                data-action="click:deferred-side-panel#loadPanel click:deferred-side-panel#panelOpened"
+                                data-show-dialog-id="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f"
+                                id="dialog-show-dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f" type="button"
+                                class="AppHeader-logo Button--invisible Button--medium Button Button--invisible-noVisuals color-bg-transparent p-0">
+                                <span class="Button-content">
+                                    <span class="Button-label">
+                                        {{Avatar 32 .Header.Context "avatar circle"}}
+                                    </span>
+                                </span>
+                            </button>
+
+                            <div class="Overlay--hidden Overlay-backdrop--side Overlay-backdrop--placement-right"
+                                data-modal-dialog-overlay="">
+                                <modal-dialog data-target="deferred-side-panel.panel" role="dialog"
+                                    id="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f" aria-modal="true"
+                                    aria-disabled="true"
+                                    aria-describedby="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f-title dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f-description"
+                                    class="Overlay Overlay-whenNarrow Overlay--size-small-portrait Overlay--motion-scaleFade SidePanel"
+                                    style="max-height: 875px;">
+                                    <div styles="flex-direction: row;" class="Overlay-header">
+                                        <div class="Overlay-headerContentWrap">
+                                            <div class="Overlay-titleWrap">
+                                                <h1 class="Overlay-title sr-only"
+                                                    id="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f-title">
+                                                    Account menu
+                                                </h1>
+                                                <div class="d-flex">
+                                                    <div class="AppHeader-logo position-relative">
+                                                        {{Avatar 32 .Header.Context "avatar circle"}}
+                                                    </div>
+                                                    <div class="d-flex width-full">
+                                                        <div
+                                                            class="lh-condensed d-flex flex-column flex-justify-center ml-2 f5 mr-auto">
+                                                            <span class="Truncate d-block text-bold">
+                                                                <span class="Truncate-text">
+                                                                    gernest
+                                                                </span>
+                                                            </span> <span class="Truncate d-block color-fg-subtle">
+                                                                <span class="Truncate-text">
+                                                                    Geofrey Ernest
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="Overlay-actionWrap">
+                                                <button
+                                                    data-close-dialog-id="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f"
+                                                    aria-label="Close" type="button"
+                                                    class="close-button Overlay-closeButton">
+                                                    {{Icon "x" 16}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="Overlay-body d-flex flex-column height-full px-2">
+                                        <nav aria-label="User navigation" class="ActionList">
+                                            <nav-list data-catalyst="">
+                                                <ul class="ActionListWrap">
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <button id="item-072f1bd3-5508-48d8-a828-95a75f60ed79"
+                                                            type="button"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <span class="d-flex flex-items-center"> <svg
+                                                                        style="box-sizing: content-box; color: var(--color-icon-primary);"
+                                                                        width="16" height="16" viewBox="0 0 16 16"
+                                                                        fill="none" class="anim-rotate">
+                                                                        <circle cx="8" cy="8" r="7"
+                                                                            stroke="currentColor" stroke-opacity="0.25"
+                                                                            stroke-width="2"
+                                                                            vector-effect="non-scaling-stroke"></circle>
+                                                                        <path d="M15 8a7.002 7.002 0 00-7-7"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round"
+                                                                            vector-effect="non-scaling-stroke"></path>
+                                                                    </svg>
+                                                                </span>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+
+
+                                                                <span class="color-fg-muted">
+                                                                    Loading...
+                                                                </span>
+
+                                                            </span></button>
+
+
+                                                    </li>
+
+
+                                                    <li role="presentation" aria-hidden="true"
+                                                        class="ActionList-sectionDivider">
+                                                    </li>
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem ActionListItem--navActive">
+
+                                                        <a id="item-e41a779b-cd93-4e21-a1ad-f6efe23c2784"
+                                                            href="https://github.com/gernest"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-person">
+                                                                    <path
+                                                                        d="M10.561 8.073a6.005 6.005 0 0 1 3.432 5.142.75.75 0 1 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6.004 6.004 0 0 1 3.431-5.142 3.999 3.999 0 1 1 5.123 0ZM10.5 5a2.5 2.5 0 1 0-5 0 2.5 2.5 0 0 0 5 0Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                Your profile
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+                                                    <li role="presentation" aria-hidden="true"
+                                                        class="ActionList-sectionDivider">
+                                                    </li>
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-eb849bf2-19ed-454c-bbb2-910ad8aecee1"
+                                                            href="/gernest?tab=repositories"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-repo">
+                                                                    <path
+                                                                        d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                Your repositories
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-13494293-0d82-4f16-a73b-d817e46f53f5"
+                                                            href="/gernest?tab=projects"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-project">
+                                                                    <path
+                                                                        d="M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0ZM1.5 1.75v12.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25H1.75a.25.25 0 0 0-.25.25ZM11.75 3a.75.75 0 0 1 .75.75v7.5a.75.75 0 0 1-1.5 0v-7.5a.75.75 0 0 1 .75-.75Zm-8.25.75a.75.75 0 0 1 1.5 0v5.5a.75.75 0 0 1-1.5 0ZM8 3a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 3Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                Your projects
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-26dcf72c-02c4-488b-a056-e15c298c54d6"
+                                                            href="/codespaces"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-codespaces">
+                                                                    <path
+                                                                        d="M0 11.25c0-.966.784-1.75 1.75-1.75h12.5c.966 0 1.75.784 1.75 1.75v3A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25Zm2-9.5C2 .784 2.784 0 3.75 0h8.5C13.216 0 14 .784 14 1.75v5a1.75 1.75 0 0 1-1.75 1.75h-8.5A1.75 1.75 0 0 1 2 6.75Zm1.75-.25a.25.25 0 0 0-.25.25v5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-5a.25.25 0 0 0-.25-.25Zm-2 9.5a.25.25 0 0 0-.25.25v3c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25v-3a.25.25 0 0 0-.25-.25Z">
+                                                                    </path>
+                                                                    <path
+                                                                        d="M7 12.75a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Zm-4 0a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1-.75-.75Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                Your codespaces
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <button id="item-ad89846b-71a7-448b-a6b8-cfcc4215cc4d"
+                                                            type="button"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <span class="d-flex flex-items-center"> <svg
+                                                                        style="box-sizing: content-box; color: var(--color-icon-primary);"
+                                                                        width="16" height="16" viewBox="0 0 16 16"
+                                                                        fill="none" class="anim-rotate">
+                                                                        <circle cx="8" cy="8" r="7"
+                                                                            stroke="currentColor" stroke-opacity="0.25"
+                                                                            stroke-width="2"
+                                                                            vector-effect="non-scaling-stroke"></circle>
+                                                                        <path d="M15 8a7.002 7.002 0 00-7-7"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round"
+                                                                            vector-effect="non-scaling-stroke"></path>
+                                                                    </svg>
+                                                                </span>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+
+
+                                                                <span class="color-fg-muted">
+                                                                    Loading...
+                                                                </span>
+
+                                                            </span></button>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-d0e0643c-f998-494d-89d5-3a6b457f7403"
+                                                            href="/gernest?tab=stars"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-star">
+                                                                    <path
+                                                                        d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Zm0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41L8 2.694Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                Your stars
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-29242f22-6f42-4fea-8d7e-83c9aa304dd1"
+                                                            href="/sponsors/accounts"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-heart">
+                                                                    <path
+                                                                        d="m8 14.25.345.666a.75.75 0 0 1-.69 0l-.008-.004-.018-.01a7.152 7.152 0 0 1-.31-.17 22.055 22.055 0 0 1-3.434-2.414C2.045 10.731 0 8.35 0 5.5 0 2.836 2.086 1 4.25 1 5.797 1 7.153 1.802 8 3.02 8.847 1.802 10.203 1 11.75 1 13.914 1 16 2.836 16 5.5c0 2.85-2.045 5.231-3.885 6.818a22.066 22.066 0 0 1-3.744 2.584l-.018.01-.006.003h-.002ZM4.25 2.5c-1.336 0-2.75 1.164-2.75 3 0 2.15 1.58 4.144 3.365 5.682A20.58 20.58 0 0 0 8 13.393a20.58 20.58 0 0 0 3.135-2.211C12.92 9.644 14.5 7.65 14.5 5.5c0-1.836-1.414-3-2.75-3-1.373 0-2.609.986-3.029 2.456a.749.749 0 0 1-1.442 0C6.859 3.486 5.623 2.5 4.25 2.5Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                Your sponsors
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-bf3214a1-8318-4e18-9afd-41551a1fc8a3"
+                                                            href="https://gist.github.com/mine"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-code-square">
+                                                                    <path
+                                                                        d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25Zm7.47 3.97a.75.75 0 0 1 1.06 0l2 2a.75.75 0 0 1 0 1.06l-2 2a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L10.69 8 9.22 6.53a.75.75 0 0 1 0-1.06ZM6.78 6.53 5.31 8l1.47 1.47a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215l-2-2a.75.75 0 0 1 0-1.06l2-2a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                Your gists
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+                                                    <li role="presentation" aria-hidden="true"
+                                                        class="ActionList-sectionDivider">
+                                                    </li>
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <button id="item-42fcf916-5263-450d-b8a3-7c154f8a2c43"
+                                                            type="button"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <span class="d-flex flex-items-center"> <svg
+                                                                        style="box-sizing: content-box; color: var(--color-icon-primary);"
+                                                                        width="16" height="16" viewBox="0 0 16 16"
+                                                                        fill="none" class="anim-rotate">
+                                                                        <circle cx="8" cy="8" r="7"
+                                                                            stroke="currentColor" stroke-opacity="0.25"
+                                                                            stroke-width="2"
+                                                                            vector-effect="non-scaling-stroke"></circle>
+                                                                        <path d="M15 8a7.002 7.002 0 00-7-7"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round"
+                                                                            vector-effect="non-scaling-stroke"></path>
+                                                                    </svg>
+                                                                </span>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+
+
+                                                                <span class="color-fg-muted">
+                                                                    Loading...
+                                                                </span>
+
+                                                            </span></button>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <button id="item-441c43ca-3ebe-4dc6-a5c9-0d1550ad701b"
+                                                            type="button"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <span class="d-flex flex-items-center"> <svg
+                                                                        style="box-sizing: content-box; color: var(--color-icon-primary);"
+                                                                        width="16" height="16" viewBox="0 0 16 16"
+                                                                        fill="none" class="anim-rotate">
+                                                                        <circle cx="8" cy="8" r="7"
+                                                                            stroke="currentColor" stroke-opacity="0.25"
+                                                                            stroke-width="2"
+                                                                            vector-effect="non-scaling-stroke"></circle>
+                                                                        <path d="M15 8a7.002 7.002 0 00-7-7"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round"
+                                                                            vector-effect="non-scaling-stroke"></path>
+                                                                    </svg>
+                                                                </span>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+
+
+                                                                <span class="color-fg-muted">
+                                                                    Loading...
+                                                                </span>
+
+                                                            </span></button>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <button id="item-6c409872-1425-4d2c-8af9-cbd0a9d9bceb"
+                                                            type="button"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <span class="d-flex flex-items-center"> <svg
+                                                                        style="box-sizing: content-box; color: var(--color-icon-primary);"
+                                                                        width="16" height="16" viewBox="0 0 16 16"
+                                                                        fill="none" class="anim-rotate">
+                                                                        <circle cx="8" cy="8" r="7"
+                                                                            stroke="currentColor" stroke-opacity="0.25"
+                                                                            stroke-width="2"
+                                                                            vector-effect="non-scaling-stroke"></circle>
+                                                                        <path d="M15 8a7.002 7.002 0 00-7-7"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round"
+                                                                            vector-effect="non-scaling-stroke"></path>
+                                                                    </svg>
+                                                                </span>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+
+
+                                                                <span class="color-fg-muted">
+                                                                    Loading...
+                                                                </span>
+
+                                                            </span></button>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-e9ae5d21-6010-4cb1-ac74-ae17509b4fd4"
+                                                            href="/settings/profile"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-gear">
+                                                                    <path
+                                                                        d="M8 0a8.2 8.2 0 0 1 .701.031C9.444.095 9.99.645 10.16 1.29l.288 1.107c.018.066.079.158.212.224.231.114.454.243.668.386.123.082.233.09.299.071l1.103-.303c.644-.176 1.392.021 1.82.63.27.385.506.792.704 1.218.315.675.111 1.422-.364 1.891l-.814.806c-.049.048-.098.147-.088.294.016.257.016.515 0 .772-.01.147.038.246.088.294l.814.806c.475.469.679 1.216.364 1.891a7.977 7.977 0 0 1-.704 1.217c-.428.61-1.176.807-1.82.63l-1.102-.302c-.067-.019-.177-.011-.3.071a5.909 5.909 0 0 1-.668.386c-.133.066-.194.158-.211.224l-.29 1.106c-.168.646-.715 1.196-1.458 1.26a8.006 8.006 0 0 1-1.402 0c-.743-.064-1.289-.614-1.458-1.26l-.289-1.106c-.018-.066-.079-.158-.212-.224a5.738 5.738 0 0 1-.668-.386c-.123-.082-.233-.09-.299-.071l-1.103.303c-.644.176-1.392-.021-1.82-.63a8.12 8.12 0 0 1-.704-1.218c-.315-.675-.111-1.422.363-1.891l.815-.806c.05-.048.098-.147.088-.294a6.214 6.214 0 0 1 0-.772c.01-.147-.038-.246-.088-.294l-.815-.806C.635 6.045.431 5.298.746 4.623a7.92 7.92 0 0 1 .704-1.217c.428-.61 1.176-.807 1.82-.63l1.102.302c.067.019.177.011.3-.071.214-.143.437-.272.668-.386.133-.066.194-.158.211-.224l.29-1.106C6.009.645 6.556.095 7.299.03 7.53.01 7.764 0 8 0Zm-.571 1.525c-.036.003-.108.036-.137.146l-.289 1.105c-.147.561-.549.967-.998 1.189-.173.086-.34.183-.5.29-.417.278-.97.423-1.529.27l-1.103-.303c-.109-.03-.175.016-.195.045-.22.312-.412.644-.573.99-.014.031-.021.11.059.19l.815.806c.411.406.562.957.53 1.456a4.709 4.709 0 0 0 0 .582c.032.499-.119 1.05-.53 1.456l-.815.806c-.081.08-.073.159-.059.19.162.346.353.677.573.989.02.03.085.076.195.046l1.102-.303c.56-.153 1.113-.008 1.53.27.161.107.328.204.501.29.447.222.85.629.997 1.189l.289 1.105c.029.109.101.143.137.146a6.6 6.6 0 0 0 1.142 0c.036-.003.108-.036.137-.146l.289-1.105c.147-.561.549-.967.998-1.189.173-.086.34-.183.5-.29.417-.278.97-.423 1.529-.27l1.103.303c.109.029.175-.016.195-.045.22-.313.411-.644.573-.99.014-.031.021-.11-.059-.19l-.815-.806c-.411-.406-.562-.957-.53-1.456a4.709 4.709 0 0 0 0-.582c-.032-.499.119-1.05.53-1.456l.815-.806c.081-.08.073-.159.059-.19a6.464 6.464 0 0 0-.573-.989c-.02-.03-.085-.076-.195-.046l-1.102.303c-.56.153-1.113.008-1.53-.27a4.44 4.44 0 0 0-.501-.29c-.447-.222-.85-.629-.997-1.189l-.289-1.105c-.029-.11-.101-.143-.137-.146a6.6 6.6 0 0 0-1.142 0ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9.5 8a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 9.5 8Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                Settings
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+                                                    <li role="presentation" aria-hidden="true"
+                                                        class="ActionList-sectionDivider">
+                                                    </li>
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-84a2aeb3-89c9-4e70-9d52-49de6d99df43"
+                                                            href="https://docs.github.com"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-book">
+                                                                    <path
+                                                                        d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Zm7.251 10.324.004-5.073-.002-2.253A2.25 2.25 0 0 0 5.003 2.5H1.5v9h3.757a3.75 3.75 0 0 1 1.994.574ZM8.755 4.75l-.004 7.322a3.752 3.752 0 0 1 1.992-.572H14.5v-9h-3.495a2.25 2.25 0 0 0-2.25 2.25Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                GitHub Docs
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-e255c5ef-ee27-474a-8fb5-3aff1f16567a"
+                                                            href="https://support.github.com"
+                                                            class="ActionListContent ActionListContent--visual16">
+                                                            <span
+                                                                class="ActionListItem-visual ActionListItem-visual--leading">
+                                                                <svg aria-hidden="true" height="16" viewBox="0 0 16 16"
+                                                                    version="1.1" width="16"
+                                                                    class="octicon octicon-people">
+                                                                    <path
+                                                                        d="M2 5.5a3.5 3.5 0 1 1 5.898 2.549 5.508 5.508 0 0 1 3.034 4.084.75.75 0 1 1-1.482.235 4 4 0 0 0-7.9 0 .75.75 0 0 1-1.482-.236A5.507 5.507 0 0 1 3.102 8.05 3.493 3.493 0 0 1 2 5.5ZM11 4a3.001 3.001 0 0 1 2.22 5.018 5.01 5.01 0 0 1 2.56 3.012.749.749 0 0 1-.885.954.752.752 0 0 1-.549-.514 3.507 3.507 0 0 0-2.522-2.372.75.75 0 0 1-.574-.73v-.352a.75.75 0 0 1 .416-.672A1.5 1.5 0 0 0 11 5.5.75.75 0 0 1 11 4Zm-5.5-.5a2 2 0 1 0-.001 3.999A2 2 0 0 0 5.5 3.5Z">
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+
+                                                            <span class="ActionListItem-label">
+                                                                GitHub Support
+                                                            </span></a>
+
+
+                                                    </li>
+
+
+                                                    <li role="presentation" aria-hidden="true"
+                                                        class="ActionList-sectionDivider">
+                                                    </li>
+
+
+                                                    <li data-item-id="" data-targets="nav-list.items"
+                                                        class="ActionListItem">
+
+                                                        <a id="item-7c7061c1-da65-4ed0-9ba0-28483795c982" href="/logout"
+                                                            class="ActionListContent">
+
+                                                            <span class="ActionListItem-label">
+                                                                Sign out
+                                                            </span></a>
+
+
+                                                    </li>
+
+                                                </ul>
+                                            </nav-list>
+                                        </nav>
+
+
+                                    </div>
+
+                                </modal-dialog>
+                            </div>
+                        </user-drawer-side-panel>
+
+                    </include-fragment>
+                </deferred-side-panel>
+            </div>
         </div>
     </div>
-</nav>
-{{else}}
-<div class="header">
-    <nav class="siteNav">
-        <ul>
-            <li>
-                <a href="/sites">
-                    {{Icon "repo" 24}}
-                    <span>sites </span>
-                </a>
-            </li>
-            <li>
-                <a href="/sites/new">
-                    {{Icon "plus" 24}}
-                    <span> add site </span>
-                </a>
-            </li>
-            <li>
-                <a href="/settings">
-                    {{Icon "gear" 24 }}
-                    <span>settings </span>
-                </a>
-            </li>
-            <li>
-                <a href="/logout">
-                    {{Icon "link-external" 24 }}
-                    <span>sign out </span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-</div>
-{{end}}
+
+
+    <div class="AppHeader-localBar">
+        <nav class=" overflow-hidden UnderlineNav">
+            <ul class="UnderlineNav-body list-style-none">
+                <li class="d-inline-flex">
+                    <a id="overview-tab" href={{.Header.ContextRef}} class="UnderlineNav-item no-wrap  selected">
+                        {{Icon "book" 16 "UnderlineNav-octicon"}}
+                        <span>Overview</span>
+                        <span title="Not available" class="Counter"></span>
+                    </a>
+                </li>
+                <li class="d-inline-flex">
+                    <a class="UnderlineNav-item no-wrap ">
+                        {{Icon "repo" 16 "UnderlineNav-octicon"}}
+                        <span>Sites</span>
+                        <span title="329" class="Counter">329</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>
 {{end}}

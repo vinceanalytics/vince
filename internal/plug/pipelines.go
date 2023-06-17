@@ -148,6 +148,7 @@ var replace = map[string]string{
 	":recipient":     "(?P<recipient>[^.]+)",
 	":slug":          "(?P<slug>[^.]+)",
 	":id":            "(?P<id>[^.]+)",
+	":user_id":       "(?P<id>[^.]+)",
 	":invitation_id": "(?P<id>[^.]+)",
 	":new_role":      "(?P<new_role>[^.]+)",
 	":site_id":       siteID,

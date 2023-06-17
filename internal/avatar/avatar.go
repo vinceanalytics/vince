@@ -13,7 +13,7 @@ import (
 
 // Generates and server avatar in png format. Accepts query params
 //
-//	u = for user id which is a uint64
+//	u = string for username
 //	s = an int for the image size
 //
 // Any size below 24 is set to 24 and an empty u defaults to a fallback avatar image.
@@ -34,11 +34,6 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 func create(size, uid string, o *bytes.Buffer) error {
 	if size == "" {
 		size = "24"
-	}
-	if _, err := strconv.ParseUint(uid, 10, 64); err != nil {
-		// uid is supposed to be a valid user id which is a uint64. Fallback
-		// to placeholder when given bad value.
-		uid = ""
 	}
 	if uid == "" {
 		uid = "vince"

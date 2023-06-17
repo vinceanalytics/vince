@@ -17,6 +17,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/site"
 	"github.com/vinceanalytics/vince/internal/sites"
 	"github.com/vinceanalytics/vince/internal/stats"
+	"github.com/vinceanalytics/vince/internal/user"
 )
 
 func Pipe(ctx context.Context) plug.Pipeline {
@@ -115,6 +116,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.POST(`^/:website/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:website/stats$`, site.ResetStats),
 		sitePipe.GET(`^/:domain/stats$`, site.Stats),
+		pipe5.And(plug.RequireAccount).GET("/:user_id", user.Profile),
 		NotFound,
 	}
 
