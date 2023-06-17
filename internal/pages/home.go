@@ -7,9 +7,10 @@ import (
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
-	cts := r.Context()
-	if models.GetUser(cts) != nil {
-		http.Redirect(w, r, "/sites", http.StatusFound)
+	ctx := r.Context()
+	u := models.GetUser(ctx)
+	if u != nil {
+		http.Redirect(w, r, "/"+u.Name, http.StatusFound)
 		return
 	}
 	http.Redirect(w, r, "/login", http.StatusFound)
