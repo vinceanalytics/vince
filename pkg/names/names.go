@@ -21,7 +21,9 @@ func Valid(s string) bool {
 	if err != nil {
 		return false
 	}
-	if !unicode.IsLetter(start) || !unicode.IsNumber(start) {
+	switch {
+	case unicode.IsLetter(start), unicode.IsNumber(start):
+	default:
 		return false
 	}
 	for {
@@ -30,9 +32,9 @@ func Valid(s string) bool {
 			return errors.Is(err, io.EOF)
 		}
 		switch {
-		case unicode.IsLetter(o):
-		case unicode.IsNumber(o):
-		case o == '-':
+		case unicode.IsLetter(o),
+			unicode.IsNumber(o),
+			o == '-':
 		default:
 			return false
 		}
