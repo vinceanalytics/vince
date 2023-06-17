@@ -61,15 +61,10 @@ func Bootstrap(
 	}) {
 		return
 	}
-	hashPasswd, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		log.Get().Fatal().Err(err).Msg("failed to hash password")
-	}
 	hash, prefix := ProcessAPIKey(ctx, key)
 	u := &User{
-		Name:         name,
-		Email:        email,
-		PasswordHash: string(hashPasswd),
+		Name:  name,
+		Email: email,
 		APIKeys: []*APIKey{
 			{
 				Name:      name,
@@ -78,10 +73,17 @@ func Bootstrap(
 			},
 		},
 	}
+	if m := NewUser(ctx, u, password, password); len(m) > 0 {
+		e := log.Get().Fatal()
+		for k, v := range m {
+			e.Str(k, v)
+		}
+		e.Msg("failed user validation")
+	}
 	if !config.Get(ctx).Mailer.Enabled {
 		u.EmailVerified = true
 	}
-	err = Get(ctx).Create(u).Error
+	err := Get(ctx).Create(u).Error
 	if err != nil {
 		log.Get().Fatal().Err(err).Msg("failed to save bootstrapped user")
 	}
