@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"text/tabwriter"
@@ -93,6 +94,9 @@ func walk(wg *sync.WaitGroup, parent *entry, path string) {
 		if err != nil {
 			println("> ERROR", path, err.Error())
 			continue
+		}
+		if strings.HasPrefix(f.Name(), ".") {
+			return
 		}
 		if i.IsDir() {
 			wg.Add(1)
