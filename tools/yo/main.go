@@ -1,8 +1,13 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
+	"errors"
 	"flag"
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -25,7 +30,7 @@ func main() {
 	wg.Add(1)
 	start := time.Now()
 
-	walk(&wg, r, flag.Arg(0))
+	walk(&wg, r, empty(), flag.Arg(0))
 	wg.Wait()
 	elapsed := time.Since(start)
 	summary(r, elapsed)
@@ -76,9 +81,12 @@ func (e *entry) add(ch *entry) {
 	e.mu.Unlock()
 }
 
-func walk(wg *sync.WaitGroup, parent *entry, path string) {
+func walk(wg *sync.WaitGroup, parent *entry, r *rules, path string) {
 	dirs.Add(1)
 	defer wg.Done()
+	if b, err := os.ReadFile(filepath.Join(path, ".gitignore")); err == nil {
+		r = r.merge(parse(bytes.NewReader(b)))
+	}
 	e, err := os.ReadDir(path)
 	if err != nil {
 		println("> ERROR", path, err.Error())
@@ -95,12 +103,13 @@ func walk(wg *sync.WaitGroup, parent *entry, path string) {
 			println("> ERROR", path, err.Error())
 			continue
 		}
-		if strings.HasPrefix(f.Name(), ".") {
-			return
+		name := f.Name()
+		if r.skip(name, i) {
+			continue
 		}
 		if i.IsDir() {
 			wg.Add(1)
-			go walk(wg, x, filepath.Join(path, f.Name()))
+			go walk(wg, x, r, filepath.Join(path, f.Name()))
 		} else {
 			files.Add(1)
 			x.update(i.Size())
@@ -156,4 +165,128 @@ func summary(e *entry, elapsed time.Duration) {
 		fmt.Fprintf(w, "%s\t%s\t\n", v.path, human(v.size))
 	}
 	w.Flush()
+}
+
+type rules struct {
+	patterns []*pattern
+}
+
+func parse(b io.Reader) *rules {
+	e := empty()
+	s := bufio.NewScanner(b)
+	for s.Scan() {
+		e.parse(s.Text())
+	}
+	return e
+}
+
+func empty() *rules {
+	e := &rules{}
+	e.parse(".git")
+	return e
+}
+
+func (r *rules) merge(o *rules) *rules {
+	return &rules{patterns: append(r.patterns, o.patterns...)}
+}
+
+func (r *rules) skip(path string, fi os.FileInfo) bool {
+	// Don't match on empty dirs.
+	if path == "" {
+		return false
+	}
+
+	if path == "." || path == "./" {
+		return false
+	}
+	for _, p := range r.patterns {
+		if p.match == nil {
+			log.Printf("ignore: no matcher supplied for %q", p.raw)
+			return false
+		}
+		if p.negate {
+			if p.mustDir && !fi.IsDir() {
+				return true
+			}
+			if !p.match(path, fi) {
+				return true
+			}
+			continue
+		}
+		if p.mustDir && !fi.IsDir() {
+			continue
+		}
+		if p.match(path, fi) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *rules) parse(rl string) error {
+	rl = strings.TrimSpace(rl)
+	if rl == "" {
+		return nil
+	}
+	if strings.HasPrefix(rl, "#") {
+		return nil
+	}
+	if strings.Contains(rl, "**") {
+		return errors.New("double-star (**) syntax is not supported")
+	}
+	if _, err := filepath.Match(rl, "abc"); err != nil {
+		return err
+	}
+
+	p := &pattern{raw: rl}
+	if strings.HasPrefix(rl, "!") {
+		p.negate = true
+		rl = rl[1:]
+	}
+	if strings.HasSuffix(rl, "/") {
+		p.mustDir = true
+		rl = strings.TrimSuffix(rl, "/")
+	}
+
+	if strings.HasPrefix(rl, "/") {
+		p.match = func(n string, fi os.FileInfo) bool {
+			rl = strings.TrimPrefix(rl, "/")
+			ok, err := filepath.Match(rl, n)
+			if err != nil {
+				log.Printf("Failed to compile %q: %s", rl, err)
+				return false
+			}
+			return ok
+		}
+	} else if strings.Contains(rl, "/") {
+		p.match = func(n string, fi os.FileInfo) bool {
+			ok, err := filepath.Match(rl, n)
+			if err != nil {
+				log.Printf("Failed to compile %q: %s", rl, err)
+				return false
+			}
+			return ok
+		}
+	} else {
+		p.match = func(n string, fi os.FileInfo) bool {
+			n = filepath.Base(n)
+			ok, err := filepath.Match(rl, n)
+			if err != nil {
+				log.Printf("Failed to compile %q: %s", rl, err)
+				return false
+			}
+			return ok
+		}
+	}
+	r.patterns = append(r.patterns, p)
+	return nil
+}
+
+type matcher func(name string, fi os.FileInfo) bool
+
+type pattern struct {
+	raw     string
+	match   matcher
+	negate  bool
+	mustDir bool
 }
