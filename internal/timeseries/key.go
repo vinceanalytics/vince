@@ -59,6 +59,7 @@ func (id *Key) base(b *bytes.Buffer) *bytes.Buffer {
 }
 
 func (id *Key) site(s *bytes.Buffer) *bytes.Buffer {
+	s.Reset()
 	id[propOffset] = 100
 	s.Write(id[:])
 	return s
