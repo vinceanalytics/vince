@@ -35,6 +35,34 @@ func (id *Key) prop(p Property) *Key {
 	return id
 }
 
+var zero = make([]byte, 8)
+
+type gk struct {
+	base *bytes.Buffer
+	site *bytes.Buffer
+}
+
+// Returns two keys used to store global stats
+func (id *Key) global(ls *txnBufferList) gk {
+	return gk{
+		base: id.base(ls.Get()),
+		site: id.site(ls.Get()),
+	}
+}
+
+func (id *Key) base(b *bytes.Buffer) *bytes.Buffer {
+	id[propOffset] = 100
+	b.Write(id[:siteOffset])
+	b.Write(zero)
+	b.Write(id[metricOffset:])
+	return b
+}
+
+func (id *Key) site(s *bytes.Buffer) *bytes.Buffer {
+	id[propOffset] = 100
+	s.Write(id[:])
+	return s
+}
 func (id *Key) clone() *Key {
 	o := newMetaKey()
 	copy(o[:], id[:])
