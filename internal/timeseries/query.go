@@ -251,8 +251,10 @@ func Global(ctx context.Context, uid, sid uint64) (o query.Global) {
 	now := core.Now(ctx).UnixMilli()
 	txn := GetMike(ctx).NewTransactionAt(uint64(now), false)
 	m := newMetaKey()
+	defer m.Release()
 	m.uid(uid, sid)
 	b := get()
+	defer put(b)
 	err := errors.Join(
 		u16(txn, m.metric(Visitors).site(b), &o.Visitors),
 		u16(txn, m.metric(Views).site(b), &o.Views),
