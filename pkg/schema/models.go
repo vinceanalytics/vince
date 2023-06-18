@@ -78,6 +78,7 @@ type Model struct {
 type User struct {
 	Model
 	Name         string `gorm:"uniqueIndex"`
+	FullName     string
 	Email        string `gorm:"uniqueIndex"`
 	PasswordHash string
 	Sites        []*Site `gorm:"many2many:site_memberships;"`

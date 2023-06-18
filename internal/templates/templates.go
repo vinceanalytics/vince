@@ -219,7 +219,7 @@ type Errors struct {
 type Context struct {
 	Title         string
 	Header        Header
-	CurrentUser   *models.User
+	USER          *models.User
 	Data          map[string]any
 	CSRF          template.HTML
 	Captcha       template.HTMLAttr
@@ -251,6 +251,7 @@ type Context struct {
 
 type Header struct {
 	Context    string
+	Mode       string
 	ContextRef string
 }
 
@@ -275,15 +276,15 @@ func (t *Context) GreetRecipient() string {
 
 func New(ctx context.Context, f ...func(c *Context)) *Context {
 	c := &Context{
-		Data:        make(map[string]any),
-		CSRF:        getCsrf(ctx),
-		Captcha:     getCaptcha(ctx),
-		CurrentUser: models.GetUser(ctx),
-		Config:      config.Get(ctx),
-		Flash:       flash.Get(ctx),
-		Errors:      make(map[string]string),
-		Form:        make(url.Values),
-		Now:         core.GetNow(ctx),
+		Data:    make(map[string]any),
+		CSRF:    getCsrf(ctx),
+		Captcha: getCaptcha(ctx),
+		USER:    models.GetUser(ctx),
+		Config:  config.Get(ctx),
+		Flash:   flash.Get(ctx),
+		Errors:  make(map[string]string),
+		Form:    make(url.Values),
+		Now:     core.GetNow(ctx),
 	}
 	if len(f) > 0 {
 		f[0](c)

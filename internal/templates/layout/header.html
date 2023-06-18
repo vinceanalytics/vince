@@ -8,14 +8,12 @@
             <div class="AppHeader-context">
                 <div class="AppHeader-context-compact">
                     <a class="AppHeader-context-compact-trigger no-underline" href="{{.Header.ContextRef}}"
-                        aria-current="page"
-                        data-analytics-event="{&quot;category&quot;:&quot;SiteHeaderComponent&quot;,&quot;action&quot;:&quot;compact_context_region_dialog_button&quot;,&quot;label&quot;:&quot;gernest&quot;}">
+                        aria-current="page">
                         <strong class="AppHeader-context-compact-mainItem d-flex flex-items-center Truncate">
                             <span class="Truncate-text ">{{.Header.Context}}</span>
                         </strong>
                     </a>
                 </div>
-
                 <div class="AppHeader-context-full">
                     <nav role="navigation" aria-label="Page context">
                         <ul role="list" class="list-style-none">
@@ -31,120 +29,104 @@
                     </nav>
                 </div>
             </div>
-
         </div>
         <div class="AppHeader-globalBar-end">
             <div class="AppHeader-actions">
             </div>
             <div class="AppHeader-user">
-                <deferred-side-panel
-                    data-url="/_side-panels/user?memex_enabled=true&amp;user=gernest&amp;user_can_create_organizations=true&amp;user_id=6039952"
-                    data-catalyst="">
-                    <include-fragment data-target="deferred-side-panel.fragment">
-                        <user-drawer-side-panel data-catalyst="">
-                            <button aria-label="Open user account menu"
-                                data-action="click:deferred-side-panel#loadPanel click:deferred-side-panel#panelOpened"
-                                data-show-dialog-id="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f"
-                                id="dialog-show-dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f" type="button"
-                                class="AppHeader-logo Button--invisible Button--medium Button Button--invisible-noVisuals color-bg-transparent p-0">
-                                <span class="Button-content">
-                                    <span class="Button-label">
-                                        {{Avatar 32 .Header.Context "avatar circle"}}
-                                    </span>
-                                </span>
-                            </button>
+                <button data-show-dialog-id="user-profile-dialog" id="dialog-show-user-profile-dialog" type="button"
+                    class="AppHeader-logo Button--invisible Button--medium Button Button--invisible-noVisuals color-bg-transparent p-0">
+                    <span class="Button-content">
+                        <span class="Button-label">
+                            {{Avatar 32 .Header.Context "avatar circle"}}
+                        </span>
+                    </span>
+                </button>
+                <div class="Overlay--hidden Overlay-backdrop--side Overlay-backdrop--placement-right"
+                    data-modal-dialog-overlay="">
 
-                            <div class="Overlay--hidden Overlay-backdrop--side Overlay-backdrop--placement-right"
-                                data-modal-dialog-overlay="">
-                                <modal-dialog data-target="deferred-side-panel.panel" role="dialog"
-                                    id="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f" aria-modal="true"
-                                    aria-disabled="true"
-                                    aria-describedby="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f-title dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f-description"
-                                    class="Overlay Overlay-whenNarrow Overlay--size-small-portrait Overlay--motion-scaleFade SidePanel"
-                                    style="max-height: 875px;">
-                                    <div styles="flex-direction: row;" class="Overlay-header">
-                                        <div class="Overlay-headerContentWrap">
-                                            <div class="Overlay-titleWrap">
-                                                <h1 class="Overlay-title sr-only"
-                                                    id="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f-title">
-                                                    Account menu
-                                                </h1>
-                                                <div class="d-flex">
-                                                    <div class="AppHeader-logo position-relative">
-                                                        {{Avatar 32 .Header.Context "avatar circle"}}
-                                                    </div>
-                                                    <div class="d-flex width-full">
-                                                        <div
-                                                            class="lh-condensed d-flex flex-column flex-justify-center ml-2 f5 mr-auto">
-                                                            <span class="Truncate d-block text-bold">
-                                                                <span class="Truncate-text">
-                                                                    gernest
-                                                                </span>
-                                                            </span> <span class="Truncate d-block color-fg-subtle">
-                                                                <span class="Truncate-text">
-                                                                    Geofrey Ernest
-                                                                </span>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="Overlay-actionWrap">
-                                                <button
-                                                    data-close-dialog-id="dialog-fd07056e-e48d-4aa9-a9f6-d2d8460faf9f"
-                                                    aria-label="Close" type="button"
-                                                    class="close-button Overlay-closeButton">
-                                                    {{Icon "x" 16}}
-                                                </button>
+                    <modal-dialog role="dialog" id="user-profile-dialog" aria-modal="true" aria-disabled="true"
+                        aria-describedby="user-profile-dialog-title user-profile-dialog-description"
+                        class="Overlay Overlay-whenNarrow Overlay--size-small-portrait Overlay--motion-scaleFade SidePanel"
+                        style="max-height: 875px;">
+                        <div styles="flex-direction: row;" class="Overlay-header">
+                            <div class="Overlay-headerContentWrap">
+                                <div class="Overlay-titleWrap">
+                                    <h1 class="Overlay-title sr-only" id="user-profile-dialog-title">
+                                        Account menu
+                                    </h1>
+                                    <div class="d-flex">
+                                        <div class="AppHeader-logo position-relative">
+                                            {{Avatar 32 .Header.Context "avatar circle"}}
+                                        </div>
+                                        <div class="d-flex width-full">
+                                            <div
+                                                class="lh-condensed d-flex flex-column flex-justify-center ml-2 f5 mr-auto">
+                                                <span class="Truncate d-block text-bold">
+                                                    <span class="Truncate-text">
+                                                        {{.USER.Name}}
+                                                    </span>
+                                                </span> <span class="Truncate d-block color-fg-subtle">
+                                                    <span class="Truncate-text">
+                                                        {{.USER.FullName}}
+                                                    </span>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="Overlay-body d-flex flex-column height-full px-2">
-                                        <nav aria-label="User navigation" class="ActionList">
-                                            <nav-list data-catalyst="">
-                                                <ul class="ActionListWrap">
-                                                    <li data-item-id="" data-targets="nav-list.items"
-                                                        class="ActionListItem">
-                                                        <a href="/logout" class="ActionListContent">
-                                                            <span class="ActionListItem-label">
-                                                                Sign out
-                                                            </span></a>
-                                                    </li>
-
-                                                </ul>
-                                            </nav-list>
-                                        </nav>
-                                    </div>
-                                </modal-dialog>
+                                </div>
+                                <div class="Overlay-actionWrap">
+                                    <button data-close-dialog-id="user-profile-dialog" aria-label="Close" type="button"
+                                        class="close-button Overlay-closeButton">
+                                        {{Icon "x" 16}}
+                                    </button>
+                                </div>
                             </div>
-                        </user-drawer-side-panel>
-
-                    </include-fragment>
-                </deferred-side-panel>
+                        </div>
+                        <div class="Overlay-body d-flex flex-column height-full px-2">
+                            <nav aria-label="User navigation" class="ActionList">
+                                <nav-list data-catalyst="">
+                                    <ul class="ActionListWrap">
+                                        <li data-item-id="" data-targets="nav-list.items" class="ActionListItem">
+                                            <a href="/logout" class="ActionListContent">
+                                                <span class="ActionListItem-label">
+                                                    Sign out
+                                                </span></a>
+                                        </li>
+                                    </ul>
+                                </nav-list>
+                            </nav>
+                        </div>
+                    </modal-dialog>
+                </div>
             </div>
         </div>
     </div>
 
 
     <div class="AppHeader-localBar">
-        <nav class=" overflow-hidden UnderlineNav">
-            <ul class="UnderlineNav-body list-style-none">
-                <li class="d-inline-flex">
-                    <a id="overview-tab" href={{.Header.ContextRef}} class="UnderlineNav-item no-wrap  selected">
-                        {{Icon "book" 16 "UnderlineNav-octicon"}}
-                        <span>Overview</span>
-                        <span title="Not available" class="Counter"></span>
-                    </a>
-                </li>
-                <li class="d-inline-flex">
-                    <a class="UnderlineNav-item no-wrap ">
-                        {{Icon "repo" 16 "UnderlineNav-octicon"}}
-                        <span>Sites</span>
-                        <span title="329" class="Counter">329</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+        {{if eq .Header.Mode "profile"}}
+        <tab-container>
+            <nav class=" overflow-hidden UnderlineNav">
+                <ul role="tablist" class="UnderlineNav-body list-style-none">
+                    <li class="d-inline-flex">
+                        <button role="tab" aria-selected="true" id="overview-tab" href={{.Header.ContextRef}}
+                            class="UnderlineNav-item no-wrap">
+                            {{Icon "book" 16 "UnderlineNav-octicon"}}
+                            <span>Overview</span>
+                        </button>
+                    </li>
+                    <li class="d-inline-flex">
+                        <button role="tab" id="sites-tab" class="UnderlineNav-item no-wrap ">
+                            {{Icon "repo" 16 "UnderlineNav-octicon"}}
+                            <span>Sites</span>
+                            <span title="329" class="Counter">329</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </tab-container>
+        {{end}}
     </div>
 </header>
 {{end}}

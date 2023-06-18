@@ -16,6 +16,6 @@ func UserSettings(w http.ResponseWriter, r *http.Request) {
 	models.PreloadUser(ctx, usr, "APIKeys")
 	render.HTML(ctx, w, templates.UserSettings, http.StatusOK, func(ctx *templates.Context) {
 		ctx.Key = base64.StdEncoding.EncodeToString(secrets.APIKey())
-		ctx.CurrentUser = usr
+		ctx.USER = usr
 	})
 }
