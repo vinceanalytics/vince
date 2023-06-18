@@ -26,11 +26,21 @@ func main() {
 	r := &entry{
 		path: flag.Arg(0),
 	}
+	e := empty()
+	if !filepath.IsAbs(r.path) {
+		var b string
+		for _, d := range filepath.SplitList(r.path) {
+			b = filepath.Join(b, d)
+			if o, err := os.ReadFile(filepath.Join(b, ".gitignore")); err == nil {
+				e = e.merge(parse(bytes.NewReader(o)))
+			}
+		}
+	}
 	var wg sync.WaitGroup
 	wg.Add(1)
 	start := time.Now()
 
-	walk(&wg, r, empty(), flag.Arg(0))
+	walk(&wg, r, e, flag.Arg(0))
 	wg.Wait()
 	elapsed := time.Since(start)
 	summary(r, elapsed)
