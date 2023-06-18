@@ -171,6 +171,7 @@ func percent(a, b []uint32) {
 		a[i] = uint32(x)
 	}
 }
+
 func getMetric(
 	sum bool,
 	metric Metric,
@@ -231,13 +232,6 @@ func getMetric(
 			o[k] = rollUp(v.Value, v.Timestamp, shared, Sum16)
 		}
 	}
-}
-
-func Sum(ls []uint32) (o uint32) {
-	for _, v := range ls {
-		o += v
-	}
-	return
 }
 
 func Sum16(ls []uint16) (o uint32) {
