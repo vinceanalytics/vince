@@ -25,6 +25,7 @@ func main() {
 	flag.Parse()
 	r := &entry{
 		path: flag.Arg(0),
+		dir:  true,
 	}
 	e := empty()
 	if !filepath.IsAbs(r.path) {
@@ -65,15 +66,18 @@ func (ls list) Swap(i, j int) {
 type entry struct {
 	parent   *entry
 	path     string
+	dir      bool
 	mu       sync.Mutex
 	size     int64
-	children []*entry
+	children list
 }
 
 func (e *entry) walk(f func(*entry)) {
 	f(e)
 	for _, v := range e.children {
-		v.walk(f)
+		if v.dir {
+			v.walk(f)
+		}
 	}
 }
 
@@ -105,6 +109,7 @@ func walk(wg *sync.WaitGroup, parent *entry, r *rules, path string) {
 	x := &entry{
 		parent: parent,
 		path:   path,
+		dir:    true,
 	}
 	parent.add(x)
 	for _, f := range e {
@@ -123,6 +128,10 @@ func walk(wg *sync.WaitGroup, parent *entry, r *rules, path string) {
 		} else {
 			files.Add(1)
 			x.update(i.Size())
+			x.add(&entry{
+				path: filepath.Join(path, name),
+				size: i.Size(),
+			})
 		}
 	}
 }
@@ -156,7 +165,9 @@ func count(x int64) string {
 func summary(e *entry, elapsed time.Duration) {
 	ls := make(list, 0, 3<<10)
 	e.walk(func(e *entry) {
-		ls = append(ls, e)
+		if e.dir {
+			ls = append(ls, e)
+		}
 	})
 	ls = ls[1:]
 	sort.Sort(sort.Reverse(ls))
@@ -173,6 +184,17 @@ func summary(e *entry, elapsed time.Duration) {
 
 	for _, v := range ls {
 		fmt.Fprintf(w, "%s\t%s\t\n", v.path, human(v.size))
+		sort.Sort(sort.Reverse(v.children))
+		ch := v.children
+		if len(ch) > 3 {
+			ch = ch[:3]
+		}
+		for _, x := range ch {
+			if x.dir || x.size < kb {
+				continue
+			}
+			fmt.Fprintf(w, "%s\t%s\t\n", x.path, human(x.size))
+		}
 	}
 	w.Flush()
 }
