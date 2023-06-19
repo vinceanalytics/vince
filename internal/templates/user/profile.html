@@ -27,7 +27,13 @@
         </div>
         <div class=" Layout-main">
             {{if eq .Overview.Panel "sites"}}
-            <div class="Box">
+            <div class="Subhead Subhead--spacious">
+                <div class="Subhead-action">
+                    <a class="text-center btn btn-primary" type="button" href="/sites/new">
+                        {{Icon "plus" 16}}
+                        CREATE
+                    </a>
+                </div>
             </div>
             {{else}}
             <div class="Box Box--spacious">
