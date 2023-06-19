@@ -15,6 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/octicon"
 	"github.com/vinceanalytics/vince/pkg/timex"
@@ -247,12 +248,34 @@ type Context struct {
 	Stats         *timeseries.Stats
 	Now           core.NowFunc
 	Invite        *Invite
+	Overview      *Overview
+}
+
+func (t *Context) ProfileOverview() string {
+	return "/" + t.USER.Name
+}
+
+func (t *Context) ProfileSites() string {
+	q := make(url.Values)
+	q.Set("panel", "sites")
+	return "/" + t.USER.Name + "?" + q.Encode()
 }
 
 type Header struct {
 	Context    string
 	Mode       string
 	ContextRef string
+}
+
+type Overview struct {
+	Global query.Global
+	Sites  []SiteOverView
+	Panel  string
+}
+
+type SiteOverView struct {
+	Site   *models.Site
+	Global query.Global
 }
 
 type Invite struct {
