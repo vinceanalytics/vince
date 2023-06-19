@@ -6,7 +6,7 @@ export default defineConfig({
   titleTemplate: true,
   title: 'vince',
   ignoreDeadLinks: 'localhostLinks',
-  appearance: 'dark',
+  appearance: false,
   lastUpdated: true,
   head: [
     ["meta", { name: "msapplication-TileColor", content: "#bdfcff" }],
