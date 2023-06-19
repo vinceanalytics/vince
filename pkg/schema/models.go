@@ -7,9 +7,10 @@ import (
 
 type Site struct {
 	Model
-	Domain          string    `gorm:"uniqueIndex" json:"domain"`
-	Timezone        string    `gorm:"default:UTC" json:"timezone"`
-	Public          bool      `gorm:"not null;default:false" json:"public"`
+	Domain          string `gorm:"uniqueIndex" json:"domain"`
+	Timezone        string `gorm:"default:UTC" json:"timezone"`
+	Public          bool   `gorm:"not null;default:false" json:"public"`
+	Description     string
 	StatsStartDate  time.Time `json:"statsStartDate"`
 	IngestRateLimit sql.NullFloat64
 

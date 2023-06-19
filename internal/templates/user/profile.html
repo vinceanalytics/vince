@@ -35,6 +35,13 @@
                     </a>
                 </div>
             </div>
+            <div class="Box">
+                {{range .Overview.Sites}}
+                <div class="Box-row">
+                    {{template "siteOverview" .}}
+                </div>
+                {{end}}
+            </div>
             {{else}}
             <div class="Box Box--spacious">
                 <li class="Box-row p-0">
@@ -70,6 +77,51 @@
                 </li>
             </div>
             {{end}}
+        </div>
+    </div>
+</div>
+{{end}}
+
+
+{{define "siteOverview"}}
+<div class="col-12 d-flex flex-justify-between width-full py-4" itemprop="owns" itemscope=""
+    itemtype="http://schema.org/Code">
+    <div class="col-10 col-lg-9 d-inline-block">
+        <div class="d-inline-block mb-1">
+            <h3 class="wb-break-all">
+                <a href="/gernest/base32" itemprop="name codeRepository">
+                    {{.Site.Domain}}
+                </a>
+                <span class="Label Label--secondary v-align-middle ml-1 mb-1">
+                    {{if .Site.Public}}Public{{else}}Private{{end}}
+                </span>
+            </h3>
+        </div>
+
+        <div>
+            <p class="col-9 d-inline-block color-fg-muted mb-2 pr-4" itemprop="description">
+                {{.Site.Description}}
+            </p>
+        </div>
+
+
+        <div class="f6 color-fg-muted mt-2">
+            <a class="Link--muted mr-3" href="/gernest/base32/stargazers">
+                Visitors
+                <span class="Counter">{{.Global.Visitors}}</span>
+            </a>
+            <a class="Link--muted mr-3" href="/gernest/base32/stargazers">
+                Views
+                <span class="Counter">{{.Global.Views}}</span>
+            </a>
+            <a class="Link--muted mr-3" href="/gernest/base32/stargazers">
+                Events
+                <span class="Counter">{{.Global.Events}}</span>
+            </a>
+            <a class="Link--muted mr-3" href="/gernest/base32/stargazers">
+                Visits
+                <span class="Counter">{{.Global.Visits}}</span>
+            </a>
         </div>
     </div>
 </div>
