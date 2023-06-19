@@ -142,7 +142,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 			return nil, nil, errors.New("bootstrap-name, bootstrap-email, bootstrap-password, and bootstrap-key, are required")
 		}
 		models.Bootstrap(ctx,
-			o.Bootstrap.Name, o.Bootstrap.Email, o.Bootstrap.Password, o.Bootstrap.Key,
+			o.Bootstrap.Name, o.Bootstrap.FullName, o.Bootstrap.Email, o.Bootstrap.Password, o.Bootstrap.Key,
 		)
 	}
 

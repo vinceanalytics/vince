@@ -16,8 +16,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	session, r := sessions.Load(r)
 	r.ParseForm()
 	u := &models.User{
-		Name:  r.Form.Get("name"),
-		Email: r.Form.Get("email"),
+		Name:     r.Form.Get("name"),
+		FullName: r.Form.Get("full-name"),
+		Email:    r.Form.Get("email"),
 	}
 	m := models.NewUser(ctx, u, r.Form.Get("password"), r.Form.Get("password_confirmation"))
 	validCaptcha := session.VerifyCaptchaSolution(r)

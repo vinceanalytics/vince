@@ -55,7 +55,7 @@ func GetUser(ctx context.Context) *User {
 // operations are done.
 func Bootstrap(
 	ctx context.Context,
-	name, email, password, key string,
+	name, fullName, email, password, key string,
 ) {
 	if Exists(ctx, func(db *gorm.DB) *gorm.DB {
 		return db.Model(&User{}).Where("email = ?", email)
@@ -64,8 +64,9 @@ func Bootstrap(
 	}
 	hash, prefix := ProcessAPIKey(ctx, key)
 	u := &User{
-		Name:  name,
-		Email: email,
+		Name:     name,
+		Email:    email,
+		FullName: fullName,
 		APIKeys: []*APIKey{
 			{
 				Name:      name,

@@ -84,8 +84,8 @@ type Options struct {
 		Address, Key, Cert string
 	}
 	Bootstrap struct {
-		Enabled                    bool
-		Name, Email, Password, Key string
+		Enabled                              bool
+		Name, FullName, Email, Password, Key string
 	}
 	Alerts struct {
 		Enabled bool
@@ -410,9 +410,16 @@ func (o *Options) Flags() []cli.Flag {
 		&cli.StringFlag{
 			Category:    "bootstrap",
 			Name:        "bootstrap-name",
-			Usage:       "Full name of the user to bootstrap.",
+			Usage:       "User name of the user to bootstrap.",
 			Destination: &o.Bootstrap.Name,
 			EnvVars:     []string{"VINCE_BOOTSTRAP_NAME"},
+		},
+		&cli.StringFlag{
+			Category:    "bootstrap",
+			Name:        "bootstrap-full-name",
+			Usage:       "Full name of the user to bootstrap.",
+			Destination: &o.Bootstrap.FullName,
+			EnvVars:     []string{"VINCE_BOOTSTRAP_FULL_NAME"},
 		},
 		&cli.StringFlag{
 			Category:    "bootstrap",
