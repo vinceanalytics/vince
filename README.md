@@ -50,6 +50,10 @@ for timeseries.
 The frontend is built with [@primer](https://github.com/primer) and web components.
 
 
+# The UI
+
+You might be wondering why the UI looks like github, we are using the same components
+library as github [@primer](https://github.com/primer)
 
 # The name vince 
 
