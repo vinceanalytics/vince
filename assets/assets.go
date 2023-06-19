@@ -11,17 +11,11 @@ import (
 //go:generate go run gen/main.go app ../../assets/
 
 var files = map[string]bool{
-	"/android-chrome-192x192.png": true,
-	"/favicon-32x32.png":          true,
-	"/android-chrome-512x512.png": true,
-	"/favicon.ico":                true,
-	"/apple-touch-icon.png":       true,
-	"/site.webmanifest":           true,
-	"/favicon-16x16.png":          true,
-	"/robots.txt":                 true,
+	"/favicon.svg": true,
+	"/robots.txt":  true,
 }
 
-//go:embed css image js *.png *.ico *.webmanifest
+//go:embed css image js *.svg
 var fs embed.FS
 
 func match(path string) bool {
