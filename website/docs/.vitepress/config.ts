@@ -17,8 +17,15 @@ export default defineConfig({
     ["meta", { name: "og:title", content: "Vince Analytics" }],
     ["meta", { name: "og:description", content: "The Cloud Native Web Analytics Platform." }],
     ["meta", { name: "og:type", content: "article" }],
+    ["link",
+      {
+        rel: "icon",
+        href: "/logo.svg",
+      },
+    ],
   ],
   themeConfig: {
+    logo: "/logo.svg",
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'guide', link: '/guide/' },
