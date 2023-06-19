@@ -1,5 +1,7 @@
 
-![logo](./assets/image/logo.svg)
+<p align="center">
+    <img src="./assets/image/logo.svg" alt="Vince Logo" />
+</p>
 
 # vince
 
