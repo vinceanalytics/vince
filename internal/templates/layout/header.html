@@ -84,16 +84,47 @@
                         </div>
                         <div class="Overlay-body d-flex flex-column height-full px-2">
                             <nav aria-label="User navigation" class="ActionList">
-                                <nav-list data-catalyst="">
-                                    <ul class="ActionListWrap">
-                                        <li data-item-id="" data-targets="nav-list.items" class="ActionListItem">
-                                            <a href="/logout" class="ActionListContent">
-                                                <span class="ActionListItem-label">
-                                                    Sign out
-                                                </span></a>
-                                        </li>
-                                    </ul>
-                                </nav-list>
+                                <ul class="ActionListWrap">
+                                    <li role="presentation" aria-hidden="true" class="ActionList-sectionDivider"></li>
+                                    <li class="ActionListItem">
+
+                                        <a href="/{{.USER.Name}}" class="ActionListContent ActionListContent--visual16">
+                                            <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                {{Icon "person" 16}}
+                                            </span>
+                                            <span class="ActionListItem-label">
+                                                Profile
+                                            </span></a>
+                                    </li>
+                                    <li role="presentation" aria-hidden="true" class="ActionList-sectionDivider"></li>
+                                    <li class="ActionListItem">
+                                        <a href={{PATH .USER.Name "panel" "sites" }}
+                                            class="ActionListContent ActionListContent--visual16">
+                                            <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                {{Icon "repo" 16}}
+                                            </span>
+                                            <span class="ActionListItem-label">
+                                                Sites
+                                            </span></a>
+                                    </li>
+                                    <li role="presentation" aria-hidden="true" class="ActionList-sectionDivider"></li>
+                                    <li class="ActionListItem">
+                                        <a href="/settings" class="ActionListContent ActionListContent--visual16">
+                                            <span class="ActionListItem-visual ActionListItem-visual--leading">
+                                                {{Icon "gear" 16}}
+                                            </span>
+                                            <span class="ActionListItem-label">
+                                                Settings
+                                            </span></a>
+                                    </li>
+                                    <li role="presentation" aria-hidden="true" class="ActionList-sectionDivider"></li>
+                                    <li class="ActionListItem">
+                                        <a href="/logout" class="ActionListContent">
+                                            <span class="ActionListItem-label">
+                                                Sign out
+                                            </span></a>
+                                    </li>
+                                </ul>
                             </nav>
                         </div>
                     </modal-dialog>

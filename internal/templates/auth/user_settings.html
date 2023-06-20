@@ -5,6 +5,44 @@
         <h2 class="Subhead-heading text-center">Your Account</h2>
     </div>
 
+    <div class="Subhead mt-0 mb-0">
+        <h2 class="Subhead-heading">Profile</h2>
+    </div>
+    <div class="clearfix gutter d-flex flex-shrink-0 flex-column-reverse flex-md-row">
+        <div class="col-12 col-md-8">
+            <form action="/settings" method="post">
+                <div>
+                    <dl class="form-group">
+                        <dt>
+                            <label for="full_name">Full Name</label>
+                        </dt>
+                        <dd>
+                            <input type="text" class="form-control" id="full_name" name="full_name"
+                                value={{.USER.FullName}}>
+                        </dd>
+                    </dl>
+                    <dl class="form-group">
+                        <dt>
+                            <label for="profile_picture">Change Profile Picture</label>
+                        </dt>
+                        <dd>
+                            <input type="file" accept="image/jpeg,image/png" class="form-control" id="profile_picture"
+                                name="profile_picture">
+                        </dd>
+                    </dl>
+                </div>
+                {{template "_csrf" .}}
+                <button type="submit" class="btn btn-primary">Update Profile →</button>
+            </form>
+        </div>
+        <div class="col-12 col-md-4">
+            <dl>
+                <dt><label class="d-block mb-2">Profile picture</label></dt>
+                {{Avatar 200 .USER.Name "avatar circle"}}
+            </dl>
+        </div>
+    </div>
+
     <div class="Subhead border-0">
         <h2 class="Subhead-heading">Personal API Tokens</h2>
     </div>

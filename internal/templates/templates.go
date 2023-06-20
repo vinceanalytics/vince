@@ -76,6 +76,9 @@ func PATH(b string, a ...string) string {
 	for i := 0; i < len(a); i += 2 {
 		q.Set(a[i], a[i+1])
 	}
+	if len(b) > 0 && b[0] != '/' {
+		b = "/" + b
+	}
 	return b + "?" + q.Encode()
 }
 

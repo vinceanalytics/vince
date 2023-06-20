@@ -3,9 +3,13 @@ package auth
 import (
 	"net/http"
 
-	"github.com/vinceanalytics/vince/internal/render"
+	"github.com/vinceanalytics/vince/internal/models"
 )
 
 func SaveSettings(w http.ResponseWriter, r *http.Request) {
-	render.ERROR(r.Context(), w, http.StatusNotImplemented)
+	ctx := r.Context()
+	u := models.GetUser(ctx)
+	u.FullName = r.Form.Get("full_name")
+	models.Get(ctx).Save(u)
+	http.Redirect(w, r, "/settings#profile", http.StatusFound)
 }
