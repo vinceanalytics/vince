@@ -92,8 +92,7 @@ func queryStats(ctx context.Context) func(string, *query.Query) (*query.QueryRes
 		if site == nil {
 			return nil, ErrDomainNotFound
 		}
-		u := models.SiteOwner(ctx, site.ID)
-		o := timeseries.Query(ctx, u.ID, site.ID, *q)
+		o := timeseries.Query(ctx, site.UserID, site.ID, *q)
 		return &o, nil
 	}
 }

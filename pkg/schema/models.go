@@ -14,26 +14,16 @@ type Site struct {
 	StatsStartDate  time.Time `json:"statsStartDate"`
 	IngestRateLimit sql.NullFloat64
 
-	Users []*User `gorm:"many2many:site_memberships;" json:"-"`
+	UserID uint64
 
-	Invitations     []*Invitation     `gorm:"constraint:OnDelete:CASCADE;" json:"invitations,omitempty"`
-	SiteMemberships []*SiteMembership `json:"siteMemberships,omitempty"`
-	SharedLinks     []*SharedLink     `json:"sharedLinks,omitempty"`
+	Invitations []*Invitation `gorm:"constraint:OnDelete:CASCADE;" json:"invitations,omitempty"`
+	SharedLinks []*SharedLink `json:"sharedLinks,omitempty"`
 }
 
 type EmailVerificationCode struct {
 	Model
 	Code   uint64
 	UserID sql.NullInt64
-}
-
-type SiteMembership struct {
-	Model
-	UserID uint64 `gorm:"primaryKey"`
-	User   *User
-	SiteID uint64 `gorm:"primaryKey"`
-	Site   *Site
-	Role   string `gorm:"not null;default:'owner';check:role in ('owner', 'admin', 'viewer')"`
 }
 
 type APIKey struct {
@@ -82,7 +72,7 @@ type User struct {
 	FullName     string
 	Email        string `gorm:"uniqueIndex"`
 	PasswordHash string
-	Sites        []*Site `gorm:"many2many:site_memberships;"`
+	Sites        []*Site
 
 	EmailVerificationCodes []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
 	APIKeys                []*APIKey

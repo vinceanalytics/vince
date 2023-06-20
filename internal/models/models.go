@@ -65,10 +65,10 @@ func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 }
 
 func DeleteSite(ctx context.Context, site *Site) {
-	err := Get(ctx).Select("SiteMemberships").Delete(site).Error
-	if err != nil {
-		LOG(ctx, err, "failed to delete site")
-	}
+	// err := Get(ctx).Select("SiteMemberships").Delete(site).Error
+	// if err != nil {
+	// 	LOG(ctx, err, "failed to delete site")
+	// }
 }
 
 func SafeDomain(s *Site) string {
@@ -122,38 +122,13 @@ func CleanupDOmain(domain string) string {
 	return domain
 }
 
-func SiteOwner(ctx context.Context, sid uint64) *User {
-	var u User
-	err := Get(ctx).Model(&User{}).
-		Joins("left join site_memberships on site_memberships.user_id = users.id").
-		Where("site_memberships.site_id = ?", sid).
-		Where("site_memberships.role = ?", "owner").First(&u).Error
-	if err != nil {
-		LOG(ctx, err, "failed to find site owner")
-		return nil
-	}
-	return &u
-}
-
-func SiteFor(ctx context.Context, uid uint64, domain string, roles ...string) *Site {
+func SiteFor(ctx context.Context, uid uint64, domain string) *Site {
 	var site Site
-	err := Get(ctx).Model(&Site{}).
-		Joins("left join site_memberships on site_memberships.site_id = sites.id").
-		Where("site_memberships.user_id = ?", uid).
-		Where("sites.domain = ?", domain).
-		Where("site_memberships.role IN " + buildRoles(roles...)).First(&site).Error
+	err := Get(ctx).Where("user_id = ?", uid).Where("domain = ?", domain).First(&site).Error
 	if err != nil {
-		LOG(ctx, err, "failed to find site owner")
-		return nil
+		LOG(ctx, err, "failed to find site")
 	}
 	return &site
-}
-
-func buildRoles(roles ...string) string {
-	for i := range roles {
-		roles[i] = "'" + roles[i] + "'"
-	}
-	return "(" + strings.Join(roles, ", ") + ")"
 }
 
 func SiteHasGoals(ctx context.Context, domain string) bool {
@@ -179,13 +154,7 @@ func ChangeSiteVisibility(ctx context.Context, site *Site, public bool) {
 	}
 }
 
-func UserIsMember(ctx context.Context, uid, sid uint64) bool {
-	return Role(ctx, uid, sid) != ""
-}
-
 type EmailVerificationCode = schema.EmailVerificationCode
-
-type SiteMembership = schema.SiteMembership
 
 type APIKey = schema.APIKey
 
@@ -436,15 +405,12 @@ func Open(path string) (*gorm.DB, error) {
 		return nil, err
 	}
 	db.Logger = db.Logger.LogMode(logger.Silent)
-	db.SetupJoinTable(&User{}, "Sites", &SiteMembership{})
-	db.SetupJoinTable(&Site{}, "Users", &SiteMembership{})
 	err = db.AutoMigrate(
 		&APIKey{},
 		&EmailVerificationCode{},
 		&Goal{},
 		&Invitation{},
 		&SharedLink{},
-		&SiteMembership{},
 		&Site{},
 		&User{},
 	)

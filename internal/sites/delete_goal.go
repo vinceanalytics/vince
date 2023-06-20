@@ -13,7 +13,6 @@ func DeleteGoal(w http.ResponseWriter, r *http.Request) {
 	site := models.SiteFor(ctx,
 		models.GetUser(ctx).ID,
 		params.Get(ctx)["site_id"],
-		"owner", "admin",
 	)
 	if site == nil {
 		render.JSON(w, http.StatusNotFound, map[string]any{

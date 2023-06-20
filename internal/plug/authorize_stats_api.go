@@ -55,7 +55,7 @@ func AuthorizeStatsAPI(h http.Handler) http.Handler {
 			return
 		}
 		isSuperUser := config.Get(r.Context()).IsSuperUser(key.UserID)
-		isMember := models.UserIsMember(ctx, key.UserID, site.ID)
+		isMember := site.UserID == key.UserID
 		switch {
 		case isSuperUser, isMember:
 			r = r.WithContext(models.SetSite(ctx, site))

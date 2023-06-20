@@ -48,7 +48,6 @@ func FindOrCreateGoals(w http.ResponseWriter, r *http.Request) {
 	site := models.SiteFor(ctx,
 		models.GetUser(ctx).ID,
 		g.SiteID,
-		"owner", "admin",
 	)
 	if site == nil {
 		render.JSON(w, http.StatusNotFound, map[string]any{

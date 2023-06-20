@@ -115,9 +115,7 @@ func PreloadUser(ctx context.Context, u *User, preload ...string) {
 // CountOwnedSites counts sites owned by the user.
 func CountOwnedSites(ctx context.Context, uid uint64) int64 {
 	var o int64
-	err := Get(ctx).Model(&Site{}).
-		Joins("inner join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' and site_memberships.user_id = ? ", uid).
-		Count(&o).Error
+	err := Get(ctx).Model(&Site{}).Where("user_id = ?", uid).Count(&o).Error
 	if err != nil {
 		LOG(ctx, err, "failed to count owned sites")
 		return 0
@@ -176,19 +174,6 @@ func HashPassword(password string) string {
 
 func PasswordMatch(u *User, pwd string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(pwd)) == nil
-}
-
-func Role(ctx context.Context, uid, sid uint64) (role string) {
-	err := Get(ctx).Model(&SiteMembership{}).
-		Select("role").
-		Where("site_id = ?", sid).
-		Where("user_id = ?", uid).
-		Limit(1).
-		Row().Scan(&role)
-	if err != nil {
-		LOG(ctx, err, "failed to retrieve role membership")
-	}
-	return
 }
 
 func QueryUserByNameOrEmail(ctx context.Context, nameOrEmail string) *User {

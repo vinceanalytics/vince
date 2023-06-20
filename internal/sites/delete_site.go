@@ -16,7 +16,6 @@ func DeleteSite(w http.ResponseWriter, r *http.Request) {
 	site := models.SiteFor(ctx,
 		models.GetUser(ctx).ID,
 		params.Get(ctx)["site_id"],
-		"owner",
 	)
 	if site != nil {
 		// remove site from database

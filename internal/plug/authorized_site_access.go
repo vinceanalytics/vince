@@ -8,7 +8,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/params"
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/internal/sites"
 )
 
 func AuthorizedSiteAccess(allowed ...string) Plug {
@@ -34,15 +33,8 @@ func AuthorizedSiteAccess(allowed ...string) Plug {
 			sharedLink := GetSharedLink(ctx, slug)
 			usr := models.GetUser(ctx)
 
-			var membership string
-			if usr != nil {
-				membership = sites.Role(ctx, usr.ID, site.ID)
-			}
-
 			var role string
 			switch {
-			case membership != "":
-				role = membership
 			case usr != nil && config.Get(ctx).IsSuperUser(usr.ID):
 				role = "super_admin"
 			case site.Public:

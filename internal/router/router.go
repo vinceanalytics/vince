@@ -115,7 +115,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe5.And(plug.RequireAccount).GET("/:user_id", user.Home),
 		NotFound,
 	}
-
 }
 
 func NotFound(h http.Handler) http.Handler {

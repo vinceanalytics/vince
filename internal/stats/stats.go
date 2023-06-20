@@ -14,7 +14,6 @@ import (
 func Query(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := models.GetSite(ctx)
-	u := models.SiteOwner(ctx, site.ID)
 	var q query.Query
 	err := json.NewDecoder(r.Body).Decode(&q)
 	if err != nil {
@@ -22,5 +21,5 @@ func Query(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	render.JSON(w, http.StatusOK, timeseries.Query(ctx, u.ID, site.ID, q))
+	render.JSON(w, http.StatusOK, timeseries.Query(ctx, site.UserID, site.ID, q))
 }
