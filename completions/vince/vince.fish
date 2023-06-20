@@ -17,6 +17,7 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l tls-key -r -d 'Path to k
 complete -c vince -n '__fish_vince_no_subcommand' -f -l tls-cert -r -d 'Path to certificate file used for https'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l data -r -d 'path to data directory'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l url -r -d 'url for the server on which vince is hosted(it shows up on emails)'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l uploads-dir -r -d 'Path to store uploaded assets'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-backup -d 'Allows backing up and restoring'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l backup-dir -r -d 'directory where backups are stored'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-email -d 'allows sending emails'
@@ -51,7 +52,8 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-external-acc
 complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-disable-http-challenge
 complete -c vince -n '__fish_vince_no_subcommand' -f -l acme-issuer-disable-tls-alpn-challenge
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-bootstrap -d 'allows creating a user and api key on startup.'
-complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-name -r -d 'Full name of the user to bootstrap.'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-name -r -d 'User name of the user to bootstrap.'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-full-name -r -d 'Full name of the user to bootstrap.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-email -r -d 'Email address of the user to bootstrap.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-password -r -d 'Password of the user to bootstrap.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-key -r -d 'API Key of the user to bootstrap.'

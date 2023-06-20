@@ -69,6 +69,16 @@ Email address of the user to bootstrap.
 VINCE_BOOTSTRAP_EMAIL="..."
 ```
 :::
+## bootstrap-full-name
+Full name of the user to bootstrap.
+::: code-group
+```shell [flag]
+--bootstrap-full-name="Geofrey Ernest"
+```
+```shell [env]
+VINCE_BOOTSTRAP_FULL_NAME="Geofrey Ernest"
+```
+:::
 ## bootstrap-key
 API Key of the user to bootstrap.
 ::: code-group
@@ -80,7 +90,7 @@ VINCE_BOOTSTRAP_KEY="..."
 ```
 :::
 ## bootstrap-name
-Full name of the user to bootstrap.
+User name of the user to bootstrap.
 ::: code-group
 ```shell [flag]
 --bootstrap-name="..."
@@ -159,6 +169,16 @@ a list of user ID with super privilege
 ```
 ```shell [env]
 VINCE_SUPER_USERS="..."
+```
+:::
+## uploads-dir
+Path to store uploaded assets
+::: code-group
+```shell [flag]
+--uploads-dir="..."
+```
+```shell [env]
+VINCE_UPLOAD_DIR="..."
 ```
 :::
 ## url
@@ -303,10 +323,10 @@ VINCE_TS_BUFFER_INTERVAL="1m0s"
 allows sending emails
 ::: code-group
 ```shell [flag]
---enable-email="true"
+--enable-email="false"
 ```
 ```shell [env]
-VINCE_ENABLE_EMAIL="true"
+VINCE_ENABLE_EMAIL="false"
 ```
 :::
 ## mailer-address
@@ -363,10 +383,10 @@ VINCE_MAILER_SMTP_ANONYMOUS_TRACE="..."
 port address of the smtp server used for outgoing emails
 ::: code-group
 ```shell [flag]
---mailer-smtp-enable-mailhog="true"
+--mailer-smtp-enable-mailhog="false"
 ```
 ```shell [env]
-VINCE_MAILER_SMTP_ENABLE_MAILHOG="true"
+VINCE_MAILER_SMTP_ENABLE_MAILHOG="false"
 ```
 :::
 ## mailer-smtp-oauth-host

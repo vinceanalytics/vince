@@ -28,6 +28,7 @@ vince
 [--alerts-source]=[value]
 [--backup-dir]=[value]
 [--bootstrap-email]=[value]
+[--bootstrap-full-name]=[value]
 [--bootstrap-key]=[value]
 [--bootstrap-name]=[value]
 [--bootstrap-password]=[value]
@@ -73,6 +74,7 @@ vince
 [--tls-cert]=[value]
 [--tls-key]=[value]
 [--ts-buffer-sync-interval]=[value]
+[--uploads-dir]=[value]
 [--url]=[value]
 
 .fi
@@ -135,10 +137,13 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--bootstrap-email\fP="": Email address of the user to bootstrap.
 
 .PP
+\fB--bootstrap-full-name\fP="": Full name of the user to bootstrap.
+
+.PP
 \fB--bootstrap-key\fP="": API Key of the user to bootstrap.
 
 .PP
-\fB--bootstrap-name\fP="": Full name of the user to bootstrap.
+\fB--bootstrap-name\fP="": User name of the user to bootstrap.
 
 .PP
 \fB--bootstrap-password\fP="": Password of the user to bootstrap.
@@ -268,6 +273,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .PP
 \fB--ts-buffer-sync-interval\fP="": window for buffering timeseries in memory before savin them (default: 1m0s)
+
+.PP
+\fB--uploads-dir\fP="": Path to store uploaded assets
 
 .PP
 \fB--url\fP="": url for the server on which vince is hosted(it shows up on emails) (default: http://localhost:8080)
