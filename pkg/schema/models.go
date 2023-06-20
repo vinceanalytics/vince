@@ -2,7 +2,10 @@ package schema
 
 import (
 	"database/sql"
+	"errors"
 	"time"
+
+	"gorm.io/datatypes"
 )
 
 type Site struct {
@@ -68,12 +71,12 @@ type Model struct {
 
 type User struct {
 	Model
-	Name         string `gorm:"uniqueIndex"`
-	FullName     string
-	Email        string `gorm:"uniqueIndex"`
-	PasswordHash string
-	Sites        []*Site
-
+	Name                   string `gorm:"uniqueIndex"`
+	FullName               string
+	Email                  string `gorm:"uniqueIndex"`
+	PasswordHash           string
+	Sites                  []*Site
+	Roles                  []*Role
 	EmailVerificationCodes []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
 	APIKeys                []*APIKey
 	LastSeen               time.Time
@@ -88,4 +91,54 @@ type CachedSite struct {
 	IngestRateLimitScaleSeconds uint64
 	IngestRateLimitThreshold    sql.NullInt64
 	UserID                      uint64
+}
+
+type Verb uint
+
+const (
+	Get Verb = iota
+	List
+	Create
+	Update
+	Delete
+)
+
+var verbs_name = map[string]Verb{
+	"get":    Get,
+	"list":   List,
+	"create": Create,
+	"update": Update,
+	"delete": Delete,
+}
+
+var name_from_verb = map[Verb]string{
+	Get:    "get",
+	List:   "list",
+	Create: "create",
+	Update: "update",
+	Delete: "delete",
+}
+
+var ErrUnknownVerb = errors.New("unknown verb")
+
+func (v *Verb) From(s string) error {
+	a, ok := verbs_name[s]
+	if !ok {
+		return ErrUnknownVerb
+	}
+	*v = a
+	return nil
+}
+
+func (v Verb) String() string {
+	return name_from_verb[v]
+}
+
+type Role struct {
+	Model
+	UserID  uint64
+	Name    string
+	Subject string
+	Domain  string
+	Actions datatypes.JSONSlice[Verb]
 }
