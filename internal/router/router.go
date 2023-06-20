@@ -35,12 +35,10 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		plug.Ok(config.Get(ctx).EnableProfile,
 			pipe5.Prefix("/debug/pprof/", pprof.Index),
 		),
-
 		plug.PREFIX("/api/stats",
 			pipe6.GET("/api/stats/:website", stats.Query),
 			NotFound,
 		),
-
 		plug.PREFIX("/api/v1/sites",
 			pipe1.PathPOST("/api/v1/sites", sites.CreateSite),
 			pipe1.PathGET("/api/v1/sites", sites.ListSites),
@@ -106,7 +104,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			sitePipe.DELETE(`^/sites/:website/memberships/:id$`, site.RemoveMember),
 			NotFound,
 		),
-
 		sitePipe.GET(`^/:website/snippet$`, site.AddSnippet),
 		sitePipe.GET(`^/:website/settings$`, site.Settings),
 		sitePipe.GET(`^/:website/goals/new$`, site.NewGoal),
@@ -114,7 +111,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.POST(`^/:website/goals/:id/delete$`, site.DeleteGoal),
 		sitePipe.POST(`^/:website/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:website/stats$`, site.ResetStats),
-		sitePipe.GET(`^/:domain/stats$`, site.Stats),
+		sitePipe.GET("/:user_id/:website", site.Home),
 		pipe5.And(plug.RequireAccount).GET("/:user_id", user.Home),
 		NotFound,
 	}
