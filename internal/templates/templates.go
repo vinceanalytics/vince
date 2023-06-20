@@ -67,7 +67,16 @@ func base() *template.Template {
 			}
 			return string(b), nil
 		},
+		"PATH": PATH,
 	})
+}
+
+func PATH(b string, a ...string) string {
+	q := make(url.Values)
+	for i := 0; i < len(a); i += 2 {
+		q.Set(a[i], a[i+1])
+	}
+	return b + "?" + q.Encode()
 }
 
 var RegisterForm = template.Must(

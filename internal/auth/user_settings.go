@@ -15,6 +15,10 @@ func UserSettings(w http.ResponseWriter, r *http.Request) {
 	usr := models.GetUser(ctx)
 	models.PreloadUser(ctx, usr, "APIKeys")
 	render.HTML(ctx, w, templates.UserSettings, http.StatusOK, func(ctx *templates.Context) {
+		ctx.Header = templates.Header{
+			Context:    "Settings",
+			ContextRef: "/settings#profile",
+		}
 		ctx.Key = base64.StdEncoding.EncodeToString(secrets.APIKey())
 		ctx.USER = usr
 	})
