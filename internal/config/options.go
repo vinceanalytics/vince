@@ -50,6 +50,9 @@ type Options struct {
 	Secrets  struct {
 		Age, Secret string
 	}
+	Uploads struct {
+		Dir string
+	}
 	Cors struct {
 		Origin                string
 		Credentials           bool
@@ -158,6 +161,13 @@ func (o *Options) Flags() []cli.Flag {
 			Value:       "http://localhost:8080",
 			Destination: &o.URL,
 			EnvVars:     []string{"VINCE_URL"},
+		},
+		&cli.StringFlag{
+			Category:    "core",
+			Name:        "uploads-dir",
+			Usage:       "Path to store uploaded assets",
+			Destination: &o.Uploads.Dir,
+			EnvVars:     []string{"VINCE_UPLOAD_DIR"},
 		},
 		&cli.BoolFlag{
 			Category:    "backup",

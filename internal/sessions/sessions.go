@@ -189,9 +189,8 @@ func SaveCsrf(w http.ResponseWriter, r *http.Request) *http.Request {
 }
 
 func IsValidCSRF(r *http.Request) bool {
-	r.ParseForm()
 	session, _ := Load(r)
-	value := r.Form.Get("_csrf")
+	value := r.FormValue("_csrf")
 	return subtle.ConstantTimeCompare([]byte(value), []byte(session.Data.Csrf)) == 1
 }
 

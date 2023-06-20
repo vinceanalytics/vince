@@ -372,8 +372,8 @@ func Avatar(size uint, uid string, class ...string) template.HTML {
 	q.Set("u", uid)
 	q.Set("s", strconv.Itoa(int(size)))
 	u := "/avatar?" + q.Encode()
-	return template.HTML(fmt.Sprintf(`<img class=%q src=%q>`,
-		strings.Join(class, " "), u,
+	return template.HTML(fmt.Sprintf(`<img class=%q width="%d" height="%d" src=%q>`,
+		strings.Join(class, " "), size, size, u,
 	))
 }
 
