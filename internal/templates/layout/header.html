@@ -38,13 +38,12 @@
                     class="AppHeader-logo Button--invisible Button--medium Button Button--invisible-noVisuals color-bg-transparent p-0">
                     <span class="Button-content">
                         <span class="Button-label">
-                            {{Avatar 32 .Header.Context "avatar circle"}}
+                            {{Avatar 32 .USER.Name "avatar circle"}}
                         </span>
                     </span>
                 </button>
                 <div class="Overlay--hidden Overlay-backdrop--side Overlay-backdrop--placement-right"
                     data-modal-dialog-overlay="">
-
                     <modal-dialog role="dialog" id="user-profile-dialog" aria-modal="true" aria-disabled="true"
                         aria-describedby="user-profile-dialog-title user-profile-dialog-description"
                         class="Overlay Overlay-whenNarrow Overlay--size-small-portrait Overlay--motion-scaleFade SidePanel"
@@ -57,7 +56,7 @@
                                     </h1>
                                     <div class="d-flex">
                                         <div class="AppHeader-logo position-relative">
-                                            {{Avatar 32 .Header.Context "avatar circle"}}
+                                            {{Avatar 32 .USER.Name "avatar circle"}}
                                         </div>
                                         <div class="d-flex width-full">
                                             <div
