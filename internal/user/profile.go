@@ -9,7 +9,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
-func Profile(w http.ResponseWriter, r *http.Request) {
+func Home(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
 	models.PreloadUser(ctx, u, "Sites")
@@ -23,7 +23,7 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 			Global: timeseries.Global(ctx, u.ID, site.ID),
 		})
 	}
-	render.HTML(ctx, w, templates.Profile, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(ctx, w, templates.Home, http.StatusOK, func(ctx *templates.Context) {
 		ctx.USER = u
 		ctx.Header.Context = u.Name
 		ctx.Header.ContextRef = "/" + u.Name

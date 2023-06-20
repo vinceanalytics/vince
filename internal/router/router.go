@@ -116,7 +116,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.POST(`^/:website/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:website/stats$`, site.ResetStats),
 		sitePipe.GET(`^/:domain/stats$`, site.Stats),
-		pipe5.And(plug.RequireAccount).GET("/:user_id", user.Profile),
+		pipe5.And(plug.RequireAccount).GET("/:user_id", user.Home),
 		NotFound,
 	}
 

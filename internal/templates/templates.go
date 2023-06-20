@@ -200,9 +200,9 @@ var InviteNewUser = template.Must(
 	),
 ).Lookup("base_email")
 
-var Profile = template.Must(
+var Home = template.Must(
 	layout().ParseFS(Files,
-		"user/profile.html",
+		"user/home.html",
 	),
 ).Lookup("app")
 
