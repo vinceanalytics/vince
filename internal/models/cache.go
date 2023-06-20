@@ -26,7 +26,7 @@ func CacheRateLimit(c *CachedSite) (rate.Limit, int) {
 func QuerySitesToCache(ctx context.Context, fn func(*CachedSite)) (count float64) {
 	db := Get(ctx)
 	var sites []*CachedSite
-	err := db.Select(
+	err := db.Model(&Site{}).Select(
 		"id", "domain", "stats_start_date", "ingest_rate_limit", "user_id",
 	).Find(&sites).Error
 	if err != nil {

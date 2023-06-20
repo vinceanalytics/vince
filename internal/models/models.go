@@ -203,6 +203,8 @@ func UpdateAPIKeyUse(ctx context.Context, aid uint64) {
 	}
 }
 
+type Role = schema.Role
+
 func APIKeyByID(ctx context.Context, aid uint64) (a *APIKey) {
 	var m APIKey
 	err := Get(ctx).Where("id = ?", aid).First(&m).Error
@@ -406,6 +408,7 @@ func Open(path string) (*gorm.DB, error) {
 	}
 	db.Logger = db.Logger.LogMode(logger.Silent)
 	err = db.AutoMigrate(
+
 		&APIKey{},
 		&EmailVerificationCode{},
 		&Goal{},
