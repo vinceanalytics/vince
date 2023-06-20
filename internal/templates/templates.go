@@ -115,13 +115,6 @@ var Activate = template.Must(
 	),
 ).Lookup("focus")
 
-var Sites = template.Must(
-	layout().ParseFS(Files,
-		"plot/plot.html",
-		"site/index.html",
-	),
-).Lookup("app")
-
 var SiteNew = template.Must(
 	layout().ParseFS(Files,
 		"site/new.html",

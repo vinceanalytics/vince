@@ -88,7 +88,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe5.POST(`^/settings/api-keys/:id/delete$`, auth.DeleteAPIKey),
 
 		plug.PREFIX("/sites",
-			pipe5.And(plug.RequireAccount).PathGET("/sites", site.Index),
 			pipe5.And(plug.RequireAccount).PathGET("/sites/new", site.New),
 			pipe5.And(plug.RequireAccount).PathPOST("/sites", site.CreateSite),
 			sitePipe.POST(`^/sites/:website/make-public$`, site.MakePublic),
