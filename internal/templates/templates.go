@@ -360,7 +360,7 @@ func (t *Context) SharedLinkURL(site *models.Site, link *models.SharedLink) stri
 	return models.SharedLinkURL(t.Config.URL, site, link)
 }
 
-func Avatar(size uint, uid string, class ...string) template.HTML {
+func Avatar(uid string, size uint, class ...string) template.HTML {
 	q := make(url.Values)
 	q.Set("u", uid)
 	q.Set("s", strconv.Itoa(int(size)))

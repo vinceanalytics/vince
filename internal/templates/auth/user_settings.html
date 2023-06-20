@@ -1,91 +1,210 @@
 {{define "_content"}}
 {{$ctx := .}}
-<div class="container-md">
-    <div class="Subhead mt-3 mb-0">
-        <h2 class="Subhead-heading">Profile</h2>
-    </div>
-    <div class="clearfix gutter d-flex flex-shrink-0 flex-column-reverse flex-md-row">
-        <div class="col-12 col-md-8">
-            <form action="/settings" method="post" enctype="multipart/form-data">
-                <div>
-                    <dl class="form-group">
-                        <dt>
-                            <label for="full_name">Full Name</label>
-                        </dt>
-                        <dd>
-                            <input type="text" class="form-control" id="full_name" name="full_name"
-                                value={{.USER.FullName}}>
-                        </dd>
-                    </dl>
-                    <dl class="form-group">
-                        <dt>
-                            <label for="profile_picture">Change Profile Picture</label>
-                        </dt>
-                        <dd>
-                            <input type="file" accept="image/png" class="form-control" id="profile_picture"
-                                name="profile_picture">
-                        </dd>
-                    </dl>
-                </div>
-                {{template "_csrf" .}}
-                <button type="submit" class="btn btn-primary">Update Profile →</button>
-            </form>
-        </div>
-        <div class="col-12 col-md-4">
-            <dl>
-                <dt><label class="d-block mb-2">Profile picture</label></dt>
-                {{Avatar 200 .USER.Name "avatar circle"}}
-            </dl>
-        </div>
-    </div>
-
-    <div class="Subhead border-0">
-        <h2 class="Subhead-heading">Personal API Tokens</h2>
-    </div>
-    <div class="Box" id="api-keys">
-        {{range .USER.APIKeys}}
-        <div class="Box-row">
-            <div class="f4 d-flex width-full flex-items-baseline flex-justify-between ">
-                <div>
-                    <span class="text-bold mr-3">
-                        {{.Name}}
-                    </span>
-                    <span class="Label">
-                        {{.KeyPrefix}}
-                    </span>
-                </div>
-                <div>
-                    <send-form>
-                        <button type="button" class=" btn btn-danger" data-to="/settings/api-keys/{{.ID}}/delete"
-                            data-method="post" data-action="click:send-form#send" data-csrf="{{$ctx.CSRF}}"
-                            data-target="send-form.link">
-                            Remove
-                        </button>
-                    </send-form>
-                </div>
+<div class="pt-4 container-xl p-responsive clearfix">
+    <div class="d-md-flex flex-items-center flex-justify-between mt-1 mb-4">
+        <div class="d-flex flex-items-center mb-2 mb-md-0">
+            {{Avatar .USER.Name 48 "avatar circle mr-3"}}
+            <div class="flex-auto">
+                <h1 class="h3 lh-condensed">
+                    <a href="/{{.USER.Name}}" class="color-fg-default">
+                        {{.USER.FullName}}
+                        <span class="color-fg-muted">({{.USER.Name}})</span>
+                    </a>
+                    <span class="sr-only">settings</span>
+                </h1>
             </div>
         </div>
-        {{end}}
-        <div class="Box-row">
-            <form action="/settings/api-keys" method="post">
-                <div class="FormControl width-full">
-                    <div class="snippet">
-                        <input type="hidden" name="key" value="{{.Key}}">
-                        <pre><code>{{.Key}}</code></pre>
-                    </div>
-                    <span class="FormControl-caption">
-                        Copy this and store it. It will never be shown again
-                    </span>
-                </div>
-                <div class="mt-3">
-                    <input class="FormControl-input" id="name" name="name" type="text" placeholder="Key Name"
-                        style="width: 75%;">
-                    {{template "_csrf" .}}
-                    <input class=" btn btn-primary" type="submit" value="Create New Key">
-                </div>
-            </form>
-        </div>
+    </div>
 
+
+    <div class="container-md">
+        <div class="Subhead mt-0 mb-0">
+            <h2 class="Subhead-heading">Profile</h2>
+        </div>
+        <div class="clearfix gutter d-flex flex-shrink-0 flex-column-reverse flex-md-row">
+            <div class="col-12 col-md-8">
+                <form action="/settings" method="post" enctype="multipart/form-data">
+                    <div>
+                        <dl class="form-group">
+                            <dt>
+                                <label for="full_name">Full Name</label>
+                            </dt>
+                            <dd>
+                                <input type="text" class="form-control" id="full_name" name="full_name"
+                                    value={{.USER.FullName}}>
+                            </dd>
+                        </dl>
+                        <dl class="form-group">
+                            <dt>
+                                <label for="profile_picture">Change Profile Picture</label>
+                            </dt>
+                            <dd>
+                                <input type="file" accept="image/png" class="form-control" id="profile_picture"
+                                    name="profile_picture">
+                            </dd>
+                        </dl>
+                    </div>
+                    {{template "_csrf" .}}
+                    <button type="submit" class="btn btn-primary">Update Profile →</button>
+                </form>
+            </div>
+
+            <div class="col-12 col-md-4">
+
+                <dl>
+                    <dt><label class="d-block mb-2">Profile picture</label></dt>
+                    <dd class="avatar-upload-container clearfix position-relative">
+                        {{Avatar .USER.Name 200 "avatar circle"}}
+                    </dd>
+                </dl>
+
+            </div>
+        </div>
+        <div class="Subhead Subhead--spacious">
+            <h2 id="profile-settings-heading" class="Subhead-heading">Keys</h2>
+        </div>
+        <form action="/settings/api-keys" method="post">
+            <dl class="form-group required">
+                <dt class="input-label">
+                    <label maxlength="40" required="required" for="name">
+                        Key name
+                    </label>
+                </dt>
+                <dd>
+                    <input class="form-control" maxlength="40" required type="text" name="name" id="name"
+                        autocomplete="off" spellcheck="false">
+                </dd>
+            </dl>
+            <dl class="form-group required">
+                <dt class="input-label">
+                    <label for="expires_at">Expiration</label>
+                </dt>
+                <dd class="d-inline-block mr-2">
+                    <select class="form-select " aria-labelledby="expiration-label" name="expires_at" id="expires_at">
+                        <option value="7">7 days</option>
+                        <option selected="selected" value="30">30 days</option>
+                        <option value="60">60 days</option>
+                        <option value="90">90 days</option>
+                    </select>
+                </dd>
+            </dl>
+            <dl class="form-group">
+                <dt><strong>Select scopes</strong></dt>
+                <dd>
+                    <p>
+                        Scopes define the access for personal tokens. <a
+                            href="https://docs.github.com/apps/building-oauth-apps/scopes-for-oauth-apps/"
+                            target="_blank">Read more about OAuth scopes.</a>
+                    </p>
+                    <div class="Box Box--condensed">
+                        <ul>
+                            <li class="Box-row px-2 py-1 js-check-scope-container">
+                                <div class="form-checkbox my-2">
+                                    <label class="clearfix">
+                                        <div class="col-4 float-left ">
+                                            <input type="checkbox" name="scope" value="site"
+                                                class="parent-checkbox-scope">
+                                            <span class="color-fg-default text-bold">site</span>
+                                        </div>
+
+                                        <div class="col-8 float-left">
+                                            <span class="color-fg-muted text-normal">
+                                                Full control of private sites
+                                            </span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <ul class="list-style-none">
+                                    <li>
+                                        <div class="form-checkbox my-2">
+                                            <label class="clearfix">
+                                                <div class="col-4 float-left pl-3">
+                                                    <input type="checkbox" name="scope" value="site:get">
+                                                    <span class="color-fg-default text-normal">site:get</span>
+                                                </div>
+                                                <div class="col-8 float-left">
+                                                    <span class="color-fg-muted text-normal">
+                                                        Can get a site
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                    </li>
+                                    <li>
+                                        <div class="form-checkbox my-2">
+                                            <label class="clearfix">
+                                                <div class="col-4 float-left pl-3">
+                                                    <input type="checkbox" name="scope" value="site:list">
+                                                    <span class="color-fg-default text-normal">site:list</span>
+                                                </div>
+
+                                                <div class="col-8 float-left">
+                                                    <span class="color-fg-muted text-normal">
+                                                        Can list sites
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="form-checkbox my-2">
+                                            <label class="clearfix">
+                                                <div class="col-4 float-left pl-3">
+                                                    <input type="checkbox" name="scope" value="site:create">
+                                                    <span class="color-fg-default text-normal">site:create</span>
+                                                </div>
+
+                                                <div class="col-8 float-left">
+                                                    <span class="color-fg-muted text-normal">
+                                                        Can create sites
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="form-checkbox my-2">
+                                            <label class="clearfix">
+                                                <div class="col-4 float-left pl-3">
+                                                    <input type="checkbox" name="scope" value="site:update">
+                                                    <span class="color-fg-default text-normal">site:update</span>
+                                                </div>
+
+                                                <div class="col-8 float-left">
+                                                    <span class="color-fg-muted text-normal">
+                                                        Can update sites
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="form-checkbox my-2">
+                                            <label class="clearfix">
+                                                <div class="col-4 float-left pl-3">
+                                                    <input type="checkbox" name="scope" value="site:delete">
+                                                    <span class="color-fg-default text-normal">site:delete</span>
+                                                </div>
+
+                                                <div class="col-8 float-left">
+                                                    <span class="color-fg-muted text-normal">
+                                                        Can delete sites
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </dd>
+            </dl>
+            {{template "_csrf" .}}
+            <button type="submit" class="btn btn-primary">Create Key →</button>
+        </form>
     </div>
 </div>
 {{end}}
