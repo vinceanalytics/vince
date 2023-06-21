@@ -17,6 +17,11 @@
 // Builds the binaries/docker images/ apk packages/brew formula and upload them
 // to github.
 //
+//	DOWNLOAD=true go generate ./release
+//
+// Generate download page based on the build metadata. Make sure you commit the
+// changes before moving to the next step.
+//
 //	SITE=true go generate ./release
 //
 // Generates documentation ,blog and helm repository. The generated static site

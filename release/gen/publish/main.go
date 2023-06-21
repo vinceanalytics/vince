@@ -12,8 +12,10 @@ import (
 
 func main() {
 	root := tools.RootVince()
-	if os.Getenv("SITE") != "" {
+	if os.Getenv("DOWNLOAD") != "" {
 		download(root)
+	}
+	if os.Getenv("SITE") != "" {
 		tools.ExecPlainWith(func(c *exec.Cmd) {
 			c.Dir = root
 			c.Env = append(c.Env, "SITE=true")
@@ -21,6 +23,7 @@ func main() {
 			"go", "generate", "./website",
 		)
 	}
+
 }
 
 func download(root string) {
