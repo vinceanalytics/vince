@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"encoding/base64"
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/models"
@@ -12,7 +11,7 @@ import (
 func CreateAPIKey(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	usr := models.GetUser(ctx)
-	key := base64.StdEncoding.EncodeToString(secrets.APIKey())
+	key := secrets.APIKey()
 	name := r.Form.Get("personal_api_key_name")
 	models.CreateApiKey(ctx, key, name, usr.ID)
 	session, r := sessions.Load(r)

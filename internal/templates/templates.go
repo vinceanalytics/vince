@@ -248,7 +248,6 @@ type Context struct {
 	HasGoals      bool
 	Owner         *models.User
 	Recipient     string
-	Key           string
 	SharedLink    *models.SharedLink
 	Stats         *timeseries.Stats
 	Now           core.NowFunc

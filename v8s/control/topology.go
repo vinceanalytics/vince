@@ -291,6 +291,7 @@ func key(o metav1.Object) string {
 
 func createSecret(o *v1alpha1.Vince) *corev1.Secret {
 	var ok bool
+	ok = true
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      o.Name,
@@ -298,7 +299,7 @@ func createSecret(o *v1alpha1.Vince) *corev1.Secret {
 			Labels:    baseLabels(),
 		},
 		Immutable: &ok,
-		Data: map[string][]byte{
+		StringData: map[string]string{
 			secrets.API_KEY:    secrets.APIKey(),
 			secrets.AGE_KEY:    secrets.AGE(),
 			secrets.SECRET_KEY: secrets.ED25519(),

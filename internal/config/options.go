@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/base64"
 	"flag"
 	"net"
 	"path/filepath"
@@ -580,9 +579,9 @@ func Test(fn ...func(*Options)) *Options {
 	o.Mailer.SMTP.Address = randomAddress()
 
 	// setup secrets
-	o.Bootstrap.Key = base64.StdEncoding.EncodeToString(secrets.APIKey())
-	o.Secrets.Secret = base64.StdEncoding.EncodeToString(secrets.ED25519())
-	o.Secrets.Age = base64.StdEncoding.EncodeToString(secrets.AGE())
+	o.Bootstrap.Key = secrets.APIKey()
+	o.Secrets.Secret = secrets.ED25519()
+	o.Secrets.Age = secrets.AGE()
 
 	// setup default user. We don't enable bootstrapping
 	o.Bootstrap.Name = TestName

@@ -2,7 +2,6 @@ package config
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"strconv"
@@ -24,11 +23,11 @@ func ConfigCMD() *cli.Command {
 				case *cli.StringFlag:
 					switch e.Name {
 					case "secret":
-						e.Value = base64.StdEncoding.EncodeToString(secrets.ED25519())
+						e.Value = secrets.ED25519()
 					case "secret-age":
-						e.Value = base64.StdEncoding.EncodeToString(secrets.AGE())
+						e.Value = secrets.AGE()
 					case "bootstrap-key":
-						e.Value = base64.StdEncoding.EncodeToString(secrets.APIKey())
+						e.Value = secrets.APIKey()
 					}
 					usage, env, value = e.GetUsage(), e.GetEnvVars()[0], e.GetValue()
 				case *cli.BoolFlag:

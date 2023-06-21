@@ -1,13 +1,11 @@
 package auth
 
 import (
-	"encoding/base64"
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/templates"
-	"github.com/vinceanalytics/vince/pkg/secrets"
 )
 
 func UserSettings(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +17,6 @@ func UserSettings(w http.ResponseWriter, r *http.Request) {
 			Context:    "Settings",
 			ContextRef: "/settings#profile",
 		}
-		ctx.Key = base64.StdEncoding.EncodeToString(secrets.APIKey())
 		ctx.USER = usr
 	})
 }
