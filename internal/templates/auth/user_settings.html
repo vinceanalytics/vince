@@ -19,7 +19,7 @@
 
     <div class="container-md">
         <div class="Subhead mt-0 mb-0">
-            <h2 class="Subhead-heading">Profile</h2>
+            <h2 class="Subhead-heading" id="profile">Profile</h2>
         </div>
         <div class="clearfix gutter d-flex flex-shrink-0 flex-column-reverse flex-md-row">
             <div class="col-12 col-md-8">
@@ -61,18 +61,18 @@
             </div>
         </div>
         <div class="Subhead Subhead--spacious">
-            <h2 id="profile-settings-heading" class="Subhead-heading">Keys</h2>
+            <h2 id="tokens" class="Subhead-heading">Personal Access Tokens </h2>
         </div>
         <form action="/settings/tokens" method="post">
             <dl class="form-group required">
                 <dt class="input-label">
-                    <label maxlength="40" required="required" for="personal_api_key_name">
-                        Key name
+                    <label maxlength="40" required="required" for="personal_access_token_name">
+                        Token name
                     </label>
                 </dt>
                 <dd>
-                    <input class="form-control" maxlength="40" required type="text" name="personal_api_key_name"
-                        id="personal_api_key_name" autocomplete="off" spellcheck="false">
+                    <input class="form-control" maxlength="40" required type="text" name="personal_access_token_name"
+                        id="personal_access_token_name" autocomplete="off" spellcheck="false">
                 </dd>
             </dl>
             <dl class="form-group required">
@@ -80,7 +80,8 @@
                     <label for="expires_at">Expiration</label>
                 </dt>
                 <dd class="d-inline-block mr-2">
-                    <select class="form-select " name="personal_api_key_expires_at" id="personal_api_key_expires_at">
+                    <select class="form-select " name="personal_access_token_expires_at"
+                        id="personal_access_token_expires_at">
                         <option value="7">7 days</option>
                         <option selected="selected" value="30">30 days</option>
                         <option value="60">60 days</option>
@@ -97,7 +98,7 @@
                                 <div class="form-checkbox my-2">
                                     <label class="clearfix">
                                         <div class="col-4 float-left ">
-                                            <input type="checkbox" name="personal_api_key_scope" value="site:*"
+                                            <input type="checkbox" name="personal_access_token_scope" value="site:*"
                                                 class="parent-checkbox-scope">
                                             <span class="color-fg-default text-bold">site</span>
                                         </div>
@@ -115,7 +116,7 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                    <input type="checkbox" name="personal_access_token_scope"
                                                         value="site:get">
                                                     <span class="color-fg-default text-normal">site:get</span>
                                                 </div>
@@ -131,7 +132,7 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                    <input type="checkbox" name="personal_access_token_scope"
                                                         value="site:list">
                                                     <span class="color-fg-default text-normal">site:list</span>
                                                 </div>
@@ -148,7 +149,7 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                    <input type="checkbox" name="personal_access_token_scope"
                                                         value="site:create">
                                                     <span class="color-fg-default text-normal">site:create</span>
                                                 </div>
@@ -165,7 +166,7 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                    <input type="checkbox" name="personal_access_token_scope"
                                                         value="site:update">
                                                     <span class="color-fg-default text-normal">site:update</span>
                                                 </div>
@@ -200,7 +201,7 @@
                                 <div class="form-checkbox my-2">
                                     <label class="clearfix">
                                         <div class="col-4 float-left ">
-                                            <input type="checkbox" name="personal_api_key_scope" value="stats:*"
+                                            <input type="checkbox" name="personal_access_token_scope" value="stats:*"
                                                 class="parent-checkbox-scope">
                                             <span class="color-fg-default text-bold">stats</span>
                                         </div>
@@ -216,7 +217,7 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                    <input type="checkbox" name="personal_access_token_scope"
                                                         value="site:get">
                                                     <span class="color-fg-default text-normal">stats:get</span>
                                                 </div>
@@ -260,7 +261,7 @@
         </div>
         {{end}}
         {{end}}
-        <div class="Box Box--condensed mt-3">
+        <div class="Box Box--condensed mt-3" id="tokens-list">
             {{with .Flash}}
             {{if .Custom}}
             <div class="Box-header">

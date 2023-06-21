@@ -18,7 +18,7 @@ func AuthorizeSiteAPI(h http.Handler) http.Handler {
 			return
 		}
 		ctx := r.Context()
-		claims := models.VerifyAPIKey(ctx, tokenString)
+		claims := models.VerifyPersonalAccessToken(ctx, tokenString)
 		if claims == nil {
 			render.ERROR(r.Context(), w, http.StatusUnauthorized, func(ctx *templates.Context) {
 				ctx.Error.StatusText = "Missing API key. Please use a valid vince API key as a Bearer Token."
@@ -33,7 +33,7 @@ func AuthorizeSiteAPI(h http.Handler) http.Handler {
 			return
 		}
 		r = r.WithContext(models.SetUser(r.Context(), user))
-		models.UpdateAPIKeyUse(ctx, claims.ID)
+		models.UpdatePersonalAccessTokenUse(ctx, claims.ID)
 		h.ServeHTTP(w, r)
 	})
 }
