@@ -46,6 +46,7 @@ builds:
       - cgo
       - netgo
       - osusergo
+      - sqlite_json
     goarch:
       - amd64
       - arm64
