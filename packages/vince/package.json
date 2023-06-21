@@ -3,7 +3,7 @@
     "typescript": "^5.1.3"
   },
   "name": "@vinceanalytics/vince",
-  "version": "v0.0.12",
+  "version": "v0.0.13",
   "repository": "https://github.com/vinceanalytics/vince",
   "description": "The cloud native web analytics platform",
   "main": "dist/index.js",
