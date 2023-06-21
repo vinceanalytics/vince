@@ -98,7 +98,7 @@
                                 <div class="form-checkbox my-2">
                                     <label class="clearfix">
                                         <div class="col-4 float-left ">
-                                            <input type="checkbox" name="personal_access_token_scope" value="site:*"
+                                            <input type="checkbox" name="personal_access_token_scope" value="sites:*"
                                                 class="parent-checkbox-scope">
                                             <span class="color-fg-default text-bold">site</span>
                                         </div>
@@ -117,8 +117,8 @@
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
                                                     <input type="checkbox" name="personal_access_token_scope"
-                                                        value="site:get">
-                                                    <span class="color-fg-default text-normal">site:get</span>
+                                                        value="sites:get">
+                                                    <span class="color-fg-default text-normal">sites:get</span>
                                                 </div>
                                                 <div class="col-8 float-left">
                                                     <span class="color-fg-muted text-normal">
@@ -133,8 +133,8 @@
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
                                                     <input type="checkbox" name="personal_access_token_scope"
-                                                        value="site:list">
-                                                    <span class="color-fg-default text-normal">site:list</span>
+                                                        value="sites:list">
+                                                    <span class="color-fg-default text-normal">sites:list</span>
                                                 </div>
 
                                                 <div class="col-8 float-left">
@@ -150,8 +150,8 @@
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
                                                     <input type="checkbox" name="personal_access_token_scope"
-                                                        value="site:create">
-                                                    <span class="color-fg-default text-normal">site:create</span>
+                                                        value="sites:create">
+                                                    <span class="color-fg-default text-normal">sites:create</span>
                                                 </div>
 
                                                 <div class="col-8 float-left">
@@ -167,8 +167,8 @@
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
                                                     <input type="checkbox" name="personal_access_token_scope"
-                                                        value="site:update">
-                                                    <span class="color-fg-default text-normal">site:update</span>
+                                                        value="sites:update">
+                                                    <span class="color-fg-default text-normal">sites:update</span>
                                                 </div>
 
                                                 <div class="col-8 float-left">
@@ -183,8 +183,9 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="scope" value="site:delete">
-                                                    <span class="color-fg-default text-normal">site:delete</span>
+                                                    <input type="checkbox" name="personal_access_token_scope"
+                                                        value="sites:delete">
+                                                    <span class="color-fg-default text-normal">sites:delete</span>
                                                 </div>
 
                                                 <div class="col-8 float-left">
@@ -218,7 +219,7 @@
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
                                                     <input type="checkbox" name="personal_access_token_scope"
-                                                        value="site:get">
+                                                        value="stats:get">
                                                     <span class="color-fg-default text-normal">stats:get</span>
                                                 </div>
                                                 <div class="col-8 float-left">
@@ -233,7 +234,8 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="scope" value="site:delete">
+                                                    <input type="checkbox" name="personal_access_token_scope"
+                                                        value="stats:delete">
                                                     <span class="color-fg-default text-normal">stats:delete</span>
                                                 </div>
                                                 <div class="col-8 float-left">
@@ -304,8 +306,11 @@
                             {{.Name}}</a>
                     </strong>
                     <span class="color-fg-muted">
-                        <em>— <span title="Full control of private repositories">repo</span>, <span
-                                title="Upload packages to github package registry">write:packages</span></em>
+                        <em>—
+                            {{range $k,$v:= .ScopeList}}
+                            {{if ne $k 0}}, {{end}}
+                            <span>{{$v}}</span>
+                            {{end}}
                     </span>
                 </span>
                 <div>

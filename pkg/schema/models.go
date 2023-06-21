@@ -3,9 +3,12 @@ package schema
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 	"time"
+
+	"gorm.io/datatypes"
 )
 
 type Site struct {
@@ -33,12 +36,24 @@ type APIKey struct {
 	Model
 	UserID                uint64 `gorm:"not null"`
 	Name                  string `gorm:"not null"`
-	Scopes                string `gorm:"not null;default:stats:read:*"`
 	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
 	KeyPrefix             string
 	KeyHash               string
 	UsedAt                time.Time
+	Scopes                datatypes.JSONSlice[*Scope]
 	ExpiresAt             time.Time
+}
+
+func (a *APIKey) ScopeList() (o []string) {
+	var b strings.Builder
+	for _, r := range a.Scopes {
+		for _, v := range r.Verbs {
+			b.Reset()
+			fmt.Fprintf(&b, "%s:%s", r.Resource, v)
+			o = append(o, b.String())
+		}
+	}
+	return
 }
 
 type SharedLink struct {
@@ -174,9 +189,10 @@ func (v Verb) String() string {
 	return name_from_verb[v]
 }
 
-type ScopeList []*Scope
+type ScopeList datatypes.JSONSlice[*Scope]
 
 func ParseScopes(e ...string) (ScopeList, error) {
+	fmt.Println(e)
 	m := make(map[Resource]*Scope)
 	for _, v := range e {
 		p := strings.Split(v, ":")

@@ -24,6 +24,7 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/time/rate"
+	"gorm.io/datatypes"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -170,13 +171,14 @@ func ProcessAPIKey(ctx context.Context, key string) (hash, prefix string) {
 }
 
 func CreatePersonalAccessToken(ctx context.Context,
-	key, name string, uid uint64, days int) {
+	key, name string, uid uint64, days int, scopes schema.ScopeList) {
 	hash, prefix := ProcessAPIKey(ctx, key)
 	err := Get(ctx).Create(&APIKey{
 		Name:      name,
 		UserID:    uid,
 		KeyPrefix: prefix,
 		KeyHash:   hash,
+		Scopes:    datatypes.JSONSlice[*schema.Scope](scopes),
 		ExpiresAt: core.Now(ctx).AddDate(0, 0, days),
 	}).Error
 	if err != nil {
