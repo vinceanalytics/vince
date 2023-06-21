@@ -81,7 +81,7 @@
                 </dt>
                 <dd class="d-inline-block mr-2">
                     <select class="form-select " name="personal_access_token_expires_at"
-                        id="personal_access_token_expires_at">
+                        id="personal_access_token_expires_at" required>
                         <option value="7">7 days</option>
                         <option selected="selected" value="30">30 days</option>
                         <option value="60">60 days</option>
@@ -298,7 +298,7 @@
                         <button type="submit" class="btn-danger btn-sm btn" role="button">Delete</button>
                     </form>
                 </div>
-                <span class="token-description">
+                <span style="line-height: 26px;">
                     <strong>
                         <a href="/settings/tokens/{{.ID}}">
                             {{.Name}}</a>

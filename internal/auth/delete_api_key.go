@@ -21,5 +21,5 @@ func DeleteAPIKey(w http.ResponseWriter, r *http.Request) {
 	}
 	session, r := sessions.Load(r)
 	session.SuccessFlash("API key revoked successfully").Save(ctx, w)
-	http.Redirect(w, r, "/settings#keys", http.StatusFound)
+	http.Redirect(w, r, "/settings#tokens-list", http.StatusFound)
 }
