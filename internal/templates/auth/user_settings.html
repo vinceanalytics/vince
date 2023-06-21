@@ -63,16 +63,16 @@
         <div class="Subhead Subhead--spacious">
             <h2 id="profile-settings-heading" class="Subhead-heading">Keys</h2>
         </div>
-        <form action="/settings/api-keys" method="post">
+        <form action="/settings/tokens" method="post">
             <dl class="form-group required">
                 <dt class="input-label">
-                    <label maxlength="40" required="required" for="name">
+                    <label maxlength="40" required="required" for="personal_api_key_name">
                         Key name
                     </label>
                 </dt>
                 <dd>
-                    <input class="form-control" maxlength="40" required type="text" name="name" id="name"
-                        autocomplete="off" spellcheck="false">
+                    <input class="form-control" maxlength="40" required type="text" name="personal_api_key_name"
+                        id="personal_api_key_name" autocomplete="off" spellcheck="false">
                 </dd>
             </dl>
             <dl class="form-group required">
@@ -80,7 +80,7 @@
                     <label for="expires_at">Expiration</label>
                 </dt>
                 <dd class="d-inline-block mr-2">
-                    <select class="form-select " aria-labelledby="expiration-label" name="expires_at" id="expires_at">
+                    <select class="form-select " name="personal_api_key_expires_at" id="personal_api_key_expires_at">
                         <option value="7">7 days</option>
                         <option selected="selected" value="30">30 days</option>
                         <option value="60">60 days</option>
@@ -93,11 +93,11 @@
                 <dd>
                     <div class="Box Box--condensed">
                         <ul>
-                            <li class="Box-row px-2 py-1 js-check-scope-container">
+                            <li class="Box-row px-2 py-1r">
                                 <div class="form-checkbox my-2">
                                     <label class="clearfix">
                                         <div class="col-4 float-left ">
-                                            <input type="checkbox" name="scope" value="site"
+                                            <input type="checkbox" name="personal_api_key_scope" value="site:*"
                                                 class="parent-checkbox-scope">
                                             <span class="color-fg-default text-bold">site</span>
                                         </div>
@@ -115,7 +115,8 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="scope" value="site:get">
+                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                        value="site:get">
                                                     <span class="color-fg-default text-normal">site:get</span>
                                                 </div>
                                                 <div class="col-8 float-left">
@@ -125,13 +126,13 @@
                                                 </div>
                                             </label>
                                         </div>
-
                                     </li>
                                     <li>
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="scope" value="site:list">
+                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                        value="site:list">
                                                     <span class="color-fg-default text-normal">site:list</span>
                                                 </div>
 
@@ -147,7 +148,8 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="scope" value="site:create">
+                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                        value="site:create">
                                                     <span class="color-fg-default text-normal">site:create</span>
                                                 </div>
 
@@ -163,7 +165,8 @@
                                         <div class="form-checkbox my-2">
                                             <label class="clearfix">
                                                 <div class="col-4 float-left pl-3">
-                                                    <input type="checkbox" name="scope" value="site:update">
+                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                        value="site:update">
                                                     <span class="color-fg-default text-normal">site:update</span>
                                                 </div>
 
@@ -193,6 +196,55 @@
                                     </li>
                                 </ul>
                             </li>
+                            <li class="Box-row px-2 py-1r">
+                                <div class="form-checkbox my-2">
+                                    <label class="clearfix">
+                                        <div class="col-4 float-left ">
+                                            <input type="checkbox" name="personal_api_key_scope" value="stats:*"
+                                                class="parent-checkbox-scope">
+                                            <span class="color-fg-default text-bold">stats</span>
+                                        </div>
+                                        <div class="col-8 float-left">
+                                            <span class="color-fg-muted text-normal">
+                                                Full control of site stats
+                                            </span>
+                                        </div>
+                                    </label>
+                                </div>
+                                <ul class="list-style-none">
+                                    <li>
+                                        <div class="form-checkbox my-2">
+                                            <label class="clearfix">
+                                                <div class="col-4 float-left pl-3">
+                                                    <input type="checkbox" name="personal_api_key_scope"
+                                                        value="site:get">
+                                                    <span class="color-fg-default text-normal">stats:get</span>
+                                                </div>
+                                                <div class="col-8 float-left">
+                                                    <span class="color-fg-muted text-normal">
+                                                        Can get site stats
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="form-checkbox my-2">
+                                            <label class="clearfix">
+                                                <div class="col-4 float-left pl-3">
+                                                    <input type="checkbox" name="scope" value="site:delete">
+                                                    <span class="color-fg-default text-normal">stats:delete</span>
+                                                </div>
+                                                <div class="col-8 float-left">
+                                                    <span class="color-fg-muted text-normal">
+                                                        Can delete stats
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                 </dd>
@@ -200,6 +252,80 @@
             {{template "_csrf" .}}
             <button type="submit" class="btn btn-primary">Create Key →</button>
         </form>
+
+        {{with .Flash}}
+        {{if .Custom}}
+        <div class="flash mb-3">
+            Make sure to copy your personal access token now. You won’t be able to see it again!
+        </div>
+        {{end}}
+        {{end}}
+        <div class="Box Box--condensed mt-3">
+            {{with .Flash}}
+            {{if .Custom}}
+            <div class="Box-header">
+                {{Icon "check" 16}}
+                <code style="font-size: 14px;" id="new-api-key">
+                    {{index .Custom 0}}
+                </code>
+                <clipboard-copy for="new-api-key" aria-label="Copy key" data-copy-feedback="Copied!"
+                    data-tooltip-direction="ne" class="btn-link" tabindex="0" role="button">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-copy">
+                        <path
+                            d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z">
+                        </path>
+                        <path
+                            d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z">
+                        </path>
+                    </svg>
+                    <svg style="display: none;" aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1"
+                        width="16" data-view-component="true" class="octicon octicon-check color-fg-success">
+                        <path
+                            d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z">
+                        </path>
+                    </svg>
+                </clipboard-copy>
+            </div>
+            {{end}}
+            {{end}}
+            {{range .USER.APIKeys}}
+            <div class="Box-row">
+                <div class="d-flex float-right">
+                    <form action="/settings/tokens/{{.ID}}" method="post">
+                        <input type="hidden" name="_method" value="DELETE">
+                        {{template "_csrf" $ctx}}
+                        <button type="submit" class="btn-danger btn-sm btn" role="button">Delete</button>
+                    </form>
+                </div>
+                <span class="token-description">
+                    <strong>
+                        <a href="/settings/tokens/{{.ID}}">
+                            {{.Name}}</a>
+                    </strong>
+                    <span class="color-fg-muted">
+                        <em>— <span title="Full control of private repositories">repo</span>, <span
+                                title="Upload packages to github package registry">write:packages</span></em>
+                    </span>
+                </span>
+                <div>
+                    {{if .ExpiresAt.IsZero}}
+                    <span class="color-fg-attention">
+                        {{Icon "alert" 16 "color-fg-attention"}}
+                        <a class="color-fg-attention" href="/settings/tokens/{{.ID}}/regenerate">This
+                            token has no expiration date</a>.
+                    </span>
+                    {{else}}
+                    <span class="color-fg-default">
+                        Expires <span class="text-semibold text-italic">
+                            {{.ExpiresAt.Format "02 Jan 06 15:04 -0700"}}
+                        </span>.
+                    </span>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+        </div>
     </div>
 </div>
 {{end}}

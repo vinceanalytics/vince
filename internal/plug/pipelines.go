@@ -56,7 +56,7 @@ func (p Pipeline) Re(exp string, method string, f func(w http.ResponseWriter, r 
 	pipe := p.Pass(f)
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if method == r.Method && re.MatchString(r.URL.Path) {
+			if checkMethod(method, r) && re.MatchString(r.URL.Path) {
 				r = r.WithContext(params.Set(r.Context(),
 					params.Re(re, r.URL.Path),
 				))
@@ -104,7 +104,7 @@ func (p Pipeline) Path(method, path string, handler func(w http.ResponseWriter, 
 	pipe := p.Pass(handler)
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == method && r.URL.Path == path {
+			if checkMethod(method, r) && r.URL.Path == path {
 				pipe.ServeHTTP(w, r)
 				return
 			}
@@ -162,4 +162,16 @@ func Ok(ok bool, pipe Plug) Plug {
 	return func(h http.Handler) http.Handler {
 		return h
 	}
+}
+
+const form = "application/x-www-form-urlencoded"
+
+func checkMethod(method string, r *http.Request) bool {
+	if method == r.Method {
+		return true
+	}
+	if r.Header.Get("content-type") == form {
+		return r.FormValue("_method") == method
+	}
+	return false
 }

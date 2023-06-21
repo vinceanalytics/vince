@@ -3,9 +3,9 @@ package schema
 import (
 	"database/sql"
 	"errors"
+	"sort"
+	"strings"
 	"time"
-
-	"gorm.io/datatypes"
 )
 
 type Site struct {
@@ -38,6 +38,7 @@ type APIKey struct {
 	KeyPrefix             string
 	KeyHash               string
 	UsedAt                time.Time
+	ExpiresAt             time.Time
 }
 
 type SharedLink struct {
@@ -76,7 +77,6 @@ type User struct {
 	Email                  string `gorm:"uniqueIndex"`
 	PasswordHash           string
 	Sites                  []*Site
-	Roles                  []*Role
 	EmailVerificationCodes []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
 	APIKeys                []*APIKey
 	LastSeen               time.Time
@@ -93,10 +93,48 @@ type CachedSite struct {
 	UserID                      uint64
 }
 
+type Scope struct {
+	Resource Resource
+	Verbs    []Verb
+}
+
+type Resource uint
+
+const (
+	Sites Resource = iota
+	Stats
+)
+
+var resource_name = map[string]Resource{
+	"sites": Sites,
+	"stats": Stats,
+}
+
+var name_from_resource = map[Resource]string{
+	Sites: "sites",
+	Stats: "stats",
+}
+
+var ErrUnknownResource = errors.New("unknown resource")
+
+func (r *Resource) From(s string) error {
+	v, ok := resource_name[s]
+	if !ok {
+		return ErrUnknownResource
+	}
+	*r = v
+	return nil
+}
+
+func (r Resource) String() string {
+	return name_from_resource[r]
+}
+
 type Verb uint
 
 const (
-	Get Verb = iota
+	All Verb = iota
+	Get
 	List
 	Create
 	Update
@@ -104,6 +142,7 @@ const (
 )
 
 var verbs_name = map[string]Verb{
+	"*":      All,
 	"get":    Get,
 	"list":   List,
 	"create": Create,
@@ -112,6 +151,7 @@ var verbs_name = map[string]Verb{
 }
 
 var name_from_verb = map[Verb]string{
+	All:    "*",
 	Get:    "get",
 	List:   "list",
 	Create: "create",
@@ -134,11 +174,59 @@ func (v Verb) String() string {
 	return name_from_verb[v]
 }
 
-type Role struct {
-	Model
-	UserID  uint64
-	Name    string
-	Subject string
-	Domain  string
-	Actions datatypes.JSONSlice[Verb]
+type ScopeList []*Scope
+
+func ParseScopes(e ...string) (ScopeList, error) {
+	m := make(map[Resource]*Scope)
+	for _, v := range e {
+		p := strings.Split(v, ":")
+		var r Resource
+		err := r.From(p[0])
+		if err != nil {
+			return nil, err
+		}
+		x, ok := m[r]
+		if !ok {
+			x = &Scope{Resource: r}
+			m[r] = x
+		}
+		switch len(p) {
+		case 1:
+			x.Verbs = append(x.Verbs, All)
+		case 2:
+			var a Verb
+			err = a.From(p[1])
+			if err != nil {
+				return nil, err
+			}
+			x.Verbs = append(x.Verbs, a)
+		}
+	}
+	var ls ScopeList
+	for _, v := range m {
+		sort.Slice(v.Verbs, func(i, j int) bool {
+			return v.Verbs[i] < v.Verbs[j]
+		})
+		ls = append(ls, v)
+	}
+	sort.Slice(ls, func(i, j int) bool {
+		return ls[i].Resource < ls[j].Resource
+	})
+	return ls, nil
+}
+
+func (ls ScopeList) Can(resource Resource, verb Verb) bool {
+	for _, r := range ls {
+		if r.Resource == resource {
+			for _, v := range r.Verbs {
+				if v == All {
+					return true
+				}
+				if v == verb {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }

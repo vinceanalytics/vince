@@ -67,6 +67,14 @@ func (s *SessionContext) SuccessFlash(m string) *SessionContext {
 	return s
 }
 
+func (s *SessionContext) CustomFlash(m string) *SessionContext {
+	if s.Data.Flash == nil {
+		s.Data.Flash = &flash.Flash{}
+	}
+	s.Data.Flash.Custom = append(s.Data.Flash.Custom, m)
+	return s
+}
+
 func (s *SessionContext) FailFlash(m string) *SessionContext {
 	if s.Data.Flash == nil {
 		s.Data.Flash = &flash.Flash{}

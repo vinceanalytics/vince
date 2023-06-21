@@ -19,4 +19,5 @@ type Flash struct {
 	Success []string
 	Error   []string
 	Warn    []string
+	Custom  []string
 }

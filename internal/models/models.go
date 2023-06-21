@@ -203,8 +203,6 @@ func UpdateAPIKeyUse(ctx context.Context, aid uint64) {
 	}
 }
 
-type Role = schema.Role
-
 func APIKeyByID(ctx context.Context, aid uint64) (a *APIKey) {
 	var m APIKey
 	err := Get(ctx).Where("id = ?", aid).First(&m).Error
