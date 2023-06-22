@@ -24,10 +24,22 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	metrics := promhttp.Handler()
 	pipe1 := plug.Pipeline{plug.Firewall(ctx), plug.AuthorizeSiteAPI}
 	pipe2 := plug.SharedLink()
-	pipe4 := plug.API(ctx)
+
+	// Pipeline for public facing apis. This includes events ingestion api and
+	// health endpoints.
+	public := plug.API(ctx)
+
 	pipe6 := plug.InternalStatsAPI()
 	browser := plug.Browser(ctx)
 	pipe5 := append(plug.Browser(ctx), plug.Protect()...)
+
+	// This is the pipeline for authorized owned resources accessed from the web
+	// browser.
+	o := append(plug.Browser(ctx), plug.Protect()...).And(plug.RequireAccount)
+
+	// Pipeline for accessing publicly reachable resources via the web browser.
+	www := append(plug.Browser(ctx), plug.Protect()...).And(plug.RequireLoggedOut)
+
 	sitePipe := pipe5.And(plug.RequireAccount, plug.AuthorizedSiteAccess("owner", "admin", "super_admin"))
 	return plug.Pipeline{
 		browser.PathGET("/metrics", metrics.ServeHTTP),
@@ -56,34 +68,34 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			NotFound,
 		),
 
-		pipe4.PathPOST("/api/event", api.Events),
-		pipe4.PathGET("/health", api.Health),
-		pipe4.PathGET("/version", api.Version),
+		public.PathPOST("/api/event", api.Events),
+		public.PathGET("/health", api.Health),
+		public.PathGET("/version", api.Version),
 
 		browser.PathGET("/", pages.Home),
 		browser.PathGET("/avatar", avatar.Serve),
-		pipe5.And(plug.RequireLoggedOut).PathGET("/register", auth.RegisterForm),
-		pipe5.And(plug.RequireLoggedOut).PathPOST("/register", auth.Register),
-		pipe5.And(plug.RequireLoggedOut).GET(`^/register/invitation/:invitation_id$`, auth.RegisterFromInvitationForm),
-		pipe5.And(plug.RequireLoggedOut).POST(`^/register/invitation/:invitation_id$`, auth.RegisterFromInvitation),
-		pipe5.And(plug.RequireAccount).PathGET("/activate", auth.ActivateForm),
-		pipe5.PathPOST("/activate", auth.Activate),
-		pipe5.PathPOST("/activate/request-code", auth.RequestActivationCode),
-		pipe5.PathGET("/login", auth.LoginForm),
-		pipe5.And(plug.RequireLoggedOut).PathPOST("/login", auth.Login),
-		pipe5.PathGET("/password/request-reset", auth.PasswordResetRequestForm),
-		pipe5.PathPOST("/password/request-reset", auth.PasswordResetRequest),
-		pipe5.PathGET("/password/reset", auth.PasswordResetForm),
-		pipe5.PathPOST("/password/reset", auth.PasswordReset),
+		www.PathGET("/register", auth.RegisterForm),
+		www.PathPOST("/register", auth.Register),
+		www.GET(`^/register/invitation/:invitation_id$`, auth.RegisterFromInvitationForm),
+		www.POST(`^/register/invitation/:invitation_id$`, auth.RegisterFromInvitation),
+		www.PathGET("/activate", auth.ActivateForm),
+		www.PathPOST("/activate", auth.Activate),
+		www.PathPOST("/activate/request-code", auth.RequestActivationCode),
+		www.PathGET("/login", auth.LoginForm),
+		www.PathPOST("/login", auth.Login),
+		www.PathGET("/password/request-reset", auth.PasswordResetRequestForm),
+		www.PathPOST("/password/request-reset", auth.PasswordResetRequest),
+		www.PathGET("/password/reset", auth.PasswordResetForm),
+		www.PathPOST("/password/reset", auth.PasswordReset),
 
-		pipe5.And(plug.RequireAccount).PathGET("/password", auth.PasswordForm),
-		pipe5.And(plug.RequireAccount).PathPOST("/password", auth.SetPassword),
-		pipe5.PathGET("/logout", auth.Logout),
-		pipe5.And(plug.RequireAccount).PathGET("/settings", auth.UserSettings),
-		pipe5.And(plug.RequireAccount).PathPOST("/settings", auth.SaveSettings),
-		pipe5.And(plug.RequireAccount).PathDELETE("/me", auth.DeleteMe),
-		pipe5.PathPOST("/settings/tokens", auth.CreatePersonalAccessToken),
-		pipe5.DELETE(`^/settings/tokens/:id$`, auth.DeleteAPIKey),
+		o.PathGET("/password", auth.PasswordForm),
+		o.PathPOST("/password", auth.SetPassword),
+		o.PathGET("/logout", auth.Logout),
+		o.PathGET("/settings", auth.UserSettings),
+		o.PathPOST("/settings", auth.SaveSettings),
+		o.PathDELETE("/me", auth.DeleteMe),
+		o.PathPOST("/settings/tokens", auth.CreatePersonalAccessToken),
+		o.DELETE(`^/settings/tokens/:id$`, auth.DeleteAPIKey),
 
 		plug.PREFIX("/sites",
 			sitePipe.POST(`^/sites/:site/make-public$`, site.MakePublic),
@@ -110,10 +122,10 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.POST(`^/:site/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:site/stats$`, site.ResetStats),
 
-		pipe5.And(plug.RequireAccount).PathPOST("/new", site.CreateSite),
-		pipe5.And(plug.RequireAccount).PathGET("/new", site.New),
-		sitePipe.GET("/:owner/:site", site.Home),
-		pipe5.And(plug.RequireAccount).GET("/:owner", user.Home),
+		o.PathPOST("/new", site.CreateSite),
+		o.PathGET("/new", site.New),
+		o.GET("/:owner/:site", site.Home),
+		o.GET("/:owner", user.Home),
 		NotFound,
 	}
 }
