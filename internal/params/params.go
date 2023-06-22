@@ -2,7 +2,8 @@ package params
 
 import (
 	"context"
-	"regexp"
+
+	"github.com/dlclark/regexp2"
 )
 
 type Params map[string]string
@@ -17,11 +18,10 @@ func Get(ctx context.Context) Params {
 	return ctx.Value(paramKey{}).(Params)
 }
 
-func Re(re *regexp.Regexp, path string) Params {
-	m := re.FindStringSubmatch(path)
+func Re(re *regexp2.Match) Params {
 	p := make(Params)
-	for k, v := range re.SubexpNames() {
-		p[v] = m[k]
+	for _, g := range re.Groups()[1:] {
+		p[g.Name] = g.Captures[0].String()
 	}
 	return p
 }

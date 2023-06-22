@@ -2,10 +2,11 @@ package plug
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 
+	"github.com/dlclark/regexp2"
 	"github.com/vinceanalytics/vince/internal/params"
 )
 
@@ -52,16 +53,18 @@ func (p Pipeline) Re(exp string, method string, f func(w http.ResponseWriter, r 
 	for k, v := range replace {
 		exp = strings.ReplaceAll(exp, k, v)
 	}
-	re := regexp.MustCompile(exp)
+	re := regexp2.MustCompile(exp, regexp2.ECMAScript)
 	pipe := p.Pass(f)
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if checkMethod(method, r) && re.MatchString(r.URL.Path) {
-				r = r.WithContext(params.Set(r.Context(),
-					params.Re(re, r.URL.Path),
-				))
-				pipe.ServeHTTP(w, r)
-				return
+			if checkMethod(method, r) {
+				if m, err := re.FindStringMatch(r.URL.Path); err == nil && m != nil {
+					r = r.WithContext(params.Set(r.Context(),
+						params.Re(m),
+					))
+					pipe.ServeHTTP(w, r)
+					return
+				}
 			}
 			h.ServeHTTP(w, r)
 		})
@@ -138,15 +141,25 @@ func PREFIX(prefix string, pipe ...Plug) Plug {
 	}
 }
 
+const (
+	// User nickname regex
+	// may only contain alphanumeric characters or hyphens.
+	// cannot have multiple consecutive hyphens.
+	// cannot begin or end with a hyphen.
+	// Maximum is 39 characters.
+	owner = `(?<owner>[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38})`
+	site  = `(?<site>[-\.\\\/:\p{L}\d]*)`
+	id    = `(?<%s>\d+)`
+)
+
+func reid(x string) string {
+	return fmt.Sprintf(id, x)
+}
+
 var replace = map[string]string{
-	":recipient":     "(?P<recipient>[^.]+)",
-	":slug":          "(?P<slug>[^.]+)",
-	":id":            "(?P<id>[^.]+)",
-	":owner":         "(?P<owner>[^.]+)",
-	":invitation_id": "(?P<id>[^.]+)",
-	":new_role":      "(?P<new_role>[^.]+)",
-	":site":          `(?P<site>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`,
-	":goal_id":       "(?P<goal_id>[^.]+)",
+	":owner": owner,
+	":site":  site,
+	":goal":  reid("goal"),
 }
 
 func Ok(ok bool, pipe Plug) Plug {

@@ -32,6 +32,6 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 	}
 	ss, r := sessions.Load(r)
 	ss.Save(ctx, w)
-	to := fmt.Sprintf("/%s/snippet", url.PathEscape(domain))
+	to := fmt.Sprintf("/%s/%s", u.Name, url.PathEscape(domain))
 	http.Redirect(w, r, to, http.StatusFound)
 }

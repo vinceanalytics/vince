@@ -86,7 +86,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		pipe5.DELETE(`^/settings/tokens/:id$`, auth.DeleteAPIKey),
 
 		plug.PREFIX("/sites",
-			pipe5.And(plug.RequireAccount).PathPOST("/sites", site.CreateSite),
 			sitePipe.POST(`^/sites/:site/make-public$`, site.MakePublic),
 			sitePipe.POST(`^/sites/:site/make-private$`, site.MakePrivate),
 			sitePipe.GET(`^/sites/:site/shared-links/new$`, site.NewSharedLink),
@@ -111,6 +110,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.POST(`^/:site/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:site/stats$`, site.ResetStats),
 
+		pipe5.And(plug.RequireAccount).PathPOST("/new", site.CreateSite),
 		pipe5.And(plug.RequireAccount).PathGET("/new", site.New),
 		sitePipe.GET("/:owner/:site", site.Home),
 		pipe5.And(plug.RequireAccount).GET("/:owner", user.Home),
