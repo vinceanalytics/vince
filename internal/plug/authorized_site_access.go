@@ -20,11 +20,7 @@ func AuthorizedSiteAccess(allowed ...string) Plug {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			params := params.Get(r.Context())
-			domain := params["domain"]
-			if domain == "" {
-				domain = params["website"]
-			}
-			site := GetSite(ctx, domain)
+			site := GetSite(ctx, params["site"])
 			if site == nil {
 				render.ERROR(ctx, w, http.StatusNotFound)
 				return
