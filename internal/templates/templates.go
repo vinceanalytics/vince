@@ -274,6 +274,7 @@ type Overview struct {
 
 type SiteOverView struct {
 	Site   *models.Site
+	Owner  string
 	Global query.Global
 }
 

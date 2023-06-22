@@ -1,3 +1,4 @@
+{{$ctx := .}}
 {{define "_content"}}
 <div class="container-xl px-3 px-md-4 px-lg-5 mt-2">
     <div class="Layout Layout--flowRow-until-md Layout--sidebarPosition-start Layout--sidebarPosition-flowRow-start">
@@ -89,7 +90,7 @@
     <div class="col-10 col-lg-9 d-inline-block">
         <div class="d-inline-block mb-1">
             <h3 class="wb-break-all">
-                <a href="/gernest/base32" itemprop="name codeRepository">
+                <a href="/{{.Owner}}/{{.Site.Domain}}" itemprop="name codeRepository">
                     {{.Site.Domain}}
                 </a>
                 <span class="Label Label--secondary v-align-middle ml-1 mb-1">
@@ -103,22 +104,20 @@
                 {{.Site.Description}}
             </p>
         </div>
-
-
         <div class="f6 color-fg-muted mt-2">
-            <a class="Link--muted mr-3" href="/gernest/base32/stargazers">
+            <a class="Link--muted mr-3" href="/{{.Owner}}/{{.Site.Domain}}/visitors">
                 Visitors
                 <span class="Counter">{{.Global.Visitors}}</span>
             </a>
-            <a class="Link--muted mr-3" href="/gernest/base32/stargazers">
+            <a class="Link--muted mr-3" href="/{{.Owner}}/{{.Site.Domain}}/views">
                 Views
                 <span class="Counter">{{.Global.Views}}</span>
             </a>
-            <a class="Link--muted mr-3" href="/gernest/base32/stargazers">
+            <a class="Link--muted mr-3" href="/{{.Owner}}/{{.Site.Domain}}/events">
                 Events
                 <span class="Counter">{{.Global.Events}}</span>
             </a>
-            <a class="Link--muted mr-3" href="/gernest/base32/stargazers">
+            <a class="Link--muted mr-3" href="/{{.Owner}}/{{.Site.Domain}}/visits">
                 Visits
                 <span class="Counter">{{.Global.Visits}}</span>
             </a>

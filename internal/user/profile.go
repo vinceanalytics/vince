@@ -20,6 +20,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	for _, site := range u.Sites {
 		o.Sites = append(o.Sites, templates.SiteOverView{
 			Site:   site,
+			Owner:  u.Name,
 			Global: timeseries.Global(ctx, u.ID, site.ID),
 		})
 	}
