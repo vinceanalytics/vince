@@ -12,6 +12,8 @@ import (
 
 var files = map[string]bool{
 	"/favicon.svg": true,
+	"/favicon.ico": true,
+	"/favicon":     true,
 	"/robots.txt":  true,
 }
 
