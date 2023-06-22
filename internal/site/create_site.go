@@ -14,7 +14,6 @@ import (
 func CreateSite(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
-	owned := models.CountOwnedSites(ctx, u.ID)
 	domain := r.Form.Get("domain")
 	domain, bad := models.ValidateSiteDomain(ctx, domain)
 	if bad != "" {
@@ -24,9 +23,6 @@ func CreateSite(w http.ResponseWriter, r *http.Request) {
 				ctx.Errors["domain"] = bad
 			}
 			ctx.Form = r.Form
-			ctx.NewSite = &templates.NewSite{
-				IsFirstSite: owned == 0,
-			}
 		})
 		return
 	}

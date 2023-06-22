@@ -211,10 +211,6 @@ var Home = template.Must(
 	),
 ).Lookup("app")
 
-type NewSite struct {
-	IsFirstSite bool
-}
-
 type Errors struct {
 	Status     int
 	StatusText string
@@ -239,7 +235,6 @@ type Context struct {
 	HasInvitation bool
 	HasPin        bool
 	Flash         *flash.Flash
-	NewSite       *NewSite
 	Error         *Errors
 	Site          *models.Site
 	Goals         []*models.Goal
