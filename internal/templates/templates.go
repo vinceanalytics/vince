@@ -16,6 +16,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/pkg/octicon"
+	"github.com/vinceanalytics/vince/pkg/property"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
@@ -245,10 +246,11 @@ type SiteOverView struct {
 }
 
 type SiteStats struct {
-	Site   *models.Site
-	Owner  string
-	Period timex.Duration
-	Global query.Global
+	Site     *models.Site
+	Owner    string
+	Metric   property.Metric
+	Duration timex.Duration
+	Global   query.Global
 }
 
 type Period struct {
@@ -266,18 +268,65 @@ func (s *SiteStats) Periods() []Period {
 	}
 }
 
+func (s *SiteStats) Metrics() []Metric {
+	return []Metric{
+		s.metric(property.Visitors),
+		s.metric(property.Visits),
+		s.metric(property.Events),
+		s.metric(property.Views),
+	}
+}
+
 func (s *SiteStats) period(d timex.Duration) Period {
 	q := s.query()
-	q.Set("p", d.String())
+	q.Set("d", d.String())
 	return Period{
 		Name:     d.String(),
-		Selected: d == s.Period,
+		Selected: d == s.Duration,
 		Query:    fmt.Sprintf("/%s/%s?%s", s.Owner, s.Site.Domain, q.Encode()),
+	}
+}
+
+type Metric struct {
+	Name     string
+	Query    string
+	Selected bool
+	Value    uint64
+}
+
+func (m *Metric) Select() string {
+	if m.Selected {
+		return "color-bg-accent"
+	}
+	return ""
+}
+
+func (s *SiteStats) metric(m property.Metric) Metric {
+	q := s.query()
+	q.Set("m", m.String())
+	var value uint64
+	switch m {
+	case property.Visitors:
+		value = s.Global.Visitors
+	case property.Views:
+		value = s.Global.Views
+	case property.Events:
+		value = s.Global.Events
+	case property.Visits:
+		value = s.Global.Visits
+	}
+	return Metric{
+		Name:     m.Label(),
+		Selected: s.Metric == m,
+		Query:    fmt.Sprintf("/%s/%s?%s", s.Owner, s.Site.Domain, q.Encode()),
+		Value:    value,
 	}
 }
 
 func (s *SiteStats) query() url.Values {
 	m := make(url.Values)
+	m.Set("m", s.Metric.String())
+	m.Set("d", s.Duration.String())
 	return m
 }
 

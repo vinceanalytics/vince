@@ -156,10 +156,6 @@ func (m Metric) Label() string {
 	return _metric_label[m]
 }
 
-func (m Metric) Selected() bool {
-	return m == Visitors
-}
-
 func ParsMetric(k string) Metric {
 	return Metric(_metric_value[k])
 }
