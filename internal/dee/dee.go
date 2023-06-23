@@ -28,7 +28,9 @@ var Map = template.FuncMap{
 }
 
 func create() *chart.Chart {
-	return &chart.Chart{}
+	return &chart.Chart{
+		YAxisSecondary: chart.HideYAxis(),
+	}
 }
 
 func title(txt string, a *chart.Chart) *chart.Chart {
