@@ -3,21 +3,19 @@ package templates
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
+	"github.com/vinceanalytics/vince/internal/dee"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/pkg/octicon"
-	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
 //go:embed layout  plot site stats auth error email user
@@ -36,49 +34,17 @@ var LoginForm = template.Must(
 ).Lookup("focus")
 
 func base() *template.Template {
-	return template.New("root").Funcs(template.FuncMap{
+	m := template.FuncMap{
 		"Icon":       octicon.IconTemplateFunc,
 		"Avatar":     Avatar,
 		"Logo":       LogoText,
 		"GoalName":   models.GoalName,
 		"SafeDomain": models.SafeDomain,
-		"HumanDate": func(ts time.Time) string {
-			return ts.Format(timex.HumanDate)
-		},
-		"Periods": func() []timex.Duration {
-			return []timex.Duration{
-				timex.Today,
-				timex.ThisWeek,
-				timex.ThisMonth,
-				timex.ThisYear,
-			}
-		},
-		"SelectedPeriod": func(a, b timex.Duration) string {
-			if a != b {
-				return "d-none"
-			}
-			return ""
-		},
-		"JSON": func(a any) (string, error) {
-			b, err := json.Marshal(a)
-			if err != nil {
-				return "", err
-			}
-			return string(b), nil
-		},
-		"PATH": PATH,
-	})
-}
-
-func PATH(b string, a ...string) string {
-	q := make(url.Values)
-	for i := 0; i < len(a); i += 2 {
-		q.Set(a[i], a[i+1])
 	}
-	if len(b) > 0 && b[0] != '/' {
-		b = "/" + b
+	for k, v := range dee.Map {
+		m[k] = v
 	}
-	return b + "?" + q.Encode()
+	return template.New("root").Funcs(m)
 }
 
 var RegisterForm = template.Must(
@@ -125,12 +91,6 @@ var AddSnippet = template.Must(
 		"site/snippet.html",
 	),
 ).Lookup("focus")
-
-var Stats = template.Must(
-	layout().ParseFS(Files,
-		"stats/stats.html",
-	),
-).Lookup("app")
 
 var UserSettings = template.Must(
 	layout().ParseFS(Files,
