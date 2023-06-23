@@ -15,7 +15,17 @@ func Set(ctx context.Context, p Params) context.Context {
 }
 
 func Get(ctx context.Context) Params {
-	return ctx.Value(paramKey{}).(Params)
+	if p := ctx.Value(paramKey{}); p != nil {
+		return p.(Params)
+	}
+	return nil
+}
+
+func (p Params) Get(k string) string {
+	if p == nil {
+		return ""
+	}
+	return p[k]
 }
 
 func Re(re *regexp2.Match) Params {

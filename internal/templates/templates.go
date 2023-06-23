@@ -211,6 +211,12 @@ var Home = template.Must(
 	),
 ).Lookup("app")
 
+var SiteHome = template.Must(
+	layout().ParseFS(Files,
+		"site/home.html",
+	),
+).Lookup("app")
+
 type Errors struct {
 	Status     int
 	StatusText string

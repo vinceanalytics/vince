@@ -26,8 +26,6 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	}
 	render.HTML(ctx, w, templates.Home, http.StatusOK, func(ctx *templates.Context) {
 		ctx.USER = u
-		ctx.Header.Context = u.Name
-		ctx.Header.ContextRef = "/" + u.Name
 		ctx.Header.Mode = "profile"
 		ctx.Overview = &o
 	})
