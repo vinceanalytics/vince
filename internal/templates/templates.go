@@ -16,6 +16,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/pkg/octicon"
+	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
 //go:embed layout  plot site stats auth error email user
@@ -246,7 +247,38 @@ type SiteOverView struct {
 type SiteStats struct {
 	Site   *models.Site
 	Owner  string
+	Period timex.Duration
 	Global query.Global
+}
+
+type Period struct {
+	Name     string
+	Selected bool
+	Query    string
+}
+
+func (s *SiteStats) Periods() []Period {
+	return []Period{
+		s.period(timex.Today),
+		s.period(timex.ThisWeek),
+		s.period(timex.ThisMonth),
+		s.period(timex.ThisYear),
+	}
+}
+
+func (s *SiteStats) period(d timex.Duration) Period {
+	q := s.query()
+	q.Set("p", d.String())
+	return Period{
+		Name:     d.String(),
+		Selected: d == s.Period,
+		Query:    fmt.Sprintf("/%s/%s?%s", s.Owner, s.Site.Domain, q.Encode()),
+	}
+}
+
+func (s *SiteStats) query() url.Values {
+	m := make(url.Values)
+	return m
 }
 
 type Invite struct {

@@ -35,6 +35,24 @@
                     </ul>
                 </li>
             </div>
+
+            <div class="Box border-0 my-3">
+                <div class="Box-body border-0">
+                    <div class="d-flex">
+                        <nav class="UnderlineNav">
+                            <div class="UnderlineNav-body">
+                                {{range .Stats.Periods}}
+                                <a href="{{.Query}}" class="UnderlineNav-item" {{if .Selected}}aria-current="page"
+                                    {{end}}>
+                                    {{.Name}}
+                                </a>
+                                {{end}}
+                            </div>
+                        </nav>
+
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="Layout-sidebar">
         </div>
