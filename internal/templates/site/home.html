@@ -1,2 +1,44 @@
 {{define "_content"}}
+<div class="clearfix container-xl mt-4 px-md-4 px-lg-5 px-3">
+    <div class="Layout Layout--flowRow-until-md Layout--sidebarPosition-end Layout--sidebarPosition-flowRow-end">
+        <div class="Layout-main">
+            <div class="Box Box--spacious">
+                <li class="Box-row p-0">
+                    <ul class="list-style-none text-center d-flex flex-wrap">
+                        <li
+                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
+                            <span class="d-block h4 color-fg-default">
+                                {{.Stats.Global.Visitors}}
+                            </span>
+                            <span class="color-fg-muted">Visitors</span>
+                        </li>
+                        <li
+                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-md-bottom-0 border-md-right color-border-muted">
+                            <span class="d-block h4">
+                                {{.Stats.Global.Views}}
+                            </span>
+                            <span class="color-fg-muted">Page Views</span>
+                        </li>
+                        <li
+                            class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-bottom-0 border-sm-right color-border-muted">
+                            <span class="d-block h4 color-fg-default">
+                                {{.Stats.Global.Events}}
+                            </span>
+                            <span class="color-fg-muted">Events</span>
+                        </li>
+                        <li class="p-3 col-12 col-sm-6 col-md-3">
+                            <span class="d-block h4 color-fg-default">
+                                {{.Stats.Global.Visits}}
+                            </span>
+                            <span class="color-fg-muted">Visits</span>
+                        </li>
+                    </ul>
+                </li>
+            </div>
+        </div>
+        <div class="Layout-sidebar">
+        </div>
+    </div>
+</div>
+
 {{end}}

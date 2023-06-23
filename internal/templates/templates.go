@@ -16,7 +16,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/query"
-	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/octicon"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
@@ -250,10 +249,10 @@ type Context struct {
 	Owner         *models.User
 	Recipient     string
 	SharedLink    *models.SharedLink
-	Stats         *timeseries.Stats
 	Now           core.NowFunc
 	Invite        *Invite
 	Overview      *Overview
+	Stats         *SiteStats
 }
 
 func (t *Context) ProfileOverview() string {
@@ -279,6 +278,12 @@ type Overview struct {
 }
 
 type SiteOverView struct {
+	Site   *models.Site
+	Owner  string
+	Global query.Global
+}
+
+type SiteStats struct {
 	Site   *models.Site
 	Owner  string
 	Global query.Global
