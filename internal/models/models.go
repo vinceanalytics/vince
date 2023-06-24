@@ -65,11 +65,11 @@ func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 	}
 }
 
-func DeleteSite(ctx context.Context, site *Site) {
-	// err := Get(ctx).Select("SiteMemberships").Delete(site).Error
-	// if err != nil {
-	// 	LOG(ctx, err, "failed to delete site")
-	// }
+func DeleteSite(ctx context.Context, u *User, site *Site) {
+	err := Get(ctx).Unscoped().Model(u).Association("Sites").Delete(site)
+	if err != nil {
+		LOG(ctx, err, "failed to delete site")
+	}
 }
 
 func SafeDomain(s *Site) string {

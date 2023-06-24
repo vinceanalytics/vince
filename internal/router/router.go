@@ -119,13 +119,13 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		sitePipe.GET(`^/:site/goals/new$`, site.NewGoal),
 		sitePipe.POST(`^/:site/goals$`, site.CreateGoal),
 		sitePipe.POST(`^/:site/goals/:id/delete$`, site.DeleteGoal),
-		sitePipe.POST(`^/:site/delete$`, site.DeleteSite),
 		sitePipe.DELETE(`^/:site/stats$`, site.ResetStats),
 
 		o.PathPOST("/new", site.CreateSite),
 		o.PathGET("/new", site.New),
 		o.GET("/:owner/:site/settings", site.Settings),
 		o.GET("/:owner/:site", site.Home),
+		o.DELETE("/:owner/:site", site.DeleteSite),
 		o.GET("/:owner", user.Home),
 		NotFound,
 	}

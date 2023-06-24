@@ -1,3 +1,33 @@
 {{define "_content"}}
+<div class="container-md">
 
+    <div id="delete-site" class="my-3">
+        <div class="Subhead">
+            <h2 class="Subhead-heading">Danger Zone</h2>
+        </div>
+        <Div class="Box color-border-danger">
+            <div class="Box-row d-flex flex-items-center">
+                <div class="flex-auto mb-md-0 mb-2">
+                    <strong>
+                        Delete this Site
+                    </strong>
+                    <p class="mb-0">
+                        There is no way to recover this action.
+                    </p>
+                </div>
+                <div class="flex-md-order-1 flex-order-2">
+                    <form action="/{{.USER.Name}}/{{.Site.Domain}}" method="post">
+                        <input type="hidden" name="_method" value="DELETE">
+                        {{template "_csrf" .}}
+                        <button type="submit" class=" Button--danger Button--medium Button">
+                            <span class="Button-content">
+                                <span class="Button-label">Delete this site</span>
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </Div>
+    </div>
+</div>
 {{end}}

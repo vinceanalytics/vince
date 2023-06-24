@@ -19,7 +19,7 @@ func DeleteSite(w http.ResponseWriter, r *http.Request) {
 	)
 	if site != nil {
 		// remove site from database
-		models.DeleteSite(ctx, site)
+		models.DeleteSite(ctx, u, site)
 
 		// remove site from cache
 		caches.Site(ctx).Del(site.Domain)

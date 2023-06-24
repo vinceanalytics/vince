@@ -15,7 +15,7 @@ func DeleteSite(w http.ResponseWriter, r *http.Request) {
 	u := models.GetUser(ctx)
 
 	// remove site from database
-	models.DeleteSite(ctx, site)
+	models.DeleteSite(ctx, u, site)
 
 	// remove site from cache
 	caches.Site(ctx).Del(site.Domain)
@@ -28,5 +28,5 @@ func DeleteSite(w http.ResponseWriter, r *http.Request) {
 
 	session, r := sessions.Load(r)
 	session.SuccessFlash("site and site stats have been permanently deleted").Save(ctx, w)
-	http.Redirect(w, r, "/sites", http.StatusFound)
+	http.Redirect(w, r, "/"+u.Name, http.StatusFound)
 }
