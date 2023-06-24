@@ -1,9 +1,12 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"net"
+	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/caddyserver/certmagic"
@@ -91,11 +94,49 @@ type Options struct {
 	}
 	Alerts struct {
 		Enabled bool
-		Source  string
+		Sources []string
 	}
 	EnableProfile bool
 	// If true don't listen on os.Interrupt signal.
 	NoSignal bool
+}
+
+var ErrInvalidAlertPath = errors.New("invalid alert path : use filename[name,interval] format")
+
+// FromText parses alert from txt.
+func ParseAlert(txt string) (name, path string, interval time.Duration, err error) {
+	leftBrace := strings.LastIndex(txt, "[")
+	if leftBrace == -1 {
+		// This is just a path to a js script there is no interval and name
+		_, err = os.Stat(txt)
+		if err != nil {
+			return
+		}
+		name = filepath.Base(txt)
+		path = txt
+		return
+	}
+	rightBrace := strings.LastIndex(txt, "]")
+	if rightBrace < leftBrace {
+		err = ErrInvalidAlertPath
+		return
+	}
+	parts := strings.Split(txt[leftBrace+1:rightBrace], ",")
+	if len(parts) != 2 {
+		err = ErrInvalidAlertPath
+		return
+	}
+	name = strings.TrimSpace(parts[0])
+	interval, err = time.ParseDuration(strings.TrimSpace(parts[1]))
+	if err != nil {
+		return
+	}
+	path = txt[:leftBrace]
+	_, err = os.Stat(path)
+	if err != nil {
+		return
+	}
+	return
 }
 
 func (o *Options) Flags() []cli.Flag {
@@ -465,11 +506,11 @@ func (o *Options) Flags() []cli.Flag {
 			Destination: &o.Alerts.Enabled,
 			EnvVars:     []string{"VINCE_ENABLE_ALERTS"},
 		},
-		&cli.StringFlag{
+		&cli.StringSliceFlag{
 			Category:    "alerts",
 			Name:        "alerts-source",
-			Usage:       "path to directory with alerts scripts",
-			Destination: &o.Alerts.Source,
+			Usage:       "comma separated list of alert files of the form file[name,interval] eg foo.ts[spike,15m]",
+			Destination: &o.Alerts.Sources,
 			EnvVars:     []string{"VINCE_ALERTS_SOURCE"},
 		},
 

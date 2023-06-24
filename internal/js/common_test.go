@@ -6,21 +6,15 @@ import (
 )
 
 func TestImport(t *testing.T) {
-	file, err := Compile(context.TODO(), "testdata/schedule/")
+	a, err := Compile(context.TODO(), "testdata/schedule.js[spike,15m]")
 	if err != nil {
 		t.Fatal(err)
 	}
-	u := file.Units()
-	if want, got := 1, len(u); got != want {
-		t.Errorf("expected %d got %d", want, got)
+	x := a[0]
+	if x.Function == nil {
+		t.Error("expected schedule function to be called")
 	}
-
-	// check that we have reference to the function and we can call it.
-	v, err := u[0].(*Unit).calls[0](file.runtime.GlobalObject())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if want, got := int64(200), v.ToInteger(); got != want {
-		t.Errorf("expected %d got %d", want, got)
+	if want, got := "spike", x.Name; want != got {
+		t.Errorf("expected %s got %s", want, got)
 	}
 }

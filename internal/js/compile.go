@@ -1,15 +1,21 @@
 package js
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
+	"time"
 
 	"github.com/dop251/goja"
 	"github.com/evanw/esbuild/pkg/api"
+	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/email"
+	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/packages"
 )
 
@@ -20,48 +26,103 @@ type file struct {
 
 const vinceFile = "__vince__.ts"
 
-func Compile(ctx context.Context, dir string) (*File, error) {
-	err := os.WriteFile(filepath.Join(dir, vinceFile), packages.VINCE, 0600)
+type Alert struct {
+	Name     string
+	Path     string
+	Interval time.Duration
+	VM       *goja.Runtime
+	JS       []byte
+	Function goja.Callable
+}
+
+func (a *Alert) Run(ctx context.Context) {
+
+}
+
+func (a *Alert) schedule(call goja.Callable) {
+	a.Function = call
+}
+
+var relVince = []byte("./" + vinceFile)
+var vinceImport = []byte("@vinceanalytics/vince")
+
+func Compile(ctx context.Context, paths ...string) ([]*Alert, error) {
+	dir, err := os.MkdirTemp("", "vince_alerts")
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		os.Remove(dir)
+	}()
+	return CompileWith(ctx, dir, paths...)
+}
+
+func CompileWith(ctx context.Context, dir string, paths ...string) ([]*Alert, error) {
+	dir, err := filepath.Abs(dir)
+	if err != nil {
+		return nil, err
+	}
+	vs := filepath.Join(dir, vinceFile)
+	err = os.WriteFile(vs, packages.VINCE, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write __vince__ file %v", err)
 	}
-	defer func() {
-		os.Remove(filepath.Join(dir, vinceFile))
-	}()
-	var scripts []string
-	err = filepath.Walk(dir, func(path string, info fs.FileInfo, e error) error {
-		if e != nil {
-			return e
-		}
-		if info.IsDir() {
-			return nil
-		}
-		switch filepath.Ext(path) {
-		case ".ts", ".js":
-		default:
-			return nil
-		}
-		rel, err := filepath.Rel(dir, path)
+	namer := make(map[string]*Alert)
+	var i uint
+	scripts := []string{}
+	for _, p := range paths {
+		name, path, interval, err := config.ParseAlert(p)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		scripts = append(scripts, rel)
-		return nil
-	})
-	if err != nil {
-		return nil, err
+		x := &Alert{
+			Name:     name,
+			Path:     path,
+			Interval: interval,
+			VM:       goja.New(),
+		}
+		x.VM.Set("__schedule__", x.schedule)
+		r, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		r = bytes.ReplaceAll(r, vinceImport, relVince)
+		o := filepath.Base(path)
+		if ext := filepath.Ext(o); ext != ".js" {
+			// a typescript file
+			xo := strings.ReplaceAll(o, ext, ".js")
+			if _, ok := namer[xo]; ok {
+				// We have already copied file with the same base name
+				i++
+				o = fmt.Sprintf("%d%s", i, o)
+				xo = fmt.Sprintf("%d%s", i, xo)
+			}
+			namer[xo] = x
+		} else {
+			if _, ok := namer[o]; ok {
+				// We have already copied file with the same base name
+				i++
+				o = fmt.Sprintf("%d%s", i, o)
+			}
+			namer[o] = x
+		}
+		s := filepath.Join(dir, o)
+		err = os.WriteFile(s, r, 0600)
+		if err != nil {
+			return nil, err
+		}
+		scripts = append(scripts, s)
 	}
-	dir, err = filepath.Abs(dir)
-	if err != nil {
-		return nil, err
-	}
+
 	result := api.Build(api.BuildOptions{
-		EntryPoints:   scripts,
-		Outdir:        dir,
-		Outbase:       dir,
-		AbsWorkingDir: dir,
-		Format:        api.FormatCommonJS,
-		LogLevel:      api.LogLevelSilent,
+		EntryPoints:    scripts,
+		Outdir:         dir,
+		Outbase:        dir,
+		AbsWorkingDir:  dir,
+		Write:          true,
+		AllowOverwrite: true,
+		Bundle:         true,
+		LogLevel:       api.LogLevelSilent,
 	})
 	if len(result.Errors) > 0 {
 		ls := make([]error, len(result.Errors))
@@ -70,40 +131,33 @@ func Compile(ctx context.Context, dir string) (*File, error) {
 		}
 		return nil, errors.Join(ls...)
 	}
-	var o []*file
-	var vincePkg []byte
+	var o []*Alert
 	for _, v := range result.OutputFiles {
 		rel, _ := filepath.Rel(dir, v.Path)
 		base := filepath.Base(rel)
-		if base == vinceFile {
-			vincePkg = v.Contents
+		a, ok := namer[base]
+		if !ok {
 			continue
 		}
-		o = append(o, &file{
-			Path: rel,
-			Data: v.Contents,
-		})
-	}
-	vm := create(ctx)
-	pkg := vm.runtime.NewObject()
-	vm.runtime.Set("module", pkg)
-	_, err = vm.runtime.RunString(string(vincePkg))
-	if err != nil {
-		return nil, err
-	}
+		a.JS = v.Contents
 
-	vm.runtime.Set("require", func(a goja.Value) goja.Value {
-		if a.String() == "@vinceanalytics/vince" {
-			return pkg.Get("exports")
-		}
-		return goja.Undefined()
-	})
-
-	for _, m := range o {
-		_, err = vm.runtime.RunScript(m.Path, string(m.Data))
+		err = load(ctx, a.VM, a.JS)
 		if err != nil {
 			return nil, err
 		}
+		o = append(o, a)
 	}
-	return vm, nil
+	sort.Slice(o, func(i, j int) bool {
+		return o[i].Name < o[j].Name
+	})
+	return o, nil
+}
+
+func load(ctx context.Context, vm *goja.Runtime, mainPkg []byte) error {
+	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
+	query.Register(vm)
+	email.Register(ctx, vm)
+	vm.Set("__query__", queryStats(ctx))
+	_, err := vm.RunString(string(mainPkg))
+	return err
 }
