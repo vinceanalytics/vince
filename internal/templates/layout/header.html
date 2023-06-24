@@ -163,6 +163,9 @@
                     {{if .Site}}
                     <strong class="AppHeader-context-compact-mainItem d-flex flex-items-center Truncate">
                         <span class="Truncate-text ">{{.Site.Domain}}</span>
+                        {{if not .Site.Public}}
+                        {{Icon "lock" 16 "ml-1"}}
+                        {{end}}
                     </strong>
                     {{end}}
                 </span>
@@ -197,6 +200,9 @@
                     <strong class="AppHeader-context-item-label">
                         {{.Site.Domain}}
                     </strong>
+                    {{if not .Site.Public}}
+                    {{Icon "lock" 16 "ml-1"}}
+                    {{end}}
                 </a>
                 {{end}}
                 {{end}}
