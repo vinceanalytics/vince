@@ -12,6 +12,7 @@
                     </div>
                     <div class="form-group-body">
                         <input class="form-control input-block" type="text" name="domain" id="domain"
+                            pattern="\b((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}\b"
                             placeholder="example.com" required>
                     </div>
                     {{with .Errors.domain}}

@@ -31,6 +31,9 @@ func (p Params) Get(k string) string {
 func Re(re *regexp2.Match) Params {
 	p := make(Params)
 	for _, g := range re.Groups()[1:] {
+		if len(g.Captures) == 0 {
+			continue
+		}
 		p[g.Name] = g.Captures[0].String()
 	}
 	return p

@@ -148,7 +148,7 @@ const (
 	// cannot begin or end with a hyphen.
 	// Maximum is 39 characters.
 	owner = `(?<owner>[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38})`
-	site  = `(?<site>[-\.\\\/:\p{L}\d]*)`
+	site  = `(?<site>\b((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}\b)`
 	id    = `(?<%s>\d+)`
 )
 

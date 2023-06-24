@@ -124,6 +124,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 
 		o.PathPOST("/new", site.CreateSite),
 		o.PathGET("/new", site.New),
+		o.GET("/:owner/:site/settings", site.Settings),
 		o.GET("/:owner/:site", site.Home),
 		o.GET("/:owner", user.Home),
 		NotFound,
