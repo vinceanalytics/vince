@@ -24,15 +24,27 @@
                                 </li>
                             </ul>
                         </div>
-
-                        <form action="/{{SafeDomain .Site}}/goals" method="post">
+                        <form action="/{{.USER.Name}}/{{.Site.Domain}}/goals" method="post">
+                            <div class="form-group required">
+                                <div class="form-group-header">
+                                    <label for="goal-name">Goal name</label>
+                                </div>
+                                <div class="form-group-body">
+                                    <input class="form-control" type="text" name="name" id="goal-name" required>
+                                </div>
+                                {{with .Errors.name}}
+                                <div class="note error">
+                                    {{.}}
+                                </div>
+                                {{end}}
+                            </div>
                             <div class="form-group" id="custom_event" role="tabpanel" aria-labelledby="custom-events">
                                 <div class="form-group-header">
                                     <label for="event_name"> Event name</label>
                                 </div>
                                 <div class="form-group-body">
                                     <input type="text" name="event_name" id="event_name" placeholder="SignUp"
-                                        class="form-control input-lg input-block">
+                                        class="form-control">
                                 </div>
                             </div>
                             <div class="form-group" id="page_view" role="tabpanel" aria-labelledby="path" hidden>
@@ -41,13 +53,11 @@
                                 </div>
                                 <div class="form-group-body">
                                     <input type="text" name="page_path" id="page_path" placeholder="/success"
-                                        class="form-control input-block">
+                                        class="form-control">
                                 </div>
                             </div>
-                            <div class="form-actions pt-2">
-                                {{template "_csrf" .}}
-                                <button type="submit" class="btn btn-primary btn-large  btn-block">Add goal →</button>
-                            </div>
+                            {{template "_csrf" .}}
+                            <button type="submit" class="btn btn-primary">Add goal →</button>
                         </form>
                     </div>
                 </tab-container>

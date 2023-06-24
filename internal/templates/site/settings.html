@@ -1,6 +1,39 @@
 {{define "_content"}}
+{{$ctx := .}}
 <div class="container-md">
-
+    <div id="goals" class="my-3">
+        <div class="Subhead">
+            <h2 class="Subhead-heading">Goals</h2>
+            <div class="Subhead-action">
+                <a class="btn btn-primary" href="/{{.USER.Name}}/{{.Site.Domain}}/goals/new">
+                    {{Icon "plus" 16}}
+                    <span>Add goal</span>
+                </a>
+            </div>
+        </div>
+        <div class="Box">
+            {{range .Site.Goals}}
+            <div class="Box-row">
+                <div class="f4 d-flex width-full flex-items-baseline  lh-condensed text-bold color-fg-default">
+                    <div class="col-10">
+                        <span class="text-bold  d-inline-block">
+                            {{.Name}}
+                        </span>
+                    </div>
+                    <div class="col-2">
+                        <form action="/{{$ctx.USER.Name}}/{{$ctx.Site.Domain}}/goals/{{.ID}}" method="post">
+                            <input type="hidden" name="_method" value="DELETE">
+                            {{template "_csrf" $ctx}}
+                            <button type="submit" class=" btn btn-danger">
+                                Remove
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
     <div id="delete-site" class="my-3">
         <div class="Subhead">
             <h2 class="Subhead-heading">Danger Zone</h2>

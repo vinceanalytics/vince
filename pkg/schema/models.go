@@ -24,6 +24,7 @@ type Site struct {
 
 	Invitations []*Invitation `gorm:"constraint:OnDelete:CASCADE;" json:"invitations,omitempty"`
 	SharedLinks []*SharedLink `json:"sharedLinks,omitempty"`
+	Goals       []*Goal
 }
 
 type EmailVerificationCode struct {
@@ -66,7 +67,8 @@ type SharedLink struct {
 
 type Goal struct {
 	Model
-	Domain    string `gorm:"index"`
+	SiteID    uint64
+	Name      string `gorm:"uniqueIndex"`
 	EventName string
 	PagePath  string
 }

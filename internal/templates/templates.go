@@ -40,7 +40,6 @@ func base() *template.Template {
 		"Icon":       octicon.IconTemplateFunc,
 		"Avatar":     Avatar,
 		"Logo":       LogoText,
-		"GoalName":   models.GoalName,
 		"SafeDomain": models.SafeDomain,
 	}
 	for k, v := range dee.Map {

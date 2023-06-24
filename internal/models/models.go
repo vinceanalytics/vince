@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -324,27 +323,17 @@ func ValidateGoals(event, path string) bool {
 		(path != "" && pathRe.MatchString(path))
 }
 
-func GoalName(g *Goal) string {
-	if g.EventName != "" {
-		return g.EventName
+func CreateGoal(ctx context.Context, site *Site, name, event, path string) *Goal {
+	g := &Goal{
+		Name:      name,
+		EventName: event,
+		PagePath:  path,
 	}
-	return "Visit " + g.PagePath
-}
-
-func CreateGoal(ctx context.Context, domain, event, path string) *Goal {
-	// Support multiple goals to be set per site. We have removed unique constraint
-	// on goals table, so we perform UPSERT based on the goals fields to avoid
-	// creating multiple rows of same goals
-	var o Goal
-	err := Get(ctx).Where(&Goal{
-		Domain:    domain,
-		EventName: strings.TrimSpace(event),
-		PagePath:  strings.TrimSpace(path),
-	}).FirstOrCreate(&o).Error
+	err := Get(ctx).Model(site).Association("Goals").Append(g)
 	if err != nil {
 		LOG(ctx, err, "failed to create a new goal")
 	}
-	return &o
+	return g
 }
 
 func GoalByEvent(ctx context.Context, domain, event string) *Goal {
@@ -352,6 +341,17 @@ func GoalByEvent(ctx context.Context, domain, event string) *Goal {
 	err := Get(ctx).Model(&Goal{}).Where("domain = ?", domain).
 		Where("event_name = ?", event).
 		Find(&g).Error
+	if err != nil {
+		LOG(ctx, err, "failed to find goal by event_name")
+		return nil
+	}
+	return &g
+}
+
+func GoalID(ctx context.Context, id uint64) *Goal {
+	var g Goal
+	g.ID = id
+	err := Get(ctx).First(&g).Error
 	if err != nil {
 		LOG(ctx, err, "failed to find goal by event_name")
 		return nil
@@ -379,17 +379,8 @@ func Goals(ctx context.Context, domain string) (o []*Goal) {
 	return
 }
 
-func DeleteGoal(ctx context.Context, gid, domain string) bool {
-	id, err := strconv.ParseUint(gid, 10, 64)
-	if err != nil {
-		log.Get().Err(err).
-			Str("domain", domain).
-			Str("id", gid).Msg("failed parsing goal id")
-		return false
-	}
-	err = Get(ctx).Where("domain = ?", domain).Delete(&Goal{
-		Model: schema.Model{ID: id},
-	}).Error
+func DeleteGoal(ctx context.Context, site *Site, goal *Goal) bool {
+	err := Get(ctx).Unscoped().Model(site).Association("Goals").Delete(goal)
 	if err != nil {
 		LOG(ctx, err, "failed to delete goal")
 		return false

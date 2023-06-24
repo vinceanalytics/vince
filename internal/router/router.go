@@ -15,14 +15,12 @@ import (
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/share"
 	"github.com/vinceanalytics/vince/internal/site"
-	"github.com/vinceanalytics/vince/internal/sites"
 	"github.com/vinceanalytics/vince/internal/stats"
 	"github.com/vinceanalytics/vince/internal/user"
 )
 
 func Pipe(ctx context.Context) plug.Pipeline {
 	metrics := promhttp.Handler()
-	pipe1 := plug.Pipeline{plug.Firewall(ctx), plug.AuthorizeSiteAPI}
 	pipe2 := plug.SharedLink()
 
 	// Pipeline for public facing apis. This includes events ingestion api and
@@ -49,16 +47,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		),
 		plug.PREFIX("/api/stats",
 			pipe6.GET("/api/stats/:site", stats.Query),
-			NotFound,
-		),
-		plug.PREFIX("/api/v1/sites",
-			pipe1.PathPOST("/api/v1/sites", sites.CreateSite),
-			pipe1.PathGET("/api/v1/sites", sites.ListSites),
-			pipe1.PathPUT("/api/v1/sites/goals", sites.FindOrCreateGoals),
-			pipe1.PathPUT("/api/v1/sites/shared-links", sites.FindOrCreateSharedLink),
-			pipe1.DELETE(`^/api/v1/sites/goals/:goal_id$`, sites.DeleteGoal),
-			pipe1.GET(`^/api/v1/sites/:site$`, sites.GetSite),
-			pipe1.DELETE(`^/api/v1/sites/:site$`, sites.DeleteSite),
 			NotFound,
 		),
 
@@ -115,18 +103,17 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			NotFound,
 		),
 		sitePipe.GET(`^/:site/snippet$`, site.AddSnippet),
-		sitePipe.GET(`^/:site/settings$`, site.Settings),
-		sitePipe.GET(`^/:site/goals/new$`, site.NewGoal),
-		sitePipe.POST(`^/:site/goals$`, site.CreateGoal),
-		sitePipe.POST(`^/:site/goals/:id/delete$`, site.DeleteGoal),
 		sitePipe.DELETE(`^/:site/stats$`, site.ResetStats),
 
 		o.PathPOST("/new", site.CreateSite),
 		o.PathGET("/new", site.New),
-		o.GET("/:owner/:site/settings", site.Settings),
-		o.GET("/:owner/:site", site.Home),
-		o.DELETE("/:owner/:site", site.DeleteSite),
-		o.GET("/:owner", user.Home),
+		o.GET("^/:owner/:site/settings$", site.Settings),
+		o.GET("^/:owner/:site/goals/new$", site.NewGoal),
+		o.POST("^/:owner/:site/goals$", site.CreateGoal),
+		o.DELETE("^/:owner/:site/goals/:goal$", site.DeleteGoal),
+		o.GET("^/:owner/:site$", site.Home),
+		o.DELETE("^/:owner/:site$", site.DeleteSite),
+		o.GET("^/:owner$", user.Home),
 		NotFound,
 	}
 }
