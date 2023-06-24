@@ -59,7 +59,7 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-password -r -d
 complete -c vince -n '__fish_vince_no_subcommand' -f -l bootstrap-key -r -d 'API Key of the user to bootstrap.'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-profile -d 'Expose /debug/pprof endpoint'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-alerts -d 'allows loading and executing alerts'
-complete -c vince -n '__fish_vince_no_subcommand' -f -l alerts-source -r -d 'path to directory with alerts scripts'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l alerts-source -r -d 'comma separated list of alert files of the form file[name,interval] eg foo.ts[spike,15m]'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l cors-origin -r
 complete -c vince -n '__fish_vince_no_subcommand' -f -l cors-credentials
 complete -c vince -n '__fish_vince_no_subcommand' -f -l cors-max-age -r

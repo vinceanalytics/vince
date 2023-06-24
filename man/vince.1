@@ -128,7 +128,8 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 \fB--acme-issuer-test-ca\fP="": The endpoint of the directory for the ACME  CA to use to test domain validation (default: https://acme-staging-v02.api.letsencrypt.org/directory)
 
 .PP
-\fB--alerts-source\fP="": path to directory with alerts scripts
+\fB--alerts-source\fP="": comma separated list of alert files of the form file[name,interval] eg foo.tsspike,15m
+\[la]default: []\[ra]
 
 .PP
 \fB--backup-dir\fP="": directory where backups are stored

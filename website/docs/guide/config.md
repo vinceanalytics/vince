@@ -16,13 +16,13 @@ and it allows simpler deployments, where you set the environment and just call
 # Alerts
 
 ## alerts-source
-path to directory with alerts scripts
+comma separated list of alert files of the form file[name,interval] eg foo.ts[spike,15m]
 ::: code-group
 ```shell [flag]
---alerts-source="..."
+--alerts-source=""
 ```
 ```shell [env]
-VINCE_ALERTS_SOURCE="..."
+VINCE_ALERTS_SOURCE=""
 ```
 :::
 ## enable-alerts
