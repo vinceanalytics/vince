@@ -308,7 +308,6 @@ func Open(path string) (*gorm.DB, error) {
 	}
 	db.Logger = db.Logger.LogMode(logger.Silent)
 	err = db.AutoMigrate(
-
 		&APIKey{},
 		&EmailVerificationCode{},
 		&Goal{},
