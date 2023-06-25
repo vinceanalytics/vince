@@ -11,6 +11,7 @@
                 </a>
             </div>
         </div>
+        {{if .Site.Goals}}
         <div class="Box">
             {{range .Site.Goals}}
             <div class="Box-row">
@@ -33,6 +34,12 @@
             </div>
             {{end}}
         </div>
+        {{else}}
+        <div class="blankslate">
+            <h2 class="blankslate-heading">No goals for this site yet</h2>
+        </div>
+        {{end}}
+
     </div>
     <div id="delete-site" class="my-3">
         <div class="Subhead">
