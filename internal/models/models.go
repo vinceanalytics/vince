@@ -62,7 +62,7 @@ func UpdateSiteStartDate(ctx context.Context, sid uint64, start time.Time) {
 }
 
 func DeleteSite(ctx context.Context, u *User, site *Site) {
-	err := Get(ctx).Unscoped().Model(u).Association("Sites").Delete(site)
+	err := Get(ctx).Unscoped().Model(u).Association("Sites").Unscoped().Delete(site)
 	if err != nil {
 		LOG(ctx, err, "failed to delete site")
 	}
