@@ -20,7 +20,7 @@ import (
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
-//go:embed layout  plot site stats auth error email user
+//go:embed layout  plot site  auth error email user
 var Files embed.FS
 
 var Layouts = template.Must(
@@ -87,12 +87,6 @@ var SiteNew = template.Must(
 	),
 ).Lookup("focus")
 
-var AddSnippet = template.Must(
-	layout().ParseFS(Files,
-		"site/snippet.html",
-	),
-).Lookup("focus")
-
 var UserSettings = template.Must(
 	layout().ParseFS(Files,
 		"auth/user_settings.html",
@@ -117,24 +111,6 @@ var PasswordForm = template.Must(
 	),
 ).Lookup("focus")
 
-var InviteMemberForm = template.Must(
-	layout().ParseFS(Files,
-		"site/invite_member_form.html",
-	),
-).Lookup("focus")
-
-var SharedLinkForm = template.Must(
-	layout().ParseFS(Files,
-		"site/new_shared_link.html",
-	),
-).Lookup("focus")
-
-var EditSharedLinkForm = template.Must(
-	layout().ParseFS(Files,
-		"site/edit_shared_link.html",
-	),
-).Lookup("focus")
-
 var PasswordResetRequestForm = template.Must(
 	layout().ParseFS(Files,
 		"auth/password_reset_request_form.html",
@@ -152,18 +128,6 @@ var PasswordResetForm = template.Must(
 		"auth/password_reset_form.html",
 	),
 ).Lookup("focus")
-
-var InviteExistingUser = template.Must(
-	layout().ParseFS(Files,
-		"email/existing_user_invitation.html",
-	),
-).Lookup("base_email")
-
-var InviteNewUser = template.Must(
-	layout().ParseFS(Files,
-		"email/new_user_invitation.html",
-	),
-).Lookup("base_email")
 
 var Home = template.Must(
 	layout().ParseFS(Files,
@@ -198,7 +162,6 @@ type Context struct {
 	Token         string
 	Email         string
 	Config        *config.Options
-	HasInvitation bool
 	HasPin        bool
 	Flash         *flash.Flash
 	Error         *Errors
@@ -209,9 +172,7 @@ type Context struct {
 	HasGoals      bool
 	Owner         *models.User
 	Recipient     string
-	SharedLink    *models.SharedLink
 	Now           core.NowFunc
-	Invite        *Invite
 	Overview      *Overview
 	Stats         *SiteStats
 }
@@ -329,18 +290,6 @@ func (s *SiteStats) query() url.Values {
 	return m
 }
 
-type Invite struct {
-	Email string
-	ID    uint64
-}
-
-func (t *Context) InviteURL() string {
-	if t.Invite.ID == 0 {
-		return fmt.Sprintf("%s/sites", t.Config.URL)
-	}
-	return fmt.Sprintf("%s/register/invitation/%d", t.Config.URL, t.Invite.ID)
-}
-
 func (t *Context) GreetRecipient() string {
 	if t.Recipient == "" {
 		return "Hey"
@@ -396,16 +345,6 @@ func (t *Context) Home() string {
 	return t.Config.URL + "/"
 }
 
-func (t *Context) Snippet() string {
-	track := fmt.Sprintf("%s/js/vince.js", t.Config.URL)
-	src := fmt.Sprintf("<script defer data-domain=%q src=%q></script>", models.SafeDomain(t.Site), track)
-	return src
-}
-
-func (t *Context) SharedLinkURL(site *models.Site, link *models.SharedLink) string {
-	return models.SharedLinkURL(t.Config.URL, site, link)
-}
-
 func Avatar(uid string, size uint, class ...string) template.HTML {
 	q := make(url.Values)
 	q.Set("u", uid)
@@ -414,19 +353,4 @@ func Avatar(uid string, size uint, class ...string) template.HTML {
 	return template.HTML(fmt.Sprintf(`<img class=%q width="%d" height="%d" src=%q>`,
 		strings.Join(class, " "), size, size, u,
 	))
-}
-
-func (t *Context) SiteIndex() (o [][]models.SiteOverView) {
-	var m []models.SiteOverView
-	for _, v := range t.SitesOverview {
-		m = append(m, v)
-		if len(m) == 3 {
-			o = append(o, m)
-			m = nil
-		}
-	}
-	if len(m) > 0 {
-		o = append(o, m)
-	}
-	return
 }

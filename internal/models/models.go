@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"math/rand"
 	"net/url"
 	"path/filepath"
@@ -15,13 +14,11 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/schema"
 
 	// "github.com/vinceanalytics/vince/pkg/sqlite"
-	gonanoid "github.com/matoous/go-nanoid/v2"
+
 	"github.com/rs/zerolog"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/time/rate"
 	"gorm.io/datatypes"
 	"gorm.io/driver/sqlite"
@@ -225,94 +222,6 @@ func LOG(ctx context.Context, err error, msg string, f ...func(*zerolog.Event) *
 	db.LOG(ctx, err, msg, f...)
 }
 
-type SharedLink = schema.SharedLink
-
-func CreateSharedLink(ctx context.Context, sid uint64, name, password string) *SharedLink {
-	id, err := gonanoid.New()
-	if err != nil {
-		log.Get().Fatal().Err(err).
-			Msg("failed to create id for shared link")
-	}
-	shared := &SharedLink{
-		SiteID: sid,
-		Name:   name,
-		Slug:   id,
-	}
-	if password != "" {
-		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		if err != nil {
-			log.Get().Fatal().Err(err).
-				Msg("failed to create id for hash shared password")
-		}
-		shared.PasswordHash = string(b)
-	}
-	err = Get(ctx).Create(shared).Error
-	if err != nil {
-		log.Get().Err(err).
-			Msg("failed to create shared link")
-		return nil
-	}
-	return shared
-}
-
-func UpdateSharedLink(ctx context.Context, shared *SharedLink, name, password string) {
-	if password != "" {
-		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		if err != nil {
-			log.Get().Fatal().Err(err).
-				Msg("failed to create id for hash shared password")
-		}
-		shared.PasswordHash = string(b)
-	}
-	if name != "" {
-		shared.Name = name
-	}
-	err := Get(ctx).Save(shared).Error
-	if err != nil {
-		log.Get().Err(err).
-			Msg("failed to create shared link")
-	}
-}
-
-func SharedLinkURL(base string, site *Site, link *SharedLink) string {
-	query := make(url.Values)
-	query.Set("auth", link.Slug)
-	return fmt.Sprintf("%s/share/%s?%s", base, url.PathEscape(site.Domain), query.Encode())
-}
-
-func GetSharedLink(ctx context.Context, sid uint64, name string) *SharedLink {
-	var shared SharedLink
-	err := Get(ctx).Model(&SharedLink{}).
-		Where("site_id = ?", sid).
-		Where("name = ?", name).
-		First(&shared).Error
-	if err != nil {
-		LOG(ctx, err, "failed to find shared link")
-		return nil
-	}
-	return &shared
-}
-
-func GetSharedLinkWithSlug(ctx context.Context, sid uint64, slug string) *SharedLink {
-	var shared SharedLink
-	err := Get(ctx).Model(&SharedLink{}).
-		Where("site_id = ?", sid).
-		Where("slug = ?", slug).
-		First(&shared).Error
-	if err != nil {
-		LOG(ctx, err, "failed to find shared link")
-		return nil
-	}
-	return &shared
-}
-
-func DeleteSharedLink(ctx context.Context, shared *SharedLink) {
-	err := Get(ctx).Delete(shared).Error
-	if err != nil {
-		LOG(ctx, err, "failed to delete shared link")
-	}
-}
-
 type Goal = schema.Goal
 
 var pathRe = regexp.MustCompile(`^\/.*`)
@@ -388,8 +297,6 @@ func DeleteGoal(ctx context.Context, site *Site, goal *Goal) bool {
 	return true
 }
 
-type Invitation = schema.Invitation
-
 func Database(cfg *config.Options) string {
 	return filepath.Join(cfg.DataPath, "vince.db")
 }
@@ -405,8 +312,6 @@ func Open(path string) (*gorm.DB, error) {
 		&APIKey{},
 		&EmailVerificationCode{},
 		&Goal{},
-		&Invitation{},
-		&SharedLink{},
 		&Site{},
 		&User{},
 	)

@@ -37,8 +37,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 
 	// Pipeline for accessing publicly reachable resources via the web browser.
 	www := append(plug.Browser(ctx), plug.Protect()...).And(plug.RequireLoggedOut)
-
-	sitePipe := pipe5.And(plug.RequireAccount, plug.AuthorizedSiteAccess("owner", "admin", "super_admin"))
 	return plug.Pipeline{
 		browser.PathGET("/metrics", metrics.ServeHTTP),
 		// add prefix matches on the top of the pipeline for faster lookups
@@ -84,24 +82,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.PathDELETE("/me", auth.DeleteMe),
 		o.PathPOST("/settings/tokens", auth.CreatePersonalAccessToken),
 		o.DELETE(`^/settings/tokens/:id$`, auth.DeleteAPIKey),
-
-		plug.PREFIX("/sites",
-			sitePipe.GET(`^/sites/:site/shared-links/new$`, site.NewSharedLink),
-			sitePipe.POST(`^/sites/:site/shared-links$`, site.CreateSharedLink),
-			sitePipe.GET(`^/sites/:site/shared-links/:slug/edit$`, site.EditSharedLink),
-			sitePipe.POST(`^/sites/:site/shared-links/:slug/update$`, site.UpdateSharedLink),
-			sitePipe.POST(`^/sites/:site/shared-links/:slug/delete$`, site.DeleteSharedLink),
-			sitePipe.GET(`^/sites/:site/memberships/invite$`, site.InviteMemberForm),
-			sitePipe.POST(`^/sites/:site/memberships/invite$`, site.InviteMember),
-			sitePipe.POST(`^/sites/invitations/:invitation_id/accept$`, site.AcceptInvitation),
-			sitePipe.POST(`^/sites/invitations/:invitation_id/reject$`, site.RejectInvitation),
-			sitePipe.DELETE(`^/sites/:site/invitations/:invitation_id/reject$`, site.RemoveInvitation),
-			sitePipe.PUT(`^/sites/:site/memberships/:id/role/:new_role$`, site.UpdateRole),
-			sitePipe.DELETE(`^/sites/:site/memberships/:id$`, site.RemoveMember),
-			NotFound,
-		),
-		sitePipe.GET(`^/:site/snippet$`, site.AddSnippet),
-		sitePipe.DELETE(`^/:site/stats$`, site.ResetStats),
 
 		o.PathPOST("/new", site.CreateSite),
 		o.PathGET("/new", site.New),

@@ -25,17 +25,12 @@ func AuthorizedSiteAccess(allowed ...string) Plug {
 				render.ERROR(ctx, w, http.StatusNotFound)
 				return
 			}
-			slug := r.URL.Query().Get("auth")
-			sharedLink := GetSharedLink(ctx, slug)
 			usr := models.GetUser(ctx)
-
 			var role string
 			switch {
 			case usr != nil && config.Get(ctx).IsSuperUser(usr.ID):
 				role = "super_admin"
 			case site.Public:
-				role = "public"
-			case sharedLink != nil && sharedLink.SiteID == site.ID:
 				role = "public"
 			}
 			for _, a := range allowed {
@@ -61,21 +56,4 @@ func GetSite(ctx context.Context, domain string) *models.Site {
 		return nil
 	}
 	return &site
-}
-
-func GetSharedLink(ctx context.Context, slug string) *models.SharedLink {
-	if slug == "" {
-		return nil
-	}
-	var link models.SharedLink
-	err := models.Get(ctx).
-		Model(&models.SharedLink{}).
-		Where("slug = ?", slug).
-		Select("site_id").Limit(1).First(&link).Error
-
-	if err != nil {
-		models.LOG(ctx, err, "failed to get shared link")
-		return nil
-	}
-	return &link
 }

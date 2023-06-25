@@ -19,12 +19,8 @@ type Site struct {
 	Description     string
 	StatsStartDate  time.Time `json:"statsStartDate"`
 	IngestRateLimit sql.NullFloat64
-
-	UserID uint64
-
-	Invitations []*Invitation `gorm:"constraint:OnDelete:CASCADE;" json:"invitations,omitempty"`
-	SharedLinks []*SharedLink `json:"sharedLinks,omitempty"`
-	Goals       []*Goal
+	UserID          uint64
+	Goals           []*Goal
 }
 
 type EmailVerificationCode struct {
@@ -57,28 +53,12 @@ func (a *APIKey) ScopeList() (o []string) {
 	return
 }
 
-type SharedLink struct {
-	Model
-	Name         string `gorm:"uniqueIndex;not null"`
-	Slug         string `gorm:"uniqueIndex"`
-	SiteID       uint64
-	PasswordHash string
-}
-
 type Goal struct {
 	Model
 	SiteID    uint64
 	Name      string `gorm:"uniqueIndex"`
 	EventName string
 	PagePath  string
-}
-
-type Invitation struct {
-	Model
-	Email  string `gorm:"not null;uniqueIndex"`
-	SiteID uint64 `gorm:"uniqueIndex"`
-	UserID uint64 `gorm:"uniqueIndex"`
-	Role   string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
 }
 
 type Model struct {
@@ -98,7 +78,6 @@ type User struct {
 	APIKeys                []*APIKey
 	LastSeen               time.Time
 	EmailVerified          bool `gorm:"not null;default:false"`
-	Invitations            []*Invitation
 }
 
 type CachedSite struct {

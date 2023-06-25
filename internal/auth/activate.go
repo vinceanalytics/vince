@@ -11,7 +11,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"gorm.io/gorm"
 )
 
 func Activate(w http.ResponseWriter, r *http.Request) {
@@ -25,9 +24,6 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	// our current user object.
 	models.PreloadUser(ctx, usr, "EmailVerificationCodes")
 
-	hasInvitation := models.Exists(ctx, func(db *gorm.DB) *gorm.DB {
-		return db.Model(&models.Invitation{}).Where("email=?", usr.Email)
-	})
 	code, _ := strconv.Atoi(r.Form.Get("code"))
 
 	// User model is preloaded with verification codes
@@ -40,7 +36,6 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 				render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
 					ctx.Errors["code"] = "Code is expired, please request another one"
 					ctx.HasPin = true
-					ctx.HasInvitation = hasInvitation
 				})
 				return
 			}
@@ -67,10 +62,6 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 				render.ERROR(ctx, w, http.StatusInternalServerError)
 				return
 			}
-			if hasInvitation {
-				http.Redirect(w, r, "/sites", http.StatusFound)
-				return
-			}
 			http.Redirect(w, r, "/sites/new", http.StatusFound)
 			return
 		}
@@ -80,6 +71,5 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
 		ctx.Errors["code"] = "Incorrect activation code"
 		ctx.HasPin = true
-		ctx.HasInvitation = hasInvitation
 	})
 }
