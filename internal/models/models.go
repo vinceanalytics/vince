@@ -289,7 +289,7 @@ func Goals(ctx context.Context, domain string) (o []*Goal) {
 }
 
 func DeleteGoal(ctx context.Context, site *Site, goal *Goal) bool {
-	err := Get(ctx).Unscoped().Model(site).Association("Goals").Delete(goal)
+	err := Get(ctx).Unscoped().Model(site).Association("Goals").Unscoped().Delete(goal)
 	if err != nil {
 		LOG(ctx, err, "failed to delete goal")
 		return false
