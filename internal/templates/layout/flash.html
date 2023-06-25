@@ -1,34 +1,22 @@
 {{define "_flash"}}
 {{$root:=.}}
 {{with .Flash}}
-<div class="flash-messages container-lg">
+<div class="flash-messages">
     {{range .Success}}
-    <div class="Box ">
-        <div class="flash flash-full flash-success">
-            <div class="container-md">
-                {{Icon "check" 16}}
-                <span>{{.}}</span>
-            </div>
-        </div>
+    <div class="flash flash-success">
+        {{Icon "check" 16}}
+        <span>{{.}}</span>
     </div>
     {{end}}
     {{range .Warn}}
-    <div class="Box ">
-        <div class="flash flash-full flash-warn">
-            <div class="container-md">
-                {{Icon "alert" 16}}
-                <span>{{.}}</span>
-            </div>
-        </div>
+    <div class="flash flash-warn">
+        {{Icon "alert" 16}}
+        <span>{{.}}</span>
     </div>
     {{end}}
     {{ range .Error}}
-    <div class="Box ">
-        <div class="flash flash-full flash-error">
-            <div class="container-md">
-                <span>{{.}}</span>
-            </div>
-        </div>
+    <div class="flash flash-error">
+        <span>{{.}}</span>
     </div>
     {{end}}
     {{end}}

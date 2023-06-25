@@ -86,8 +86,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.DELETE(`^/settings/tokens/:id$`, auth.DeleteAPIKey),
 
 		plug.PREFIX("/sites",
-			sitePipe.POST(`^/sites/:site/make-public$`, site.MakePublic),
-			sitePipe.POST(`^/sites/:site/make-private$`, site.MakePrivate),
 			sitePipe.GET(`^/sites/:site/shared-links/new$`, site.NewSharedLink),
 			sitePipe.POST(`^/sites/:site/shared-links$`, site.CreateSharedLink),
 			sitePipe.GET(`^/sites/:site/shared-links/:slug/edit$`, site.EditSharedLink),
@@ -108,6 +106,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.PathPOST("/new", site.CreateSite),
 		o.PathGET("/new", site.New),
 		o.GET("^/:owner/:site/settings$", site.Settings),
+		o.POST("^/:owner/:site/settings/visibility/public$", site.MakePublic),
+		o.POST("^/:owner/:site/settings/visibility/private$", site.MakePrivate),
 		o.GET("^/:owner/:site/goals/new$", site.NewGoal),
 		o.POST("^/:owner/:site/goals$", site.CreateGoal),
 		o.DELETE("^/:owner/:site/goals/:goal$", site.DeleteGoal),
