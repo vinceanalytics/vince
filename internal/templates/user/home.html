@@ -36,6 +36,7 @@
                     </a>
                 </div>
             </div>
+            {{if .Overview.Sites}}
             <div class="Box">
                 {{range .Overview.Sites}}
                 <div class="Box-row">
@@ -43,6 +44,11 @@
                 </div>
                 {{end}}
             </div>
+            {{else}}
+            <div class="blankslate">
+                <h2 class="blankslate-heading">No created sites yet</h2>
+            </div>
+            {{end}}
             {{else}}
             <div class="Box Box--spacious">
                 <li class="Box-row p-0">
