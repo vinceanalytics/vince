@@ -28,7 +28,7 @@ docker pull ghcr.io/vinceanalytics/vince
 
 ## Linux packages
 
-Download the `.deb`, `.rpm` or `.apk` packages from [Release Page]() and install
+Download the `.deb`, `.rpm` or `.apk` packages from [Downloads Page](./downloads.md) and install
 them with the appropriate tools
 
 
