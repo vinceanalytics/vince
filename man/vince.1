@@ -51,6 +51,7 @@ vince
 [--enable-tls]
 [--firewall-allow-list]=[value]
 [--firewall-block-list]=[value]
+[--gc-interval]=[value]
 [--listen]=[value]
 [--log-level]=[value]
 [--mailer-address-name]=[value]
@@ -205,6 +206,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .PP
 \fB--firewall-block-list\fP="": block  ip address from this list (default: [])
+
+.PP
+\fB--gc-interval\fP="": How often to perform value log garbage collection (default: 24h0m0s)
 
 .PP
 \fB--listen\fP="": http address to listen to (default: :8080)

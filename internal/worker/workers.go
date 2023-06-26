@@ -55,3 +55,10 @@ func Periodic(
 func SaveBuffers(ctx context.Context, interval time.Duration) {
 	timeseries.GetMap(ctx).Save(ctx)
 }
+
+func GC(ctx context.Context, interval time.Duration) {
+	db := timeseries.GetMike(ctx)
+	ts := core.Now(ctx).UnixMilli()
+	db.SetDiscardTs(uint64(ts))
+	db.RunValueLogGC(0.5)
+}

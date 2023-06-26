@@ -71,7 +71,7 @@ type Options struct {
 		AllowIP []string
 	}
 	Intervals struct {
-		SiteCache, TSSync time.Duration
+		SiteCache, TSSync, GC time.Duration
 	}
 	Backup struct {
 		Enabled bool
@@ -351,6 +351,14 @@ func (o *Options) Flags() []cli.Flag {
 			Value:       time.Minute,
 			Destination: &o.Intervals.TSSync,
 			EnvVars:     []string{"VINCE_TS_BUFFER_INTERVAL"},
+		},
+		&cli.DurationFlag{
+			Category:    "intervals",
+			Name:        "gc-interval",
+			Usage:       "How often to perform value log garbage collection",
+			Value:       24 * time.Hour,
+			Destination: &o.Intervals.TSSync,
+			EnvVars:     []string{"VINCE_GC_INTERVAL"},
 		},
 		// secrets
 		&cli.StringFlag{

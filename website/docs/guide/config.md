@@ -307,6 +307,16 @@ window for refreshing sites cache
 VINCE_SITE_CACHE_REFRESH_INTERVAL="15m0s"
 ```
 :::
+## gc-interval
+How often to perform value log garbage collection
+::: code-group
+```shell [flag]
+--gc-interval="1m0s"
+```
+```shell [env]
+VINCE_GC_INTERVAL="1m0s"
+```
+:::
 ## ts-buffer-sync-interval
 window for buffering timeseries in memory before savin them
 ::: code-group
