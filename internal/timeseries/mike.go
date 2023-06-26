@@ -61,15 +61,6 @@ func Save(ctx context.Context, b *Buffer) {
 
 	svc.txn = db.NewTransactionAt(startMs, true)
 	err := b.build(ctx, func(p Property, key string, sum *aggr) error {
-		if p == Base {
-			return errors.Join(
-				global(&svc, meta.metric(Visitors).global(svc.ls), sum.Visitors),
-				global(&svc, meta.metric(Views).global(svc.ls), sum.Views),
-				global(&svc, meta.metric(Events).global(svc.ls), sum.Events),
-				global(&svc, meta.metric(Visits).global(svc.ls), sum.Visits),
-				transaction(&svc, tsBytes, meta.prop(p), key, sum),
-			)
-		}
 		return transaction(&svc, tsBytes, meta.prop(p), key, sum)
 	})
 	svc.commit(ctx, startMs, err)
@@ -198,35 +189,6 @@ func save(svc *saveContext, key *bytes.Buffer, a uint16) error {
 	k := key.Bytes()
 	// println(">", DebugKey(k), a)
 	return svc.txn.Set(k, svc.slice.u16(a))
-}
-
-func global(svc *saveContext, g gk, a uint16) error {
-	return errors.Join(
-		incr(svc, g.base, a),
-		incr(svc, g.site, a),
-	)
-}
-
-func incr(svc *saveContext, key *bytes.Buffer, a uint16) error {
-	if a == 0 {
-		return nil
-	}
-	svc.keys++
-	k := key.Bytes()
-	it, err := svc.txn.Get(k)
-	if err != nil {
-		if errors.Is(err, badger.ErrKeyNotFound) {
-			return svc.txn.Set(k, svc.slice.u64(uint64(a)))
-		}
-		return err
-	}
-	var v uint64
-	it.Value(func(val []byte) error {
-		v = binary.BigEndian.Uint64(val)
-		return nil
-	})
-	v += uint64(a)
-	return svc.txn.Set(k, svc.slice.u64(v))
 }
 
 type slice struct {

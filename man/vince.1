@@ -68,6 +68,7 @@ vince
 [--mailer-smtp-plain-identity]=[value]
 [--mailer-smtp-plain-password]=[value]
 [--mailer-smtp-plain-username]=[value]
+[--merge-interval]=[value]
 [--secret-age]=[value]
 [--secret]=[value]
 [--super-users]=[value]
@@ -257,6 +258,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .PP
 \fB--mailer-smtp-plain-username\fP="": username value for plain smtp auth
+
+.PP
+\fB--merge-interval\fP="": How often to merge aggregated stats and store in a permanent storage (default: 2m0s)
 
 .PP
 \fB--secret\fP="": path to a file with  ed25519 private key

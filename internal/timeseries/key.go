@@ -14,8 +14,6 @@ const (
 	metricOffset = siteOffset + 8
 	propOffset   = metricOffset + 1
 	keyOffset    = propOffset + 1
-
-	globalProp = 100
 )
 
 type Key [keyOffset]byte
@@ -39,33 +37,6 @@ func (id *Key) prop(p Property) *Key {
 
 var zero = make([]byte, 8)
 
-type gk struct {
-	base *bytes.Buffer
-	site *bytes.Buffer
-}
-
-// Returns two keys used to store global stats
-func (id *Key) global(ls *txnBufferList) gk {
-	return gk{
-		base: id.base(ls.Get()),
-		site: id.site(ls.Get()),
-	}
-}
-
-func (id *Key) base(b *bytes.Buffer) *bytes.Buffer {
-	id[propOffset] = globalProp
-	b.Write(id[:siteOffset])
-	b.Write(zero)
-	b.Write(id[metricOffset:])
-	return b
-}
-
-func (id *Key) site(s *bytes.Buffer) *bytes.Buffer {
-	s.Reset()
-	id[propOffset] = globalProp
-	s.Write(id[:])
-	return s
-}
 func (id *Key) clone() *Key {
 	o := newMetaKey()
 	copy(o[:], id[:])

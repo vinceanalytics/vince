@@ -258,11 +258,10 @@ func Run(ctx context.Context, resources ResourceList) error {
 	})
 	{
 		o := config.Get(ctx)
-		// register and start workers
-		g.Go(worker.Periodic(ctx, h.Ping("site_cache"), o.Intervals.SiteCache, true, worker.SiteCacheUpdate))
-		g.Go(worker.Periodic(ctx, h.Ping("timeseries"), o.Intervals.TSSync, false, worker.SaveBuffers))
+		g.Go(worker.Periodic(ctx, h.Ping("cache"), o.Intervals.SiteCache, true, worker.SiteCacheUpdate))
+		g.Go(worker.Periodic(ctx, h.Ping("aggregate"), o.Intervals.TSSync, false, worker.SaveBuffers))
 		g.Go(worker.Periodic(ctx, h.Ping("gc"), o.Intervals.GC, false, worker.GC))
-		// schedule alerts
+		g.Go(worker.Periodic(ctx, h.Ping("merge"), o.Intervals.Merge, false, worker.Merge))
 		if o.Alerts.Enabled {
 			g.Go(alerts.Get(ctx).Work(ctx))
 		}

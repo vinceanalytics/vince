@@ -38,6 +38,7 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l mailer-smtp-oauth-port -
 complete -c vince -n '__fish_vince_no_subcommand' -f -l cache-refresh-interval -r -d 'window for refreshing sites cache'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l ts-buffer-sync-interval -r -d 'window for buffering timeseries in memory before savin them'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l gc-interval -r -d 'How often to perform value log garbage collection'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l merge-interval -r -d 'How often to merge aggregated stats and store in a permanent storage'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret -r -d 'path to a file with  ed25519 private key'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-age -r -d 'path to file with age.X25519Identity'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-auto-tls -d 'Enables using acme for automatic https.'

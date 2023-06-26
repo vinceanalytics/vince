@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"errors"
 	"sync"
+	"time"
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
@@ -12,18 +14,64 @@ import (
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
-type mergeFunction func(context.Context, uint64, *kvTs) error
+type mergeFunction func(context.Context, uint64, *kvTs, *mergeStats) error
 
 func Merge(ctx context.Context) {
-	mergeStats(ctx, joe)
+	stats := storeForever(ctx, forever)
+	log.Get().Debug().
+		Int("visited", stats.keys.visited).
+		Int("skipped", stats.keys.skipped).
+		Int("accepted", stats.keys.accepted).
+		Int("processed", stats.keys.processed).
+		Msgf("merged in %s", stats.elapsed)
 }
 
-func joe(ctx context.Context, ts uint64, kv *kvTs) error {
+type mergeStats struct {
+	elapsed time.Duration
+	keys    struct {
+		visited, skipped, accepted, processed int
+	}
+}
+
+func forever(ctx context.Context, ts uint64, kv *kvTs, stats *mergeStats) error {
+	txn := Get(ctx).NewTransactionAt(ts, true)
+	s := newSlice()
+	for _, b := range kv.b {
+		v := uint64(Sum16(b.b))
+		if err := store(txn, s, b.k.Bytes(), v); err != nil {
+			s.release()
+			txn.Discard()
+			return err
+		}
+	}
+	err := txn.CommitAt(ts, nil)
+	if err != nil {
+		s.release()
+		txn.Discard()
+		return err
+	}
+	s.release()
+	stats.keys.processed++
 	return nil
 }
 
-func mergeStats(ctx context.Context, mergeFn mergeFunction) {
-	ts := uint64(core.Now(ctx).UnixMilli())
+func store(txn *badger.Txn, sl *slice, key []byte, value uint64) error {
+	g, err := txn.Get(key)
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			return txn.Set(key, sl.u64(value))
+		}
+		return err
+	}
+	return g.Value(func(val []byte) error {
+		return txn.Set(key, sl.u64(binary.BigEndian.Uint64(val)+value))
+	})
+}
+
+func storeForever(ctx context.Context, mergeFn mergeFunction) (stats mergeStats) {
+	start := core.Now(ctx)
+
+	ts := uint64(start.UnixMilli())
 	txn := GetMike(ctx).NewTransactionAt(ts, true)
 	o := badger.DefaultIteratorOptions
 	it := txn.NewIterator(o)
@@ -32,10 +80,17 @@ func mergeStats(ctx context.Context, mergeFn mergeFunction) {
 
 	m := mergePool.Get().(*merge)
 	defer m.release()
+	defer func() {
+		ls.release()
+		m.release()
+		stats.elapsed = core.Now(ctx).Sub(start)
+	}()
 
 	for it.Rewind(); it.Valid(); it.Next() {
+		stats.keys.visited++
 		x := it.Item()
 		if x.IsDeletedOrExpired() {
+			stats.keys.skipped++
 			continue
 		}
 		key := x.Key()
@@ -46,16 +101,19 @@ func mergeStats(ctx context.Context, mergeFn mergeFunction) {
 		k := ls.Get()
 		k.Write(key)
 		txn.Delete(k.Bytes())
+		stats.keys.accepted++
 	}
-	err := txn.Commit()
+	it.Close()
+	err := txn.CommitAt(ts, nil)
 	if err != nil {
 		log.Get().Err(err).Msg("failed to commit merge transaction")
 		return
 	}
-	err = m.do(ctx, mergeFn)
+	err = m.do(ctx, mergeFn, &stats)
 	if err != nil {
 		log.Get().Err(err).Msg("failed merge operation")
 	}
+	return
 }
 
 type merge struct {
@@ -100,7 +158,7 @@ func (m *merge) add(key, value []byte) {
 	keyHash := m.hash(baseKey)
 	ts := binary.BigEndian.Uint64(baseTs)
 	m.h.Reset()
-	v := binary.BigEndian.Uint32(value)
+	v := binary.BigEndian.Uint16(value)
 	b, ok := m.m[keyHash]
 	if ok {
 		// existing key
@@ -119,9 +177,9 @@ func (m *merge) add(key, value []byte) {
 	}
 }
 
-func (m *merge) do(ctx context.Context, f mergeFunction) error {
+func (m *merge) do(ctx context.Context, f mergeFunction, stats *mergeStats) error {
 	for k, kt := range m.ts {
-		err := f(ctx, k, kt)
+		err := f(ctx, k, kt, stats)
 		if err != nil {
 			return err
 		}
@@ -148,7 +206,7 @@ var kvTsPool = &sync.Pool{
 
 type kvBuf struct {
 	k *bytes.Buffer
-	b []uint32
+	b []uint16
 }
 
 func (k *kvBuf) reset() {
@@ -160,12 +218,7 @@ func (k *kvBuf) reset() {
 var kvBufPool = &sync.Pool{
 	New: func() any {
 		return &kvBuf{
-			b: make([]uint32, 0, 1<<10),
+			b: make([]uint16, 0, 1<<10),
 		}
 	},
-}
-
-type kv struct {
-	k *bytes.Buffer
-	v uint32
 }

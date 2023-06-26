@@ -24,7 +24,7 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 		mike.Close()
 		return nil, nil, err
 	}
-	vince, err := open(ctx, filepath.Join(dir, "vince"))
+	vince, err := openVince(ctx, filepath.Join(dir, "vince"))
 	if err != nil {
 		mike.Close()
 		return nil, nil, err
@@ -35,7 +35,7 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 	m := NewMap(o.Intervals.TSSync)
 	ctx = SetMap(ctx, m)
 
-	resource := resourceList{mike, unique, m}
+	resource := resourceList{mike, unique, vince, m}
 	return ctx, resource, nil
 }
 
@@ -52,6 +52,14 @@ func (r resourceList) Close() error {
 func openMike(ctx context.Context, path string) (*badger.DB, error) {
 	os.MkdirAll(path, 0755)
 	o := badger.DefaultOptions(path).
+		WithLogger(log.Badger(ctx))
+	return badger.OpenManaged(o)
+}
+
+func openVince(ctx context.Context, path string) (*badger.DB, error) {
+	os.MkdirAll(path, 0755)
+	o := badger.DefaultOptions(path).
+		WithCompression(options.ZSTD).
 		WithLogger(log.Badger(ctx))
 	return badger.OpenManaged(o)
 }
