@@ -160,6 +160,24 @@ func (m *merge) hash(b []byte) uint64 {
 }
 
 func (m *merge) add(key, value []byte) {
+	m.addInternal(key, value)
+	if key[propOffset] == byte(Base) {
+		b := get()
+		b.Write(key)
+		o := b.Bytes()
+
+		// per user
+		copy(o[siteOffset:], zero)
+		m.addInternal(o, value)
+
+		// per vince instance
+		copy(o[userOffset:], zero)
+		m.addInternal(o, value)
+		put(b)
+	}
+}
+
+func (m *merge) addInternal(key, value []byte) {
 	m.h.Reset()
 	baseKey := key[:len(key)-8]
 	baseTs := key[len(key)-8:]
