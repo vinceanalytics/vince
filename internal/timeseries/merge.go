@@ -34,14 +34,22 @@ type mergeStats struct {
 }
 
 func forever(ctx context.Context, ts uint64, kv *kvTs, stats *mergeStats) error {
-	txn := Get(ctx).NewTransactionAt(ts, true)
+	db := Get(ctx)
+	txn := db.NewTransactionAt(ts, true)
 	s := newSlice()
 	for _, b := range kv.b {
 		v := uint64(Sum16(b.b))
 		if err := store(txn, s, b.k.Bytes(), v); err != nil {
-			s.release()
-			txn.Discard()
-			return err
+			if !errors.Is(err, badger.ErrTxnTooBig) {
+				s.release()
+				txn.Discard()
+				return err
+			}
+			err = txn.CommitAt(ts, nil)
+			if err != nil {
+				return err
+			}
+			txn = db.NewTransactionAt(ts, true)
 		}
 	}
 	err := txn.CommitAt(ts, nil)
