@@ -9,8 +9,8 @@ import (
 var rolloutWindow = time.Hour.Milliseconds()
 
 // This function was ported from VictoriaMetrics project.
-func rollUp(values []uint16, ts []int64, shared []int64, f func([]uint16) uint32) (o []uint32) {
-	o = make([]uint32, len(shared))
+func rollUp(values []uint64, ts []int64, shared []int64, f func([]uint64) uint64) (o []uint64) {
+	o = make([]uint64, len(shared))
 	i := 0
 	j := 0
 	ni := 0

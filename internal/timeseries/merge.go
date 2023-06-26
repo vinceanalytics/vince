@@ -38,8 +38,7 @@ func forever(ctx context.Context, ts uint64, kv *kvTs, stats *mergeStats) error 
 	txn := db.NewTransactionAt(ts, true)
 	s := newSlice()
 	for _, b := range kv.b {
-		v := uint64(Sum16(b.b))
-		if err := store(txn, s, b.k.Bytes(), v); err != nil {
+		if err := store(txn, s, b.k.Bytes(), b.b); err != nil {
 			if !errors.Is(err, badger.ErrTxnTooBig) {
 				s.release()
 				txn.Discard()
@@ -188,11 +187,12 @@ func (m *merge) addInternal(key, value []byte) {
 	b, ok := m.m[keyHash]
 	if ok {
 		// existing key
-		b.b = append(b.b, v)
+		b.b += uint64(v)
 	} else {
 		b = kvBufPool.Get().(*kvBuf)
 		b.k = get()
 		b.k.Write(baseKey)
+		b.b = uint64(v)
 		m.m[keyHash] = b
 		t, ok := m.ts[ts]
 		if !ok {
@@ -232,19 +232,16 @@ var kvTsPool = &sync.Pool{
 
 type kvBuf struct {
 	k *bytes.Buffer
-	b []uint16
+	b uint64
 }
 
 func (k *kvBuf) reset() {
 	put(k.k)
-	k.b = k.b[:0]
 	kvBufPool.Put(k)
 }
 
 var kvBufPool = &sync.Pool{
 	New: func() any {
-		return &kvBuf{
-			b: make([]uint16, 0, 1<<10),
-		}
+		return &kvBuf{}
 	},
 }

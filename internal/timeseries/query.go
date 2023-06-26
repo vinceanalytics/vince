@@ -18,7 +18,7 @@ import (
 
 type internalValue struct {
 	Timestamp []int64  `json:"timestamp"`
-	Value     []uint16 `json:"value"`
+	Value     []uint64 `json:"value"`
 }
 
 var (
@@ -127,7 +127,7 @@ func doQuery(
 	*result = &query.MetricsResult{}
 	r := *result
 
-	txn := GetMike(ctx).NewTransactionAt(now, false)
+	txn := Get(ctx).NewTransactionAt(now, false)
 	o := badger.DefaultIteratorOptions
 	o.SinceTs = uint64(start)
 	// make sure all iterations are in /user_id/site_id/ scope
@@ -146,7 +146,7 @@ func doQuery(
 	if metrics.BounceRates != nil {
 		o := r.Visits
 		if metrics.Visits == nil || !metrics.Visits.Equal(metrics.BounceRates) {
-			o = make(map[string][]uint32)
+			o = make(map[string][]uint64)
 			getMetric(sum, Visits, metrics.BounceRates, end, shared, it, b, m, &o)
 		}
 		for k, v := range r.BounceRates {
@@ -160,7 +160,7 @@ func doQuery(
 	getMetric(sum, VisitDurations, metrics.VisitDurations, end, shared, it, b, m, &r.VisitDurations)
 }
 
-func percent(a, b []uint32) {
+func percent(a, b []uint64) {
 	for i := range a {
 		if b[i] == 0 || a[i] == 0 {
 			// avoid dividing by zero
@@ -168,7 +168,7 @@ func percent(a, b []uint32) {
 		}
 		x := float64(a[i]) / float64(b[i])
 		x = math.Round(x)
-		a[i] = uint32(x)
+		a[i] = uint64(x)
 	}
 }
 
@@ -181,12 +181,12 @@ func getMetric(
 	it *badger.Iterator,
 	b *bytes.Buffer,
 	m *Key,
-	result *map[string][]uint32,
+	result *map[string][]uint64,
 ) {
 	if sel == nil {
 		return
 	}
-	*result = make(map[string][]uint32)
+	*result = make(map[string][]uint64)
 	var text string
 	if sel.Exact != nil {
 		text = sel.Exact.Value
@@ -203,8 +203,7 @@ func getMetric(
 			break
 		}
 		kb := x.Key()
-		// text comes after the key offset
-		txt := kb[keyOffset : len(kb)-6]
+		txt := kb
 		if !sel.Match(txt) {
 			continue
 		}
@@ -216,7 +215,7 @@ func getMetric(
 		err := x.Value(func(val []byte) error {
 			v.Timestamp = append(v.Timestamp, int64(x.Version()))
 			v.Value = append(v.Value,
-				binary.BigEndian.Uint16(val),
+				binary.BigEndian.Uint64(val),
 			)
 			return nil
 		})
@@ -227,16 +226,16 @@ func getMetric(
 	o := *result
 	for k, v := range values {
 		if sum {
-			o[k] = []uint32{Sum16(v.Value)}
+			o[k] = []uint64{Sum64(v.Value)}
 		} else {
-			o[k] = rollUp(v.Value, v.Timestamp, shared, Sum16)
+			o[k] = rollUp(v.Value, v.Timestamp, shared, Sum64)
 		}
 	}
 }
 
-func Sum16(ls []uint16) (o uint32) {
+func Sum64(ls []uint64) (o uint64) {
 	for _, v := range ls {
-		o += uint32(v)
+		o += v
 	}
 	return
 }

@@ -240,12 +240,12 @@ type PropsResult struct {
 }
 
 type MetricsResult struct {
-	Visitors       map[string][]uint32 `json:"visitors,omitempty"`
-	Views          map[string][]uint32 `json:"views,omitempty"`
-	Events         map[string][]uint32 `json:"events,omitempty"`
-	Visits         map[string][]uint32 `json:"visits,omitempty"`
-	BounceRates    map[string][]uint32 `json:"bounceRates,omitempty"`
-	VisitDurations map[string][]uint32 `json:"visitDurations,omitempty"`
+	Visitors       map[string][]uint64 `json:"visitors,omitempty"`
+	Views          map[string][]uint64 `json:"views,omitempty"`
+	Events         map[string][]uint64 `json:"events,omitempty"`
+	Visits         map[string][]uint64 `json:"visits,omitempty"`
+	BounceRates    map[string][]uint64 `json:"bounceRates,omitempty"`
+	VisitDurations map[string][]uint64 `json:"visitDurations,omitempty"`
 }
 
 func Register(vm *goja.Runtime) {
