@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"errors"
 	"math"
 	"sync"
 	"time"
@@ -241,5 +242,39 @@ func Sum16(ls []uint16) (o uint32) {
 }
 
 func Global(ctx context.Context, uid, sid uint64) (o query.Global) {
+	now := core.Now(ctx).UnixMilli()
+	txn := Get(ctx).NewTransactionAt(uint64(now), false)
+	m := newMetaKey()
+	defer m.Release()
+	m.uid(uid, sid)
+	m.prop(Base)
+	b := get()
+	defer put(b)
+	b.Write(m[:])
+	b.WriteString(BaseKey)
+	key := b.Bytes()
+	err := errors.Join(
+		u64(txn, key, Visitors, &o.Visitors),
+		u64(txn, key, Views, &o.Views),
+		u64(txn, key, Events, &o.Events),
+		u64(txn, key, Visits, &o.Visits),
+	)
+	if err != nil {
+		log.Get().Err(err).Msg("failed to query global stats")
+	}
 	return
+}
+
+func u64(txn *badger.Txn, b []byte, m Metric, o *uint64) error {
+	b[metricOffset] = byte(m)
+	it, err := txn.Get(b)
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			return nil
+		}
+	}
+	return it.Value(func(val []byte) error {
+		*o = binary.BigEndian.Uint64(val)
+		return nil
+	})
 }
