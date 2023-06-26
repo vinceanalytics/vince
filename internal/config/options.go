@@ -357,7 +357,7 @@ func (o *Options) Flags() []cli.Flag {
 			Name:        "gc-interval",
 			Usage:       "How often to perform value log garbage collection",
 			Value:       24 * time.Hour,
-			Destination: &o.Intervals.TSSync,
+			Destination: &o.Intervals.GC,
 			EnvVars:     []string{"VINCE_GC_INTERVAL"},
 		},
 		// secrets

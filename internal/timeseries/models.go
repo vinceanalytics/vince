@@ -24,8 +24,14 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 		mike.Close()
 		return nil, nil, err
 	}
+	vince, err := open(ctx, filepath.Join(dir, "vince"))
+	if err != nil {
+		mike.Close()
+		return nil, nil, err
+	}
 	ctx = context.WithValue(ctx, mikeKey{}, mike)
 	ctx = context.WithValue(ctx, uniqueKey{}, unique)
+	ctx = context.WithValue(ctx, vinceKey{}, vince)
 	m := NewMap(o.Intervals.TSSync)
 	ctx = SetMap(ctx, m)
 
@@ -46,8 +52,7 @@ func (r resourceList) Close() error {
 func openMike(ctx context.Context, path string) (*badger.DB, error) {
 	os.MkdirAll(path, 0755)
 	o := badger.DefaultOptions(path).
-		WithLogger(log.Badger(ctx)).
-		WithCompression(options.ZSTD)
+		WithLogger(log.Badger(ctx))
 	return badger.OpenManaged(o)
 }
 
@@ -60,8 +65,8 @@ func open(ctx context.Context, path string) (*badger.DB, error) {
 }
 
 type mikeKey struct{}
-
 type uniqueKey struct{}
+type vinceKey struct{}
 
 func GetMike(ctx context.Context) *badger.DB {
 	return ctx.Value(mikeKey{}).(*badger.DB)
@@ -69,4 +74,8 @@ func GetMike(ctx context.Context) *badger.DB {
 
 func GetUnique(ctx context.Context) *badger.DB {
 	return ctx.Value(uniqueKey{}).(*badger.DB)
+}
+
+func Get(ctx context.Context) *badger.DB {
+	return ctx.Value(vinceKey{}).(*badger.DB)
 }
