@@ -43,7 +43,7 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 }
 
 func Save(ctx context.Context, b *Buffer) {
-	start := core.Now(ctx).UTC().Truncate(time.Millisecond)
+	start := core.Now(ctx)
 	startMs := uint64(start.UnixMilli())
 
 	db := GetMike(ctx)
@@ -57,8 +57,8 @@ func Save(ctx context.Context, b *Buffer) {
 	// b.id has the same encoding as the first 16 bytes of meta. We just copy that
 	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
-	tsBytes := svc.slice.get(6)
-	setTs(tsBytes[:], startMs)
+	tsBytes := svc.slice.u64(uint64(start.Truncate(time.Hour).UnixMilli()))
+
 	svc.txn = db.NewTransactionAt(startMs, true)
 	err := b.build(ctx, func(p Property, key string, sum *aggr) error {
 		if p == Base {

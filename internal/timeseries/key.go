@@ -14,6 +14,8 @@ const (
 	metricOffset = siteOffset + 8
 	propOffset   = metricOffset + 1
 	keyOffset    = propOffset + 1
+
+	globalProp = 100
 )
 
 type Key [keyOffset]byte
@@ -51,7 +53,7 @@ func (id *Key) global(ls *txnBufferList) gk {
 }
 
 func (id *Key) base(b *bytes.Buffer) *bytes.Buffer {
-	id[propOffset] = 100
+	id[propOffset] = globalProp
 	b.Write(id[:siteOffset])
 	b.Write(zero)
 	b.Write(id[metricOffset:])
@@ -60,7 +62,7 @@ func (id *Key) base(b *bytes.Buffer) *bytes.Buffer {
 
 func (id *Key) site(s *bytes.Buffer) *bytes.Buffer {
 	s.Reset()
-	id[propOffset] = 100
+	id[propOffset] = globalProp
 	s.Write(id[:])
 	return s
 }
