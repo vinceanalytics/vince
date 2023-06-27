@@ -66,9 +66,9 @@ func TestSeries(t *testing.T) {
 	}
 
 	values := []float64{1.0, 1.2, 1.3, 1.4, 1.5}
-	ts := make([]time.Time, len(values))
+	ts := make([]int64, len(values))
 	for i := range ts {
-		ts[i] = base.AddDate(0, 0, i)
+		ts[i] = base.AddDate(0, 0, i).UnixMilli()
 	}
 	var b bytes.Buffer
 	err = x.Execute(&b, map[string]any{

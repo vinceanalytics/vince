@@ -152,7 +152,11 @@ func axis(mode string, a *chart.Chart) Axis {
 	}
 }
 
-func series(ts []time.Time, values []float64, a *chart.Chart) *chart.Chart {
+func series(timestamps []int64, values []float64, a *chart.Chart) *chart.Chart {
+	ts := make([]time.Time, len(timestamps))
+	for i := range timestamps {
+		ts[i] = time.UnixMilli(timestamps[i])
+	}
 	a.Series = append(a.Series, &chart.TimeSeries{
 		XValues: ts,
 		YValues: values,
