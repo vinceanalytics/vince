@@ -58,7 +58,7 @@ func Query(ctx context.Context, uid, sid uint64, r query.Query) (result query.Qu
 	m := newMetaKey()
 	defer func() {
 		m.Release()
-		system.QueryDuration.Observe(time.Since(currentTime).Seconds())
+		system.QueryDuration.Observe(core.Now(ctx).Sub(currentTime).Seconds())
 	}()
 	m.uid(uid, sid)
 
