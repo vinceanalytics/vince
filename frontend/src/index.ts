@@ -1,2 +1,0 @@
-import "./SendForm"
-import "./Plot"
