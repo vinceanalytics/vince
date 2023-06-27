@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/dee"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
@@ -75,30 +74,26 @@ type Errors struct {
 // For our logo the font used is Contrail One face 700-bold italic with size 150
 
 type Context struct {
-	Title       string
-	Header      Header
-	USER        *models.User
-	Data        map[string]any
-	CSRF        template.HTML
-	Captcha     template.HTMLAttr
-	Errors      map[string]string
-	Form        url.Values
-	Code        uint64
-	ResetLink   string
-	Token       string
-	Email       string
-	Config      *config.Options
-	HasPin      bool
-	Flash       *flash.Flash
-	Error       *Errors
-	Site        *models.Site
-	Goals       []*models.Goal
-	IsFIrstSite bool
-	Owner       *models.User
-	Recipient   string
-	Now         core.NowFunc
-	Overview    *Overview
-	Stats       *SiteStats
+	Title     string
+	Header    Header
+	USER      *models.User
+	Data      map[string]any
+	CSRF      template.HTML
+	Captcha   template.HTMLAttr
+	Errors    map[string]string
+	Form      url.Values
+	Code      uint64
+	ResetLink string
+	Token     string
+	Email     string
+	Config    *config.Options
+	HasPin    bool
+	Flash     *flash.Flash
+	Error     *Errors
+	Site      *models.Site
+	Recipient string
+	Overview  *Overview
+	Stats     *SiteStats
 }
 
 func (t *Context) ProfileOverview() string {
@@ -231,7 +226,6 @@ func New(ctx context.Context, f ...func(c *Context)) *Context {
 		Flash:   flash.Get(ctx),
 		Errors:  make(map[string]string),
 		Form:    make(url.Values),
-		Now:     core.GetNow(ctx),
 	}
 	if len(f) > 0 {
 		f[0](c)
