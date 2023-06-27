@@ -149,32 +149,31 @@ type Errors struct {
 // For our logo the font used is Contrail One face 700-bold italic with size 150
 
 type Context struct {
-	Title         string
-	Header        Header
-	USER          *models.User
-	Data          map[string]any
-	CSRF          template.HTML
-	Captcha       template.HTMLAttr
-	Errors        map[string]string
-	Form          url.Values
-	Code          uint64
-	ResetLink     string
-	Token         string
-	Email         string
-	Config        *config.Options
-	HasPin        bool
-	Flash         *flash.Flash
-	Error         *Errors
-	Site          *models.Site
-	Goals         []*models.Goal
-	IsFIrstSite   bool
-	SitesOverview []models.SiteOverView
-	HasGoals      bool
-	Owner         *models.User
-	Recipient     string
-	Now           core.NowFunc
-	Overview      *Overview
-	Stats         *SiteStats
+	Title       string
+	Header      Header
+	USER        *models.User
+	Data        map[string]any
+	CSRF        template.HTML
+	Captcha     template.HTMLAttr
+	Errors      map[string]string
+	Form        url.Values
+	Code        uint64
+	ResetLink   string
+	Token       string
+	Email       string
+	Config      *config.Options
+	HasPin      bool
+	Flash       *flash.Flash
+	Error       *Errors
+	Site        *models.Site
+	Goals       []*models.Goal
+	IsFIrstSite bool
+	HasGoals    bool
+	Owner       *models.User
+	Recipient   string
+	Now         core.NowFunc
+	Overview    *Overview
+	Stats       *SiteStats
 }
 
 func (t *Context) ProfileOverview() string {

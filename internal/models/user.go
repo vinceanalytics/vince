@@ -214,3 +214,5 @@ func CreateSite(ctx context.Context, usr *User, domain string, public bool) bool
 	}
 	return true
 }
+
+type Membership = schema.Membership

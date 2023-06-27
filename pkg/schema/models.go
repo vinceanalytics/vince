@@ -80,6 +80,15 @@ type User struct {
 	EmailVerified          bool `gorm:"not null;default:false"`
 }
 
+type Membership struct {
+	Model
+	UserID uint64
+	Site   *Site
+	SiteID uint64
+	User   *User
+	Role   string `gorm:"not null;default:'owner';check:role in ('owner', 'admin', 'viewer')"`
+}
+
 type CachedSite struct {
 	ID                          uint64
 	Domain                      string
