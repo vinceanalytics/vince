@@ -18,6 +18,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/share"
+	"github.com/vinceanalytics/vince/pkg/schema"
 )
 
 func Pipe(ctx context.Context) plug.Pipeline {
@@ -26,7 +27,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 
 	// Pipeline for public facing apis. This includes events ingestion api and
 	// health endpoints.
-	public := plug.API(ctx)
+	public := plug.Public(ctx)
 
 	browser := plug.Browser(ctx)
 	pipe5 := append(plug.Browser(ctx), plug.Protect()...)
@@ -37,6 +38,10 @@ func Pipe(ctx context.Context) plug.Pipeline {
 
 	// Pipeline for accessing publicly reachable resources via the web browser.
 	www := append(plug.Browser(ctx), plug.Protect()...).And(plug.RequireLoggedOut)
+
+	// sites api
+	a := plug.Pipeline{plug.AcceptJSON}
+
 	return plug.Pipeline{
 		browser.PathGET("/metrics", metrics.ServeHTTP),
 		// add prefix matches on the top of the pipeline for faster lookups
@@ -48,6 +53,14 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			pipe2.GET(`^/share/:site$`, share.SharedLink),
 			pipe2.GET(`^/share/:slug/authenticate$`, share.AuthenticateSharedLink),
 			NotFound,
+		),
+
+		plug.PREFIX("/sites/",
+			a.And(plug.AuthSiteAPI(schema.Create)).POST("^/sites/:owner$", site.APICreate),
+			a.And(plug.AuthSiteAPI(schema.Get)).GET("^/sites/:owner/:site$", site.APIGet),
+			a.And(plug.AuthSiteAPI(schema.List)).GET("^/sites/:owner$", site.APIList),
+			a.And(plug.AuthSiteAPI(schema.Update)).PUT("^/sites/:owner/:site$", site.APIUpdate),
+			a.And(plug.AuthSiteAPI(schema.Delete)).DELETE("^/sites/:owner/:site$", site.APIDelete),
 		),
 
 		public.PathPOST("/api/event", api.Events),

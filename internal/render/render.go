@@ -17,6 +17,16 @@ func JSON(w http.ResponseWriter, code int, data any) {
 	json.NewEncoder(w).Encode(data)
 }
 
+type err struct {
+	Error string `json:"error"`
+}
+
+func JSONError(w http.ResponseWriter, code int, msg string) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(err{Error: msg})
+}
+
 func HTML(ctx context.Context, w http.ResponseWriter, tpl *template.Template, code int, f ...func(*templates.Context)) {
 	w.Header().Add("Content-Type", "text/html")
 	w.WriteHeader(code)

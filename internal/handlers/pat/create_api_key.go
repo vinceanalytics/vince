@@ -23,7 +23,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		log.Get().Err(err).Msg("failed to parse scopes")
 	}
 
-	models.CreatePersonalAccessToken(ctx, key, name, usr.ID, i, scopes)
+	models.CreatePersonalAccessToken(ctx, key, name, usr.Name, i, scopes)
 	session, r := sessions.Load(r)
 	session.CustomFlash(key).
 		SuccessFlash("API key created successfully").Save(ctx, w)

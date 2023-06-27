@@ -10,6 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/pkg/names"
 	"github.com/vinceanalytics/vince/pkg/schema"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -72,6 +73,16 @@ func Bootstrap(
 				Name:      name,
 				KeyPrefix: prefix,
 				KeyHash:   hash,
+				Scopes: datatypes.JSONSlice[*schema.Scope]{
+					{
+						Resource: schema.Sites,
+						Verbs:    []schema.Verb{schema.All},
+					},
+					{
+						Resource: schema.Stats,
+						Verbs:    []schema.Verb{schema.All},
+					},
+				},
 			},
 		},
 	}

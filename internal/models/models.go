@@ -161,11 +161,11 @@ func ProcessAPIKey(ctx context.Context, key string) (hash, prefix string) {
 }
 
 func CreatePersonalAccessToken(ctx context.Context,
-	key, name string, uid uint64, days int, scopes schema.ScopeList) {
+	key, name string, owner string, days int, scopes schema.ScopeList) {
 	hash, prefix := ProcessAPIKey(ctx, key)
 	err := Get(ctx).Create(&APIKey{
 		Name:      name,
-		UserID:    uid,
+		Owner:     owner,
 		KeyPrefix: prefix,
 		KeyHash:   hash,
 		Scopes:    datatypes.JSONSlice[*schema.Scope](scopes),
@@ -176,7 +176,7 @@ func CreatePersonalAccessToken(ctx context.Context,
 	}
 }
 
-func VerifyPersonalAccessToken(ctx context.Context, key string) *APIKey {
+func GetApiKey(ctx context.Context, key string) *APIKey {
 	hash := HashAPIKey(ctx, key)
 	var a APIKey
 	err := Get(ctx).Model(&APIKey{}).Where("key_hash = ?", hash).First(&a).Error

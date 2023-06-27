@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vinceanalytics/vince/internal/core"
 	"gorm.io/datatypes"
 )
 
@@ -31,11 +33,12 @@ type EmailVerificationCode struct {
 
 type APIKey struct {
 	Model
-	UserID                uint64 `gorm:"not null"`
+	Owner                 string
+	Site                  string
 	Name                  string `gorm:"not null"`
 	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
 	KeyPrefix             string
-	KeyHash               string
+	KeyHash               string `gorm:"index"`
 	UsedAt                time.Time
 	Scopes                datatypes.JSONSlice[*Scope]
 	ExpiresAt             time.Time
@@ -51,6 +54,26 @@ func (a *APIKey) ScopeList() (o []string) {
 		}
 	}
 	return
+}
+
+func (a *APIKey) Can(ctx context.Context, owner, site string, resource Resource, verb Verb) bool {
+	if !a.ExpiresAt.IsZero() && a.ExpiresAt.Before(core.Now(ctx)) {
+		// The key has expired
+		return false
+	}
+	if a.Owner != owner {
+		return false
+	}
+	if a.Site != "" && a.Site != site {
+		return false
+	}
+	if len(a.Scopes) == 0 {
+		return false
+	}
+	if !ScopeList(a.Scopes).Can(resource, verb) {
+		return false
+	}
+	return true
 }
 
 type Goal struct {
@@ -75,7 +98,7 @@ type User struct {
 	PasswordHash           string
 	Sites                  []*Site
 	EmailVerificationCodes []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
-	APIKeys                []*APIKey
+	APIKeys                []*APIKey                `gorm:"foreignKey:Owner;references:Name"`
 	LastSeen               time.Time
 	EmailVerified          bool `gorm:"not null;default:false"`
 }

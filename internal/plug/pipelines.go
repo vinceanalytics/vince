@@ -35,7 +35,7 @@ func Protect() Pipeline {
 	}
 }
 
-func API(ctx context.Context) Pipeline {
+func Public(ctx context.Context) Pipeline {
 	return Pipeline{
 		Firewall(ctx),
 	}
@@ -173,4 +173,15 @@ func checkMethod(method string, r *http.Request) bool {
 		return r.FormValue("_method") == method
 	}
 	return false
+}
+
+func bearer(h http.Header) string {
+	a := h.Get("authorization")
+	if a == "" {
+		return ""
+	}
+	if !strings.HasPrefix(a, "Bearer ") {
+		return ""
+	}
+	return strings.TrimSpace(strings.TrimPrefix(a, "Bearer "))
 }
