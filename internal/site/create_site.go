@@ -11,7 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/templates"
 )
 
-func CreateSite(w http.ResponseWriter, r *http.Request) {
+func Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
 	domain := r.Form.Get("domain")

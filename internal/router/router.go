@@ -84,7 +84,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.PathPOST("/settings/tokens", pat.Create),
 		o.DELETE(`^/settings/tokens/:id$`, pat.Delete),
 
-		o.PathPOST("/new", site.CreateSite),
+		o.PathPOST("/new", site.Create),
 		o.PathGET("/new", site.New),
 		o.GET("^/:owner/:site/settings$", site.Settings),
 		o.POST("^/:owner/:site/settings/visibility/public$", site.MakePublic),
