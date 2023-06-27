@@ -285,6 +285,7 @@ func Global(ctx context.Context, uid, sid uint64) (o query.Global) {
 	defer put(b)
 	b.Write(m[:])
 	b.WriteString(BaseKey)
+	b.Write(zero)
 	key := b.Bytes()
 	err := errors.Join(
 		u64(txn, key, Visitors, &o.Visitors),
