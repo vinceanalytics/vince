@@ -45,10 +45,12 @@ func Query(ctx context.Context, uid, sid uint64, r query.Query) (result query.Qu
 	if endTS.Before(startTS) {
 		endTS = startTS
 	}
-	start := startTS.UnixMilli()
-	end := endTS.UnixMilli()
+
+	start := startTS.Truncate(time.Hour).UnixMilli()
+	end := endTS.Truncate(time.Hour).UnixMilli()
 
 	shared := sharedTS(start, end, step.Milliseconds())
+
 	result.Timestamps = shared
 	if r.Sum {
 		// for sum only use single timestamp
@@ -237,7 +239,11 @@ func getMetric(
 			break
 		}
 		kb := x.Key()
-		txt := kb
+		ts := binary.BigEndian.Uint64(kb[len(kb)-8:])
+		if ts == 0 || ts > end {
+			continue
+		}
+		txt := kb[:len(kb)-8]
 		if !sel.Match(txt) {
 			continue
 		}
@@ -247,7 +253,7 @@ func getMetric(
 			values[string(txt)] = v
 		}
 		err := x.Value(func(val []byte) error {
-			v.Timestamp = append(v.Timestamp, int64(x.Version()))
+			v.Timestamp = append(v.Timestamp, int64(ts))
 			v.Value = append(v.Value,
 				binary.BigEndian.Uint64(val),
 			)
