@@ -9,7 +9,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
-func DeleteSite(w http.ResponseWriter, r *http.Request) {
+func Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := models.GetSite(ctx)
 	u := models.GetUser(ctx)

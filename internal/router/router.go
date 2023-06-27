@@ -13,11 +13,11 @@ import (
 	"github.com/vinceanalytics/vince/internal/handlers/account"
 	"github.com/vinceanalytics/vince/internal/handlers/goals"
 	"github.com/vinceanalytics/vince/internal/handlers/pat"
+	"github.com/vinceanalytics/vince/internal/handlers/site"
 	"github.com/vinceanalytics/vince/internal/pages"
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/share"
-	"github.com/vinceanalytics/vince/internal/site"
 	"github.com/vinceanalytics/vince/internal/stats"
 )
 
@@ -87,13 +87,13 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.PathPOST("/new", site.Create),
 		o.PathGET("/new", site.New),
 		o.GET("^/:owner/:site/settings$", site.Settings),
-		o.POST("^/:owner/:site/settings/visibility/public$", site.MakePublic),
-		o.POST("^/:owner/:site/settings/visibility/private$", site.MakePrivate),
+		o.POST("^/:owner/:site/settings/visibility/public$", site.Public),
+		o.POST("^/:owner/:site/settings/visibility/private$", site.Private),
 		o.GET("^/:owner/:site/goals/new$", goals.New),
 		o.POST("^/:owner/:site/goals$", goals.Create),
 		o.DELETE("^/:owner/:site/goals/:goal$", goals.Delete),
 		o.GET("^/:owner/:site$", site.Home),
-		o.DELETE("^/:owner/:site$", site.DeleteSite),
+		o.DELETE("^/:owner/:site$", site.Delete),
 		o.GET("^/:owner$", account.Home),
 		NotFound,
 	}

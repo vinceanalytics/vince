@@ -8,7 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/sessions"
 )
 
-func MakePublic(w http.ResponseWriter, r *http.Request) {
+func Public(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := models.GetSite(ctx)
 	u := models.GetUser(ctx)
