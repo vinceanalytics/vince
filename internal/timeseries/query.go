@@ -66,25 +66,63 @@ func Query(ctx context.Context, uid, sid uint64, r query.Query) (result query.Qu
 	now := uint64(currentTime.UnixMilli())
 	p := r.Props
 	rs := &result.Props
-	do(ctx, Base, p.Base, &rs.Base, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, Event, p.Event, &rs.Event, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, Page, p.Page, &rs.Page, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, EntryPage, p.EntryPage, &rs.EntryPage, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, ExitPage, p.ExitPage, &rs.ExitPage, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, Referrer, p.Referrer, &rs.Referrer, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, UtmMedium, p.UtmMedium, &rs.UtmMedium, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, UtmSource, p.UtmSource, &rs.UtmSource, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, UtmCampaign, p.UtmCampaign, &rs.UtmCampaign, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, UtmContent, p.UtmContent, &rs.UtmContent, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, UtmTerm, p.UtmTerm, &rs.UtmTerm, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, UtmDevice, p.UtmDevice, &rs.UtmDevice, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, UtmBrowser, p.UtmBrowser, &rs.UtmBrowser, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, BrowserVersion, p.BrowserVersion, &rs.BrowserVersion, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, Os, p.Os, &rs.Os, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, OsVersion, p.OsVersion, &rs.OsVersion, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, Country, p.Country, &rs.Country, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, Region, p.Region, &rs.Region, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	do(ctx, City, p.City, &rs.City, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	if p.Base != nil {
+		do(ctx, Base, p.Base, &rs.Base, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.Event != nil {
+		do(ctx, Event, p.Event, &rs.Event, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.Page != nil {
+		do(ctx, Page, p.Page, &rs.Page, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.EntryPage != nil {
+		do(ctx, EntryPage, p.EntryPage, &rs.EntryPage, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.ExitPage != nil {
+		do(ctx, ExitPage, p.ExitPage, &rs.ExitPage, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.Referrer != nil {
+		do(ctx, Referrer, p.Referrer, &rs.Referrer, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.UtmMedium != nil {
+		do(ctx, UtmMedium, p.UtmMedium, &rs.UtmMedium, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.UtmSource != nil {
+		do(ctx, UtmSource, p.UtmSource, &rs.UtmSource, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.UtmCampaign != nil {
+		do(ctx, UtmCampaign, p.UtmCampaign, &rs.UtmCampaign, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.UtmContent != nil {
+		do(ctx, UtmContent, p.UtmContent, &rs.UtmContent, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.UtmTerm != nil {
+		do(ctx, UtmTerm, p.UtmTerm, &rs.UtmTerm, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.UtmDevice != nil {
+		do(ctx, UtmDevice, p.UtmDevice, &rs.UtmDevice, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.UtmBrowser != nil {
+		do(ctx, UtmBrowser, p.UtmBrowser, &rs.UtmBrowser, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.BrowserVersion != nil {
+		do(ctx, BrowserVersion, p.BrowserVersion, &rs.BrowserVersion, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.Os != nil {
+		do(ctx, Os, p.Os, &rs.Os, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.OsVersion != nil {
+		do(ctx, OsVersion, p.OsVersion, &rs.OsVersion, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.Country != nil {
+		do(ctx, Country, p.Country, &rs.Country, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.Region != nil {
+		do(ctx, Region, p.Region, &rs.Region, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
+	if p.City != nil {
+		do(ctx, City, p.City, &rs.City, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
+	}
 	wg.Wait()
 	return
 }
@@ -100,10 +138,6 @@ func do(
 	m *Key,
 	sum bool,
 ) {
-	if metrics == nil {
-		m.Release()
-		return
-	}
 	wg.Add(1)
 	go doQuery(ctx, prop, metrics, result, wg, shared, now, start, end, m, sum)
 }
