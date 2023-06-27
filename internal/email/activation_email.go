@@ -10,13 +10,15 @@ import (
 	"github.com/vinceanalytics/vince/internal/templates"
 )
 
+var activationEmail = templates.Email("email/activation_code.html")
+
 func SendActivation(ctx context.Context, code uint64) error {
 	mailer := Get(ctx)
 	from := mailer.From()
 	usr := models.GetUser(ctx)
 	var b bytes.Buffer
 	subject := fmt.Sprintf("%d is your Vince email verification code", code)
-	err := Compose(ctx, &b, templates.ActivationEmail, from,
+	err := Compose(ctx, &b, activationEmail, from,
 		&mail.Address{Name: usr.Name, Address: usr.Email}, subject, func(ctx *templates.Context) {
 			ctx.Code = code
 			ctx.Recipient = usr.Name

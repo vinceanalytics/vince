@@ -7,6 +7,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/templates"
 )
 
+var passwordResetRequestFromTpl = templates.Focus("auth/password_reset_request_form.html")
+
 func PasswordResetRequestForm(w http.ResponseWriter, r *http.Request) {
-	render.HTML(r.Context(), w, templates.PasswordResetRequestForm, http.StatusOK)
+	render.HTML(r.Context(), w, passwordResetRequestFromTpl, http.StatusOK)
 }

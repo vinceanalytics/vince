@@ -12,6 +12,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/templates"
 )
 
+var loginForm = templates.Focus("auth/login_form.html")
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	if !caches.AllowRemoteIPLogin(ctx, remoteip.Get(r)) {
@@ -29,7 +31,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if !validCaptcha || u == nil {
 		r = sessions.SaveCsrf(w, r)
 		r = sessions.SaveCaptcha(w, r)
-		render.HTML(r.Context(), w, templates.LoginForm, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(r.Context(), w, loginForm, http.StatusOK, func(ctx *templates.Context) {
 			if !validCaptcha {
 				ctx.Errors["captcha"] = "Invalid Captcha"
 			}
@@ -49,7 +51,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if !models.PasswordMatch(u, password) {
 		r = sessions.SaveCsrf(w, r)
 		r = sessions.SaveCaptcha(w, r)
-		render.HTML(r.Context(), w, templates.LoginForm, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(r.Context(), w, loginForm, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Errors["failed"] = "Wrong email or password. Please try again."
 			ctx.Form = r.Form
 		})

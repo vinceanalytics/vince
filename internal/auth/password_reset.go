@@ -19,7 +19,7 @@ func PasswordReset(w http.ResponseWriter, r *http.Request) {
 	if password == "" {
 		r = sessions.SaveCsrf(w, r)
 		r = sessions.SaveCaptcha(w, r)
-		render.HTML(r.Context(), w, templates.PasswordResetForm, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(r.Context(), w, passwordResetFormTpl, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Errors["password"] = "Password cannot be empty"
 			ctx.Form = r.Form
 		})
@@ -59,7 +59,7 @@ func PasswordReset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r = sessions.SaveCsrf(w, r)
-	render.HTML(r.Context(), w, templates.PasswordResetForm, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(r.Context(), w, passwordResetFormTpl, http.StatusOK, func(ctx *templates.Context) {
 		ctx.Token = t
 	})
 }

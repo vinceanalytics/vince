@@ -11,6 +11,8 @@ import (
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
+var registerForm = templates.Focus("auth/register_form.html")
+
 func Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	session, r := sessions.Load(r)
@@ -25,7 +27,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	if len(m) > 0 || !validCaptcha {
 		r = sessions.SaveCsrf(w, r)
 		r = sessions.SaveCaptcha(w, r)
-		render.HTML(r.Context(), w, templates.RegisterForm, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(r.Context(), w, registerForm, http.StatusOK, func(ctx *templates.Context) {
 			for k, v := range m {
 				ctx.Errors[k] = v
 			}
@@ -41,7 +43,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			r = sessions.SaveCsrf(w, r)
 			r = sessions.SaveCaptcha(w, r)
-			render.HTML(r.Context(), w, templates.RegisterForm, http.StatusOK, func(ctx *templates.Context) {
+			render.HTML(r.Context(), w, registerForm, http.StatusOK, func(ctx *templates.Context) {
 				ctx.Errors["email"] = "already exists"
 				ctx.Form = r.Form
 			})

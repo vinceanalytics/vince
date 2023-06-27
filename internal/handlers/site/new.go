@@ -8,6 +8,6 @@ import (
 )
 
 func New(w http.ResponseWriter, r *http.Request) {
-	render.HTML(r.Context(), w, templates.SiteNew, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(r.Context(), w, newSiteTpl, http.StatusOK, func(ctx *templates.Context) {
 	})
 }

@@ -11,6 +11,8 @@ import (
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
+var homeTpl = templates.App("site/home.html")
+
 func Home(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
@@ -25,7 +27,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		Duration: p,
 		Global:   timeseries.Global(ctx, u.ID, site.ID),
 	}
-	render.HTML(ctx, w, templates.SiteHome, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(ctx, w, homeTpl, http.StatusOK, func(ctx *templates.Context) {
 		ctx.USER = u
 		ctx.Site = site
 		ctx.Stats = &o

@@ -9,6 +9,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
+var homeTpl = templates.App("user/home.html")
+
 func Home(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
@@ -24,7 +26,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 			Global: timeseries.Global(ctx, u.ID, site.ID),
 		})
 	}
-	render.HTML(ctx, w, templates.Home, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(ctx, w, homeTpl, http.StatusOK, func(ctx *templates.Context) {
 		ctx.USER = u
 		ctx.Header.Mode = "profile"
 		ctx.Overview = &o

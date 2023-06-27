@@ -18,22 +18,17 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	usr := models.GetUser(ctx)
 
-	// load verification codes belonging to the user. We save space by only selecting id instead
-	// of all columns.
-	// We only care about correctness of the relationship, since we already have
-	// our current user object.
 	models.PreloadUser(ctx, usr, "EmailVerificationCodes")
 
 	code, _ := strconv.Atoi(r.Form.Get("code"))
 
-	// User model is preloaded with verification codes
 	for _, codes := range usr.EmailVerificationCodes {
 		if codes.Code == uint64(code) {
 			// we found a match
 			if codes.UpdatedAt.Before(core.Now(ctx).Add(-4 * time.Hour)) {
 				// verification code has expired
 				r = sessions.SaveCsrf(w, r)
-				render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
+				render.HTML(r.Context(), w, activate, http.StatusOK, func(ctx *templates.Context) {
 					ctx.Errors["code"] = "Code is expired, please request another one"
 					ctx.HasPin = true
 				})
@@ -68,7 +63,7 @@ func Activate(w http.ResponseWriter, r *http.Request) {
 
 	}
 	r = sessions.SaveCsrf(w, r)
-	render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(r.Context(), w, activate, http.StatusOK, func(ctx *templates.Context) {
 		ctx.Errors["code"] = "Incorrect activation code"
 		ctx.HasPin = true
 	})

@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var newGoalTpl = templates.Focus("site/new_goal.html")
+
 func Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
@@ -24,7 +26,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	valid := models.ValidateGoals(event, path)
 	if exists || !valid {
 		r = sessions.SaveCsrf(w, r)
-		render.HTML(ctx, w, templates.SiteNewGoal, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(ctx, w, newGoalTpl, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Site = site
 			if !valid {
 				ctx.Errors["event_name"] = "this field is required and cannot be blank"

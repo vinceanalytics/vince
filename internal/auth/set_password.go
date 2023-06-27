@@ -14,7 +14,7 @@ func SetPassword(w http.ResponseWriter, r *http.Request) {
 	fail := models.SetPassword(ctx, r.Form.Get("password"))
 	if fail != "" {
 		r = sessions.SaveCsrf(w, r)
-		render.HTML(ctx, w, templates.PasswordForm, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(ctx, w, passwordFormTpl, http.StatusOK, func(ctx *templates.Context) {
 			ctx.Errors["password"] = fail
 			ctx.Form = r.Form
 		})

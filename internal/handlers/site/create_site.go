@@ -11,6 +11,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/templates"
 )
 
+var newSiteTpl = templates.Focus("site/new.html")
+
 func Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
@@ -18,7 +20,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	domain, bad := models.ValidateSiteDomain(ctx, domain)
 	if bad != "" {
 		r = sessions.SaveCsrf(w, r)
-		render.HTML(r.Context(), w, templates.SiteNew, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(r.Context(), w, newSiteTpl, http.StatusOK, func(ctx *templates.Context) {
 			if bad != "" {
 				ctx.Errors["domain"] = bad
 			}

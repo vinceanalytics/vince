@@ -18,6 +18,8 @@ import (
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
+var passwordResetSuccess = templates.Focus("auth/password_reset_request_success.html")
+
 func PasswordResetRequest(w http.ResponseWriter, r *http.Request) {
 	address := r.Form.Get("email")
 	session, r := sessions.Load(r)
@@ -25,7 +27,7 @@ func PasswordResetRequest(w http.ResponseWriter, r *http.Request) {
 	if !validCaptcha || address == "" {
 		r = sessions.SaveCsrf(w, r)
 		r = sessions.SaveCaptcha(w, r)
-		render.HTML(r.Context(), w, templates.PasswordResetRequestForm, http.StatusOK, func(ctx *templates.Context) {
+		render.HTML(r.Context(), w, passwordResetRequestFromTpl, http.StatusOK, func(ctx *templates.Context) {
 			if !validCaptcha {
 				ctx.Errors["captcha"] = "Please complete the captcha to reset your password"
 			}
@@ -51,7 +53,7 @@ func PasswordResetRequest(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	render.HTML(ctx, w, templates.PasswordResetRequestSuccess, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(ctx, w, passwordResetSuccess, http.StatusOK, func(ctx *templates.Context) {
 		ctx.Email = address
 	})
 }

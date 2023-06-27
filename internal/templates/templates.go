@@ -29,11 +29,21 @@ var Layouts = template.Must(
 	),
 )
 
-var LoginForm = template.Must(
-	layout().ParseFS(Files,
-		"auth/login_form.html",
-	),
-).Lookup("focus")
+func Must(name, layout_ string) *template.Template {
+	return template.Must(layout().ParseFS(Files, name)).Lookup(layout_)
+}
+
+func Focus(name string) *template.Template {
+	return Must(name, "focus")
+}
+
+func App(name string) *template.Template {
+	return Must(name, "app")
+}
+
+func Email(name string) *template.Template {
+	return Must(name, "base_email")
+}
 
 func base() *template.Template {
 	m := template.FuncMap{
@@ -48,12 +58,6 @@ func base() *template.Template {
 	return template.New("root").Funcs(m)
 }
 
-var RegisterForm = template.Must(
-	layout().ParseFS(Files,
-		"auth/register_form.html",
-	),
-).Lookup("focus")
-
 func layout() *template.Template {
 	return template.Must(Layouts.Clone())
 }
@@ -62,84 +66,6 @@ var Error = template.Must(
 	template.ParseFS(Files,
 		"error/error.html",
 	))
-
-var ActivationEmail = template.Must(
-	layout().ParseFS(Files,
-		"email/activation_code.html",
-	),
-).Lookup("base_email")
-
-var PasswordResetEmail = template.Must(
-	layout().ParseFS(Files,
-		"email/password_reset_email.html",
-	),
-).Lookup("base_email")
-
-var Activate = template.Must(
-	layout().ParseFS(Files,
-		"auth/activate.html",
-	),
-).Lookup("focus")
-
-var SiteNew = template.Must(
-	layout().ParseFS(Files,
-		"site/new.html",
-	),
-).Lookup("focus")
-
-var UserSettings = template.Must(
-	layout().ParseFS(Files,
-		"auth/user_settings.html",
-	),
-).Lookup("app")
-
-var SiteSettings = template.Must(
-	layout().ParseFS(Files,
-		"site/settings.html",
-	),
-).Lookup("app")
-
-var SiteNewGoal = template.Must(
-	layout().ParseFS(Files,
-		"site/new_goal.html",
-	),
-).Lookup("focus")
-
-var PasswordForm = template.Must(
-	layout().ParseFS(Files,
-		"auth/password_form.html",
-	),
-).Lookup("focus")
-
-var PasswordResetRequestForm = template.Must(
-	layout().ParseFS(Files,
-		"auth/password_reset_request_form.html",
-	),
-).Lookup("focus")
-
-var PasswordResetRequestSuccess = template.Must(
-	layout().ParseFS(Files,
-		"auth/password_reset_request_success.html",
-	),
-).Lookup("focus")
-
-var PasswordResetForm = template.Must(
-	layout().ParseFS(Files,
-		"auth/password_reset_form.html",
-	),
-).Lookup("focus")
-
-var Home = template.Must(
-	layout().ParseFS(Files,
-		"user/home.html",
-	),
-).Lookup("app")
-
-var SiteHome = template.Must(
-	layout().ParseFS(Files,
-		"site/home.html",
-	),
-).Lookup("app")
 
 type Errors struct {
 	Status     int

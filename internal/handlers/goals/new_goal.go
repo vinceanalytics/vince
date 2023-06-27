@@ -12,7 +12,7 @@ func New(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
 	site := models.GetSite(ctx)
-	render.HTML(ctx, w, templates.SiteNewGoal, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(ctx, w, newGoalTpl, http.StatusOK, func(ctx *templates.Context) {
 		ctx.Site = site
 		ctx.USER = u
 	})

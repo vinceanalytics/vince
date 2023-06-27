@@ -9,12 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
+var activate = templates.Focus("auth/activate.html")
+
 func ActivateForm(w http.ResponseWriter, r *http.Request) {
 	usr := models.GetUser(r.Context())
 	hasCode := models.Exists(r.Context(), func(db *gorm.DB) *gorm.DB {
 		return db.Model(&models.EmailVerificationCode{}).Where("user_id=?", usr.ID)
 	})
-	render.HTML(r.Context(), w, templates.Activate, http.StatusOK, func(ctx *templates.Context) {
+	render.HTML(r.Context(), w, activate, http.StatusOK, func(ctx *templates.Context) {
 		ctx.HasPin = hasCode
 	})
 }
