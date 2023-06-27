@@ -161,27 +161,54 @@ func (m *merge) hash(b []byte) uint64 {
 func (m *merge) add(key, value []byte) {
 	m.addInternal(key, value)
 	if key[propOffset] == byte(Base) {
+		// Store global stats. Global stats are grouped into
+		//  Per Site : This is covered by the base property. It aggregates metrics per site.
+		//  Per User:  This is covered by setting site to zero
+		//  Per Instance : Both user and site are set to zero.
+		// We also want to be able to chart or compute diffs between global stats so
+		// we provide variations of per user and per instance stats with timestamp
+		// appended.
 		b := get()
 		b.Write(key)
-		o := b.Bytes()
+		g := b.Bytes()
 
-		// per user
-		copy(o[siteOffset:], zero)
-		m.addInternal(o, value)
+		// per user global  stats with timestamp
+		copy(g[siteOffset:], zero)
+		m.addInternal(g, value)
 
-		// per vince instance
-		copy(o[userOffset:], zero)
-		m.addInternal(o, value)
+		// per vince instance global stats with timestamp
+		copy(g[userOffset:], zero)
+		m.addInternal(g, value)
+
+		b.Reset()
+		b.Write(key)
+		g = b.Bytes()
+
+		ts := binary.BigEndian.Uint64(g[len(g)-8:])
+		// spot stats. Think of this as a global counter. Not tied to specific
+		// timestamp
+		copy(g[len(g)-8:], zero)
+
+		copy(g[siteOffset:], zero)
+		m.addInternal(g, value, ts)
+
+		copy(g[userOffset:], zero)
+		m.addInternal(g, value, ts)
 		put(b)
 	}
 }
 
-func (m *merge) addInternal(key, value []byte) {
+func (m *merge) addInternal(key, value []byte, stamp ...uint64) {
 	m.h.Reset()
 	baseKey := key[:len(key)-8]
 	baseTs := key[len(key)-8:]
 	keyHash := m.hash(baseKey)
-	ts := binary.BigEndian.Uint64(baseTs)
+	var ts uint64
+	if len(stamp) > 0 {
+		ts = stamp[0]
+	} else {
+		ts = binary.BigEndian.Uint64(baseTs)
+	}
 	m.h.Reset()
 	v := binary.BigEndian.Uint16(value)
 	b, ok := m.m[keyHash]
@@ -191,7 +218,7 @@ func (m *merge) addInternal(key, value []byte) {
 	} else {
 		b = kvBufPool.Get().(*kvBuf)
 		b.k = get()
-		b.k.Write(baseKey)
+		b.k.Write(key)
 		b.b = uint64(v)
 		m.m[keyHash] = b
 		t, ok := m.ts[ts]
