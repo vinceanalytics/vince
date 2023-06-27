@@ -11,6 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/avatar"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/handlers/goals"
+	"github.com/vinceanalytics/vince/internal/handlers/pat"
 	"github.com/vinceanalytics/vince/internal/pages"
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/render"
@@ -81,8 +82,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.PathGET("/settings", auth.UserSettings),
 		o.PathPOST("/settings", auth.SaveSettings),
 		o.PathDELETE("/me", auth.DeleteMe),
-		o.PathPOST("/settings/tokens", auth.CreatePersonalAccessToken),
-		o.DELETE(`^/settings/tokens/:id$`, auth.DeleteAPIKey),
+		o.PathPOST("/settings/tokens", pat.Create),
+		o.DELETE(`^/settings/tokens/:id$`, pat.Delete),
 
 		o.PathPOST("/new", site.CreateSite),
 		o.PathGET("/new", site.New),

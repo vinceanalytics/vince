@@ -1,4 +1,4 @@
-package auth
+package pat
 
 import (
 	"net/http"
@@ -11,7 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/pkg/secrets"
 )
 
-func CreatePersonalAccessToken(w http.ResponseWriter, r *http.Request) {
+func Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	usr := models.GetUser(ctx)
 	key := secrets.APIKey()

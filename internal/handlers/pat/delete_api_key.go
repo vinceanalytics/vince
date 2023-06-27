@@ -1,4 +1,4 @@
-package auth
+package pat
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/sessions"
 )
 
-func DeleteAPIKey(w http.ResponseWriter, r *http.Request) {
+func Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	aid, _ := strconv.ParseUint(params.Get(ctx)["id"], 10, 64)
 	a := models.APIKeyByID(ctx, aid)
