@@ -172,34 +172,55 @@ func doQuery(
 	defer it.Close()
 	b := get()
 	defer put(b)
-	getMetric(sum, Visitors, metrics.Visitors, end, shared, it, b, m, &r.Visitors)
-	getMetric(sum, Views, metrics.Views, end, shared, it, b, m, &r.Views)
-	getMetric(sum, Events, metrics.Events, end, shared, it, b, m, &r.Events)
-	getMetric(sum, Visits, metrics.Visits, end, shared, it, b, m, &r.Visits)
-	// bounce rate is a percentage of bounce to visits. We only save bounce counts,
-	// so we must calculate the rate here.
-	getMetric(sum, BounceRates, metrics.BounceRates, end, shared, it, b, m, &r.BounceRates)
+	if metrics.Visitors != nil {
+		getMetric(sum, Visitors, metrics.Visitors, end, shared, it, b, m, &r.Visitors)
+	}
+	if metrics.Views != nil {
+		getMetric(sum, Views, metrics.Views, end, shared, it, b, m, &r.Views)
+	}
+	if metrics.Events != nil {
+		getMetric(sum, Events, metrics.Events, end, shared, it, b, m, &r.Events)
+	}
+	if metrics.Visits != nil {
+		getMetric(sum, Visits, metrics.Visits, end, shared, it, b, m, &r.Visits)
+	}
 	if metrics.BounceRates != nil {
-		o := r.Visits
+		getMetric(sum, BounceRates, metrics.BounceRates, end, shared, it, b, m, &r.BounceRates)
+		visits := r.Visits
 		if metrics.Visits == nil || !metrics.Visits.Equal(metrics.BounceRates) {
-			o = make(map[string][]uint64)
-			getMetric(sum, Visits, metrics.BounceRates, end, shared, it, b, m, &o)
+			visits = make(map[string][]uint64)
+			getMetric(sum, Visits, metrics.BounceRates, end, shared, it, b, m, &visits)
 		}
 		for k, v := range r.BounceRates {
-			xv, ok := o[k]
+			xv, ok := visits[k]
 			if !ok {
 				continue
 			}
 			percent(v, xv)
 		}
 	}
-	getMetric(sum, VisitDurations, metrics.VisitDurations, end, shared, it, b, m, &r.VisitDurations)
+	if metrics.VisitDurations != nil {
+		getMetric(sum, VisitDurations, metrics.VisitDurations, end, shared, it, b, m, &r.VisitDurations)
+		visits := r.Visits
+		if metrics.Visits == nil || !metrics.Visits.Equal(metrics.VisitDurations) {
+			visits = make(map[string][]uint64)
+			getMetric(sum, Visits, metrics.VisitDurations, end, shared, it, b, m, &visits)
+		}
+		for k, v := range r.VisitDurations {
+			xv, ok := visits[k]
+			if !ok {
+				continue
+			}
+			percent(v, xv)
+		}
+	}
 }
 
 func percent(a, b []uint64) {
 	for i := range a {
 		if b[i] == 0 || a[i] == 0 {
 			// avoid dividing by zero
+			a[i] = 0
 			continue
 		}
 		x := float64(a[i]) / float64(b[i])
@@ -219,9 +240,6 @@ func getMetric(
 	m *Key,
 	result *map[string][]uint64,
 ) {
-	if sel == nil {
-		return
-	}
 	*result = make(map[string][]uint64)
 	var text string
 	if sel.Exact != nil {
