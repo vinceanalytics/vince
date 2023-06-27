@@ -128,12 +128,6 @@ func SiteFor(ctx context.Context, uid uint64, domain string) *Site {
 	return &site
 }
 
-func SiteHasGoals(ctx context.Context, domain string) bool {
-	return Exists(ctx, func(db *gorm.DB) *gorm.DB {
-		return db.Model(&Goal{}).Where("domain = ?", domain)
-	})
-}
-
 func SiteByDomain(ctx context.Context, domain string) *Site {
 	var s Site
 	err := Get(ctx).Model(&Site{}).Where("domain = ?", domain).First(&s).Error

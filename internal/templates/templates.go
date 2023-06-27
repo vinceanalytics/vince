@@ -94,7 +94,6 @@ type Context struct {
 	Site        *models.Site
 	Goals       []*models.Goal
 	IsFIrstSite bool
-	HasGoals    bool
 	Owner       *models.User
 	Recipient   string
 	Now         core.NowFunc
