@@ -1,4 +1,4 @@
-package site
+package goals
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/templates"
 )
 
-func NewGoal(w http.ResponseWriter, r *http.Request) {
+func New(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
 	site := models.GetSite(ctx)

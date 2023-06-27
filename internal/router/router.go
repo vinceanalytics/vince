@@ -10,6 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/auth"
 	"github.com/vinceanalytics/vince/internal/avatar"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/handlers/goals"
 	"github.com/vinceanalytics/vince/internal/pages"
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/render"
@@ -88,9 +89,9 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.GET("^/:owner/:site/settings$", site.Settings),
 		o.POST("^/:owner/:site/settings/visibility/public$", site.MakePublic),
 		o.POST("^/:owner/:site/settings/visibility/private$", site.MakePrivate),
-		o.GET("^/:owner/:site/goals/new$", site.NewGoal),
-		o.POST("^/:owner/:site/goals$", site.CreateGoal),
-		o.DELETE("^/:owner/:site/goals/:goal$", site.DeleteGoal),
+		o.GET("^/:owner/:site/goals/new$", goals.New),
+		o.POST("^/:owner/:site/goals$", goals.Create),
+		o.DELETE("^/:owner/:site/goals/:goal$", goals.Delete),
 		o.GET("^/:owner/:site$", site.Home),
 		o.DELETE("^/:owner/:site$", site.DeleteSite),
 		o.GET("^/:owner$", user.Home),

@@ -1,4 +1,4 @@
-package site
+package goals
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/sessions"
 )
 
-func DeleteGoal(w http.ResponseWriter, r *http.Request) {
+func Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
 	site := models.GetSite(ctx)
