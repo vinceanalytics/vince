@@ -1,4 +1,4 @@
-package user
+package account
 
 import (
 	"net/http"

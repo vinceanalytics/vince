@@ -10,6 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/auth"
 	"github.com/vinceanalytics/vince/internal/avatar"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/handlers/account"
 	"github.com/vinceanalytics/vince/internal/handlers/goals"
 	"github.com/vinceanalytics/vince/internal/handlers/pat"
 	"github.com/vinceanalytics/vince/internal/pages"
@@ -18,7 +19,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/share"
 	"github.com/vinceanalytics/vince/internal/site"
 	"github.com/vinceanalytics/vince/internal/stats"
-	"github.com/vinceanalytics/vince/internal/user"
 )
 
 func Pipe(ctx context.Context) plug.Pipeline {
@@ -79,9 +79,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.PathGET("/password", auth.PasswordForm),
 		o.PathPOST("/password", auth.SetPassword),
 		o.PathGET("/logout", auth.Logout),
-		o.PathGET("/settings", auth.UserSettings),
-		o.PathPOST("/settings", auth.SaveSettings),
-		o.PathDELETE("/me", auth.DeleteMe),
+		o.PathGET("/settings", account.Settings),
+		o.PathPOST("/settings", account.SaveSettings),
 		o.PathPOST("/settings/tokens", pat.Create),
 		o.DELETE(`^/settings/tokens/:id$`, pat.Delete),
 
@@ -95,7 +94,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.DELETE("^/:owner/:site/goals/:goal$", goals.Delete),
 		o.GET("^/:owner/:site$", site.Home),
 		o.DELETE("^/:owner/:site$", site.DeleteSite),
-		o.GET("^/:owner$", user.Home),
+		o.GET("^/:owner$", account.Home),
 		NotFound,
 	}
 }
