@@ -162,13 +162,13 @@ VINCE_LOG_LEVEL="debug"
 ```
 :::
 ## super-users
-a list of user ID with super privilege
+a list of user names with super privilege
 ::: code-group
 ```shell [flag]
---super-users="..."
+--super-users=""
 ```
 ```shell [env]
-VINCE_SUPER_USERS="..."
+VINCE_SUPER_USERS=""
 ```
 :::
 ## uploads-dir

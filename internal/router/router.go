@@ -18,7 +18,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/share"
-	"github.com/vinceanalytics/vince/internal/stats"
 )
 
 func Pipe(ctx context.Context) plug.Pipeline {
@@ -29,7 +28,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	// health endpoints.
 	public := plug.API(ctx)
 
-	pipe6 := plug.InternalStatsAPI()
 	browser := plug.Browser(ctx)
 	pipe5 := append(plug.Browser(ctx), plug.Protect()...)
 
@@ -44,10 +42,6 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		// add prefix matches on the top of the pipeline for faster lookups
 		plug.Ok(config.Get(ctx).EnableProfile,
 			pipe5.Prefix("/debug/pprof/", pprof.Index),
-		),
-		plug.PREFIX("/api/stats",
-			pipe6.GET("/api/stats/:site", stats.Query),
-			NotFound,
 		),
 
 		plug.PREFIX("/share/",

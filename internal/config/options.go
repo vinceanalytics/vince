@@ -64,8 +64,8 @@ type Options struct {
 		Methods               []string
 		SendPreflightResponse bool
 	}
-	SuperUserId []uint64
-	Firewall    struct {
+	SuperUsers []string
+	Firewall   struct {
 		Enabled bool
 		BlockIP []string
 		AllowIP []string
@@ -578,11 +578,11 @@ func (o *Options) Flags() []cli.Flag {
 			Destination: &o.Cors.SendPreflightResponse,
 			EnvVars:     []string{"VINCE_CORS_SEND_PREFLIGHT_RESPONSE"},
 		},
-		&cli.Uint64SliceFlag{
+		&cli.StringSliceFlag{
 			Category:    "core",
 			Name:        "super-users",
-			Usage:       "a list of user ID with super privilege",
-			Destination: &o.SuperUserId,
+			Usage:       "a list of user names with super privilege",
+			Destination: &o.SuperUsers,
 			EnvVars:     []string{"VINCE_SUPER_USERS"},
 		},
 		&cli.BoolFlag{
@@ -609,8 +609,8 @@ func (o *Options) Flags() []cli.Flag {
 	}
 }
 
-func (o *Options) IsSuperUser(uid uint64) bool {
-	for _, v := range o.SuperUserId {
+func (o *Options) IsSuperUser(uid string) bool {
+	for _, v := range o.SuperUsers {
 		if v == uid {
 			return true
 		}

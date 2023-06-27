@@ -69,7 +69,7 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l cors-headers -r
 complete -c vince -n '__fish_vince_no_subcommand' -f -l cors-expose -r
 complete -c vince -n '__fish_vince_no_subcommand' -f -l cors-methods -r
 complete -c vince -n '__fish_vince_no_subcommand' -f -l cors-send-preflight-response
-complete -c vince -n '__fish_vince_no_subcommand' -f -l super-users -r -d 'a list of user ID with super privilege'
+complete -c vince -n '__fish_vince_no_subcommand' -f -l super-users -r -d 'a list of user names with super privilege'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l enable-firewall -d 'allow blocking ip address'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l firewall-block-list -r -d 'block  ip address from this list'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l firewall-allow-list -r -d 'allow  ip address from this list'
