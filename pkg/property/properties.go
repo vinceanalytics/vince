@@ -11,7 +11,7 @@ var _ json.Marshaler = (*Property)(nil)
 var _ json.Unmarshaler = (*Property)(nil)
 
 const (
-	Base Property = iota
+	Base Property = 1 + iota
 	Event
 	Page
 	EntryPage
