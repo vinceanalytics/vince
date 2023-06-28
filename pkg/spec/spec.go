@@ -37,6 +37,8 @@ type Metrics struct {
 	Visits   uint64 `json:"visits,omitempty"`
 }
 
+type Metric One[uint64]
+
 type One[T any] struct {
 	Elapsed time.Duration `json:"elapsed"`
 	Item    T             `json:"item"`

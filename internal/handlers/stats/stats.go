@@ -9,6 +9,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/property"
 )
 
 func Query(w http.ResponseWriter, r *http.Request) {
@@ -31,8 +32,17 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 func Global(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	owner := models.GetUser(ctx)
-	site := models.GetSite(ctx)
 	render.JSON(w, http.StatusOK, timeseries.Global(
-		ctx, owner.ID, site.ID,
+		ctx, owner.ID, 0,
 	))
+}
+
+func GlobalMetric(m property.Metric) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		owner := models.GetUser(ctx)
+		render.JSON(w, http.StatusOK, timeseries.GlobalMetric(
+			ctx, owner.ID, 0, m,
+		))
+	}
 }

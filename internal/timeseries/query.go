@@ -329,6 +329,31 @@ func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {
 	return
 }
 
+func GlobalMetric(ctx context.Context, uid, sid uint64, metric Metric) (o spec.Metric) {
+	start := core.Now(ctx)
+	now := start.UnixMilli()
+	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
+	m := newMetaKey()
+	m.uid(uid, sid)
+	m.prop(Base)
+	b := get()
+
+	defer func() {
+		m.Release()
+		put(b)
+		o.Elapsed = core.Now(ctx).Sub(start)
+	}()
+	b.Write(m[:])
+	b.WriteString(BaseKey)
+	b.Write(zero)
+	key := b.Bytes()
+	err := u64(txn, key, metric, &o.Item)
+	if err != nil {
+		log.Get().Err(err).Msg("failed to query global stats")
+	}
+	return
+}
+
 func u64(txn *badger.Txn, b []byte, m Metric, o *uint64) error {
 	b[metricOffset] = byte(m)
 	it, err := txn.Get(b)
