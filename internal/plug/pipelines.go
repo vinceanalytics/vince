@@ -139,9 +139,10 @@ const (
 	// cannot have multiple consecutive hyphens.
 	// cannot begin or end with a hyphen.
 	// Maximum is 39 characters.
-	owner = `(?<owner>[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38})`
-	site  = `(?<site>\b((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}\b)`
-	id    = `(?<%s>\d*)`
+	owner  = `(?<owner>[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38})`
+	site   = `(?<site>\b((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}\b)`
+	id     = `(?<%s>\d*)`
+	metric = `(?<metric>visitors|views|events|visits)`
 )
 
 func reid(x string) string {
@@ -149,9 +150,10 @@ func reid(x string) string {
 }
 
 var replace = map[string]string{
-	":owner": owner,
-	":site":  site,
-	":goal":  reid("goal"),
+	":owner":  owner,
+	":site":   site,
+	":goal":   reid("goal"),
+	":metric": metric,
 }
 
 func Ok(ok bool, pipe Plug) Plug {

@@ -19,7 +19,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/share"
-	"github.com/vinceanalytics/vince/pkg/property"
 	"github.com/vinceanalytics/vince/pkg/schema"
 )
 
@@ -70,13 +69,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			a.And(plug.AuthAPI(schema.Stats, schema.Get)).
 				GET("^/stats/:owner$", stats.Global),
 			a.And(plug.AuthAPI(schema.Stats, schema.Get)).
-				GET("^/stats/:owner/visitors$", stats.GlobalMetric(property.Visitors)),
-			a.And(plug.AuthAPI(schema.Stats, schema.Get)).
-				GET("^/stats/:owner/views$", stats.GlobalMetric(property.Views)),
-			a.And(plug.AuthAPI(schema.Stats, schema.Get)).
-				GET("^/stats/:owner/events$", stats.GlobalMetric(property.Events)),
-			a.And(plug.AuthAPI(schema.Stats, schema.Get)).
-				GET("^/stats/:owner/visits$", stats.GlobalMetric(property.Visits)),
+				GET("^/stats/:owner/:metric$", stats.GlobalMetric),
 			a.And(plug.AuthAPI(schema.Stats, schema.Get)).
 				GET("^/stats/:owner/:site$", stats.Query),
 			a.And(plug.AuthAPI(schema.Stats, schema.Delete)).

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/params"
 	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/timeseries"
@@ -37,12 +38,11 @@ func Global(w http.ResponseWriter, r *http.Request) {
 	))
 }
 
-func GlobalMetric(m property.Metric) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		owner := models.GetUser(ctx)
-		render.JSON(w, http.StatusOK, timeseries.GlobalMetric(
-			ctx, owner.ID, 0, m,
-		))
-	}
+func GlobalMetric(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	owner := models.GetUser(ctx)
+	m := property.ParsMetric(params.Get(ctx).Get("metric"))
+	render.JSON(w, http.StatusOK, timeseries.GlobalMetric(
+		ctx, owner.ID, 0, m,
+	))
 }
