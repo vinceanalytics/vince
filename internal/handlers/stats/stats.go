@@ -23,3 +23,11 @@ func Query(w http.ResponseWriter, r *http.Request) {
 	}
 	render.JSON(w, http.StatusOK, timeseries.Query(ctx, site.UserID, site.ID, q))
 }
+
+func Delete(w http.ResponseWriter, r *http.Request) {
+	render.JSON(w, http.StatusNotImplemented, http.StatusText(http.StatusNotImplemented))
+}
+
+func Global(w http.ResponseWriter, r *http.Request) {
+	render.JSON(w, http.StatusNotImplemented, http.StatusText(http.StatusNotImplemented))
+}

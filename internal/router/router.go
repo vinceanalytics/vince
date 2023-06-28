@@ -14,6 +14,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/handlers/goals"
 	"github.com/vinceanalytics/vince/internal/handlers/pat"
 	"github.com/vinceanalytics/vince/internal/handlers/site"
+	"github.com/vinceanalytics/vince/internal/handlers/stats"
 	"github.com/vinceanalytics/vince/internal/pages"
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/render"
@@ -61,6 +62,12 @@ func Pipe(ctx context.Context) plug.Pipeline {
 			a.And(plug.AuthAPI(schema.Sites, schema.List)).GET("^/sites/:owner$", site.APIList),
 			a.And(plug.AuthAPI(schema.Sites, schema.Update)).PUT("^/sites/:owner/:site$", site.APIUpdate),
 			a.And(plug.AuthAPI(schema.Sites, schema.Delete)).DELETE("^/sites/:owner/:site$", site.APIDelete),
+		),
+
+		plug.PREFIX("/stats/",
+			a.And(plug.AuthAPI(schema.Stats, schema.Get)).GET("^/stats/:owner/:site/global$", stats.Global),
+			a.And(plug.AuthAPI(schema.Stats, schema.Get)).GET("^/stats/:owner/:site$", stats.Query),
+			a.And(plug.AuthAPI(schema.Stats, schema.Delete)).DELETE("^/stats/:owner/:site$", stats.Delete),
 		),
 
 		public.PathPOST("/api/event", api.Events),
