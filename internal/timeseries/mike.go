@@ -25,26 +25,75 @@ type aggr struct {
 
 func DropSite(ctx context.Context, uid, sid uint64) {
 	start := core.Now(ctx)
-	defer system.DropSiteDuration.Observe(core.Now(ctx).Sub(start).Seconds())
-
 	id := newMetaKey()
-	defer id.Release()
 	id.uid(uid, sid)
+	var wg sync.WaitGroup
+	prefix := id[:metricOffset]
+	sl := newSlice()
+	defer func() {
+		sl.release()
+		id.Release()
+		system.DropSiteDuration.Observe(core.Now(ctx).Sub(start).Seconds())
+	}()
+	wg.Add(2)
+	ts := uint64(start.UnixMilli())
+	go dropSiteTemporary(ctx, &wg, ts, sl.clone(prefix))
+	go dropSitePermanent(ctx, &wg, ts, sl.clone(prefix))
+	wg.Wait()
+}
 
-	err := GetMike(ctx).DropPrefix(id[:metricOffset])
+func dropSiteTemporary(ctx context.Context, wg *sync.WaitGroup, ts uint64, prefix []byte) {
+	defer wg.Done()
+	err := drop(GetMike(ctx), ts, prefix)
 	if err != nil {
-		log.Get().Err(err).
-			Uint64("uid", uid).
-			Uint64("sid", sid).
-			Msg("failed to delete site from temporary storage")
+		log.Get().Err(err).Msg("failed to delete site data from temporary storage")
 	}
-	err = Get(ctx).DropPrefix(id[:metricOffset])
+}
+
+func dropSitePermanent(ctx context.Context, wg *sync.WaitGroup, ts uint64, prefix []byte) {
+	defer wg.Done()
+	err := drop(Get(ctx), ts, prefix)
 	if err != nil {
-		log.Get().Err(err).
-			Uint64("uid", uid).
-			Uint64("sid", sid).
-			Msg("failed to delete site from permanent storage")
+		log.Get().Err(err).Msg("failed to delete site data from permanent storage")
 	}
+}
+
+func drop(db *badger.DB, ts uint64, prefix []byte) error {
+	sl := newSlice()
+	txn := db.NewTransactionAt(ts, false)
+	delTxn := db.NewTransactionAt(ts, true)
+	o := badger.DefaultIteratorOptions
+	o.PrefetchValues = false
+	o.Prefix = prefix
+	it := txn.NewIterator(o)
+
+	defer func() {
+		it.Close()
+		txn.Discard()
+		delTxn.Discard()
+		sl.release()
+	}()
+	for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+		clone := sl.clone(it.Item().Key())
+		err := delTxn.Delete(clone)
+		if err != nil {
+			if errors.Is(err, badger.ErrTxnTooBig) {
+				err = delTxn.CommitAt(ts, nil)
+				if err != nil {
+					return err
+				}
+				sl.reset()
+				delTxn = db.NewTransactionAt(ts, true)
+				err = delTxn.Delete(clone)
+				if err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
+	}
+	return delTxn.CommitAt(ts, nil)
 }
 
 func Save(ctx context.Context, b *Buffer) {
@@ -238,7 +287,16 @@ func (s *slice) get(n int) []byte {
 }
 
 func (s *slice) release() {
+	s.reset()
+	slicePool.Put(s)
+}
+
+func (s *slice) clone(b []byte) []byte {
+	o := s.get(len(b))
+	copy(o, b)
+	return o
+}
+func (s *slice) reset() {
 	s.pos = 0
 	s.d = s.d[:0]
-	slicePool.Put(s)
 }
