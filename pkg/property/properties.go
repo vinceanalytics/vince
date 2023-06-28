@@ -37,7 +37,6 @@ const BaseKey = "__root__"
 // Enum value maps for Property.
 var (
 	_prop_name = map[Property]string{
-		Base:           "base",
 		Event:          "event",
 		Page:           "page",
 		EntryPage:      "entryPage",
@@ -58,7 +57,6 @@ var (
 		City:           "city",
 	}
 	_prop_value = map[string]Property{
-		"base":           Base,
 		"event":          Event,
 		"page":           Page,
 		"entryPage":      EntryPage,

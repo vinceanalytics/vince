@@ -8,7 +8,6 @@ export function schedule(call: () => void) {
 
 
 export type Property =
-    | "base"
     | "event"
     | "page"
     | "entryPage"

@@ -69,9 +69,6 @@ func Query(ctx context.Context, uid, sid uint64, r query.Query) (result query.Qu
 	now := uint64(currentTime.UnixMilli())
 	p := r.Props
 	rs := &result.Props
-	if p.Base != nil {
-		do(ctx, Base, p.Base, &rs.Base, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
-	}
 	if p.Event != nil {
 		do(ctx, Event, p.Event, &rs.Event, &wg, shared, now, uint64(start), uint64(end), m.clone(), r.Sum)
 	}

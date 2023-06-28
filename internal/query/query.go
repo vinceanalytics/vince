@@ -17,7 +17,6 @@ type Query struct {
 }
 
 type Props struct {
-	Base           *Metrics `json:"base,omitempty"`
 	Event          *Metrics `json:"event,omitempty"`
 	Page           *Metrics `json:"page,omitempty"`
 	EntryPage      *Metrics `json:"entryPage,omitempty"`
@@ -40,8 +39,6 @@ type Props struct {
 
 func (p *Props) Set(prop string, m *Metrics) {
 	switch prop {
-	case "base":
-		p.Base = m
 	case "event":
 		p.Event = m
 	case "page":
@@ -82,12 +79,10 @@ func (p *Props) Set(prop string, m *Metrics) {
 }
 
 func (p *Props) All(f func(string, *Metrics)) {
-	p.Base = &Metrics{}
-	f("base", p.Base)
 	p.Event = &Metrics{}
-	f("base", p.Event)
+	f("event", p.Event)
 	p.Page = &Metrics{}
-	f("base", p.Page)
+	f("page", p.Page)
 	p.EntryPage = &Metrics{}
 	f("EntryPage", p.EntryPage)
 	p.ExitPage = &Metrics{}
