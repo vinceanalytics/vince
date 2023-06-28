@@ -57,11 +57,16 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		),
 
 		plug.PREFIX("/sites/",
-			a.And(plug.AuthAPI(schema.Sites, schema.Create)).POST("^/sites/:owner$", site.APICreate),
-			a.And(plug.AuthAPI(schema.Sites, schema.Get)).GET("^/sites/:owner/:site$", site.APIGet),
-			a.And(plug.AuthAPI(schema.Sites, schema.List)).GET("^/sites/:owner$", site.APIList),
-			a.And(plug.AuthAPI(schema.Sites, schema.Update)).PUT("^/sites/:owner/:site$", site.APIUpdate),
-			a.And(plug.AuthAPI(schema.Sites, schema.Delete)).DELETE("^/sites/:owner/:site$", site.APIDelete),
+			a.And(plug.AuthAPI(schema.Sites, schema.Create)).
+				POST("^/sites/:owner$", site.APICreate),
+			a.And(plug.AuthAPI(schema.Sites, schema.Get)).
+				GET("^/sites/:owner/:site$", site.APIGet),
+			a.And(plug.AuthAPI(schema.Sites, schema.List)).
+				GET("^/sites/:owner$", site.APIList),
+			a.And(plug.AuthAPI(schema.Sites, schema.Update)).
+				PUT("^/sites/:owner/:site$", site.APIUpdate),
+			a.And(plug.AuthAPI(schema.Sites, schema.Delete)).
+				DELETE("^/sites/:owner/:site$", site.APIDelete),
 			NotFound,
 		),
 
