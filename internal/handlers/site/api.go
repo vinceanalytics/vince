@@ -16,7 +16,7 @@ func APIGet(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	owner := models.GetUser(ctx)
 	site := models.GetSite(ctx)
-	render.JSON(w, http.StatusOK, siteSpec(owner, *site))
+	render.JSON(w, http.StatusOK, siteSpec(owner, site))
 }
 
 func APIUpdate(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +24,14 @@ func APIUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func APIList(w http.ResponseWriter, r *http.Request) {
-	render.JSONError(w, http.StatusNotImplemented, http.StatusText(http.StatusNotImplemented))
+	ctx := r.Context()
+	owner := models.GetUser(ctx)
+	models.PreloadUser(ctx, owner, "Sites")
+	o := make([]spec.Site, len(owner.Sites))
+	for i := range owner.Sites {
+		o[i] = siteSpec(owner, owner.Sites[i])
+	}
+	render.JSON(w, http.StatusOK, o)
 }
 
 func APIDelete(w http.ResponseWriter, r *http.Request) {
@@ -76,10 +83,10 @@ func APICreate(w http.ResponseWriter, r *http.Request) {
 		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
-	render.JSON(w, http.StatusCreated, siteSpec(owner, *site))
+	render.JSON(w, http.StatusCreated, siteSpec(owner, site))
 }
 
-func siteSpec(owner *models.User, site models.Site) spec.Site {
+func siteSpec(owner *models.User, site *models.Site) spec.Site {
 	return spec.Site{
 		Domain:      site.Domain,
 		Public:      site.Public,
