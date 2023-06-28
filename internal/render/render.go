@@ -18,10 +18,10 @@ func JSON(w http.ResponseWriter, code int, data any) {
 }
 
 type err struct {
-	Error string `json:"error"`
+	Error any `json:"error"`
 }
 
-func JSONError(w http.ResponseWriter, code int, msg string) {
+func JSONError(w http.ResponseWriter, code int, msg any) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(err{Error: msg})

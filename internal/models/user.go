@@ -141,7 +141,7 @@ func NewUser(ctx context.Context, u *User, password, passwordConfirm string) (va
 		return s != ""
 	})
 	validate("name", u.Name, "required", validation, func(s string) bool {
-		return names.Valid(s)
+		return names.Owner(s)
 	})
 	validate("email", u.Email, "required", validation, func(s string) bool {
 		return s != ""
