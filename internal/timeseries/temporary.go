@@ -296,7 +296,11 @@ func (s *slice) clone(b []byte) []byte {
 	copy(o, b)
 	return o
 }
+
 func (s *slice) reset() {
 	s.pos = 0
+	for i := 0; i < len(s.d); i += 1 {
+		s.d[i] = 0
+	}
 	s.d = s.d[:0]
 }

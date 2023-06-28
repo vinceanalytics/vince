@@ -147,9 +147,10 @@ func (m *merge) release() {
 var mergePool = &sync.Pool{
 	New: func() any {
 		return &merge{
-			ts: make(map[uint64]*kvTs),
-			m:  make(map[uint64]*kvBuf),
-			h:  xxhash.New(),
+			ts:    make(map[uint64]*kvTs),
+			m:     make(map[uint64]*kvBuf),
+			slice: slice{d: make([]byte, 0, 1<<10)},
+			h:     xxhash.New(),
 		}
 	},
 }
