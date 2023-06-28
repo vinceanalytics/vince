@@ -9,7 +9,7 @@ import (
 	"github.com/vinceanalytics/vince/pkg/schema"
 )
 
-func AuthSiteAPI(action schema.Verb) Plug {
+func AuthAPI(resource schema.Resource, action schema.Verb) Plug {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenString := bearer(r.Header)
@@ -24,7 +24,7 @@ func AuthSiteAPI(action schema.Verb) Plug {
 			owner := params.Get("owner")
 			site := params.Get("site")
 			claims := models.GetApiKey(ctx, tokenString)
-			if claims == nil || !claims.Can(ctx, owner, site, schema.Sites, action) {
+			if claims == nil || !claims.Can(ctx, owner, site, resource, action) {
 				render.JSONError(w, http.StatusUnauthorized,
 					"Invalid API key. Please make sure you're using a valid API key with access to the resource you've requested.",
 				)
