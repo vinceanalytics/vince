@@ -25,21 +25,26 @@ type aggr struct {
 
 func DropSite(ctx context.Context, uid, sid uint64) {
 	start := core.Now(ctx)
-	defer system.DropSiteDuration.Observe(time.Since(start).Seconds())
+	defer system.DropSiteDuration.Observe(core.Now(ctx).Sub(start).Seconds())
 
-	db := GetMike(ctx)
 	id := newMetaKey()
 	defer id.Release()
 	id.uid(uid, sid)
-	// remove all keys under /user_id/site_id/ prefix.
-	err := db.DropPrefix(id[:metricOffset])
+
+	err := GetMike(ctx).DropPrefix(id[:metricOffset])
 	if err != nil {
 		log.Get().Err(err).
 			Uint64("uid", uid).
 			Uint64("sid", sid).
-			Msg("failed to delete site from stats storage")
+			Msg("failed to delete site from temporary storage")
 	}
-
+	err = Get(ctx).DropPrefix(id[:metricOffset])
+	if err != nil {
+		log.Get().Err(err).
+			Uint64("uid", uid).
+			Uint64("sid", sid).
+			Msg("failed to delete site from permanent storage")
+	}
 }
 
 func Save(ctx context.Context, b *Buffer) {
