@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/names"
 	"github.com/vinceanalytics/vince/pkg/spec"
@@ -35,7 +37,23 @@ func APIList(w http.ResponseWriter, r *http.Request) {
 }
 
 func APIDelete(w http.ResponseWriter, r *http.Request) {
-	render.JSONError(w, http.StatusNotImplemented, http.StatusText(http.StatusNotImplemented))
+	ctx := r.Context()
+	owner := models.GetUser(ctx)
+	site := models.GetSite(ctx)
+
+	// remove site from database
+	models.DeleteSite(ctx, owner, site)
+
+	// remove site from cache
+	caches.Site(ctx).Del(site.Domain)
+
+	// remove site events in collection  buffers
+	timeseries.GetMap(ctx).Delete(site.ID)
+
+	// permanently remove site stats
+	timeseries.DropSite(ctx, owner.ID, site.ID)
+
+	render.JSON(w, http.StatusOK, siteSpec(owner, site))
 }
 
 func APICreate(w http.ResponseWriter, r *http.Request) {
