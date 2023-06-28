@@ -44,7 +44,7 @@ func DropSite(ctx context.Context, uid, sid uint64) {
 
 func dropSiteTemporary(ctx context.Context, wg *sync.WaitGroup, ts uint64, prefix []byte) {
 	defer wg.Done()
-	err := drop(GetMike(ctx), ts, prefix)
+	err := drop(Temporary(ctx), ts, prefix)
 	if err != nil {
 		log.Get().Err(err).Msg("failed to delete site data from temporary storage")
 	}
@@ -52,7 +52,7 @@ func dropSiteTemporary(ctx context.Context, wg *sync.WaitGroup, ts uint64, prefi
 
 func dropSitePermanent(ctx context.Context, wg *sync.WaitGroup, ts uint64, prefix []byte) {
 	defer wg.Done()
-	err := drop(Get(ctx), ts, prefix)
+	err := drop(Permanent(ctx), ts, prefix)
 	if err != nil {
 		log.Get().Err(err).Msg("failed to delete site data from permanent storage")
 	}
@@ -100,7 +100,7 @@ func Save(ctx context.Context, b *Buffer) {
 	start := core.Now(ctx)
 	startMs := uint64(start.UnixMilli())
 
-	db := GetMike(ctx)
+	db := Temporary(ctx)
 	meta := newMetaKey()
 
 	svc := saveContext{

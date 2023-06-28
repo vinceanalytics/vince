@@ -163,7 +163,7 @@ func doQuery(
 	*result = &query.MetricsResult{}
 	r := *result
 
-	txn := Get(ctx).NewTransactionAt(now, false)
+	txn := Permanent(ctx).NewTransactionAt(now, false)
 	o := badger.DefaultIteratorOptions
 	o.SinceTs = uint64(start)
 	// make sure all iterations are in /user_id/site_id/ scope
@@ -300,7 +300,7 @@ func Sum64(ls []uint64) (o uint64) {
 
 func Global(ctx context.Context, uid, sid uint64) (o query.Global) {
 	now := core.Now(ctx).UnixMilli()
-	txn := Get(ctx).NewTransactionAt(uint64(now), false)
+	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
 	m := newMetaKey()
 	defer m.Release()
 	m.uid(uid, sid)

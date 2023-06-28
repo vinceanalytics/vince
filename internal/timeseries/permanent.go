@@ -34,7 +34,7 @@ type mergeStats struct {
 }
 
 func forever(ctx context.Context, ts uint64, kv *kvTs, stats *mergeStats) error {
-	db := Get(ctx)
+	db := Permanent(ctx)
 	txn := db.NewTransactionAt(ts, true)
 	s := newSlice()
 	for _, b := range kv.b {
@@ -79,7 +79,7 @@ func storeForever(ctx context.Context, mergeFn mergeFunction) (stats mergeStats)
 	start := core.Now(ctx)
 
 	ts := uint64(start.UnixMilli())
-	txn := GetMike(ctx).NewTransactionAt(ts, true)
+	txn := Temporary(ctx).NewTransactionAt(ts, true)
 	o := badger.DefaultIteratorOptions
 	it := txn.NewIterator(o)
 	ls := newTxnBufferList()

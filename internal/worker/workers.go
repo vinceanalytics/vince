@@ -57,9 +57,9 @@ func SaveBuffers(ctx context.Context, interval time.Duration) {
 }
 
 func GC(ctx context.Context, interval time.Duration) {
-	timeseries.GetMike(ctx).RunValueLogGC(0.5)
+	timeseries.Temporary(ctx).RunValueLogGC(0.5)
 	timeseries.GetUnique(ctx).RunValueLogGC(0.5)
-	timeseries.Get(ctx).RunValueLogGC(0.5)
+	timeseries.Permanent(ctx).RunValueLogGC(0.5)
 }
 
 func Merge(ctx context.Context, interval time.Duration) {

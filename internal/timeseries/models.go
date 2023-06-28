@@ -15,27 +15,27 @@ import (
 
 func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, error) {
 	dir := filepath.Join(o.DataPath, "ts")
-	mike, err := openMike(ctx, filepath.Join(dir, "mike"))
+	temporary, err := managed(ctx, filepath.Join(dir, "temp"))
 	if err != nil {
 		return nil, nil, err
 	}
 	unique, err := open(ctx, filepath.Join(dir, "unique"))
 	if err != nil {
-		mike.Close()
+		temporary.Close()
 		return nil, nil, err
 	}
-	vince, err := openVince(ctx, filepath.Join(dir, "vince"))
+	permanent, err := managed(ctx, filepath.Join(dir, "permanent"))
 	if err != nil {
-		mike.Close()
+		temporary.Close()
 		return nil, nil, err
 	}
-	ctx = context.WithValue(ctx, mikeKey{}, mike)
+	ctx = context.WithValue(ctx, temporaryKey{}, temporary)
 	ctx = context.WithValue(ctx, uniqueKey{}, unique)
-	ctx = context.WithValue(ctx, vinceKey{}, vince)
+	ctx = context.WithValue(ctx, permanentKey{}, permanent)
 	m := NewMap(o.Intervals.TSSync)
 	ctx = SetMap(ctx, m)
 
-	resource := resourceList{mike, unique, vince, m}
+	resource := resourceList{temporary, unique, permanent, m}
 	return ctx, resource, nil
 }
 
@@ -49,14 +49,7 @@ func (r resourceList) Close() error {
 	return errors.Join(err...)
 }
 
-func openMike(ctx context.Context, path string) (*badger.DB, error) {
-	os.MkdirAll(path, 0755)
-	o := badger.DefaultOptions(path).
-		WithLogger(log.Badger(ctx))
-	return badger.OpenManaged(o)
-}
-
-func openVince(ctx context.Context, path string) (*badger.DB, error) {
+func managed(ctx context.Context, path string) (*badger.DB, error) {
 	os.MkdirAll(path, 0755)
 	o := badger.DefaultOptions(path).
 		WithCompression(options.ZSTD).
@@ -72,18 +65,18 @@ func open(ctx context.Context, path string) (*badger.DB, error) {
 	return badger.Open(o)
 }
 
-type mikeKey struct{}
+type temporaryKey struct{}
 type uniqueKey struct{}
-type vinceKey struct{}
+type permanentKey struct{}
 
-func GetMike(ctx context.Context) *badger.DB {
-	return ctx.Value(mikeKey{}).(*badger.DB)
+func Temporary(ctx context.Context) *badger.DB {
+	return ctx.Value(temporaryKey{}).(*badger.DB)
 }
 
 func GetUnique(ctx context.Context) *badger.DB {
 	return ctx.Value(uniqueKey{}).(*badger.DB)
 }
 
-func Get(ctx context.Context) *badger.DB {
-	return ctx.Value(vinceKey{}).(*badger.DB)
+func Permanent(ctx context.Context) *badger.DB {
+	return ctx.Value(permanentKey{}).(*badger.DB)
 }
