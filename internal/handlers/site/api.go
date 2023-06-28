@@ -13,7 +13,10 @@ import (
 )
 
 func APIGet(w http.ResponseWriter, r *http.Request) {
-	render.JSON(w, http.StatusOK, models.GetSite(r.Context()))
+	ctx := r.Context()
+	owner := models.GetUser(ctx)
+	site := models.GetSite(ctx)
+	render.JSON(w, http.StatusOK, siteSpec(owner, *site))
 }
 
 func APIUpdate(w http.ResponseWriter, r *http.Request) {
