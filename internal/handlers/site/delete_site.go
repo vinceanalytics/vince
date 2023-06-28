@@ -27,6 +27,6 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	timeseries.DropSite(ctx, u.ID, site.ID)
 
 	session, r := sessions.Load(r)
-	session.SuccessFlash("site and site stats have been permanently deleted").Save(ctx, w)
+	session.Success("site and site stats have been permanently deleted").Save(ctx, w)
 	http.Redirect(w, r, "/"+u.Name, http.StatusFound)
 }

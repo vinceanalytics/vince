@@ -41,7 +41,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 	models.CreateGoal(ctx, site, name, event, path)
 	session, r := sessions.Load(r)
-	session.SuccessFlash("Goal created successfully").Save(ctx, w)
+	session.Success("Goal created successfully").Save(ctx, w)
 	to := fmt.Sprintf("/%s/%s/settings#goals", u.Name, site.Domain)
 	http.Redirect(w, r, to, http.StatusFound)
 }

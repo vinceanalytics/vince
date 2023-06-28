@@ -20,6 +20,6 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	session, r := sessions.Load(r)
-	session.SuccessFlash("API key revoked successfully").Save(ctx, w)
+	session.Success("API key revoked successfully").Save(ctx, w)
 	http.Redirect(w, r, "/settings#tokens-list", http.StatusFound)
 }

@@ -51,8 +51,8 @@ func PasswordReset(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		session, r := sessions.Load(r)
-		session.SuccessFlash("Password updated successfully").
-			SuccessFlash("Please log in with your new credentials")
+		session.Success("Password updated successfully").
+			Success("Please log in with your new credentials")
 		session.Data.LoggedIn = false
 		session.Save(ctx, w)
 		http.Redirect(w, r, "/login", http.StatusFound)

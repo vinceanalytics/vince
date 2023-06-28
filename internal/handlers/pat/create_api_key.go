@@ -25,7 +25,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	models.CreatePersonalAccessToken(ctx, key, name, usr.Name, i, scopes)
 	session, r := sessions.Load(r)
-	session.CustomFlash(key).
-		SuccessFlash("API key created successfully").Save(ctx, w)
+	session.Custom(key).
+		Success("API key created successfully").Save(ctx, w)
 	http.Redirect(w, r, "/settings#tokens-list", http.StatusFound)
 }

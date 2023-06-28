@@ -19,12 +19,12 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	to := fmt.Sprintf("/%s/%s/settings#goals", u.Name, site.Domain)
 	session, r := sessions.Load(r)
 	if goal == nil {
-		session.FailFlash("no such a goal")
+		session.Fail("no such a goal")
 	} else {
 		if !models.DeleteGoal(ctx, site, goal) {
-			session.FailFlash("failed to delete goal")
+			session.Fail("failed to delete goal")
 		} else {
-			session.SuccessFlash("Goal deleted successfully")
+			session.Success("Goal deleted successfully")
 		}
 	}
 	session.Save(ctx, w)

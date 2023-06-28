@@ -14,7 +14,7 @@ func Public(w http.ResponseWriter, r *http.Request) {
 	u := models.GetUser(ctx)
 	models.ChangeSiteVisibility(ctx, site, true)
 	session, r := sessions.Load(r)
-	session.SuccessFlash(fmt.Sprintf("Stats for %s are now public.", site.Domain))
+	session.Success(fmt.Sprintf("Stats for %s are now public.", site.Domain))
 	session.Save(ctx, w)
 	to := fmt.Sprintf("/%s/%s/settings#visibility", u.Name, site.Domain)
 	http.Redirect(w, r, to, http.StatusFound)

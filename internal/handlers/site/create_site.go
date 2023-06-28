@@ -33,7 +33,8 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ss, r := sessions.Load(r)
-	ss.Save(ctx, w)
+	ss.Success("successfully created a new site").
+		Save(ctx, w)
 	to := fmt.Sprintf("/%s/%s", u.Name, url.PathEscape(domain))
 	http.Redirect(w, r, to, http.StatusFound)
 }

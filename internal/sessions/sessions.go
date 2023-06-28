@@ -59,7 +59,7 @@ type Data struct {
 	Flash     *flash.Flash `json:",omitempty"`
 }
 
-func (s *SessionContext) SuccessFlash(m string) *SessionContext {
+func (s *SessionContext) Success(m string) *SessionContext {
 	if s.Data.Flash == nil {
 		s.Data.Flash = &flash.Flash{}
 	}
@@ -67,7 +67,7 @@ func (s *SessionContext) SuccessFlash(m string) *SessionContext {
 	return s
 }
 
-func (s *SessionContext) CustomFlash(m string) *SessionContext {
+func (s *SessionContext) Custom(m string) *SessionContext {
 	if s.Data.Flash == nil {
 		s.Data.Flash = &flash.Flash{}
 	}
@@ -75,11 +75,18 @@ func (s *SessionContext) CustomFlash(m string) *SessionContext {
 	return s
 }
 
-func (s *SessionContext) FailFlash(m string) *SessionContext {
+func (s *SessionContext) Fail(m string) *SessionContext {
 	if s.Data.Flash == nil {
 		s.Data.Flash = &flash.Flash{}
 	}
 	s.Data.Flash.Error = append(s.Data.Flash.Error, m)
+	return s
+}
+func (s *SessionContext) Warn(m string) *SessionContext {
+	if s.Data.Flash == nil {
+		s.Data.Flash = &flash.Flash{}
+	}
+	s.Data.Flash.Warn = append(s.Data.Flash.Warn, m)
 	return s
 }
 
