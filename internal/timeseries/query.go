@@ -305,7 +305,6 @@ func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {
 	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
 	m := newMetaKey()
 	m.uid(uid, sid)
-	m.prop(Base)
 	b := get()
 
 	defer func() {
@@ -314,10 +313,8 @@ func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {
 		o.Elapsed = core.Now(ctx).Sub(start)
 	}()
 	b.Write(m[:])
-	b.WriteString(BaseKey)
 	b.Write(zero)
 	key := b.Bytes()
-	println(DebugKey(key))
 
 	err := errors.Join(
 		u64(txn, key, Visitors, &o.Item.Visitors),
@@ -325,6 +322,7 @@ func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {
 		u64(txn, key, Events, &o.Item.Events),
 		u64(txn, key, Visits, &o.Item.Visits),
 	)
+
 	if err != nil {
 		log.Get().Err(err).Msg("failed to query global stats")
 	}
@@ -337,7 +335,6 @@ func GlobalMetric(ctx context.Context, uid, sid uint64, metric Metric) (o spec.M
 	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
 	m := newMetaKey()
 	m.uid(uid, sid)
-	m.prop(Base)
 	b := get()
 
 	defer func() {
@@ -346,7 +343,6 @@ func GlobalMetric(ctx context.Context, uid, sid uint64, metric Metric) (o spec.M
 		o.Elapsed = core.Now(ctx).Sub(start)
 	}()
 	b.Write(m[:])
-	b.WriteString(BaseKey)
 	b.Write(zero)
 	key := b.Bytes()
 	err := u64(txn, key, metric, &o.Item)

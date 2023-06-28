@@ -124,9 +124,10 @@ func storeForever(ctx context.Context, mergeFn mergeFunction) (stats mergeStats)
 }
 
 type merge struct {
-	ts map[uint64]*kvTs
-	m  map[uint64]*kvBuf
-	h  *xxhash.Digest
+	ts    map[uint64]*kvTs
+	m     map[uint64]*kvBuf
+	slice slice
+	h     *xxhash.Digest
 }
 
 func (m *merge) release() {
@@ -138,6 +139,7 @@ func (m *merge) release() {
 		v.reset()
 		delete(m.ts, k)
 	}
+	m.slice.reset()
 	m.h.Reset()
 	mergePool.Put(m)
 }
@@ -159,42 +161,51 @@ func (m *merge) hash(b []byte) uint64 {
 }
 
 func (m *merge) add(key, value []byte) {
-	m.addInternal(key, value)
 	if key[propOffset] == byte(Base) {
+		m.slice.reset()
 		// Store global stats. Global stats are grouped into
-		//  Per Site : This is covered by the base property. It aggregates metrics per site.
-		//  Per User:  This is covered by setting site to zero
-		//  Per Instance : Both user and site are set to zero.
+		//  Per Site :
+		//  Per User:
+		//  Per Instance :
 		// We also want to be able to chart or compute diffs between global stats so
 		// we provide variations of per user and per instance stats with timestamp
 		// appended.
-		b := get()
-		b.Write(key)
-		g := b.Bytes()
 
-		// per user global  stats with timestamp
-		copy(g[siteOffset:], zero)
-		m.addInternal(g, value)
+		stamp := binary.BigEndian.Uint64(key[len(key)-8:])
 
-		// per vince instance global stats with timestamp
-		copy(g[userOffset:], zero)
-		m.addInternal(g, value)
+		// we don't include BaseKey
+		size := len(key) - len(BaseKey)
 
-		b.Reset()
-		b.Write(key)
-		g = b.Bytes()
+		// plain stats
+		g := m.slice.get(size)
 
-		ts := binary.BigEndian.Uint64(g[len(g)-8:])
-		// spot stats. Think of this as a global counter. Not tied to specific
-		// timestamp
-		copy(g[len(g)-8:], zero)
+		// plain stats by timestamp
+		ts := m.slice.get(size)
 
-		copy(g[siteOffset:], zero)
-		m.addInternal(g, value, ts)
+		// set metric byte. We don't set property because this is property agnostic
+		// and we want this to be sorted earlier to faster prefix iteration
+		g[metricOffset] = key[metricOffset]
 
-		copy(g[userOffset:], zero)
-		m.addInternal(g, value, ts)
-		put(b)
+		ts[metricOffset] = key[metricOffset]
+		copy(ts[len(ts)-8:], key[len(key)-8:])
+
+		// per instance
+		m.addInternal(g, value, stamp)
+		m.addInternal(ts, value)
+
+		// per user
+		copy(g[:siteOffset], key[:siteOffset])
+		copy(ts[:siteOffset], key[:siteOffset])
+		m.addInternal(g, value, stamp)
+		m.addInternal(ts, value)
+
+		// per site
+		copy(g[siteOffset:metricOffset], key[siteOffset:metricOffset])
+		copy(ts[siteOffset:metricOffset], key[siteOffset:metricOffset])
+		m.addInternal(g, value, stamp)
+		m.addInternal(ts, value)
+	} else {
+		m.addInternal(key, value)
 	}
 }
 

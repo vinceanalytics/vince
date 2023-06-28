@@ -51,10 +51,10 @@ func (id *Key) uid(u, s uint64) *Key {
 
 func DebugKey(id []byte) string {
 	uid := binary.BigEndian.Uint64(id[userOffset:])
-	sid := binary.BigEndian.Uint64(id[userOffset:])
+	sid := binary.BigEndian.Uint64(id[siteOffset:])
 	metric := Metric(id[metricOffset])
 	prop := Property(id[propOffset])
-	key := id[keyOffset : len(id)-6]
+	key := id[keyOffset : len(id)-8]
 	ts := Time(id[len(id)-8:])
 	g := smallBufferpool.Get().(*bytes.Buffer)
 	fmt.Fprintf(g, "/%s/%d/%d/%s/%s/%s", ts.Format(time.DateTime), uid, sid, metric, prop, string(key))
