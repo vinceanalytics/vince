@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/caches"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/timeseries"
@@ -23,6 +24,7 @@ func APIGet(w http.ResponseWriter, r *http.Request) {
 
 func APIUpdate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	start := core.Now(ctx)
 	owner := models.GetUser(ctx)
 	site := models.GetSite(ctx)
 	var o spec.UpdateSite
@@ -48,22 +50,30 @@ func APIUpdate(w http.ResponseWriter, r *http.Request) {
 		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
-	render.JSON(w, http.StatusOK, siteSpec(owner, site))
+	render.JSON(w, http.StatusOK, spec.Site{
+		Elapsed: core.Elapsed(ctx, start),
+		Item:    siteSpec(owner, site),
+	})
 }
 
 func APIList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	start := core.Now(ctx)
 	owner := models.GetUser(ctx)
 	models.PreloadUser(ctx, owner, "Sites")
-	o := make([]spec.Site, len(owner.Sites))
+	o := make([]spec.Site_, len(owner.Sites))
 	for i := range owner.Sites {
 		o[i] = siteSpec(owner, owner.Sites[i])
 	}
-	render.JSON(w, http.StatusOK, o)
+	render.JSON(w, http.StatusOK, spec.SiteList{
+		Elapsed: core.Elapsed(ctx, start),
+		Items:   o,
+	})
 }
 
 func APIDelete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	start := core.Now(ctx)
 	owner := models.GetUser(ctx)
 	site := models.GetSite(ctx)
 
@@ -79,11 +89,15 @@ func APIDelete(w http.ResponseWriter, r *http.Request) {
 	// permanently remove site stats
 	timeseries.DropSite(ctx, owner.ID, site.ID)
 
-	render.JSON(w, http.StatusOK, siteSpec(owner, site))
+	render.JSON(w, http.StatusOK, spec.Site{
+		Elapsed: core.Elapsed(ctx, start),
+		Item:    siteSpec(owner, site),
+	})
 }
 
 func APICreate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	start := core.Now(ctx)
 	owner := models.GetUser(ctx)
 	var o spec.CreateSite
 	err := json.NewDecoder(r.Body).Decode(&o)
@@ -129,11 +143,14 @@ func APICreate(w http.ResponseWriter, r *http.Request) {
 		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
-	render.JSON(w, http.StatusCreated, siteSpec(owner, site))
+	render.JSON(w, http.StatusCreated, spec.Site{
+		Elapsed: core.Elapsed(ctx, start),
+		Item:    siteSpec(owner, site),
+	})
 }
 
-func siteSpec(owner *models.User, site *models.Site) spec.Site {
-	return spec.Site{
+func siteSpec(owner *models.User, site *models.Site) spec.Site_ {
+	return spec.Site_{
 		Domain:      site.Domain,
 		Public:      site.Public,
 		Description: site.Description,

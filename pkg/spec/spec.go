@@ -13,7 +13,9 @@ type UpdateSite struct {
 	Description *string `json:"desc,omitempty"`
 }
 
-type Site struct {
+type Site One[Site_]
+
+type Site_ struct {
 	Domain      string    `json:"domain"`
 	Public      bool      `json:"public,omitempty"`
 	Description string    `json:"desc,omitempty"`
@@ -22,9 +24,11 @@ type Site struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
+type SiteList List[Site_]
+
 type Global One[Metrics]
 
-type Globals List[Metrics]
+type GlobalList List[Metrics]
 
 type Metrics struct {
 	Visitors uint64 `json:"visitors,omitempty"`
@@ -40,5 +44,5 @@ type One[T any] struct {
 
 type List[T any] struct {
 	Elapsed time.Duration `json:"elapsed"`
-	Items   T             `json:"items"`
+	Items   []T           `json:"items"`
 }

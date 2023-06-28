@@ -80,3 +80,7 @@ func fallback() time.Time {
 func Now(ctx context.Context) time.Time {
 	return GetNow(ctx)()
 }
+
+func Elapsed(ctx context.Context, since time.Time) time.Duration {
+	return Now(ctx).Sub(since)
+}
