@@ -13,9 +13,9 @@ import (
 	"github.com/vinceanalytics/vince/internal/dee"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/pkg/octicon"
 	"github.com/vinceanalytics/vince/pkg/property"
+	"github.com/vinceanalytics/vince/pkg/spec"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
@@ -113,7 +113,7 @@ type Header struct {
 }
 
 type Overview struct {
-	Global query.Global
+	Global spec.Global
 	Sites  []SiteOverView
 	Panel  string
 }
@@ -121,7 +121,7 @@ type Overview struct {
 type SiteOverView struct {
 	Site   *models.Site
 	Owner  string
-	Global query.Global
+	Global spec.Global
 }
 
 type SiteStats struct {
@@ -129,7 +129,7 @@ type SiteStats struct {
 	Owner    string
 	Metric   property.Metric
 	Duration timex.Duration
-	Global   query.Global
+	Global   spec.Global
 }
 
 type Period struct {

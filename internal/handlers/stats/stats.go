@@ -29,5 +29,10 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func Global(w http.ResponseWriter, r *http.Request) {
-	render.JSON(w, http.StatusNotImplemented, http.StatusText(http.StatusNotImplemented))
+	ctx := r.Context()
+	owner := models.GetUser(ctx)
+	site := models.GetSite(ctx)
+	render.JSON(w, http.StatusOK, timeseries.Global(
+		ctx, owner.ID, site.ID,
+	))
 }

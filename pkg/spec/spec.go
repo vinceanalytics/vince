@@ -21,3 +21,10 @@ type Site struct {
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
+
+type Global struct {
+	Visitors uint64 `json:"visitors,omitempty"`
+	Views    uint64 `json:"views,omitempty"`
+	Events   uint64 `json:"events,omitempty"`
+	Visits   uint64 `json:"visits,omitempty"`
+}

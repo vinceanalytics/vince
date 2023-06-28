@@ -9,13 +9,6 @@ import (
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
-type Global struct {
-	Visitors uint64 `json:"visitors,omitempty"`
-	Views    uint64 `json:"views,omitempty"`
-	Events   uint64 `json:"events,omitempty"`
-	Visits   uint64 `json:"visits,omitempty"`
-}
-
 type Query struct {
 	Offset *Duration `json:"offset,omitempty"`
 	Sum    bool      `json:"sum,omitempty"`

@@ -14,6 +14,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
 type internalValue struct {
@@ -298,7 +299,7 @@ func Sum64(ls []uint64) (o uint64) {
 	return
 }
 
-func Global(ctx context.Context, uid, sid uint64) (o query.Global) {
+func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {
 	now := core.Now(ctx).UnixMilli()
 	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
 	m := newMetaKey()
