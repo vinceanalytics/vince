@@ -300,23 +300,28 @@ func Sum64(ls []uint64) (o uint64) {
 }
 
 func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {
-	now := core.Now(ctx).UnixMilli()
+	start := core.Now(ctx)
+	now := start.UnixMilli()
 	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
 	m := newMetaKey()
-	defer m.Release()
 	m.uid(uid, sid)
 	m.prop(Base)
 	b := get()
-	defer put(b)
+
+	defer func() {
+		m.Release()
+		put(b)
+		o.Elapsed = core.Now(ctx).Sub(start)
+	}()
 	b.Write(m[:])
 	b.WriteString(BaseKey)
 	b.Write(zero)
 	key := b.Bytes()
 	err := errors.Join(
-		u64(txn, key, Visitors, &o.Visitors),
-		u64(txn, key, Views, &o.Views),
-		u64(txn, key, Events, &o.Events),
-		u64(txn, key, Visits, &o.Visits),
+		u64(txn, key, Visitors, &o.Item.Visitors),
+		u64(txn, key, Views, &o.Item.Views),
+		u64(txn, key, Events, &o.Item.Events),
+		u64(txn, key, Visits, &o.Item.Visits),
 	)
 	if err != nil {
 		log.Get().Err(err).Msg("failed to query global stats")

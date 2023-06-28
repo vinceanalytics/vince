@@ -186,13 +186,13 @@ func (s *SiteStats) metric(m property.Metric) Metric {
 	var value uint64
 	switch m {
 	case property.Visitors:
-		value = s.Global.Visitors
+		value = s.Global.Item.Visitors
 	case property.Views:
-		value = s.Global.Views
+		value = s.Global.Item.Views
 	case property.Events:
-		value = s.Global.Events
+		value = s.Global.Item.Events
 	case property.Visits:
-		value = s.Global.Visits
+		value = s.Global.Item.Visits
 	}
 	return Metric{
 		Name:     m.Label(),

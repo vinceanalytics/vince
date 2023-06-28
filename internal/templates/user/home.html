@@ -56,27 +56,27 @@
                         <li
                             class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-right border-md-bottom-0 color-border-muted">
                             <span class="d-block h4 color-fg-default">
-                                {{.Overview.Global.Visitors}}
+                                {{.Overview.Global.Item.Visitors}}
                             </span>
                             <span class="color-fg-muted">Visitors</span>
                         </li>
                         <li
                             class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-md-bottom-0 border-md-right color-border-muted">
                             <span class="d-block h4">
-                                {{.Overview.Global.Views}}
+                                {{.Overview.Global.Item.Views}}
                             </span>
                             <span class="color-fg-muted">Page Views</span>
                         </li>
                         <li
                             class="p-3 col-12 col-sm-6 col-md-3 border-bottom border-sm-bottom-0 border-sm-right color-border-muted">
                             <span class="d-block h4 color-fg-default">
-                                {{.Overview.Global.Events}}
+                                {{.Overview.Global.Item.Events}}
                             </span>
                             <span class="color-fg-muted">Events</span>
                         </li>
                         <li class="p-3 col-12 col-sm-6 col-md-3">
                             <span class="d-block h4 color-fg-default">
-                                {{.Overview.Global.Visits}}
+                                {{.Overview.Global.Item.Visits}}
                             </span>
                             <span class="color-fg-muted">Visits</span>
                         </li>
@@ -112,19 +112,19 @@
         <div class="f6 color-fg-muted mt-2">
             <a class="Link--muted mr-3" href="/{{.Owner}}/{{.Site.Domain}}/visitors">
                 Visitors
-                <span class="Counter">{{.Global.Visitors}}</span>
+                <span class="Counter">{{.Global.Item.Visitors}}</span>
             </a>
             <a class="Link--muted mr-3" href="/{{.Owner}}/{{.Site.Domain}}/views">
                 Views
-                <span class="Counter">{{.Global.Views}}</span>
+                <span class="Counter">{{.Global.Item.Views}}</span>
             </a>
             <a class="Link--muted mr-3" href="/{{.Owner}}/{{.Site.Domain}}/events">
                 Events
-                <span class="Counter">{{.Global.Events}}</span>
+                <span class="Counter">{{.Global.Item.Events}}</span>
             </a>
             <a class="Link--muted mr-3" href="/{{.Owner}}/{{.Site.Domain}}/visits">
                 Visits
-                <span class="Counter">{{.Global.Visits}}</span>
+                <span class="Counter">{{.Global.Item.Visits}}</span>
             </a>
         </div>
     </div>
