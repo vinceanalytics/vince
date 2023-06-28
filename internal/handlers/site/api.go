@@ -22,7 +22,33 @@ func APIGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func APIUpdate(w http.ResponseWriter, r *http.Request) {
-	render.JSONError(w, http.StatusNotImplemented, http.StatusText(http.StatusNotImplemented))
+	ctx := r.Context()
+	owner := models.GetUser(ctx)
+	site := models.GetSite(ctx)
+	var o spec.UpdateSite
+	err := json.NewDecoder(r.Body).Decode(&o)
+	if err != nil {
+		log.Get().Err(err).
+			Str("handler", "APIUpdate").
+			Msg("failed to decode  request body")
+		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+		return
+	}
+	if o.Public != nil {
+		site.Public = *o.Public
+	}
+	if o.Description != nil {
+		site.Description = *o.Description
+	}
+	err = models.Get(ctx).Save(site).Error
+	if err != nil {
+		log.Get().Err(err).
+			Str("handler", "APIUpdate").
+			Msg("failed to save site")
+		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+		return
+	}
+	render.JSON(w, http.StatusOK, siteSpec(owner, site))
 }
 
 func APIList(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +88,9 @@ func APICreate(w http.ResponseWriter, r *http.Request) {
 	var o spec.CreateSite
 	err := json.NewDecoder(r.Body).Decode(&o)
 	if err != nil {
-		log.Get().Err(err).Msg("failed to decode create site request body")
+		log.Get().Err(err).
+			Str("handler", "APICreate").
+			Msg("failed to decode create site request body")
 		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}

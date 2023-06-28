@@ -8,6 +8,11 @@ type CreateSite struct {
 	Description *string `json:"desc,omitempty"`
 }
 
+type UpdateSite struct {
+	Public      *bool   `json:"public,omitempty"`
+	Description *string `json:"desc,omitempty"`
+}
+
 type Site struct {
 	Domain      string    `json:"domain"`
 	Public      bool      `json:"public,omitempty"`
