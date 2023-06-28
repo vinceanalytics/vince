@@ -317,6 +317,8 @@ func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {
 	b.WriteString(BaseKey)
 	b.Write(zero)
 	key := b.Bytes()
+	println(DebugKey(key))
+
 	err := errors.Join(
 		u64(txn, key, Visitors, &o.Item.Visitors),
 		u64(txn, key, Views, &o.Item.Views),

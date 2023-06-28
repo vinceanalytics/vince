@@ -55,7 +55,7 @@ func DebugKey(id []byte) string {
 	metric := Metric(id[metricOffset])
 	prop := Property(id[propOffset])
 	key := id[keyOffset : len(id)-6]
-	ts := Time(id[len(id)-6:])
+	ts := Time(id[len(id)-8:])
 	g := smallBufferpool.Get().(*bytes.Buffer)
 	fmt.Fprintf(g, "/%s/%d/%d/%s/%s/%s", ts.Format(time.DateTime), uid, sid, metric, prop, string(key))
 	o := g.String()
@@ -78,22 +78,10 @@ func DebugPrefix(id []byte) string {
 	return o
 }
 
-func setTs(b []byte, ms uint64) {
-	b[0] = byte(ms >> 40)
-	b[1] = byte(ms >> 32)
-	b[2] = byte(ms >> 24)
-	b[3] = byte(ms >> 16)
-	b[4] = byte(ms >> 8)
-	b[5] = byte(ms)
-}
-
 func Time(id []byte) time.Time {
-	ms := uint64(id[5]) | uint64(id[4])<<8 |
-		uint64(id[3])<<16 | uint64(id[2])<<24 |
-		uint64(id[1])<<32 | uint64(id[0])<<40
-	s := int64(ms / 1e3)
-	ns := int64((ms % 1e3) * 1e6)
-	return time.Unix(s, ns)
+	return time.UnixMilli(
+		int64(binary.BigEndian.Uint64(id)),
+	)
 }
 
 func (id *Key) key(ts []byte, s string, ls *txnBufferList) *bytes.Buffer {

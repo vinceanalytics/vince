@@ -112,7 +112,7 @@ var _ json.Marshaler = (*Metric)(nil)
 var _ json.Unmarshaler = (*Metric)(nil)
 
 const (
-	Visitors Metric = iota
+	Visitors Metric = 1 + iota
 	Views
 	Events
 	Visits
