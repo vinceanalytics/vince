@@ -21,7 +21,7 @@
     "url": "https://github.com/vinceanalytics/vince/issues"
   },
   "homepage": "https://github.com/vinceanalytics/vince#readme",
-  "dependencies": {
+  "devDependencies": {
     "@vinceanalytics/types": "file:../types"
   }
 }
