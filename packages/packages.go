@@ -4,5 +4,8 @@ import (
 	_ "embed"
 )
 
-//go:embed vince/src/index.ts
-var VINCE []byte
+//go:embed packages/alerts/lib/index.js
+var Alerts []byte
+
+//go:embed packages/types/lib/index.js
+var Types []byte
