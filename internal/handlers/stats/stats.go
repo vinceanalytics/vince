@@ -50,24 +50,6 @@ func GlobalMetric(w http.ResponseWriter, r *http.Request) {
 
 func GlobalSeries(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	uid := models.GetUser(ctx).ID
-	var sid uint64
-	if site := models.GetSite(ctx); site != nil {
-		sid = site.ID
-	}
-	var q spec.QueryOptions
-	err := json.NewDecoder(r.Body).Decode(&q)
-	if err != nil {
-		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
-		return
-	}
-	render.JSON(w, http.StatusOK, timeseries.QueryGlobal(
-		ctx, uid, sid, q.Window, q.Offset,
-	))
-}
-
-func GlobalMetricSeries(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
 	metric := property.ParsMetric(params.Get(ctx).Get("metric"))
 	uid := models.GetUser(ctx).ID
 	var sid uint64

@@ -301,7 +301,7 @@ func QueryGlobalMetric(ctx context.Context,
 	metric Metric,
 	uid, sid uint64,
 	window, offset time.Duration,
-) (o spec.QueryGlobalMetric) {
+) (o spec.Series) {
 	now := core.Now(ctx)
 	if window < time.Hour {
 		window = timex.Today.Window(now)
@@ -317,44 +317,6 @@ func QueryGlobalMetric(ctx context.Context,
 	startTs := uint64(start.UnixMilli())
 	endTs := uint64(end.UnixMilli())
 	readGlobalMetric(ctx, metric, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result)
-	o.Elapsed = core.Elapsed(ctx, now)
-	return
-}
-
-func QueryGlobal(ctx context.Context,
-	uid, sid uint64,
-	window, offset time.Duration,
-) (o spec.QueryGlobal) {
-	now := core.Now(ctx)
-	if window < time.Hour {
-		window = timex.Today.Window(now)
-	}
-	start := now.Add(-offset)
-	end := start
-	start = end.Add(-window)
-	if end.Before(start) {
-		end = start
-	}
-	o.Timestamps = sharedTS(start.UnixMilli(), end.UnixMilli(), time.Hour.Milliseconds())
-
-	var wg sync.WaitGroup
-	wg.Add(4)
-	stamp := uint64(now.UnixMilli())
-	startTs := uint64(start.UnixMilli())
-	endTs := uint64(end.UnixMilli())
-	go singleGlobalMetric(
-		ctx, &wg, Visitors, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result.Visitors,
-	)
-	go singleGlobalMetric(
-		ctx, &wg, Views, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result.Views,
-	)
-	go singleGlobalMetric(
-		ctx, &wg, Events, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result.Events,
-	)
-	go singleGlobalMetric(
-		ctx, &wg, Visits, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result.Visits,
-	)
-	wg.Wait()
 	o.Elapsed = core.Elapsed(ctx, now)
 	return
 }
@@ -401,7 +363,7 @@ func readGlobalMetric(ctx context.Context, metric Metric, now, uid, sid, start, 
 	*out = rollUp(values, ts, shared, Sum64)
 }
 
-func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {
+func Global(ctx context.Context, uid, sid uint64) (o spec.Stats) {
 	start := core.Now(ctx)
 	now := start.UnixMilli()
 	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)

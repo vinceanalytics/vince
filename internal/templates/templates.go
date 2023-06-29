@@ -113,7 +113,7 @@ type Header struct {
 }
 
 type Overview struct {
-	Global spec.Global
+	Global spec.Stats
 	Sites  []SiteOverView
 	Panel  string
 }
@@ -121,7 +121,7 @@ type Overview struct {
 type SiteOverView struct {
 	Site   *models.Site
 	Owner  string
-	Global spec.Global
+	Global spec.Stats
 }
 
 type SiteStats struct {
@@ -129,7 +129,7 @@ type SiteStats struct {
 	Owner    string
 	Metric   property.Metric
 	Duration timex.Duration
-	Global   spec.Global
+	Global   spec.Stats
 }
 
 type Period struct {
