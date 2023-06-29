@@ -19,12 +19,8 @@ import (
 	"github.com/vinceanalytics/vince/packages"
 )
 
-type file struct {
-	Path string
-	Data []byte
-}
-
-const vinceFile = "__vince__.ts"
+const vinceAlertFile = "__vinceAlert__.js"
+const vinceTypesFile = "__vinceTypes__.js"
 
 type Alert struct {
 	Name     string
@@ -43,8 +39,11 @@ func (a *Alert) schedule(call goja.Callable) {
 	a.Function = call
 }
 
-var relVince = []byte("./" + vinceFile)
-var vinceImport = []byte("@vinceanalytics/vince")
+var vinceAlertRel = []byte("./" + vinceAlertFile)
+var vinceAlertImport = []byte("@vinceanalytics/alerts")
+
+var vinceTypesRel = []byte("./" + vinceTypesFile)
+var vinceTypesImport = []byte("@vinceanalytics/types")
 
 func Compile(ctx context.Context, paths ...string) ([]*Alert, error) {
 	dir, err := os.MkdirTemp("", "vince_alerts")
@@ -62,10 +61,13 @@ func CompileWith(ctx context.Context, dir string, paths ...string) ([]*Alert, er
 	if err != nil {
 		return nil, err
 	}
-	vs := filepath.Join(dir, vinceFile)
-	err = os.WriteFile(vs, packages.VINCE, 0600)
+	err = os.WriteFile(filepath.Join(dir, vinceAlertFile), packages.Alerts, 0600)
 	if err != nil {
-		return nil, fmt.Errorf("failed to write __vince__ file %v", err)
+		return nil, fmt.Errorf("failed to write alerts file %v", err)
+	}
+	err = os.WriteFile(filepath.Join(dir, vinceTypesFile), packages.Types, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write types file %v", err)
 	}
 	namer := make(map[string]*Alert)
 	var i uint
@@ -86,7 +88,8 @@ func CompileWith(ctx context.Context, dir string, paths ...string) ([]*Alert, er
 		if err != nil {
 			return nil, err
 		}
-		r = bytes.ReplaceAll(r, vinceImport, relVince)
+		r = bytes.ReplaceAll(r, vinceAlertImport, vinceAlertRel)
+		r = bytes.ReplaceAll(r, vinceTypesImport, vinceTypesRel)
 		o := filepath.Base(path)
 		if ext := filepath.Ext(o); ext != ".js" {
 			// a typescript file

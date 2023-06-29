@@ -1,3 +1,3 @@
-import { schedule } from "@vinceanalytics/vince";
+import { schedule } from "@vinceanalytics/alerts";
 
 schedule(() => 200);

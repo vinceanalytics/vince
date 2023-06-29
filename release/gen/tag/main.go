@@ -81,7 +81,18 @@ func helm(root, v string) {
 
 func npm(root, v string) {
 	println("> update npm package")
-	file := filepath.Join(root, "packages/vince/package.json")
+
+	npmFile(root, filepath.Join(root, "packages/packages/types/package.json"), v)
+	npmFile(root, filepath.Join(root, "packages/packages/alerts/package.json"), v)
+	npmFile(root, filepath.Join(root, "packages/packages/vince/package.json"), v)
+
+	tools.ExecPlainWithWorkingPath(
+		filepath.Join(root, "packages"),
+		"npm", "publish", "--workspaces",
+	)
+}
+
+func npmFile(root, file, v string) {
 	chart := tools.ReadFile(file)
 	var o bytes.Buffer
 	s := bufio.NewScanner(bytes.NewReader(chart))
@@ -94,10 +105,6 @@ func npm(root, v string) {
 		fmt.Fprintln(&o, text)
 	}
 	tools.WriteFile(file, o.Bytes())
-	tools.ExecPlainWithWorkingPath(
-		filepath.Join(root, "packages/vince"),
-		"npm", "publish",
-	)
 }
 
 func commit(v string) {
