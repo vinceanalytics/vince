@@ -1,6 +1,6 @@
 {
   "name": "@vinceanalytics/vince",
-  "version": "v0.0.15",
+  "version": "v0.0.16",
   "repository": "https://github.com/vinceanalytics/vince",
   "description": "Javascript SDK for vince - The cloud native web analytics platform",
   "main": "lib/index.js",
