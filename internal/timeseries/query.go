@@ -393,6 +393,7 @@ func readGlobalMetric(ctx context.Context, metric Metric, now, uid, sid, start, 
 		})
 	}
 	it.Close()
+	m.Release()
 	if len(ts) == 0 {
 		*out = make([]uint64, len(shared))
 		return
@@ -430,7 +431,7 @@ func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {
 	return
 }
 
-func GlobalMetric(ctx context.Context, uid, sid uint64, metric Metric) (o spec.Metric) {
+func GlobalStat(ctx context.Context, uid, sid uint64, metric Metric) (o spec.Stat) {
 	start := core.Now(ctx)
 	now := start.UnixMilli()
 	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
