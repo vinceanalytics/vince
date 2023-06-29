@@ -15,6 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/spec"
+	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
 type internalValue struct {
@@ -294,6 +295,109 @@ func Sum64(ls []uint64) (o uint64) {
 		o += v
 	}
 	return
+}
+
+func QueryGlobalMetric(ctx context.Context,
+	metric Metric,
+	uid, sid uint64,
+	window, offset time.Duration,
+) (o spec.QueryGlobalMetric) {
+	now := core.Now(ctx)
+	if window < time.Hour {
+		window = timex.Today.Window(now)
+	}
+	start := now.Add(-offset)
+	end := start
+	start = end.Add(-window)
+	if end.Before(start) {
+		end = start
+	}
+	o.Timestamps = sharedTS(start.UnixMilli(), end.UnixMilli(), time.Hour.Milliseconds())
+	stamp := uint64(now.UnixMilli())
+	startTs := uint64(start.UnixMilli())
+	endTs := uint64(end.UnixMilli())
+	readGlobalMetric(ctx, metric, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result)
+	o.Elapsed = core.Elapsed(ctx, now)
+	return
+}
+
+func QueryGlobal(ctx context.Context,
+	uid, sid uint64,
+	window, offset time.Duration,
+) (o spec.QueryGlobal) {
+	now := core.Now(ctx)
+	if window < time.Hour {
+		window = timex.Today.Window(now)
+	}
+	start := now.Add(-offset)
+	end := start
+	start = end.Add(-window)
+	if end.Before(start) {
+		end = start
+	}
+	o.Timestamps = sharedTS(start.UnixMilli(), end.UnixMilli(), time.Hour.Milliseconds())
+
+	var wg sync.WaitGroup
+	wg.Add(4)
+	stamp := uint64(now.UnixMilli())
+	startTs := uint64(start.UnixMilli())
+	endTs := uint64(end.UnixMilli())
+	go singleGlobalMetric(
+		ctx, &wg, Visitors, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result.Visitors,
+	)
+	go singleGlobalMetric(
+		ctx, &wg, Views, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result.Views,
+	)
+	go singleGlobalMetric(
+		ctx, &wg, Events, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result.Events,
+	)
+	go singleGlobalMetric(
+		ctx, &wg, Visits, stamp, uid, sid, startTs, endTs, o.Timestamps, &o.Result.Visits,
+	)
+	wg.Wait()
+	o.Elapsed = core.Elapsed(ctx, now)
+	return
+}
+
+func singleGlobalMetric(ctx context.Context, wg *sync.WaitGroup, metric Metric, now, uid, sid, start, end uint64, shared []int64, out *[]uint64) {
+	readGlobalMetric(ctx, metric, now, uid, sid, start, end, shared, out)
+	wg.Done()
+}
+
+func readGlobalMetric(ctx context.Context, metric Metric, now, uid, sid, start, end uint64, shared []int64, out *[]uint64) {
+	var ts []int64
+	var values []uint64
+	txn := Permanent(ctx).NewTransactionAt(now, false)
+	m := newMetaKey()
+	m.uid(uid, sid)
+	m.metric(metric)
+
+	o := badger.DefaultIteratorOptions
+	o.Prefix = m[:]
+	it := txn.NewIterator(o)
+	for it.Seek(m[:]); it.ValidForPrefix(m[:]); it.Next() {
+		item := it.Item()
+		key := item.Key()
+		stamp := key[len(key)-8:]
+		if bytes.Equal(stamp, zero) {
+			continue
+		}
+		timestamp := binary.BigEndian.Uint64(stamp)
+		if timestamp > end {
+			break
+		}
+		item.Value(func(val []byte) error {
+			ts = append(ts, int64(timestamp))
+			values = append(values, binary.BigEndian.Uint64(val))
+			return nil
+		})
+	}
+	it.Close()
+	if len(ts) == 0 {
+		*out = make([]uint64, len(shared))
+		return
+	}
+	*out = rollUp(values, ts, shared, Sum64)
 }
 
 func Global(ctx context.Context, uid, sid uint64) (o spec.Global) {

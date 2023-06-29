@@ -11,6 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/property"
+	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
 func Query(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +21,7 @@ func Query(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&q)
 	if err != nil {
 		log.Get().Err(err).Msg("failed to decode query body")
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 	render.JSON(w, http.StatusOK, timeseries.Query(ctx, site.UserID, site.ID, q))
@@ -44,5 +45,42 @@ func GlobalMetric(w http.ResponseWriter, r *http.Request) {
 	m := property.ParsMetric(params.Get(ctx).Get("metric"))
 	render.JSON(w, http.StatusOK, timeseries.GlobalMetric(
 		ctx, owner.ID, 0, m,
+	))
+}
+
+func GlobalSeries(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	uid := models.GetUser(ctx).ID
+	var sid uint64
+	if site := models.GetSite(ctx); site != nil {
+		sid = site.ID
+	}
+	var q spec.QueryOptions
+	err := json.NewDecoder(r.Body).Decode(&q)
+	if err != nil {
+		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+		return
+	}
+	render.JSON(w, http.StatusOK, timeseries.QueryGlobal(
+		ctx, uid, sid, q.Window, q.Offset,
+	))
+}
+
+func GlobalMetricSeries(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	metric := property.ParsMetric(params.Get(ctx).Get("metric"))
+	uid := models.GetUser(ctx).ID
+	var sid uint64
+	if site := models.GetSite(ctx); site != nil {
+		sid = site.ID
+	}
+	var q spec.QueryOptions
+	err := json.NewDecoder(r.Body).Decode(&q)
+	if err != nil {
+		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+		return
+	}
+	render.JSON(w, http.StatusOK, timeseries.QueryGlobalMetric(
+		ctx, metric, uid, sid, q.Window, q.Offset,
 	))
 }
