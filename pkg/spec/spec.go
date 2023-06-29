@@ -5,12 +5,12 @@ import "time"
 type CreateSite struct {
 	Domain      string  `json:"domain"`
 	Public      *bool   `json:"public,omitempty"`
-	Description *string `json:"desc,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
 
 type UpdateSite struct {
 	Public      *bool   `json:"public,omitempty"`
-	Description *string `json:"desc,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
 
 type Site One[Site_]
@@ -27,8 +27,6 @@ type Site_ struct {
 type SiteList List[Site_]
 
 type Global One[Metrics]
-
-type GlobalList List[Metrics]
 
 type Metrics struct {
 	Visitors uint64 `json:"visitors,omitempty"`

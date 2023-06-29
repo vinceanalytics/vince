@@ -1,7 +1,7 @@
 {
   "name": "@vinceanalytics/types",
   "version": "v0.0.16",
-  "description": "Types definitions for resources shared by vince pakcages",
+  "description": "Types definitions for resources shared by vince packages",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {

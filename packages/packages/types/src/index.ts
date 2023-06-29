@@ -73,3 +73,49 @@ export interface QueryResult {
     timestamps: number[];
     props: PropsResult;
 }
+
+export interface CreateSite {
+    domain: string;
+    public?: boolean;
+    description?: string;
+}
+
+export interface SiteObject {
+    domain: string;
+    public: boolean;
+    description: string;
+    owner: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface UpdateSite {
+    public?: boolean;
+    description?: string;
+}
+
+export type Site = One<SiteObject>
+
+export type SiteList = List<SiteObject>
+
+export type Global = One<MetricsObject>
+
+export type MetricResult = One<number>
+
+export interface MetricsObject {
+    visitors: number;
+    views: number;
+    events: number;
+    visits: number;
+}
+
+export interface One<T> {
+    item: T;
+    elapsed: string;
+}
+
+export interface List<T> {
+    items: T;
+    elapsed: string;
+}
+
