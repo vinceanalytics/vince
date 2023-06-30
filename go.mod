@@ -6,6 +6,7 @@ require (
 	filippo.io/age v1.1.1
 	github.com/caddyserver/certmagic v0.17.2
 	github.com/cenkalti/backoff/v4 v4.1.3
+	github.com/cespare/xxhash/v2 v2.1.2
 	github.com/chanced/powerset v0.0.1
 	github.com/dchest/captcha v1.0.0
 	github.com/dchest/siphash v1.2.3
@@ -22,7 +23,6 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress v1.16.0
 	github.com/lestrrat-go/dataurl v0.0.0-20220721131304-b60017625013
-	github.com/matoous/go-nanoid/v2 v2.0.0
 	github.com/mholt/acmez v1.0.4
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/oschwald/geoip2-golang v1.8.0
@@ -30,7 +30,6 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/rs/zerolog v1.21.0
 	github.com/urfave/cli/v3 v3.0.0-alpha3
-	github.com/wcharczuk/go-chart/v2 v2.1.0
 	golang.org/x/crypto v0.6.0
 	golang.org/x/mod v0.10.0
 	golang.org/x/net v0.9.0
@@ -38,6 +37,7 @@ require (
 	golang.org/x/text v0.10.0
 	golang.org/x/time v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
+	gorm.io/datatypes v1.2.0
 	gorm.io/driver/sqlite v1.5.1
 	gorm.io/gorm v1.25.1
 	k8s.io/api v0.27.1
@@ -51,7 +51,6 @@ require (
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -66,7 +65,6 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/gobuffalo/flect v1.0.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
@@ -103,7 +101,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
-	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
 	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/term v0.7.0 // indirect
@@ -112,7 +109,6 @@ require (
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/datatypes v1.2.0 // indirect
 	gorm.io/driver/mysql v1.4.7 // indirect
 	k8s.io/apiextensions-apiserver v0.27.1 // indirect
 	k8s.io/gengo v0.0.0-20220902162205-c0856e24416d // indirect
