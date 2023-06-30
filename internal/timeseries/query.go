@@ -27,6 +27,10 @@ func QueryAggregate(ctx context.Context, uid, sid uint64, o spec.QueryPropertyOp
 
 func queryProperty[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o spec.QueryPropertyOptions) (result spec.PropertyResult[T]) {
 	now := core.Now(ctx)
+	sel := selector(o.Selector)
+	if sel.invalid {
+		return
+	}
 	window := o.Window
 	if window < time.Hour {
 		window = timex.Today.Window(now)
@@ -56,7 +60,6 @@ func queryProperty[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o 
 	b := get()
 	b.Write(m[:])
 	var text string
-	sel := selector(o.Selector)
 	if sel.exact != "" {
 		text = sel.exact
 	}
