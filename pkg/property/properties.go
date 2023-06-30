@@ -155,6 +155,9 @@ func (m Metric) Label() string {
 }
 
 func ParsMetric(k string) Metric {
+	if k == "" {
+		return Visitors
+	}
 	return Metric(_metric_value[k])
 }
 
