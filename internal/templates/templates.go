@@ -125,11 +125,11 @@ type SiteOverView struct {
 }
 
 type SiteStats struct {
-	Site     *models.Site
-	Owner    string
-	Metric   property.Metric
-	Duration timex.Duration
-	Global   spec.Stats
+	Site   *models.Site
+	Owner  string
+	Metric property.Metric
+	Window timex.Duration
+	Global spec.Stats
 }
 
 type Period struct {
@@ -158,10 +158,10 @@ func (s *SiteStats) Metrics() []Metric {
 
 func (s *SiteStats) period(d timex.Duration) Period {
 	q := s.query()
-	q.Set("d", d.String())
+	q.Set("w", d.String())
 	return Period{
 		Name:     d.String(),
-		Selected: d == s.Duration,
+		Selected: d == s.Window,
 		Query:    fmt.Sprintf("/%s/%s?%s", s.Owner, s.Site.Domain, q.Encode()),
 	}
 }
@@ -205,7 +205,7 @@ func (s *SiteStats) metric(m property.Metric) Metric {
 func (s *SiteStats) query() url.Values {
 	m := make(url.Values)
 	m.Set("m", s.Metric.String())
-	m.Set("d", s.Duration.String())
+	m.Set("w", s.Window.String())
 	return m
 }
 

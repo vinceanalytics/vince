@@ -18,14 +18,14 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	u := models.GetUser(ctx)
 	site := models.GetSite(ctx)
 	q := r.URL.Query()
-	p := timex.Parse(q.Get("d"))
+	p := timex.Parse(q.Get("w"))
 	m := property.ParsMetric(q.Get("m"))
 	o := templates.SiteStats{
-		Site:     site,
-		Owner:    u.Name,
-		Metric:   m,
-		Duration: p,
-		Global:   timeseries.Global(ctx, u.ID, site.ID),
+		Site:   site,
+		Owner:  u.Name,
+		Metric: m,
+		Window: p,
+		Global: timeseries.Global(ctx, u.ID, site.ID),
 	}
 	render.HTML(ctx, w, homeTpl, http.StatusOK, func(ctx *templates.Context) {
 		ctx.USER = u
