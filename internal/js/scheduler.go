@@ -2,27 +2,9 @@ package js
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"time"
-
-	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/query"
-	"github.com/vinceanalytics/vince/internal/timeseries"
 )
-
-var ErrDomainNotFound = errors.New("domain not found")
-
-func queryStats(ctx context.Context) func(string, *query.Query) (*query.QueryResult, error) {
-	return func(s string, q *query.Query) (*query.QueryResult, error) {
-		site := models.SiteByDomain(ctx, s)
-		if site == nil {
-			return nil, ErrDomainNotFound
-		}
-		o := timeseries.Query(ctx, site.UserID, site.ID, *q)
-		return &o, nil
-	}
-}
 
 type Scheduler struct {
 	units map[time.Duration][]*Alert

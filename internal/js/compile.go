@@ -160,7 +160,6 @@ func load(ctx context.Context, vm *goja.Runtime, mainPkg []byte) error {
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 	query.Register(vm)
 	email.Register(ctx, vm)
-	vm.Set("__query__", queryStats(ctx))
 	_, err := vm.RunString(string(mainPkg))
 	return err
 }
