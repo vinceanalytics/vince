@@ -6,6 +6,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"math"
+	"path"
+	"regexp"
 	"sync"
 	"time"
 
@@ -358,15 +360,42 @@ func readGlobalMetric(ctx context.Context, metric Metric, readTs, uid, sid, star
 	*out = rollUp(values, ts, shared, Sum64)
 }
 
-func selector(o spec.Select) (s query.Select) {
-	if o.Exact != nil {
-		s.Exact = &query.Value{Value: *o.Exact}
+type sel struct {
+	exact, glob string
+	invalid     bool
+	re          *regexp.Regexp
+}
+
+func (s *sel) Match(txt []byte) bool {
+	if s.exact != "" {
+		return s.exact == string(txt)
 	}
-	if o.Re != nil {
-		s.Re = &query.Value{Value: *o.Re}
+	if s.glob != "" {
+		ok, _ := path.Match(s.glob, string(txt))
+		return ok
+	}
+	if s.re != nil {
+		return s.re.Match(txt)
+	}
+	return true
+}
+
+func selector(o spec.Select) (s sel) {
+	if o.Exact != nil {
+		s.exact = *o.Exact
 	}
 	if o.Glob != nil {
-		s.Glob = &query.Value{Value: *o.Glob}
+		s.glob = *o.Glob
+	}
+	if o.Re != nil {
+		var err error
+		s.re, err = regexp.Compile(*o.Re)
+		if err != nil {
+			log.Get().Err(err).
+				Str("pattern", *o.Re).
+				Msg("failed to compile regular expression for selector")
+			s.invalid = true
+		}
 	}
 	return
 }
@@ -411,8 +440,8 @@ func queryProperty[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o 
 	b.Write(m[:])
 	var text string
 	sel := selector(o.Selector)
-	if sel.Exact != nil {
-		text = sel.Exact.Value
+	if sel.exact != "" {
+		text = sel.exact
 	}
 	b.WriteString(text)
 	prefix := b.Bytes()
