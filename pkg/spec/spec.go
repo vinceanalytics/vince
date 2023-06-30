@@ -1,6 +1,10 @@
 package spec
 
-import "time"
+import (
+	"time"
+
+	"github.com/vinceanalytics/vince/pkg/property"
+)
 
 type CreateSite struct {
 	Domain      string  `json:"domain"`
@@ -31,6 +35,24 @@ type QueryOptions struct {
 	Offset time.Duration `json:"offset,omitempty"`
 }
 
+type QueryPropertyOptions struct {
+	Window   time.Duration     `json:"window,omitempty"`
+	Offset   time.Duration     `json:"offset,omitempty"`
+	Metric   property.Metric   `json:"metric,omitempty"`
+	Property property.Property `json:"property,omitempty"`
+	Selector Select            `json:"selector,omitempty"`
+}
+
+type PropertyValue map[string]uint64
+
+type PropertySeriesValue map[string][]uint64
+
+type PropertyResult[T any] struct {
+	Timestamps []int64       `json:"timestamps"`
+	Elapsed    time.Duration `json:"elapsed"`
+	Result     map[string]T  `json:"result"`
+}
+
 type Series struct {
 	Timestamps []int64       `json:"timestamps"`
 	Elapsed    time.Duration `json:"elapsed"`
@@ -56,4 +78,10 @@ type One[T any] struct {
 type List[T any] struct {
 	Elapsed time.Duration `json:"elapsed"`
 	Items   []T           `json:"items"`
+}
+
+type Select struct {
+	Exact *string `json:"exact,omitempty"`
+	Re    *string `json:"re,omitempty"`
+	Glob  *string `json:"glob,omitempty"`
 }

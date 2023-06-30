@@ -321,15 +321,10 @@ func QueryGlobalMetric(ctx context.Context,
 	return
 }
 
-func singleGlobalMetric(ctx context.Context, wg *sync.WaitGroup, metric Metric, now, uid, sid, start, end uint64, shared []int64, out *[]uint64) {
-	readGlobalMetric(ctx, metric, now, uid, sid, start, end, shared, out)
-	wg.Done()
-}
-
-func readGlobalMetric(ctx context.Context, metric Metric, now, uid, sid, start, end uint64, shared []int64, out *[]uint64) {
+func readGlobalMetric(ctx context.Context, metric Metric, readTs, uid, sid, start, end uint64, shared []int64, out *[]uint64) {
 	var ts []int64
 	var values []uint64
-	txn := Permanent(ctx).NewTransactionAt(now, false)
+	txn := Permanent(ctx).NewTransactionAt(readTs, false)
 	m := newMetaKey()
 	m.uid(uid, sid)
 	m.metric(metric)
@@ -361,6 +356,108 @@ func readGlobalMetric(ctx context.Context, metric Metric, now, uid, sid, start, 
 		return
 	}
 	*out = rollUp(values, ts, shared, Sum64)
+}
+
+func selector(o spec.Select) (s query.Select) {
+	if o.Exact != nil {
+		s.Exact = &query.Value{Value: *o.Exact}
+	}
+	if o.Re != nil {
+		s.Re = &query.Value{Value: *o.Re}
+	}
+	if o.Glob != nil {
+		s.Glob = &query.Value{Value: *o.Glob}
+	}
+	return
+}
+
+func QueryProperty[T any](ctx context.Context, uid, sid uint64, o spec.QueryPropertyOptions) (result spec.PropertyResult[T]) {
+	now := core.Now(ctx)
+	window := o.Window
+	if window < time.Hour {
+		window = timex.Today.Window(now)
+	}
+
+	start := now.Add(-o.Offset)
+	end := start
+	start = end.Add(-window)
+	if end.Before(start) {
+		end = start
+	}
+	switch any(result.Result).(type) {
+	case spec.PropertySeriesValue:
+		result.Timestamps = sharedTS(start.UnixMilli(), end.UnixMilli(), time.Hour.Milliseconds())
+	case spec.PropertyValue:
+	default:
+		log.Get().Fatal().Msg("unknown property value  type")
+	}
+	result.Result = make(map[string]T)
+
+	readTs := uint64(now.UnixMilli())
+	startTs := uint64(start.UnixMilli())
+	endTs := uint64(end.UnixMilli())
+
+	txn := Permanent(ctx).NewTransactionAt(readTs, false)
+	m := newMetaKey()
+	m.uid(uid, sid)
+	m.metric(o.Metric).prop(o.Property)
+
+	b := get()
+	b.Write(m[:])
+	var text string
+	sel := selector(o.Selector)
+	if sel.Exact != nil {
+		text = sel.Exact.Value
+	}
+	b.WriteString(text)
+	prefix := b.Bytes()
+
+	opt := badger.DefaultIteratorOptions
+	opt.Prefix = prefix
+	opt.SinceTs = startTs
+
+	values := make(map[string]*internalValue)
+
+	it := txn.NewIterator(opt)
+	for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+		item := it.Item()
+		if item.Version() >= endTs {
+			break
+		}
+		key := item.Key()
+		txt := key[len(m) : len(key)-8]
+		if !sel.Match(txt) {
+			continue
+		}
+		x, ok := values[string(txt)]
+		if !ok {
+			x = &internalValue{}
+			values[string(txt)] = x
+		}
+		item.Value(func(val []byte) error {
+			x.Timestamp = append(x.Timestamp, int64(item.Version()))
+			x.Value = append(x.Value,
+				binary.BigEndian.Uint64(val),
+			)
+			return nil
+		})
+	}
+	it.Close()
+	m.Release()
+	put(b)
+
+	switch r := any(result.Result).(type) {
+	case spec.PropertySeriesValue:
+		for k, v := range values {
+			r[k] = rollUp(v.Value, v.Timestamp, result.Timestamps, Sum64)
+		}
+	case spec.PropertyValue:
+		for k, v := range values {
+			r[k] = Sum64(v.Value)
+		}
+	}
+	result.Elapsed = core.Elapsed(ctx, now)
+	return
 }
 
 func Global(ctx context.Context, uid, sid uint64) (o spec.Stats) {
