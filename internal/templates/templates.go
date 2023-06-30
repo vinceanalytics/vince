@@ -136,7 +136,7 @@ type SiteStats struct {
 	Metric property.Metric
 	Window timex.Duration
 	Global spec.Global[spec.Metrics]
-	Series spec.ResultSet[[]uint64]
+	Series spec.Series[[]uint64]
 }
 
 type Period struct {

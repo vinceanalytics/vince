@@ -474,15 +474,15 @@ func global[T uint64 | spec.Metrics](ctx context.Context, uid, sid uint64, metri
 	return
 }
 
-func GlobalAggregate(ctx context.Context, uid, sid uint64, o spec.QueryOptions) (r spec.ResultSet[uint64]) {
+func GlobalAggregate(ctx context.Context, uid, sid uint64, o spec.QueryOptions) (r spec.Series[uint64]) {
 	return queryGlobal[uint64](ctx, uid, sid, o)
 }
 
-func GlobalSeries(ctx context.Context, uid, sid uint64, o spec.QueryOptions) (r spec.ResultSet[[]uint64]) {
+func GlobalSeries(ctx context.Context, uid, sid uint64, o spec.QueryOptions) (r spec.Series[[]uint64]) {
 	return queryGlobal[[]uint64](ctx, uid, sid, o)
 }
 
-func queryGlobal[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o spec.QueryOptions) (r spec.ResultSet[T]) {
+func queryGlobal[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o spec.QueryOptions) (r spec.Series[T]) {
 	now := core.Now(ctx)
 	start := now.Add(-o.Offset)
 	end := start

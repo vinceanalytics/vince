@@ -57,7 +57,7 @@ type Metrics struct {
 	Visits   uint64 `json:"visits,omitempty"`
 }
 
-type ResultSet[T uint64 | []uint64] struct {
+type Series[T uint64 | []uint64] struct {
 	Timestamps []int64       `json:"timestamps,omitempty"`
 	Elapsed    time.Duration `json:"elapsed"`
 	Result     T             `json:"result"`
