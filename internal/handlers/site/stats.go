@@ -28,7 +28,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		Owner:  u.Name,
 		Metric: m,
 		Window: p,
-		Global: timeseries.AllStats(ctx, site.UserID, site.ID),
+		Global: timeseries.Stats(ctx, site.UserID, site.ID),
 		Series: timeseries.GlobalSeries(ctx, site.UserID, site.ID, spec.QueryOptions{
 			Window: p.Window(now),
 			Metric: m,

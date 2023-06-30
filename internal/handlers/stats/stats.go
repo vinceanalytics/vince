@@ -25,7 +25,7 @@ func All(w http.ResponseWriter, r *http.Request) {
 	} else {
 		uid = models.GetUser(ctx).ID
 	}
-	render.JSON(w, http.StatusOK, timeseries.AllStats(
+	render.JSON(w, http.StatusOK, timeseries.Stats(
 		ctx, uid, sid,
 	))
 }

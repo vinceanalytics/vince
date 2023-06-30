@@ -118,7 +118,7 @@ func Stat(ctx context.Context, uid, sid uint64, metric Metric) spec.Global[uint6
 	return global[uint64](ctx, uid, sid, metric)
 }
 
-func AllStats(ctx context.Context, uid, sid uint64) spec.Global[spec.Metrics] {
+func Stats(ctx context.Context, uid, sid uint64) spec.Global[spec.Metrics] {
 	return global[spec.Metrics](ctx, uid, sid, property.Metric(0))
 }
 
