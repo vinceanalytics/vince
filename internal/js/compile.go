@@ -15,7 +15,6 @@ import (
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/email"
-	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/packages"
 )
 
@@ -158,7 +157,6 @@ func CompileWith(ctx context.Context, dir string, paths ...string) ([]*Alert, er
 
 func load(ctx context.Context, vm *goja.Runtime, mainPkg []byte) error {
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
-	query.Register(vm)
 	email.Register(ctx, vm)
 	_, err := vm.RunString(string(mainPkg))
 	return err
