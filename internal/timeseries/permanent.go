@@ -188,7 +188,7 @@ func (m *merge) add(key, value []byte) {
 		g[metricOffset] = key[metricOffset]
 
 		ts[metricOffset] = key[metricOffset]
-		copy(ts[len(ts)-8:], key[len(key)-8:])
+		copy(ts[len(ts)-8:], key[len(key)-8:]) //copy timestamp
 
 		// per instance
 		m.addInternal(g, value, stamp)

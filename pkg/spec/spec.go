@@ -31,8 +31,9 @@ type Site_ struct {
 type SiteList List[Site_]
 
 type QueryOptions struct {
-	Window time.Duration `json:"window,omitempty"`
-	Offset time.Duration `json:"offset,omitempty"`
+	Window time.Duration   `json:"window,omitempty"`
+	Offset time.Duration   `json:"offset,omitempty"`
+	Metric property.Metric `json:"metric,omitempty"`
 }
 
 type QueryPropertyOptions struct {
@@ -64,6 +65,12 @@ type Metrics struct {
 	Views    uint64 `json:"views,omitempty"`
 	Events   uint64 `json:"events,omitempty"`
 	Visits   uint64 `json:"visits,omitempty"`
+}
+
+type ResultSet[T any] struct {
+	Timestamps []int64       `json:"timestamps,omitempty"`
+	Elapsed    time.Duration `json:"elapsed"`
+	Result     T             `json:"result"`
 }
 
 type Stat One[uint64]

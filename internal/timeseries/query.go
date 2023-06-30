@@ -490,26 +490,67 @@ func Global(ctx context.Context, uid, sid uint64) (o spec.Stats) {
 	return
 }
 
-func GlobalStat(ctx context.Context, uid, sid uint64, metric Metric) (o spec.Stat) {
-	start := core.Now(ctx)
-	now := start.UnixMilli()
-	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
-	m := newMetaKey()
-	m.uid(uid, sid)
-	b := get()
+func GlobalAggregate(ctx context.Context, uid, sid uint64, o spec.QueryOptions) (r spec.ResultSet[uint64]) {
+	return queryGlobal[uint64](ctx, uid, sid, o)
+}
 
-	defer func() {
-		m.Release()
-		put(b)
-		o.Elapsed = core.Now(ctx).Sub(start)
-	}()
-	b.Write(m[:])
-	b.Write(zero)
-	key := b.Bytes()
-	err := u64(txn, key, metric, &o.Item)
-	if err != nil {
-		log.Get().Err(err).Msg("failed to query global stats")
+func GlobalSeries(ctx context.Context, uid, sid uint64, o spec.QueryOptions) (r spec.ResultSet[[]uint64]) {
+	return queryGlobal[[]uint64](ctx, uid, sid, o)
+}
+
+func queryGlobal[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o spec.QueryOptions) (r spec.ResultSet[T]) {
+	now := core.Now(ctx)
+	start := now.Add(-o.Offset)
+	end := start
+	start = end.Add(-o.Window)
+	if end.Before(start) {
+		end = start
 	}
+	readTs := uint64(now.UnixMilli())
+	endTs := uint64(end.UnixMilli())
+
+	var ts []int64
+	var values []uint64
+	txn := Permanent(ctx).NewTransactionAt(readTs, false)
+	m := newMetaKey()
+	b := get()
+	m.uid(uid, sid)
+	m.metric(o.Metric)
+	b.Write(m[:])
+
+	opts := badger.DefaultIteratorOptions
+	switch any(r.Result).(type) {
+	case []uint64:
+		r.Timestamps = sharedTS(start.UnixMilli(), end.UnixMilli(), time.Hour.Milliseconds())
+	}
+	prefix := m[:]
+
+	opts.Prefix = prefix
+	it := txn.NewIterator(opts)
+	for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+		item := it.Item()
+		if item.Version() >= endTs {
+			break
+		}
+		k := item.Key()
+		if bytes.Equal(k[len(k)-8:], zero) {
+			continue
+		}
+		item.Value(func(val []byte) error {
+			ts = append(ts, int64(item.Version()))
+			values = append(values, binary.BigEndian.Uint64(val))
+			return nil
+		})
+	}
+	it.Close()
+	m.Release()
+	switch e := any(&r.Result).(type) {
+	case *uint64:
+		*e = Sum64(values)
+	case *[]uint64:
+		*e = rollUp(values, ts, r.Timestamps, Sum64)
+	}
+	r.Elapsed = core.Elapsed(ctx, now)
 	return
 }
 

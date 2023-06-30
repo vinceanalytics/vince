@@ -40,12 +40,7 @@ func Global(w http.ResponseWriter, r *http.Request) {
 }
 
 func GlobalMetric(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	owner := models.GetUser(ctx)
-	m := property.ParsMetric(params.Get(ctx).Get("metric"))
-	render.JSON(w, http.StatusOK, timeseries.GlobalStat(
-		ctx, owner.ID, 0, m,
-	))
+
 }
 
 func GlobalSeries(w http.ResponseWriter, r *http.Request) {
