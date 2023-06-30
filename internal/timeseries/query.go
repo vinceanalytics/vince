@@ -371,7 +371,15 @@ func selector(o spec.Select) (s query.Select) {
 	return
 }
 
-func QueryProperty[T any](ctx context.Context, uid, sid uint64, o spec.QueryPropertyOptions) (result spec.PropertyResult[T]) {
+func QuerySeries(ctx context.Context, uid, sid uint64, o spec.QueryPropertyOptions) (result spec.PropertyResult[[]uint64]) {
+	return queryProperty[[]uint64](ctx, uid, sid, o)
+}
+
+func QueryAggregate(ctx context.Context, uid, sid uint64, o spec.QueryPropertyOptions) (result spec.PropertyResult[uint64]) {
+	return queryProperty[uint64](ctx, uid, sid, o)
+}
+
+func queryProperty[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o spec.QueryPropertyOptions) (result spec.PropertyResult[T]) {
 	now := core.Now(ctx)
 	window := o.Window
 	if window < time.Hour {
@@ -385,11 +393,8 @@ func QueryProperty[T any](ctx context.Context, uid, sid uint64, o spec.QueryProp
 		end = start
 	}
 	switch any(result.Result).(type) {
-	case spec.PropertySeriesValue:
+	case map[string][]uint64:
 		result.Timestamps = sharedTS(start.UnixMilli(), end.UnixMilli(), time.Hour.Milliseconds())
-	case spec.PropertyValue:
-	default:
-		log.Get().Fatal().Msg("unknown property value  type")
 	}
 	result.Result = make(map[string]T)
 
@@ -447,11 +452,11 @@ func QueryProperty[T any](ctx context.Context, uid, sid uint64, o spec.QueryProp
 	put(b)
 
 	switch r := any(result.Result).(type) {
-	case spec.PropertySeriesValue:
+	case map[string][]uint64:
 		for k, v := range values {
 			r[k] = rollUp(v.Value, v.Timestamp, result.Timestamps, Sum64)
 		}
-	case spec.PropertyValue:
+	case map[string]uint64:
 		for k, v := range values {
 			r[k] = Sum64(v.Value)
 		}

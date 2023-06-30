@@ -44,11 +44,7 @@ type QueryPropertyOptions struct {
 	Selector Select            `json:"selector,omitempty"`
 }
 
-type PropertyValue map[string]uint64
-
-type PropertySeriesValue map[string][]uint64
-
-type PropertyResult[T any] struct {
+type PropertyResult[T uint64 | []uint64] struct {
 	Timestamps []int64       `json:"timestamps"`
 	Elapsed    time.Duration `json:"elapsed"`
 	Result     map[string]T  `json:"result"`
