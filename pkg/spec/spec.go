@@ -50,12 +50,6 @@ type PropertyResult[T uint64 | []uint64] struct {
 	Result     map[string]T  `json:"result"`
 }
 
-type Series struct {
-	Timestamps []int64       `json:"timestamps"`
-	Elapsed    time.Duration `json:"elapsed"`
-	Result     []uint64      `json:"result"`
-}
-
 type Metrics struct {
 	Visitors uint64 `json:"visitors,omitempty"`
 	Views    uint64 `json:"views,omitempty"`
@@ -63,15 +57,11 @@ type Metrics struct {
 	Visits   uint64 `json:"visits,omitempty"`
 }
 
-type ResultSet[T any] struct {
+type ResultSet[T uint64 | []uint64] struct {
 	Timestamps []int64       `json:"timestamps,omitempty"`
 	Elapsed    time.Duration `json:"elapsed"`
 	Result     T             `json:"result"`
 }
-
-type Stat One[uint64]
-
-type Stats One[Metrics]
 
 type Global[T uint64 | Metrics] struct {
 	Elapsed time.Duration `json:"elapsed"`

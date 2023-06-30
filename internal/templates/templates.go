@@ -119,7 +119,7 @@ type Header struct {
 }
 
 type Overview struct {
-	Global spec.Stats
+	Global spec.Global[spec.Metrics]
 	Sites  []SiteOverView
 	Panel  string
 }
@@ -127,7 +127,7 @@ type Overview struct {
 type SiteOverView struct {
 	Site   *models.Site
 	Owner  string
-	Global spec.Stats
+	Global spec.Global[spec.Metrics]
 }
 
 type SiteStats struct {
@@ -135,8 +135,8 @@ type SiteStats struct {
 	Owner  string
 	Metric property.Metric
 	Window timex.Duration
-	Global spec.Stats
-	Series spec.Series
+	Global spec.Global[spec.Metrics]
+	Series spec.ResultSet[[]uint64]
 }
 
 type Period struct {
@@ -193,13 +193,13 @@ func (s *SiteStats) metric(m property.Metric) Metric {
 	var value uint64
 	switch m {
 	case property.Visitors:
-		value = s.Global.Item.Visitors
+		value = s.Global.Result.Visitors
 	case property.Views:
-		value = s.Global.Item.Views
+		value = s.Global.Result.Views
 	case property.Events:
-		value = s.Global.Item.Events
+		value = s.Global.Result.Events
 	case property.Visits:
-		value = s.Global.Item.Visits
+		value = s.Global.Result.Visits
 	}
 	return Metric{
 		Name:     m.Label(),

@@ -16,14 +16,14 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	u := models.GetUser(ctx)
 	models.PreloadUser(ctx, u, "Sites")
 	o := templates.Overview{
-		Global: timeseries.Global(ctx, u.ID, 0),
+		Global: timeseries.AllStats(ctx, u.ID, 0),
 		Panel:  r.URL.Query().Get("panel"),
 	}
 	for _, site := range u.Sites {
 		o.Sites = append(o.Sites, templates.SiteOverView{
 			Site:   site,
 			Owner:  u.Name,
-			Global: timeseries.Global(ctx, u.ID, site.ID),
+			Global: timeseries.AllStats(ctx, u.ID, site.ID),
 		})
 	}
 	render.HTML(ctx, w, homeTpl, http.StatusOK, func(ctx *templates.Context) {

@@ -9,6 +9,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/property"
+	"github.com/vinceanalytics/vince/pkg/spec"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
 
@@ -27,10 +28,11 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		Owner:  u.Name,
 		Metric: m,
 		Window: p,
-		Global: timeseries.Global(ctx, u.ID, site.ID),
-		Series: timeseries.QueryGlobalMetric(
-			ctx, m, site.UserID, site.ID, p.Window(now), 0,
-		),
+		Global: timeseries.AllStats(ctx, site.UserID, site.ID),
+		Series: timeseries.GlobalSeries(ctx, site.UserID, site.ID, spec.QueryOptions{
+			Window: p.Window(now),
+			Metric: m,
+		}),
 	}
 	render.HTML(ctx, w, homeTpl, http.StatusOK, func(ctx *templates.Context) {
 		ctx.USER = u
