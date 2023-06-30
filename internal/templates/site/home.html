@@ -18,7 +18,7 @@
                 </div>
             </nav>
             <div class="Box Box--spacious">
-                <li class="Box-row p-0">
+                <div class="Box-row p-0">
                     <ul class="list-style-none text-center d-flex flex-wrap">
                         {{range .Stats.Metrics}}
                         <li class="{{.Select}}  p-3 col-12 col-sm-6 col-md-3 border-bottom border-md-bottom-0">
@@ -31,7 +31,13 @@
                         </li>
                         {{end}}
                     </ul>
-                </li>
+                </div>
+                <div class="Box-row">
+                    <div>
+                        <plot-stat data-ts="{{JSON .Stats.Series.Timestamps}}"
+                            data-values="{{JSON .Stats.Series.Result}}"></plot-stat>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="Layout-sidebar">

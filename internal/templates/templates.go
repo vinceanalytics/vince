@@ -3,6 +3,7 @@ package templates
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/url"
@@ -10,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/dee"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/pkg/octicon"
@@ -50,11 +50,17 @@ func base() *template.Template {
 		"Avatar":     Avatar,
 		"Logo":       LogoText,
 		"SafeDomain": models.SafeDomain,
-	}
-	for k, v := range dee.Map {
-		m[k] = v
+		"JSON":       JSON,
 	}
 	return template.New("root").Funcs(m)
+}
+
+func JSON(a any) (string, error) {
+	b, err := json.Marshal(a)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 func layout() *template.Template {
@@ -130,6 +136,7 @@ type SiteStats struct {
 	Metric property.Metric
 	Window timex.Duration
 	Global spec.Stats
+	Series spec.Series
 }
 
 type Period struct {

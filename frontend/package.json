@@ -7,5 +7,9 @@
     "@primer/css": "^21.0.6",
     "esbuild": "^0.17.18",
     "sass": "^1.62.1"
+  },
+  "dependencies": {
+    "@github/catalyst": "^1.6.0",
+    "uplot": "^1.6.24"
   }
 }
