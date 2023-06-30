@@ -16,6 +16,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/property"
 	"github.com/vinceanalytics/vince/pkg/spec"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
@@ -521,6 +522,46 @@ func Global(ctx context.Context, uid, sid uint64) (o spec.Stats) {
 	if err != nil {
 		log.Get().Err(err).Msg("failed to query global stats")
 	}
+	return
+}
+
+func Stat(ctx context.Context, uid, sid uint64, metric Metric) spec.Global[uint64] {
+	return global[uint64](ctx, uid, sid, metric)
+}
+
+func AllStats(ctx context.Context, uid, sid uint64) spec.Global[spec.Metrics] {
+	return global[spec.Metrics](ctx, uid, sid, property.Metric(0))
+}
+
+func global[T uint64 | spec.Metrics](ctx context.Context, uid, sid uint64, metric Metric) (o spec.Global[T]) {
+	start := core.Now(ctx)
+	now := start.UnixMilli()
+	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
+	m := newMetaKey()
+	m.uid(uid, sid)
+	b := get()
+
+	b.Write(m[:])
+	b.Write(zero)
+	key := b.Bytes()
+	var err error
+	switch e := any(&o.Result).(type) {
+	case *uint64:
+		err = u64(txn, key, metric, e)
+	case *spec.Metrics:
+		err = errors.Join(
+			u64(txn, key, Visitors, &e.Visitors),
+			u64(txn, key, Views, &e.Views),
+			u64(txn, key, Events, &e.Events),
+			u64(txn, key, Visits, &e.Visits),
+		)
+	}
+	if err != nil {
+		log.Get().Err(err).Msg("failed to query global stats")
+	}
+	m.Release()
+	put(b)
+	o.Elapsed = core.Elapsed(ctx, start)
 	return
 }
 

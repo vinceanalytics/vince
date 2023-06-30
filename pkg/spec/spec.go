@@ -73,6 +73,11 @@ type Stat One[uint64]
 
 type Stats One[Metrics]
 
+type Global[T uint64 | Metrics] struct {
+	Elapsed time.Duration `json:"elapsed"`
+	Result  T             `json:"result"`
+}
+
 type One[T any] struct {
 	Elapsed time.Duration `json:"elapsed"`
 	Item    T             `json:"item"`

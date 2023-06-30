@@ -31,16 +31,33 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, http.StatusNotImplemented, http.StatusText(http.StatusNotImplemented))
 }
 
-func Global(w http.ResponseWriter, r *http.Request) {
+func All(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	owner := models.GetUser(ctx)
-	render.JSON(w, http.StatusOK, timeseries.Global(
-		ctx, owner.ID, 0,
+	var sid, uid uint64
+	if site := models.GetSite(ctx); site != nil {
+		sid = site.ID
+		uid = site.ID
+	} else {
+		uid = models.GetUser(ctx).ID
+	}
+	render.JSON(w, http.StatusOK, timeseries.AllStats(
+		ctx, uid, sid,
 	))
 }
 
-func GlobalMetric(w http.ResponseWriter, r *http.Request) {
-
+func Metric(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var sid, uid uint64
+	if site := models.GetSite(ctx); site != nil {
+		sid = site.ID
+		uid = site.ID
+	} else {
+		uid = models.GetUser(ctx).ID
+	}
+	metric := property.ParsMetric(params.Get(ctx).Get("metric"))
+	render.JSON(w, http.StatusOK, timeseries.Stat(
+		ctx, uid, sid, metric,
+	))
 }
 
 func GlobalSeries(w http.ResponseWriter, r *http.Request) {
