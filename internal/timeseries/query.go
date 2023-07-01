@@ -171,7 +171,6 @@ func queryGlobal[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o sp
 		end = start
 	}
 	readTs := uint64(now.UnixMilli())
-	endTs := uint64(end.UnixMilli())
 
 	var ts []int64
 	var values []uint64
@@ -187,9 +186,14 @@ func queryGlobal[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o sp
 	case []uint64:
 		r.Timestamps = sharedTS(start.UnixMilli(), end.UnixMilli(), time.Hour.Milliseconds())
 	}
+	startTS := uint64(start.UnixMilli())
+	endTs := uint64(end.UnixMilli())
+
 	prefix := m[:]
 
 	opts.Prefix = prefix
+	opts.SinceTs = startTS
+
 	it := txn.NewIterator(opts)
 	for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 		item := it.Item()
