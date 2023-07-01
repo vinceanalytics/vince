@@ -62,3 +62,27 @@ func GlobalSeries(w http.ResponseWriter, r *http.Request) {
 	}
 	render.JSON(w, http.StatusOK, timeseries.GlobalSeries(ctx, uid, sid, q))
 }
+
+func PropertySeries(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	site := models.GetSite(ctx)
+	var q spec.QueryPropertyOptions
+	err := json.NewDecoder(r.Body).Decode(&q)
+	if err != nil {
+		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+		return
+	}
+	render.JSON(w, http.StatusOK, timeseries.QuerySeries(ctx, site.UserID, site.ID, q))
+}
+
+func PropertyAggregate(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	site := models.GetSite(ctx)
+	var q spec.QueryPropertyOptions
+	err := json.NewDecoder(r.Body).Decode(&q)
+	if err != nil {
+		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+		return
+	}
+	render.JSON(w, http.StatusOK, timeseries.QuerySeries(ctx, site.UserID, site.ID, q))
+}

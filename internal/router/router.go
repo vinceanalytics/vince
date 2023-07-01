@@ -69,6 +69,13 @@ func Pipe(ctx context.Context) plug.Pipeline {
 				DELETE("^/sites/:owner/:site$", site.APIDelete),
 			NotFound,
 		),
+		plug.PREFIX("/stats/property",
+			a.And(plug.AuthAPI(schema.Stats, schema.Get)).
+				GET("^/stats/property/series/:owner/:site$", stats.PropertySeries),
+			a.And(plug.AuthAPI(schema.Stats, schema.Get)).
+				GET("^/stats/property/aggregate/:owner/:site$", stats.PropertyAggregate),
+			NotFound,
+		),
 		plug.PREFIX("/stats/series/",
 			a.And(plug.AuthAPI(schema.Stats, schema.Get)).
 				GET("^/stats/series/:owner$", stats.GlobalSeries),
