@@ -39,10 +39,18 @@ func (id *Key) prop(p spec.Property) *Key {
 
 var zero = make([]byte, 8)
 
-func (id *Key) clone() *Key {
-	o := newMetaKey()
-	copy(o[:], id[:])
-	return o
+func (id *Key) String() string {
+	return formatID(id[:])
+}
+
+func formatID(id []byte) string {
+	return fmt.Sprintf(
+		"%d/%d/%s/%s",
+		binary.BigEndian.Uint64(id[userOffset:]),
+		binary.BigEndian.Uint64(id[siteOffset:]),
+		spec.Metric(id[metricOffset]),
+		spec.Property(id[propOffset]),
+	)
 }
 
 func (id *Key) uid(u, s uint64) *Key {
