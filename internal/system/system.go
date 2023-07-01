@@ -1,6 +1,8 @@
 package system
 
 import (
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -107,4 +109,13 @@ func init() {
 		SiteCacheDuration,
 		CalendarReadDuration,
 	)
+}
+
+type Stats struct {
+	Timestamp         time.Time `parquet:"timestamp,timestamp"`
+	SitesInCache      int64     `parquet:"sites_in_cache"`
+	DataPointReceived int64     `parquet:"data_point_received,delta"`
+	DataPointRejected int64     `parquet:"data_point_rejected,delta"`
+	DataPointDropped  int64     `parquet:"data_point_dropped,delta"`
+	DataPointAccepted int64     `parquet:"data_point_accepted,delta"`
 }
