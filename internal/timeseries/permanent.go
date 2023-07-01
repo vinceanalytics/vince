@@ -153,7 +153,7 @@ func storeForever(ctx context.Context) (stats mergeStats) {
 			})
 			if err != nil {
 				log.Get().Err(err).
-					Str("key", formatID(key)).
+					Str("key", formatID(swk)).
 					Msg("failed to set key in permanent store")
 				it.Close()
 				txn.Discard()
