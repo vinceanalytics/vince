@@ -112,7 +112,7 @@ func Save(ctx context.Context, b *Buffer) {
 	// b.id has the same encoding as the first 16 bytes of meta. We just copy that
 	// there is no need to re encode user id and site id.
 	copy(meta[:], b.id[:])
-	tsBytes := svc.slice.u64(uint64(start.Truncate(time.Hour).UnixMilli()))
+	tsBytes := svc.slice.u64(uint64(start.UnixMilli()))
 
 	svc.txn = db.NewTransactionAt(startMs, true)
 	err := b.build(ctx, func(p spec.Property, key string, sum *aggr) error {
@@ -242,8 +242,7 @@ func save(svc *saveContext, key *bytes.Buffer, a uint16) error {
 	}
 	svc.keys++
 	k := key.Bytes()
-	// println(">", DebugKey(k), a)
-	return svc.txn.Set(k, svc.slice.u16(a))
+	return svc.txn.Set(k, svc.slice.u64(uint64(a)))
 }
 
 type slice struct {
