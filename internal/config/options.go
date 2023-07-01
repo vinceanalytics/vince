@@ -371,8 +371,8 @@ func (o *Options) Flags() []cli.Flag {
 		&cli.DurationFlag{
 			Category:    "intervals",
 			Name:        "system-interval",
-			Usage:       "How often to collect application stats",
-			Value:       2 * time.Minute,
+			Usage:       "Interval for collecting system metrics",
+			Value:       time.Minute,
 			Destination: &o.Intervals.System,
 			EnvVars:     []string{"VINCE_SYSTEM_INTERVAL"},
 		},

@@ -19,7 +19,7 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 	if err != nil {
 		return nil, nil, err
 	}
-	system, err := managed(ctx, filepath.Join(dir, "system"))
+	system, err := openSystem(ctx, filepath.Join(dir, "system"))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -43,7 +43,7 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 	m := NewMap(o.Intervals.TSSync)
 	ctx = SetMap(ctx, m)
 
-	resource := resourceList{temporary, unique, permanent, m}
+	resource := resourceList{temporary, system, unique, permanent, m}
 	return ctx, resource, nil
 }
 
@@ -90,13 +90,12 @@ func Permanent(ctx context.Context) *badger.DB {
 	return ctx.Value(permanentKey{}).(*badger.DB)
 }
 
-func System(ctx context.Context) *badger.DB {
-	return ctx.Value(systemKey{}).(*badger.DB)
+func System(ctx context.Context) *SystemStats {
+	return ctx.Value(systemKey{}).(*SystemStats)
 }
 
 func GC(ctx context.Context) {
 	Temporary(ctx).RunValueLogGC(0.5)
 	Unique(ctx).RunValueLogGC(0.5)
 	Permanent(ctx).RunValueLogGC(0.5)
-	System(ctx).RunValueLogGC(0.5)
 }

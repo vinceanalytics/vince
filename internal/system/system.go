@@ -2,6 +2,7 @@ package system
 
 import (
 	"context"
+	"runtime"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -121,6 +122,7 @@ type Stats struct {
 	DataPointRejected uint64    `parquet:"data_point_rejected,zstd"`
 	DataPointDropped  uint64    `parquet:"data_point_dropped,zstd"`
 	DataPointAccepted uint64    `parquet:"data_point_accepted,zstd"`
+	TotalAllocation   uint64    `parquet:"total_allocation,zstd"`
 }
 
 func (s *Stats) Read(ts time.Time) {
@@ -144,6 +146,10 @@ func (s *Stats) Read(ts time.Time) {
 	m.Reset()
 	DataPointAccepted.Write(m)
 	s.DataPointAccepted = uint64(m.GetCounter().GetValue())
+
+	var mem runtime.MemStats
+	runtime.ReadMemStats(&mem)
+	s.TotalAllocation = mem.TotalAlloc
 }
 
 func Read(ctx context.Context) (o Stats) {
