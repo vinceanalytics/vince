@@ -110,7 +110,7 @@ var _ json.Marshaler = (*Metric)(nil)
 var _ json.Unmarshaler = (*Metric)(nil)
 
 const (
-	Visitors Metric = 1 + iota
+	Visitors Metric = iota
 	Views
 	Events
 	Visits
@@ -155,9 +155,6 @@ func (m Metric) Label() string {
 }
 
 func ParsMetric(k string) Metric {
-	if k == "" {
-		return Visitors
-	}
 	return Metric(_metric_value[k])
 }
 
