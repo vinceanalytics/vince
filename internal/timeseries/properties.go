@@ -27,14 +27,3 @@ const (
 )
 
 const BaseKey = property.BaseKey
-
-type Metric = property.Metric
-
-const (
-	Visitors       = property.Visitors
-	Views          = property.Views
-	Events         = property.Events
-	Visits         = property.Visits
-	BounceRates    = property.BounceRates
-	VisitDurations = property.VisitDurations
-)

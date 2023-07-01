@@ -12,6 +12,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/property"
 )
 
 type aggr struct {
@@ -149,12 +150,12 @@ func transaction(
 	ts []byte,
 	m *Key, text string, a *aggr) error {
 	return errors.Join(
-		save(svc, m.metric(Visitors).key(ts, text, svc.ls), a.Visitors),
-		save(svc, m.metric(Views).key(ts, text, svc.ls), a.Views),
-		save(svc, m.metric(Events).key(ts, text, svc.ls), a.Events),
-		save(svc, m.metric(Visits).key(ts, text, svc.ls), a.Visits),
-		save(svc, m.metric(BounceRates).key(ts, text, svc.ls), a.BounceRate),
-		save(svc, m.metric(VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration)),
+		save(svc, m.metric(property.Visitors).key(ts, text, svc.ls), a.Visitors),
+		save(svc, m.metric(property.Views).key(ts, text, svc.ls), a.Views),
+		save(svc, m.metric(property.Events).key(ts, text, svc.ls), a.Events),
+		save(svc, m.metric(property.Visits).key(ts, text, svc.ls), a.Visits),
+		save(svc, m.metric(property.BounceRates).key(ts, text, svc.ls), a.BounceRate),
+		save(svc, m.metric(property.VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration)),
 	)
 }
 

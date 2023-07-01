@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/vinceanalytics/vince/pkg/property"
 )
 
 const (
@@ -25,7 +27,7 @@ var metaKeyPool = &sync.Pool{
 	},
 }
 
-func (id *Key) metric(u Metric) *Key {
+func (id *Key) metric(u property.Metric) *Key {
 	id[metricOffset] = byte(u)
 	return id
 }
@@ -52,7 +54,7 @@ func (id *Key) uid(u, s uint64) *Key {
 func DebugKey(id []byte) string {
 	uid := binary.BigEndian.Uint64(id[userOffset:])
 	sid := binary.BigEndian.Uint64(id[siteOffset:])
-	metric := Metric(id[metricOffset])
+	metric := property.Metric(id[metricOffset])
 	prop := Property(id[propOffset])
 	key := id[keyOffset : len(id)-8]
 	ts := Time(id[len(id)-8:])
@@ -67,7 +69,7 @@ func DebugKey(id []byte) string {
 func DebugPrefix(id []byte) string {
 	uid := binary.BigEndian.Uint64(id[userOffset:])
 	sid := binary.BigEndian.Uint64(id[userOffset:])
-	metric := Metric(id[metricOffset])
+	metric := property.Metric(id[metricOffset])
 	prop := Property(id[propOffset])
 	key := id[keyOffset:]
 	g := smallBufferpool.Get().(*bytes.Buffer)
