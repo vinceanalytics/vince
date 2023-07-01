@@ -32,7 +32,7 @@ func (id *Key) metric(u property.Metric) *Key {
 	return id
 }
 
-func (id *Key) prop(p Property) *Key {
+func (id *Key) prop(p property.Property) *Key {
 	id[propOffset] = byte(p)
 	return id
 }
@@ -55,7 +55,7 @@ func DebugKey(id []byte) string {
 	uid := binary.BigEndian.Uint64(id[userOffset:])
 	sid := binary.BigEndian.Uint64(id[siteOffset:])
 	metric := property.Metric(id[metricOffset])
-	prop := Property(id[propOffset])
+	prop := property.Property(id[propOffset])
 	key := id[keyOffset : len(id)-8]
 	ts := Time(id[len(id)-8:])
 	g := smallBufferpool.Get().(*bytes.Buffer)
@@ -70,7 +70,7 @@ func DebugPrefix(id []byte) string {
 	uid := binary.BigEndian.Uint64(id[userOffset:])
 	sid := binary.BigEndian.Uint64(id[userOffset:])
 	metric := property.Metric(id[metricOffset])
-	prop := Property(id[propOffset])
+	prop := property.Property(id[propOffset])
 	key := id[keyOffset:]
 	g := smallBufferpool.Get().(*bytes.Buffer)
 	fmt.Fprintf(g, "/%d/%d/%s/%s/%s", uid, sid, metric, prop, string(key))

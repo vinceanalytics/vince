@@ -12,6 +12,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/property"
 )
 
 type mergeFunction func(context.Context, uint64, *kvTs, *mergeStats) error
@@ -175,7 +176,7 @@ func (m *merge) add(key, value []byte) {
 		stamp := binary.BigEndian.Uint64(key[len(key)-8:])
 
 		// we don't include BaseKey
-		size := len(key) - len(BaseKey)
+		size := len(key) - len(property.BaseKey)
 
 		// plain stats
 		g := m.slice.get(size)

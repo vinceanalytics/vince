@@ -115,7 +115,7 @@ func Save(ctx context.Context, b *Buffer) {
 	tsBytes := svc.slice.u64(uint64(start.Truncate(time.Hour).UnixMilli()))
 
 	svc.txn = db.NewTransactionAt(startMs, true)
-	err := b.build(ctx, func(p Property, key string, sum *aggr) error {
+	err := b.build(ctx, func(p property.Property, key string, sum *aggr) error {
 		return transaction(&svc, tsBytes, meta.prop(p), key, sum)
 	})
 	svc.commit(ctx, startMs, err)

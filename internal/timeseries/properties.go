@@ -2,8 +2,6 @@ package timeseries
 
 import "github.com/vinceanalytics/vince/pkg/property"
 
-type Property = property.Property
-
 const (
 	Base           = property.Base
 	Event          = property.Event
@@ -25,5 +23,3 @@ const (
 	Region         = property.Region
 	City           = property.City
 )
-
-const BaseKey = property.BaseKey

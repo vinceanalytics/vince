@@ -11,6 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/property"
 )
 
 type Buffer struct {
@@ -87,7 +88,7 @@ var bigBufferPool = &sync.Pool{
 	},
 }
 
-func (b *Buffer) build(ctx context.Context, f func(p Property, key string, sum *aggr) error) error {
+func (b *Buffer) build(ctx context.Context, f func(p property.Property, key string, sum *aggr) error) error {
 	return b.segments.build(ctx, f)
 }
 
@@ -197,7 +198,7 @@ type computed struct {
 	done func()
 }
 
-func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, sum *aggr) error) error {
+func (m *MultiEntry) build(ctx context.Context, f func(p property.Property, key string, sum *aggr) error) error {
 	// We capitalize on badger Transaction to globally track unique visitors in
 	// this entries batch.
 	//
@@ -240,7 +241,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p Property, key string, s
 //
 // f is called on each key:Sum result. The order of the keys is not guaranteed.
 func (m *MultiEntry) compute(
-	prop Property,
+	prop property.Property,
 	pick func(*MultiEntry, int) string,
 	seen seenFunc,
 	f func(string, *aggr) error,
@@ -293,11 +294,11 @@ func (m *MultiEntry) compute(
 // returns a function that chooses a key from MultiEntry based on Property p.
 // All keys are strings, empty keys are ignored. Base property uses __root__ as
 // its key.
-func choose(p Property) func(m *MultiEntry, i int) string {
+func choose(p property.Property) func(m *MultiEntry, i int) string {
 	switch p {
 	case Base:
 		return func(m *MultiEntry, i int) string {
-			return BaseKey
+			return property.BaseKey
 		}
 	case Event:
 		return func(m *MultiEntry, i int) string {
@@ -394,7 +395,7 @@ func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) 
 			return true
 		}
 	}
-	return func(p Property) (func(uint64) bool, func()) {
+	return func(p property.Property) (func(uint64) bool, func()) {
 		if p == Base {
 			return use(txn), func() {}
 		}
@@ -405,4 +406,4 @@ func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) 
 	}
 }
 
-type seenFunc func(Property) (func(uint64) bool, func())
+type seenFunc func(property.Property) (func(uint64) bool, func())
