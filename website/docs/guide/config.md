@@ -327,6 +327,16 @@ How often to merge aggregated stats and store in a permanent storage
 VINCE_MERGE_INTERVAL="30s"
 ```
 :::
+## system-interval
+Interval for collecting system metrics
+::: code-group
+```shell [flag]
+--system-interval="1m0s"
+```
+```shell [env]
+VINCE_SYSTEM_INTERVAL="1m0s"
+```
+:::
 ## ts-buffer-sync-interval
 window for buffering timeseries in memory before savin them
 ::: code-group

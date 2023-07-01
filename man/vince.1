@@ -72,6 +72,7 @@ vince
 [--secret-age]=[value]
 [--secret]=[value]
 [--super-users]=[value]
+[--system-interval]=[value]
 [--tls-address]=[value]
 [--tls-cert]=[value]
 [--tls-key]=[value]
@@ -270,6 +271,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 .PP
 \fB--super-users\fP="": a list of user names with super privilege (default: [])
+
+.PP
+\fB--system-interval\fP="": Interval for collecting system metrics (default: 1m0s)
 
 .PP
 \fB--tls-address\fP="": https address to listen to. You must provide tls-key and tls-cert or configure auto-tls (default: :8443)
