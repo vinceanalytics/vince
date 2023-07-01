@@ -21,7 +21,7 @@ import (
 
 // Events accepts events payloads from vince client script.
 func Events(w http.ResponseWriter, r *http.Request) {
-	system.DataPoint.WithLabelValues("received").Inc()
+	system.DataPointReceived.Inc()
 
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	xlg := log.Get()

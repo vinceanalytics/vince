@@ -68,18 +68,22 @@ var (
 )
 
 var (
-	DataPoint = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "vince",
-			Name:      "data_point",
-			Help:      "Number of calls to /api/event",
-		},
-		[]string{"status"},
-	)
-	DataPointReceived = DataPoint.WithLabelValues("received")
-	DataPointRejected = DataPoint.WithLabelValues("rejected")
-	DataPointDropped  = DataPoint.WithLabelValues("dropped")
-	DataPointAccepted = DataPoint.WithLabelValues("accepted")
+	DataPointReceived = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "vince",
+		Name:      "data_point_received",
+	})
+	DataPointRejected = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "vince",
+		Name:      "data_point_rejected",
+	})
+	DataPointDropped = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "vince",
+		Name:      "data_point_dropped",
+	})
+	DataPointAccepted = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "vince",
+		Name:      "data_point_accepted",
+	})
 )
 
 // gauges
@@ -93,7 +97,10 @@ var (
 
 func init() {
 	prometheus.DefaultRegisterer.MustRegister(
-		DataPoint,
+		DataPointReceived,
+		DataPointRejected,
+		DataPointDropped,
+		DataPointAccepted,
 		SitesInCache,
 		SaveDuration,
 		DropSiteDuration,
