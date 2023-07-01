@@ -1,9 +1,12 @@
 package system
 
 import (
+	"context"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
+	"github.com/vinceanalytics/vince/internal/core"
 )
 
 // histograms
@@ -113,9 +116,37 @@ func init() {
 
 type Stats struct {
 	Timestamp         time.Time `parquet:"timestamp,timestamp"`
-	SitesInCache      int64     `parquet:"sites_in_cache"`
-	DataPointReceived int64     `parquet:"data_point_received,delta"`
-	DataPointRejected int64     `parquet:"data_point_rejected,delta"`
-	DataPointDropped  int64     `parquet:"data_point_dropped,delta"`
-	DataPointAccepted int64     `parquet:"data_point_accepted,delta"`
+	SitesInCache      uint64    `parquet:"sites_in_cache"`
+	DataPointReceived uint64    `parquet:"data_point_received,zstd"`
+	DataPointRejected uint64    `parquet:"data_point_rejected,zstd"`
+	DataPointDropped  uint64    `parquet:"data_point_dropped,zstd"`
+	DataPointAccepted uint64    `parquet:"data_point_accepted,zstd"`
+}
+
+func (s *Stats) Read(ts time.Time) {
+	m := new(dto.Metric)
+
+	SitesInCache.Write(m)
+	s.SitesInCache = uint64(m.GetGauge().GetValue())
+
+	m.Reset()
+	DataPointReceived.Write(m)
+	s.DataPointReceived = uint64(m.GetCounter().GetValue())
+
+	m.Reset()
+	DataPointRejected.Write(m)
+	s.DataPointRejected = uint64(m.GetCounter().GetValue())
+
+	m.Reset()
+	DataPointDropped.Write(m)
+	s.DataPointDropped = uint64(m.GetCounter().GetValue())
+
+	m.Reset()
+	DataPointAccepted.Write(m)
+	s.DataPointAccepted = uint64(m.GetCounter().GetValue())
+}
+
+func Read(ctx context.Context) (o Stats) {
+	o.Read(core.Now(ctx))
+	return
 }
