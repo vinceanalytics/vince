@@ -34,11 +34,13 @@ func storeForever(ctx context.Context) (stats mergeStats) {
 
 	ts := uint64(start.Truncate(time.Hour).UnixMilli())
 
+	readTs := uint64(start.UnixMilli())
+
 	// Use this transaction to read from temporary storage
-	tmpReadTxn := Temporary(ctx).NewTransactionAt(ts, false)
+	tmpReadTxn := Temporary(ctx).NewTransactionAt(readTs, false)
 
 	// Use this transaction to delete from temporary storage
-	tmpDelTxn := Temporary(ctx).NewTransactionAt(ts, true)
+	tmpDelTxn := Temporary(ctx).NewTransactionAt(readTs, true)
 
 	// Transaction to store keys in permanent storage
 	txn := Permanent(ctx).NewTransactionAt(ts, true)
@@ -65,8 +67,8 @@ func storeForever(ctx context.Context) (stats mergeStats) {
 
 		key := x.Key()
 		owk := buf.clone(key)
-		err := doTxn(tmpDelTxn, ts, tmpDelTxn.Delete(owk), func() error {
-			tmpDelTxn = Temporary(ctx).NewTransactionAt(ts, true)
+		err := doTxn(tmpDelTxn, readTs, tmpDelTxn.Delete(owk), func() error {
+			tmpDelTxn = Temporary(ctx).NewTransactionAt(readTs, true)
 			err := doTxn(txn, ts, badger.ErrTxnTooBig, func() error {
 				txn = Permanent(ctx).NewTransactionAt(ts, true)
 				return nil
@@ -144,7 +146,7 @@ func storeForever(ctx context.Context) (stats mergeStats) {
 			err := doTxn(txn, ts, saveKey(txn, buf, swk, owv), func() error {
 				txn = Permanent(ctx).NewTransactionAt(ts, true)
 				return doTxn(tmpDelTxn, ts, badger.ErrTxnTooBig, func() error {
-					tmpDelTxn = Temporary(ctx).NewTransactionAt(ts, true)
+					tmpDelTxn = Temporary(ctx).NewTransactionAt(readTs, true)
 					buf.reset()
 					return nil
 				})
@@ -165,7 +167,7 @@ func storeForever(ctx context.Context) (stats mergeStats) {
 	}
 	it.Close()
 	tmpReadTxn.Discard()
-	err := tmpDelTxn.CommitAt(ts, nil)
+	err := tmpDelTxn.CommitAt(readTs, nil)
 	if err != nil {
 		log.Get().Err(err).Msg("failed to commit deletion of temporary keys transaction")
 		tmpReadTxn.Discard()
