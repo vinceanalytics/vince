@@ -208,6 +208,7 @@ func queryGlobal[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o sp
 	}
 	it.Close()
 	m.Release()
+	put(b)
 	switch e := any(&r.Result).(type) {
 	case *uint64:
 		*e = Sum64(values)
