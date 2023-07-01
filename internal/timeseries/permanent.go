@@ -67,26 +67,13 @@ func storeForever(ctx context.Context) (stats mergeStats) {
 
 		key := x.Key()
 		owk := buf.clone(key)
-		err := doTxn(tmpDelTxn, readTs, tmpDelTxn.Delete(owk), func() error {
+		doTxn(tmpDelTxn, readTs, tmpDelTxn.Delete(owk), func() {
 			tmpDelTxn = Temporary(ctx).NewTransactionAt(readTs, true)
-			err := doTxn(txn, ts, badger.ErrTxnTooBig, func() error {
+			doTxn(txn, ts, badger.ErrTxnTooBig, func() {
 				txn = Permanent(ctx).NewTransactionAt(ts, true)
-				return nil
 			})
 			buf.reset()
-			return err
 		})
-		if err != nil {
-			log.Get().Err(err).
-				Str("key", formatID(key)).
-				Msg("failed to commit delete or permanent store transaction")
-			it.Close()
-			txn.Discard()
-			tmpDelTxn.Discard()
-			tmpReadTxn.Discard()
-			buf.release()
-			return
-		}
 		keys = keys[:0]
 		if owk[propOffset] == byte(spec.Base) {
 			// Store global stats. Global stats are grouped into
@@ -143,25 +130,13 @@ func storeForever(ctx context.Context) (stats mergeStats) {
 			return
 		}
 		for _, swk := range keys {
-			err := doTxn(txn, ts, saveKey(txn, buf, swk, owv), func() error {
+			doTxn(txn, ts, saveKey(txn, buf, swk, owv), func() {
 				txn = Permanent(ctx).NewTransactionAt(ts, true)
-				return doTxn(tmpDelTxn, ts, badger.ErrTxnTooBig, func() error {
+				doTxn(tmpDelTxn, ts, badger.ErrTxnTooBig, func() {
 					tmpDelTxn = Temporary(ctx).NewTransactionAt(readTs, true)
 					buf.reset()
-					return nil
 				})
 			})
-			if err != nil {
-				log.Get().Err(err).
-					Str("key", formatID(swk)).
-					Msg("failed to set key in permanent store")
-				it.Close()
-				txn.Discard()
-				tmpDelTxn.Discard()
-				tmpReadTxn.Discard()
-				buf.release()
-				return
-			}
 			stats.keys.permanent++
 		}
 	}
@@ -199,16 +174,16 @@ func saveKey(txn *badger.Txn, s *slice, key, value []byte) error {
 
 }
 
-func doTxn(txn *badger.Txn, stamp uint64, err error, on func() error) error {
+func doTxn(txn *badger.Txn, stamp uint64, err error, on func()) {
 	if err != nil {
 		if errors.Is(err, badger.ErrTxnTooBig) {
 			err = txn.CommitAt(stamp, nil)
 			if err != nil {
-				return err
+				log.Get().Fatal().Err(err).Msg("failed to commit transaction")
 			}
-			return on()
+			on()
+			return
 		}
-		return err
+		log.Get().Fatal().Err(err).Msg("unexpected error during transaction")
 	}
-	return nil
 }
