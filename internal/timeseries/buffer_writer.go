@@ -209,7 +209,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p spec.Property, key stri
 	// transaction before calling m.Compute and the transaction is discarded there
 	// after to ensure we only commit Base user_id but still be able to correctly
 	// detect unique visitors within m.Compute calls.
-	txn := GetUnique(ctx).NewTransaction(true)
+	txn := Unique(ctx).NewTransaction(true)
 	mls := newTxnBufferList()
 	defer func() {
 		err := txn.Commit()
@@ -399,7 +399,7 @@ func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) 
 		if p == spec.Base {
 			return use(txn), func() {}
 		}
-		x := GetUnique(ctx).NewTransaction(true)
+		x := Unique(ctx).NewTransaction(true)
 		return use(x), func() {
 			x.Discard()
 		}
