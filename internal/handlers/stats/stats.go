@@ -66,6 +66,7 @@ func PropertySeries(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := models.GetSite(ctx)
 	var q spec.QueryPropertyOptions
+	q.Defaults()
 	err := json.NewDecoder(r.Body).Decode(&q)
 	if err != nil {
 		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
@@ -78,6 +79,7 @@ func PropertyAggregate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := models.GetSite(ctx)
 	var q spec.QueryPropertyOptions
+	q.Defaults()
 	err := json.NewDecoder(r.Body).Decode(&q)
 	if err != nil {
 		render.JSONError(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))

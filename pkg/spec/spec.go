@@ -42,6 +42,11 @@ type QueryPropertyOptions struct {
 	Selector Select        `json:"selector,omitempty"`
 }
 
+func (q *QueryPropertyOptions) Defaults() {
+	q.Window = time.Hour * 24
+	q.Property = Page
+}
+
 type PropertyResult[T uint64 | []uint64] struct {
 	Timestamps []int64       `json:"timestamps"`
 	Elapsed    time.Duration `json:"elapsed"`
