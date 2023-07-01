@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vinceanalytics/vince/pkg/property"
+	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
 const (
@@ -27,12 +27,12 @@ var metaKeyPool = &sync.Pool{
 	},
 }
 
-func (id *Key) metric(u property.Metric) *Key {
+func (id *Key) metric(u spec.Metric) *Key {
 	id[metricOffset] = byte(u)
 	return id
 }
 
-func (id *Key) prop(p property.Property) *Key {
+func (id *Key) prop(p spec.Property) *Key {
 	id[propOffset] = byte(p)
 	return id
 }
@@ -54,8 +54,8 @@ func (id *Key) uid(u, s uint64) *Key {
 func DebugKey(id []byte) string {
 	uid := binary.BigEndian.Uint64(id[userOffset:])
 	sid := binary.BigEndian.Uint64(id[siteOffset:])
-	metric := property.Metric(id[metricOffset])
-	prop := property.Property(id[propOffset])
+	metric := spec.Metric(id[metricOffset])
+	prop := spec.Property(id[propOffset])
 	key := id[keyOffset : len(id)-8]
 	ts := Time(id[len(id)-8:])
 	g := smallBufferpool.Get().(*bytes.Buffer)
@@ -69,8 +69,8 @@ func DebugKey(id []byte) string {
 func DebugPrefix(id []byte) string {
 	uid := binary.BigEndian.Uint64(id[userOffset:])
 	sid := binary.BigEndian.Uint64(id[userOffset:])
-	metric := property.Metric(id[metricOffset])
-	prop := property.Property(id[propOffset])
+	metric := spec.Metric(id[metricOffset])
+	prop := spec.Property(id[propOffset])
 	key := id[keyOffset:]
 	g := smallBufferpool.Get().(*bytes.Buffer)
 	fmt.Fprintf(g, "/%d/%d/%s/%s/%s", uid, sid, metric, prop, string(key))

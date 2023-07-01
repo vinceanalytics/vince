@@ -14,7 +14,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/pkg/octicon"
-	"github.com/vinceanalytics/vince/pkg/property"
 	"github.com/vinceanalytics/vince/pkg/spec"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
@@ -133,7 +132,7 @@ type SiteOverView struct {
 type SiteStats struct {
 	Site   *models.Site
 	Owner  string
-	Metric property.Metric
+	Metric spec.Metric
 	Window timex.Duration
 	Global spec.Global[spec.Metrics]
 	Series spec.Series[[]uint64]
@@ -156,10 +155,10 @@ func (s *SiteStats) Periods() []Period {
 
 func (s *SiteStats) Metrics() []Metric {
 	return []Metric{
-		s.metric(property.Visitors),
-		s.metric(property.Visits),
-		s.metric(property.Events),
-		s.metric(property.Views),
+		s.metric(spec.Visitors),
+		s.metric(spec.Visits),
+		s.metric(spec.Events),
+		s.metric(spec.Views),
 	}
 }
 
@@ -187,18 +186,18 @@ func (m *Metric) Select() string {
 	return ""
 }
 
-func (s *SiteStats) metric(m property.Metric) Metric {
+func (s *SiteStats) metric(m spec.Metric) Metric {
 	q := s.query()
 	q.Set("m", m.String())
 	var value uint64
 	switch m {
-	case property.Visitors:
+	case spec.Visitors:
 		value = s.Global.Result.Visitors
-	case property.Views:
+	case spec.Views:
 		value = s.Global.Result.Views
-	case property.Events:
+	case spec.Events:
 		value = s.Global.Result.Events
-	case property.Visits:
+	case spec.Visits:
 		value = s.Global.Result.Visits
 	}
 	return Metric{

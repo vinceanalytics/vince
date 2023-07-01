@@ -11,7 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/pkg/property"
+	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
 type Buffer struct {
@@ -88,7 +88,7 @@ var bigBufferPool = &sync.Pool{
 	},
 }
 
-func (b *Buffer) build(ctx context.Context, f func(p property.Property, key string, sum *aggr) error) error {
+func (b *Buffer) build(ctx context.Context, f func(p spec.Property, key string, sum *aggr) error) error {
 	return b.segments.build(ctx, f)
 }
 
@@ -198,14 +198,14 @@ type computed struct {
 	done func()
 }
 
-func (m *MultiEntry) build(ctx context.Context, f func(p property.Property, key string, sum *aggr) error) error {
+func (m *MultiEntry) build(ctx context.Context, f func(p spec.Property, key string, sum *aggr) error) error {
 	// We capitalize on badger Transaction to globally track unique visitors in
 	// this entries batch.
 	//
-	// txn holds visible user_id seen on Base property. This ensure we correctly account
+	// txn holds visible user_id seen on Base spec. This ensure we correctly account
 	// for all buffered entries.
 	//
-	// seen function will use this for Base property. All other properties create a new
+	// seen function will use this for Base spec. All other properties create a new
 	// transaction before calling m.Compute and the transaction is discarded there
 	// after to ensure we only commit Base user_id but still be able to correctly
 	// detect unique visitors within m.Compute calls.
@@ -220,7 +220,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p property.Property, key 
 		mls.release()
 	}()
 	uniq := seen(ctx, txn, m.key[:], mls)
-	for i := property.Base; i <= property.City; i++ {
+	for i := spec.Base; i <= spec.City; i++ {
 		err := m.compute(i, choose(i), uniq, func(s1 string, s2 *aggr) error {
 			return f(i, s1, s2)
 		})
@@ -241,7 +241,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p property.Property, key 
 //
 // f is called on each key:Sum result. The order of the keys is not guaranteed.
 func (m *MultiEntry) compute(
-	prop property.Property,
+	prop spec.Property,
 	pick func(*MultiEntry, int) string,
 	seen seenFunc,
 	f func(string, *aggr) error,
@@ -294,81 +294,81 @@ func (m *MultiEntry) compute(
 // returns a function that chooses a key from MultiEntry based on Property p.
 // All keys are strings, empty keys are ignored. Base property uses __root__ as
 // its key.
-func choose(p property.Property) func(m *MultiEntry, i int) string {
+func choose(p spec.Property) func(m *MultiEntry, i int) string {
 	switch p {
-	case property.Base:
+	case spec.Base:
 		return func(m *MultiEntry, i int) string {
-			return property.BaseKey
+			return spec.BaseKey
 		}
-	case property.Event:
+	case spec.Event:
 		return func(m *MultiEntry, i int) string {
 			return m.Name[i]
 		}
-	case property.Page:
+	case spec.Page:
 		return func(m *MultiEntry, i int) string {
 			return m.Pathname[i]
 		}
-	case property.EntryPage:
+	case spec.EntryPage:
 		return func(m *MultiEntry, i int) string {
 			return m.EntryPage[i]
 		}
-	case property.ExitPage:
+	case spec.ExitPage:
 		return func(m *MultiEntry, i int) string {
 			return m.ExitPage[i]
 		}
-	case property.Referrer:
+	case spec.Referrer:
 		return func(m *MultiEntry, i int) string {
 			return m.ReferrerSource[i]
 		}
-	case property.UtmMedium:
+	case spec.UtmMedium:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmMedium[i]
 		}
-	case property.UtmSource:
+	case spec.UtmSource:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmSource[i]
 		}
-	case property.UtmCampaign:
+	case spec.UtmCampaign:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmCampaign[i]
 		}
-	case property.UtmContent:
+	case spec.UtmContent:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmContent[i]
 		}
-	case property.UtmTerm:
+	case spec.UtmTerm:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmTerm[i]
 		}
-	case property.UtmDevice:
+	case spec.UtmDevice:
 		return func(m *MultiEntry, i int) string {
 			return m.ScreenSize[i]
 		}
-	case property.UtmBrowser:
+	case spec.UtmBrowser:
 		return func(m *MultiEntry, i int) string {
 			return m.Browser[i]
 		}
-	case property.BrowserVersion:
+	case spec.BrowserVersion:
 		return func(m *MultiEntry, i int) string {
 			return m.BrowserVersion[i]
 		}
-	case property.Os:
+	case spec.Os:
 		return func(m *MultiEntry, i int) string {
 			return m.OperatingSystem[i]
 		}
-	case property.OsVersion:
+	case spec.OsVersion:
 		return func(m *MultiEntry, i int) string {
 			return m.OperatingSystemVersion[i]
 		}
-	case property.Country:
+	case spec.Country:
 		return func(m *MultiEntry, i int) string {
 			return m.CountryCode[i]
 		}
-	case property.Region:
+	case spec.Region:
 		return func(m *MultiEntry, i int) string {
 			return m.Region[i]
 		}
-	case property.City:
+	case spec.City:
 		return func(m *MultiEntry, i int) string {
 			return m.City[i]
 		}
@@ -395,8 +395,8 @@ func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) 
 			return true
 		}
 	}
-	return func(p property.Property) (func(uint64) bool, func()) {
-		if p == property.Base {
+	return func(p spec.Property) (func(uint64) bool, func()) {
+		if p == spec.Base {
 			return use(txn), func() {}
 		}
 		x := GetUnique(ctx).NewTransaction(true)
@@ -406,4 +406,4 @@ func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) 
 	}
 }
 
-type seenFunc func(property.Property) (func(uint64) bool, func())
+type seenFunc func(spec.Property) (func(uint64) bool, func())

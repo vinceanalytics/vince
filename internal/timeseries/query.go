@@ -12,7 +12,6 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/pkg/property"
 	"github.com/vinceanalytics/vince/pkg/spec"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
@@ -114,15 +113,15 @@ func queryProperty[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o 
 	return
 }
 
-func Stat(ctx context.Context, uid, sid uint64, metric property.Metric) spec.Global[uint64] {
+func Stat(ctx context.Context, uid, sid uint64, metric spec.Metric) spec.Global[uint64] {
 	return global[uint64](ctx, uid, sid, metric)
 }
 
 func Stats(ctx context.Context, uid, sid uint64) spec.Global[spec.Metrics] {
-	return global[spec.Metrics](ctx, uid, sid, property.Metric(0))
+	return global[spec.Metrics](ctx, uid, sid, spec.Metric(0))
 }
 
-func global[T uint64 | spec.Metrics](ctx context.Context, uid, sid uint64, metric property.Metric) (o spec.Global[T]) {
+func global[T uint64 | spec.Metrics](ctx context.Context, uid, sid uint64, metric spec.Metric) (o spec.Global[T]) {
 	start := core.Now(ctx)
 	now := start.UnixMilli()
 	txn := Permanent(ctx).NewTransactionAt(uint64(now), false)
@@ -139,10 +138,10 @@ func global[T uint64 | spec.Metrics](ctx context.Context, uid, sid uint64, metri
 		err = u64(txn, key, metric, e)
 	case *spec.Metrics:
 		err = errors.Join(
-			u64(txn, key, property.Visitors, &e.Visitors),
-			u64(txn, key, property.Views, &e.Views),
-			u64(txn, key, property.Events, &e.Events),
-			u64(txn, key, property.Visits, &e.Visits),
+			u64(txn, key, spec.Visitors, &e.Visitors),
+			u64(txn, key, spec.Views, &e.Views),
+			u64(txn, key, spec.Events, &e.Events),
+			u64(txn, key, spec.Visits, &e.Visits),
 		)
 	}
 	if err != nil {
@@ -220,7 +219,7 @@ func queryGlobal[T uint64 | []uint64](ctx context.Context, uid, sid uint64, o sp
 	return
 }
 
-func u64(txn *badger.Txn, b []byte, m property.Metric, o *uint64) error {
+func u64(txn *badger.Txn, b []byte, m spec.Metric, o *uint64) error {
 	b[metricOffset] = byte(m)
 	it, err := txn.Get(b)
 	if err != nil {

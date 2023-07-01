@@ -12,7 +12,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/pkg/property"
+	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
 type aggr struct {
@@ -115,7 +115,7 @@ func Save(ctx context.Context, b *Buffer) {
 	tsBytes := svc.slice.u64(uint64(start.Truncate(time.Hour).UnixMilli()))
 
 	svc.txn = db.NewTransactionAt(startMs, true)
-	err := b.build(ctx, func(p property.Property, key string, sum *aggr) error {
+	err := b.build(ctx, func(p spec.Property, key string, sum *aggr) error {
 		return transaction(&svc, tsBytes, meta.prop(p), key, sum)
 	})
 	svc.commit(ctx, startMs, err)
@@ -150,12 +150,12 @@ func transaction(
 	ts []byte,
 	m *Key, text string, a *aggr) error {
 	return errors.Join(
-		save(svc, m.metric(property.Visitors).key(ts, text, svc.ls), a.Visitors),
-		save(svc, m.metric(property.Views).key(ts, text, svc.ls), a.Views),
-		save(svc, m.metric(property.Events).key(ts, text, svc.ls), a.Events),
-		save(svc, m.metric(property.Visits).key(ts, text, svc.ls), a.Visits),
-		save(svc, m.metric(property.BounceRates).key(ts, text, svc.ls), a.BounceRate),
-		save(svc, m.metric(property.VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration)),
+		save(svc, m.metric(spec.Visitors).key(ts, text, svc.ls), a.Visitors),
+		save(svc, m.metric(spec.Views).key(ts, text, svc.ls), a.Views),
+		save(svc, m.metric(spec.Events).key(ts, text, svc.ls), a.Events),
+		save(svc, m.metric(spec.Visits).key(ts, text, svc.ls), a.Visits),
+		save(svc, m.metric(spec.BounceRates).key(ts, text, svc.ls), a.BounceRate),
+		save(svc, m.metric(spec.VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration)),
 	)
 }
 

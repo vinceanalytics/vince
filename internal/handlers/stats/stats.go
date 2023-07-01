@@ -8,7 +8,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/params"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/timeseries"
-	"github.com/vinceanalytics/vince/pkg/property"
 	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
@@ -39,7 +38,7 @@ func Metric(w http.ResponseWriter, r *http.Request) {
 	} else {
 		uid = models.GetUser(ctx).ID
 	}
-	metric := property.ParsMetric(params.Get(ctx).Get("metric"))
+	metric := spec.ParsMetric(params.Get(ctx).Get("metric"))
 	render.JSON(w, http.StatusOK, timeseries.Stat(
 		ctx, uid, sid, metric,
 	))

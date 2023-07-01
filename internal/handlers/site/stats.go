@@ -8,7 +8,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/internal/timeseries"
-	"github.com/vinceanalytics/vince/pkg/property"
 	"github.com/vinceanalytics/vince/pkg/spec"
 	"github.com/vinceanalytics/vince/pkg/timex"
 )
@@ -22,7 +21,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	site := models.GetSite(ctx)
 	q := r.URL.Query()
 	p := timex.Parse(q.Get("w"))
-	m := property.ParsMetric(q.Get("m"))
+	m := spec.ParsMetric(q.Get("m"))
 	o := templates.SiteStats{
 		Site:   site,
 		Owner:  u.Name,

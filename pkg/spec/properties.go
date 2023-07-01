@@ -1,4 +1,4 @@
-package property
+package spec
 
 import (
 	"encoding/json"
