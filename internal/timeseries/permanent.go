@@ -144,19 +144,13 @@ func storeForever(ctx context.Context) (stats mergeStats) {
 	tmpReadTxn.Discard()
 	err := tmpDelTxn.CommitAt(readTs, nil)
 	if err != nil {
-		log.Get().Err(err).Msg("failed to commit deletion of temporary keys transaction")
-		tmpReadTxn.Discard()
-		txn.Discard()
-		buf.release()
-		return
+		log.Get().Fatal().Err(err).Msg("failed to commit deletion transaction")
 	}
 	err = txn.CommitAt(ts, nil)
 	if err != nil {
-		log.Get().Err(err).Msg("failed to commit permanent storage transaction")
-		tmpReadTxn.Discard()
-		buf.release()
-		return
+		log.Get().Fatal().Err(err).Msg("failed to commit permanent storage transaction")
 	}
+	buf.release()
 	return
 }
 
