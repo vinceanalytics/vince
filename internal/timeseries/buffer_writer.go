@@ -220,7 +220,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p property.Property, key 
 		mls.release()
 	}()
 	uniq := seen(ctx, txn, m.key[:], mls)
-	for i := Base; i <= City; i++ {
+	for i := property.Base; i <= property.City; i++ {
 		err := m.compute(i, choose(i), uniq, func(s1 string, s2 *aggr) error {
 			return f(i, s1, s2)
 		})
@@ -296,79 +296,79 @@ func (m *MultiEntry) compute(
 // its key.
 func choose(p property.Property) func(m *MultiEntry, i int) string {
 	switch p {
-	case Base:
+	case property.Base:
 		return func(m *MultiEntry, i int) string {
 			return property.BaseKey
 		}
-	case Event:
+	case property.Event:
 		return func(m *MultiEntry, i int) string {
 			return m.Name[i]
 		}
-	case Page:
+	case property.Page:
 		return func(m *MultiEntry, i int) string {
 			return m.Pathname[i]
 		}
-	case EntryPage:
+	case property.EntryPage:
 		return func(m *MultiEntry, i int) string {
 			return m.EntryPage[i]
 		}
-	case ExitPage:
+	case property.ExitPage:
 		return func(m *MultiEntry, i int) string {
 			return m.ExitPage[i]
 		}
-	case Referrer:
+	case property.Referrer:
 		return func(m *MultiEntry, i int) string {
 			return m.ReferrerSource[i]
 		}
-	case UtmMedium:
+	case property.UtmMedium:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmMedium[i]
 		}
-	case UtmSource:
+	case property.UtmSource:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmSource[i]
 		}
-	case UtmCampaign:
+	case property.UtmCampaign:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmCampaign[i]
 		}
-	case UtmContent:
+	case property.UtmContent:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmContent[i]
 		}
-	case UtmTerm:
+	case property.UtmTerm:
 		return func(m *MultiEntry, i int) string {
 			return m.UtmTerm[i]
 		}
-	case UtmDevice:
+	case property.UtmDevice:
 		return func(m *MultiEntry, i int) string {
 			return m.ScreenSize[i]
 		}
-	case UtmBrowser:
+	case property.UtmBrowser:
 		return func(m *MultiEntry, i int) string {
 			return m.Browser[i]
 		}
-	case BrowserVersion:
+	case property.BrowserVersion:
 		return func(m *MultiEntry, i int) string {
 			return m.BrowserVersion[i]
 		}
-	case Os:
+	case property.Os:
 		return func(m *MultiEntry, i int) string {
 			return m.OperatingSystem[i]
 		}
-	case OsVersion:
+	case property.OsVersion:
 		return func(m *MultiEntry, i int) string {
 			return m.OperatingSystemVersion[i]
 		}
-	case Country:
+	case property.Country:
 		return func(m *MultiEntry, i int) string {
 			return m.CountryCode[i]
 		}
-	case Region:
+	case property.Region:
 		return func(m *MultiEntry, i int) string {
 			return m.Region[i]
 		}
-	case City:
+	case property.City:
 		return func(m *MultiEntry, i int) string {
 			return m.City[i]
 		}
@@ -396,7 +396,7 @@ func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) 
 		}
 	}
 	return func(p property.Property) (func(uint64) bool, func()) {
-		if p == Base {
+		if p == property.Base {
 			return use(txn), func() {}
 		}
 		x := GetUnique(ctx).NewTransaction(true)

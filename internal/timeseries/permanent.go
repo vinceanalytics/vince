@@ -163,7 +163,7 @@ func (m *merge) hash(b []byte) uint64 {
 }
 
 func (m *merge) add(key, value []byte) {
-	if key[propOffset] == byte(Base) {
+	if key[propOffset] == byte(property.Base) {
 		m.slice.reset()
 		// Store global stats. Global stats are grouped into
 		//  Per Site :
