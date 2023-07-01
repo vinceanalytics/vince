@@ -63,3 +63,7 @@ func GC(ctx context.Context, interval time.Duration) {
 func Merge(ctx context.Context, interval time.Duration) {
 	timeseries.Merge(ctx)
 }
+
+func System(ctx context.Context, interval time.Duration) {
+	timeseries.SaveSystem(ctx)
+}

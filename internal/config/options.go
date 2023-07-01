@@ -71,7 +71,7 @@ type Options struct {
 		AllowIP []string
 	}
 	Intervals struct {
-		SiteCache, TSSync, GC, Merge time.Duration
+		SiteCache, TSSync, GC, Merge, System time.Duration
 	}
 	Backup struct {
 		Enabled bool
@@ -367,6 +367,14 @@ func (o *Options) Flags() []cli.Flag {
 			Value:       2 * time.Minute,
 			Destination: &o.Intervals.Merge,
 			EnvVars:     []string{"VINCE_MERGE_INTERVAL"},
+		},
+		&cli.DurationFlag{
+			Category:    "intervals",
+			Name:        "system-interval",
+			Usage:       "How often to collect application stats",
+			Value:       2 * time.Minute,
+			Destination: &o.Intervals.System,
+			EnvVars:     []string{"VINCE_SYSTEM_INTERVAL"},
 		},
 		// secrets
 		&cli.StringFlag{

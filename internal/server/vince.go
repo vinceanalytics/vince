@@ -262,6 +262,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 		g.Go(worker.Periodic(ctx, h.Ping("aggregate"), o.Intervals.TSSync, false, worker.SaveBuffers))
 		g.Go(worker.Periodic(ctx, h.Ping("gc"), o.Intervals.GC, false, worker.GC))
 		g.Go(worker.Periodic(ctx, h.Ping("merge"), o.Intervals.Merge, false, worker.Merge))
+		g.Go(worker.Periodic(ctx, h.Ping("system"), o.Intervals.System, false, worker.System))
 		if o.Alerts.Enabled {
 			g.Go(alerts.Get(ctx).Work(ctx))
 		}
