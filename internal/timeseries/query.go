@@ -148,6 +148,7 @@ func global[T uint64 | spec.Metrics](ctx context.Context, uid, sid uint64, metri
 	if err != nil {
 		log.Get().Err(err).Msg("failed to query global stats")
 	}
+	txn.Discard()
 	m.Release()
 	put(b)
 	o.Elapsed = core.Elapsed(ctx, start)
