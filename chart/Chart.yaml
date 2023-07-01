@@ -5,8 +5,8 @@ type: application
 # This chart is developed as part of vince repository. This means it follows the
 # same release as vince, as a result version and appVersion will always be the
 # same. All will reference the git tag.
-version: v0.0.16
-appVersion: v0.0.16
+version: v0.0.17
+appVersion: v0.0.17
 keywords:
   - vince
   - v8s
