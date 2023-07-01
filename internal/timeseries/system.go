@@ -48,7 +48,7 @@ func (o *SystemStats) open(ctx context.Context) error {
 		o.w = parquet.NewSortingWriter[system.Stats](o.f, 10<<10,
 			parquet.SortingWriterConfig(
 				parquet.SortingColumns(
-					parquet.Descending("timestamp"),
+					parquet.Ascending("timestamp"),
 				),
 			),
 		)
