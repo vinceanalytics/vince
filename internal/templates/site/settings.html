@@ -71,9 +71,9 @@
         {{end}}
 
     </div>
-    <div id="membership" class="my-3">
+    <div id="members" class="my-3">
         <div class="Subhead">
-            <h2 class="Subhead-heading">Membership</h2>
+            <h2 class="Subhead-heading">Members</h2>
             <div class="Subhead-action">
                 <a class="btn btn-primary" href="/{{.USER.Name}}/{{.Site.Domain}}/memberships/invite">
                     {{Icon "plus" 16}}
@@ -81,8 +81,24 @@
                 </a>
             </div>
         </div>
-        <div class="blankslate">
-            <h2 class="blankslate-heading">No goals for this site yet</h2>
+        <div class="container-lg">
+            <ul class="border-top">
+                {{range .Site.Memberships}}
+                <li class="d-flex flex-items-center flex-justify-end member-list-item  border border-top-0 ">
+                    <div class="py-3 pl-3 pr-0 text-center flex-shrink-0">
+                        <a href="/{{.User.Name}}" class="d-inline-block">
+                            {{Avatar .User.Name 48 "avatar circle"}}
+                        </a>
+                    </div>
+                    <div class="py-3 css-truncate pl-3 flex-auto">
+                        <a class="f4 d-block" href="/{{.User.Name}}">
+                            {{.User.FullName}}
+                        </a>
+                        <span class="color-fg-default">{{.User.Name}}</span>
+                    </div>
+                </li>
+                {{end}}
+            </ul>
         </div>
 
     </div>

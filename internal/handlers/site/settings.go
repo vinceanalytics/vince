@@ -14,7 +14,7 @@ func Settings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := models.GetUser(ctx)
 	site := models.GetSite(ctx)
-	models.PreloadSite(ctx, site, "Goals")
+	models.PreloadSite(ctx, site, "Invitations", "Goals", "Memberships", "Memberships.User")
 	render.HTML(ctx, w, settingsTpl, http.StatusOK, func(ctx *templates.Context) {
 		ctx.Site = site
 		ctx.USER = u
