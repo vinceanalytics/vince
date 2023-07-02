@@ -12,6 +12,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/handlers/account"
 	"github.com/vinceanalytics/vince/internal/handlers/goals"
+	"github.com/vinceanalytics/vince/internal/handlers/membership"
 	"github.com/vinceanalytics/vince/internal/handlers/pat"
 	"github.com/vinceanalytics/vince/internal/handlers/site"
 	"github.com/vinceanalytics/vince/internal/handlers/stats"
@@ -134,6 +135,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.GET("^/:owner/:site/goals/new$", goals.New),
 		o.POST("^/:owner/:site/goals$", goals.Create),
 		o.DELETE("^/:owner/:site/goals/:goal$", goals.Delete),
+		o.GET("^/:owner/:site/memberships/invite$", membership.InviteForm),
 		o.GET("^/:owner/:site$", site.Home),
 		o.DELETE("^/:owner/:site$", site.Delete),
 		o.GET("^/:owner$", account.Home),
