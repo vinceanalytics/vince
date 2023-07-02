@@ -25,6 +25,8 @@ type Site struct {
 	UserID          uint64
 	Goals           []*Goal
 	Invitations     []*Invitation
+	Memberships     []*Membership
+	Members         []*User `gorm:"many2many:memberships"`
 }
 
 type EmailVerificationCode struct {
@@ -98,18 +100,20 @@ type User struct {
 	FullName               string
 	Email                  string `gorm:"uniqueIndex"`
 	PasswordHash           string
-	Sites                  []*Site
+	Sites                  []*Site                  `gorm:"many2many:memberships"`
 	EmailVerificationCodes []*EmailVerificationCode `gorm:"constraint:OnDelete:CASCADE;"`
 	APIKeys                []*APIKey                `gorm:"foreignKey:Owner;references:Name"`
 	LastSeen               time.Time
 	EmailVerified          bool `gorm:"not null;default:false"`
+
+	Memberships []*Membership
 }
 
 type Membership struct {
 	Model
-	UserID uint64
+	UserID uint64 `gorm:"primaryKey"`
 	Site   *Site
-	SiteID uint64
+	SiteID uint64 `gorm:"primaryKey"`
 	User   *User
 	Role   string `gorm:"not null;default:'owner';check:role in ('owner', 'admin', 'viewer')"`
 }

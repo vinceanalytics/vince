@@ -213,13 +213,25 @@ func UserByID(ctx context.Context, uid uint64) (u *User) {
 }
 
 func CreateSite(ctx context.Context, usr *User, domain string, public bool) bool {
-	err := Get(ctx).Model(usr).Association("Sites").Append(&Site{
+	site := &Site{
 		Domain: domain,
 		Public: public,
-	})
+	}
+	err := Get(ctx).Model(usr).Association("Sites").Append(site)
 	if err != nil {
 		LOG(ctx, err, "failed to create a new site", func(e *zerolog.Event) *zerolog.Event {
 			return e.Str("domain", domain).Bool("public", public)
+		})
+		return false
+	}
+	member := &Membership{
+		SiteID: site.ID,
+		UserID: usr.ID,
+	}
+	err = Get(ctx).Create(member).Error
+	if err != nil {
+		LOG(ctx, err, "failed to create a new site membership", func(e *zerolog.Event) *zerolog.Event {
+			return e.Uint64("site_id", site.ID).Uint64("user_id", usr.ID)
 		})
 		return false
 	}
