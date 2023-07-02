@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/vinceanalytics/vince/internal/core"
 	"gorm.io/datatypes"
 )
@@ -23,6 +24,7 @@ type Site struct {
 	IngestRateLimit sql.NullFloat64
 	UserID          uint64
 	Goals           []*Goal
+	Invitations     []*Invitation
 }
 
 type EmailVerificationCode struct {
@@ -110,6 +112,16 @@ type Membership struct {
 	SiteID uint64
 	User   *User
 	Role   string `gorm:"not null;default:'owner';check:role in ('owner', 'admin', 'viewer')"`
+}
+
+type Invitation struct {
+	Model
+	UUID   uuid.UUID
+	Email  string
+	Role   string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
+	SiteID uint64
+	UserID uint64
+	User   *User
 }
 
 type CachedSite struct {

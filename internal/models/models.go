@@ -308,6 +308,7 @@ func Open(path string) (*gorm.DB, error) {
 		&Site{},
 		&User{},
 		&Membership{},
+		&Invitation{},
 	)
 	if err != nil {
 		return nil, err
