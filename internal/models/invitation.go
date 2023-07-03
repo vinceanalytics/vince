@@ -27,7 +27,7 @@ func NewInvite(ctx context.Context, i *Invitation) (o url.Values) {
 		return db.Model(&Invitation{}).Where("email = ?", i.Email).Where("site_id = ?", i.SiteID)
 	})
 	if exists {
-		o.Set("invite", "invitation has already been sent")
+		o.Set("email", "invitation has already been sent")
 		return
 	}
 	return
