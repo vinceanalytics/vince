@@ -8,19 +8,23 @@
     <form action="/{{.USER.Name}}/{{.Site.Domain}}/memberships/invite" method="post">
 
         <div>
-            <dl class="form-group required">
+            <dl class="form-group required {{if .Errors.email}}errored{{end}}">
                 <dt>
                     <label for="email">Email</label>
                 </dt>
                 <dd>
-                    <input type="email" class="form-control input-block" required id="email">
-
+                    <input type="email" class="form-control input-block" required id="email" name="email" {{with
+                        .Form.Get "email" }} value="{{.}}" {{end}}>
                 </dd>
+                {{with .Errors.email}}
+                <p class="note error">{{.}}</p>
+                {{else}}
                 <p class="note">
                     Email address of the member you want to invite. An email will be sent to them with
                     an
                     invitation.
                 </p>
+                {{end}}
             </dl>
 
             <div class="radio-group">
@@ -31,6 +35,7 @@
                 <input class="radio-input" id="viewer" type="radio" name="role" value="viewer">
                 <label class="radio-label" for="viewer">Viewer</label>
             </div>
+            {{template "_csrf" .}}
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Send Invite →</button>
             </div>

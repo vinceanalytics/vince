@@ -136,6 +136,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		o.POST("^/:owner/:site/goals$", goals.Create),
 		o.DELETE("^/:owner/:site/goals/:goal$", goals.Delete),
 		o.GET("^/:owner/:site/memberships/invite$", membership.InviteForm),
+		o.POST("^/:owner/:site/memberships/invite$", membership.Invite),
 		o.GET("^/:owner/:site$", site.Home),
 		o.DELETE("^/:owner/:site$", site.Delete),
 		o.GET("^/:owner$", account.Home),

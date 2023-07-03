@@ -212,6 +212,21 @@ func UserByID(ctx context.Context, uid uint64) (u *User) {
 	return &m
 }
 
+func IsMember(ctx context.Context, uid, sid uint64) bool {
+	return Role(ctx, uid, sid) != ""
+}
+
+func Role(ctx context.Context, uid, sid uint64) (r string) {
+	err := Get(ctx).Table("memberships").Select("role").
+		Where("user_id = ?", uid).
+		Where("site_id = ?", sid).
+		Limit(1).Row().Scan(&r)
+	if err != nil {
+		LOG(ctx, err, "failed to query role")
+	}
+	return
+}
+
 func CreateSite(ctx context.Context, usr *User, domain string, public bool) bool {
 	site := &Site{
 		UserID: usr.ID,
