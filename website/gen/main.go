@@ -16,9 +16,6 @@ const (
 func main() {
 	// build documentation
 	tools.ExecPlain("npm", "run", "docs:build")
-	// build blog
-	tools.ExecPlain("npm", "run", "blog:build")
-	tools.CopyDir("blog/.vitepress/dist/", "docs/.vitepress/dist/blog/")
 	// We also deploy v8s helm chart as part of the documentation website under
 	// the /charts/ path
 	//

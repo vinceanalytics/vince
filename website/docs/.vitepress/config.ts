@@ -30,7 +30,6 @@ export default defineConfig({
     nav: [
       { text: 'guide', link: '/guide/' },
       { text: 'k8s', link: '/k8s/' },
-      { text: 'blog', link: '/blog/' }
     ],
 
     sidebar: {
