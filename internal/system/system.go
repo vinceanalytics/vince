@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	dto "github.com/prometheus/client_model/go"
 	"github.com/vinceanalytics/vince/internal/core"
 )
 
@@ -116,40 +115,16 @@ func init() {
 }
 
 type Stats struct {
-	Timestamp         time.Time `parquet:"timestamp,timestamp"`
-	SitesInCache      int64     `parquet:"sites_in_cache"`
-	DataPointReceived int64     `parquet:"data_point_received,zstd"`
-	DataPointRejected int64     `parquet:"data_point_rejected,zstd"`
-	DataPointDropped  int64     `parquet:"data_point_dropped,zstd"`
-	DataPointAccepted int64     `parquet:"data_point_accepted,zstd"`
-	TotalAllocation   int64     `parquet:"total_allocation,zstd"`
+	Timestamp       time.Time `parquet:"timestamp,timestamp"`
+	TotalAllocation int64     `parquet:"allocation_total,zstd"`
+	NumGoroutines   int64     `parquet:"num_goroutines,zstd"`
 }
 
 func (s *Stats) Read(ts time.Time) {
-	m := new(dto.Metric)
-
-	SitesInCache.Write(m)
-	s.SitesInCache = int64(m.GetGauge().GetValue())
-
-	m.Reset()
-	DataPointReceived.Write(m)
-	s.DataPointReceived = int64(m.GetCounter().GetValue())
-
-	m.Reset()
-	DataPointRejected.Write(m)
-	s.DataPointRejected = int64(m.GetCounter().GetValue())
-
-	m.Reset()
-	DataPointDropped.Write(m)
-	s.DataPointDropped = int64(m.GetCounter().GetValue())
-
-	m.Reset()
-	DataPointAccepted.Write(m)
-	s.DataPointAccepted = int64(m.GetCounter().GetValue())
-
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 	s.TotalAllocation = int64(mem.TotalAlloc)
+	s.NumGoroutines = int64(runtime.NumGoroutine())
 }
 
 func Read(ctx context.Context) (o Stats) {
