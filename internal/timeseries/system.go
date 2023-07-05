@@ -91,7 +91,8 @@ func (o *SystemStats) Read(ctx context.Context) {
 }
 
 func (o *SystemStats) Close() error {
-	return o.save()
+	o.save()
+	return os.RemoveAll(o.dir)
 }
 
 var schema = parquet.SchemaOf(system.Stats{})
