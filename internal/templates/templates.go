@@ -16,6 +16,7 @@ import (
 	"github.com/vinceanalytics/vince/pkg/octicon"
 	"github.com/vinceanalytics/vince/pkg/spec"
 	"github.com/vinceanalytics/vince/pkg/timex"
+	"golang.org/x/exp/constraints"
 )
 
 //go:embed layout  plot site  auth error email user
@@ -50,7 +51,8 @@ func base() *template.Template {
 		"Logo":       LogoText,
 		"SafeDomain": models.SafeDomain,
 		"JSON":       JSON,
-		"Plot":       Plot,
+		"Plot":       Plot[int64],
+		"PlotU64":    Plot[uint64],
 	}
 	return template.New("root").Funcs(m)
 }
@@ -281,20 +283,20 @@ func Avatar(uid string, size uint, class ...string) template.HTML {
 	))
 }
 
-func Plot(id, label string, x, y []int64) template.HTML {
+func Plot[Y constraints.Integer](id, label string, x []int64, y []Y) template.HTML {
 	return template.HTML(fmt.Sprintf("<script>%s</script>",
-		plot(id, label, x, y),
+		plot[Y](id, label, x, y),
 	))
 }
 
-func plot(id, label string, x, y []int64) string {
+func plot[Y constraints.Integer](id, label string, x []int64, y []Y) string {
 	var b strings.Builder
 	return fmt.Sprintf("plotSeries(%q,%q,%v,%v);", id, label,
 		jsNum(&b, x), jsNum(&b, y),
 	)
 }
 
-func jsNum(b *strings.Builder, n []int64) string {
+func jsNum[T constraints.Integer](b *strings.Builder, n []T) string {
 	b.Reset()
 	b.WriteByte('[')
 	for i, v := range n {

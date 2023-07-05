@@ -9,7 +9,6 @@
     "sass": "^1.62.1"
   },
   "dependencies": {
-    "@github/catalyst": "^1.6.0",
     "uplot": "^1.6.24"
   }
 }
