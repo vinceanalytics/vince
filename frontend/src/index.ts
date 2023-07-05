@@ -48,6 +48,7 @@ class PlotStatElement extends HTMLElement {
 
 
 if (!window.customElements.get('plot-stat')) {
+    //@ts-ignore
     window.PlotStatElement = PlotStatElement
     window.customElements.define('plot-stat', PlotStatElement)
 }
