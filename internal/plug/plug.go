@@ -13,6 +13,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/flash"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
@@ -313,6 +314,17 @@ func RequestID(h http.Handler) http.Handler {
 		lg := log.Get()
 		rg := lg.With().Str("request_id", r.Header.Get("x-request-id")).Logger()
 		r = r.WithContext(rg.WithContext(r.Context()))
+		h.ServeHTTP(w, r)
+	})
+}
+
+func Bootstrap(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		usr := models.GetUser(r.Context())
+		if usr == nil || usr.Name != config.Get(r.Context()).Bootstrap.Name {
+			render.ERROR(r.Context(), w, http.StatusUnauthorized)
+			return
+		}
 		h.ServeHTTP(w, r)
 	})
 }

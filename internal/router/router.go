@@ -13,6 +13,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/handlers/account"
 	"github.com/vinceanalytics/vince/internal/handlers/goals"
 	"github.com/vinceanalytics/vince/internal/handlers/membership"
+	"github.com/vinceanalytics/vince/internal/handlers/ops"
 	"github.com/vinceanalytics/vince/internal/handlers/pat"
 	"github.com/vinceanalytics/vince/internal/handlers/site"
 	"github.com/vinceanalytics/vince/internal/handlers/stats"
@@ -38,6 +39,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	// browser.
 	o := append(plug.Browser(ctx), plug.Protect()...).And(plug.RequireAccount)
 
+	boot := o.And(plug.Bootstrap)
+
 	// Pipeline for accessing publicly reachable resources via the web browser.
 	www := append(plug.Browser(ctx), plug.Protect()...).And(plug.RequireLoggedOut)
 
@@ -45,6 +48,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	a := plug.Pipeline{plug.AcceptJSON}
 
 	return plug.Pipeline{
+		boot.PathGET("/system", ops.System),
 		browser.PathGET("/metrics", metrics.ServeHTTP),
 		// add prefix matches on the top of the pipeline for faster lookups
 		plug.Ok(config.Get(ctx).EnableProfile,
