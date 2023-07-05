@@ -2,8 +2,11 @@ package timeseries
 
 import (
 	"context"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"sync"
 	"time"
 
@@ -11,6 +14,8 @@ import (
 	"github.com/segmentio/parquet-go"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/system"
+	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
 func SaveSystem(ctx context.Context) {
@@ -87,4 +92,113 @@ func (o *SystemStats) Read(ctx context.Context) {
 
 func (o *SystemStats) Close() error {
 	return o.save()
+}
+
+var schema = parquet.SchemaOf(system.Stats{})
+
+var SystemFields = fields()
+
+func fields() (f []string) {
+	for _, e := range schema.Fields()[1:] {
+		f = append(f, e.Name())
+	}
+	return
+}
+func (o *SystemStats) Query(ctx context.Context, paths ...string) (r spec.System) {
+	leaf, ok := schema.Lookup(paths...)
+	if !ok {
+		return
+	}
+	if time.Since(o.ts) > (15 * time.Minute) {
+		o.mu.Lock()
+		o.save()
+		o.mu.Unlock()
+	}
+	err := o.read(o.readColum(leaf, &r))
+	if err != nil {
+		log.Get().Err(err).Msg("failed querying system stats")
+	}
+	return
+}
+
+func (o *SystemStats) readColum(col parquet.LeafColumn, rs *spec.System) func(io.ReaderAt, int64) error {
+	return func(ra io.ReaderAt, i int64) error {
+		f, err := parquet.OpenFile(ra, i)
+		if err != nil {
+			return err
+		}
+		for _, g := range f.RowGroups() {
+			chunks := g.ColumnChunks()
+			ts, err := readInt64(chunks[0])
+			if err != nil {
+				return err
+			}
+			rs.Timestamps = append(rs.Timestamps, ts...)
+			column, err := readInt64(chunks[col.ColumnIndex])
+			if err != nil {
+				return err
+			}
+			rs.Result = append(rs.Result, column...)
+		}
+		return nil
+	}
+}
+
+func readInt64(col parquet.ColumnChunk) ([]int64, error) {
+	pages := col.Pages()
+	defer pages.Close()
+	var result []int64
+	for {
+		p, err := pages.ReadPage()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return result, nil
+			}
+			return nil, err
+		}
+		switch e := p.Values().(type) {
+		case parquet.Int64Reader:
+			o := make([]int64, p.NumValues())
+			_, err := e.ReadInt64s(o)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, o...)
+		}
+	}
+}
+
+func (o *SystemStats) read(fn func(io.ReaderAt, int64) error) error {
+	var files []ulid.ULID
+	fi, err := os.ReadDir(o.dir)
+	if err != nil {
+		return err
+	}
+	for _, f := range fi {
+		u, err := ulid.Parse(f.Name())
+		if err != nil {
+			continue
+		}
+		files = append(files, u)
+	}
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Compare(files[i]) == -1
+	})
+	for _, u := range files {
+		f, err := os.Open(filepath.Join(o.dir, u.String()))
+		if err != nil {
+			return err
+		}
+		stat, err := f.Stat()
+		if err != nil {
+			f.Close()
+			return err
+		}
+		err = fn(f, stat.Size())
+		f.Close()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

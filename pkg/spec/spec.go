@@ -60,6 +60,12 @@ type Metrics struct {
 	Visits   uint64 `json:"visits,omitempty"`
 }
 
+type System struct {
+	Timestamps []int64       `json:"timestamps"`
+	Elapsed    time.Duration `json:"elapsed"`
+	Result     []int64       `json:"result"`
+}
+
 type Series[T uint64 | []uint64] struct {
 	Timestamps []int64       `json:"timestamps,omitempty"`
 	Elapsed    time.Duration `json:"elapsed"`
