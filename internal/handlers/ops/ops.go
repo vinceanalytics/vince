@@ -15,5 +15,7 @@ func System(w http.ResponseWriter, r *http.Request) {
 	usr := models.GetUser(ctx)
 	render.HTML(ctx, w, systemTpl, http.StatusOK, func(ctx *templates.Context) {
 		ctx.USER = usr
+		ctx.Header.Context = "system"
+		ctx.Header.ContextRef = "/system"
 	})
 }
