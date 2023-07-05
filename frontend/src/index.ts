@@ -53,9 +53,18 @@ if (!window.customElements.get('plot-stat')) {
     window.customElements.define('plot-stat', PlotStatElement)
 }
 
-function plot(id, label, x, y) {
+function plotSeries(id: string, label: string, x: number[], y: number[]) {
     let el = document.getElementById(id)!
-    new uPlot({ width: el.parentElement?.scrollWidth!, height: 240, series: [{}, { label: label, fill: "#ffe0d8" }], ms: 1 }, [x, y], el!);;
+    const container = el.parentElement!;
+    let p = new uPlot({ width: container.scrollWidth!, height: 240, series: [{}, { label: label, fill: "#ffe0d8" }], ms: 1 }, [x, y], el!);;
+    const resize = new ResizeObserver(() => {
+        p.setSize({
+            width: container.scrollWidth!,
+            height: 240,
+        })
+    });
+    resize.observe(container);
 }
 
-window.plot = plot;
+//@ts-ignore
+window.plotSeries = plotSeries;

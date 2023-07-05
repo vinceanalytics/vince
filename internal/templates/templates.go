@@ -286,9 +286,10 @@ func Plot(id, label string, x, y []int64) template.HTML {
 		plot(id, label, x, y),
 	))
 }
+
 func plot(id, label string, x, y []int64) string {
 	var b strings.Builder
-	return fmt.Sprintf("plot(%q,%q,%v,%v);", id, label,
+	return fmt.Sprintf("plotSeries(%q,%q,%v,%v);", id, label,
 		jsNum(&b, x), jsNum(&b, y),
 	)
 }
