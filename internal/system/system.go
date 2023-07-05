@@ -117,39 +117,39 @@ func init() {
 
 type Stats struct {
 	Timestamp         time.Time `parquet:"timestamp,timestamp"`
-	SitesInCache      uint64    `parquet:"sites_in_cache"`
-	DataPointReceived uint64    `parquet:"data_point_received,zstd"`
-	DataPointRejected uint64    `parquet:"data_point_rejected,zstd"`
-	DataPointDropped  uint64    `parquet:"data_point_dropped,zstd"`
-	DataPointAccepted uint64    `parquet:"data_point_accepted,zstd"`
-	TotalAllocation   uint64    `parquet:"total_allocation,zstd"`
+	SitesInCache      int64     `parquet:"sites_in_cache"`
+	DataPointReceived int64     `parquet:"data_point_received,zstd"`
+	DataPointRejected int64     `parquet:"data_point_rejected,zstd"`
+	DataPointDropped  int64     `parquet:"data_point_dropped,zstd"`
+	DataPointAccepted int64     `parquet:"data_point_accepted,zstd"`
+	TotalAllocation   int64     `parquet:"total_allocation,zstd"`
 }
 
 func (s *Stats) Read(ts time.Time) {
 	m := new(dto.Metric)
 
 	SitesInCache.Write(m)
-	s.SitesInCache = uint64(m.GetGauge().GetValue())
+	s.SitesInCache = int64(m.GetGauge().GetValue())
 
 	m.Reset()
 	DataPointReceived.Write(m)
-	s.DataPointReceived = uint64(m.GetCounter().GetValue())
+	s.DataPointReceived = int64(m.GetCounter().GetValue())
 
 	m.Reset()
 	DataPointRejected.Write(m)
-	s.DataPointRejected = uint64(m.GetCounter().GetValue())
+	s.DataPointRejected = int64(m.GetCounter().GetValue())
 
 	m.Reset()
 	DataPointDropped.Write(m)
-	s.DataPointDropped = uint64(m.GetCounter().GetValue())
+	s.DataPointDropped = int64(m.GetCounter().GetValue())
 
 	m.Reset()
 	DataPointAccepted.Write(m)
-	s.DataPointAccepted = uint64(m.GetCounter().GetValue())
+	s.DataPointAccepted = int64(m.GetCounter().GetValue())
 
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
-	s.TotalAllocation = mem.TotalAlloc
+	s.TotalAllocation = int64(mem.TotalAlloc)
 }
 
 func Read(ctx context.Context) (o Stats) {
