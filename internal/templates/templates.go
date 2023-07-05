@@ -99,6 +99,7 @@ type Context struct {
 	Recipient string
 	Overview  *Overview
 	Stats     *SiteStats
+	System    *spec.System
 }
 
 func (t *Context) ProfileOverview() string {

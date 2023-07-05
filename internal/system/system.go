@@ -117,14 +117,12 @@ func init() {
 type Stats struct {
 	Timestamp       time.Time `parquet:"timestamp,timestamp"`
 	TotalAllocation int64     `parquet:"allocation_total,zstd"`
-	NumGoroutines   int64     `parquet:"num_goroutines,zstd"`
 }
 
 func (s *Stats) Read(ts time.Time) {
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 	s.TotalAllocation = int64(mem.TotalAlloc)
-	s.NumGoroutines = int64(runtime.NumGoroutine())
 }
 
 func Read(ctx context.Context) (o Stats) {

@@ -1,2 +1,10 @@
 {{define "_content"}}
+<div class="container-md">
+    <nav class="UnderlineNav my-3">
+        <div class="UnderlineNav-body">
+            <a role="tab" href="/system?tab=allocation_total" class="UnderlineNav-item" {{if eq
+                .System.Name "allocation_total" }} aria-selected="true" {{end}}>Memory</a>
+        </div>
+    </nav>
+</div>
 {{end}}

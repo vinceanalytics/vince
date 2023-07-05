@@ -61,6 +61,7 @@ type Metrics struct {
 }
 
 type System struct {
+	Name       string        `json:"system"`
 	Timestamps []int64       `json:"timestamps"`
 	Elapsed    time.Duration `json:"elapsed"`
 	Result     []int64       `json:"result"`
