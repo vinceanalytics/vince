@@ -6,5 +6,11 @@
                 .System.Name "allocation_total" }} aria-selected="true" {{end}}>Memory</a>
         </div>
     </nav>
+    <div class="Box">
+        <div class="Box-body">
+            <div id="{{.System.Name}}"></div>
+            {{Plot .System.Name .System.Name .System.Timestamps .System.Result}}
+        </div>
+    </div>
 </div>
 {{end}}

@@ -50,6 +50,7 @@ func base() *template.Template {
 		"Logo":       LogoText,
 		"SafeDomain": models.SafeDomain,
 		"JSON":       JSON,
+		"Plot":       Plot,
 	}
 	return template.New("root").Funcs(m)
 }
@@ -278,4 +279,29 @@ func Avatar(uid string, size uint, class ...string) template.HTML {
 	return template.HTML(fmt.Sprintf(`<img class=%q width="%d" height="%d" src=%q>`,
 		strings.Join(class, " "), size, size, u,
 	))
+}
+
+func Plot(id, label string, x, y []int64) template.HTML {
+	return template.HTML(fmt.Sprintf("<script>%s</script>",
+		plot(id, label, x, y),
+	))
+}
+func plot(id, label string, x, y []int64) string {
+	var b strings.Builder
+	return fmt.Sprintf("plot(%q,%q,%v,%v);", id, label,
+		jsNum(&b, x), jsNum(&b, y),
+	)
+}
+
+func jsNum(b *strings.Builder, n []int64) string {
+	b.Reset()
+	b.WriteByte('[')
+	for i, v := range n {
+		if i != 0 {
+			b.WriteByte(',')
+		}
+		fmt.Fprint(b, v)
+	}
+	b.WriteByte(']')
+	return b.String()
 }

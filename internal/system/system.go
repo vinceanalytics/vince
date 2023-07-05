@@ -120,6 +120,7 @@ type Stats struct {
 }
 
 func (s *Stats) Read(ts time.Time) {
+	s.Timestamp = ts
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 	s.TotalAllocation = int64(mem.TotalAlloc)

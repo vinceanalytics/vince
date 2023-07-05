@@ -7,11 +7,13 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/oklog/ulid/v2"
 	"github.com/segmentio/parquet-go"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/pkg/log"
@@ -66,10 +68,11 @@ func (o *SystemStats) save() error {
 	if err != nil {
 		return err
 	}
-	err = o.w.Flush()
+	err = o.w.Close()
 	if err != nil {
 		return err
 	}
+	o.f.Seek(0, io.SeekStart)
 	_, err = f.ReadFrom(o.f)
 	if err != nil {
 		return err
@@ -87,7 +90,10 @@ func openSystem(ctx context.Context, dir string) (*SystemStats, error) {
 }
 
 func (o *SystemStats) Read(ctx context.Context) {
-	o.w.Write([]system.Stats{system.Read(ctx)})
+	_, err := o.w.Write([]system.Stats{system.Read(ctx)})
+	if err != nil {
+		log.Get().Err(err).Msg("failed to write system stats")
+	}
 }
 
 func (o *SystemStats) Close() error {
@@ -110,11 +116,12 @@ func (o *SystemStats) Query(ctx context.Context, paths ...string) (r spec.System
 	if !ok {
 		return
 	}
-	if time.Since(o.ts) > (15 * time.Minute) {
+	if time.Since(o.ts) > config.Get(ctx).Intervals.System {
 		o.mu.Lock()
 		o.save()
 		o.mu.Unlock()
 	}
+	r.Name = strings.Join(paths, ".")
 	err := o.read(o.readColum(leaf, &r))
 	if err != nil {
 		log.Get().Err(err).Msg("failed querying system stats")
@@ -162,7 +169,9 @@ func readInt64(col parquet.ColumnChunk) ([]int64, error) {
 			o := make([]int64, p.NumValues())
 			_, err := e.ReadInt64s(o)
 			if err != nil {
-				return nil, err
+				if !errors.Is(err, io.EOF) {
+					return nil, err
+				}
 			}
 			result = append(result, o...)
 		}

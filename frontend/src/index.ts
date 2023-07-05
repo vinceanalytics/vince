@@ -52,3 +52,10 @@ if (!window.customElements.get('plot-stat')) {
     window.PlotStatElement = PlotStatElement
     window.customElements.define('plot-stat', PlotStatElement)
 }
+
+function plot(id, label, x, y) {
+    let el = document.getElementById(id)!
+    new uPlot({ width: el.parentElement?.scrollWidth!, height: 240, series: [{}, { label: label, fill: "#ffe0d8" }], ms: 1 }, [x, y], el!);;
+}
+
+window.plot = plot;

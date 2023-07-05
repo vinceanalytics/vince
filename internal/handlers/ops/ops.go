@@ -6,7 +6,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/templates"
-	"github.com/vinceanalytics/vince/pkg/spec"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
 var systemTpl = templates.App("user/system.html")
@@ -19,9 +19,8 @@ func System(w http.ResponseWriter, r *http.Request) {
 	if tab == "" {
 		tab = "allocation_total"
 	}
-	sys := spec.System{
-		Name: tab,
-	}
+
+	sys := timeseries.System(ctx).Query(ctx, tab)
 	render.HTML(ctx, w, systemTpl, http.StatusOK, func(ctx *templates.Context) {
 		ctx.USER = usr
 		ctx.Header.Context = "system"
