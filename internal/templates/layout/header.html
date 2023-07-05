@@ -64,7 +64,6 @@
                                 <ul class="ActionListWrap">
                                     <li role="presentation" aria-hidden="true" class="ActionList-sectionDivider"></li>
                                     <li class="ActionListItem">
-
                                         <a href="/{{.USER.Name}}" class="ActionListContent ActionListContent--visual16">
                                             <span class="ActionListItem-visual ActionListItem-visual--leading">
                                                 {{Icon "person" 16}}
@@ -94,7 +93,17 @@
                                                 Settings
                                             </span></a>
                                     </li>
+                                    {{if .IsSysAdmin}}
                                     <li role="presentation" aria-hidden="true" class="ActionList-sectionDivider"></li>
+                                    <li class="ActionListItem">
+                                        <a href="/system" class="ActionListContent">
+                                            <span class="ActionListItem-label">
+                                                System
+                                            </span></a>
+                                    </li>
+                                    {{end}}
+                                    <li role="presentation" aria-hidden="true" class="ActionList-sectionDivider"></li>
+
                                     <li class="ActionListItem">
                                         <a href="/logout" class="ActionListContent">
                                             <span class="ActionListItem-label">

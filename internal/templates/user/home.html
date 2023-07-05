@@ -4,7 +4,7 @@
         <ul role="tablist" class="UnderlineNav-body list-style-none">
             <li class="d-inline-flex">
                 <a role="tab" {{if ne .Overview.Panel "sites" }} aria-selected="true" {{end}} id="overview-tab"
-                    href={{.ProfileOverview}} class="UnderlineNav-item no-wrap">
+                    href="/{{.USER.Name}}" class="UnderlineNav-item no-wrap">
                     {{Icon "book" 16 "UnderlineNav-octicon"}}
                     <span>Overview</span>
                 </a>

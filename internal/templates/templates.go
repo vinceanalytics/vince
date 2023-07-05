@@ -102,8 +102,8 @@ type Context struct {
 	System    *spec.System
 }
 
-func (t *Context) ProfileOverview() string {
-	return "/" + t.USER.Name
+func (t *Context) IsSysAdmin() bool {
+	return t.USER.Name == t.Config.Bootstrap.Name
 }
 
 func (t *Context) ProfileSites() string {
