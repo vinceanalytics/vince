@@ -201,13 +201,5 @@ var scheme = &schemapb.Schema{
 			Path:      "timestamp",
 			Direction: schemapb.SortingColumn_DIRECTION_ASCENDING,
 		},
-		{
-			Path:      "uid",
-			Direction: schemapb.SortingColumn_DIRECTION_ASCENDING,
-		},
-		{
-			Path:      "sid",
-			Direction: schemapb.SortingColumn_DIRECTION_ASCENDING,
-		},
 	},
 }
