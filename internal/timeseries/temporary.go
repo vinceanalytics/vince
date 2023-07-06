@@ -11,18 +11,12 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/system"
+	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
-type aggr struct {
-	Visitors,
-	Views,
-	Events,
-	Visits,
-	BounceRate uint16
-	VisitDuration time.Duration
-}
+type Aggregate = entry.Aggregate
 
 func DropSite(ctx context.Context, uid, sid uint64) {
 	start := core.Now(ctx)
@@ -115,7 +109,7 @@ func Save(ctx context.Context, b *Buffer) {
 	tsBytes := svc.slice.u64(uint64(start.UnixMilli()))
 
 	svc.txn = db.NewTransactionAt(startMs, true)
-	err := b.build(ctx, func(p spec.Property, key string, sum *aggr) error {
+	err := b.build(ctx, func(p spec.Property, key string, sum *Aggregate) error {
 		return transaction(&svc, tsBytes, meta.prop(p), key, sum)
 	})
 	svc.commit(ctx, startMs, err)
@@ -148,14 +142,14 @@ func Save(ctx context.Context, b *Buffer) {
 func transaction(
 	svc *saveContext,
 	ts []byte,
-	m *Key, text string, a *aggr) error {
+	m *Key, text string, a *Aggregate) error {
 	return errors.Join(
 		save(svc, m.metric(spec.Visitors).key(ts, text, svc.ls), a.Visitors),
 		save(svc, m.metric(spec.Views).key(ts, text, svc.ls), a.Views),
 		save(svc, m.metric(spec.Events).key(ts, text, svc.ls), a.Events),
 		save(svc, m.metric(spec.Visits).key(ts, text, svc.ls), a.Visits),
-		save(svc, m.metric(spec.BounceRates).key(ts, text, svc.ls), a.BounceRate),
-		save(svc, m.metric(spec.VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDuration)),
+		save(svc, m.metric(spec.BounceRates).key(ts, text, svc.ls), a.BounceRates),
+		save(svc, m.metric(spec.VisitDurations).key(ts, text, svc.ls), uint16(a.VisitDurations)),
 	)
 }
 

@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+type Aggregate struct {
+	Visitors,
+	Views,
+	Events,
+	Visits,
+	BounceRates uint16
+	VisitDurations time.Duration
+}
+
 type Entry struct {
 	UID, SID               uint64
 	UtmMedium              string

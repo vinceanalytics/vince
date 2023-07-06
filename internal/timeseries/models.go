@@ -10,6 +10,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/vinceanalytics/vince/internal/config"
+	v9 "github.com/vinceanalytics/vince/internal/v9"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
@@ -36,14 +37,24 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 		unique.Close()
 		return nil, nil, err
 	}
+
+	neo, err := v9.Open(ctx, dir)
+	if err != nil {
+		temporary.Close()
+		system.Close()
+		unique.Close()
+		return nil, nil, err
+	}
+
 	ctx = context.WithValue(ctx, temporaryKey{}, temporary)
 	ctx = context.WithValue(ctx, systemKey{}, system)
 	ctx = context.WithValue(ctx, uniqueKey{}, unique)
 	ctx = context.WithValue(ctx, permanentKey{}, permanent)
+	ctx = context.WithValue(ctx, v9Key{}, neo)
 	m := NewMap(o.Intervals.TSSync)
 	ctx = SetMap(ctx, m)
 
-	resource := resourceList{temporary, system, unique, permanent, m}
+	resource := resourceList{temporary, system, unique, permanent, neo, m}
 	return ctx, resource, nil
 }
 
@@ -78,6 +89,8 @@ type uniqueKey struct{}
 type permanentKey struct{}
 type systemKey struct{}
 
+type v9Key struct{}
+
 func Temporary(ctx context.Context) *badger.DB {
 	return ctx.Value(temporaryKey{}).(*badger.DB)
 }
@@ -92,6 +105,10 @@ func Permanent(ctx context.Context) *badger.DB {
 
 func System(ctx context.Context) *SystemStats {
 	return ctx.Value(systemKey{}).(*SystemStats)
+}
+
+func V9(ctx context.Context) *v9.V9 {
+	return ctx.Value(v9Key{}).(*v9.V9)
 }
 
 func GC(ctx context.Context) {

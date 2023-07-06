@@ -88,7 +88,7 @@ var bigBufferPool = &sync.Pool{
 	},
 }
 
-func (b *Buffer) build(ctx context.Context, f func(p spec.Property, key string, sum *aggr) error) error {
+func (b *Buffer) build(ctx context.Context, f func(p spec.Property, key string, sum *Aggregate) error) error {
 	return b.segments.build(ctx, f)
 }
 
@@ -193,12 +193,12 @@ func (m *MultiEntry) append(e *entry.Entry) {
 }
 
 type computed struct {
-	aggr
+	Aggregate
 	uniq func(uint64) bool
 	done func()
 }
 
-func (m *MultiEntry) build(ctx context.Context, f func(p spec.Property, key string, sum *aggr) error) error {
+func (m *MultiEntry) build(ctx context.Context, f func(p spec.Property, key string, sum *Aggregate) error) error {
 	// We capitalize on badger Transaction to globally track unique visitors in
 	// this entries batch.
 	//
@@ -221,7 +221,7 @@ func (m *MultiEntry) build(ctx context.Context, f func(p spec.Property, key stri
 	}()
 	uniq := seen(ctx, txn, m.key[:], mls)
 	for i := spec.Base; i <= spec.City; i++ {
-		err := m.compute(i, choose(i), uniq, func(s1 string, s2 *aggr) error {
+		err := m.compute(i, choose(i), uniq, func(s1 string, s2 *Aggregate) error {
 			return f(i, s1, s2)
 		})
 		if err != nil {
@@ -244,7 +244,7 @@ func (m *MultiEntry) compute(
 	prop spec.Property,
 	pick func(*MultiEntry, int) string,
 	seen seenFunc,
-	f func(string, *aggr) error,
+	f func(string, *Aggregate) error,
 ) error {
 	seg := make(map[string]*computed)
 	defer func() {
@@ -268,22 +268,22 @@ func (m *MultiEntry) compute(
 		}
 		e.Visits += 1
 		if m.IsBounce[i] {
-			e.BounceRate += 1
+			e.BounceRates += 1
 		}
 		e.Views += m.PageViews[i]
 		e.Events += m.Events[i]
 		if !e.uniq(m.UserId[i]) {
 			e.Visitors += 1
 		}
-		e.VisitDuration += m.Duration[i]
+		e.VisitDurations += m.Duration[i]
 	}
 	for k, v := range seg {
 		// Visit duration is average. Compute the average before calling f. Avoid
 		// division by zero bugs.
 		if len(m.Timestamp) > 0 {
-			v.aggr.VisitDuration = v.aggr.VisitDuration / time.Duration(len(m.Timestamp))
+			v.Aggregate.VisitDurations = v.Aggregate.VisitDurations / time.Duration(len(m.Timestamp))
 		}
-		err := f(k, &v.aggr)
+		err := f(k, &v.Aggregate)
 		if err != nil {
 			return err
 		}
