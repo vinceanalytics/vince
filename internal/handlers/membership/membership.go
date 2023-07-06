@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/vinceanalytics/vince/internal/email"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/params"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/templates"
@@ -25,6 +27,8 @@ func Invite(w http.ResponseWriter, r *http.Request) {
 	u := models.GetUser(ctx)
 	site := models.SiteFor(ctx, u.ID, models.GetSite(ctx).Domain)
 	user := models.QueryUserByNameOrEmail(ctx, r.FormValue("email"))
+	param := params.Get(ctx)
+	owner := param.Get("owner")
 	if user != nil && models.IsMember(ctx, user.ID, site.ID) {
 		r = sessions.SaveCsrf(w, r)
 		render.HTML(r.Context(), w, inviteMemberForm, http.StatusOK, func(ctx *templates.Context) {
@@ -57,13 +61,20 @@ func Invite(w http.ResponseWriter, r *http.Request) {
 	err := models.Get(ctx).Create(invite).Error
 	if err != nil {
 		models.LOG(ctx, err, "failed to create invitation")
-		to := fmt.Sprintf("/%s/%s/settings#people", u.Email, site.Domain)
+		to := fmt.Sprintf("/%s/%s/settings#people", owner, site.Domain)
 		session, r := sessions.Load(r)
 		session.Fail("something went wrong").Save(ctx, w)
 		http.Redirect(w, r, to, http.StatusFound)
 		return
 	}
-	render.HTML(ctx, w, inviteMemberForm, http.StatusOK, func(ctx *templates.Context) {
-		ctx.Site = site
-	})
+	invite.Site = site
+	invite.User = u
+
+	if user != nil {
+		email.ExistingUserInvite(ctx, invite)
+	} else {
+		email.NewUserInvite(ctx, invite)
+	}
+	to := fmt.Sprintf("/%s/%s/settings#people", owner, site.Domain)
+	http.Redirect(w, r, to, http.StatusFound)
 }

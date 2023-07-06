@@ -1,0 +1,6 @@
+{{define "_content"}}
+{{.invitation.User.Email}} has invited you to the {{.invitation.Site.Domain}} site on Vince Analytics.
+<a href="{[.host]}/{{.owner.Name}}/{{.invitation.Site.Domain}}"></a> to view and respond to the invitation.
+The invitation
+will expire 48 hours after this email is sent.
+{{end}}

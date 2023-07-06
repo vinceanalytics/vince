@@ -124,6 +124,7 @@ type Invitation struct {
 	Email  string
 	Role   string `gorm:"not null;check:role in ('owner', 'admin', 'viewer')"`
 	SiteID uint64
+	Site   *Site
 	UserID uint64
 	User   *User
 }
