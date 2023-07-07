@@ -180,18 +180,6 @@ func nullableString(name string) *schemapb.Node {
 	}
 }
 
-func nullableInt64(name string) *schemapb.Node {
-	return &schemapb.Node{
-		Type: &schemapb.Node_Leaf{
-			Leaf: &schemapb.Leaf{Name: name, StorageLayout: &schemapb.StorageLayout{
-				Type:        schemapb.StorageLayout_TYPE_INT64,
-				Nullable:    true,
-				Compression: schemapb.StorageLayout_COMPRESSION_ZSTD,
-			}},
-		},
-	}
-}
-
 func plainInt64(name string) *schemapb.Node {
 	return &schemapb.Node{
 		Type: &schemapb.Node_Leaf{
