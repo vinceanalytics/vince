@@ -25,7 +25,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/router"
 	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/timeseries"
-	"github.com/vinceanalytics/vince/internal/userid"
 	"github.com/vinceanalytics/vince/internal/worker"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"golang.org/x/sync/errgroup"
@@ -118,8 +117,6 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		resources = append(resources, httpsListener)
 		ctx = core.SetHTTPSListener(ctx, httpsListener)
 	}
-
-	ctx = userid.Open(ctx)
 
 	sqlDb, err := models.Open(models.Database(o))
 	if err != nil {

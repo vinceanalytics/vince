@@ -113,16 +113,15 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	ts := core.Now(ctx)
 	unix := ts.UnixMilli()
 
-	uid := userid.Get(ctx)
 	for _, domain := range domains {
 		b, pass := gate.Check(r.Context(), domain)
 		if !pass {
 			dropped += 1
 			continue
 		}
-		userID := uid.Hash(remoteIp, userAgent, domain, host)
+		userID := userid.Hash(remoteIp, userAgent, domain, host)
 		e := entry.NewEntry()
-		e.UserId = userID
+		e.ID = userID
 		e.Name = req.EventName
 		e.Hostname = host
 		e.Domain = domain
@@ -143,8 +142,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.City = city.City
 		e.ScreenSize = screenSize
 		e.Timestamp = unix
-		previousUUserID := uid.HashPrevious(remoteIp, userAgent, domain, host)
-		b.Register(r.Context(), e, previousUUserID)
+		b.Register(r.Context(), e)
 	}
 	if dropped > 0 {
 		system.DataPointDropped.Inc()

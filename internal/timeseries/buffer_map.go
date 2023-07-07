@@ -73,9 +73,6 @@ func (m *Map) Close() error {
 func (m *Map) Save(ctx context.Context) {
 	m.mu.Lock()
 	for k, v := range m.m {
-		if !v.hasEntries() {
-			continue
-		}
 		delete(m.m, k)
 		go Save(ctx, v)
 	}
@@ -83,6 +80,6 @@ func (m *Map) Save(ctx context.Context) {
 }
 
 func Collect(ctx context.Context, e *entry.Entry) {
-	GetMap(ctx).Get(e.Domain).AddEntry(e)
+	GetMap(ctx).Get(e.Domain).endSession(e)
 	e.Release()
 }
