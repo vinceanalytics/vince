@@ -9,12 +9,22 @@ import (
 	"github.com/polarsignals/frostdb/dynparquet"
 	schemapb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 	"github.com/segmentio/parquet-go"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/pkg/entry"
+	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
 func Save(ctx context.Context, b *Buffer) {
-
+	ts := core.Now(ctx).UnixMilli()
+	err := Store(ctx).Do(ctx, b.domain, func(saf SaveAggregateFunc) error {
+		return b.build(ctx, func(p spec.Property, key string, sum *Aggregate) error {
+			return saf(ctx, ts, p, key, sum)
+		})
+	})
+	if err != nil {
+		log.Get().Err(err).Msg("failed saving events to storage")
+	}
 }
 
 type V9 struct {
@@ -93,11 +103,11 @@ func (v *V9) Add(ctx context.Context, table *frostdb.Table, r *rowsBuffer, ts in
 		}
 	}
 	r.rows = append(r.rows, parquet.Row{
-		parquet.Int64Value(ts),
-		parquet.ByteArrayValue([]byte(prop.String())),
-		parquet.ByteArrayValue([]byte(metric.String())),
-		parquet.ByteArrayValue([]byte(key)),
-		parquet.Int64Value(value),
+		parquet.Int64Value(ts).Level(0, 0, columnIndex["timestamp"]),
+		parquet.ValueOf(prop.String()).Level(0, 0, columnIndex["segment"]),
+		parquet.ValueOf(metric.String()).Level(0, 0, columnIndex["metric"]),
+		parquet.ValueOf(key).Level(0, 0, columnIndex["key"]),
+		parquet.Int64Value(value).Level(0, 0, columnIndex["value"]),
 	})
 	return nil
 }
@@ -148,6 +158,16 @@ func must[T any](v T, err error) T {
 	return v
 }
 
+var columnIndex = columns()
+
+func columns() (o map[string]int) {
+	o = make(map[string]int)
+	for i, f := range schema.ParquetSchema().Fields() {
+		o[f.Name()] = i
+	}
+	return
+}
+
 var scheme = &schemapb.Schema{
 	Root: &schemapb.Group{
 		Name: "site_stats",
@@ -191,6 +211,7 @@ var scheme = &schemapb.Schema{
 				Type: &schemapb.Node_Leaf{
 					Leaf: &schemapb.Leaf{Name: "value", StorageLayout: &schemapb.StorageLayout{
 						Type:        schemapb.StorageLayout_TYPE_INT64,
+						Encoding:    schemapb.StorageLayout_ENCODING_RLE_DICTIONARY,
 						Compression: schemapb.StorageLayout_COMPRESSION_ZSTD,
 					}},
 				},
