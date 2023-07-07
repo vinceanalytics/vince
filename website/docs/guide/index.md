@@ -33,31 +33,6 @@ solution for web analytics ,catering for teams of all sizes.
 With ease of use as a self hosted solution, vince comes as a single binary with
 everything you need for production deployments. There is zero runtime dependency.
 
-## Core tech we use
-
-### sqlite
-
-Battle tested sql database is used for operational data. This scales very well 
-with organization of any size.
-
-### Badger 
-
-Aggregate stats are stored in [Badger](https://github.com/dgraph-io/badger) a key
-value store that is used in production. This ensures vince to offer faster permanent
-storage of your site stats.
-
-### Ristretto
-
-To ensure fast operations we use [ristretto](https://github.com/dgraph-io/ristretto)
-a fast embedded cache. This allows vince to be very fast for events ingestion and other
-endpoints. This library is used throughout vince for many performance critical 
-components.
-
-
-These are core components we ship with vince. All embedded in the single binary for yoru
-delight.
-
-
 
 # The name vince 
 

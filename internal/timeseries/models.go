@@ -4,13 +4,9 @@ import (
 	"context"
 	"errors"
 	"io"
-	"os"
 	"path/filepath"
 
-	"github.com/dgraph-io/badger/v4"
-	"github.com/dgraph-io/badger/v4/options"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, error) {
@@ -34,14 +30,6 @@ func (r resourceList) Close() error {
 		err[i] = r[i].Close()
 	}
 	return errors.Join(err...)
-}
-
-func open(ctx context.Context, path string) (*badger.DB, error) {
-	os.MkdirAll(path, 0755)
-	o := badger.DefaultOptions(path).
-		WithLogger(log.Badger(ctx)).
-		WithCompression(options.ZSTD)
-	return badger.Open(o)
 }
 
 type storeKey struct{}
