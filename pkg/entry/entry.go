@@ -15,7 +15,6 @@ type Aggregate struct {
 }
 
 type Entry struct {
-	UID, SID               uint64
 	UtmMedium              string
 	Referrer               string
 	Domain                 string

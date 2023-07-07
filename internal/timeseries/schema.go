@@ -1,9 +1,8 @@
-package v9
+package timeseries
 
 import (
 	"context"
 	"errors"
-	"path/filepath"
 	"sync"
 
 	"github.com/polarsignals/frostdb"
@@ -13,6 +12,10 @@ import (
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/spec"
 )
+
+func Save(ctx context.Context, b *Buffer) {
+
+}
 
 type V9 struct {
 	store *frostdb.ColumnStore
@@ -119,12 +122,10 @@ func (v *V9) Close() error {
 	return errors.Join(v.db.Close(), v.store.Close())
 }
 
-func Open(ctx context.Context, dataPath string) (*V9, error) {
+func OpenStore(ctx context.Context, dataPath string) (*V9, error) {
 	store, err := frostdb.New(
 		frostdb.WithWAL(),
-		frostdb.WithStoragePath(
-			filepath.Join(dataPath, "series"),
-		),
+		frostdb.WithStoragePath(dataPath),
 	)
 	if err != nil {
 		return nil, err

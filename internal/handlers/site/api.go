@@ -84,10 +84,7 @@ func APIDelete(w http.ResponseWriter, r *http.Request) {
 	caches.Site(ctx).Del(site.Domain)
 
 	// remove site events in collection  buffers
-	timeseries.GetMap(ctx).Delete(site.ID)
-
-	// permanently remove site stats
-	timeseries.DropSite(ctx, owner.ID, site.ID)
+	timeseries.GetMap(ctx).Delete(site.Domain)
 
 	render.JSON(w, http.StatusOK, spec.Site{
 		Elapsed: core.Elapsed(ctx, start),

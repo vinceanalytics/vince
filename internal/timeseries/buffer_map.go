@@ -10,14 +10,14 @@ import (
 
 // Maps user ID to *Buffer.
 type Map struct {
-	m   map[uint64]*Buffer
+	m   map[string]*Buffer
 	mu  sync.RWMutex
 	ttl time.Duration
 }
 
 func NewMap(ttl time.Duration) *Map {
 	return &Map{
-		m:   make(map[uint64]*Buffer),
+		m:   make(map[string]*Buffer),
 		ttl: ttl,
 	}
 }
@@ -33,28 +33,28 @@ func GetMap(ctx context.Context) *Map {
 }
 
 // Get returns a *Buffer belonging to a user with uid who owns site with id sid.
-func (m *Map) Get(uid, sid uint64) *Buffer {
+func (m *Map) Get(domain string) *Buffer {
 	m.mu.RLock()
-	b, ok := m.m[sid]
+	b, ok := m.m[domain]
 	if ok {
 		m.mu.RUnlock()
 		return b
 	}
 	m.mu.RUnlock()
 
-	b = NewBuffer(uid, sid, m.ttl)
+	b = NewBuffer(domain, m.ttl)
 	m.mu.Lock()
-	m.m[sid] = b
+	m.m[domain] = b
 	m.mu.Unlock()
 	return b
 }
 
 // Removes the buffer associated with sid
-func (m *Map) Delete(sid uint64) {
+func (m *Map) Delete(domain string) {
 	m.mu.Lock()
-	b, ok := m.m[sid]
+	b, ok := m.m[domain]
 	if ok {
-		delete(m.m, sid)
+		delete(m.m, domain)
 		b.Release()
 	}
 	m.mu.Unlock()
@@ -83,6 +83,6 @@ func (m *Map) Save(ctx context.Context) {
 }
 
 func Collect(ctx context.Context, e *entry.Entry) {
-	GetMap(ctx).Get(e.UID, e.SID).AddEntry(e)
+	GetMap(ctx).Get(e.Domain).AddEntry(e)
 	e.Release()
 }

@@ -125,7 +125,7 @@ type SiteRate struct {
 	Rate       *rate.Limiter
 }
 
-func (s *SiteRate) Allow(ctx context.Context) (uint64, uint64, bool) {
+func (s *SiteRate) Allow(ctx context.Context) bool {
 	ok := s.Rate.Allow()
 	if ok {
 		// we have allowed this event tp be processed. We need to update site with
@@ -135,7 +135,7 @@ func (s *SiteRate) Allow(ctx context.Context) (uint64, uint64, bool) {
 			s.HasStarted.Store(true)
 		}
 	}
-	return s.UID, s.SID, ok
+	return ok
 }
 
 func SetSite(ctx context.Context, ttl time.Duration) func(*models.CachedSite) {
@@ -151,7 +151,7 @@ func SetSite(ctx context.Context, ttl time.Duration) func(*models.CachedSite) {
 	}
 }
 
-func AllowSite(ctx context.Context, domain string) (uid, sid uint64, ok bool) {
+func AllowSite(ctx context.Context, domain string) (ok bool) {
 	x, _ := Site(ctx).Get(domain)
 	if x != nil {
 		r := x.(*SiteRate)

@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"errors"
@@ -14,10 +15,12 @@ import (
 	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
+type Aggregate = entry.Aggregate
+
 type Buffer struct {
 	mu       sync.Mutex
 	segments MultiEntry
-	id       [16]byte
+	domain   string
 	ttl      time.Duration
 }
 
@@ -27,10 +30,9 @@ func (b *Buffer) AddEntry(e ...*entry.Entry) {
 	}
 }
 
-func (b *Buffer) Init(uid, sid uint64, ttl time.Duration) *Buffer {
-	binary.BigEndian.PutUint64(b.id[:8], uid)
-	binary.BigEndian.PutUint64(b.id[8:], sid)
+func (b *Buffer) Init(domain string, ttl time.Duration) *Buffer {
 	b.ttl = ttl
+	b.domain = domain
 	return b
 }
 
@@ -48,8 +50,8 @@ func (b *Buffer) Release() {
 	bigBufferPool.Put(b)
 }
 
-func NewBuffer(uid, sid uint64, ttl time.Duration) *Buffer {
-	return bigBufferPool.Get().(*Buffer).Init(uid, sid, ttl)
+func NewBuffer(domain string, ttl time.Duration) *Buffer {
+	return bigBufferPool.Get().(*Buffer).Init(domain, ttl)
 }
 
 func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64) {
@@ -407,3 +409,54 @@ func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) 
 }
 
 type seenFunc func(spec.Property) (func(uint64) bool, func())
+
+// keeps reference to keys. We need this to make sure we reuse ID and properly
+// release them back to the pool when done.
+type txnBufferList struct {
+	ls []*bytes.Buffer
+}
+
+func newTxnBufferList() *txnBufferList {
+	return txnBufferListPool.New().(*txnBufferList)
+}
+
+func (ls *txnBufferList) Get() *bytes.Buffer {
+	b := get()
+	ls.ls = append(ls.ls, b)
+	return b
+}
+
+func (ls *txnBufferList) Reset() {
+	for _, v := range ls.ls {
+		put(v)
+	}
+	ls.ls = ls.ls[:0]
+}
+
+func (ls *txnBufferList) release() {
+	ls.Reset()
+	txnBufferListPool.Put(ls)
+}
+
+var txnBufferListPool = &sync.Pool{
+	New: func() any {
+		return &txnBufferList{
+			ls: make([]*bytes.Buffer, 0, 1<<10),
+		}
+	},
+}
+
+var smallBufferpool = &sync.Pool{
+	New: func() any {
+		return new(bytes.Buffer)
+	},
+}
+
+func get() *bytes.Buffer {
+	return smallBufferpool.Get().(*bytes.Buffer)
+}
+
+func put(b *bytes.Buffer) {
+	b.Reset()
+	smallBufferpool.Put(b)
+}
