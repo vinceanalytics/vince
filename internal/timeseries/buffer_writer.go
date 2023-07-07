@@ -3,15 +3,12 @@ package timeseries
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
-	"errors"
 	"sync"
 	"time"
 
-	"github.com/dgraph-io/badger/v4"
+	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/pkg/entry"
-	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
@@ -86,7 +83,7 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry, prevUserId uint64
 
 var bigBufferPool = &sync.Pool{
 	New: func() any {
-		return new(Buffer)
+		return &Buffer{}
 	},
 }
 
@@ -125,8 +122,6 @@ type MultiEntry struct {
 	PageViews              []uint16
 	Events                 []uint16
 	IsBounce               []bool
-
-	key [8]byte
 }
 
 func (m *MultiEntry) reset() {
@@ -196,34 +191,37 @@ func (m *MultiEntry) append(e *entry.Entry) {
 
 type computed struct {
 	Aggregate
-	uniq func(uint64) bool
-	done func()
+	bitmap *roaring64.Bitmap
+}
+
+func newComputed() *computed {
+	return computedPool.Get().(*computed)
+}
+
+func (c *computed) release() {
+	c.Aggregate = Aggregate{}
+	c.bitmap.Clear()
+}
+
+func (c *computed) has(k uint64) bool {
+	if !c.bitmap.Contains(k) {
+		c.bitmap.Add(k)
+		return false
+	}
+	return true
+}
+
+var computedPool = &sync.Pool{
+	New: func() any {
+		return &computed{
+			bitmap: roaring64.New(),
+		}
+	},
 }
 
 func (m *MultiEntry) build(ctx context.Context, f func(p spec.Property, key string, sum *Aggregate) error) error {
-	// We capitalize on badger Transaction to globally track unique visitors in
-	// this entries batch.
-	//
-	// txn holds visible user_id seen on Base spec. This ensure we correctly account
-	// for all buffered entries.
-	//
-	// seen function will use this for Base spec. All other properties create a new
-	// transaction before calling m.Compute and the transaction is discarded there
-	// after to ensure we only commit Base user_id but still be able to correctly
-	// detect unique visitors within m.Compute calls.
-	txn := Unique(ctx).NewTransaction(true)
-	mls := newTxnBufferList()
-	defer func() {
-		err := txn.Commit()
-		if err != nil {
-			log.Get().Err(err).Msg("failed to commit transaction for unique index")
-		}
-		txn.Discard()
-		mls.release()
-	}()
-	uniq := seen(ctx, txn, m.key[:], mls)
 	for i := spec.Base; i <= spec.City; i++ {
-		err := m.compute(i, choose(i), uniq, func(s1 string, s2 *Aggregate) error {
+		err := m.compute(i, choose(i), func(s1 string, s2 *Aggregate) error {
 			return f(i, s1, s2)
 		})
 		if err != nil {
@@ -245,13 +243,13 @@ func (m *MultiEntry) build(ctx context.Context, f func(p spec.Property, key stri
 func (m *MultiEntry) compute(
 	prop spec.Property,
 	pick func(*MultiEntry, int) string,
-	seen seenFunc,
 	f func(string, *Aggregate) error,
 ) error {
 	seg := make(map[string]*computed)
 	defer func() {
-		for _, v := range seg {
-			v.done()
+		for k, v := range seg {
+			delete(seg, k)
+			v.release()
 		}
 	}()
 	for i := 0; i < len(m.Timestamp); i++ {
@@ -261,11 +259,7 @@ func (m *MultiEntry) compute(
 		}
 		e, ok := seg[key]
 		if !ok {
-			uq, done := seen(prop)
-			e = &computed{
-				uniq: uq,
-				done: done,
-			}
+			e = newComputed()
 			seg[key] = e
 		}
 		e.Visits += 1
@@ -274,7 +268,7 @@ func (m *MultiEntry) compute(
 		}
 		e.Views += m.PageViews[i]
 		e.Events += m.Events[i]
-		if !e.uniq(m.UserId[i]) {
+		if !e.has(m.UserId[i]) {
 			e.Visitors += 1
 		}
 		e.VisitDurations += m.Duration[i]
@@ -378,37 +372,6 @@ func choose(p spec.Property) func(m *MultiEntry, i int) string {
 		panic("Unknown property value")
 	}
 }
-
-func seen(ctx context.Context, txn *badger.Txn, buf []byte, mls *txnBufferList) seenFunc {
-	use := func(x *badger.Txn) func(uint64) bool {
-		return func(u uint64) bool {
-			binary.BigEndian.PutUint64(buf, u)
-			_, err := x.Get(buf)
-			if err != nil {
-				if errors.Is(err, badger.ErrKeyNotFound) {
-					b := mls.Get()
-					b.Write(buf)
-					txn.Set(b.Bytes(), []byte{})
-				} else {
-					log.Get().Err(err).Msg("failed to get key from unique index")
-				}
-				return false
-			}
-			return true
-		}
-	}
-	return func(p spec.Property) (func(uint64) bool, func()) {
-		if p == spec.Base {
-			return use(txn), func() {}
-		}
-		x := Unique(ctx).NewTransaction(true)
-		return use(x), func() {
-			x.Discard()
-		}
-	}
-}
-
-type seenFunc func(spec.Property) (func(uint64) bool, func())
 
 // keeps reference to keys. We need this to make sure we reuse ID and properly
 // release them back to the pool when done.

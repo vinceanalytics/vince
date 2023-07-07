@@ -56,9 +56,5 @@ func SaveBuffers(ctx context.Context, interval time.Duration) {
 	timeseries.GetMap(ctx).Save(ctx)
 }
 
-func GC(ctx context.Context, interval time.Duration) {
-	timeseries.GC(ctx)
-}
-
 func System(ctx context.Context, interval time.Duration) {
 }
