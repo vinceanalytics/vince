@@ -2,19 +2,12 @@ package models
 
 import (
 	"context"
-	"database/sql"
-	"time"
 
+	"github.com/vinceanalytics/vince/pkg/schema"
 	"golang.org/x/time/rate"
 )
 
-type CachedSite struct {
-	ID              uint64
-	Domain          string
-	StatsStartDate  time.Time
-	IngestRateLimit sql.NullFloat64
-	UserID          uint64
-}
+type CachedSite = schema.CachedSite
 
 func CacheRateLimit(c *CachedSite) (rate.Limit, int) {
 	if !c.IngestRateLimit.Valid {

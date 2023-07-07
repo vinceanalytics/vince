@@ -130,12 +130,11 @@ type Invitation struct {
 }
 
 type CachedSite struct {
-	ID                          uint64
-	Domain                      string
-	StatsStartDate              time.Time
-	IngestRateLimitScaleSeconds uint64
-	IngestRateLimitThreshold    sql.NullInt64
-	UserID                      uint64
+	ID              uint64
+	Domain          string
+	StatsStartDate  time.Time
+	IngestRateLimit sql.NullFloat64
+	UserID          uint64
 }
 
 type Scope struct {
