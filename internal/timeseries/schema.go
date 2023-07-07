@@ -3,12 +3,14 @@ package timeseries
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"sync"
 
 	"github.com/polarsignals/frostdb"
 	"github.com/polarsignals/frostdb/dynparquet"
 	schemapb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 	"github.com/segmentio/parquet-go"
+	"github.com/thanos-io/objstore/providers/filesystem"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
@@ -133,9 +135,15 @@ func (v *V9) Close() error {
 }
 
 func OpenStore(ctx context.Context, dataPath string) (*V9, error) {
+	bucket, err := filesystem.NewBucket(filepath.Join(dataPath, "buckets"))
+	if err != nil {
+		return nil, err
+	}
+	o := frostdb.NewDefaultObjstoreBucket(bucket)
 	store, err := frostdb.New(
 		frostdb.WithWAL(),
-		frostdb.WithStoragePath(dataPath),
+		frostdb.WithStoragePath(filepath.Join(dataPath, "store")),
+		frostdb.WithReadWriteStorage(o),
 	)
 	if err != nil {
 		return nil, err
