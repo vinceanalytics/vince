@@ -38,13 +38,11 @@ type QueryPropertyOptions struct {
 	Window   time.Duration `json:"window,omitempty"`
 	Offset   time.Duration `json:"offset,omitempty"`
 	Metric   Metric        `json:"metric,omitempty"`
-	Property Property      `json:"property,omitempty"`
 	Selector Select        `json:"selector,omitempty"`
 }
 
 func (q *QueryPropertyOptions) Defaults() {
 	q.Window = time.Hour * 24
-	q.Property = Page
 }
 
 type PropertyResult[T uint64 | []uint64] struct {

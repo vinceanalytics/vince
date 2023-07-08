@@ -80,6 +80,5 @@ func (m *Map) Save(ctx context.Context) {
 }
 
 func Collect(ctx context.Context, e *entry.Entry) {
-	GetMap(ctx).Get(e.Domain).endSession(e)
 	e.Release()
 }

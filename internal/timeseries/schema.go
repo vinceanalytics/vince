@@ -5,15 +5,18 @@ import (
 	"errors"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/apache/arrow/go/v13/arrow/memory"
 	"github.com/polarsignals/frostdb"
 	"github.com/polarsignals/frostdb/dynparquet"
 	"github.com/polarsignals/frostdb/query"
+	lo "github.com/polarsignals/frostdb/query/logicalplan"
 	"github.com/segmentio/parquet-go"
 	"github.com/thanos-io/objstore/providers/filesystem"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/pkg/spec"
 )
 
 func Save(ctx context.Context, b *Buffer) {
@@ -102,4 +105,37 @@ func OpenStore(ctx context.Context, dataPath string) (*Store, error) {
 
 func (v *Store) engine() *query.LocalEngine {
 	return query.NewEngine(memory.DefaultAllocator, v.db.TableProvider())
+}
+
+func (v *Store) Session(
+	domain string,
+	start, end time.Time,
+	step time.Duration,
+	selectors []*spec.Match,
+) {
+	filter := []lo.Expr{
+		lo.Col("timestamp").Gt(lo.Literal(start.UnixMilli())),
+		lo.Col("timestamp").Lt(lo.Literal(end.UnixMilli())),
+	}
+
+	for _, s := range selectors {
+		filter = append(filter, s.Expr())
+	}
+
+	e := v.engine().
+		ScanTable(domain)
+	e.
+		Filter(
+			lo.And(filter...),
+		).
+		Aggregate(
+			[]lo.Expr{
+				lo.Sum(lo.Col("value")),
+				lo.Avg(lo.Col("bounce")),
+				lo.Avg(lo.Col("duration")),
+			},
+			[]lo.Expr{
+				lo.Duration(step),
+			},
+		)
 }

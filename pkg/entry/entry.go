@@ -20,7 +20,7 @@ type Entry struct {
 	ExitPage               string
 	Hostname               string
 	ID                     uint64
-	IsBounce               bool
+	Bounce                 int64
 	Name                   string
 	OperatingSystem        string
 	OperatingSystemVersion string
@@ -58,16 +58,19 @@ func (e *Entry) Hit() {
 	e.EntryPage = e.Pathname
 	e.ExitPage = e.Pathname
 	e.Value = 1
+	e.Bounce = 1
 }
 
 func (s *Entry) Update(e *Entry) {
+	e.Bounce = -1
 	s.ExitPage = e.Pathname
-	s.Duration = time.UnixMilli(e.Timestamp).Sub(time.UnixMilli(s.Timestamp))
+	e.Duration = time.UnixMilli(e.Timestamp).Sub(time.UnixMilli(s.Timestamp))
+	s.Timestamp = e.Timestamp
 }
 
 func (e *Entry) Row() parquet.Row {
 	return parquet.Row{
-		boolValue("bounce", e.IsBounce),
+		int64Value("bounce", e.Bounce),
 		int64Value("duration", int64(e.Duration)),
 		int64Value("id", int64(e.ID)),
 		int64Value("timestamp", e.Timestamp),
@@ -147,7 +150,7 @@ var Scheme = &schemapb.Schema{
 			nullableString("name"),
 			nullableString("os"),
 			nullableString("os_version"),
-			nullableString("patch"),
+			nullableString("path"),
 			nullableString("referrer"),
 			nullableString("referrer_source"),
 			nullableString("region"),
@@ -157,7 +160,7 @@ var Scheme = &schemapb.Schema{
 			nullableString("utm_medium"),
 			nullableString("utm_source"),
 			nullableString("utm_term"),
-			plainBool("bounce"),
+			plainInt64("bounce"),
 			plainInt64("duration"),
 			plainInt64("id"),
 			plainInt64("timestamp"),
@@ -191,17 +194,6 @@ func plainInt64(name string) *schemapb.Node {
 			Leaf: &schemapb.Leaf{Name: name, StorageLayout: &schemapb.StorageLayout{
 				Type:        schemapb.StorageLayout_TYPE_INT64,
 				Encoding:    schemapb.StorageLayout_ENCODING_RLE_DICTIONARY,
-				Compression: schemapb.StorageLayout_COMPRESSION_ZSTD,
-			}},
-		},
-	}
-}
-
-func plainBool(name string) *schemapb.Node {
-	return &schemapb.Node{
-		Type: &schemapb.Node_Leaf{
-			Leaf: &schemapb.Leaf{Name: name, StorageLayout: &schemapb.StorageLayout{
-				Type:        schemapb.StorageLayout_TYPE_BOOL,
 				Compression: schemapb.StorageLayout_COMPRESSION_ZSTD,
 			}},
 		},

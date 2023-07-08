@@ -17,12 +17,6 @@ type Buffer struct {
 	ttl    time.Duration
 }
 
-func (b *Buffer) endSession(e *entry.Entry) {
-	e.IsBounce = e.EntryPage == e.ExitPage
-	e.Value = 0
-	b.rows = append(b.rows, e.Row())
-}
-
 func (b *Buffer) Init(domain string, ttl time.Duration) *Buffer {
 	b.ttl = ttl
 	b.domain = domain
