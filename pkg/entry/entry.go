@@ -64,6 +64,7 @@ func (s *Entry) Update(e *Entry) {
 	if s.Bounce == 1 {
 		s.Bounce, e.Bounce = -1, -1
 	}
+	e.Value = 1
 	e.ExitPage = e.Pathname
 	e.Duration = time.UnixMilli(e.Timestamp).Sub(time.UnixMilli(s.Timestamp))
 	s.Timestamp = e.Timestamp
