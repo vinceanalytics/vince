@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/apache/arrow/go/v13/arrow/memory"
 	"github.com/polarsignals/frostdb"
 	"github.com/polarsignals/frostdb/dynparquet"
+	"github.com/polarsignals/frostdb/query"
 	"github.com/segmentio/parquet-go"
 	"github.com/thanos-io/objstore/providers/filesystem"
 	"github.com/vinceanalytics/vince/pkg/entry"
@@ -96,4 +98,8 @@ func OpenStore(ctx context.Context, dataPath string) (*Store, error) {
 		return nil, err
 	}
 	return &Store{store: store, db: db}, nil
+}
+
+func (v *Store) engine() *query.LocalEngine {
+	return query.NewEngine(memory.DefaultAllocator, v.db.TableProvider())
 }
