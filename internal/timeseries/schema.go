@@ -15,14 +15,14 @@ import (
 )
 
 func Save(ctx context.Context, b *Buffer) {
-	err := Store(ctx).Save(ctx, b.domain, b.rows)
+	err := store(ctx).Save(ctx, b.domain, b.rows)
 	if err != nil {
 		log.Get().Err(err).Msg("failed saving events to storage")
 	}
 	b.Release()
 }
 
-type V9 struct {
+type Store struct {
 	store *frostdb.ColumnStore
 	db    *frostdb.DB
 }
@@ -52,7 +52,7 @@ var rowsBufferPool = &sync.Pool{
 	},
 }
 
-func (v *V9) Save(ctx context.Context, domain string, rows []parquet.Row) error {
+func (v *Store) Save(ctx context.Context, domain string, rows []parquet.Row) error {
 	table, err := v.db.GetTable(domain)
 	if err != nil {
 		// Only a single error is returned. We are sure that err is for the missing
@@ -72,11 +72,11 @@ func (v *V9) Save(ctx context.Context, domain string, rows []parquet.Row) error 
 	return err
 }
 
-func (v *V9) Close() error {
+func (v *Store) Close() error {
 	return errors.Join(v.db.Close(), v.store.Close())
 }
 
-func OpenStore(ctx context.Context, dataPath string) (*V9, error) {
+func OpenStore(ctx context.Context, dataPath string) (*Store, error) {
 	bucket, err := filesystem.NewBucket(filepath.Join(dataPath, "buckets"))
 	if err != nil {
 		return nil, err
@@ -95,5 +95,5 @@ func OpenStore(ctx context.Context, dataPath string) (*V9, error) {
 		store.Close()
 		return nil, err
 	}
-	return &V9{store: store, db: db}, nil
+	return &Store{store: store, db: db}, nil
 }

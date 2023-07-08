@@ -34,6 +34,6 @@ func (r resourceList) Close() error {
 
 type storeKey struct{}
 
-func Store(ctx context.Context) *V9 {
-	return ctx.Value(storeKey{}).(*V9)
+func store(ctx context.Context) *Store {
+	return ctx.Value(storeKey{}).(*Store)
 }
