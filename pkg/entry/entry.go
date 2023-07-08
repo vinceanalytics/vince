@@ -56,14 +56,15 @@ func (e *Entry) Release() {
 
 func (e *Entry) Hit() {
 	e.EntryPage = e.Pathname
-	e.ExitPage = e.Pathname
 	e.Value = 1
 	e.Bounce = 1
 }
 
 func (s *Entry) Update(e *Entry) {
-	e.Bounce = -1
-	s.ExitPage = e.Pathname
+	if s.Bounce == 1 {
+		s.Bounce, e.Bounce = -1, -1
+	}
+	e.ExitPage = e.Pathname
 	e.Duration = time.UnixMilli(e.Timestamp).Sub(time.UnixMilli(s.Timestamp))
 	s.Timestamp = e.Timestamp
 }
@@ -126,10 +127,6 @@ func stringValue(name string, v string) parquet.Value {
 		return parquet.NullValue().Level(0, 0, columnIndex[name])
 	}
 	return parquet.ByteArrayValue([]byte(v)).Level(0, 0, columnIndex[name])
-}
-
-func boolValue(name string, ok bool) parquet.Value {
-	return parquet.BooleanValue(ok).Level(0, 0, columnIndex[name])
 }
 
 func int64Value(name string, v int64) parquet.Value {
