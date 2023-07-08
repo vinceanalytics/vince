@@ -2,6 +2,7 @@ package entry
 
 import (
 	"sync"
+	"time"
 
 	"github.com/polarsignals/frostdb/dynparquet"
 	schemapb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
@@ -9,31 +10,32 @@ import (
 )
 
 type Entry struct {
-	UtmMedium              string
-	Referrer               string
-	Domain                 string
-	ExitPage               string
-	EntryPage              string
-	Hostname               string
-	Pathname               string
-	UtmSource              string
-	ReferrerSource         string
+	Browser                string
+	BrowserVersion         string
+	City                   string
 	Country                string
+	Domain                 string
+	Duration               time.Duration
+	EntryPage              string
+	ExitPage               string
+	Hostname               string
+	ID                     uint64
+	IsBounce               bool
+	Name                   string
+	OperatingSystem        string
+	OperatingSystemVersion string
+	Pathname               string
+	Referrer               string
+	ReferrerSource         string
 	Region                 string
+	ScreenSize             string
+	Timestamp              int64
 	TransferredFrom        string
 	UtmCampaign            string
-	OperatingSystem        string
-	Browser                string
-	UtmTerm                string
-	Name                   string
-	ScreenSize             string
-	BrowserVersion         string
-	OperatingSystemVersion string
 	UtmContent             string
-	ID                     uint64
-	Timestamp              int64
-	City                   string
-	IsBounce               bool
+	UtmMedium              string
+	UtmSource              string
+	UtmTerm                string
 	Value                  int64
 }
 
@@ -60,11 +62,16 @@ func (e *Entry) Hit() {
 
 func (s *Entry) Update(e *Entry) {
 	s.ExitPage = e.Pathname
+	s.Duration = time.UnixMilli(e.Timestamp).Sub(time.UnixMilli(s.Timestamp))
 }
 
 func (e *Entry) Row() parquet.Row {
 	return parquet.Row{
 		boolValue("bounce", e.IsBounce),
+		int64Value("duration", int64(e.Duration)),
+		int64Value("id", int64(e.ID)),
+		int64Value("timestamp", e.Timestamp),
+		int64Value("value", e.Value),
 		stringValue("browser", e.Browser),
 		stringValue("browser_version", e.BrowserVersion),
 		stringValue("city", e.City),
@@ -85,9 +92,6 @@ func (e *Entry) Row() parquet.Row {
 		stringValue("utm_medium", e.UtmCampaign),
 		stringValue("utm_source", e.UtmSource),
 		stringValue("utm_term", e.UtmTerm),
-		int64Value("id", int64(e.ID)),
-		int64Value("timestamp", e.Timestamp),
-		int64Value("value", e.Value),
 	}
 }
 
@@ -133,7 +137,6 @@ var Scheme = &schemapb.Schema{
 	Root: &schemapb.Group{
 		Name: "site_stats",
 		Nodes: []*schemapb.Node{
-			plainBool("bounce"),
 			nullableString("browser"),
 			nullableString("browser_version"),
 			nullableString("city"),
@@ -154,6 +157,8 @@ var Scheme = &schemapb.Schema{
 			nullableString("utm_medium"),
 			nullableString("utm_source"),
 			nullableString("utm_term"),
+			plainBool("bounce"),
+			plainInt64("duration"),
 			plainInt64("id"),
 			plainInt64("timestamp"),
 			plainInt64("value"),
