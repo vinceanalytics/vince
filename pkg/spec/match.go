@@ -37,7 +37,7 @@ func (o *Op) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-var validSegment = map[string]struct{}{
+var ValidSegment = map[string]struct{}{
 	"browser":         {},
 	"browser_version": {},
 	"city":            {},
@@ -72,7 +72,7 @@ func (o *Segment) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	_, ok := validSegment[s]
+	_, ok := ValidSegment[s]
 	if !ok {
 		return fmt.Errorf("unknown op %q", s)
 	}
