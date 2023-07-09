@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"io"
+	"path"
+	"regexp"
 
 	"github.com/apache/arrow/go/v13/arrow"
 	"github.com/apache/arrow/go/v13/arrow/array"
@@ -86,15 +88,35 @@ type Plan struct {
 	Where  []string
 }
 
+type FilterType uint
+
+const (
+	EXACT FilterType = iota
+	GLOB
+	RE
+)
+
 type Filter struct {
 	Field    string
 	Value    string
+	Type     FilterType
+	re       *regexp.Regexp
 	selected *Field
 	value    parquet.Value
 }
 
 func (f *Filter) Match(v parquet.Value) bool {
-	return parquet.Equal(v, f.value)
+	if f.Type == EXACT {
+		return parquet.Equal(v, f.value)
+	}
+	if f.Type == GLOB {
+		ok, _ := path.Match(f.Value, v.String())
+		return ok
+	}
+	if f.re == nil {
+		f.re = regexp.MustCompile(f.Value)
+	}
+	return f.re.MatchString(v.String())
 }
 
 func Exec(ctx context.Context,
@@ -121,8 +143,10 @@ func Exec(ctx context.Context,
 		if selectedFields[x.Field] {
 			x.selected = &pages[NameToCol[x.Field]]
 		}
-		x.value = parquet.ValueOf(x.Value)
-		bloom[NameToCol[x.Field]] = x.value
+		if x.Type == EXACT {
+			x.value = parquet.ValueOf(x.Value)
+			bloom[NameToCol[x.Field]] = x.value
+		}
 	}
 
 	domainCol := NameToCol["domain"]
