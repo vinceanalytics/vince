@@ -102,10 +102,10 @@ func Exec(ctx context.Context,
 	domain string,
 	filters []*Filter,
 	selection []string,
-) error {
+) (arrow.Record, error) {
 	f, err := parquet.OpenFile(r, size)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	selectedFields := make(map[string]bool)
 	for _, v := range selection {
@@ -158,7 +158,7 @@ func Exec(ctx context.Context,
 					break
 				}
 				pages.Close()
-				return err
+				return nil, err
 			}
 			min, max, ok := pts.Bounds()
 			if !ok {
@@ -173,7 +173,7 @@ func Exec(ctx context.Context,
 			if err != nil {
 				if !errors.Is(err, io.EOF) {
 					pages.Close()
-					return err
+					return nil, err
 				}
 			}
 			booleans = slices.Grow(booleans, int(valuesInPage))[:valuesInPage]
@@ -207,7 +207,22 @@ func Exec(ctx context.Context,
 		}
 		pages.Close()
 	}
-	return nil
+	fields := make([]arrow.Field, 0, len(selectedFields))
+	var arrays []arrow.Array
+	for i := range pages {
+		x := pages[i]
+		if selectedFields[x.Name] {
+			fields = append(fields, x.Arrow)
+			j, err := array.Concatenate(x.Table, memory.DefaultAllocator)
+			if err != nil {
+				log.Get().Fatal().Err(err).Msg("failed to join pages arrays")
+			}
+			arrays = append(arrays, j)
+		}
+	}
+	schema := arrow.NewSchema(fields, nil)
+	result := array.NewRecord(schema, arrays, int64(arrays[0].Len()))
+	return result, nil
 }
 
 func filterTimestamp(ts []int64, start, end int64) (from, to int) {
