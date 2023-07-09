@@ -10,33 +10,32 @@ import (
 )
 
 type Entry struct {
-	Browser                string
-	BrowserVersion         string
-	City                   string
-	Country                string
-	Domain                 string
-	Duration               time.Duration
-	EntryPage              string
-	ExitPage               string
-	Hostname               string
-	ID                     uint64
-	Bounce                 int64
-	Name                   string
-	OperatingSystem        string
-	OperatingSystemVersion string
-	Pathname               string
-	Referrer               string
-	ReferrerSource         string
-	Region                 string
-	ScreenSize             string
-	Timestamp              int64
-	TransferredFrom        string
-	UtmCampaign            string
-	UtmContent             string
-	UtmMedium              string
-	UtmSource              string
-	UtmTerm                string
-	Value                  int64
+	Browser                string        `parquet:"browser,dict,zstd"`
+	BrowserVersion         string        `parquet:"browser_version,dict,zstd"`
+	City                   string        `parquet:"city,dict,zstd"`
+	Country                string        `parquet:"country,dict,zstd"`
+	Domain                 string        `parquet:"domain,dict,zstd"`
+	Duration               time.Duration `parquet:"duration,dict,zstd"`
+	EntryPage              string        `parquet:"entry_page,dict,zstd"`
+	ExitPage               string        `parquet:"exit_page,dict,zstd"`
+	Hostname               string        `parquet:"host,dict,zstd"`
+	ID                     uint64        `parquet:"id,dict,zstd"`
+	Bounce                 int64         `parquet:"bounce,dict,zstd"`
+	Name                   string        `parquet:"name,dict,zstd"`
+	OperatingSystem        string        `parquet:"os,dict,zstd"`
+	OperatingSystemVersion string        `parquet:"os_version,dict,zstd"`
+	Pathname               string        `parquet:"path,dict,zstd"`
+	Referrer               string        `parquet:"referrer,dict,zstd"`
+	ReferrerSource         string        `parquet:"referrer_source,dict,zstd"`
+	Region                 string        `parquet:"region,dict,zstd"`
+	ScreenSize             string        `parquet:"screen,dict,zstd"`
+	Timestamp              int64         `parquet:"timestamp,dict,zstd"`
+	UtmCampaign            string        `parquet:"utm_campaign,dict,zstd"`
+	UtmContent             string        `parquet:"utm_content,dict,zstd"`
+	UtmMedium              string        `parquet:"utm_medium,dict,zstd"`
+	UtmSource              string        `parquet:"utm_source,dict,zstd"`
+	UtmTerm                string        `parquet:"utm_term,dict,zstd"`
+	Value                  int64         `parquet:"utm_value,dict,zstd"`
 }
 
 var entryPool = &sync.Pool{
