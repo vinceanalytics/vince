@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/apache/arrow/go/v13/arrow"
 	"github.com/apache/arrow/go/v13/arrow/memory"
 	"github.com/polarsignals/frostdb"
 	"github.com/polarsignals/frostdb/dynparquet"
@@ -20,7 +21,7 @@ import (
 )
 
 func Save(ctx context.Context, b *Buffer) {
-	err := store(ctx).Save(ctx, b.domain, b.rows)
+	err := GetStore(ctx).Save(ctx, b.domain, b.rows)
 	if err != nil {
 		log.Get().Err(err).Msg("failed saving events to storage")
 	}
@@ -108,34 +109,22 @@ func (v *Store) engine() *query.LocalEngine {
 }
 
 func (v *Store) Session(
+	ctx context.Context,
 	domain string,
 	start, end time.Time,
 	step time.Duration,
 	selectors []*spec.Match,
-) {
-	filter := []lo.Expr{
-		lo.Col("timestamp").Gt(lo.Literal(start.UnixMilli())),
-		lo.Col("timestamp").Lt(lo.Literal(end.UnixMilli())),
+) (records []arrow.Record) {
+	_, err := v.db.GetTable(domain)
+	if err != nil {
+		println("=======", err.Error())
 	}
-
-	for _, s := range selectors {
-		filter = append(filter, s.Expr())
-	}
-
-	e := v.engine().
-		ScanTable(domain)
-	e.
-		Filter(
-			lo.And(filter...),
-		).
-		Aggregate(
-			[]lo.Expr{
-				lo.Sum(lo.Col("value")),
-				lo.Avg(lo.Col("bounce")),
-				lo.Avg(lo.Col("duration")),
-			},
-			[]lo.Expr{
-				lo.Duration(step),
-			},
-		)
+	e := v.engine().ScanTable(domain).
+		Project(lo.Col("name"))
+	e.Execute(ctx, func(ctx context.Context, r arrow.Record) error {
+		r.Retain()
+		records = append(records, r)
+		return nil
+	})
+	return
 }

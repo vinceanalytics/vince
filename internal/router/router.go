@@ -48,6 +48,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 	a := plug.Pipeline{plug.AcceptJSON}
 
 	return plug.Pipeline{
+		browser.PathGET("/query", stats.Query),
 		boot.PathGET("/system", ops.System),
 		browser.PathGET("/metrics", metrics.ServeHTTP),
 		// add prefix matches on the top of the pipeline for faster lookups
