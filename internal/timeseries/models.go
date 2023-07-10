@@ -15,6 +15,7 @@ import (
 func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, error) {
 	dir := filepath.Join(o.DataPath, "ts")
 	neo, err := badger.Open(badger.DefaultOptions(dir).
+		WithLogger(badgerLogger{}).
 		WithCompression(options.ZSTD))
 	if err != nil {
 		return nil, nil, err
@@ -50,4 +51,24 @@ func Save(ctx context.Context, b *Buffer) {
 			Msg("failed saving buffer")
 	}
 	b.Release()
+}
+
+var _ badger.Logger = (*badgerLogger)(nil)
+
+type badgerLogger struct {
+}
+
+func (badgerLogger) Errorf(format string, args ...interface{}) {
+	log.Get().Error().Msgf(format, args...)
+}
+func (badgerLogger) Warningf(format string, args ...interface{}) {
+	log.Get().Warn().Msgf(format, args...)
+}
+
+func (badgerLogger) Infof(format string, args ...interface{}) {
+	log.Get().Info().Msgf(format, args...)
+}
+
+func (b badgerLogger) Debugf(format string, args ...interface{}) {
+	log.Get().Debug().Msgf(format, args...)
 }
