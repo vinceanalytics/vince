@@ -15,7 +15,6 @@ type Entry struct {
 	BrowserVersion         string        `parquet:"browser_version,dict,zstd"`
 	City                   string        `parquet:"city,dict,zstd"`
 	Country                string        `parquet:"country,dict,zstd"`
-	Domain                 string        `parquet:"domain,dict,zstd"`
 	Duration               time.Duration `parquet:"duration,dict,zstd"`
 	EntryPage              string        `parquet:"entry_page,dict,zstd"`
 	ExitPage               string        `parquet:"exit_page,dict,zstd"`

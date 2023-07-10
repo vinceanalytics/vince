@@ -124,7 +124,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.ID = userID
 		e.Name = req.EventName
 		e.Hostname = host
-		e.Domain = domain
 		e.Pathname = path
 		e.UtmMedium = query.Get("utm_medium")
 		e.UtmSource = query.Get("utm_source")
