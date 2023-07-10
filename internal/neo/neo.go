@@ -154,7 +154,7 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 
 	err := source(func(g parquet.RowGroup) error {
 		columns := g.ColumnChunks()
-		var has bool
+		has := true
 		for k, v := range bloom {
 			has, _ = columns[k].BloomFilter().Check(v)
 			if !has {
