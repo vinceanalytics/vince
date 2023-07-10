@@ -40,7 +40,8 @@ value store that support ACID transactions with serializable snapshot isolation
 
 This started as a go port of [Plausible](https://github.com/plausible/analytics), with 
 the intention to remove clickhouse and postgresql dependency . **Vince** is
-built on `sqlite` for operational data and embedded columnar store [frostdb](https://github.com/polarsignals/frostdb/tree/main) for time series data.
+built on `sqlite` for operational data. Timeseries data is stored in Apache
+Parquet files and queried using Apache Arrow.
 
 The frontend is built with [@primer](https://github.com/primer) and web components.
 
