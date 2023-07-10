@@ -125,11 +125,9 @@ type Options struct {
 	Select     []string
 }
 
-func Exec(ctx context.Context, r io.ReaderAt, size int64, o Options) (arrow.Record, error) {
-	f, err := parquet.OpenFile(r, size)
-	if err != nil {
-		return nil, err
-	}
+type GroupProcess func(g parquet.RowGroup) error
+
+func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arrow.Record, error) {
 	selectedFields := make(map[string]bool)
 	for _, v := range o.Select {
 		selectedFields[v] = true
@@ -140,6 +138,7 @@ func Exec(ctx context.Context, r io.ReaderAt, size int64, o Options) (arrow.Reco
 	tsCol := NameToCol["timestamp"]
 
 	bloom := make(map[int]parquet.Value)
+
 	for _, x := range o.Filters {
 		if selectedFields[x.Field] {
 			x.selected = &pages[NameToCol[x.Field]]
@@ -152,8 +151,8 @@ func Exec(ctx context.Context, r io.ReaderAt, size int64, o Options) (arrow.Reco
 
 	var booleans []bool
 	values := make([]parquet.Value, 0, 1<<10)
-group:
-	for _, g := range f.RowGroups() {
+
+	err := source(func(g parquet.RowGroup) error {
 		columns := g.ColumnChunks()
 		var has bool
 		for k, v := range bloom {
@@ -165,23 +164,25 @@ group:
 		if !has {
 			// Filtering is binary AND . If one of the filter condition is not met we
 			// skip this row group.
-			continue
+			return nil
 		}
 		for i := range columns {
-			if pages[i].Pages != nil {
-				pages[i].Pages.Close()
-			}
 			pages[i].Pages = columns[i].Pages()
 		}
+		defer func() {
+			for i := range pages {
+				pages[i].Pages.Close()
+			}
+		}()
 		for {
 			booleans = booleans[:0]
 			values = values[:0]
 			pts, err := pages[tsCol].Pages.ReadPage()
 			if err != nil {
 				if errors.Is(err, io.EOF) {
-					break group
+					return io.EOF
 				}
-				return nil, err
+				return err
 			}
 			min, max, ok := pts.Bounds()
 			if !ok {
@@ -195,7 +196,7 @@ group:
 			_, err = pts.Values().(parquet.Int64Reader).ReadInt64s(tsValues)
 			if err != nil {
 				if !errors.Is(err, io.EOF) {
-					return nil, err
+					return err
 				}
 			}
 			lo, hi := filterTimestamp(tsValues, o.Start, o.End)
@@ -218,7 +219,7 @@ group:
 				if observedEndTs {
 					// Nothing matched and we have seen the end timestamp. Stop looking any
 					// further
-					break group
+					return io.EOF
 				}
 				continue
 			}
@@ -233,10 +234,16 @@ group:
 				x.Read(ctx, booleans)
 			}
 			if observedEndTs {
-				break group
+				return io.EOF
 			}
 		}
+	})
+	if err != nil {
+		if !errors.Is(err, io.EOF) {
+			return nil, err
+		}
 	}
+
 	fields := make([]arrow.Field, 0, len(selectedFields))
 	var arrays []arrow.Array
 	for i := range pages {
