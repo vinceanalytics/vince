@@ -119,18 +119,21 @@ func (f *Filter) Match(v parquet.Value) bool {
 	return f.re.MatchString(v.String())
 }
 
+type Options struct {
+	Filters    []*Filter
+	Start, End int64
+	Select     []string
+}
+
 func Exec(ctx context.Context,
-	r io.ReaderAt, size int64, start, end int64,
-	domain string,
-	filters []*Filter,
-	selection []string,
+	r io.ReaderAt, size int64, o Options,
 ) (arrow.Record, error) {
 	f, err := parquet.OpenFile(r, size)
 	if err != nil {
 		return nil, err
 	}
 	selectedFields := make(map[string]bool)
-	for _, v := range selection {
+	for _, v := range o.Select {
 		selectedFields[v] = true
 	}
 
@@ -139,7 +142,7 @@ func Exec(ctx context.Context,
 	tsCol := NameToCol["timestamp"]
 
 	bloom := make(map[int]parquet.Value)
-	for _, x := range filters {
+	for _, x := range o.Filters {
 		if selectedFields[x.Field] {
 			x.selected = &pages[NameToCol[x.Field]]
 		}
@@ -149,13 +152,9 @@ func Exec(ctx context.Context,
 		}
 	}
 
-	domainCol := NameToCol["domain"]
-
-	// add domain bloom filter
-	bloom[domainCol] = parquet.ValueOf(domain)
-
 	var booleans []bool
 	values := make([]parquet.Value, 0, 1<<10)
+group:
 	for _, g := range f.RowGroups() {
 		columns := g.ColumnChunks()
 		var has bool
@@ -171,6 +170,9 @@ func Exec(ctx context.Context,
 			continue
 		}
 		for i := range columns {
+			if pages[i].Pages != nil {
+				pages[i].Pages.Close()
+			}
 			pages[i].Pages = columns[i].Pages()
 		}
 		for {
@@ -179,16 +181,15 @@ func Exec(ctx context.Context,
 			pts, err := pages[tsCol].Pages.ReadPage()
 			if err != nil {
 				if errors.Is(err, io.EOF) {
-					break
+					break group
 				}
-				pages.Close()
 				return nil, err
 			}
 			min, max, ok := pts.Bounds()
 			if !ok {
 				continue
 			}
-			if !bounds(start, end, min.Int64(), max.Int64()) {
+			if !bounds(o.Start, o.End, min.Int64(), max.Int64()) {
 				continue
 			}
 			valuesInPage := pts.NumValues()
@@ -196,40 +197,47 @@ func Exec(ctx context.Context,
 			_, err = pts.Values().(parquet.Int64Reader).ReadInt64s(tsValues)
 			if err != nil {
 				if !errors.Is(err, io.EOF) {
-					pages.Close()
 					return nil, err
 				}
 			}
+			lo, hi := filterTimestamp(tsValues, o.Start, o.End)
 			booleans = slices.Grow(booleans, int(valuesInPage))[:valuesInPage]
-			filterTimestamp(tsValues, start, end)
+
+			observedEndTs := hi < int(valuesInPage)-1
+
+			// by default select every row from this page
+			copyBool(booleans[lo:hi])
+
 			values = slices.Grow(values, int(valuesInPage))
-			match := filterDomain(pages[domainCol].Pages, values, bloom[domainCol], booleans)
-			if !match {
-				continue
-			}
-			for _, x := range filters {
+			match := true
+			for _, x := range o.Filters {
 				match = filterValues(pages[NameToCol[x.Field]].Pages, values, x, booleans)
 				if !match {
 					break
 				}
 			}
 			if !match {
+				if observedEndTs {
+					// Nothing matched and we have seen the end timestamp. Stop looking any
+					// further
+					break group
+				}
 				continue
 			}
 
 			// select
-
 			for i := range pages {
 				x := &pages[i]
 				if !selectedFields[x.Name] {
 					continue
 				}
-
 				// x was selected
 				x.Read(ctx, booleans)
 			}
+			if observedEndTs {
+				break group
+			}
 		}
-		pages.Close()
 	}
 	fields := make([]arrow.Field, 0, len(selectedFields))
 	var arrays []arrow.Array
@@ -287,6 +295,8 @@ func filterValues(pages parquet.Pages, values []parquet.Value, f *Filter, ok []b
 		if s != nil {
 			s.Append(values[i].String())
 		}
+		// filtering is binary AND all filters must select the same row for it to be
+		// considered.
 		ok[i] = ok[i] && f.Match(values[i])
 		if ok[i] {
 			seen = true
@@ -296,23 +306,6 @@ func filterValues(pages parquet.Pages, values []parquet.Value, f *Filter, ok []b
 		f.selected.Page = s.NewArray()
 	}
 	return
-}
-
-func filterDomain(pages parquet.Pages, values []parquet.Value, domain parquet.Value, ok []bool) bool {
-	p, err := pages.ReadPage()
-	if err != nil {
-		log.Get().Fatal().Err(err).Msg("corrupt data: found pages with different sizes")
-	}
-	_, err = p.Values().ReadValues(values)
-	if err != nil {
-		if !errors.Is(err, io.EOF) {
-			log.Get().Fatal().Err(err).Msg("corrupt data: found page values with different sizes")
-		}
-	}
-	for i := range values {
-		ok[i] = parquet.Equal(values[i], domain)
-	}
-	return false
 }
 
 func bounds(start, end int64, min, max int64) bool {
@@ -410,5 +403,23 @@ func (f *Field) Read(ctx context.Context, ok []bool) {
 		f.Page = nil
 		f.Builder.(*array.StringBuilder).AppendValues(o, ok)
 		f.Table = append(f.Table, f.Builder.NewArray())
+	}
+}
+
+var boolBuffer = func() (o []bool) {
+	o = make([]bool, 5<<10)
+	for i := range o {
+		o[i] = true
+	}
+	return
+}()
+
+func copyBool(o []bool) {
+	if len(o) < len(boolBuffer) {
+		copy(o, boolBuffer[:len(o)])
+		return
+	}
+	for i := range o {
+		o[i] = true
 	}
 }
