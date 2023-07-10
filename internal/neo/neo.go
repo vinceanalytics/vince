@@ -17,6 +17,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+//go:generate go run gen/main.go
 var schema = parquet.SchemaOf(entry.Entry{})
 
 // Maps field name to column number

@@ -1,0 +1,12 @@
+syntax = "proto3";
+package timeseries;
+
+option go_package = "github.com/vinceanalytics/vince/internal/neo";
+
+message Metadata { repeated Block blocks = 1; }
+
+message Block {
+  int64 start = 1;
+  int64 end = 2;
+  int64 size = 3;
+}
