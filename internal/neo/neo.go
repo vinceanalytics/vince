@@ -125,9 +125,7 @@ type Options struct {
 	Select     []string
 }
 
-func Exec(ctx context.Context,
-	r io.ReaderAt, size int64, o Options,
-) (arrow.Record, error) {
+func Exec(ctx context.Context, r io.ReaderAt, size int64, o Options) (arrow.Record, error) {
 	f, err := parquet.OpenFile(r, size)
 	if err != nil {
 		return nil, err
