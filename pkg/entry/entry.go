@@ -24,12 +24,12 @@ type Entry struct {
 	Name                   string        `parquet:"name,dict,zstd"`
 	OperatingSystem        string        `parquet:"os,dict,zstd"`
 	OperatingSystemVersion string        `parquet:"os_version,dict,zstd"`
-	Pathname               string        `parquet:"path,dict,zstd"`
+	Path                   string        `parquet:"path,dict,zstd"`
 	Referrer               string        `parquet:"referrer,dict,zstd"`
 	ReferrerSource         string        `parquet:"referrer_source,dict,zstd"`
 	Region                 string        `parquet:"region,dict,zstd"`
 	ScreenSize             string        `parquet:"screen,dict,zstd"`
-	Timestamp              int64         `parquet:"timestamp,dict,zstd"`
+	Timestamp              time.Time     `parquet:"timestamp,timestamp,zstd"`
 	UtmCampaign            string        `parquet:"utm_campaign,dict,zstd"`
 	UtmContent             string        `parquet:"utm_content,dict,zstd"`
 	UtmMedium              string        `parquet:"utm_medium,dict,zstd"`
@@ -54,7 +54,7 @@ func (e *Entry) Release() {
 }
 
 func (e *Entry) Hit() {
-	e.EntryPage = e.Pathname
+	e.EntryPage = e.Path
 	e.Value = 1
 	e.Bounce = 1
 }
@@ -64,8 +64,8 @@ func (s *Entry) Update(e *Entry) {
 		s.Bounce, e.Bounce = -1, -1
 	}
 	e.Value = 1
-	e.ExitPage = e.Pathname
-	e.Duration = time.UnixMilli(e.Timestamp).Sub(time.UnixMilli(s.Timestamp))
+	e.ExitPage = e.Path
+	e.Duration = e.Timestamp.Sub(s.Timestamp)
 	s.Timestamp = e.Timestamp
 }
 
@@ -74,7 +74,7 @@ func (e *Entry) Row() parquet.Row {
 		int64Value("bounce", e.Bounce),
 		int64Value("duration", int64(e.Duration)),
 		int64Value("id", int64(e.ID)),
-		int64Value("timestamp", e.Timestamp),
+		int64Value("timestamp", e.Timestamp.UnixMilli()),
 		int64Value("value", e.Value),
 		stringValue("browser", e.Browser),
 		stringValue("browser_version", e.BrowserVersion),
@@ -86,7 +86,7 @@ func (e *Entry) Row() parquet.Row {
 		stringValue("name", e.Name),
 		stringValue("os", e.OperatingSystem),
 		stringValue("os_version", e.OperatingSystem),
-		stringValue("path", e.Pathname),
+		stringValue("path", e.Path),
 		stringValue("referrer", e.Referrer),
 		stringValue("referrer_source", e.ReferrerSource),
 		stringValue("region", e.Region),

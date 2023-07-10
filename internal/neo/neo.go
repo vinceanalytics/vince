@@ -3,6 +3,7 @@ package neo
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"path"
 	"regexp"
@@ -174,6 +175,7 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 				pages[i].Pages.Close()
 			}
 		}()
+
 		for {
 			booleans = booleans[:0]
 			values = values[:0]
@@ -191,6 +193,8 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 			if !bounds(o.Start, o.End, min.Int64(), max.Int64()) {
 				continue
 			}
+			println(3)
+
 			valuesInPage := pts.NumValues()
 			tsValues := make([]int64, pts.NumValues())
 			_, err = pts.Values().(parquet.Int64Reader).ReadInt64s(tsValues)
@@ -202,10 +206,15 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 			lo, hi := filterTimestamp(tsValues, o.Start, o.End)
 			booleans = slices.Grow(booleans, int(valuesInPage))[:valuesInPage]
 
-			observedEndTs := hi < int(valuesInPage)-1
+			observedEndTs := hi != -1
 
 			// by default select every row from this page
-			copyBool(booleans[lo:hi])
+			if observedEndTs {
+				copyBool(booleans[lo:hi])
+			} else {
+				copyBool(booleans[lo:])
+			}
+			fmt.Println(booleans, lo, hi)
 
 			values = slices.Grow(values, int(valuesInPage))
 			match := true
@@ -250,6 +259,7 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 		x := pages[i]
 		if selectedFields[x.Name] {
 			fields = append(fields, x.Arrow)
+			println(len(x.Table))
 			j, err := array.Concatenate(x.Table, memory.DefaultAllocator)
 			if err != nil {
 				log.Get().Fatal().Err(err).Msg("failed to join pages arrays")
@@ -263,6 +273,7 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 }
 
 func filterTimestamp(ts []int64, start, end int64) (from, to int) {
+	to = -1
 	if ts[0] < start {
 		for from = 0; from < len(ts); from++ {
 			if ts[from] > start {
@@ -314,6 +325,7 @@ func filterValues(pages parquet.Pages, values []parquet.Value, f *Filter, ok []b
 }
 
 func bounds(start, end int64, min, max int64) bool {
+	println(start, end, min, max)
 	if min > end {
 		return false
 	}

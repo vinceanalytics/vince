@@ -111,7 +111,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var dropped int
 	ts := core.Now(ctx)
-	unix := ts.UnixMilli()
 
 	for _, domain := range domains {
 		b, pass := gate.Check(r.Context(), domain)
@@ -124,7 +123,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.ID = userID
 		e.Name = req.EventName
 		e.Hostname = host
-		e.Pathname = path
+		e.Path = path
 		e.UtmMedium = query.Get("utm_medium")
 		e.UtmSource = query.Get("utm_source")
 		e.UtmCampaign = query.Get("utm_campaign")
@@ -140,7 +139,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.Region = city.Region
 		e.City = city.City
 		e.ScreenSize = screenSize
-		e.Timestamp = unix
+		e.Timestamp = ts
 		b.Register(r.Context(), e)
 	}
 	if dropped > 0 {
