@@ -1,6 +1,7 @@
 package entry
 
 import (
+	"io"
 	"sync"
 	"time"
 
@@ -195,4 +196,12 @@ func plainInt64(name string) *schemapb.Node {
 			}},
 		},
 	}
+}
+
+func Writer(w io.Writer) *parquet.SortingWriter[Entry] {
+	return parquet.NewSortingWriter[Entry](w, 4<<10, parquet.SortingWriterConfig(
+		parquet.SortingColumns(
+			parquet.Ascending("timestamp"),
+		),
+	))
 }
