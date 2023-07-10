@@ -5,26 +5,27 @@ import (
 	"sync"
 	"time"
 
-	"github.com/segmentio/parquet-go"
 	"github.com/vinceanalytics/vince/internal/caches"
+	"github.com/vinceanalytics/vince/internal/neo"
 	"github.com/vinceanalytics/vince/pkg/entry"
 )
 
 type Buffer struct {
 	mu     sync.Mutex
+	neo    neo.ActiveBlock
 	domain string
-	rows   []parquet.Row
 	ttl    time.Duration
 }
 
 func (b *Buffer) Init(domain string, ttl time.Duration) *Buffer {
 	b.ttl = ttl
 	b.domain = domain
+	b.neo.Init(domain)
 	return b
 }
 
 func (b *Buffer) Reset() *Buffer {
-	b.rows = b.rows[:0]
+	b.neo.Reset()
 	return b
 }
 
@@ -41,16 +42,16 @@ func (b *Buffer) Register(ctx context.Context, e *entry.Entry) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	e.Hit()
-	b.rows = append(b.rows, e.Row())
 	x := caches.Session(ctx)
 	cacheKey := e.ID
 	if o, ok := x.Get(cacheKey); ok {
 		s := o.(*entry.Entry)
 		s.Update(e)
-		e.Release()
-		return
+		defer e.Release()
+	} else {
+		x.SetWithTTL(e.ID, e, 1, b.ttl)
 	}
-	x.SetWithTTL(e.ID, e, 1, b.ttl)
+	b.neo.WriteEntry(e)
 }
 
 var bigBufferPool = &sync.Pool{

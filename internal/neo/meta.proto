@@ -5,8 +5,14 @@ option go_package = "github.com/vinceanalytics/vince/internal/neo";
 
 message Metadata { repeated Block blocks = 1; }
 
+// Defines metadata about a single parquet file.
 message Block {
-  int64 start = 1;
-  int64 end = 2;
-  int64 size = 3;
+  // a ULID string identifier for this block.
+  string id = 1;
+  // Smallest timestamp in milliseconds observed in this block
+  int64 min = 2;
+  // Largest timestamp in milliseconds observed in this block.
+  int64 max = 3;
+  // Size on bytes contained in this block
+  int64 size = 4;
 }

@@ -6,12 +6,16 @@ import (
 	"io"
 	"path/filepath"
 
+	"github.com/dgraph-io/badger/v4"
+	"github.com/dgraph-io/badger/v4/options"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, error) {
 	dir := filepath.Join(o.DataPath, "ts")
-	neo, err := OpenStore(ctx, dir)
+	neo, err := badger.Open(badger.DefaultOptions(dir).
+		WithCompression(options.ZSTD))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -34,6 +38,16 @@ func (r resourceList) Close() error {
 
 type storeKey struct{}
 
-func GetStore(ctx context.Context) *Store {
-	return ctx.Value(storeKey{}).(*Store)
+func Store(ctx context.Context) *badger.DB {
+	return ctx.Value(storeKey{}).(*badger.DB)
+}
+
+func Save(ctx context.Context, b *Buffer) {
+	err := b.neo.Save(Store(ctx))
+	if err != nil {
+		log.Get().Err(err).
+			Str("domain", b.domain).
+			Msg("failed saving buffer")
+	}
+	b.Release()
 }

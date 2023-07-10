@@ -3,9 +3,7 @@ package stats
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 
-	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/params"
 	"github.com/vinceanalytics/vince/internal/render"
@@ -14,13 +12,11 @@ import (
 )
 
 func Query(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	db := timeseries.GetStore(ctx)
-	end := core.Now(ctx)
-	start := end.Add(24 * time.Hour)
-	render.JSON(w, http.StatusOK, db.Session(
-		ctx, "vince.io", start, end, time.Hour, []*spec.Match{},
-	))
+	// ctx := r.Context()
+	// db := timeseries.GetStore(ctx)
+	// end := core.Now(ctx)
+	// start := end.Add(24 * time.Hour)
+
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
