@@ -149,7 +149,7 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 		}
 	}
 
-	var booleans []bool
+	booleans := make([]bool, 0, 1<<10)
 	values := make([]parquet.Value, 0, 1<<10)
 
 	err := source(func(g parquet.RowGroup) error {
