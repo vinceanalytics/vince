@@ -3,7 +3,6 @@ package neo
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"path"
 	"regexp"
@@ -203,18 +202,9 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 					return err
 				}
 			}
-			lo, hi := filterTimestamp(tsValues, o.Start, o.End)
 			booleans = slices.Grow(booleans, int(valuesInPage))[:valuesInPage]
-
-			observedEndTs := hi != -1
-
-			// by default select every row from this page
-			if observedEndTs {
-				copyBool(booleans[lo:hi])
-			} else {
-				copyBool(booleans[lo:])
-			}
-			fmt.Println(booleans, lo, hi)
+			copyBool(booleans)
+			observedEndTs := filterTimestamp(tsValues, o.Start, o.End, booleans)
 
 			values = slices.Grow(values, int(valuesInPage))
 			match := true
@@ -272,20 +262,22 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 	return result, nil
 }
 
-func filterTimestamp(ts []int64, start, end int64) (from, to int) {
-	to = -1
+func filterTimestamp(ts []int64, start, end int64, ok []bool) (observedEndTs bool) {
 	if ts[0] < start {
-		for from = 0; from < len(ts); from++ {
+		for from := 0; from < len(ts); from++ {
 			if ts[from] > start {
 				break
 			}
+			ok[from] = false
 		}
 	}
 	if ts[len(ts)-1] > end {
-		for to = len(ts) - 1; to > 0; to-- {
+		observedEndTs = true
+		for to := len(ts) - 1; to > 0; to-- {
 			if ts[to] <= end {
 				break
 			}
+			ok[to] = false
 		}
 	}
 	return
@@ -325,14 +317,7 @@ func filterValues(pages parquet.Pages, values []parquet.Value, f *Filter, ok []b
 }
 
 func bounds(start, end int64, min, max int64) bool {
-	println(start, end, min, max)
-	if min > end {
-		return false
-	}
-	if start > max {
-		return false
-	}
-	return true
+	return min < end
 }
 
 func clonePages() FieldList {
