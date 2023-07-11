@@ -125,6 +125,22 @@ type KeyValue[T any] struct {
 func FilterString(names []string, o KeyValue[string]) FilterFuncs {
 	value := parquet.ValueOf(o.Value)
 	values := make([]parquet.Value, 0, 1<<10)
+	var match func(v parquet.Value) bool
+	if o.Op == EXACT {
+		match = func(v parquet.Value) bool {
+			return parquet.Equal(v, value)
+		}
+	} else if o.Op == GLOB {
+		match = func(v parquet.Value) bool {
+			ok, _ := path.Match(o.Value, v.String())
+			return ok
+		}
+	} else if o.Op == RE {
+		re := regexp.MustCompile(o.Value)
+		match = func(v parquet.Value) bool {
+			return re.MatchString(v.String())
+		}
+	}
 	return FilterFuncs{
 		AcceptFunc: func(g parquet.RowGroup) bool {
 			if o.Op != EXACT {
@@ -174,6 +190,9 @@ func FilterString(names []string, o KeyValue[string]) FilterFuncs {
 						if !errors.Is(err, io.EOF) {
 							log.Get().Fatal().Err(err).Msg("failed to read a page")
 						}
+					}
+					for i := range values {
+						b[i] = b[i] && match(values[i])
 					}
 				},
 			}
