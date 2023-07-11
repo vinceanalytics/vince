@@ -136,8 +136,6 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 
 	pages := clonePages()
 
-	tsCol := NameToCol["timestamp"]
-
 	bloom := make(map[int]parquet.Value)
 
 	for _, x := range o.Filters {
@@ -154,6 +152,12 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 	values := make([]parquet.Value, 0, 1<<10)
 
 	err := source(func(g parquet.RowGroup) error {
+		scheme := g.Schema()
+		ts, ok := scheme.Lookup("timestamp")
+		if !ok {
+			// Query is for schemas with timestamp only
+			return nil
+		}
 		columns := g.ColumnChunks()
 		has := true
 		for k, v := range bloom {
@@ -179,7 +183,7 @@ func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arro
 		for {
 			booleans = booleans[:0]
 			values = values[:0]
-			pts, err := pages[tsCol].Pages.ReadPage()
+			pts, err := pages[ts.ColumnIndex].Pages.ReadPage()
 			if err != nil {
 				if errors.Is(err, io.EOF) {
 					return io.EOF
