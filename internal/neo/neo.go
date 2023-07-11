@@ -150,20 +150,20 @@ func StringBloomFilter(value string, op FilterType, names ...string) func(g parq
 	}
 }
 
-func StringMatch(o KeyValue[string]) func(parquet.Value) bool {
-	if o.Op == EXACT {
-		value := parquet.ValueOf(o.Value)
+func StringMatch(val string, op FilterType) func(parquet.Value) bool {
+	if op == EXACT {
+		value := parquet.ValueOf(val)
 		return func(v parquet.Value) bool {
 			return parquet.Equal(v, value)
 		}
 	}
-	if o.Op == GLOB {
+	if op == GLOB {
 		return func(v parquet.Value) bool {
-			ok, _ := path.Match(o.Value, v.String())
+			ok, _ := path.Match(val, v.String())
 			return ok
 		}
 	}
-	re := regexp.MustCompile(o.Value)
+	re := regexp.MustCompile(val)
 	return func(v parquet.Value) bool {
 		return re.MatchString(v.String())
 	}
@@ -171,7 +171,7 @@ func StringMatch(o KeyValue[string]) func(parquet.Value) bool {
 
 func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 	values := make([]parquet.Value, 0, 1<<10)
-	match := StringMatch(o)
+	match := StringMatch(o.Value, o.Op)
 	build := array.NewStringBuilder(memory.DefaultAllocator)
 	return FilterFuncs{
 		ReleaseFunc: build.Release,
@@ -212,6 +212,211 @@ func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 						}
 					}
 					if pick {
+						fn[0](build.NewArray())
+					}
+				},
+			}
+		},
+	}
+}
+
+type ValueMatch struct {
+	Op    FilterType
+	Value string
+}
+
+type MapMatch struct {
+	Field string
+	Match map[string]ValueMatch
+}
+
+func FilterMap(o MapMatch) FilterFuncs {
+	build := array.NewMapBuilder(memory.DefaultAllocator,
+		&arrow.StringType{},
+		&arrow.StringType{}, false,
+	)
+	keyPath := []string{o.Field, "Key_value", "key"}
+	valuePath := []string{o.Field, "Key_value", "value"}
+
+	var bloomKeys []parquet.Value
+	var bloomValues []parquet.Value
+
+	var keyMatch []string
+	var valueMatch []func(parquet.Value) bool
+
+	for k, v := range o.Match {
+		bloomKeys = append(bloomKeys, parquet.ValueOf(k))
+		if v.Op == EXACT {
+			bloomValues = append(bloomValues, parquet.ValueOf(v.Value))
+		}
+		keyMatch = append(keyMatch, k)
+		valueMatch = append(valueMatch, StringMatch(v.Value, v.Op))
+	}
+	keys := make([]parquet.Value, 0, 1<<10)
+	values := make([]parquet.Value, 0, 1<<10)
+
+	keyBuild := build.KeyBuilder().(*array.StringBuilder)
+	valueBuild := build.ValueBuilder().(*array.StringBuilder)
+
+	match := func(m map[string]parquet.Value) bool {
+		for i := range keyMatch {
+			v, ok := m[keyMatch[i]]
+			if !ok {
+				return false
+			}
+			if !valueMatch[i](v) {
+				return false
+			}
+		}
+		return true
+	}
+	return FilterFuncs{
+		ReleaseFunc: build.Release,
+		AcceptFunc: func(g parquet.RowGroup) bool {
+			scheme := g.Schema()
+			cols := g.ColumnChunks()
+			{
+				// check for keys
+				l, ok := scheme.Lookup(keyPath...)
+				if !ok {
+					return ok
+				}
+				b := cols[l.ColumnIndex].BloomFilter()
+				if b == nil {
+					return false
+				}
+				for _, k := range bloomKeys {
+					ok, err := b.Check(k)
+					if err != nil {
+						log.Get().Fatal().Err(err).Msg("failed to check value from bloom filter")
+					}
+					if !ok {
+						return ok
+					}
+				}
+
+			}
+			{
+				// check for values
+				l, ok := scheme.Lookup(valuePath...)
+				if !ok {
+					return ok
+				}
+				b := cols[l.ColumnIndex].BloomFilter()
+				if b == nil {
+					return false
+				}
+				for _, k := range bloomValues {
+					ok, err := b.Check(k)
+					if err != nil {
+						log.Get().Fatal().Err(err).Msg("failed to check value from bloom filter")
+					}
+					if !ok {
+						return ok
+					}
+				}
+			}
+			return true
+		},
+		PagesFunc: func(g parquet.RowGroup) IFilterPage {
+			schema := g.Schema()
+			var keysPages, valuesPages parquet.Pages
+			{
+				// read keys
+				leaf, ok := schema.Lookup(keyPath...)
+				if !ok {
+					// If the row group does not contain the field we are supposed to filter.
+					// Don't select anything from this row group.
+					return nil
+				}
+				col := g.ColumnChunks()[leaf.ColumnIndex]
+				keysPages = col.Pages()
+			}
+			{
+				// read values
+				leaf, ok := schema.Lookup(valuePath...)
+				if !ok {
+					// If the row group does not contain the field we are supposed to filter.
+					// Don't select anything from this row group.
+					return nil
+				}
+				col := g.ColumnChunks()[leaf.ColumnIndex]
+				valuesPages = col.Pages()
+			}
+
+			return FilterPagesFuncs{
+				CloseFunc: func() error {
+					return errors.Join(keysPages.Close(), valuesPages.Close())
+				},
+				PageFunc: func(b []bool, fn ...func(arrow.Array)) {
+					{
+						// read keys
+						p, err := keysPages.ReadPage()
+						if err != nil {
+							if !errors.Is(err, io.EOF) {
+								log.Get().Fatal().Err(err).Msg("failed to read a page")
+							}
+							return
+						}
+						n := p.NumValues()
+						keys = slices.Grow(keys, int(n))[:n]
+						_, err = p.Values().ReadValues(values)
+						if err != nil {
+							if !errors.Is(err, io.EOF) {
+								log.Get().Fatal().Err(err).Msg("failed to read a page")
+							}
+						}
+					}
+					{
+						// read values
+						p, err := valuesPages.ReadPage()
+						if err != nil {
+							if !errors.Is(err, io.EOF) {
+								log.Get().Fatal().Err(err).Msg("failed to read a page")
+							}
+							return
+						}
+						n := p.NumValues()
+						values = slices.Grow(values, int(n))[:n]
+						_, err = p.Values().ReadValues(values)
+						if err != nil {
+							if !errors.Is(err, io.EOF) {
+								log.Get().Fatal().Err(err).Msg("failed to read a page")
+							}
+						}
+					}
+
+					pick := len(fn) > 0
+
+					m := make(map[string]parquet.Value)
+					var bIdx int
+					for i := range keys {
+						x := keys[i]
+						if x.RepetitionLevel() == 0 {
+							if i != 0 {
+								// We have collected a key/value pairs in this  row
+								if pick {
+									build.Append(true)
+									for k, v := range m {
+										keyBuild.Append(k)
+										valueBuild.Append(v.String())
+									}
+								}
+								b[bIdx] = b[bIdx] && match(m)
+								for k := range m {
+									delete(m, k)
+								}
+								bIdx++
+							}
+						}
+					}
+					b[bIdx] = b[bIdx] && match(m)
+					if pick {
+						build.Append(true)
+						for k, v := range m {
+							keyBuild.Append(k)
+							valueBuild.Append(v.String())
+						}
 						fn[0](build.NewArray())
 					}
 				},
