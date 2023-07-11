@@ -122,7 +122,34 @@ type KeyValue[T any] struct {
 	Value T
 }
 
-func FilterString(names []string, o KeyValue[string]) FilterFuncs {
+func StringBloomFilter(value string, op FilterType, names ...string) func(g parquet.RowGroup) bool {
+	if op != EXACT {
+		return func(g parquet.RowGroup) bool {
+			return true
+		}
+	}
+	pv := parquet.ValueOf(value)
+	return func(g parquet.RowGroup) bool {
+		schema := g.Schema()
+		leaf, ok := schema.Lookup(names...)
+		if !ok {
+			return ok
+		}
+		col := g.ColumnChunks()[leaf.ColumnIndex]
+		if b := col.BloomFilter(); b != nil {
+			ok, err := b.Check(pv)
+			if err != nil {
+				log.Get().Fatal().Err(err).Msg("failed reading bloom filter")
+			}
+			return ok
+		}
+		// If the string field does not have a bloom filter always select the row
+		// group for processing.
+		return true
+	}
+}
+
+func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 	value := parquet.ValueOf(o.Value)
 	values := make([]parquet.Value, 0, 1<<10)
 	var match func(v parquet.Value) bool
@@ -142,27 +169,7 @@ func FilterString(names []string, o KeyValue[string]) FilterFuncs {
 		}
 	}
 	return FilterFuncs{
-		AcceptFunc: func(g parquet.RowGroup) bool {
-			if o.Op != EXACT {
-				return true
-			}
-			schema := g.Schema()
-			leaf, ok := schema.Lookup(names...)
-			if !ok {
-				return ok
-			}
-			col := g.ColumnChunks()[leaf.ColumnIndex]
-			if b := col.BloomFilter(); b != nil {
-				ok, err := b.Check(value)
-				if err != nil {
-					log.Get().Fatal().Err(err).Msg("failed reading bloom filter")
-				}
-				return ok
-			}
-			// If the string field does not have a bloom filter always select the row
-			// group for processing.
-			return true
-		},
+		AcceptFunc: StringBloomFilter(o.Value, o.Op, names...),
 		PagesFunc: func(g parquet.RowGroup) IFilterPage {
 			schema := g.Schema()
 			leaf, ok := schema.Lookup(names...)
