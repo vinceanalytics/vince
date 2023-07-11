@@ -106,6 +106,132 @@ type Filter struct {
 	value    parquet.Value
 }
 
+type IFilter interface {
+	Accept(g parquet.RowGroup) bool
+	Pages(g parquet.RowGroup) IFilterPage
+}
+
+type IFilterPage interface {
+	Page([]bool)
+	Close() error
+}
+
+type KeyValue[T any] struct {
+	Key   string
+	Op    FilterType
+	Value T
+}
+
+func FilterString(names []string, o KeyValue[string]) FilterFuncs {
+	value := parquet.ValueOf(o.Value)
+	values := make([]parquet.Value, 0, 1<<10)
+	return FilterFuncs{
+		AcceptFunc: func(g parquet.RowGroup) bool {
+			if o.Op != EXACT {
+				return true
+			}
+			schema := g.Schema()
+			leaf, ok := schema.Lookup(names...)
+			if !ok {
+				return ok
+			}
+			col := g.ColumnChunks()[leaf.ColumnIndex]
+			if b := col.BloomFilter(); b != nil {
+				ok, err := b.Check(value)
+				if err != nil {
+					log.Get().Fatal().Err(err).Msg("failed reading bloom filter")
+				}
+				return ok
+			}
+			// If the string field does not have a bloom filter always select the row
+			// group for processing.
+			return true
+		},
+		PagesFunc: func(g parquet.RowGroup) IFilterPage {
+			schema := g.Schema()
+			leaf, ok := schema.Lookup(names...)
+			if !ok {
+				// If the row group does not contain the field we are supposed to filter.
+				// Don't select anything from this row group.
+				return nil
+			}
+			col := g.ColumnChunks()[leaf.ColumnIndex]
+			pages := col.Pages()
+			return FilterPagesFuncs{
+				CloseFunc: pages.Close,
+				PageFunc: func(b []bool) {
+					p, err := pages.ReadPage()
+					if err != nil {
+						if !errors.Is(err, io.EOF) {
+							log.Get().Fatal().Err(err).Msg("failed to read a page")
+						}
+						return
+					}
+					n := p.NumValues()
+					values = slices.Grow(values, int(n))
+					_, err = p.Values().ReadValues(values)
+					if err != nil {
+						if !errors.Is(err, io.EOF) {
+							log.Get().Fatal().Err(err).Msg("failed to read a page")
+						}
+					}
+				},
+			}
+		},
+	}
+}
+
+type FilterFuncs struct {
+	AcceptFunc func(g parquet.RowGroup) bool
+	PagesFunc  func(g parquet.RowGroup) IFilterPage
+}
+
+var _ IFilter = (*FilterFuncs)(nil)
+
+func (f FilterFuncs) Accept(g parquet.RowGroup) bool {
+	if f.AcceptFunc != nil {
+		return f.AcceptFunc(g)
+	}
+	return false
+}
+
+func (f FilterFuncs) Pages(g parquet.RowGroup) IFilterPage {
+	if f.PagesFunc != nil {
+		return f.PagesFunc(g)
+	}
+	return noopFilterPage{}
+}
+
+type FilterPagesFuncs struct {
+	PageFunc  func([]bool)
+	CloseFunc func() error
+}
+
+var _ IFilterPage = (*FilterPagesFuncs)(nil)
+
+func (f FilterPagesFuncs) Page(ok []bool) {
+	if f.PageFunc != nil {
+		f.PageFunc(ok)
+	}
+}
+func (f FilterPagesFuncs) Close() error {
+	if f.CloseFunc != nil {
+		return f.CloseFunc()
+	}
+	return nil
+}
+
+type noopFilterPage struct{}
+
+var _ IFilterPage = (*noopFilterPage)(nil)
+
+func (noopFilterPage) Page(_ []bool) {
+
+}
+func (noopFilterPage) Close() error {
+	return nil
+}
+
 func (f *Filter) Match(v parquet.Value) bool {
 	if f.Type == EXACT {
 		return parquet.Equal(v, f.value)
