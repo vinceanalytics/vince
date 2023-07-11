@@ -33,7 +33,7 @@ type ActiveBlock struct {
 
 func (a *ActiveBlock) Init(domain string) {
 	a.domain = domain
-	a.w = Writer(a)
+	a.w = Writer[*entry.Entry](a)
 }
 
 func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
@@ -90,8 +90,10 @@ func (a *ActiveBlock) Save(db *badger.DB) error {
 
 }
 
-func Writer(w io.Writer) *parquet.SortingWriter[*entry.Entry] {
-	return parquet.NewSortingWriter[*entry.Entry](w, 4<<10, parquet.SortingWriterConfig(
+// Writer returns a parquet.SortingWriter for T that sorts timestamp field in
+// ascending order.
+func Writer[T any](w io.Writer) *parquet.SortingWriter[T] {
+	return parquet.NewSortingWriter[T](w, 4<<10, parquet.SortingWriterConfig(
 		parquet.SortingColumns(
 			parquet.Ascending("timestamp"),
 		),

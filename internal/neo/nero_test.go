@@ -18,7 +18,7 @@ func TestQuery(t *testing.T) {
 	ts := time.Now().UTC()
 	start := ts.Add(-24 * time.Hour)
 	var b bytes.Buffer
-	w := Writer(&b)
+	w := Writer[*entry.Entry](&b)
 	w.Write([]*entry.Entry{
 		{Path: "/", Timestamp: start.Add(time.Hour)},
 		{Path: "/hello", Timestamp: start.Add(2 * time.Hour)},
