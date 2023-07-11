@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	MetaFile    = "METADATA"
-	MetaPrefix  = "meta"
-	BlockPrefix = "block"
+	MetaFile           = "METADATA"
+	MetaPrefix         = "meta"
+	BlockPrefix        = "block"
+	FilterBitsPerValue = 10
 )
 
 type ActiveBlock struct {
@@ -92,10 +93,22 @@ func (a *ActiveBlock) Save(db *badger.DB) error {
 
 // Writer returns a parquet.SortingWriter for T that sorts timestamp field in
 // ascending order.
-func Writer[T any](w io.Writer) *parquet.SortingWriter[T] {
-	return parquet.NewSortingWriter[T](w, 4<<10, parquet.SortingWriterConfig(
-		parquet.SortingColumns(
-			parquet.Ascending("timestamp"),
+func Writer[T any](w io.Writer, o ...parquet.WriterOption) *parquet.SortingWriter[T] {
+	var t T
+	scheme := parquet.SchemaOf(t)
+	var bloom []parquet.BloomFilterColumn
+	for _, col := range scheme.Columns() {
+		l, _ := scheme.Lookup(col...)
+		if l.Node.Type().Kind() == parquet.ByteArray {
+			bloom = append(bloom, parquet.SplitBlockFilter(FilterBitsPerValue, col...))
+		}
+	}
+	return parquet.NewSortingWriter[T](w, 4<<10, append(o,
+		parquet.BloomFilters(bloom...),
+		parquet.SortingWriterConfig(
+			parquet.SortingColumns(
+				parquet.Ascending("timestamp"),
+			),
 		),
-	))
+	)...)
 }
