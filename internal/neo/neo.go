@@ -109,10 +109,11 @@ type Filter struct {
 type IFilter interface {
 	Accept(g parquet.RowGroup) bool
 	Pages(g parquet.RowGroup) IFilterPage
+	Release()
 }
 
 type IFilterPage interface {
-	Page([]bool)
+	Page([]bool, ...func(arrow.Array))
 	Close() error
 }
 
@@ -171,8 +172,10 @@ func StringMatch(o KeyValue[string]) func(parquet.Value) bool {
 func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 	values := make([]parquet.Value, 0, 1<<10)
 	match := StringMatch(o)
+	build := array.NewStringBuilder(memory.DefaultAllocator)
 	return FilterFuncs{
-		AcceptFunc: StringBloomFilter(o.Value, o.Op, names...),
+		ReleaseFunc: build.Release,
+		AcceptFunc:  StringBloomFilter(o.Value, o.Op, names...),
 		PagesFunc: func(g parquet.RowGroup) IFilterPage {
 			schema := g.Schema()
 			leaf, ok := schema.Lookup(names...)
@@ -185,7 +188,7 @@ func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 			pages := col.Pages()
 			return FilterPagesFuncs{
 				CloseFunc: pages.Close,
-				PageFunc: func(b []bool) {
+				PageFunc: func(b []bool, fn ...func(arrow.Array)) {
 					p, err := pages.ReadPage()
 					if err != nil {
 						if !errors.Is(err, io.EOF) {
@@ -201,8 +204,15 @@ func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 							log.Get().Fatal().Err(err).Msg("failed to read a page")
 						}
 					}
+					pick := len(fn) > 0
 					for i := range values {
 						b[i] = b[i] && match(values[i])
+						if pick {
+							build.Append(values[i].String())
+						}
+					}
+					if pick {
+						fn[0](build.NewArray())
 					}
 				},
 			}
@@ -211,8 +221,9 @@ func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 }
 
 type FilterFuncs struct {
-	AcceptFunc func(g parquet.RowGroup) bool
-	PagesFunc  func(g parquet.RowGroup) IFilterPage
+	AcceptFunc  func(g parquet.RowGroup) bool
+	PagesFunc   func(g parquet.RowGroup) IFilterPage
+	ReleaseFunc func()
 }
 
 var _ IFilter = (*FilterFuncs)(nil)
@@ -230,15 +241,20 @@ func (f FilterFuncs) Pages(g parquet.RowGroup) IFilterPage {
 	}
 	return noopFilterPage{}
 }
+func (f FilterFuncs) Release() {
+	if f.ReleaseFunc != nil {
+		f.ReleaseFunc()
+	}
+}
 
 type FilterPagesFuncs struct {
-	PageFunc  func([]bool)
+	PageFunc  func([]bool, ...func(arrow.Array))
 	CloseFunc func() error
 }
 
 var _ IFilterPage = (*FilterPagesFuncs)(nil)
 
-func (f FilterPagesFuncs) Page(ok []bool) {
+func (f FilterPagesFuncs) Page(ok []bool, fn ...func(arrow.Array)) {
 	if f.PageFunc != nil {
 		f.PageFunc(ok)
 	}
@@ -254,7 +270,7 @@ type noopFilterPage struct{}
 
 var _ IFilterPage = (*noopFilterPage)(nil)
 
-func (noopFilterPage) Page(_ []bool) {
+func (noopFilterPage) Page(_ []bool, _ ...func(arrow.Array)) {
 
 }
 func (noopFilterPage) Close() error {
