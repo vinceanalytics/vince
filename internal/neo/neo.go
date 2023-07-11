@@ -149,25 +149,28 @@ func StringBloomFilter(value string, op FilterType, names ...string) func(g parq
 	}
 }
 
-func FilterString(o KeyValue[string], names ...string) FilterFuncs {
-	value := parquet.ValueOf(o.Value)
-	values := make([]parquet.Value, 0, 1<<10)
-	var match func(v parquet.Value) bool
+func StringMatch(o KeyValue[string]) func(parquet.Value) bool {
 	if o.Op == EXACT {
-		match = func(v parquet.Value) bool {
+		value := parquet.ValueOf(o.Value)
+		return func(v parquet.Value) bool {
 			return parquet.Equal(v, value)
 		}
-	} else if o.Op == GLOB {
-		match = func(v parquet.Value) bool {
+	}
+	if o.Op == GLOB {
+		return func(v parquet.Value) bool {
 			ok, _ := path.Match(o.Value, v.String())
 			return ok
 		}
-	} else if o.Op == RE {
-		re := regexp.MustCompile(o.Value)
-		match = func(v parquet.Value) bool {
-			return re.MatchString(v.String())
-		}
 	}
+	re := regexp.MustCompile(o.Value)
+	return func(v parquet.Value) bool {
+		return re.MatchString(v.String())
+	}
+}
+
+func FilterString(o KeyValue[string], names ...string) FilterFuncs {
+	values := make([]parquet.Value, 0, 1<<10)
+	match := StringMatch(o)
 	return FilterFuncs{
 		AcceptFunc: StringBloomFilter(o.Value, o.Op, names...),
 		PagesFunc: func(g parquet.RowGroup) IFilterPage {
