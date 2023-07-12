@@ -29,9 +29,9 @@ func TestQuery(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		r, err := Exec(context.Background(), Options{
-			Start:  start.UnixMilli(),
-			End:    ts.UnixMilli(),
+		r, err := Exec[*entry.Entry](context.Background(), Options{
+			Start:  start,
+			End:    ts,
 			Select: []string{"path"},
 		}, func(gp GroupProcess) error {
 			for _, g := range f.RowGroups() {
@@ -71,9 +71,9 @@ func TestQuery(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		r, err := Exec(context.Background(), Options{
-			Start:  start.Add(time.Hour + time.Millisecond).UnixMilli(),
-			End:    ts.UnixMilli(),
+		r, err := Exec[*entry.Entry](context.Background(), Options{
+			Start:  start.Add(time.Hour + time.Millisecond),
+			End:    ts,
 			Select: []string{"path"},
 		}, func(gp GroupProcess) error {
 			for _, g := range f.RowGroups() {
