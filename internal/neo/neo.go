@@ -5,89 +5,20 @@ import (
 	"errors"
 	"io"
 	"path"
+	reflect "reflect"
 	"regexp"
+	"time"
 
 	"github.com/apache/arrow/go/v13/arrow"
 	"github.com/apache/arrow/go/v13/arrow/array"
+	"github.com/apache/arrow/go/v13/arrow/compute"
 	"github.com/apache/arrow/go/v13/arrow/memory"
 	"github.com/segmentio/parquet-go"
-	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/pkg/spec"
 	"golang.org/x/exp/slices"
 )
 
 //go:generate go run gen/main.go
-var schema = parquet.SchemaOf(entry.Entry{})
-
-// Maps field name to column number
-var NameToCol = func() (o map[string]int) {
-	o = make(map[string]int)
-	for i, f := range schema.Fields() {
-		o[f.Name()] = i
-	}
-	return
-}()
-
-var FilterToCol = func() (o map[string]int) {
-	o = make(map[string]int)
-	for i, f := range schema.Fields() {
-		if _, ok := spec.ValidSegment[f.Name()]; ok {
-			o[f.Name()] = i
-		}
-	}
-	return
-}()
-
-var FieldToArrowType = func() (o map[string]arrow.Field) {
-	o = make(map[string]arrow.Field)
-	for _, f := range schema.Fields() {
-		switch f.Type().Kind() {
-		case parquet.ByteArray:
-			o[f.Name()] = arrow.Field{
-				Name: f.Name(),
-				Type: &arrow.StringType{},
-			}
-		case parquet.Int64:
-			switch f.Name() {
-			case "timestamp":
-				o[f.Name()] = arrow.Field{
-					Name: f.Name(),
-					Type: &arrow.TimestampType{
-						Unit: arrow.Millisecond,
-					},
-				}
-			case "duration":
-				o[f.Name()] = arrow.Field{
-					Name: f.Name(),
-					Type: &arrow.DurationType{},
-				}
-			default:
-				o[f.Name()] = arrow.Field{
-					Name: f.Name(),
-					Type: &arrow.Int64Type{},
-				}
-			}
-		}
-	}
-	return
-}()
-
-var fieldPages = func() (o []Field) {
-	o = make([]Field, len(schema.Fields()))
-	for i, f := range schema.Fields() {
-		o[i] = Field{
-			Name:  f.Name(),
-			Arrow: FieldToArrowType[f.Name()],
-		}
-	}
-	return
-}()
-
-type Plan struct {
-	Select []string
-	Where  []string
-}
 
 type FilterType uint
 
@@ -97,24 +28,31 @@ const (
 	RE
 )
 
-type Filter struct {
-	Field    string
-	Value    string
-	Type     FilterType
-	re       *regexp.Regexp
-	selected *Field
-	value    parquet.Value
-}
-
 type IFilter interface {
+	Field() string
 	Accept(g parquet.RowGroup) bool
-	Pages(g parquet.RowGroup) IFilterPage
+	Pages(g parquet.RowGroup) IPageReader
 	Release()
 }
 
-type IFilterPage interface {
-	Page([]bool, ...func(arrow.Array))
+type IFilterList []IFilter
+
+func (ls IFilterList) Accept(g parquet.RowGroup) bool {
+	for _, f := range ls {
+		if !f.Accept(g) {
+			return false
+		}
+	}
+	return true
+}
+
+type IPageReader interface {
+	Page(*Booleans, ...func(arrow.Array)) error
 	Close() error
+}
+
+type FieldReader interface {
+	Pages(g parquet.RowGroup) IPageReader
 }
 
 type KeyValue[T any] struct {
@@ -176,7 +114,7 @@ func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 	return FilterFuncs{
 		ReleaseFunc: build.Release,
 		AcceptFunc:  StringBloomFilter(o.Value, o.Op, names...),
-		PagesFunc: func(g parquet.RowGroup) IFilterPage {
+		PagesFunc: func(g parquet.RowGroup) IPageReader {
 			schema := g.Schema()
 			leaf, ok := schema.Lookup(names...)
 			if !ok {
@@ -186,15 +124,16 @@ func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 			}
 			col := g.ColumnChunks()[leaf.ColumnIndex]
 			pages := col.Pages()
-			return FilterPagesFuncs{
+			return PageReaderFuncs{
 				CloseFunc: pages.Close,
-				PageFunc: func(b []bool, fn ...func(arrow.Array)) {
+				PageFunc: func(fb *Booleans, fn ...func(arrow.Array)) error {
+					b := fb.Get()
 					p, err := pages.ReadPage()
 					if err != nil {
 						if !errors.Is(err, io.EOF) {
 							log.Get().Fatal().Err(err).Msg("failed to read a page")
 						}
-						return
+						return err
 					}
 					n := p.NumValues()
 					values = slices.Grow(values, int(n))
@@ -214,6 +153,7 @@ func FilterString(o KeyValue[string], names ...string) FilterFuncs {
 					if pick {
 						fn[0](build.NewArray())
 					}
+					return nil
 				},
 			}
 		},
@@ -318,7 +258,7 @@ func FilterMap(o MapMatch) FilterFuncs {
 			}
 			return true
 		},
-		PagesFunc: func(g parquet.RowGroup) IFilterPage {
+		PagesFunc: func(g parquet.RowGroup) IPageReader {
 			schema := g.Schema()
 			var keysPages, valuesPages parquet.Pages
 			{
@@ -344,19 +284,17 @@ func FilterMap(o MapMatch) FilterFuncs {
 				valuesPages = col.Pages()
 			}
 
-			return FilterPagesFuncs{
+			return PageReaderFuncs{
 				CloseFunc: func() error {
 					return errors.Join(keysPages.Close(), valuesPages.Close())
 				},
-				PageFunc: func(b []bool, fn ...func(arrow.Array)) {
+				PageFunc: func(fb *Booleans, fn ...func(arrow.Array)) error {
+					b := fb.Get()
 					{
 						// read keys
 						p, err := keysPages.ReadPage()
 						if err != nil {
-							if !errors.Is(err, io.EOF) {
-								log.Get().Fatal().Err(err).Msg("failed to read a page")
-							}
-							return
+							return err
 						}
 						n := p.NumValues()
 						keys = slices.Grow(keys, int(n))[:n]
@@ -371,10 +309,7 @@ func FilterMap(o MapMatch) FilterFuncs {
 						// read values
 						p, err := valuesPages.ReadPage()
 						if err != nil {
-							if !errors.Is(err, io.EOF) {
-								log.Get().Fatal().Err(err).Msg("failed to read a page")
-							}
-							return
+							return err
 						}
 						n := p.NumValues()
 						values = slices.Grow(values, int(n))[:n]
@@ -419,6 +354,90 @@ func FilterMap(o MapMatch) FilterFuncs {
 						}
 						fn[0](build.NewArray())
 					}
+					return nil
+				},
+			}
+		},
+	}
+}
+
+var ErrSkipPage = errors.New("skip page")
+var ErrComplete = errors.New("complete page read")
+
+func FilterTimestamp(start, end time.Time) FilterFuncs {
+	build := array.NewTimestampBuilder(memory.DefaultAllocator, &arrow.TimestampType{
+		Unit:     arrow.Millisecond,
+		TimeZone: "UTC",
+	})
+	values := make([]int64, 0, 1<<10)
+	lo := start.UnixMilli()
+	hi := end.UnixMilli()
+	return FilterFuncs{
+		FieldName:   "timestamp",
+		ReleaseFunc: build.Release,
+		PagesFunc: func(g parquet.RowGroup) IPageReader {
+			schema := g.Schema()
+			leaf, ok := schema.Lookup("timestamp")
+			if !ok {
+				return nil
+			}
+			pages := g.ColumnChunks()[leaf.ColumnIndex].Pages()
+			return PageReaderFuncs{
+				CloseFunc: pages.Close,
+				PageFunc: func(fb *Booleans, f ...func(arrow.Array)) error {
+					p, err := pages.ReadPage()
+					if err != nil {
+						return err
+					}
+					min, max, ok := p.Bounds()
+					if !ok {
+						return ErrSkipPage
+					}
+					lowerBound := min.Int64()
+					upperBound := max.Int64()
+					if upperBound < lo {
+						// Ww can't observe starting timestamp on this page. Move on to the next
+						// one
+						return ErrSkipPage
+					}
+					if lowerBound > hi {
+						// This page starts way past the end of the query range. Stop Immediately
+						return io.EOF
+					}
+					n := p.NumValues()
+					b := fb.Reserve(int(n))
+					values = slices.Grow(values, int(n))[:n]
+					_, err = p.Values().(parquet.Int64Reader).ReadInt64s(values)
+					if err != nil {
+						if !errors.Is(err, io.EOF) {
+							return err
+						}
+					}
+					for i := 0; i < len(values); i++ {
+						if values[i] <= lo {
+							b[i] = false
+							continue
+						}
+						break
+					}
+					for i := len(values) - 1; i > 0; i-- {
+						if values[i] >= hi {
+							b[i] = false
+							continue
+						}
+						break
+					}
+					if len(f) > 0 {
+						build.Reserve(len(values))
+						for i := range values {
+							build.Append(arrow.Timestamp(values[i]))
+						}
+						f[0](build.NewArray())
+					}
+					if hi < upperBound {
+						return ErrComplete
+					}
+					return nil
 				},
 			}
 		},
@@ -426,12 +445,17 @@ func FilterMap(o MapMatch) FilterFuncs {
 }
 
 type FilterFuncs struct {
+	FieldName   string
 	AcceptFunc  func(g parquet.RowGroup) bool
-	PagesFunc   func(g parquet.RowGroup) IFilterPage
+	PagesFunc   func(g parquet.RowGroup) IPageReader
 	ReleaseFunc func()
 }
 
 var _ IFilter = (*FilterFuncs)(nil)
+
+func (f FilterFuncs) Field() string {
+	return f.FieldName
+}
 
 func (f FilterFuncs) Accept(g parquet.RowGroup) bool {
 	if f.AcceptFunc != nil {
@@ -440,31 +464,51 @@ func (f FilterFuncs) Accept(g parquet.RowGroup) bool {
 	return false
 }
 
-func (f FilterFuncs) Pages(g parquet.RowGroup) IFilterPage {
+func (f FilterFuncs) Pages(g parquet.RowGroup) IPageReader {
 	if f.PagesFunc != nil {
 		return f.PagesFunc(g)
 	}
 	return noopFilterPage{}
 }
+
 func (f FilterFuncs) Release() {
 	if f.ReleaseFunc != nil {
 		f.ReleaseFunc()
 	}
 }
 
-type FilterPagesFuncs struct {
-	PageFunc  func([]bool, ...func(arrow.Array))
+type FilterFuncsWithCallback struct {
+	IFilter
+	Callback func(arrow.Array)
+}
+
+func (f FilterFuncsWithCallback) Pages(g parquet.RowGroup) IPageReader {
+	o := f.IFilter.Pages(g)
+	return PageReaderFuncs{
+		Callback:  f.Callback,
+		PageFunc:  o.Page,
+		CloseFunc: o.Close,
+	}
+}
+
+type PageReaderFuncs struct {
+	Callback  func(arrow.Array)
+	PageFunc  func(*Booleans, ...func(arrow.Array)) error
 	CloseFunc func() error
 }
 
-var _ IFilterPage = (*FilterPagesFuncs)(nil)
+var _ IPageReader = (*PageReaderFuncs)(nil)
 
-func (f FilterPagesFuncs) Page(ok []bool, fn ...func(arrow.Array)) {
+func (f PageReaderFuncs) Page(ok *Booleans, fn ...func(arrow.Array)) error {
 	if f.PageFunc != nil {
-		f.PageFunc(ok)
+		if f.Callback != nil {
+			return f.PageFunc(ok, f.Callback)
+		}
+		return f.PageFunc(ok, fn...)
 	}
+	return nil
 }
-func (f FilterPagesFuncs) Close() error {
+func (f PageReaderFuncs) Close() error {
 	if f.CloseFunc != nil {
 		return f.CloseFunc()
 	}
@@ -473,320 +517,184 @@ func (f FilterPagesFuncs) Close() error {
 
 type noopFilterPage struct{}
 
-var _ IFilterPage = (*noopFilterPage)(nil)
+var _ IPageReader = (*noopFilterPage)(nil)
 
-func (noopFilterPage) Page(_ []bool, _ ...func(arrow.Array)) {
-
+func (noopFilterPage) Page(_ *Booleans, _ ...func(arrow.Array)) error {
+	return nil
 }
 func (noopFilterPage) Close() error {
 	return nil
 }
 
-func (f *Filter) Match(v parquet.Value) bool {
-	if f.Type == EXACT {
-		return parquet.Equal(v, f.value)
-	}
-	if f.Type == GLOB {
-		ok, _ := path.Match(f.Value, v.String())
-		return ok
-	}
-	if f.re == nil {
-		f.re = regexp.MustCompile(f.Value)
-	}
-	return f.re.MatchString(v.String())
+type Options struct {
+	Filters    IFilterList
+	Start, End time.Time
+	Select     []string
 }
 
-type Options struct {
-	Filters    []*Filter
-	Start, End int64
-	Select     []string
+type Booleans struct {
+	data []bool
+}
+
+func (b *Booleans) Reserve(n int) []bool {
+	b.data = slices.Grow(b.data, n)[:n]
+	copyBool(b.data)
+	return b.data
+}
+
+func (b *Booleans) Get() []bool {
+	return b.data
 }
 
 type GroupProcess func(g parquet.RowGroup) error
 
-func Exec(ctx context.Context, o Options, source func(GroupProcess) error) (arrow.Record, error) {
-	selectedFields := make(map[string]bool)
-	for _, v := range o.Select {
-		selectedFields[v] = true
-	}
+func Exec[T any](ctx context.Context, o Options, source func(GroupProcess) error) (arrow.Record, error) {
+	selected := buildSelection[T](o.Select...)
 
-	pages := clonePages()
+	filters := slices.Clone(o.Filters)
+	filters = append(IFilterList{FilterTimestamp(o.Start, o.End)}, filters...)
 
-	bloom := make(map[int]parquet.Value)
-
-	for _, x := range o.Filters {
-		if selectedFields[x.Field] {
-			x.selected = &pages[NameToCol[x.Field]]
-		}
-		if x.Type == EXACT {
-			x.value = parquet.ValueOf(x.Value)
-			bloom[NameToCol[x.Field]] = x.value
+	for i, x := range filters {
+		if f, ok := selected[x.Field()]; ok {
+			// We are performing filter on a selected field.We wrap the filter in a
+			// callback to store the read column page.
+			filters[i] = &FilterFuncsWithCallback{
+				IFilter:  filters[i],
+				Callback: f.SetPage,
+			}
+			f.Filtered = true
 		}
 	}
 
-	booleans := make([]bool, 0, 1<<10)
-	values := make([]parquet.Value, 0, 1<<10)
+	booleans := &Booleans{
+		data: make([]bool, 0, 1<<10),
+	}
+	pages := make([]IPageReader, 0, len(filters))
+	build := array.NewBooleanBuilder(memory.DefaultAllocator)
+	defer build.Release()
 
 	err := source(func(g parquet.RowGroup) error {
-		scheme := g.Schema()
-		ts, ok := scheme.Lookup("timestamp")
-		if !ok {
-			// Query is for schemas with timestamp only
+		if !filters.Accept(g) {
 			return nil
 		}
-		columns := g.ColumnChunks()
-		has := true
-		for k, v := range bloom {
-			has, _ = columns[k].BloomFilter().Check(v)
-			if !has {
-				break
+		pages = pages[:0]
+		for _, f := range filters {
+			pgs := f.Pages(g)
+			if pgs == nil {
+				// Move to the next row group if any of the filters rejects this row group.
+				return nil
 			}
+			pages = append(pages, pgs)
 		}
-		if !has {
-			// Filtering is binary AND . If one of the filter condition is not met we
-			// skip this row group.
-			return nil
-		}
-		for i := range columns {
-			pages[i].Pages = columns[i].Pages()
-		}
-		defer func() {
-			for i := range pages {
-				pages[i].Pages.Close()
+		// we add the selection pages at the end of the filter chain
+		for _, f := range selected {
+			if f.Filtered {
+				// This field pages are already added.
+				continue
 			}
-		}()
-
+			pages = append(pages, f.Reader.Pages(g))
+		}
+		var complete bool
+	group:
 		for {
-			booleans = booleans[:0]
-			values = values[:0]
-			pts, err := pages[ts.ColumnIndex].Pages.ReadPage()
-			if err != nil {
-				if errors.Is(err, io.EOF) {
-					return io.EOF
-				}
-				return err
-			}
-			min, max, ok := pts.Bounds()
-			if !ok {
-				continue
-			}
-			if !bounds(o.Start, o.End, min.Int64(), max.Int64()) {
-				continue
-			}
-			println(3)
+			for i, p := range pages {
+				err := p.Page(booleans)
+				if err != nil {
+					if errors.Is(err, io.EOF) {
+						if i != 0 {
+							log.Get().Fatal().Msg("observed io.EOF error on non timestamp filter")
+						}
+						// reached the end of this row group. io.EOF is returned before any other
+						// filters are applied.
+						//
+						// This marks the end of processing this row group. We may however still
+						// process more row groups
+						break group
+					}
+					if errors.Is(err, ErrSkipPage) {
+						if i != 0 {
+							log.Get().Fatal().Msg("observed ErrSkipPage error on non timestamp filter")
+						}
+						continue
+					}
+					if !errors.Is(err, ErrComplete) {
+						return err
+					}
 
-			valuesInPage := pts.NumValues()
-			tsValues := make([]int64, pts.NumValues())
-			_, err = pts.Values().(parquet.Int64Reader).ReadInt64s(tsValues)
-			if err != nil {
-				if !errors.Is(err, io.EOF) {
-					return err
+					if i != 0 {
+						log.Get().Fatal().Msg("observed ErrSkipPage error on non timestamp filter")
+					}
+					// We have completed processing All groups. There is still data that we
+					// must read from this page. So we set complete = true and carry on until
+					// the end of this page processing where we explicitly state to not need
+					// any more row groups.
+					complete = true
 				}
 			}
-			booleans = slices.Grow(booleans, int(valuesInPage))[:valuesInPage]
-			copyBool(booleans)
-			observedEndTs := filterTimestamp(tsValues, o.Start, o.End, booleans)
-
-			values = slices.Grow(values, int(valuesInPage))
-			match := true
-			for _, x := range o.Filters {
-				match = filterValues(pages[NameToCol[x.Field]].Pages, values, x, booleans)
-				if !match {
-					break
-				}
+			build.AppendValues(booleans.Get(), nil)
+			a := build.NewArray()
+			for i := range selected {
+				selected[i].Apply(ctx, a)
 			}
-			if !match {
-				if observedEndTs {
-					// Nothing matched and we have seen the end timestamp. Stop looking any
-					// further
-					return io.EOF
-				}
-				continue
-			}
-
-			// select
-			for i := range pages {
-				x := &pages[i]
-				if !selectedFields[x.Name] {
-					continue
-				}
-				// x was selected
-				x.Read(ctx, booleans)
-			}
-			if observedEndTs {
-				return io.EOF
-			}
+			a.Release()
 		}
+		for _, p := range pages {
+			p.Close()
+		}
+		if complete {
+			return io.EOF
+		}
+		return nil
 	})
 	if err != nil {
 		if !errors.Is(err, io.EOF) {
 			return nil, err
 		}
 	}
-
-	fields := make([]arrow.Field, 0, len(selectedFields))
-	var arrays []arrow.Array
-	for i := range pages {
-		x := pages[i]
-		if selectedFields[x.Name] {
-			fields = append(fields, x.Arrow)
-			println(len(x.Table))
-			j, err := array.Concatenate(x.Table, memory.DefaultAllocator)
-			if err != nil {
-				log.Get().Fatal().Err(err).Msg("failed to join pages arrays")
-			}
-			arrays = append(arrays, j)
+	fields := make([]arrow.Field, 0, len(selected))
+	values := make([]arrow.Array, 0, len(selected))
+	for _, f := range selected {
+		fields = append(fields, arrow.Field{
+			Name:     f.Name,
+			Type:     f.Builder.Type(),
+			Nullable: true,
+		})
+		v, err := array.Concatenate(f.Table, memory.DefaultAllocator)
+		if err != nil {
+			return nil, err
 		}
+		values = append(values, v)
 	}
-	schema := arrow.NewSchema(fields, nil)
-	result := array.NewRecord(schema, arrays, int64(arrays[0].Len()))
-	return result, nil
-}
-
-func filterTimestamp(ts []int64, start, end int64, ok []bool) (observedEndTs bool) {
-	if ts[0] < start {
-		for from := 0; from < len(ts); from++ {
-			if ts[from] > start {
-				break
-			}
-			ok[from] = false
-		}
-	}
-	if ts[len(ts)-1] > end {
-		observedEndTs = true
-		for to := len(ts) - 1; to > 0; to-- {
-			if ts[to] <= end {
-				break
-			}
-			ok[to] = false
-		}
-	}
-	return
-}
-
-func filterValues(pages parquet.Pages, values []parquet.Value, f *Filter, ok []bool) (seen bool) {
-	p, err := pages.ReadPage()
-	if err != nil {
-		log.Get().Fatal().Err(err).Msg("corrupt data: found pages with different sizes")
-	}
-	_, err = p.Values().ReadValues(values)
-	if err != nil {
-		if !errors.Is(err, io.EOF) {
-			log.Get().Fatal().Err(err).Msg("corrupt data: found page values with different sizes")
-		}
-	}
-	var s *array.StringBuilder
-	if f.selected != nil {
-		s = f.selected.Builder.(*array.StringBuilder)
-		s.Reserve(len(values))
-	}
-	for i := range values {
-		if s != nil {
-			s.Append(values[i].String())
-		}
-		// filtering is binary AND all filters must select the same row for it to be
-		// considered.
-		ok[i] = ok[i] && f.Match(values[i])
-		if ok[i] {
-			seen = true
-		}
-	}
-	if s != nil {
-		f.selected.Page = s.NewArray()
-	}
-	return
-}
-
-func bounds(start, end int64, min, max int64) bool {
-	return min < end
-}
-
-func clonePages() FieldList {
-	pages := slices.Clone(fieldPages)
-	for i := range pages {
-		pages[i].Builder = array.NewBuilder(memory.DefaultAllocator,
-			pages[i].Arrow.Type,
-		)
-	}
-	return pages
+	return array.NewRecord(arrow.NewSchema(fields, nil),
+		values, int64(values[0].Len()),
+	), nil
 }
 
 type Field struct {
-	Name    string
-	Pages   parquet.Pages
-	Arrow   arrow.Field
-	Builder array.Builder
-	Page    arrow.Array
-	Table   []arrow.Array
+	Name     string
+	Filtered bool
+	Schema   *parquet.Schema
+	Reader   FieldReader
+	Builder  array.Builder
+	Page     arrow.Array
+	Table    []arrow.Array
 }
 
-type FieldList []Field
+var _ FieldReader = (*FilterFuncs)(nil)
 
-func (f FieldList) Close() {
-	for i := range f {
-		f[i].Pages.Close()
-	}
+func (f *Field) SetPage(a arrow.Array) {
+	f.Page = a
 }
 
-func (f *Field) Read(ctx context.Context, ok []bool) {
-	if f.Page == nil {
-		p, err := f.Pages.ReadPage()
-		if err != nil {
-			log.Get().Fatal().Err(err).Msg("corrupt data: found pages with different sizes")
-		}
-		id := f.Arrow.Type.ID()
-		switch id {
-		case arrow.INT64,
-			arrow.DURATION,
-			arrow.TIMESTAMP:
-			o := make([]int64, p.NumValues())
-			_, err = p.Values().(parquet.Int64Reader).ReadInt64s(o)
-			if !errors.Is(err, io.EOF) {
-				log.Get().Fatal().Err(err).Msg("corrupt data: found page values with different sizes")
-			}
-			if id == arrow.INT64 {
-				f.Builder.(*array.Int64Builder).AppendValues(o, ok)
-			} else if id == arrow.DURATION {
-				du := make([]arrow.Duration, len(o))
-				for i := range o {
-					du[i] = arrow.Duration(o[i])
-				}
-				f.Builder.(*array.DurationBuilder).AppendValues(du, ok)
-			} else if id == arrow.TIMESTAMP {
-				ts := make([]arrow.Timestamp, len(o))
-				for i := range o {
-					ts[i] = arrow.Timestamp(o[i])
-				}
-				f.Builder.(*array.TimestampBuilder).AppendValues(ts, ok)
-			}
-		case arrow.STRING:
-			o := make([]parquet.Value, p.NumValues())
-			_, err = p.Values().ReadValues(o)
-			if !errors.Is(err, io.EOF) {
-				log.Get().Fatal().Err(err).Msg("corrupt data: found page values with different sizes")
-			}
-			ts := make([]string, len(o))
-			for i := range o {
-				ts[i] = o[i].String()
-			}
-			f.Builder.(*array.StringBuilder).AppendValues(ts, ok)
-		default:
-			log.Get().Fatal().Str("kind", f.Arrow.Type.ID().String()).
-				Msg("unexpected arrow datatype")
-		}
-		f.Table = append(f.Table, f.Builder.NewArray())
-	} else {
-		a := f.Page
-		sv := a.(*array.String)
-		o := make([]string, a.Len())
-		for i := range o {
-			o[i] = sv.Value(i)
-		}
-		a.Release()
-		f.Page = nil
-		f.Builder.(*array.StringBuilder).AppendValues(o, ok)
-		f.Table = append(f.Table, f.Builder.NewArray())
+func (f *Field) Apply(ctx context.Context, ok arrow.Array) {
+	o := compute.FilterOptions{}
+	r, err := compute.FilterArray(ctx, f.Page, ok, o)
+	if err != nil {
+		log.Get().Fatal().Err(err).Msg("failed to apply filter")
 	}
+	f.Table = append(f.Table, r)
+	f.Page.Release()
+	f.Page = nil
 }
 
 var boolBuffer = func() (o []bool) {
@@ -804,5 +712,332 @@ func copyBool(o []bool) {
 	}
 	for i := range o {
 		o[i] = true
+	}
+}
+
+func buildSelection[T any](roots ...string) (o map[string]*Field) {
+	var t T
+	schema := parquet.SchemaOf(t)
+	o = make(map[string]*Field)
+	for _, r := range roots {
+		o[r] = nil
+	}
+	for _, f := range schema.Fields() {
+		if _, ok := o[f.Name()]; !ok {
+			continue
+		}
+		field := &Field{
+			Name: f.Name(),
+		}
+		switch e := reflect.Zero(f.GoType()).Interface().(type) {
+		case uint64, int64:
+			field.Builder = array.NewInt64Builder(memory.DefaultAllocator)
+			field.Reader = readInt64(field)
+		case time.Duration:
+			field.Builder = array.NewDurationBuilder(memory.DefaultAllocator,
+				&arrow.DurationType{
+					Unit: arrow.Second,
+				})
+			field.Reader = readDuration(field)
+		case time.Time:
+			field.Builder = array.NewTimestampBuilder(memory.DefaultAllocator,
+				&arrow.TimestampType{
+					Unit:     arrow.Millisecond,
+					TimeZone: "UTC",
+				})
+			field.Reader = readTime(field)
+		case map[string]string:
+			field.Builder = array.NewMapBuilder(
+				memory.DefaultAllocator,
+				&arrow.StringType{},
+				&arrow.StringType{},
+				false,
+			)
+			field.Reader = readMap(field)
+		case string:
+			field.Builder = array.NewStringBuilder(memory.DefaultAllocator)
+			field.Reader = readString(field)
+		case float64:
+			field.Builder = array.NewFloat64Builder(memory.DefaultAllocator)
+			field.Reader = readFloat64(field)
+		default:
+			log.Get().Fatal().Msgf("unsupported field type %#T", e)
+		}
+		o[f.Name()] = field
+	}
+	return
+}
+
+func readTime(f *Field) FilterFuncs {
+	b := array.NewTimestampBuilder(memory.DefaultAllocator, &arrow.TimestampType{
+		Unit: arrow.Millisecond,
+	})
+	values := make([]int64, 0, 1<<10)
+	o := make([]arrow.Timestamp, 0, 1<<10)
+	return FilterFuncs{
+		ReleaseFunc: b.Release,
+		PagesFunc: func(g parquet.RowGroup) IPageReader {
+			l, ok := g.Schema().Lookup(f.Name)
+			if !ok {
+				return nil
+			}
+			pages := g.ColumnChunks()[l.ColumnIndex].Pages()
+			return PageReaderFuncs{
+				CloseFunc: pages.Close,
+				PageFunc: func(xx *Booleans, _ ...func(arrow.Array)) error {
+					fb := xx.Get()
+					p, err := pages.ReadPage()
+					if err != nil {
+						return err
+					}
+					n := p.NumValues()
+					values = slices.Grow(values, int(n))[:n]
+					_, err = p.Values().(parquet.Int64Reader).ReadInt64s(values)
+					if err != nil {
+						if !errors.Is(err, io.EOF) {
+							return err
+						}
+					}
+					o = slices.Grow(o, int(n))[:n]
+					for i := range values {
+						o[i] = arrow.Timestamp(values[i])
+					}
+					b.AppendValues(o, fb)
+					f.SetPage(b.NewArray())
+					return nil
+				},
+			}
+		},
+	}
+}
+func readDuration(f *Field) FilterFuncs {
+	b := array.NewDurationBuilder(memory.DefaultAllocator, &arrow.DurationType{})
+	values := make([]int64, 0, 1<<10)
+	o := make([]arrow.Duration, 0, 1<<10)
+	return FilterFuncs{
+		ReleaseFunc: b.Release,
+		PagesFunc: func(g parquet.RowGroup) IPageReader {
+			l, ok := g.Schema().Lookup(f.Name)
+			if !ok {
+				return nil
+			}
+			pages := g.ColumnChunks()[l.ColumnIndex].Pages()
+			return PageReaderFuncs{
+				CloseFunc: pages.Close,
+				PageFunc: func(fb *Booleans, _ ...func(arrow.Array)) error {
+					p, err := pages.ReadPage()
+					if err != nil {
+						return err
+					}
+					n := p.NumValues()
+					values = slices.Grow(values, int(n))[:n]
+					_, err = p.Values().(parquet.Int64Reader).ReadInt64s(values)
+					if err != nil {
+						if !errors.Is(err, io.EOF) {
+							return err
+						}
+					}
+					o = slices.Grow(o, int(n))[:n]
+					for i := range values {
+						o[i] = arrow.Duration(values[i])
+					}
+					b.AppendValues(o, fb.Get())
+					f.SetPage(b.NewArray())
+					return nil
+				},
+			}
+		},
+	}
+}
+func readFloat64(f *Field) FilterFuncs {
+	b := array.NewFloat64Builder(memory.DefaultAllocator)
+	values := make([]float64, 0, 1<<10)
+	return FilterFuncs{
+		ReleaseFunc: b.Release,
+		PagesFunc: func(g parquet.RowGroup) IPageReader {
+			l, ok := g.Schema().Lookup(f.Name)
+			if !ok {
+				return nil
+			}
+			pages := g.ColumnChunks()[l.ColumnIndex].Pages()
+			return PageReaderFuncs{
+				CloseFunc: pages.Close,
+				PageFunc: func(fb *Booleans, _ ...func(arrow.Array)) error {
+					p, err := pages.ReadPage()
+					if err != nil {
+						return err
+					}
+					n := p.NumValues()
+					values = slices.Grow(values, int(n))[:n]
+					_, err = p.Values().(parquet.DoubleReader).ReadDoubles(values)
+					if err != nil {
+						if !errors.Is(err, io.EOF) {
+							return err
+						}
+					}
+					b.AppendValues(values, fb.Get())
+					f.SetPage(b.NewArray())
+					return nil
+				},
+			}
+		},
+	}
+}
+func readInt64(f *Field) FilterFuncs {
+	b := array.NewInt64Builder(memory.DefaultAllocator)
+	values := make([]int64, 0, 1<<10)
+	return FilterFuncs{
+		ReleaseFunc: b.Release,
+		PagesFunc: func(g parquet.RowGroup) IPageReader {
+			l, ok := g.Schema().Lookup(f.Name)
+			if !ok {
+				return nil
+			}
+			pages := g.ColumnChunks()[l.ColumnIndex].Pages()
+			return PageReaderFuncs{
+				CloseFunc: pages.Close,
+				PageFunc: func(fb *Booleans, _ ...func(arrow.Array)) error {
+					p, err := pages.ReadPage()
+					if err != nil {
+						return err
+					}
+					n := p.NumValues()
+					values = slices.Grow(values, int(n))[:n]
+					_, err = p.Values().(parquet.Int64Reader).ReadInt64s(values)
+					if err != nil {
+						if !errors.Is(err, io.EOF) {
+							return err
+						}
+					}
+					b.AppendValues(values, fb.Get())
+					f.SetPage(b.NewArray())
+					return nil
+				},
+			}
+		},
+	}
+}
+
+func readString(f *Field) FilterFuncs {
+	b := array.NewStringBuilder(memory.DefaultAllocator)
+	values := make([]parquet.Value, 0, 1<<10)
+	o := make([]string, 0, 1<<10)
+	return FilterFuncs{
+		ReleaseFunc: b.Release,
+		PagesFunc: func(g parquet.RowGroup) IPageReader {
+			l, ok := g.Schema().Lookup(f.Name)
+			if !ok {
+				return nil
+			}
+			pages := g.ColumnChunks()[l.ColumnIndex].Pages()
+			return PageReaderFuncs{
+				CloseFunc: pages.Close,
+				PageFunc: func(fb *Booleans, _ ...func(arrow.Array)) error {
+					p, err := pages.ReadPage()
+					if err != nil {
+						return err
+					}
+					n := p.NumValues()
+					values = slices.Grow(values, int(n))[:n]
+					_, err = p.Values().ReadValues(values)
+					if err != nil {
+						if !errors.Is(err, io.EOF) {
+							return err
+						}
+					}
+					o := slices.Grow(o, int(n))[:n]
+					for i := range values {
+						o[i] = values[i].String()
+					}
+					b.AppendStringValues(o, fb.Get())
+					f.SetPage(b.NewArray())
+					return nil
+				},
+			}
+		},
+	}
+}
+func readMap(f *Field) FilterFuncs {
+	b := array.NewMapBuilder(memory.DefaultAllocator,
+		&arrow.StringType{},
+		&arrow.StringType{},
+		false,
+	)
+	bk := b.KeyBuilder().(*array.StringBuilder)
+	bv := b.KeyBuilder().(*array.StringBuilder)
+	return FilterFuncs{
+		PagesFunc: func(g parquet.RowGroup) IPageReader {
+			schema := g.Schema()
+			k, ok := schema.Lookup(f.Name, "key_value", "key")
+			if !ok {
+				return nil
+			}
+			v, ok := schema.Lookup(f.Name, "key_value", "value")
+			if !ok {
+				return nil
+			}
+			cols := g.ColumnChunks()
+			keyPages := cols[k.ColumnIndex].Pages()
+			valuePages := cols[v.ColumnIndex].Pages()
+			keys := make([]parquet.Value, 0, 1<<10)
+			values := make([]parquet.Value, 0, 1<<10)
+
+			var ks, vs []string
+			return PageReaderFuncs{
+				CloseFunc: func() error {
+					return errors.Join(keyPages.Close(), valuePages.Close())
+				},
+				PageFunc: func(fb *Booleans, f ...func(arrow.Array)) error {
+					{
+						p, err := keyPages.ReadPage()
+						if err != nil {
+							return err
+						}
+						n := p.NumValues()
+						keys = slices.Grow(keys, int(n))[:n]
+						_, err = p.Values().ReadValues(keys)
+						if err != nil {
+							if !errors.Is(err, io.EOF) {
+								return err
+							}
+						}
+					}
+					{
+						p, err := valuePages.ReadPage()
+						if err != nil {
+							return err
+						}
+						n := p.NumValues()
+						values = slices.Grow(values, int(n))[:n]
+						_, err = p.Values().ReadValues(keys)
+						if err != nil {
+							if !errors.Is(err, io.EOF) {
+								return err
+							}
+						}
+					}
+					for i := range keys {
+						x := keys[i]
+						if x.RepetitionLevel() == 0 {
+							if i != 0 {
+								b.Append(true)
+								bk.AppendStringValues(ks, nil)
+								bv.AppendStringValues(vs, nil)
+								ks = ks[:0]
+								vs = vs[:0]
+							}
+						}
+						ks = append(ks, x.String())
+						vs = append(vs, values[i].String())
+					}
+					b.Append(true)
+					bk.AppendStringValues(ks, nil)
+					bv.AppendStringValues(vs, nil)
+					ks = ks[:0]
+					vs = vs[:0]
+					return nil
+				},
+			}
+		},
 	}
 }
