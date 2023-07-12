@@ -375,6 +375,10 @@ func FilterTimestamp(start, end time.Time) FilterFuncs {
 	return FilterFuncs{
 		FieldName:   "timestamp",
 		ReleaseFunc: build.Release,
+		AcceptFunc: func(g parquet.RowGroup) bool {
+			// We don't use bloom filters on timestamp field.
+			return true
+		},
 		PagesFunc: func(g parquet.RowGroup) IPageReader {
 			schema := g.Schema()
 			leaf, ok := schema.Lookup("timestamp")

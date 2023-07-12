@@ -30,7 +30,7 @@ require (
 	github.com/polarsignals/frostdb v0.0.0-20230703171536-fa06a07dadb8
 	github.com/prometheus/client_golang v1.15.0
 	github.com/rs/zerolog v1.21.0
-	github.com/segmentio/parquet-go v0.0.0-20230622230624-510764ae9e80
+	github.com/segmentio/parquet-go v0.0.0-20230712180008-5d42db8f0d47
 	github.com/urfave/cli/v3 v3.0.0-alpha3
 	golang.org/x/crypto v0.6.0
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
