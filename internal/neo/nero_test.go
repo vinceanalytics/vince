@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/apache/arrow/go/v13/arrow/array"
-	"github.com/segmentio/parquet-go"
+	"github.com/parquet-go/parquet-go"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/entry"
 )

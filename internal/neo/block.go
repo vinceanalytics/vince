@@ -9,7 +9,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
-	"github.com/segmentio/parquet-go"
+	"github.com/parquet-go/parquet-go"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"google.golang.org/protobuf/proto"
 )

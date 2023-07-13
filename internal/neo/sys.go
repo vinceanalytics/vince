@@ -4,7 +4,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/segmentio/parquet-go"
+	"github.com/parquet-go/parquet-go"
 )
 
 type Sys struct {

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/segmentio/parquet-go"
+	"github.com/parquet-go/parquet-go"
 )
 
 func TestSys(t *testing.T) {
