@@ -15,4 +15,33 @@ message Block {
   int64 max = 3;
   // Size on bytes contained in this block
   int64 size = 4;
+  // Bloom filters  string fields
+  Bloom bloom = 5;
+}
+
+// Block wise bloom filters.
+message Bloom {
+  bytes browser = 1;
+  bytes browser_version = 2;
+  bytes city = 3;
+  bytes country = 4;
+  bytes domain = 5;
+  bytes duration = 6;
+  bytes entry_page = 7;
+  bytes exit_page = 8;
+  bytes host = 9;
+  bytes name = 10;
+  bytes os = 11;
+  bytes os_version = 12;
+  bytes path = 13;
+  bytes referrer = 14;
+  bytes referrer_source = 15;
+  bytes region = 16;
+  bytes screen = 17;
+  bytes utm_campaign = 18;
+  bytes utm_content = 19;
+  bytes utm_medium = 20;
+  bytes utm_source = 21;
+  bytes utm_term = 22;
+  bytes utm_value = 23;
 }

@@ -6,17 +6,17 @@ import (
 )
 
 type Entry struct {
+	Bounce                 int64         `parquet:"bounce,dict,zstd"`
 	Browser                string        `parquet:"browser,dict,zstd"`
-	Domain                 string        `parquet:"domain,dict,zstd"`
 	BrowserVersion         string        `parquet:"browser_version,dict,zstd"`
 	City                   string        `parquet:"city,dict,zstd"`
 	Country                string        `parquet:"country,dict,zstd"`
+	Domain                 string        `parquet:"domain,dict,zstd"`
 	Duration               time.Duration `parquet:"duration,dict,zstd"`
 	EntryPage              string        `parquet:"entry_page,dict,zstd"`
 	ExitPage               string        `parquet:"exit_page,dict,zstd"`
 	Hostname               string        `parquet:"host,dict,zstd"`
 	ID                     uint64        `parquet:"id,dict,zstd"`
-	Bounce                 int64         `parquet:"bounce,dict,zstd"`
 	Name                   string        `parquet:"name,dict,zstd"`
 	OperatingSystem        string        `parquet:"os,dict,zstd"`
 	OperatingSystemVersion string        `parquet:"os_version,dict,zstd"`
