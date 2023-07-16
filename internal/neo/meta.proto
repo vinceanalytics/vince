@@ -26,7 +26,6 @@ message Bloom {
   bytes city = 3;
   bytes country = 4;
   bytes domain = 5;
-  bytes duration = 6;
   bytes entry_page = 7;
   bytes exit_page = 8;
   bytes host = 9;
@@ -43,5 +42,4 @@ message Bloom {
   bytes utm_medium = 20;
   bytes utm_source = 21;
   bytes utm_term = 22;
-  bytes utm_value = 23;
 }

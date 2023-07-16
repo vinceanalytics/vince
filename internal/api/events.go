@@ -122,15 +122,15 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e := entry.NewEntry()
 		e.ID = userID
 		e.Name = req.EventName
-		e.Hostname = host
+		e.Host = host
 		e.Path = path
 		e.UtmMedium = query.Get("utm_medium")
 		e.UtmSource = query.Get("utm_source")
 		e.UtmCampaign = query.Get("utm_campaign")
 		e.UtmContent = query.Get("utm_content")
 		e.UtmTerm = query.Get("utm_content")
-		e.OperatingSystem = agent.Os
-		e.OperatingSystemVersion = agent.OsVersion
+		e.Os = agent.Os
+		e.OsVersion = agent.OsVersion
 		e.Browser = agent.Browser
 		e.BrowserVersion = agent.BrowserVersion
 		e.ReferrerSource = src
@@ -138,7 +138,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.Country = city.Country
 		e.Region = city.Region
 		e.City = city.City
-		e.ScreenSize = screenSize
+		e.Screen = screenSize
 		e.Timestamp = ts
 		b.Register(r.Context(), e)
 	}
