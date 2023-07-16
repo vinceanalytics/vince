@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	filippo.io/age v1.1.1
-	github.com/apache/arrow/go/v13 v13.0.0-20230709091256-fdaa99d47112
+	github.com/apache/arrow/go/v13 v13.0.0-20230716160436-9ebb3d790f15
 	github.com/caddyserver/certmagic v0.17.2
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/cespare/xxhash/v2 v2.2.0

@@ -8,6 +8,8 @@ github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/apache/arrow/go/v13 v13.0.0-20230709091256-fdaa99d47112 h1:CkPClrPOxjZgWLzmJBdZbtuUwgq62Pk0TEAwJOVp/y4=
 github.com/apache/arrow/go/v13 v13.0.0-20230709091256-fdaa99d47112/go.mod h1:W69eByFNO0ZR30q1/7Sr9d83zcVZmF2MiP3fFYAWJOc=
+github.com/apache/arrow/go/v13 v13.0.0-20230716160436-9ebb3d790f15 h1:v2UkG8K3fFi1HPUwanm69fFoDJXT4iON1NorYUfIFg0=
+github.com/apache/arrow/go/v13 v13.0.0-20230716160436-9ebb3d790f15/go.mod h1:W69eByFNO0ZR30q1/7Sr9d83zcVZmF2MiP3fFYAWJOc=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
