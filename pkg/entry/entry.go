@@ -7,6 +7,7 @@ import (
 
 type Entry struct {
 	Browser                string        `parquet:"browser,dict,zstd"`
+	Domain                 string        `parquet:"domain,dict,zstd"`
 	BrowserVersion         string        `parquet:"browser_version,dict,zstd"`
 	City                   string        `parquet:"city,dict,zstd"`
 	Country                string        `parquet:"country,dict,zstd"`
