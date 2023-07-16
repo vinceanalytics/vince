@@ -94,7 +94,7 @@ func TestQuery(t *testing.T) {
 		if got, want := r.NumCols(), int64(1); got != want {
 			t.Errorf("expected %d columns got %d", want, got)
 		}
-		if got, want := r.NumRows(), int64(2); got != want {
+		if got, want := r.NumRows(), int64(1); got != want {
 			t.Errorf("expected %d rows got %d", want, got)
 		}
 		if got, want := r.ColumnName(0), "path"; got != want {
