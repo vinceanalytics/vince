@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"os"
 	"path"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -15,6 +17,7 @@ import (
 	"github.com/parquet-go/parquet-go"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/entry"
+	"github.com/vinceanalytics/vince/pkg/log"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -23,24 +26,75 @@ const (
 	MetaPrefix         = "meta"
 	BlockPrefix        = "block"
 	FilterBitsPerValue = 10
+	BlockFile          = "BLOCK"
 )
 
 type ActiveBlock struct {
 	mu       sync.Mutex
 	bloom    metaBloom
-	domain   string
 	Min, Max time.Time
-	bytes.Buffer
+	dir      string
+	f        *os.File
+	b        bytes.Buffer
+	db       *badger.DB
 	// rows are already buffered with w. It is wise to send entries to w as they
 	// arrive. tmp allows us to avoid creating a slice with one entry on every
 	// WriteRow call
 	tmp [1]*entry.Entry
 	w   *parquet.SortingWriter[*entry.Entry]
+	n   int
 }
 
-func (a *ActiveBlock) Init(domain string) {
-	a.domain = domain
-	a.w = Writer[*entry.Entry](a)
+func NewBlock(dir string, db *badger.DB) (*ActiveBlock, error) {
+	a := &ActiveBlock{
+		bloom: metaBloom{hash: xxhash.New()},
+		db:    db,
+		dir:   dir,
+	}
+	return a, a.open()
+}
+
+func (a *ActiveBlock) Save() error {
+	a.mu.Lock()
+	err := a.open()
+	a.mu.Unlock()
+	return err
+}
+
+func (a *ActiveBlock) Close() error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return errors.Join(a.open(), a.f.Close())
+}
+
+func (a *ActiveBlock) open() error {
+	if a.f != nil {
+		if a.n != 0 {
+			a.w.Close()
+			_, err := a.f.Seek(0, io.SeekStart)
+			if err != nil {
+				return err
+			}
+			a.b.Reset()
+			io.Copy(&a.b, a.f)
+			err = a.save()
+			if err != nil {
+				return err
+			}
+			a.bloom.reset()
+		}
+		a.f.Close()
+	}
+	var err error
+	a.f, err = os.Create(filepath.Join(a.dir, BlockFile))
+	if err != nil {
+		return err
+	}
+	if a.w == nil {
+		a.w = Writer[*entry.Entry](a.f)
+	}
+	a.w.Reset(a.f)
+	return nil
 }
 
 func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
@@ -50,34 +104,21 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 	}
 	a.Max = e.Timestamp
 	a.tmp[0] = e.Clone()
-	a.w.Write(a.tmp[:])
+	n, err := a.w.Write(a.tmp[:])
+	if err != nil {
+		log.Get().Fatal().Err(err).
+			Msg("failed to save entries")
+	}
+	a.n += n
 	a.bloom.set(e)
 	a.mu.Unlock()
 }
 
-func (a *ActiveBlock) Reset() {
-	a.bloom.reset()
-	a.Buffer.Reset()
-	a.Min, a.Max = time.Time{}, time.Time{}
-	a.domain = ""
-	a.w.Reset(a)
-}
-
-// Block exports current active block for permanent storage
-func (a *ActiveBlock) Block() (meta *Block, data []byte, err error) {
-	return
-}
-
-func (a *ActiveBlock) Save(db *badger.DB) error {
-	err := a.w.Close()
-	if err != nil {
-		return err
-	}
-	return db.Update(func(txn *badger.Txn) error {
+func (a *ActiveBlock) save() error {
+	return a.db.Update(func(txn *badger.Txn) error {
 		meta := &Metadata{}
-		metaPath := path.Join(MetaPrefix, a.domain, MetaFile)
+		metaPath := path.Join(MetaPrefix, MetaFile)
 		if x, err := txn.Get([]byte(metaPath)); err != nil {
-			meta = &Metadata{}
 			err := x.Value(func(val []byte) error {
 				return proto.Unmarshal(val, meta)
 			})
@@ -86,24 +127,23 @@ func (a *ActiveBlock) Save(db *badger.DB) error {
 			}
 		}
 		id := ulid.Make().String()
-		blockPath := path.Join(BlockPrefix, a.domain, id)
-
+		blockPath := path.Join(BlockPrefix, id)
 		meta.Blocks = append(meta.Blocks, &Block{
-			Id:   id,
-			Min:  a.Min.UnixMilli(),
-			Max:  a.Max.UnixMilli(),
-			Size: int64(a.Len()),
+			Id:    id,
+			Min:   a.Min.UnixMilli(),
+			Max:   a.Max.UnixMilli(),
+			Size:  int64(a.b.Len()),
+			Bloom: a.bloom.bloom(),
 		})
 		mb, err := proto.Marshal(meta)
 		if err != nil {
 			return err
 		}
 		return errors.Join(
-			txn.Set([]byte(blockPath), a.Bytes()),
+			txn.Set([]byte(blockPath), a.b.Bytes()),
 			txn.Set([]byte(metaPath), mb),
 		)
 	})
-
 }
 
 // Writer returns a parquet.SortingWriter for T that sorts timestamp field in
@@ -339,7 +379,7 @@ func (m *metaBloom) set(e *entry.Entry) {
 	}
 }
 
-func (m *metaBloom) bloom(e *entry.Entry) (b *Bloom) {
+func (m *metaBloom) bloom() (b *Bloom) {
 	b = &Bloom{}
 	if m.Browser != nil {
 		b.Browser = must.Must(m.Browser.MarshalBinary())

@@ -171,7 +171,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		ctx = alerts.Set(ctx, a)
 	}
 	resources = append(resources, ts)
-	ctx, err = caches.Open(ctx, timeseries.Collect)
+	ctx, err = caches.Open(ctx)
 	if err != nil {
 		log.Get().Err(err).Msg("failed to open caches")
 		resources.Close()
@@ -256,7 +256,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 	{
 		o := config.Get(ctx)
 		g.Go(worker.Periodic(ctx, h.Ping("cache"), o.Intervals.SiteCache, true, worker.SiteCacheUpdate))
-		g.Go(worker.Periodic(ctx, h.Ping("aggregate"), o.Intervals.TSSync, false, worker.SaveBuffers))
+		g.Go(worker.Periodic(ctx, h.Ping("series"), o.Intervals.TSSync, false, worker.SaveBuffers))
 		g.Go(worker.Periodic(ctx, h.Ping("system"), o.Intervals.System, false, worker.System))
 		if o.Alerts.Enabled {
 			g.Go(alerts.Get(ctx).Work(ctx))

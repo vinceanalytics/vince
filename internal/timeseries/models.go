@@ -9,21 +9,26 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/neo"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, error) {
 	dir := filepath.Join(o.DataPath, "ts")
-	neo, err := badger.Open(badger.DefaultOptions(dir).
+	db, err := badger.Open(badger.DefaultOptions(filepath.Join(dir, "series")).
 		WithLogger(badgerLogger{}).
 		WithCompression(options.ZSTD))
 	if err != nil {
 		return nil, nil, err
 	}
-	ctx = context.WithValue(ctx, storeKey{}, neo)
-	m := NewMap(o.Intervals.TSSync)
-	ctx = SetMap(ctx, m)
-	resource := resourceList{neo, m}
+	a, err := neo.NewBlock(dir, db)
+	if err != nil {
+		db.Close()
+		return nil, nil, err
+	}
+	ctx = context.WithValue(ctx, storeKey{}, db)
+	ctx = context.WithValue(ctx, blockKey{}, a)
+	resource := resourceList{a, db}
 	return ctx, resource, nil
 }
 
@@ -38,19 +43,21 @@ func (r resourceList) Close() error {
 }
 
 type storeKey struct{}
+type blockKey struct{}
 
 func Store(ctx context.Context) *badger.DB {
 	return ctx.Value(storeKey{}).(*badger.DB)
 }
 
-func Save(ctx context.Context, b *Buffer) {
-	err := b.neo.Save(Store(ctx))
+func Block(ctx context.Context) *neo.ActiveBlock {
+	return ctx.Value(blockKey{}).(*neo.ActiveBlock)
+}
+
+func Save(ctx context.Context) {
+	err := Block(ctx).Save()
 	if err != nil {
-		log.Get().Err(err).
-			Str("domain", b.domain).
-			Msg("failed saving buffer")
+		log.Get().Fatal().Err(err).Msg("failed to save block")
 	}
-	b.Release()
 }
 
 var _ badger.Logger = (*badgerLogger)(nil)

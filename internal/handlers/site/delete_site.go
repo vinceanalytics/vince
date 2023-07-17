@@ -6,7 +6,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/sessions"
-	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
 func Delete(w http.ResponseWriter, r *http.Request) {
@@ -19,9 +18,6 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 
 	// remove site from cache
 	caches.Site(ctx).Del(site.Domain)
-
-	// remove site events in collection  buffers
-	timeseries.GetMap(ctx).Delete(site.Domain)
 
 	session, r := sessions.Load(r)
 	session.Success("site and site stats have been permanently deleted").Save(ctx, w)

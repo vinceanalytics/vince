@@ -53,7 +53,7 @@ func Periodic(
 
 // SaveBuffers persists collected Entry Buffers to the timeseries storage.
 func SaveBuffers(ctx context.Context, interval time.Duration) {
-	timeseries.GetMap(ctx).Save(ctx)
+	timeseries.Save(ctx)
 }
 
 func System(ctx context.Context, interval time.Duration) {

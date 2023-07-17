@@ -8,7 +8,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/names"
 	"github.com/vinceanalytics/vince/pkg/spec"
@@ -82,9 +81,6 @@ func APIDelete(w http.ResponseWriter, r *http.Request) {
 
 	// remove site from cache
 	caches.Site(ctx).Del(site.Domain)
-
-	// remove site events in collection  buffers
-	timeseries.GetMap(ctx).Delete(site.Domain)
 
 	render.JSON(w, http.StatusOK, spec.Site{
 		Elapsed: core.Elapsed(ctx, start),

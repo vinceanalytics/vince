@@ -18,13 +18,13 @@ type userKey struct{}
 type ipKey struct{}
 type apiKey struct{}
 
-func Open(ctx context.Context, onSession func(context.Context, *entry.Entry)) (context.Context, error) {
+func Open(ctx context.Context) (context.Context, error) {
 	session, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1e7,
 		MaxCost:     2 << 20,
 		BufferItems: 64,
 		OnEvict: func(item *ristretto.Item) {
-			onSession(ctx, item.Value.(*entry.Entry))
+			item.Value.(*entry.Entry).Release()
 		},
 	})
 	if err != nil {

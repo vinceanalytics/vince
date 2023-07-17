@@ -13,6 +13,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/referrer"
 	"github.com/vinceanalytics/vince/internal/remoteip"
 	"github.com/vinceanalytics/vince/internal/system"
+	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/internal/ua"
 	"github.com/vinceanalytics/vince/internal/userid"
 	"github.com/vinceanalytics/vince/pkg/entry"
@@ -111,9 +112,8 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var dropped int
 	ts := core.Now(ctx)
-
 	for _, domain := range domains {
-		b, pass := gate.Check(r.Context(), domain)
+		pass := gate.Check(r.Context(), domain)
 		if !pass {
 			dropped += 1
 			continue
@@ -141,7 +141,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		e.City = city.City
 		e.Screen = screenSize
 		e.Timestamp = ts
-		b.Register(r.Context(), e)
+		timeseries.Register(ctx, e)
 	}
 	if dropped > 0 {
 		system.DataPointDropped.Inc()
