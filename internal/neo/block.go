@@ -83,6 +83,7 @@ func (a *ActiveBlock) open() error {
 				return err
 			}
 			a.bloom.reset()
+			a.n = 0
 		}
 		a.f.Close()
 	}
