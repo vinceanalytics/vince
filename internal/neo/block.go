@@ -119,8 +119,14 @@ func (a *ActiveBlock) save() error {
 	return a.db.Update(func(txn *badger.Txn) error {
 		meta := &blocks.Metadata{}
 		metaPath := path.Join(MetaPrefix, MetaFile)
-		if x, err := txn.Get([]byte(metaPath)); err != nil {
-			err := x.Value(func(val []byte) error {
+		x, err := txn.Get([]byte(metaPath))
+
+		if err != nil {
+			if !errors.Is(err, badger.ErrKeyNotFound) {
+				return err
+			}
+		} else {
+			err = x.Value(func(val []byte) error {
 				return proto.Unmarshal(val, meta)
 			})
 			if err != nil {
