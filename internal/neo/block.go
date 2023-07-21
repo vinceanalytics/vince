@@ -195,12 +195,6 @@ type metaBloom struct {
 	UtmValue       *roaring64.Bitmap
 }
 
-func newMetaBloom() *metaBloom {
-	return &metaBloom{
-		hash: xxhash.New(),
-	}
-}
-
 func (m *metaBloom) reset() {
 	// we only reuse hash digest
 	h := m.hash
