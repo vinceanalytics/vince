@@ -18,8 +18,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-//go:generate go run gen/main.go
-
 type FilterType uint
 
 const (

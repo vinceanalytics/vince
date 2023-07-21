@@ -1,7 +1,7 @@
 syntax = "proto3";
-package timeseries;
+package blocks;
 
-option go_package = "github.com/vinceanalytics/vince/internal/neo";
+option go_package = "github.com/vinceanalytics/vince/pkg/blocks";
 
 message Metadata { repeated Block blocks = 1; }
 

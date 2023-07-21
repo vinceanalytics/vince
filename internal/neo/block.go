@@ -16,6 +16,7 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/parquet-go/parquet-go"
 	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"google.golang.org/protobuf/proto"
@@ -116,7 +117,7 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 
 func (a *ActiveBlock) save() error {
 	return a.db.Update(func(txn *badger.Txn) error {
-		meta := &Metadata{}
+		meta := &blocks.Metadata{}
 		metaPath := path.Join(MetaPrefix, MetaFile)
 		if x, err := txn.Get([]byte(metaPath)); err != nil {
 			err := x.Value(func(val []byte) error {
@@ -128,7 +129,7 @@ func (a *ActiveBlock) save() error {
 		}
 		id := ulid.Make().String()
 		blockPath := path.Join(BlockPrefix, id)
-		meta.Blocks = append(meta.Blocks, &Block{
+		meta.Blocks = append(meta.Blocks, &blocks.Block{
 			Id:    id,
 			Min:   a.Min.UnixMilli(),
 			Max:   a.Max.UnixMilli(),
@@ -379,8 +380,8 @@ func (m *metaBloom) set(e *entry.Entry) {
 	}
 }
 
-func (m *metaBloom) bloom() (b *Bloom) {
-	b = &Bloom{}
+func (m *metaBloom) bloom() (b *blocks.Bloom) {
+	b = &blocks.Bloom{}
 	if m.Browser != nil {
 		b.Browser = must.Must(m.Browser.MarshalBinary())
 	}
