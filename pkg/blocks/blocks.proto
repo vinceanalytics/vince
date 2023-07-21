@@ -17,6 +17,9 @@ message Block {
   int64 size = 4;
   // Bloom filters  string fields
   Bloom bloom = 5;
+
+  // Per site statistics for this block.
+  map<string, Stats> stats = 6;
 }
 
 // Block wise bloom filters.
@@ -42,4 +45,11 @@ message Bloom {
   bytes utm_medium = 20;
   bytes utm_source = 21;
   bytes utm_term = 22;
+}
+
+message Stats {
+  int64 unique_visitors = 1;
+  int64 page_views = 2;
+  int64 bounce_rate = 3;
+  int64 session_duration = 4;
 }
