@@ -2,10 +2,10 @@ package neo
 
 import (
 	"bytes"
+	"encoding/binary"
 	"errors"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"sync"
 	"time"
@@ -13,7 +13,6 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
-	"github.com/oklog/ulid/v2"
 	"github.com/parquet-go/parquet-go"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
@@ -23,12 +22,11 @@ import (
 )
 
 const (
-	MetaFile           = "METADATA"
-	MetaPrefix         = "meta"
-	BlockPrefix        = "block"
 	FilterBitsPerValue = 10
 	BlockFile          = "BLOCK"
 )
+
+var metaPath = make([]byte, 1)
 
 type ActiveBlock struct {
 	mu       sync.Mutex
@@ -119,9 +117,7 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 func (a *ActiveBlock) save() error {
 	return a.db.Update(func(txn *badger.Txn) error {
 		meta := &blocks.Metadata{}
-		metaPath := path.Join(MetaPrefix, MetaFile)
 		x, err := txn.Get([]byte(metaPath))
-
 		if err != nil {
 			if !errors.Is(err, badger.ErrKeyNotFound) {
 				return err
@@ -134,8 +130,9 @@ func (a *ActiveBlock) save() error {
 				return err
 			}
 		}
-		id := ulid.Make().String()
-		blockPath := path.Join(BlockPrefix, id)
+		id := time.Now().UTC().UnixMilli()
+		blockPath := make([]byte, 8)
+		binary.BigEndian.PutUint64(blockPath, uint64(id))
 		meta.Blocks = append(meta.Blocks, &blocks.Block{
 			Id:    id,
 			Min:   a.Min.UnixMilli(),
@@ -148,8 +145,8 @@ func (a *ActiveBlock) save() error {
 			return err
 		}
 		return errors.Join(
-			txn.Set([]byte(blockPath), a.b.Bytes()),
-			txn.Set([]byte(metaPath), mb),
+			txn.Set(blockPath, a.b.Bytes()),
+			txn.Set(metaPath, mb),
 		)
 	})
 }
