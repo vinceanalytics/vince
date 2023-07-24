@@ -40,7 +40,7 @@ type ActiveBlock struct {
 	// arrive. tmp allows us to avoid creating a slice with one entry on every
 	// WriteRow call
 	tmp [1]*entry.Entry
-	w   *parquet.SortingWriter[*entry.Entry]
+	w   *parquet.GenericWriter[*entry.Entry]
 	n   int
 }
 
@@ -153,7 +153,7 @@ func (a *ActiveBlock) save() error {
 
 // Writer returns a parquet.SortingWriter for T that sorts timestamp field in
 // ascending order.
-func Writer[T any](w io.Writer, o ...parquet.WriterOption) *parquet.SortingWriter[T] {
+func Writer[T any](w io.Writer, o ...parquet.WriterOption) *parquet.GenericWriter[T] {
 	var t T
 	scheme := parquet.SchemaOf(t)
 	var bloom []parquet.BloomFilterColumn
@@ -163,14 +163,9 @@ func Writer[T any](w io.Writer, o ...parquet.WriterOption) *parquet.SortingWrite
 			bloom = append(bloom, parquet.SplitBlockFilter(FilterBitsPerValue, col...))
 		}
 	}
-	return parquet.NewSortingWriter[T](w, 4<<10, append(o,
-		parquet.BloomFilters(bloom...),
-		parquet.SortingWriterConfig(
-			parquet.SortingColumns(
-				parquet.Ascending("timestamp"),
-			),
-		),
-	)...)
+	return parquet.NewGenericWriter[T](w, parquet.BloomFilters(
+		bloom...,
+	))
 }
 
 type metaBloom struct {

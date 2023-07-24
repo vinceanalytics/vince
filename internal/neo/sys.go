@@ -14,8 +14,8 @@ type Sys struct {
 	Value     float64           `parquet:"value,zstd"`
 }
 
-func SysWriter(w io.Writer) *parquet.SortingWriter[Sys] {
-	return Writer[Sys](w,
+func SysWriter(w io.Writer) *parquet.GenericWriter[Sys] {
+	return parquet.NewGenericWriter[Sys](w,
 		parquet.BloomFilters(
 			parquet.SplitBlockFilter(FilterBitsPerValue, "labels", "key_value", "key"),
 			parquet.SplitBlockFilter(FilterBitsPerValue, "labels", "key_value", "value"),
