@@ -46,6 +46,10 @@ func NewBlock(dir string, db *badger.DB) *ActiveBlock {
 
 func (a *ActiveBlock) Save(ctx context.Context) error {
 	a.mu.Lock()
+	if len(a.entries.Timestamp) == 0 {
+		a.mu.Unlock()
+		return nil
+	}
 	record := a.entries.Record()
 	bloom := a.bloom.set(a.entries)
 	a.entries.Reset()
