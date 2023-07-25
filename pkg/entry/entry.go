@@ -31,6 +31,7 @@ type Entry struct {
 	UtmMedium      string        `parquet:"utm_medium,dict,zstd"`
 	UtmSource      string        `parquet:"utm_source,dict,zstd"`
 	UtmTerm        string        `parquet:"utm_term,dict,zstd"`
+	Value          int64         `parquet:"value,zstd"`
 }
 
 var entryPool = &sync.Pool{
@@ -57,6 +58,7 @@ func (e *Entry) Release() {
 func (e *Entry) Hit() {
 	e.EntryPage = e.Path
 	e.Bounce = 1
+	e.Value = 1
 }
 
 func (s *Entry) Update(e *Entry) {
