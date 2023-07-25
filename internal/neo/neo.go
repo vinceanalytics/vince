@@ -540,8 +540,9 @@ func (o Options) Entry() Options {
 		Start:   o.Start,
 		End:     o.End,
 		Select: append(o.Select,
-			"id",
 			"bounce",
+			"duration",
+			"id",
 			"value",
 		),
 	}
