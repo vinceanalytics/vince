@@ -124,6 +124,33 @@ func (m *MultiEntry) Reset() {
 	m.UtmSource = m.UtmSource[:0]
 	m.UtmTerm = m.UtmTerm[:0]
 }
+func (m *MultiEntry) Append(e *Entry) {
+	m.Bounce = append(m.Bounce, e.Bounce)
+	m.Browser = append(m.Browser, e.Browser)
+	m.BrowserVersion = append(m.BrowserVersion, e.BrowserVersion)
+	m.City = append(m.City, e.City)
+	m.Country = append(m.Country, e.Country)
+	m.Domain = append(m.Domain, e.Domain)
+	m.Duration = append(m.Duration, arrow.Duration(e.Duration))
+	m.EntryPage = append(m.EntryPage, e.EntryPage)
+	m.ExitPage = append(m.ExitPage, e.ExitPage)
+	m.Host = append(m.Host, e.Host)
+	m.ID = append(m.ID, int64(e.ID))
+	m.Name = append(m.Name, e.Name)
+	m.Os = append(m.Os, e.Os)
+	m.OsVersion = append(m.OsVersion, e.OsVersion)
+	m.Path = append(m.Path, e.Path)
+	m.Referrer = append(m.Referrer, e.Referrer)
+	m.ReferrerSource = append(m.ReferrerSource, e.ReferrerSource)
+	m.Region = append(m.Region, e.Region)
+	m.Screen = append(m.Screen, e.Screen)
+	m.Timestamp = append(m.Timestamp, arrow.Timestamp(e.Timestamp.UnixMilli()))
+	m.UtmCampaign = append(m.UtmCampaign, e.UtmCampaign)
+	m.UtmContent = append(m.UtmContent, e.UtmContent)
+	m.UtmMedium = append(m.UtmMedium, e.UtmMedium)
+	m.UtmSource = append(m.UtmSource, e.UtmSource)
+	m.UtmTerm = append(m.UtmTerm, e.UtmTerm)
+}
 
 func (m *MultiEntry) Record() arrow.Record {
 	m.build.Reserve(len(m.Timestamp))

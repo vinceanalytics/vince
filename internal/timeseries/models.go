@@ -21,11 +21,7 @@ func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, e
 	if err != nil {
 		return nil, nil, err
 	}
-	a, err := neo.NewBlock(dir, db)
-	if err != nil {
-		db.Close()
-		return nil, nil, err
-	}
+	a := neo.NewBlock(dir, db)
 	ctx = context.WithValue(ctx, storeKey{}, db)
 	ctx = context.WithValue(ctx, blockKey{}, a)
 	resource := resourceList{a, db}
