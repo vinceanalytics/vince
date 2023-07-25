@@ -20,11 +20,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const (
-	FilterBitsPerValue = 10
-	BlockFile          = "BLOCK"
-)
-
 var metaPath = make([]byte, 1)
 
 type ActiveBlock struct {
