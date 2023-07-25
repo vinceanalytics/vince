@@ -4,7 +4,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/vinceanalytics/vince/internal/core"
@@ -36,8 +35,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	remoteIp := remoteip.Get(r)
+	req.IP = remoteip.Get(r)
 	if req.URI == "" {
 		system.DataPointRejected.Inc()
 		w.WriteHeader(http.StatusBadRequest)
@@ -57,7 +55,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	}
 
 	host := sanitizeHost(uri.Host)
-	userAgent := r.UserAgent()
+	req.UserAgent = r.UserAgent()
 
 	ref, src, err := refSource(r.URL.Query(), req.Referrer)
 	if err != nil {
@@ -88,11 +86,11 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	domain := req.Domain
 
 	query := uri.Query()
-	agent := ua.Parse(userAgent)
+	agent := ua.Parse(req.UserAgent)
 
 	var city geoip.Info
-	if remoteIp != "" {
-		ip := net.ParseIP(remoteIp)
+	if req.IP != "" {
+		ip := net.ParseIP(req.IP)
 		city = geoip.Lookup(ip)
 	}
 	var screenSize string
@@ -111,11 +109,11 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	pass := gate.Check(r.Context(), domain)
 	if !pass {
 		system.DataPointDropped.Inc()
-		w.Header().Set("x-vince-dropped", strconv.Itoa(dropped))
+		w.Header().Set("x-vince-dropped", "1")
 		w.WriteHeader(http.StatusAccepted)
 		return
 	}
-	userID := userid.Hash(remoteIp, userAgent, domain, host)
+	userID := userid.Hash(req.IP, req.UserAgent, domain, host)
 	e := entry.NewEntry()
 	e.ID = userID
 	e.Name = req.EventName

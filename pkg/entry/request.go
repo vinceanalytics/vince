@@ -22,7 +22,6 @@ type Request struct {
 	ScreenWidth int    `json:"w"`
 	HashMode    bool   `json:"h"`
 
-	// Used in tests
 	IP        string `json:"ip,omitempty"`
 	UserAgent string `json:"ua,omitempty"`
 
