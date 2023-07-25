@@ -85,10 +85,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	var domains []string
-	for _, d := range strings.Split(req.Domain, ",") {
-		domains = append(domains, sanitizeHost(d))
-	}
+	domain := req.Domain
 
 	query := uri.Query()
 	agent := ua.Parse(userAgent)
@@ -110,45 +107,39 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		screenSize = "desktop"
 	}
 	ctx := r.Context()
-	var dropped int
 	ts := core.Now(ctx)
-	for _, domain := range domains {
-		pass := gate.Check(r.Context(), domain)
-		if !pass {
-			dropped += 1
-			continue
-		}
-		userID := userid.Hash(remoteIp, userAgent, domain, host)
-		e := entry.NewEntry()
-		e.ID = userID
-		e.Name = req.EventName
-		e.Host = host
-		e.Path = path
-		e.Domain = domain
-		e.UtmMedium = query.Get("utm_medium")
-		e.UtmSource = query.Get("utm_source")
-		e.UtmCampaign = query.Get("utm_campaign")
-		e.UtmContent = query.Get("utm_content")
-		e.UtmTerm = query.Get("utm_content")
-		e.Os = agent.Os
-		e.OsVersion = agent.OsVersion
-		e.Browser = agent.Browser
-		e.BrowserVersion = agent.BrowserVersion
-		e.ReferrerSource = src
-		e.Referrer = ref
-		e.Country = city.Country
-		e.Region = city.Region
-		e.City = city.City
-		e.Screen = screenSize
-		e.Timestamp = ts
-		timeseries.Register(ctx, e)
-	}
-	if dropped > 0 {
+	pass := gate.Check(r.Context(), domain)
+	if !pass {
 		system.DataPointDropped.Inc()
 		w.Header().Set("x-vince-dropped", strconv.Itoa(dropped))
 		w.WriteHeader(http.StatusAccepted)
 		return
 	}
+	userID := userid.Hash(remoteIp, userAgent, domain, host)
+	e := entry.NewEntry()
+	e.ID = userID
+	e.Name = req.EventName
+	e.Host = host
+	e.Path = path
+	e.Domain = domain
+	e.UtmMedium = query.Get("utm_medium")
+	e.UtmSource = query.Get("utm_source")
+	e.UtmCampaign = query.Get("utm_campaign")
+	e.UtmContent = query.Get("utm_content")
+	e.UtmTerm = query.Get("utm_content")
+	e.Os = agent.Os
+	e.OsVersion = agent.OsVersion
+	e.Browser = agent.Browser
+	e.BrowserVersion = agent.BrowserVersion
+	e.ReferrerSource = src
+	e.Referrer = ref
+	e.Country = city.Country
+	e.Region = city.Region
+	e.City = city.City
+	e.Screen = screenSize
+	e.Timestamp = ts
+	timeseries.Register(ctx, e)
+
 	system.DataPointAccepted.Inc()
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
