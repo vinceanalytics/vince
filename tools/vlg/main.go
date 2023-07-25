@@ -44,6 +44,9 @@ func main() {
 					Event:     "pageview",
 					Referrer:  referrer(),
 				}
+				if len(call.Arguments) > 0 {
+					s.Fixture = true
+				}
 				a := vm.ToValue(s).(*goja.Object)
 				a.SetPrototype(call.This.Prototype())
 				return a
@@ -52,6 +55,7 @@ func main() {
 			vm.Set("ip", ip)
 			vm.Set("referer", referrer)
 			vm.Set("userAgent", ua)
+			vm.Set("console", console{})
 			_, err = vm.RunString(string(b))
 			if err != nil {
 				return err
@@ -93,12 +97,12 @@ func (r Requests) Dump() string {
 	return string(b)
 }
 
-func (s *Session) With(key, value string) *Session {
-	o := *s
-	if o.Fixture && len(o.Requests) > 0 {
-		o.Requests = make(Requests, len(s.Requests))
-		copy(o.Requests, s.Requests)
-	}
+func (s *Session) Pretty() string {
+	b, _ := json.MarshalIndent(s.Requests, "", " ")
+	return string(b)
+}
+
+func (o *Session) With(key, value string) *Session {
 	switch key {
 	case "host":
 		o.Host = value
@@ -111,7 +115,7 @@ func (s *Session) With(key, value string) *Session {
 	case "event":
 		o.Event = value
 	}
-	return &o
+	return o
 }
 
 func (o *Session) RequestBody() *entry.Request {
@@ -152,4 +156,10 @@ func (o *Session) Send() *Session {
 func (s *Session) Wait(n int) *Session {
 	time.Sleep(time.Millisecond * time.Duration(n))
 	return s
+}
+
+type console struct{}
+
+func (console) Log(a ...any) {
+	fmt.Fprintln(os.Stdout, a...)
 }
