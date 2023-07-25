@@ -3,6 +3,8 @@ package entry
 import (
 	"sync"
 	"time"
+
+	"github.com/apache/arrow/go/v13/arrow"
 )
 
 type Entry struct {
@@ -32,6 +34,39 @@ type Entry struct {
 	UtmSource      string        `parquet:"utm_source,dict,zstd"`
 	UtmTerm        string        `parquet:"utm_term,dict,zstd"`
 	Value          int64         `parquet:"value,zstd"`
+}
+
+// Fields for constructing arrow schema on Entry.
+func Fields() []arrow.Field {
+	return []arrow.Field{
+		{Name: "bounce", Type: arrow.PrimitiveTypes.Int64},
+		{Name: "browser", Type: &arrow.StringType{}},
+		{Name: "browser_version", Type: &arrow.StringType{}},
+		{Name: "city", Type: &arrow.StringType{}},
+		{Name: "country", Type: &arrow.StringType{}},
+		{Name: "domain", Type: &arrow.StringType{}},
+		{Name: "duration", Type: &arrow.DurationType{}},
+		{Name: "entry_page", Type: &arrow.StringType{}},
+		{Name: "exit_page", Type: &arrow.StringType{}},
+		{Name: "host", Type: &arrow.StringType{}},
+		{Name: "id", Type: &arrow.StringType{}},
+		{Name: "name", Type: &arrow.StringType{}},
+		{Name: "os", Type: &arrow.StringType{}},
+		{Name: "os_version", Type: &arrow.StringType{}},
+		{Name: "path", Type: &arrow.StringType{}},
+		{Name: "referrer", Type: &arrow.StringType{}},
+		{Name: "referrer_source", Type: &arrow.StringType{}},
+		{Name: "region", Type: &arrow.StringType{}},
+		{Name: "screen", Type: &arrow.StringType{}},
+		{Name: "timestamp", Type: &arrow.TimestampType{Unit: arrow.Millisecond}},
+		{Name: "utm_campaign", Type: &arrow.StringType{}},
+		{Name: "utm_content", Type: &arrow.StringType{}},
+		{Name: "utm_medium", Type: &arrow.StringType{}},
+		{Name: "utm_source", Type: &arrow.StringType{}},
+		{Name: "utm_term", Type: &arrow.StringType{}},
+		{Name: "utm_term", Type: &arrow.StringType{}},
+		{Name: "value", Type: arrow.PrimitiveTypes.Int64},
+	}
 }
 
 var entryPool = &sync.Pool{
