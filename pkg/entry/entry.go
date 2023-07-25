@@ -69,6 +69,16 @@ func Fields() []arrow.Field {
 	}
 }
 
+var Schema = arrow.NewSchema(Fields(), nil)
+
+func Select(names ...string) *arrow.Schema {
+	o := make([]arrow.Field, len(names))
+	for i := range o {
+		o[i] = Schema.Field(Schema.FieldIndices(names[i])[0])
+	}
+	return arrow.NewSchema(o, nil)
+}
+
 var entryPool = &sync.Pool{
 	New: func() any {
 		return new(Entry)
