@@ -5,7 +5,7 @@
 
 # vince
 
-The Cloud Native Web Analytics Platform. Built Built on Apache Arrow and Apache Parquet.
+The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parquet.
 
 # Features
 
