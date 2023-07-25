@@ -2,17 +2,18 @@ package neo
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"errors"
-	"io"
 	"sync"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v13/arrow"
+	"github.com/apache/arrow/go/v13/parquet"
+	"github.com/apache/arrow/go/v13/parquet/pqarrow"
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
-	"github.com/parquet-go/parquet-go"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
@@ -43,14 +44,14 @@ func NewBlock(dir string, db *badger.DB) *ActiveBlock {
 	}
 }
 
-func (a *ActiveBlock) Save() error {
+func (a *ActiveBlock) Save(ctx context.Context) error {
 	a.mu.Lock()
 	record := a.entries.Record()
 	bloom := a.bloom.set(a.entries)
 	a.entries.Reset()
 	a.bloom.reset()
 	a.mu.Unlock()
-	return a.save(record, bloom)
+	return a.save(ctx, record, bloom)
 }
 
 func (a *ActiveBlock) Close() error {
@@ -67,20 +68,68 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 	a.mu.Unlock()
 }
 
-func (a *ActiveBlock) save(r arrow.Record, b *blocks.Bloom) error {
+func (a *ActiveBlock) save(ctx context.Context, r arrow.Record, b *blocks.Bloom) error {
 	return a.db.Update(func(txn *badger.Txn) error {
 		meta := &blocks.Metadata{}
+		defer r.Release()
 		x, err := txn.Get([]byte(metaPath))
 		if err != nil {
 			if !errors.Is(err, badger.ErrKeyNotFound) {
 				return err
 			}
-		} else {
 			err = x.Value(func(val []byte) error {
 				return proto.Unmarshal(val, meta)
 			})
 			if err != nil {
 				return err
+			}
+			last := meta.Blocks[len(meta.Blocks)-1]
+			if last.Size < (1 << 20) {
+				// We keep blocks below 1 mb size. Its fine if exceeds the limit after we
+				// merge them
+				blockPath := make([]byte, 8)
+				binary.BigEndian.PutUint64(blockPath, uint64(last.Id))
+
+				blk := must.Must(txn.Get(blockPath))
+
+				return blk.Value(func(val []byte) error {
+					pr, err := pqarrow.ReadTable(ctx, bytes.NewReader(val), &parquet.ReaderProperties{}, pqarrow.ArrowReadProperties{
+						Parallel: true,
+					}, entry.Pool)
+					if err != nil {
+						return err
+					}
+					defer pr.Release()
+					a.b.Reset()
+					w, err := pqarrow.NewFileWriter(entry.Schema, &a.b,
+						parquet.NewWriterProperties(
+							parquet.WithAllocator(entry.Pool),
+						),
+						pqarrow.NewArrowWriterProperties(
+							pqarrow.WithAllocator(entry.Pool),
+						))
+					if err != nil {
+						return err
+					}
+					err = w.WriteTable(pr, 1<<20)
+					if err != nil {
+						return err
+					}
+					err = w.Write(r)
+					if err != nil {
+						return err
+					}
+					err = w.Close()
+					if err != nil {
+						return err
+					}
+					union(last.Bloom, b)
+					mb := must.Must(proto.Marshal(meta))
+					return errors.Join(
+						txn.Set(blockPath, a.b.Bytes()),
+						txn.Set(metaPath, mb),
+					)
+				})
 			}
 		}
 		id := time.Now().UTC().UnixMilli()
@@ -91,9 +140,28 @@ func (a *ActiveBlock) save(r arrow.Record, b *blocks.Bloom) error {
 			Min:   a.Min.UnixMilli(),
 			Max:   a.Max.UnixMilli(),
 			Size:  int64(a.b.Len()),
-			Bloom: a.bloom.bloom(),
+			Bloom: b,
 		})
 		mb, err := proto.Marshal(meta)
+		if err != nil {
+			return err
+		}
+		a.b.Reset()
+		w, err := pqarrow.NewFileWriter(entry.Schema, &a.b,
+			parquet.NewWriterProperties(
+				parquet.WithAllocator(entry.Pool),
+			),
+			pqarrow.NewArrowWriterProperties(
+				pqarrow.WithAllocator(entry.Pool),
+			))
+		if err != nil {
+			return err
+		}
+		err = w.Write(r)
+		if err != nil {
+			return err
+		}
+		err = w.Close()
 		if err != nil {
 			return err
 		}
@@ -102,23 +170,6 @@ func (a *ActiveBlock) save(r arrow.Record, b *blocks.Bloom) error {
 			txn.Set(metaPath, mb),
 		)
 	})
-}
-
-// Writer returns a parquet.SortingWriter for T that sorts timestamp field in
-// ascending order.
-func Writer[T any](w io.Writer, o ...parquet.WriterOption) *parquet.GenericWriter[T] {
-	var t T
-	scheme := parquet.SchemaOf(t)
-	var bloom []parquet.BloomFilterColumn
-	for _, col := range scheme.Columns() {
-		l, _ := scheme.Lookup(col...)
-		if l.Node.Type().Kind() == parquet.ByteArray {
-			bloom = append(bloom, parquet.SplitBlockFilter(FilterBitsPerValue, col...))
-		}
-	}
-	return parquet.NewGenericWriter[T](w, parquet.BloomFilters(
-		bloom...,
-	))
 }
 
 type metaBloom struct {
@@ -211,75 +262,91 @@ func (m *metaBloom) set(e *entry.MultiEntry) *blocks.Bloom {
 }
 
 func (m *metaBloom) bloom() (b *blocks.Bloom) {
-	b = &blocks.Bloom{}
+	b = &blocks.Bloom{
+		Filters: make(map[string][]byte),
+	}
 	if !m.Browser.IsEmpty() {
-		b.Browser = must.Must(m.Browser.MarshalBinary())
+		b.Filters["browser"] = must.Must(m.Browser.MarshalBinary())
 	}
 	if !m.BrowserVersion.IsEmpty() {
-		b.BrowserVersion = must.Must(m.BrowserVersion.MarshalBinary())
+		b.Filters["browser_version"] = must.Must(m.BrowserVersion.MarshalBinary())
 	}
 	if !m.City.IsEmpty() {
-		b.City = must.Must(m.City.MarshalBinary())
+		b.Filters["city"] = must.Must(m.City.MarshalBinary())
 	}
 	if !m.Country.IsEmpty() {
-		b.Country = must.Must(m.Country.MarshalBinary())
+		b.Filters["country"] = must.Must(m.Country.MarshalBinary())
 	}
 	if !m.Domain.IsEmpty() {
-		b.Domain = must.Must(m.Domain.MarshalBinary())
+		b.Filters["domain"] = must.Must(m.Domain.MarshalBinary())
 	}
 	if !m.EntryPage.IsEmpty() {
-		b.EntryPage = must.Must(m.EntryPage.MarshalBinary())
+		b.Filters["entry_page"] = must.Must(m.EntryPage.MarshalBinary())
 	}
 	if !m.ExitPage.IsEmpty() {
-		b.ExitPage = must.Must(m.ExitPage.MarshalBinary())
+		b.Filters["exit_page"] = must.Must(m.ExitPage.MarshalBinary())
 	}
 	if !m.Host.IsEmpty() {
-		b.Host = must.Must(m.Host.MarshalBinary())
+		b.Filters["host"] = must.Must(m.Host.MarshalBinary())
 	}
 	if !m.Name.IsEmpty() {
-		b.Name = must.Must(m.Name.MarshalBinary())
+		b.Filters["name"] = must.Must(m.Name.MarshalBinary())
 	}
 	if !m.Os.IsEmpty() {
-		b.Os = must.Must(m.Os.MarshalBinary())
+		b.Filters["os"] = must.Must(m.Os.MarshalBinary())
 	}
 	if !m.OsVersion.IsEmpty() {
-		b.OsVersion = must.Must(m.OsVersion.MarshalBinary())
+		b.Filters["os_version"] = must.Must(m.OsVersion.MarshalBinary())
 	}
 	if !m.Path.IsEmpty() {
-		b.Path = must.Must(m.Path.MarshalBinary())
+		b.Filters["path"] = must.Must(m.Path.MarshalBinary())
 	}
 	if !m.Referrer.IsEmpty() {
-		b.Referrer = must.Must(m.Referrer.MarshalBinary())
+		b.Filters["referrer"] = must.Must(m.Referrer.MarshalBinary())
 	}
 	if !m.ReferrerSource.IsEmpty() {
-		b.ReferrerSource = must.Must(m.ReferrerSource.MarshalBinary())
+		b.Filters["referrer_source"] = must.Must(m.ReferrerSource.MarshalBinary())
 	}
 	if !m.Region.IsEmpty() {
-		b.Region = must.Must(m.Region.MarshalBinary())
+		b.Filters["region"] = must.Must(m.Region.MarshalBinary())
 	}
 	if !m.Screen.IsEmpty() {
-		b.Screen = must.Must(m.Screen.MarshalBinary())
+		b.Filters["screen"] = must.Must(m.Screen.MarshalBinary())
 	}
 	if !m.UtmCampaign.IsEmpty() {
-		b.UtmCampaign = must.Must(m.UtmCampaign.MarshalBinary())
+		b.Filters["utm_campaign"] = must.Must(m.UtmCampaign.MarshalBinary())
 	}
 	if !m.UtmContent.IsEmpty() {
-		b.UtmContent = must.Must(m.UtmContent.MarshalBinary())
+		b.Filters["utm_content"] = must.Must(m.UtmContent.MarshalBinary())
 	}
 	if !m.UtmMedium.IsEmpty() {
-		b.UtmMedium = must.Must(m.UtmMedium.MarshalBinary())
+		b.Filters["utm_medium"] = must.Must(m.UtmMedium.MarshalBinary())
 	}
-	if !m.UtmMedium.IsEmpty() {
-		b.UtmMedium = must.Must(m.UtmMedium.MarshalBinary())
-	}
+
 	if !m.UtmSource.IsEmpty() {
-		b.UtmSource = must.Must(m.Browser.MarshalBinary())
+		b.Filters["utm_source"] = must.Must(m.Browser.MarshalBinary())
 	}
 	if !m.UtmTerm.IsEmpty() {
-		b.UtmTerm = must.Must(m.UtmTerm.MarshalBinary())
-	}
-	if !m.UtmTerm.IsEmpty() {
-		b.UtmTerm = must.Must(m.UtmTerm.MarshalBinary())
+		b.Filters["utm_term"] = must.Must(m.UtmTerm.MarshalBinary())
 	}
 	return
+}
+
+func union(dst, src *blocks.Bloom) {
+	var x, y roaring64.Bitmap
+	for k, v := range src.Filters {
+		h, ok := dst.Filters[k]
+		if !ok {
+			dst.Filters[k] = v
+			continue
+		}
+		x.Clear()
+		x.UnmarshalBinary(h)
+
+		y.Clear()
+		y.UnmarshalBinary(v)
+
+		x.Or(&y)
+		dst.Filters[k] = must.Must(x.MarshalBinary())
+	}
 }

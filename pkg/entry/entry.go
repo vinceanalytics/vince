@@ -93,7 +93,7 @@ func NewMulti() *MultiEntry {
 		UtmMedium:      make([]string, 0, 1<<10),
 		UtmSource:      make([]string, 0, 1<<10),
 		UtmTerm:        make([]string, 0, 1<<10),
-		build:          array.NewRecordBuilder(pool, Schema),
+		build:          array.NewRecordBuilder(Pool, Schema),
 	}
 }
 
@@ -249,7 +249,7 @@ func Select(names ...string) *arrow.Schema {
 	return arrow.NewSchema(o, nil)
 }
 
-var pool = memory.NewGoAllocator()
+var Pool = memory.NewGoAllocator()
 
 var entryPool = &sync.Pool{
 	New: func() any {
