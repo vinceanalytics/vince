@@ -5,11 +5,7 @@
 
 # vince
 
-The Cloud Native Web Analytics Platform. Built on a persistent and fast key
-value store that support ACID transactions with serializable snapshot isolation
-(SSI) guarantees.
-
-
+The Cloud Native Web Analytics Platform. Built Built on Apache Arrow and Apache Parquet.
 
 # Features
 
