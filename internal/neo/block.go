@@ -54,7 +54,7 @@ func (a *ActiveBlock) Save(ctx context.Context) error {
 }
 
 func (a *ActiveBlock) Close() error {
-	return nil
+	return a.Save(context.Background())
 }
 
 func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
