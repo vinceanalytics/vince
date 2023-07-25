@@ -534,6 +534,19 @@ type Options struct {
 	Select     []string
 }
 
+func (o Options) Entry() Options {
+	return Options{
+		Filters: o.Filters,
+		Start:   o.Start,
+		End:     o.End,
+		Select: append(o.Select,
+			"id",
+			"bounce",
+			"value",
+		),
+	}
+}
+
 type Booleans struct {
 	data []bool
 }
