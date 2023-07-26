@@ -5,22 +5,16 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/caches"
-	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/system"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 // SiteCacheUpdate updates cache of active sites.
 func SiteCacheUpdate(ctx context.Context, interval time.Duration) {
-	start := core.Now(ctx)
-	defer system.SiteCacheDuration.Observe(time.Since(start).Seconds())
 	setSite := caches.SetSite(ctx, interval)
-	system.SitesInCache.Set(
-		models.QuerySitesToCache(ctx, setSite),
-	)
+	models.QuerySitesToCache(ctx, setSite)
 }
 
 func Periodic(
