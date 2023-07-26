@@ -42,5 +42,3 @@ features:
     details: Get email whenever something actionable happen.
     link: /features/alerts
 ---
-
-![demo](/demo.png)
