@@ -1,38 +1,6 @@
 {{define "_content"}}
 {{$ctx := .}}
 <div class="container-lg">
-    <div id="visibility" class="Box mt-3 Box--condensed">
-        <div class="Box-header">
-            <h3 class="f5">
-                Visibility
-            </h3>
-        </div>
-        <div class="Box-body">
-            <div class="d-flex flex-items-center">
-                <div class="flex-auto mb-md-0 mb-2">
-                    <strong>
-                        Change site visibility
-                    </strong>
-                    <p class="mb-0">
-                        This site is currently {{if .Site.Public}}public{{else}}private{{end}}
-                    </p>
-                </div>
-                <div class="flex-md-order-1 flex-order-2">
-                    <form
-                        action="/{{.USER.Name}}/{{.Site.Domain}}/settings/visibility/{{if .Site.Public}}private{{else}}public{{end}}"
-                        method="post">
-                        {{template "_csrf" .}}
-                        <button type="submit" class=" Button--danger Button--medium Button">
-                            <span class="Button-content">
-                                <span class="Button-label">
-                                    Change to {{if .Site.Public}}private{{else}}public{{end}}</span>
-                            </span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
     <div id="goals" class="Box mt-3 Box--condensed">
         <div class="Box-header">
             <div class="d-flex flex-items-center">
@@ -112,12 +80,34 @@
 
     </div>
 
-    <div id="delete-site" class="my-3">
-        <div class="Subhead">
-            <h2 class="Subhead-heading">Danger Zone</h2>
+    <div id="danger-zone" class="Box color-border-danger mt-3">
+        <div class="Box-row" id="visibility">
+            <div class="d-flex flex-items-center">
+                <div class="flex-auto mb-md-0 mb-2">
+                    <strong>
+                        Change site visibility
+                    </strong>
+                    <p class="mb-0">
+                        This site is currently {{if .Site.Public}}public{{else}}private{{end}}
+                    </p>
+                </div>
+                <div class="flex-md-order-1 flex-order-2">
+                    <form
+                        action="/{{.USER.Name}}/{{.Site.Domain}}/settings/visibility/{{if .Site.Public}}private{{else}}public{{end}}"
+                        method="post">
+                        {{template "_csrf" .}}
+                        <button type="submit" class=" Button--danger Button--medium Button">
+                            <span class="Button-content">
+                                <span class="Button-label">
+                                    Change to {{if .Site.Public}}private{{else}}public{{end}}</span>
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-        <Div class="Box color-border-danger">
-            <div class="Box-row d-flex flex-items-center">
+        <div class="Box-row" id="delete-site">
+            <div class="d-flex flex-items-center">
                 <div class="flex-auto mb-md-0 mb-2">
                     <strong>
                         Delete this Site
@@ -138,7 +128,7 @@
                     </form>
                 </div>
             </div>
-        </Div>
+        </div>
     </div>
 </div>
 {{end}}
