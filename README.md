@@ -3,6 +3,8 @@
     <img src="./assets/image/logo.svg" alt="Vince Logo" />
 </p>
 
+> :warning: **This is still under early development its not in a usable state yet**. 
+
 # vince
 
 The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parquet.
