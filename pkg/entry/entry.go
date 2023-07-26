@@ -10,31 +10,31 @@ import (
 )
 
 type Entry struct {
-	Bounce         int64         `parquet:"bounce,dict,zstd"`
-	Browser        string        `parquet:"browser,dict,zstd"`
-	BrowserVersion string        `parquet:"browser_version,dict,zstd"`
-	City           string        `parquet:"city,dict,zstd"`
-	Country        string        `parquet:"country,dict,zstd"`
-	Domain         string        `parquet:"domain,dict,zstd"`
-	Duration       time.Duration `parquet:"duration,dict,zstd"`
-	EntryPage      string        `parquet:"entry_page,dict,zstd"`
-	ExitPage       string        `parquet:"exit_page,dict,zstd"`
-	Host           string        `parquet:"host,dict,zstd"`
-	ID             uint64        `parquet:"id,dict,zstd"`
-	Name           string        `parquet:"name,dict,zstd"`
-	Os             string        `parquet:"os,dict,zstd"`
-	OsVersion      string        `parquet:"os_version,dict,zstd"`
-	Path           string        `parquet:"path,dict,zstd"`
-	Referrer       string        `parquet:"referrer,dict,zstd"`
-	ReferrerSource string        `parquet:"referrer_source,dict,zstd"`
-	Region         string        `parquet:"region,dict,zstd"`
-	Screen         string        `parquet:"screen,dict,zstd"`
-	Timestamp      time.Time     `parquet:"timestamp,timestamp,zstd"`
-	UtmCampaign    string        `parquet:"utm_campaign,dict,zstd"`
-	UtmContent     string        `parquet:"utm_content,dict,zstd"`
-	UtmMedium      string        `parquet:"utm_medium,dict,zstd"`
-	UtmSource      string        `parquet:"utm_source,dict,zstd"`
-	UtmTerm        string        `parquet:"utm_term,dict,zstd"`
+	Bounce         int64
+	Browser        string
+	BrowserVersion string
+	City           string
+	Country        string
+	Domain         string
+	Duration       time.Duration
+	EntryPage      string
+	ExitPage       string
+	Host           string
+	ID             uint64
+	Name           string
+	Os             string
+	OsVersion      string
+	Path           string
+	Referrer       string
+	ReferrerSource string
+	Region         string
+	Screen         string
+	Timestamp      time.Time
+	UtmCampaign    string
+	UtmContent     string
+	UtmMedium      string
+	UtmSource      string
+	UtmTerm        string
 }
 
 type MultiEntry struct {
@@ -200,31 +200,31 @@ func (m *MultiEntry) timestamp(name string, values []arrow.Timestamp) {
 func Fields() []arrow.Field {
 	return []arrow.Field{
 		{Name: "bounce", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "browser", Type: &arrow.StringType{}},
-		{Name: "browser_version", Type: &arrow.StringType{}},
-		{Name: "city", Type: &arrow.StringType{}},
-		{Name: "country", Type: &arrow.StringType{}},
-		{Name: "domain", Type: &arrow.StringType{}},
+		{Name: "browser", Type: arrow.BinaryTypes.String},
+		{Name: "browser_version", Type: arrow.BinaryTypes.String},
+		{Name: "city", Type: arrow.BinaryTypes.String},
+		{Name: "country", Type: arrow.BinaryTypes.String},
+		{Name: "domain", Type: arrow.BinaryTypes.String},
 		{Name: "duration", Type: &arrow.DurationType{}},
-		{Name: "entry_page", Type: &arrow.StringType{}},
-		{Name: "exit_page", Type: &arrow.StringType{}},
-		{Name: "host", Type: &arrow.StringType{}},
-		{Name: "id", Type: &arrow.StringType{}},
-		{Name: "name", Type: &arrow.StringType{}},
-		{Name: "os", Type: &arrow.StringType{}},
-		{Name: "os_version", Type: &arrow.StringType{}},
-		{Name: "path", Type: &arrow.StringType{}},
-		{Name: "referrer", Type: &arrow.StringType{}},
-		{Name: "referrer_source", Type: &arrow.StringType{}},
-		{Name: "region", Type: &arrow.StringType{}},
-		{Name: "screen", Type: &arrow.StringType{}},
+		{Name: "entry_page", Type: arrow.BinaryTypes.String},
+		{Name: "exit_page", Type: arrow.BinaryTypes.String},
+		{Name: "host", Type: arrow.BinaryTypes.String},
+		{Name: "id", Type: arrow.PrimitiveTypes.Int64},
+		{Name: "name", Type: arrow.BinaryTypes.String},
+		{Name: "os", Type: arrow.BinaryTypes.String},
+		{Name: "os_version", Type: arrow.BinaryTypes.String},
+		{Name: "path", Type: arrow.BinaryTypes.String},
+		{Name: "referrer", Type: arrow.BinaryTypes.String},
+		{Name: "referrer_source", Type: arrow.BinaryTypes.String},
+		{Name: "region", Type: arrow.BinaryTypes.String},
+		{Name: "screen", Type: arrow.BinaryTypes.String},
 		{Name: "timestamp", Type: &arrow.TimestampType{Unit: arrow.Millisecond}},
-		{Name: "utm_campaign", Type: &arrow.StringType{}},
-		{Name: "utm_content", Type: &arrow.StringType{}},
-		{Name: "utm_medium", Type: &arrow.StringType{}},
-		{Name: "utm_source", Type: &arrow.StringType{}},
-		{Name: "utm_term", Type: &arrow.StringType{}},
-		{Name: "utm_term", Type: &arrow.StringType{}},
+		{Name: "utm_campaign", Type: arrow.BinaryTypes.String},
+		{Name: "utm_content", Type: arrow.BinaryTypes.String},
+		{Name: "utm_medium", Type: arrow.BinaryTypes.String},
+		{Name: "utm_source", Type: arrow.BinaryTypes.String},
+		{Name: "utm_term", Type: arrow.BinaryTypes.String},
+		{Name: "utm_term", Type: arrow.BinaryTypes.String},
 		{Name: "value", Type: arrow.PrimitiveTypes.Int64},
 	}
 }
