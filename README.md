@@ -11,19 +11,19 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 
 # Features
 
-- Programmable alerting (using Typescript or modern Javascript ECMAScript 2022)
-- Time on site tracking
-- Conversion tracking 
-- Multiple site management
-- User Interaction Management 
-- Campaign Management 
-- Report Generation
-- Goal Tracking 
-- Event Tracking 
-- Cloud Native (seamless k8s integration)
-- Automatic TLS
+- [ ]Programmable alerting (using Typescript or modern Javascript ECMAScript 2022)
+- [ ] Time on site tracking
+- [ ] Conversion tracking 
+- [x] Multiple site management
+- [ ] User Interaction Management 
+- [ ] Campaign Management 
+- [ ] Report Generation
+- [ ] Goal Tracking 
+- [ ]Event Tracking 
+- [ ] Cloud Native (seamless k8s integration)
+- [ ] Automatic TLS
 - API for stats and sites management
-- No runtime dependency (Static binary with everything you need)
+- [x] No runtime dependency (Static binary with everything you need)
 
 ## Usage
 
