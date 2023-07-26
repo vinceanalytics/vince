@@ -37,8 +37,6 @@ complete -c vince -n '__fish_vince_no_subcommand' -f -l mailer-smtp-oauth-host -
 complete -c vince -n '__fish_vince_no_subcommand' -f -l mailer-smtp-oauth-port -r -d 'port value for oauth bearer smtp auth'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l cache-refresh-interval -r -d 'window for refreshing sites cache'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l ts-buffer-sync-interval -r -d 'window for buffering timeseries in memory before savin them'
-complete -c vince -n '__fish_vince_no_subcommand' -f -l gc-interval -r -d 'How often to perform value log garbage collection'
-complete -c vince -n '__fish_vince_no_subcommand' -f -l merge-interval -r -d 'How often to merge aggregated stats and store in a permanent storage'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l system-interval -r -d 'Interval for collecting system metrics'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret -r -d 'path to a file with  ed25519 private key'
 complete -c vince -n '__fish_vince_no_subcommand' -f -l secret-age -r -d 'path to file with age.X25519Identity'

@@ -307,26 +307,6 @@ window for refreshing sites cache
 VINCE_SITE_CACHE_REFRESH_INTERVAL="15m0s"
 ```
 :::
-## gc-interval
-How often to perform value log garbage collection
-::: code-group
-```shell [flag]
---gc-interval="24h0m0s"
-```
-```shell [env]
-VINCE_GC_INTERVAL="24h0m0s"
-```
-:::
-## merge-interval
-How often to merge aggregated stats and store in a permanent storage
-::: code-group
-```shell [flag]
---merge-interval="30s"
-```
-```shell [env]
-VINCE_MERGE_INTERVAL="30s"
-```
-:::
 ## system-interval
 Interval for collecting system metrics
 ::: code-group
@@ -413,10 +393,10 @@ VINCE_MAILER_SMTP_ANONYMOUS_TRACE="..."
 port address of the smtp server used for outgoing emails
 ::: code-group
 ```shell [flag]
---mailer-smtp-enable-mailhog="false"
+--mailer-smtp-enable-mailhog="true"
 ```
 ```shell [env]
-VINCE_MAILER_SMTP_ENABLE_MAILHOG="false"
+VINCE_MAILER_SMTP_ENABLE_MAILHOG="true"
 ```
 :::
 ## mailer-smtp-oauth-host
