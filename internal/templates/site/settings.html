@@ -1,12 +1,14 @@
 {{define "_content"}}
 {{$ctx := .}}
-<div class="container-md">
-    <div id="visibility" class="my-3">
-        <div class="Subhead">
-            <h2 class="Subhead-heading">Visibility</h2>
+<div class="container-lg">
+    <div id="visibility" class="Box mt-3 Box--condensed">
+        <div class="Box-header">
+            <h3 class="f5">
+                Visibility
+            </h3>
         </div>
-        <div class="Box color-border-danger">
-            <div class="Box-row d-flex flex-items-center">
+        <div class="Box-body">
+            <div class="d-flex flex-items-center">
                 <div class="flex-auto mb-md-0 mb-2">
                     <strong>
                         Change site visibility
@@ -31,39 +33,42 @@
             </div>
         </div>
     </div>
-    <div id="goals" class="my-3">
-        <div class="Subhead">
-            <h2 class="Subhead-heading">Goals</h2>
-            <div class="Subhead-action">
-                <a class="btn btn-primary" href="/{{.USER.Name}}/{{.Site.Domain}}/goals/new">
-                    {{Icon "plus" 16}}
-                    <span>Add goal</span>
-                </a>
-            </div>
-        </div>
-        {{if .Site.Goals}}
-        <div class="Box">
-            {{range .Site.Goals}}
-            <div class="Box-row">
-                <div class="f4 d-flex width-full flex-items-baseline  lh-condensed text-bold color-fg-default">
-                    <div class="col-10">
-                        <span class="text-bold  d-inline-block">
-                            {{.Name}}
-                        </span>
-                    </div>
-                    <div class="col-2">
-                        <form action="/{{$ctx.USER.Name}}/{{$ctx.Site.Domain}}/goals/{{.ID}}" method="post">
-                            <input type="hidden" name="_method" value="DELETE">
-                            {{template "_csrf" $ctx}}
-                            <button type="submit" class=" btn btn-danger">
-                                Remove
-                            </button>
-                        </form>
-                    </div>
+    <div id="goals" class="Box mt-3 Box--condensed">
+        <div class="Box-header">
+            <div class="d-flex flex-items-center">
+                <div class="flex-auto mb-md-0 mb-2">
+                    <h3 class="f5">
+                        Goals
+                    </h3>
+                </div>
+                <div class="flex-md-order-1 flex-order-2">
+                    <a class="btn btn-primary" href="/{{.USER.Name}}/{{.Site.Domain}}/goals/new">
+                        {{Icon "plus" 16}}
+                        <span>Add goal</span>
+                    </a>
                 </div>
             </div>
-            {{end}}
+
         </div>
+        {{if .Site.Goals}}
+        {{range .Site.Goals}}
+        <div class="Box-row">
+            <div class="d-flex flex-items-center">
+                <div class="flex-auto mb-md-0 mb-2">
+                    {{.Name}}
+                </div>
+                <div class="flex-md-order-1 flex-order-2">
+                    <form action="/{{$ctx.USER.Name}}/{{$ctx.Site.Domain}}/goals/{{.ID}}" method="post">
+                        <input type="hidden" name="_method" value="DELETE">
+                        {{template "_csrf" $ctx}}
+                        <button type="submit" class=" btn btn-danger">
+                            Remove
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {{end}}
         {{else}}
         <div class="blankslate">
             <h2 class="blankslate-heading">No goals for this site yet</h2>
@@ -71,35 +76,39 @@
         {{end}}
 
     </div>
-    <div id="people" class="my-3">
-        <div class="Subhead">
-            <h2 class="Subhead-heading">Members</h2>
-            <div class="Subhead-action">
-                <a class="btn btn-primary" href="/{{.USER.Name}}/{{.Site.Domain}}/memberships/invite">
-                    {{Icon "plus" 16}}
-                    <span>Invite Member</span>
-                </a>
+    <div id="people" class="Box mt-3 Box--condensed">
+        <div class="Box-header">
+            <div class="d-flex flex-items-center">
+                <div class="flex-auto mb-md-0 mb-2">
+                    <h3 class="f5">
+                        Members
+                    </h3>
+                </div>
+                <div class="flex-md-order-1 flex-order-2">
+                    <a class="btn btn-primary" href="/{{.USER.Name}}/{{.Site.Domain}}/memberships/invite">
+                        {{Icon "plus" 16}}
+                        <span>Invite Member</span>
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="container-lg">
-            <ul class="border-top">
-                {{range .Site.Memberships}}
-                <li class="d-flex flex-items-center flex-justify-end member-list-item  border border-top-0 ">
-                    <div class="py-3 pl-3 pr-0 text-center flex-shrink-0">
-                        <a href="/{{.User.Name}}" class="d-inline-block">
-                            {{Avatar .User.Name 48 "avatar circle"}}
-                        </a>
-                    </div>
-                    <div class="py-3 css-truncate pl-3 flex-auto">
-                        <a class="f4 d-block" href="/{{.User.Name}}">
-                            {{.User.FullName}}
-                        </a>
-                        <span class="color-fg-default">{{.User.Name}}</span>
-                    </div>
-                </li>
-                {{end}}
-            </ul>
+        {{range .Site.Memberships}}
+        <div class="Box-row">
+            <div class="d-flex flex-items-center flex-justify-end member-list-item  ">
+                <div class="py-3 pl-3 pr-0 text-center flex-shrink-0">
+                    <a href="/{{.User.Name}}" class="d-inline-block">
+                        {{Avatar .User.Name 48 "avatar circle"}}
+                    </a>
+                </div>
+                <div class="py-3 css-truncate pl-3 flex-auto">
+                    <a class="f4 d-block" href="/{{.User.Name}}">
+                        {{.User.FullName}}
+                    </a>
+                    <span class="color-fg-default">{{.User.Name}}</span>
+                </div>
+            </div>
         </div>
+        {{end}}
 
     </div>
 
