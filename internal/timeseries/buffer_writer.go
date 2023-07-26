@@ -10,6 +10,15 @@ import (
 
 const DefaultSession = 15 * time.Minute
 
+// Register records entry e. Tracks duration between page navigation by using a
+// cache. Entries are cached by the user hash. By default the entry is kept for
+// 15 mins before it is discarded.
+//
+// By caching , it allows accurate tracking of page navigation. Giving us
+// - entry page
+// - exit page
+// - duration on page
+// - bounce rate
 func Register(ctx context.Context, e *entry.Entry) {
 	e.Hit()
 	x := caches.Session(ctx)
@@ -17,9 +26,8 @@ func Register(ctx context.Context, e *entry.Entry) {
 	if o, ok := x.Get(cacheKey); ok {
 		s := o.(*entry.Entry)
 		s.Update(e)
-		defer e.Release()
 	} else {
-		x.SetWithTTL(e.ID, e, 1, DefaultSession)
+		x.SetWithTTL(e.ID, e.Clone(), 1, DefaultSession)
 	}
 	Block(ctx).WriteEntry(e)
 }

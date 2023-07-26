@@ -65,6 +65,7 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 	a.Max = e.Timestamp
 	a.entries.Append(e)
 	a.mu.Unlock()
+	e.Release()
 }
 
 func (a *ActiveBlock) save(ctx context.Context, r arrow.Record, b *blocks.Bloom) error {
