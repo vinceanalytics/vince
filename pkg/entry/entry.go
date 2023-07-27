@@ -44,7 +44,7 @@ type MultiEntry struct {
 	City           []string
 	Country        []string
 	Domain         []string
-	Duration       []arrow.Duration
+	Duration       []int64
 	EntryPage      []string
 	ExitPage       []string
 	Host           []string
@@ -74,7 +74,7 @@ func NewMulti() *MultiEntry {
 		City:           make([]string, 0, 1<<10),
 		Country:        make([]string, 0, 1<<10),
 		Domain:         make([]string, 0, 1<<10),
-		Duration:       make([]arrow.Duration, 0, 1<<10),
+		Duration:       make([]int64, 0, 1<<10),
 		EntryPage:      make([]string, 0, 1<<10),
 		ExitPage:       make([]string, 0, 1<<10),
 		Host:           make([]string, 0, 1<<10),
@@ -94,13 +94,6 @@ func NewMulti() *MultiEntry {
 		UtmSource:      make([]string, 0, 1<<10),
 		UtmTerm:        make([]string, 0, 1<<10),
 		build:          array.NewRecordBuilder(Pool, Schema),
-	}
-}
-
-func (m *MultiEntry) SetTime(ts int64) {
-	a := arrow.Timestamp(ts)
-	for i := range m.Timestamp {
-		m.Timestamp[i] = a
 	}
 }
 
@@ -138,7 +131,7 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.City = append(m.City, e.City)
 	m.Country = append(m.Country, e.Country)
 	m.Domain = append(m.Domain, e.Domain)
-	m.Duration = append(m.Duration, arrow.Duration(e.Duration))
+	m.Duration = append(m.Duration, int64(e.Duration))
 	m.EntryPage = append(m.EntryPage, e.EntryPage)
 	m.ExitPage = append(m.ExitPage, e.ExitPage)
 	m.Host = append(m.Host, e.Host)
@@ -159,14 +152,19 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.UtmTerm = append(m.UtmTerm, e.UtmTerm)
 }
 
-func (m *MultiEntry) Record() arrow.Record {
+func (m *MultiEntry) Record(ts int64) arrow.Record {
+	a := arrow.Timestamp(ts)
+	for i := range m.Timestamp {
+		m.Timestamp[i] = a
+	}
 	m.build.Reserve(len(m.Timestamp))
 	m.int64("bounce", m.Bounce)
 	m.string("browser", m.Browser)
 	m.string("browser_version", m.BrowserVersion)
 	m.string("city", m.City)
+	m.string("country", m.Country)
 	m.string("domain", m.Domain)
-	m.duration("duration", m.Duration)
+	m.int64("duration", m.Duration)
 	m.string("entry_page", m.EntryPage)
 	m.string("exit_page", m.ExitPage)
 	m.string("host", m.Host)
@@ -195,9 +193,6 @@ func (m *MultiEntry) int64(name string, values []int64) {
 func (m *MultiEntry) string(name string, values []string) {
 	m.build.Field(Index[name]).(*array.StringBuilder).AppendStringValues(values, nil)
 }
-func (m *MultiEntry) duration(name string, values []arrow.Duration) {
-	m.build.Field(Index[name]).(*array.DurationBuilder).AppendValues(values, nil)
-}
 
 func (m *MultiEntry) timestamp(name string, values []arrow.Timestamp) {
 	m.build.Field(Index[name]).(*array.TimestampBuilder).AppendValues(values, nil)
@@ -212,7 +207,7 @@ func Fields() []arrow.Field {
 		{Name: "city", Type: arrow.BinaryTypes.String},
 		{Name: "country", Type: arrow.BinaryTypes.String},
 		{Name: "domain", Type: arrow.BinaryTypes.String},
-		{Name: "duration", Type: &arrow.DurationType{Unit: arrow.Nanosecond}},
+		{Name: "duration", Type: arrow.PrimitiveTypes.Int64},
 		{Name: "entry_page", Type: arrow.BinaryTypes.String},
 		{Name: "exit_page", Type: arrow.BinaryTypes.String},
 		{Name: "host", Type: arrow.BinaryTypes.String},
@@ -231,8 +226,6 @@ func Fields() []arrow.Field {
 		{Name: "utm_medium", Type: arrow.BinaryTypes.String},
 		{Name: "utm_source", Type: arrow.BinaryTypes.String},
 		{Name: "utm_term", Type: arrow.BinaryTypes.String},
-		{Name: "utm_term", Type: arrow.BinaryTypes.String},
-		{Name: "value", Type: arrow.PrimitiveTypes.Int64},
 	}
 }
 

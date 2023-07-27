@@ -50,8 +50,7 @@ func (a *ActiveBlock) Save(ctx context.Context) error {
 		return nil
 	}
 
-	a.entries.SetTime(ts)
-	record := a.entries.Record()
+	record := a.entries.Record(ts)
 	bloom := a.bloom.set(a.entries)
 	a.entries.Reset()
 	a.bloom.reset()
@@ -311,7 +310,7 @@ func union(dst, src *blocks.Bloom) {
 func WriteBlock(ctx context.Context, txn *badger.Txn, b *bytes.Buffer, key []byte, r arrow.Record) (err error) {
 	it, err := txn.Get(key)
 	if err != nil {
-		if !errors.Is(err, io.EOF) {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return err
 		}
 		w, err := pqarrow.NewFileWriter(entry.Schema, b,
@@ -321,6 +320,7 @@ func WriteBlock(ctx context.Context, txn *badger.Txn, b *bytes.Buffer, key []byt
 			pqarrow.NewArrowWriterProperties(
 				pqarrow.WithAllocator(entry.Pool),
 			))
+
 		if err != nil {
 			return err
 		}
@@ -328,7 +328,11 @@ func WriteBlock(ctx context.Context, txn *badger.Txn, b *bytes.Buffer, key []byt
 		if err != nil {
 			return err
 		}
-		return w.Close()
+		err = w.Close()
+		if err != nil {
+			return err
+		}
+		return txn.Set(key, b.Bytes())
 	}
 	err = it.Value(func(val []byte) error {
 		pr, err := pqarrow.ReadTable(ctx, bytes.NewReader(val), &parquet.ReaderProperties{}, pqarrow.ArrowReadProperties{
