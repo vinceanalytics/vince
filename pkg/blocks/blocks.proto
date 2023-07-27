@@ -8,7 +8,7 @@ message Metadata { repeated Block blocks = 1; }
 // Defines metadata about a single parquet file.
 message Block {
   // a ULID string identifier for this block.
-  int64 id = 1;
+  bytes id = 1;
   // Smallest timestamp in milliseconds observed in this block
   int64 min = 2;
   // Largest timestamp in milliseconds observed in this block.

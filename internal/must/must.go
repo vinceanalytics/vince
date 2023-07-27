@@ -8,3 +8,10 @@ func Must[T any](r T, err error) T {
 	}
 	return r
 }
+
+func Assert(err error) error {
+	if err != nil {
+		log.Get().Fatal().Err(err).Msg("failed a must assertion")
+	}
+	return err
+}

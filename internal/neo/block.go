@@ -3,7 +3,6 @@ package neo
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
 	"errors"
 	"io"
 	"sync"
@@ -16,6 +15,7 @@ import (
 	"github.com/apache/arrow/go/v13/parquet/pqarrow"
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
+	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
@@ -44,18 +44,20 @@ func NewBlock(dir string, db *badger.DB) *ActiveBlock {
 }
 
 func (a *ActiveBlock) Save(ctx context.Context) error {
+	ts := core.Now(ctx).UnixMilli()
 	a.mu.Lock()
 	if len(a.entries.Timestamp) == 0 {
 		a.mu.Unlock()
 		return nil
 	}
-	a.entries.SetTime(core.Now(ctx))
+
+	a.entries.SetTime(ts)
 	record := a.entries.Record()
 	bloom := a.bloom.set(a.entries)
 	a.entries.Reset()
 	a.bloom.reset()
 	a.mu.Unlock()
-	return a.save(ctx, record, bloom)
+	return a.save(ctx, ts, record, bloom)
 }
 
 func (a *ActiveBlock) Close() error {
@@ -73,108 +75,57 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 	e.Release()
 }
 
-func (a *ActiveBlock) save(ctx context.Context, r arrow.Record, b *blocks.Bloom) error {
-	return a.db.Update(func(txn *badger.Txn) error {
-		meta := &blocks.Metadata{}
-		defer r.Release()
-		x, err := txn.Get([]byte(metaPath))
-		if err != nil {
-			if !errors.Is(err, badger.ErrKeyNotFound) {
-				return err
-			}
-			err = x.Value(func(val []byte) error {
-				return proto.Unmarshal(val, meta)
-			})
-			if err != nil {
-				return err
-			}
-			last := meta.Blocks[len(meta.Blocks)-1]
-			if last.Size < (1 << 20) {
-				// We keep blocks below 1 mb size. Its fine if exceeds the limit after we
-				// merge them
-				blockPath := make([]byte, 8)
-				binary.BigEndian.PutUint64(blockPath, uint64(last.Id))
-
-				blk := must.Must(txn.Get(blockPath))
-
-				return blk.Value(func(val []byte) error {
-					pr, err := pqarrow.ReadTable(ctx, bytes.NewReader(val), &parquet.ReaderProperties{}, pqarrow.ArrowReadProperties{
-						Parallel: true,
-					}, entry.Pool)
-					if err != nil {
-						return err
-					}
-					defer pr.Release()
-					a.b.Reset()
-					w, err := pqarrow.NewFileWriter(entry.Schema, &a.b,
-						parquet.NewWriterProperties(
-							parquet.WithAllocator(entry.Pool),
-						),
-						pqarrow.NewArrowWriterProperties(
-							pqarrow.WithAllocator(entry.Pool),
-						))
-					if err != nil {
-						return err
-					}
-					err = w.WriteTable(pr, 1<<20)
-					if err != nil {
-						return err
-					}
-					err = w.Write(r)
-					if err != nil {
-						return err
-					}
-					err = w.Close()
-					if err != nil {
-						return err
-					}
-					union(last.Bloom, b)
-					mb := must.Must(proto.Marshal(meta))
-					return errors.Join(
-						txn.Set(blockPath, a.b.Bytes()),
-						txn.Set(metaPath, mb),
-					)
-				})
-			}
+func (a *ActiveBlock) save(ctx context.Context, ts int64, r arrow.Record, b *blocks.Bloom) (err error) {
+	txn := a.db.NewTransaction(true)
+	meta := must.Must(ReadMetadata(txn))
+	var block *blocks.Block
+	if len(meta.Blocks) > 0 {
+		last := meta.Blocks[len(meta.Blocks)-1]
+		if last.Size < (1 << 20) {
+			block = last
+			union(block.Bloom, b)
 		}
-		id := time.Now().UTC().UnixMilli()
-		blockPath := make([]byte, 8)
-		binary.BigEndian.PutUint64(blockPath, uint64(id))
-		meta.Blocks = append(meta.Blocks, &blocks.Block{
-			Id:    id,
-			Min:   a.Min.UnixMilli(),
-			Max:   a.Max.UnixMilli(),
-			Size:  int64(a.b.Len()),
+	}
+	if block == nil {
+		id := ulid.Make()
+		block = &blocks.Block{
+			Id:    id.Bytes(),
+			Min:   ts,
 			Bloom: b,
-		})
-		mb, err := proto.Marshal(meta)
-		if err != nil {
-			return err
 		}
-		a.b.Reset()
-		w, err := pqarrow.NewFileWriter(entry.Schema, &a.b,
-			parquet.NewWriterProperties(
-				parquet.WithAllocator(entry.Pool),
-			),
-			pqarrow.NewArrowWriterProperties(
-				pqarrow.WithAllocator(entry.Pool),
-			))
-		if err != nil {
-			return err
+		meta.Blocks = append(meta.Blocks, block)
+	}
+	block.Max = ts
+	buf := bufferPool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		bufferPool.Put(buf)
+		r.Release()
+	}()
+	must.Assert(WriteBlock(ctx, txn, buf, block.Id, r))
+	block.Size = int64(buf.Len())
+	return errors.Join(
+		txn.Set(metaPath, must.Must(proto.Marshal(meta))),
+		must.Assert(txn.Commit()),
+	)
+}
+
+func ReadMetadata(txn *badger.Txn) (*blocks.Metadata, error) {
+	it, err := txn.Get(metaPath)
+	if err != nil {
+		if !errors.Is(err, io.EOF) {
+			return nil, err
 		}
-		err = w.Write(r)
-		if err != nil {
-			return err
-		}
-		err = w.Close()
-		if err != nil {
-			return err
-		}
-		return errors.Join(
-			txn.Set(blockPath, a.b.Bytes()),
-			txn.Set(metaPath, mb),
-		)
+		return &blocks.Metadata{}, nil
+	}
+	meta := &blocks.Metadata{}
+	err = it.Value(func(val []byte) error {
+		return proto.Unmarshal(val, meta)
 	})
+	if err != nil {
+		return nil, err
+	}
+	return meta, nil
 }
 
 type metaBloom struct {
@@ -358,72 +309,60 @@ func union(dst, src *blocks.Bloom) {
 
 // WriteBlock saves record r in a parquet file with key. If the block exists a
 // new file is created that adds record r to it.
-func WriteBlock(ctx context.Context, db *badger.DB, key []byte, r arrow.Record, cb func([]byte)) (err error) {
-	b := bufferPool.Get().(*bytes.Buffer)
-	defer func() {
-		if err == nil {
-			cb(b.Bytes())
+func WriteBlock(ctx context.Context, txn *badger.Txn, b *bytes.Buffer, key []byte, r arrow.Record) (err error) {
+	it, err := txn.Get(key)
+	if err != nil {
+		if !errors.Is(err, io.EOF) {
+			return err
 		}
-		b.Reset()
-		bufferPool.Put(b)
-		r.Release()
-	}()
-	err = db.Update(func(txn *badger.Txn) error {
-		it, err := txn.Get(key)
-		if err != nil {
-			if !errors.Is(err, io.EOF) {
-				return err
-			}
-			w, err := pqarrow.NewFileWriter(entry.Schema, b,
-				parquet.NewWriterProperties(
-					parquet.WithAllocator(entry.Pool),
-				),
-				pqarrow.NewArrowWriterProperties(
-					pqarrow.WithAllocator(entry.Pool),
-				))
-			if err != nil {
-				return err
-			}
-			err = w.Write(r)
-			if err != nil {
-				return err
-			}
-			return w.Close()
-		}
-		err = it.Value(func(val []byte) error {
-			pr, err := pqarrow.ReadTable(ctx, bytes.NewReader(val), &parquet.ReaderProperties{}, pqarrow.ArrowReadProperties{
-				Parallel: true,
-			}, entry.Pool)
-			if err != nil {
-				return err
-			}
-			defer pr.Release()
-			w, err := pqarrow.NewFileWriter(entry.Schema, b,
-				parquet.NewWriterProperties(
-					parquet.WithAllocator(entry.Pool),
-				),
-				pqarrow.NewArrowWriterProperties(
-					pqarrow.WithAllocator(entry.Pool),
-				))
-			if err != nil {
-				return err
-			}
-			err = w.WriteTable(pr, 1<<20)
-			if err != nil {
-				return err
-			}
-			err = w.Write(r)
-			if err != nil {
-				return err
-			}
-			return w.Close()
-		})
+		w, err := pqarrow.NewFileWriter(entry.Schema, b,
+			parquet.NewWriterProperties(
+				parquet.WithAllocator(entry.Pool),
+			),
+			pqarrow.NewArrowWriterProperties(
+				pqarrow.WithAllocator(entry.Pool),
+			))
 		if err != nil {
 			return err
 		}
-		return txn.Set(key, b.Bytes())
+		err = w.Write(r)
+		if err != nil {
+			return err
+		}
+		return w.Close()
+	}
+	err = it.Value(func(val []byte) error {
+		pr, err := pqarrow.ReadTable(ctx, bytes.NewReader(val), &parquet.ReaderProperties{}, pqarrow.ArrowReadProperties{
+			Parallel: true,
+		}, entry.Pool)
+		if err != nil {
+			return err
+		}
+		defer pr.Release()
+		w, err := pqarrow.NewFileWriter(entry.Schema, b,
+			parquet.NewWriterProperties(
+				parquet.WithAllocator(entry.Pool),
+			),
+			pqarrow.NewArrowWriterProperties(
+				pqarrow.WithAllocator(entry.Pool),
+			))
+		if err != nil {
+			return err
+		}
+		err = w.WriteTable(pr, 1<<20)
+		if err != nil {
+			return err
+		}
+		err = w.Write(r)
+		if err != nil {
+			return err
+		}
+		return w.Close()
 	})
-	return
+	if err != nil {
+		return err
+	}
+	return txn.Set(key, b.Bytes())
 }
 
 var bufferPool = &sync.Pool{

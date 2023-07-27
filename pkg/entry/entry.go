@@ -97,8 +97,8 @@ func NewMulti() *MultiEntry {
 	}
 }
 
-func (m *MultiEntry) SetTime(ts time.Time) {
-	a := arrow.Timestamp(ts.UnixMilli())
+func (m *MultiEntry) SetTime(ts int64) {
+	a := arrow.Timestamp(ts)
 	for i := range m.Timestamp {
 		m.Timestamp[i] = a
 	}
