@@ -14,6 +14,7 @@ import (
 	"github.com/apache/arrow/go/v13/parquet/pqarrow"
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
@@ -45,6 +46,7 @@ func (a *ActiveBlock) Save(ctx context.Context) error {
 		a.mu.Unlock()
 		return nil
 	}
+	a.entries.SetTime(core.Now(ctx))
 	record := a.entries.Record()
 	bloom := a.bloom.set(a.entries)
 	a.entries.Reset()

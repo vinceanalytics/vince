@@ -97,6 +97,13 @@ func NewMulti() *MultiEntry {
 	}
 }
 
+func (m *MultiEntry) SetTime(ts time.Time) {
+	a := arrow.Timestamp(ts.UnixMilli())
+	for i := range m.Timestamp {
+		m.Timestamp[i] = a
+	}
+}
+
 func (m *MultiEntry) Reset() {
 	m.Bounce = m.Bounce[:0]
 	m.Browser = m.Browser[:0]
