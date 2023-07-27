@@ -31,3 +31,22 @@ message Stats {
   int64 bounce_rate = 3;
   int64 session_duration = 4;
 }
+
+message Filter {
+  string column = 1;
+  Op op = 2;
+  oneof value {
+    string str = 3;
+    int64 timestamp = 4;
+    int64 duration = 5;
+  }
+}
+
+enum Op {
+  equal = 0;
+  not_equal = 1;
+  greater = 2;
+  greater_equal = 3;
+  less = 4;
+  less_equal = 5;
+}

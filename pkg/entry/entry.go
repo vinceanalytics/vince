@@ -151,7 +151,7 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.ReferrerSource = append(m.ReferrerSource, e.ReferrerSource)
 	m.Region = append(m.Region, e.Region)
 	m.Screen = append(m.Screen, e.Screen)
-	m.Timestamp = append(m.Timestamp, arrow.Timestamp(e.Timestamp.UnixMilli()))
+	m.Timestamp = append(m.Timestamp, 0) // This will be updated when saving
 	m.UtmCampaign = append(m.UtmCampaign, e.UtmCampaign)
 	m.UtmContent = append(m.UtmContent, e.UtmContent)
 	m.UtmMedium = append(m.UtmMedium, e.UtmMedium)
@@ -212,7 +212,7 @@ func Fields() []arrow.Field {
 		{Name: "city", Type: arrow.BinaryTypes.String},
 		{Name: "country", Type: arrow.BinaryTypes.String},
 		{Name: "domain", Type: arrow.BinaryTypes.String},
-		{Name: "duration", Type: &arrow.DurationType{}},
+		{Name: "duration", Type: &arrow.DurationType{Unit: arrow.Nanosecond}},
 		{Name: "entry_page", Type: arrow.BinaryTypes.String},
 		{Name: "exit_page", Type: arrow.BinaryTypes.String},
 		{Name: "host", Type: arrow.BinaryTypes.String},

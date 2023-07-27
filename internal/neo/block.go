@@ -20,7 +20,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
-	"github.com/vinceanalytics/vince/pkg/log"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -373,8 +372,7 @@ var bufferPool = &sync.Pool{
 
 // ReadBlock reads records constructed by combining fields from block with key.
 // For each record cb is called with it. If cb returns false reading is halter.
-func ReadBlock(ctx context.Context, db *badger.DB, key []byte, fields []string,
-	cb func(context.Context, arrow.Record) bool) error {
+func ReadBlock(ctx context.Context, db *badger.DB, key []byte, a Analysis) error {
 	return db.View(func(txn *badger.Txn) error {
 		it, err := txn.Get(key)
 		if err != nil {
@@ -392,27 +390,11 @@ func ReadBlock(ctx context.Context, db *badger.DB, key []byte, fields []string,
 			if err != nil {
 				return err
 			}
-			var indices []int
-			if len(fields) > 0 {
-				indices = make([]int, len(fields))
-				for i := range fields {
-					idx, ok := entry.Index[fields[i]]
-					if !ok {
-						log.Get().Fatal().Str("field", fields[i]).
-							Msg("invalid block field")
-					}
-					indices[i] = idx
-				}
-			}
-			x, err := r.GetRecordReader(ctx, indices, nil)
+			x, err := r.GetRecordReader(ctx, a.ColumnIndices(), nil)
 			if err != nil {
 				return err
 			}
-			for x.Next() {
-				if !cb(ctx, x.Record()) {
-					break
-				}
-			}
+			a.Analyze(ctx, x)
 			x.Release()
 			return nil
 		})
