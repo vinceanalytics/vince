@@ -189,18 +189,18 @@ func (m *MultiEntry) Record() arrow.Record {
 }
 
 func (m *MultiEntry) int64(name string, values []int64) {
-	m.build.Field(idx[name]).(*array.Int64Builder).AppendValues(values, nil)
+	m.build.Field(Index[name]).(*array.Int64Builder).AppendValues(values, nil)
 }
 
 func (m *MultiEntry) string(name string, values []string) {
-	m.build.Field(idx[name]).(*array.StringBuilder).AppendStringValues(values, nil)
+	m.build.Field(Index[name]).(*array.StringBuilder).AppendStringValues(values, nil)
 }
 func (m *MultiEntry) duration(name string, values []arrow.Duration) {
-	m.build.Field(idx[name]).(*array.DurationBuilder).AppendValues(values, nil)
+	m.build.Field(Index[name]).(*array.DurationBuilder).AppendValues(values, nil)
 }
 
 func (m *MultiEntry) timestamp(name string, values []arrow.Timestamp) {
-	m.build.Field(idx[name]).(*array.TimestampBuilder).AppendValues(values, nil)
+	m.build.Field(Index[name]).(*array.TimestampBuilder).AppendValues(values, nil)
 }
 
 // Fields for constructing arrow schema on Entry.
@@ -238,7 +238,7 @@ func Fields() []arrow.Field {
 
 var all = Fields()
 
-var idx = func() (m map[string]int) {
+var Index = func() (m map[string]int) {
 	m = make(map[string]int)
 	for i := range all {
 		m[all[i].Name] = i
@@ -251,7 +251,7 @@ var Schema = arrow.NewSchema(Fields(), nil)
 func Select(names ...string) *arrow.Schema {
 	o := make([]arrow.Field, len(names))
 	for i := range o {
-		o[i] = Schema.Field(idx[names[i]])
+		o[i] = Schema.Field(Index[names[i]])
 	}
 	return arrow.NewSchema(o, nil)
 }

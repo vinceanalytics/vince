@@ -11,6 +11,7 @@ import (
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v13/arrow"
 	"github.com/apache/arrow/go/v13/parquet"
+	"github.com/apache/arrow/go/v13/parquet/file"
 	"github.com/apache/arrow/go/v13/parquet/pqarrow"
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
@@ -18,6 +19,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
+	"github.com/vinceanalytics/vince/pkg/log"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -351,4 +353,52 @@ func union(dst, src *blocks.Bloom) {
 		x.Or(&y)
 		dst.Filters[k] = must.Must(x.MarshalBinary())
 	}
+}
+
+// ReadBlock reads records constructed by combining fields from block with key.
+// For each record cb is called with it. If cb returns false reading is halter.
+func ReadBlock(ctx context.Context, db *badger.DB, key []byte, fields []string,
+	cb func(context.Context, arrow.Record) bool) error {
+	return db.View(func(txn *badger.Txn) error {
+		it, err := txn.Get(key)
+		if err != nil {
+			return err
+		}
+		return it.Value(func(val []byte) error {
+			f, err := file.NewParquetReader(bytes.NewReader(val),
+				file.WithReadProps(parquet.NewReaderProperties(entry.Pool)))
+			if err != nil {
+				return err
+			}
+			r, err := pqarrow.NewFileReader(f, pqarrow.ArrowReadProperties{
+				Parallel: true,
+			}, entry.Pool)
+			if err != nil {
+				return err
+			}
+			var indices []int
+			if len(fields) > 0 {
+				indices = make([]int, len(fields))
+				for i := range fields {
+					idx, ok := entry.Index[fields[i]]
+					if !ok {
+						log.Get().Fatal().Str("field", fields[i]).
+							Msg("invalid block field")
+					}
+					indices[i] = idx
+				}
+			}
+			x, err := r.GetRecordReader(ctx, indices, nil)
+			if err != nil {
+				return err
+			}
+			for x.Next() {
+				if !cb(ctx, x.Record()) {
+					break
+				}
+			}
+			x.Release()
+			return nil
+		})
+	})
 }
