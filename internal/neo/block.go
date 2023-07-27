@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
+	"io"
 	"sync"
 	"time"
 
@@ -353,6 +354,82 @@ func union(dst, src *blocks.Bloom) {
 		x.Or(&y)
 		dst.Filters[k] = must.Must(x.MarshalBinary())
 	}
+}
+
+// WriteBlock saves record r in a parquet file with key. If the block exists a
+// new file is created that adds record r to it.
+func WriteBlock(ctx context.Context, db *badger.DB, key []byte, r arrow.Record, cb func([]byte)) (err error) {
+	b := bufferPool.Get().(*bytes.Buffer)
+	defer func() {
+		if err == nil {
+			cb(b.Bytes())
+		}
+		b.Reset()
+		bufferPool.Put(b)
+		r.Release()
+	}()
+	err = db.Update(func(txn *badger.Txn) error {
+		it, err := txn.Get(key)
+		if err != nil {
+			if !errors.Is(err, io.EOF) {
+				return err
+			}
+			w, err := pqarrow.NewFileWriter(entry.Schema, b,
+				parquet.NewWriterProperties(
+					parquet.WithAllocator(entry.Pool),
+				),
+				pqarrow.NewArrowWriterProperties(
+					pqarrow.WithAllocator(entry.Pool),
+				))
+			if err != nil {
+				return err
+			}
+			err = w.Write(r)
+			if err != nil {
+				return err
+			}
+			return w.Close()
+		}
+		err = it.Value(func(val []byte) error {
+			pr, err := pqarrow.ReadTable(ctx, bytes.NewReader(val), &parquet.ReaderProperties{}, pqarrow.ArrowReadProperties{
+				Parallel: true,
+			}, entry.Pool)
+			if err != nil {
+				return err
+			}
+			defer pr.Release()
+			w, err := pqarrow.NewFileWriter(entry.Schema, b,
+				parquet.NewWriterProperties(
+					parquet.WithAllocator(entry.Pool),
+				),
+				pqarrow.NewArrowWriterProperties(
+					pqarrow.WithAllocator(entry.Pool),
+				))
+			if err != nil {
+				return err
+			}
+			err = w.WriteTable(pr, 1<<20)
+			if err != nil {
+				return err
+			}
+			err = w.Write(r)
+			if err != nil {
+				return err
+			}
+			return w.Close()
+		})
+		if err != nil {
+			return err
+		}
+		return txn.Set(key, b.Bytes())
+	})
+	return
+}
+
+var bufferPool = &sync.Pool{
+	New: func() any {
+		return new(bytes.Buffer)
+	},
 }
 
 // ReadBlock reads records constructed by combining fields from block with key.
