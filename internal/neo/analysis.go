@@ -35,7 +35,6 @@ func baseColumnsIndices(f ...string) []int {
 func baseColumns(f ...string) []string {
 	f = append(f,
 		"bounce",
-		"domain",
 		"duration",
 		"id",
 		"name",
@@ -55,7 +54,6 @@ func baseColumns(f ...string) []string {
 
 type Base struct {
 	records []arrow.Record
-	pick    []string
 	columns []string
 	indices []int
 	filters []*blocks.Filter
@@ -71,7 +69,6 @@ func NewBase(pick []string, filters ...*blocks.Filter) *Base {
 	return &Base{
 		columns: names,
 		indices: baseColumnsIndices(names...),
-		pick:    pick,
 	}
 }
 
@@ -80,7 +77,7 @@ func (b *Base) ColumnIndices() []int {
 }
 
 func (b *Base) Select() []string {
-	return b.pick
+	return b.columns
 }
 
 func (b *Base) Filters() []*blocks.Filter {

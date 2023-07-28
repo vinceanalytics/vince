@@ -451,10 +451,10 @@ func ReadRecord(ctx context.Context, val []byte, cols, groups []int) (arrow.Reco
 	for _, rg := range groups {
 		count += f.MetaData().RowGroup(rg).NumRows()
 	}
-	result := make([]arrow.Array, len(cols))
-	errs := make([]error, len(cols))
+	result := make([]arrow.Array, len(readers))
+	errs := make([]error, len(readers))
 	var wg sync.WaitGroup
-	for i := 0; i < len(cols); i++ {
+	for i := 0; i < len(readers); i++ {
 		wg.Add(1)
 		go read(ctx, &wg, i, count, result, errs, readers[i])
 	}

@@ -87,4 +87,19 @@ func TestWriteBlock_basic(t *testing.T) {
 			t.Error(err)
 		}
 	})
+
+	t.Run("can read base fields", func(t *testing.T) {
+		base := NewBase([]string{})
+		err := ReadBlock(context.Background(), db, id.Bytes(), base)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// os.WriteFile("testdata/basic_write_base.json",
+		// 	must.Must(json.MarshalIndent(base.records[0], "", " ")), 0600)
+		got := must.Must(json.MarshalIndent(base.records[0], "", " "))
+		want := must.Must(os.ReadFile("testdata/basic_write_base.json"))
+		if !bytes.Equal(got, want) {
+			t.Error("failed roundtrip")
+		}
+	})
 }
