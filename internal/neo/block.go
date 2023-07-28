@@ -98,10 +98,10 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entr
 		meta.Blocks = append(meta.Blocks, block)
 	}
 	block.Max = ts
-	buf := bufferPool.Get().(*bytes.Buffer)
+	buf := get()
 	defer func() {
-		buf.Reset()
-		bufferPool.Put(buf)
+		put(buf)
+		put(kb)
 		r.Release()
 		m.Release()
 		bloom.release()
@@ -388,7 +388,7 @@ func get() *bytes.Buffer {
 	return bufferPool.Get().(*bytes.Buffer)
 }
 
-func pun(b *bytes.Buffer) {
+func put(b *bytes.Buffer) {
 	b.Reset()
 	bufferPool.Put(b)
 }
