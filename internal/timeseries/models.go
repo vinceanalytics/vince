@@ -50,10 +50,7 @@ func Block(ctx context.Context) *neo.ActiveBlock {
 }
 
 func Save(ctx context.Context) {
-	err := Block(ctx).Save(ctx)
-	if err != nil {
-		log.Get().Fatal().Err(err).Msg("failed to save block")
-	}
+	Block(ctx).Save(ctx)
 }
 
 var _ badger.Logger = (*badgerLogger)(nil)

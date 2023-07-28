@@ -38,12 +38,12 @@ type Entry struct {
 }
 
 type MultiEntry struct {
+	mu             sync.RWMutex
 	Bounce         []int64
 	Browser        []string
 	BrowserVersion []string
 	City           []string
 	Country        []string
-	Domain         []string
 	Duration       []int64
 	EntryPage      []string
 	ExitPage       []string
@@ -66,35 +66,45 @@ type MultiEntry struct {
 	build          *array.RecordBuilder
 }
 
+var multiPool = &sync.Pool{
+	New: func() any {
+		return &MultiEntry{
+			Bounce:         make([]int64, 0, 1<<10),
+			Browser:        make([]string, 0, 1<<10),
+			BrowserVersion: make([]string, 0, 1<<10),
+			City:           make([]string, 0, 1<<10),
+			Country:        make([]string, 0, 1<<10),
+			Duration:       make([]int64, 0, 1<<10),
+			EntryPage:      make([]string, 0, 1<<10),
+			ExitPage:       make([]string, 0, 1<<10),
+			Host:           make([]string, 0, 1<<10),
+			ID:             make([]int64, 0, 1<<10),
+			Name:           make([]string, 0, 1<<10),
+			Os:             make([]string, 0, 1<<10),
+			OsVersion:      make([]string, 0, 1<<10),
+			Path:           make([]string, 0, 1<<10),
+			Referrer:       make([]string, 0, 1<<10),
+			ReferrerSource: make([]string, 0, 1<<10),
+			Region:         make([]string, 0, 1<<10),
+			Screen:         make([]string, 0, 1<<10),
+			Timestamp:      make([]arrow.Timestamp, 0, 1<<10),
+			UtmCampaign:    make([]string, 0, 1<<10),
+			UtmContent:     make([]string, 0, 1<<10),
+			UtmMedium:      make([]string, 0, 1<<10),
+			UtmSource:      make([]string, 0, 1<<10),
+			UtmTerm:        make([]string, 0, 1<<10),
+			build:          array.NewRecordBuilder(Pool, Schema),
+		}
+	},
+}
+
 func NewMulti() *MultiEntry {
-	return &MultiEntry{
-		Bounce:         make([]int64, 0, 1<<10),
-		Browser:        make([]string, 0, 1<<10),
-		BrowserVersion: make([]string, 0, 1<<10),
-		City:           make([]string, 0, 1<<10),
-		Country:        make([]string, 0, 1<<10),
-		Domain:         make([]string, 0, 1<<10),
-		Duration:       make([]int64, 0, 1<<10),
-		EntryPage:      make([]string, 0, 1<<10),
-		ExitPage:       make([]string, 0, 1<<10),
-		Host:           make([]string, 0, 1<<10),
-		ID:             make([]int64, 0, 1<<10),
-		Name:           make([]string, 0, 1<<10),
-		Os:             make([]string, 0, 1<<10),
-		OsVersion:      make([]string, 0, 1<<10),
-		Path:           make([]string, 0, 1<<10),
-		Referrer:       make([]string, 0, 1<<10),
-		ReferrerSource: make([]string, 0, 1<<10),
-		Region:         make([]string, 0, 1<<10),
-		Screen:         make([]string, 0, 1<<10),
-		Timestamp:      make([]arrow.Timestamp, 0, 1<<10),
-		UtmCampaign:    make([]string, 0, 1<<10),
-		UtmContent:     make([]string, 0, 1<<10),
-		UtmMedium:      make([]string, 0, 1<<10),
-		UtmSource:      make([]string, 0, 1<<10),
-		UtmTerm:        make([]string, 0, 1<<10),
-		build:          array.NewRecordBuilder(Pool, Schema),
-	}
+	return multiPool.Get().(*MultiEntry)
+}
+
+func (m *MultiEntry) Release() {
+	m.Reset()
+	multiPool.Put(m)
 }
 
 func (m *MultiEntry) Reset() {
@@ -103,7 +113,6 @@ func (m *MultiEntry) Reset() {
 	m.BrowserVersion = m.BrowserVersion[:0]
 	m.City = m.City[:0]
 	m.Country = m.Country[:0]
-	m.Domain = m.Domain[:0]
 	m.Duration = m.Duration[:0]
 	m.EntryPage = m.EntryPage[:0]
 	m.ExitPage = m.ExitPage[:0]
@@ -124,13 +133,14 @@ func (m *MultiEntry) Reset() {
 	m.UtmSource = m.UtmSource[:0]
 	m.UtmTerm = m.UtmTerm[:0]
 }
+
 func (m *MultiEntry) Append(e *Entry) {
+	m.mu.Lock()
 	m.Bounce = append(m.Bounce, e.Bounce)
 	m.Browser = append(m.Browser, e.Browser)
 	m.BrowserVersion = append(m.BrowserVersion, e.BrowserVersion)
 	m.City = append(m.City, e.City)
 	m.Country = append(m.Country, e.Country)
-	m.Domain = append(m.Domain, e.Domain)
 	m.Duration = append(m.Duration, int64(e.Duration))
 	m.EntryPage = append(m.EntryPage, e.EntryPage)
 	m.ExitPage = append(m.ExitPage, e.ExitPage)
@@ -150,6 +160,7 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.UtmMedium = append(m.UtmMedium, e.UtmMedium)
 	m.UtmSource = append(m.UtmSource, e.UtmSource)
 	m.UtmTerm = append(m.UtmTerm, e.UtmTerm)
+	m.mu.Unlock()
 }
 
 func (m *MultiEntry) Record(ts int64) arrow.Record {
@@ -163,7 +174,6 @@ func (m *MultiEntry) Record(ts int64) arrow.Record {
 	m.string("browser_version", m.BrowserVersion)
 	m.string("city", m.City)
 	m.string("country", m.Country)
-	m.string("domain", m.Domain)
 	m.int64("duration", m.Duration)
 	m.string("entry_page", m.EntryPage)
 	m.string("exit_page", m.ExitPage)

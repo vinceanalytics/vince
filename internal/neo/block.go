@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io"
 	"sync"
-	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v13/arrow"
@@ -25,14 +23,12 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var metaPath = make([]byte, 1)
-
 type ActiveBlock struct {
-	mu       sync.Mutex
-	bloom    metaBloom
-	Min, Max time.Time
-	db       *badger.DB
-	entries  *entry.MultiEntry
+	mu      sync.Mutex
+	bloom   metaBloom
+	db      *badger.DB
+	hosts   map[string]*entry.MultiEntry
+	entries *entry.MultiEntry
 }
 
 func NewBlock(dir string, db *badger.DB) *ActiveBlock {
@@ -43,40 +39,47 @@ func NewBlock(dir string, db *badger.DB) *ActiveBlock {
 	}
 }
 
-func (a *ActiveBlock) Save(ctx context.Context) error {
+func (a *ActiveBlock) Save(ctx context.Context) {
 	ts := core.Now(ctx).UnixMilli()
 	a.mu.Lock()
-	if len(a.entries.Timestamp) == 0 {
+	if len(a.hosts) == 0 {
 		a.mu.Unlock()
-		return nil
+		return
 	}
-
-	record := a.entries.Record(ts)
-	bloom := a.bloom.set(a.entries)
-	a.entries.Reset()
-	a.bloom.reset()
+	for k, v := range a.hosts {
+		go a.save(ctx, k, ts, v)
+		delete(a.hosts, k)
+	}
 	a.mu.Unlock()
-	return a.save(ctx, ts, record, bloom)
 }
 
 func (a *ActiveBlock) Close() error {
-	return a.Save(context.Background())
+	a.Save(context.Background())
+	return nil
 }
 
 func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 	a.mu.Lock()
-	if a.Min.IsZero() {
-		a.Min = e.Timestamp
+	h, ok := a.hosts[e.Domain]
+	if !ok {
+		h = entry.NewMulti()
+		a.hosts[e.Domain] = h
 	}
-	a.Max = e.Timestamp
-	a.entries.Append(e)
 	a.mu.Unlock()
+	h.Append(e)
 	e.Release()
 }
 
-func (a *ActiveBlock) save(ctx context.Context, ts int64, r arrow.Record, b *blocks.Bloom) (err error) {
+func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entry.MultiEntry) {
 	txn := a.db.NewTransaction(true)
-	meta := must.Must(ReadMetadata(txn))
+	meta := must.Must(ReadMetadata(txn, domain))
+	r := m.Record(ts)
+	bloom := newMetaBloom()
+	b := bloom.set(m)
+	kb := get()
+	kb.WriteString(domain)
+	kb.WriteByte('/')
+
 	var block *blocks.Block
 	if len(meta.Blocks) > 0 {
 		last := meta.Blocks[len(meta.Blocks)-1]
@@ -100,19 +103,22 @@ func (a *ActiveBlock) save(ctx context.Context, ts int64, r arrow.Record, b *blo
 		buf.Reset()
 		bufferPool.Put(buf)
 		r.Release()
+		m.Release()
+		bloom.release()
 	}()
-	must.Assert(WriteBlock(ctx, txn, buf, block.Id, r))
+	kb.Write(block.Id)
+	must.Assert(WriteBlock(ctx, txn, buf, kb.Bytes(), r))
 	block.Size = int64(buf.Len())
-	return errors.Join(
-		txn.Set(metaPath, must.Must(proto.Marshal(meta))),
+	must.Assert(errors.Join(
+		txn.Set([]byte(domain), must.Must(proto.Marshal(meta))),
 		must.Assert(txn.Commit()),
-	)
+	))
 }
 
-func ReadMetadata(txn *badger.Txn) (*blocks.Metadata, error) {
-	it, err := txn.Get(metaPath)
+func ReadMetadata(txn *badger.Txn, domain string) (*blocks.Metadata, error) {
+	it, err := txn.Get([]byte(domain))
 	if err != nil {
-		if !errors.Is(err, io.EOF) {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return nil, err
 		}
 		return &blocks.Metadata{}, nil
@@ -133,7 +139,6 @@ type metaBloom struct {
 	BrowserVersion roaring64.Bitmap
 	City           roaring64.Bitmap
 	Country        roaring64.Bitmap
-	Domain         roaring64.Bitmap
 	EntryPage      roaring64.Bitmap
 	ExitPage       roaring64.Bitmap
 	Host           roaring64.Bitmap
@@ -153,13 +158,27 @@ type metaBloom struct {
 	UtmValue       roaring64.Bitmap
 }
 
+var metaPool = &sync.Pool{
+	New: func() any {
+		return new(metaBloom)
+	},
+}
+
+func newMetaBloom() *metaBloom {
+	return metaPool.Get().(*metaBloom)
+}
+
+func (m *metaBloom) release() {
+	m.reset()
+	metaPool.Put(m)
+}
+
 func (m *metaBloom) reset() {
 	m.hash.Reset()
 	m.Browser.Clear()
 	m.BrowserVersion.Clear()
 	m.City.Clear()
 	m.Country.Clear()
-	m.Domain.Clear()
 	m.EntryPage.Clear()
 	m.ExitPage.Clear()
 	m.Host.Clear()
@@ -198,7 +217,6 @@ func (m *metaBloom) set(e *entry.MultiEntry) *blocks.Bloom {
 	m.ls(&m.BrowserVersion, e.BrowserVersion...)
 	m.ls(&m.City, e.City...)
 	m.ls(&m.Country, e.Country...)
-	m.ls(&m.Domain, e.Domain...)
 	m.ls(&m.EntryPage, e.EntryPage...)
 	m.ls(&m.ExitPage, e.ExitPage...)
 	m.ls(&m.Host, e.Host...)
@@ -231,9 +249,6 @@ func (m *metaBloom) bloom() (b *blocks.Bloom) {
 	}
 	if !m.Country.IsEmpty() {
 		b.Filters["country"] = must.Must(m.Country.MarshalBinary())
-	}
-	if !m.Domain.IsEmpty() {
-		b.Filters["domain"] = must.Must(m.Domain.MarshalBinary())
 	}
 	if !m.EntryPage.IsEmpty() {
 		b.Filters["entry_page"] = must.Must(m.EntryPage.MarshalBinary())
@@ -367,6 +382,15 @@ func WriteBlock(ctx context.Context, txn *badger.Txn, b *bytes.Buffer, key []byt
 		return err
 	}
 	return txn.Set(key, b.Bytes())
+}
+
+func get() *bytes.Buffer {
+	return bufferPool.Get().(*bytes.Buffer)
+}
+
+func pun(b *bytes.Buffer) {
+	b.Reset()
+	bufferPool.Put(b)
 }
 
 var bufferPool = &sync.Pool{

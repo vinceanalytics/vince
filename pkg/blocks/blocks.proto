@@ -18,8 +18,8 @@ message Block {
   // Bloom filters  string fields
   Bloom bloom = 5;
 
-  // Per site statistics for this block.
-  map<string, Stats> stats = 6;
+  // Block level statistsic about this site
+  Stats stats = 6;
 }
 
 // Block wise bloom filters.
