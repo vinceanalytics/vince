@@ -31,7 +31,6 @@ type ActiveBlock struct {
 	mu       sync.Mutex
 	bloom    metaBloom
 	Min, Max time.Time
-	b        bytes.Buffer
 	db       *badger.DB
 	entries  *entry.MultiEntry
 }
