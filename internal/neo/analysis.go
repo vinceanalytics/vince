@@ -179,3 +179,91 @@ func filter(ctx context.Context, a ...compute.Datum) arrow.Record {
 	}
 	return r.Value
 }
+
+type Window interface {
+	Init(arrow.Record) bool
+	Schema() *arrow.Schema
+	Call(map[string]arrow.Array, *array.RecordBuilder, int64, int64)
+	Next() (from, to int64, ok bool)
+}
+
+func Transform(r arrow.Record, w Window) arrow.Record {
+	if !w.Init(r) {
+		return r
+	}
+	columns := r.Columns()
+	m := make(map[string]arrow.Array)
+	for i := range columns {
+		m[r.ColumnName(i)] = columns[i]
+	}
+	schema := w.Schema()
+	build := array.NewRecordBuilder(entry.Pool, schema)
+	defer build.Release()
+	for lo, hi, ok := w.Next(); ok; lo, hi, ok = w.Next() {
+		w.Call(m, build, lo, hi)
+	}
+	return build.NewRecord()
+}
+
+type window struct {
+	fields []arrow.Field
+	form   func(string, map[string]arrow.Array, array.Builder, int64, int64)
+	timestampChunk
+}
+
+var _ Window = (*window)(nil)
+
+func (w *window) Schema() *arrow.Schema {
+	return arrow.NewSchema(append([]arrow.Field{
+		entry.Fields()[entry.Index["timestamp"]],
+	}, w.fields...), nil)
+}
+
+func (w *window) Init(r arrow.Record) bool {
+	for i := 0; i < int(r.NumCols()); i++ {
+		if r.ColumnName(i) == "timestamp" {
+			a := r.Column(i).(*array.Timestamp).TimestampValues()
+			w.timestampChunk = timestampChunk{
+				size: int64(len(a)),
+				a:    a,
+			}
+			return true
+		}
+	}
+	return false
+}
+
+func (w *window) Call(m map[string]arrow.Array, b *array.RecordBuilder, lo, hi int64) {
+	b.Field(0).(*array.TimestampBuilder).Append(w.last)
+	for i := range w.fields {
+		w.form(w.fields[i].Name, m, b.Field(i+1), lo, hi)
+	}
+}
+
+type timestampChunk struct {
+	start, pos, size int64
+	last             arrow.Timestamp
+	a                []arrow.Timestamp
+}
+
+func (ts *timestampChunk) Next() (lo, hi int64, ok bool) {
+	if ts.pos >= ts.size {
+		return
+	}
+	for ; ts.pos < ts.size; ts.pos++ {
+		if ts.a[ts.pos] != ts.last {
+			lo = ts.start
+			hi = ts.pos
+			ok = true
+			ts.start = ts.pos
+			return
+		}
+	}
+	if ts.start < ts.pos && ts.pos <= ts.size {
+		lo = ts.start
+		hi = ts.pos
+		ok = true
+		ts.start = ts.pos
+	}
+	return
+}
