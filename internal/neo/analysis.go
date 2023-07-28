@@ -69,6 +69,7 @@ func NewBase(pick []string, filters ...*blocks.Filter) *Base {
 	return &Base{
 		columns: names,
 		indices: baseColumnsIndices(names...),
+		filters: filters,
 	}
 }
 
@@ -170,7 +171,7 @@ func call(ctx context.Context, f string, a ...compute.Datum) arrow.Array {
 }
 
 func filter(ctx context.Context, a ...compute.Datum) arrow.Record {
-	o := must.Must(compute.CallFunction(ctx, "filter", *compute.DefaultFilterOptions(), a...))
+	o := must.Must(compute.CallFunction(ctx, "filter", compute.DefaultFilterOptions(), a...))
 	r := o.(*compute.RecordDatum)
 	for i := range a {
 		a[i].Release()

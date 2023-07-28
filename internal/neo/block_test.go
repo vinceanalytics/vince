@@ -13,6 +13,7 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/events"
 	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
 )
 
@@ -113,6 +114,26 @@ func TestWriteBlock_basic(t *testing.T) {
 		// 	must.Must(json.MarshalIndent(base.records[0], "", " ")), 0600)
 		got := must.Must(json.MarshalIndent(base.records[0], "", " "))
 		want := must.Must(os.ReadFile("testdata/basic_write_base_pick.json"))
+		if !bytes.Equal(got, want) {
+			t.Error("failed roundtrip")
+		}
+	})
+	t.Run("can read base fields with pick and filter", func(t *testing.T) {
+		base := NewBase([]string{"path"}, &blocks.Filter{
+			Column: "path",
+			Op:     blocks.Op_equal,
+			Value: &blocks.Filter_Str{
+				Str: "/home",
+			},
+		})
+		err := ReadBlock(context.Background(), db, id.Bytes(), base)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// os.WriteFile("testdata/basic_write_base_pick_filter.json",
+		// 	must.Must(json.MarshalIndent(base.records[0], "", " ")), 0600)
+		got := must.Must(json.MarshalIndent(base.records[0], "", " "))
+		want := must.Must(os.ReadFile("testdata/basic_write_base_pick_filter.json"))
 		if !bytes.Equal(got, want) {
 			t.Error("failed roundtrip")
 		}
