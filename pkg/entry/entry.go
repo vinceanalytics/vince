@@ -216,7 +216,6 @@ func Fields() []arrow.Field {
 		{Name: "browser_version", Type: arrow.BinaryTypes.String},
 		{Name: "city", Type: arrow.BinaryTypes.String},
 		{Name: "country", Type: arrow.BinaryTypes.String},
-		{Name: "domain", Type: arrow.BinaryTypes.String},
 		{Name: "duration", Type: arrow.PrimitiveTypes.Int64},
 		{Name: "entry_page", Type: arrow.BinaryTypes.String},
 		{Name: "exit_page", Type: arrow.BinaryTypes.String},
