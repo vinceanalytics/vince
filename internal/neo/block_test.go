@@ -52,4 +52,16 @@ func TestWriteBlock_basic(t *testing.T) {
 	if buf.Len() == 0 {
 		t.Fatal("expected data to be written")
 	}
+	r, err := ReadRecord(context.Background(), buf.Bytes(), nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// os.WriteFile("testdata/basic_write.json",
+	// 	must.Must(json.MarshalIndent(r, "", " ")), 0600)
+	// t.Error(r.NumCols(), r.NumRows())
+	got := must.Must(json.MarshalIndent(r, "", " "))
+	want := must.Must(os.ReadFile("testdata/basic_write.json"))
+	if !bytes.Equal(got, want) {
+		t.Error("failed roundtrip")
+	}
 }

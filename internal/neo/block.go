@@ -10,6 +10,8 @@ import (
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v13/arrow"
+	"github.com/apache/arrow/go/v13/arrow/array"
+	"github.com/apache/arrow/go/v13/arrow/memory"
 	"github.com/apache/arrow/go/v13/parquet"
 	"github.com/apache/arrow/go/v13/parquet/file"
 	"github.com/apache/arrow/go/v13/parquet/pqarrow"
@@ -383,24 +385,97 @@ func ReadBlock(ctx context.Context, db *badger.DB, key []byte, a Analysis) error
 			return err
 		}
 		return it.Value(func(val []byte) error {
-			f, err := file.NewParquetReader(bytes.NewReader(val),
-				file.WithReadProps(parquet.NewReaderProperties(entry.Pool)))
+			r, err := ReadRecord(ctx, val, a.ColumnIndices(), nil)
 			if err != nil {
 				return err
 			}
-			r, err := pqarrow.NewFileReader(f, pqarrow.ArrowReadProperties{
-				Parallel: true,
-			}, entry.Pool)
-			if err != nil {
-				return err
-			}
-			x, err := r.GetRecordReader(ctx, a.ColumnIndices(), nil)
-			if err != nil {
-				return err
-			}
-			a.Analyze(ctx, x)
-			x.Release()
+			a.Analyze(ctx, r)
 			return nil
 		})
 	})
+}
+
+func ReadRecord(ctx context.Context, val []byte, cols, groups []int) (arrow.Record, error) {
+	f, err := file.NewParquetReader(bytes.NewReader(val), file.WithReadProps(parquet.NewReaderProperties(
+		entry.Pool,
+	)))
+	if err != nil {
+		return nil, err
+	}
+	r, err := pqarrow.NewFileReader(f, pqarrow.ArrowReadProperties{
+		Parallel: true,
+	}, entry.Pool)
+	if err != nil {
+		return nil, err
+	}
+	if groups == nil {
+		groups = make([]int, f.NumRowGroups())
+		for idx := range groups {
+			groups[idx] = idx
+		}
+	}
+	if cols == nil {
+		cols = make([]int, f.MetaData().Schema.NumColumns())
+		for idx := range cols {
+			cols[idx] = idx
+		}
+	}
+	readers, schema, err := r.GetFieldReaders(ctx, cols, groups)
+	if err != nil {
+		return nil, err
+	}
+	count := int64(0)
+	for _, rg := range groups {
+		count += f.MetaData().RowGroup(rg).NumRows()
+	}
+	result := make([]arrow.Array, len(cols))
+	errs := make([]error, len(cols))
+	var wg sync.WaitGroup
+	for i := 0; i < len(cols); i++ {
+		wg.Add(1)
+		go read(ctx, &wg, i, count, result, errs, readers[i])
+	}
+	wg.Wait()
+	err = errors.Join(errs...)
+	if err != nil {
+		for i := range result {
+			if result[i] != nil {
+				result[i].Release()
+				result[i] = nil
+			}
+		}
+		return nil, err
+	}
+	return array.NewRecord(schema, result, count), nil
+}
+
+func read(ctx context.Context, wg *sync.WaitGroup, idx int, count int64, o []arrow.Array, errs []error, r *pqarrow.ColumnReader) {
+	defer wg.Done()
+	chunk, err := r.NextBatch(int64(count))
+	if err != nil {
+		errs[idx] = err
+		return
+	}
+	data, err := chunksToSingle(chunk)
+	if err != nil {
+		errs[idx] = err
+		chunk.Release()
+		return
+	}
+	o[idx] = array.MakeFromData(data)
+	data.Release()
+	chunk.Release()
+}
+
+func chunksToSingle(chunked *arrow.Chunked) (arrow.ArrayData, error) {
+	switch len(chunked.Chunks()) {
+	case 0:
+		return array.NewData(chunked.DataType(), 0, []*memory.Buffer{nil, nil}, nil, 0, 0), nil
+	case 1:
+		data := chunked.Chunk(0).Data()
+		data.Retain() // we pass control to the caller
+		return data, nil
+	default: // if an item reader yields a chunked array, this is not yet implemented
+		return nil, arrow.ErrNotImplemented
+	}
 }

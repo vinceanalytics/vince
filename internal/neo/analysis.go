@@ -17,7 +17,7 @@ type Analysis interface {
 	ColumnIndices() []int
 	Select() []string
 	Filters() []*blocks.Filter
-	Analyze(context.Context, array.RecordReader)
+	Analyze(context.Context, arrow.Record)
 }
 
 var _ Analysis = (*Base)(nil)
@@ -87,12 +87,10 @@ func (b *Base) Filters() []*blocks.Filter {
 	return b.filters
 }
 
-func (b *Base) Analyze(ctx context.Context, r array.RecordReader) {
-	for r.Next() {
-		b.records = append(b.records,
-			selection(ctx, r.Record(), b),
-		)
-	}
+func (b *Base) Analyze(ctx context.Context, r arrow.Record) {
+	b.records = append(b.records,
+		selection(ctx, r, b),
+	)
 }
 
 func selection(ctx context.Context, r arrow.Record, b Analysis) arrow.Record {
