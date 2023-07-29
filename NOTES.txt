@@ -16,3 +16,6 @@ docker system prune -a --volumes
 
 * color palette
 Skip to Loafer
+
+* dashboard library
+https://github.com/tremorlabs/tremor
