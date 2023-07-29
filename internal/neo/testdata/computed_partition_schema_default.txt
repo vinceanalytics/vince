@@ -1,0 +1,8 @@
+schema:
+  fields: 6
+    - timestamp: type=timestamp[ms]
+    - visitors: type=int64
+    - page_views: type=int64
+    - sessions: type=int64
+    - bounce_rate: type=int64
+    - session_duration: type=int64

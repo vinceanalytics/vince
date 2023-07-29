@@ -246,6 +246,37 @@ type Window interface {
 	Next() (from, to int64, ok bool)
 }
 
+var computedFields = []arrow.Field{
+	{Name: "visitors", Type: arrow.PrimitiveTypes.Int64},
+	{Name: "page_views", Type: arrow.PrimitiveTypes.Int64},
+	{Name: "sessions", Type: arrow.PrimitiveTypes.Int64},
+	{Name: "bounce_rate", Type: arrow.PrimitiveTypes.Int64},
+	{Name: "session_duration", Type: arrow.PrimitiveTypes.Int64},
+}
+
+func computedPartition(names ...string) *arrow.Schema {
+	fields := []arrow.Field{
+		entry.Fields()[entry.Index["timestamp"]],
+	}
+	if len(names) == 0 {
+		return arrow.NewSchema(append(fields, computedFields...), nil)
+	}
+	sort.Strings(names)
+	for _, f := range names {
+		fields = append(fields, arrow.Field{
+			Name: f,
+			Type: arrow.StructOf(
+				append([]arrow.Field{
+					{
+						Name: "value", Type: arrow.BinaryTypes.String,
+					},
+				}, computedFields...)...,
+			),
+		})
+	}
+	return arrow.NewSchema(fields, nil)
+}
+
 func Transform(r arrow.Record, w Window) arrow.Record {
 	if !w.Init(r) {
 		return r

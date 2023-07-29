@@ -1,0 +1,4 @@
+schema:
+  fields: 2
+    - timestamp: type=timestamp[ms]
+    - path: type=struct<value: utf8, visitors: int64, page_views: int64, sessions: int64, bounce_rate: int64, session_duration: int64>
