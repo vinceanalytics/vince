@@ -16,8 +16,6 @@ import (
 
 type Analysis interface {
 	ColumnIndices() []int
-	Select() []string
-	Filters() []*blocks.Filter
 	Analyze(context.Context, arrow.Record)
 }
 
@@ -51,10 +49,6 @@ func (b *Base) ColumnIndices() []int {
 
 func (b *Base) Select() []string {
 	return b.columns
-}
-
-func (b *Base) Filters() []*blocks.Filter {
-	return b.filters
 }
 
 func (b *Base) Record() arrow.Record {
@@ -124,7 +118,7 @@ func (b *Base) selection(ctx context.Context, r arrow.Record) {
 		columns[r.ColumnName(i)] = r.Column(i)
 	}
 	var activeFilter arrow.Array
-	for _, f := range b.Filters() {
+	for _, f := range b.filters {
 		o := apply(ctx, f, columns[f.Column])
 		if activeFilter != nil {
 			n := call(ctx, "and",
