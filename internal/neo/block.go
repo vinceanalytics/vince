@@ -72,7 +72,8 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 
 func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entry.MultiEntry) {
 	txn := a.db.NewTransaction(true)
-	meta := must.Must(ReadMetadata(txn, domain))
+	meta := must.
+		Must(ReadMetadata(txn, domain))("failed to read metadata for domain", domain)
 	r := m.Record(ts)
 	bloom := newMetaBloom()
 	b := bloom.set(m)
@@ -107,12 +108,12 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entr
 		bloom.release()
 	}()
 	kb.Write(block.Id)
-	must.Assert(WriteBlock(ctx, txn, buf, kb.Bytes(), r))
+	must.One(WriteBlock(ctx, txn, buf, kb.Bytes(), r))("failed to write block")
 	block.Size = int64(buf.Len())
-	must.Assert(errors.Join(
-		txn.Set([]byte(domain), must.Must(proto.Marshal(meta))),
-		must.Assert(txn.Commit()),
-	))
+	must.One(errors.Join(
+		txn.Set([]byte(domain), must.Must(proto.Marshal(meta))()),
+		txn.Commit(),
+	))("failed to commit write block")
 }
 
 func ReadMetadata(txn *badger.Txn, domain string) (*blocks.Metadata, error) {
@@ -239,65 +240,65 @@ func (m *metaBloom) bloom() (b *blocks.Bloom) {
 		Filters: make(map[string][]byte),
 	}
 	if !m.Browser.IsEmpty() {
-		b.Filters["browser"] = must.Must(m.Browser.MarshalBinary())
+		b.Filters["browser"] = must.Must(m.Browser.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.BrowserVersion.IsEmpty() {
-		b.Filters["browser_version"] = must.Must(m.BrowserVersion.MarshalBinary())
+		b.Filters["browser_version"] = must.Must(m.BrowserVersion.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.City.IsEmpty() {
-		b.Filters["city"] = must.Must(m.City.MarshalBinary())
+		b.Filters["city"] = must.Must(m.City.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.Country.IsEmpty() {
-		b.Filters["country"] = must.Must(m.Country.MarshalBinary())
+		b.Filters["country"] = must.Must(m.Country.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.EntryPage.IsEmpty() {
-		b.Filters["entry_page"] = must.Must(m.EntryPage.MarshalBinary())
+		b.Filters["entry_page"] = must.Must(m.EntryPage.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.ExitPage.IsEmpty() {
-		b.Filters["exit_page"] = must.Must(m.ExitPage.MarshalBinary())
+		b.Filters["exit_page"] = must.Must(m.ExitPage.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.Host.IsEmpty() {
-		b.Filters["host"] = must.Must(m.Host.MarshalBinary())
+		b.Filters["host"] = must.Must(m.Host.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.Name.IsEmpty() {
-		b.Filters["name"] = must.Must(m.Name.MarshalBinary())
+		b.Filters["name"] = must.Must(m.Name.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.Os.IsEmpty() {
-		b.Filters["os"] = must.Must(m.Os.MarshalBinary())
+		b.Filters["os"] = must.Must(m.Os.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.OsVersion.IsEmpty() {
-		b.Filters["os_version"] = must.Must(m.OsVersion.MarshalBinary())
+		b.Filters["os_version"] = must.Must(m.OsVersion.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.Path.IsEmpty() {
-		b.Filters["path"] = must.Must(m.Path.MarshalBinary())
+		b.Filters["path"] = must.Must(m.Path.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.Referrer.IsEmpty() {
-		b.Filters["referrer"] = must.Must(m.Referrer.MarshalBinary())
+		b.Filters["referrer"] = must.Must(m.Referrer.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.ReferrerSource.IsEmpty() {
-		b.Filters["referrer_source"] = must.Must(m.ReferrerSource.MarshalBinary())
+		b.Filters["referrer_source"] = must.Must(m.ReferrerSource.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.Region.IsEmpty() {
-		b.Filters["region"] = must.Must(m.Region.MarshalBinary())
+		b.Filters["region"] = must.Must(m.Region.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.Screen.IsEmpty() {
-		b.Filters["screen"] = must.Must(m.Screen.MarshalBinary())
+		b.Filters["screen"] = must.Must(m.Screen.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.UtmCampaign.IsEmpty() {
-		b.Filters["utm_campaign"] = must.Must(m.UtmCampaign.MarshalBinary())
+		b.Filters["utm_campaign"] = must.Must(m.UtmCampaign.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.UtmContent.IsEmpty() {
-		b.Filters["utm_content"] = must.Must(m.UtmContent.MarshalBinary())
+		b.Filters["utm_content"] = must.Must(m.UtmContent.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.UtmMedium.IsEmpty() {
-		b.Filters["utm_medium"] = must.Must(m.UtmMedium.MarshalBinary())
+		b.Filters["utm_medium"] = must.Must(m.UtmMedium.MarshalBinary())("failed encoding bitmap")
 	}
 
 	if !m.UtmSource.IsEmpty() {
-		b.Filters["utm_source"] = must.Must(m.Browser.MarshalBinary())
+		b.Filters["utm_source"] = must.Must(m.Browser.MarshalBinary())("failed encoding bitmap")
 	}
 	if !m.UtmTerm.IsEmpty() {
-		b.Filters["utm_term"] = must.Must(m.UtmTerm.MarshalBinary())
+		b.Filters["utm_term"] = must.Must(m.UtmTerm.MarshalBinary())("failed encoding bitmap")
 	}
 	return
 }
@@ -317,7 +318,7 @@ func union(dst, src *blocks.Bloom) {
 		y.UnmarshalBinary(v)
 
 		x.Or(&y)
-		dst.Filters[k] = must.Must(x.MarshalBinary())
+		dst.Filters[k] = must.Must(x.MarshalBinary())("failed encoding bitmap")
 	}
 }
 

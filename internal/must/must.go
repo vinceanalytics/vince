@@ -1,17 +1,24 @@
 package must
 
-import "github.com/vinceanalytics/vince/pkg/log"
+import (
+	"fmt"
 
-func Must[T any](r T, err error) T {
-	if err != nil {
-		log.Get().Fatal().Err(err).Msg("failed a must condition")
+	"github.com/vinceanalytics/vince/pkg/log"
+)
+
+func Must[T any](r T, err error) func(msg ...any) T {
+	return func(msg ...any) T {
+		if err != nil {
+			log.Get().Fatal().Err(err).Msg(fmt.Sprint(msg...))
+		}
+		return r
 	}
-	return r
 }
 
-func Assert(err error) error {
-	if err != nil {
-		log.Get().Fatal().Err(err).Msg("failed a must assertion")
+func One(err error) func(msg ...any) {
+	return func(msg ...any) {
+		if err != nil {
+			log.Get().Fatal().Err(err).Msg(fmt.Sprint(msg...))
+		}
 	}
-	return err
 }

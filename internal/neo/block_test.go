@@ -27,7 +27,7 @@ func TestWriteBlock_basic(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	start := must.Must(time.Parse(time.RFC822, time.RFC822)).UTC()
+	start := must.Must(time.Parse(time.RFC822, time.RFC822))().UTC()
 	m := entry.NewMulti()
 	for i, r := range requests {
 		e, err := events.Parse(r, start.Add(time.Duration(i)*time.Hour))
@@ -62,10 +62,8 @@ func TestWriteBlock_basic(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		// os.WriteFile("testdata/basic_write.json",
-		// 	must.Must(json.MarshalIndent(r, "", " ")), 0600)
-		got := must.Must(json.MarshalIndent(r, "", " "))
-		want := must.Must(os.ReadFile("testdata/basic_write.json"))
+		got := must.Must(json.MarshalIndent(r, "", " "))()
+		want := must.Must(os.ReadFile("testdata/basic_write.json"))()
 		if !bytes.Equal(got, want) {
 			t.Error("failed roundtrip")
 		}
@@ -96,8 +94,8 @@ func TestWriteBlock_basic(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		got := must.Must(json.MarshalIndent(base.Record(), "", " "))
-		want := must.Must(os.ReadFile("testdata/basic_write_base.json"))
+		got := must.Must(json.MarshalIndent(base.Record(), "", " "))()
+		want := must.Must(os.ReadFile("testdata/basic_write_base.json"))()
 		if !bytes.Equal(got, want) {
 			t.Error("failed roundtrip")
 		}
@@ -109,8 +107,8 @@ func TestWriteBlock_basic(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		got := must.Must(json.MarshalIndent(base.Record(), "", " "))
-		want := must.Must(os.ReadFile("testdata/basic_write_base_pick.json"))
+		got := must.Must(json.MarshalIndent(base.Record(), "", " "))()
+		want := must.Must(os.ReadFile("testdata/basic_write_base_pick.json"))()
 		if !bytes.Equal(got, want) {
 			t.Error("failed roundtrip")
 		}
@@ -128,8 +126,8 @@ func TestWriteBlock_basic(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		got := must.Must(json.MarshalIndent(base.Record(), "", " "))
-		want := must.Must(os.ReadFile("testdata/basic_write_base_pick_filter.json"))
+		got := must.Must(json.MarshalIndent(base.Record(), "", " "))()
+		want := must.Must(os.ReadFile("testdata/basic_write_base_pick_filter.json"))()
 		if !bytes.Equal(got, want) {
 			t.Error("failed roundtrip")
 		}

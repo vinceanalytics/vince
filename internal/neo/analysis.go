@@ -214,7 +214,8 @@ func apply(ctx context.Context, f *blocks.Filter, a arrow.Array) arrow.Array {
 }
 
 func call(ctx context.Context, f string, a ...compute.Datum) arrow.Array {
-	o := must.Must(compute.CallFunction(ctx, f, nil, a...))
+	o := must.
+		Must(compute.CallFunction(ctx, f, nil, a...))("failed applying comparison operator ", f)
 	r := o.(*compute.ArrayDatum).MakeArray()
 	for i := range a {
 		a[i].Release()
@@ -225,7 +226,9 @@ func call(ctx context.Context, f string, a ...compute.Datum) arrow.Array {
 }
 
 func filter(ctx context.Context, a ...compute.Datum) arrow.Record {
-	o := must.Must(compute.CallFunction(ctx, "filter", compute.DefaultFilterOptions(), a...))
+	o := must.
+		Must(compute.CallFunction(ctx, "filter",
+			compute.DefaultFilterOptions(), a...))("failed applying filter")
 	r := o.(*compute.RecordDatum)
 	for i := range a {
 		a[i].Release()
