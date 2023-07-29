@@ -13,6 +13,7 @@ import (
 
 type Entry struct {
 	Bounce         int64
+	Session        int64
 	Browser        string
 	BrowserVersion string
 	City           string
@@ -59,6 +60,7 @@ type MultiEntry struct {
 	ReferrerSource []string
 	Region         []string
 	Screen         []string
+	Session        []int64
 	Timestamp      []arrow.Timestamp
 	UtmCampaign    []string
 	UtmContent     []string
@@ -89,6 +91,7 @@ var multiPool = &sync.Pool{
 			ReferrerSource: make([]string, 0, 1<<10),
 			Region:         make([]string, 0, 1<<10),
 			Screen:         make([]string, 0, 1<<10),
+			Session:        make([]int64, 0, 1<<10),
 			Timestamp:      make([]arrow.Timestamp, 0, 1<<10),
 			UtmCampaign:    make([]string, 0, 1<<10),
 			UtmContent:     make([]string, 0, 1<<10),
@@ -128,6 +131,7 @@ func (m *MultiEntry) Reset() {
 	m.ReferrerSource = m.ReferrerSource[:0]
 	m.Region = m.Region[:0]
 	m.Screen = m.Screen[:0]
+	m.Session = m.Session[:0]
 	m.Timestamp = m.Timestamp[:0]
 	m.UtmCampaign = m.UtmCampaign[:0]
 	m.UtmContent = m.UtmContent[:0]
@@ -156,6 +160,7 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.ReferrerSource = append(m.ReferrerSource, e.ReferrerSource)
 	m.Region = append(m.Region, e.Region)
 	m.Screen = append(m.Screen, e.Screen)
+	m.Session = append(m.Session, e.Session)
 	m.Timestamp = append(m.Timestamp, 0) // This will be updated when saving
 	m.UtmCampaign = append(m.UtmCampaign, e.UtmCampaign)
 	m.UtmContent = append(m.UtmContent, e.UtmContent)
@@ -189,6 +194,7 @@ func (m *MultiEntry) Record(ts int64) arrow.Record {
 	m.string("referrer_source", m.ReferrerSource)
 	m.string("region", m.Region)
 	m.string("screen", m.Screen)
+	m.int64("session", m.Session)
 	m.timestamp("timestamp", m.Timestamp)
 	m.string("utm_campaign", m.UtmCampaign)
 	m.string("utm_content", m.UtmContent)
@@ -231,6 +237,7 @@ func Fields() []arrow.Field {
 		{Name: "referrer_source", Type: arrow.BinaryTypes.String},
 		{Name: "region", Type: arrow.BinaryTypes.String},
 		{Name: "screen", Type: arrow.BinaryTypes.String},
+		{Name: "session", Type: arrow.PrimitiveTypes.Int64},
 		{Name: "timestamp", Type: &arrow.TimestampType{Unit: arrow.Millisecond}},
 		{Name: "utm_campaign", Type: arrow.BinaryTypes.String},
 		{Name: "utm_content", Type: arrow.BinaryTypes.String},
@@ -286,6 +293,7 @@ func (e *Entry) Release() {
 func (e *Entry) Hit() {
 	e.EntryPage = e.Path
 	e.Bounce = 1
+	e.Session = 1
 }
 
 func (s *Entry) Update(e *Entry) {
@@ -293,6 +301,7 @@ func (s *Entry) Update(e *Entry) {
 		s.Bounce, e.Bounce = -1, -1
 	}
 	e.ExitPage = e.Path
+	e.Session = 0
 	e.Duration = e.Timestamp.Sub(s.Timestamp)
 	s.Timestamp = e.Timestamp
 }
