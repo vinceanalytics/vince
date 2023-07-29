@@ -335,6 +335,7 @@ func WriteBlock(ctx context.Context, txn *badger.Txn, b *bytes.Buffer, key []byt
 			parquet.NewWriterProperties(
 				parquet.WithAllocator(entry.Pool),
 				parquet.WithCompression(compress.Codecs.Zstd),
+				parquet.WithCompressionLevel(10),
 			),
 			pqarrow.NewArrowWriterProperties(
 				pqarrow.WithAllocator(entry.Pool),
@@ -365,6 +366,7 @@ func WriteBlock(ctx context.Context, txn *badger.Txn, b *bytes.Buffer, key []byt
 			parquet.NewWriterProperties(
 				parquet.WithAllocator(entry.Pool),
 				parquet.WithCompression(compress.Codecs.Zstd),
+				parquet.WithCompressionLevel(10),
 			),
 			pqarrow.NewArrowWriterProperties(
 				pqarrow.WithAllocator(entry.Pool),
