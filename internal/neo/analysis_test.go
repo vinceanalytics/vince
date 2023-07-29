@@ -16,7 +16,7 @@ import (
 func TestComputedPartition(t *testing.T) {
 	t.Run("defaults to only metrics and timestamp", func(t *testing.T) {
 		got := []byte(computedPartition().String())
-		// os.WriteFile("testdata/computed_partition_schema_default.txt", got, 0600)
+		os.WriteFile("testdata/computed_partition_schema_default.txt", got, 0600)
 		want := must.
 			Must(os.ReadFile("testdata/computed_partition_schema_default.txt"))()
 		if !bytes.Equal(got, want) {
@@ -25,7 +25,7 @@ func TestComputedPartition(t *testing.T) {
 	})
 	t.Run("with partition key", func(t *testing.T) {
 		got := []byte(computedPartition("path").String())
-		// os.WriteFile("testdata/computed_partition_schema_with_keys.txt", got, 0600)
+		os.WriteFile("testdata/computed_partition_schema_with_keys.txt", got, 0600)
 		want := must.
 			Must(os.ReadFile("testdata/computed_partition_schema_with_keys.txt"))()
 		if !bytes.Equal(got, want) {
@@ -43,13 +43,15 @@ func TestComputedPartition(t *testing.T) {
 		s.Append(true)
 		// first is the field is the value
 		s.FieldBuilder(0).(*array.StringBuilder).Append("/")
+		x := s.FieldBuilder(1).(*array.StructBuilder)
+		x.Append(true)
 		for i := range computedFields {
-			s.FieldBuilder(i + 1).(*array.Float64Builder).Append(float64(i))
+			x.FieldBuilder(i).(*array.Float64Builder).Append(float64(i))
 		}
 		r := b.NewRecord()
 		defer r.Release()
 		got := must.Must(json.MarshalIndent(r, "", " "))()
-		// os.WriteFile("testdata/computed_partition_schema_record.json", got, 0600)
+		os.WriteFile("testdata/computed_partition_schema_record.json", got, 0600)
 		want := must.Must(os.ReadFile("testdata/computed_partition_schema_record.json"))()
 		if !bytes.Equal(want, got) {
 			t.Error("record schema changed")

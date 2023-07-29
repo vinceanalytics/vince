@@ -4,10 +4,12 @@ import (
 	"context"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/apache/arrow/go/v13/arrow"
 	"github.com/apache/arrow/go/v13/arrow/array"
 	"github.com/apache/arrow/go/v13/arrow/compute"
+	"github.com/apache/arrow/go/v13/arrow/math"
 	"github.com/apache/arrow/go/v13/arrow/scalar"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
@@ -227,6 +229,10 @@ func call(ctx context.Context, f string, a ...compute.Datum) arrow.Array {
 	return r
 }
 
+func sum(a arrow.Array) int64 {
+	return math.Int64.Sum(a.(*array.Int64))
+}
+
 func filter(ctx context.Context, a ...compute.Datum) arrow.Record {
 	o := must.
 		Must(compute.CallFunction(ctx, "filter",
@@ -239,11 +245,48 @@ func filter(ctx context.Context, a ...compute.Datum) arrow.Record {
 	return r.Value
 }
 
-type Window interface {
-	Init(arrow.Record) bool
-	Schema() *arrow.Schema
-	Call(map[string]arrow.Array, *array.RecordBuilder, int64, int64)
-	Next() (from, to int64, ok bool)
+type Metrics struct {
+	Visitors        float64
+	PageViews       float64
+	Sessions        float64
+	BounceRate      float64
+	SessionDuration float64
+}
+
+func (m *Metrics) Compute(ctx context.Context, r arrow.Record) {
+	*m = Metrics{}
+	for i := 0; i < int(r.NumCols()); i++ {
+		switch r.ColumnName(i) {
+		case "id":
+			a := must.Must(compute.UniqueArray(ctx, r.Column(i)))()
+			m.Visitors = float64(a.Len())
+			a.Release()
+		case "name":
+			m.PageViews = float64(r.Column(i).Len())
+		case "session":
+			m.Sessions = float64(sum(r.Column(i)))
+		case "bounce":
+			m.BounceRate = float64(sum(r.Column(i)))
+		case "duration":
+			m.SessionDuration = float64(sum(r.Column(i)))
+		}
+	}
+	if m.Sessions != 0 {
+		m.BounceRate = m.BounceRate / m.Sessions * 100
+		m.SessionDuration = m.SessionDuration / m.Sessions
+	} else {
+		m.BounceRate = 0
+		m.SessionDuration = 0
+	}
+}
+
+func (m *Metrics) Record(b *array.StructBuilder) {
+	b.Append(true)
+	b.FieldBuilder(0).(*array.Float64Builder).Append(m.Visitors)
+	b.FieldBuilder(1).(*array.Float64Builder).Append(m.PageViews)
+	b.FieldBuilder(2).(*array.Float64Builder).Append(m.Sessions)
+	b.FieldBuilder(3).(*array.Float64Builder).Append(m.BounceRate)
+	b.FieldBuilder(4).(*array.Float64Builder).Append(m.SessionDuration)
 }
 
 var computedFields = []arrow.Field{
@@ -254,12 +297,16 @@ var computedFields = []arrow.Field{
 	{Name: "session_duration", Type: arrow.PrimitiveTypes.Float64},
 }
 
+var metricsField = arrow.Field{
+	Name: "metrics", Type: arrow.StructOf(computedFields...),
+}
+
 func computedPartition(names ...string) *arrow.Schema {
 	fields := []arrow.Field{
 		entry.Fields()[entry.Index["timestamp"]],
 	}
 	if len(names) == 0 {
-		return arrow.NewSchema(append(fields, computedFields...), nil)
+		return arrow.NewSchema(append(fields), nil)
 	}
 	sort.Strings(names)
 	for _, f := range names {
@@ -271,7 +318,7 @@ func computedPartition(names ...string) *arrow.Schema {
 						{
 							Name: "value", Type: arrow.BinaryTypes.String,
 						},
-					}, computedFields...)...,
+					}, metricsField)...,
 				),
 			),
 		})
@@ -279,83 +326,39 @@ func computedPartition(names ...string) *arrow.Schema {
 	return arrow.NewSchema(fields, nil)
 }
 
-func Transform(r arrow.Record, w Window) arrow.Record {
-	if !w.Init(r) {
-		return r
-	}
+func Transform(ctx context.Context, r arrow.Record, step, truncate time.Duration, partitions ...string) arrow.Record {
 	columns := r.Columns()
 	m := make(map[string]arrow.Array)
 	for i := range columns {
 		m[r.ColumnName(i)] = columns[i]
 	}
-	schema := w.Schema()
-	build := array.NewRecordBuilder(entry.Pool, schema)
-	defer build.Release()
-	for lo, hi, ok := w.Next(); ok; lo, hi, ok = w.Next() {
-		w.Call(m, build, lo, hi)
-	}
-	return build.NewRecord()
-}
-
-type window struct {
-	fields []arrow.Field
-	form   func(string, map[string]arrow.Array, array.Builder, int64, int64)
-	timestampChunk
-}
-
-var _ Window = (*window)(nil)
-
-func (w *window) Schema() *arrow.Schema {
-	return arrow.NewSchema(append([]arrow.Field{
-		entry.Fields()[entry.Index["timestamp"]],
-	}, w.fields...), nil)
-}
-
-func (w *window) Init(r arrow.Record) bool {
-	for i := 0; i < int(r.NumCols()); i++ {
-		if r.ColumnName(i) == "timestamp" {
-			a := r.Column(i).(*array.Timestamp).TimestampValues()
-			w.timestampChunk = timestampChunk{
-				size: int64(len(a)),
-				a:    a,
-			}
-			return true
+	bound := func(ts arrow.Timestamp) arrow.Timestamp {
+		a := ts.ToTime(arrow.Millisecond).Add(step)
+		if truncate != 0 {
+			a = a.Truncate(truncate)
 		}
+		return arrow.Timestamp(a.UnixMilli())
 	}
-	return false
-}
-
-func (w *window) Call(m map[string]arrow.Array, b *array.RecordBuilder, lo, hi int64) {
-	b.Field(0).(*array.TimestampBuilder).Append(w.last)
-	for i := range w.fields {
-		w.form(w.fields[i].Name, m, b.Field(i+1), lo, hi)
-	}
-}
-
-type timestampChunk struct {
-	start, pos, size int64
-	last             arrow.Timestamp
-	a                []arrow.Timestamp
-}
-
-func (ts *timestampChunk) Next() (lo, hi int64, ok bool) {
-	if ts.pos >= ts.size {
-		return
-	}
-	for ; ts.pos < ts.size; ts.pos++ {
-		if ts.a[ts.pos] != ts.last {
-			lo = ts.start
-			hi = ts.pos
-			ok = true
-			ts.start = ts.pos
-			return
+	b := array.NewRecordBuilder(entry.Pool, computedPartition(partitions...))
+	ts := m["timestamp"].(*array.Timestamp).TimestampValues()
+	boundary := bound(ts[0])
+	hasPartitions := len(partitions) > 0
+	var result Metrics
+	lo := 0
+	tsField := b.Field(0).(*array.TimestampBuilder)
+	for i := range ts {
+		if ts[i] < boundary {
+			continue
 		}
+		tsField.Append(boundary)
+		slice := r.NewSlice(int64(lo), int64(i))
+		if !hasPartitions {
+			result.Compute(ctx, slice)
+			result.Record(b.Field(1).(*array.StructBuilder))
+		}
+		boundary = bound(ts[i])
+		lo = i
+		slice.Release()
 	}
-	if ts.start < ts.pos && ts.pos <= ts.size {
-		lo = ts.start
-		hi = ts.pos
-		ok = true
-		ts.start = ts.pos
-	}
-	return
+	return b.NewRecord()
 }

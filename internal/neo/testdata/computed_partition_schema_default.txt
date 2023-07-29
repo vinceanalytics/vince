@@ -1,8 +1,3 @@
 schema:
-  fields: 6
+  fields: 1
     - timestamp: type=timestamp[ms]
-    - visitors: type=float64
-    - page_views: type=float64
-    - sessions: type=float64
-    - bounce_rate: type=float64
-    - session_duration: type=float64

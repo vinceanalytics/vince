@@ -2,14 +2,16 @@
  {
   "path": [
    {
-    "bounce_rate": 3,
-    "page_views": 1,
-    "session_duration": 4,
-    "sessions": 2,
-    "value": "/",
-    "visitors": 0
+    "metrics": {
+     "bounce_rate": 3,
+     "page_views": 1,
+     "session_duration": 4,
+     "sessions": 2,
+     "visitors": 0
+    },
+    "value": "/"
    }
   ],
-  "timestamp": "2023-07-29 21:46:50.314"
+  "timestamp": "2023-07-29 22:43:31.253"
  }
 ]
