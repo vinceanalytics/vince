@@ -1,11 +1,13 @@
 package entry
 
 import (
+	"context"
 	"sync"
 	"time"
 
 	"github.com/apache/arrow/go/v13/arrow"
 	"github.com/apache/arrow/go/v13/arrow/array"
+	"github.com/apache/arrow/go/v13/arrow/compute"
 	"github.com/apache/arrow/go/v13/arrow/memory"
 )
 
@@ -293,4 +295,11 @@ func (s *Entry) Update(e *Entry) {
 	e.ExitPage = e.Path
 	e.Duration = e.Timestamp.Sub(s.Timestamp)
 	s.Timestamp = e.Timestamp
+}
+
+func Context(ctx ...context.Context) context.Context {
+	if len(ctx) > 0 {
+		return compute.WithAllocator(ctx[0], Pool)
+	}
+	return compute.WithAllocator(context.Background(), Pool)
 }

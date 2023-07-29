@@ -69,6 +69,10 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 }
 
 func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entry.MultiEntry) {
+
+	// Wrap default allocator to pass when doing computation
+	ctx = entry.Context(ctx)
+
 	txn := a.db.NewTransaction(true)
 	meta := must.
 		Must(ReadMetadata(txn, domain))("failed to read metadata for domain", domain)
