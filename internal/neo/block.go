@@ -11,6 +11,7 @@ import (
 	"github.com/apache/arrow/go/v13/arrow/array"
 	"github.com/apache/arrow/go/v13/arrow/memory"
 	"github.com/apache/arrow/go/v13/parquet"
+	"github.com/apache/arrow/go/v13/parquet/compress"
 	"github.com/apache/arrow/go/v13/parquet/file"
 	"github.com/apache/arrow/go/v13/parquet/pqarrow"
 	"github.com/cespare/xxhash/v2"
@@ -333,6 +334,7 @@ func WriteBlock(ctx context.Context, txn *badger.Txn, b *bytes.Buffer, key []byt
 		w, err := pqarrow.NewFileWriter(entry.Schema, b,
 			parquet.NewWriterProperties(
 				parquet.WithAllocator(entry.Pool),
+				parquet.WithCompression(compress.Codecs.Zstd),
 			),
 			pqarrow.NewArrowWriterProperties(
 				pqarrow.WithAllocator(entry.Pool),
@@ -362,6 +364,7 @@ func WriteBlock(ctx context.Context, txn *badger.Txn, b *bytes.Buffer, key []byt
 		w, err := pqarrow.NewFileWriter(entry.Schema, b,
 			parquet.NewWriterProperties(
 				parquet.WithAllocator(entry.Pool),
+				parquet.WithCompression(compress.Codecs.Zstd),
 			),
 			pqarrow.NewArrowWriterProperties(
 				pqarrow.WithAllocator(entry.Pool),
