@@ -247,11 +247,11 @@ type Window interface {
 }
 
 var computedFields = []arrow.Field{
-	{Name: "visitors", Type: arrow.PrimitiveTypes.Int64},
-	{Name: "page_views", Type: arrow.PrimitiveTypes.Int64},
-	{Name: "sessions", Type: arrow.PrimitiveTypes.Int64},
-	{Name: "bounce_rate", Type: arrow.PrimitiveTypes.Int64},
-	{Name: "session_duration", Type: arrow.PrimitiveTypes.Int64},
+	{Name: "visitors", Type: arrow.PrimitiveTypes.Float64},
+	{Name: "page_views", Type: arrow.PrimitiveTypes.Float64},
+	{Name: "sessions", Type: arrow.PrimitiveTypes.Float64},
+	{Name: "bounce_rate", Type: arrow.PrimitiveTypes.Float64},
+	{Name: "session_duration", Type: arrow.PrimitiveTypes.Float64},
 }
 
 func computedPartition(names ...string) *arrow.Schema {
@@ -265,12 +265,14 @@ func computedPartition(names ...string) *arrow.Schema {
 	for _, f := range names {
 		fields = append(fields, arrow.Field{
 			Name: f,
-			Type: arrow.StructOf(
-				append([]arrow.Field{
-					{
-						Name: "value", Type: arrow.BinaryTypes.String,
-					},
-				}, computedFields...)...,
+			Type: arrow.ListOf(
+				arrow.StructOf(
+					append([]arrow.Field{
+						{
+							Name: "value", Type: arrow.BinaryTypes.String,
+						},
+					}, computedFields...)...,
+				),
 			),
 		})
 	}

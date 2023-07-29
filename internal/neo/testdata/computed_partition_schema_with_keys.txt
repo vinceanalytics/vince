@@ -1,4 +1,4 @@
 schema:
   fields: 2
     - timestamp: type=timestamp[ms]
-    - path: type=struct<value: utf8, visitors: int64, page_views: int64, sessions: int64, bounce_rate: int64, session_duration: int64>
+    - path: type=list<item: struct<value: utf8, visitors: float64, page_views: float64, sessions: float64, bounce_rate: float64, session_duration: float64>, nullable>
