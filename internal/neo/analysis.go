@@ -11,9 +11,11 @@ import (
 	"github.com/apache/arrow/go/v13/arrow/compute"
 	"github.com/apache/arrow/go/v13/arrow/math"
 	"github.com/apache/arrow/go/v13/arrow/scalar"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
+	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 type Analysis interface {
@@ -327,10 +329,28 @@ func computedPartition(names ...string) *arrow.Schema {
 }
 
 func Transform(ctx context.Context, r arrow.Record, step, truncate time.Duration, partitions ...string) arrow.Record {
-	columns := r.Columns()
-	m := make(map[string]arrow.Array)
-	for i := range columns {
-		m[r.ColumnName(i)] = columns[i]
+	defer r.Release()
+	var ts []arrow.Timestamp
+	for i := 0; i < int(r.NumRows()); i++ {
+		if r.ColumnName(i) == "timestamp" {
+			ts = r.Column(i).(*array.Timestamp).TimestampValues()
+			break
+		}
+	}
+	if ts == nil {
+		log.Get().Fatal().Msg("passed a record for transformation without timestamp")
+	}
+	hasPartitions := len(partitions) > 0
+	b := array.NewRecordBuilder(entry.Pool, computedPartition(partitions...))
+	defer b.Release()
+	tsField := b.Field(0).(*array.TimestampBuilder)
+	var result Metrics
+
+	if !hasPartitions && step == 0 {
+		tsField.Append(arrow.Timestamp(core.Now(ctx).UnixMilli()))
+		result.Compute(ctx, r)
+		result.Record(b.Field(1).(*array.StructBuilder))
+		return b.NewRecord()
 	}
 	bound := func(ts arrow.Timestamp) arrow.Timestamp {
 		a := ts.ToTime(arrow.Millisecond).Add(step)
@@ -339,13 +359,8 @@ func Transform(ctx context.Context, r arrow.Record, step, truncate time.Duration
 		}
 		return arrow.Timestamp(a.UnixMilli())
 	}
-	b := array.NewRecordBuilder(entry.Pool, computedPartition(partitions...))
-	ts := m["timestamp"].(*array.Timestamp).TimestampValues()
 	boundary := bound(ts[0])
-	hasPartitions := len(partitions) > 0
-	var result Metrics
 	lo := 0
-	tsField := b.Field(0).(*array.TimestampBuilder)
 	for i := range ts {
 		if ts[i] < boundary {
 			continue
