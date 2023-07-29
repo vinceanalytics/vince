@@ -4,6 +4,7 @@
   "duration": 0,
   "id": 1188957328146959468,
   "name": "pageview",
+  "session": 0,
   "timestamp": "2006-01-02 19:04:00"
  },
  {
@@ -11,6 +12,7 @@
   "duration": 0,
   "id": 1188957328146959468,
   "name": "pageview",
+  "session": 0,
   "timestamp": "2006-01-02 19:04:00"
  },
  {
@@ -18,6 +20,7 @@
   "duration": 0,
   "id": 1188957328146959468,
   "name": "pageview",
+  "session": 0,
   "timestamp": "2006-01-02 19:04:00"
  }
 ]

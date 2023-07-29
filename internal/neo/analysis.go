@@ -61,6 +61,7 @@ func (b *Base) Init(pick []string, filters ...*blocks.Filter) *Base {
 		"duration",
 		"id",
 		"name",
+		"session",
 		"timestamp",
 	)
 
@@ -69,6 +70,7 @@ func (b *Base) Init(pick []string, filters ...*blocks.Filter) *Base {
 		"duration":  {},
 		"id":        {},
 		"name":      {},
+		"session":   {},
 		"timestamp": {},
 	}
 	for i := range pick {
