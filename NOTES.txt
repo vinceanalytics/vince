@@ -19,3 +19,6 @@ Skip to Loafer
 
 * dashboard library
 https://github.com/tremorlabs/tremor
+
+* charting library 
+https://echarts.apache.org/en/index.html
