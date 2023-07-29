@@ -25,18 +25,15 @@ import (
 )
 
 type ActiveBlock struct {
-	mu      sync.Mutex
-	bloom   metaBloom
-	db      *badger.DB
-	hosts   map[string]*entry.MultiEntry
-	entries *entry.MultiEntry
+	mu    sync.Mutex
+	db    *badger.DB
+	hosts map[string]*entry.MultiEntry
 }
 
 func NewBlock(dir string, db *badger.DB) *ActiveBlock {
 	return &ActiveBlock{
-		bloom:   metaBloom{hash: xxhash.New()},
-		db:      db,
-		entries: entry.NewMulti(),
+		db:    db,
+		hosts: make(map[string]*entry.MultiEntry),
 	}
 }
 

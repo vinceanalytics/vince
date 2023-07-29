@@ -132,5 +132,4 @@ func TestWriteBlock_basic(t *testing.T) {
 			t.Error("failed roundtrip")
 		}
 	})
-
 }
