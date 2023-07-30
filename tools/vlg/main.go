@@ -13,6 +13,7 @@ import (
 	"github.com/dop251/goja"
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/pkg/entry"
+	"golang.org/x/time/rate"
 )
 
 func main() {
@@ -25,6 +26,9 @@ func main() {
 				Value:   "http://localhost:8080",
 				EnvVars: []string{"VLG_HOST"},
 			},
+		},
+		Commands: []*cli.Command{
+			{Name: "bench", Action: bench},
 		},
 		Action: func(ctx *cli.Context) error {
 			vm := goja.New()
@@ -67,6 +71,44 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// sends 1 billion page view events
+func bench(ctx *cli.Context) error {
+	bound := 1 << 30
+	r := rate.NewLimiter(rate.Every(time.Second), 200)
+	n := 0
+	s := newSession(ctx.String("host"))
+	chunk := 2 << 10
+	for n < bound {
+		for x := 0; r.Allow() && x < chunk; x++ {
+			n++
+			s.Reset().Send()
+		}
+	}
+	return nil
+}
+
+var paths = []string{"/", "/about", "/career"}
+
+func newSession(host string) *Session {
+	return &Session{
+		UserAgent: ua(),
+		IP:        ip(),
+		Domain:    "vince.io",
+		Host:      host,
+		Path:      "/",
+		Event:     "pageview",
+		Referrer:  referrer(),
+	}
+}
+
+func (s *Session) Reset() *Session {
+	s.UserAgent = ua()
+	s.IP = ip()
+	s.Path = paths[rand.Intn(len(paths))]
+	s.Referrer = referrer()
+	return s
 }
 
 var client = &http.Client{}
@@ -139,6 +181,7 @@ func (o *Session) Send() *Session {
 		return o
 	}
 	b, _ := json.Marshal(rb)
+	rb.Release()
 	r, _ := http.NewRequest(http.MethodPost, o.Host+"/api/event", bytes.NewReader(b))
 	r.Header.Set("x-forwarded-for", o.IP)
 	r.Header.Set("user-agent", o.UserAgent.UserAgent)
@@ -148,8 +191,10 @@ func (o *Session) Send() *Session {
 		println("> failed sending request", err.Error())
 		return o
 	}
-	defer res.Body.Close()
-	println(res.Status)
+	res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		println(res.Status)
+	}
 	return o
 }
 
