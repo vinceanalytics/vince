@@ -137,7 +137,7 @@ func ReadMetadata(txn *badger.Txn, domain string) (*blocks.Metadata, error) {
 }
 
 type metaBloom struct {
-	hash           *xxhash.Digest
+	hash           xxhash.Digest
 	Browser        roaring64.Bitmap
 	BrowserVersion roaring64.Bitmap
 	City           roaring64.Bitmap
