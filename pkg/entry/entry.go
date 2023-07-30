@@ -9,6 +9,8 @@ import (
 	"github.com/apache/arrow/go/v13/arrow/array"
 	"github.com/apache/arrow/go/v13/arrow/compute"
 	"github.com/apache/arrow/go/v13/arrow/memory"
+	"github.com/apache/arrow/go/v13/parquet/pqarrow"
+	"github.com/vinceanalytics/vince/internal/must"
 )
 
 type Entry struct {
@@ -257,7 +259,21 @@ var Index = func() (m map[string]int) {
 	return
 }()
 
-var Schema = arrow.NewSchema(Fields(), nil)
+var Schema = func() *arrow.Schema {
+	a := arrow.NewSchema(all, nil)
+	// When merging blocks, there is schema mismatch error because of the way
+	// equality is conducted.
+	//
+	// Conversion of arrow.Schema to parquet schema adds fiend_id metadata . This
+	// causes the equality check to fail. We make sure that we have the same schema
+	// for both parquet and arrow by converting between them here.
+	return must.Must(pqarrow.FromParquet(
+		must.Must(
+			pqarrow.ToParquet(a, nil, pqarrow.ArrowWriterProperties{}),
+		)("failed to convert arrow schema to parquet schema"),
+		nil, nil,
+	))("failed to convert parquet schema to arrow schema")
+}()
 
 func Select(names ...string) *arrow.Schema {
 	o := make([]arrow.Field, len(names))
