@@ -15,3 +15,7 @@ func init() {
 func Get() *zerolog.Logger {
 	return &Logger
 }
+
+func Level(l zerolog.Level) {
+	Logger = Logger.Level(l)
+}

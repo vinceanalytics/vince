@@ -59,6 +59,8 @@ func (r ResourceList) Close() error {
 }
 
 func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList, error) {
+	log.Level(o.GetLogLevel())
+
 	var resources ResourceList
 
 	// we start listeners early to make sure we can actually bind to the network.

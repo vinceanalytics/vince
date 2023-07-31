@@ -11,7 +11,9 @@ import (
 
 	"github.com/caddyserver/certmagic"
 	"github.com/mholt/acmez/acme"
+	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/log"
 	"github.com/vinceanalytics/vince/pkg/secrets"
 )
@@ -137,6 +139,13 @@ func ParseAlert(txt string) (name, path string, interval time.Duration, err erro
 		return
 	}
 	return
+}
+
+func (o *Options) GetLogLevel() zerolog.Level {
+	if o.LogLevel == "" {
+		return zerolog.DebugLevel
+	}
+	return must.Must(zerolog.ParseLevel(o.LogLevel))()
 }
 
 func (o *Options) Flags() []cli.Flag {
