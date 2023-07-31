@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -21,6 +20,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/email"
 	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/router"
 	"github.com/vinceanalytics/vince/internal/sessions"
@@ -65,17 +65,15 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 
 	// we start listeners early to make sure we can actually bind to the network.
 	// This saves us managing all long running goroutines we start in this process.
-	httpListener, err := net.Listen("tcp", o.Listen)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to bind to a network address %v", err)
-	}
+	httpListener := must.Must(net.Listen("tcp", o.Listen))(
+		"failed binding network address", o.Listen,
+	)
 	resources = append(resources, httpListener)
 	ctx = core.SetHTTPListener(ctx, httpListener)
 	var httpsListener net.Listener
 	var magic *certmagic.Config
 	if o.TLS.Enabled {
 		if o.TLS.Address == "" {
-			resources.Close()
 			return nil, nil, errors.New("tls-address is required")
 		}
 		if o.TLS.Key == "" || o.TLS.Cert == "" {
@@ -90,29 +88,21 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 				return nil, nil, errors.New("acme-email and acme-domain  are required")
 			}
 			magic = o.Magic()
-			err = magic.ManageSync(ctx, []string{o.Acme.Domain})
-			if err != nil {
-				resources.Close()
-				return nil, nil, fmt.Errorf("failed to sync acme domain %v", err)
-			}
-			httpsListener, err = net.Listen("tcp", o.TLS.Address)
-			if err != nil {
-				resources.Close()
-				return nil, nil, fmt.Errorf("failed to bind to https socket %v", err)
-			}
+			must.One(magic.ManageSync(ctx, []string{o.Acme.Domain}))(
+				"failed to sync acme domain",
+			)
+			httpsListener = must.Must(net.Listen("tcp", o.TLS.Address))(
+				"failed to bind https socket", o.TLS.Address,
+			)
 		} else {
-			cert, err := tls.LoadX509KeyPair(o.TLS.Cert, o.TLS.Key)
-			if err != nil {
-				resources.Close()
-				return nil, nil, fmt.Errorf("failed to load https certificate %v", err)
-			}
+			cert := must.Must(tls.LoadX509KeyPair(o.TLS.Cert, o.TLS.Key))(
+				"failed to load tls certificates",
+			)
 			config := tls.Config{}
 			config.Certificates = append(config.Certificates, cert)
-			httpsListener, err = tls.Listen("tcp", o.TLS.Address, &config)
-			if err != nil {
-				resources.Close()
-				return nil, nil, fmt.Errorf("failed to bind https socket %v", err)
-			}
+			httpsListener = must.Must(tls.Listen("tcp", o.TLS.Address, &config))(
+				"failed to bind tls socket with tls config",
+			)
 		}
 	}
 	if httpsListener != nil {
@@ -120,11 +110,9 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		ctx = core.SetHTTPSListener(ctx, httpsListener)
 	}
 
-	sqlDb, err := models.Open(models.Database(o))
-	if err != nil {
-		resources.Close()
-		return nil, nil, err
-	}
+	sqlDb := must.Must(models.Open(models.Database(o)))(
+		"failed setting up operational database",
+	)
 	resources = append(resources, resourceFunc(func() error {
 		return models.CloseDB(sqlDb)
 	}))
@@ -147,38 +135,27 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 
 	if o.Mailer.Enabled {
 		log.Get().Debug().Msg("setup mailer")
-		mailer, err := email.FromConfig(o)
-		if err != nil {
-			log.Get().Err(err).Msg("failed creating mailer")
-			resources.Close()
-			return nil, nil, err
-		}
+		mailer := must.Must(email.FromConfig(o))(
+			"failed setting up mailer from config",
+		)
 		resources = append(resources, mailer)
 		ctx = email.Set(ctx, mailer)
 	}
 	ctx, ts, err := timeseries.Open(ctx, o)
-	if err != nil {
-		resources.Close()
-		return nil, nil, err
-	}
+	must.One(err)("failed setting up timeseries")
 	if o.Alerts.Enabled {
 		// alerts support querying and email. Make sure we initialize after email and
 		// timeseries has been set on ctx.
 		log.Get().Debug().Msg("setup alerts")
-		a, err := alerts.Setup(ctx, o)
-		if err != nil {
-			resources.Close()
-			return nil, nil, err
-		}
+		a := must.Must(alerts.Setup(ctx, o))(
+			"failed setting up alerts",
+		)
 		ctx = alerts.Set(ctx, a)
 	}
 	resources = append(resources, ts)
-	ctx, err = caches.Open(ctx)
-	if err != nil {
-		log.Get().Err(err).Msg("failed to open caches")
-		resources.Close()
-		return nil, nil, err
-	}
+	ctx = must.Must(caches.Open(ctx))(
+		"failed setting up caches",
+	)
 	resources = append(resources, resourceFunc(func() error {
 		return caches.Close(ctx)
 	}))
