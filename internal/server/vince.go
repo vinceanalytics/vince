@@ -51,9 +51,9 @@ func (r resourceFunc) Close() error {
 }
 
 func (r ResourceList) Close() error {
-	e := make([]error, len(r))
-	for i, f := range r {
-		e[i] = f.Close()
+	e := make([]error, 0, len(r))
+	for i := len(r) - 1; i > 0; i-- {
+		e = append(e, r[i].Close())
 	}
 	return errors.Join(e...)
 }
@@ -187,7 +187,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		}
 	}
 	ctx = core.SetHTTPServer(ctx, httpSvr)
-	svr := ResourceList{httpSvr}
+	resources = append(resources, httpSvr)
 
 	if httpsListener != nil {
 		//configure https server
@@ -210,10 +210,9 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 			ctx = core.SetHTTPSListener(ctx, httpsListener)
 		}
 		ctx = core.SetHTTPSServer(ctx, httpsSvr)
-		svr = append(svr, httpsSvr)
+		resources = append(resources, httpsSvr)
 
 	}
-	resources = append(svr, resources...)
 	return ctx, resources, nil
 }
 
