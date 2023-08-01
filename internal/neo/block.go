@@ -6,7 +6,6 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v13/arrow"
 	"github.com/apache/arrow/go/v13/arrow/array"
 	"github.com/apache/arrow/go/v13/arrow/memory"
@@ -14,7 +13,6 @@ import (
 	"github.com/apache/arrow/go/v13/parquet/compress"
 	"github.com/apache/arrow/go/v13/parquet/file"
 	"github.com/apache/arrow/go/v13/parquet/pqarrow"
-	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/core"
@@ -22,6 +20,12 @@ import (
 	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
 	"google.golang.org/protobuf/proto"
+)
+
+const (
+	blockPrefix    = "block/"
+	metadataPrefix = "meta/"
+	indexPrefix    = "index/"
 )
 
 type ActiveBlock struct {
@@ -77,26 +81,19 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entr
 	meta := must.
 		Must(ReadMetadata(txn, domain))("failed to read metadata for domain", domain)
 	r := m.Record(ts)
-	bloom := newMetaBloom()
-	b := bloom.set(m)
-	kb := get()
-	kb.WriteString(domain)
-	kb.WriteByte('/')
 
 	var block *blocks.Block
 	if len(meta.Blocks) > 0 {
 		last := meta.Blocks[len(meta.Blocks)-1]
 		if last.Size < (1 << 20) {
 			block = last
-			union(block.Bloom, b)
 		}
 	}
 	if block == nil {
 		id := ulid.Make()
 		block = &blocks.Block{
-			Id:    id.Bytes(),
-			Min:   ts,
-			Bloom: b,
+			Id:  id.Bytes(),
+			Min: ts,
 		}
 		meta.Blocks = append(meta.Blocks, block)
 	}
@@ -104,16 +101,16 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entr
 	buf := get()
 	defer func() {
 		put(buf)
-		put(kb)
 		r.Release()
 		m.Release()
-		bloom.release()
 	}()
-	kb.Write(block.Id)
-	must.One(WriteBlock(ctx, txn, buf, kb.Bytes(), r))("failed to write block")
+	must.One(WriteBlock(ctx, txn, buf,
+		[]byte(blockPrefix+domain+string(block.Id)), r))("failed to write block")
 	block.Size = int64(buf.Len())
+	index := Index(ctx, buf.Bytes())
 	must.One(errors.Join(
-		txn.Set([]byte(domain), must.Must(proto.Marshal(meta))()),
+		txn.Set([]byte(metadataPrefix+domain), must.Must(proto.Marshal(meta))()),
+		txn.Set([]byte(indexPrefix+domain), must.Must(proto.Marshal(&index))()),
 		txn.Commit(),
 	))("failed to commit write block")
 }
@@ -134,194 +131,6 @@ func ReadMetadata(txn *badger.Txn, domain string) (*blocks.Metadata, error) {
 		return nil, err
 	}
 	return meta, nil
-}
-
-type metaBloom struct {
-	hash           xxhash.Digest
-	Browser        roaring64.Bitmap
-	BrowserVersion roaring64.Bitmap
-	City           roaring64.Bitmap
-	Country        roaring64.Bitmap
-	EntryPage      roaring64.Bitmap
-	ExitPage       roaring64.Bitmap
-	Host           roaring64.Bitmap
-	Name           roaring64.Bitmap
-	Os             roaring64.Bitmap
-	OsVersion      roaring64.Bitmap
-	Path           roaring64.Bitmap
-	Referrer       roaring64.Bitmap
-	ReferrerSource roaring64.Bitmap
-	Region         roaring64.Bitmap
-	Screen         roaring64.Bitmap
-	UtmCampaign    roaring64.Bitmap
-	UtmContent     roaring64.Bitmap
-	UtmMedium      roaring64.Bitmap
-	UtmSource      roaring64.Bitmap
-	UtmTerm        roaring64.Bitmap
-	UtmValue       roaring64.Bitmap
-}
-
-var metaPool = &sync.Pool{
-	New: func() any {
-		return new(metaBloom)
-	},
-}
-
-func newMetaBloom() *metaBloom {
-	return metaPool.Get().(*metaBloom)
-}
-
-func (m *metaBloom) release() {
-	m.reset()
-	metaPool.Put(m)
-}
-
-func (m *metaBloom) reset() {
-	m.hash.Reset()
-	m.Browser.Clear()
-	m.BrowserVersion.Clear()
-	m.City.Clear()
-	m.Country.Clear()
-	m.EntryPage.Clear()
-	m.ExitPage.Clear()
-	m.Host.Clear()
-	m.Name.Clear()
-	m.Os.Clear()
-	m.OsVersion.Clear()
-	m.Path.Clear()
-	m.Referrer.Clear()
-	m.ReferrerSource.Clear()
-	m.Region.Clear()
-	m.Screen.Clear()
-	m.UtmCampaign.Clear()
-	m.UtmContent.Clear()
-	m.UtmMedium.Clear()
-	m.UtmSource.Clear()
-	m.UtmTerm.Clear()
-	m.UtmValue.Clear()
-}
-
-func (m *metaBloom) sum(s string) uint64 {
-	m.hash.Reset()
-	m.hash.WriteString(s)
-	return m.hash.Sum64()
-}
-
-func (m *metaBloom) ls(b *roaring64.Bitmap, values ...string) {
-	for i := range values {
-		if values[i] != "" {
-			b.Add(m.sum(values[i]))
-		}
-	}
-}
-
-func (m *metaBloom) set(e *entry.MultiEntry) *blocks.Bloom {
-	m.ls(&m.Browser, e.Browser...)
-	m.ls(&m.BrowserVersion, e.BrowserVersion...)
-	m.ls(&m.City, e.City...)
-	m.ls(&m.Country, e.Country...)
-	m.ls(&m.EntryPage, e.EntryPage...)
-	m.ls(&m.ExitPage, e.ExitPage...)
-	m.ls(&m.Host, e.Host...)
-	m.ls(&m.Name, e.Name...)
-	m.ls(&m.Os, e.Os...)
-	m.ls(&m.OsVersion, e.OsVersion...)
-	m.ls(&m.Path, e.Path...)
-	m.ls(&m.Referrer, e.Referrer...)
-	m.ls(&m.Screen, e.Screen...)
-	m.ls(&m.UtmCampaign, e.UtmCampaign...)
-	m.ls(&m.UtmContent, e.UtmContent...)
-	m.ls(&m.UtmMedium, e.UtmMedium...)
-	m.ls(&m.UtmSource, e.UtmSource...)
-	m.ls(&m.UtmTerm, e.UtmTerm...)
-	return m.bloom()
-}
-
-func (m *metaBloom) bloom() (b *blocks.Bloom) {
-	b = &blocks.Bloom{
-		Filters: make(map[string][]byte),
-	}
-	if !m.Browser.IsEmpty() {
-		b.Filters["browser"] = must.Must(m.Browser.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.BrowserVersion.IsEmpty() {
-		b.Filters["browser_version"] = must.Must(m.BrowserVersion.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.City.IsEmpty() {
-		b.Filters["city"] = must.Must(m.City.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.Country.IsEmpty() {
-		b.Filters["country"] = must.Must(m.Country.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.EntryPage.IsEmpty() {
-		b.Filters["entry_page"] = must.Must(m.EntryPage.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.ExitPage.IsEmpty() {
-		b.Filters["exit_page"] = must.Must(m.ExitPage.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.Host.IsEmpty() {
-		b.Filters["host"] = must.Must(m.Host.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.Name.IsEmpty() {
-		b.Filters["name"] = must.Must(m.Name.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.Os.IsEmpty() {
-		b.Filters["os"] = must.Must(m.Os.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.OsVersion.IsEmpty() {
-		b.Filters["os_version"] = must.Must(m.OsVersion.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.Path.IsEmpty() {
-		b.Filters["path"] = must.Must(m.Path.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.Referrer.IsEmpty() {
-		b.Filters["referrer"] = must.Must(m.Referrer.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.ReferrerSource.IsEmpty() {
-		b.Filters["referrer_source"] = must.Must(m.ReferrerSource.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.Region.IsEmpty() {
-		b.Filters["region"] = must.Must(m.Region.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.Screen.IsEmpty() {
-		b.Filters["screen"] = must.Must(m.Screen.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.UtmCampaign.IsEmpty() {
-		b.Filters["utm_campaign"] = must.Must(m.UtmCampaign.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.UtmContent.IsEmpty() {
-		b.Filters["utm_content"] = must.Must(m.UtmContent.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.UtmMedium.IsEmpty() {
-		b.Filters["utm_medium"] = must.Must(m.UtmMedium.MarshalBinary())("failed encoding bitmap")
-	}
-
-	if !m.UtmSource.IsEmpty() {
-		b.Filters["utm_source"] = must.Must(m.Browser.MarshalBinary())("failed encoding bitmap")
-	}
-	if !m.UtmTerm.IsEmpty() {
-		b.Filters["utm_term"] = must.Must(m.UtmTerm.MarshalBinary())("failed encoding bitmap")
-	}
-	return
-}
-
-func union(dst, src *blocks.Bloom) {
-	var x, y roaring64.Bitmap
-	for k, v := range src.Filters {
-		h, ok := dst.Filters[k]
-		if !ok {
-			dst.Filters[k] = v
-			continue
-		}
-		x.Clear()
-		x.UnmarshalBinary(h)
-
-		y.Clear()
-		y.UnmarshalBinary(v)
-
-		x.Or(&y)
-		dst.Filters[k] = must.Must(x.MarshalBinary())("failed encoding bitmap")
-	}
 }
 
 // WriteBlock saves record r in a parquet file with key. If the block exists a
