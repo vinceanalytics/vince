@@ -15,7 +15,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
-	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 type Analysis interface {
@@ -308,7 +307,7 @@ func computedPartition(names ...string) *arrow.Schema {
 		entry.Fields()[entry.Index["timestamp"]],
 	}
 	if len(names) == 0 {
-		return arrow.NewSchema(append(fields), nil)
+		return arrow.NewSchema(append(fields, metricsField), nil)
 	}
 	sort.Strings(names)
 	for _, f := range names {
@@ -329,6 +328,7 @@ func computedPartition(names ...string) *arrow.Schema {
 }
 
 func Transform(ctx context.Context, r arrow.Record, step, truncate time.Duration, partitions ...string) arrow.Record {
+	ctx = entry.Context(ctx)
 	defer r.Release()
 	var ts []arrow.Timestamp
 	for i := 0; i < int(r.NumRows()); i++ {
@@ -337,15 +337,12 @@ func Transform(ctx context.Context, r arrow.Record, step, truncate time.Duration
 			break
 		}
 	}
-	if ts == nil {
-		log.Get().Fatal().Msg("passed a record for transformation without timestamp")
-	}
+	must.Assert(ts != nil)("passed a record for transformation without timestamp")
 	hasPartitions := len(partitions) > 0
 	b := array.NewRecordBuilder(entry.Pool, computedPartition(partitions...))
 	defer b.Release()
 	tsField := b.Field(0).(*array.TimestampBuilder)
 	var result Metrics
-
 	if !hasPartitions && step == 0 {
 		tsField.Append(arrow.Timestamp(core.Now(ctx).UnixMilli()))
 		result.Compute(ctx, r)
