@@ -11,6 +11,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/events"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/pkg/blocks"
@@ -58,7 +59,7 @@ func TestWriteBlock_basic(t *testing.T) {
 	})
 
 	t.Run("can read written data", func(t *testing.T) {
-		r, err := ReadRecord(context.Background(), buf.Bytes(), nil, nil)
+		r, err := ReadRecord(context.Background(), bytes.NewReader(buf.Bytes()), nil, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -139,6 +140,35 @@ func TestWriteBlock_basic(t *testing.T) {
 		want := 0
 		if got != want {
 			t.Errorf("expected row group %d got %d", want, got)
+		}
+	})
+}
+
+func TestTransform(t *testing.T) {
+	ctx := entry.Context(context.Background())
+	t.Run("full file transform no partitions", func(t *testing.T) {
+		f := must.Must(os.Open("testdata/block.parquet"))()
+		defer f.Close()
+
+		base := NewBase(nil)
+		defer base.Release()
+
+		r := must.Must(ReadRecord(ctx, f, base.ColumnIndices(), nil))()
+		base.Analyze(ctx, r)
+		r = base.Record()
+		defer r.Release()
+
+		// consistent timestamp.
+		ctx = core.SetNow(ctx, func() time.Time {
+			return must.Must(time.Parse(time.RFC822, time.RFC822))()
+		})
+
+		r = Transform(ctx, r, 0, 0)
+		got := must.Must(json.MarshalIndent(r, "", " "))()
+		// os.WriteFile("testdata/block_full_no_partitions.json", got, 0600)
+		want := must.Must(os.ReadFile("testdata/block_full_no_partitions.json"))
+		if !bytes.Equal(got, want()) {
+			t.Error("wrong full computation")
 		}
 	})
 }

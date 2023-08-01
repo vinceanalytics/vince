@@ -224,7 +224,7 @@ func ReadBlock(ctx context.Context, db *badger.DB, key []byte, a Analysis) error
 			return err
 		}
 		return it.Value(func(val []byte) error {
-			r, err := ReadRecord(ctx, val, a.ColumnIndices(), nil)
+			r, err := ReadRecord(ctx, bytes.NewReader(val), a.ColumnIndices(), nil)
 			if err != nil {
 				return err
 			}
@@ -234,8 +234,8 @@ func ReadBlock(ctx context.Context, db *badger.DB, key []byte, a Analysis) error
 	})
 }
 
-func ReadRecord(ctx context.Context, val []byte, cols, groups []int) (arrow.Record, error) {
-	f, err := file.NewParquetReader(bytes.NewReader(val), file.WithReadProps(parquet.NewReaderProperties(
+func ReadRecord(ctx context.Context, rd parquet.ReaderAtSeeker, cols, groups []int) (arrow.Record, error) {
+	f, err := file.NewParquetReader(rd, file.WithReadProps(parquet.NewReaderProperties(
 		entry.Pool,
 	)))
 	if err != nil {
