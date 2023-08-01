@@ -74,10 +74,7 @@ func Vince(t *testing.T, o Options) (context.Context, *mail.Backend) {
 	})
 	vo := config.Test(vOpts...)
 	be := mail.New(vo.Mailer.SMTP.Address, o.SMTPOpts...)
-	ctx, r, err := server.Configure(context.Background(), vo)
-	if err != nil {
-		t.Fatalf("failed to configure vince instance %v", err)
-	}
+	ctx, r := server.Configure(context.Background(), vo)
 	if o.StartSMTP {
 		go be.Start()
 		r = append(r, be)

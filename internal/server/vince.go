@@ -35,7 +35,7 @@ func Serve(o *config.Options) error {
 	if err != nil {
 		return err
 	}
-	ctx, resources, err := Configure(ctx, o)
+	ctx, resources := Configure(ctx, o)
 	if err != nil {
 		return err
 	}
@@ -58,8 +58,9 @@ func (r ResourceList) Close() error {
 	return errors.Join(e...)
 }
 
-func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList, error) {
+func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList) {
 	log.Level(o.GetLogLevel())
+	o.Validate()
 
 	var resources ResourceList
 
@@ -73,20 +74,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 	var httpsListener net.Listener
 	var magic *certmagic.Config
 	if o.TLS.Enabled {
-		if o.TLS.Address == "" {
-			return nil, nil, errors.New("tls-address is required")
-		}
-		if o.TLS.Key == "" || o.TLS.Cert == "" {
-			if !o.Acme.Enabled {
-				resources.Close()
-				return nil, nil, errors.New("tls-key and tls-cert  are required")
-			}
-		}
 		if o.Acme.Enabled {
-			if o.Acme.Issuer.Email == "" || o.Acme.Domain == "" {
-				resources.Close()
-				return nil, nil, errors.New("acme-email and acme-domain  are required")
-			}
 			magic = o.Magic()
 			must.One(magic.ManageSync(ctx, []string{o.Acme.Domain}))(
 				"failed to sync acme domain",
@@ -120,21 +108,12 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 	ctx = models.Set(ctx, sqlDb)
 
 	if o.Bootstrap.Enabled {
-		log.Get().Debug().Msg("bootstrapping user")
-		if o.Bootstrap.Name == "" ||
-			o.Bootstrap.Email == "" ||
-			o.Bootstrap.Password == "" ||
-			o.Bootstrap.Key == "" {
-			resources.Close()
-			return nil, nil, errors.New("bootstrap-name, bootstrap-email, bootstrap-password, and bootstrap-key, are required")
-		}
 		models.Bootstrap(ctx,
 			o.Bootstrap.Name, o.Bootstrap.FullName, o.Bootstrap.Email, o.Bootstrap.Password, o.Bootstrap.Key,
 		)
 	}
 
 	if o.Mailer.Enabled {
-		log.Get().Debug().Msg("setup mailer")
 		mailer := must.Must(email.FromConfig(o))(
 			"failed setting up mailer from config",
 		)
@@ -211,7 +190,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		resources = append(resources, httpsSvr)
 
 	}
-	return ctx, resources, nil
+	return ctx, resources
 }
 
 func Run(ctx context.Context, resources ResourceList) error {

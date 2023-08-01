@@ -22,3 +22,19 @@ func One(err error) func(msg ...any) {
 		}
 	}
 }
+
+func Assert(ok bool) func(msg ...any) {
+	return func(msg ...any) {
+		if !ok {
+			log.Get().Fatal().Msg(fmt.Sprint(msg...))
+		}
+	}
+}
+
+func AssertFMT(ok bool) func(msg string, a ...any) {
+	return func(msg string, a ...any) {
+		if !ok {
+			log.Get().Fatal().Msgf(msg, a...)
+		}
+	}
+}

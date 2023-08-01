@@ -103,6 +103,26 @@ type Options struct {
 	NoSignal bool
 }
 
+func (o *Options) Validate() {
+	if o.TLS.Enabled {
+		must.Assert(o.TLS.Address != "")("tls-address is required")
+		if !o.Acme.Enabled {
+			must.Assert(o.TLS.Key != "" &&
+				o.TLS.Cert != "")("tls-key and tls-cert  are required")
+		}
+		if o.Acme.Enabled {
+			must.Assert(o.Acme.Issuer.Email != "" &&
+				o.Acme.Domain != "")("acme-email and acme-domain  are required")
+		}
+	}
+	if o.Bootstrap.Enabled {
+		must.Assert(o.Bootstrap.Name != "" &&
+			o.Bootstrap.Email != "" &&
+			o.Bootstrap.Password != "" &&
+			o.Bootstrap.Key != "")("bootstrap-name, bootstrap-email, bootstrap-password, and bootstrap-key, are required")
+	}
+}
+
 var ErrInvalidAlertPath = errors.New("invalid alert path : use filename[name,interval] format")
 
 // FromText parses alert from txt.
