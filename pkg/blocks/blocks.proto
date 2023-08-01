@@ -50,3 +50,8 @@ enum Op {
   less = 4;
   less_equal = 5;
 }
+
+message Index {
+  // List of row groups bitmaps for a block
+  repeated bytes bitmaps = 1;
+}

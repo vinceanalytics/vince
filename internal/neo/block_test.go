@@ -132,4 +132,13 @@ func TestWriteBlock_basic(t *testing.T) {
 			t.Error("failed roundtrip")
 		}
 	})
+
+	t.Run("written block can be indexed", func(t *testing.T) {
+		idx := Index(context.Background(), buf.Bytes())
+		got := FindRowGroups(&idx, []string{"path"}, []string{"/home"})[0]
+		want := 0
+		if got != want {
+			t.Errorf("expected row group %d got %d", want, got)
+		}
+	})
 }

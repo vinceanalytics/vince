@@ -259,6 +259,38 @@ var Index = func() (m map[string]int) {
 	return
 }()
 
+var IndexedColumnsNames = []string{
+	"browser",
+	"browser_version",
+	"city",
+	"country",
+	"entry_page",
+	"exit_page",
+	"host",
+	"name",
+	"os",
+	"os_version",
+	"path",
+	"referrer",
+	"referrer_source",
+	"region",
+	"screen",
+	"utm_campaign",
+	"utm_content",
+	"utm_medium",
+	"utm_source",
+	"utm_term",
+}
+
+// Maps column index to column name of all indexed columns
+var IndexedColumns = func() (m map[int]string) {
+	m = make(map[int]string)
+	for _, n := range IndexedColumnsNames {
+		m[Index[n]] = n
+	}
+	return
+}()
+
 var Schema = func() *arrow.Schema {
 	a := arrow.NewSchema(all, nil)
 	// When merging blocks, there is schema mismatch error because of the way
