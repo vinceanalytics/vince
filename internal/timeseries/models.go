@@ -9,23 +9,23 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/neo"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
-func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer, error) {
+func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer) {
 	dir := filepath.Join(o.DataPath, "ts")
-	db, err := badger.Open(badger.DefaultOptions(filepath.Join(dir, "series")).
+	db := must.Must(badger.Open(badger.DefaultOptions(filepath.Join(dir, "series")).
 		WithLogger(badgerLogger{}).
-		WithCompression(options.ZSTD))
-	if err != nil {
-		return nil, nil, err
-	}
+		WithCompression(options.ZSTD)))(
+		"failed to open badger db for  timeseries storage dir:", dir,
+	)
 	a := neo.NewBlock(dir, db)
 	ctx = context.WithValue(ctx, storeKey{}, db)
 	ctx = context.WithValue(ctx, blockKey{}, a)
 	resource := resourceList{a, db}
-	return ctx, resource, nil
+	return ctx, resource
 }
 
 type resourceList []io.Closer

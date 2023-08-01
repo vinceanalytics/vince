@@ -141,12 +141,10 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		resources = append(resources, mailer)
 		ctx = email.Set(ctx, mailer)
 	}
-	ctx, ts, err := timeseries.Open(ctx, o)
-	must.One(err)("failed setting up timeseries")
+	ctx, ts := timeseries.Open(ctx, o)
 	if o.Alerts.Enabled {
 		// alerts support querying and email. Make sure we initialize after email and
 		// timeseries has been set on ctx.
-		log.Get().Debug().Msg("setup alerts")
 		a := must.Must(alerts.Setup(ctx, o))(
 			"failed setting up alerts",
 		)
