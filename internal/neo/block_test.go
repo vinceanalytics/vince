@@ -172,3 +172,29 @@ func TestTransform(t *testing.T) {
 		}
 	})
 }
+
+func TestMetrics(t *testing.T) {
+	ctx := entry.Context(context.Background())
+
+	t.Run("compute", func(t *testing.T) {
+		f := must.Must(os.Open("testdata/block.parquet"))()
+		defer f.Close()
+
+		base := NewBase(nil)
+		defer base.Release()
+
+		r := must.Must(ReadRecord(ctx, f, base.ColumnIndices(), nil))()
+		base.Analyze(ctx, r)
+		r = base.Record()
+		defer r.Release()
+
+		var m Metrics
+		m.Compute(ctx, r)
+		got := must.Must(json.MarshalIndent(m, "", " "))()
+		os.WriteFile("testdata/metrics_compute.json", got, 0600)
+		want := must.Must(os.ReadFile("testdata/metrics_compute.json"))
+		if !bytes.Equal(got, want()) {
+			t.Error("wrong full computation")
+		}
+	})
+}

@@ -20,10 +20,11 @@ message Block {
 }
 
 message Stats {
-  int64 unique_visitors = 1;
-  int64 page_views = 2;
-  int64 bounce_rate = 3;
-  int64 session_duration = 4;
+  double visitors = 1;
+  double page_views = 2;
+  double bounce_rate = 3;
+  double session_duration = 4;
+  double sessions = 5;
 }
 
 message Filter {
