@@ -35,7 +35,7 @@ func TestComputedPartition(t *testing.T) {
 	t.Run("check computed partition record ", func(t *testing.T) {
 		b := array.NewRecordBuilder(entry.Pool, computedPartition("path"))
 		defer b.Release()
-		now := time.Now().UTC().UnixMilli()
+		now := must.Must(time.Parse(time.RFC822, time.RFC822))().UTC().UnixMilli()
 		b.Field(0).(*array.TimestampBuilder).Append(arrow.Timestamp(now))
 		ls := b.Field(1).(*array.ListBuilder)
 		ls.Append(true)
