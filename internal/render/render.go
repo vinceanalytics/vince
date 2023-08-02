@@ -1,14 +1,8 @@
 package render
 
 import (
-	"context"
 	"encoding/json"
-	"html/template"
-	"io"
 	"net/http"
-
-	"github.com/vinceanalytics/vince/internal/templates"
-	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 func JSON(w http.ResponseWriter, code int, data any) {
@@ -21,37 +15,11 @@ type err struct {
 	Error any `json:"error"`
 }
 
-func JSONError(w http.ResponseWriter, code int, msg any) {
+func ERROR(w http.ResponseWriter, code int, msg ...any) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(err{Error: msg})
-}
-
-func HTML(ctx context.Context, w http.ResponseWriter, tpl *template.Template, code int, f ...func(*templates.Context)) {
-	w.Header().Add("Content-Type", "text/html")
-	w.WriteHeader(code)
-	err := EXEC(ctx, w, tpl, f...)
-	if err != nil {
-		log.Get().Err(err).Str("template", tpl.Name()).Msg("Failed to render")
+	if len(msg) == 0 {
+		msg = []any{http.StatusText(code)}
 	}
-}
-
-func EXEC(ctx context.Context, w io.Writer, tpl *template.Template, f ...func(*templates.Context)) error {
-	data := templates.New(ctx)
-	if len(f) > 0 {
-		f[0](data)
-	}
-	return tpl.Execute(w, data)
-}
-
-func ERROR(ctx context.Context, w http.ResponseWriter, code int, f ...func(*templates.Context)) {
-	HTML(ctx, w, templates.Error, code, func(ctx *templates.Context) {
-		ctx.Error = &templates.Errors{
-			Status:     code,
-			StatusText: http.StatusText(code),
-		}
-		if len(f) > 0 {
-			f[0](ctx)
-		}
-	})
+	json.NewEncoder(w).Encode(err{Error: msg[0]})
 }

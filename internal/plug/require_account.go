@@ -30,7 +30,7 @@ func RequireAccount(h http.Handler) http.Handler {
 			// accessing user site
 			site := models.SiteByDomain(ctx, s)
 			if site == nil {
-				render.ERROR(ctx, w, http.StatusNotFound)
+				render.ERROR(w, http.StatusNotFound)
 				return
 			}
 			ctx = models.SetSite(ctx, site)

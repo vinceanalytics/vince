@@ -135,32 +135,6 @@ func PutSecureBrowserHeaders(h http.Handler) http.Handler {
 	})
 }
 
-func Captcha(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
-			r = sessions.SaveCaptcha(w, r)
-		default:
-		}
-		h.ServeHTTP(w, r)
-	})
-}
-
-func CSRF(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
-			r = sessions.SaveCsrf(w, r)
-		default:
-			if !sessions.IsValidCSRF(r) {
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-		}
-		h.ServeHTTP(w, r)
-	})
-}
-
 func CORS(h http.Handler) http.Handler {
 	var allowedHeaders http.Header
 	var once sync.Once
@@ -322,7 +296,7 @@ func Bootstrap(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		usr := models.GetUser(r.Context())
 		if usr == nil || usr.Name != config.Get(r.Context()).Bootstrap.Name {
-			render.ERROR(r.Context(), w, http.StatusUnauthorized)
+			render.ERROR(w, http.StatusUnauthorized)
 			return
 		}
 		h.ServeHTTP(w, r)

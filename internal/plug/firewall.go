@@ -22,7 +22,7 @@ func Firewall(ctx context.Context) Plug {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if !pass.Allow(r) {
-				render.ERROR(r.Context(), w, http.StatusNotFound)
+				render.ERROR(w, http.StatusNotFound)
 				return
 			}
 			h.ServeHTTP(w, r)

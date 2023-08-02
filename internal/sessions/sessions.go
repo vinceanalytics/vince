@@ -3,12 +3,9 @@ package sessions
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"html/template"
 	"io"
 	"net/http"
 	"strconv"
@@ -16,12 +13,9 @@ import (
 	"time"
 
 	"filippo.io/age"
-	"github.com/dchest/captcha"
-	"github.com/lestrrat-go/dataurl"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/flash"
-	"github.com/vinceanalytics/vince/internal/templates"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
@@ -173,34 +167,6 @@ func (s *Session) Create(ctx context.Context, b []byte) string {
 		panic("failed to encrypt session " + err.Error())
 	}
 	return base64.StdEncoding.EncodeToString(buf.Bytes())
-}
-
-func SaveCaptcha(w http.ResponseWriter, r *http.Request) *http.Request {
-	session, r := Load(r)
-	solution := captcha.RandomDigits(captcha.DefaultLen)
-	img := captcha.NewImage("", solution, captcha.StdWidth, captcha.StdHeight)
-	var b bytes.Buffer
-	img.WriteTo(&b)
-	data, err := dataurl.Encode(b.Bytes(), dataurl.WithBase64Encoding(true), dataurl.WithMediaType("image/png"))
-	if err != nil {
-		log.Get().Err(err).Msg("failed to encode captcha image")
-		return r
-	}
-	session.Data.Captcha = formatCaptchaSolution(solution)
-	session.Save(r.Context(), w)
-	return r.WithContext(templates.SetCaptcha(r.Context(),
-		template.HTMLAttr(fmt.Sprintf("src=%q", string(data))),
-	))
-}
-
-func SaveCsrf(w http.ResponseWriter, r *http.Request) *http.Request {
-	session, r := Load(r)
-	token := make([]byte, 32)
-	rand.Read(token)
-	csrf := base64.StdEncoding.EncodeToString(token)
-	session.Data.Csrf = csrf
-	session.Save(r.Context(), w)
-	return r.WithContext(templates.SetCSRF(r.Context(), template.HTML(csrf)))
 }
 
 func IsValidCSRF(r *http.Request) bool {

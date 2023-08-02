@@ -17,7 +17,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
-	"github.com/vinceanalytics/vince/internal/email"
 	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -113,13 +112,6 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		)
 	}
 
-	if o.Mailer.Enabled {
-		mailer := must.Must(email.FromConfig(o))(
-			"failed setting up mailer from config",
-		)
-		resources = append(resources, mailer)
-		ctx = email.Set(ctx, mailer)
-	}
 	ctx, ts := timeseries.Open(ctx, o)
 	if o.Alerts.Enabled {
 		// alerts support querying and email. Make sure we initialize after email and

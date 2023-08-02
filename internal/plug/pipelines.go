@@ -28,13 +28,6 @@ func SharedLink() Pipeline {
 	}
 }
 
-func Protect() Pipeline {
-	return Pipeline{
-		CSRF,
-		Captcha,
-	}
-}
-
 func Public(ctx context.Context) Pipeline {
 	return Pipeline{
 		Firewall(ctx),

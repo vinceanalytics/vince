@@ -14,7 +14,7 @@ func AuthAPI(resource schema.Resource, action schema.Verb) Plug {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenString := bearer(r.Header)
 			if tokenString == "" {
-				render.JSONError(w, http.StatusUnauthorized,
+				render.ERROR(w, http.StatusUnauthorized,
 					"Missing API key. Please use a valid vince API key as a Bearer Token.",
 				)
 				return
@@ -25,7 +25,7 @@ func AuthAPI(resource schema.Resource, action schema.Verb) Plug {
 			site := params.Get("site")
 			claims := models.GetApiKey(ctx, tokenString)
 			if claims == nil || !claims.Can(ctx, owner, site, resource, action) {
-				render.JSONError(w, http.StatusUnauthorized,
+				render.ERROR(w, http.StatusUnauthorized,
 					"Invalid API key. Please make sure you're using a valid API key with access to the resource you've requested.",
 				)
 				return
@@ -33,7 +33,7 @@ func AuthAPI(resource schema.Resource, action schema.Verb) Plug {
 
 			user := models.QueryUserByNameOrEmail(ctx, claims.Owner)
 			if user == nil {
-				render.JSONError(w, http.StatusUnauthorized,
+				render.ERROR(w, http.StatusUnauthorized,
 					"Invalid API key. Please make sure you're using a valid API key with access to the resource you've requested.",
 				)
 				return
@@ -42,7 +42,7 @@ func AuthAPI(resource schema.Resource, action schema.Verb) Plug {
 			if site != "" {
 				s := models.SiteByDomain(ctx, site)
 				if s == nil {
-					render.JSONError(w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
+					render.ERROR(w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 					return
 				}
 				ctx = models.SetSite(ctx, s)
