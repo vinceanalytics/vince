@@ -1,4 +1,5 @@
 schema:
   fields: 2
     - timestamp: type=timestamp[ms]
+           metadata: ["PARQUET:field_id": "-1"]
     - path: type=list<item: struct<value: utf8, metrics: struct<visitors: float64, page_views: float64, sessions: float64, bounce_rate: float64, session_duration: float64>>, nullable>

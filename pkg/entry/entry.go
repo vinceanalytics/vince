@@ -9,8 +9,6 @@ import (
 	"github.com/apache/arrow/go/v13/arrow/array"
 	"github.com/apache/arrow/go/v13/arrow/compute"
 	"github.com/apache/arrow/go/v13/arrow/memory"
-	"github.com/apache/arrow/go/v13/parquet/pqarrow"
-	"github.com/vinceanalytics/vince/internal/must"
 )
 
 type Entry struct {
@@ -221,31 +219,31 @@ func (m *MultiEntry) timestamp(name string, values []arrow.Timestamp) {
 // Fields for constructing arrow schema on Entry.
 func Fields() []arrow.Field {
 	return []arrow.Field{
-		{Name: "bounce", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "browser", Type: arrow.BinaryTypes.String},
-		{Name: "browser_version", Type: arrow.BinaryTypes.String},
-		{Name: "city", Type: arrow.BinaryTypes.String},
-		{Name: "country", Type: arrow.BinaryTypes.String},
-		{Name: "duration", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "entry_page", Type: arrow.BinaryTypes.String},
-		{Name: "exit_page", Type: arrow.BinaryTypes.String},
-		{Name: "host", Type: arrow.BinaryTypes.String},
-		{Name: "id", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "name", Type: arrow.BinaryTypes.String},
-		{Name: "os", Type: arrow.BinaryTypes.String},
-		{Name: "os_version", Type: arrow.BinaryTypes.String},
-		{Name: "path", Type: arrow.BinaryTypes.String},
-		{Name: "referrer", Type: arrow.BinaryTypes.String},
-		{Name: "referrer_source", Type: arrow.BinaryTypes.String},
-		{Name: "region", Type: arrow.BinaryTypes.String},
-		{Name: "screen", Type: arrow.BinaryTypes.String},
-		{Name: "session", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "timestamp", Type: &arrow.TimestampType{Unit: arrow.Millisecond}},
-		{Name: "utm_campaign", Type: arrow.BinaryTypes.String},
-		{Name: "utm_content", Type: arrow.BinaryTypes.String},
-		{Name: "utm_medium", Type: arrow.BinaryTypes.String},
-		{Name: "utm_source", Type: arrow.BinaryTypes.String},
-		{Name: "utm_term", Type: arrow.BinaryTypes.String},
+		{Name: "bounce", Type: arrow.PrimitiveTypes.Int64, Metadata: metaData},
+		{Name: "browser", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "browser_version", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "city", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "country", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "duration", Type: arrow.PrimitiveTypes.Int64, Metadata: metaData},
+		{Name: "entry_page", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "exit_page", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "host", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "id", Type: arrow.PrimitiveTypes.Int64, Metadata: metaData},
+		{Name: "name", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "os", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "os_version", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "path", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "referrer", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "referrer_source", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "region", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "screen", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "session", Type: arrow.PrimitiveTypes.Int64, Metadata: metaData},
+		{Name: "timestamp", Type: &arrow.TimestampType{Unit: arrow.Millisecond}, Metadata: metaData},
+		{Name: "utm_campaign", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "utm_content", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "utm_medium", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "utm_source", Type: arrow.BinaryTypes.String, Metadata: metaData},
+		{Name: "utm_term", Type: arrow.BinaryTypes.String, Metadata: metaData},
 	}
 }
 
@@ -258,6 +256,8 @@ var Index = func() (m map[string]int) {
 	}
 	return
 }()
+
+var metaData = arrow.NewMetadata([]string{"PARQUET:field_id"}, []string{"-1"})
 
 var IndexedColumnsNames = []string{
 	"browser",
@@ -291,21 +291,7 @@ var IndexedColumns = func() (m map[int]string) {
 	return
 }()
 
-var Schema = func() *arrow.Schema {
-	a := arrow.NewSchema(all, nil)
-	// When merging blocks, there is schema mismatch error because of the way
-	// equality is conducted.
-	//
-	// Conversion of arrow.Schema to parquet schema adds fiend_id metadata . This
-	// causes the equality check to fail. We make sure that we have the same schema
-	// for both parquet and arrow by converting between them here.
-	return must.Must(pqarrow.FromParquet(
-		must.Must(
-			pqarrow.ToParquet(a, nil, pqarrow.ArrowWriterProperties{}),
-		)("failed to convert arrow schema to parquet schema"),
-		nil, nil,
-	))("failed to convert parquet schema to arrow schema")
-}()
+var Schema = arrow.NewSchema(all, nil)
 
 func Select(names ...string) *arrow.Schema {
 	o := make([]arrow.Field, len(names))
