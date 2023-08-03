@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { Box, NavList } from "@primer/react";
+import { Box, NavList, Tooltip } from "@primer/react";
 import styled from "styled-components"
 import { HomeIcon, GearIcon } from "@primer/octicons-react";
 
@@ -30,7 +30,6 @@ const Sidebar = () => {
                 flex: " 0 0 4.5rem",
                 flexDirection: "column",
                 zIndex: 20001,
-                width: "130px",
                 borderRightWidth: 1,
                 borderStyle: 'solid',
                 borderColor: 'border.default',
@@ -41,19 +40,22 @@ const Sidebar = () => {
                 </a>
             </Logo>
             <NavList >
-                <NavList.Item aria-current="page">
-                    <NavList.LeadingVisual>
-                        <HomeIcon />
-                    </NavList.LeadingVisual>
-                    Console
-                </NavList.Item>
-                <NavList.Divider />
-                <NavList.Item>
-                    <NavList.LeadingVisual>
-                        <GearIcon />
-                    </NavList.LeadingVisual>
-                    Settings
-                </NavList.Item>
+                <Tooltip aria-label="Console" direction="e">
+                    <NavList.Item aria-current="page">
+                        <NavList.LeadingVisual>
+                            <HomeIcon size="medium" />
+                        </NavList.LeadingVisual>
+                    </NavList.Item>
+                </Tooltip>
+                <NavList.Divider sx={{ marginY: "1rem" }} />
+                <Tooltip aria-label="Settings" direction="e">
+                    <NavList.Item >
+                        <NavList.LeadingVisual>
+                            <GearIcon size="medium" />
+                        </NavList.LeadingVisual>
+                    </NavList.Item>
+                </Tooltip>
+
             </NavList>
         </Box>
     )
