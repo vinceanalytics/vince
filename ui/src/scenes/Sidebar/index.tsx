@@ -17,7 +17,19 @@ const Logo = styled.div`
     justify-content: center;
   }
 `
+
+type Tab = "console" | "settings"
+
 const Sidebar = () => {
+    const [selected, setSelected] = useState<Tab>("console")
+    const handleConsoleClick = useCallback(() => {
+        setSelected("console")
+    }, [])
+
+    const handleSettingsClick = useCallback(() => {
+        setSelected("settings")
+    }, [])
+
     return (
         <Box
             sx={{
@@ -41,7 +53,10 @@ const Sidebar = () => {
             </Logo>
             <NavList >
                 <Tooltip aria-label="Console" direction="e">
-                    <NavList.Item aria-current="page">
+                    <NavList.Item
+                        aria-current={selected === "console"}
+                        onClick={handleConsoleClick}
+                    >
                         <NavList.LeadingVisual>
                             <HomeIcon />
                         </NavList.LeadingVisual>
@@ -49,7 +64,10 @@ const Sidebar = () => {
                 </Tooltip>
                 <NavList.Divider sx={{ marginY: "1rem" }} />
                 <Tooltip aria-label="Settings" direction="e">
-                    <NavList.Item >
+                    <NavList.Item
+                        aria-current={selected === "settings"}
+                        onClick={handleSettingsClick}
+                    >
                         <NavList.LeadingVisual>
                             <GearIcon />
                         </NavList.LeadingVisual>
