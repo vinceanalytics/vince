@@ -7,6 +7,7 @@ import {
   ScreenSizeProvider,
   TransitionDuration,
 } from "./components"
+import { ThemeProvider } from '@primer/react'
 
 
 const FadeReg = createGlobalFadeTransition("fade-reg", TransitionDuration.REG)
@@ -21,8 +22,10 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <ScreenSizeProvider>
-    <FadeSlow />
-    <FadeReg />
-    <App />
+    <ThemeProvider>
+      <FadeSlow />
+      <FadeReg />
+      <App />
+    </ThemeProvider>
   </ScreenSizeProvider>,
 )
