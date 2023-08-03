@@ -20,7 +20,6 @@ const Logo = styled.div`
 const Sidebar = () => {
     return (
         <Box
-            backgroundColor={"accent.muted"}
             sx={{
                 display: "flex",
                 position: "absolute",
@@ -32,6 +31,9 @@ const Sidebar = () => {
                 flexDirection: "column",
                 zIndex: 20001,
                 width: "130px",
+                borderRightWidth: 1,
+                borderStyle: 'solid',
+                borderColor: 'border.default',
             }}>
             <Logo>
                 <a href="https://vinceanalytics.github.io" rel="noreferrer" target="_blank">
