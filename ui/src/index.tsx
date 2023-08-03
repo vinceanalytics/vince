@@ -8,6 +8,7 @@ import {
   TransitionDuration,
 } from "./components"
 import { ThemeProvider } from '@primer/react'
+import { LocalStorageProvider } from "./providers/LocalStorageProvider"
 
 
 const FadeReg = createGlobalFadeTransition("fade-reg", TransitionDuration.REG)
@@ -23,9 +24,11 @@ const root = ReactDOM.createRoot(
 root.render(
   <ScreenSizeProvider>
     <ThemeProvider>
-      <FadeSlow />
-      <FadeReg />
-      <App />
+      <LocalStorageProvider>
+        <FadeSlow />
+        <FadeReg />
+        <App />
+      </LocalStorageProvider>
     </ThemeProvider>
   </ScreenSizeProvider>,
 )
