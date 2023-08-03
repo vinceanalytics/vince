@@ -25,13 +25,15 @@ const Sidebar = () => {
                 position: "absolute",
                 left: "0",
                 top: "0",
-                paddingX: "1rem",
+                paddingLeft: "1rem",
                 height: "calc(100% - 4rem)",
                 flex: " 0 0 4.5rem",
                 flexDirection: "column",
                 zIndex: 20001,
                 borderRightWidth: 1,
                 borderStyle: 'solid',
+                borderBottom: "none",
+                borderTop: "none",
                 borderColor: 'border.default',
             }}>
             <Logo>
@@ -43,7 +45,7 @@ const Sidebar = () => {
                 <Tooltip aria-label="Console" direction="e">
                     <NavList.Item aria-current="page">
                         <NavList.LeadingVisual>
-                            <HomeIcon size="medium" />
+                            <HomeIcon />
                         </NavList.LeadingVisual>
                     </NavList.Item>
                 </Tooltip>
@@ -51,7 +53,7 @@ const Sidebar = () => {
                 <Tooltip aria-label="Settings" direction="e">
                     <NavList.Item >
                         <NavList.LeadingVisual>
-                            <GearIcon size="medium" />
+                            <GearIcon />
                         </NavList.LeadingVisual>
                     </NavList.Item>
                 </Tooltip>
