@@ -1,7 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
 import {
   createGlobalFadeTransition,
   ScreenSizeProvider,
@@ -9,6 +7,7 @@ import {
 } from "./components"
 import { ThemeProvider } from '@primer/react'
 import { LocalStorageProvider } from "./providers/LocalStorageProvider"
+import Layout from "./scenes/Layout"
 
 
 const FadeReg = createGlobalFadeTransition("fade-reg", TransitionDuration.REG)
@@ -27,7 +26,7 @@ root.render(
       <LocalStorageProvider>
         <FadeSlow />
         <FadeReg />
-        <App />
+        <Layout />
       </LocalStorageProvider>
     </ThemeProvider>
   </ScreenSizeProvider>,
