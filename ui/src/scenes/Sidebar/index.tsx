@@ -31,9 +31,7 @@ const Sidebar = () => {
                 flexDirection: "column",
                 zIndex: 20001,
                 borderRightWidth: 1,
-                borderStyle: 'solid',
-                borderBottom: "none",
-                borderTop: "none",
+                borderRightStyle: 'solid',
                 borderColor: 'border.default',
             }}>
             <Logo>
