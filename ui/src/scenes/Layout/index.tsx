@@ -1,12 +1,67 @@
+import React, { useCallback, useEffect } from "react"
+import { createPortal } from "react-dom"
+import styled from "styled-components"
+
 import { VinceProvider } from "../../providers";
 import Footer from "../Footer";
 import Sidebar from "../Sidebar"
+import { Box } from "@primer/react";
+import { useLocalStorage, StoreKey, SettingsType } from "../../providers/LocalStorageProvider"
+import { Splitter, } from "../../components"
+
+const Console = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-height: 100%;
+`
+
+const Top = styled.div`
+  position: relative;
+  overflow: hidden;
+`
 
 const Layout = () => {
+    const consoleNode = document.getElementById("console")
+    const { editorSplitterBasis, resultsSplitterBasis, updateSettings } =
+        useLocalStorage()
+    const handleEditorSplitterChange = useCallback((value: SettingsType) => {
+        updateSettings(StoreKey.EDITOR_SPLITTER_BASIS, value)
+    }, [])
+
+    const handleResultsSplitterChange = useCallback((value: SettingsType) => {
+        updateSettings(StoreKey.RESULTS_SPLITTER_BASIS, value)
+    }, [])
     return (
         <VinceProvider>
             <Sidebar />
             <Footer />
+            {consoleNode &&
+                createPortal(
+                    <Console>
+                        <Splitter
+                            direction="vertical"
+                            fallback={editorSplitterBasis}
+                            min={100}
+                            onChange={handleEditorSplitterChange}
+                        >
+                            <Top>
+                                <Splitter
+                                    direction="horizontal"
+                                    fallback={resultsSplitterBasis}
+                                    max={500}
+                                    onChange={handleResultsSplitterChange}
+                                >
+                                    <Box />
+                                    <Box />
+                                </Splitter>
+                            </Top>
+                            <Box />
+                        </Splitter>
+                    </Console>,
+                    consoleNode,
+                )
+            }
         </VinceProvider>
     )
 }
