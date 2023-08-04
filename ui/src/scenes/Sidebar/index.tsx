@@ -37,6 +37,7 @@ const Sidebar = () => {
                 position: "absolute",
                 left: "0",
                 top: "0",
+                width: "56px",
                 paddingLeft: "1rem",
                 height: "calc(100% - 4rem)",
                 flex: " 0 0 4.5rem",
