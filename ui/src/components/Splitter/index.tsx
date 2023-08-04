@@ -33,7 +33,7 @@ import React, {
     useState,
 } from "react"
 import styled, { createGlobalStyle, css } from "styled-components"
-import { Octicon } from "@primer/react"
+import { Octicon, themeGet } from "@primer/react"
 import { GrabberIcon } from "@primer/octicons-react";
 
 
@@ -73,8 +73,8 @@ const wrapperStyles = css`
     color: #636e7b;
   
     &:hover {
-      background: #6e7781};
-      color: #1F2328;
+      background: ${themeGet('canvas.subtle')}};
+      color: ${themeGet('fg.subtle')};
     }
   `
 
