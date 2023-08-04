@@ -98,4 +98,4 @@ export const useLocalStorage = () => {
     return useContext(LocalStorageContext)
 }
 
-
+export * from "./types"
