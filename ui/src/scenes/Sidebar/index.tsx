@@ -7,7 +7,7 @@ import { HomeIcon, GearIcon } from "@primer/octicons-react";
 const Logo = styled.div`
   position: relative;
   display: flex;
-  flex: 0 0 4rem;
+  flex: 0 0 3rem;
   z-index: 1;
 
   a {
