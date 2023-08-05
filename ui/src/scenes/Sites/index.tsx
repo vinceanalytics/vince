@@ -1,5 +1,5 @@
 import { Box, TreeView } from "@primer/react";
-import { TableIcon, PlusIcon } from "@primer/octicons-react";
+import { TableIcon, PlusIcon, GoalIcon, AlertIcon } from "@primer/octicons-react";
 
 import { UnderlineNav } from '@primer/react/drafts'
 
@@ -15,9 +15,11 @@ const Sites = () => {
             }}>
             <UnderlineNav aria-label="Sites" >
                 <UnderlineNav.Item
-                    aria-current="page"
+                    aria-current={true}
                     icon={TableIcon}
                 >Sites</UnderlineNav.Item>
+                <UnderlineNav.Item icon={GoalIcon}>Goals</UnderlineNav.Item>
+                <UnderlineNav.Item icon={AlertIcon}>Alerts</UnderlineNav.Item>
             </UnderlineNav>
             <Box>
                 <nav aria-label="Sites Content">
