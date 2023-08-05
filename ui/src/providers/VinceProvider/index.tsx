@@ -1,6 +1,6 @@
 import React, { createContext, PropsWithChildren } from "react"
 
-import { Client } from "./client";
+import { Client } from "../../vince";
 
 const client = new Client();
 

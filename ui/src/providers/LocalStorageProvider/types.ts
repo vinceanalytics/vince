@@ -3,6 +3,7 @@ export enum StoreKey {
     QUERY_TEXT = "query.text",
     EDITOR_LINE = "editor.line",
     EDITOR_COL = "editor.col",
+    EXAMPLE_QUERIES_VISITED = "editor.exampleQueriesVisited",
     NOTIFICATION_ENABLED = "notification.enabled",
     NOTIFICATION_DELAY = "notification.delay",
     EDITOR_SPLITTER_BASIS = "splitter.editor.basis",
@@ -19,8 +20,14 @@ export type SettingsType = string | boolean | number
 
 export type LocalConfig = {
     authPayload: string
+    editorCol: number
+    editorLine: number
+    notificationDelay: number
+    isNotificationEnabled: boolean
+    queryText: string
     editorSplitterBasis: number
     resultsSplitterBasis: number
+    exampleQueriesVisited: boolean
 }
 
 export const parseBoolean = (value: string, defaultValue: boolean): boolean =>
