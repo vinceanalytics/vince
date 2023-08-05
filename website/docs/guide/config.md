@@ -73,10 +73,10 @@ VINCE_BOOTSTRAP_EMAIL="..."
 Full name of the user to bootstrap.
 ::: code-group
 ```shell [flag]
---bootstrap-full-name="Geofrey Ernest"
+--bootstrap-full-name="..."
 ```
 ```shell [env]
-VINCE_BOOTSTRAP_FULL_NAME="Geofrey Ernest"
+VINCE_BOOTSTRAP_FULL_NAME="..."
 ```
 :::
 ## bootstrap-key
@@ -113,10 +113,10 @@ VINCE_BOOTSTRAP_PASSWORD="..."
 allows creating a user and api key on startup.
 ::: code-group
 ```shell [flag]
---enable-bootstrap="true"
+--enable-bootstrap="false"
 ```
 ```shell [env]
-VINCE_ENABLE_BOOTSTRAP="true"
+VINCE_ENABLE_BOOTSTRAP="false"
 ```
 :::
 # Core
@@ -247,10 +247,10 @@ VINCE_CORS_METHODS="GET,POST,PUT,PATCH,DELETE,OPTIONS"
 
 ::: code-group
 ```shell [flag]
---cors-origin="true"
+--cors-origin="*"
 ```
 ```shell [env]
-VINCE_CORS_ORIGIN="true"
+VINCE_CORS_ORIGIN="*"
 ```
 :::
 ## cors-send-preflight-response
@@ -321,10 +321,10 @@ VINCE_SYSTEM_INTERVAL="1m0s"
 window for buffering timeseries in memory before savin them
 ::: code-group
 ```shell [flag]
---ts-buffer-sync-interval="20s"
+--ts-buffer-sync-interval="1m0s"
 ```
 ```shell [env]
-VINCE_TS_BUFFER_INTERVAL="20s"
+VINCE_TS_BUFFER_INTERVAL="1m0s"
 ```
 :::
 # Mailer
@@ -393,10 +393,10 @@ VINCE_MAILER_SMTP_ANONYMOUS_TRACE="..."
 port address of the smtp server used for outgoing emails
 ::: code-group
 ```shell [flag]
---mailer-smtp-enable-mailhog="true"
+--mailer-smtp-enable-mailhog="false"
 ```
 ```shell [env]
-VINCE_MAILER_SMTP_ENABLE_MAILHOG="true"
+VINCE_MAILER_SMTP_ENABLE_MAILHOG="false"
 ```
 :::
 ## mailer-smtp-oauth-host
