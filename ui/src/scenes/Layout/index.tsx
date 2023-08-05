@@ -8,7 +8,7 @@ import Sidebar from "../Sidebar"
 import { Box } from "@primer/react";
 import { useLocalStorage, StoreKey, SettingsType } from "../../providers/LocalStorageProvider"
 import { Splitter, } from "../../components"
-
+import Sites from "../Sites";
 const Console = styled.div`
   display: flex;
   flex-direction: column;
@@ -52,7 +52,9 @@ const Layout = () => {
                                     max={500}
                                     onChange={handleResultsSplitterChange}
                                 >
-                                    <Box />
+                                    <Box >
+                                        <Sites />
+                                    </Box>
                                     <Box />
                                 </Splitter>
                             </Top>
