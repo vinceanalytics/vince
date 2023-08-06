@@ -2,51 +2,10 @@ project_name: vince
 report_sizes: true
 builds:
   - env:
-      - CGO_ENABLED=1
-      - >-
-        {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-macos -F{{.Env.FOUNDATION}}{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-macos -F{{.Env.FOUNDATION}}{{- end }}
-        {{- end }}
-        {{- if eq .Os "windows" }}
-          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-windows{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-windows{{- end }}
-        {{- end }}
-        {{- if eq .Os "linux" }}
-          {{- if eq .Arch "amd64"}}CC=zig cc -target x86_64-linux-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig cc -target aarch64-linux-musl{{- end }}
-        {{- end }}
-      - >-
-        {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-macos -F{{.Env.FOUNDATION}}{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-macos -F{{.Env.FOUNDATION}}{{- end }}
-        {{- end }}
-        {{- if eq .Os "windows" }}
-          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-windows{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-windows{{- end }}
-        {{- end }}
-        {{- if eq .Os "linux" }}
-          {{- if eq .Arch "amd64"}}CXX=zig c++ -target x86_64-linux-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CXX=zig c++ -target aarch64-linux-musl{{- end }}
-        {{- end }}
+      - CGO_ENABLED=0
     goos:
       - darwin
       - linux
-      - windows
-    ignore:
-      - goos: windows
-        goarch: arm64
-    ldflags:
-      - -linkmode=external
-      - -extldflags -static
-      - >-
-        {{- if eq .Os "darwin" }}-w -buildmode=pie {{end}}
-    tags:
-      - static_build
-      - cgo
-      - netgo
-      - osusergo
-      - sqlite_json
     goarch:
       - amd64
       - arm64
@@ -59,14 +18,10 @@ builds:
     binary: v8s
     goos:
       - linux
-      - windows
       - darwin
     goarch:
       - amd64
       - arm64
-    ignore:
-      - goos: windows
-        goarch: arm64
     env:
       - CGO_ENABLED=0
 archives:
@@ -80,9 +35,6 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    format_overrides:
-      - goos: windows
-        format: zip
     files:
       - man/vince.1
       - completions/vince/*
@@ -97,9 +49,6 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    format_overrides:
-      - goos: windows
-        format: zip
     files:
       - man/v8s.1
       - completions/v8s/*
