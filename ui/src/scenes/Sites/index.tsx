@@ -1,9 +1,16 @@
-import { Box, TreeView } from "@primer/react";
+import { Box, Button, TreeView } from "@primer/react";
 import { TableIcon, PlusIcon, GoalIcon, AlertIcon } from "@primer/octicons-react";
 
 import { UnderlineNav } from '@primer/react/drafts'
+import SitePanel from "./sitePanel";
+import GoalsPanel from "./goalsPanel";
+import AlertsPanel from "./alertsPanel";
+import { useState } from "react";
+
+
 
 const Sites = () => {
+    const [active, setActive] = useState<string>("sites")
     return (
         <Box
             sx={{
@@ -15,31 +22,31 @@ const Sites = () => {
             }}>
             <UnderlineNav aria-label="Sites" >
                 <UnderlineNav.Item
-                    aria-current={true}
+                    aria-current={active === "sites" ? true : undefined}
+                    onSelect={() => setActive("sites")}
                     icon={TableIcon}
-                >Sites</UnderlineNav.Item>
-                <UnderlineNav.Item icon={GoalIcon}>Goals</UnderlineNav.Item>
-                <UnderlineNav.Item icon={AlertIcon}>Alerts</UnderlineNav.Item>
+                >
+                    Sites
+                </UnderlineNav.Item>
+                <UnderlineNav.Item
+                    aria-current={active === "goals" ? true : undefined}
+                    onSelect={() => setActive("goals")}
+                    icon={GoalIcon}
+                >
+                    Goals
+                </UnderlineNav.Item>
+                <UnderlineNav.Item
+                    aria-current={active === "alerts" ? true : undefined}
+                    onSelect={() => setActive("alerts")}
+                    icon={AlertIcon}
+                >
+                    Alerts
+                </UnderlineNav.Item>
             </UnderlineNav>
             <Box>
-                <nav aria-label="Sites Content">
-                    <TreeView aria-label="Sites Content">
-                        <TreeView.Item id="root">
-                            <TreeView.LeadingVisual>
-                                <TreeView.DirectoryIcon />
-                            </TreeView.LeadingVisual>
-                            ..
-                            <TreeView.SubTree>
-                                <TreeView.Item id="createSite">
-                                    <TreeView.LeadingVisual>
-                                        <PlusIcon />
-                                    </TreeView.LeadingVisual>
-                                    Create Site
-                                </TreeView.Item>
-                            </TreeView.SubTree>
-                        </TreeView.Item>
-                    </TreeView>
-                </nav>
+                {active === "sites" && <SitePanel />}
+                {active === "goals" && <GoalsPanel />}
+                {active === "alerts" && <AlertsPanel />}
             </Box>
         </Box>
     )
