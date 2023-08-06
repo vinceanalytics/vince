@@ -12,25 +12,7 @@ import (
 
 func Browser(ctx context.Context) Pipeline {
 	return Pipeline{
-		Firewall(ctx),
-		FetchSession,
-		FetchFlash,
 		PutSecureBrowserHeaders,
-		SessionTimeout,
-		Auth,
-		LastSeen,
-	}
-}
-
-func SharedLink() Pipeline {
-	return Pipeline{
-		PutSecureBrowserHeaders,
-	}
-}
-
-func Public(ctx context.Context) Pipeline {
-	return Pipeline{
-		Firewall(ctx),
 	}
 }
 

@@ -14,10 +14,6 @@ import (
 func Pipe(ctx context.Context) plug.Pipeline {
 	metrics := promhttp.Handler()
 
-	// Pipeline for public facing apis. This includes events ingestion api and
-	// health endpoints.
-	public := plug.Public(ctx)
-
 	browser := plug.Browser(ctx)
 
 	return plug.Pipeline{
@@ -26,11 +22,9 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		plug.Ok(config.Get(ctx).EnableProfile,
 			browser.Prefix("/debug/pprof/", pprof.Index),
 		),
-
-		public.PathPOST("/api/event", api.Events),
-		public.PathGET("/health", api.Health),
-		public.PathGET("/version", api.Version),
-
+		browser.PathPOST("/api/event", api.Events),
+		browser.PathGET("/health", api.Health),
+		browser.PathGET("/version", api.Version),
 		NotFound,
 	}
 }

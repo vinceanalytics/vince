@@ -6,15 +6,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/core"
-	"github.com/vinceanalytics/vince/internal/flash"
-	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/pkg/log"
 )
 
@@ -36,27 +30,6 @@ func (p Pipeline) And(n ...Plug) Pipeline {
 
 func NOOP(w http.ResponseWriter, r *http.Request) {}
 
-func FetchSession(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, r = sessions.Load(r)
-		h.ServeHTTP(w, r)
-	})
-}
-
-func FetchFlash(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := sessions.Load(r)
-		f := session.Data.Flash
-		if f != nil {
-			r = r.WithContext(flash.Set(r.Context(), f))
-			// save session without the flashes
-			session.Data.Flash = nil
-			session.Save(r.Context(), w)
-		}
-		h.ServeHTTP(w, r)
-	})
-}
-
 func Track() Plug {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -69,58 +42,6 @@ func Track() Plug {
 			h.ServeHTTP(w, r)
 		})
 	}
-}
-
-func SessionTimeout(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := sessions.Load(r)
-		now := core.Now(r.Context())
-		switch {
-		case session.Data.USER != "" && !session.Data.TimeoutAt.IsZero() && now.After(session.Data.TimeoutAt):
-			session.Data = sessions.Data{}
-		case session.Data.USER != "":
-			session.Data.TimeoutAt = now.Add(24 * 7 * 2 * time.Hour)
-			session.Save(r.Context(), w)
-		}
-		h.ServeHTTP(w, r)
-	})
-}
-
-func Auth(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := sessions.Load(r)
-		if session.Data.USER != "" {
-			if u := models.QueryUserByNameOrEmail(r.Context(), session.Data.USER); u != nil {
-				r = r.WithContext(models.SetUser(r.Context(), u))
-			} else {
-				session.Data = sessions.Data{}
-				session.Save(r.Context(), w)
-			}
-		}
-		h.ServeHTTP(w, r)
-	})
-}
-
-func LastSeen(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, r := sessions.Load(r)
-		usr := models.GetUser(r.Context())
-		now := core.Now(r.Context())
-		switch {
-		case usr != nil && !session.Data.LastSeen.IsZero() && now.Add(-4*time.Hour).After(session.Data.LastSeen):
-			usr.LastSeen = now
-			err := models.Get(r.Context()).Model(usr).Update("last_seen", now).Error
-			if err != nil {
-				log.Get().Err(err).Msg("failed to update last_seen")
-			}
-			session.Data.LastSeen = now
-			session.Save(r.Context(), w)
-		case usr != nil && session.Data.LastSeen.IsZero():
-			session.Data.LastSeen = now
-			session.Save(r.Context(), w)
-		}
-		h.ServeHTTP(w, r)
-	})
 }
 
 func PutSecureBrowserHeaders(h http.Handler) http.Handler {
@@ -288,17 +209,6 @@ func RequestID(h http.Handler) http.Handler {
 		lg := log.Get()
 		rg := lg.With().Str("request_id", r.Header.Get("x-request-id")).Logger()
 		r = r.WithContext(rg.WithContext(r.Context()))
-		h.ServeHTTP(w, r)
-	})
-}
-
-func Bootstrap(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		usr := models.GetUser(r.Context())
-		if usr == nil || usr.Name != config.Get(r.Context()).Bootstrap.Name {
-			render.ERROR(w, http.StatusUnauthorized)
-			return
-		}
 		h.ServeHTTP(w, r)
 	})
 }

@@ -5,7 +5,6 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/events"
-	"github.com/vinceanalytics/vince/internal/gate"
 	"github.com/vinceanalytics/vince/internal/remoteip"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/pkg/entry"
@@ -33,12 +32,6 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	e, err := events.Parse(req, core.Now(r.Context()))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	pass := gate.Check(r.Context(), req.Domain)
-	if !pass {
-		w.Header().Set("x-vince-dropped", "1")
-		w.WriteHeader(http.StatusAccepted)
 		return
 	}
 	timeseries.Register(r.Context(), e)

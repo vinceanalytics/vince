@@ -13,16 +13,12 @@ import (
 
 	"github.com/caddyserver/certmagic"
 	"github.com/vinceanalytics/vince/assets"
-	"github.com/vinceanalytics/vince/internal/alerts"
-	"github.com/vinceanalytics/vince/internal/caches"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/health"
-	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/router"
-	"github.com/vinceanalytics/vince/internal/sessions"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/internal/worker"
 	"github.com/vinceanalytics/vince/pkg/log"
@@ -97,40 +93,9 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		ctx = core.SetHTTPSListener(ctx, httpsListener)
 	}
 
-	sqlDb := must.Must(models.Open(models.Database(o)))(
-		"failed setting up operational database",
-	)
-	resources = append(resources, resourceFunc(func() error {
-		return models.CloseDB(sqlDb)
-	}))
-
-	ctx = models.Set(ctx, sqlDb)
-
-	if o.Bootstrap.Enabled {
-		models.Bootstrap(ctx,
-			o.Bootstrap.Name, o.Bootstrap.FullName, o.Bootstrap.Email, o.Bootstrap.Password, o.Bootstrap.Key,
-		)
-	}
-
 	ctx, ts := timeseries.Open(ctx, o)
-	if o.Alerts.Enabled {
-		// alerts support querying and email. Make sure we initialize after email and
-		// timeseries has been set on ctx.
-		a := must.Must(alerts.Setup(ctx, o))(
-			"failed setting up alerts",
-		)
-		ctx = alerts.Set(ctx, a)
-	}
 	resources = append(resources, ts)
-	ctx = must.Must(caches.Open(ctx))(
-		"failed setting up caches",
-	)
-	resources = append(resources, resourceFunc(func() error {
-		return caches.Close(ctx)
-	}))
 
-	session := sessions.NewSession("_vince")
-	ctx = sessions.Set(ctx, session)
 	h := &health.Config{}
 	resources = append(resources, h)
 	ctx = health.Set(ctx, h)
@@ -196,18 +161,9 @@ func Run(ctx context.Context, resources ResourceList) error {
 
 	h := health.Get(ctx)
 	var g errgroup.Group
-	h.Health = append(h.Health, health.Base{
-		Key:       "database",
-		CheckFunc: models.Check,
-	})
 	{
 		o := config.Get(ctx)
-		g.Go(worker.Periodic(ctx, h.Ping("cache"), o.Intervals.SiteCache, true, worker.SiteCacheUpdate))
 		g.Go(worker.Periodic(ctx, h.Ping("series"), o.Intervals.TSSync, false, worker.SaveBuffers))
-		g.Go(worker.Periodic(ctx, h.Ping("system"), o.Intervals.System, false, worker.System))
-		if o.Alerts.Enabled {
-			g.Go(alerts.Get(ctx).Work(ctx))
-		}
 	}
 
 	plain := core.GetHTTPServer(ctx)
