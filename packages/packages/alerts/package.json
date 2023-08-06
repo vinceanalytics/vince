@@ -1,6 +1,6 @@
 {
   "name": "@vinceanalytics/alerts",
-  "version": "v0.0.17",
+  "version": "v0.0.18",
   "description": "Write vince alert scripts",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
