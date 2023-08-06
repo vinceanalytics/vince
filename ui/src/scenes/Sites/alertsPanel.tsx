@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Text, TreeView, Box } from "@primer/react";
+import { Text, TreeView, Link } from "@primer/react";
 import { PlusIcon } from "@primer/octicons-react";
 import { Dialog } from '@primer/react/drafts'
 
@@ -21,7 +21,9 @@ const AlertsPanel = () => {
                             <TreeView.LeadingVisual>
                                 <PlusIcon />
                             </TreeView.LeadingVisual>
-                            Create Alerts
+                            <Link onClick={openDialog}>
+                                Create Alert
+                            </Link>
                             {isOpen && (
                                 <Dialog
                                     title="Dialog example"

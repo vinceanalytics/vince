@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Text, TreeView, Box } from "@primer/react";
+import { Text, TreeView, Box, Button, IconButton, Link } from "@primer/react";
 import { PlusIcon } from "@primer/octicons-react";
 import { Dialog } from '@primer/react/drafts'
 
@@ -17,11 +17,13 @@ const SitePanel = () => {
                     </TreeView.LeadingVisual>
                     ..
                     <TreeView.SubTree>
-                        <TreeView.Item id="createSite" onSelect={openDialog}>
+                        <TreeView.Item id="createSite" >
                             <TreeView.LeadingVisual>
                                 <PlusIcon />
                             </TreeView.LeadingVisual>
-                            Create Site
+                            <Link onClick={openDialog}>
+                                Create Site
+                            </Link>
                             {isOpen && (
                                 <Dialog
                                     title="Dialog example"
