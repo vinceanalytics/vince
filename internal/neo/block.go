@@ -17,8 +17,8 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
+	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -82,7 +82,7 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entr
 		Must(ReadMetadata(txn, domain))("failed to read metadata for domain", domain)
 	r := m.Record(ts)
 
-	var block *blocks.Block
+	var block *v1.Block
 	if len(meta.Blocks) > 0 {
 		last := meta.Blocks[len(meta.Blocks)-1]
 		if last.Size < (1 << 20) {
@@ -91,7 +91,7 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entr
 	}
 	if block == nil {
 		id := ulid.Make()
-		block = &blocks.Block{
+		block = &v1.Block{
 			Id:  id.Bytes(),
 			Min: ts,
 		}
@@ -115,15 +115,15 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, ts int64, m *entr
 	))("failed to commit write block")
 }
 
-func ReadMetadata(txn *badger.Txn, domain string) (*blocks.Metadata, error) {
+func ReadMetadata(txn *badger.Txn, domain string) (*v1.Metadata, error) {
 	it, err := txn.Get([]byte(domain))
 	if err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return nil, err
 		}
-		return &blocks.Metadata{}, nil
+		return &v1.Metadata{}, nil
 	}
-	meta := &blocks.Metadata{}
+	meta := &v1.Metadata{}
 	err = it.Value(func(val []byte) error {
 		return proto.Unmarshal(val, meta)
 	})

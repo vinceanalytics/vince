@@ -1,7 +1,7 @@
 syntax = "proto3";
-package blocks;
+package v1;
 
-option go_package = "github.com/vinceanalytics/vince/pkg/blocks";
+option go_package = "github.com/vinceanalytics/vince/proro/v1";
 
 message Metadata { repeated Block blocks = 1; }
 

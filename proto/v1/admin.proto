@@ -1,0 +1,31 @@
+syntax = "proto3";
+package v1;
+
+option go_package = "github.com/vinceanalytics/vince/proro/v1";
+
+// StorePrefix defines different kind of data we are storing in the key value
+// store.
+enum StorePrefix {
+  SITES = 0;
+  BLOCKS = 1;
+  ALERTS = 2;
+}
+
+message StoreKey {
+  string namespace = 1;
+  StorePrefix prefix = 2;
+  bytes key = 3;
+}
+
+message Site {
+  Meta meta = 1;
+  Stats stats = 2;
+
+  message Meta { string domain = 1; }
+
+  message Stats {
+    double visitors = 1;
+    double page_views = 2;
+    double sessions = 3;
+  }
+}

@@ -13,8 +13,8 @@ import (
 	"github.com/apache/arrow/go/v13/arrow/scalar"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
+	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 type Analysis interface {
@@ -27,11 +27,11 @@ var _ Analysis = (*Base)(nil)
 type Base struct {
 	columns []string
 	indices []int
-	filters []*blocks.Filter
+	filters []*v1.Filter
 	build   *array.RecordBuilder
 }
 
-func NewBase(pick []string, filters ...*blocks.Filter) *Base {
+func NewBase(pick []string, filters ...*v1.Filter) *Base {
 	b := basePool.Get().(*Base)
 	return b.Init(pick, filters...)
 }
@@ -41,7 +41,7 @@ var basePool = &sync.Pool{
 		return &Base{
 			columns: make([]string, 0, len(entry.Index)),
 			indices: make([]int, 0, len(entry.Index)),
-			filters: make([]*blocks.Filter, 0, len(entry.Index)),
+			filters: make([]*v1.Filter, 0, len(entry.Index)),
 		}
 	},
 }
@@ -58,7 +58,7 @@ func (b *Base) Record() arrow.Record {
 	return b.build.NewRecord()
 }
 
-func (b *Base) Init(pick []string, filters ...*blocks.Filter) *Base {
+func (b *Base) Init(pick []string, filters ...*v1.Filter) *Base {
 	b.columns = append(b.columns,
 		"bounce",
 		"duration",
@@ -194,20 +194,20 @@ func (b *Base) schema(r arrow.Record) *arrow.Schema {
 	return b.build.Schema()
 }
 
-func apply(ctx context.Context, f *blocks.Filter, a arrow.Array) arrow.Array {
+func apply(ctx context.Context, f *v1.Filter, a arrow.Array) arrow.Array {
 	switch e := f.Value.(type) {
-	case *blocks.Filter_Str:
+	case *v1.Filter_Str:
 		return call(ctx, f.Op.String(),
 			compute.NewDatum(a),
 			compute.NewDatum(scalar.NewStringScalar(e.Str)),
 		)
-	case *blocks.Filter_Timestamp:
+	case *v1.Filter_Timestamp:
 		return call(ctx, f.Op.String(),
 			compute.NewDatum(a),
 			compute.NewDatum(scalar.NewTimestampScalar(arrow.Timestamp(e.Timestamp),
 				&arrow.TimestampType{Unit: arrow.Millisecond})),
 		)
-	case *blocks.Filter_Duration:
+	case *v1.Filter_Duration:
 		return call(ctx, f.Op.String(),
 			compute.NewDatum(a),
 			compute.NewDatum(scalar.NewDurationScalar(arrow.Duration(e.Duration),

@@ -14,8 +14,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/events"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
+	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 func TestWriteBlock_basic(t *testing.T) {
@@ -115,10 +115,10 @@ func TestWriteBlock_basic(t *testing.T) {
 		}
 	})
 	t.Run("can read base fields with pick and filter", func(t *testing.T) {
-		base := NewBase([]string{"path"}, &blocks.Filter{
+		base := NewBase([]string{"path"}, &v1.Filter{
 			Column: "path",
-			Op:     blocks.Op_equal,
-			Value: &blocks.Filter_Str{
+			Op:     v1.Op_equal,
+			Value: &v1.Filter_Str{
 				Str: "/home",
 			},
 		})

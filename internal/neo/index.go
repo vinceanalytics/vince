@@ -12,12 +12,12 @@ import (
 	"github.com/apache/arrow/go/v13/parquet/pqarrow"
 	"github.com/cespare/xxhash/v2"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/pkg/blocks"
 	"github.com/vinceanalytics/vince/pkg/entry"
+	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 // FindRowGroups returns a list of row groups containing indexed column values
-func FindRowGroups(idx *blocks.Index, columns, values []string) (o []int) {
+func FindRowGroups(idx *v1.Index, columns, values []string) (o []int) {
 	must.Assert(len(columns) == len(values))(
 		"mismatch column / value size",
 	)
@@ -40,7 +40,7 @@ out:
 	return
 }
 
-func Index(ctx context.Context, b []byte) (result blocks.Index) {
+func Index(ctx context.Context, b []byte) (result v1.Index) {
 	ctx = entry.Context(ctx)
 	f := must.Must(file.NewParquetReader(bytes.NewReader(b), file.WithReadProps(parquet.NewReaderProperties(
 		entry.Pool,
