@@ -73,7 +73,7 @@ const Sites = () => {
 
   return (
     <Wrapper>
-      <Box paddingX={2}>
+      <Box paddingX={2} sx={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderColor: 'border.default', pb: 1 }}>
         <PageHeader>
           <PageHeader.TitleArea>
             <PageHeader.LeadingAction>
@@ -120,6 +120,7 @@ const Sites = () => {
             alignItems: "center",
             justifyContent: "center",
             width: "100%",
+            pt: 2,
           }}>
             <Spinner size="large" />
           </Box>}
