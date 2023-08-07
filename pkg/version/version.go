@@ -20,9 +20,8 @@ type Version struct {
 	Valid  bool
 }
 
-func (v *Version) String() string {
+func (v Version) String() string {
 	var s strings.Builder
-	s.WriteString("v")
 	s.Write(bytes.TrimSpace(BuildVersion))
 	if !v.Valid {
 		s.WriteString("-ERR-BuildInfo")
@@ -37,7 +36,6 @@ func (v *Version) String() string {
 			s.WriteString("-dirty")
 		}
 	}
-	s.WriteByte('\n')
 	return s.String()
 }
 

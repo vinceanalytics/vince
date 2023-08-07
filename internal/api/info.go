@@ -2,12 +2,13 @@ package api
 
 import (
 	"net/http"
-	"runtime/debug"
 
 	"github.com/vinceanalytics/vince/internal/render"
+	"github.com/vinceanalytics/vince/pkg/version"
 )
 
 func Version(w http.ResponseWriter, r *http.Request) {
-	build, _ := debug.ReadBuildInfo()
-	render.JSON(w, http.StatusOK, build)
+	render.JSON(w, http.StatusOK, map[string]any{
+		"version": version.Build().String(),
+	})
 }
