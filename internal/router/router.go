@@ -25,6 +25,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		browser.PathPOST("/api/event", api.Events),
 		browser.PathGET("/health", api.Health),
 		browser.PathGET("/version", api.Version),
+		browser.PathGET("/sites", api.ListSites),
 		NotFound,
 	}
 }

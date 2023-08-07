@@ -176,6 +176,14 @@ export type UploadResult = {
     status: string
 }
 
+export type ErrorShape = Readonly<{
+    error: string
+}>
+
+
+
+
+
 export class Client {
     private readonly _host: string
     private _controllers: AbortController[] = []
@@ -236,6 +244,47 @@ export class Client {
         }
 
         return result
+    }
+
+    async sites(): Promise<Site[] | ErrorShape> {
+        return this.do<Site[]>("/sites")
+    }
+
+
+    async do<T extends Record<string, any>>(
+        uri: string | URL, init?: RequestInit | undefined,
+    ): Promise<T | ErrorShape> {
+        const controller = new AbortController()
+        this._controllers.push(controller)
+        const path = `${this._host}${uri}`
+        let response: Response
+        try {
+            response = await fetch(path, init)
+        } catch (error) {
+            return await Promise.reject({
+                error: JSON.stringify(error).toString()
+            })
+        } finally {
+            const index = this._controllers.indexOf(controller)
+            if (index >= 0) {
+                this._controllers.splice(index, 1)
+            }
+        }
+        if (response.ok) {
+            if (
+                !response.headers.get("content-type")?.startsWith("application/json")
+            ) {
+                return await Promise.reject({ error: "unexpected content type" })
+            }
+            const data = (await response.json()) as T | ErrorShape
+            if (data.error) {
+                return await Promise.reject(data)
+            }
+            return data as T
+        }
+        return await Promise.reject({
+            error: response.statusText,
+        })
     }
 
     async queryRaw(query: string, options?: Options): Promise<QueryRawResult> {
@@ -440,4 +489,3 @@ export class Client {
     }
 }
 
-export * from "./fromFetch"
