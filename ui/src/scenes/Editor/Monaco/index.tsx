@@ -19,7 +19,7 @@ import {
 } from "./utils"
 import type { Request } from "./utils"
 import { PaneContent } from "../../../components"
-import type { ErrorResult, Table } from "../../../vince"
+import type { ErrorResult, Site } from "../../../vince"
 import * as VINCE from "../../../vince"
 import Loader from "../Loader"
 import styled from "styled-components"
@@ -97,7 +97,7 @@ const MonacoEditor = () => {
     const [editorReady, setEditorReady] = useState<boolean>(false)
     const [lastExecutedQuery, setLastExecutedQuery] = useState("")
     const [running, setRunning] = useState<boolean>(false)
-    const [tables, setTables] = useState<Table[]>([]);
+    const [tables, setTables] = useState<Site[]>([]);
     const [schemaCompletionHandle, setSchemaCompletionHandle] =
         useState<IDisposable>()
     const decorationsRef = useRef<string[]>([])

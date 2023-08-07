@@ -1,8 +1,8 @@
-import { Table } from "../../../../vince"
+import { Site } from "../../../../vince"
 import * as monaco from "monaco-editor"
 import { CompletionItemKind } from "./types"
 
-export const createSchemaCompletionProvider = (questDBTables: Table[] = []) => {
+export const createSchemaCompletionProvider = (questDBTables: Site[] = []) => {
     const completionProvider: monaco.languages.CompletionItemProvider = {
         triggerCharacters: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz \"".split(
             "",

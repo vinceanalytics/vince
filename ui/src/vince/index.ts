@@ -94,11 +94,8 @@ export type QueryResult<T extends Record<string, any>> =
     | ErrorResult
     | DdlResult
 
-export type Table = {
+export type Site = {
     name: string
-    partitionBy: string
-    designatedTimestamp: string
-    walEnabled: boolean
 }
 
 export type Column = {
@@ -335,8 +332,8 @@ export class Client {
         return await Promise.reject(errorPayload)
     }
 
-    async showTables(): Promise<QueryResult<Table>> {
-        const response = await this.query<Table>("tables();")
+    async showTables(): Promise<QueryResult<Site>> {
+        const response = await this.query<Site>("tables();")
 
         if (response.type === Type.DQL) {
             return {

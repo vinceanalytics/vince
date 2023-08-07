@@ -4,6 +4,7 @@ import { PlusIcon, DatabaseIcon } from "@primer/octicons-react";
 import { Dialog } from '@primer/react/drafts'
 
 import styled, { css } from "styled-components"
+import { Site } from "../../vince";
 
 export const PaneMenu = styled.div`
   position: relative;
@@ -43,8 +44,8 @@ const Header = styled(Text)`
 `
 
 type Props = Readonly<{
-    children: ReactNode
-    className?: string
+  children: ReactNode
+  className?: string
 }>
 
 export const PaneContent = styled.div<Props>`
@@ -56,7 +57,7 @@ export const PaneContent = styled.div<Props>`
   `
 
 const Content = styled(PaneContent) <{
-    _loading: boolean
+  _loading: boolean
 }>`
     display: block;
     overflow: auto;
@@ -65,23 +66,42 @@ const Content = styled(PaneContent) <{
 
 
 
+type NewSite = {
+  isDialogOpen: boolean;
+  site?: Site;
+}
+
 
 const Sites = () => {
-    return (
-        <Wrapper>
-            <Box sx={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderColor: 'border.default' }}>
-                < Menu >
-                    <Header>
-                        <Octicon icon={DatabaseIcon} sx={{ marginRight: "1rem" }} />
-                        Sites
-                    </Header>
-                    <Box display={"flex"}>
-                        <IconButton size="small" aria-label="new site" icon={PlusIcon} />
-                    </Box>
-                </Menu>
-            </Box >
-        </Wrapper >
-    )
+  const [isOpen, setIsOpen] = useState(false);
+  const openDialog = useCallback(() => setIsOpen(true), [setIsOpen])
+  const closeDialog = useCallback(() => setIsOpen(false), [setIsOpen])
+
+
+  return (
+    <Wrapper>
+      <Box sx={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderColor: 'border.default' }}>
+        < Menu >
+          <Header>
+            <Octicon icon={DatabaseIcon} sx={{ marginRight: "1rem" }} />
+            Sites
+          </Header>
+          <Box display={"flex"}>
+            <IconButton size="small" aria-label="new site" icon={PlusIcon} onClick={openDialog} />
+            {isOpen && (
+              <Dialog
+                title="Create New Site"
+                footerButtons={[{ content: 'Create', onClick: closeDialog }]}
+                onClose={closeDialog}
+              >
+                <Text fontFamily="sans-serif">Some content</Text>
+              </Dialog>
+            )}
+          </Box>
+        </Menu>
+      </Box >
+    </Wrapper >
+  )
 }
 
 export default Sites;
