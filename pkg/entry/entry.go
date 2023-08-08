@@ -32,7 +32,7 @@ type Entry struct {
 	ReferrerSource string
 	Region         string
 	Screen         string
-	Timestamp      time.Time
+	Timestamp      int64
 	UtmCampaign    string
 	UtmContent     string
 	UtmMedium      string
@@ -61,7 +61,7 @@ type MultiEntry struct {
 	Region         []string
 	Screen         []string
 	Session        []int64
-	Timestamp      []arrow.Timestamp
+	Timestamp      []int64
 	UtmCampaign    []string
 	UtmContent     []string
 	UtmMedium      []string
@@ -92,7 +92,7 @@ var multiPool = &sync.Pool{
 			Region:         make([]string, 0, 1<<10),
 			Screen:         make([]string, 0, 1<<10),
 			Session:        make([]int64, 0, 1<<10),
-			Timestamp:      make([]arrow.Timestamp, 0, 1<<10),
+			Timestamp:      make([]int64, 0, 1<<10),
 			UtmCampaign:    make([]string, 0, 1<<10),
 			UtmContent:     make([]string, 0, 1<<10),
 			UtmMedium:      make([]string, 0, 1<<10),
@@ -161,7 +161,7 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.Region = append(m.Region, e.Region)
 	m.Screen = append(m.Screen, e.Screen)
 	m.Session = append(m.Session, e.Session)
-	m.Timestamp = append(m.Timestamp, 0) // This will be updated when saving
+	m.Timestamp = append(m.Timestamp, e.Timestamp) // This will be updated when saving
 	m.UtmCampaign = append(m.UtmCampaign, e.UtmCampaign)
 	m.UtmContent = append(m.UtmContent, e.UtmContent)
 	m.UtmMedium = append(m.UtmMedium, e.UtmMedium)
@@ -171,11 +171,6 @@ func (m *MultiEntry) Append(e *Entry) {
 }
 
 func (m *MultiEntry) Record(ts int64) arrow.Record {
-	a := arrow.Timestamp(ts)
-	for i := range m.Timestamp {
-		m.Timestamp[i] = a
-	}
-	m.build.Reserve(len(m.Timestamp))
 	m.int64("bounce", m.Bounce)
 	m.string("browser", m.Browser)
 	m.string("browser_version", m.BrowserVersion)
@@ -212,8 +207,12 @@ func (m *MultiEntry) string(name string, values []string) {
 	m.build.Field(Index[name]).(*array.StringBuilder).AppendStringValues(values, nil)
 }
 
-func (m *MultiEntry) timestamp(name string, values []arrow.Timestamp) {
-	m.build.Field(Index[name]).(*array.TimestampBuilder).AppendValues(values, nil)
+func (m *MultiEntry) timestamp(name string, values []int64) {
+	b := m.build.Field(Index[name]).(*array.TimestampBuilder)
+	b.Reserve(len(values))
+	for i := range values {
+		b.UnsafeAppend(arrow.Timestamp(values[i]))
+	}
 }
 
 // Fields for constructing arrow schema on Entry.
@@ -336,7 +335,7 @@ func (s *Entry) Update(e *Entry) {
 	}
 	e.ExitPage = e.Path
 	e.Session = 0
-	e.Duration = e.Timestamp.Sub(s.Timestamp)
+	e.Duration = time.UnixMilli(e.Timestamp).Sub(time.UnixMilli(s.Timestamp))
 	s.Timestamp = e.Timestamp
 }
 

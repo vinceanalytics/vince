@@ -83,7 +83,7 @@ func Parse(req *entry.Request, ts time.Time) (*entry.Entry, error) {
 	e.Region = city.Region
 	e.City = city.City
 	e.Screen = screenSize
-	e.Timestamp = ts
+	e.Timestamp = ts.UnixMilli()
 	return e, nil
 }
 
