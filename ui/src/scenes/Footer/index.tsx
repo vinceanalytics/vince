@@ -24,7 +24,7 @@ const Footer = () => {
                     flex: "1",
                 }}
             >
-                <Text fontSize={4}>
+                <Text>
                     Copyright &copy; {new Date().getFullYear()} Vince Analytics
                 </Text>
             </Box>
@@ -39,7 +39,7 @@ const Footer = () => {
                     target='_blank'
                     rel='noreferrer'
                 >
-                    <MarkGithubIcon size={"medium"} />
+                    <MarkGithubIcon size={"small"} />
                 </Link>
             </Box>
         </Box>
