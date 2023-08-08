@@ -92,7 +92,7 @@ func ReadFile(path string) []byte {
 
 func Remove(path string) {
 	println("    delete: ", path)
-	ExecPlain("rm", "-f", path)
+	ExecPlain("rm", "-rfv", path)
 }
 
 func CopyFile(src, dest string) {
