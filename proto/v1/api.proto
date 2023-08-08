@@ -1,0 +1,122 @@
+syntax = "proto3";
+package v1;
+
+option go_package = "github.com/vinceanalytics/vince/proro/v1";
+
+// StorePrefix defines different kind of data we are storing in the key value
+// store.
+enum StorePrefix {
+  SITES = 0;
+  BLOCKS = 1;
+  ALERTS = 2;
+}
+
+message StoreKey {
+  string namespace = 1;
+  StorePrefix prefix = 2;
+  string key = 3;
+}
+
+message Site {
+  string domain = 1;
+  Stats stats = 2;
+
+  message Stats {
+    double visitors = 1;
+    double page_views = 2;
+    double sessions = 3;
+  }
+}
+
+message Metadata { repeated Block blocks = 1; }
+
+// Defines metadata about a single parquet file.
+message Block {
+  // a ULID string identifier for this block.
+  bytes id = 1;
+  // Smallest timestamp in milliseconds observed in this block
+  int64 min = 2;
+  // Largest timestamp in milliseconds observed in this block.
+  int64 max = 3;
+  // Size on bytes contained in this block
+  int64 size = 4;
+
+  message Key {
+    Kind kind = 1;
+    string domain = 2;
+    string uid = 3;
+
+    enum Kind {
+      METADATA = 0;
+      INDEX = 1;
+    }
+  }
+
+  message Index {
+    map<int32, Bitmap> groups = 1;
+    int64 min = 2;
+    int64 max = 3;
+
+    message Bitmap {
+      bytes bitmap = 1;
+      int64 min = 2;
+      int64 max = 3;
+    }
+
+    enum Column {
+      Browser = 0;
+      BrowserVersion = 1;
+      City = 2;
+      Country = 3;
+      Domain = 4;
+      EntryPage = 5;
+      ExitPage = 6;
+      Host = 7;
+      Event = 8;
+      Os = 9;
+      OsVersion = 10;
+      Path = 11;
+      Referrer = 12;
+      ReferrerSource = 13;
+      Region = 14;
+      Screen = 15;
+      UtmCampaign = 16;
+      UtmContent = 17;
+      UtmMedium = 18;
+      UtmSource = 19;
+      UtmTerm = 20;
+    }
+
+    message BloomKey {
+      Column column = 1;
+      string value = 2;
+    }
+  }
+}
+
+message Stats {
+  double visitors = 1;
+  double page_views = 2;
+  double bounce_rate = 3;
+  double session_duration = 4;
+  double sessions = 5;
+}
+
+message Filter {
+  string column = 1;
+  Op op = 2;
+  oneof value {
+    string str = 3;
+    int64 timestamp = 4;
+    int64 duration = 5;
+  }
+}
+
+enum Op {
+  equal = 0;
+  not_equal = 1;
+  greater = 2;
+  greater_equal = 3;
+  less = 4;
+  less_equal = 5;
+}

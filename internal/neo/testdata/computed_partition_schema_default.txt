@@ -1,5 +1,0 @@
-schema:
-  fields: 2
-    - timestamp: type=timestamp[ms]
-           metadata: ["PARQUET:field_id": "-1"]
-    - metrics: type=struct<visitors: float64, page_views: float64, sessions: float64, bounce_rate: float64, session_duration: float64>

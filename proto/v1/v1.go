@@ -1,17 +1,17 @@
 package v1
 
-import "bytes"
+import "path"
 
-func (s *StoreKey) Badger() []byte {
-	var b bytes.Buffer
+func (s *StoreKey) Badger() string {
 	if s.Namespace == "" {
-		b.WriteString("vince")
-	} else {
-		b.WriteString(s.Namespace)
+		s.Namespace = "vince"
 	}
-	b.WriteByte('/')
-	b.WriteString(s.Prefix.String())
-	b.WriteByte('/')
-	b.WriteString(s.Key)
-	return b.Bytes()
+	return path.Join(s.Namespace, s.Prefix.String(), s.Key)
+}
+
+func (s *Block_Key) Badger() string {
+	return (&StoreKey{
+		Prefix: StorePrefix_BLOCKS,
+		Key:    path.Join(s.Kind.String(), s.Domain, s.Uid),
+	}).Badger()
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/assets"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
+	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/plug"
@@ -92,7 +93,8 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 		resources = append(resources, httpsListener)
 		ctx = core.SetHTTPSListener(ctx, httpsListener)
 	}
-
+	ctx, dba := db.Open(ctx, o.DataPath)
+	resources = append(resources, dba)
 	ctx, ts := timeseries.Open(ctx, o)
 	resources = append(resources, ts)
 

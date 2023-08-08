@@ -7,6 +7,6 @@ func main() {
 		"./v1",
 		"protoc",
 		"-I=.", "--go_out=paths=source_relative:.",
-		"blocks.proto", "admin.proto",
+		"api.proto",
 	)
 }

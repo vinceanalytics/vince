@@ -6,21 +6,21 @@ import (
 	"net/http"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/internal/timeseries"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
 )
 
 func ListSites(w http.ResponseWriter, r *http.Request) {
 	o := []*v1.Site{}
-	timeseries.Store(r.Context()).View(func(txn *badger.Txn) error {
+	db.Get(r.Context()).View(func(txn *badger.Txn) error {
 		itO := badger.DefaultIteratorOptions
 		prefix := (&v1.StoreKey{
 			Prefix: v1.StorePrefix_SITES,
 		}).Badger()
-		itO.Prefix = prefix
+		itO.Prefix = []byte(prefix)
 		it := txn.NewIterator(itO)
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
@@ -43,13 +43,13 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(w, http.StatusBadRequest)
 		return
 	}
-	timeseries.Store(r.Context()).Update(func(txn *badger.Txn) error {
+	db.Get(r.Context()).Update(func(txn *badger.Txn) error {
 		key := (&v1.StoreKey{Prefix: v1.StorePrefix_SITES, Key: b.Domain}).Badger()
-		it, err := txn.Get(key)
+		it, err := txn.Get([]byte(key))
 		if err != nil {
 			if errors.Is(err, badger.ErrKeyNotFound) {
 				return txn.Set(
-					key,
+					[]byte(key),
 					must.Must(proto.Marshal(&b))(),
 				)
 			}
