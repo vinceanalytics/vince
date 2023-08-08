@@ -30,10 +30,13 @@ const Wrapper = styled(PaneWrapper)`
 
 const domainRe = new RegExp("^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$")
 
+
 const Sites = () => {
   const [loading, setLoading] = useState(false)
   const [vince] = useState(new Client())
   const [sites, setSites] = useState<Site[]>()
+
+  const [refresh, setRefresh] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const openDialog = useCallback(() => setIsOpen(true), [setIsOpen])
@@ -41,9 +44,13 @@ const Sites = () => {
   const [domain, setDomain] = useState<string>("")
 
   const submitNewSite = useCallback(() => {
-    console.log(domain)
     setIsOpen(false)
-  }, [domain])
+    vince.create(domain).then((result) => {
+      setRefresh(true)
+    })
+      .catch((e) => { })
+  }, [domain, setRefresh])
+
   const [validDomain, setValidDomain] = useState(true)
 
   const fetchSites = useCallback(() => {
@@ -69,7 +76,7 @@ const Sites = () => {
 
   useEffect(() => {
     fetchSites()
-  }, [fetchSites])
+  }, [refresh, fetchSites])
 
   return (
     <Wrapper>
@@ -123,6 +130,36 @@ const Sites = () => {
             pt: 2,
           }}>
             <Spinner size="large" />
+          </Box>}
+
+        {!loading && sites?.length == 0 &&
+          <Box sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            pt: 2,
+          }}>
+            <Text>No Sites</Text>
+          </Box>}
+        {!loading && sites?.length !== 0 &&
+          <Box sx={{
+            width: "100%",
+            pt: 2,
+            overflow: "auto",
+          }}>
+            <nav>
+              <TreeView aria-label="Sites">
+                {sites?.map((site) => (
+                  <TreeView.Item id={site.domain}>
+                    <TreeView.LeadingVisual>
+                      <TreeView.DirectoryIcon />
+                    </TreeView.LeadingVisual>
+                    {site.domain}
+                  </TreeView.Item>
+                ))}
+              </TreeView>
+            </nav>
           </Box>}
       </Box>
     </Wrapper >

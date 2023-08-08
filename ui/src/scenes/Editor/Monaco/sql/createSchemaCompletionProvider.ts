@@ -41,12 +41,12 @@ export const createSchemaCompletionProvider = (questDBTables: Site[] = []) => {
                 return {
                     suggestions: questDBTables.map((item) => {
                         return {
-                            label: item.name,
+                            label: item.domain,
                             kind: CompletionItemKind.Class,
                             insertText:
                                 openQuote
-                                    ? item.name + (nextCharQuote ? "" : "\"")
-                                    : /^[a-z0-9_]+$/i.test(item.name) ? item.name : `"${item.name}"`,
+                                    ? item.domain + (nextCharQuote ? "" : "\"")
+                                    : /^[a-z0-9_]+$/i.test(item.domain) ? item.domain : `"${item.domain}"`,
                             range,
                         }
                     }),

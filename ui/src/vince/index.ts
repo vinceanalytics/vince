@@ -95,7 +95,7 @@ export type QueryResult<T extends Record<string, any>> =
     | DdlResult
 
 export type Site = {
-    name: string
+    domain: string
 }
 
 export type Column = {
@@ -250,6 +250,13 @@ export class Client {
         return this.do<Site[]>("/sites")
     }
 
+    async create(domain: string): Promise<Site | ErrorShape> {
+        return this.do<Site>("/sites", {
+            method: "POST",
+            body: JSON.stringify({ domain })
+        })
+    }
+
 
     async do<T extends Record<string, any>>(
         uri: string | URL, init?: RequestInit | undefined,
@@ -259,7 +266,13 @@ export class Client {
         const path = `${this._host}${uri}`
         let response: Response
         try {
-            response = await fetch(path, init)
+            response = await fetch(path, {
+                ...init,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            })
         } catch (error) {
             return await Promise.reject({
                 error: JSON.stringify(error).toString()
@@ -379,113 +392,6 @@ export class Client {
 
         // eslint-disable-next-line prefer-promise-reject-errors
         return await Promise.reject(errorPayload)
-    }
-
-    async showTables(): Promise<QueryResult<Site>> {
-        const response = await this.query<Site>("tables();")
-
-        if (response.type === Type.DQL) {
-            return {
-                ...response,
-                data: response.data.slice().sort((a, b) => {
-                    if (a.name > b.name) {
-                        return 1
-                    }
-
-                    if (a.name < b.name) {
-                        return -1
-                    }
-
-                    return 0
-                }),
-            }
-        }
-
-        return response
-    }
-
-    async showColumns(table: string): Promise<QueryResult<Column>> {
-        return await this.query<Column>(`SHOW COLUMNS FROM '${table}';`)
-    }
-
-    async checkCSVFile(name: string): Promise<FileCheckResponse> {
-        try {
-            const response: Response = await fetch(
-                `${this._host}/chk?${Client.encodeParams({
-                    f: "json",
-                    j: name,
-                })}`,
-            )
-            return await response.json()
-        } catch (error) {
-            throw error
-        }
-    }
-
-    async uploadCSVFile({
-        file,
-        name,
-        settings,
-        schema,
-        partitionBy,
-        timestamp,
-        onProgress,
-    }: UploadOptions): Promise<UploadResult> {
-        const formData = new FormData()
-        formData.append("schema", JSON.stringify(schema))
-        formData.append("data", file)
-        const serializedSettings = Object.keys(settings).reduce(
-            (acc, key) => ({
-                ...acc,
-                [key]: settings[key as keyof UploadModeSettings].toString(),
-            }),
-            {},
-        )
-        const params = {
-            fmt: "json",
-            name,
-            partitionBy,
-            ...(timestamp ? { timestamp } : {}),
-            ...serializedSettings,
-        }
-
-        return new Promise((resolve, reject) => {
-            let request = new XMLHttpRequest()
-            request.open("POST", `${this._host}/imp?${new URLSearchParams(params)}`)
-            request.upload.addEventListener("progress", (e) => {
-                let percent_completed = (e.loaded / e.total) * 100
-                onProgress(percent_completed)
-            })
-            request.onload = (_e) => {
-                if (request.status === 200) {
-                    resolve(JSON.parse(request.response))
-                } else {
-                    reject({
-                        status: request.status,
-                        statusText: request.statusText,
-                    })
-                }
-            }
-            request.onerror = () => {
-                reject({
-                    status: request.status,
-                    statusText: request.statusText,
-                })
-            }
-            request.send(formData)
-        })
-    }
-
-    async getLatestRelease() {
-        try {
-            const response: Response = await fetch(
-                `https://api.github.com/repos/questdb/questdb/releases/latest`,
-            )
-            return (await response.json()) as Release
-        } catch (error) {
-            // eslint-disable-next-line prefer-promise-reject-errors
-            throw error
-        }
     }
 }
 
