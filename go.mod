@@ -5,7 +5,7 @@ go 1.20
 require (
 	filippo.io/age v1.1.1
 	github.com/RoaringBitmap/roaring v1.3.0
-	github.com/apache/arrow/go/v13 v13.0.0-20230731205701-112f94971882
+	github.com/apache/arrow/go/v13 v13.0.0-20230808050235-21e1e00ab898
 	github.com/caddyserver/certmagic v0.17.2
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/cespare/xxhash/v2 v2.2.0
