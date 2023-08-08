@@ -14,7 +14,7 @@ enum StorePrefix {
 message StoreKey {
   string namespace = 1;
   StorePrefix prefix = 2;
-  bytes key = 3;
+  string key = 3;
 }
 
 message Site {

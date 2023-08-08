@@ -14,7 +14,8 @@ import (
 func Pipe(ctx context.Context) plug.Pipeline {
 	metrics := promhttp.Handler()
 
-	browser := plug.Browser(ctx)
+	browser := plug.Browser()
+	a := plug.API()
 
 	return plug.Pipeline{
 		browser.PathGET("/metrics", metrics.ServeHTTP),
@@ -22,10 +23,11 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		plug.Ok(config.Get(ctx).EnableProfile,
 			browser.Prefix("/debug/pprof/", pprof.Index),
 		),
-		browser.PathPOST("/api/event", api.Events),
-		browser.PathGET("/health", api.Health),
-		browser.PathGET("/version", api.Version),
-		browser.PathGET("/sites", api.ListSites),
+		a.PathPOST("/api/event", api.Events),
+		a.PathGET("/health", api.Health),
+		a.PathGET("/version", api.Version),
+		a.PathGET("/sites", api.ListSites),
+		a.PathPOST("/sites", api.Create),
 		NotFound,
 	}
 }

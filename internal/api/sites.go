@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/dgraph-io/badger/v4"
@@ -15,7 +16,9 @@ func ListSites(w http.ResponseWriter, r *http.Request) {
 	o := []*v1.Site{}
 	timeseries.Store(r.Context()).View(func(txn *badger.Txn) error {
 		itO := badger.DefaultIteratorOptions
-		prefix := []byte(v1.StorePrefix_SITES.String())
+		prefix := (&v1.StoreKey{
+			Prefix: v1.StorePrefix_SITES,
+		}).Badger()
 		itO.Prefix = prefix
 		it := txn.NewIterator(itO)
 		for it.Rewind(); it.Valid(); it.Next() {
@@ -29,4 +32,20 @@ func ListSites(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 	render.JSON(w, http.StatusOK, o)
+}
+
+func Create(w http.ResponseWriter, r *http.Request) {
+	var b v1.Site
+	err := json.NewDecoder(r.Body).Decode(&b)
+	if err != nil || b.Domain == "" {
+		render.ERROR(w, http.StatusBadRequest)
+		return
+	}
+	timeseries.Store(r.Context()).Update(func(txn *badger.Txn) error {
+		return txn.Set(
+			(&v1.StoreKey{Prefix: v1.StorePrefix_SITES, Key: b.Domain}).Badger(),
+			must.Must(proto.Marshal(&b))(),
+		)
+	})
+	render.JSON(w, http.StatusOK, &b)
 }

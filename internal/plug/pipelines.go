@@ -1,7 +1,6 @@
 package plug
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -10,9 +9,15 @@ import (
 	"github.com/vinceanalytics/vince/internal/params"
 )
 
-func Browser(ctx context.Context) Pipeline {
+func Browser() Pipeline {
 	return Pipeline{
 		PutSecureBrowserHeaders,
+	}
+}
+
+func API() Pipeline {
+	return Pipeline{
+		AcceptJSON,
 	}
 }
 
