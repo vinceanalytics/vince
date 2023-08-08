@@ -18,10 +18,8 @@ message StoreKey {
 }
 
 message Site {
-  Meta meta = 1;
+  string domain = 1;
   Stats stats = 2;
-
-  message Meta { string domain = 1; }
 
   message Stats {
     double visitors = 1;
