@@ -3,10 +3,10 @@ import {
   Text, TextInput, FormControl,
   TreeView, Box, themeGet, IconButton, Octicon, Spinner,
 } from "@primer/react";
-import { PlusIcon, DatabaseIcon } from "@primer/octicons-react";
+import { PlusIcon, DatabaseIcon, ColumnsIcon } from "@primer/octicons-react";
 import { Dialog, PageHeader } from '@primer/react/drafts'
-
-import styled, { css } from "styled-components"
+import { columns } from "../Editor/Monaco/sql";
+import styled from "styled-components"
 import { Site, Client } from "../../vince";
 
 
@@ -30,6 +30,29 @@ const Wrapper = styled(PaneWrapper)`
 
 const domainRe = new RegExp("^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$")
 
+type ColumnProps = {
+  id: string,
+}
+const Columns = ({ id }: ColumnProps) => {
+  return (
+    <TreeView.Item id={`${id}-columns`} >
+      <TreeView.LeadingVisual>
+        <TreeView.DirectoryIcon />
+      </TreeView.LeadingVisual>
+      columns
+      <TreeView.SubTree>
+        {columns.map((name) => (
+          <TreeView.Item id={`${id}-columns${name}`}>
+            <TreeView.LeadingVisual>
+              <Octicon icon={ColumnsIcon} />
+            </TreeView.LeadingVisual>
+            {name}
+          </TreeView.Item>
+        ))}
+      </TreeView.SubTree>
+    </TreeView.Item >
+  )
+}
 
 const Sites = () => {
   const [loading, setLoading] = useState(false)
@@ -156,6 +179,9 @@ const Sites = () => {
                       <TreeView.DirectoryIcon />
                     </TreeView.LeadingVisual>
                     {site.domain}
+                    <TreeView.SubTree>
+                      <Columns id={site.domain} />
+                    </TreeView.SubTree>
                   </TreeView.Item>
                 ))}
               </TreeView>

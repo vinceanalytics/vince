@@ -204,3 +204,31 @@ export const keywords = [
     "squash",
     "partitions",
 ]
+
+export const columns = [
+    "bounce",
+    "browser",
+    "browser_version",
+    "city",
+    "country",
+    "duration",
+    "entry_page",
+    "exit_page",
+    "host",
+    "id",
+    "name",
+    "os",
+    "os_version",
+    "path",
+    "referrer",
+    "referrer_source",
+    "region",
+    "screen",
+    "session",
+    "timestamp",
+    "utm_campaign",
+    "utm_content",
+    "utm_medium",
+    "utm_source",
+]
+
