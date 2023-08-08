@@ -17,12 +17,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const (
-	blockPrefix    = "block/"
-	metadataPrefix = "meta/"
-	indexPrefix    = "index/"
-)
-
 type ActiveBlock struct {
 	mu    sync.Mutex
 	dir   string
