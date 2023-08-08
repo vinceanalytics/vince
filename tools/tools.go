@@ -77,8 +77,8 @@ func WriteFile(path string, data []byte) {
 	println("    write: ", path)
 }
 
-func MkDir(path string) {
-	ExecPlain("mkdir", "-pv", path)
+func MkDir(path ...string) {
+	ExecPlain("mkdir", "-pv", filepath.Join(path...))
 }
 
 func ReadFile(path string) []byte {
@@ -97,6 +97,10 @@ func Remove(path string) {
 
 func CopyFile(src, dest string) {
 	ExecPlain("cp", "-v", src, dest)
+}
+
+func Copy(dest string, src ...string) {
+	ExecPlain("cp", "-fv", filepath.Join(src...), dest)
 }
 
 func CopyDir(src, dest string, workingDir ...string) {

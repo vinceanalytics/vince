@@ -27,6 +27,8 @@ var ui = must.Must(fs.Sub(static, "ui"))()
 
 func match(path string) bool {
 	return strings.HasPrefix(path, "/static") ||
+		strings.HasPrefix(path, "/vs") ||
+		strings.HasPrefix(path, "/min-map") ||
 		files[path]
 }
 

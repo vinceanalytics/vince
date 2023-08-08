@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/pprof"
 
@@ -34,6 +35,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 
 func NotFound(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.Method, r.URL)
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	})
 }

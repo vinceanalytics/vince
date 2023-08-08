@@ -2,9 +2,10 @@ import React, { useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
 import styled from "styled-components"
 
-import { VinceProvider } from "../../providers";
+import { VinceProvider, EditorProvider } from "../../providers";
 import Footer from "../Footer";
 import Sidebar from "../Sidebar"
+import Editor from "../Editor"
 import { Box } from "@primer/react";
 import { useLocalStorage, StoreKey, SettingsType } from "../../providers/LocalStorageProvider"
 import { Splitter, } from "../../components"
@@ -39,27 +40,29 @@ const Layout = () => {
             {consoleNode &&
                 createPortal(
                     <Console>
-                        <Splitter
-                            direction="vertical"
-                            fallback={editorSplitterBasis}
-                            min={100}
-                            onChange={handleEditorSplitterChange}
-                        >
-                            <Top>
-                                <Splitter
-                                    direction="horizontal"
-                                    fallback={resultsSplitterBasis}
-                                    max={500}
-                                    onChange={handleResultsSplitterChange}
-                                >
-                                    <Box >
-                                        <Sites />
-                                    </Box>
-                                    <Box />
-                                </Splitter>
-                            </Top>
-                            <Box />
-                        </Splitter>
+                        <EditorProvider>
+                            <Splitter
+                                direction="vertical"
+                                fallback={editorSplitterBasis}
+                                min={100}
+                                onChange={handleEditorSplitterChange}
+                            >
+                                <Top>
+                                    <Splitter
+                                        direction="horizontal"
+                                        fallback={resultsSplitterBasis}
+                                        max={500}
+                                        onChange={handleResultsSplitterChange}
+                                    >
+                                        <Box >
+                                            <Sites />
+                                        </Box>
+                                        <Editor />
+                                    </Splitter>
+                                </Top>
+                                <Box />
+                            </Splitter>
+                        </EditorProvider>
                     </Console>,
                     consoleNode,
                 )

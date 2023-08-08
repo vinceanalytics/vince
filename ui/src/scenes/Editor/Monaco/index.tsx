@@ -35,7 +35,7 @@ import {
 
 loader.config({
     paths: {
-        vs: "assets/vs",
+        vs: "vs",
     },
 })
 
