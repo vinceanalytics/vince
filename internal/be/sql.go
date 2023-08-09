@@ -5,7 +5,7 @@ import (
 
 	"github.com/pingcap/tidb/parser"
 	"github.com/pingcap/tidb/parser/ast"
-	"github.com/substrait-io/substrait-go/expr"
+	_ "github.com/pingcap/tidb/parser/test_driver"
 	"github.com/substrait-io/substrait-go/plan"
 )
 
@@ -29,7 +29,11 @@ func (p *Parser) Parse(sql string) (ParseResult, error) {
 		return ParseResult{}, v.err
 	}
 
-	return ParseResult{Explain: v.explain}, nil
+	r, err := v.Build()
+	if err != nil {
+		return ParseResult{}, err
+	}
+	return ParseResult{Explain: v.explain, Plan: r}, nil
 }
 
 func NewParser() *Parser {
@@ -38,31 +42,69 @@ func NewParser() *Parser {
 
 type ParseResult struct {
 	Explain bool
-	Plan    plan.Plan
+	Plan    *plan.Plan
 }
 
 type astVisitor struct {
-	explain   bool
-	builder   plan.Builder
-	err       error
-	rel       plan.Rel
-	exprStack []expr.Expression
+	explain bool
+	plan    plan.Builder
+	err     error
+	root    plan.Rel
+	names   []string
 }
 
-var _ ast.Visitor = &astVisitor{}
+var _ ast.Visitor = (*astVisitor)(nil)
 
+var _ ast.Visitor = (leaveFunc)(nil)
+
+type leaveFunc func(n ast.Node) (node ast.Node, ok bool)
+
+func (f leaveFunc) Enter(n ast.Node) (ast.Node, bool) {
+	return n, false
+}
+
+func (f leaveFunc) Leave(n ast.Node) (ast.Node, bool) {
+	return f(n)
+}
 func newASTVisitor() *astVisitor {
 	return &astVisitor{
-		builder: plan.NewBuilderDefault(),
+		plan: plan.NewBuilderDefault(),
 	}
+}
+
+func (v *astVisitor) Build() (*plan.Plan, error) {
+	return v.plan.Plan(v.root, v.names)
 }
 
 func (v *astVisitor) Enter(n ast.Node) (nRes ast.Node, skipChildren bool) {
 	switch expr := n.(type) {
 	case *ast.SelectStmt:
-		if expr.From != nil {
-			expr.From.Accept(v)
-		}
+		var name *ast.TableName
+		expr.From.Accept(leaveFunc(func(n ast.Node) (node ast.Node, ok bool) {
+			switch e := n.(type) {
+			case *ast.TableName:
+				name = e
+				return nil, false
+			}
+			return n, true
+		}))
+		var columns []string
+		expr.Fields.Accept(leaveFunc(func(n ast.Node) (node ast.Node, ok bool) {
+			switch e := n.(type) {
+			case *ast.SelectField:
+				if e.WildCard != nil {
+					columns = all
+					return nil, false
+				}
+			}
+			return n, true
+		}))
+
+		v.root = v.plan.NamedScan([]string{name.Name.String()},
+			Schema(columns...),
+		)
+		v.names = append(v.names[:0], columns...)
+
 	// 	// The SelectStmt is handled in during pre-visit given that it has many
 	// 	// clauses we need to handle independently (e.g. a group by with a
 	// 	// filter).
@@ -95,7 +137,7 @@ func (v *astVisitor) Enter(n ast.Node) (nRes ast.Node, skipChildren bool) {
 	// 	}
 	// 	return n, true
 	default:
-		fmt.Println(expr.Text())
+		fmt.Printf("=> %#T\n", expr)
 	}
 	return n, false
 }
@@ -109,10 +151,10 @@ func (v *astVisitor) Leave(n ast.Node) (nRes ast.Node, ok bool) {
 }
 
 func (v *astVisitor) leaveImpl(n ast.Node) error {
-	// switch expr := n.(type) {
-	// case *ast.SelectStmt:
-	// 	// Handled in Enter.
-	// 	return nil
+	switch expr := n.(type) {
+	case *ast.SelectStmt:
+		// Handled in Enter.
+		return nil
 	// case *ast.ExplainStmt:
 	// 	v.explain = true
 	// 	return nil
@@ -224,10 +266,10 @@ func (v *astVisitor) leaveImpl(n ast.Node) error {
 	// 	default:
 	// 		return fmt.Errorf("unhandled func call: %s", expr.FnName.String())
 	// 	}
-	// default:
-	// 	return fmt.Errorf("unhandled ast node %T", expr)
-	// }
-	return nil
+	default:
+		fmt.Printf("==> %T\n", expr)
+		return nil
+	}
 }
 
 func columnNameToString(c *ast.ColumnName) string {

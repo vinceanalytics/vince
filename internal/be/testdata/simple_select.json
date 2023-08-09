@@ -1,0 +1,241 @@
+{
+  "version": {
+    "minor_number": 29,
+    "producer": "substrait-go"
+  },
+  "relations": [
+    {
+      "RelType": {
+        "Root": {
+          "input": {
+            "RelType": {
+              "Read": {
+                "common": {
+                  "EmitKind": {
+                    "Direct": {}
+                  }
+                },
+                "base_schema": {
+                  "struct": {
+                    "types": [
+                      {
+                        "Kind": {
+                          "I64": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "I64": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "I64": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "I64": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "I64": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      },
+                      {
+                        "Kind": {
+                          "String_": {
+                            "nullability": 2
+                          }
+                        }
+                      }
+                    ],
+                    "nullability": 2
+                  }
+                },
+                "ReadType": {
+                  "NamedTable": {
+                    "names": [
+                      "vince.io"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "names": [
+            "bounce",
+            "browser",
+            "browser_version",
+            "city",
+            "country",
+            "duration",
+            "entry_page",
+            "exit_page",
+            "host",
+            "id",
+            "name",
+            "os",
+            "os_version",
+            "path",
+            "referrer",
+            "referrer_source",
+            "region",
+            "screen",
+            "session",
+            "timestamp",
+            "utm_campaign",
+            "utm_content",
+            "utm_medium",
+            "utm_source",
+            "utm_term"
+          ]
+        }
+      }
+    }
+  ]
+}

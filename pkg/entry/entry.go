@@ -329,7 +329,7 @@ func Fields() []arrow.Field {
 		{Name: "region", Type: arrow.BinaryTypes.String},
 		{Name: "screen", Type: arrow.BinaryTypes.String},
 		{Name: "session", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "timestamp", Type: &arrow.TimestampType{Unit: arrow.Millisecond}},
+		{Name: "timestamp", Type: arrow.PrimitiveTypes.Int64},
 		{Name: "utm_campaign", Type: arrow.BinaryTypes.String},
 		{Name: "utm_content", Type: arrow.BinaryTypes.String},
 		{Name: "utm_medium", Type: arrow.BinaryTypes.String},
@@ -545,14 +545,6 @@ func (b *Reader) read(f int, rows int64, chunk file.ColumnChunkReader) {
 		b.ints = slices.Grow(b.ints, int(rows))[:rows]
 		r.ReadBatch(rows, b.ints, nil, nil)
 		e.AppendValues(b.ints, nil)
-	case *array.TimestampBuilder:
-		r := chunk.(*file.Int64ColumnChunkReader)
-		b.ints = slices.Grow(b.ints, int(rows))[:rows]
-		r.ReadBatch(rows, b.ints, nil, nil)
-		e.Reserve(int(rows))
-		for i := range b.ints {
-			e.UnsafeAppend(arrow.Timestamp(b.ints[i]))
-		}
 	default:
 		must.AssertFMT(false)("unsupported arrow builder type %T", e)
 	}
