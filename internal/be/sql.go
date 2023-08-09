@@ -96,6 +96,11 @@ func (v *astVisitor) Enter(n ast.Node) (nRes ast.Node, skipChildren bool) {
 					columns = all
 					return nil, false
 				}
+			case *ast.ColumnName:
+				columns = append(columns, e.Name.String())
+				return n, true
+			default:
+				fmt.Printf("FROM %#T\n", e)
 			}
 			return n, true
 		}))
