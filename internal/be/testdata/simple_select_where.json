@@ -1,0 +1,303 @@
+{
+  "version": {
+    "minor_number": 29,
+    "producer": "substrait-go"
+  },
+  "relations": [
+    {
+      "RelType": {
+        "Root": {
+          "input": {
+            "RelType": {
+              "Filter": {
+                "common": {
+                  "EmitKind": {
+                    "Direct": {}
+                  }
+                },
+                "input": {
+                  "RelType": {
+                    "Read": {
+                      "common": {
+                        "EmitKind": {
+                          "Direct": {}
+                        }
+                      },
+                      "base_schema": {
+                        "struct": {
+                          "types": [
+                            {
+                              "Kind": {
+                                "I64": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "I64": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "I64": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "I64": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "I64": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            },
+                            {
+                              "Kind": {
+                                "String_": {
+                                  "nullability": 2
+                                }
+                              }
+                            }
+                          ],
+                          "nullability": 2
+                        }
+                      },
+                      "ReadType": {
+                        "NamedTable": {
+                          "names": [
+                            "vince.io"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "condition": {
+                  "RexType": {
+                    "ScalarFunction": {
+                      "function_reference": 1,
+                      "arguments": [
+                        {
+                          "ArgType": {
+                            "Value": {
+                              "RexType": {
+                                "Selection": {
+                                  "ReferenceType": {
+                                    "DirectReference": {
+                                      "ReferenceType": {
+                                        "StructField": {
+                                          "field": 10
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "RootType": {
+                                    "RootReference": {}
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "ArgType": {
+                            "Value": {
+                              "RexType": {
+                                "Literal": {
+                                  "LiteralType": {
+                                    "String_": "pageview"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "output_type": {
+                        "Kind": {
+                          "Bool": {
+                            "nullability": 2
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "names": [
+            "bounce",
+            "browser",
+            "browser_version",
+            "city",
+            "country",
+            "duration",
+            "entry_page",
+            "exit_page",
+            "host",
+            "id",
+            "name",
+            "os",
+            "os_version",
+            "path",
+            "referrer",
+            "referrer_source",
+            "region",
+            "screen",
+            "session",
+            "timestamp",
+            "utm_campaign",
+            "utm_content",
+            "utm_medium",
+            "utm_source",
+            "utm_term"
+          ]
+        }
+      }
+    }
+  ]
+}
