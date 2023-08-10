@@ -18,42 +18,29 @@ import (
 )
 
 type ActiveBlock struct {
-	mu    sync.Mutex
 	dir   string
-	hosts map[string]*entry.MultiEntry
+	hosts sync.Map
 	ctx   sync.Map
 }
 
 func NewBlock(dir string) *ActiveBlock {
-	return &ActiveBlock{
-		hosts: make(map[string]*entry.MultiEntry),
-	}
+	return &ActiveBlock{dir: dir}
 }
 
 func (a *ActiveBlock) Save(ctx context.Context) {
-	a.mu.Lock()
-	if len(a.hosts) == 0 {
-		a.mu.Unlock()
-		return
-	}
-	for k, v := range a.hosts {
-		go a.save(ctx, k, v, false)
-		delete(a.hosts, k)
-	}
-	a.mu.Unlock()
+	a.hosts.Range(func(key, value any) bool {
+		a.hosts.Delete(key.(string))
+		go a.save(ctx, key.(string), value.(*entry.MultiEntry), false)
+		return true
+	})
 }
 
 func (a *ActiveBlock) Shutdown(ctx context.Context) {
-	a.mu.Lock()
-	if len(a.hosts) == 0 {
-		a.mu.Unlock()
-		return
-	}
-	for k, v := range a.hosts {
-		go a.save(ctx, k, v, true)
-		delete(a.hosts, k)
-	}
-	a.mu.Unlock()
+	a.hosts.Range(func(key, value any) bool {
+		a.hosts.Delete(key.(string))
+		go a.save(ctx, key.(string), value.(*entry.MultiEntry), true)
+		return true
+	})
 }
 
 func (a *ActiveBlock) Close() error {
@@ -62,14 +49,15 @@ func (a *ActiveBlock) Close() error {
 }
 
 func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
-	a.mu.Lock()
-	h, ok := a.hosts[e.Domain]
+	h, ok := a.hosts.Load(e.Domain)
 	if !ok {
-		h = entry.NewMulti()
-		a.hosts[e.Domain] = h
+		m := entry.NewMulti()
+		m.Append(e)
+		e.Release()
+		a.hosts.Store(e.Domain, m)
+		return
 	}
-	a.mu.Unlock()
-	h.Append(e)
+	h.(*entry.MultiEntry).Append(e)
 	e.Release()
 }
 
