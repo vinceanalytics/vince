@@ -50,11 +50,9 @@ func TestParse_simple_where(t *testing.T) {
 			"", "  ",
 		),
 	)()
-	os.WriteFile("testdata/simple_select_where.json", got, 0600)
+	// os.WriteFile("testdata/simple_select_where.json", got, 0600)
 	want := must.Must(os.ReadFile("testdata/simple_select_where.json"))()
 	if !bytes.Equal(got, want) {
 		t.Error("plan mismatch")
 	}
-	t.Error()
-
 }
