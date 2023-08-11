@@ -1,3 +1,0 @@
----
-title: Delete your account
----

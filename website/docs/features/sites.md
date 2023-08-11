@@ -1,3 +1,0 @@
----
-title: Multiple sites management
----

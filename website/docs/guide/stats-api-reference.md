@@ -1,3 +1,0 @@
----
-title: Stats API reference
----

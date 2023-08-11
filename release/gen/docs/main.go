@@ -25,7 +25,6 @@ func main() {
 		mannPage(root, vince.App())
 		mannPage(root, v8s.App())
 		completion(root)
-		config(vince.App())
 	}
 }
 
