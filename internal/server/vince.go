@@ -198,7 +198,6 @@ func Handle(ctx context.Context) http.Handler {
 	pipe := append(
 		plug.Pipeline{
 			plug.Track(),
-			plug.Favicon(plug.DefaultClient),
 			assets.Plug(),
 			plug.RequestID,
 			plug.CORS,
