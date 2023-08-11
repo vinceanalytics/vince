@@ -20,15 +20,20 @@ const Logo = styled.div`
 
 type Tab = "console" | "settings"
 
-const Sidebar = () => {
+export type SideBarProps = {
+    onPanelChange: (pane: string) => void,
+}
+export const Sidebar = ({ onPanelChange }: SideBarProps) => {
     const [selected, setSelected] = useState<Tab>("console")
     const handleConsoleClick = useCallback(() => {
         setSelected("console")
-    }, [])
+        onPanelChange("console")
+    }, [onPanelChange, setSelected])
 
     const handleSettingsClick = useCallback(() => {
         setSelected("settings")
-    }, [])
+        onPanelChange("settings")
+    }, [onPanelChange, setSelected])
 
     return (
         <Box
@@ -80,5 +85,3 @@ const Sidebar = () => {
     )
 }
 
-
-export default Sidebar
