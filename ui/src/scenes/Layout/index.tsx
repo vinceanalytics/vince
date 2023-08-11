@@ -44,11 +44,9 @@ const Layout = () => {
             <Portal containerName="console">
                 <Box
                     display={activePane === "console" ? "flex" : "none"}
-                    sx={{
-                        flexDirection: "column",
-                        flex: "1",
-                        maxHeight: "100%",
-                    }}
+                    flex={1}
+                    flexDirection={"column"}
+                    maxHeight={"100%"}
                 >
                     <EditorProvider>
                         <Splitter
@@ -78,11 +76,9 @@ const Layout = () => {
             <Portal containerName="settings">
                 <Box
                     display={activePane === "settings" ? "flex" : "none"}
-                    sx={{
-                        flexDirection: "column",
-                        flex: "1",
-                        maxHeight: "100%",
-                    }}
+                    flex={1}
+                    flexDirection={"column"}
+                    maxHeight={"100%"}
                 >
                     <PageHeader>
                         <PageHeader.TitleArea>
