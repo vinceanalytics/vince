@@ -185,7 +185,9 @@ func (o *Session) Send() *Session {
 	r, _ := http.NewRequest(http.MethodPost, o.Host+"/api/event", bytes.NewReader(b))
 	r.Header.Set("x-forwarded-for", o.IP)
 	r.Header.Set("user-agent", o.UserAgent.UserAgent)
-	r.Header.Set("content-type", "text/plain")
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("content-type", "application/json")
+
 	res, err := client.Do(r)
 	if err != nil {
 		println("> failed sending request", err.Error())
