@@ -14,15 +14,11 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func App() *cli.App {
+func App() *cli.Command {
 	o := &control.Options{}
-	return &cli.App{
+	return &cli.Command{
 		Name:  "v8s",
 		Usage: "kubernetes controller for vince - The Cloud Native Web Analytics Platform.",
-		Commands: []*cli.Command{
-			version.VersionCmd(),
-		},
-		EnableShellCompletion: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "master-url",

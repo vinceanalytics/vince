@@ -13,17 +13,6 @@ builds:
     main: main.go
     binary: vince
 
-  - id: v8s
-    main: ./v8s/main.go
-    binary: v8s
-    goos:
-      - linux
-      - darwin
-    goarch:
-      - amd64
-      - arm64
-    env:
-      - CGO_ENABLED=0
 archives:
   - builds:
       - vince
@@ -39,20 +28,7 @@ archives:
       - man/vince.1
       - completions/vince/*
       - LICENSE
-  - builds:
-      - v8s
-    id: v8s
-    name_template: >-
-      {{ .Binary }}_
-      {{-  .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-    files:
-      - man/v8s.1
-      - completions/v8s/*
-      - LICENSE
+
 checksum:
   name_template: "checksums.txt"
 signs:
@@ -64,7 +40,6 @@ signs:
       - "${artifact}"
     ids:
       - vince
-      - v8s
 changelog:
   sort: asc
   use: github
@@ -135,58 +110,17 @@ dockers:
       - "--label=org.opencontainers.image.version={{.Tag}}"
       - "--platform=linux/arm64"
 
-  - id: v8s-amd64
-    ids:
-      - v8s
-    image_templates:
-      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-amd64"
-    goos: linux
-    goarch: amd64
-    dockerfile: "v8s.Dockerfile"
-    build_flag_templates:
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Tag}}"
-      - "--platform=linux/amd64"
-  - id: v8s-arm64
-    ids:
-      - v8s
-    image_templates:
-      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-arm64"
-    goos: linux
-    goarch: arm64
-    dockerfile: "v8s.Dockerfile"
-    build_flag_templates:
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Tag}}"
-      - "--platform=linux/arm64"
-
 docker_manifests:
   - id: vince
     name_template: "ghcr.io/vinceanalytics/vince:{{.Tag}}"
     image_templates:
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
-  - id: v8s
-    name_template: "ghcr.io/vinceanalytics/v8s:{{.Tag}}"
-    image_templates:
-      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-amd64"
-      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-arm64"
   - id: vince-latest
     name_template: "ghcr.io/vinceanalytics/vince:latest"
     image_templates:
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
-  - id: v8s-latest
-    name_template: "ghcr.io/vinceanalytics/v8s:latest"
-    image_templates:
-      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-amd64"
-      - "ghcr.io/vinceanalytics/v8s:{{.Tag}}-arm64"
 brews:
   - tap:
       owner: vinceanalytics
@@ -196,7 +130,7 @@ brews:
       email: geofreyernest@live.com
     name: vince
     folder: Formula
-    homepage: httpd://vinceanalytics.github.io
+    homepage: https://vinceanalytics.github.io
     description: The Cloud Native Web Analytics Platform
     license: AGPL-3.0
     ids:
@@ -209,28 +143,6 @@ brews:
       zsh_completion.install "completions/vince/vince.zsh" => "_vince"
       fish_completion.install "completions/vince/vince.fish"
       man1.install "man/vince.1"
-  - tap:
-      owner: vinceanalytics
-      name: homebrew-tap
-    commit_author:
-      name: Geofrey Ernest
-      email: geofreyernest@live.com
-    name: v8s
-    folder: Formula
-    homepage: httpd://vinceanalytics.github.io
-    description: kubernetes controller for vince- The Cloud Native Web Analytics Platform
-    license: AGPL-3.0
-    ids:
-      - v8s
-    test: |
-      system "#{bin}/v8s version"
-    install: |-
-      bin.install "v8s"
-      bash_completion.install "completions/v8s/v8s.bash" => "v8s"
-      zsh_completion.install "completions/v8s/v8s.zsh" => "_v8s"
-      fish_completion.install "completions/v8s/v8s.fish"
-      man1.install "man/v8s.1"
-
 nfpms:
   - file_name_template: >-
       vince_
@@ -279,54 +191,6 @@ nfpms:
       lintian_overrides:
         - statically-linked-binary
         - changelog-file-missing-in-native-package
-  - file_name_template: >-
-      v8s_
-      {{-  .Tag }}_
-      {{-  .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-    id: v8s
-    builds:
-      - v8s
-    description: kubernetes controller for vince- The Cloud Native Web Analytics Platform
-    maintainer: Geofrey Ernest <geofreyernest@live.com>
-    license: AGPL-3.0
-    vendor: Geofrey Ernest
-    bindir: /usr/bin
-    section: Web
-    contents:
-      - src: ./completions/v8s/v8s.bash
-        dst: /usr/share/bash-completion/completions/v8s
-        file_info:
-          mode: 0644
-      - src: ./completions/v8s/v8s.fish
-        dst: /usr/share/fish/vendor_completions.d/v8s.fish
-        file_info:
-          mode: 0644
-      - src: ./completions/v8s/v8s.zsh
-        dst: /usr/share/zsh/vendor-completions/_v8s
-        file_info:
-          mode: 0644
-      - src: ./man/v8s.1
-        dst: /usr/share/man/man1/v8s.1
-        file_info:
-          mode: 0644
-      - src: ./LICENSE
-        dst: /usr/share/doc/v8s/copyright
-        file_info:
-          mode: 0644
-    formats:
-      - apk
-      - deb
-      - rpm
-      - archlinux
-    deb:
-      lintian_overrides:
-        - statically-linked-binary
-        - changelog-file-missing-in-native-package
-
 release:
   github:
     owner: vinceanalytics

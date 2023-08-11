@@ -14,7 +14,6 @@ import (
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/internal/cmd/vince"
 	"github.com/vinceanalytics/vince/tools"
-	"github.com/vinceanalytics/vince/v8s/cmd/v8s"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -23,7 +22,6 @@ func main() {
 	if os.Getenv("DOCS") != "" {
 		root := tools.RootVince()
 		mannPage(root, vince.App())
-		mannPage(root, v8s.App())
 		completion(root)
 	}
 }
@@ -135,7 +133,7 @@ func completion(root string) {
 	power := tools.ReadFile(powerFile)
 	zshFile := filepath.Join(base, "autocomplete", "zsh_autocomplete")
 	zsh := tools.ReadFile(zshFile)
-	binaries := []string{"vince", "v8s"}
+	binaries := []string{"vince"}
 	for _, name := range binaries {
 		fileBash := filepath.Join(root, "completions", name, name+".bash")
 		fileZsh := filepath.Join(root, "completions", name, name+".zsh")
@@ -149,12 +147,7 @@ func completion(root string) {
 	if err != nil {
 		tools.Exit(err.Error())
 	}
-	v8sFish, err := v8s.App().ToFishCompletion()
-	if err != nil {
-		tools.Exit(err.Error())
-	}
 	tools.WriteFile(filepath.Join(root, "completions", "vince", "vince.fish"), []byte(vinceFish))
-	tools.WriteFile(filepath.Join(root, "completions", "v8s", "v8s.fish"), []byte(v8sFish))
 }
 
 func mannPage(root string, app *cli.App) {

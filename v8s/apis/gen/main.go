@@ -74,7 +74,7 @@ func buildCrd() {
 	to := pkg.Path + "/cmd/controller-gen@" + pkg.Version
 	println(">> using ", to)
 	tools.ExecPlain("go", "install", to)
-	out := filepath.Join(root, "chart/crds")
+	out := filepath.Join(root, "manifests", "crds")
 	tools.ExecPlain(
 		"controller-gen",
 		"crd",

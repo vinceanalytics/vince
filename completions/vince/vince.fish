@@ -2,7 +2,7 @@
 
 function __fish_vince_no_subcommand --description 'Test if there has been any subcommand yet'
     for i in (commandline -opc)
-        if contains -- $i config version
+        if contains -- $i config version k8s
             return 1
         end
     end
@@ -78,3 +78,12 @@ complete -c vince -n '__fish_seen_subcommand_from config' -f -l help -s h -d 'sh
 complete -r -c vince -n '__fish_vince_no_subcommand' -a 'config' -d 'generates configurations for vince'
 complete -c vince -n '__fish_seen_subcommand_from version' -f -l help -s h -d 'show help'
 complete -r -c vince -n '__fish_vince_no_subcommand' -a 'version' -d 'prints version information'
+complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l help -s h -d 'show help'
+complete -r -c vince -n '__fish_vince_no_subcommand' -a 'k8s' -d 'kubernetes controller for vince - The Cloud Native Web Analytics Platform.'
+complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l master-url -r -d 'The address of the Kubernetes API server. Overrides any value in kubeconfig.'
+complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l kubeconfig -r -d 'Path to a kubeconfig. Only required if out-of-cluster.'
+complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l default-image -r -d 'Default image of vince to use'
+complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l port -r -d 'controller api port'
+complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l namespace -r -d 'default namespace where resource managed by v8s will be deployed'
+complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l watch-namespaces -r -d 'namespaces to watch for Vince and Site custom resources'
+complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l ignore-namespaces -r -d 'namespaces to ignore for Vince and Site custom resources'
