@@ -1,5 +1,6 @@
 {
     "yaml.schemas": {
-        "kubernetes": "chart/crds/*.yaml"
-    }
+        "kubernetes": "chart/crds/*.yaml",
+        "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yaml"
+    },
 }
