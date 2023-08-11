@@ -1,0 +1,17 @@
+apiVersion: staples/v1alpha1
+kind: Vince
+metadata:
+  creationTimestamp: null
+  labels:
+    app.kubernetes.io/component: server
+    app.kubernetes.io/managed-by: v8s
+    app.kubernetes.io/name: vince
+    app.kubernetes.io/part-of: vinceanalytics
+    app.kubernetes.io/version: ""
+  name: topology
+  namespace: ns0
+spec:
+  container:
+    resources: {}
+  volume:
+    size: 1Gi
