@@ -2,11 +2,9 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,7 +17,6 @@ import (
 	"github.com/vinceanalytics/vince/v8s/cmd/v8s"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"moul.io/http2curl"
 )
 
 func main() {
@@ -28,7 +25,6 @@ func main() {
 		mannPage(root, vince.App())
 		mannPage(root, v8s.App())
 		completion(root)
-		guides(root)
 		config(vince.App())
 	}
 }
@@ -130,6 +126,7 @@ func scrub(name, value string) string {
 		return value
 	}
 }
+
 func completion(root string) {
 	println("> completions")
 	base := tools.Root("github.com/urfave/cli/v3")
@@ -168,35 +165,4 @@ func mannPage(root string, app *cli.App) {
 		tools.Exit(err.Error())
 	}
 	tools.WriteFile(filepath.Join(root, "man", app.Name+".1"), []byte(m))
-}
-
-func guides(root string) {
-	guideCreateSite(root)
-}
-
-const (
-	host   = "http://localhost:8080"
-	bearer = "$VINCE_BOOTSTRAP_KEY"
-	domain = "vince.example.com"
-)
-
-func guideCreateSite(root string) {
-	b, _ := json.Marshal(map[string]string{
-		"domain": domain,
-	})
-	r, _ := http.NewRequest(http.MethodPost, host+"/api/v1/sites", bytes.NewReader(b))
-	r.Header.Set("Authorization", "Bearer "+bearer)
-
-	write(filepath.Join(root, "website/docs/guide/files/create_site.sh"), r)
-}
-
-func write(path string, r *http.Request) {
-	cmd, _ := http2curl.GetCurlCommand(r)
-	tools.WriteFile(path, []byte(breakDown(cmd.String())))
-}
-
-func breakDown(a string) string {
-	a = strings.ReplaceAll(a, "' -d '", "' \\\n\t-d '")
-	a = strings.ReplaceAll(a, "' -H '", "' \\\n\t-H '")
-	return a
 }
