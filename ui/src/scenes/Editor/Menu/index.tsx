@@ -1,16 +1,19 @@
 
 
-import { Box, ActionMenu, ActionList, Button, Label } from "@primer/react";
+import { Box, ActionMenu, ActionList, Button } from "@primer/react";
 import { PageHeader } from '@primer/react/drafts'
 import {
-    TriangleRightIcon, TriangleDownIcon,
+    TriangleRightIcon,
+    ZapIcon,
     CodeIcon,
 } from "@primer/octicons-react";
 
 export const Menu = () => {
     return (
         <Box
-            paddingX={2} sx={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderColor: 'border.default', pb: 1 }}
+            pl={2}
+            pr={3}
+            sx={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderColor: 'border.default', pb: 1 }}
         >
             <PageHeader>
                 <PageHeader.TitleArea>
@@ -30,6 +33,11 @@ export const Menu = () => {
                                 </ActionList>
                             </ActionMenu.Overlay>
                         </ActionMenu>
+                        <Button
+                            variant="primary"
+                            leadingIcon={ZapIcon}
+                            sx={{ mr: 1 }}
+                        >Save</Button>
                     </PageHeader.Actions>
                 </PageHeader.TitleArea>
             </PageHeader>
