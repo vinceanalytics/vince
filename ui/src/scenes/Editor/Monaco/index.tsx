@@ -44,43 +44,6 @@ type IStandaloneCodeEditor = editor.IStandaloneCodeEditor
 const Content = styled(PaneContent)`
   position: relative;
   overflow: hidden;
-
-  .monaco-scrollable-element > .scrollbar > .slider {
-    background: ${themeGet("fg.default")};
-  }
-
-  .cursorQueryDecoration {
-    width: 0.2rem !important;
-    background: ${themeGet("success.fg")};
-    margin-left: 1.2rem;
-
-    &.hasError {
-      background: ${themeGet("danger.fg")};
-    }
-  }
-
-  .cursorQueryGlyph {
-    margin-left: 2rem;
-    z-index: 1;
-    cursor: pointer;
-
-    &:after {
-      content: "◃";
-      font-size: 2.5rem;
-      transform: rotate(180deg) scaleX(0.8);
-      color: ${themeGet("success.fg")};
-    }
-  }
-
-  .errorGlyph {
-    margin-left: 2.5rem;
-    margin-top: 0.5rem;
-    z-index: 1;
-    width: 0.75rem !important;
-    height: 0.75rem !important;
-    border-radius: 50%;
-    background: ${themeGet("danger.fg")};
-  }
 `
 
 enum Command {
