@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -32,7 +33,9 @@ jobs:
           go-version-file: "go.mod"
       - name: Setup minisign
         run: |
-          go install aead.dev/minisign/cmd/minisign@latest
+          curl -sL https://github.com/jedisct1/minisign/releases/download/0.11/minisign-0.11-linux.tar.gz | tar xz
+          cp ./minisign-linux/x86_64/minisign /usr/local/bin/
+          rm -r ./minisign-linux
           mkdir -p $HOME/.minisign
           printenv MINISIGN_KEY > $HOME/.minisign/minisign.key
         env:
