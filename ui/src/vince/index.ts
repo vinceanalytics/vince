@@ -181,6 +181,9 @@ export type ErrorShape = Readonly<{
 }>
 
 
+export type Version = {
+    version: string
+}
 
 
 
@@ -248,6 +251,10 @@ export class Client {
 
     async sites(): Promise<Site[] | ErrorShape> {
         return this.do<Site[]>("/sites")
+    }
+
+    async version(): Promise<Version | ErrorShape> {
+        return this.do<Version>("/version")
     }
 
     async create(domain: string): Promise<Site | ErrorShape> {

@@ -1,9 +1,19 @@
-import { Box, Text, Link } from '@primer/react'
-
+import { Box, Text, Link, Label } from '@primer/react'
+import { useVince } from "../../providers";
+import { Version } from "../../vince";
 import { MarkGithubIcon } from "@primer/octicons-react";
-
+import { useEffect, useState } from 'react';
 
 const Footer = () => {
+    const [version, setVersion] = useState<string>()
+    const { vince } = useVince()
+    useEffect(() => {
+        vince.version().then((v) => {
+            const r = v as Version;
+            setVersion(r.version)
+        })
+            .catch((e) => { })
+    }, [vince, setVersion])
     return (
         <Box id="footer"
             sx={{
@@ -34,12 +44,17 @@ const Footer = () => {
                 paddingRight: "1rem",
                 alignItems: "center",
             }}>
+                <Label variant="primary" sx={{
+                    marginRight: 1,
+                }}>
+                    vince: {version}
+                </Label>
                 <Link
                     href='https://github.com/vinceanalytics/vince'
                     target='_blank'
                     rel='noreferrer'
                 >
-                    <MarkGithubIcon size={"small"} />
+                    <MarkGithubIcon size={"medium"} />
                 </Link>
             </Box>
         </Box>
