@@ -1,4 +1,4 @@
-import React, { createContext, PropsWithChildren } from "react"
+import React, { createContext, PropsWithChildren, useContext } from "react"
 
 import { Client } from "../../vince";
 
@@ -26,4 +26,8 @@ export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
             {children}
         </VinceContext.Provider>
     )
+}
+
+export const useVince = () => {
+    return useContext(VinceContext)
 }
