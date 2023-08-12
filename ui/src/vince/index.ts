@@ -113,68 +113,8 @@ export type Options = {
     explain?: boolean
 }
 
-export type Release = {
-    assets: {
-        browser_download_url: string
-        name: string
-        size: number
-    }[]
-    html_url: string
-    name: string
-    published_at: string
-}
 
-export enum FileCheckStatus {
-    EXISTS = "Exists",
-    DOES_NOT_EXIST = "Does not exist",
-    RESERVED_NAME = "Reserved name",
-}
 
-export type FileCheckResponse = {
-    status: FileCheckStatus
-}
-
-export type UploadModeSettings = {
-    forceHeader: boolean
-    overwrite: boolean
-    skipLev: boolean
-    delimiter: string
-    atomicity: string
-    durable: boolean
-    maxUncommitedRows: number
-}
-
-export type SchemaColumn = {
-    name: string
-    type: string
-    pattern?: string
-}
-
-type UploadOptions = {
-    file: File
-    name: string
-    settings: UploadModeSettings
-    schema: SchemaColumn[]
-    partitionBy: string
-    timestamp: string
-    onProgress: (progress: number) => void
-}
-
-export type UploadResultColumn = {
-    name: string
-    type: string
-    size: number
-    errors: number
-}
-
-export type UploadResult = {
-    columns: UploadResultColumn[]
-    header: boolean
-    location: string
-    rowsImported: number
-    rowsRejected: number
-    status: string
-}
 
 export type ErrorShape = Readonly<{
     error: string
@@ -219,35 +159,6 @@ export class Client {
         this._controllers = []
     }
 
-    async query<T extends Record<string, any>>(query: string, options?: Options): Promise<QueryResult<T>> {
-        const result = await this.queryRaw(query, options)
-
-        if (result.type === Type.DQL) {
-            const { columns, count, dataset, timings } = result
-
-            const parsed = dataset.map(
-                (row) =>
-                    row.reduce(
-                        (acc: RawData, val: Value, idx) => ({
-                            ...acc,
-                            [columns[idx].name]: val,
-                        }),
-                        {},
-                    ) as RawData,
-            ) as unknown as T[]
-
-            return {
-                columns,
-                count,
-                data: parsed,
-                timings,
-                type: Type.DQL,
-                ...(result.explain ? { explain: result.explain } : {}),
-            }
-        }
-
-        return result
-    }
 
     async sites(): Promise<Site[] | ErrorShape> {
         return this.do<Site[]>("/sites")
