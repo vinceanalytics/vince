@@ -11,13 +11,32 @@ permissions:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Docker Login
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_PAT }}
       - name: Set up Go
         uses: actions/setup-go@v4
+        with:
+          go-version-file: "go.mod"
+      - name: Setup minisign
+        run: |
+          go install aead.dev/minisign/cmd/minisign@latest
+          mkdir -p $HOME/.minisign
+          printenv MINISIGN_KEY > $HOME/.minisign/minisign.key
+        env:
+          MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
@@ -25,4 +44,4 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
