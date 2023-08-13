@@ -25,7 +25,6 @@ require (
 	github.com/pingcap/tidb/parser v0.0.0-20230813044528-92b5a6760686
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.21.0
-	github.com/substrait-io/substrait-go v0.4.1
 	github.com/tikv/client-go/v2 v2.0.8-0.20230811033710-8a214402da13
 	github.com/urfave/cli/v3 v3.0.0-alpha3
 	golang.org/x/exp v0.0.0-20230711005742-c3f37128e5a4
@@ -61,7 +60,6 @@ require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
-	github.com/alecthomas/participle/v2 v2.0.0 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1581 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/apache/thrift v0.16.0 // indirect
@@ -106,7 +104,6 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/gobuffalo/flect v1.0.2 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/goccy/go-yaml v1.9.8 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.1+incompatible // indirect
 	github.com/golang/glog v1.1.0 // indirect
@@ -236,3 +233,5 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 	sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0 // indirect
 )
+
+replace github.com/go-ldap/ldap/v3 => github.com/YangKeao/ldap/v3 v3.4.5-0.20230421065457-369a3bab1117
