@@ -7,7 +7,7 @@ import (
 	"github.com/pingcap/tidb/parser"
 	"github.com/pingcap/tidb/parser/ast"
 	"github.com/pingcap/tidb/parser/opcode"
-	"github.com/pingcap/tidb/parser/test_driver"
+	_ "github.com/pingcap/tidb/types/parser_driver"
 	"github.com/substrait-io/substrait-go/expr"
 	"github.com/substrait-io/substrait-go/plan"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -135,22 +135,23 @@ func (v *astVisitor) Enter(n ast.Node) (nRes ast.Node, skipChildren bool) {
 					}
 					v.err = fmt.Errorf("column %q does not exist", name)
 					return nil, false
-				case *test_driver.ValueExpr:
-					var lit expr.Literal
-					switch x := e.GetValue().(type) {
-					case int64:
-						lit = expr.NewPrimitiveLiteral(x, false)
-					case float32:
-						lit = expr.NewPrimitiveLiteral(x, false)
-					case float64:
-						lit = expr.NewPrimitiveLiteral(x, false)
-					case string:
-						lit = expr.NewPrimitiveLiteral(x, false)
-					default:
-						v.err = fmt.Errorf("data type %v is not supported", x)
-						return nil, false
-					}
-					v.expr = append(v.expr, lit)
+				// case *test_driver.ValueExpr:
+				// 	var lit expr.Literal
+				// 	switch x := e.GetValue().(type) {
+				// 	case int64:
+				// 		lit = expr.NewPrimitiveLiteral(x, false)
+				// 	case float32:
+				// 		lit = expr.NewPrimitiveLiteral(x, false)
+				// 	case float64:
+				// 		lit = expr.NewPrimitiveLiteral(x, false)
+				// 	case string:
+				// 		lit = expr.NewPrimitiveLiteral(x, false)
+				// 	default:
+				// 		v.err = fmt.Errorf("data type %v is not supported", x)
+				// 		return nil, false
+				// 	}
+				// 	v.expr = append(v.expr, lit)
+
 				case *ast.BinaryOperationExpr:
 					right, n := pop(v.expr)
 					left, n := pop(n)
