@@ -20,11 +20,13 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/oschwald/maxminddb-golang v1.10.0
+	github.com/pingcap/kvproto v0.0.0-20230728080053-8a9db88bc88a
 	github.com/pingcap/tidb v1.1.0-beta.0.20230813044528-92b5a6760686
 	github.com/pingcap/tidb/parser v0.0.0-20230813044528-92b5a6760686
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.21.0
 	github.com/substrait-io/substrait-go v0.4.1
+	github.com/tikv/client-go/v2 v2.0.8-0.20230811033710-8a214402da13
 	github.com/urfave/cli/v3 v3.0.0-alpha3
 	golang.org/x/exp v0.0.0-20230711005742-c3f37128e5a4
 	golang.org/x/mod v0.11.0
@@ -55,6 +57,7 @@ require (
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
 	github.com/cockroachdb/redact v1.0.8 // indirect
 	github.com/cockroachdb/sentry-go v0.6.1-cockroachdb.2 // indirect
+	github.com/coocood/freecache v1.2.1 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.4.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
@@ -115,7 +118,6 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pingcap/errors v0.11.5-0.20221009092201-b66cddb77c32 // indirect
 	github.com/pingcap/failpoint v0.0.0-20220801062533-2eaa32854a6c // indirect
-	github.com/pingcap/kvproto v0.0.0-20230728080053-8a9db88bc88a // indirect
 	github.com/pingcap/log v1.1.1-0.20230317032135-a0d097d16e22 // indirect
 	github.com/pingcap/sysutil v1.0.1-0.20230407040306-fb007c5aff21 // indirect
 	github.com/pingcap/tipb v0.0.0-20230802082933-256c189cd860 // indirect
@@ -131,7 +133,6 @@ require (
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tiancaiamao/gp v0.0.0-20221230034425-4025bc8a4d4a // indirect
-	github.com/tikv/client-go/v2 v2.0.8-0.20230811033710-8a214402da13 // indirect
 	github.com/tikv/pd/client v0.0.0-20230728033905-31343e006842 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.0 // indirect
