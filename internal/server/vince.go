@@ -17,12 +17,12 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/health"
+	"github.com/vinceanalytics/vince/internal/log"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/router"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/internal/worker"
-	"github.com/vinceanalytics/vince/pkg/log"
 	"golang.org/x/sync/errgroup"
 )
 

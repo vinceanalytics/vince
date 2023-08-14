@@ -6,8 +6,8 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
+	"github.com/vinceanalytics/vince/internal/log"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 type key struct{}

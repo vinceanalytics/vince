@@ -14,7 +14,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/rs/zerolog"
-	"github.com/vinceanalytics/vince/pkg/secrets"
+	"github.com/vinceanalytics/vince/internal/secrets"
 	"github.com/vinceanalytics/vince/v8s/gen/client/vince/clientset/versioned"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"

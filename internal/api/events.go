@@ -7,11 +7,11 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/events"
+	"github.com/vinceanalytics/vince/internal/log"
 	"github.com/vinceanalytics/vince/internal/remoteip"
 	"github.com/vinceanalytics/vince/internal/timeseries"
-	"github.com/vinceanalytics/vince/pkg/entry"
-	"github.com/vinceanalytics/vince/pkg/log"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 

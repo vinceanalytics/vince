@@ -4,7 +4,7 @@ import (
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/server"
-	"github.com/vinceanalytics/vince/pkg/version"
+	"github.com/vinceanalytics/vince/internal/version"
 	"github.com/vinceanalytics/vince/v8s"
 )
 

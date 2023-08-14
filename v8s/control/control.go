@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/internal/log"
 	vince_informers "github.com/vinceanalytics/vince/v8s/gen/client/vince/informers/externalversions"
 	vince_listers "github.com/vinceanalytics/vince/v8s/gen/client/vince/listers/vince/v1alpha1"
 	"github.com/vinceanalytics/vince/v8s/k8s"

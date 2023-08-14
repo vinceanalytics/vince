@@ -3,7 +3,7 @@ package must
 import (
 	"fmt"
 
-	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/internal/log"
 )
 
 func Must[T any](r T, err error) func(msg ...any) T {

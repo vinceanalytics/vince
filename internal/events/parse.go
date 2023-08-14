@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/geoip"
 	"github.com/vinceanalytics/vince/internal/referrer"
 	"github.com/vinceanalytics/vince/internal/ua"
 	"github.com/vinceanalytics/vince/internal/userid"
-	"github.com/vinceanalytics/vince/pkg/entry"
 )
 
 var ErrInvalid = errors.New("missing uri")

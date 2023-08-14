@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/health"
+	"github.com/vinceanalytics/vince/internal/log"
 	"github.com/vinceanalytics/vince/internal/timeseries"
-	"github.com/vinceanalytics/vince/pkg/log"
 )
 
 func Periodic(

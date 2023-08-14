@@ -12,7 +12,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/urfave/cli/v3"
-	"github.com/vinceanalytics/vince/pkg/entry"
+	"github.com/vinceanalytics/vince/internal/entry"
 	"golang.org/x/time/rate"
 )
 

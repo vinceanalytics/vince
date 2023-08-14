@@ -13,9 +13,9 @@ import (
 	"github.com/mholt/acmez/acme"
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/internal/log"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/pkg/log"
-	"github.com/vinceanalytics/vince/pkg/secrets"
+	"github.com/vinceanalytics/vince/internal/secrets"
 )
 
 const (

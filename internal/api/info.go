@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/render"
-	"github.com/vinceanalytics/vince/pkg/version"
+	"github.com/vinceanalytics/vince/internal/version"
 )
 
 func Version(w http.ResponseWriter, r *http.Request) {

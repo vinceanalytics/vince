@@ -12,8 +12,8 @@ import (
 	"github.com/apache/arrow/go/v13/arrow/math"
 	"github.com/apache/arrow/go/v13/arrow/scalar"
 	"github.com/vinceanalytics/vince/internal/core"
+	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/pkg/entry"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 

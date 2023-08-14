@@ -3,7 +3,7 @@ package timeseries
 import (
 	"time"
 
-	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/internal/log"
 )
 
 var rolloutWindow = time.Hour.Milliseconds()

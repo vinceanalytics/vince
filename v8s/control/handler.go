@@ -1,7 +1,7 @@
 package control
 
 import (
-	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/internal/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"

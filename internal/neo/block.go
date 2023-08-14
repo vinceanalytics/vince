@@ -11,8 +11,8 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/pkg/entry"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
 )

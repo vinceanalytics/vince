@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v3"
-	"github.com/vinceanalytics/vince/pkg/secrets"
+	"github.com/vinceanalytics/vince/internal/secrets"
 )
 
 func ConfigCMD() *cli.Command {

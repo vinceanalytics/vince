@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/dgraph-io/ristretto"
+	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/pkg/entry"
 )
 
 const DefaultSession = 15 * time.Minute

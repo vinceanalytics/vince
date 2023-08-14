@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/emersion/go-smtp"
-	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/internal/log"
 )
 
 var _ smtp.Backend = (*Backend)(nil)

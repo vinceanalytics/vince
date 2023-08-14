@@ -9,7 +9,7 @@ import (
 
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/pkg/log"
+	"github.com/vinceanalytics/vince/internal/log"
 )
 
 type Plug func(http.Handler) http.Handler

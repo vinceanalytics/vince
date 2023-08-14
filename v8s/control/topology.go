@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/vinceanalytics/vince/pkg/secrets"
+	"github.com/vinceanalytics/vince/internal/secrets"
 	"github.com/vinceanalytics/vince/v8s/apis/vince/v1alpha1"
 	vince_listers "github.com/vinceanalytics/vince/v8s/gen/client/vince/listers/vince/v1alpha1"
 	"github.com/vinceanalytics/vince/v8s/k8s"
