@@ -11,7 +11,6 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 
 # Features
 
-- [ ] Programmable alerting (using Typescript or modern Javascript ECMAScript 2022)
 - [ ] Time on site tracking
 - [ ] Conversion tracking 
 - [x] Multiple site management
