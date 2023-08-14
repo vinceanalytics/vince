@@ -12,7 +12,8 @@ require (
 	github.com/dgraph-io/badger/v4 v4.1.0
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dlclark/regexp2 v1.7.0
-	github.com/dop251/goja v0.0.0-20230427124612-428fc442ff5f
+	github.com/dolthub/go-mysql-server v0.16.1-0.20230811232523-cee5b01dd5ce
+	github.com/dolthub/vitess v0.0.0-20230803210631-6a8ca1536779
 	github.com/emersion/go-smtp v0.16.0
 	github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress v1.16.7
@@ -22,6 +23,8 @@ require (
 	github.com/oschwald/maxminddb-golang v1.10.0
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.21.0
+	github.com/shopspring/decimal v1.2.0
+	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v3 v3.0.0-alpha3
 	golang.org/x/exp v0.0.0-20230711005742-c3f37128e5a4
 	golang.org/x/mod v0.11.0
@@ -29,6 +32,7 @@ require (
 	golang.org/x/text v0.12.0
 	golang.org/x/time v0.3.0
 	google.golang.org/protobuf v1.30.0
+	gopkg.in/src-d/go-errors.v1 v1.0.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.27.2
 	k8s.io/apimachinery v0.27.2
@@ -51,9 +55,7 @@ require (
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/dolthub/flatbuffers/v23 v23.3.3-dh.2 // indirect
 	github.com/dolthub/go-icu-regex v0.0.0-20230524105445-af7e7991c97e // indirect
-	github.com/dolthub/go-mysql-server v0.16.1-0.20230811232523-cee5b01dd5ce // indirect
 	github.com/dolthub/jsonpath v0.0.2-0.20230525180605-8dc13778fd72 // indirect
-	github.com/dolthub/vitess v0.0.0-20230803210631-6a8ca1536779 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emersion/go-sasl v0.0.0-20200509203442-7bfe0ed36a21 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
@@ -63,7 +65,6 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.1 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
-	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gobuffalo/flect v1.0.2 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -102,10 +103,8 @@ require (
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/tetratelabs/wazero v1.1.0 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
@@ -130,7 +129,6 @@ require (
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/grpc v1.54.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/src-d/go-errors.v1 v1.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.27.1 // indirect
 	k8s.io/gengo v0.0.0-20220902162205-c0856e24416d // indirect

@@ -3,14 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/dop251/goja"
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"golang.org/x/time/rate"
@@ -29,42 +27,6 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			{Name: "bench", Action: bench},
-		},
-		Action: func(ctx *cli.Context) error {
-			vm := goja.New()
-			b, err := os.ReadFile(ctx.Args().First())
-			if err != nil {
-				return err
-			}
-			vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
-			vm.Set("println", fmt.Println)
-			create := func(call goja.ConstructorCall) *goja.Object {
-				s := &Session{
-					UserAgent: ua(),
-					IP:        ip(),
-					Domain:    "vince.io",
-					Host:      ctx.String("host"),
-					Path:      "/",
-					Event:     "pageview",
-					Referrer:  referrer(),
-				}
-				if len(call.Arguments) > 0 {
-					s.Fixture = true
-				}
-				a := vm.ToValue(s).(*goja.Object)
-				a.SetPrototype(call.This.Prototype())
-				return a
-			}
-			vm.Set("Session", create)
-			vm.Set("ip", ip)
-			vm.Set("referer", referrer)
-			vm.Set("userAgent", ua)
-			vm.Set("console", console{})
-			_, err = vm.RunString(string(b))
-			if err != nil {
-				return err
-			}
-			return nil
 		},
 	}
 	err := a.Run(os.Args)
@@ -118,46 +80,14 @@ func referrer() string {
 }
 
 type Session struct {
-	// When this is true send will not send http request buf instead will buffer
-	// it, this is useful to generate fixtures to use in testing.
-	Fixture   bool     `json:"fixture"`
-	Requests  Requests `json:"requests"`
-	UserAgent UA       `json:"user_agent"`
-	IP        string   `json:"ip"`
-	Host      string   `json:"host"`
-	Website   string   `json:"website"`
-	Domain    string   `json:"domain"`
-	Path      string   `json:"path"`
-	Event     string   `json:"event"`
-	Referrer  string   `json:"referer"`
-}
-
-type Requests []*entry.Request
-
-func (r Requests) Dump() string {
-	b, _ := json.Marshal(r)
-	return string(b)
-}
-
-func (s *Session) Pretty() string {
-	b, _ := json.MarshalIndent(s.Requests, "", " ")
-	return string(b)
-}
-
-func (o *Session) With(key, value string) *Session {
-	switch key {
-	case "host":
-		o.Host = value
-	case "website":
-		o.Website = value
-	case "domain":
-		o.Domain = value
-	case "path":
-		o.Path = value
-	case "event":
-		o.Event = value
-	}
-	return o
+	UserAgent UA     `json:"user_agent"`
+	IP        string `json:"ip"`
+	Host      string `json:"host"`
+	Website   string `json:"website"`
+	Domain    string `json:"domain"`
+	Path      string `json:"path"`
+	Event     string `json:"event"`
+	Referrer  string `json:"referer"`
 }
 
 func (o *Session) RequestBody() *entry.Request {
@@ -167,19 +97,11 @@ func (o *Session) RequestBody() *entry.Request {
 	r.Referrer = o.Referrer
 	r.URI = o.Website + o.Path
 	r.ScreenWidth = o.UserAgent.ScreenWidth
-	if o.Fixture {
-		r.IP = o.IP
-		r.UserAgent = o.UserAgent.UserAgent
-	}
 	return r
 }
 
 func (o *Session) Send() *Session {
 	rb := o.RequestBody()
-	if o.Fixture {
-		o.Requests = append(o.Requests, rb)
-		return o
-	}
 	b, _ := json.Marshal(rb)
 	rb.Release()
 	r, _ := http.NewRequest(http.MethodPost, o.Host+"/api/event", bytes.NewReader(b))
@@ -198,15 +120,4 @@ func (o *Session) Send() *Session {
 		println(res.Status)
 	}
 	return o
-}
-
-func (s *Session) Wait(n int) *Session {
-	time.Sleep(time.Millisecond * time.Duration(n))
-	return s
-}
-
-type console struct{}
-
-func (console) Log(a ...any) {
-	fmt.Fprintln(os.Stdout, a...)
 }
