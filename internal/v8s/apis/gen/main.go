@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -46,30 +47,29 @@ func generate(resource string, versions ...string) {
 	defer os.RemoveAll(dir)
 
 	for _, v := range versions {
-		tools.ExecPlain("rm", "-f", filepath.Join(root,
-			"/apis", resource,
-			v,
+		tools.ExecPlain("rm", "-fv", filepath.Join(
+			root, "internal", "v8s", "apis", resource, v,
 			"zz_generated.deepcopy.go",
 		))
 	}
-	tools.ExecPlain("rm", "-rf", filepath.Join(
-		root, "/gen/client", resource,
+	tools.ExecPlain("rm", "-rfv", filepath.Join(
+		root, "internal", "v8s", "gen", "client", resource,
 	))
 	tools.ExecPlain(GENERATE_SCRIPT, "all",
-		filepath.Join(rootPackage, "/gen/client", resource),
+		path.Join(rootPackage, "/gen/client", resource),
 		filepath.Join(rootPackage, "/apis"),
 		resource+":"+strings.Join(versions, ","),
-		"--go-header-file", filepath.Join(root, "v8s/apis/gen/boilerplate.go.txt"),
+		"--go-header-file", filepath.Join(root, "internal", "v8s", "apis", "gen", "boilerplate.go.txt"),
 		"--output-base", dir,
 	)
 	tools.ExecPlain("cp", "-r",
 		filepath.Join(dir, rootPackage)+"/.",
-		root+"/v8s/")
+		filepath.Join(root, "internal", "v8s"))
 }
 
 func buildCrd() {
 	println("### Generating crds yaml ###")
-	src := filepath.Join(root, "v8s/apis/vince/v1alpha1")
+	src := filepath.Join(root, "internal", "v8s", "apis", "vince", "v1alpha1")
 	pkg := tools.Package("sigs.k8s.io/controller-tools")
 	to := pkg.Path + "/cmd/controller-gen@" + pkg.Version
 	println(">> using ", to)
