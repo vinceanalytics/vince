@@ -6,6 +6,7 @@ import (
 )
 
 //go:generate go run tools/run/main.go
+
 func main() {
 	run.Main(vince.App())
 }
