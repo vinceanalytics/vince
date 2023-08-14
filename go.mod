@@ -14,7 +14,6 @@ require (
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/dolthub/go-mysql-server v0.16.1-0.20230811232523-cee5b01dd5ce
 	github.com/dolthub/vitess v0.0.0-20230803210631-6a8ca1536779
-	github.com/emersion/go-smtp v0.16.0
 	github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress v1.16.7
 	github.com/mholt/acmez v1.0.4
@@ -57,7 +56,6 @@ require (
 	github.com/dolthub/go-icu-regex v0.0.0-20230524105445-af7e7991c97e // indirect
 	github.com/dolthub/jsonpath v0.0.2-0.20230525180605-8dc13778fd72 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/emersion/go-sasl v0.0.0-20200509203442-7bfe0ed36a21 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/go-kit/kit v0.10.0 // indirect
@@ -138,5 +136,3 @@ require (
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-replace github.com/go-ldap/ldap/v3 => github.com/YangKeao/ldap/v3 v3.4.5-0.20230421065457-369a3bab1117
