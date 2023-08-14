@@ -2,6 +2,7 @@ syntax = "proto3";
 package v1;
 
 option go_package = "github.com/vinceanalytics/vince/proro/v1";
+import "google/protobuf/duration.proto";
 
 // StorePrefix defines different kind of data we are storing in the key value
 // store.
@@ -140,4 +141,15 @@ message Config {
   // host:port to bind for http api. This is used by serve command. The server
   // serves ui console
   string listen_address = 3;
+
+  // Control how much is logged options are
+  // trace,debug,info,warn,error,fatal,panic
+  string log_level = 4;
+
+  // Interval for syncing buffered entries. By default events are buffered and
+  // periodically saved.
+  google.protobuf.Duration sync_interval = 5;
+
+  // Expose /debug/pprof endpoint when serving
+  bool enable_profile = 6;
 }

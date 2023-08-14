@@ -2,13 +2,9 @@ package plug
 
 import (
 	"net/http"
-	"path"
-	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/oklog/ulid/v2"
-	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/log"
 )
 
@@ -54,151 +50,6 @@ func PutSecureBrowserHeaders(h http.Handler) http.Handler {
 		w.Header().Set("cross-origin-window-policy", "deny")
 		h.ServeHTTP(w, r)
 	})
-}
-
-func CORS(h http.Handler) http.Handler {
-	var allowedHeaders http.Header
-	var once sync.Once
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cors := config.Get(r.Context())
-		once.Do(func() {
-			allowedHeaders = make(http.Header)
-			for _, v := range cors.Cors.Headers {
-				// we use set as value so we can check if .Get method returns ""
-				// will mean the header was not set.
-				allowedHeaders.Set(v, "set")
-			}
-		})
-		method := r.Header.Get("access-control-request-method")
-		if r.Method == http.MethodOptions && method != "" {
-			headers := w.Header()
-			origin := r.Header.Get("Origin")
-
-			headers.Add("Vary", "Origin")
-			headers.Add("Vary", "Access-Control-Request-Method")
-			headers.Add("Vary", "Access-Control-Request-Headers")
-			headers.Add("Vary", "Access-Control-Request-Private-Network")
-			reqHeaders := parseHeaderList(r.Header.Get("Access-Control-Request-Headers"))
-			switch {
-			case origin == "":
-			case !isMethodAllowed(cors, origin):
-			case !isMethodAllowed(cors, r.Header.Get("Access-Control-Request-Method")):
-			case !isHeadersAllowed(allowedHeaders, reqHeaders):
-			default:
-				if cors.Cors.Origin == "*" {
-					headers.Set("Access-Control-Allow-Origin", "*")
-				} else {
-					headers.Set("Access-Control-Allow-Origin", origin)
-				}
-				headers.Set("Access-Control-Allow-Methods", strings.ToUpper(r.Header.Get("Access-Control-Request-Method")))
-				if len(reqHeaders) > 0 {
-					headers.Set("Access-Control-Allow-Headers", strings.Join(reqHeaders, ", "))
-				}
-				if r.Header.Get("Access-Control-Request-Private-Network") == "true" {
-					headers.Set("Access-Control-Allow-Private-Network", "true")
-				}
-				if cors.Cors.MaxAge > 0 {
-					headers.Set("Access-Control-Max-Age", strconv.Itoa(cors.Cors.MaxAge))
-				}
-			}
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		headers := w.Header()
-		origin := r.Header.Get("Origin")
-		headers.Add("Vary", "Origin")
-		switch {
-		case origin == "":
-		case !isOriginAllowed(cors, origin):
-		case !isMethodAllowed(cors, r.Method):
-		default:
-			if cors.Cors.Origin == "*" {
-				headers.Set("Access-Control-Allow-Origin", "*")
-			} else {
-				headers.Set("Access-Control-Allow-Origin", origin)
-			}
-			if len(cors.Cors.Expose) > 0 {
-				headers.Set("Access-Control-Expose-Headers", strings.Join(cors.Cors.Expose, ", "))
-			}
-			if cors.Cors.Credentials {
-				headers.Set("Access-Control-Allow-Credentials", "true")
-			}
-		}
-		h.ServeHTTP(w, r)
-	})
-}
-
-func isOriginAllowed(c *config.Options, o string) bool {
-	if c.Cors.Origin == "*" {
-		return true
-	}
-	ok, _ := path.Match(c.Cors.Origin, o)
-	return ok
-}
-func isMethodAllowed(c *config.Options, m string) bool {
-	for i := range c.Cors.Methods {
-		if c.Cors.Methods[i] == m {
-			return true
-		}
-	}
-	return false
-}
-
-func isHeadersAllowed(h http.Header, o []string) bool {
-	for i := range o {
-		if h.Get(o[i]) == "" {
-			return false
-		}
-	}
-	return true
-}
-
-const toLower = 'a' - 'A'
-
-// parseHeaderList tokenize + normalize a string containing a list of headers
-func parseHeaderList(headerList string) []string {
-	l := len(headerList)
-	h := make([]byte, 0, l)
-	upper := true
-	// Estimate the number headers in order to allocate the right splice size
-	t := 0
-	for i := 0; i < l; i++ {
-		if headerList[i] == ',' {
-			t++
-		}
-	}
-	headers := make([]string, 0, t)
-	for i := 0; i < l; i++ {
-		b := headerList[i]
-		switch {
-		case b >= 'a' && b <= 'z':
-			if upper {
-				h = append(h, b-toLower)
-			} else {
-				h = append(h, b)
-			}
-		case b >= 'A' && b <= 'Z':
-			if !upper {
-				h = append(h, b+toLower)
-			} else {
-				h = append(h, b)
-			}
-		case b == '-' || b == '_' || b == '.' || (b >= '0' && b <= '9'):
-			h = append(h, b)
-		}
-
-		if b == ' ' || b == ',' || i == l-1 {
-			if len(h) > 0 {
-				// Flush the found header
-				headers = append(headers, string(h))
-				h = h[:0]
-				upper = true
-			}
-		} else {
-			upper = b == '-' || b == '_'
-		}
-	}
-	return headers
 }
 
 func RequestID(h http.Handler) http.Handler {

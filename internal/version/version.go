@@ -61,7 +61,7 @@ func Build() Version {
 	return v
 }
 
-func VersionCmd() *cli.Command {
+func CMD() *cli.Command {
 	return &cli.Command{
 		Name:  "version",
 		Usage: "prints version information",

@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"io"
 	"net"
@@ -11,7 +10,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/caddyserver/certmagic"
+	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/assets"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
@@ -26,8 +25,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func Serve(o *config.Options) error {
-	ctx, err := config.Load(o)
+func Serve(o *config.Options, x *cli.Context) error {
+	ctx, err := config.Load(o, x)
 	if err != nil {
 		return err
 	}
@@ -40,12 +39,6 @@ func Serve(o *config.Options) error {
 
 type ResourceList []io.Closer
 
-type resourceFunc func() error
-
-func (r resourceFunc) Close() error {
-	return r()
-}
-
 func (r ResourceList) Close() error {
 	e := make([]error, 0, len(r))
 	for i := len(r) - 1; i > 0; i-- {
@@ -55,47 +48,21 @@ func (r ResourceList) Close() error {
 }
 
 func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList) {
-	log.Level(o.GetLogLevel())
-	o.Validate()
+	log.Level(config.GetLogLevel(o))
 
 	var resources ResourceList
 
 	// we start listeners early to make sure we can actually bind to the network.
 	// This saves us managing all long running goroutines we start in this process.
-	httpListener := must.Must(net.Listen("tcp", o.Listen))(
-		"failed binding network address", o.Listen,
+	httpListener := must.Must(net.Listen("tcp", o.ListenAddress))(
+		"failed binding network address", o.ListenAddress,
 	)
 	resources = append(resources, httpListener)
 	ctx = core.SetHTTPListener(ctx, httpListener)
-	var httpsListener net.Listener
-	var magic *certmagic.Config
-	if o.TLS.Enabled {
-		if o.Acme.Enabled {
-			magic = o.Magic()
-			must.One(magic.ManageSync(ctx, []string{o.Acme.Domain}))(
-				"failed to sync acme domain",
-			)
-			httpsListener = must.Must(net.Listen("tcp", o.TLS.Address))(
-				"failed to bind https socket", o.TLS.Address,
-			)
-		} else {
-			cert := must.Must(tls.LoadX509KeyPair(o.TLS.Cert, o.TLS.Key))(
-				"failed to load tls certificates",
-			)
-			config := tls.Config{}
-			config.Certificates = append(config.Certificates, cert)
-			httpsListener = must.Must(tls.Listen("tcp", o.TLS.Address, &config))(
-				"failed to bind tls socket with tls config",
-			)
-		}
-	}
-	if httpsListener != nil {
-		resources = append(resources, httpsListener)
-		ctx = core.SetHTTPSListener(ctx, httpsListener)
-	}
-	ctx, dba := db.Open(ctx, o.DataPath)
+
+	ctx, dba := db.Open(ctx, o.MetaPath)
 	resources = append(resources, dba)
-	ctx, ts := timeseries.Open(ctx, o)
+	ctx, ts := timeseries.Open(ctx, o.BlocksPath)
 	resources = append(resources, ts)
 
 	h := &health.Config{}
@@ -113,74 +80,31 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 			return ctx
 		},
 	}
-	if httpsListener != nil {
-		httpSvr.Handler = redirect(httpsListener.Addr().String())
-		if magic != nil {
-			// We are using tls with auto tls
-			httpSvr.Handler = magic.Issuers[0].(*certmagic.ACMEIssuer).HTTPChallengeHandler(
-				redirect(httpsListener.Addr().String()),
-			)
-		}
-	}
+
 	ctx = core.SetHTTPServer(ctx, httpSvr)
 	resources = append(resources, httpSvr)
 
-	if httpsListener != nil {
-		//configure https server
-		httpsSvr := &http.Server{
-			Handler:           Handle(ctx),
-			ReadHeaderTimeout: 10 * time.Second,
-			ReadTimeout:       30 * time.Second,
-			WriteTimeout:      2 * time.Minute,
-			IdleTimeout:       5 * time.Minute,
-			BaseContext: func(l net.Listener) context.Context {
-				return ctx
-			},
-		}
-		if magic != nil {
-			// httpsListener is not wrapped with tls yet. We use certmagic to obtain
-			// tls Config and properly wrap it.
-			tlsConfig := magic.TLSConfig()
-			tlsConfig.NextProtos = append([]string{"h2", "http/1.1"}, tlsConfig.NextProtos...)
-			httpsListener = tls.NewListener(httpsListener, tlsConfig)
-			ctx = core.SetHTTPSListener(ctx, httpsListener)
-		}
-		ctx = core.SetHTTPSServer(ctx, httpsSvr)
-		resources = append(resources, httpsSvr)
-
-	}
 	return ctx, resources
 }
 
 func Run(ctx context.Context, resources ResourceList) error {
-	var cancel context.CancelFunc
-	if config.Get(ctx).NoSignal {
-		ctx, cancel = context.WithCancel(ctx)
-	} else {
-		ctx, cancel = signal.NotifyContext(ctx, os.Interrupt)
-	}
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
-
-	h := health.Get(ctx)
 	var g errgroup.Group
 	{
 		o := config.Get(ctx)
-		g.Go(worker.Periodic(ctx, h.Ping("series"), o.Intervals.TSSync, false, worker.SaveBuffers))
+		g.Go(func() error {
+			worker.SaveBuffers(ctx, o.SyncInterval)
+			return nil
+		})
 	}
 
 	plain := core.GetHTTPServer(ctx)
-	secure := core.GetHTTPSServer(ctx)
 	plainLS := core.GetHTTPListener(ctx)
-	secureLS := core.GetHTTPSListener(ctx)
 
 	g.Go(func() error {
 		return plain.Serve(plainLS)
 	})
-	if secure != nil {
-		g.Go(func() error {
-			return secure.Serve(secureLS)
-		})
-	}
 	g.Go(func() error {
 		// Ensure we close the servers.
 		<-ctx.Done()
@@ -188,9 +112,6 @@ func Run(ctx context.Context, resources ResourceList) error {
 		return resources.Close()
 	})
 	log.Get().Debug().Str("address", plainLS.Addr().String()).Msg("started serving  http traffic")
-	if secureLS != nil {
-		log.Get().Debug().Str("address", secureLS.Addr().String()).Msg("started serving  https traffic")
-	}
 	return g.Wait()
 }
 
@@ -200,7 +121,6 @@ func Handle(ctx context.Context) http.Handler {
 			plug.Track(),
 			assets.Plug(),
 			plug.RequestID,
-			plug.CORS,
 		},
 		router.Pipe(ctx)...,
 	)
@@ -208,27 +128,4 @@ func Handle(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTP(w, r)
 	})
-}
-
-func redirect(addr string) http.Handler {
-	_, port, _ := net.SplitHostPort(addr)
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		toURL := "https://"
-		requestHost := hostOnly(r.Host)
-		toURL += requestHost + ":" + port
-		toURL += r.URL.RequestURI()
-		w.Header().Set("Connection", "close")
-		http.Redirect(w, r, toURL, http.StatusMovedPermanently)
-	})
-}
-
-// hostOnly returns only the host portion of hostport.
-// If there is no port or if there is an error splitting
-// the port off, the whole input string is returned.
-func hostOnly(hostPort string) string {
-	host, _, err := net.SplitHostPort(hostPort)
-	if err != nil {
-		return hostPort // OK; probably had no port to begin with
-	}
-	return host
 }

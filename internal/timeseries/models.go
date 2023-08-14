@@ -3,14 +3,11 @@ package timeseries
 import (
 	"context"
 	"io"
-	"path/filepath"
 
-	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/neo"
 )
 
-func Open(ctx context.Context, o *config.Options) (context.Context, io.Closer) {
-	dir := filepath.Join(o.DataPath, "ts")
+func Open(ctx context.Context, dir string) (context.Context, io.Closer) {
 	a := neo.NewBlock(dir)
 	return context.WithValue(ctx, blockKey{}, a), a
 }
