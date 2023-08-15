@@ -1,13 +1,14 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/internal/pj"
 	"github.com/vinceanalytics/vince/internal/render"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
@@ -38,7 +39,12 @@ func ListSites(w http.ResponseWriter, r *http.Request) {
 
 func Create(w http.ResponseWriter, r *http.Request) {
 	var b v1.Site
-	err := json.NewDecoder(r.Body).Decode(&b)
+	data, err := io.ReadAll(io.LimitReader(r.Body, 2<<10))
+	if err != nil {
+		render.ERROR(w, http.StatusRequestEntityTooLarge)
+		return
+	}
+	err = pj.Unmarshal(data, &b)
 	if err != nil || b.Domain == "" {
 		render.ERROR(w, http.StatusBadRequest)
 		return
