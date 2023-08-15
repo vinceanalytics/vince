@@ -25,7 +25,7 @@ func update(v string) {
 
 func vince(root, v string) {
 	println("> update vince version")
-	app := tools.ReadFile(filepath.Join(root, "pkg/version/VERSION.txt"))
+	app := tools.ReadFile(filepath.Join(root, "internal", "version", "VERSION.txt"))
 	switch semver.Compare(v, string(app)) {
 	case 0:
 		println("> no version changes")
@@ -33,7 +33,7 @@ func vince(root, v string) {
 	case -1:
 		tools.Exit(v, "VERSION must be greater than", string(app))
 	}
-	tools.WriteFile(filepath.Join(root, "pkg/version/VERSION.txt"), []byte(v))
+	tools.WriteFile(filepath.Join(root, "internal", "version", "VERSION.txt"), []byte(v))
 }
 
 func commit(v string) {
