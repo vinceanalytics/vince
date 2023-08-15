@@ -2,9 +2,10 @@ package control
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
-	"github.com/vinceanalytics/vince/internal/log"
+	"github.com/vinceanalytics/vince/internal/must"
 	vince_informers "github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/informers/externalversions"
 	vince_listers "github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/listers/vince/v1alpha1"
 	"github.com/vinceanalytics/vince/internal/v8s/k8s"
@@ -80,20 +81,18 @@ type List struct {
 }
 
 func (c *Control) Run(ctx context.Context) error {
-	log.Get().Debug().Msg("Initializing vince controller")
+	slog.Debug("Initializing vince controller")
 	// we only watch Site resources
 	{
 		timeout, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		log.Get().Debug().Msg("Starting sites informer")
+		slog.Debug("Starting sites informer")
 		c.form.vince.Start(ctx.Done())
 		for _, ok := range c.form.vince.WaitForCacheSync(timeout.Done()) {
-			if !ok {
-				log.Get().Fatal().Msg("timed out waiting for controller caches to sync:")
-			}
+			must.Assert(ok)("timed out waiting for controller caches to sync:")
 		}
 	}
 	c.ready()
-	log.Get().Debug().Msg("Controller is ready")
+	slog.Debug("Controller is ready")
 	wait.Until(c.runWorker, time.Second, ctx.Done())
 	return nil
 }

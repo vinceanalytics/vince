@@ -3,9 +3,6 @@ package plug
 import (
 	"net/http"
 	"strings"
-
-	"github.com/oklog/ulid/v2"
-	"github.com/vinceanalytics/vince/internal/log"
 )
 
 type Plug func(http.Handler) http.Handler
@@ -48,18 +45,6 @@ func PutSecureBrowserHeaders(h http.Handler) http.Handler {
 		w.Header().Set("x-download-options", "noopen")
 		w.Header().Set("x-permitted-cross-domain-policies", "none")
 		w.Header().Set("cross-origin-window-policy", "deny")
-		h.ServeHTTP(w, r)
-	})
-}
-
-func RequestID(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("x-request-id") == "" {
-			r.Header.Set("x-request-id", ulid.Make().String())
-		}
-		lg := log.Get()
-		rg := lg.With().Str("request_id", r.Header.Get("x-request-id")).Logger()
-		r = r.WithContext(rg.WithContext(r.Context()))
 		h.ServeHTTP(w, r)
 	})
 }

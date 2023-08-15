@@ -2,11 +2,13 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
+
+	"log/slog"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
-	"github.com/vinceanalytics/vince/internal/log"
 	"github.com/vinceanalytics/vince/internal/must"
 )
 
@@ -28,20 +30,19 @@ func Get(ctx context.Context) *badger.DB {
 
 var _ badger.Logger = (*badgerLogger)(nil)
 
-type badgerLogger struct {
-}
+type badgerLogger struct{}
 
 func (badgerLogger) Errorf(format string, args ...interface{}) {
-	log.Get().Error().Msgf(format, args...)
+	slog.Error(fmt.Sprintf(format, args...))
 }
 func (badgerLogger) Warningf(format string, args ...interface{}) {
-	log.Get().Warn().Msgf(format, args...)
+	slog.Warn(fmt.Sprintf(format, args...))
 }
 
 func (badgerLogger) Infof(format string, args ...interface{}) {
-	log.Get().Info().Msgf(format, args...)
+	slog.Info(fmt.Sprintf(format, args...))
 }
 
 func (b badgerLogger) Debugf(format string, args ...interface{}) {
-	log.Get().Debug().Msgf(format, args...)
+	slog.Debug(fmt.Sprintf(format, args...))
 }

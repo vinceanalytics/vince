@@ -3,11 +3,12 @@ package v8s
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync/atomic"
 
 	"github.com/urfave/cli/v3"
-	"github.com/vinceanalytics/vince/internal/log"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/v8s/control"
 	"github.com/vinceanalytics/vince/internal/v8s/k8s"
 	"github.com/vinceanalytics/vince/internal/version"
@@ -73,11 +74,10 @@ func CMD() *cli.Command {
 }
 
 func run(o *control.Options) error {
-	xlg := log.Get()
-	xlg.Debug().
-		Int("port", o.Port).
-		Msg("Starting controller")
-	xk8 := k8s.New(xlg, o.MasterURL, o.KubeConfig)
+	slog.SetDefault(config.Logger("debug"))
+	slog.Debug("starting controller", slog.Int("port", o.Port))
+
+	xk8 := k8s.New(o.MasterURL, o.KubeConfig)
 	a := &api{}
 	xctr := control.New(xk8, *o, a.Ready)
 	base, cancel := context.WithCancel(context.Background())

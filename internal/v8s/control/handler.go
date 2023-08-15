@@ -1,7 +1,8 @@
 package control
 
 import (
-	"github.com/vinceanalytics/vince/internal/log"
+	"log/slog"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
@@ -36,7 +37,7 @@ func (h *enqueueWorkHandler) OnDelete(obj interface{}) {
 func (h *enqueueWorkHandler) enqueueWork(obj interface{}) {
 	key, err := cache.MetaNamespaceKeyFunc(obj)
 	if err != nil {
-		log.Get().Err(err).Msg("failed to get meta key")
+		slog.Error("failed to get meta key", "err", err)
 		return
 	}
 	h.queue.Add(key)

@@ -10,12 +10,13 @@ import (
 	"os/signal"
 	"time"
 
+	"log/slog"
+
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/assets"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/log"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/router"
@@ -47,7 +48,7 @@ func (r ResourceList) Close() error {
 }
 
 func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList) {
-	log.Level(config.GetLogLevel(o))
+	slog.SetDefault(config.Logger(o.LogLevel))
 
 	var resources ResourceList
 
@@ -103,10 +104,10 @@ func Run(ctx context.Context, resources ResourceList) error {
 	g.Go(func() error {
 		// Ensure we close the servers.
 		<-ctx.Done()
-		log.Get().Debug().Msg("shutting down gracefully ")
+		slog.Debug("shutting down gracefully")
 		return resources.Close()
 	})
-	log.Get().Debug().Str("address", plainLS.Addr().String()).Msg("started serving  http traffic")
+	slog.Debug("started serving http traffic", slog.String("address", plainLS.Addr().String()))
 	return g.Wait()
 }
 
@@ -115,7 +116,6 @@ func Handle(ctx context.Context) http.Handler {
 		plug.Pipeline{
 			plug.Track(),
 			assets.Plug(),
-			plug.RequestID,
 		},
 		router.Pipe(ctx)...,
 	)

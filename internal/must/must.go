@@ -2,14 +2,16 @@ package must
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/vinceanalytics/vince/internal/log"
+	"log/slog"
 )
 
 func Must[T any](r T, err error) func(msg ...any) T {
 	return func(msg ...any) T {
 		if err != nil {
-			log.Get().Fatal().Err(err).Msg(fmt.Sprint(msg...))
+			slog.Error(fmt.Sprint(msg...))
+			os.Exit(1)
 		}
 		return r
 	}
@@ -18,7 +20,8 @@ func Must[T any](r T, err error) func(msg ...any) T {
 func One(err error) func(msg ...any) {
 	return func(msg ...any) {
 		if err != nil {
-			log.Get().Fatal().Err(err).Msg(fmt.Sprint(msg...))
+			slog.Error(fmt.Sprint(msg...))
+			os.Exit(1)
 		}
 	}
 }
@@ -26,7 +29,8 @@ func One(err error) func(msg ...any) {
 func Assert(ok bool) func(msg ...any) {
 	return func(msg ...any) {
 		if !ok {
-			log.Get().Fatal().Msg(fmt.Sprint(msg...))
+			slog.Error(fmt.Sprint(msg...))
+			os.Exit(1)
 		}
 	}
 }
@@ -34,7 +38,8 @@ func Assert(ok bool) func(msg ...any) {
 func AssertFMT(ok bool) func(msg string, a ...any) {
 	return func(msg string, a ...any) {
 		if !ok {
-			log.Get().Fatal().Msgf(msg, a...)
+			slog.Error(fmt.Sprintf(msg, a...))
+			os.Exit(1)
 		}
 	}
 }

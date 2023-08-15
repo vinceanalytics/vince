@@ -12,8 +12,10 @@ import (
 	"os"
 	"time"
 
+	"log/slog"
+
 	"github.com/cenkalti/backoff/v4"
-	"github.com/rs/zerolog"
+	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/secrets"
 	"github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/clientset/versioned"
 	v1 "k8s.io/api/core/v1"
@@ -35,36 +37,39 @@ type SiteAPI interface {
 	Delete(ctx context.Context, secret *v1.Secret, domain string) error
 }
 
-func New(log *zerolog.Logger, masterURL, kubeConfig string) Client {
-	return build(log, masterURL, kubeConfig)
+func New(masterURL, kubeConfig string) Client {
+	return build(masterURL, kubeConfig)
 }
 
-func config(log *zerolog.Logger, masterURL, kubeConfig string) *rest.Config {
+func config(masterURL, kubeConfig string) *rest.Config {
 	if os.Getenv("KUBERNETES_SERVICE_HOST") != "" && os.Getenv("KUBERNETES_SERVICE_PORT") != "" {
 		// If these env vars are set, we can build an in-cluster config.
-		log.Debug().Msg("creating in-cluster client")
+		slog.Debug("creating in-cluster client")
 		c, err := rest.InClusterConfig()
 		if err != nil {
-			log.Fatal().Msg("failed to create k8s client")
+			slog.Error("failed to create k8s client", "err", err)
+			os.Exit(1)
 		}
 		return c
 	}
 	if masterURL != "" || kubeConfig != "" {
-		log.Debug().
-			Str("master_url", masterURL).
-			Str("kube_config", kubeConfig).
-			Msg("creating external k8s client ")
+		slog.Info("creating external k8s client ",
+			"master_url", masterURL,
+			"kube_config", kubeConfig,
+		)
 		c, err := clientcmd.BuildConfigFromFlags(masterURL, kubeConfig)
 		if err != nil {
-			log.Fatal().
-				Str("master_url", masterURL).
-				Str("kube_config", kubeConfig).
-				Msg("failed creating external k8s client ")
+			slog.Error("failed creating external k8s client ",
+				"master_url", masterURL,
+				"kube_config", kubeConfig,
+			)
+			os.Exit(1)
 			return nil
 		}
 		return c
 	}
-	log.Fatal().Msg("missing masterURL or kubeConfig")
+	slog.Error("missing masterURL or kubeConfig")
+	os.Exit(1)
 	return nil
 }
 
@@ -88,19 +93,17 @@ func (w *wrap) Site() SiteAPI {
 	return &w.site
 }
 
-func build(log *zerolog.Logger, masterURL, kubeConfig string) *wrap {
-	r := config(log, masterURL, kubeConfig)
+func build(masterURL, kubeConfig string) *wrap {
+	r := config(masterURL, kubeConfig)
 	if r == nil {
 		return nil
 	}
-	k8s, err := kubernetes.NewForConfig(r)
-	if err != nil {
-		log.Fatal().Msg("failed to build k8s client")
-	}
-	site, err := versioned.NewForConfig(r)
-	if err != nil {
-		log.Fatal().Msg("failed to build site client")
-	}
+	k8s := must.Must(kubernetes.NewForConfig(r))(
+		"failed to build k8s client",
+	)
+	site := must.Must(versioned.NewForConfig(r))(
+		"failed to build site client",
+	)
 	return &wrap{k8s: k8s, vince: site}
 }
 

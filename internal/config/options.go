@@ -1,11 +1,12 @@
 package config
 
 import (
+	"os"
 	"time"
 
-	"github.com/rs/zerolog"
+	"log/slog"
+
 	"github.com/urfave/cli/v3"
-	"github.com/vinceanalytics/vince/internal/must"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
@@ -32,11 +33,14 @@ func Defaults() *v1.Config {
 	}
 }
 
-func GetLogLevel(o *Options) zerolog.Level {
-	if o.LogLevel == "" {
-		return zerolog.DebugLevel
-	}
-	return must.Must(zerolog.ParseLevel(o.LogLevel))()
+func Logger(level string) *slog.Logger {
+	var lvl slog.Level
+	lvl.UnmarshalText([]byte(level))
+	return slog.New(slog.NewTextHandler(
+		os.Stdout, &slog.HandlerOptions{
+			Level: lvl,
+		},
+	))
 }
 
 func Flags(o *Options) []cli.Flag {

@@ -4,12 +4,13 @@ import (
 	"context"
 	"net/http"
 
+	"log/slog"
+
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/events"
-	"github.com/vinceanalytics/vince/internal/log"
 	"github.com/vinceanalytics/vince/internal/remoteip"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
@@ -19,13 +20,15 @@ import (
 func Events(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	xlg := log.Get()
+	xlg := slog.Default().WithGroup("api").
+		With("path", r.URL.Path, "method", r.Method)
+
 	req := entry.NewRequest()
 	defer req.Release()
 
 	err := req.Parse(r.Body)
 	if err != nil {
-		xlg.Err(err).Msg("Failed decoding json")
+		xlg.Error("failed parsing request data", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
