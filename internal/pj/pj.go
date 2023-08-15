@@ -17,5 +17,5 @@ func Marshal(m proto.Message) ([]byte, error) {
 }
 
 func Unmarshal(data []byte, m proto.Message) error {
-	return proto.Unmarshal(data, m)
+	return protojson.Unmarshal(data, m)
 }

@@ -14,7 +14,7 @@ import (
 )
 
 func ListSites(w http.ResponseWriter, r *http.Request) {
-	o := []*v1.Site{}
+	o := v1.Site_List{}
 	db.Get(r.Context()).View(func(txn *badger.Txn) error {
 		itO := badger.DefaultIteratorOptions
 		prefix := (&v1.StoreKey{
@@ -27,13 +27,13 @@ func ListSites(w http.ResponseWriter, r *http.Request) {
 			it.Item().Value(func(val []byte) error {
 				var n v1.Site
 				must.One(proto.Unmarshal(val, &n))()
-				o = append(o, &n)
+				o.List = append(o.List, &n)
 				return nil
 			})
 		}
 		return nil
 	})
-	render.JSON(w, http.StatusOK, o)
+	render.JSON(w, http.StatusOK, &o)
 }
 
 func Create(w http.ResponseWriter, r *http.Request) {

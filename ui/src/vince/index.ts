@@ -98,6 +98,10 @@ export type Site = {
     domain: string
 }
 
+export type SiteList = {
+    list: Site[];
+}
+
 export type Column = {
     column: string
     indexed: boolean
@@ -160,8 +164,8 @@ export class Client {
     }
 
 
-    async sites(): Promise<Site[] | ErrorShape> {
-        return this.do<Site[]>("/sites")
+    async sites(): Promise<SiteList | ErrorShape> {
+        return this.do<SiteList>("/sites")
     }
 
     async version(): Promise<Version | ErrorShape> {

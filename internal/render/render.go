@@ -3,12 +3,16 @@ package render
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/internal/pj"
+	"google.golang.org/protobuf/proto"
 )
 
-func JSON(w http.ResponseWriter, code int, data any) {
+func JSON(w http.ResponseWriter, code int, m proto.Message) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(data)
+	w.Write(must.Must(pj.Marshal(m))())
 }
 
 type err struct {

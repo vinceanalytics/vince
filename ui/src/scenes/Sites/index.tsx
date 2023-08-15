@@ -7,7 +7,7 @@ import { PlusIcon, DatabaseIcon, ColumnsIcon } from "@primer/octicons-react";
 import { Dialog, PageHeader } from '@primer/react/drafts'
 import { columns } from "../Editor/Monaco/sql";
 import styled from "styled-components"
-import { Site, Client } from "../../vince";
+import { Site, SiteList, Client } from "../../vince";
 
 
 export const PaneWrapper = styled.div`
@@ -79,7 +79,8 @@ const Sites = () => {
   const fetchSites = useCallback(() => {
     setLoading(true)
     vince.sites().then((result) => {
-      setSites(result as Site[])
+      const list = result as SiteList;
+      setSites(list.list)
       setLoading(false);
     })
       .catch((e) => {

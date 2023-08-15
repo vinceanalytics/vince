@@ -20,13 +20,8 @@ message StoreKey {
 
 message Site {
   string domain = 1;
-  Stats stats = 2;
 
-  message Stats {
-    double visitors = 1;
-    double page_views = 2;
-    double sessions = 3;
-  }
+  message List { repeated Site list = 1; }
 }
 
 message Metadata { repeated Block blocks = 1; }
@@ -95,13 +90,9 @@ message Block {
   }
 }
 
-message Stats {
-  double visitors = 1;
-  double page_views = 2;
-  double bounce_rate = 3;
-  double session_duration = 4;
-  double sessions = 5;
-}
+message Status {}
+
+message Build { string version = 1; }
 
 message Filter {
   string column = 1;

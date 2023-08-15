@@ -15,7 +15,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/health"
 	"github.com/vinceanalytics/vince/internal/log"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/plug"
@@ -64,10 +63,6 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 	resources = append(resources, dba)
 	ctx, ts := timeseries.Open(ctx, o.BlocksPath)
 	resources = append(resources, ts)
-
-	h := &health.Config{}
-	resources = append(resources, h)
-	ctx = health.Set(ctx, h)
 
 	// configure http server
 	httpSvr := &http.Server{
