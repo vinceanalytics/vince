@@ -338,12 +338,12 @@ func Fields() []arrow.Field {
 	}
 }
 
-var all = Fields()
+var All = Fields()
 
 var Index = func() (m map[string]int) {
 	m = make(map[string]int)
-	for i := range all {
-		m[all[i].Name] = i
+	for i := range All {
+		m[All[i].Name] = i
 	}
 	return
 }()
@@ -431,7 +431,7 @@ var IndexedColumns = func() (m map[int]string) {
 	return
 }()
 
-var Schema = arrow.NewSchema(all, nil)
+var Schema = arrow.NewSchema(All, nil)
 
 func Select(names ...string) *arrow.Schema {
 	o := make([]arrow.Field, len(names))
