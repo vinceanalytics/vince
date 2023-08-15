@@ -12,6 +12,7 @@ import (
 
 	"log/slog"
 
+	"github.com/dolthub/go-mysql-server/server"
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/assets"
 	"github.com/vinceanalytics/vince/internal/config"
@@ -100,9 +101,20 @@ func Run(ctx context.Context, resources ResourceList) error {
 
 	plain := core.GetHTTPServer(ctx)
 	plainLS := core.GetHTTPListener(ctx)
-
 	g.Go(func() error {
 		return plain.Serve(plainLS)
+	})
+
+	msvrConf := server.Config{
+		Protocol: "tcp",
+		Address:  config.Get(ctx).MysqlListenAddress,
+	}
+	msvr := must.Must(server.NewDefaultServer(msvrConf, engine.Get(ctx).Engine))(
+		"failed initializing mysql server",
+	)
+	resources = append(resources, msvr)
+	g.Go(func() error {
+		return msvr.Start()
 	})
 	g.Go(func() error {
 		// Ensure we close the servers.
@@ -111,6 +123,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 		return resources.Close()
 	})
 	slog.Debug("started serving http traffic", slog.String("address", plainLS.Addr().String()))
+	slog.Debug("started serving mysql clients", slog.String("address", msvr.Listener.Addr().String()))
 	return g.Wait()
 }
 

@@ -143,4 +143,8 @@ message Config {
 
   // Expose /debug/pprof endpoint when serving
   bool enable_profile = 6;
+
+  // host:port to bind myslq server. Serves web analytics via MySQL compliant
+  // wire protocol.
+  string mysql_listen_address = 7;
 }

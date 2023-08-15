@@ -25,11 +25,12 @@ type Options = v1.Config
 
 func Defaults() *v1.Config {
 	return &v1.Config{
-		ListenAddress: ":8080",
-		LogLevel:      "debug",
-		MetaPath:      META_PATH,
-		BlocksPath:    BLOCKS_PATH,
-		SyncInterval:  DefaultSyncInterval,
+		ListenAddress:      ":8080",
+		LogLevel:           "debug",
+		MetaPath:           META_PATH,
+		BlocksPath:         BLOCKS_PATH,
+		SyncInterval:       DefaultSyncInterval,
+		MysqlListenAddress: ":3306",
 	}
 }
 
@@ -50,6 +51,14 @@ func Flags(o *Options) []cli.Flag {
 			Name:        "listen",
 			Usage:       "http address to listen to",
 			Value:       ":8080",
+			Destination: &o.ListenAddress,
+			EnvVars:     []string{"VINCE_LISTEN"},
+		},
+		&cli.StringFlag{
+			Category:    "core",
+			Name:        "listen-mysql",
+			Usage:       "serve mysql clients on this address",
+			Value:       ":3306",
 			Destination: &o.ListenAddress,
 			EnvVars:     []string{"VINCE_LISTEN"},
 		},
