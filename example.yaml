@@ -1,7 +1,0 @@
-apiVersion: staples/v1alpha1
-kind: Site
-metadata:
-  name: vince-io
-spec:
-  domain: vince.io
-  public: true
