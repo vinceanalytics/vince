@@ -10,11 +10,27 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
+const (
+	FILE        = "vince.json"
+	META_PATH   = "meta"
+	BLOCKS_PATH = "blocks"
+)
+
 var (
 	DefaultSyncInterval = durationpb.New(time.Minute)
 )
 
 type Options = v1.Config
+
+func Defaults() *v1.Config {
+	return &v1.Config{
+		ListenAddress: ":8080",
+		LogLevel:      "debug",
+		MetaPath:      META_PATH,
+		BlocksPath:    BLOCKS_PATH,
+		SyncInterval:  DefaultSyncInterval,
+	}
+}
 
 func GetLogLevel(o *Options) zerolog.Level {
 	if o.LogLevel == "" {
@@ -46,7 +62,7 @@ func Flags(o *Options) []cli.Flag {
 			Category:    "core",
 			Name:        "meta-path",
 			Usage:       "path to meta data directory",
-			Value:       "meta",
+			Value:       META_PATH,
 			Destination: &o.MetaPath,
 			EnvVars:     []string{"VINCE_METa_PATH"},
 		},
@@ -54,7 +70,7 @@ func Flags(o *Options) []cli.Flag {
 			Category:    "core",
 			Name:        "blocks-path",
 			Usage:       "Path to store block files",
-			Value:       "blocks",
+			Value:       BLOCKS_PATH,
 			Destination: &o.BlocksPath,
 			EnvVars:     []string{"VINCE_BLOCK_PATH"},
 		},
