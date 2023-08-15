@@ -10,7 +10,7 @@ func CMD() *cli.Command {
 	o := config.Options{}
 	return &cli.Command{
 		Name:  "serve",
-		Usage: "serves web ui console and expose /api/events that collects web analytics",
+		Usage: "Serves web ui console and expose /api/events that collects web analytics",
 		Flags: config.Flags(&o),
 		Action: func(ctx *cli.Context) error {
 			return server.Serve(&o, ctx)
