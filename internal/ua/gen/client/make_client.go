@@ -2,7 +2,6 @@ package client
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"go/format"
 	"log"
@@ -30,22 +29,6 @@ func Make(root string) {
 	genMediaPlayers(&b, root)
 	genMobileApps(&b, root)
 	genPim(&b, root)
-	var ls []string
-	for k := range all {
-		ls = append(ls, k)
-	}
-	sort.Strings(ls)
-	var o bytes.Buffer
-	json.NewEncoder(&o).Encode(ls)
-	tools.WriteFile("browsers.json", o.Bytes())
-	ls = ls[:0]
-	for k := range versions {
-		ls = append(ls, k)
-	}
-	sort.Strings(ls)
-	o.Reset()
-	json.NewEncoder(&o).Encode(ls)
-	tools.WriteFile("browser_version.json", o.Bytes())
 	r, err := format.Source(b.Bytes())
 	if err != nil {
 		log.Fatal(err)

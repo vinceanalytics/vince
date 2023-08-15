@@ -6,7 +6,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/ua/gen/bot"
 	"github.com/vinceanalytics/vince/internal/ua/gen/client"
 	"github.com/vinceanalytics/vince/internal/ua/gen/device"
-	"github.com/vinceanalytics/vince/internal/ua/gen/index"
 	uos "github.com/vinceanalytics/vince/internal/ua/gen/os"
 	"github.com/vinceanalytics/vince/internal/ua/gen/vendorfragment"
 	"github.com/vinceanalytics/vince/tools"
@@ -29,5 +28,4 @@ func main() {
 	device.Make(rootRegex)
 	uos.Make(rootRegex)
 	vendorfragment.Make(rootRegex)
-	index.Make()
 }

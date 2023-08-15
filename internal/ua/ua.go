@@ -395,11 +395,3 @@ func IsStdRe(s string) bool {
 	_, err := regexp.Compile(r)
 	return err == nil
 }
-
-func ToIndex(s string) uint16 {
-	return commonIndex[s]
-}
-
-func FromIndex(i uint16) string {
-	return commonIndexReverse[i]
-}
