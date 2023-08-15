@@ -1,5 +1,4 @@
 project_name: vince
-report_sizes: true
 builds:
   - env:
       - CGO_ENABLED=0
@@ -12,7 +11,6 @@ builds:
     id: vince
     main: main.go
     binary: vince
-
 archives:
   - builds:
       - vince
@@ -28,7 +26,6 @@ archives:
       - man/vince.1
       - completions/vince/*
       - LICENSE
-
 checksum:
   name_template: "checksums.txt"
 signs:
@@ -77,7 +74,6 @@ changelog:
       order: 400
     - title: "Other work"
       order: 9999
-
 dockers:
   - id: vince-amd64
     ids:
@@ -109,7 +105,6 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Tag}}"
       - "--platform=linux/arm64"
-
 docker_manifests:
   - id: vince
     name_template: "ghcr.io/vinceanalytics/vince:{{.Tag}}"
@@ -143,54 +138,6 @@ brews:
       zsh_completion.install "completions/vince/vince.zsh" => "_vince"
       fish_completion.install "completions/vince/vince.fish"
       man1.install "man/vince.1"
-nfpms:
-  - file_name_template: >-
-      vince_
-      {{-  .Tag }}_
-      {{-  .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-    id: vince
-    builds:
-      - vince
-    description: The Cloud Native Web Analytics Platform
-    maintainer: Geofrey Ernest <geofreyernest@live.com>
-    license: AGPL-3.0
-    vendor: Geofrey Ernest
-    bindir: /usr/bin
-    section: Web
-    contents:
-      - src: ./completions/vince/vince.bash
-        dst: /usr/share/bash-completion/completions/vince
-        file_info:
-          mode: 0644
-      - src: ./completions/vince/vince.fish
-        dst: /usr/share/fish/vendor_completions.d/vince.fish
-        file_info:
-          mode: 0644
-      - src: ./completions/vince/vince.zsh
-        dst: /usr/share/zsh/vendor-completions/_vince
-        file_info:
-          mode: 0644
-      - src: ./man/vince.1
-        dst: /usr/share/man/man1/vince.1
-        file_info:
-          mode: 0644
-      - src: ./LICENSE
-        dst: /usr/share/doc/vince/copyright
-        file_info:
-          mode: 0644
-    formats:
-      - apk
-      - deb
-      - rpm
-      - archlinux
-    deb:
-      lintian_overrides:
-        - statically-linked-binary
-        - changelog-file-missing-in-native-package
 release:
   github:
     owner: vinceanalytics
