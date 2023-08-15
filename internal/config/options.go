@@ -60,7 +60,7 @@ func Flags(o *Options) []cli.Flag {
 			Usage:       "serve mysql clients on this address",
 			Value:       ":3306",
 			Destination: &o.ListenAddress,
-			EnvVars:     []string{"VINCE_LISTEN"},
+			EnvVars:     []string{"VINCE_MYSQL_LISTEN"},
 		},
 		&cli.StringFlag{
 			Category:    "core",
