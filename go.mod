@@ -8,6 +8,7 @@ require (
 	github.com/apache/arrow/go/v13 v13.0.0-20230809214823-f93929f9b3a0
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/cespare/xxhash/v2 v2.2.0
+	github.com/chanced/powerset v0.0.1
 	github.com/dgraph-io/badger/v4 v4.1.0
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dlclark/regexp2 v1.7.0
@@ -21,6 +22,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/shopspring/decimal v1.2.0
 	github.com/stretchr/testify v1.8.4
+	github.com/tdewolff/minify/v2 v2.12.8
 	github.com/urfave/cli/v3 v3.0.0-alpha3
 	golang.org/x/exp v0.0.0-20230711005742-c3f37128e5a4
 	golang.org/x/mod v0.11.0
@@ -99,6 +101,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/tdewolff/parse/v2 v2.6.7 // indirect
 	github.com/tetratelabs/wazero v1.1.0 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect

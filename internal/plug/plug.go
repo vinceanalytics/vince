@@ -3,6 +3,8 @@ package plug
 import (
 	"net/http"
 	"strings"
+
+	"github.com/vinceanalytics/vince/internal/tracker"
 )
 
 type Plug func(http.Handler) http.Handler
@@ -31,6 +33,8 @@ func Track() Plug {
 				w.Header().Set("cross-origin-resource-policy", "cross-origin")
 				w.Header().Set("access-control-allow-origin", "*")
 				w.Header().Set("cache-control", "public, max-age=86400, must-revalidate")
+				tracker.Serve(w, r)
+				return
 			}
 			h.ServeHTTP(w, r)
 		})
