@@ -155,6 +155,9 @@ message Config {
   // host:port to bind myslq server. Serves web analytics via MySQL compliant
   // wire protocol.
   string mysql_listen_address = 7;
+
+  string tls_cert_file = 8;
+  string tls_key_file = 9;
 }
 
 message Account {

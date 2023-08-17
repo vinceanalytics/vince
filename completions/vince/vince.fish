@@ -20,6 +20,8 @@ complete -c vince -n '__fish_seen_subcommand_from serve' -f -l help -s h -d 'sho
 complete -r -c vince -n '__fish_vince_no_subcommand' -a 'serve' -d 'Serves web ui console and expose /api/events that collects web analytics'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l listen -r -d 'http address to listen to'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l listen-mysql -r -d 'serve mysql clients on this address'
+complete -c vince -n '__fish_seen_subcommand_from serve' -f -l tls-cert-file -r -d 'path to tls certificate'
+complete -c vince -n '__fish_seen_subcommand_from serve' -f -l tls-key-file -r -d 'path to tls key'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l log-level -r -d 'log level, values are (trace,debug,info,warn,error,fatal,panic)'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l meta-path -r -d 'path to meta data directory'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l blocks-path -r -d 'Path to store block files'

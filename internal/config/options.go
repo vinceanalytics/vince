@@ -64,6 +64,20 @@ func Flags(o *Options) []cli.Flag {
 		},
 		&cli.StringFlag{
 			Category:    "core",
+			Name:        "tls-cert-file",
+			Usage:       "path to tls certificate",
+			Destination: &o.TlsCertFile,
+			EnvVars:     []string{"VINCE_TLS_CERT_FILE"},
+		},
+		&cli.StringFlag{
+			Category:    "core",
+			Name:        "tls-key-file",
+			Usage:       "path to tls key",
+			Destination: &o.TlsCertFile,
+			EnvVars:     []string{"VINCE_TLS_KEY_FILE"},
+		},
+		&cli.StringFlag{
+			Category:    "core",
 			Name:        "log-level",
 			Usage:       "log level, values are (trace,debug,info,warn,error,fatal,panic)",
 			Value:       "debug",
@@ -104,4 +118,9 @@ func Flags(o *Options) []cli.Flag {
 			EnvVars:     []string{"VINCE_ENABLE_PROFILE"},
 		},
 	}
+}
+
+func IsTLS(o *Options) bool {
+	return o.TlsCertFile != "" &&
+		o.TlsKeyFile != ""
 }

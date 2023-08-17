@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"io"
 	"net"
@@ -98,10 +99,14 @@ func Run(ctx context.Context, resources ResourceList) error {
 			return nil
 		})
 	}
-
+	o := config.Get(ctx)
 	plain := core.GetHTTPServer(ctx)
 	plainLS := core.GetHTTPListener(ctx)
 	g.Go(func() error {
+		defer cancel()
+		if config.IsTLS(o) {
+			return plain.ServeTLS(plainLS, o.TlsCertFile, o.TlsKeyFile)
+		}
 		return plain.Serve(plainLS)
 	})
 
@@ -109,11 +114,20 @@ func Run(ctx context.Context, resources ResourceList) error {
 		Protocol: "tcp",
 		Address:  config.Get(ctx).MysqlListenAddress,
 	}
+	if config.IsTLS(o) {
+		cert := must.Must(tls.LoadX509KeyPair(o.TlsCertFile, o.TlsKeyFile))(
+			"failed to load tls certificates for mysql server",
+		)
+		msvrConf.TLSConfig = &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}
+	}
 	msvr := must.Must(server.NewDefaultServer(msvrConf, engine.Get(ctx).Engine))(
 		"failed initializing mysql server",
 	)
 	resources = append(resources, msvr)
 	g.Go(func() error {
+		defer cancel()
 		return msvr.Start()
 	})
 	g.Go(func() error {
