@@ -121,6 +121,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 		msvrConf.TLSConfig = &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		}
+		msvrConf.RequireSecureTransport = true
 	}
 	msvr := must.Must(server.NewDefaultServer(msvrConf, engine.Get(ctx).Engine))(
 		"failed initializing mysql server",
