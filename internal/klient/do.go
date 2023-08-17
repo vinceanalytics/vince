@@ -40,7 +40,6 @@ func Do[I Input, O Output](ctx context.Context, method, uri string, in I, out O)
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		var out v1.Error
-		println(res.StatusCode)
 		must.One(pj.UnmarshalDefault(&out, res.Body))(
 			"failed decoding api error",
 		)
