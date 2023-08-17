@@ -14,6 +14,10 @@ func App() *cli.App {
 		Name:    "vince",
 		Usage:   "The Cloud Native Web Analytics Platform.",
 		Version: version.Build().String(),
+		Authors: []any{
+			"Geofrey Ernest",
+		},
+		Copyright: "@2033 - present",
 		Commands: []*cli.Command{
 			serve.CMD(),
 			v8s.CMD(),
