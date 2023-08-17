@@ -87,7 +87,10 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, m *entry.MultiEnt
 			return
 		}
 		id := ulid.Make().String()
-		x := must.Must(os.Create(filepath.Join(a.dir, id)))()
+
+		x := must.Must(os.Create(filepath.Join(a.dir, id)))(
+			"failed creating active stats file", "file", id,
+		)
 		w := &writeContext{
 			id: id,
 			f:  x,
@@ -107,11 +110,15 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, m *entry.MultiEnt
 	}
 	w.i.Max = m.Timestamp.Last()
 	w.i.Groups[int32(w.w.NumRowGroups())-1] = &v1.Block_Index_Bitmap{
-		Min:    m.Timestamp.First(),
-		Max:    m.Timestamp.Last(),
-		Bitmap: must.Must(r.MarshalBinary())(),
+		Min: m.Timestamp.First(),
+		Max: m.Timestamp.Last(),
+		Bitmap: must.Must(r.MarshalBinary())(
+			"failed encoding binary",
+		),
 	}
-	size := must.Must(w.f.Stat())().Size()
+	size := must.Must(w.f.Stat())(
+		"failed getting stats for active file", "name", w.f.Name(),
+	).Size()
 	if size >= (1<<20) || shutdown {
 		// Keep blocks sizes under 1 mb
 		a.ctx.Delete(domain)

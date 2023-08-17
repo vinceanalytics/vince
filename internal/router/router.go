@@ -29,6 +29,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		a.PathGET("/version", api.Version),
 		a.PathGET("/sites", api.ListSites),
 		a.PathPOST("/sites", api.Create),
+		a.PathPOST("/tokens", api.Token),
 		NotFound,
 	}
 }

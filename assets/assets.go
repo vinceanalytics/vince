@@ -23,7 +23,7 @@ var files = map[string]bool{
 //go:embed ui
 var static embed.FS
 
-var ui = must.Must(fs.Sub(static, "ui"))()
+var ui = must.Must(fs.Sub(static, "ui"))("failed getting sub directory")
 
 func match(path string) bool {
 	return strings.HasPrefix(path, "/static") ||

@@ -18,7 +18,7 @@ var sessionCache = must.Must(ristretto.NewCache(&ristretto.Config{
 	OnEvict: func(item *ristretto.Item) {
 		item.Value.(*entry.Entry).Release()
 	},
-}))()
+}))("failed creating session cache")
 
 // Register records entry e. Tracks duration between page navigation by using a
 // cache. Entries are cached by the user hash. By default the entry is kept for

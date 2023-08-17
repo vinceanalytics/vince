@@ -7,20 +7,20 @@ import (
 	"log/slog"
 )
 
-func Must[T any](r T, err error) func(msg ...any) T {
-	return func(msg ...any) T {
+func Must[T any](r T, err error) func(msg string, args ...any) T {
+	return func(msg string, args ...any) T {
 		if err != nil {
-			slog.Error(fmt.Sprint(msg...))
+			slog.Error(msg, append([]any{slog.String("err", err.Error())}, args...)...)
 			os.Exit(1)
 		}
 		return r
 	}
 }
 
-func One(err error) func(msg ...any) {
-	return func(msg ...any) {
+func One(err error) func(msg string, args ...any) {
+	return func(msg string, args ...any) {
 		if err != nil {
-			slog.Error(fmt.Sprint(msg...))
+			slog.Error(msg, append([]any{slog.String("err", err.Error())}, args...)...)
 			os.Exit(1)
 		}
 	}

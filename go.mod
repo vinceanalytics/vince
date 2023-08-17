@@ -14,6 +14,8 @@ require (
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/dolthub/go-mysql-server v0.16.1-0.20230811232523-cee5b01dd5ce
 	github.com/dolthub/vitess v0.0.0-20230803210631-6a8ca1536779
+	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/gympass/goprompt v0.1.4
 	github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress v1.16.7
 	github.com/oklog/ulid/v2 v2.1.0
@@ -24,6 +26,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tdewolff/minify/v2 v2.12.8
 	github.com/urfave/cli/v3 v3.0.0-alpha3
+	golang.org/x/crypto v0.12.0
 	golang.org/x/exp v0.0.0-20230711005742-c3f37128e5a4
 	golang.org/x/mod v0.11.0
 	golang.org/x/sync v0.3.0
@@ -77,7 +80,6 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20230207041349-798e818bf904 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/gympass/goprompt v0.1.4 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -114,7 +116,6 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/otel v1.10.0 // indirect
 	go.opentelemetry.io/otel/trace v1.10.0 // indirect
-	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect

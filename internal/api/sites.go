@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"io"
 	"net/http"
 
 	"github.com/dgraph-io/badger/v4"
@@ -26,7 +25,7 @@ func ListSites(w http.ResponseWriter, r *http.Request) {
 		for it.Rewind(); it.Valid(); it.Next() {
 			it.Item().Value(func(val []byte) error {
 				var n v1.Site
-				must.One(proto.Unmarshal(val, &n))()
+				must.One(proto.Unmarshal(val, &n))("failed decoding site object")
 				o.List = append(o.List, &n)
 				return nil
 			})
@@ -38,12 +37,7 @@ func ListSites(w http.ResponseWriter, r *http.Request) {
 
 func Create(w http.ResponseWriter, r *http.Request) {
 	var b v1.Site
-	data, err := io.ReadAll(io.LimitReader(r.Body, 2<<10))
-	if err != nil {
-		render.ERROR(w, http.StatusRequestEntityTooLarge)
-		return
-	}
-	err = pj.Unmarshal(data, &b)
+	err := pj.UnmarshalDefault(&b, r.Body)
 	if err != nil || b.Domain == "" {
 		render.ERROR(w, http.StatusBadRequest)
 		return
@@ -55,7 +49,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 			if errors.Is(err, badger.ErrKeyNotFound) {
 				return txn.Set(
 					[]byte(key),
-					must.Must(proto.Marshal(&b))(),
+					must.Must(proto.Marshal(&b))("failed encoding site object"),
 				)
 			}
 			return err

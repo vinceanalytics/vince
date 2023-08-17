@@ -50,3 +50,13 @@ func Account(name string) string {
 		Name: name,
 	}).Parts()...)
 }
+
+func Token(account, id string) string {
+	return path.Join((&v1.Token_Key{
+		Store: &v1.StoreKey{
+			Prefix: v1.StorePrefix_TOKEN,
+		},
+		Account: account,
+		Id:      account,
+	}).Parts()...)
+}

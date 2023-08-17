@@ -259,7 +259,9 @@ func (m *Metrics) Compute(ctx context.Context, r arrow.Record) {
 	for i := 0; i < int(r.NumCols()); i++ {
 		switch r.ColumnName(i) {
 		case "id":
-			a := must.Must(compute.UniqueArray(ctx, r.Column(i)))()
+			a := must.Must(compute.UniqueArray(ctx, r.Column(i)))(
+				"failed computing unique array for id column",
+			)
 			m.Visitors = float64(a.Len())
 			a.Release()
 		case "name":

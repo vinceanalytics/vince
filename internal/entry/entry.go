@@ -277,7 +277,7 @@ func (m *MultiEntry) Append(e *Entry) {
 func (m *MultiEntry) Write(f *file.Writer, r *roaring64.Bitmap) {
 	g := f.AppendRowGroup()
 	next := func() file.ColumnChunkWriter {
-		return must.Must(g.NextColumn())()
+		return must.Must(g.NextColumn())("failed getting next column")
 	}
 	m.Bounce.Write(next())
 	m.Browser.Write(next(), r, v1.Block_Index_Browser)
@@ -304,7 +304,7 @@ func (m *MultiEntry) Write(f *file.Writer, r *roaring64.Bitmap) {
 	m.UtmMedium.Write(next(), r, v1.Block_Index_UtmMedium)
 	m.UtmSource.Write(next(), r, v1.Block_Index_UtmSource)
 	m.UtmTerm.Write(next(), r, v1.Block_Index_UtmTerm)
-	must.One(g.Close())()
+	must.One(g.Close())("failed closing row group writer")
 }
 
 // Fields for constructing arrow schema on Entry.
@@ -371,12 +371,12 @@ func parquetSchema() *schema.Schema {
 				parquet.Repetitions.Required,
 				logicalType,
 				typ, -1, -1),
-		)()
+		)("schema.NewPrimitiveNodeLogical")
 	}
 	root := must.Must(
 		schema.NewGroupNode(parquet.DefaultRootName,
 			parquet.Repetitions.Required, nodes, -1),
-	)()
+	)("schema.NewGroupNode")
 	return schema.NewSchema(root)
 }
 
@@ -396,7 +396,7 @@ func NewFileWriter(w io.Writer) *file.Writer {
 func NewFileReader(r parquet.ReaderAtSeeker) *file.Reader {
 	return must.Must(
 		file.NewParquetReader(r),
-	)()
+	)("failed creating new parquet file reader")
 }
 
 var IndexedColumnsNames = []string{
@@ -525,7 +525,7 @@ func (b *Reader) Read(r *file.Reader, groups []int) {
 		g := r.RowGroup(groups[i])
 		n := g.NumRows()
 		for f := 0; f < x.NumFields(); f++ {
-			b.read(f, n, must.Must(g.Column(f))())
+			b.read(f, n, must.Must(g.Column(f))("failed getting a RowGroup column"))
 		}
 	}
 }

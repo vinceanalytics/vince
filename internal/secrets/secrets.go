@@ -8,6 +8,7 @@ import (
 	"encoding/pem"
 
 	"filippo.io/age"
+	"github.com/vinceanalytics/vince/internal/must"
 )
 
 const (
@@ -35,17 +36,19 @@ func AGE() string {
 
 // ED25519 returns pem encoded base64 string of ed25519 key pair.
 func ED25519() string {
-	_, priv, err := ed25519.GenerateKey(rand.Reader)
-	if err != nil {
-		panic("failed to generate ed25519 key pair " + err.Error())
-	}
-	b, err := x509.MarshalPKCS8PrivateKey(priv)
-	if err != nil {
-		panic("failed to  x509.MarshalPKCS8PrivateKey " + err.Error())
-	}
+	priv := ED25519Raw()
+	b := must.Must(x509.MarshalPKCS8PrivateKey(priv))(
+		"failed to  x509.MarshalPKCS8PrivateKey",
+	)
 	privBlock := &pem.Block{
 		Type:  "PRIVATE KEY",
 		Bytes: b,
 	}
 	return base64.StdEncoding.EncodeToString(pem.EncodeToMemory(privBlock))
+}
+
+func ED25519Raw() ed25519.PrivateKey {
+	_, priv, err := ed25519.GenerateKey(rand.Reader)
+	must.One(err)("failed to generate ed25519 key pair")
+	return priv
 }

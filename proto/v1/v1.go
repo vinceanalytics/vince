@@ -20,3 +20,7 @@ func (s *Block_Key) Parts() []string {
 func (s *Account_Key) Parts() []string {
 	return append(s.Store.Parts(), s.Name)
 }
+
+func (s *Token_Key) Parts() []string {
+	return append(s.Store.Parts(), s.Account, s.Id)
+}
