@@ -3,11 +3,8 @@ package version
 import (
 	"bytes"
 	_ "embed"
-	"os"
 	"runtime/debug"
 	"strings"
-
-	"github.com/urfave/cli/v3"
 )
 
 //go:embed VERSION.txt
@@ -59,16 +56,4 @@ func Build() Version {
 		}
 	}
 	return v
-}
-
-func CMD() *cli.Command {
-	return &cli.Command{
-		Name:  "version",
-		Usage: "prints version information",
-		Action: func(ctx *cli.Context) error {
-			x := Build()
-			os.Stdout.WriteString(x.String())
-			return nil
-		},
-	}
 }
