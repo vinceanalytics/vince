@@ -73,7 +73,7 @@ func Flags(o *Options) []cli.Flag {
 			Category:    "core",
 			Name:        "tls-key-file",
 			Usage:       "path to tls key",
-			Destination: &o.TlsCertFile,
+			Destination: &o.TlsKeyFile,
 			EnvVars:     []string{"VINCE_TLS_KEY_FILE"},
 		},
 		&cli.StringFlag{
