@@ -10,6 +10,7 @@ enum StorePrefix {
   SITES = 0;
   BLOCKS = 1;
   ALERTS = 2;
+  ACCOUNT = 3;
 }
 
 message StoreKey {
@@ -155,4 +156,12 @@ message Config {
   string mysql_listen_address = 7;
 }
 
-message Account {}
+message Account {
+  string name = 1;
+  bytes password = 2;
+
+  message Key {
+    StoreKey store = 1;
+    string name = 2;
+  }
+}

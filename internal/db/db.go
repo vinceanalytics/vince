@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"log/slog"
 
@@ -14,11 +15,26 @@ import (
 
 type key struct{}
 
-func Open(ctx context.Context, path string) (context.Context, *badger.DB) {
+func Open(ctx context.Context, path string, logLevel ...string) (context.Context, *badger.DB) {
 	dir := filepath.Join(path, "db")
-	db := must.Must(badger.Open(badger.DefaultOptions(filepath.Join(dir, "series")).
+	o := badger.DefaultOptions(filepath.Join(dir, "series")).
 		WithLogger(badgerLogger{}).
-		WithCompression(options.ZSTD)))(
+		WithLoggingLevel(10).
+		WithCompression(options.ZSTD)
+
+	if len(logLevel) > 0 {
+		switch strings.ToLower(logLevel[0]) {
+		case "debug":
+			o = o.WithLoggingLevel(0)
+		case "info":
+			o = o.WithLoggingLevel(1)
+		case "warn":
+			o = o.WithLoggingLevel(2)
+		case "error":
+			o = o.WithLoggingLevel(3)
+		}
+	}
+	db := must.Must(badger.Open(o))(
 		"failed to open badger db for  timeseries storage dir:", dir,
 	)
 	return context.WithValue(ctx, key{}, db), db

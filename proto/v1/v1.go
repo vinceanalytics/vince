@@ -16,3 +16,7 @@ func (s *Site_Key) Parts() []string {
 func (s *Block_Key) Parts() []string {
 	return append(s.Store.Parts(), s.Kind.String(), s.Domain, s.Uid)
 }
+
+func (s *Account_Key) Parts() []string {
+	return append(s.Store.Parts(), s.Name)
+}

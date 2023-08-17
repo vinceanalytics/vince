@@ -40,3 +40,13 @@ func BlockIndex(domain, uid string) string {
 		Uid:    uid,
 	}).Parts()...)
 }
+
+// Returns a key which stores account object in badger db.
+func Account(name string) string {
+	return path.Join((&v1.Account_Key{
+		Store: &v1.StoreKey{
+			Prefix: v1.StorePrefix_ACCOUNT,
+		},
+		Name: name,
+	}).Parts()...)
+}
