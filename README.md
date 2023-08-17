@@ -11,6 +11,7 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 
 # Features
 
+- [x] SQL for querying stats (All MySQL compatible clients are supported)
 - [x] Time on site tracking
 - [ ] Conversion tracking 
 - [x] Multiple site management
@@ -20,7 +21,7 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 - [ ] Goal Tracking 
 - [x] Event Tracking 
 - [ ] Cloud Native (seamless k8s integration)
-- [ ] API for stats and sites management
+- [ ] API for sites management
 - [x] No runtime dependency (Static binary with everything you need)
 
 ## Usage
