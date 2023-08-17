@@ -1,17 +1,18 @@
 package v1
 
-import "path"
-
-func (s *StoreKey) Badger() string {
+func (s *StoreKey) Parts() []string {
 	if s.Namespace == "" {
 		s.Namespace = "vince"
 	}
-	return path.Join(s.Namespace, s.Prefix.String(), s.Key)
+	return []string{
+		s.Namespace, s.Prefix.String(),
+	}
 }
 
-func (s *Block_Key) Badger() string {
-	return (&StoreKey{
-		Prefix: StorePrefix_BLOCKS,
-		Key:    path.Join(s.Kind.String(), s.Domain, s.Uid),
-	}).Badger()
+func (s *Site_Key) Parts() []string {
+	return append(s.Store.Parts(), s.Domain)
+}
+
+func (s *Block_Key) Parts() []string {
+	return append(s.Store.Parts(), s.Kind.String(), s.Domain, s.Uid)
 }

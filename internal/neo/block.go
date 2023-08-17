@@ -12,6 +12,7 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
+	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
@@ -72,11 +73,7 @@ func (w *writeContext) commit(ctx context.Context, domain string) {
 	must.One(w.w.Close())("closing parquet file writer for ", domain)
 	must.One(w.f.Close())("closing parquet file  for ", domain)
 	b := must.Must(proto.Marshal(w.i))("marshalling index")
-	key := (&v1.Block_Key{
-		Kind:   v1.Block_Key_INDEX,
-		Domain: domain,
-		Uid:    w.id,
-	}).Badger()
+	key := keys.BlockIndex(domain, w.id)
 	db.Get(ctx).Update(func(txn *badger.Txn) error {
 		return txn.Set([]byte(key), b)
 	})

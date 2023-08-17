@@ -15,10 +15,15 @@ enum StorePrefix {
 message StoreKey {
   string namespace = 1;
   StorePrefix prefix = 2;
-  string key = 3;
 }
 
 message Site {
+
+  message Key {
+    StoreKey store = 1;
+    string domain = 2;
+  }
+
   string domain = 1;
 
   message List { repeated Site list = 1; }
@@ -38,9 +43,10 @@ message Block {
   int64 size = 4;
 
   message Key {
-    Kind kind = 1;
-    string domain = 2;
-    string uid = 3;
+    StoreKey store = 1;
+    Kind kind = 2;
+    string domain = 3;
+    string uid = 4;
 
     enum Kind {
       METADATA = 0;
@@ -148,3 +154,5 @@ message Config {
   // wire protocol.
   string mysql_listen_address = 7;
 }
+
+message Account {}

@@ -11,9 +11,9 @@ import (
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/events"
+	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/remoteip"
 	"github.com/vinceanalytics/vince/internal/timeseries"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 // Events accepts events payloads from vince client script.
@@ -53,10 +53,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 // there is an existing site registered with the domain.
 func accept(ctx context.Context, domain string) bool {
 	return db.Get(ctx).View(func(txn *badger.Txn) error {
-		key := (&v1.StoreKey{
-			Prefix: v1.StorePrefix_SITES,
-			Key:    domain,
-		}).Badger()
+		key := keys.Site(domain)
 		_, err := txn.Get([]byte(key))
 		return err
 	}) == nil
