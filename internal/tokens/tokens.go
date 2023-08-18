@@ -3,13 +3,17 @@ package tokens
 import (
 	"context"
 	"crypto/ed25519"
+	"errors"
 	"time"
 
+	"github.com/dgraph-io/badger/v4"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/core"
+	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 func Generate(ctx context.Context, key ed25519.PrivateKey,
@@ -28,4 +32,32 @@ func Generate(ctx context.Context, key ed25519.PrivateKey,
 		"failed signing jwt token",
 	), claims
 
+}
+
+func Valid(db *badger.DB, token string) bool {
+	return db.View(func(txn *badger.Txn) error {
+		key := keys.Token(token)
+		it, err := txn.Get([]byte(key))
+		if err != nil {
+			return err
+		}
+		return it.Value(func(val []byte) error {
+			var tpub v1.Token
+			err := proto.Unmarshal(val, &tpub)
+			if err != nil {
+				return err
+			}
+			var claims jwt.RegisteredClaims
+			t, err := jwt.ParseWithClaims(token, &claims, func(t *jwt.Token) (interface{}, error) {
+				return ed25519.PublicKey(tpub.PubKey), nil
+			})
+			if err != nil {
+				return err
+			}
+			if !t.Valid {
+				return errors.New("invalid token")
+			}
+			return nil
+		})
+	}) == nil
 }

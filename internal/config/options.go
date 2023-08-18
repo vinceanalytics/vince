@@ -24,7 +24,7 @@ var (
 type Options = v1.Config
 
 func Defaults() *v1.Config {
-	return &v1.Config{
+	o := &v1.Config{
 		ListenAddress:      ":8080",
 		LogLevel:           "debug",
 		MetaPath:           META_PATH,
@@ -32,6 +32,7 @@ func Defaults() *v1.Config {
 		SyncInterval:       DefaultSyncInterval,
 		MysqlListenAddress: ":3306",
 	}
+	return o
 }
 
 func Logger(level string) *slog.Logger {

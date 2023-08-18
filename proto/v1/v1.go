@@ -1,5 +1,7 @@
 package v1
 
+import "fmt"
+
 func (s *StoreKey) Parts() []string {
 	if s.Namespace == "" {
 		s.Namespace = "vince"
@@ -22,5 +24,5 @@ func (s *Account_Key) Parts() []string {
 }
 
 func (s *Token_Key) Parts() []string {
-	return append(s.Store.Parts(), s.Account, s.Id)
+	return append(s.Store.Parts(), fmt.Sprint(s.Hash))
 }

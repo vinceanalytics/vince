@@ -3,6 +3,7 @@ package keys
 import (
 	"path"
 
+	"github.com/cespare/xxhash/v2"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
@@ -51,12 +52,13 @@ func Account(name string) string {
 	}).Parts()...)
 }
 
-func Token(account, id string) string {
+func Token(token string) string {
+	h := xxhash.New()
+	h.WriteString(token)
 	return path.Join((&v1.Token_Key{
 		Store: &v1.StoreKey{
 			Prefix: v1.StorePrefix_TOKEN,
 		},
-		Account: account,
-		Id:      account,
+		Hash: int64(h.Sum64()),
 	}).Parts()...)
 }

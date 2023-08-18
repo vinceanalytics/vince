@@ -103,7 +103,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = db.Get(ctx).Update(func(txn *badger.Txn) error {
-		key := keys.Token(tr.Name, claims.ID)
+		key := keys.Token(tr.Token)
 		tok := must.Must(
 			proto.Marshal(&v1.Token{
 				PubKey: pub.(ed25519.PublicKey),

@@ -208,8 +208,7 @@ message Token {
 
   message Key {
     StoreKey store = 1;
-    string account = 2;
-    string id = 3;
+    int64 hash = 2;
   }
 
   enum Issuer {

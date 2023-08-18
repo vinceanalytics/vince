@@ -1,17 +1,12 @@
 package engine
 
 import (
-	"errors"
 	"net"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/vitess/go/mysql"
 	querypb "github.com/dolthub/vitess/go/vt/proto/query"
-	"github.com/vinceanalytics/vince/internal/keys"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
-	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/exp/slog"
-	"google.golang.org/protobuf/proto"
+	"github.com/vinceanalytics/vince/internal/tokens"
 )
 
 type Auth struct {
@@ -38,25 +33,7 @@ func (a Auth) Negotiate(c *mysql.Conn, user string, remoteAddr net.Addr) (mysql.
 	if err != nil {
 		return nil, err
 	}
-	err = a.DB.View(func(txn *badger.Txn) error {
-		key := keys.Account(user)
-		it, err := txn.Get([]byte(key))
-		if err != nil {
-			return err
-		}
-		return it.Value(func(val []byte) error {
-			var a v1.Account
-			err := proto.Unmarshal(val, &a)
-			if err != nil {
-				return err
-			}
-			return bcrypt.CompareHashAndPassword(a.Password, []byte(password))
-		})
-	})
-	if err != nil {
-		if !errors.Is(err, badger.ErrKeyNotFound) {
-			slog.Error("Authenticate mysql client", "conn", c.ID(), "err", err, "user", user)
-		}
+	if !tokens.Valid(a.DB, password) {
 		return &mysql.StaticUserData{}, mysql.NewSQLError(mysql.ERAccessDeniedError, mysql.SSAccessDeniedError, "Access denied for user '%v'", user)
 	}
 	return StaticUserData(user), nil
