@@ -108,7 +108,9 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, m *entry.MultiEnt
 	if w.i.Min == 0 {
 		w.i.Min = m.Timestamp.First()
 	}
-	w.i.Max = m.Timestamp.Last()
+	w.i.Min = min(w.i.Min, m.Timestamp.First())
+	w.i.Max = max(w.i.Max, m.Timestamp.Last())
+
 	w.i.Groups[int32(w.w.NumRowGroups())-1] = &v1.Block_Index_Bitmap{
 		Min: m.Timestamp.First(),
 		Max: m.Timestamp.Last(),
