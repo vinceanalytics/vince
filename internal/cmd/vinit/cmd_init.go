@@ -32,8 +32,8 @@ func CMD() *cli.Command {
 				"failed hashing root password",
 			)
 			account := must.Must(proto.Marshal(&v1.Account{
-				Name:     name,
-				Password: hashed,
+				Name:           name,
+				HashedPassword: hashed,
 			}))(
 				"failed encoding root account",
 			)

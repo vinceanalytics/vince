@@ -164,7 +164,7 @@ message Config {
 
 message Account {
   string name = 1;
-  bytes password = 2;
+  bytes hashed_password = 2;
 
   message Key {
     StoreKey store = 1;

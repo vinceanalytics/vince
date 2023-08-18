@@ -90,7 +90,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(w, http.StatusInternalServerError)
 		return
 	}
-	err = bcrypt.CompareHashAndPassword(a.Password, []byte(tr.Password))
+	err = bcrypt.CompareHashAndPassword(a.HashedPassword, []byte(tr.Password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			render.ERROR(w, http.StatusBadRequest, "invalid password")
