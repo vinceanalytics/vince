@@ -55,6 +55,7 @@ VINCE_ROOT_PASSWORD=xxxxx vince init example
 
 <details markdown="1">
 <summary>UI</summary>
+
 Console ui lives in `./ui/` directory. We are using react with `@primer/react` 
 components. For the code editor we use `Monaco`
 
