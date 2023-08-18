@@ -47,8 +47,7 @@ func Valid(db *badger.DB, token string) bool {
 			if err != nil {
 				return err
 			}
-			var claims jwt.RegisteredClaims
-			t, err := jwt.ParseWithClaims(token, &claims, func(t *jwt.Token) (interface{}, error) {
+			t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 				return ed25519.PublicKey(tpub.PubKey), nil
 			})
 			if err != nil {
