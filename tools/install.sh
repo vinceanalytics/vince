@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ ${OS:-} = Windows_NT ]]; then
-    echo 'error: Please install bun using Windows Subsystem for Linux'
+    echo 'error: Please install vince using Windows Subsystem for Linux'
     exit 1
 fi
 
@@ -49,11 +49,9 @@ success() {
     echo -e "${Green}$@ ${Color_Off}"
 }
 
-command -v unzip >/dev/null ||
-    error 'unzip is required to install bun (see: https://github.com/oven-sh/bun#unzip-is-required)'
 
-if [[ $# -gt 2 ]]; then
-    error 'Too many arguments, only 2 are allowed. The first can be a specific tag of bun to install. (e.g. "bun-v0.1.4") The second can be a build variant of bun to install. (e.g. "debug-info")'
+if [[ $# -gt 1 ]]; then
+    error 'Too many arguments, only 2 are allowed.To specify specific version of vince to install'
 fi
 
 case $(uname -ms) in
