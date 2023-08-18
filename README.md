@@ -21,7 +21,7 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 - [ ] Goal Tracking 
 - [x] Event Tracking 
 - [ ] Cloud Native (seamless k8s integration)
-- [ ] API for sites management
+- [x] API for sites management
 - [x] No runtime dependency (Static binary with everything you need)
 
 ## Usage
