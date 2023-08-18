@@ -12,7 +12,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 )
 
-//go:generate go run download/make_mmdb.go
+//go:generate go run gen/main.go
 
 //go:embed city.mmdb
 var CityData []byte
