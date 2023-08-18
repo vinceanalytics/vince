@@ -94,6 +94,7 @@ You can now access the ui with your changes on `localhost:8080`
 
 <details markdown="1">
 <summary>Backend</summary>
+
 You only need the latest Go version `g01.21+`
 
 We recommend using `go install` when developing.
