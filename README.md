@@ -30,10 +30,9 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 <summary>Initialize a project</summary>
 
 ```bash
-export VINCE_ROOT_USER=root
-export VINCE_ROOT_PASSWORD=xxxxx
-vince init example
+VINCE_ROOT_PASSWORD=xxxxx vince init example
 ```
+
 </details>
 
 ## Contributing
