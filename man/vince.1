@@ -73,7 +73,7 @@ Serves web ui console and expose /api/events that collects web analytics
 kubernetes controller for vince - The Cloud Native Web Analytics Platform.
 
 .PP
-\fB--default-image\fP="": Default image of vince to use (default: ghcr.io/vinceanalytics/vince:v0.0.22)
+\fB--default-image\fP="": Default image of vince to use (default: ghcr.io/vinceanalytics/vince:v0.0.23)
 
 .PP
 \fB--ignore-namespaces\fP="": namespaces to ignore for Vince and Site custom resources (default: [])
@@ -109,3 +109,15 @@ Initializes a vince project
 .SH query
 .PP
 connect to vince and execute sql query
+
+.SH sites
+.PP
+Manage sites
+
+.SS create
+.PP
+Creates a new site
+
+.SS list
+.PP
+Lists  sites

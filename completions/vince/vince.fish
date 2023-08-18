@@ -2,7 +2,7 @@
 
 function __fish_vince_no_subcommand --description 'Test if there has been any subcommand yet'
     for i in (commandline -opc)
-        if contains -- $i login serve k8s init query
+        if contains -- $i login serve k8s init query sites create list
             return 1
         end
     end
@@ -43,3 +43,9 @@ complete -c vince -n '__fish_seen_subcommand_from init' -f -l username -r -d 'Na
 complete -c vince -n '__fish_seen_subcommand_from init' -f -l password -r -d 'password of the root user'
 complete -c vince -n '__fish_seen_subcommand_from query' -f -l help -s h -d 'show help'
 complete -r -c vince -n '__fish_vince_no_subcommand' -a 'query' -d 'connect to vince and execute sql query'
+complete -c vince -n '__fish_seen_subcommand_from sites' -f -l help -s h -d 'show help'
+complete -r -c vince -n '__fish_vince_no_subcommand' -a 'sites' -d 'Manage sites'
+complete -c vince -n '__fish_seen_subcommand_from create' -f -l help -s h -d 'show help'
+complete -r -c vince -n '__fish_seen_subcommand_from sites' -a 'create' -d 'Creates a new site'
+complete -c vince -n '__fish_seen_subcommand_from list' -f -l help -s h -d 'show help'
+complete -r -c vince -n '__fish_seen_subcommand_from sites' -a 'list' -d 'Lists  sites'
