@@ -47,7 +47,6 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	var claims *jwt.RegisteredClaims
 	pub := publicKey
 	if tr.Generate {
-		// By default we generate short lived tokens.
 		tr.Token, claims = tokens.Generate(ctx, privateKey, v1.Token_SERVER,
 			tr.Name, core.Now(ctx).Add(tr.Ttl.AsDuration()))
 	} else {
