@@ -26,7 +26,14 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 
 ## Usage
 
-[Documentation](https://vinceanalytics.github.io/guide)
+### Initialize a project
+<details markdown="1">
+```bash
+export VINCE_ROOT_USER=root
+export VINCE_ROOT_PASSWORD=xxxxx
+vince init example
+```
+</details>
 
 ## Contributing
 
