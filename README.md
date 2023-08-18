@@ -27,6 +27,22 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 ## Usage
 
 <details markdown="1">
+<summary>Install</summary>
+
+```bash
+curl -fsSL https://github.com/vinceanalytics/vince/releases/latest/download/install.sh | bash
+```
+
+```bash
+brew install vinceanalytics/tap/vince
+```
+
+```bash
+docker pull ghcr.io/vinceanalytics/vince:v0.0.24
+```
+</details>
+
+<details markdown="1">
 <summary>Initialize a project</summary>
 
 ```bash
