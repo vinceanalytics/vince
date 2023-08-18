@@ -17,6 +17,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 
 	browser := plug.Browser()
 	a := plug.API()
+	protect := plug.APIProtected()
 
 	return plug.Pipeline{
 		browser.PathGET("/metrics", metrics.ServeHTTP),
@@ -27,8 +28,8 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		a.PathPOST("/api/event", api.Events),
 		a.PathGET("/health", api.Health),
 		a.PathGET("/version", api.Version),
-		a.PathGET("/sites", api.ListSites),
-		a.PathPOST("/sites", api.Create),
+		protect.PathGET("/sites", api.ListSites),
+		protect.PathPOST("/sites", api.Create),
 		a.PathPOST("/tokens", api.Token),
 		NotFound,
 	}

@@ -17,6 +17,13 @@ func API() Pipeline {
 	}
 }
 
+func APIProtected() Pipeline {
+	return Pipeline{
+		AcceptJSON,
+		Auth,
+	}
+}
+
 func (p Pipeline) PathGET(path string, handler func(w http.ResponseWriter, r *http.Request)) Plug {
 	return p.Path(http.MethodGet, path, handler)
 }

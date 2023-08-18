@@ -5,6 +5,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/cmd/login"
 	"github.com/vinceanalytics/vince/internal/cmd/query"
 	"github.com/vinceanalytics/vince/internal/cmd/serve"
+	"github.com/vinceanalytics/vince/internal/cmd/sites"
 	"github.com/vinceanalytics/vince/internal/cmd/vinit"
 	"github.com/vinceanalytics/vince/internal/v8s"
 	"github.com/vinceanalytics/vince/internal/version"
@@ -25,6 +26,7 @@ func App() *cli.App {
 			v8s.CMD(),
 			vinit.CMD(),
 			query.CMD(),
+			sites.CMD(),
 		},
 		EnableShellCompletion: true,
 	}
