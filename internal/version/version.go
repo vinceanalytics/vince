@@ -1,14 +1,13 @@
 package version
 
 import (
-	"bytes"
 	_ "embed"
 	"runtime/debug"
 	"strings"
 )
 
 //go:embed VERSION.txt
-var BuildVersion []byte
+var BuildVersion string
 
 type Version struct {
 	Commit string
@@ -18,8 +17,11 @@ type Version struct {
 }
 
 func (v Version) String() string {
+	if v.Commit == "" && v.Date == "" {
+		return BuildVersion
+	}
 	var s strings.Builder
-	s.Write(bytes.TrimSpace(BuildVersion))
+	s.WriteString(BuildVersion)
 	if !v.Valid {
 		s.WriteString("-ERR-BuildInfo")
 	} else {
