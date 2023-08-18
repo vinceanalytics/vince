@@ -38,7 +38,7 @@ brew install vinceanalytics/tap/vince
 ```
 
 ```bash
-docker pull ghcr.io/vinceanalytics/vince:v0.0.24
+docker pull ghcr.io/vinceanalytics/vince
 ```
 </details>
 
