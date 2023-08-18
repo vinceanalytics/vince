@@ -131,7 +131,7 @@ brews:
     ids:
       - vince
     test: |
-      system "#{bin}/vince version"
+      system "#{bin}/vince --version"
     install: |-
       bin.install "vince"
       bash_completion.install "completions/vince/vince.bash" => "vince"
