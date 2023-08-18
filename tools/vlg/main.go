@@ -14,6 +14,8 @@ import (
 	"golang.org/x/time/rate"
 )
 
+//go:generate go run gen/main.go
+
 func main() {
 	a := &cli.App{
 		Name:  "vlg",

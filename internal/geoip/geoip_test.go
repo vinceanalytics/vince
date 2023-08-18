@@ -7,7 +7,7 @@ import (
 
 func TestSample(t *testing.T) {
 	ip := net.ParseIP("81.2.69.142")
-	city, err := Get().City(ip)
+	city, err := get().City(ip)
 	if err != nil {
 		t.Fatal(err)
 	}
