@@ -16,8 +16,14 @@ export const Login = () => {
                         <img alt="VinceAnalytics Logo" height="26" src="/logo.svg" />
                     </a>
                 </Box>
-                <TextInput placeholder="username" sx={{ marginRight: 1 }} />
-                <TextInput placeholder="password" type="password" sx={{ marginRight: 1 }} />
+                <TextInput
+                    name="username"
+                    aria-label="vince root account name"
+                    monospace placeholder="username" sx={{ marginRight: 1 }} />
+                <TextInput
+                    name="password"
+                    aria-label="vince root account password"
+                    monospace placeholder="password" type="password" sx={{ marginRight: 1 }} />
                 <Button variant="primary">Login</Button>
             </Box>
         </Box>
