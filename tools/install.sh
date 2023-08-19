@@ -106,13 +106,13 @@ if [[ ! -d $bin_dir ]]; then
         error "Failed to create install directory \"$bin_dir\""
 fi
 
-# curl --fail --location --progress-bar --output "$exe.tar.gz" "$vince_uri" ||
-#     error "Failed to download vince from \"$vince_uri\""
+curl --fail --location --progress-bar --output "$exe.tar.gz" "$vince_uri" ||
+    error "Failed to download vince from \"$vince_uri\""
 
-# tar -xf  "$exe.tar.gz" -C "$bin_dir"||
-#     error 'Failed to extract vince'
+tar -xf  "$exe.tar.gz" -C "$bin_dir"||
+    error 'Failed to extract vince'
 
-# rm -rf "$exe.tar.gz"
+rm -rf "$exe.tar.gz"
 
 tildify() {
     if [[ $1 = $HOME/* ]]; then
@@ -126,10 +126,10 @@ tildify() {
 
 success "vince was installed successfully to $Bold_Green$(tildify "$exe")"
 
-# if command -v vince >/dev/null; then
-#     echo "Run 'vince --help' to get started"
-#     exit
-# fi
+if command -v vince >/dev/null; then
+    echo "Run 'vince --help' to get started"
+    exit
+fi
 
 refresh_command=''
 
