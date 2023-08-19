@@ -40,6 +40,14 @@ func Err(msg string, args ...any) {
 	fmt.Fprintf(os.Stdout, "%s %s\n", Red(X), fmt.Sprintf(msg, args...))
 }
 
+func ERROR(err error) error {
+	if err == nil {
+		return nil
+	}
+	Err(err.Error())
+	return err
+}
+
 func Suggestion(ls ...string) {
 	fmt.Fprintln(os.Stdout, "try:")
 	for _, k := range ls {
