@@ -21,6 +21,14 @@ func New() *Engine {
 	}
 }
 
+func (e *Engine) Add(name string) {
+	e.DB.AddTable(name, Table(name))
+}
+
+func (e *Engine) Remove(name string) {
+	e.DB.DropTable(nil, name)
+}
+
 type engineKey struct{}
 
 func Open(ctx context.Context) (context.Context, *Engine) {
