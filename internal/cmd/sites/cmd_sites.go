@@ -2,6 +2,7 @@ package sites
 
 import (
 	"context"
+	"errors"
 	"os"
 
 	"github.com/urfave/cli/v3"
@@ -46,8 +47,7 @@ func create() *cli.Command {
 				token,
 			)
 			if err != nil {
-				ansi.Err(err.Error)
-				os.Exit(1)
+				return ansi.ERROR(errors.New(err.Error))
 			}
 			ansi.Ok("ok")
 			return nil
@@ -78,8 +78,7 @@ func del() *cli.Command {
 				token,
 			)
 			if err != nil {
-				ansi.Err(err.Error)
-				os.Exit(1)
+				return ansi.ERROR(errors.New(err.Error))
 			}
 			ansi.Ok("ok")
 			return nil
@@ -102,8 +101,7 @@ func list() *cli.Command {
 				token,
 			)
 			if err != nil {
-				ansi.Err(err.Error)
-				os.Exit(1)
+				return ansi.ERROR(errors.New(err.Error))
 			}
 			for _, s := range list.List {
 				ansi.Ok(s.Domain)
