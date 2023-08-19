@@ -62,10 +62,6 @@ vince serve example
 The script for embedding will be served under `localhost:8080/js/vince.js`.
 Web analytics events are collected on `localhost:8080/api/events` endpoint.
 
-```bash
-VINCE_ROOT_PASSWORD=xxxxx vince init example
-```
-
 </details>
 
 ## Contributing
