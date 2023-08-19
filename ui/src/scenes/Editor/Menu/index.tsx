@@ -1,11 +1,10 @@
 
 
-import { Box, ActionMenu, ActionList, Button, LabelGroup, Label } from "@primer/react";
+import { Box, Button, LabelGroup, Label } from "@primer/react";
 import { PageHeader } from '@primer/react/drafts'
 import {
     TriangleRightIcon,
     ZapIcon,
-    CodeIcon,
 } from "@primer/octicons-react";
 
 export const Menu = () => {
