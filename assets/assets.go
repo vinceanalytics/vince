@@ -25,6 +25,8 @@ var static embed.FS
 
 var ui = must.Must(fs.Sub(static, "ui"))("failed getting sub directory")
 
+var FS = http.FileServer(http.FS(ui))
+
 func match(path string) bool {
 	return strings.HasPrefix(path, "/static") ||
 		strings.HasPrefix(path, "/vs") ||
@@ -33,11 +35,10 @@ func match(path string) bool {
 }
 
 func Plug() plug.Plug {
-	app := http.FileServer(http.FS(ui))
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if match(r.URL.Path) {
-				app.ServeHTTP(w, r)
+				FS.ServeHTTP(w, r)
 				return
 			}
 			h.ServeHTTP(w, r)
