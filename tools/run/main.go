@@ -4,5 +4,5 @@ import "github.com/vinceanalytics/vince/tools"
 
 func main() {
 	tools.ExecPlain("go", "generate", "./ui")
-	tools.ExecPlain("go", "run", "main.go")
+	tools.ExecPlain("go", "run", "main.go", "serve", ".vince")
 }

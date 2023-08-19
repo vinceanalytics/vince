@@ -10,6 +10,7 @@ import { PageHeader } from '@primer/react/drafts'
 import { useLocalStorage, StoreKey, SettingsType } from "../../providers/LocalStorageProvider"
 import { Splitter, } from "../../components"
 import Sites from "../Sites";
+import { Login } from "../Login";
 
 
 const Top = styled.div`
@@ -19,11 +20,12 @@ const Top = styled.div`
 
 registerPortalRoot(document.getElementById("console")!, "console")
 registerPortalRoot(document.getElementById("settings")!, "settings")
+registerPortalRoot(document.getElementById("login")!, "login")
 
 const Layout = () => {
     const [activePane, setActivePane] = useState<string>("console")
 
-    const { editorSplitterBasis, resultsSplitterBasis, updateSettings } =
+    const { authPayload, editorSplitterBasis, resultsSplitterBasis, updateSettings } =
         useLocalStorage()
     const handleEditorSplitterChange = useCallback((value: SettingsType) => {
         updateSettings(StoreKey.EDITOR_SPLITTER_BASIS, value)
@@ -39,54 +41,58 @@ const Layout = () => {
 
     return (
         <VinceProvider>
-            <Sidebar onPanelChange={paneChange} />
-            <Footer />
-            <Portal containerName="console">
-                <Box
-                    display={activePane === "console" ? "flex" : "none"}
-                    flex={1}
-                    flexDirection={"column"}
-                    maxHeight={"100%"}
-                >
-                    <EditorProvider>
-                        <Splitter
-                            direction="vertical"
-                            fallback={editorSplitterBasis}
-                            min={100}
-                            onChange={handleEditorSplitterChange}
+            {authPayload === "" && <Portal containerName="login"><Login /></Portal>}
+            {authPayload !== "" &&
+                <>
+                    <Sidebar onPanelChange={paneChange} />
+                    <Footer />
+                    <Portal containerName="console">
+                        <Box
+                            display={activePane === "console" ? "flex" : "none"}
+                            flex={1}
+                            flexDirection={"column"}
+                            maxHeight={"100%"}
                         >
-                            <Top>
+                            <EditorProvider>
                                 <Splitter
-                                    direction="horizontal"
-                                    fallback={resultsSplitterBasis}
-                                    max={500}
-                                    onChange={handleResultsSplitterChange}
+                                    direction="vertical"
+                                    fallback={editorSplitterBasis}
+                                    min={100}
+                                    onChange={handleEditorSplitterChange}
                                 >
-                                    <Box >
-                                        <Sites />
-                                    </Box>
-                                    <Editor />
+                                    <Top>
+                                        <Splitter
+                                            direction="horizontal"
+                                            fallback={resultsSplitterBasis}
+                                            max={500}
+                                            onChange={handleResultsSplitterChange}
+                                        >
+                                            <Box >
+                                                <Sites />
+                                            </Box>
+                                            <Editor />
+                                        </Splitter>
+                                    </Top>
+                                    <Box />
                                 </Splitter>
-                            </Top>
-                            <Box />
-                        </Splitter>
-                    </EditorProvider>
-                </Box>
-            </Portal>
-            <Portal containerName="settings">
-                <Box
-                    display={activePane === "settings" ? "flex" : "none"}
-                    flex={1}
-                    flexDirection={"column"}
-                    maxHeight={"100%"}
-                >
-                    <PageHeader>
-                        <PageHeader.TitleArea>
-                            <PageHeader.Title>Settings</PageHeader.Title>
-                        </PageHeader.TitleArea>
-                    </PageHeader>
-                </Box>
-            </Portal>
+                            </EditorProvider>
+                        </Box>
+                    </Portal>
+                    <Portal containerName="settings">
+                        <Box
+                            display={activePane === "settings" ? "flex" : "none"}
+                            flex={1}
+                            flexDirection={"column"}
+                            maxHeight={"100%"}
+                        >
+                            <PageHeader>
+                                <PageHeader.TitleArea>
+                                    <PageHeader.Title>Settings</PageHeader.Title>
+                                </PageHeader.TitleArea>
+                            </PageHeader>
+                        </Box>
+                    </Portal>
+                </>}
         </VinceProvider >
     )
 }
