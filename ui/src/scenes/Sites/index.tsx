@@ -8,6 +8,7 @@ import { Dialog, PageHeader } from '@primer/react/drafts'
 import { columns } from "../Editor/Monaco/sql";
 import styled from "styled-components"
 import { Site, SiteList, Client } from "../../vince";
+import { useLocalStorage } from "../../providers/LocalStorageProvider";
 
 
 export const PaneWrapper = styled.div`
@@ -56,7 +57,8 @@ const Columns = ({ id }: ColumnProps) => {
 
 const Sites = () => {
   const [loading, setLoading] = useState(false)
-  const [vince] = useState(new Client())
+  const { authPayload } = useLocalStorage()
+  const [vince] = useState(new Client(authPayload))
   const [sites, setSites] = useState<Site[]>()
 
   const [refresh, setRefresh] = useState(false);

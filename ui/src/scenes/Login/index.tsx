@@ -1,7 +1,29 @@
 
 import { Box, Button, TextInput } from "@primer/react";
+import { useCallback, useEffect, useState } from "react";
+import { Client, TokenResult } from "../../vince";
+import { useLocalStorage, StoreKey } from "../../providers/LocalStorageProvider";
 
 export const Login = () => {
+    const [vince] = useState(new Client())
+    const { updateSettings } = useLocalStorage()
+    const [userName, setUserName] = useState<string>("")
+    const [password, setPassWord] = useState<string>("")
+    const [loading, setLoading] = useState<boolean>(false)
+    const submit = useCallback(() => {
+        vince.login({
+            name: userName,
+            password: password,
+            generate: true,
+        }).then((result) => {
+            const r = result as TokenResult;
+            updateSettings(StoreKey.AUTH_PAYLOAD, r.token)
+            setLoading(false);
+        })
+            .catch((e) => {
+                console.log(e)
+            })
+    }, [userName, password, setLoading])
     return (
         <Box
             display={"flex"}
@@ -19,12 +41,18 @@ export const Login = () => {
                 <TextInput
                     name="username"
                     aria-label="vince root account name"
+                    required
+                    onChange={(e) => setUserName(e.currentTarget.value)}
+                    loading={loading}
                     monospace placeholder="username" sx={{ marginRight: 1 }} />
                 <TextInput
                     name="password"
                     aria-label="vince root account password"
+                    required
+                    onChange={(e) => setPassWord(e.currentTarget.value)}
+                    loading={loading}
                     monospace placeholder="password" type="password" sx={{ marginRight: 1 }} />
-                <Button variant="primary">Login</Button>
+                <Button variant="primary" onClick={submit}>Login</Button>
             </Box>
         </Box>
     )

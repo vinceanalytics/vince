@@ -31,13 +31,16 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var tr v1.Token_CreateOptions
 	err := pj.UnmarshalDefault(&tr, r.Body)
-	if err != nil ||
-		((tr.Name == "" ||
-			tr.Password == "") ||
-			(!tr.Generate &&
-				tr.PublicKey == nil ||
-				tr.Token == "")) {
+	if err != nil {
 		render.ERROR(w, http.StatusBadRequest)
+		return
+	}
+	if tr.Name == "" || tr.Password == "" {
+		render.ERROR(w, http.StatusBadRequest, "name and username required")
+		return
+	}
+	if !tr.Generate && (tr.Token == "" || tr.PublicKey == nil) {
+		render.ERROR(w, http.StatusBadRequest, "token and public key is required")
 		return
 	}
 

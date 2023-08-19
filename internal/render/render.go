@@ -31,6 +31,5 @@ func ERROR(w http.ResponseWriter, code int, msg ...any) {
 	data := must.Must(pj.Marshal(err))(
 		"failed encoding error message",
 	)
-	println(len(data))
-	fmt.Println(w.Write(data))
+	w.Write(data)
 }

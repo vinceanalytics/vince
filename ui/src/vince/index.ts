@@ -102,6 +102,17 @@ export type SiteList = {
     list: Site[];
 }
 
+export type TokenRequest = {
+    name: string;
+    password: string;
+    generate: true;
+}
+
+export type TokenResult = {
+    token: string;
+}
+
+
 export type Column = {
     column: string
     indexed: boolean
@@ -133,13 +144,15 @@ export type Version = {
 
 export class Client {
     private readonly _host: string
+    private readonly _token: string
     private _controllers: AbortController[] = []
 
-    constructor(host?: string) {
-        if (!host) {
-            this._host = window.location.origin
+    constructor(token?: string) {
+        this._host = window.location.origin
+        if (token) {
+            this._token = token
         } else {
-            this._host = host
+            this._token = ""
         }
     }
 
@@ -163,6 +176,13 @@ export class Client {
         this._controllers = []
     }
 
+
+    async login(request: TokenRequest): Promise<TokenResult | ErrorShape> {
+        return this.do<TokenResult>("/tokens", {
+            method: "POST",
+            body: JSON.stringify(request),
+        })
+    }
 
     async sites(): Promise<SiteList | ErrorShape> {
         return this.do<SiteList>("/sites")
@@ -192,7 +212,8 @@ export class Client {
                 ...init,
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'authorization': 'Bearer ' + this._token
                 },
             })
         } catch (error) {
