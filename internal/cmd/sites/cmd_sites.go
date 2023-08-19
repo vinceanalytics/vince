@@ -18,6 +18,7 @@ func CMD() *cli.Command {
 		Commands: []*cli.Command{
 			create(),
 			list(),
+			del(),
 		},
 	}
 }
@@ -40,7 +41,39 @@ func create() *cli.Command {
 			err := klient.POST(
 				context.Background(),
 				instance+"/sites",
-				&v1.Site{Domain: name},
+				&v1.Site_CreateOptions{Domain: name},
+				&v1.Site{},
+				token,
+			)
+			if err != nil {
+				ansi.Err(err.Error)
+				os.Exit(1)
+			}
+			ansi.Ok("ok")
+			return nil
+		},
+	}
+}
+
+func del() *cli.Command {
+	return &cli.Command{
+		Name:  "delete",
+		Usage: "Deletes a  site",
+		Action: func(ctx *cli.Context) error {
+			name := ctx.Args().First()
+			if name == "" {
+				ansi.Err("missing site domain")
+				ansi.Suggestion(
+					"vince sites delete vinceanalytics.github.io",
+				)
+				os.Exit(1)
+			}
+			token, instance := account()
+
+			err := klient.DELETE(
+				context.Background(),
+				instance+"/sites",
+				&v1.Site_DeleteOptions{Domain: name},
 				&v1.Site{},
 				token,
 			)
@@ -64,7 +97,7 @@ func list() *cli.Command {
 			err := klient.GET(
 				context.Background(),
 				instance+"/sites",
-				&v1.Site_List_Request{},
+				&v1.Site_ListOptions{},
 				&list,
 				token,
 			)

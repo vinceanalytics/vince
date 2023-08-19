@@ -27,11 +27,12 @@ message Site {
     string domain = 2;
   }
 
-  message List {
-    repeated Site list = 1;
+  message GetOptions {}
+  message CreateOptions { string domain = 1; }
+  message ListOptions {}
+  message DeleteOptions { string domain = 1; }
 
-    message Request {}
-  }
+  message List { repeated Site list = 1; }
 }
 
 message Metadata { repeated Block blocks = 1; }
@@ -198,7 +199,7 @@ message Client {
 message Token {
   bytes pub_key = 1;
 
-  message Request {
+  message CreateOptions {
     string name = 1;
     string password = 2;
     string token = 3;

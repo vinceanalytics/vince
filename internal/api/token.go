@@ -29,7 +29,7 @@ var publicKey = privateKey.Public()
 
 func Token(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var tr v1.Token_Request
+	var tr v1.Token_CreateOptions
 	err := pj.UnmarshalDefault(&tr, r.Body)
 	if err != nil ||
 		((tr.Name == "" ||

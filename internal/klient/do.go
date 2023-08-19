@@ -14,7 +14,8 @@ import (
 var client = &http.Client{}
 
 type Input interface {
-	*v1.Token_Request | *v1.Site | *v1.Site_List_Request
+	*v1.Token_CreateOptions | *v1.Site_GetOptions | *v1.Site_CreateOptions |
+		*v1.Site_ListOptions | *v1.Site_DeleteOptions
 }
 
 type Output interface {
@@ -23,6 +24,10 @@ type Output interface {
 
 func POST[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) *v1.Error {
 	return Do(ctx, http.MethodPost, uri, in, out, token...)
+}
+
+func DELETE[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) *v1.Error {
+	return Do(ctx, http.MethodDelete, uri, in, out, token...)
 }
 
 func GET[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) *v1.Error {

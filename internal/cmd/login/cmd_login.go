@@ -60,7 +60,7 @@ func CMD() *cli.Command {
 			e := klient.POST(
 				context.Background(),
 				uri+"/tokens",
-				&v1.Token_Request{
+				&v1.Token_CreateOptions{
 					Name:      name,
 					Password:  password,
 					Token:     token,
