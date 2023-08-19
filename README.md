@@ -51,6 +51,23 @@ VINCE_ROOT_PASSWORD=xxxxx vince init example
 
 </details>
 
+<details markdown="1">
+<summary>Serve analytics collection api and web console</summary>
+
+__Start server__
+```bash
+vince serve example
+```
+
+The script for embedding will be served under `localhost:8080/js/vince.js`.
+Web analytics events are collected on `localhost:8080/api/events` endpoint.
+
+```bash
+VINCE_ROOT_PASSWORD=xxxxx vince init example
+```
+
+</details>
+
 ## Contributing
 
 <details markdown="1">
