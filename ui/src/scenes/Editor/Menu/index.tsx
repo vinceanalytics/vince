@@ -1,6 +1,6 @@
 
 
-import { Box, ActionMenu, ActionList, Button } from "@primer/react";
+import { Box, ActionMenu, ActionList, Button, LabelGroup, Label } from "@primer/react";
 import { PageHeader } from '@primer/react/drafts'
 import {
     TriangleRightIcon,
@@ -23,16 +23,14 @@ export const Menu = () => {
                         >Run</Button>
                     </PageHeader.Title>
                     <PageHeader.Actions>
-                        <ActionMenu>
-                            <ActionMenu.Button leadingIcon={CodeIcon}
-                                variant="outline">
-                                Snippets
-                            </ActionMenu.Button>
-                            <ActionMenu.Overlay>
-                                <ActionList>
-                                </ActionList>
-                            </ActionMenu.Overlay>
-                        </ActionMenu>
+                        <LabelGroup visibleChildCount={5}>
+                            <Label sx={{ cursor: "pointer" }}>page_views</Label>
+                            <Label>unique_visitors</Label>
+                            <Label>bounce_rate</Label>
+                            <Label>visits</Label>
+                            <Label>visit_duration</Label>
+                            <Label>custom_label</Label>
+                        </LabelGroup>
                         <Button
                             variant="primary"
                             leadingIcon={ZapIcon}
