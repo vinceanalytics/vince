@@ -26,6 +26,7 @@ func Auth(h http.Handler) http.Handler {
 			Token: token,
 			Api:   o.ListenAddress,
 			Mysql: o.MysqlListenAddress,
+			Tls:   config.IsTLS(o),
 		})))
 	})
 }

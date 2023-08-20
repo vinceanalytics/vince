@@ -37,7 +37,7 @@ func create() *cli.Command {
 				)
 				os.Exit(1)
 			}
-			token, instance := account()
+			token, instance := auth.Account()
 
 			err := klient.POST(
 				context.Background(),
@@ -68,7 +68,7 @@ func del() *cli.Command {
 				)
 				os.Exit(1)
 			}
-			token, instance := account()
+			token, instance := auth.Account()
 
 			err := klient.DELETE(
 				context.Background(),
@@ -91,7 +91,7 @@ func list() *cli.Command {
 		Name:  "list",
 		Usage: "Lists  sites",
 		Action: func(ctx *cli.Context) error {
-			token, instance := account()
+			token, instance := auth.Account()
 			var list v1.Site_List
 			err := klient.GET(
 				context.Background(),
@@ -109,19 +109,4 @@ func list() *cli.Command {
 			return nil
 		},
 	}
-}
-
-func account() (token string, api string) {
-	o, _ := auth.LoadClient()
-	if o.Active == nil {
-		ansi.Err("no active account found")
-		ansi.Suggestion(
-			"log in to a vince instance with [vince login] command",
-			"select existing vince instance/account using [vince use] command",
-		)
-		os.Exit(1)
-	}
-	token = o.Instance[o.Active.Instance].Accounts[o.Active.Account].Token
-	api = o.Active.Instance
-	return
 }

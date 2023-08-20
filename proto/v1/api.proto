@@ -3,6 +3,7 @@ package v1;
 
 option go_package = "github.com/vinceanalytics/vince/proro/v1";
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 // StorePrefix defines different kind of data we are storing in the key value
 // store.
@@ -193,6 +194,7 @@ message Client {
     string token = 2;
     string api = 3;
     string mysql = 4;
+    bool tls = 5;
   }
 }
 
@@ -223,4 +225,47 @@ message Token {
 message Error {
   string error = 1;
   int32 code = 2;
+}
+
+message Query {
+  message Value {
+    oneof value {
+      int64 number = 1;
+      double double = 2;
+      string string = 3;
+      bool bool = 4;
+      google.protobuf.Timestamp timestamp = 5;
+    }
+  }
+
+  message RequestOptions {
+    string query = 1;
+    repeated Param params = 2;
+  }
+
+  message Param {
+    string name = 1;
+    Value value = 2;
+  }
+
+  message Colum {
+    string name = 1;
+    DataType data_type = 2;
+
+    enum DataType {
+      UNKNOWN = 0;
+      NUMBER = 1;
+      DOUBLE = 2;
+      STRING = 3;
+      BOOL = 4;
+      TIMESTAMP = 5;
+    }
+  }
+  message Row { repeated Value values = 1; }
+
+  message Result {
+    google.protobuf.Duration elapsed = 1;
+    repeated Colum columns = 2;
+    repeated Row rows = 3;
+  }
 }

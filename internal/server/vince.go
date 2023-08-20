@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"io"
 	"net"
@@ -13,7 +12,6 @@ import (
 
 	"log/slog"
 
-	"github.com/dolthub/go-mysql-server/server"
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/assets"
 	"github.com/vinceanalytics/vince/internal/config"
@@ -110,20 +108,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 		return plain.Serve(plainLS)
 	})
 
-	msvrConf := server.Config{
-		Protocol: "tcp",
-		Address:  config.Get(ctx).MysqlListenAddress,
-	}
-	if config.IsTLS(o) {
-		cert := must.Must(tls.LoadX509KeyPair(o.TlsCertFile, o.TlsKeyFile))(
-			"failed to load tls certificates for mysql server",
-		)
-		msvrConf.TLSConfig = &tls.Config{
-			Certificates: []tls.Certificate{cert},
-		}
-		msvrConf.RequireSecureTransport = true
-	}
-	msvr := must.Must(server.NewDefaultServer(msvrConf, engine.Get(ctx).Engine))(
+	msvr := must.Must(engine.Listen(ctx))(
 		"failed initializing mysql server",
 	)
 	resources = append(resources, msvr)

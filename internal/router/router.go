@@ -31,6 +31,7 @@ func Pipe(ctx context.Context) plug.Pipeline {
 		protect.PathGET("/sites", api.ListSites),
 		protect.PathPOST("/sites", api.Create),
 		protect.PathDELETE("/sites", api.Delete),
+		protect.PathPOST("/query", api.Query),
 		a.PathPOST("/tokens", api.Token),
 		NotFound,
 	}

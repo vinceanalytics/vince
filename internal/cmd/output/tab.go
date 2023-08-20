@@ -5,26 +5,28 @@ import (
 	"io"
 	"strings"
 	"text/tabwriter"
+
+	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
-func Tab(out io.Writer, cols []*Column) error {
+func Tab(out io.Writer, result *v1.Query_Result) error {
 	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
 	var s strings.Builder
-	for i := range cols {
+	for i, col := range result.Columns {
 		if i != 0 {
 			s.WriteByte('\t')
 		}
-		s.WriteString(cols[i].Name)
+		s.WriteString(col.Name)
 		s.WriteByte(' ')
 	}
 	fmt.Fprintln(w, s.String())
-	for i := 0; i < len(cols[0].Values); i++ {
+	for _, row := range result.Rows {
 		s.Reset()
-		for n := range cols {
-			if n != 0 {
+		for i, v := range row.Values {
+			if i != 0 {
 				s.WriteByte('\t')
 			}
-			cols[n].Format(&s, i)
+			formatValue(&s, v)
 		}
 		s.WriteByte('\t')
 		fmt.Fprintln(w, s.String())
@@ -32,13 +34,6 @@ func Tab(out io.Writer, cols []*Column) error {
 	return w.Flush()
 }
 
-type CountWriter struct {
-	io.Writer
-	N int
-}
-
-func (c *CountWriter) Write(p []byte) (n int, err error) {
-	n, err = c.Writer.Write(p)
-	c.N += n
-	return
+func formatValue(w io.Writer, v *v1.Query_Value) {
+	fmt.Fprint(w, v.Interface())
 }

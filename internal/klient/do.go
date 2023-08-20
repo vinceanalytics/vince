@@ -15,11 +15,11 @@ var client = &http.Client{}
 
 type Input interface {
 	*v1.Token_CreateOptions | *v1.Site_GetOptions | *v1.Site_CreateOptions |
-		*v1.Site_ListOptions | *v1.Site_DeleteOptions
+		*v1.Site_ListOptions | *v1.Site_DeleteOptions | *v1.Query_RequestOptions
 }
 
 type Output interface {
-	*v1.Client_Auth | *v1.Site | *v1.Site_List
+	*v1.Client_Auth | *v1.Site | *v1.Site_List | *v1.Query_Result
 }
 
 func POST[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) *v1.Error {

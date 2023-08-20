@@ -9,6 +9,7 @@ import (
 	"github.com/dlclark/regexp2"
 	"github.com/gympass/goprompt"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
@@ -122,5 +123,20 @@ func LoadClient() (client v1.Client, file string) {
 			"failed decoding client config",
 		)
 	}
+	return
+}
+
+func Account() (token string, api string) {
+	o, _ := LoadClient()
+	if o.Active == nil {
+		ansi.Err("no active account found")
+		ansi.Suggestion(
+			"log in to a vince instance with [vince login] command",
+			"select existing vince instance/account using [vince use] command",
+		)
+		os.Exit(1)
+	}
+	token = o.Instance[o.Active.Instance].Accounts[o.Active.Account].Token
+	api = o.Active.Instance
 	return
 }

@@ -128,5 +128,6 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		Token: tr.Token,
 		Api:   o.ListenAddress,
 		Mysql: o.MysqlListenAddress,
+		Tls:   config.IsTLS(o),
 	})
 }

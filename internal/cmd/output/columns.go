@@ -2,45 +2,58 @@ package output
 
 import (
 	"database/sql"
-	"fmt"
-	"strings"
+	"slices"
+
+	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
-type Column struct {
-	Name   string
-	Values []any
-}
-
-func (c *Column) Format(w *strings.Builder, n int) {
-	fmt.Fprint(w, c.Values[n])
-}
-
-var _ sql.Scanner = (*Column)(nil)
-
-func (c *Column) Scan(src any) error {
-	c.Values = append(c.Values, src)
-	return nil
-}
-
-func Build(rows *sql.Rows) ([]*Column, error) {
+func Build(rows *sql.Rows) (*v1.Query_Result, error) {
 	columns, err := rows.ColumnTypes()
 	if err != nil {
 		return nil, err
 	}
-	cols := make([]*Column, len(columns))
-	scans := make([]any, len(columns))
-	for i := range cols {
-		cols[i] = &Column{
-			Name: columns[i].Name(),
+	r := &v1.Query_Result{}
+	r.Columns = make([]*v1.Query_Colum, len(columns))
+	for i := range r.Columns {
+		r.Columns[i] = &v1.Query_Colum{
+			Name:     columns[i].Name(),
+			DataType: fromDBType(columns[i].DatabaseTypeName()),
 		}
-		scans[i] = cols[i]
+	}
+
+	scans := make([]*v1.Query_Value, len(columns))
+	clone := make([]any, len(columns))
+	setValue := func(i int, v any) {
+		scans[i] = v1.NewQueryValue(v)
+	}
+
+	for i := range clone {
+		clone[i] = &Any{
+			i:  i,
+			cb: setValue,
+		}
 	}
 
 	for rows.Next() {
-		err = rows.Scan(scans...)
+		err = rows.Scan(clone...)
 		if err != nil {
 			return nil, err
 		}
+		r.Rows = append(r.Rows, &v1.Query_Row{
+			Values: slices.Clone(scans),
+		})
 	}
-	return cols, rows.Err()
+	return r, rows.Err()
+}
+
+type Any struct {
+	i  int
+	cb func(int, any)
+}
+
+var _ sql.Scanner = (*Any)(nil)
+
+func (a *Any) Scan(v any) error {
+	a.cb(a.i, v)
+	return nil
 }
