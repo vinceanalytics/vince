@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"time"
+
+	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 type httpListenerKey struct{}
@@ -59,4 +61,14 @@ func Now(ctx context.Context) time.Time {
 
 func Elapsed(ctx context.Context, since time.Time) time.Duration {
 	return Now(ctx).Sub(since)
+}
+
+type authKey struct{}
+
+func SetAuth(ctx context.Context, a *v1.Client_Auth) context.Context {
+	return context.WithValue(ctx, authKey{}, a)
+}
+
+func GetAuth(ctx context.Context) *v1.Client_Auth {
+	return ctx.Value(authKey{}).(*v1.Client_Auth)
 }

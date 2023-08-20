@@ -34,8 +34,16 @@ func Generate(ctx context.Context, key ed25519.PrivateKey,
 
 }
 
-func Valid(db *badger.DB, token string) bool {
-	return db.View(func(txn *badger.Txn) error {
+func Valid(db *badger.DB, token string) (ok bool) {
+	_, ok = ValidWithClaims(db, token)
+	return
+}
+
+func ValidWithClaims(db *badger.DB, token string) (claims *jwt.RegisteredClaims, ok bool) {
+	if token == "" {
+		return
+	}
+	ok = db.View(func(txn *badger.Txn) error {
 		key := keys.Token(token)
 		it, err := txn.Get([]byte(key))
 		if err != nil {
@@ -47,7 +55,8 @@ func Valid(db *badger.DB, token string) bool {
 			if err != nil {
 				return err
 			}
-			t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+			claims = &jwt.RegisteredClaims{}
+			t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
 				return ed25519.PublicKey(tpub.PubKey), nil
 			})
 			if err != nil {
@@ -59,4 +68,5 @@ func Valid(db *badger.DB, token string) bool {
 			return nil
 		})
 	}) == nil
+	return
 }
