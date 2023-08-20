@@ -15,15 +15,13 @@ import {
     clearModelMarkers,
     getQueryFromCursor,
     findMatches,
-    AppendQueryOptions,
 } from "./utils"
 import type { Request } from "./utils"
 import { PaneContent } from "../../../components"
 import type { ErrorResult, Site } from "../../../vince"
-import * as VINCE from "../../../vince"
 import Loader from "../Loader"
 import styled from "styled-components"
-import { Text, themeGet } from "@primer/react";
+
 import {
     conf as QuestDBLanguageConf,
     language as QuestDBLanguage,
@@ -273,70 +271,18 @@ const MonacoEditor = () => {
 
             if (request?.query) {
                 void vince
-                    .queryRaw(request.query, { limit: "0,1000", explain: true })
-                    .then((result) => {
+                    .query({ query: request.query })
+                    .then(() => {
                         setRequest(undefined)
                         errorRef.current = undefined
                         errorRangeRef.current = undefined
-                        // dispatch(actions.query.stopRunning())
-                        // dispatch(actions.query.setResult(result))
-
                         if (monacoRef?.current && editorRef?.current) {
                             renderLineMarkings(monacoRef.current, editorRef?.current)
-                        }
-
-                        if (result.type === VINCE.Type.DDL) {
-                            // dispatch(
-                            //     actions.query.addNotification({
-                            //         content: (
-                            //             <Text color="foreground"
-                            //                 // TODO:(gernest)  ellipsis
-                            //                 title={result.query}>
-                            //                 {result.query}
-                            //             </Text>
-                            //         ),
-                            //     }),
-                            // )
-                        }
-
-                        if (result.type === VINCE.Type.DQL) {
-                            setLastExecutedQuery(request.query)
-                            // dispatch(
-                            //     actions.query.addNotification({
-                            //         jitCompiled: result.explain?.jitCompiled ?? false,
-                            //         content: (
-                            //             <QueryResult {...result.timings} rowCount={result.count} />
-                            //         ),
-                            //         sideContent: (
-                            //             <Text color="fg.default"
-                            //                 // TODO:(gernest)  ellipsis
-                            //                 title={result.query}>
-                            //                 {result.query}
-                            //             </Text>
-                            //         ),
-                            //     }),
-                            // )
                         }
                     })
                     .catch((error: ErrorResult) => {
                         errorRef.current = error
                         setRequest(undefined)
-                        // dispatch(actions.query.stopRunning())
-                        // dispatch(
-                        //     actions.query.addNotification({
-                        //         content: <Text color="red">{error.error}</Text>,
-                        //         sideContent: (
-                        //             <Text color="foreground"
-                        //                 // TODO:(gernest)  ellipsis
-
-                        //                 title={request.query}>
-                        //                 {request.query}
-                        //             </Text>
-                        //         ),
-                        //         type: "error",
-                        //     }),
-                        // )
-
                         if (editorRef?.current && monacoRef?.current) {
                             const errorRange = getErrorRange(
                                 editorRef.current,

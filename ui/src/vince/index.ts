@@ -22,15 +22,10 @@
  *
  ******************************************************************************/
 
-type ColumnDefinition = Readonly<{ name: string; type: string }>
 
-type Value = string | number | boolean
-type RawData = Record<string, Value>
-
-export enum Type {
-    DDL = "ddl",
-    DQL = "dql",
-    ERROR = "error",
+export type QueryRequestOptions = {
+    query: string;
+    params?: Param[];
 }
 
 export type Timings = {
@@ -40,59 +35,35 @@ export type Timings = {
     fetch: number
 }
 
-export type Explain = { jitCompiled: boolean }
-
-type DatasetType = Array<boolean | string | number>
-
-type RawDqlResult = {
-    columns: ColumnDefinition[]
-    count: number
-    dataset: DatasetType[]
-    ddl: undefined
-    error: undefined
-    query: string
-    timings: Timings
-    explain?: Explain
+export type QueryResult = {
+    elapsed: string;
+    columns: Column[];
+    rows: Row[];
 }
 
-type RawDdlResult = {
-    ddl: "OK"
+export type Column = {
+    name: string;
+    dataType: DataType;
 }
 
-type RawErrorResult = {
-    ddl: undefined
-    error: "<error message>"
-    position: number
-    query: string
+export type Row = {
+    values: Value[];
 }
 
-type DdlResult = {
-    query: string
-    type: Type.DDL
+export type DataType = "UNKNOWN" | "NUMBER" | "DOUBLE" | "STRING" | "BOOL" | "TIMESTAMP";
+
+export type Value = {
+    number?: number;
+    double?: number;
+    string?: string;
+    bool?: boolean;
+    timestamp?: string;
 }
 
-type RawResult = RawDqlResult | RawDdlResult | RawErrorResult
-
-export type ErrorResult = RawErrorResult & {
-    type: Type.ERROR
+export type Param = {
+    name: string;
+    value: Value;
 }
-
-export type QueryRawResult =
-    | (Omit<RawDqlResult, "ddl"> & { type: Type.DQL })
-    | DdlResult
-    | ErrorResult
-
-export type QueryResult<T extends Record<string, any>> =
-    | {
-        columns: ColumnDefinition[]
-        count: number
-        data: T[]
-        timings: Timings
-        type: Type.DQL
-        explain?: Explain
-    }
-    | ErrorResult
-    | DdlResult
 
 export type Site = {
     domain: string
@@ -113,27 +84,14 @@ export type TokenResult = {
 }
 
 
-export type Column = {
-    column: string
-    indexed: boolean
-    designated: boolean
-    indexBlockCapacity: number
-    symbolCached: boolean
-    symbolCapacity: number
-    type: string
+export type ErrorResult = ErrorShape & {
+    position: number
+    query: string
 }
 
-export type Options = {
-    limit?: string
-    explain?: boolean
-}
-
-
-
-
-export type ErrorShape = Readonly<{
+export type ErrorShape = {
     error: string
-}>
+}
 
 
 export type Version = {
@@ -155,19 +113,6 @@ export class Client {
             this._token = ""
         }
     }
-
-    static encodeParams = (
-        params: Record<string, string | number | boolean | undefined>,
-    ) =>
-        Object.keys(params)
-            .filter((k) => typeof params[k] !== "undefined")
-            .map(
-                (k) =>
-                    `${encodeURIComponent(k)}=${encodeURIComponent(
-                        params[k] as string | number | boolean,
-                    )}`,
-            )
-            .join("&")
 
     abort = () => {
         this._controllers.forEach((controller) => {
@@ -196,6 +141,13 @@ export class Client {
         return this.do<Site>("/sites", {
             method: "POST",
             body: JSON.stringify({ domain })
+        })
+    }
+
+    async query(request: QueryRequestOptions): Promise<QueryResult | ErrorShape> {
+        return this.do<QueryResult>("/query", {
+            method: "POST",
+            body: JSON.stringify(request)
         })
     }
 
@@ -241,100 +193,6 @@ export class Client {
         return await Promise.reject({
             error: response.statusText,
         })
-    }
-
-    async queryRaw(query: string, options?: Options): Promise<QueryRawResult> {
-        const controller = new AbortController()
-        const payload = {
-            ...options,
-            count: true,
-            src: "con",
-            query,
-            timings: true,
-        }
-
-        this._controllers.push(controller)
-        let response: Response
-        const start = new Date()
-
-        try {
-            response = await fetch(
-                `${this._host}/exec?${Client.encodeParams(payload)}`,
-                { signal: controller.signal },
-            )
-        } catch (error) {
-            const err = {
-                position: -1,
-                query,
-                type: Type.ERROR,
-            }
-
-            const genericErrorPayload = {
-                ...err,
-                error: "An error occured, please try again",
-            }
-
-            if (error instanceof DOMException) {
-                // eslint-disable-next-line prefer-promise-reject-errors
-                return await Promise.reject({
-                    ...err,
-                    error:
-                        error.code === 20
-                            ? "Cancelled by user"
-                            : JSON.stringify(error).toString(),
-                })
-            }
-
-            // eslint-disable-next-line prefer-promise-reject-errors
-            return await Promise.reject(genericErrorPayload)
-        } finally {
-            const index = this._controllers.indexOf(controller)
-
-            if (index >= 0) {
-                this._controllers.splice(index, 1)
-            }
-        }
-
-        if (response.ok || response.status === 400) {
-            // 400 is only for SQL errors
-            const fetchTime = (new Date().getTime() - start.getTime()) * 1e6
-            const data = (await response.json()) as RawResult
-
-
-            if (data.ddl) {
-                return {
-                    query,
-                    type: Type.DDL,
-                }
-            }
-
-            if (data.error) {
-                // eslint-disable-next-line prefer-promise-reject-errors
-                return await Promise.reject({
-                    ...data,
-                    type: Type.ERROR,
-                })
-            }
-
-            return {
-                ...data,
-                timings: {
-                    ...data.timings,
-                    fetch: fetchTime,
-                },
-                type: Type.DQL,
-            }
-        }
-
-        const errorPayload = {
-            error: `QuestDB is not reachable [${response.status}]`,
-            position: -1,
-            query,
-            type: Type.ERROR,
-        }
-
-        // eslint-disable-next-line prefer-promise-reject-errors
-        return await Promise.reject(errorPayload)
     }
 }
 

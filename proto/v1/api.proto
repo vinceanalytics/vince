@@ -261,6 +261,7 @@ message Query {
       TIMESTAMP = 5;
     }
   }
+
   message Row { repeated Value values = 1; }
 
   message Result {
