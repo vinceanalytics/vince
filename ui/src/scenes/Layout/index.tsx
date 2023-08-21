@@ -11,6 +11,7 @@ import { useLocalStorage, StoreKey, SettingsType } from "../../providers/LocalSt
 import { Splitter, } from "../../components"
 import Sites from "../Sites";
 import { Login } from "../Login";
+import { Result } from "../Result";
 
 
 const Top = styled.div`
@@ -73,7 +74,7 @@ const Layout = () => {
                                             <Editor />
                                         </Splitter>
                                     </Top>
-                                    <Box />
+                                    <Result />
                                 </Splitter>
                             </EditorProvider>
                         </Box>
