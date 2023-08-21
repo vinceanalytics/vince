@@ -30,7 +30,6 @@ import {
     documentFormattingEditProvider,
     documentRangeFormattingEditProvider,
 } from "./sql"
-import { themeGet } from "@primer/react"
 
 loader.config({
     paths: {
