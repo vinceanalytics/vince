@@ -42,7 +42,7 @@ func base() (o [][]string) {
 			return nil
 		}
 		switch filepath.Ext(path) {
-		case ".js", ".css":
+		case ".js", ".css", ".ttf":
 		default:
 			return nil
 		}

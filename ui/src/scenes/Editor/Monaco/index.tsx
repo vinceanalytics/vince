@@ -30,6 +30,7 @@ import {
     documentFormattingEditProvider,
     documentRangeFormattingEditProvider,
 } from "./sql"
+import { themeGet } from "@primer/react"
 
 loader.config({
     paths: {
@@ -42,6 +43,42 @@ type IStandaloneCodeEditor = editor.IStandaloneCodeEditor
 const Content = styled(PaneContent)`
   position: relative;
   overflow: hidden;
+
+  .monaco-scrollable-element > .scrollbar > .slider {
+    background: #1f883d ;
+  }
+
+  .cursorQueryDecoration {
+    width: 0.2rem !important;
+    background: #1f883d;
+    margin-left: 1.2rem;
+
+    &.hasError {
+      background: #1f883d;
+    }
+  }
+
+  .cursorQueryGlyph {
+    margin-left: 2rem;
+    z-index: 1;
+    cursor: pointer;
+
+    &:after {
+      content: "◃";
+      transform: rotate(180deg) scaleX(0.8);
+      color: #1f883d;
+    }
+  }
+
+  .errorGlyph {
+    margin-left: 2.5rem;
+    margin-top: 0.5rem;
+    z-index: 1;
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+    border-radius: 50%;
+    background: #cf222e;
+  }
 `
 
 enum Command {
@@ -184,8 +221,6 @@ const MonacoEditor = () => {
         editor: IStandaloneCodeEditor,
         monaco: Monaco,
     ) => {
-        monaco.editor.setTheme("dracula")
-
         if (monacoRef) {
             monacoRef.current = monaco
             setEditorReady(true)
@@ -341,6 +376,7 @@ const MonacoEditor = () => {
                     minimap: {
                         enabled: false,
                     },
+                    fontFamily: 'SFMono-Regular, Menlo, Monaco, Consolas,"Liberation Mono", "Courier New", monospace',
                     selectOnLineNumbers: false,
                     scrollBeyondLastLine: false,
                     tabSize: 2,
