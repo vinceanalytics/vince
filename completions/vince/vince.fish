@@ -2,7 +2,7 @@
 
 function __fish_vince_no_subcommand --description 'Test if there has been any subcommand yet'
     for i in (commandline -opc)
-        if contains -- $i login serve k8s init query sites create list
+        if contains -- $i login serve k8s init query sites create list delete bench
             return 1
         end
     end
@@ -49,3 +49,11 @@ complete -c vince -n '__fish_seen_subcommand_from create' -f -l help -s h -d 'sh
 complete -r -c vince -n '__fish_seen_subcommand_from sites' -a 'create' -d 'Creates a new site'
 complete -c vince -n '__fish_seen_subcommand_from list' -f -l help -s h -d 'show help'
 complete -r -c vince -n '__fish_seen_subcommand_from sites' -a 'list' -d 'Lists  sites'
+complete -c vince -n '__fish_seen_subcommand_from delete' -f -l help -s h -d 'show help'
+complete -r -c vince -n '__fish_seen_subcommand_from sites' -a 'delete' -d 'Deletes a  site'
+complete -c vince -n '__fish_seen_subcommand_from bench' -f -l help -s h -d 'show help'
+complete -r -c vince -n '__fish_vince_no_subcommand' -a 'bench' -d 'Load test a vince instance'
+complete -c vince -n '__fish_seen_subcommand_from bench' -f -l users -r -d 'Number of concurrent users'
+complete -c vince -n '__fish_seen_subcommand_from bench' -f -l event -r -d 'Name of the event to send'
+complete -c vince -n '__fish_seen_subcommand_from bench' -f -l paths -r -d 'Url path visited by the users'
+complete -c vince -n '__fish_seen_subcommand_from bench' -f -l duration -r -d 'How long to run the benchmark'

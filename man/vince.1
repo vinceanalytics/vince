@@ -73,7 +73,7 @@ Serves web ui console and expose /api/events that collects web analytics
 kubernetes controller for vince - The Cloud Native Web Analytics Platform.
 
 .PP
-\fB--default-image\fP="": Default image of vince to use (default: ghcr.io/vinceanalytics/vince:v0.0.23)
+\fB--default-image\fP="": Default image of vince to use (default: ghcr.io/vinceanalytics/vince:v0.0.25)
 
 .PP
 \fB--ignore-namespaces\fP="": namespaces to ignore for Vince and Site custom resources (default: [])
@@ -121,3 +121,23 @@ Creates a new site
 .SS list
 .PP
 Lists  sites
+
+.SS delete
+.PP
+Deletes a  site
+
+.SH bench
+.PP
+Load test a vince instance
+
+.PP
+\fB--duration\fP="": How long to run the benchmark (default: 1s)
+
+.PP
+\fB--event\fP="": Name of the event to send (default: pageview)
+
+.PP
+\fB--paths\fP="": Url path visited by the users (default: [/ /pricing /company])
+
+.PP
+\fB--users\fP="": Number of concurrent users (default: 1)
