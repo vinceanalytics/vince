@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"sort"
+	"strings"
 	"sync/atomic"
 	"text/tabwriter"
 	"time"
@@ -229,6 +231,9 @@ func ref() (o string) {
 		}
 		n--
 	}
+	p := strings.Split(o, ".")
+	sort.Sort(sort.Reverse(referrer.StringSlice(p)))
+	o = strings.Join(p, ".")
 	return
 }
 
