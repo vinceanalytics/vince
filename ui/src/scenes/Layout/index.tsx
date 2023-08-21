@@ -1,6 +1,4 @@
-import React, { useCallback, useState } from "react"
-import styled from "styled-components"
-
+import { useCallback, useState } from "react"
 import { VinceProvider, EditorProvider } from "../../providers";
 import Footer from "../Footer";
 import { Sidebar } from "../Sidebar"
@@ -14,10 +12,6 @@ import { Login } from "../Login";
 import { Result } from "../Result";
 
 
-const Top = styled.div`
-  position: relative;
-  overflow: hidden;
-`
 
 registerPortalRoot(document.getElementById("console")!, "console")
 registerPortalRoot(document.getElementById("settings")!, "settings")
@@ -61,7 +55,10 @@ const Layout = () => {
                                     min={100}
                                     onChange={handleEditorSplitterChange}
                                 >
-                                    <Top>
+                                    <Box
+                                        position={"relative"}
+                                        overflow={"hidden"}
+                                    >
                                         <Splitter
                                             direction="horizontal"
                                             fallback={resultsSplitterBasis}
@@ -73,7 +70,8 @@ const Layout = () => {
                                             </Box>
                                             <Editor />
                                         </Splitter>
-                                    </Top>
+                                    </Box>
+
                                     <Result />
                                 </Splitter>
                             </EditorProvider>
