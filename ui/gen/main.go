@@ -19,6 +19,9 @@ func main() {
 	for _, b := range base() {
 		monaco(b...)
 	}
+	for _, b := range languages() {
+		monaco(b...)
+	}
 	maps()
 }
 
@@ -43,6 +46,28 @@ func base() (o [][]string) {
 		}
 		switch filepath.Ext(path) {
 		case ".js", ".css", ".ttf":
+		default:
+			return nil
+		}
+		r, _ := filepath.Rel(vs, path)
+		o = append(o, filepath.SplitList(r))
+		return nil
+	})
+	return
+}
+
+func languages() (o [][]string) {
+	vs := filepath.Join("node_modules", "monaco-editor", "min", "vs")
+	root := filepath.Join(vs, "basic-languages")
+	filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		switch filepath.Base(path) {
+		case "mysql.js":
 		default:
 			return nil
 		}
