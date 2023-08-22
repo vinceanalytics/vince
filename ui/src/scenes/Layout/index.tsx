@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { VinceProvider, EditorProvider } from "../../providers";
+import { VinceProvider, EditorProvider, SitesProvider } from "../../providers";
 import Footer from "../Footer";
 import { Sidebar } from "../Sidebar"
 import Editor from "../Editor"
@@ -8,19 +8,18 @@ import { PageHeader } from '@primer/react/drafts'
 import { useLocalStorage, StoreKey, SettingsType } from "../../providers/LocalStorageProvider"
 import { Splitter, } from "../../components"
 import Sites from "../Sites";
-import { Login } from "../Login";
+import { Auth } from "../Auth";
 import { Result } from "../Result";
 
 
 
 registerPortalRoot(document.getElementById("console")!, "console")
 registerPortalRoot(document.getElementById("settings")!, "settings")
-registerPortalRoot(document.getElementById("login")!, "login")
 
 const Layout = () => {
     const [activePane, setActivePane] = useState<string>("console")
 
-    const { authPayload, editorSplitterBasis, resultsSplitterBasis, updateSettings } =
+    const { editorSplitterBasis, resultsSplitterBasis, updateSettings } =
         useLocalStorage()
     const handleEditorSplitterChange = useCallback((value: SettingsType) => {
         updateSettings(StoreKey.EDITOR_SPLITTER_BASIS, value)
@@ -36,9 +35,8 @@ const Layout = () => {
 
     return (
         <VinceProvider>
-            {authPayload === "" && <Portal containerName="login"><Login /></Portal>}
-            {authPayload !== "" &&
-                <>
+            <SitesProvider>
+                <Auth>
                     <Sidebar onPanelChange={paneChange} />
                     <Footer />
                     <Portal containerName="console">
@@ -71,7 +69,6 @@ const Layout = () => {
                                             <Editor />
                                         </Splitter>
                                     </Box>
-
                                     <Result />
                                 </Splitter>
                             </EditorProvider>
@@ -91,7 +88,8 @@ const Layout = () => {
                             </PageHeader>
                         </Box>
                     </Portal>
-                </>}
+                </Auth>
+            </SitesProvider>
         </VinceProvider >
     )
 }

@@ -1,11 +1,11 @@
 
-import { Box, Button, TextInput } from "@primer/react";
+import { Box, Button, Portal, TextInput, registerPortalRoot } from "@primer/react";
 import { useCallback, useState } from "react";
 import { Client, TokenResult } from "../../vince";
 import { useLocalStorage, StoreKey } from "../../providers/LocalStorageProvider";
 
-export const Login = () => {
-    const [vince] = useState(new Client())
+const Login = () => {
+    const vince = new Client();
     const { updateSettings } = useLocalStorage()
     const [userName, setUserName] = useState<string>("")
     const [password, setPassWord] = useState<string>("")
@@ -60,5 +60,18 @@ export const Login = () => {
                 </Box>
             </form>
         </Box>
+    )
+}
+
+registerPortalRoot(document.getElementById("login")!, "login")
+
+export const Auth = (props: { children?: React.ReactNode; }) => {
+    const { children } = props;
+    const { authPayload } = useLocalStorage()
+    return (
+        <>
+            {authPayload == "" && <Portal containerName="login"><Login /></Portal>}
+            {authPayload !== "" && children}
+        </>
     )
 }
