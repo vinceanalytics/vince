@@ -10,7 +10,6 @@ import {
     getErrorRange,
     getQueryRequestFromEditor,
     getQueryRequestFromLastExecutedQuery,
-    VINCELanguageName,
     setErrorMarker,
     clearModelMarkers,
     getQueryFromCursor,
@@ -23,8 +22,6 @@ import Loader from "../Loader"
 import styled from "styled-components"
 
 import {
-    conf as QuestDBLanguageConf,
-    language as QuestDBLanguage,
     createQuestDBCompletionProvider,
     createSchemaCompletionProvider,
     documentFormattingEditProvider,
@@ -106,36 +103,25 @@ const MonacoEditor = () => {
     }
 
     const handleEditorBeforeMount = (monaco: Monaco) => {
-        monaco.languages.register({ id: VINCELanguageName })
-
-        monaco.languages.setMonarchTokensProvider(
-            VINCELanguageName,
-            QuestDBLanguage,
-        )
-
-        monaco.languages.setLanguageConfiguration(
-            VINCELanguageName,
-            QuestDBLanguageConf,
-        )
 
         monaco.languages.registerCompletionItemProvider(
-            VINCELanguageName,
+            "mysql",
             createQuestDBCompletionProvider(),
         )
 
         monaco.languages.registerDocumentFormattingEditProvider(
-            VINCELanguageName,
+            "mysql",
             documentFormattingEditProvider,
         )
 
         monaco.languages.registerDocumentRangeFormattingEditProvider(
-            VINCELanguageName,
+            "mysql",
             documentRangeFormattingEditProvider,
         )
 
         setSchemaCompletionHandle(
             monaco.languages.registerCompletionItemProvider(
-                VINCELanguageName,
+                "mysql",
                 createSchemaCompletionProvider(tables),
             ),
         )
@@ -354,7 +340,7 @@ const MonacoEditor = () => {
             schemaCompletionHandle?.dispose()
             setSchemaCompletionHandle(
                 monacoRef.current.languages.registerCompletionItemProvider(
-                    VINCELanguageName,
+                    "mysql",
                     createSchemaCompletionProvider(tables),
                 ),
             )
@@ -365,7 +351,7 @@ const MonacoEditor = () => {
         <Content onClick={handleEditorClick}>
             <Editor
                 beforeMount={handleEditorBeforeMount}
-                defaultLanguage={VINCELanguageName}
+                defaultLanguage={"mysql"}
                 onMount={handleEditorDidMount}
                 options={{
                     fixedOverflowWidgets: true,
