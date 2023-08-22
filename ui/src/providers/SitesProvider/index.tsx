@@ -1,16 +1,17 @@
-import { createContext, PropsWithChildren, useState, useContext } from "react"
-import { Site } from "../../vince"
+import { createContext, PropsWithChildren, useState, useContext, useEffect } from "react"
+import { Site, SiteList } from "../../vince"
+import { useVince } from "../VinceProvider"
 
 
 
 type ContextProps = {
-    sites: Site[] | null
-    updateSites: (sites: Site[]) => void
+    sites: Site[]
+    refresh: () => void
 }
 
 const defaultValues = {
     sites: [],
-    updateSites: (sites: Site[]) => undefined,
+    refresh: () => undefined,
 }
 
 const SitesContext = createContext<ContextProps>(defaultValues)
@@ -18,15 +19,27 @@ const SitesContext = createContext<ContextProps>(defaultValues)
 
 export const SitesProvider = ({ children }: PropsWithChildren<{}>) => {
     const [sites, setSites] = useState<Site[]>([])
-    const updateSites = (site: Site[]) => {
-        setSites(site)
+    const { vince } = useVince()
+    const refresh = () => {
+        vince.sites().then((result) => {
+            const { list } = result as SiteList;
+            setSites(list)
+        })
+            .catch((e) => {
+                console.log(e)
+            })
     }
+    useEffect(() => {
+        if (vince.authenticated()) {
+            refresh()
+        }
+    }, [vince])
 
     return (
         <SitesContext.Provider
             value={{
                 sites,
-                updateSites,
+                refresh,
             }}
         >
             {children}

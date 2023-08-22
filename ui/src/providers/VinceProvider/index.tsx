@@ -19,7 +19,7 @@ export const VinceContext = createContext<ContextProps>(defaultValues)
 
 export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
     const { authPayload } = useLocalStorage()
-    const [activeClient, setClient] = useState<Client>(client)
+    const [vince, setClient] = useState<Client>(client)
     useEffect(() => {
         if (authPayload !== "") {
             setClient(new Client(authPayload))
@@ -28,7 +28,7 @@ export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
     return (
         <VinceContext.Provider
             value={{
-                vince: activeClient
+                vince,
             }}
         >
             {children}

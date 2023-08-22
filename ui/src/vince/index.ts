@@ -114,6 +114,10 @@ export class Client {
         }
     }
 
+    authenticated = (): boolean => {
+        return this._token !== ""
+    }
+
     abort = () => {
         this._controllers.forEach((controller) => {
             controller.abort()

@@ -9,6 +9,7 @@ import { columns } from "../Editor/Monaco/sql";
 import styled from "styled-components"
 import { Site, SiteList, Client } from "../../vince";
 import { useLocalStorage } from "../../providers/LocalStorageProvider";
+import { useSites, useVince } from "../../providers";
 
 
 export const PaneWrapper = styled.div`
@@ -56,12 +57,8 @@ const Columns = ({ id }: ColumnProps) => {
 }
 
 const Sites = () => {
-  const [loading, setLoading] = useState(false)
-  const { authPayload } = useLocalStorage()
-  const [vince] = useState(new Client(authPayload))
-  const [sites, setSites] = useState<Site[]>()
-
-  const [refresh, setRefresh] = useState(false);
+  const { vince } = useVince()
+  const { sites, refresh } = useSites()
 
   const [isOpen, setIsOpen] = useState(false);
   const openDialog = useCallback(() => setIsOpen(true), [setIsOpen])
@@ -70,25 +67,14 @@ const Sites = () => {
 
   const submitNewSite = useCallback(() => {
     setIsOpen(false)
-    vince.create(domain).then((result) => {
-      setRefresh(true)
+    vince.create(domain).then(() => {
+      refresh()
     })
       .catch((e) => { })
-  }, [domain, setRefresh])
+  }, [domain, refresh])
 
   const [validDomain, setValidDomain] = useState(true)
 
-  const fetchSites = useCallback(() => {
-    setLoading(true)
-    vince.sites().then((result) => {
-      const list = result as SiteList;
-      setSites(list.list)
-      setLoading(false);
-    })
-      .catch((e) => {
-        console.log(e)
-      })
-  }, [setLoading, setSites])
 
   useEffect(() => {
     if (domain != "") {
@@ -99,10 +85,6 @@ const Sites = () => {
       }
     }
   }, [domain])
-
-  useEffect(() => {
-    fetchSites()
-  }, [refresh, fetchSites])
 
   return (
     <Wrapper>
@@ -147,18 +129,8 @@ const Sites = () => {
         </PageHeader>
       </Box>
       <Box display={"flex"} overflow={"auto"}>
-        {loading &&
-          <Box sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            pt: 2,
-          }}>
-            <Spinner size="large" />
-          </Box>}
 
-        {!loading && sites?.length == 0 &&
+        {sites.length == 0 &&
           <Box sx={{
             display: "flex",
             alignItems: "center",
@@ -168,7 +140,7 @@ const Sites = () => {
           }}>
             <Text>No Sites</Text>
           </Box>}
-        {!loading && sites?.length !== 0 &&
+        {sites.length !== 0 &&
           <Box sx={{
             width: "100%",
             pt: 2,
