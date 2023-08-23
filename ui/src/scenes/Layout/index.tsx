@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { VinceProvider, EditorProvider, SitesProvider } from "../../providers";
+import { VinceProvider, EditorProvider, SitesProvider, QueryProvider } from "../../providers";
 import Footer from "../Footer";
 import { Sidebar } from "../Sidebar"
 import Editor from "../Editor"
@@ -47,30 +47,32 @@ const Layout = () => {
                             maxHeight={"100%"}
                         >
                             <EditorProvider>
-                                <Splitter
-                                    direction="vertical"
-                                    fallback={editorSplitterBasis}
-                                    min={100}
-                                    onChange={handleEditorSplitterChange}
-                                >
-                                    <Box
-                                        position={"relative"}
-                                        overflow={"hidden"}
+                                <QueryProvider>
+                                    <Splitter
+                                        direction="vertical"
+                                        fallback={editorSplitterBasis}
+                                        min={100}
+                                        onChange={handleEditorSplitterChange}
                                     >
-                                        <Splitter
-                                            direction="horizontal"
-                                            fallback={resultsSplitterBasis}
-                                            max={500}
-                                            onChange={handleResultsSplitterChange}
+                                        <Box
+                                            position={"relative"}
+                                            overflow={"hidden"}
                                         >
-                                            <Box >
-                                                <Sites />
-                                            </Box>
-                                            <Editor />
-                                        </Splitter>
-                                    </Box>
-                                    <Result />
-                                </Splitter>
+                                            <Splitter
+                                                direction="horizontal"
+                                                fallback={resultsSplitterBasis}
+                                                max={500}
+                                                onChange={handleResultsSplitterChange}
+                                            >
+                                                <Box >
+                                                    <Sites />
+                                                </Box>
+                                                <Editor />
+                                            </Splitter>
+                                        </Box>
+                                        <Result />
+                                    </Splitter>
+                                </QueryProvider>
                             </EditorProvider>
                         </Box>
                     </Portal>

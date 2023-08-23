@@ -3,10 +3,11 @@
 import { Box, Button, LabelGroup, Label, Spinner } from "@primer/react";
 import { PageHeader } from '@primer/react/drafts'
 import {
-    TriangleRightIcon,
+    TriangleRightIcon, XIcon,
     ZapIcon,
 } from "@primer/octicons-react";
 import { useState } from "react";
+import { useQuery } from "../../../providers";
 
 export const Menu = () => {
     return (
@@ -43,10 +44,17 @@ export const Menu = () => {
 
 
 const Run = () => {
-    const [loading, setLoading] = useState<boolean>(false)
+    const { running, toggleRun } = useQuery()
     return (
         <>
-            {loading ? <Spinner /> : <Button onClick={() => setLoading(true)}>Run</Button>}
+            {running && <Spinner />}
+            <Button
+                leadingIcon={running ? XIcon : TriangleRightIcon}
+                onClick={toggleRun}
+                variant={running ? "danger" : "outline"}
+            >
+                {running ? "Cancel" : "Run"}
+            </Button>
         </>
     )
 }

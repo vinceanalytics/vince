@@ -3,7 +3,7 @@ import type { BaseSyntheticEvent } from "react"
 import Editor, { Monaco, loader } from "@monaco-editor/react"
 import { editor } from "monaco-editor"
 import type { IDisposable, IRange } from "monaco-editor"
-import { VinceContext, useEditor } from "../../../providers"
+import { VinceContext, useEditor, useQuery, useSites } from "../../../providers"
 import { usePreferences } from "./usePreferences"
 import {
     appendQuery,
@@ -17,8 +17,7 @@ import {
 } from "./utils"
 import type { Request } from "./utils"
 import { PaneContent } from "../../../components"
-import type { ErrorResult, Site } from "../../../vince"
-import Loader from "../Loader"
+import type { ErrorResult } from "../../../vince"
 import styled from "styled-components"
 
 import {
@@ -90,17 +89,13 @@ const MonacoEditor = () => {
     const [request, setRequest] = useState<Request | undefined>()
     const [editorReady, setEditorReady] = useState<boolean>(false)
     const [lastExecutedQuery, setLastExecutedQuery] = useState("")
-    const [running, setRunning] = useState<boolean>(false)
-    const [tables, setTables] = useState<Site[]>([]);
+    const { running, toggleRun, stopRunning } = useQuery()
+    const { sites } = useSites()
     const [schemaCompletionHandle, setSchemaCompletionHandle] =
         useState<IDisposable>()
     const decorationsRef = useRef<string[]>([])
     const errorRef = useRef<ErrorResult | undefined>()
     const errorRangeRef = useRef<IRange | undefined>()
-
-    const toggleRunning = (isRefresh: boolean = false) => {
-        // dispatch(actions.query.toggleRunning(isRefresh))
-    }
 
     const handleEditorBeforeMount = (monaco: Monaco) => {
 
@@ -122,7 +117,7 @@ const MonacoEditor = () => {
         setSchemaCompletionHandle(
             monaco.languages.registerCompletionItemProvider(
                 "mysql",
-                createSchemaCompletionProvider(tables),
+                createSchemaCompletionProvider(sites),
             ),
         )
     }
@@ -130,7 +125,7 @@ const MonacoEditor = () => {
     const handleEditorClick = (e: BaseSyntheticEvent) => {
         if (e.target.classList.contains("cursorQueryGlyph")) {
             editorRef?.current?.focus()
-            toggleRunning()
+            toggleRun()
         }
     }
 
@@ -229,16 +224,7 @@ const MonacoEditor = () => {
                     monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
                 ],
                 run: () => {
-                    toggleRunning()
-                },
-            })
-
-            editor.addAction({
-                id: Command.CLEANUP_NOTIFICATIONS,
-                label: "Clear all notifications",
-                keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
-                run: () => {
-                    // dispatch(actions.query.cleanupNotifications())
+                    toggleRun()
                 },
             })
 
@@ -248,33 +234,12 @@ const MonacoEditor = () => {
         }
 
         loadPreferences(editor)
-
-        // Insert query, if one is found in the URL
-        const params = new URLSearchParams(window.location.search)
-        // Support multi-line queries (URL encoded)
-        const query = params.get("query")
-        const model = editor.getModel()
-        if (query && model) {
-            // Find if the query is already in the editor
-            const matches = findMatches(model, query)
-            if (matches && matches.length > 0) {
-                editor.setSelection(matches[0].range)
-                // otherwise, append the query
-            } else {
-                appendQuery(editor, query, { appendAt: "end" })
-            }
-        }
-
-        const executeQuery = params.get("executeQuery")
-        if (executeQuery) {
-            toggleRunning()
-        }
     }
 
     useEffect(() => {
         if (!running && request) {
             vince.abort()
-            // dispatch(actions.query.stopRunning())
+            stopRunning()
             setRequest(undefined)
         }
     }, [request, vince, running])
@@ -323,7 +288,7 @@ const MonacoEditor = () => {
                     })
                 setRequest(request)
             } else {
-                // dispatch(actions.query.stopRunning())
+                stopRunning()
             }
         }
     }, [vince, running])
@@ -341,11 +306,11 @@ const MonacoEditor = () => {
             setSchemaCompletionHandle(
                 monacoRef.current.languages.registerCompletionItemProvider(
                     "mysql",
-                    createSchemaCompletionProvider(tables),
+                    createSchemaCompletionProvider(sites),
                 ),
             )
         }
-    }, [tables, monacoRef, editorReady])
+    }, [sites, monacoRef, editorReady])
 
     return (
         <Content onClick={handleEditorClick}>
@@ -367,7 +332,6 @@ const MonacoEditor = () => {
                     tabSize: 2,
                 }}
             />
-            <Loader show={!!request || !tables} />
         </Content>
     )
 }
