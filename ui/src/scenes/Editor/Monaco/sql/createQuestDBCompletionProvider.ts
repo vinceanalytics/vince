@@ -1,5 +1,5 @@
 import * as monaco from "monaco-editor"
-import { dataTypes, functions, keywords } from "./grammar"
+import { dataTypes, functions, keywords, columns } from "./grammar"
 import { operators } from "./operators"
 import { CompletionItemKind } from "./types"
 
@@ -38,6 +38,15 @@ export const createQuestDBCompletionProvider = () => {
                         return {
                             label: keyword,
                             kind: CompletionItemKind.Keyword,
+                            insertText: keyword,
+                            range,
+                        }
+                    }),
+                    ...columns.map((item) => {
+                        const keyword = item.toLowerCase()
+                        return {
+                            label: keyword,
+                            kind: CompletionItemKind.Field,
                             insertText: keyword,
                             range,
                         }

@@ -3,4 +3,5 @@ export enum CompletionItemKind {
     Class = 5,
     Operator = 11,
     Keyword = 17,
+    Field = 3,
 }
