@@ -1,11 +1,12 @@
 
 
-import { Box, Button, LabelGroup, Label } from "@primer/react";
+import { Box, Button, LabelGroup, Label, Spinner } from "@primer/react";
 import { PageHeader } from '@primer/react/drafts'
 import {
     TriangleRightIcon,
     ZapIcon,
 } from "@primer/octicons-react";
+import { useState } from "react";
 
 export const Menu = () => {
     return (
@@ -17,9 +18,7 @@ export const Menu = () => {
             <PageHeader>
                 <PageHeader.TitleArea>
                     <PageHeader.Title>
-                        <Button leadingIcon={TriangleRightIcon}
-                            variant="outline"
-                        >Run</Button>
+                        <Run />
                     </PageHeader.Title>
                     <PageHeader.Actions>
                         <LabelGroup visibleChildCount={5}>
@@ -39,5 +38,15 @@ export const Menu = () => {
                 </PageHeader.TitleArea>
             </PageHeader>
         </Box>
+    )
+}
+
+
+const Run = () => {
+    const [loading, setLoading] = useState<boolean>(false)
+    return (
+        <>
+            {loading ? <Spinner /> : <Button onClick={() => setLoading(true)}>Run</Button>}
+        </>
     )
 }
