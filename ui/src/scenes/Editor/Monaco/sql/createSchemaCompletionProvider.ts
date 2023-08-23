@@ -24,29 +24,16 @@ export const createSchemaCompletionProvider = (questDBTables: Site[] = []) => {
                 endColumn: word.endColumn,
             }
 
-            const nextChar = model.getValueInRange({
-                startLineNumber: position.lineNumber,
-                startColumn: word.endColumn,
-                endLineNumber: position.lineNumber,
-                endColumn: word.endColumn + 1,
-            })
-
             if (
                 word.word ||
-                /(FROM|INTO|TABLE) $/gim.test(textUntilPosition) ||
-                (/'$/gim.test(textUntilPosition) && !textUntilPosition.endsWith("= '"))
+                /(FROM|INTO|TABLE) $/gim.test(textUntilPosition)
             ) {
-                const openQuote = textUntilPosition.substr(-1) === "\"";
-                const nextCharQuote = nextChar == "\"";
                 return {
                     suggestions: questDBTables.map((item) => {
                         return {
                             label: item.domain,
                             kind: CompletionItemKind.Class,
-                            insertText:
-                                openQuote
-                                    ? item.domain + (nextCharQuote ? "" : "\"")
-                                    : /^[a-z0-9_]+$/i.test(item.domain) ? item.domain : `"${item.domain}"`,
+                            insertText: `\`${item.domain}\``,
                             range,
                         }
                     }),
