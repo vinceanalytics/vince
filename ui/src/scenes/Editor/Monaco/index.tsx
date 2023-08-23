@@ -86,9 +86,7 @@ const MonacoEditor = () => {
     const { editorRef, monacoRef, insertTextAtCursor } = useEditor()
     const { loadPreferences, savePreferences } = usePreferences()
     const { vince } = useContext(VinceContext)
-    const [request, setRequest] = useState<Request | undefined>()
     const [editorReady, setEditorReady] = useState<boolean>(false)
-    const [lastExecutedQuery, setLastExecutedQuery] = useState("")
     const { running, toggleRun, stopRunning } = useQuery()
     const { sites } = useSites()
     const [schemaCompletionHandle, setSchemaCompletionHandle] =
@@ -125,7 +123,6 @@ const MonacoEditor = () => {
     const handleEditorClick = (e: BaseSyntheticEvent) => {
         if (e.target.classList.contains("cursorQueryGlyph")) {
             editorRef?.current?.focus()
-            toggleRun()
         }
     }
 
@@ -236,59 +233,11 @@ const MonacoEditor = () => {
         loadPreferences(editor)
     }
 
-    useEffect(() => {
-        if (!running && request) {
-            vince.abort()
-            stopRunning()
-            setRequest(undefined)
-        }
-    }, [request, vince, running])
 
     useEffect(() => {
         if (running && editorRef?.current) {
             if (monacoRef?.current) {
                 clearModelMarkers(monacoRef.current, editorRef.current)
-            }
-
-            const request = running
-                ? getQueryRequestFromLastExecutedQuery(lastExecutedQuery)
-                : getQueryRequestFromEditor(editorRef.current)
-
-            if (request?.query) {
-                void vince
-                    .query({ query: request.query })
-                    .then(() => {
-                        setRequest(undefined)
-                        errorRef.current = undefined
-                        errorRangeRef.current = undefined
-                        if (monacoRef?.current && editorRef?.current) {
-                            renderLineMarkings(monacoRef.current, editorRef?.current)
-                        }
-                    })
-                    .catch((error: ErrorResult) => {
-                        errorRef.current = error
-                        setRequest(undefined)
-                        if (editorRef?.current && monacoRef?.current) {
-                            const errorRange = getErrorRange(
-                                editorRef.current,
-                                request,
-                                error.position,
-                            )
-                            errorRangeRef.current = errorRange ?? undefined
-                            if (errorRange) {
-                                setErrorMarker(
-                                    monacoRef?.current,
-                                    editorRef.current,
-                                    errorRange,
-                                    error.error,
-                                )
-                                renderLineMarkings(monacoRef?.current, editorRef?.current)
-                            }
-                        }
-                    })
-                setRequest(request)
-            } else {
-                stopRunning()
             }
         }
     }, [vince, running])
