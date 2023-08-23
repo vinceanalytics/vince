@@ -8,15 +8,19 @@ import { useVince } from "../VinceProvider"
 type ContextProps = {
     running: boolean
     request: string
-    result: QueryResult | undefined
+    result: QueryResult
     toggleRun: () => void
     stopRunning: () => void
+}
+
+const emptyResult = {
+    elapsed: "", columns: [], rows: []
 }
 
 const defaultValues = {
     running: false,
     request: "",
-    result: undefined,
+    result: emptyResult,
     toggleRun: () => undefined,
     stopRunning: () => undefined,
 }
@@ -27,7 +31,7 @@ const QueryContext = createContext<ContextProps>(defaultValues)
 export const QueryProvider = ({ children }: PropsWithChildren<{}>) => {
     const [running, setRunning] = useState<boolean>(false)
     const [request, setRequest] = useState<string>("")
-    const [result, setResult] = useState<QueryResult | undefined>(undefined)
+    const [result, setResult] = useState<QueryResult>(emptyResult)
     const { editorRef } = useEditor()
     const { vince } = useVince()
     useEffect(() => {

@@ -1,10 +1,13 @@
 import { Box } from "@primer/react"
 import { TableIcon, GraphIcon, DownloadIcon } from "@primer/octicons-react";
-import { UnderlineNav } from '@primer/react/drafts'
+import { DataTable, UnderlineNav } from '@primer/react/drafts'
 import { useState } from "react";
+import { useQuery } from "../../providers";
+import { QueryResult, Value } from "../../vince";
 
 export const Result = () => {
     const [panel, setPanel] = useState<string>("grid")
+    const { result } = useQuery()
     return (
         <Box
             overflow={"hidden"}
@@ -28,7 +31,7 @@ export const Result = () => {
                     CSV
                 </UnderlineNav.Item>
             </UnderlineNav>
-            {panel === "grid" && <Grid />}
+            {panel === "grid" && <Grid result={result} />}
             {panel === "graph" && <Graph />}
         </Box>
     )
@@ -36,10 +39,29 @@ export const Result = () => {
 
 
 
-const Grid = () => {
+
+
+
+
+
+
+const Grid = ({ result }: { result: QueryResult }) => {
+    const data = result.rows ? (result.rows.map((row, id) => (
+        row.values.reduce((a, v, idx) => ({
+            ...a, ...Object.fromEntries([
+                [result.columns[idx].name, v]
+            ])
+        }), { id })
+    ))) : [];
     return (
-        <Box>
-            <h1>GRID</h1>
+        <Box marginTop={1} height={"100%"}>
+            {result && <DataTable
+                columns={result.columns.map(({ name }, idx) => ({
+                    id: idx.toString(),
+                    header: name,
+                }))}
+                data={data}
+            />}
         </Box>
     )
 }

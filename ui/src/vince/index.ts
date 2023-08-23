@@ -50,6 +50,8 @@ export type Row = {
     values: Value[];
 }
 
+
+
 export type DataType = "UNKNOWN" | "NUMBER" | "DOUBLE" | "STRING" | "BOOL" | "TIMESTAMP";
 
 export type Value = {
