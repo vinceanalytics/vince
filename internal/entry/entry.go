@@ -34,7 +34,7 @@ type Entry struct {
 	ExitPage       string
 	Host           string
 	ID             uint64
-	Name           string
+	Event          string
 	Os             string
 	OsVersion      string
 	Path           string
@@ -155,10 +155,10 @@ type MultiEntry struct {
 	Country        ByteArray
 	Duration       Int64Array
 	EntryPage      ByteArray
+	Event          ByteArray
 	ExitPage       ByteArray
 	Host           ByteArray
 	ID             Int64Array
-	Name           ByteArray
 	Os             ByteArray
 	OsVersion      ByteArray
 	Path           ByteArray
@@ -188,7 +188,7 @@ var multiPool = &sync.Pool{
 			ExitPage:       NewByteArray(),
 			Host:           NewByteArray(),
 			ID:             NewInt64Array(),
-			Name:           NewByteArray(),
+			Event:          NewByteArray(),
 			Os:             NewByteArray(),
 			OsVersion:      NewByteArray(),
 			Path:           NewByteArray(),
@@ -227,7 +227,7 @@ func (m *MultiEntry) Reset() {
 	m.ExitPage.Reset()
 	m.Host.Reset()
 	m.ID.Reset()
-	m.Name.Reset()
+	m.Event.Reset()
 	m.Os.Reset()
 	m.OsVersion.Reset()
 	m.Path.Reset()
@@ -256,7 +256,7 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.ExitPage.Append(e.ExitPage)
 	m.Host.Append(e.Host)
 	m.ID.Append(int64(e.ID))
-	m.Name.Append(e.Name)
+	m.Event.Append(e.Event)
 	m.Os.Append(e.Os)
 	m.OsVersion.Append(e.OsVersion)
 	m.Path.Append(e.Path)
@@ -289,7 +289,7 @@ func (m *MultiEntry) Write(f *file.Writer, r *roaring64.Bitmap) {
 	m.ExitPage.Write(next(), r, v1.Block_Index_ExitPage)
 	m.Host.Write(next(), r, v1.Block_Index_Host)
 	m.ID.Write(next())
-	m.Name.Write(next(), r, v1.Block_Index_Event)
+	m.Event.Write(next(), r, v1.Block_Index_Event)
 	m.Os.Write(next(), r, v1.Block_Index_Os)
 	m.OsVersion.Write(next(), r, v1.Block_Index_OsVersion)
 	m.Path.Write(next(), r, v1.Block_Index_Path)
@@ -317,10 +317,10 @@ func Fields() []arrow.Field {
 		{Name: "country", Type: arrow.BinaryTypes.String},
 		{Name: "duration", Type: arrow.PrimitiveTypes.Int64},
 		{Name: "entry_page", Type: arrow.BinaryTypes.String},
+		{Name: "event", Type: arrow.BinaryTypes.String},
 		{Name: "exit_page", Type: arrow.BinaryTypes.String},
 		{Name: "host", Type: arrow.BinaryTypes.String},
 		{Name: "id", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "name", Type: arrow.BinaryTypes.String},
 		{Name: "os", Type: arrow.BinaryTypes.String},
 		{Name: "os_version", Type: arrow.BinaryTypes.String},
 		{Name: "path", Type: arrow.BinaryTypes.String},
@@ -405,9 +405,9 @@ var IndexedColumnsNames = []string{
 	"city",
 	"country",
 	"entry_page",
+	"event",
 	"exit_page",
 	"host",
-	"name",
 	"os",
 	"os_version",
 	"path",

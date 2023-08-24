@@ -107,24 +107,6 @@ message Status {}
 
 message Build { string version = 1; }
 
-message Filter {
-  string column = 1;
-  Op op = 2;
-  oneof value {
-    string str = 3;
-    int64 timestamp = 4;
-    int64 duration = 5;
-  }
-  enum Op {
-    equal = 0;
-    not_equal = 1;
-    greater = 2;
-    greater_equal = 3;
-    less = 4;
-    less_equal = 5;
-  }
-}
-
 // Configuration object for vince instance
 message Config {
   // Path to the directory which is used to store metadata. This directory  is
@@ -269,4 +251,32 @@ message Query {
     repeated Colum columns = 2;
     repeated Row rows = 3;
   }
+}
+
+enum Column {
+  bounce = 0;
+  browser = 1;
+  browser_version = 2;
+  city = 3;
+  country = 4;
+  duration = 5;
+  entry_page = 6;
+  event = 7;
+  exit_page = 8;
+  host = 9;
+  id = 10;
+  os = 11;
+  os_version = 12;
+  path = 13;
+  referrer = 14;
+  referrer_source = 15;
+  region = 16;
+  screen = 17;
+  session = 18;
+  timestamp = 19;
+  utm_campaign = 20;
+  utm_content = 21;
+  utm_medium = 22;
+  utm_source = 23;
+  utm_term = 24;
 }
