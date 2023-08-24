@@ -84,3 +84,10 @@ func NewQueryValue(v any) *Query_Value {
 		panic(fmt.Sprintf("unknown value type %#T", v))
 	}
 }
+
+func (c Column) Index() int {
+	if c <= Column_timestamp {
+		return int(c)
+	}
+	return int(c - Column_browser)
+}

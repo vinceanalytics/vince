@@ -15,7 +15,6 @@ import (
 	"github.com/apache/arrow/go/v14/parquet/compress"
 	"github.com/apache/arrow/go/v14/parquet/file"
 	"github.com/apache/arrow/go/v14/parquet/schema"
-	"github.com/cespare/xxhash/v2"
 	"github.com/vinceanalytics/vince/internal/must"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"golang.org/x/exp/slices"
@@ -50,133 +49,27 @@ type Entry struct {
 	UtmTerm        string
 }
 
-type BufWrite interface {
-	Append(any)
-	Write(file.ColumnChunkWriter, *roaring64.Bitmap, v1.Column)
-	Reset()
-}
-
-type ByteArray struct {
-	hash xxhash.Digest
-	buf  []parquet.ByteArray
-}
-
-var _ BufWrite = (*ByteArray)(nil)
-
-func NewByteArray() *ByteArray {
-	return &ByteArray{
-		buf: make([]parquet.ByteArray, 0, 1<<10),
-	}
-}
-
-func (b *ByteArray) Append(a any) {
-	b.buf = append(b.buf, parquet.ByteArray(a.(string)))
-}
-
-func (b *ByteArray) Reset() {
-	b.buf = b.buf[:0]
-	b.hash.Reset()
-}
-
-func (b *ByteArray) Write(g file.ColumnChunkWriter, r *roaring64.Bitmap, field v1.Column) {
-	w := g.(*file.ByteArrayColumnChunkWriter)
-	must.Must(w.WriteBatch(b.buf, nil, nil))(
-		"failed writing int64 column to parquet",
-	)
-	w.Close()
-	if r == nil {
-		return
-	}
-	column := []byte(field.String())
-	for i := range b.buf {
-		if len(b.buf[i]) == 0 {
-			continue
-		}
-		b.hash.Reset()
-		b.hash.Write(column)
-		b.hash.Write(b.buf[i])
-		sum := b.hash.Sum64()
-		if !r.Contains(sum) {
-			r.Add(sum)
-		}
-	}
-}
-
-type Int64Array struct {
-	buf []int64
-}
-
-var _ BufWrite = (*Int64Array)(nil)
-
-func NewInt64Array() *Int64Array {
-	return &Int64Array{
-		buf: make([]int64, 0, 1<<10),
-	}
-}
-
-func (b *Int64Array) First() int64 {
-	if len(b.buf) == 0 {
-		return 0
-	}
-	return b.buf[0]
-}
-
-func (b *Int64Array) Last() int64 {
-	if len(b.buf) == 0 {
-		return 0
-	}
-	return b.buf[len(b.buf)-1]
-}
-
-func (b *Int64Array) Append(v any) {
-	b.buf = append(b.buf, v.(int64))
-}
-
-func (b *Int64Array) Reset() {
-	b.buf = b.buf[:0]
-}
-
-func (b *Int64Array) Write(g file.ColumnChunkWriter, _ *roaring64.Bitmap, _ v1.Column) {
-	w := g.(*file.Int64ColumnChunkWriter)
-	must.Must(w.WriteBatch(b.buf, nil, nil))(
-		"failed writing int64 column to parquet",
-	)
-	w.Close()
-}
-
 type MultiEntry struct {
 	mu      sync.Mutex
-	columns [v1.Column_utm_term + 1]BufWrite
+	ints    [v1.Column_timestamp + 1][]int64
+	strings [v1.Column_utm_term - v1.Column_timestamp][]parquet.ByteArray
 }
 
-func (m *MultiEntry) Boundary() (lo, hi int64) {
-	ts := m.columns[v1.Column_timestamp].(*Int64Array)
-	lo = ts.First()
-	hi = ts.Last()
-	return
+func (m *MultiEntry) IsEmpty() bool {
+	return len(m.ints[0]) == 0
 }
 
-func (m *MultiEntry) setup() {
-	for i := range m.columns {
-		col := v1.Column(i)
-		switch col {
-		case v1.Column_bounce,
-			v1.Column_duration,
-			v1.Column_id,
-			v1.Column_session,
-			v1.Column_timestamp:
-			m.columns[i] = NewInt64Array()
-		default:
-			m.columns[i] = NewByteArray()
-		}
+func (m *MultiEntry) add(name v1.Column, v any) {
+	if name <= v1.Column_timestamp {
+		m.ints[name] = append(m.ints[name], v.(int64))
+		return
 	}
+	m.strings[name.Index()] = append(m.strings[name.Index()], parquet.ByteArray(v.(string)))
 }
 
 var multiPool = &sync.Pool{
 	New: func() any {
-		var m MultiEntry
-		m.setup()
-		return &m
+		return &MultiEntry{}
 	},
 }
 
@@ -190,81 +83,87 @@ func (m *MultiEntry) Release() {
 }
 
 func (m *MultiEntry) Reset() {
-	for i := range m.columns {
-		m.columns[i].Reset()
+	for i := range m.ints {
+		m.ints[i] = m.ints[i][:0]
+	}
+	for i := range m.strings {
+		m.strings[i] = m.strings[i][:0]
 	}
 }
 
 func (m *MultiEntry) Append(e *Entry) {
 	m.mu.Lock()
-	m.columns[v1.Column_bounce].Append(e.Bounce)
-	m.columns[v1.Column_browser].Append(e.Browser)
-	m.columns[v1.Column_browser_version].Append(e.BrowserVersion)
-	m.columns[v1.Column_city].Append(e.City)
-	m.columns[v1.Column_country].Append(e.Country)
-	m.columns[v1.Column_duration].Append(int64(e.Duration))
-	m.columns[v1.Column_entry_page].Append(e.EntryPage)
-	m.columns[v1.Column_event].Append(e.Event)
-	m.columns[v1.Column_exit_page].Append(e.ExitPage)
-	m.columns[v1.Column_host].Append(e.Host)
-	m.columns[v1.Column_id].Append(int64(e.ID))
-	m.columns[v1.Column_os].Append(e.Os)
-	m.columns[v1.Column_os_version].Append(e.OsVersion)
-	m.columns[v1.Column_path].Append(e.Path)
-	m.columns[v1.Column_referrer].Append(e.Referrer)
-	m.columns[v1.Column_referrer_source].Append(e.ReferrerSource)
-	m.columns[v1.Column_region].Append(e.Region)
-	m.columns[v1.Column_screen].Append(e.Screen)
-	m.columns[v1.Column_session].Append(e.Session)
-	m.columns[v1.Column_timestamp].Append(e.Timestamp)
-	m.columns[v1.Column_utm_campaign].Append(e.UtmCampaign)
-	m.columns[v1.Column_utm_content].Append(e.UtmContent)
-	m.columns[v1.Column_utm_medium].Append(e.UtmMedium)
-	m.columns[v1.Column_utm_source].Append(e.UtmSource)
-	m.columns[v1.Column_utm_term].Append(e.UtmTerm)
+	m.add(v1.Column_bounce, e.Bounce)
+	m.add(v1.Column_browser, e.Browser)
+	m.add(v1.Column_browser_version, e.BrowserVersion)
+	m.add(v1.Column_city, e.City)
+	m.add(v1.Column_country, e.Country)
+	m.add(v1.Column_duration, int64(e.Duration))
+	m.add(v1.Column_entry_page, e.EntryPage)
+	m.add(v1.Column_event, e.Event)
+	m.add(v1.Column_exit_page, e.ExitPage)
+	m.add(v1.Column_host, e.Host)
+	m.add(v1.Column_id, int64(e.ID))
+	m.add(v1.Column_os, e.Os)
+	m.add(v1.Column_os_version, e.OsVersion)
+	m.add(v1.Column_path, e.Path)
+	m.add(v1.Column_referrer, e.Referrer)
+	m.add(v1.Column_referrer_source, e.ReferrerSource)
+	m.add(v1.Column_region, e.Region)
+	m.add(v1.Column_screen, e.Screen)
+	m.add(v1.Column_session, e.Session)
+	m.add(v1.Column_timestamp, e.Timestamp)
+	m.add(v1.Column_utm_campaign, e.UtmCampaign)
+	m.add(v1.Column_utm_content, e.UtmContent)
+	m.add(v1.Column_utm_medium, e.UtmMedium)
+	m.add(v1.Column_utm_source, e.UtmSource)
+	m.add(v1.Column_utm_term, e.UtmTerm)
 	m.mu.Unlock()
 }
 
 func (m *MultiEntry) Write(f *file.Writer, r *roaring64.Bitmap) {
 	g := f.AppendRowGroup()
-	next := func() file.ColumnChunkWriter {
-		return must.Must(g.NextColumn())("failed getting next column")
+	nextInt := func(v []int64) {
+		x := must.Must(g.NextColumn())("failed getting next column")
+		w := x.(*file.Int64ColumnChunkWriter)
+		must.Must(w.WriteBatch(v, nil, nil))(
+			"failed writing int64 column to parquet",
+		)
+		must.One(w.Close())("failed closing column writer")
 	}
-	for i := range m.columns {
-		m.columns[i].Write(next(), r, v1.Column(i))
+	nextString := func(v []parquet.ByteArray) {
+		x := must.Must(g.NextColumn())("failed getting next column")
+		w := x.(*file.ByteArrayColumnChunkWriter)
+		must.Must(w.WriteBatch(v, nil, nil))(
+			"failed writing int64 column to parquet",
+		)
+		must.One(w.Close())("failed closing column writer")
+	}
+	for i := range m.ints {
+		nextInt(m.ints[i])
+	}
+	for i := range m.strings {
+		nextString(m.strings[i])
 	}
 	must.One(g.Close())("failed closing row group writer")
 }
 
 // Fields for constructing arrow schema on Entry.
-func Fields() []arrow.Field {
-	return []arrow.Field{
-		{Name: "bounce", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "browser", Type: arrow.BinaryTypes.String},
-		{Name: "browser_version", Type: arrow.BinaryTypes.String},
-		{Name: "city", Type: arrow.BinaryTypes.String},
-		{Name: "country", Type: arrow.BinaryTypes.String},
-		{Name: "duration", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "entry_page", Type: arrow.BinaryTypes.String},
-		{Name: "event", Type: arrow.BinaryTypes.String},
-		{Name: "exit_page", Type: arrow.BinaryTypes.String},
-		{Name: "host", Type: arrow.BinaryTypes.String},
-		{Name: "id", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "os", Type: arrow.BinaryTypes.String},
-		{Name: "os_version", Type: arrow.BinaryTypes.String},
-		{Name: "path", Type: arrow.BinaryTypes.String},
-		{Name: "referrer", Type: arrow.BinaryTypes.String},
-		{Name: "referrer_source", Type: arrow.BinaryTypes.String},
-		{Name: "region", Type: arrow.BinaryTypes.String},
-		{Name: "screen", Type: arrow.BinaryTypes.String},
-		{Name: "session", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "timestamp", Type: arrow.PrimitiveTypes.Int64},
-		{Name: "utm_campaign", Type: arrow.BinaryTypes.String},
-		{Name: "utm_content", Type: arrow.BinaryTypes.String},
-		{Name: "utm_medium", Type: arrow.BinaryTypes.String},
-		{Name: "utm_source", Type: arrow.BinaryTypes.String},
-		{Name: "utm_term", Type: arrow.BinaryTypes.String},
+func Fields() (f []arrow.Field) {
+	for i := v1.Column_bounce; i <= v1.Column_utm_term; i++ {
+		if i <= v1.Column_timestamp {
+			f = append(f, arrow.Field{
+				Name: i.String(),
+				Type: arrow.PrimitiveTypes.Int64,
+			})
+			continue
+		}
+		f = append(f, arrow.Field{
+			Name: i.String(),
+			Type: arrow.BinaryTypes.String,
+		})
 	}
+	return
 }
 
 var All = Fields()
@@ -281,26 +180,23 @@ var ParquetSchema = parquetSchema()
 
 func parquetSchema() *schema.Schema {
 	f := Fields()
-	nodes := make(schema.FieldList, len(f))
-	for i := range nodes {
-		x := &f[i]
-		var logicalType schema.LogicalType
-		var typ parquet.Type
-		switch f[i].Type.ID() {
-		case arrow.STRING:
-			logicalType = schema.StringLogicalType{}
-			typ = parquet.Types.ByteArray
-
-		default:
-			typ = parquet.Types.Int64
-			logicalType = schema.NewIntLogicalType(64, true)
+	nodes := make(schema.FieldList, 0, len(f))
+	for i := v1.Column_bounce; i <= v1.Column_utm_term; i++ {
+		if i <= v1.Column_timestamp {
+			nodes = append(nodes, must.Must(
+				schema.NewPrimitiveNodeLogical(i.String(),
+					parquet.Repetitions.Required,
+					schema.NewIntLogicalType(64, true),
+					parquet.Types.Int64, -1, -1),
+			)("schema.NewPrimitiveNodeLogical"))
+			continue
 		}
-		nodes[i] = must.Must(
-			schema.NewPrimitiveNodeLogical(x.Name,
+		nodes = append(nodes, must.Must(
+			schema.NewPrimitiveNodeLogical(i.String(),
 				parquet.Repetitions.Required,
-				logicalType,
-				typ, -1, -1),
-		)("schema.NewPrimitiveNodeLogical")
+				schema.StringLogicalType{},
+				parquet.Types.ByteArray, -1, -1),
+		)("schema.NewPrimitiveNodeLogical"))
 	}
 	root := must.Must(
 		schema.NewGroupNode(parquet.DefaultRootName,
@@ -314,6 +210,7 @@ func NewFileWriter(w io.Writer) *file.Writer {
 		ParquetSchema.Root(),
 		file.WithWriterProps(
 			parquet.NewWriterProperties(
+				parquet.WithStats(true),
 				parquet.WithAllocator(Pool),
 				parquet.WithCompression(compress.Codecs.Zstd),
 				parquet.WithCompressionLevel(10),

@@ -30,18 +30,25 @@ func NewBlock(dir string) *ActiveBlock {
 
 func (a *ActiveBlock) Save(ctx context.Context) {
 	a.hosts.Range(func(key, value any) bool {
-		a.hosts.Delete(key.(string))
+		// Push new events to a new buffer while processing current buffer in the
+		// background
+		a.hosts.Store(key.(string), entry.NewMulti())
+
 		go a.save(ctx, key.(string), value.(*entry.MultiEntry), false)
 		return true
 	})
 }
 
-func (a *ActiveBlock) Shutdown(ctx context.Context) {
+func (a *ActiveBlock) Shutdown(ctx context.Context) error {
 	a.hosts.Range(func(key, value any) bool {
-		a.hosts.Delete(key.(string))
-		go a.save(ctx, key.(string), value.(*entry.MultiEntry), true)
+		a.save(ctx, key.(string), value.(*entry.MultiEntry), true)
 		return true
 	})
+	a.ctx.Range(func(key, value any) bool {
+		value.(*writeContext).commit(ctx, key.(string))
+		return true
+	})
+	return nil
 }
 
 func (a *ActiveBlock) Close() error {
@@ -64,14 +71,12 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 
 type writeContext struct {
 	id string
-	f  *os.File
 	w  *file.Writer
 	i  *v1.Block_Index
 }
 
 func (w *writeContext) commit(ctx context.Context, domain string) {
-	must.One(w.w.Close())("closing parquet file writer for ", domain)
-	must.One(w.f.Close())("closing parquet file  for ", domain)
+	must.One(w.w.Close())("closing parquet file writer ")
 	b := must.Must(proto.Marshal(w.i))("marshalling index")
 	key := keys.BlockIndex(domain, w.id)
 	db.Get(ctx).Update(func(txn *badger.Txn) error {
@@ -79,48 +84,36 @@ func (w *writeContext) commit(ctx context.Context, domain string) {
 	})
 }
 
-func (a *ActiveBlock) save(ctx context.Context, domain string, m *entry.MultiEntry, shutdown bool) {
-	defer m.Release()
+func (a *ActiveBlock) wctx(domain string) *writeContext {
 	df, ok := a.ctx.Load(domain)
 	if !ok {
 		id := ulid.Make().String()
-		x := must.Must(os.Create(filepath.Join(a.dir, id)))(
-			"failed creating active stats file", "file", id,
-		)
 		w := &writeContext{
 			id: id,
-			f:  x,
-			w:  entry.NewFileWriter(x),
+			w: entry.NewFileWriter(must.Must(os.Create(filepath.Join(a.dir, id)))(
+				"failed creating active stats file", "file", id,
+			)),
 			i: &v1.Block_Index{
 				Groups: make(map[int32]*v1.Block_Index_Bitmap),
 			},
 		}
 		a.ctx.Store(domain, w)
-		df = w
+		return w
 	}
-	w := df.(*writeContext)
+	return df.(*writeContext)
+}
+
+func (a *ActiveBlock) save(ctx context.Context, domain string, m *entry.MultiEntry, shutdown bool) {
+	defer m.Release()
+	w := a.wctx(domain)
 	r := roaring64.New()
 	m.Write(w.w, r)
-	lo, hi := m.Boundary()
-	if w.i.Min == 0 {
-		// w.i.Min tracks block wise minimum value. Timestamps are assumed to always
-		// increase. Any non zero minimum value encountered is the one which will
-		// cover this whole block
-		w.i.Min = lo
-	}
-	w.i.Max = max(w.i.Max, hi)
-
 	w.i.Groups[int32(w.w.NumRowGroups())-1] = &v1.Block_Index_Bitmap{
-		Min: lo,
-		Max: hi,
 		Bitmap: must.Must(r.MarshalBinary())(
 			"failed encoding binary",
 		),
 	}
-	size := must.Must(w.f.Stat())(
-		"failed getting stats for active file", "name", w.f.Name(),
-	).Size()
-	if size >= (1<<20) || shutdown {
+	if w.w.NumRows() >= (1<<20) || shutdown {
 		// Keep blocks sizes under 1 mb
 		a.ctx.Delete(domain)
 		w.commit(ctx, domain)

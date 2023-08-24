@@ -253,27 +253,32 @@ message Query {
   }
 }
 
+// Parquet fields used to store events. There are only two phisical data types
+// int64 and string.
+//
+// The columns are grouped by data types for easy access
 enum Column {
   bounce = 0;
-  browser = 1;
-  browser_version = 2;
-  city = 3;
-  country = 4;
-  duration = 5;
-  entry_page = 6;
-  event = 7;
-  exit_page = 8;
-  host = 9;
-  id = 10;
-  os = 11;
-  os_version = 12;
-  path = 13;
-  referrer = 14;
-  referrer_source = 15;
-  region = 16;
-  screen = 17;
-  session = 18;
-  timestamp = 19;
+  duration = 1;
+  id = 2;
+  session = 3;
+  timestamp = 4;
+
+  browser = 5;
+  browser_version = 6;
+  city = 7;
+  country = 8;
+  entry_page = 9;
+  event = 10;
+  exit_page = 11;
+  host = 12;
+  os = 13;
+  os_version = 14;
+  path = 15;
+  referrer = 16;
+  referrer_source = 17;
+  region = 18;
+  screen = 19;
   utm_campaign = 20;
   utm_content = 21;
   utm_medium = 22;

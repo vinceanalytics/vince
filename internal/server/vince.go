@@ -48,6 +48,22 @@ func (r ResourceList) Close() error {
 	return errors.Join(e...)
 }
 
+type shutdown interface {
+	Shutdown(context.Context) error
+}
+
+func (r ResourceList) CloseWithGrace(ctx context.Context) error {
+	e := make([]error, 0, len(r))
+	for i := len(r) - 1; i > 0; i-- {
+		if shut, ok := r[i].(shutdown); ok {
+			e = append(e, shut.Shutdown(ctx))
+		} else {
+			e = append(e, r[i].Close())
+		}
+	}
+	return errors.Join(e...)
+}
+
 func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList) {
 	slog.SetDefault(config.Logger(o.LogLevel))
 
@@ -120,7 +136,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 		// Ensure we close the servers.
 		<-ctx.Done()
 		slog.Debug("shutting down gracefully")
-		return resources.Close()
+		return resources.CloseWithGrace(ctx)
 	})
 	slog.Debug("started serving http traffic", slog.String("address", plainLS.Addr().String()))
 	slog.Debug("started serving mysql clients", slog.String("address", msvr.Listener.Addr().String()))
