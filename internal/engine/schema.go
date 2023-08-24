@@ -7,7 +7,6 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
-	"github.com/vinceanalytics/vince/internal/engine/core"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -52,10 +51,6 @@ func Schema(table string) (o sql.Schema) {
 	return
 }
 
-func Table(name string) *core.Table {
-	return core.NewTable(name, sql.NewPrimaryKeySchema(Schema(name)), nil)
-}
-
 type DB struct {
 	db *badger.DB
 }
@@ -73,7 +68,7 @@ func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.T
 		if err != nil {
 			return err
 		}
-		table = Table(tblName)
+		table = &Table{name: tblName, schema: Schema(tblName)}
 		ok = true
 		return nil
 	})
