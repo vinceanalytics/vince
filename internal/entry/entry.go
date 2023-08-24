@@ -57,7 +57,8 @@ type BufWrite interface {
 }
 
 type ByteArray struct {
-	buf []parquet.ByteArray
+	hash xxhash.Digest
+	buf  []parquet.ByteArray
 }
 
 var _ BufWrite = (*ByteArray)(nil)
@@ -74,6 +75,7 @@ func (b *ByteArray) Append(a any) {
 
 func (b *ByteArray) Reset() {
 	b.buf = b.buf[:0]
+	b.hash.Reset()
 }
 
 func (b *ByteArray) Write(g file.ColumnChunkWriter, r *roaring64.Bitmap, field v1.Column) {
@@ -85,16 +87,15 @@ func (b *ByteArray) Write(g file.ColumnChunkWriter, r *roaring64.Bitmap, field v
 	if r == nil {
 		return
 	}
-	h := xxhash.New()
 	column := []byte(field.String())
 	for i := range b.buf {
 		if len(b.buf[i]) == 0 {
 			continue
 		}
-		h.Reset()
-		h.Write(column)
-		h.Write(b.buf[i])
-		sum := h.Sum64()
+		b.hash.Reset()
+		b.hash.Write(column)
+		b.hash.Write(b.buf[i])
+		sum := b.hash.Sum64()
 		if !r.Contains(sum) {
 			r.Add(sum)
 		}
