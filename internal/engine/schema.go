@@ -1,7 +1,7 @@
 package engine
 
 import (
-	"github.com/apache/arrow/go/v13/arrow"
+	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
 	"github.com/vinceanalytics/vince/internal/engine/core"

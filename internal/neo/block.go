@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/apache/arrow/go/v13/parquet/file"
+	"github.com/apache/arrow/go/v14/parquet/file"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/db"
