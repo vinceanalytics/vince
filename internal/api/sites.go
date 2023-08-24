@@ -7,7 +7,6 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dlclark/regexp2"
 	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/engine"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
@@ -40,7 +39,6 @@ func ListSites(w http.ResponseWriter, r *http.Request) {
 var domain = regexp2.MustCompile(`^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$`, regexp2.ECMAScript)
 
 func Create(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
 	var b v1.Site_CreateOptions
 	err := pj.UnmarshalDefault(&b, r.Body)
 	if err != nil || b.Domain == "" {
@@ -77,12 +75,10 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(w, http.StatusInternalServerError)
 		return
 	}
-	engine.Get(ctx).Add(site.Domain)
 	render.JSON(w, http.StatusOK, &site)
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
 	var b v1.Site_DeleteOptions
 	err := pj.UnmarshalDefault(&b, r.Body)
 	if err != nil || b.Domain == "" {
@@ -111,6 +107,5 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(w, http.StatusInternalServerError)
 		return
 	}
-	engine.Get(ctx).Remove(site.Domain)
 	render.JSON(w, http.StatusOK, &site)
 }

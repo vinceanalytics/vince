@@ -3,36 +3,27 @@ package engine
 import (
 	"context"
 
+	"github.com/dgraph-io/badger/v4"
 	sqle "github.com/dolthub/go-mysql-server"
+	"github.com/vinceanalytics/vince/internal/db"
 )
 
 type Engine struct {
-	DB *RadOnly
 	*sqle.Engine
 }
 
-func New() *Engine {
-	db := Database("vince")
+func New(db *badger.DB) *Engine {
 	return &Engine{
 		Engine: sqle.NewDefault(&Provider{
-			base: db,
+			db: db,
 		}),
-		DB: db,
 	}
-}
-
-func (e *Engine) Add(name string) {
-	e.DB.AddTable(name, Table(name))
-}
-
-func (e *Engine) Remove(name string) {
-	e.DB.DropTable(nil, name)
 }
 
 type engineKey struct{}
 
 func Open(ctx context.Context) (context.Context, *Engine) {
-	e := New()
+	e := New(db.Get(ctx))
 	return context.WithValue(ctx, engineKey{}, e), e
 }
 
