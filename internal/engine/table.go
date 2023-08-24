@@ -7,11 +7,13 @@ import (
 )
 
 type Table struct {
-	name   string
-	schema sql.Schema
+	name    string
+	schema  sql.Schema
+	columns []string
 }
 
 var _ sql.Table = (*Table)(nil)
+var _ sql.ProjectedTable = (*Table)(nil)
 
 func (t *Table) Name() string {
 	return t.name
@@ -35,6 +37,14 @@ func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
 
 func (t *Table) PartitionRows(*sql.Context, sql.Partition) (sql.RowIter, error) {
 	return &rowIter{}, nil
+}
+
+func (t *Table) WithProjections(colNames []string) sql.Table {
+	return &Table{name: t.name, schema: t.schema, columns: colNames}
+}
+
+func (t *Table) Projections() []string {
+	return t.columns
 }
 
 type Partition struct {
