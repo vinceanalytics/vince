@@ -83,11 +83,7 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, m *entry.MultiEnt
 	defer m.Release()
 	df, ok := a.ctx.Load(domain)
 	if !ok {
-		if shutdown {
-			return
-		}
 		id := ulid.Make().String()
-
 		x := must.Must(os.Create(filepath.Join(a.dir, id)))(
 			"failed creating active stats file", "file", id,
 		)
@@ -105,15 +101,18 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, m *entry.MultiEnt
 	w := df.(*writeContext)
 	r := roaring64.New()
 	m.Write(w.w, r)
+	lo, hi := m.Boundary()
 	if w.i.Min == 0 {
-		w.i.Min = m.Timestamp.First()
+		// w.i.Min tracks block wise minimum value. Timestamps are assumed to always
+		// increase. Any non zero minimum value encountered is the one which will
+		// cover this whole block
+		w.i.Min = lo
 	}
-	w.i.Min = min(w.i.Min, m.Timestamp.First())
-	w.i.Max = max(w.i.Max, m.Timestamp.Last())
+	w.i.Max = max(w.i.Max, hi)
 
 	w.i.Groups[int32(w.w.NumRowGroups())-1] = &v1.Block_Index_Bitmap{
-		Min: m.Timestamp.First(),
-		Max: m.Timestamp.Last(),
+		Min: lo,
+		Max: hi,
 		Bitmap: must.Must(r.MarshalBinary())(
 			"failed encoding binary",
 		),

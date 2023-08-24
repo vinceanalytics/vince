@@ -50,40 +50,35 @@ type Entry struct {
 	UtmTerm        string
 }
 
+type BufWrite interface {
+	Append(any)
+	Write(file.ColumnChunkWriter, *roaring64.Bitmap, v1.Column)
+	Reset()
+}
+
 type ByteArray struct {
-	pos int
 	buf []parquet.ByteArray
 }
 
-func NewByteArray() ByteArray {
-	return ByteArray{
-		buf: make([]parquet.ByteArray, 128),
+var _ BufWrite = (*ByteArray)(nil)
+
+func NewByteArray() *ByteArray {
+	return &ByteArray{
+		buf: make([]parquet.ByteArray, 0, 1<<10),
 	}
 }
 
-func (b *ByteArray) Append(s string) {
-	b.grow()
-	b.buf[b.pos] = append(b.buf[b.pos], []byte(s)...)
-	b.pos++
-}
-
-func (b *ByteArray) grow() {
-	if b.pos < len(b.buf) {
-		return
-	}
-	b.buf = slices.Grow(b.buf, len(b.buf)*2)
-	b.buf = b.buf[:cap(b.buf)]
+func (b *ByteArray) Append(a any) {
+	b.buf = append(b.buf, parquet.ByteArray(a.(string)))
 }
 
 func (b *ByteArray) Reset() {
-	for i := range b.buf {
-		b.buf[i] = b.buf[i][:0]
-	}
+	b.buf = b.buf[:0]
 }
 
-func (b *ByteArray) Write(g file.ColumnChunkWriter, r *roaring64.Bitmap, field v1.Block_Index_Column) {
+func (b *ByteArray) Write(g file.ColumnChunkWriter, r *roaring64.Bitmap, field v1.Column) {
 	w := g.(*file.ByteArrayColumnChunkWriter)
-	must.Must(w.WriteBatch(b.buf[:b.pos], nil, nil))(
+	must.Must(w.WriteBatch(b.buf, nil, nil))(
 		"failed writing int64 column to parquet",
 	)
 	w.Close()
@@ -92,7 +87,7 @@ func (b *ByteArray) Write(g file.ColumnChunkWriter, r *roaring64.Bitmap, field v
 	}
 	h := xxhash.New()
 	column := []byte(field.String())
-	for i := range b.buf[:b.pos] {
+	for i := range b.buf {
 		if len(b.buf[i]) == 0 {
 			continue
 		}
@@ -110,9 +105,11 @@ type Int64Array struct {
 	buf []int64
 }
 
-func NewInt64Array() Int64Array {
-	return Int64Array{
-		buf: make([]int64, 0, 128),
+var _ BufWrite = (*Int64Array)(nil)
+
+func NewInt64Array() *Int64Array {
+	return &Int64Array{
+		buf: make([]int64, 0, 1<<10),
 	}
 }
 
@@ -130,15 +127,15 @@ func (b *Int64Array) Last() int64 {
 	return b.buf[len(b.buf)-1]
 }
 
-func (b *Int64Array) Append(v int64) {
-	b.buf = append(b.buf, v)
+func (b *Int64Array) Append(v any) {
+	b.buf = append(b.buf, v.(int64))
 }
 
 func (b *Int64Array) Reset() {
 	b.buf = b.buf[:0]
 }
 
-func (b *Int64Array) Write(g file.ColumnChunkWriter) {
+func (b *Int64Array) Write(g file.ColumnChunkWriter, _ *roaring64.Bitmap, _ v1.Column) {
 	w := g.(*file.Int64ColumnChunkWriter)
 	must.Must(w.WriteBatch(b.buf, nil, nil))(
 		"failed writing int64 column to parquet",
@@ -147,63 +144,38 @@ func (b *Int64Array) Write(g file.ColumnChunkWriter) {
 }
 
 type MultiEntry struct {
-	mu             sync.RWMutex
-	Bounce         Int64Array
-	Browser        ByteArray
-	BrowserVersion ByteArray
-	City           ByteArray
-	Country        ByteArray
-	Duration       Int64Array
-	EntryPage      ByteArray
-	Event          ByteArray
-	ExitPage       ByteArray
-	Host           ByteArray
-	ID             Int64Array
-	Os             ByteArray
-	OsVersion      ByteArray
-	Path           ByteArray
-	Referrer       ByteArray
-	ReferrerSource ByteArray
-	Region         ByteArray
-	Screen         ByteArray
-	Session        Int64Array
-	Timestamp      Int64Array
-	UtmCampaign    ByteArray
-	UtmContent     ByteArray
-	UtmMedium      ByteArray
-	UtmSource      ByteArray
-	UtmTerm        ByteArray
+	mu      sync.Mutex
+	columns [v1.Column_utm_term + 1]BufWrite
+}
+
+func (m *MultiEntry) Boundary() (lo, hi int64) {
+	ts := m.columns[v1.Column_timestamp].(*Int64Array)
+	lo = ts.First()
+	hi = ts.Last()
+	return
+}
+
+func (m *MultiEntry) setup() {
+	for i := range m.columns {
+		col := v1.Column(i)
+		switch col {
+		case v1.Column_bounce,
+			v1.Column_duration,
+			v1.Column_id,
+			v1.Column_session,
+			v1.Column_timestamp:
+			m.columns[i] = NewInt64Array()
+		default:
+			m.columns[i] = NewByteArray()
+		}
+	}
 }
 
 var multiPool = &sync.Pool{
 	New: func() any {
-		return &MultiEntry{
-			Bounce:         NewInt64Array(),
-			Browser:        NewByteArray(),
-			BrowserVersion: NewByteArray(),
-			City:           NewByteArray(),
-			Country:        NewByteArray(),
-			Duration:       NewInt64Array(),
-			EntryPage:      NewByteArray(),
-			ExitPage:       NewByteArray(),
-			Host:           NewByteArray(),
-			ID:             NewInt64Array(),
-			Event:          NewByteArray(),
-			Os:             NewByteArray(),
-			OsVersion:      NewByteArray(),
-			Path:           NewByteArray(),
-			Referrer:       NewByteArray(),
-			ReferrerSource: NewByteArray(),
-			Region:         NewByteArray(),
-			Screen:         NewByteArray(),
-			Session:        NewInt64Array(),
-			Timestamp:      NewInt64Array(),
-			UtmCampaign:    NewByteArray(),
-			UtmContent:     NewByteArray(),
-			UtmMedium:      NewByteArray(),
-			UtmSource:      NewByteArray(),
-			UtmTerm:        NewByteArray(),
-		}
+		var m MultiEntry
+		m.setup()
+		return &m
 	},
 }
 
@@ -217,60 +189,38 @@ func (m *MultiEntry) Release() {
 }
 
 func (m *MultiEntry) Reset() {
-	m.Bounce.Reset()
-	m.Browser.Reset()
-	m.BrowserVersion.Reset()
-	m.City.Reset()
-	m.Country.Reset()
-	m.Duration.Reset()
-	m.EntryPage.Reset()
-	m.ExitPage.Reset()
-	m.Host.Reset()
-	m.ID.Reset()
-	m.Event.Reset()
-	m.Os.Reset()
-	m.OsVersion.Reset()
-	m.Path.Reset()
-	m.Referrer.Reset()
-	m.ReferrerSource.Reset()
-	m.Region.Reset()
-	m.Screen.Reset()
-	m.Session.Reset()
-	m.Timestamp.Reset()
-	m.UtmCampaign.Reset()
-	m.UtmContent.Reset()
-	m.UtmMedium.Reset()
-	m.UtmSource.Reset()
-	m.UtmTerm.Reset()
+	for i := range m.columns {
+		m.columns[i].Reset()
+	}
 }
 
 func (m *MultiEntry) Append(e *Entry) {
 	m.mu.Lock()
-	m.Bounce.Append(e.Bounce)
-	m.Browser.Append(e.Browser)
-	m.BrowserVersion.Append(e.BrowserVersion)
-	m.City.Append(e.City)
-	m.Country.Append(e.Country)
-	m.Duration.Append(int64(e.Duration))
-	m.EntryPage.Append(e.EntryPage)
-	m.ExitPage.Append(e.ExitPage)
-	m.Host.Append(e.Host)
-	m.ID.Append(int64(e.ID))
-	m.Event.Append(e.Event)
-	m.Os.Append(e.Os)
-	m.OsVersion.Append(e.OsVersion)
-	m.Path.Append(e.Path)
-	m.Referrer.Append(e.Referrer)
-	m.ReferrerSource.Append(e.ReferrerSource)
-	m.Region.Append(e.Region)
-	m.Screen.Append(e.Screen)
-	m.Session.Append(e.Session)
-	m.Timestamp.Append(e.Timestamp)
-	m.UtmCampaign.Append(e.UtmCampaign)
-	m.UtmContent.Append(e.UtmContent)
-	m.UtmMedium.Append(e.UtmMedium)
-	m.UtmSource.Append(e.UtmSource)
-	m.UtmTerm.Append(e.UtmTerm)
+	m.columns[v1.Column_bounce].Append(e.Bounce)
+	m.columns[v1.Column_browser].Append(e.Browser)
+	m.columns[v1.Column_browser_version].Append(e.BrowserVersion)
+	m.columns[v1.Column_city].Append(e.City)
+	m.columns[v1.Column_country].Append(e.Country)
+	m.columns[v1.Column_duration].Append(int64(e.Duration))
+	m.columns[v1.Column_entry_page].Append(e.EntryPage)
+	m.columns[v1.Column_event].Append(e.Event)
+	m.columns[v1.Column_exit_page].Append(e.ExitPage)
+	m.columns[v1.Column_host].Append(e.Host)
+	m.columns[v1.Column_id].Append(int64(e.ID))
+	m.columns[v1.Column_os].Append(e.Os)
+	m.columns[v1.Column_os_version].Append(e.OsVersion)
+	m.columns[v1.Column_path].Append(e.Path)
+	m.columns[v1.Column_referrer].Append(e.Referrer)
+	m.columns[v1.Column_referrer_source].Append(e.ReferrerSource)
+	m.columns[v1.Column_region].Append(e.Region)
+	m.columns[v1.Column_screen].Append(e.Screen)
+	m.columns[v1.Column_session].Append(e.Session)
+	m.columns[v1.Column_timestamp].Append(e.Timestamp)
+	m.columns[v1.Column_utm_campaign].Append(e.UtmCampaign)
+	m.columns[v1.Column_utm_content].Append(e.UtmContent)
+	m.columns[v1.Column_utm_medium].Append(e.UtmMedium)
+	m.columns[v1.Column_utm_source].Append(e.UtmSource)
+	m.columns[v1.Column_utm_term].Append(e.UtmTerm)
 	m.mu.Unlock()
 }
 
@@ -279,31 +229,9 @@ func (m *MultiEntry) Write(f *file.Writer, r *roaring64.Bitmap) {
 	next := func() file.ColumnChunkWriter {
 		return must.Must(g.NextColumn())("failed getting next column")
 	}
-	m.Bounce.Write(next())
-	m.Browser.Write(next(), r, v1.Block_Index_Browser)
-	m.BrowserVersion.Write(next(), r, v1.Block_Index_BrowserVersion)
-	m.City.Write(next(), r, v1.Block_Index_City)
-	m.Country.Write(next(), r, v1.Block_Index_Country)
-	m.Duration.Write(next())
-	m.EntryPage.Write(next(), r, v1.Block_Index_EntryPage)
-	m.ExitPage.Write(next(), r, v1.Block_Index_ExitPage)
-	m.Host.Write(next(), r, v1.Block_Index_Host)
-	m.ID.Write(next())
-	m.Event.Write(next(), r, v1.Block_Index_Event)
-	m.Os.Write(next(), r, v1.Block_Index_Os)
-	m.OsVersion.Write(next(), r, v1.Block_Index_OsVersion)
-	m.Path.Write(next(), r, v1.Block_Index_Path)
-	m.Referrer.Write(next(), r, v1.Block_Index_Referrer)
-	m.ReferrerSource.Write(next(), r, v1.Block_Index_ReferrerSource)
-	m.Region.Write(next(), r, v1.Block_Index_Region)
-	m.Screen.Write(next(), r, v1.Block_Index_Screen)
-	m.Session.Write(next())
-	m.Timestamp.Write(next())
-	m.UtmCampaign.Write(next(), r, v1.Block_Index_UtmCampaign)
-	m.UtmContent.Write(next(), r, v1.Block_Index_UtmContent)
-	m.UtmMedium.Write(next(), r, v1.Block_Index_UtmMedium)
-	m.UtmSource.Write(next(), r, v1.Block_Index_UtmSource)
-	m.UtmTerm.Write(next(), r, v1.Block_Index_UtmTerm)
+	for i := range m.columns {
+		m.columns[i].Write(next(), r, v1.Column(i))
+	}
 	must.One(g.Close())("failed closing row group writer")
 }
 
@@ -399,47 +327,7 @@ func NewFileReader(r parquet.ReaderAtSeeker) *file.Reader {
 	)("failed creating new parquet file reader")
 }
 
-var IndexedColumnsNames = []string{
-	"browser",
-	"browser_version",
-	"city",
-	"country",
-	"entry_page",
-	"event",
-	"exit_page",
-	"host",
-	"os",
-	"os_version",
-	"path",
-	"referrer",
-	"referrer_source",
-	"region",
-	"screen",
-	"utm_campaign",
-	"utm_content",
-	"utm_medium",
-	"utm_source",
-	"utm_term",
-}
-
-// Maps column index to column name of all indexed columns
-var IndexedColumns = func() (m map[int]string) {
-	m = make(map[int]string)
-	for _, n := range IndexedColumnsNames {
-		m[Index[n]] = n
-	}
-	return
-}()
-
 var Schema = arrow.NewSchema(All, nil)
-
-func Select(names ...string) *arrow.Schema {
-	o := make([]arrow.Field, len(names))
-	for i := range o {
-		o[i] = Schema.Field(Index[names[i]])
-	}
-	return arrow.NewSchema(o, nil)
-}
 
 var Pool = memory.NewGoAllocator()
 
