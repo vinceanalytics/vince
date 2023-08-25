@@ -252,3 +252,5 @@ enum Column {
   utm_source = 23;
   utm_term = 24;
 }
+
+message Notice {}
