@@ -111,6 +111,67 @@ message Config {
   string tls_key_file = 9;
 
   int64 events_buffer_size = 10;
+
+  repeated Notifier notifiers = 11;
+
+  message Notifier {
+    string name = 1;
+    oneof provider {
+      Email email = 2;
+      Webhook webhook = 3;
+    }
+  }
+
+  message Email {
+    string to = 1;
+    string from = 2;
+    string hello = 3;
+    string host_port = 4;
+    string auth_username = 5;
+    string auth_password = 6;
+    string auth_secret = 7;
+    string auth_identity = 8;
+    map<string, string> headers = 9;
+    string html = 10;
+    string text = 11;
+    bool require_tls = 12;
+    HTTP.TLSConfig tls_config = 13;
+  }
+
+  message Webhook {
+    HTTP http_config = 1;
+    string url = 2;
+  }
+
+  message HTTP {
+    BasicAuth basic_auth = 1;
+    Authorization authorization = 2;
+    OAuth2 pauth2 = 3;
+    TLSConfig tls_config = 4;
+
+    message BasicAuth {
+      string username = 1;
+      string password = 2;
+    }
+    message Authorization {
+      string type = 1;
+      string credentials = 2;
+    }
+    message OAuth2 {
+      string client_id = 1;
+      string client_secret = 2;
+      repeated string client_scopes = 3;
+      string token_url = 4;
+      map<string, string> endpoint_params = 5;
+      TLSConfig tls_config = 6;
+    }
+
+    message TLSConfig {
+      string key_file = 1;
+      string cert_file = 2;
+      bool insecure_skip_verify = 3;
+    }
+  }
 }
 
 message Account {
