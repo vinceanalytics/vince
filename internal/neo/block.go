@@ -1,6 +1,7 @@
 package neo
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -14,8 +15,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
-	"google.golang.org/protobuf/proto"
 )
 
 type ActiveBlock struct {
@@ -72,15 +71,15 @@ func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
 type writeContext struct {
 	id string
 	w  *file.Writer
-	i  *v1.Block_Index
 }
 
 func (w *writeContext) commit(ctx context.Context, domain string) {
 	must.One(w.w.Close())("closing parquet file writer ")
-	b := must.Must(proto.Marshal(w.i))("marshalling index")
-	key := keys.BlockIndex(domain, w.id)
+	key := keys.BlockMeta(domain, w.id)
+	var b bytes.Buffer
+	must.Must(w.w.FileMetadata.WriteTo(&b, nil))("failed serializing block metadata")
 	db.Get(ctx).Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(key), b)
+		return txn.Set([]byte(key), b.Bytes())
 	})
 }
 
@@ -93,9 +92,6 @@ func (a *ActiveBlock) wctx(domain string) *writeContext {
 			w: entry.NewFileWriter(must.Must(os.Create(filepath.Join(a.dir, id)))(
 				"failed creating active stats file", "file", id,
 			)),
-			i: &v1.Block_Index{
-				Groups: make(map[int32]*v1.Block_Index_Bitmap),
-			},
 		}
 		a.ctx.Store(domain, w)
 		return w
@@ -108,11 +104,6 @@ func (a *ActiveBlock) save(ctx context.Context, domain string, m *entry.MultiEnt
 	w := a.wctx(domain)
 	r := roaring64.New()
 	m.Write(w.w, r)
-	w.i.Groups[int32(w.w.NumRowGroups())-1] = &v1.Block_Index_Bitmap{
-		Bitmap: must.Must(r.MarshalBinary())(
-			"failed encoding binary",
-		),
-	}
 	if w.w.NumRows() >= (1<<20) || shutdown {
 		// Keep blocks sizes under 1 mb
 		a.ctx.Delete(domain)

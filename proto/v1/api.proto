@@ -60,47 +60,6 @@ message Block {
       INDEX = 1;
     }
   }
-
-  message Index {
-    map<int32, Bitmap> groups = 1;
-    int64 min = 2;
-    int64 max = 3;
-
-    message Bitmap {
-      bytes bitmap = 1;
-      int64 min = 2;
-      int64 max = 3;
-    }
-
-    enum Column {
-      Browser = 0;
-      BrowserVersion = 1;
-      City = 2;
-      Country = 3;
-      Domain = 4;
-      EntryPage = 5;
-      ExitPage = 6;
-      Host = 7;
-      Event = 8;
-      Os = 9;
-      OsVersion = 10;
-      Path = 11;
-      Referrer = 12;
-      ReferrerSource = 13;
-      Region = 14;
-      Screen = 15;
-      UtmCampaign = 16;
-      UtmContent = 17;
-      UtmMedium = 18;
-      UtmSource = 19;
-      UtmTerm = 20;
-    }
-
-    message BloomKey {
-      Column column = 1;
-      string value = 2;
-    }
-  }
 }
 
 message Status {}
