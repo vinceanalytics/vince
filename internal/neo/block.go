@@ -8,10 +8,12 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v14/parquet"
 	"github.com/apache/arrow/go/v14/parquet/file"
+	"github.com/apache/arrow/go/v14/parquet/metadata"
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
@@ -21,6 +23,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ActiveBlock struct {
@@ -117,11 +120,26 @@ func (w *writeContext) commit(ctx context.Context) {
 	must.One(w.w.Close())("closing parquet file writer ")
 	idx := v1.Block_Index{
 		RowGroupBitmap: make([][]byte, 0, len(w.blooms)),
+		TimeRange:      make([]*v1.Block_Index_Range, 0, len(w.blooms)),
 	}
-	for _, r := range w.blooms {
+	meta := w.w.FileMetadata.RowGroups
+	for i, r := range w.blooms {
 		idx.RowGroupBitmap = append(idx.RowGroupBitmap,
 			must.Must(r.MarshalBinary())("failed serializing bitmap"),
 		)
+		g := meta[i].Columns[v1.Column_timestamp.Index()].MetaData.Statistics
+		idx.TimeRange = append(idx.TimeRange, &v1.Block_Index_Range{
+			Min: timestamppb.New(
+				time.UnixMilli(
+					metadata.GetStatValue(parquet.Types.Int64, g.MinValue).(int64),
+				),
+			),
+			Max: timestamppb.New(
+				time.UnixMilli(
+					metadata.GetStatValue(parquet.Types.Int64, g.MaxValue).(int64),
+				),
+			),
+		})
 	}
 	index := must.Must(proto.Marshal(&idx))("failed serializing index")
 
