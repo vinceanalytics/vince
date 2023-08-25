@@ -79,7 +79,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 
 	ctx, dba := db.Open(ctx, o.MetaPath)
 	resources = append(resources, dba)
-	ctx, ts := timeseries.Open(ctx, o.BlocksPath)
+	ctx, ts := timeseries.Open(ctx, o.BlocksPath, int(o.GetEventsBufferSize()))
 	resources = append(resources, ts)
 	ctx, eng := engine.Open(ctx)
 	resources = append(resources, eng)
@@ -109,11 +109,6 @@ func Run(ctx context.Context, resources ResourceList) error {
 	defer cancel()
 	var g errgroup.Group
 	{
-		o := config.Get(ctx)
-		g.Go(func() error {
-			worker.SaveBuffers(ctx, o.SyncInterval)
-			return nil
-		})
 		g.Go(func() error {
 			worker.ProcessRequests(ctx)
 			return nil

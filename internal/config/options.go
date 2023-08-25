@@ -18,7 +18,8 @@ const (
 )
 
 var (
-	DefaultSyncInterval = durationpb.New(time.Minute)
+	DefaultSyncInterval     = durationpb.New(time.Minute)
+	DefaultEventsBufferSize = 10 << 10
 )
 
 type Options = v1.Config
@@ -31,6 +32,7 @@ func Defaults() *v1.Config {
 		BlocksPath:         BLOCKS_PATH,
 		SyncInterval:       DefaultSyncInterval,
 		MysqlListenAddress: ":3306",
+		EventsBufferSize:   int64(DefaultEventsBufferSize),
 	}
 	return o
 }
@@ -117,6 +119,13 @@ func Flags(o *Options) []cli.Flag {
 			Usage:       "Expose /debug/pprof endpoint",
 			Destination: &o.EnableProfile,
 			EnvVars:     []string{"VINCE_ENABLE_PROFILE"},
+		},
+		&cli.Int64Flag{
+			Name:        "events-buffer-size",
+			Usage:       "Number of events to keep in memory before saving",
+			Value:       int64(DefaultEventsBufferSize),
+			Destination: &o.EventsBufferSize,
+			EnvVars:     []string{"VINCE_EVENTS_BUFFER_SIZE"},
 		},
 	}
 }

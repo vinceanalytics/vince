@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/apache/arrow/go/v14/arrow/array"
 	"github.com/apache/arrow/go/v14/arrow/compute"
@@ -50,13 +49,8 @@ type Entry struct {
 }
 
 type MultiEntry struct {
-	mu      sync.Mutex
 	ints    [v1.Column_timestamp + 1][]int64
 	strings [v1.Column_utm_term - v1.Column_timestamp][]parquet.ByteArray
-}
-
-func (m *MultiEntry) IsEmpty() bool {
-	return len(m.ints[0]) == 0
 }
 
 func (m *MultiEntry) add(name v1.Column, v any) {
@@ -91,8 +85,11 @@ func (m *MultiEntry) Reset() {
 	}
 }
 
+func (m *MultiEntry) Len() int {
+	return len(m.ints[0])
+}
+
 func (m *MultiEntry) Append(e *Entry) {
-	m.mu.Lock()
 	m.add(v1.Column_bounce, e.Bounce)
 	m.add(v1.Column_browser, e.Browser)
 	m.add(v1.Column_browser_version, e.BrowserVersion)
@@ -118,10 +115,12 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.add(v1.Column_utm_medium, e.UtmMedium)
 	m.add(v1.Column_utm_source, e.UtmSource)
 	m.add(v1.Column_utm_term, e.UtmTerm)
-	m.mu.Unlock()
 }
 
-func (m *MultiEntry) Write(f *file.Writer, r *roaring64.Bitmap) {
+func (m *MultiEntry) Write(f *file.Writer) {
+	if m.Len() == 0 {
+		return
+	}
 	g := f.AppendRowGroup()
 	nextInt := func(v []int64) {
 		x := must.Must(g.NextColumn())("failed getting next column")
@@ -146,6 +145,7 @@ func (m *MultiEntry) Write(f *file.Writer, r *roaring64.Bitmap) {
 		nextString(m.strings[i])
 	}
 	must.One(g.Close())("failed closing row group writer")
+	return
 }
 
 // Fields for constructing arrow schema on Entry.

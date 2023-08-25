@@ -103,6 +103,8 @@ message Config {
 
   string tls_cert_file = 8;
   string tls_key_file = 9;
+
+  int64 events_buffer_size = 10;
 }
 
 message Account {
