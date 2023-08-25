@@ -36,8 +36,6 @@ message Site {
   message List { repeated Site list = 1; }
 }
 
-message Metadata { repeated Block blocks = 1; }
-
 // Defines metadata about a single parquet file.
 message Block {
   // a ULID string identifier for this block.
@@ -59,6 +57,13 @@ message Block {
       METADATA = 0;
       INDEX = 1;
     }
+  }
+
+  message Index {
+
+    // A list of bitmaps each belonging to a row group. This allows us to select
+    // row groups that might contain relevant data based on indexed columns.
+    repeated bytes row_group_bitmap = 1;
   }
 }
 

@@ -3,18 +3,24 @@ package neo
 import (
 	"bytes"
 	"context"
+	"errors"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/RoaringBitmap/roaring/roaring64"
+	"github.com/apache/arrow/go/v14/parquet"
 	"github.com/apache/arrow/go/v14/parquet/file"
+	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
+	v1 "github.com/vinceanalytics/vince/proto/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 type ActiveBlock struct {
@@ -61,6 +67,19 @@ type writeContext struct {
 	m          *entry.MultiEntry
 	w          *file.Writer
 	log        *slog.Logger
+	h          xxhash.Digest
+	blooms     []*roaring64.Bitmap
+}
+
+var bitmapPool = &sync.Pool{New: func() any { return roaring64.New() }}
+
+func bloom() *roaring64.Bitmap {
+	return bitmapPool.Get().(*roaring64.Bitmap)
+}
+
+func releaseBloom(r *roaring64.Bitmap) {
+	r.Clear()
+	bitmapPool.Put(r)
 }
 
 func (w *writeContext) append(ctx context.Context, e *entry.Entry) {
@@ -75,7 +94,19 @@ func (w *writeContext) append(ctx context.Context, e *entry.Entry) {
 }
 
 func (w *writeContext) save(ctx context.Context) {
-	w.m.Write(w.w)
+	b := []byte{0}
+	r := bloom()
+	w.m.Write(w.w, func(c v1.Column, ba parquet.ByteArray) {
+		if len(ba) == 0 {
+			return
+		}
+		b[0] = byte(c)
+		w.h.Reset()
+		w.h.Write(b)
+		w.h.Write(ba)
+		r.CheckedAdd(w.h.Sum64())
+	})
+	w.blooms = append(w.blooms, r)
 	w.log.Debug("saved events to block",
 		slog.Int("rows", w.w.NumRows()),
 		slog.Int("groups", w.w.NumRowGroups()),
@@ -84,20 +115,40 @@ func (w *writeContext) save(ctx context.Context) {
 
 func (w *writeContext) commit(ctx context.Context) {
 	must.One(w.w.Close())("closing parquet file writer ")
-	key := keys.BlockMeta(w.domain, w.id)
+	idx := v1.Block_Index{
+		RowGroupBitmap: make([][]byte, 0, len(w.blooms)),
+	}
+	for _, r := range w.blooms {
+		idx.RowGroupBitmap = append(idx.RowGroupBitmap,
+			must.Must(r.MarshalBinary())("failed serializing bitmap"),
+		)
+	}
+	index := must.Must(proto.Marshal(&idx))("failed serializing index")
+
+	metaKey := keys.BlockMeta(w.domain, w.id)
+	indexKey := keys.BlockIndex(w.domain, w.id)
+
 	var b bytes.Buffer
 	must.Must(w.w.FileMetadata.WriteTo(&b, nil))("failed serializing block metadata")
-	db.Get(ctx).Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(key), b.Bytes())
+	err := db.Get(ctx).Update(func(txn *badger.Txn) error {
+		return errors.Join(
+			txn.Set([]byte(metaKey), b.Bytes()),
+			txn.Set([]byte(indexKey), index),
+		)
 	})
+	must.One(err)("failed saving block metadata to meta storage")
 	w.log.Debug("commit block",
 		slog.Int("rows", w.w.NumRows()),
 		slog.Int("groups", w.w.NumRowGroups()),
 	)
-
 	// we make sure we release the events buffer so we can reuse it
 	w.m.Release()
 	w.m = nil
+	for i := range w.blooms {
+		releaseBloom(w.blooms[i])
+		w.blooms[i] = nil
+	}
+	w.blooms = nil
 }
 
 func (a *ActiveBlock) wctx(domain string) *writeContext {

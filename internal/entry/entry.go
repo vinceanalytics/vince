@@ -117,7 +117,7 @@ func (m *MultiEntry) Append(e *Entry) {
 	m.add(v1.Column_utm_term, e.UtmTerm)
 }
 
-func (m *MultiEntry) Write(f *file.Writer) {
+func (m *MultiEntry) Write(f *file.Writer, hash func(v1.Column, parquet.ByteArray)) {
 	if m.Len() == 0 {
 		return
 	}
@@ -130,7 +130,7 @@ func (m *MultiEntry) Write(f *file.Writer) {
 		)
 		must.One(w.Close())("failed closing column writer")
 	}
-	nextString := func(v []parquet.ByteArray) {
+	nextString := func(c v1.Column, v []parquet.ByteArray) {
 		x := must.Must(g.NextColumn())("failed getting next column")
 		w := x.(*file.ByteArrayColumnChunkWriter)
 		must.Must(w.WriteBatch(v, nil, nil))(
@@ -142,10 +142,9 @@ func (m *MultiEntry) Write(f *file.Writer) {
 		nextInt(m.ints[i])
 	}
 	for i := range m.strings {
-		nextString(m.strings[i])
+		nextString(v1.Column(i+len(m.ints)), m.strings[i])
 	}
 	must.One(g.Close())("failed closing row group writer")
-	return
 }
 
 // Fields for constructing arrow schema on Entry.
