@@ -7,18 +7,15 @@ import (
 	"log/slog"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
-	"github.com/vinceanalytics/vince/internal/events"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/remoteip"
-	"github.com/vinceanalytics/vince/internal/timeseries"
+	"github.com/vinceanalytics/vince/internal/worker"
 )
 
 // Events accepts events payloads from vince client script.
 func Events(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	xlg := slog.Default().WithGroup("api").
 		With("path", r.URL.Path, "method", r.Method)
@@ -39,12 +36,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	e, err := events.Parse(req, core.Now(r.Context()))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	timeseries.Register(ctx, e)
+	worker.Submit(ctx, req)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }

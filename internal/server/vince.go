@@ -83,6 +83,8 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 	resources = append(resources, ts)
 	ctx, eng := engine.Open(ctx)
 	resources = append(resources, eng)
+	ctx, requests := worker.SetupRequestsBuffer(ctx)
+	resources = append(resources, requests)
 
 	// configure http server
 	httpSvr := &http.Server{
@@ -110,6 +112,10 @@ func Run(ctx context.Context, resources ResourceList) error {
 		o := config.Get(ctx)
 		g.Go(func() error {
 			worker.SaveBuffers(ctx, o.SyncInterval)
+			return nil
+		})
+		g.Go(func() error {
+			worker.ProcessRequests(ctx)
 			return nil
 		})
 	}
