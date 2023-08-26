@@ -11,7 +11,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/v8s/control"
 	"github.com/vinceanalytics/vince/internal/v8s/k8s"
-	"github.com/vinceanalytics/vince/internal/version"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -36,7 +35,7 @@ func CMD() *cli.Command {
 			&cli.StringFlag{
 				Name:        "default-image",
 				Usage:       "Default image of vince to use",
-				Value:       fmt.Sprintf("ghcr.io/vinceanalytics/vince:%s", string(version.BuildVersion)),
+				Value:       "ghcr.io/vinceanalytics/vince:latest",
 				Destination: &o.Image,
 				EnvVars:     []string{"V8S_VINCE_IMAGE"},
 			},
