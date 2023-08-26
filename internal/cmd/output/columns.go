@@ -2,9 +2,12 @@ package output
 
 import (
 	"database/sql"
-	"slices"
+	"fmt"
+	"time"
 
+	sqld "github.com/dolthub/go-mysql-server/sql"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Build(rows *sql.Rows) (*v1.Query_Result, error) {
@@ -21,16 +24,20 @@ func Build(rows *sql.Rows) (*v1.Query_Result, error) {
 		}
 	}
 
-	scans := make([]*v1.Query_Value, len(columns))
+	row := make([]*v1.Query_Value, len(columns))
 	clone := make([]any, len(columns))
-	setValue := func(i int, v any) {
-		scans[i] = v1.NewQueryValue(v)
-	}
 
 	for i := range clone {
-		clone[i] = &Any{
-			i:  i,
-			cb: setValue,
+		switch r.Columns[i].DataType {
+		case v1.Query_Colum_NUMBER:
+			var v int64
+			clone[i] = &v
+		case v1.Query_Colum_STRING:
+			var v string
+			clone[i] = &v
+		case v1.Query_Colum_TIMESTAMP:
+			var v Time
+			clone[i] = &v
 		}
 	}
 
@@ -39,21 +46,62 @@ func Build(rows *sql.Rows) (*v1.Query_Result, error) {
 		if err != nil {
 			return nil, err
 		}
+		row = row[:0]
+		for i := range clone {
+			switch e := clone[i].(type) {
+			case *string:
+				row = append(row, &v1.Query_Value{
+					Value: &v1.Query_Value_String_{
+						String_: *e,
+					},
+				})
+			case *int64:
+				row = append(row, &v1.Query_Value{
+					Value: &v1.Query_Value_Number{
+						Number: *e,
+					},
+				})
+			case *Time:
+				row = append(row, &v1.Query_Value{
+					Value: &v1.Query_Value_Timestamp{
+						Timestamp: timestamppb.New(
+							e.Time,
+						),
+					},
+				})
+			}
+		}
 		r.Rows = append(r.Rows, &v1.Query_Row{
-			Values: slices.Clone(scans),
+			Values: row,
 		})
 	}
 	return r, rows.Err()
 }
 
-type Any struct {
-	i  int
-	cb func(int, any)
+type Time struct {
+	Time time.Time
 }
 
-var _ sql.Scanner = (*Any)(nil)
+var _ sql.Scanner = (*Time)(nil)
 
-func (a *Any) Scan(v any) error {
-	a.cb(a.i, v)
+func (t *Time) Scan(src any) error {
+	switch e := src.(type) {
+	case time.Time:
+		t.Time = e
+	case []byte:
+		var err error
+		t.Time, err = time.Parse(sqld.TimestampDatetimeLayout, string(e))
+		if err != nil {
+			return err
+		}
+	case string:
+		var err error
+		t.Time, err = time.Parse(sqld.TimestampDatetimeLayout, e)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("can't convert %T to time.Time", e)
+	}
 	return nil
 }

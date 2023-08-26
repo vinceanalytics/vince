@@ -3,56 +3,56 @@ package engine
 import (
 	"bytes"
 
-	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
-	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
-	"github.com/vinceanalytics/vince/internal/must"
+	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
+
+var Columns = func() (o []v1.Column) {
+	for i := v1.Column_bounce; i <= v1.Column_utm_term; i++ {
+		o = append(o, i)
+	}
+	return
+}()
 
 // Creates a schema for a site table. Each site is treated as an individual read
 // only table.
 //
 // Physically timestamps are stored as int64, but we expose this a DateTime.
-func Schema(table string) (o sql.Schema) {
-	for i := range entry.All {
-		f := &entry.All[i]
-		switch f.Name {
-		case "timestamp":
+func Schema(table string, columns []v1.Column) (o sql.Schema) {
+	for _, i := range columns {
+		if i <= v1.Column_timestamp {
+			if i == v1.Column_timestamp {
+				o = append(o, &sql.Column{
+					Name:     i.String(),
+					Type:     types.Timestamp,
+					Nullable: false,
+					Source:   table,
+				})
+				continue
+			}
 			o = append(o, &sql.Column{
-				Name:     f.Name,
-				Type:     types.Datetime,
+				Name:     i.String(),
+				Type:     types.Int64,
 				Nullable: false,
 				Source:   table,
 			})
-		default:
-			switch f.Type.ID() {
-			case arrow.INT64:
-				o = append(o, &sql.Column{
-					Name:     f.Name,
-					Type:     types.Int64,
-					Nullable: false,
-					Source:   table,
-				})
-			case arrow.STRING:
-				o = append(o, &sql.Column{
-					Name:     f.Name,
-					Type:     types.Text,
-					Nullable: false,
-					Source:   table,
-				})
-			default:
-				must.Assert(false)("unsupported field type", f.Type.ID())
-			}
+			continue
 		}
+		o = append(o, &sql.Column{
+			Name:     i.String(),
+			Type:     types.Text,
+			Nullable: false,
+			Source:   table,
+		})
 	}
 	return
 }
 
 type DB struct {
-	db *badger.DB
+	Context
 }
 
 var _ sql.Database = (*DB)(nil)
@@ -62,13 +62,15 @@ func (DB) Name() string {
 }
 
 func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.Table, ok bool, err error) {
-	db.db.View(func(txn *badger.Txn) error {
+	db.DB.View(func(txn *badger.Txn) error {
 		key := keys.Site(tblName)
 		_, err := txn.Get([]byte(key))
 		if err != nil {
 			return err
 		}
-		table = &Table{name: tblName, schema: Schema(tblName)}
+		table = &Table{Context: db.Context,
+			name:   tblName,
+			schema: Schema(tblName, Columns)}
 		ok = true
 		return nil
 	})
@@ -76,7 +78,7 @@ func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.T
 }
 
 func (db *DB) GetTableNames(ctx *sql.Context) (names []string, err error) {
-	db.db.View(func(txn *badger.Txn) error {
+	db.DB.View(func(txn *badger.Txn) error {
 		prefix := keys.Site("") + "/"
 		o := badger.DefaultIteratorOptions
 		o.PrefetchValues = false
@@ -98,18 +100,18 @@ func (DB) IsReadOnly() bool {
 var _ sql.DatabaseProvider = (*Provider)(nil)
 
 type Provider struct {
-	db *badger.DB
+	Context
 }
 
 func (p *Provider) Database(_ *sql.Context, name string) (sql.Database, error) {
 	if name != "vince" {
 		return nil, sql.ErrDatabaseNotFound.New(name)
 	}
-	return &DB{db: p.db}, nil
+	return &DB{Context: p.Context}, nil
 }
 
 func (p *Provider) AllDatabases(_ *sql.Context) []sql.Database {
-	return []sql.Database{&DB{db: p.db}}
+	return []sql.Database{&DB{Context: p.Context}}
 }
 
 func (p *Provider) HasDatabase(_ *sql.Context, name string) bool {

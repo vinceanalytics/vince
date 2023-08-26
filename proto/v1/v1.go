@@ -81,6 +81,7 @@ func NewQueryValue(v any) *Query_Value {
 			},
 		}
 	default:
+		fmt.Printf("======= %v %#T\n", v, v)
 		panic(fmt.Sprintf("unknown value type %#T", v))
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/apache/arrow/go/v14/arrow"
-	"github.com/apache/arrow/go/v14/arrow/array"
 	"github.com/apache/arrow/go/v14/arrow/compute"
 	"github.com/apache/arrow/go/v14/arrow/memory"
 	"github.com/apache/arrow/go/v14/parquet"
@@ -16,7 +15,6 @@ import (
 	"github.com/apache/arrow/go/v14/parquet/schema"
 	"github.com/vinceanalytics/vince/internal/must"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
-	"golang.org/x/exp/slices"
 )
 
 type Entry struct {
@@ -167,14 +165,6 @@ func Fields() (f []arrow.Field) {
 
 var All = Fields()
 
-var Index = func() (m map[string]int) {
-	m = make(map[string]int)
-	for i := range All {
-		m[All[i].Name] = i
-	}
-	return
-}()
-
 var ParquetSchema = parquetSchema()
 
 func parquetSchema() *schema.Schema {
@@ -272,69 +262,105 @@ func Context(ctx ...context.Context) context.Context {
 	return compute.WithAllocator(context.Background(), Pool)
 }
 
-type Reader struct {
-	strings []parquet.ByteArray
-	ints    []int64
-	b       *array.RecordBuilder
+type colReader interface {
+	Read(int64, file.ColumnChunkReader)
+	ReadResult
 }
 
-func NewReader() *Reader {
-	return readerPool.Get().(*Reader)
+type stringReader struct {
+	col    v1.Column
+	values []parquet.ByteArray
 }
 
-var readerPool = &sync.Pool{
-	New: func() any {
-		return &Reader{
-			strings: make([]parquet.ByteArray, 1<<10),
-			ints:    make([]int64, 1<<10),
-			b:       array.NewRecordBuilder(Pool, Schema),
+var _ colReader = (*stringReader)(nil)
+
+func (r *stringReader) Read(size int64, rd file.ColumnChunkReader) {
+	x := rd.(*file.ByteArrayColumnChunkReader)
+	v := make([]parquet.ByteArray, size)
+	x.ReadBatch(size, v, nil, nil)
+	r.values = append(r.values, v...)
+}
+
+func (r *stringReader) Value(i int) any {
+	if i < len(r.values) {
+		return r.values[i]
+	}
+	return nil
+}
+
+func (r *stringReader) Len() int {
+	return len(r.values)
+}
+
+func (r *stringReader) Col() v1.Column {
+	return r.col
+}
+
+type int64Reader struct {
+	col    v1.Column
+	values []int64
+}
+
+var _ colReader = (*stringReader)(nil)
+
+func (r *int64Reader) Read(size int64, rd file.ColumnChunkReader) {
+	x := rd.(*file.Int64ColumnChunkReader)
+	v := make([]int64, size)
+	x.ReadBatch(size, v, nil, nil)
+	r.values = append(r.values, v...)
+}
+
+func (r *int64Reader) Value(i int) any {
+	if i < len(r.values) {
+		return r.values[i]
+	}
+	return nil
+}
+
+func (r *int64Reader) Len() int {
+	return len(r.values)
+}
+
+func (r *int64Reader) Col() v1.Column {
+	return r.col
+}
+
+type ReadResult interface {
+	Col() v1.Column
+	Len() int
+	Value(int) any
+}
+
+func ReadColumns(r *file.Reader, columns []v1.Column, groups []int) (o []ReadResult) {
+	if len(columns) == 0 {
+		columns = make([]v1.Column, 0, v1.Column_utm_term+1)
+		for i := v1.Column_bounce; i <= v1.Column_utm_term; i++ {
+			columns = append(columns, i)
 		}
-	},
-}
-
-func (b *Reader) Release() {
-	b.strings = b.strings[:0]
-	b.ints = b.ints[:0]
-	readerPool.Put(b)
-}
-
-func (b *Reader) Read(r *file.Reader, groups []int) {
-	x := b.b.Schema()
-	if groups == nil {
-		groups = make([]int, r.NumRowGroups())
-		for i := range groups {
-			groups[i] = i
+	}
+	cr := make([]colReader, 0, len(columns))
+	for _, i := range columns {
+		if i <= v1.Column_timestamp {
+			cr = append(cr, &int64Reader{
+				col: i,
+			})
+			continue
 		}
+		cr = append(cr, &stringReader{
+			col: i,
+		})
 	}
 	for i := range groups {
 		g := r.RowGroup(groups[i])
-		n := g.NumRows()
-		for f := 0; f < x.NumFields(); f++ {
-			b.read(f, n, must.Must(g.Column(f))("failed getting a RowGroup column"))
+		size := g.NumRows()
+		for n := range columns {
+			rd := must.Must(g.Column(int(columns[n])))("failed getting column from row group")
+			cr[n].Read(size, rd)
 		}
 	}
-}
-
-func (b *Reader) read(f int, rows int64, chunk file.ColumnChunkReader) {
-	switch e := b.b.Field(f).(type) {
-	case *array.StringBuilder:
-		r := chunk.(*file.ByteArrayColumnChunkReader)
-		b.strings = slices.Grow(b.strings, int(rows))[:rows]
-		r.ReadBatch(rows, b.strings, nil, nil)
-		e.Reserve(int(rows))
-		for i := range b.strings {
-			e.UnsafeAppend(b.strings[i])
-		}
-	case *array.Int64Builder:
-		r := chunk.(*file.Int64ColumnChunkReader)
-		b.ints = slices.Grow(b.ints, int(rows))[:rows]
-		r.ReadBatch(rows, b.ints, nil, nil)
-		e.AppendValues(b.ints, nil)
-	default:
-		must.AssertFMT(false)("unsupported arrow builder type %T", e)
+	o = make([]ReadResult, len(cr))
+	for i := range cr {
+		o[i] = cr[i]
 	}
-}
-
-func (b *Reader) Record() arrow.Record {
-	return b.b.NewRecord()
+	return
 }

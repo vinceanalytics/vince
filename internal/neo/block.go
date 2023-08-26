@@ -169,6 +169,16 @@ func (w *writeContext) commit(ctx context.Context) {
 	w.blooms = nil
 }
 
+func (a *ActiveBlock) ReadBlock(id ulid.ULID, f func(parquet.ReaderAtSeeker)) {
+	o, err := os.Open(filepath.Join(a.dir, id.String()))
+	if err != nil {
+		slog.Error("failed opening block", "id", id.String())
+		return
+	}
+	f(o)
+	o.Close()
+}
+
 func (a *ActiveBlock) wctx(domain string) *writeContext {
 	df, ok := a.ctx.Load(domain)
 	if !ok {
