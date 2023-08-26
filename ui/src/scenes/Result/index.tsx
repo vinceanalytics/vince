@@ -1,4 +1,4 @@
-import { Box } from "@primer/react"
+import { Box, Label, Text } from "@primer/react"
 import { TableIcon, GraphIcon, DownloadIcon } from "@primer/octicons-react";
 import { DataTable, UnderlineNav } from '@primer/react/drafts'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
@@ -71,18 +71,41 @@ const Grid = ({ result }: { result: QueryResult }) => {
         }), { id })
     ))) : [];
     return (
-        <Box marginTop={1} height={"100%"}>
+        <Box marginTop={1} overflow={"auto"}>
             {result && <DataTable
                 columns={result.columns.map(({ name }, idx) => ({
                     id: idx.toString(),
                     header: name,
+                    renderCell(data) {
+                        //@ts-ignore
+                        const value = data[name] as Value;
+                        let format = ''
+                        if (value.number) format = value.number.toString();
+                        if (value.double) format = value.double.toString();
+                        if (value.bool) format = value.bool.toString();
+                        if (value.string) format = value.string;
+                        if (value.timestamp) format = value.timestamp;
+                        return (<Text>{format}</Text>)
+                    },
                 }))}
+                //@ts-ignore
                 data={data}
             />}
         </Box>
     )
 }
 
+const ValueResult = (result: Value) => {
+    return (
+        <>
+            {result.number && <Text>{result.number}</Text>}
+            {result.double && <Text>{result.double}</Text>}
+            {result.string && <Text>{result.string}</Text>}
+            {result.bool && <Text>{result.bool}</Text>}
+            {result.timestamp && <Text>{result.timestamp}</Text>}
+        </>
+    )
+}
 
 const labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
