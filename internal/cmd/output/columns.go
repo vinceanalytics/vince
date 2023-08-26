@@ -32,6 +32,12 @@ func Build(rows *sql.Rows) (*v1.Query_Result, error) {
 		case v1.Query_Colum_NUMBER:
 			var v int64
 			clone[i] = &v
+		case v1.Query_Colum_DOUBLE:
+			var v float64
+			clone[i] = &v
+		case v1.Query_Colum_BOOL:
+			var v bool
+			clone[i] = &v
 		case v1.Query_Colum_STRING:
 			var v string
 			clone[i] = &v
@@ -59,6 +65,18 @@ func Build(rows *sql.Rows) (*v1.Query_Result, error) {
 				row = append(row, &v1.Query_Value{
 					Value: &v1.Query_Value_Number{
 						Number: *e,
+					},
+				})
+			case *float64:
+				row = append(row, &v1.Query_Value{
+					Value: &v1.Query_Value_Double{
+						Double: *e,
+					},
+				})
+			case *bool:
+				row = append(row, &v1.Query_Value{
+					Value: &v1.Query_Value_Bool{
+						Bool: *e,
 					},
 				})
 			case *Time:
