@@ -95,17 +95,6 @@ const Grid = ({ result }: { result: QueryResult }) => {
     )
 }
 
-const ValueResult = (result: Value) => {
-    return (
-        <>
-            {result.number && <Text>{result.number}</Text>}
-            {result.double && <Text>{result.double}</Text>}
-            {result.string && <Text>{result.string}</Text>}
-            {result.bool && <Text>{result.bool}</Text>}
-            {result.timestamp && <Text>{result.timestamp}</Text>}
-        </>
-    )
-}
 
 const labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
