@@ -28,6 +28,8 @@ complete -c vince -n '__fish_seen_subcommand_from serve' -f -l blocks-path -r -d
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l sync-interval -r -d 'window for buffering timeseries in memory before saving them'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l enable-profile -d 'Expose /debug/pprof endpoint'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l events-buffer-size -r -d 'Number of events to keep in memory before saving'
+complete -c vince -n '__fish_seen_subcommand_from serve' -f -l server-id -r -d 'unique id of this server in a cluster'
+complete -c vince -n '__fish_seen_subcommand_from serve' -f -l raft-listen-address -r -d 'network address for cluster communication'
 complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l help -s h -d 'show help'
 complete -r -c vince -n '__fish_vince_no_subcommand' -a 'k8s' -d 'kubernetes controller for vince - The Cloud Native Web Analytics Platform.'
 complete -c vince -n '__fish_seen_subcommand_from k8s' -f -l master-url -r -d 'The address of the Kubernetes API server. Overrides any value in kubeconfig.'

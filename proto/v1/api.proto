@@ -118,7 +118,7 @@ message Config {
   repeated Notifier notifiers = 11;
 
   string server_id = 12;
-  string raft_listem_address = 13;
+  string raft_listen_address = 13;
   Cluster cluster = 14;
 
   message Cluster {

@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/vince/internal/ng"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
@@ -33,6 +34,8 @@ func Defaults() *v1.Config {
 		SyncInterval:       DefaultSyncInterval,
 		MysqlListenAddress: ":3306",
 		EventsBufferSize:   int64(DefaultEventsBufferSize),
+		ServerId:           ng.Name(),
+		RaftListenAddress:  ":6800",
 	}
 	return o
 }
@@ -126,6 +129,19 @@ func Flags(o *Options) []cli.Flag {
 			Value:       int64(DefaultEventsBufferSize),
 			Destination: &o.EventsBufferSize,
 			EnvVars:     []string{"VINCE_EVENTS_BUFFER_SIZE"},
+		},
+		&cli.StringFlag{
+			Name:        "server-id",
+			Usage:       "unique id of this server in a cluster",
+			Destination: &o.ServerId,
+			EnvVars:     []string{"VINCE_SERVER_ID"},
+		},
+		&cli.StringFlag{
+			Name:        "raft-listen-address",
+			Usage:       "network address for cluster communication",
+			Value:       ":6800",
+			Destination: &o.RaftListenAddress,
+			EnvVars:     []string{"VINCE_RAFT_LISTEN_ADDRESS"},
 		},
 	}
 }
