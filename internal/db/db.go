@@ -97,3 +97,7 @@ func (cb *Observer) Changed(kv *badger.KVList) error {
 	}
 	return nil
 }
+
+type Provider interface {
+	With(func(db *badger.DB) error) error
+}

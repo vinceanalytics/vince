@@ -62,3 +62,41 @@ func Token(token string) string {
 		Hash: int64(h.Sum64()),
 	}).Parts()...)
 }
+
+func RaftLog(id int64) string {
+	return path.Join((&v1.Raft_Log_Key{
+		Store: &v1.StoreKey{
+			Prefix: v1.StorePrefix_RAFT_LOGS,
+		},
+		Index: id,
+	}).Parts()...)
+}
+
+func RaftStable(key []byte) string {
+	return path.Join((&v1.Raft_Stable_Key{
+		Store: &v1.StoreKey{
+			Prefix: v1.StorePrefix_RAFT_STABLE,
+		},
+		Key: key,
+	}).Parts()...)
+}
+
+func RaftSnapshotData(id string) string {
+	return path.Join((&v1.Raft_Snapshot_Key{
+		Store: &v1.StoreKey{
+			Prefix: v1.StorePrefix_RAFT_SNAPSHOT,
+		},
+		Mode: v1.Raft_Snapshot_Key_DATA,
+		Id:   id,
+	}).Parts()...)
+}
+
+func RaftSnapshotMeta(id string) string {
+	return path.Join((&v1.Raft_Snapshot_Key{
+		Store: &v1.StoreKey{
+			Prefix: v1.StorePrefix_RAFT_SNAPSHOT,
+		},
+		Mode: v1.Raft_Snapshot_Key_META,
+		Id:   id,
+	}).Parts()...)
+}

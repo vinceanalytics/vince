@@ -13,6 +13,9 @@ enum StorePrefix {
   ALERTS = 2;
   ACCOUNT = 3;
   TOKEN = 4;
+  RAFT_LOGS = 5;
+  RAFT_STABLE = 6;
+  RAFT_SNAPSHOT = 7;
 }
 
 message StoreKey {
@@ -315,3 +318,75 @@ enum Column {
 }
 
 message Notice {}
+
+message Raft {
+  message Log {
+    uint64 index = 1;
+    uint64 term = 2;
+    Type type = 3;
+    bytes data = 4;
+    bytes extensions = 5;
+    google.protobuf.Timestamp appended_at = 6;
+
+    enum Type {
+      Command = 0;
+      Noop = 1;
+      AddPeerDeprecated = 2;
+      RemovePeerDeprecated = 3;
+      Barrier = 4;
+      Configuration = 5;
+    }
+    message Key {
+      StoreKey store = 1;
+      int64 index = 2;
+    }
+  }
+  message Stable {
+    message Key {
+      StoreKey store = 1;
+      bytes key = 2;
+    }
+  }
+
+  message Snapshot {
+    Version version = 1;
+    string id = 2;
+    uint64 index = 3;
+    uint64 term = 4;
+    bytes peers = 5;
+    Config config = 6;
+    uint64 config_index = 7;
+    int64 size = 8;
+
+    enum Version {
+      Min = 0;
+      Max = 1;
+    }
+
+    message Key {
+      StoreKey store = 1;
+      Mode mode = 2;
+      string id = 3;
+
+      enum Mode {
+        META = 0;
+        DATA = 1;
+      }
+    }
+  }
+  message Config {
+    repeated Server servers = 1;
+
+    message Server {
+      Suffrage suffrage = 1;
+      string id = 2;
+      string address = 3;
+
+      enum Suffrage {
+        Voter = 0;
+        Nonvoter = 1;
+        Staging = 2;
+      }
+    }
+  }
+}

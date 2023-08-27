@@ -27,11 +27,14 @@ const (
 type StorePrefix int32
 
 const (
-	StorePrefix_SITES   StorePrefix = 0
-	StorePrefix_BLOCKS  StorePrefix = 1
-	StorePrefix_ALERTS  StorePrefix = 2
-	StorePrefix_ACCOUNT StorePrefix = 3
-	StorePrefix_TOKEN   StorePrefix = 4
+	StorePrefix_SITES         StorePrefix = 0
+	StorePrefix_BLOCKS        StorePrefix = 1
+	StorePrefix_ALERTS        StorePrefix = 2
+	StorePrefix_ACCOUNT       StorePrefix = 3
+	StorePrefix_TOKEN         StorePrefix = 4
+	StorePrefix_RAFT_LOGS     StorePrefix = 5
+	StorePrefix_RAFT_STABLE   StorePrefix = 6
+	StorePrefix_RAFT_SNAPSHOT StorePrefix = 7
 )
 
 // Enum value maps for StorePrefix.
@@ -42,13 +45,19 @@ var (
 		2: "ALERTS",
 		3: "ACCOUNT",
 		4: "TOKEN",
+		5: "RAFT_LOGS",
+		6: "RAFT_STABLE",
+		7: "RAFT_SNAPSHOT",
 	}
 	StorePrefix_value = map[string]int32{
-		"SITES":   0,
-		"BLOCKS":  1,
-		"ALERTS":  2,
-		"ACCOUNT": 3,
-		"TOKEN":   4,
+		"SITES":         0,
+		"BLOCKS":        1,
+		"ALERTS":        2,
+		"ACCOUNT":       3,
+		"TOKEN":         4,
+		"RAFT_LOGS":     5,
+		"RAFT_STABLE":   6,
+		"RAFT_SNAPSHOT": 7,
 	}
 )
 
@@ -346,6 +355,205 @@ func (x Query_Colum_DataType) Number() protoreflect.EnumNumber {
 // Deprecated: Use Query_Colum_DataType.Descriptor instead.
 func (Query_Colum_DataType) EnumDescriptor() ([]byte, []int) {
 	return file_api_proto_rawDescGZIP(), []int{10, 3, 0}
+}
+
+type Raft_Log_Type int32
+
+const (
+	Raft_Log_Command              Raft_Log_Type = 0
+	Raft_Log_Noop                 Raft_Log_Type = 1
+	Raft_Log_AddPeerDeprecated    Raft_Log_Type = 2
+	Raft_Log_RemovePeerDeprecated Raft_Log_Type = 3
+	Raft_Log_Barrier              Raft_Log_Type = 4
+	Raft_Log_Configuration        Raft_Log_Type = 5
+)
+
+// Enum value maps for Raft_Log_Type.
+var (
+	Raft_Log_Type_name = map[int32]string{
+		0: "Command",
+		1: "Noop",
+		2: "AddPeerDeprecated",
+		3: "RemovePeerDeprecated",
+		4: "Barrier",
+		5: "Configuration",
+	}
+	Raft_Log_Type_value = map[string]int32{
+		"Command":              0,
+		"Noop":                 1,
+		"AddPeerDeprecated":    2,
+		"RemovePeerDeprecated": 3,
+		"Barrier":              4,
+		"Configuration":        5,
+	}
+)
+
+func (x Raft_Log_Type) Enum() *Raft_Log_Type {
+	p := new(Raft_Log_Type)
+	*p = x
+	return p
+}
+
+func (x Raft_Log_Type) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Raft_Log_Type) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_proto_enumTypes[5].Descriptor()
+}
+
+func (Raft_Log_Type) Type() protoreflect.EnumType {
+	return &file_api_proto_enumTypes[5]
+}
+
+func (x Raft_Log_Type) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Raft_Log_Type.Descriptor instead.
+func (Raft_Log_Type) EnumDescriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 0, 0}
+}
+
+type Raft_Snapshot_Version int32
+
+const (
+	Raft_Snapshot_Min Raft_Snapshot_Version = 0
+	Raft_Snapshot_Max Raft_Snapshot_Version = 1
+)
+
+// Enum value maps for Raft_Snapshot_Version.
+var (
+	Raft_Snapshot_Version_name = map[int32]string{
+		0: "Min",
+		1: "Max",
+	}
+	Raft_Snapshot_Version_value = map[string]int32{
+		"Min": 0,
+		"Max": 1,
+	}
+)
+
+func (x Raft_Snapshot_Version) Enum() *Raft_Snapshot_Version {
+	p := new(Raft_Snapshot_Version)
+	*p = x
+	return p
+}
+
+func (x Raft_Snapshot_Version) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Raft_Snapshot_Version) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_proto_enumTypes[6].Descriptor()
+}
+
+func (Raft_Snapshot_Version) Type() protoreflect.EnumType {
+	return &file_api_proto_enumTypes[6]
+}
+
+func (x Raft_Snapshot_Version) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Raft_Snapshot_Version.Descriptor instead.
+func (Raft_Snapshot_Version) EnumDescriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 2, 0}
+}
+
+type Raft_Snapshot_Key_Mode int32
+
+const (
+	Raft_Snapshot_Key_META Raft_Snapshot_Key_Mode = 0
+	Raft_Snapshot_Key_DATA Raft_Snapshot_Key_Mode = 1
+)
+
+// Enum value maps for Raft_Snapshot_Key_Mode.
+var (
+	Raft_Snapshot_Key_Mode_name = map[int32]string{
+		0: "META",
+		1: "DATA",
+	}
+	Raft_Snapshot_Key_Mode_value = map[string]int32{
+		"META": 0,
+		"DATA": 1,
+	}
+)
+
+func (x Raft_Snapshot_Key_Mode) Enum() *Raft_Snapshot_Key_Mode {
+	p := new(Raft_Snapshot_Key_Mode)
+	*p = x
+	return p
+}
+
+func (x Raft_Snapshot_Key_Mode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Raft_Snapshot_Key_Mode) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_proto_enumTypes[7].Descriptor()
+}
+
+func (Raft_Snapshot_Key_Mode) Type() protoreflect.EnumType {
+	return &file_api_proto_enumTypes[7]
+}
+
+func (x Raft_Snapshot_Key_Mode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Raft_Snapshot_Key_Mode.Descriptor instead.
+func (Raft_Snapshot_Key_Mode) EnumDescriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 2, 0, 0}
+}
+
+type Raft_Config_Server_Suffrage int32
+
+const (
+	Raft_Config_Server_Voter    Raft_Config_Server_Suffrage = 0
+	Raft_Config_Server_Nonvoter Raft_Config_Server_Suffrage = 1
+	Raft_Config_Server_Staging  Raft_Config_Server_Suffrage = 2
+)
+
+// Enum value maps for Raft_Config_Server_Suffrage.
+var (
+	Raft_Config_Server_Suffrage_name = map[int32]string{
+		0: "Voter",
+		1: "Nonvoter",
+		2: "Staging",
+	}
+	Raft_Config_Server_Suffrage_value = map[string]int32{
+		"Voter":    0,
+		"Nonvoter": 1,
+		"Staging":  2,
+	}
+)
+
+func (x Raft_Config_Server_Suffrage) Enum() *Raft_Config_Server_Suffrage {
+	p := new(Raft_Config_Server_Suffrage)
+	*p = x
+	return p
+}
+
+func (x Raft_Config_Server_Suffrage) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Raft_Config_Server_Suffrage) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_proto_enumTypes[8].Descriptor()
+}
+
+func (Raft_Config_Server_Suffrage) Type() protoreflect.EnumType {
+	return &file_api_proto_enumTypes[8]
+}
+
+func (x Raft_Config_Server_Suffrage) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Raft_Config_Server_Suffrage.Descriptor instead.
+func (Raft_Config_Server_Suffrage) EnumDescriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 3, 0, 0}
 }
 
 type StoreKey struct {
@@ -1018,6 +1226,44 @@ func (*Notice) Descriptor() ([]byte, []int) {
 	return file_api_proto_rawDescGZIP(), []int{11}
 }
 
+type Raft struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Raft) Reset() {
+	*x = Raft{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft) ProtoMessage() {}
+
+func (x *Raft) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft.ProtoReflect.Descriptor instead.
+func (*Raft) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12}
+}
+
 type Site_Key struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1030,7 +1276,7 @@ type Site_Key struct {
 func (x *Site_Key) Reset() {
 	*x = Site_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[12]
+		mi := &file_api_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1043,7 +1289,7 @@ func (x *Site_Key) String() string {
 func (*Site_Key) ProtoMessage() {}
 
 func (x *Site_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[12]
+	mi := &file_api_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1082,7 +1328,7 @@ type Site_GetOptions struct {
 func (x *Site_GetOptions) Reset() {
 	*x = Site_GetOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[13]
+		mi := &file_api_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1095,7 +1341,7 @@ func (x *Site_GetOptions) String() string {
 func (*Site_GetOptions) ProtoMessage() {}
 
 func (x *Site_GetOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[13]
+	mi := &file_api_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1122,7 +1368,7 @@ type Site_CreateOptions struct {
 func (x *Site_CreateOptions) Reset() {
 	*x = Site_CreateOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[14]
+		mi := &file_api_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1135,7 +1381,7 @@ func (x *Site_CreateOptions) String() string {
 func (*Site_CreateOptions) ProtoMessage() {}
 
 func (x *Site_CreateOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[14]
+	mi := &file_api_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1167,7 +1413,7 @@ type Site_ListOptions struct {
 func (x *Site_ListOptions) Reset() {
 	*x = Site_ListOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[15]
+		mi := &file_api_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1180,7 +1426,7 @@ func (x *Site_ListOptions) String() string {
 func (*Site_ListOptions) ProtoMessage() {}
 
 func (x *Site_ListOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[15]
+	mi := &file_api_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1207,7 +1453,7 @@ type Site_DeleteOptions struct {
 func (x *Site_DeleteOptions) Reset() {
 	*x = Site_DeleteOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[16]
+		mi := &file_api_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1220,7 +1466,7 @@ func (x *Site_DeleteOptions) String() string {
 func (*Site_DeleteOptions) ProtoMessage() {}
 
 func (x *Site_DeleteOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[16]
+	mi := &file_api_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1254,7 +1500,7 @@ type Site_List struct {
 func (x *Site_List) Reset() {
 	*x = Site_List{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[17]
+		mi := &file_api_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1267,7 +1513,7 @@ func (x *Site_List) String() string {
 func (*Site_List) ProtoMessage() {}
 
 func (x *Site_List) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[17]
+	mi := &file_api_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1304,7 +1550,7 @@ type Block_Key struct {
 func (x *Block_Key) Reset() {
 	*x = Block_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[18]
+		mi := &file_api_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1317,7 +1563,7 @@ func (x *Block_Key) String() string {
 func (*Block_Key) ProtoMessage() {}
 
 func (x *Block_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[18]
+	mi := &file_api_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1376,7 +1622,7 @@ type Block_Index struct {
 func (x *Block_Index) Reset() {
 	*x = Block_Index{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[19]
+		mi := &file_api_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1389,7 +1635,7 @@ func (x *Block_Index) String() string {
 func (*Block_Index) ProtoMessage() {}
 
 func (x *Block_Index) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[19]
+	mi := &file_api_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1433,7 +1679,7 @@ type Block_Index_Range struct {
 func (x *Block_Index_Range) Reset() {
 	*x = Block_Index_Range{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[20]
+		mi := &file_api_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1446,7 +1692,7 @@ func (x *Block_Index_Range) String() string {
 func (*Block_Index_Range) ProtoMessage() {}
 
 func (x *Block_Index_Range) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[20]
+	mi := &file_api_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1492,7 +1738,7 @@ type Config_Notifier struct {
 func (x *Config_Notifier) Reset() {
 	*x = Config_Notifier{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[21]
+		mi := &file_api_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1505,7 +1751,7 @@ func (x *Config_Notifier) String() string {
 func (*Config_Notifier) ProtoMessage() {}
 
 func (x *Config_Notifier) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[21]
+	mi := &file_api_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1588,7 +1834,7 @@ type Config_Email struct {
 func (x *Config_Email) Reset() {
 	*x = Config_Email{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[22]
+		mi := &file_api_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1601,7 +1847,7 @@ func (x *Config_Email) String() string {
 func (*Config_Email) ProtoMessage() {}
 
 func (x *Config_Email) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[22]
+	mi := &file_api_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1720,7 +1966,7 @@ type Config_Webhook struct {
 func (x *Config_Webhook) Reset() {
 	*x = Config_Webhook{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[23]
+		mi := &file_api_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1733,7 +1979,7 @@ func (x *Config_Webhook) String() string {
 func (*Config_Webhook) ProtoMessage() {}
 
 func (x *Config_Webhook) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[23]
+	mi := &file_api_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1777,7 +2023,7 @@ type Config_HTTP struct {
 func (x *Config_HTTP) Reset() {
 	*x = Config_HTTP{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[24]
+		mi := &file_api_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1790,7 +2036,7 @@ func (x *Config_HTTP) String() string {
 func (*Config_HTTP) ProtoMessage() {}
 
 func (x *Config_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[24]
+	mi := &file_api_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1846,7 +2092,7 @@ type Config_HTTP_BasicAuth struct {
 func (x *Config_HTTP_BasicAuth) Reset() {
 	*x = Config_HTTP_BasicAuth{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[26]
+		mi := &file_api_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1859,7 +2105,7 @@ func (x *Config_HTTP_BasicAuth) String() string {
 func (*Config_HTTP_BasicAuth) ProtoMessage() {}
 
 func (x *Config_HTTP_BasicAuth) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[26]
+	mi := &file_api_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1901,7 +2147,7 @@ type Config_HTTP_Authorization struct {
 func (x *Config_HTTP_Authorization) Reset() {
 	*x = Config_HTTP_Authorization{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[27]
+		mi := &file_api_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1914,7 +2160,7 @@ func (x *Config_HTTP_Authorization) String() string {
 func (*Config_HTTP_Authorization) ProtoMessage() {}
 
 func (x *Config_HTTP_Authorization) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[27]
+	mi := &file_api_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1960,7 +2206,7 @@ type Config_HTTP_OAuth2 struct {
 func (x *Config_HTTP_OAuth2) Reset() {
 	*x = Config_HTTP_OAuth2{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[28]
+		mi := &file_api_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1973,7 +2219,7 @@ func (x *Config_HTTP_OAuth2) String() string {
 func (*Config_HTTP_OAuth2) ProtoMessage() {}
 
 func (x *Config_HTTP_OAuth2) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[28]
+	mi := &file_api_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2044,7 +2290,7 @@ type Config_HTTP_TLSConfig struct {
 func (x *Config_HTTP_TLSConfig) Reset() {
 	*x = Config_HTTP_TLSConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[29]
+		mi := &file_api_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2057,7 +2303,7 @@ func (x *Config_HTTP_TLSConfig) String() string {
 func (*Config_HTTP_TLSConfig) ProtoMessage() {}
 
 func (x *Config_HTTP_TLSConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[29]
+	mi := &file_api_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2106,7 +2352,7 @@ type Account_Key struct {
 func (x *Account_Key) Reset() {
 	*x = Account_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[31]
+		mi := &file_api_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2119,7 +2365,7 @@ func (x *Account_Key) String() string {
 func (*Account_Key) ProtoMessage() {}
 
 func (x *Account_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[31]
+	mi := &file_api_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2160,7 +2406,7 @@ type Client_Instance struct {
 func (x *Client_Instance) Reset() {
 	*x = Client_Instance{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[33]
+		mi := &file_api_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2173,7 +2419,7 @@ func (x *Client_Instance) String() string {
 func (*Client_Instance) ProtoMessage() {}
 
 func (x *Client_Instance) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[33]
+	mi := &file_api_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2208,7 +2454,7 @@ type Client_Active struct {
 func (x *Client_Active) Reset() {
 	*x = Client_Active{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[34]
+		mi := &file_api_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2221,7 +2467,7 @@ func (x *Client_Active) String() string {
 func (*Client_Active) ProtoMessage() {}
 
 func (x *Client_Active) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[34]
+	mi := &file_api_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2266,7 +2512,7 @@ type Client_Auth struct {
 func (x *Client_Auth) Reset() {
 	*x = Client_Auth{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[35]
+		mi := &file_api_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2279,7 +2525,7 @@ func (x *Client_Auth) String() string {
 func (*Client_Auth) ProtoMessage() {}
 
 func (x *Client_Auth) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[35]
+	mi := &file_api_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2347,7 +2593,7 @@ type Token_CreateOptions struct {
 func (x *Token_CreateOptions) Reset() {
 	*x = Token_CreateOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[37]
+		mi := &file_api_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2360,7 +2606,7 @@ func (x *Token_CreateOptions) String() string {
 func (*Token_CreateOptions) ProtoMessage() {}
 
 func (x *Token_CreateOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[37]
+	mi := &file_api_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2430,7 +2676,7 @@ type Token_Key struct {
 func (x *Token_Key) Reset() {
 	*x = Token_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[38]
+		mi := &file_api_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2443,7 +2689,7 @@ func (x *Token_Key) String() string {
 func (*Token_Key) ProtoMessage() {}
 
 func (x *Token_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[38]
+	mi := &file_api_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2491,7 +2737,7 @@ type Query_Value struct {
 func (x *Query_Value) Reset() {
 	*x = Query_Value{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[39]
+		mi := &file_api_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2504,7 +2750,7 @@ func (x *Query_Value) String() string {
 func (*Query_Value) ProtoMessage() {}
 
 func (x *Query_Value) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[39]
+	mi := &file_api_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2608,7 +2854,7 @@ type Query_RequestOptions struct {
 func (x *Query_RequestOptions) Reset() {
 	*x = Query_RequestOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[40]
+		mi := &file_api_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2621,7 +2867,7 @@ func (x *Query_RequestOptions) String() string {
 func (*Query_RequestOptions) ProtoMessage() {}
 
 func (x *Query_RequestOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[40]
+	mi := &file_api_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2663,7 +2909,7 @@ type Query_Param struct {
 func (x *Query_Param) Reset() {
 	*x = Query_Param{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[41]
+		mi := &file_api_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2676,7 +2922,7 @@ func (x *Query_Param) String() string {
 func (*Query_Param) ProtoMessage() {}
 
 func (x *Query_Param) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[41]
+	mi := &file_api_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2718,7 +2964,7 @@ type Query_Colum struct {
 func (x *Query_Colum) Reset() {
 	*x = Query_Colum{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[42]
+		mi := &file_api_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2731,7 +2977,7 @@ func (x *Query_Colum) String() string {
 func (*Query_Colum) ProtoMessage() {}
 
 func (x *Query_Colum) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[42]
+	mi := &file_api_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2772,7 +3018,7 @@ type Query_Row struct {
 func (x *Query_Row) Reset() {
 	*x = Query_Row{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[43]
+		mi := &file_api_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2785,7 +3031,7 @@ func (x *Query_Row) String() string {
 func (*Query_Row) ProtoMessage() {}
 
 func (x *Query_Row) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[43]
+	mi := &file_api_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2821,7 +3067,7 @@ type Query_Result struct {
 func (x *Query_Result) Reset() {
 	*x = Query_Result{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[44]
+		mi := &file_api_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2834,7 +3080,7 @@ func (x *Query_Result) String() string {
 func (*Query_Result) ProtoMessage() {}
 
 func (x *Query_Result) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[44]
+	mi := &file_api_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2869,6 +3115,517 @@ func (x *Query_Result) GetRows() []*Query_Row {
 		return x.Rows
 	}
 	return nil
+}
+
+type Raft_Log struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Index      uint64                 `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
+	Term       uint64                 `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
+	Type       Raft_Log_Type          `protobuf:"varint,3,opt,name=type,proto3,enum=v1.Raft_Log_Type" json:"type,omitempty"`
+	Data       []byte                 `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
+	Extensions []byte                 `protobuf:"bytes,5,opt,name=extensions,proto3" json:"extensions,omitempty"`
+	AppendedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=appended_at,json=appendedAt,proto3" json:"appended_at,omitempty"`
+}
+
+func (x *Raft_Log) Reset() {
+	*x = Raft_Log{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[46]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_Log) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_Log) ProtoMessage() {}
+
+func (x *Raft_Log) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[46]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_Log.ProtoReflect.Descriptor instead.
+func (*Raft_Log) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 0}
+}
+
+func (x *Raft_Log) GetIndex() uint64 {
+	if x != nil {
+		return x.Index
+	}
+	return 0
+}
+
+func (x *Raft_Log) GetTerm() uint64 {
+	if x != nil {
+		return x.Term
+	}
+	return 0
+}
+
+func (x *Raft_Log) GetType() Raft_Log_Type {
+	if x != nil {
+		return x.Type
+	}
+	return Raft_Log_Command
+}
+
+func (x *Raft_Log) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *Raft_Log) GetExtensions() []byte {
+	if x != nil {
+		return x.Extensions
+	}
+	return nil
+}
+
+func (x *Raft_Log) GetAppendedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.AppendedAt
+	}
+	return nil
+}
+
+type Raft_Stable struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Raft_Stable) Reset() {
+	*x = Raft_Stable{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[47]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_Stable) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_Stable) ProtoMessage() {}
+
+func (x *Raft_Stable) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[47]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_Stable.ProtoReflect.Descriptor instead.
+func (*Raft_Stable) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 1}
+}
+
+type Raft_Snapshot struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Version     Raft_Snapshot_Version `protobuf:"varint,1,opt,name=version,proto3,enum=v1.Raft_Snapshot_Version" json:"version,omitempty"`
+	Id          string                `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Index       uint64                `protobuf:"varint,3,opt,name=index,proto3" json:"index,omitempty"`
+	Term        uint64                `protobuf:"varint,4,opt,name=term,proto3" json:"term,omitempty"`
+	Peers       []byte                `protobuf:"bytes,5,opt,name=peers,proto3" json:"peers,omitempty"`
+	Config      *Raft_Config          `protobuf:"bytes,6,opt,name=config,proto3" json:"config,omitempty"`
+	ConfigIndex uint64                `protobuf:"varint,7,opt,name=config_index,json=configIndex,proto3" json:"config_index,omitempty"`
+	Size        int64                 `protobuf:"varint,8,opt,name=size,proto3" json:"size,omitempty"`
+}
+
+func (x *Raft_Snapshot) Reset() {
+	*x = Raft_Snapshot{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[48]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_Snapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_Snapshot) ProtoMessage() {}
+
+func (x *Raft_Snapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[48]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_Snapshot.ProtoReflect.Descriptor instead.
+func (*Raft_Snapshot) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 2}
+}
+
+func (x *Raft_Snapshot) GetVersion() Raft_Snapshot_Version {
+	if x != nil {
+		return x.Version
+	}
+	return Raft_Snapshot_Min
+}
+
+func (x *Raft_Snapshot) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Raft_Snapshot) GetIndex() uint64 {
+	if x != nil {
+		return x.Index
+	}
+	return 0
+}
+
+func (x *Raft_Snapshot) GetTerm() uint64 {
+	if x != nil {
+		return x.Term
+	}
+	return 0
+}
+
+func (x *Raft_Snapshot) GetPeers() []byte {
+	if x != nil {
+		return x.Peers
+	}
+	return nil
+}
+
+func (x *Raft_Snapshot) GetConfig() *Raft_Config {
+	if x != nil {
+		return x.Config
+	}
+	return nil
+}
+
+func (x *Raft_Snapshot) GetConfigIndex() uint64 {
+	if x != nil {
+		return x.ConfigIndex
+	}
+	return 0
+}
+
+func (x *Raft_Snapshot) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+type Raft_Config struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Servers []*Raft_Config_Server `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
+}
+
+func (x *Raft_Config) Reset() {
+	*x = Raft_Config{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[49]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_Config) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_Config) ProtoMessage() {}
+
+func (x *Raft_Config) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[49]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_Config.ProtoReflect.Descriptor instead.
+func (*Raft_Config) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 3}
+}
+
+func (x *Raft_Config) GetServers() []*Raft_Config_Server {
+	if x != nil {
+		return x.Servers
+	}
+	return nil
+}
+
+type Raft_Log_Key struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Store *StoreKey `protobuf:"bytes,1,opt,name=store,proto3" json:"store,omitempty"`
+	Index int64     `protobuf:"varint,2,opt,name=index,proto3" json:"index,omitempty"`
+}
+
+func (x *Raft_Log_Key) Reset() {
+	*x = Raft_Log_Key{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[50]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_Log_Key) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_Log_Key) ProtoMessage() {}
+
+func (x *Raft_Log_Key) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[50]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_Log_Key.ProtoReflect.Descriptor instead.
+func (*Raft_Log_Key) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 0, 0}
+}
+
+func (x *Raft_Log_Key) GetStore() *StoreKey {
+	if x != nil {
+		return x.Store
+	}
+	return nil
+}
+
+func (x *Raft_Log_Key) GetIndex() int64 {
+	if x != nil {
+		return x.Index
+	}
+	return 0
+}
+
+type Raft_Stable_Key struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Store *StoreKey `protobuf:"bytes,1,opt,name=store,proto3" json:"store,omitempty"`
+	Key   []byte    `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *Raft_Stable_Key) Reset() {
+	*x = Raft_Stable_Key{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[51]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_Stable_Key) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_Stable_Key) ProtoMessage() {}
+
+func (x *Raft_Stable_Key) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[51]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_Stable_Key.ProtoReflect.Descriptor instead.
+func (*Raft_Stable_Key) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 1, 0}
+}
+
+func (x *Raft_Stable_Key) GetStore() *StoreKey {
+	if x != nil {
+		return x.Store
+	}
+	return nil
+}
+
+func (x *Raft_Stable_Key) GetKey() []byte {
+	if x != nil {
+		return x.Key
+	}
+	return nil
+}
+
+type Raft_Snapshot_Key struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Store *StoreKey              `protobuf:"bytes,1,opt,name=store,proto3" json:"store,omitempty"`
+	Mode  Raft_Snapshot_Key_Mode `protobuf:"varint,2,opt,name=mode,proto3,enum=v1.Raft_Snapshot_Key_Mode" json:"mode,omitempty"`
+	Id    string                 `protobuf:"bytes,3,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *Raft_Snapshot_Key) Reset() {
+	*x = Raft_Snapshot_Key{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[52]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_Snapshot_Key) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_Snapshot_Key) ProtoMessage() {}
+
+func (x *Raft_Snapshot_Key) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[52]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_Snapshot_Key.ProtoReflect.Descriptor instead.
+func (*Raft_Snapshot_Key) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 2, 0}
+}
+
+func (x *Raft_Snapshot_Key) GetStore() *StoreKey {
+	if x != nil {
+		return x.Store
+	}
+	return nil
+}
+
+func (x *Raft_Snapshot_Key) GetMode() Raft_Snapshot_Key_Mode {
+	if x != nil {
+		return x.Mode
+	}
+	return Raft_Snapshot_Key_META
+}
+
+func (x *Raft_Snapshot_Key) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type Raft_Config_Server struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Suffrage Raft_Config_Server_Suffrage `protobuf:"varint,1,opt,name=suffrage,proto3,enum=v1.Raft_Config_Server_Suffrage" json:"suffrage,omitempty"`
+	Id       string                      `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Address  string                      `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (x *Raft_Config_Server) Reset() {
+	*x = Raft_Config_Server{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[53]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_Config_Server) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_Config_Server) ProtoMessage() {}
+
+func (x *Raft_Config_Server) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[53]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_Config_Server.ProtoReflect.Descriptor instead.
+func (*Raft_Config_Server) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 3, 0}
+}
+
+func (x *Raft_Config_Server) GetSuffrage() Raft_Config_Server_Suffrage {
+	if x != nil {
+		return x.Suffrage
+	}
+	return Raft_Config_Server_Voter
+}
+
+func (x *Raft_Config_Server) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Raft_Config_Server) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
 }
 
 var File_api_proto protoreflect.FileDescriptor
@@ -3162,37 +3919,109 @@ var file_api_proto_rawDesc = []byte{
 	0x2e, 0x43, 0x6f, 0x6c, 0x75, 0x6d, 0x52, 0x07, 0x63, 0x6f, 0x6c, 0x75, 0x6d, 0x6e, 0x73, 0x12,
 	0x21, 0x0a, 0x04, 0x72, 0x6f, 0x77, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e,
 	0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x52, 0x6f, 0x77, 0x52, 0x04, 0x72, 0x6f,
-	0x77, 0x73, 0x22, 0x08, 0x0a, 0x06, 0x4e, 0x6f, 0x74, 0x69, 0x63, 0x65, 0x2a, 0x48, 0x0a, 0x0b,
-	0x53, 0x74, 0x6f, 0x72, 0x65, 0x50, 0x72, 0x65, 0x66, 0x69, 0x78, 0x12, 0x09, 0x0a, 0x05, 0x53,
-	0x49, 0x54, 0x45, 0x53, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x42, 0x4c, 0x4f, 0x43, 0x4b, 0x53,
-	0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x41, 0x4c, 0x45, 0x52, 0x54, 0x53, 0x10, 0x02, 0x12, 0x0b,
-	0x0a, 0x07, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x10, 0x03, 0x12, 0x09, 0x0a, 0x05, 0x54,
-	0x4f, 0x4b, 0x45, 0x4e, 0x10, 0x04, 0x2a, 0xe1, 0x02, 0x0a, 0x06, 0x43, 0x6f, 0x6c, 0x75, 0x6d,
-	0x6e, 0x12, 0x0a, 0x0a, 0x06, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x10, 0x00, 0x12, 0x0c, 0x0a,
-	0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x01, 0x12, 0x06, 0x0a, 0x02, 0x69,
-	0x64, 0x10, 0x02, 0x12, 0x0b, 0x0a, 0x07, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x03,
-	0x12, 0x0d, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x10, 0x04, 0x12,
-	0x0b, 0x0a, 0x07, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x10, 0x05, 0x12, 0x13, 0x0a, 0x0f,
-	0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10,
-	0x06, 0x12, 0x08, 0x0a, 0x04, 0x63, 0x69, 0x74, 0x79, 0x10, 0x07, 0x12, 0x0b, 0x0a, 0x07, 0x63,
-	0x6f, 0x75, 0x6e, 0x74, 0x72, 0x79, 0x10, 0x08, 0x12, 0x0e, 0x0a, 0x0a, 0x65, 0x6e, 0x74, 0x72,
-	0x79, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x09, 0x12, 0x09, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e,
-	0x74, 0x10, 0x0a, 0x12, 0x0d, 0x0a, 0x09, 0x65, 0x78, 0x69, 0x74, 0x5f, 0x70, 0x61, 0x67, 0x65,
-	0x10, 0x0b, 0x12, 0x08, 0x0a, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x10, 0x0c, 0x12, 0x06, 0x0a, 0x02,
-	0x6f, 0x73, 0x10, 0x0d, 0x12, 0x0e, 0x0a, 0x0a, 0x6f, 0x73, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69,
-	0x6f, 0x6e, 0x10, 0x0e, 0x12, 0x08, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x10, 0x0f, 0x12, 0x0c,
-	0x0a, 0x08, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72, 0x10, 0x10, 0x12, 0x13, 0x0a, 0x0f,
-	0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x10,
-	0x11, 0x12, 0x0a, 0x0a, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e, 0x10, 0x12, 0x12, 0x0a, 0x0a,
-	0x06, 0x73, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x10, 0x13, 0x12, 0x10, 0x0a, 0x0c, 0x75, 0x74, 0x6d,
-	0x5f, 0x63, 0x61, 0x6d, 0x70, 0x61, 0x69, 0x67, 0x6e, 0x10, 0x14, 0x12, 0x0f, 0x0a, 0x0b, 0x75,
-	0x74, 0x6d, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x10, 0x15, 0x12, 0x0e, 0x0a, 0x0a,
-	0x75, 0x74, 0x6d, 0x5f, 0x6d, 0x65, 0x64, 0x69, 0x75, 0x6d, 0x10, 0x16, 0x12, 0x0e, 0x0a, 0x0a,
-	0x75, 0x74, 0x6d, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x10, 0x17, 0x12, 0x0c, 0x0a, 0x08,
-	0x75, 0x74, 0x6d, 0x5f, 0x74, 0x65, 0x72, 0x6d, 0x10, 0x18, 0x42, 0x2a, 0x5a, 0x28, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e,
-	0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x70, 0x72,
-	0x6f, 0x72, 0x6f, 0x2f, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x77, 0x73, 0x22, 0x08, 0x0a, 0x06, 0x4e, 0x6f, 0x74, 0x69, 0x63, 0x65, 0x22, 0xc0, 0x08, 0x0a,
+	0x04, 0x52, 0x61, 0x66, 0x74, 0x1a, 0xf8, 0x02, 0x0a, 0x03, 0x4c, 0x6f, 0x67, 0x12, 0x14, 0x0a,
+	0x05, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x69, 0x6e,
+	0x64, 0x65, 0x78, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x25, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x11, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e,
+	0x4c, 0x6f, 0x67, 0x2e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x12,
+	0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61,
+	0x74, 0x61, 0x12, 0x1e, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x65, 0x6e, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x0a, 0x65, 0x78, 0x74, 0x65, 0x6e, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x12, 0x3b, 0x0a, 0x0b, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x65, 0x64, 0x5f, 0x61,
+	0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74,
+	0x61, 0x6d, 0x70, 0x52, 0x0a, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x65, 0x64, 0x41, 0x74, 0x1a,
+	0x3f, 0x0a, 0x03, 0x4b, 0x65, 0x79, 0x12, 0x22, 0x0a, 0x05, 0x73, 0x74, 0x6f, 0x72, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65,
+	0x4b, 0x65, 0x79, 0x52, 0x05, 0x73, 0x74, 0x6f, 0x72, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e,
+	0x64, 0x65, 0x78, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x69, 0x6e, 0x64, 0x65, 0x78,
+	0x22, 0x6e, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d,
+	0x61, 0x6e, 0x64, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x6f, 0x6f, 0x70, 0x10, 0x01, 0x12,
+	0x15, 0x0a, 0x11, 0x41, 0x64, 0x64, 0x50, 0x65, 0x65, 0x72, 0x44, 0x65, 0x70, 0x72, 0x65, 0x63,
+	0x61, 0x74, 0x65, 0x64, 0x10, 0x02, 0x12, 0x18, 0x0a, 0x14, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65,
+	0x50, 0x65, 0x65, 0x72, 0x44, 0x65, 0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65, 0x64, 0x10, 0x03,
+	0x12, 0x0b, 0x0a, 0x07, 0x42, 0x61, 0x72, 0x72, 0x69, 0x65, 0x72, 0x10, 0x04, 0x12, 0x11, 0x0a,
+	0x0d, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x05,
+	0x1a, 0x45, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x1a, 0x3b, 0x0a, 0x03, 0x4b, 0x65,
+	0x79, 0x12, 0x22, 0x0a, 0x05, 0x73, 0x74, 0x6f, 0x72, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x0c, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x4b, 0x65, 0x79, 0x52, 0x05,
+	0x73, 0x74, 0x6f, 0x72, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x1a, 0x94, 0x03, 0x0a, 0x08, 0x53, 0x6e, 0x61, 0x70,
+	0x73, 0x68, 0x6f, 0x74, 0x12, 0x33, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x19, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e,
+	0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
+	0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e, 0x64,
+	0x65, 0x78, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x12,
+	0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x74,
+	0x65, 0x72, 0x6d, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x65, 0x65, 0x72, 0x73, 0x18, 0x05, 0x20, 0x01,
+	0x28, 0x0c, 0x52, 0x05, 0x70, 0x65, 0x65, 0x72, 0x73, 0x12, 0x27, 0x0a, 0x06, 0x63, 0x6f, 0x6e,
+	0x66, 0x69, 0x67, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x76, 0x31, 0x2e, 0x52,
+	0x61, 0x66, 0x74, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x66,
+	0x69, 0x67, 0x12, 0x21, 0x0a, 0x0c, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x5f, 0x69, 0x6e, 0x64,
+	0x65, 0x78, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67,
+	0x49, 0x6e, 0x64, 0x65, 0x78, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x08, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x1a, 0x85, 0x01, 0x0a, 0x03, 0x4b, 0x65,
+	0x79, 0x12, 0x22, 0x0a, 0x05, 0x73, 0x74, 0x6f, 0x72, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x0c, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x4b, 0x65, 0x79, 0x52, 0x05,
+	0x73, 0x74, 0x6f, 0x72, 0x65, 0x12, 0x2e, 0x0a, 0x04, 0x6d, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0e, 0x32, 0x1a, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x53, 0x6e,
+	0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x4b, 0x65, 0x79, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x52,
+	0x04, 0x6d, 0x6f, 0x64, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x1a, 0x0a, 0x04, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x08, 0x0a,
+	0x04, 0x4d, 0x45, 0x54, 0x41, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x44, 0x41, 0x54, 0x41, 0x10,
+	0x01, 0x22, 0x1b, 0x0a, 0x07, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x07, 0x0a, 0x03,
+	0x4d, 0x69, 0x6e, 0x10, 0x00, 0x12, 0x07, 0x0a, 0x03, 0x4d, 0x61, 0x78, 0x10, 0x01, 0x1a, 0xde,
+	0x01, 0x0a, 0x06, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x30, 0x0a, 0x07, 0x73, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x76, 0x31, 0x2e,
+	0x52, 0x61, 0x66, 0x74, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x53, 0x65, 0x72, 0x76,
+	0x65, 0x72, 0x52, 0x07, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x1a, 0xa1, 0x01, 0x0a, 0x06,
+	0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x12, 0x3b, 0x0a, 0x08, 0x73, 0x75, 0x66, 0x66, 0x72, 0x61,
+	0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1f, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61,
+	0x66, 0x74, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72,
+	0x2e, 0x53, 0x75, 0x66, 0x66, 0x72, 0x61, 0x67, 0x65, 0x52, 0x08, 0x73, 0x75, 0x66, 0x66, 0x72,
+	0x61, 0x67, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x02, 0x69, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x30, 0x0a,
+	0x08, 0x53, 0x75, 0x66, 0x66, 0x72, 0x61, 0x67, 0x65, 0x12, 0x09, 0x0a, 0x05, 0x56, 0x6f, 0x74,
+	0x65, 0x72, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x4e, 0x6f, 0x6e, 0x76, 0x6f, 0x74, 0x65, 0x72,
+	0x10, 0x01, 0x12, 0x0b, 0x0a, 0x07, 0x53, 0x74, 0x61, 0x67, 0x69, 0x6e, 0x67, 0x10, 0x02, 0x2a,
+	0x7b, 0x0a, 0x0b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x50, 0x72, 0x65, 0x66, 0x69, 0x78, 0x12, 0x09,
+	0x0a, 0x05, 0x53, 0x49, 0x54, 0x45, 0x53, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x42, 0x4c, 0x4f,
+	0x43, 0x4b, 0x53, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x41, 0x4c, 0x45, 0x52, 0x54, 0x53, 0x10,
+	0x02, 0x12, 0x0b, 0x0a, 0x07, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x10, 0x03, 0x12, 0x09,
+	0x0a, 0x05, 0x54, 0x4f, 0x4b, 0x45, 0x4e, 0x10, 0x04, 0x12, 0x0d, 0x0a, 0x09, 0x52, 0x41, 0x46,
+	0x54, 0x5f, 0x4c, 0x4f, 0x47, 0x53, 0x10, 0x05, 0x12, 0x0f, 0x0a, 0x0b, 0x52, 0x41, 0x46, 0x54,
+	0x5f, 0x53, 0x54, 0x41, 0x42, 0x4c, 0x45, 0x10, 0x06, 0x12, 0x11, 0x0a, 0x0d, 0x52, 0x41, 0x46,
+	0x54, 0x5f, 0x53, 0x4e, 0x41, 0x50, 0x53, 0x48, 0x4f, 0x54, 0x10, 0x07, 0x2a, 0xe1, 0x02, 0x0a,
+	0x06, 0x43, 0x6f, 0x6c, 0x75, 0x6d, 0x6e, 0x12, 0x0a, 0x0a, 0x06, 0x62, 0x6f, 0x75, 0x6e, 0x63,
+	0x65, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10,
+	0x01, 0x12, 0x06, 0x0a, 0x02, 0x69, 0x64, 0x10, 0x02, 0x12, 0x0b, 0x0a, 0x07, 0x73, 0x65, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74,
+	0x61, 0x6d, 0x70, 0x10, 0x04, 0x12, 0x0b, 0x0a, 0x07, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72,
+	0x10, 0x05, 0x12, 0x13, 0x0a, 0x0f, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x5f, 0x76, 0x65,
+	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x06, 0x12, 0x08, 0x0a, 0x04, 0x63, 0x69, 0x74, 0x79, 0x10,
+	0x07, 0x12, 0x0b, 0x0a, 0x07, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x72, 0x79, 0x10, 0x08, 0x12, 0x0e,
+	0x0a, 0x0a, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x09, 0x12, 0x09,
+	0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x10, 0x0a, 0x12, 0x0d, 0x0a, 0x09, 0x65, 0x78, 0x69,
+	0x74, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x0b, 0x12, 0x08, 0x0a, 0x04, 0x68, 0x6f, 0x73, 0x74,
+	0x10, 0x0c, 0x12, 0x06, 0x0a, 0x02, 0x6f, 0x73, 0x10, 0x0d, 0x12, 0x0e, 0x0a, 0x0a, 0x6f, 0x73,
+	0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x0e, 0x12, 0x08, 0x0a, 0x04, 0x70, 0x61,
+	0x74, 0x68, 0x10, 0x0f, 0x12, 0x0c, 0x0a, 0x08, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72,
+	0x10, 0x10, 0x12, 0x13, 0x0a, 0x0f, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72, 0x5f, 0x73,
+	0x6f, 0x75, 0x72, 0x63, 0x65, 0x10, 0x11, 0x12, 0x0a, 0x0a, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f,
+	0x6e, 0x10, 0x12, 0x12, 0x0a, 0x0a, 0x06, 0x73, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x10, 0x13, 0x12,
+	0x10, 0x0a, 0x0c, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x61, 0x6d, 0x70, 0x61, 0x69, 0x67, 0x6e, 0x10,
+	0x14, 0x12, 0x0f, 0x0a, 0x0b, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
+	0x10, 0x15, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x6d, 0x65, 0x64, 0x69, 0x75, 0x6d,
+	0x10, 0x16, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+	0x10, 0x17, 0x12, 0x0c, 0x0a, 0x08, 0x75, 0x74, 0x6d, 0x5f, 0x74, 0x65, 0x72, 0x6d, 0x10, 0x18,
+	0x42, 0x2a, 0x5a, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76,
+	0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x76, 0x69,
+	0x6e, 0x63, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x72, 0x6f, 0x2f, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -3207,105 +4036,128 @@ func file_api_proto_rawDescGZIP() []byte {
 	return file_api_proto_rawDescData
 }
 
-var file_api_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_api_proto_msgTypes = make([]protoimpl.MessageInfo, 45)
+var file_api_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
+var file_api_proto_msgTypes = make([]protoimpl.MessageInfo, 54)
 var file_api_proto_goTypes = []interface{}{
 	(StorePrefix)(0),                  // 0: v1.StorePrefix
 	(Column)(0),                       // 1: v1.Column
 	(Block_Key_Kind)(0),               // 2: v1.Block.Key.Kind
 	(Token_Issuer)(0),                 // 3: v1.Token.Issuer
 	(Query_Colum_DataType)(0),         // 4: v1.Query.Colum.DataType
-	(*StoreKey)(nil),                  // 5: v1.StoreKey
-	(*Site)(nil),                      // 6: v1.Site
-	(*Block)(nil),                     // 7: v1.Block
-	(*Status)(nil),                    // 8: v1.Status
-	(*Build)(nil),                     // 9: v1.Build
-	(*Config)(nil),                    // 10: v1.Config
-	(*Account)(nil),                   // 11: v1.Account
-	(*Client)(nil),                    // 12: v1.Client
-	(*Token)(nil),                     // 13: v1.Token
-	(*Error)(nil),                     // 14: v1.Error
-	(*Query)(nil),                     // 15: v1.Query
-	(*Notice)(nil),                    // 16: v1.Notice
-	(*Site_Key)(nil),                  // 17: v1.Site.Key
-	(*Site_GetOptions)(nil),           // 18: v1.Site.GetOptions
-	(*Site_CreateOptions)(nil),        // 19: v1.Site.CreateOptions
-	(*Site_ListOptions)(nil),          // 20: v1.Site.ListOptions
-	(*Site_DeleteOptions)(nil),        // 21: v1.Site.DeleteOptions
-	(*Site_List)(nil),                 // 22: v1.Site.List
-	(*Block_Key)(nil),                 // 23: v1.Block.Key
-	(*Block_Index)(nil),               // 24: v1.Block.Index
-	(*Block_Index_Range)(nil),         // 25: v1.Block.Index.Range
-	(*Config_Notifier)(nil),           // 26: v1.Config.Notifier
-	(*Config_Email)(nil),              // 27: v1.Config.Email
-	(*Config_Webhook)(nil),            // 28: v1.Config.Webhook
-	(*Config_HTTP)(nil),               // 29: v1.Config.HTTP
-	nil,                               // 30: v1.Config.Email.HeadersEntry
-	(*Config_HTTP_BasicAuth)(nil),     // 31: v1.Config.HTTP.BasicAuth
-	(*Config_HTTP_Authorization)(nil), // 32: v1.Config.HTTP.Authorization
-	(*Config_HTTP_OAuth2)(nil),        // 33: v1.Config.HTTP.OAuth2
-	(*Config_HTTP_TLSConfig)(nil),     // 34: v1.Config.HTTP.TLSConfig
-	nil,                               // 35: v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	(*Account_Key)(nil),               // 36: v1.Account.Key
-	nil,                               // 37: v1.Client.InstanceEntry
-	(*Client_Instance)(nil),           // 38: v1.Client.Instance
-	(*Client_Active)(nil),             // 39: v1.Client.Active
-	(*Client_Auth)(nil),               // 40: v1.Client.Auth
-	nil,                               // 41: v1.Client.Instance.AccountsEntry
-	(*Token_CreateOptions)(nil),       // 42: v1.Token.CreateOptions
-	(*Token_Key)(nil),                 // 43: v1.Token.Key
-	(*Query_Value)(nil),               // 44: v1.Query.Value
-	(*Query_RequestOptions)(nil),      // 45: v1.Query.RequestOptions
-	(*Query_Param)(nil),               // 46: v1.Query.Param
-	(*Query_Colum)(nil),               // 47: v1.Query.Colum
-	(*Query_Row)(nil),                 // 48: v1.Query.Row
-	(*Query_Result)(nil),              // 49: v1.Query.Result
-	(*durationpb.Duration)(nil),       // 50: google.protobuf.Duration
-	(*timestamppb.Timestamp)(nil),     // 51: google.protobuf.Timestamp
+	(Raft_Log_Type)(0),                // 5: v1.Raft.Log.Type
+	(Raft_Snapshot_Version)(0),        // 6: v1.Raft.Snapshot.Version
+	(Raft_Snapshot_Key_Mode)(0),       // 7: v1.Raft.Snapshot.Key.Mode
+	(Raft_Config_Server_Suffrage)(0),  // 8: v1.Raft.Config.Server.Suffrage
+	(*StoreKey)(nil),                  // 9: v1.StoreKey
+	(*Site)(nil),                      // 10: v1.Site
+	(*Block)(nil),                     // 11: v1.Block
+	(*Status)(nil),                    // 12: v1.Status
+	(*Build)(nil),                     // 13: v1.Build
+	(*Config)(nil),                    // 14: v1.Config
+	(*Account)(nil),                   // 15: v1.Account
+	(*Client)(nil),                    // 16: v1.Client
+	(*Token)(nil),                     // 17: v1.Token
+	(*Error)(nil),                     // 18: v1.Error
+	(*Query)(nil),                     // 19: v1.Query
+	(*Notice)(nil),                    // 20: v1.Notice
+	(*Raft)(nil),                      // 21: v1.Raft
+	(*Site_Key)(nil),                  // 22: v1.Site.Key
+	(*Site_GetOptions)(nil),           // 23: v1.Site.GetOptions
+	(*Site_CreateOptions)(nil),        // 24: v1.Site.CreateOptions
+	(*Site_ListOptions)(nil),          // 25: v1.Site.ListOptions
+	(*Site_DeleteOptions)(nil),        // 26: v1.Site.DeleteOptions
+	(*Site_List)(nil),                 // 27: v1.Site.List
+	(*Block_Key)(nil),                 // 28: v1.Block.Key
+	(*Block_Index)(nil),               // 29: v1.Block.Index
+	(*Block_Index_Range)(nil),         // 30: v1.Block.Index.Range
+	(*Config_Notifier)(nil),           // 31: v1.Config.Notifier
+	(*Config_Email)(nil),              // 32: v1.Config.Email
+	(*Config_Webhook)(nil),            // 33: v1.Config.Webhook
+	(*Config_HTTP)(nil),               // 34: v1.Config.HTTP
+	nil,                               // 35: v1.Config.Email.HeadersEntry
+	(*Config_HTTP_BasicAuth)(nil),     // 36: v1.Config.HTTP.BasicAuth
+	(*Config_HTTP_Authorization)(nil), // 37: v1.Config.HTTP.Authorization
+	(*Config_HTTP_OAuth2)(nil),        // 38: v1.Config.HTTP.OAuth2
+	(*Config_HTTP_TLSConfig)(nil),     // 39: v1.Config.HTTP.TLSConfig
+	nil,                               // 40: v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	(*Account_Key)(nil),               // 41: v1.Account.Key
+	nil,                               // 42: v1.Client.InstanceEntry
+	(*Client_Instance)(nil),           // 43: v1.Client.Instance
+	(*Client_Active)(nil),             // 44: v1.Client.Active
+	(*Client_Auth)(nil),               // 45: v1.Client.Auth
+	nil,                               // 46: v1.Client.Instance.AccountsEntry
+	(*Token_CreateOptions)(nil),       // 47: v1.Token.CreateOptions
+	(*Token_Key)(nil),                 // 48: v1.Token.Key
+	(*Query_Value)(nil),               // 49: v1.Query.Value
+	(*Query_RequestOptions)(nil),      // 50: v1.Query.RequestOptions
+	(*Query_Param)(nil),               // 51: v1.Query.Param
+	(*Query_Colum)(nil),               // 52: v1.Query.Colum
+	(*Query_Row)(nil),                 // 53: v1.Query.Row
+	(*Query_Result)(nil),              // 54: v1.Query.Result
+	(*Raft_Log)(nil),                  // 55: v1.Raft.Log
+	(*Raft_Stable)(nil),               // 56: v1.Raft.Stable
+	(*Raft_Snapshot)(nil),             // 57: v1.Raft.Snapshot
+	(*Raft_Config)(nil),               // 58: v1.Raft.Config
+	(*Raft_Log_Key)(nil),              // 59: v1.Raft.Log.Key
+	(*Raft_Stable_Key)(nil),           // 60: v1.Raft.Stable.Key
+	(*Raft_Snapshot_Key)(nil),         // 61: v1.Raft.Snapshot.Key
+	(*Raft_Config_Server)(nil),        // 62: v1.Raft.Config.Server
+	(*durationpb.Duration)(nil),       // 63: google.protobuf.Duration
+	(*timestamppb.Timestamp)(nil),     // 64: google.protobuf.Timestamp
 }
 var file_api_proto_depIdxs = []int32{
 	0,  // 0: v1.StoreKey.prefix:type_name -> v1.StorePrefix
-	50, // 1: v1.Config.sync_interval:type_name -> google.protobuf.Duration
-	26, // 2: v1.Config.notifiers:type_name -> v1.Config.Notifier
-	37, // 3: v1.Client.instance:type_name -> v1.Client.InstanceEntry
-	39, // 4: v1.Client.active:type_name -> v1.Client.Active
-	5,  // 5: v1.Site.Key.store:type_name -> v1.StoreKey
-	6,  // 6: v1.Site.List.list:type_name -> v1.Site
-	5,  // 7: v1.Block.Key.store:type_name -> v1.StoreKey
+	63, // 1: v1.Config.sync_interval:type_name -> google.protobuf.Duration
+	31, // 2: v1.Config.notifiers:type_name -> v1.Config.Notifier
+	42, // 3: v1.Client.instance:type_name -> v1.Client.InstanceEntry
+	44, // 4: v1.Client.active:type_name -> v1.Client.Active
+	9,  // 5: v1.Site.Key.store:type_name -> v1.StoreKey
+	10, // 6: v1.Site.List.list:type_name -> v1.Site
+	9,  // 7: v1.Block.Key.store:type_name -> v1.StoreKey
 	2,  // 8: v1.Block.Key.kind:type_name -> v1.Block.Key.Kind
-	25, // 9: v1.Block.Index.time_range:type_name -> v1.Block.Index.Range
-	51, // 10: v1.Block.Index.Range.min:type_name -> google.protobuf.Timestamp
-	51, // 11: v1.Block.Index.Range.max:type_name -> google.protobuf.Timestamp
-	27, // 12: v1.Config.Notifier.email:type_name -> v1.Config.Email
-	28, // 13: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
-	30, // 14: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
-	34, // 15: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	29, // 16: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
-	31, // 17: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
-	32, // 18: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
-	33, // 19: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
-	34, // 20: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	35, // 21: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	34, // 22: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	5,  // 23: v1.Account.Key.store:type_name -> v1.StoreKey
-	38, // 24: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
-	41, // 25: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
-	40, // 26: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
-	50, // 27: v1.Token.CreateOptions.ttl:type_name -> google.protobuf.Duration
-	5,  // 28: v1.Token.Key.store:type_name -> v1.StoreKey
-	51, // 29: v1.Query.Value.timestamp:type_name -> google.protobuf.Timestamp
-	46, // 30: v1.Query.RequestOptions.params:type_name -> v1.Query.Param
-	44, // 31: v1.Query.Param.value:type_name -> v1.Query.Value
+	30, // 9: v1.Block.Index.time_range:type_name -> v1.Block.Index.Range
+	64, // 10: v1.Block.Index.Range.min:type_name -> google.protobuf.Timestamp
+	64, // 11: v1.Block.Index.Range.max:type_name -> google.protobuf.Timestamp
+	32, // 12: v1.Config.Notifier.email:type_name -> v1.Config.Email
+	33, // 13: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
+	35, // 14: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
+	39, // 15: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	34, // 16: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
+	36, // 17: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
+	37, // 18: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
+	38, // 19: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
+	39, // 20: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	40, // 21: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	39, // 22: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	9,  // 23: v1.Account.Key.store:type_name -> v1.StoreKey
+	43, // 24: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
+	46, // 25: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
+	45, // 26: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
+	63, // 27: v1.Token.CreateOptions.ttl:type_name -> google.protobuf.Duration
+	9,  // 28: v1.Token.Key.store:type_name -> v1.StoreKey
+	64, // 29: v1.Query.Value.timestamp:type_name -> google.protobuf.Timestamp
+	51, // 30: v1.Query.RequestOptions.params:type_name -> v1.Query.Param
+	49, // 31: v1.Query.Param.value:type_name -> v1.Query.Value
 	4,  // 32: v1.Query.Colum.data_type:type_name -> v1.Query.Colum.DataType
-	44, // 33: v1.Query.Row.values:type_name -> v1.Query.Value
-	50, // 34: v1.Query.Result.elapsed:type_name -> google.protobuf.Duration
-	47, // 35: v1.Query.Result.columns:type_name -> v1.Query.Colum
-	48, // 36: v1.Query.Result.rows:type_name -> v1.Query.Row
-	37, // [37:37] is the sub-list for method output_type
-	37, // [37:37] is the sub-list for method input_type
-	37, // [37:37] is the sub-list for extension type_name
-	37, // [37:37] is the sub-list for extension extendee
-	0,  // [0:37] is the sub-list for field type_name
+	49, // 33: v1.Query.Row.values:type_name -> v1.Query.Value
+	63, // 34: v1.Query.Result.elapsed:type_name -> google.protobuf.Duration
+	52, // 35: v1.Query.Result.columns:type_name -> v1.Query.Colum
+	53, // 36: v1.Query.Result.rows:type_name -> v1.Query.Row
+	5,  // 37: v1.Raft.Log.type:type_name -> v1.Raft.Log.Type
+	64, // 38: v1.Raft.Log.appended_at:type_name -> google.protobuf.Timestamp
+	6,  // 39: v1.Raft.Snapshot.version:type_name -> v1.Raft.Snapshot.Version
+	58, // 40: v1.Raft.Snapshot.config:type_name -> v1.Raft.Config
+	62, // 41: v1.Raft.Config.servers:type_name -> v1.Raft.Config.Server
+	9,  // 42: v1.Raft.Log.Key.store:type_name -> v1.StoreKey
+	9,  // 43: v1.Raft.Stable.Key.store:type_name -> v1.StoreKey
+	9,  // 44: v1.Raft.Snapshot.Key.store:type_name -> v1.StoreKey
+	7,  // 45: v1.Raft.Snapshot.Key.mode:type_name -> v1.Raft.Snapshot.Key.Mode
+	8,  // 46: v1.Raft.Config.Server.suffrage:type_name -> v1.Raft.Config.Server.Suffrage
+	47, // [47:47] is the sub-list for method output_type
+	47, // [47:47] is the sub-list for method input_type
+	47, // [47:47] is the sub-list for extension type_name
+	47, // [47:47] is the sub-list for extension extendee
+	0,  // [0:47] is the sub-list for field type_name
 }
 
 func init() { file_api_proto_init() }
@@ -3459,7 +4311,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Site_Key); i {
+			switch v := v.(*Raft); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3471,7 +4323,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Site_GetOptions); i {
+			switch v := v.(*Site_Key); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3483,7 +4335,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Site_CreateOptions); i {
+			switch v := v.(*Site_GetOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3495,7 +4347,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Site_ListOptions); i {
+			switch v := v.(*Site_CreateOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3507,7 +4359,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Site_DeleteOptions); i {
+			switch v := v.(*Site_ListOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3519,7 +4371,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Site_List); i {
+			switch v := v.(*Site_DeleteOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3531,7 +4383,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Block_Key); i {
+			switch v := v.(*Site_List); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3543,7 +4395,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Block_Index); i {
+			switch v := v.(*Block_Key); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3555,7 +4407,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Block_Index_Range); i {
+			switch v := v.(*Block_Index); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3567,7 +4419,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Config_Notifier); i {
+			switch v := v.(*Block_Index_Range); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3579,7 +4431,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Config_Email); i {
+			switch v := v.(*Config_Notifier); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3591,7 +4443,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Config_Webhook); i {
+			switch v := v.(*Config_Email); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3603,6 +4455,18 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Config_Webhook); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP); i {
 			case 0:
 				return &v.state
@@ -3614,7 +4478,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_BasicAuth); i {
 			case 0:
 				return &v.state
@@ -3626,7 +4490,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_Authorization); i {
 			case 0:
 				return &v.state
@@ -3638,7 +4502,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_OAuth2); i {
 			case 0:
 				return &v.state
@@ -3650,7 +4514,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_TLSConfig); i {
 			case 0:
 				return &v.state
@@ -3662,7 +4526,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Account_Key); i {
 			case 0:
 				return &v.state
@@ -3674,7 +4538,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Instance); i {
 			case 0:
 				return &v.state
@@ -3686,7 +4550,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Active); i {
 			case 0:
 				return &v.state
@@ -3698,7 +4562,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Auth); i {
 			case 0:
 				return &v.state
@@ -3710,7 +4574,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Token_CreateOptions); i {
 			case 0:
 				return &v.state
@@ -3722,7 +4586,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Token_Key); i {
 			case 0:
 				return &v.state
@@ -3734,7 +4598,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Value); i {
 			case 0:
 				return &v.state
@@ -3746,7 +4610,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_RequestOptions); i {
 			case 0:
 				return &v.state
@@ -3758,7 +4622,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Param); i {
 			case 0:
 				return &v.state
@@ -3770,7 +4634,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Colum); i {
 			case 0:
 				return &v.state
@@ -3782,7 +4646,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Row); i {
 			case 0:
 				return &v.state
@@ -3794,7 +4658,7 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
-		file_api_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
+		file_api_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Result); i {
 			case 0:
 				return &v.state
@@ -3806,12 +4670,108 @@ func file_api_proto_init() {
 				return nil
 			}
 		}
+		file_api_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_Log); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_Stable); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_Snapshot); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_Config); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_Log_Key); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_Stable_Key); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_Snapshot_Key); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_Config_Server); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
-	file_api_proto_msgTypes[21].OneofWrappers = []interface{}{
+	file_api_proto_msgTypes[22].OneofWrappers = []interface{}{
 		(*Config_Notifier_Email)(nil),
 		(*Config_Notifier_Webhook)(nil),
 	}
-	file_api_proto_msgTypes[39].OneofWrappers = []interface{}{
+	file_api_proto_msgTypes[40].OneofWrappers = []interface{}{
 		(*Query_Value_Number)(nil),
 		(*Query_Value_Double)(nil),
 		(*Query_Value_String_)(nil),
@@ -3823,8 +4783,8 @@ func file_api_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_proto_rawDesc,
-			NumEnums:      5,
-			NumMessages:   45,
+			NumEnums:      9,
+			NumMessages:   54,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
