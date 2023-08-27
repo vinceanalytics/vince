@@ -117,6 +117,30 @@ message Config {
 
   repeated Notifier notifiers = 11;
 
+  string server_id = 12;
+  string raft_listem_address = 13;
+  Cluster cluster = 14;
+
+  message Cluster {
+    Version version = 1;
+    google.protobuf.Duration heartbeat_timeout = 2;
+    google.protobuf.Duration election_timeout = 3;
+    google.protobuf.Duration commit_timeout = 4;
+    int32 max_append_entries = 5;
+    bool batch_acpply = 6;
+    bool shutdowm_on_remove = 7;
+    uint64 trailing_logs = 8;
+    google.protobuf.Duration snapshot_interval = 9;
+    uint64 snapshot_threshold = 10;
+    google.protobuf.Duration leader_lease_timeout = 11;
+    string local_id = 12;
+
+    enum Version {
+      Min = 0;
+      Max = 3;
+    }
+  }
+
   message Notifier {
     string name = 1;
     oneof provider {
