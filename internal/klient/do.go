@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"net/http"
+	"os"
 
+	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
@@ -61,4 +63,29 @@ func Do[I Input, O Output](ctx context.Context, method, uri string, in I, out O,
 		"failed decoding api result",
 	)
 	return nil
+}
+
+func CLI_POST[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) {
+	cli(POST(ctx, uri, in, out, token...))
+}
+
+func CLI_GET[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) {
+	cli(GET(ctx, uri, in, out, token...))
+}
+
+func CLI_DELETE[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) {
+	cli(DELETE(ctx, uri, in, out, token...))
+}
+
+func cli(err *v1.Error) {
+	if err != nil {
+		ansi.Err(err.Error)
+		if err.Code == http.StatusUnauthorized {
+			ansi.Suggestion(
+				"vince login",
+			)
+			os.Exit(1)
+		}
+		os.Exit(1)
+	}
 }

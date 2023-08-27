@@ -2,7 +2,6 @@ package sites
 
 import (
 	"context"
-	"errors"
 	"os"
 
 	"github.com/urfave/cli/v3"
@@ -39,16 +38,13 @@ func create() *cli.Command {
 			}
 			token, instance := auth.Account()
 
-			err := klient.POST(
+			klient.CLI_POST(
 				context.Background(),
 				instance+"/sites",
 				&v1.Site_CreateOptions{Domain: name},
 				&v1.Site{},
 				token,
 			)
-			if err != nil {
-				return ansi.ERROR(errors.New(err.Error))
-			}
 			ansi.Ok("ok")
 			return nil
 		},
@@ -70,16 +66,13 @@ func del() *cli.Command {
 			}
 			token, instance := auth.Account()
 
-			err := klient.DELETE(
+			klient.CLI_DELETE(
 				context.Background(),
 				instance+"/sites",
 				&v1.Site_DeleteOptions{Domain: name},
 				&v1.Site{},
 				token,
 			)
-			if err != nil {
-				return ansi.ERROR(errors.New(err.Error))
-			}
 			ansi.Ok("ok")
 			return nil
 		},
@@ -93,16 +86,13 @@ func list() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			token, instance := auth.Account()
 			var list v1.Site_List
-			err := klient.GET(
+			klient.CLI_GET(
 				context.Background(),
 				instance+"/sites",
 				&v1.Site_ListOptions{},
 				&list,
 				token,
 			)
-			if err != nil {
-				return ansi.ERROR(errors.New(err.Error))
-			}
 			for _, s := range list.List {
 				ansi.Ok(s.Domain)
 			}

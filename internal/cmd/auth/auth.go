@@ -141,3 +141,12 @@ func Account() (token string, api string) {
 	api = o.Active.Instance
 	return
 }
+
+func Instance() (api string) {
+	o, _ := LoadClient()
+	if o.Active == nil {
+		return
+	}
+	api = o.Active.Instance
+	return
+}
