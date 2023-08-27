@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"log/slog"
+
 	"github.com/dgraph-io/badger/v4"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/vinceanalytics/vince/internal/config"
@@ -19,7 +21,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/tokens"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/exp/slog"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
