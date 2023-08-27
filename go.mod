@@ -5,7 +5,7 @@ go 1.21
 require (
 	filippo.io/age v1.1.1
 	github.com/RoaringBitmap/roaring v1.3.0
-	github.com/apache/arrow/go/v14 v14.0.0-20230824155655-9958896fe067
+	github.com/apache/arrow/go/v14 v14.0.0-20230825230106-c9bfca5ec40d
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/cespare/xxhash/v2 v2.2.0
 	github.com/chanced/powerset v0.0.1

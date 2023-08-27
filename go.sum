@@ -26,6 +26,8 @@ github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/apache/arrow/go/v14 v14.0.0-20230824155655-9958896fe067 h1:pMhaIJD8Zi5vhEOevo1P7qHKIQHd1fPqrXZ37UM7n+4=
 github.com/apache/arrow/go/v14 v14.0.0-20230824155655-9958896fe067/go.mod h1:QQ18IZU2Y3BFqHtF2HyvrjEEmk8TyzzmXgUVjep3bCw=
+github.com/apache/arrow/go/v14 v14.0.0-20230825230106-c9bfca5ec40d h1:VY3jOV6QRGJOlhXHob0GSNybSyws1n4628xdvczv12Q=
+github.com/apache/arrow/go/v14 v14.0.0-20230825230106-c9bfca5ec40d/go.mod h1:QQ18IZU2Y3BFqHtF2HyvrjEEmk8TyzzmXgUVjep3bCw=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/apache/thrift v0.13.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/apache/thrift v0.16.0 h1:qEy6UW60iVOlUy+b9ZR0d5WzUWYGOo4HfopoyBaNmoY=
