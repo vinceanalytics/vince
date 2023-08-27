@@ -81,7 +81,7 @@ func CMD() *cli.Command {
 			)
 			ansi.Ok("config path :%s", file)
 
-			_, db := db.Open(context.Background(), meta)
+			_, db := db.Open(context.Background(), meta, "silent")
 			defer db.Close()
 			must.One(db.Update(func(txn *badger.Txn) error {
 				return txn.Set([]byte(accountKey), account)

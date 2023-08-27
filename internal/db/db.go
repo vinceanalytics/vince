@@ -10,6 +10,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
+	"github.com/dgraph-io/badger/v4/pb"
 	"github.com/vinceanalytics/vince/internal/must"
 )
 
@@ -37,6 +38,14 @@ func Open(ctx context.Context, path string, logLevel ...string) (context.Context
 	db := must.Must(badger.Open(o))(
 		"failed to open badger db for  timeseries storage dir:", dir,
 	)
+	obs := &Observer{ctx: ctx, Silent: len(logLevel) > 0 && logLevel[0] == "silent"}
+	go func() {
+		db.Subscribe(ctx, obs.Changed, []pb.Match{
+			{Prefix: []byte("vince/")},
+		})
+	}()
+
+	ctx = context.WithValue(ctx, observeKey{}, obs)
 	return context.WithValue(ctx, key{}, db), db
 }
 
@@ -61,4 +70,30 @@ func (badgerLogger) Infof(format string, args ...interface{}) {
 
 func (b badgerLogger) Debugf(format string, args ...interface{}) {
 	slog.Debug(fmt.Sprintf(format, args...))
+}
+
+type Observer struct {
+	ctx      context.Context
+	Silent   bool
+	OnChange func(context.Context, *badger.KVList) error
+}
+
+type observeKey struct{}
+
+func SetKeyChangeObserver(ctx context.Context, obs func(context.Context, *badger.KVList) error) {
+	cb := ctx.Value(observeKey{}).(*Observer)
+	cb.OnChange = obs
+}
+
+func (cb *Observer) Changed(kv *badger.KVList) error {
+	if cb.OnChange != nil {
+		return cb.OnChange(cb.ctx, kv)
+	}
+	if cb.Silent {
+		return nil
+	}
+	for _, v := range kv.Kv {
+		slog.Info("Key Change", "key", string(v.Key))
+	}
+	return nil
 }
