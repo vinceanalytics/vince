@@ -108,10 +108,16 @@ type partitionIter struct {
 	it      *badger.Iterator
 	txn     *badger.Txn
 	baseKey []byte
+	started bool
 }
 
 func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
-	defer p.it.Next()
+	if !p.started {
+		p.started = true
+		p.it.Rewind()
+	} else {
+		p.it.Next()
+	}
 	if !p.it.Valid() {
 		return nil, io.EOF
 	}

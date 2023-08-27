@@ -49,8 +49,8 @@ func Open(ctx context.Context, path string, logLevel ...string) (context.Context
 	return context.WithValue(ctx, key{}, db), db
 }
 
-func Get(ctx context.Context) *badger.DB {
-	return ctx.Value(key{}).(*badger.DB)
+func Get(ctx context.Context) Provider {
+	return &provider{db: ctx.Value(key{}).(*badger.DB)}
 }
 
 var _ badger.Logger = (*badgerLogger)(nil)
@@ -100,4 +100,31 @@ func (cb *Observer) Changed(kv *badger.KVList) error {
 
 type Provider interface {
 	With(func(db *badger.DB) error) error
+	Update(f func(txn *badger.Txn) error) error
+	View(f func(txn *badger.Txn) error) error
+	NewTransaction(update bool) *badger.Txn
+}
+
+type provider struct {
+	db *badger.DB
+}
+
+func (p *provider) With(f func(db *badger.DB) error) error {
+	return f(p.db)
+}
+
+func (p *provider) View(f func(txn *badger.Txn) error) error {
+	return p.With(func(db *badger.DB) error {
+		return db.View(f)
+	})
+}
+
+func (p *provider) Update(f func(txn *badger.Txn) error) error {
+	return p.With(func(db *badger.DB) error {
+		return db.Update(f)
+	})
+}
+
+func (p *provider) NewTransaction(update bool) *badger.Txn {
+	return p.db.NewTransaction(update)
 }

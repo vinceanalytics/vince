@@ -3,14 +3,14 @@ package engine
 import (
 	"net"
 
-	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/vitess/go/mysql"
 	querypb "github.com/dolthub/vitess/go/vt/proto/query"
+	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/tokens"
 )
 
 type Auth struct {
-	DB *badger.DB
+	DB db.Provider
 }
 
 var _ mysql.AuthServer = (*Auth)(nil)

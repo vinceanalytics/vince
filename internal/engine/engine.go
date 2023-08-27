@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/apache/arrow/go/v14/parquet"
-	"github.com/dgraph-io/badger/v4"
 	sqle "github.com/dolthub/go-mysql-server"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/db"
@@ -39,7 +38,7 @@ func Get(ctx context.Context) *Engine {
 }
 
 type Context struct {
-	DB                   *badger.DB
+	DB                   db.Provider
 	ReadBlock            func(ulid.ULID, func(parquet.ReaderAtSeeker))
 	PrepareTableForQuery func(string)
 }

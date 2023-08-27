@@ -10,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/core"
+	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
@@ -34,12 +35,12 @@ func Generate(ctx context.Context, key ed25519.PrivateKey,
 
 }
 
-func Valid(db *badger.DB, token string) (ok bool) {
+func Valid(db db.Provider, token string) (ok bool) {
 	_, ok = ValidWithClaims(db, token)
 	return
 }
 
-func ValidWithClaims(db *badger.DB, token string) (claims *jwt.RegisteredClaims, ok bool) {
+func ValidWithClaims(db db.Provider, token string) (claims *jwt.RegisteredClaims, ok bool) {
 	if token == "" {
 		return
 	}
