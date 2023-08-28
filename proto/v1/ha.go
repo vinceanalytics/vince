@@ -5,135 +5,91 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (r *Raft_RPC_Command) To() any {
+func (r *Raft_RPC_Call_Request) To() any {
 	switch e := r.Kind.(type) {
-	case *Raft_RPC_Command_AppendEntries_:
-		switch o := e.AppendEntries.Kind.(type) {
-		case *Raft_RPC_Command_AppendEntries_Request_:
-			return o.Request.To()
-		case *Raft_RPC_Command_AppendEntries_Response_:
-			return o.Response.To()
-		default:
-			panic("unreachable")
+	case *Raft_RPC_Call_Request_AppendEntries:
+		return e.AppendEntries.To()
+	case *Raft_RPC_Call_Request_Vote:
+		return e.Vote.To()
+	case *Raft_RPC_Call_Request_InstallSnapshot:
+		return e.InstallSnapshot.To()
+	case *Raft_RPC_Call_Request_TimeoutNow:
+		return e.TimeoutNow.To()
+	default:
+		panic("unreachable")
+	}
+}
+
+func Raft_RPC_Call_RequestFrom(a any) *Raft_RPC_Call_Request {
+	switch e := a.(type) {
+	case *raft.AppendEntriesRequest:
+		return &Raft_RPC_Call_Request{
+			Kind: &Raft_RPC_Call_Request_AppendEntries{
+				AppendEntries: Raft_RPC_Command_AppendEntries_RequestFrom(e),
+			},
 		}
-	case *Raft_RPC_Command_Vote_:
-		switch o := e.Vote.Kind.(type) {
-		case *Raft_RPC_Command_Vote_Request_:
-			return o.Request.To()
-		case *Raft_RPC_Command_Vote_Response_:
-			return o.Response.To()
-		default:
-			panic("unreachable")
+	case *raft.RequestVoteRequest:
+		return &Raft_RPC_Call_Request{
+			Kind: &Raft_RPC_Call_Request_Vote{
+				Vote: Raft_RPC_Command_Vote_RequestFrom(e),
+			},
 		}
-	case *Raft_RPC_Command_InstallSnapshot_:
-		switch o := e.InstallSnapshot.Kind.(type) {
-		case *Raft_RPC_Command_InstallSnapshot_Request_:
-			return o.Request.To()
-		case *Raft_RPC_Command_InstallSnapshot_Response_:
-			return o.Response.To()
-		default:
-			panic("unreachable")
+	case *raft.InstallSnapshotRequest:
+		return &Raft_RPC_Call_Request{
+			Kind: &Raft_RPC_Call_Request_InstallSnapshot{
+				InstallSnapshot: Raft_RPC_Command_InstallSnapshot_RequestFrom(e),
+			},
 		}
-	case *Raft_RPC_Command_TimeoutNow_:
-		switch o := e.TimeoutNow.Kind.(type) {
-		case *Raft_RPC_Command_TimeoutNow_Request_:
-			return o.Request.To()
-		case *Raft_RPC_Command_TimeoutNow_Response_:
-			return o.Response.To()
-		default:
-			panic("unreachable")
+	case *raft.TimeoutNowRequest:
+		return &Raft_RPC_Call_Request{
+			Kind: &Raft_RPC_Call_Request_TimeoutNow{
+				TimeoutNow: Raft_RPC_Command_TimeoutNow_RequestFrom(e),
+			},
 		}
 	default:
 		panic("unreachable")
 	}
 }
 
-func Raft_RPC_CommandFrom(a any) *Raft_RPC_Command {
-	switch e := a.(type) {
-	case *raft.AppendEntriesRequest:
-		return &Raft_RPC_Command{
-			Kind: &Raft_RPC_Command_AppendEntries_{
-				AppendEntries: &Raft_RPC_Command_AppendEntries{
-					Kind: &Raft_RPC_Command_AppendEntries_Request_{
-						Request: Raft_RPC_Command_AppendEntries_RequestFrom(e),
-					},
-				},
-			},
-		}
-	case *raft.AppendEntriesResponse:
-		return &Raft_RPC_Command{
-			Kind: &Raft_RPC_Command_AppendEntries_{
-				AppendEntries: &Raft_RPC_Command_AppendEntries{
-					Kind: &Raft_RPC_Command_AppendEntries_Response_{
-						Response: Raft_RPC_Command_AppendEntries_ResponseFrom(e),
-					},
-				},
-			},
-		}
+func (r *Raft_RPC_Call_Response) To() any {
+	switch e := r.Kind.(type) {
+	case *Raft_RPC_Call_Response_AppendEntries:
+		return e.AppendEntries.To()
+	case *Raft_RPC_Call_Response_Vote:
+		return e.Vote.To()
+	case *Raft_RPC_Call_Response_InstallSnapshot:
+		return e.InstallSnapshot.To()
+	case *Raft_RPC_Call_Response_TimeoutNow:
+		return e.TimeoutNow.To()
+	default:
+		panic("unreachable")
+	}
+}
 
-	case *raft.RequestVoteRequest:
-		return &Raft_RPC_Command{
-			Kind: &Raft_RPC_Command_Vote_{
-				Vote: &Raft_RPC_Command_Vote{
-					Kind: &Raft_RPC_Command_Vote_Request_{
-						Request: Raft_RPC_Command_Vote_RequestFrom(e),
-					},
-				},
-			},
+func Raft_RPC_Call_ResponseFrom(a raft.RPCResponse) (o *Raft_RPC_Call_Response) {
+	o = &Raft_RPC_Call_Response{}
+	if a.Error != nil {
+		o.Error = a.Error.Error()
+	}
+	switch e := a.Response.(type) {
+	case *raft.AppendEntriesResponse:
+		o.Kind = &Raft_RPC_Call_Response_AppendEntries{
+			AppendEntries: Raft_RPC_Command_AppendEntries_ResponseFrom(e),
 		}
 	case *raft.RequestVoteResponse:
-		return &Raft_RPC_Command{
-			Kind: &Raft_RPC_Command_Vote_{
-				Vote: &Raft_RPC_Command_Vote{
-					Kind: &Raft_RPC_Command_Vote_Response_{
-						Response: Raft_RPC_Command_Vote_ResponseFrom(e),
-					},
-				},
-			},
-		}
-	case *raft.InstallSnapshotRequest:
-		return &Raft_RPC_Command{
-			Kind: &Raft_RPC_Command_InstallSnapshot_{
-				InstallSnapshot: &Raft_RPC_Command_InstallSnapshot{
-					Kind: &Raft_RPC_Command_InstallSnapshot_Request_{
-						Request: Raft_RPC_Command_InstallSnapshot_RequestFrom(e),
-					},
-				},
-			},
+		o.Kind = &Raft_RPC_Call_Response_Vote{
+			Vote: Raft_RPC_Command_Vote_ResponseFrom(e),
 		}
 	case *raft.InstallSnapshotResponse:
-		return &Raft_RPC_Command{
-			Kind: &Raft_RPC_Command_InstallSnapshot_{
-				InstallSnapshot: &Raft_RPC_Command_InstallSnapshot{
-					Kind: &Raft_RPC_Command_InstallSnapshot_Response_{
-						Response: Raft_RPC_Command_InstallSnapshot_ResponseFrom(e),
-					},
-				},
-			},
-		}
-	case *raft.TimeoutNowRequest:
-		return &Raft_RPC_Command{
-			Kind: &Raft_RPC_Command_TimeoutNow_{
-				TimeoutNow: &Raft_RPC_Command_TimeoutNow{
-					Kind: &Raft_RPC_Command_TimeoutNow_Request_{
-						Request: Raft_RPC_Command_TimeoutNow_RequestFrom(e),
-					},
-				},
-			},
+		o.Kind = &Raft_RPC_Call_Response_InstallSnapshot{
+			InstallSnapshot: Raft_RPC_Command_InstallSnapshot_ResponseFrom(e),
 		}
 	case *raft.TimeoutNowResponse:
-		return &Raft_RPC_Command{
-			Kind: &Raft_RPC_Command_TimeoutNow_{
-				TimeoutNow: &Raft_RPC_Command_TimeoutNow{
-					Kind: &Raft_RPC_Command_TimeoutNow_Response_{
-						Response: Raft_RPC_Command_TimeoutNow_ResponseFrom(e),
-					},
-				},
-			},
+		o.Kind = &Raft_RPC_Call_Response_TimeoutNow{
+			TimeoutNow: Raft_RPC_Command_TimeoutNow_ResponseFrom(e),
 		}
-	default:
-		return nil
 	}
+	return
 }
 
 func (r *Raft_RPC_Command_AppendEntries_Request) To() *raft.AppendEntriesRequest {

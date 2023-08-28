@@ -415,22 +415,29 @@ message Raft {
   }
 
   message RPC {
-    Command command = 1;
-    string error = 2;
+
+    message Call {
+      message Request {
+        oneof kind {
+          Command.AppendEntries.Request append_entries = 1;
+          Command.Vote.Request vote = 2;
+          Command.InstallSnapshot.Request install_snapshot = 3;
+          Command.TimeoutNow.Request timeout_now = 4;
+        }
+      }
+      message Response {
+        oneof kind {
+          Command.AppendEntries.Response append_entries = 1;
+          Command.Vote.Response vote = 2;
+          Command.InstallSnapshot.Response install_snapshot = 3;
+          Command.TimeoutNow.Response timeout_now = 4;
+        }
+        string error = 5;
+      }
+    }
 
     message Command {
-      oneof kind {
-        AppendEntries append_entries = 1;
-        Vote vote = 2;
-        InstallSnapshot install_snapshot = 3;
-        TimeoutNow timeout_now = 4;
-      }
-
       message AppendEntries {
-        oneof kind {
-          Request request = 1;
-          Response response = 2;
-        }
         message Request {
           Header header = 1;
           uint64 term = 2;
@@ -449,10 +456,6 @@ message Raft {
       }
 
       message Vote {
-        oneof kind {
-          Request request = 1;
-          Response response = 2;
-        }
         message Request {
           Header header = 1;
           uint64 term = 2;
@@ -468,10 +471,6 @@ message Raft {
       }
 
       message InstallSnapshot {
-        oneof kind {
-          Request request = 1;
-          Response response = 2;
-        }
         message Request {
           Header header = 1;
           Snapshot.Version snapshot_version = 2;
@@ -491,10 +490,6 @@ message Raft {
       }
 
       message TimeoutNow {
-        oneof kind {
-          Request request = 1;
-          Response response = 2;
-        }
         message Request { Header header = 1; }
         message Response { Header header = 1; }
       }
