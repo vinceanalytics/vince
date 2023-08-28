@@ -415,6 +415,8 @@ message Raft {
   }
 
   message RPC {
+    Command command = 1;
+    string error = 2;
 
     message Command {
       oneof kind {
