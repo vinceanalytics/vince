@@ -77,15 +77,8 @@ message Build { string version = 1; }
 
 // Configuration object for vince instance
 message Config {
-  // Path to the directory which is used to store metadata. This directory  is
-  // managed by  badger key/value store. WHich is used to store all metadata
-  // regarding sites events.
-  //
-  // Metadata includes
-  //  - Registered sites
-  //  - Blocks metadata
-  //  - Blocks indexes
-  string meta_path = 1;
+  // Path to the main badger database.
+  string db_path = 1;
 
   // Path to where block files are stored. Blocks are stored as files with ULID
   // as filenames
@@ -118,7 +111,7 @@ message Config {
   repeated Notifier notifiers = 11;
 
   string server_id = 12;
-  string raft_listen_address = 13;
+  string raft_path = 13;
   Cluster cluster = 14;
 
   message Cluster {

@@ -50,15 +50,15 @@ func CMD() *cli.Command {
 			}
 			ansi.Step("using root :%s", root)
 
-			meta := config.META_PATH
+			mainDB := config.DB_PATH
 			if root != "" {
-				meta = filepath.Join(root, meta)
+				mainDB = filepath.Join(root, mainDB)
 			}
 
-			must.One(os.Mkdir(meta, 0755))(
+			must.One(os.Mkdir(mainDB, 0755))(
 				"failed to create metadata directory",
 			)
-			ansi.Ok("metadata path :%s", meta)
+			ansi.Ok("main db path :%s", mainDB)
 			blocks := config.BLOCKS_PATH
 			if root != "" {
 				blocks = filepath.Join(root, blocks)
@@ -67,6 +67,15 @@ func CMD() *cli.Command {
 				"failed to create blocks directory",
 			)
 			ansi.Ok("blocks path :%s", blocks)
+
+			raft := config.RAFT_PATH
+			if root != "" {
+				raft = filepath.Join(root, raft)
+			}
+			must.One(os.Mkdir(raft, 0755))(
+				"failed to create raft directory",
+			)
+			ansi.Ok("raft path :%s", raft)
 
 			b := must.Must(pj.MarshalIndent(config.Defaults()))(
 				"failed encoding default config",
@@ -81,7 +90,7 @@ func CMD() *cli.Command {
 			)
 			ansi.Ok("config path :%s", file)
 
-			_, db := db.Open(context.Background(), meta, "silent")
+			_, db := db.Open(context.Background(), mainDB, "silent")
 			defer db.Close()
 			must.One(db.Update(func(txn *badger.Txn) error {
 				return txn.Set([]byte(accountKey), account)

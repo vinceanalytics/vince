@@ -77,7 +77,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 	resources = append(resources, httpListener)
 	ctx = core.SetHTTPListener(ctx, httpListener)
 
-	ctx, dba := db.Open(ctx, o.MetaPath)
+	ctx, dba := db.Open(ctx, o.DbPath)
 	resources = append(resources, dba)
 	ctx, ts := timeseries.Open(ctx, o.BlocksPath, int(o.GetEventsBufferSize()))
 	resources = append(resources, ts)

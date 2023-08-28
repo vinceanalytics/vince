@@ -14,8 +14,9 @@ import (
 
 const (
 	FILE        = "vince.json"
-	META_PATH   = "meta"
+	DB_PATH     = "db"
 	BLOCKS_PATH = "blocks"
+	RAFT_PATH   = "raft"
 )
 
 var (
@@ -29,13 +30,12 @@ func Defaults() *v1.Config {
 	o := &v1.Config{
 		ListenAddress:      ":8080",
 		LogLevel:           "debug",
-		MetaPath:           META_PATH,
+		DbPath:             DB_PATH,
 		BlocksPath:         BLOCKS_PATH,
 		SyncInterval:       DefaultSyncInterval,
 		MysqlListenAddress: ":3306",
 		EventsBufferSize:   int64(DefaultEventsBufferSize),
 		ServerId:           ng.Name(),
-		RaftListenAddress:  ":6800",
 	}
 	return o
 }
@@ -93,11 +93,11 @@ func Flags(o *Options) []cli.Flag {
 
 		&cli.StringFlag{
 			Category:    "core",
-			Name:        "meta-path",
-			Usage:       "path to meta data directory",
-			Value:       META_PATH,
-			Destination: &o.MetaPath,
-			EnvVars:     []string{"VINCE_METa_PATH"},
+			Name:        "db-path",
+			Usage:       "path to main database",
+			Value:       DB_PATH,
+			Destination: &o.DbPath,
+			EnvVars:     []string{"VINCE_DB_PATH"},
 		},
 		&cli.StringFlag{
 			Category:    "core",
@@ -135,13 +135,6 @@ func Flags(o *Options) []cli.Flag {
 			Usage:       "unique id of this server in a cluster",
 			Destination: &o.ServerId,
 			EnvVars:     []string{"VINCE_SERVER_ID"},
-		},
-		&cli.StringFlag{
-			Name:        "raft-listen-address",
-			Usage:       "network address for cluster communication",
-			Value:       ":6800",
-			Destination: &o.RaftListenAddress,
-			EnvVars:     []string{"VINCE_RAFT_LISTEN_ADDRESS"},
 		},
 	}
 }
