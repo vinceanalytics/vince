@@ -413,4 +413,100 @@ message Raft {
       }
     }
   }
+
+  message RPC {
+
+    message Command {
+      oneof kind {
+        AppendEntries append_entries = 1;
+        Vote vote = 2;
+        InstallSnapshot install_snapshot = 3;
+        TimeoutNow timeout_now = 4;
+      }
+
+      message AppendEntries {
+        oneof kind {
+          Request request = 1;
+          Response response = 2;
+        }
+        message Request {
+          Header header = 1;
+          uint64 term = 2;
+          uint64 prev_log_entry = 4;
+          uint64 prev_log_term = 5;
+          repeated Log entries = 6;
+          uint64 leader_commit_index = 7;
+        }
+        message Response {
+          Header header = 1;
+          uint64 term = 2;
+          uint64 last_log = 3;
+          bool success = 4;
+          bool no_retry_backoff = 5;
+        }
+      }
+
+      message Vote {
+        oneof kind {
+          Request request = 1;
+          Response response = 2;
+        }
+        message Request {
+          Header header = 1;
+          uint64 term = 2;
+          uint64 last_log_index = 3;
+          uint64 last_log_term = 4;
+          bool leadership_transfer = 5;
+        }
+        message Response {
+          Header header = 1;
+          uint64 term = 2;
+          bool granted = 3;
+        }
+      }
+
+      message InstallSnapshot {
+        oneof kind {
+          Request request = 1;
+          Response response = 2;
+        }
+        message Request {
+          Header header = 1;
+          Snapshot.Version snapshot_version = 2;
+          uint64 term = 3;
+          bytes leader = 4;
+          uint64 last_log_index = 5;
+          uint64 last_log_term = 6;
+          bytes configuration = 7;
+          uint64 configuration_index = 8;
+          int64 size = 9;
+        }
+        message Response {
+          Header header = 1;
+          uint64 term = 2;
+          bool success = 3;
+        }
+      }
+
+      message TimeoutNow {
+        oneof kind {
+          Request request = 1;
+          Response response = 2;
+        }
+        message Request { Header header = 1; }
+        message Response { Header header = 1; }
+      }
+
+      message Header {
+        Version version = 1;
+        bytes id = 2;
+        bytes addr = 3;
+
+        enum Version {
+          Min = 0;
+          Max = 1;
+        }
+      }
+    }
+  }
 }

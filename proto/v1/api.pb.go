@@ -602,6 +602,52 @@ func (Raft_Config_Server_Suffrage) EnumDescriptor() ([]byte, []int) {
 	return file_api_proto_rawDescGZIP(), []int{12, 3, 0, 0}
 }
 
+type Raft_RPC_Command_Header_Version int32
+
+const (
+	Raft_RPC_Command_Header_Min Raft_RPC_Command_Header_Version = 0
+	Raft_RPC_Command_Header_Max Raft_RPC_Command_Header_Version = 1
+)
+
+// Enum value maps for Raft_RPC_Command_Header_Version.
+var (
+	Raft_RPC_Command_Header_Version_name = map[int32]string{
+		0: "Min",
+		1: "Max",
+	}
+	Raft_RPC_Command_Header_Version_value = map[string]int32{
+		"Min": 0,
+		"Max": 1,
+	}
+)
+
+func (x Raft_RPC_Command_Header_Version) Enum() *Raft_RPC_Command_Header_Version {
+	p := new(Raft_RPC_Command_Header_Version)
+	*p = x
+	return p
+}
+
+func (x Raft_RPC_Command_Header_Version) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Raft_RPC_Command_Header_Version) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_proto_enumTypes[10].Descriptor()
+}
+
+func (Raft_RPC_Command_Header_Version) Type() protoreflect.EnumType {
+	return &file_api_proto_enumTypes[10]
+}
+
+func (x Raft_RPC_Command_Header_Version) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_Header_Version.Descriptor instead.
+func (Raft_RPC_Command_Header_Version) EnumDescriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 4, 0}
+}
+
 type StoreKey struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3597,6 +3643,44 @@ func (x *Raft_Config) GetServers() []*Raft_Config_Server {
 	return nil
 }
 
+type Raft_RPC struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Raft_RPC) Reset() {
+	*x = Raft_RPC{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[51]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC) ProtoMessage() {}
+
+func (x *Raft_RPC) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[51]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC.ProtoReflect.Descriptor instead.
+func (*Raft_RPC) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4}
+}
+
 type Raft_Log_Key struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3609,7 +3693,7 @@ type Raft_Log_Key struct {
 func (x *Raft_Log_Key) Reset() {
 	*x = Raft_Log_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[51]
+		mi := &file_api_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3622,7 +3706,7 @@ func (x *Raft_Log_Key) String() string {
 func (*Raft_Log_Key) ProtoMessage() {}
 
 func (x *Raft_Log_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[51]
+	mi := &file_api_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3664,7 +3748,7 @@ type Raft_Stable_Key struct {
 func (x *Raft_Stable_Key) Reset() {
 	*x = Raft_Stable_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[52]
+		mi := &file_api_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3677,7 +3761,7 @@ func (x *Raft_Stable_Key) String() string {
 func (*Raft_Stable_Key) ProtoMessage() {}
 
 func (x *Raft_Stable_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[52]
+	mi := &file_api_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3720,7 +3804,7 @@ type Raft_Snapshot_Key struct {
 func (x *Raft_Snapshot_Key) Reset() {
 	*x = Raft_Snapshot_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[53]
+		mi := &file_api_proto_msgTypes[54]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3733,7 +3817,7 @@ func (x *Raft_Snapshot_Key) String() string {
 func (*Raft_Snapshot_Key) ProtoMessage() {}
 
 func (x *Raft_Snapshot_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[53]
+	mi := &file_api_proto_msgTypes[54]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3783,7 +3867,7 @@ type Raft_Config_Server struct {
 func (x *Raft_Config_Server) Reset() {
 	*x = Raft_Config_Server{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[54]
+		mi := &file_api_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3796,7 +3880,7 @@ func (x *Raft_Config_Server) String() string {
 func (*Raft_Config_Server) ProtoMessage() {}
 
 func (x *Raft_Config_Server) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[54]
+	mi := &file_api_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3831,6 +3915,1078 @@ func (x *Raft_Config_Server) GetAddress() string {
 		return x.Address
 	}
 	return ""
+}
+
+type Raft_RPC_Command struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Kind:
+	//
+	//	*Raft_RPC_Command_AppendEntries_
+	//	*Raft_RPC_Command_Vote_
+	//	*Raft_RPC_Command_InstallSnapshot_
+	//	*Raft_RPC_Command_TimeoutNow_
+	Kind isRaft_RPC_Command_Kind `protobuf_oneof:"kind"`
+}
+
+func (x *Raft_RPC_Command) Reset() {
+	*x = Raft_RPC_Command{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[56]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command) ProtoMessage() {}
+
+func (x *Raft_RPC_Command) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[56]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0}
+}
+
+func (m *Raft_RPC_Command) GetKind() isRaft_RPC_Command_Kind {
+	if m != nil {
+		return m.Kind
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command) GetAppendEntries() *Raft_RPC_Command_AppendEntries {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_AppendEntries_); ok {
+		return x.AppendEntries
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command) GetVote() *Raft_RPC_Command_Vote {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_Vote_); ok {
+		return x.Vote
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command) GetInstallSnapshot() *Raft_RPC_Command_InstallSnapshot {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_InstallSnapshot_); ok {
+		return x.InstallSnapshot
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command) GetTimeoutNow() *Raft_RPC_Command_TimeoutNow {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_TimeoutNow_); ok {
+		return x.TimeoutNow
+	}
+	return nil
+}
+
+type isRaft_RPC_Command_Kind interface {
+	isRaft_RPC_Command_Kind()
+}
+
+type Raft_RPC_Command_AppendEntries_ struct {
+	AppendEntries *Raft_RPC_Command_AppendEntries `protobuf:"bytes,1,opt,name=append_entries,json=appendEntries,proto3,oneof"`
+}
+
+type Raft_RPC_Command_Vote_ struct {
+	Vote *Raft_RPC_Command_Vote `protobuf:"bytes,2,opt,name=vote,proto3,oneof"`
+}
+
+type Raft_RPC_Command_InstallSnapshot_ struct {
+	InstallSnapshot *Raft_RPC_Command_InstallSnapshot `protobuf:"bytes,3,opt,name=install_snapshot,json=installSnapshot,proto3,oneof"`
+}
+
+type Raft_RPC_Command_TimeoutNow_ struct {
+	TimeoutNow *Raft_RPC_Command_TimeoutNow `protobuf:"bytes,4,opt,name=timeout_now,json=timeoutNow,proto3,oneof"`
+}
+
+func (*Raft_RPC_Command_AppendEntries_) isRaft_RPC_Command_Kind() {}
+
+func (*Raft_RPC_Command_Vote_) isRaft_RPC_Command_Kind() {}
+
+func (*Raft_RPC_Command_InstallSnapshot_) isRaft_RPC_Command_Kind() {}
+
+func (*Raft_RPC_Command_TimeoutNow_) isRaft_RPC_Command_Kind() {}
+
+type Raft_RPC_Command_AppendEntries struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Kind:
+	//
+	//	*Raft_RPC_Command_AppendEntries_Request_
+	//	*Raft_RPC_Command_AppendEntries_Response_
+	Kind isRaft_RPC_Command_AppendEntries_Kind `protobuf_oneof:"kind"`
+}
+
+func (x *Raft_RPC_Command_AppendEntries) Reset() {
+	*x = Raft_RPC_Command_AppendEntries{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[57]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_AppendEntries) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_AppendEntries) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_AppendEntries) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[57]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_AppendEntries.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_AppendEntries) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 0}
+}
+
+func (m *Raft_RPC_Command_AppendEntries) GetKind() isRaft_RPC_Command_AppendEntries_Kind {
+	if m != nil {
+		return m.Kind
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_AppendEntries) GetRequest() *Raft_RPC_Command_AppendEntries_Request {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_AppendEntries_Request_); ok {
+		return x.Request
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_AppendEntries) GetResponse() *Raft_RPC_Command_AppendEntries_Response {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_AppendEntries_Response_); ok {
+		return x.Response
+	}
+	return nil
+}
+
+type isRaft_RPC_Command_AppendEntries_Kind interface {
+	isRaft_RPC_Command_AppendEntries_Kind()
+}
+
+type Raft_RPC_Command_AppendEntries_Request_ struct {
+	Request *Raft_RPC_Command_AppendEntries_Request `protobuf:"bytes,1,opt,name=request,proto3,oneof"`
+}
+
+type Raft_RPC_Command_AppendEntries_Response_ struct {
+	Response *Raft_RPC_Command_AppendEntries_Response `protobuf:"bytes,2,opt,name=response,proto3,oneof"`
+}
+
+func (*Raft_RPC_Command_AppendEntries_Request_) isRaft_RPC_Command_AppendEntries_Kind() {}
+
+func (*Raft_RPC_Command_AppendEntries_Response_) isRaft_RPC_Command_AppendEntries_Kind() {}
+
+type Raft_RPC_Command_Vote struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Kind:
+	//
+	//	*Raft_RPC_Command_Vote_Request_
+	//	*Raft_RPC_Command_Vote_Response_
+	Kind isRaft_RPC_Command_Vote_Kind `protobuf_oneof:"kind"`
+}
+
+func (x *Raft_RPC_Command_Vote) Reset() {
+	*x = Raft_RPC_Command_Vote{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[58]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_Vote) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_Vote) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_Vote) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[58]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_Vote.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_Vote) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 1}
+}
+
+func (m *Raft_RPC_Command_Vote) GetKind() isRaft_RPC_Command_Vote_Kind {
+	if m != nil {
+		return m.Kind
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_Vote) GetRequest() *Raft_RPC_Command_Vote_Request {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_Vote_Request_); ok {
+		return x.Request
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_Vote) GetResponse() *Raft_RPC_Command_Vote_Response {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_Vote_Response_); ok {
+		return x.Response
+	}
+	return nil
+}
+
+type isRaft_RPC_Command_Vote_Kind interface {
+	isRaft_RPC_Command_Vote_Kind()
+}
+
+type Raft_RPC_Command_Vote_Request_ struct {
+	Request *Raft_RPC_Command_Vote_Request `protobuf:"bytes,1,opt,name=request,proto3,oneof"`
+}
+
+type Raft_RPC_Command_Vote_Response_ struct {
+	Response *Raft_RPC_Command_Vote_Response `protobuf:"bytes,2,opt,name=response,proto3,oneof"`
+}
+
+func (*Raft_RPC_Command_Vote_Request_) isRaft_RPC_Command_Vote_Kind() {}
+
+func (*Raft_RPC_Command_Vote_Response_) isRaft_RPC_Command_Vote_Kind() {}
+
+type Raft_RPC_Command_InstallSnapshot struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Kind:
+	//
+	//	*Raft_RPC_Command_InstallSnapshot_Request_
+	//	*Raft_RPC_Command_InstallSnapshot_Response_
+	Kind isRaft_RPC_Command_InstallSnapshot_Kind `protobuf_oneof:"kind"`
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot) Reset() {
+	*x = Raft_RPC_Command_InstallSnapshot{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[59]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_InstallSnapshot) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_InstallSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[59]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_InstallSnapshot.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_InstallSnapshot) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 2}
+}
+
+func (m *Raft_RPC_Command_InstallSnapshot) GetKind() isRaft_RPC_Command_InstallSnapshot_Kind {
+	if m != nil {
+		return m.Kind
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot) GetRequest() *Raft_RPC_Command_InstallSnapshot_Request {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_InstallSnapshot_Request_); ok {
+		return x.Request
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot) GetResponse() *Raft_RPC_Command_InstallSnapshot_Response {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_InstallSnapshot_Response_); ok {
+		return x.Response
+	}
+	return nil
+}
+
+type isRaft_RPC_Command_InstallSnapshot_Kind interface {
+	isRaft_RPC_Command_InstallSnapshot_Kind()
+}
+
+type Raft_RPC_Command_InstallSnapshot_Request_ struct {
+	Request *Raft_RPC_Command_InstallSnapshot_Request `protobuf:"bytes,1,opt,name=request,proto3,oneof"`
+}
+
+type Raft_RPC_Command_InstallSnapshot_Response_ struct {
+	Response *Raft_RPC_Command_InstallSnapshot_Response `protobuf:"bytes,2,opt,name=response,proto3,oneof"`
+}
+
+func (*Raft_RPC_Command_InstallSnapshot_Request_) isRaft_RPC_Command_InstallSnapshot_Kind() {}
+
+func (*Raft_RPC_Command_InstallSnapshot_Response_) isRaft_RPC_Command_InstallSnapshot_Kind() {}
+
+type Raft_RPC_Command_TimeoutNow struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Kind:
+	//
+	//	*Raft_RPC_Command_TimeoutNow_Request_
+	//	*Raft_RPC_Command_TimeoutNow_Response_
+	Kind isRaft_RPC_Command_TimeoutNow_Kind `protobuf_oneof:"kind"`
+}
+
+func (x *Raft_RPC_Command_TimeoutNow) Reset() {
+	*x = Raft_RPC_Command_TimeoutNow{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[60]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_TimeoutNow) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_TimeoutNow) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_TimeoutNow) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[60]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_TimeoutNow.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_TimeoutNow) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 3}
+}
+
+func (m *Raft_RPC_Command_TimeoutNow) GetKind() isRaft_RPC_Command_TimeoutNow_Kind {
+	if m != nil {
+		return m.Kind
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_TimeoutNow) GetRequest() *Raft_RPC_Command_TimeoutNow_Request {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_TimeoutNow_Request_); ok {
+		return x.Request
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_TimeoutNow) GetResponse() *Raft_RPC_Command_TimeoutNow_Response {
+	if x, ok := x.GetKind().(*Raft_RPC_Command_TimeoutNow_Response_); ok {
+		return x.Response
+	}
+	return nil
+}
+
+type isRaft_RPC_Command_TimeoutNow_Kind interface {
+	isRaft_RPC_Command_TimeoutNow_Kind()
+}
+
+type Raft_RPC_Command_TimeoutNow_Request_ struct {
+	Request *Raft_RPC_Command_TimeoutNow_Request `protobuf:"bytes,1,opt,name=request,proto3,oneof"`
+}
+
+type Raft_RPC_Command_TimeoutNow_Response_ struct {
+	Response *Raft_RPC_Command_TimeoutNow_Response `protobuf:"bytes,2,opt,name=response,proto3,oneof"`
+}
+
+func (*Raft_RPC_Command_TimeoutNow_Request_) isRaft_RPC_Command_TimeoutNow_Kind() {}
+
+func (*Raft_RPC_Command_TimeoutNow_Response_) isRaft_RPC_Command_TimeoutNow_Kind() {}
+
+type Raft_RPC_Command_Header struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Version Raft_RPC_Command_Header_Version `protobuf:"varint,1,opt,name=version,proto3,enum=v1.Raft_RPC_Command_Header_Version" json:"version,omitempty"`
+	Id      []byte                          `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Addr    []byte                          `protobuf:"bytes,3,opt,name=addr,proto3" json:"addr,omitempty"`
+}
+
+func (x *Raft_RPC_Command_Header) Reset() {
+	*x = Raft_RPC_Command_Header{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[61]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_Header) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_Header) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_Header) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[61]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_Header.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_Header) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 4}
+}
+
+func (x *Raft_RPC_Command_Header) GetVersion() Raft_RPC_Command_Header_Version {
+	if x != nil {
+		return x.Version
+	}
+	return Raft_RPC_Command_Header_Min
+}
+
+func (x *Raft_RPC_Command_Header) GetId() []byte {
+	if x != nil {
+		return x.Id
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_Header) GetAddr() []byte {
+	if x != nil {
+		return x.Addr
+	}
+	return nil
+}
+
+type Raft_RPC_Command_AppendEntries_Request struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header            *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Term              uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
+	PrevLogEntry      uint64                   `protobuf:"varint,4,opt,name=prev_log_entry,json=prevLogEntry,proto3" json:"prev_log_entry,omitempty"`
+	PrevLogTerm       uint64                   `protobuf:"varint,5,opt,name=prev_log_term,json=prevLogTerm,proto3" json:"prev_log_term,omitempty"`
+	Entries           []*Raft_Log              `protobuf:"bytes,6,rep,name=entries,proto3" json:"entries,omitempty"`
+	LeaderCommitIndex uint64                   `protobuf:"varint,7,opt,name=leader_commit_index,json=leaderCommitIndex,proto3" json:"leader_commit_index,omitempty"`
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Request) Reset() {
+	*x = Raft_RPC_Command_AppendEntries_Request{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[62]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_AppendEntries_Request) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_AppendEntries_Request) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[62]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_AppendEntries_Request.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_AppendEntries_Request) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 0, 0}
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Request) GetHeader() *Raft_RPC_Command_Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Request) GetTerm() uint64 {
+	if x != nil {
+		return x.Term
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Request) GetPrevLogEntry() uint64 {
+	if x != nil {
+		return x.PrevLogEntry
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Request) GetPrevLogTerm() uint64 {
+	if x != nil {
+		return x.PrevLogTerm
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Request) GetEntries() []*Raft_Log {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Request) GetLeaderCommitIndex() uint64 {
+	if x != nil {
+		return x.LeaderCommitIndex
+	}
+	return 0
+}
+
+type Raft_RPC_Command_AppendEntries_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header         *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Term           uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
+	LastLog        uint64                   `protobuf:"varint,3,opt,name=last_log,json=lastLog,proto3" json:"last_log,omitempty"`
+	Success        bool                     `protobuf:"varint,4,opt,name=success,proto3" json:"success,omitempty"`
+	NoRetryBackoff bool                     `protobuf:"varint,5,opt,name=no_retry_backoff,json=noRetryBackoff,proto3" json:"no_retry_backoff,omitempty"`
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Response) Reset() {
+	*x = Raft_RPC_Command_AppendEntries_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[63]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_AppendEntries_Response) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_AppendEntries_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[63]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_AppendEntries_Response.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_AppendEntries_Response) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 0, 1}
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Response) GetHeader() *Raft_RPC_Command_Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Response) GetTerm() uint64 {
+	if x != nil {
+		return x.Term
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Response) GetLastLog() uint64 {
+	if x != nil {
+		return x.LastLog
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Response) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *Raft_RPC_Command_AppendEntries_Response) GetNoRetryBackoff() bool {
+	if x != nil {
+		return x.NoRetryBackoff
+	}
+	return false
+}
+
+type Raft_RPC_Command_Vote_Request struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header             *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Term               uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
+	LastLogIndex       uint64                   `protobuf:"varint,3,opt,name=last_log_index,json=lastLogIndex,proto3" json:"last_log_index,omitempty"`
+	LastLogTerm        uint64                   `protobuf:"varint,4,opt,name=last_log_term,json=lastLogTerm,proto3" json:"last_log_term,omitempty"`
+	LeadershipTransfer bool                     `protobuf:"varint,5,opt,name=leadership_transfer,json=leadershipTransfer,proto3" json:"leadership_transfer,omitempty"`
+}
+
+func (x *Raft_RPC_Command_Vote_Request) Reset() {
+	*x = Raft_RPC_Command_Vote_Request{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[64]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_Vote_Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_Vote_Request) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_Vote_Request) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[64]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_Vote_Request.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_Vote_Request) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 1, 0}
+}
+
+func (x *Raft_RPC_Command_Vote_Request) GetHeader() *Raft_RPC_Command_Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_Vote_Request) GetTerm() uint64 {
+	if x != nil {
+		return x.Term
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_Vote_Request) GetLastLogIndex() uint64 {
+	if x != nil {
+		return x.LastLogIndex
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_Vote_Request) GetLastLogTerm() uint64 {
+	if x != nil {
+		return x.LastLogTerm
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_Vote_Request) GetLeadershipTransfer() bool {
+	if x != nil {
+		return x.LeadershipTransfer
+	}
+	return false
+}
+
+type Raft_RPC_Command_Vote_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header  *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Term    uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
+	Granted bool                     `protobuf:"varint,3,opt,name=granted,proto3" json:"granted,omitempty"`
+}
+
+func (x *Raft_RPC_Command_Vote_Response) Reset() {
+	*x = Raft_RPC_Command_Vote_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[65]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_Vote_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_Vote_Response) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_Vote_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[65]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_Vote_Response.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_Vote_Response) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 1, 1}
+}
+
+func (x *Raft_RPC_Command_Vote_Response) GetHeader() *Raft_RPC_Command_Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_Vote_Response) GetTerm() uint64 {
+	if x != nil {
+		return x.Term
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_Vote_Response) GetGranted() bool {
+	if x != nil {
+		return x.Granted
+	}
+	return false
+}
+
+type Raft_RPC_Command_InstallSnapshot_Request struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header             *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	SnapshotVersion    Raft_Snapshot_Version    `protobuf:"varint,2,opt,name=snapshot_version,json=snapshotVersion,proto3,enum=v1.Raft_Snapshot_Version" json:"snapshot_version,omitempty"`
+	Term               uint64                   `protobuf:"varint,3,opt,name=term,proto3" json:"term,omitempty"`
+	Leader             []byte                   `protobuf:"bytes,4,opt,name=leader,proto3" json:"leader,omitempty"`
+	LastLogIndex       uint64                   `protobuf:"varint,5,opt,name=last_log_index,json=lastLogIndex,proto3" json:"last_log_index,omitempty"`
+	LastLogTerm        uint64                   `protobuf:"varint,6,opt,name=last_log_term,json=lastLogTerm,proto3" json:"last_log_term,omitempty"`
+	Configuration      []byte                   `protobuf:"bytes,7,opt,name=configuration,proto3" json:"configuration,omitempty"`
+	ConfigurationIndex uint64                   `protobuf:"varint,8,opt,name=configuration_index,json=configurationIndex,proto3" json:"configuration_index,omitempty"`
+	Size               int64                    `protobuf:"varint,9,opt,name=size,proto3" json:"size,omitempty"`
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) Reset() {
+	*x = Raft_RPC_Command_InstallSnapshot_Request{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[66]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_InstallSnapshot_Request) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[66]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_InstallSnapshot_Request.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_InstallSnapshot_Request) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 2, 0}
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) GetHeader() *Raft_RPC_Command_Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) GetSnapshotVersion() Raft_Snapshot_Version {
+	if x != nil {
+		return x.SnapshotVersion
+	}
+	return Raft_Snapshot_Min
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) GetTerm() uint64 {
+	if x != nil {
+		return x.Term
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) GetLeader() []byte {
+	if x != nil {
+		return x.Leader
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) GetLastLogIndex() uint64 {
+	if x != nil {
+		return x.LastLogIndex
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) GetLastLogTerm() uint64 {
+	if x != nil {
+		return x.LastLogTerm
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) GetConfiguration() []byte {
+	if x != nil {
+		return x.Configuration
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) GetConfigurationIndex() uint64 {
+	if x != nil {
+		return x.ConfigurationIndex
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Request) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+type Raft_RPC_Command_InstallSnapshot_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header  *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Term    uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
+	Success bool                     `protobuf:"varint,3,opt,name=success,proto3" json:"success,omitempty"`
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Response) Reset() {
+	*x = Raft_RPC_Command_InstallSnapshot_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[67]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_InstallSnapshot_Response) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[67]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_InstallSnapshot_Response.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_InstallSnapshot_Response) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 2, 1}
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Response) GetHeader() *Raft_RPC_Command_Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Response) GetTerm() uint64 {
+	if x != nil {
+		return x.Term
+	}
+	return 0
+}
+
+func (x *Raft_RPC_Command_InstallSnapshot_Response) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type Raft_RPC_Command_TimeoutNow_Request struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+}
+
+func (x *Raft_RPC_Command_TimeoutNow_Request) Reset() {
+	*x = Raft_RPC_Command_TimeoutNow_Request{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[68]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_TimeoutNow_Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_TimeoutNow_Request) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_TimeoutNow_Request) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[68]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_TimeoutNow_Request.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_TimeoutNow_Request) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 3, 0}
+}
+
+func (x *Raft_RPC_Command_TimeoutNow_Request) GetHeader() *Raft_RPC_Command_Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+type Raft_RPC_Command_TimeoutNow_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+}
+
+func (x *Raft_RPC_Command_TimeoutNow_Response) Reset() {
+	*x = Raft_RPC_Command_TimeoutNow_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[69]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Raft_RPC_Command_TimeoutNow_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Raft_RPC_Command_TimeoutNow_Response) ProtoMessage() {}
+
+func (x *Raft_RPC_Command_TimeoutNow_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[69]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Raft_RPC_Command_TimeoutNow_Response.ProtoReflect.Descriptor instead.
+func (*Raft_RPC_Command_TimeoutNow_Response) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{12, 4, 0, 3, 1}
+}
+
+func (x *Raft_RPC_Command_TimeoutNow_Response) GetHeader() *Raft_RPC_Command_Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
 }
 
 var File_api_proto protoreflect.FileDescriptor
@@ -4175,7 +5331,7 @@ var file_api_proto_rawDesc = []byte{
 	0x6c, 0x75, 0x6d, 0x52, 0x07, 0x63, 0x6f, 0x6c, 0x75, 0x6d, 0x6e, 0x73, 0x12, 0x21, 0x0a, 0x04,
 	0x72, 0x6f, 0x77, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x76, 0x31, 0x2e,
 	0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x52, 0x6f, 0x77, 0x52, 0x04, 0x72, 0x6f, 0x77, 0x73, 0x22,
-	0x08, 0x0a, 0x06, 0x4e, 0x6f, 0x74, 0x69, 0x63, 0x65, 0x22, 0xc0, 0x08, 0x0a, 0x04, 0x52, 0x61,
+	0x08, 0x0a, 0x06, 0x4e, 0x6f, 0x74, 0x69, 0x63, 0x65, 0x22, 0xd5, 0x1b, 0x0a, 0x04, 0x52, 0x61,
 	0x66, 0x74, 0x1a, 0xf8, 0x02, 0x0a, 0x03, 0x4c, 0x6f, 0x67, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e,
 	0x64, 0x65, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x69, 0x6e, 0x64, 0x65, 0x78,
 	0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x04,
@@ -4243,41 +5399,194 @@ var file_api_proto_rawDesc = []byte{
 	0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x30, 0x0a, 0x08, 0x53, 0x75,
 	0x66, 0x66, 0x72, 0x61, 0x67, 0x65, 0x12, 0x09, 0x0a, 0x05, 0x56, 0x6f, 0x74, 0x65, 0x72, 0x10,
 	0x00, 0x12, 0x0c, 0x0a, 0x08, 0x4e, 0x6f, 0x6e, 0x76, 0x6f, 0x74, 0x65, 0x72, 0x10, 0x01, 0x12,
-	0x0b, 0x0a, 0x07, 0x53, 0x74, 0x61, 0x67, 0x69, 0x6e, 0x67, 0x10, 0x02, 0x2a, 0x7b, 0x0a, 0x0b,
-	0x53, 0x74, 0x6f, 0x72, 0x65, 0x50, 0x72, 0x65, 0x66, 0x69, 0x78, 0x12, 0x09, 0x0a, 0x05, 0x53,
-	0x49, 0x54, 0x45, 0x53, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x42, 0x4c, 0x4f, 0x43, 0x4b, 0x53,
-	0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x41, 0x4c, 0x45, 0x52, 0x54, 0x53, 0x10, 0x02, 0x12, 0x0b,
-	0x0a, 0x07, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x10, 0x03, 0x12, 0x09, 0x0a, 0x05, 0x54,
-	0x4f, 0x4b, 0x45, 0x4e, 0x10, 0x04, 0x12, 0x0d, 0x0a, 0x09, 0x52, 0x41, 0x46, 0x54, 0x5f, 0x4c,
-	0x4f, 0x47, 0x53, 0x10, 0x05, 0x12, 0x0f, 0x0a, 0x0b, 0x52, 0x41, 0x46, 0x54, 0x5f, 0x53, 0x54,
-	0x41, 0x42, 0x4c, 0x45, 0x10, 0x06, 0x12, 0x11, 0x0a, 0x0d, 0x52, 0x41, 0x46, 0x54, 0x5f, 0x53,
-	0x4e, 0x41, 0x50, 0x53, 0x48, 0x4f, 0x54, 0x10, 0x07, 0x2a, 0xe1, 0x02, 0x0a, 0x06, 0x43, 0x6f,
-	0x6c, 0x75, 0x6d, 0x6e, 0x12, 0x0a, 0x0a, 0x06, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x10, 0x00,
-	0x12, 0x0c, 0x0a, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x01, 0x12, 0x06,
-	0x0a, 0x02, 0x69, 0x64, 0x10, 0x02, 0x12, 0x0b, 0x0a, 0x07, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
-	0x10, 0x04, 0x12, 0x0b, 0x0a, 0x07, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x10, 0x05, 0x12,
-	0x13, 0x0a, 0x0f, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69,
-	0x6f, 0x6e, 0x10, 0x06, 0x12, 0x08, 0x0a, 0x04, 0x63, 0x69, 0x74, 0x79, 0x10, 0x07, 0x12, 0x0b,
-	0x0a, 0x07, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x72, 0x79, 0x10, 0x08, 0x12, 0x0e, 0x0a, 0x0a, 0x65,
-	0x6e, 0x74, 0x72, 0x79, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x09, 0x12, 0x09, 0x0a, 0x05, 0x65,
-	0x76, 0x65, 0x6e, 0x74, 0x10, 0x0a, 0x12, 0x0d, 0x0a, 0x09, 0x65, 0x78, 0x69, 0x74, 0x5f, 0x70,
-	0x61, 0x67, 0x65, 0x10, 0x0b, 0x12, 0x08, 0x0a, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x10, 0x0c, 0x12,
-	0x06, 0x0a, 0x02, 0x6f, 0x73, 0x10, 0x0d, 0x12, 0x0e, 0x0a, 0x0a, 0x6f, 0x73, 0x5f, 0x76, 0x65,
-	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x0e, 0x12, 0x08, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x10,
-	0x0f, 0x12, 0x0c, 0x0a, 0x08, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72, 0x10, 0x10, 0x12,
-	0x13, 0x0a, 0x0f, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72, 0x5f, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x10, 0x11, 0x12, 0x0a, 0x0a, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e, 0x10, 0x12,
-	0x12, 0x0a, 0x0a, 0x06, 0x73, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x10, 0x13, 0x12, 0x10, 0x0a, 0x0c,
-	0x75, 0x74, 0x6d, 0x5f, 0x63, 0x61, 0x6d, 0x70, 0x61, 0x69, 0x67, 0x6e, 0x10, 0x14, 0x12, 0x0f,
-	0x0a, 0x0b, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x10, 0x15, 0x12,
-	0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x6d, 0x65, 0x64, 0x69, 0x75, 0x6d, 0x10, 0x16, 0x12,
-	0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x10, 0x17, 0x12,
-	0x0c, 0x0a, 0x08, 0x75, 0x74, 0x6d, 0x5f, 0x74, 0x65, 0x72, 0x6d, 0x10, 0x18, 0x42, 0x2a, 0x5a,
-	0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63,
-	0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65,
-	0x2f, 0x70, 0x72, 0x6f, 0x72, 0x6f, 0x2f, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x0b, 0x0a, 0x07, 0x53, 0x74, 0x61, 0x67, 0x69, 0x6e, 0x67, 0x10, 0x02, 0x1a, 0x92, 0x13, 0x0a,
+	0x03, 0x52, 0x50, 0x43, 0x1a, 0x8a, 0x13, 0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
+	0x12, 0x4b, 0x0a, 0x0e, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x72, 0x69,
+	0x65, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61,
+	0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x41,
+	0x70, 0x70, 0x65, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x48, 0x00, 0x52, 0x0d,
+	0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x12, 0x2f, 0x0a,
+	0x04, 0x76, 0x6f, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x76, 0x31,
+	0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e,
+	0x64, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x48, 0x00, 0x52, 0x04, 0x76, 0x6f, 0x74, 0x65, 0x12, 0x51,
+	0x0a, 0x10, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x5f, 0x73, 0x6e, 0x61, 0x70, 0x73, 0x68,
+	0x6f, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61,
+	0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x49,
+	0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x48, 0x00,
+	0x52, 0x0f, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f,
+	0x74, 0x12, 0x42, 0x0a, 0x0b, 0x74, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x5f, 0x6e, 0x6f, 0x77,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74,
+	0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x54, 0x69, 0x6d,
+	0x65, 0x6f, 0x75, 0x74, 0x4e, 0x6f, 0x77, 0x48, 0x00, 0x52, 0x0a, 0x74, 0x69, 0x6d, 0x65, 0x6f,
+	0x75, 0x74, 0x4e, 0x6f, 0x77, 0x1a, 0xd6, 0x04, 0x0a, 0x0d, 0x41, 0x70, 0x70, 0x65, 0x6e, 0x64,
+	0x45, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x12, 0x46, 0x0a, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61,
+	0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x41,
+	0x70, 0x70, 0x65, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x2e, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x49, 0x0a, 0x08, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x2b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e,
+	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x41, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x45, 0x6e,
+	0x74, 0x72, 0x69, 0x65, 0x73, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x48, 0x00,
+	0x52, 0x08, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0xf4, 0x01, 0x0a, 0x07, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74,
+	0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61,
+	0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x74,
+	0x65, 0x72, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12,
+	0x24, 0x0a, 0x0e, 0x70, 0x72, 0x65, 0x76, 0x5f, 0x6c, 0x6f, 0x67, 0x5f, 0x65, 0x6e, 0x74, 0x72,
+	0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0c, 0x70, 0x72, 0x65, 0x76, 0x4c, 0x6f, 0x67,
+	0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x22, 0x0a, 0x0d, 0x70, 0x72, 0x65, 0x76, 0x5f, 0x6c, 0x6f,
+	0x67, 0x5f, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x70, 0x72,
+	0x65, 0x76, 0x4c, 0x6f, 0x67, 0x54, 0x65, 0x72, 0x6d, 0x12, 0x26, 0x0a, 0x07, 0x65, 0x6e, 0x74,
+	0x72, 0x69, 0x65, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x76, 0x31, 0x2e,
+	0x52, 0x61, 0x66, 0x74, 0x2e, 0x4c, 0x6f, 0x67, 0x52, 0x07, 0x65, 0x6e, 0x74, 0x72, 0x69, 0x65,
+	0x73, 0x12, 0x2e, 0x0a, 0x13, 0x6c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x5f, 0x63, 0x6f, 0x6d, 0x6d,
+	0x69, 0x74, 0x5f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x52, 0x11,
+	0x6c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x49, 0x6e, 0x64, 0x65,
+	0x78, 0x1a, 0xb2, 0x01, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33,
+	0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b,
+	0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d,
+	0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61,
+	0x64, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x19, 0x0a, 0x08, 0x6c, 0x61, 0x73, 0x74, 0x5f,
+	0x6c, 0x6f, 0x67, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6c, 0x61, 0x73, 0x74, 0x4c,
+	0x6f, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x28, 0x0a, 0x10,
+	0x6e, 0x6f, 0x5f, 0x72, 0x65, 0x74, 0x72, 0x79, 0x5f, 0x62, 0x61, 0x63, 0x6b, 0x6f, 0x66, 0x66,
+	0x18, 0x05, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0e, 0x6e, 0x6f, 0x52, 0x65, 0x74, 0x72, 0x79, 0x42,
+	0x61, 0x63, 0x6b, 0x6f, 0x66, 0x66, 0x42, 0x06, 0x0a, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x1a, 0xce,
+	0x03, 0x0a, 0x04, 0x56, 0x6f, 0x74, 0x65, 0x12, 0x3d, 0x0a, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61,
+	0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x56,
+	0x6f, 0x74, 0x65, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x07, 0x72,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x40, 0x0a, 0x08, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61,
+	0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x56,
+	0x6f, 0x74, 0x65, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x48, 0x00, 0x52, 0x08,
+	0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0xcd, 0x01, 0x0a, 0x07, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52,
+	0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65,
+	0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72,
+	0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x24, 0x0a,
+	0x0e, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x5f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0c, 0x6c, 0x61, 0x73, 0x74, 0x4c, 0x6f, 0x67, 0x49, 0x6e,
+	0x64, 0x65, 0x78, 0x12, 0x22, 0x0a, 0x0d, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x5f,
+	0x74, 0x65, 0x72, 0x6d, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x6c, 0x61, 0x73, 0x74,
+	0x4c, 0x6f, 0x67, 0x54, 0x65, 0x72, 0x6d, 0x12, 0x2f, 0x0a, 0x13, 0x6c, 0x65, 0x61, 0x64, 0x65,
+	0x72, 0x73, 0x68, 0x69, 0x70, 0x5f, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x66, 0x65, 0x72, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x08, 0x52, 0x12, 0x6c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x68, 0x69, 0x70,
+	0x54, 0x72, 0x61, 0x6e, 0x73, 0x66, 0x65, 0x72, 0x1a, 0x6d, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52,
+	0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65,
+	0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72,
+	0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x18, 0x0a,
+	0x07, 0x67, 0x72, 0x61, 0x6e, 0x74, 0x65, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07,
+	0x67, 0x72, 0x61, 0x6e, 0x74, 0x65, 0x64, 0x42, 0x06, 0x0a, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x1a,
+	0x87, 0x05, 0x0a, 0x0f, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x53, 0x6e, 0x61, 0x70, 0x73,
+	0x68, 0x6f, 0x74, 0x12, 0x48, 0x0a, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52,
+	0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61,
+	0x6c, 0x6c, 0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x48, 0x00, 0x52, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x4b, 0x0a,
+	0x08, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x2d, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f,
+	0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x53, 0x6e, 0x61,
+	0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x48, 0x00,
+	0x52, 0x08, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0xe5, 0x02, 0x0a, 0x07, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74,
+	0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61,
+	0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x44, 0x0a, 0x10, 0x73,
+	0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x19, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e,
+	0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
+	0x52, 0x0f, 0x73, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f,
+	0x6e, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x16, 0x0a, 0x06, 0x6c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x6c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x24, 0x0a,
+	0x0e, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x5f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x18,
+	0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0c, 0x6c, 0x61, 0x73, 0x74, 0x4c, 0x6f, 0x67, 0x49, 0x6e,
+	0x64, 0x65, 0x78, 0x12, 0x22, 0x0a, 0x0d, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x5f,
+	0x74, 0x65, 0x72, 0x6d, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x6c, 0x61, 0x73, 0x74,
+	0x4c, 0x6f, 0x67, 0x54, 0x65, 0x72, 0x6d, 0x12, 0x24, 0x0a, 0x0d, 0x63, 0x6f, 0x6e, 0x66, 0x69,
+	0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x0d,
+	0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2f, 0x0a,
+	0x13, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
+	0x6e, 0x64, 0x65, 0x78, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52, 0x12, 0x63, 0x6f, 0x6e, 0x66,
+	0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x12, 0x12,
+	0x0a, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x03, 0x52, 0x04, 0x73, 0x69,
+	0x7a, 0x65, 0x1a, 0x6d, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33,
+	0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b,
+	0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d,
+	0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61,
+	0x64, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65,
+	0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73,
+	0x73, 0x42, 0x06, 0x0a, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x1a, 0xa2, 0x02, 0x0a, 0x0a, 0x54, 0x69,
+	0x6d, 0x65, 0x6f, 0x75, 0x74, 0x4e, 0x6f, 0x77, 0x12, 0x43, 0x0a, 0x07, 0x72, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x76, 0x31, 0x2e, 0x52,
+	0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e,
+	0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x4e, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x48, 0x00, 0x52, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x46, 0x0a,
+	0x08, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x28, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f,
+	0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x4e, 0x6f, 0x77,
+	0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x48, 0x00, 0x52, 0x08, 0x72, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x3e, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43,
+	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68,
+	0x65, 0x61, 0x64, 0x65, 0x72, 0x1a, 0x3f, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e,
+	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06,
+	0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x42, 0x06, 0x0a, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x1a, 0x88,
+	0x01, 0x0a, 0x06, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x3d, 0x0a, 0x07, 0x76, 0x65, 0x72,
+	0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x23, 0x2e, 0x76, 0x31, 0x2e,
+	0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
+	0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x2e, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x52,
+	0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0c, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x64, 0x64, 0x72,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x61, 0x64, 0x64, 0x72, 0x22, 0x1b, 0x0a, 0x07,
+	0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x07, 0x0a, 0x03, 0x4d, 0x69, 0x6e, 0x10, 0x00,
+	0x12, 0x07, 0x0a, 0x03, 0x4d, 0x61, 0x78, 0x10, 0x01, 0x42, 0x06, 0x0a, 0x04, 0x6b, 0x69, 0x6e,
+	0x64, 0x2a, 0x7b, 0x0a, 0x0b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x50, 0x72, 0x65, 0x66, 0x69, 0x78,
+	0x12, 0x09, 0x0a, 0x05, 0x53, 0x49, 0x54, 0x45, 0x53, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x42,
+	0x4c, 0x4f, 0x43, 0x4b, 0x53, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x41, 0x4c, 0x45, 0x52, 0x54,
+	0x53, 0x10, 0x02, 0x12, 0x0b, 0x0a, 0x07, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x10, 0x03,
+	0x12, 0x09, 0x0a, 0x05, 0x54, 0x4f, 0x4b, 0x45, 0x4e, 0x10, 0x04, 0x12, 0x0d, 0x0a, 0x09, 0x52,
+	0x41, 0x46, 0x54, 0x5f, 0x4c, 0x4f, 0x47, 0x53, 0x10, 0x05, 0x12, 0x0f, 0x0a, 0x0b, 0x52, 0x41,
+	0x46, 0x54, 0x5f, 0x53, 0x54, 0x41, 0x42, 0x4c, 0x45, 0x10, 0x06, 0x12, 0x11, 0x0a, 0x0d, 0x52,
+	0x41, 0x46, 0x54, 0x5f, 0x53, 0x4e, 0x41, 0x50, 0x53, 0x48, 0x4f, 0x54, 0x10, 0x07, 0x2a, 0xe1,
+	0x02, 0x0a, 0x06, 0x43, 0x6f, 0x6c, 0x75, 0x6d, 0x6e, 0x12, 0x0a, 0x0a, 0x06, 0x62, 0x6f, 0x75,
+	0x6e, 0x63, 0x65, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x10, 0x01, 0x12, 0x06, 0x0a, 0x02, 0x69, 0x64, 0x10, 0x02, 0x12, 0x0b, 0x0a, 0x07, 0x73,
+	0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65,
+	0x73, 0x74, 0x61, 0x6d, 0x70, 0x10, 0x04, 0x12, 0x0b, 0x0a, 0x07, 0x62, 0x72, 0x6f, 0x77, 0x73,
+	0x65, 0x72, 0x10, 0x05, 0x12, 0x13, 0x0a, 0x0f, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x5f,
+	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x06, 0x12, 0x08, 0x0a, 0x04, 0x63, 0x69, 0x74,
+	0x79, 0x10, 0x07, 0x12, 0x0b, 0x0a, 0x07, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x72, 0x79, 0x10, 0x08,
+	0x12, 0x0e, 0x0a, 0x0a, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x09,
+	0x12, 0x09, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x10, 0x0a, 0x12, 0x0d, 0x0a, 0x09, 0x65,
+	0x78, 0x69, 0x74, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x0b, 0x12, 0x08, 0x0a, 0x04, 0x68, 0x6f,
+	0x73, 0x74, 0x10, 0x0c, 0x12, 0x06, 0x0a, 0x02, 0x6f, 0x73, 0x10, 0x0d, 0x12, 0x0e, 0x0a, 0x0a,
+	0x6f, 0x73, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x0e, 0x12, 0x08, 0x0a, 0x04,
+	0x70, 0x61, 0x74, 0x68, 0x10, 0x0f, 0x12, 0x0c, 0x0a, 0x08, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72,
+	0x65, 0x72, 0x10, 0x10, 0x12, 0x13, 0x0a, 0x0f, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72,
+	0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x10, 0x11, 0x12, 0x0a, 0x0a, 0x06, 0x72, 0x65, 0x67,
+	0x69, 0x6f, 0x6e, 0x10, 0x12, 0x12, 0x0a, 0x0a, 0x06, 0x73, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x10,
+	0x13, 0x12, 0x10, 0x0a, 0x0c, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x61, 0x6d, 0x70, 0x61, 0x69, 0x67,
+	0x6e, 0x10, 0x14, 0x12, 0x0f, 0x0a, 0x0b, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65,
+	0x6e, 0x74, 0x10, 0x15, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x6d, 0x65, 0x64, 0x69,
+	0x75, 0x6d, 0x10, 0x16, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x10, 0x17, 0x12, 0x0c, 0x0a, 0x08, 0x75, 0x74, 0x6d, 0x5f, 0x74, 0x65, 0x72, 0x6d,
+	0x10, 0x18, 0x42, 0x2a, 0x5a, 0x28, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f,
+	0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x72, 0x6f, 0x2f, 0x76, 0x31, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -4292,137 +5601,176 @@ func file_api_proto_rawDescGZIP() []byte {
 	return file_api_proto_rawDescData
 }
 
-var file_api_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
-var file_api_proto_msgTypes = make([]protoimpl.MessageInfo, 55)
+var file_api_proto_enumTypes = make([]protoimpl.EnumInfo, 11)
+var file_api_proto_msgTypes = make([]protoimpl.MessageInfo, 70)
 var file_api_proto_goTypes = []interface{}{
-	(StorePrefix)(0),                  // 0: v1.StorePrefix
-	(Column)(0),                       // 1: v1.Column
-	(Block_Key_Kind)(0),               // 2: v1.Block.Key.Kind
-	(Config_Cluster_Version)(0),       // 3: v1.Config.Cluster.Version
-	(Token_Issuer)(0),                 // 4: v1.Token.Issuer
-	(Query_Colum_DataType)(0),         // 5: v1.Query.Colum.DataType
-	(Raft_Log_Type)(0),                // 6: v1.Raft.Log.Type
-	(Raft_Snapshot_Version)(0),        // 7: v1.Raft.Snapshot.Version
-	(Raft_Snapshot_Key_Mode)(0),       // 8: v1.Raft.Snapshot.Key.Mode
-	(Raft_Config_Server_Suffrage)(0),  // 9: v1.Raft.Config.Server.Suffrage
-	(*StoreKey)(nil),                  // 10: v1.StoreKey
-	(*Site)(nil),                      // 11: v1.Site
-	(*Block)(nil),                     // 12: v1.Block
-	(*Status)(nil),                    // 13: v1.Status
-	(*Build)(nil),                     // 14: v1.Build
-	(*Config)(nil),                    // 15: v1.Config
-	(*Account)(nil),                   // 16: v1.Account
-	(*Client)(nil),                    // 17: v1.Client
-	(*Token)(nil),                     // 18: v1.Token
-	(*Error)(nil),                     // 19: v1.Error
-	(*Query)(nil),                     // 20: v1.Query
-	(*Notice)(nil),                    // 21: v1.Notice
-	(*Raft)(nil),                      // 22: v1.Raft
-	(*Site_Key)(nil),                  // 23: v1.Site.Key
-	(*Site_GetOptions)(nil),           // 24: v1.Site.GetOptions
-	(*Site_CreateOptions)(nil),        // 25: v1.Site.CreateOptions
-	(*Site_ListOptions)(nil),          // 26: v1.Site.ListOptions
-	(*Site_DeleteOptions)(nil),        // 27: v1.Site.DeleteOptions
-	(*Site_List)(nil),                 // 28: v1.Site.List
-	(*Block_Key)(nil),                 // 29: v1.Block.Key
-	(*Block_Index)(nil),               // 30: v1.Block.Index
-	(*Block_Index_Range)(nil),         // 31: v1.Block.Index.Range
-	(*Config_Cluster)(nil),            // 32: v1.Config.Cluster
-	(*Config_Notifier)(nil),           // 33: v1.Config.Notifier
-	(*Config_Email)(nil),              // 34: v1.Config.Email
-	(*Config_Webhook)(nil),            // 35: v1.Config.Webhook
-	(*Config_HTTP)(nil),               // 36: v1.Config.HTTP
-	nil,                               // 37: v1.Config.Email.HeadersEntry
-	(*Config_HTTP_BasicAuth)(nil),     // 38: v1.Config.HTTP.BasicAuth
-	(*Config_HTTP_Authorization)(nil), // 39: v1.Config.HTTP.Authorization
-	(*Config_HTTP_OAuth2)(nil),        // 40: v1.Config.HTTP.OAuth2
-	(*Config_HTTP_TLSConfig)(nil),     // 41: v1.Config.HTTP.TLSConfig
-	nil,                               // 42: v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	(*Account_Key)(nil),               // 43: v1.Account.Key
-	nil,                               // 44: v1.Client.InstanceEntry
-	(*Client_Instance)(nil),           // 45: v1.Client.Instance
-	(*Client_Active)(nil),             // 46: v1.Client.Active
-	(*Client_Auth)(nil),               // 47: v1.Client.Auth
-	nil,                               // 48: v1.Client.Instance.AccountsEntry
-	(*Token_CreateOptions)(nil),       // 49: v1.Token.CreateOptions
-	(*Token_Key)(nil),                 // 50: v1.Token.Key
-	(*Query_Value)(nil),               // 51: v1.Query.Value
-	(*Query_RequestOptions)(nil),      // 52: v1.Query.RequestOptions
-	(*Query_Param)(nil),               // 53: v1.Query.Param
-	(*Query_Colum)(nil),               // 54: v1.Query.Colum
-	(*Query_Row)(nil),                 // 55: v1.Query.Row
-	(*Query_Result)(nil),              // 56: v1.Query.Result
-	(*Raft_Log)(nil),                  // 57: v1.Raft.Log
-	(*Raft_Stable)(nil),               // 58: v1.Raft.Stable
-	(*Raft_Snapshot)(nil),             // 59: v1.Raft.Snapshot
-	(*Raft_Config)(nil),               // 60: v1.Raft.Config
-	(*Raft_Log_Key)(nil),              // 61: v1.Raft.Log.Key
-	(*Raft_Stable_Key)(nil),           // 62: v1.Raft.Stable.Key
-	(*Raft_Snapshot_Key)(nil),         // 63: v1.Raft.Snapshot.Key
-	(*Raft_Config_Server)(nil),        // 64: v1.Raft.Config.Server
-	(*durationpb.Duration)(nil),       // 65: google.protobuf.Duration
-	(*timestamppb.Timestamp)(nil),     // 66: google.protobuf.Timestamp
+	(StorePrefix)(0),                         // 0: v1.StorePrefix
+	(Column)(0),                              // 1: v1.Column
+	(Block_Key_Kind)(0),                      // 2: v1.Block.Key.Kind
+	(Config_Cluster_Version)(0),              // 3: v1.Config.Cluster.Version
+	(Token_Issuer)(0),                        // 4: v1.Token.Issuer
+	(Query_Colum_DataType)(0),                // 5: v1.Query.Colum.DataType
+	(Raft_Log_Type)(0),                       // 6: v1.Raft.Log.Type
+	(Raft_Snapshot_Version)(0),               // 7: v1.Raft.Snapshot.Version
+	(Raft_Snapshot_Key_Mode)(0),              // 8: v1.Raft.Snapshot.Key.Mode
+	(Raft_Config_Server_Suffrage)(0),         // 9: v1.Raft.Config.Server.Suffrage
+	(Raft_RPC_Command_Header_Version)(0),     // 10: v1.Raft.RPC.Command.Header.Version
+	(*StoreKey)(nil),                         // 11: v1.StoreKey
+	(*Site)(nil),                             // 12: v1.Site
+	(*Block)(nil),                            // 13: v1.Block
+	(*Status)(nil),                           // 14: v1.Status
+	(*Build)(nil),                            // 15: v1.Build
+	(*Config)(nil),                           // 16: v1.Config
+	(*Account)(nil),                          // 17: v1.Account
+	(*Client)(nil),                           // 18: v1.Client
+	(*Token)(nil),                            // 19: v1.Token
+	(*Error)(nil),                            // 20: v1.Error
+	(*Query)(nil),                            // 21: v1.Query
+	(*Notice)(nil),                           // 22: v1.Notice
+	(*Raft)(nil),                             // 23: v1.Raft
+	(*Site_Key)(nil),                         // 24: v1.Site.Key
+	(*Site_GetOptions)(nil),                  // 25: v1.Site.GetOptions
+	(*Site_CreateOptions)(nil),               // 26: v1.Site.CreateOptions
+	(*Site_ListOptions)(nil),                 // 27: v1.Site.ListOptions
+	(*Site_DeleteOptions)(nil),               // 28: v1.Site.DeleteOptions
+	(*Site_List)(nil),                        // 29: v1.Site.List
+	(*Block_Key)(nil),                        // 30: v1.Block.Key
+	(*Block_Index)(nil),                      // 31: v1.Block.Index
+	(*Block_Index_Range)(nil),                // 32: v1.Block.Index.Range
+	(*Config_Cluster)(nil),                   // 33: v1.Config.Cluster
+	(*Config_Notifier)(nil),                  // 34: v1.Config.Notifier
+	(*Config_Email)(nil),                     // 35: v1.Config.Email
+	(*Config_Webhook)(nil),                   // 36: v1.Config.Webhook
+	(*Config_HTTP)(nil),                      // 37: v1.Config.HTTP
+	nil,                                      // 38: v1.Config.Email.HeadersEntry
+	(*Config_HTTP_BasicAuth)(nil),            // 39: v1.Config.HTTP.BasicAuth
+	(*Config_HTTP_Authorization)(nil),        // 40: v1.Config.HTTP.Authorization
+	(*Config_HTTP_OAuth2)(nil),               // 41: v1.Config.HTTP.OAuth2
+	(*Config_HTTP_TLSConfig)(nil),            // 42: v1.Config.HTTP.TLSConfig
+	nil,                                      // 43: v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	(*Account_Key)(nil),                      // 44: v1.Account.Key
+	nil,                                      // 45: v1.Client.InstanceEntry
+	(*Client_Instance)(nil),                  // 46: v1.Client.Instance
+	(*Client_Active)(nil),                    // 47: v1.Client.Active
+	(*Client_Auth)(nil),                      // 48: v1.Client.Auth
+	nil,                                      // 49: v1.Client.Instance.AccountsEntry
+	(*Token_CreateOptions)(nil),              // 50: v1.Token.CreateOptions
+	(*Token_Key)(nil),                        // 51: v1.Token.Key
+	(*Query_Value)(nil),                      // 52: v1.Query.Value
+	(*Query_RequestOptions)(nil),             // 53: v1.Query.RequestOptions
+	(*Query_Param)(nil),                      // 54: v1.Query.Param
+	(*Query_Colum)(nil),                      // 55: v1.Query.Colum
+	(*Query_Row)(nil),                        // 56: v1.Query.Row
+	(*Query_Result)(nil),                     // 57: v1.Query.Result
+	(*Raft_Log)(nil),                         // 58: v1.Raft.Log
+	(*Raft_Stable)(nil),                      // 59: v1.Raft.Stable
+	(*Raft_Snapshot)(nil),                    // 60: v1.Raft.Snapshot
+	(*Raft_Config)(nil),                      // 61: v1.Raft.Config
+	(*Raft_RPC)(nil),                         // 62: v1.Raft.RPC
+	(*Raft_Log_Key)(nil),                     // 63: v1.Raft.Log.Key
+	(*Raft_Stable_Key)(nil),                  // 64: v1.Raft.Stable.Key
+	(*Raft_Snapshot_Key)(nil),                // 65: v1.Raft.Snapshot.Key
+	(*Raft_Config_Server)(nil),               // 66: v1.Raft.Config.Server
+	(*Raft_RPC_Command)(nil),                 // 67: v1.Raft.RPC.Command
+	(*Raft_RPC_Command_AppendEntries)(nil),   // 68: v1.Raft.RPC.Command.AppendEntries
+	(*Raft_RPC_Command_Vote)(nil),            // 69: v1.Raft.RPC.Command.Vote
+	(*Raft_RPC_Command_InstallSnapshot)(nil), // 70: v1.Raft.RPC.Command.InstallSnapshot
+	(*Raft_RPC_Command_TimeoutNow)(nil),      // 71: v1.Raft.RPC.Command.TimeoutNow
+	(*Raft_RPC_Command_Header)(nil),          // 72: v1.Raft.RPC.Command.Header
+	(*Raft_RPC_Command_AppendEntries_Request)(nil),    // 73: v1.Raft.RPC.Command.AppendEntries.Request
+	(*Raft_RPC_Command_AppendEntries_Response)(nil),   // 74: v1.Raft.RPC.Command.AppendEntries.Response
+	(*Raft_RPC_Command_Vote_Request)(nil),             // 75: v1.Raft.RPC.Command.Vote.Request
+	(*Raft_RPC_Command_Vote_Response)(nil),            // 76: v1.Raft.RPC.Command.Vote.Response
+	(*Raft_RPC_Command_InstallSnapshot_Request)(nil),  // 77: v1.Raft.RPC.Command.InstallSnapshot.Request
+	(*Raft_RPC_Command_InstallSnapshot_Response)(nil), // 78: v1.Raft.RPC.Command.InstallSnapshot.Response
+	(*Raft_RPC_Command_TimeoutNow_Request)(nil),       // 79: v1.Raft.RPC.Command.TimeoutNow.Request
+	(*Raft_RPC_Command_TimeoutNow_Response)(nil),      // 80: v1.Raft.RPC.Command.TimeoutNow.Response
+	(*durationpb.Duration)(nil),                       // 81: google.protobuf.Duration
+	(*timestamppb.Timestamp)(nil),                     // 82: google.protobuf.Timestamp
 }
 var file_api_proto_depIdxs = []int32{
 	0,  // 0: v1.StoreKey.prefix:type_name -> v1.StorePrefix
-	65, // 1: v1.Config.sync_interval:type_name -> google.protobuf.Duration
-	33, // 2: v1.Config.notifiers:type_name -> v1.Config.Notifier
-	32, // 3: v1.Config.cluster:type_name -> v1.Config.Cluster
-	44, // 4: v1.Client.instance:type_name -> v1.Client.InstanceEntry
-	46, // 5: v1.Client.active:type_name -> v1.Client.Active
-	10, // 6: v1.Site.Key.store:type_name -> v1.StoreKey
-	11, // 7: v1.Site.List.list:type_name -> v1.Site
-	10, // 8: v1.Block.Key.store:type_name -> v1.StoreKey
+	81, // 1: v1.Config.sync_interval:type_name -> google.protobuf.Duration
+	34, // 2: v1.Config.notifiers:type_name -> v1.Config.Notifier
+	33, // 3: v1.Config.cluster:type_name -> v1.Config.Cluster
+	45, // 4: v1.Client.instance:type_name -> v1.Client.InstanceEntry
+	47, // 5: v1.Client.active:type_name -> v1.Client.Active
+	11, // 6: v1.Site.Key.store:type_name -> v1.StoreKey
+	12, // 7: v1.Site.List.list:type_name -> v1.Site
+	11, // 8: v1.Block.Key.store:type_name -> v1.StoreKey
 	2,  // 9: v1.Block.Key.kind:type_name -> v1.Block.Key.Kind
-	31, // 10: v1.Block.Index.time_range:type_name -> v1.Block.Index.Range
-	66, // 11: v1.Block.Index.Range.min:type_name -> google.protobuf.Timestamp
-	66, // 12: v1.Block.Index.Range.max:type_name -> google.protobuf.Timestamp
+	32, // 10: v1.Block.Index.time_range:type_name -> v1.Block.Index.Range
+	82, // 11: v1.Block.Index.Range.min:type_name -> google.protobuf.Timestamp
+	82, // 12: v1.Block.Index.Range.max:type_name -> google.protobuf.Timestamp
 	3,  // 13: v1.Config.Cluster.version:type_name -> v1.Config.Cluster.Version
-	65, // 14: v1.Config.Cluster.heartbeat_timeout:type_name -> google.protobuf.Duration
-	65, // 15: v1.Config.Cluster.election_timeout:type_name -> google.protobuf.Duration
-	65, // 16: v1.Config.Cluster.commit_timeout:type_name -> google.protobuf.Duration
-	65, // 17: v1.Config.Cluster.snapshot_interval:type_name -> google.protobuf.Duration
-	65, // 18: v1.Config.Cluster.leader_lease_timeout:type_name -> google.protobuf.Duration
-	34, // 19: v1.Config.Notifier.email:type_name -> v1.Config.Email
-	35, // 20: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
-	37, // 21: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
-	41, // 22: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	36, // 23: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
-	38, // 24: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
-	39, // 25: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
-	40, // 26: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
-	41, // 27: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	42, // 28: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	41, // 29: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	10, // 30: v1.Account.Key.store:type_name -> v1.StoreKey
-	45, // 31: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
-	48, // 32: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
-	47, // 33: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
-	65, // 34: v1.Token.CreateOptions.ttl:type_name -> google.protobuf.Duration
-	10, // 35: v1.Token.Key.store:type_name -> v1.StoreKey
-	66, // 36: v1.Query.Value.timestamp:type_name -> google.protobuf.Timestamp
-	53, // 37: v1.Query.RequestOptions.params:type_name -> v1.Query.Param
-	51, // 38: v1.Query.Param.value:type_name -> v1.Query.Value
+	81, // 14: v1.Config.Cluster.heartbeat_timeout:type_name -> google.protobuf.Duration
+	81, // 15: v1.Config.Cluster.election_timeout:type_name -> google.protobuf.Duration
+	81, // 16: v1.Config.Cluster.commit_timeout:type_name -> google.protobuf.Duration
+	81, // 17: v1.Config.Cluster.snapshot_interval:type_name -> google.protobuf.Duration
+	81, // 18: v1.Config.Cluster.leader_lease_timeout:type_name -> google.protobuf.Duration
+	35, // 19: v1.Config.Notifier.email:type_name -> v1.Config.Email
+	36, // 20: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
+	38, // 21: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
+	42, // 22: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	37, // 23: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
+	39, // 24: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
+	40, // 25: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
+	41, // 26: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
+	42, // 27: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	43, // 28: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	42, // 29: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	11, // 30: v1.Account.Key.store:type_name -> v1.StoreKey
+	46, // 31: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
+	49, // 32: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
+	48, // 33: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
+	81, // 34: v1.Token.CreateOptions.ttl:type_name -> google.protobuf.Duration
+	11, // 35: v1.Token.Key.store:type_name -> v1.StoreKey
+	82, // 36: v1.Query.Value.timestamp:type_name -> google.protobuf.Timestamp
+	54, // 37: v1.Query.RequestOptions.params:type_name -> v1.Query.Param
+	52, // 38: v1.Query.Param.value:type_name -> v1.Query.Value
 	5,  // 39: v1.Query.Colum.data_type:type_name -> v1.Query.Colum.DataType
-	51, // 40: v1.Query.Row.values:type_name -> v1.Query.Value
-	65, // 41: v1.Query.Result.elapsed:type_name -> google.protobuf.Duration
-	54, // 42: v1.Query.Result.columns:type_name -> v1.Query.Colum
-	55, // 43: v1.Query.Result.rows:type_name -> v1.Query.Row
+	52, // 40: v1.Query.Row.values:type_name -> v1.Query.Value
+	81, // 41: v1.Query.Result.elapsed:type_name -> google.protobuf.Duration
+	55, // 42: v1.Query.Result.columns:type_name -> v1.Query.Colum
+	56, // 43: v1.Query.Result.rows:type_name -> v1.Query.Row
 	6,  // 44: v1.Raft.Log.type:type_name -> v1.Raft.Log.Type
-	66, // 45: v1.Raft.Log.appended_at:type_name -> google.protobuf.Timestamp
+	82, // 45: v1.Raft.Log.appended_at:type_name -> google.protobuf.Timestamp
 	7,  // 46: v1.Raft.Snapshot.version:type_name -> v1.Raft.Snapshot.Version
-	60, // 47: v1.Raft.Snapshot.config:type_name -> v1.Raft.Config
-	64, // 48: v1.Raft.Config.servers:type_name -> v1.Raft.Config.Server
-	10, // 49: v1.Raft.Log.Key.store:type_name -> v1.StoreKey
-	10, // 50: v1.Raft.Stable.Key.store:type_name -> v1.StoreKey
-	10, // 51: v1.Raft.Snapshot.Key.store:type_name -> v1.StoreKey
+	61, // 47: v1.Raft.Snapshot.config:type_name -> v1.Raft.Config
+	66, // 48: v1.Raft.Config.servers:type_name -> v1.Raft.Config.Server
+	11, // 49: v1.Raft.Log.Key.store:type_name -> v1.StoreKey
+	11, // 50: v1.Raft.Stable.Key.store:type_name -> v1.StoreKey
+	11, // 51: v1.Raft.Snapshot.Key.store:type_name -> v1.StoreKey
 	8,  // 52: v1.Raft.Snapshot.Key.mode:type_name -> v1.Raft.Snapshot.Key.Mode
 	9,  // 53: v1.Raft.Config.Server.suffrage:type_name -> v1.Raft.Config.Server.Suffrage
-	54, // [54:54] is the sub-list for method output_type
-	54, // [54:54] is the sub-list for method input_type
-	54, // [54:54] is the sub-list for extension type_name
-	54, // [54:54] is the sub-list for extension extendee
-	0,  // [0:54] is the sub-list for field type_name
+	68, // 54: v1.Raft.RPC.Command.append_entries:type_name -> v1.Raft.RPC.Command.AppendEntries
+	69, // 55: v1.Raft.RPC.Command.vote:type_name -> v1.Raft.RPC.Command.Vote
+	70, // 56: v1.Raft.RPC.Command.install_snapshot:type_name -> v1.Raft.RPC.Command.InstallSnapshot
+	71, // 57: v1.Raft.RPC.Command.timeout_now:type_name -> v1.Raft.RPC.Command.TimeoutNow
+	73, // 58: v1.Raft.RPC.Command.AppendEntries.request:type_name -> v1.Raft.RPC.Command.AppendEntries.Request
+	74, // 59: v1.Raft.RPC.Command.AppendEntries.response:type_name -> v1.Raft.RPC.Command.AppendEntries.Response
+	75, // 60: v1.Raft.RPC.Command.Vote.request:type_name -> v1.Raft.RPC.Command.Vote.Request
+	76, // 61: v1.Raft.RPC.Command.Vote.response:type_name -> v1.Raft.RPC.Command.Vote.Response
+	77, // 62: v1.Raft.RPC.Command.InstallSnapshot.request:type_name -> v1.Raft.RPC.Command.InstallSnapshot.Request
+	78, // 63: v1.Raft.RPC.Command.InstallSnapshot.response:type_name -> v1.Raft.RPC.Command.InstallSnapshot.Response
+	79, // 64: v1.Raft.RPC.Command.TimeoutNow.request:type_name -> v1.Raft.RPC.Command.TimeoutNow.Request
+	80, // 65: v1.Raft.RPC.Command.TimeoutNow.response:type_name -> v1.Raft.RPC.Command.TimeoutNow.Response
+	10, // 66: v1.Raft.RPC.Command.Header.version:type_name -> v1.Raft.RPC.Command.Header.Version
+	72, // 67: v1.Raft.RPC.Command.AppendEntries.Request.header:type_name -> v1.Raft.RPC.Command.Header
+	58, // 68: v1.Raft.RPC.Command.AppendEntries.Request.entries:type_name -> v1.Raft.Log
+	72, // 69: v1.Raft.RPC.Command.AppendEntries.Response.header:type_name -> v1.Raft.RPC.Command.Header
+	72, // 70: v1.Raft.RPC.Command.Vote.Request.header:type_name -> v1.Raft.RPC.Command.Header
+	72, // 71: v1.Raft.RPC.Command.Vote.Response.header:type_name -> v1.Raft.RPC.Command.Header
+	72, // 72: v1.Raft.RPC.Command.InstallSnapshot.Request.header:type_name -> v1.Raft.RPC.Command.Header
+	7,  // 73: v1.Raft.RPC.Command.InstallSnapshot.Request.snapshot_version:type_name -> v1.Raft.Snapshot.Version
+	72, // 74: v1.Raft.RPC.Command.InstallSnapshot.Response.header:type_name -> v1.Raft.RPC.Command.Header
+	72, // 75: v1.Raft.RPC.Command.TimeoutNow.Request.header:type_name -> v1.Raft.RPC.Command.Header
+	72, // 76: v1.Raft.RPC.Command.TimeoutNow.Response.header:type_name -> v1.Raft.RPC.Command.Header
+	77, // [77:77] is the sub-list for method output_type
+	77, // [77:77] is the sub-list for method input_type
+	77, // [77:77] is the sub-list for extension type_name
+	77, // [77:77] is the sub-list for extension extendee
+	0,  // [0:77] is the sub-list for field type_name
 }
 
 func init() { file_api_proto_init() }
@@ -4996,7 +6344,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_Log_Key); i {
+			switch v := v.(*Raft_RPC); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5008,7 +6356,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_Stable_Key); i {
+			switch v := v.(*Raft_Log_Key); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5020,7 +6368,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_Snapshot_Key); i {
+			switch v := v.(*Raft_Stable_Key); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5032,7 +6380,187 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_Snapshot_Key); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Raft_Config_Server); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_AppendEntries); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_Vote); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_InstallSnapshot); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_TimeoutNow); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_Header); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_AppendEntries_Request); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_AppendEntries_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_Vote_Request); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_Vote_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_InstallSnapshot_Request); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_InstallSnapshot_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_TimeoutNow_Request); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Raft_RPC_Command_TimeoutNow_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5055,13 +6583,35 @@ func file_api_proto_init() {
 		(*Query_Value_Bool)(nil),
 		(*Query_Value_Timestamp)(nil),
 	}
+	file_api_proto_msgTypes[56].OneofWrappers = []interface{}{
+		(*Raft_RPC_Command_AppendEntries_)(nil),
+		(*Raft_RPC_Command_Vote_)(nil),
+		(*Raft_RPC_Command_InstallSnapshot_)(nil),
+		(*Raft_RPC_Command_TimeoutNow_)(nil),
+	}
+	file_api_proto_msgTypes[57].OneofWrappers = []interface{}{
+		(*Raft_RPC_Command_AppendEntries_Request_)(nil),
+		(*Raft_RPC_Command_AppendEntries_Response_)(nil),
+	}
+	file_api_proto_msgTypes[58].OneofWrappers = []interface{}{
+		(*Raft_RPC_Command_Vote_Request_)(nil),
+		(*Raft_RPC_Command_Vote_Response_)(nil),
+	}
+	file_api_proto_msgTypes[59].OneofWrappers = []interface{}{
+		(*Raft_RPC_Command_InstallSnapshot_Request_)(nil),
+		(*Raft_RPC_Command_InstallSnapshot_Response_)(nil),
+	}
+	file_api_proto_msgTypes[60].OneofWrappers = []interface{}{
+		(*Raft_RPC_Command_TimeoutNow_Request_)(nil),
+		(*Raft_RPC_Command_TimeoutNow_Response_)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_proto_rawDesc,
-			NumEnums:      10,
-			NumMessages:   55,
+			NumEnums:      11,
+			NumMessages:   70,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
