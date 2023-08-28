@@ -38,16 +38,11 @@ func CMD() *cli.Command {
 				"failed encoding root account",
 			)
 			accountKey := keys.Account(name)
-			root := ctx.Args().First()
-			if root == "" {
-				//Default root to current working directory
-				root = "."
+			root, err := filepath.Abs(ctx.Args().First())
+			if err != nil {
+				return ansi.ERROR(err)
 			}
-			if root != "" && root != "." {
-				// Try to make sure the directory exists. No need to check for error here
-				// because we bail out first thing when we cant write to this path.
-				os.MkdirAll(root, 0755)
-			}
+			os.MkdirAll(root, 0755)
 			ansi.Step("using root :%s", root)
 
 			mainDB := config.DB_PATH
@@ -56,7 +51,7 @@ func CMD() *cli.Command {
 			}
 
 			must.One(os.Mkdir(mainDB, 0755))(
-				"failed to create metadata directory",
+				"failed to create db directory",
 			)
 			ansi.Ok("main db path :%s", mainDB)
 			blocks := config.BLOCKS_PATH
