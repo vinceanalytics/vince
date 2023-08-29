@@ -32,6 +32,7 @@ func Defaults() *v1.Config {
 		LogLevel:           "debug",
 		DbPath:             DB_PATH,
 		BlocksPath:         BLOCKS_PATH,
+		RaftPath:           RAFT_PATH,
 		SyncInterval:       DefaultSyncInterval,
 		MysqlListenAddress: ":3306",
 		EventsBufferSize:   int64(DefaultEventsBufferSize),

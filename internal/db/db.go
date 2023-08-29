@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"log/slog"
@@ -16,9 +15,13 @@ import (
 
 type key struct{}
 
+type raftKey struct{}
+
 func Open(ctx context.Context, path string, logLevel ...string) (context.Context, *badger.DB) {
-	dir := filepath.Join(path, "db")
-	o := badger.DefaultOptions(filepath.Join(dir, "series")).
+	if len(logLevel) == 0 || logLevel[0] != "silent" {
+		slog.Info("opening main storage", "path", path)
+	}
+	o := badger.DefaultOptions(path).
 		WithLogger(badgerLogger{}).
 		WithLoggingLevel(10).
 		WithCompression(options.ZSTD)
@@ -36,7 +39,7 @@ func Open(ctx context.Context, path string, logLevel ...string) (context.Context
 		}
 	}
 	db := must.Must(badger.Open(o))(
-		"failed to open badger db for  timeseries storage dir:", dir,
+		"failed to open badger db:", path,
 	)
 	obs := &Observer{ctx: ctx, Silent: len(logLevel) > 0 && logLevel[0] == "silent"}
 	go func() {
@@ -51,6 +54,22 @@ func Open(ctx context.Context, path string, logLevel ...string) (context.Context
 
 func Get(ctx context.Context) Provider {
 	return &provider{db: ctx.Value(key{}).(*badger.DB)}
+}
+
+func OpenRaft(ctx context.Context, path string) (context.Context, *badger.DB) {
+	slog.Info("opening raft storage", "path", path)
+	o := badger.DefaultOptions(path).
+		WithLogger(badgerLogger{}).
+		WithLoggingLevel(10).
+		WithCompression(options.ZSTD)
+	db := must.Must(badger.Open(o))(
+		"failed to open badger db:", path,
+	)
+	return context.WithValue(ctx, raftKey{}, db), db
+}
+
+func GetRaft(ctx context.Context) *badger.DB {
+	return ctx.Value(raftKey{}).(*badger.DB)
 }
 
 var _ badger.Logger = (*badgerLogger)(nil)

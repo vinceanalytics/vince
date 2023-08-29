@@ -79,6 +79,8 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 
 	ctx, dba := db.Open(ctx, o.DbPath)
 	resources = append(resources, dba)
+	ctx, dbr := db.OpenRaft(ctx, o.RaftPath)
+	resources = append(resources, dbr)
 	ctx, ts := timeseries.Open(ctx, o.BlocksPath, int(o.GetEventsBufferSize()))
 	resources = append(resources, ts)
 	ctx, eng := engine.Open(ctx)
