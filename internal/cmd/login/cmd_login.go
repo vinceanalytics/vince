@@ -77,7 +77,7 @@ func CMD() *cli.Command {
 				0600))(
 				"failed writing client config", "path", file,
 			)
-			ansi.Ok("signed in %q", uri)
+			ansi.New().Ok("signed in %q", uri).Flush()
 			return nil
 		},
 	}

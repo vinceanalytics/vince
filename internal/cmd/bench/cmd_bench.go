@@ -4,16 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"net/http"
-	"os"
 	"slices"
 	"sort"
 	"strings"
 	"sync/atomic"
-	"text/tabwriter"
 	"time"
 
 	"github.com/urfave/cli/v3"
@@ -59,6 +57,7 @@ func CMD() *cli.Command {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			w := ansi.New()
 			token, instance := auth.Account()
 			var list v1.Site_List
 			err := klient.GET(
@@ -69,7 +68,7 @@ func CMD() *cli.Command {
 				token,
 			)
 			if err != nil {
-				return ansi.ERROR(errors.New(err.Error))
+				w.Err(err.Error).Exit()
 			}
 			m := make(map[string]struct{})
 			for _, s := range list.List {
@@ -83,10 +82,11 @@ func CMD() *cli.Command {
 			event := ctx.String("event")
 			paths := ctx.StringSlice("paths")
 			var stats []*Stats
+
 			for i := 0; i < ctx.NArg(); i++ {
 				a := args.Get(i)
 				if _, ok := m[a]; !ok {
-					ansi.Err("%q does not exist", a)
+					w.Err(fmt.Sprintf("%q does not exist", a)).Flush()
 					continue
 				}
 				stat := &Stats{
@@ -103,7 +103,7 @@ func CMD() *cli.Command {
 				}))
 			}
 			g.Wait()
-			summary(stats)
+			summary(w, stats)
 			return nil
 		},
 	}
@@ -117,17 +117,15 @@ type Stats struct {
 	End      time.Time
 }
 
-func summary(stats []*Stats) {
+func summary(w *ansi.W, stats []*Stats) {
 	for _, stat := range stats {
-		ansi.Ok(stat.Site)
+		w.Ok(stat.Site)
 		users := stat.Users.Load()
 		requests := stat.Requests.Load()
 		duration := stat.End.Sub(stat.Start)
 		rate := float64(requests) / duration.Seconds()
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)
-		fmt.Fprintf(w, "users \t%d\n", users)
-		fmt.Fprintf(w, "throughput \t%.2f req/s\n", rate)
-		w.Flush()
+		w.KV("users", fmt.Sprint(users))
+		w.KV("throughput", "%.2f req/s", rate).Flush()
 	}
 }
 
@@ -200,12 +198,12 @@ func session(ctx context.Context,
 					r.Header.Set("content-type", "application/json")
 					res, err := client.Do(r)
 					if err != nil {
-						ansi.Err("%s: err:%s", s.domain, err.Error())
+						slog.Error("failed sending client request", "domain", s.domain, "err", err.Error())
 						continue
 					}
 					res.Body.Close()
 					if res.StatusCode != http.StatusOK {
-						ansi.Err("%s: %s", s.domain, res.Status)
+						slog.Error("unexpected response status code", "domain", s.domain, "code", res.StatusCode)
 					}
 				}
 			}

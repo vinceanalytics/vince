@@ -130,12 +130,12 @@ func LoadClient() (client v1.Client, file string) {
 func Account() (token string, api string) {
 	o, _ := LoadClient()
 	if o.Active == nil {
-		ansi.Err("no active account found")
-		ansi.Suggestion(
+		w := ansi.New()
+		w.Err("no active account found")
+		w.Suggest(
 			"log in to a vince instance with [vince login] command",
 			"select existing vince instance/account using [vince use] command",
-		)
-		os.Exit(1)
+		).Exit()
 	}
 	token = o.Instance[o.Active.Instance].Accounts[o.Active.Account].Token
 	api = o.Active.Instance

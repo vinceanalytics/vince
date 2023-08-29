@@ -2,7 +2,6 @@ package query
 
 import (
 	"context"
-	"errors"
 	"os"
 
 	"github.com/urfave/cli/v3"
@@ -34,11 +33,9 @@ func CMD() *cli.Command {
 				token,
 			)
 			if err != nil {
-				return ansi.ERROR(errors.New(err.Error))
+				ansi.New().Err(err.Error).Exit()
 			}
-			return ansi.ERROR(
-				output.Tab(os.Stdout, &result),
-			)
+			return output.Tab(os.Stdout, &result)
 		},
 	}
 }

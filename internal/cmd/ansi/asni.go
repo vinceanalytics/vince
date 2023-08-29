@@ -3,54 +3,66 @@ package ansi
 import (
 	"fmt"
 	"os"
+	"text/tabwriter"
 )
-
-const esc = "\033["
-
-func Green(s string) string {
-	return fmt.Sprintf("%s32m%v%s", esc, s, resetCode)
-}
-
-func Black(s string) string {
-	return fmt.Sprintf("%s30m%v%s", esc, s, resetCode)
-}
-
-func Red(s string) string {
-	return fmt.Sprintf("%s31m%v%s", esc, s, resetCode)
-}
 
 const (
-	Check     = "✓"
-	Selection = "→"
-	Zap       = "⚡"
-	X         = "✗"
+	ok   = "✓"
+	step = "→"
+	zap  = "⚡"
+	x    = "✗"
 )
 
-var resetCode = fmt.Sprintf("%s%dm", esc, 0)
-
-func Ok(msg string, args ...any) {
-	fmt.Fprintf(os.Stdout, " %s %s\n", Green(Check), fmt.Sprintf(msg, args...))
+type W struct {
+	*tabwriter.Writer
 }
 
-func Step(msg string, args ...any) {
-	fmt.Fprintf(os.Stdout, "%s %s\n", Black(Selection), fmt.Sprintf(msg, args...))
-}
-
-func Err(msg string, args ...any) {
-	fmt.Fprintf(os.Stdout, "%s %s\n", Red(X), fmt.Sprintf(msg, args...))
-}
-
-func ERROR(err error) error {
-	if err == nil {
-		return nil
+func New() *W {
+	return &W{
+		Writer: tabwriter.NewWriter(
+			os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight,
+		),
 	}
-	Err(err.Error())
-	return err
 }
 
-func Suggestion(ls ...string) {
-	fmt.Fprintln(os.Stdout, "try:")
-	for _, k := range ls {
-		Step(k)
+func (w *W) Step(msg string) *W {
+	fmt.Fprintf(w, "%s \t%s\n", step, msg)
+	return w
+}
+
+func (w *W) Ok(msg string, a ...any) *W {
+	fmt.Fprintf(w, "%s \t%s\n", ok, fmt.Sprintf(msg, a...))
+	return w
+}
+
+func (w *W) Err(msg string, a ...any) *W {
+	fmt.Fprintf(w, "%s \t%s\n", x, fmt.Sprintf(msg, a...))
+	return w
+}
+
+func (w *W) KV(key, value string, args ...any) *W {
+	fmt.Fprintf(w, "%s \t%s\n", key, fmt.Sprintf(value, args...))
+	return w
+}
+
+func (w *W) Suggest(msg ...string) *W {
+	fmt.Fprintln(w, "suggestion \t ")
+	for _, m := range msg {
+		fmt.Fprintf(w, " \t%s\n", m)
 	}
+	return w
+}
+
+func (w *W) Complete(err error) error {
+	if err != nil {
+		w.Err(err.Error())
+		w.Flush()
+		return err
+	}
+	return w.Flush()
+}
+
+func (w *W) Exit() {
+	w.Flush()
+	os.Exit(1)
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"net/http"
-	"os"
 
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -79,13 +78,13 @@ func CLI_DELETE[I Input, O Output](ctx context.Context, uri string, in I, out O,
 
 func cli(err *v1.Error) {
 	if err != nil {
-		ansi.Err(err.Error)
+		w := ansi.New()
+		w.Err(err.Error)
 		if err.Code == http.StatusUnauthorized {
-			ansi.Suggestion(
+			w.Suggest(
 				"vince login",
 			)
-			os.Exit(1)
 		}
-		os.Exit(1)
+		w.Exit()
 	}
 }

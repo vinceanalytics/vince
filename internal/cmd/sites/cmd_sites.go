@@ -2,7 +2,6 @@ package sites
 
 import (
 	"context"
-	"os"
 
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
@@ -28,13 +27,13 @@ func create() *cli.Command {
 		Name:  "create",
 		Usage: "Creates a new site",
 		Action: func(ctx *cli.Context) error {
+			w := ansi.New()
 			name := ctx.Args().First()
 			if name == "" {
-				ansi.Err("missing site domain")
-				ansi.Suggestion(
+				w.Err("missing site domain")
+				w.Suggest(
 					"vince sites create vinceanalytics.github.io",
-				)
-				os.Exit(1)
+				).Exit()
 			}
 			token, instance := auth.Account()
 
@@ -45,8 +44,7 @@ func create() *cli.Command {
 				&v1.Site{},
 				token,
 			)
-			ansi.Ok("ok")
-			return nil
+			return w.Ok("created").Complete(nil)
 		},
 	}
 }
@@ -56,13 +54,13 @@ func del() *cli.Command {
 		Name:  "delete",
 		Usage: "Deletes a  site",
 		Action: func(ctx *cli.Context) error {
+			w := ansi.New()
 			name := ctx.Args().First()
 			if name == "" {
-				ansi.Err("missing site domain")
-				ansi.Suggestion(
+				w.Err("missing site domain")
+				w.Suggest(
 					"vince sites delete vinceanalytics.github.io",
-				)
-				os.Exit(1)
+				).Exit()
 			}
 			token, instance := auth.Account()
 
@@ -73,8 +71,7 @@ func del() *cli.Command {
 				&v1.Site{},
 				token,
 			)
-			ansi.Ok("ok")
-			return nil
+			return w.Ok("deleted").Complete(nil)
 		},
 	}
 }
@@ -84,6 +81,7 @@ func list() *cli.Command {
 		Name:  "list",
 		Usage: "Lists  sites",
 		Action: func(ctx *cli.Context) error {
+			w := ansi.New()
 			token, instance := auth.Account()
 			var list v1.Site_List
 			klient.CLI_GET(
@@ -94,9 +92,9 @@ func list() *cli.Command {
 				token,
 			)
 			for _, s := range list.List {
-				ansi.Ok(s.Domain)
+				w.Ok(s.Domain)
 			}
-			return nil
+			return w.Complete(nil)
 		},
 	}
 }
