@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/hashicorp/raft"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
@@ -30,17 +31,19 @@ type Transit struct {
 	heart   heart
 	stream  Stream
 	log     *slog.Logger
+	timeout time.Duration
 }
 
 var _ raft.Transport = (*Transit)(nil)
 
-func NewTransport(ctx context.Context, id raft.ServerID, stream Stream) *Transit {
+func NewTransport(ctx context.Context, id raft.ServerID, stream Stream, timeout time.Duration) *Transit {
 	return &Transit{
 		ctx:     ctx,
 		consume: make(chan raft.RPC),
 		id:      id,
 		stream:  stream,
 		log:     slog.Default().With("component", "raft-transport"),
+		timeout: timeout,
 	}
 }
 
@@ -79,11 +82,14 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		default:
 			var req v1.Raft_RPC_Call_Request
-			err := read(t.ctx, wrap, &req)
+			ctx, cancel := t.context()
+			err := read(ctx, wrap, &req)
+			cancel()
 			if err != nil {
 				log.Error("failed reading rpc request", "err", err.Error())
 				return
 			}
+
 			result := make(chan raft.RPCResponse, 1)
 
 			rx := raft.RPC{
@@ -114,7 +120,9 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			case res := <-result:
 				o := v1.Raft_RPC_Call_ResponseFrom(res)
-				err = write(t.ctx, wrap, o)
+				ctx, cancel := t.context()
+				err = write(ctx, wrap, o)
+				cancel()
 				if err != nil {
 					log.Error("failed writing to websocket connection", "err", err.Error())
 					return
@@ -208,8 +216,9 @@ func (t *Transit) send(id raft.ServerID,
 			Error: err.Error(),
 		}
 	}
-	ctx := t.context()
+	ctx, cancel := t.context()
 	err = write(ctx, conn, r)
+	cancel()
 	if err != nil {
 		return &v1.Raft_RPC_Call_Response{
 			Error: err.Error(),
@@ -225,8 +234,11 @@ func (t *Transit) send(id raft.ServerID,
 	return &o
 }
 
-func (t *Transit) context() context.Context {
-	return context.Background()
+func (t *Transit) context() (context.Context, context.CancelFunc) {
+	if t.timeout == 0 {
+		return t.ctx, func() {}
+	}
+	return context.WithTimeout(t.ctx, t.timeout)
 }
 
 func (t *Transit) Close() error {
@@ -243,7 +255,9 @@ func (t *Transit) peer(id raft.ServerID,
 	if conn, ok := t.peers.Load(id); ok {
 		return conn.(io.ReadWriteCloser), nil
 	}
-	conn, err := t.stream.Dial(t.ctx, id, target)
+	ctx, cancel := t.context()
+	defer cancel()
+	conn, err := t.stream.Dial(ctx, id, target)
 	if err != nil {
 		return nil, err
 	}
