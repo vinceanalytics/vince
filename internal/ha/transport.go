@@ -74,6 +74,7 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log := t.log
+	log.Info("accepted raft websocket connection")
 	wrap := newWrap(t.ctx, conn)
 	for {
 		select {
