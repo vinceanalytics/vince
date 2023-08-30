@@ -11,21 +11,21 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type FSM struct {
+type fsm struct {
 	base db.Provider
 }
 
-var _ raft.FSM = (*FSM)(nil)
+var _ raft.FSM = (*fsm)(nil)
 
 type fsmSnap struct {
 	base db.Provider
 }
 
 func NewFSM(base db.Provider) raft.FSM {
-	return &FSM{base: base}
+	return &fsm{base: base}
 }
 
-func (f *FSM) Apply(l *raft.Log) interface{} {
+func (f *fsm) Apply(l *raft.Log) interface{} {
 	if l.Type == raft.LogCommand {
 		return f.base.Txn(true, func(txn db.Txn) error {
 			var e v1.Raft_Entry
@@ -42,11 +42,11 @@ func (f *FSM) Apply(l *raft.Log) interface{} {
 	return nil
 }
 
-func (f *FSM) Snapshot() (raft.FSMSnapshot, error) {
+func (f *fsm) Snapshot() (raft.FSMSnapshot, error) {
 	return &fsmSnap{base: f.base}, nil
 }
 
-func (f *FSM) Restore(r io.ReadCloser) error {
+func (f *fsm) Restore(r io.ReadCloser) error {
 	return f.base.With(func(db *badger.DB) error {
 		return db.Load(r, runtime.NumCPU())
 	})
