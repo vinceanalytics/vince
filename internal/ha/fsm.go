@@ -7,49 +7,47 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/hashicorp/raft"
 	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/proto/bpb"
+	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
 )
 
 type FSM struct {
-	db db.Provider
+	base db.Provider
 }
 
 var _ raft.FSM = (*FSM)(nil)
 
 type fsmSnap struct {
-	db db.Provider
+	base db.Provider
+}
+
+func NewFSM(base db.Provider) raft.FSM {
+	return &FSM{base: base}
 }
 
 func (f *FSM) Apply(l *raft.Log) interface{} {
 	if l.Type == raft.LogCommand {
-		return f.db.With(func(d *badger.DB) error {
-			var ls bpb.KVList
-			err := proto.Unmarshal(l.Data, &ls)
+		return f.base.Txn(true, func(txn db.Txn) error {
+			var e v1.Raft_Entry
+			err := proto.Unmarshal(l.Data, &e)
 			if err != nil {
 				return err
 			}
-			ld := d.NewKVLoader(1)
-			defer ld.Finish()
-			x := bpb.To(&ls)
-			for _, v := range x.Kv {
-				err = ld.Set(v)
-				if err != nil {
-					return err
-				}
+			if e.Expires != nil {
+				return txn.SetTTL(e.Key, e.Value, e.Expires.AsDuration())
 			}
-			return nil
+			return txn.Set(e.Key, e.Value)
 		})
 	}
 	return nil
 }
 
 func (f *FSM) Snapshot() (raft.FSMSnapshot, error) {
-	return &fsmSnap{db: f.db}, nil
+	return &fsmSnap{base: f.base}, nil
 }
 
 func (f *FSM) Restore(r io.ReadCloser) error {
-	return f.db.With(func(db *badger.DB) error {
+	return f.base.With(func(db *badger.DB) error {
 		return db.Load(r, runtime.NumCPU())
 	})
 }
@@ -57,7 +55,7 @@ func (f *FSM) Restore(r io.ReadCloser) error {
 var _ raft.FSMSnapshot = (*fsmSnap)(nil)
 
 func (f *fsmSnap) Persist(w raft.SnapshotSink) error {
-	return f.db.With(func(db *badger.DB) error {
+	return f.base.With(func(db *badger.DB) error {
 		_, err := db.Backup(w, 0)
 		if err != nil {
 			w.Cancel()
