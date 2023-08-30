@@ -19,6 +19,7 @@ import (
 )
 
 type Stream interface {
+	Update(*v1.Raft_Config)
 	Dial(context.Context,
 		raft.ServerID, raft.ServerAddress) (io.ReadWriteCloser, error)
 }
@@ -27,7 +28,7 @@ type Transit struct {
 	ctx     context.Context
 	peers   sync.Map
 	consume chan raft.RPC
-	id      raft.ServerID
+	svr     *v1.Raft_Config_Server
 	heart   heart
 	stream  Stream
 	log     *slog.Logger
@@ -36,11 +37,11 @@ type Transit struct {
 
 var _ raft.Transport = (*Transit)(nil)
 
-func NewTransport(ctx context.Context, id raft.ServerID, stream Stream, timeout time.Duration) *Transit {
+func NewTransport(ctx context.Context, svr *v1.Raft_Config_Server, stream Stream, timeout time.Duration) *Transit {
 	return &Transit{
 		ctx:     ctx,
 		consume: make(chan raft.RPC),
-		id:      id,
+		svr:     svr,
 		stream:  stream,
 		log:     slog.Default().With("component", "raft-transport"),
 		timeout: timeout,
@@ -135,11 +136,11 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *Transit) LocalAddr() raft.ServerAddress {
-	return raft.ServerAddress(t.id)
+	return raft.ServerAddress(t.svr.Address)
 }
 
 func (*Transit) EncodePeer(id raft.ServerID, p raft.ServerAddress) []byte {
-	return []byte(id)
+	return []byte(p)
 }
 
 func (t *Transit) InstallSnapshot(id raft.ServerID, target raft.ServerAddress, args *raft.InstallSnapshotRequest, resp *raft.InstallSnapshotResponse, data io.Reader) error {
@@ -342,4 +343,42 @@ func (w *wrapSocket) Write(p []byte) (int, error) {
 
 func (w *wrapSocket) Close() error {
 	return w.conn.Close(websocket.StatusGoingAway, "closing transport")
+}
+
+type wsStream struct {
+	peers sync.Map
+}
+
+var _ Stream = (*wsStream)(nil)
+
+func NewWsStream() Stream {
+	return &wsStream{}
+}
+
+var client = &http.Client{}
+
+func (ws *wsStream) Update(x *v1.Raft_Config) {
+	for _, svr := range x.Servers {
+		ws.peers.Store(svr.Id, svr)
+	}
+}
+
+func (ws *wsStream) Dial(
+	ctx context.Context,
+	id raft.ServerID, addr raft.ServerAddress) (io.ReadWriteCloser, error) {
+	x, ok := ws.peers.Load(string(id))
+	if !ok {
+		return nil, fmt.Errorf("peer %s:%s can not be reached", id, addr)
+	}
+	s := x.(*v1.Raft_Config_Server)
+	h := make(http.Header)
+	h.Set("authorization", "Bearer "+s.Token)
+	conn, _, err := websocket.Dial(ctx, s.Address+"/raft", &websocket.DialOptions{
+		HTTPClient: client,
+		HTTPHeader: h,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return newWrap(ctx, conn), nil
 }
