@@ -22,11 +22,11 @@ func CMD() *cli.Command {
 				return nil
 			}
 			token, instance := auth.Account()
-			var result v1.Query_Result
+			var result v1.Query_Response
 			err := klient.POST(
 				context.Background(),
 				instance+"/query",
-				&v1.Query_RequestOptions{
+				&v1.Query_Request{
 					Query: a,
 				},
 				&result,

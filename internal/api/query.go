@@ -15,7 +15,7 @@ import (
 
 func Query(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var qr v1.Query_RequestOptions
+	var qr v1.Query_Request
 	err := pj.UnmarshalDefault(&qr, r.Body)
 	if err != nil {
 		render.ERROR(w, http.StatusBadRequest)

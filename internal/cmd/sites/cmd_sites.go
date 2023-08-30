@@ -40,8 +40,8 @@ func create() *cli.Command {
 			klient.CLI_POST(
 				context.Background(),
 				instance+"/sites",
-				&v1.Site_CreateOptions{Domain: name},
-				&v1.Site{},
+				&v1.Site_Create_Request{Domain: name},
+				&v1.Site_Create_Response{},
 				token,
 			)
 			return w.Ok("created").Complete(nil)
@@ -67,8 +67,8 @@ func del() *cli.Command {
 			klient.CLI_DELETE(
 				context.Background(),
 				instance+"/sites",
-				&v1.Site_DeleteOptions{Domain: name},
-				&v1.Site{},
+				&v1.Site_Delete_Request{Domain: name},
+				&v1.Site_Delete_Response{},
 				token,
 			)
 			return w.Ok("deleted").Complete(nil)
@@ -83,11 +83,11 @@ func list() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			w := ansi.New()
 			token, instance := auth.Account()
-			var list v1.Site_List
+			var list v1.Site_List_Response
 			klient.CLI_GET(
 				context.Background(),
 				instance+"/sites",
-				&v1.Site_ListOptions{},
+				&v1.Site_List_Request{},
 				&list,
 				token,
 			)

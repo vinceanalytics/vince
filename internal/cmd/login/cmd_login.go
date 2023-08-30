@@ -47,11 +47,11 @@ func CMD() *cli.Command {
 				name,
 				time.Now().Add(365*24*time.Hour),
 			)
-			var clientAuth v1.Client_Auth
+			var clientAuth v1.Token_Create_Response
 			e := klient.POST(
 				context.Background(),
 				uri+"/tokens",
-				&v1.Token_CreateOptions{
+				&v1.Token_Create_Request{
 					Name:      name,
 					Password:  password,
 					Token:     token,
@@ -62,12 +62,12 @@ func CMD() *cli.Command {
 			if e != nil {
 				must.Assert(false)(e.Error)
 			}
-
-			client.Instance[uri].Accounts[clientAuth.Name] = &clientAuth
+			a := clientAuth.Auth
+			client.Instance[uri].Accounts[a.Name] = a
 			if client.Active == nil {
 				client.Active = &v1.Client_Active{
 					Instance: uri,
-					Account:  clientAuth.Name,
+					Account:  a.Name,
 				}
 			}
 			must.One(os.WriteFile(file,

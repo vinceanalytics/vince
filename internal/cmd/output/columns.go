@@ -10,12 +10,12 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func Build(rows *sql.Rows) (*v1.Query_Result, error) {
+func Build(rows *sql.Rows) (*v1.Query_Response, error) {
 	columns, err := rows.ColumnTypes()
 	if err != nil {
 		return nil, err
 	}
-	r := &v1.Query_Result{}
+	r := &v1.Query_Response{}
 	r.Columns = make([]*v1.Query_Colum, len(columns))
 	for i := range r.Columns {
 		r.Columns[i] = &v1.Query_Colum{

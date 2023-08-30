@@ -30,7 +30,7 @@ var publicKey = privateKey.Public()
 
 func Token(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var tr v1.Token_CreateOptions
+	var tr v1.Token_Create_Request
 	err := pj.UnmarshalDefault(&tr, r.Body)
 	if err != nil {
 		render.ERROR(w, http.StatusBadRequest)
@@ -116,11 +116,13 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	o := config.Get(ctx)
-	render.JSON(w, http.StatusOK, &v1.Client_Auth{
-		Name:  tr.Name,
-		Token: tr.Token,
-		Api:   o.ListenAddress,
-		Mysql: o.MysqlListenAddress,
-		Tls:   config.IsTLS(o),
+	render.JSON(w, http.StatusOK, &v1.Token_Create_Response{
+		Auth: &v1.Client_Auth{
+			Name:  tr.Name,
+			Token: tr.Token,
+			Api:   o.ListenAddress,
+			Mysql: o.MysqlListenAddress,
+			Tls:   config.IsTLS(o),
+		},
 	})
 }

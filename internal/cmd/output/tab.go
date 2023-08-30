@@ -9,7 +9,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
-func Tab(out io.Writer, result *v1.Query_Result) error {
+func Tab(out io.Writer, result *v1.Query_Response) error {
 	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
 	var s strings.Builder
 	for i, col := range result.Columns {

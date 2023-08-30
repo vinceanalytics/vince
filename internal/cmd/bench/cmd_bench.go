@@ -59,11 +59,11 @@ func CMD() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			w := ansi.New()
 			token, instance := auth.Account()
-			var list v1.Site_List
+			var list v1.Site_List_Response
 			err := klient.GET(
 				context.Background(),
 				instance+"/sites",
-				&v1.Site_ListOptions{},
+				&v1.Site_List_Request{},
 				&list,
 				token,
 			)

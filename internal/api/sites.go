@@ -16,7 +16,7 @@ import (
 )
 
 func ListSites(w http.ResponseWriter, r *http.Request) {
-	o := v1.Site_List{}
+	o := v1.Site_List_Response{}
 	db.Get(r.Context()).Txn(false, func(txn db.Txn) error {
 		prefix := keys.Site("")
 
@@ -42,7 +42,7 @@ func ListSites(w http.ResponseWriter, r *http.Request) {
 var domain = regexp2.MustCompile(`^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$`, regexp2.ECMAScript)
 
 func Create(w http.ResponseWriter, r *http.Request) {
-	var b v1.Site_CreateOptions
+	var b v1.Site_Create_Request
 	err := pj.UnmarshalDefault(&b, r.Body)
 	if err != nil || b.Domain == "" {
 		render.ERROR(w, http.StatusBadRequest)
@@ -55,17 +55,19 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-	site := v1.Site{
-		Domain: b.Domain,
+	response := v1.Site_Create_Response{
+		Site: &v1.Site{
+			Domain: b.Domain,
+		},
 	}
 	err = db.Get(r.Context()).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(b.Domain)
 		return txn.Get([]byte(key), func(val []byte) error {
-			return proto.Unmarshal(val, &site)
+			return proto.Unmarshal(val, &response)
 		}, func() error {
 			return txn.Set(
 				[]byte(key),
-				must.Must(proto.Marshal(&site))("failed encoding site object"),
+				must.Must(proto.Marshal(&response))("failed encoding site object"),
 			)
 		})
 	})
@@ -73,7 +75,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(w, http.StatusInternalServerError)
 		return
 	}
-	render.JSON(w, http.StatusOK, &site)
+	render.JSON(w, http.StatusOK, &response)
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
