@@ -35,6 +35,9 @@ func CMD() *cli.Command {
 			if client.Instance == nil {
 				client.Instance = make(map[string]*v1.Client_Instance)
 			}
+			if client.ServerId == nil {
+				client.ServerId = make(map[string]string)
+			}
 			if client.Instance[uri] == nil {
 				client.Instance[uri] = &v1.Client_Instance{
 					Accounts: make(map[string]*v1.Client_Auth),
@@ -64,6 +67,7 @@ func CMD() *cli.Command {
 			}
 			a := clientAuth.Auth
 			client.Instance[uri].Accounts[a.Name] = a
+			client.ServerId[a.ServerId] = uri
 			if client.Active == nil {
 				client.Active = &v1.Client_Active{
 					Instance: uri,
@@ -71,13 +75,13 @@ func CMD() *cli.Command {
 				}
 			}
 			must.One(os.WriteFile(file,
-				must.Must(pj.MarshalIndent(&client))(
+				must.Must(pj.MarshalIndent(client))(
 					"failed encoding config file",
 				),
 				0600))(
 				"failed writing client config", "path", file,
 			)
-			ansi.New().Ok("signed in %q", uri).Flush()
+			ansi.New().Ok("signed in %q", a.ServerId).Flush()
 			return nil
 		},
 	}

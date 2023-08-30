@@ -92,7 +92,8 @@ func Prompt() (name, passwd string) {
 	return
 }
 
-func LoadClient() (client v1.Client, file string) {
+func LoadClient() (client *v1.Client, file string) {
+	client = &v1.Client{}
 	usr := must.Must(user.Current())(
 		"failed getting current user",
 	)
@@ -109,7 +110,7 @@ func LoadClient() (client v1.Client, file string) {
 			privateKey := secrets.ED25519Raw()
 			client.PrivateKey = privateKey
 			b := must.Must(
-				pj.MarshalIndent(&client),
+				pj.MarshalIndent(client),
 			)(
 				"failed marshalling private key",
 			)
@@ -120,11 +121,21 @@ func LoadClient() (client v1.Client, file string) {
 			must.One(err)("failed reading config file", "path", file)
 		}
 	} else {
-		must.One(pj.Unmarshal(b, &client))(
+		must.One(pj.Unmarshal(b, client))(
 			"failed decoding client config",
 		)
 	}
 	return
+}
+
+func Save(w *ansi.W, client *v1.Client, file string) {
+	err := os.WriteFile(file,
+		must.Must(pj.Marshal(client))("failed encoding client"),
+		0600,
+	)
+	if err != nil {
+		w.Err("failed saving client config path:%q err:%v", file, err).Exit()
+	}
 }
 
 func Account() (token string, api string) {

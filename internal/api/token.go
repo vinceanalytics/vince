@@ -118,11 +118,9 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	o := config.Get(ctx)
 	render.JSON(w, http.StatusOK, &v1.Token_Create_Response{
 		Auth: &v1.Client_Auth{
-			Name:  tr.Name,
-			Token: tr.Token,
-			Api:   o.ListenAddress,
-			Mysql: o.MysqlListenAddress,
-			Tls:   config.IsTLS(o),
+			Name:     tr.Name,
+			Token:    tr.Token,
+			ServerId: o.ServerId,
 		},
 	})
 }

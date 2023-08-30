@@ -16,6 +16,7 @@ enum StorePrefix {
   RAFT_LOGS = 5;
   RAFT_STABLE = 6;
   RAFT_SNAPSHOT = 7;
+  CLUSTER = 8;
 }
 
 message StoreKey {
@@ -125,27 +126,6 @@ message Config {
 
   string server_id = 12;
   string raft_path = 13;
-  Cluster cluster = 14;
-
-  message Cluster {
-    Version version = 1;
-    google.protobuf.Duration heartbeat_timeout = 2;
-    google.protobuf.Duration election_timeout = 3;
-    google.protobuf.Duration commit_timeout = 4;
-    int32 max_append_entries = 5;
-    bool batch_acpply = 6;
-    bool shutdowm_on_remove = 7;
-    uint64 trailing_logs = 8;
-    google.protobuf.Duration snapshot_interval = 9;
-    uint64 snapshot_threshold = 10;
-    google.protobuf.Duration leader_lease_timeout = 11;
-    string local_id = 12;
-
-    enum Version {
-      Min = 0;
-      Max = 3;
-    }
-  }
 
   message Notifier {
     string name = 1;
@@ -223,8 +203,13 @@ message Client {
   // Authentication details of vince instances
   map<string, Instance> instance = 2;
 
+  // Map of server_id to instance
+  map<string, string> server_id = 3;
+
   // The default auth name to use.
   Active active = 4;
+
+  map<string, ClusterConfig> clusters = 5;
 
   message Instance { map<string, Auth> accounts = 1; }
 
@@ -235,9 +220,18 @@ message Client {
   message Auth {
     string name = 1;
     string token = 2;
-    string api = 3;
-    string mysql = 4;
-    bool tls = 5;
+    string server_id = 3;
+  }
+
+  message ClusterConfig {
+    string name = 1;
+    repeated Node nodes = 2;
+
+    message Node {
+      Auth account = 1;
+      // True if this node was used to bootstrap the cluster.
+      bool bootstrapped = 2;
+    }
   }
 }
 
@@ -520,6 +514,21 @@ message Raft {
           Min = 0;
           Max = 1;
         }
+      }
+    }
+  }
+}
+
+message Cluster {
+  message Bootstrap {
+    message Request {
+      Raft.Config.Server server = 1;
+      string name = 2;
+    }
+    message Response {
+      oneof stats {
+        string ok = 1;
+        Error error = 2;
       }
     }
   }

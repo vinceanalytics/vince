@@ -3,6 +3,7 @@ package vince
 import (
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/internal/cmd/bench"
+	"github.com/vinceanalytics/vince/internal/cmd/cluster"
 	"github.com/vinceanalytics/vince/internal/cmd/login"
 	"github.com/vinceanalytics/vince/internal/cmd/query"
 	"github.com/vinceanalytics/vince/internal/cmd/serve"
@@ -22,12 +23,13 @@ func App() *cli.App {
 		},
 		Copyright: "@2033 - present",
 		Commands: []*cli.Command{
-			login.CMD(),
-			serve.CMD(),
-			v8s.CMD(),
 			vinit.CMD(),
-			query.CMD(),
+			serve.CMD(),
+			login.CMD(),
 			sites.CMD(),
+			query.CMD(),
+			cluster.CMD(),
+			v8s.CMD(),
 			bench.CMD(),
 		},
 		EnableShellCompletion: true,

@@ -22,11 +22,9 @@ func Auth(h http.Handler) http.Handler {
 		}
 		o := config.Get(ctx)
 		h.ServeHTTP(w, r.WithContext(core.SetAuth(ctx, &v1.Client_Auth{
-			Name:  claims.Subject,
-			Token: token,
-			Api:   o.ListenAddress,
-			Mysql: o.MysqlListenAddress,
-			Tls:   config.IsTLS(o),
+			Name:     claims.Subject,
+			Token:    token,
+			ServerId: o.ServerId,
 		})))
 	})
 }
