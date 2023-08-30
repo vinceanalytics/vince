@@ -1,6 +1,7 @@
 package ha
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
@@ -23,7 +24,7 @@ type Transit struct {
 	id      raft.ServerID
 	heart   heart
 	dia     func(context.Context,
-		raft.ServerID, raft.ServerAddress) (*websocket.Conn, error)
+		raft.ServerID, raft.ServerAddress) (io.ReadWriteCloser, error)
 }
 
 var _ raft.Transport = (*Transit)(nil)
@@ -57,6 +58,7 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := slog.Default().With(
 		slog.String("component", "raft"),
 	)
+	wrap := newWrap(t.ctx, conn)
 	for {
 		select {
 		case <-t.ctx.Done():
@@ -64,7 +66,7 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		default:
 			var req v1.Raft_RPC_Call_Request
-			err := read(t.ctx, conn, &req)
+			err := read(t.ctx, wrap, &req)
 			if err != nil {
 				log.Error("failed reading rpc request", "err", err.Error())
 				return
@@ -99,7 +101,7 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			case res := <-result:
 				o := v1.Raft_RPC_Call_ResponseFrom(res)
-				err = write(t.ctx, conn, o)
+				err = write(t.ctx, wrap, o)
 				if err != nil {
 					log.Error("failed writing to websocket connection", "err", err.Error())
 					return
@@ -224,9 +226,9 @@ func (t *Transit) Close() error {
 }
 
 func (t *Transit) peer(id raft.ServerID,
-	target raft.ServerAddress) (*websocket.Conn, error) {
+	target raft.ServerAddress) (io.ReadWriteCloser, error) {
 	if conn, ok := t.peers.Load(id); ok {
-		return conn.(*websocket.Conn), nil
+		return conn.(io.ReadWriteCloser), nil
 	}
 	conn, err := t.dia(t.ctx, id, target)
 	if err != nil {
@@ -236,40 +238,80 @@ func (t *Transit) peer(id raft.ServerID,
 	return conn, nil
 }
 
-func read(ctx context.Context, c *websocket.Conn, m proto.Message) error {
-	typ, r, err := c.Reader(ctx)
-	if err != nil {
-		return err
-	}
-	if typ != websocket.MessageBinary {
-		c.Close(websocket.StatusUnsupportedData, "expected binary message")
-		return fmt.Errorf("expected binary message for protobuf but got: %v", typ)
-	}
+func read(ctx context.Context, r io.Reader, m proto.Message) error {
 	b := pool.Get().(*bytes.Buffer)
 	defer func() {
 		b.Reset()
 		pool.Put(b)
 	}()
-	_, err = b.ReadFrom(r)
+	_, err := b.ReadFrom(r)
 	if err != nil {
 		return err
 	}
 	err = proto.Unmarshal(b.Bytes(), m)
 	if err != nil {
-		c.Close(websocket.StatusInvalidFramePayloadData, "failed to unmarshal protobuf")
 		return fmt.Errorf("failed to unmarshal protobuf: %w", err)
 	}
 	return nil
 }
 
-func write(ctx context.Context, c *websocket.Conn, m proto.Message) error {
+func write(ctx context.Context, c io.Writer, m proto.Message) error {
 	b, err := proto.Marshal(m)
 	if err != nil {
 		return fmt.Errorf("failed to marshal protobuf: %w", err)
 	}
-	return c.Write(ctx, websocket.MessageBinary, b)
+	_, err = c.Write(b)
+	return err
 }
 
 var pool = &sync.Pool{
 	New: func() any { return new(bytes.Buffer) },
+}
+
+type wrapSocket struct {
+	ctx   context.Context
+	conn  *websocket.Conn
+	reset bool
+	r     *bufio.Reader
+}
+
+func newWrap(ctx context.Context, c *websocket.Conn) *wrapSocket {
+	return &wrapSocket{
+		ctx:   ctx,
+		conn:  c,
+		reset: true,
+		r:     bufio.NewReader(nil),
+	}
+}
+
+var _ io.ReadWriteCloser = (*wrapSocket)(nil)
+
+func (w *wrapSocket) Read(p []byte) (n int, err error) {
+	if w.reset {
+		typ, r, err := w.conn.Reader(w.ctx)
+		if err != nil {
+			return 0, err
+		}
+		if typ != websocket.MessageBinary {
+			w.conn.Close(websocket.StatusUnsupportedData, "expected binary message")
+			return 0, fmt.Errorf("expected binary message for protobuf but got: %v", typ)
+		}
+		w.r.Reset(r)
+	}
+	n, err = w.r.Read(p)
+	if err != nil {
+		if errors.Is(err, io.EOF) {
+			w.reset = true
+		}
+	}
+	return
+}
+
+func (w *wrapSocket) Write(p []byte) (int, error) {
+	err := w.conn.Write(w.ctx, websocket.MessageBinary, p)
+	return len(p), err
+}
+
+func (w *wrapSocket) Close() error {
+	return w.conn.Close(websocket.StatusGoingAway, "closing transport")
 }
