@@ -29,6 +29,7 @@ type Transit struct {
 	id      raft.ServerID
 	heart   heart
 	stream  Stream
+	log     *slog.Logger
 }
 
 var _ raft.Transport = (*Transit)(nil)
@@ -39,6 +40,7 @@ func NewTransport(ctx context.Context, id raft.ServerID, stream Stream) *Transit
 		consume: make(chan raft.RPC),
 		id:      id,
 		stream:  stream,
+		log:     slog.Default().With("component", "raft-transport"),
 	}
 }
 
@@ -64,13 +66,11 @@ func (t *Transit) SetHeartbeatHandler(cb func(rpc raft.RPC)) {
 func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{})
 	if err != nil {
-		slog.Error("failed accepting websocket connection", "err", err.Error())
+		t.log.Error("failed accepting websocket connection", "err", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	log := slog.Default().With(
-		slog.String("component", "raft"),
-	)
+	log := t.log
 	wrap := newWrap(t.ctx, conn)
 	for {
 		select {
