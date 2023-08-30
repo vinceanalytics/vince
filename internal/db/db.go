@@ -258,8 +258,7 @@ func (p *provider) NewTransaction(update bool) Txn {
 
 func (p *provider) Txn(update bool, f func(txn Txn) error) error {
 	x := p.NewTransaction(update)
-	return errors.Join(
-		f(x),
-		x.Close(),
-	)
+	err := f(x)
+	x.Close()
+	return err
 }

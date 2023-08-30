@@ -1,7 +1,11 @@
 package v1
 
 import (
+	"time"
+
+	"github.com/dgraph-io/badger/v4"
 	"github.com/hashicorp/raft"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -278,4 +282,23 @@ func Raft_LogFrom(r *raft.Log) *Raft_Log {
 		Extensions: r.Extensions,
 		AppendedAt: timestamppb.New(r.AppendedAt),
 	}
+}
+
+func (r *Raft_Entry) To() *badger.Entry {
+	e := badger.NewEntry(r.Key, r.Value)
+	if r.Expires != nil {
+		e.WithTTL(r.Expires.AsDuration())
+	}
+	return e
+}
+
+func Raft_EntryFrom(key, value []byte, ttl time.Duration) *Raft_Entry {
+	e := &Raft_Entry{
+		Key:   key,
+		Value: value,
+	}
+	if ttl != 0 {
+		e.Expires = durationpb.New(ttl)
+	}
+	return e
 }

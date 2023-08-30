@@ -354,6 +354,12 @@ enum Column {
 message Notice {}
 
 message Raft {
+  message Entry {
+    bytes key = 1;
+    bytes value = 2;
+    google.protobuf.Duration expires = 3;
+  }
+
   message Log {
     uint64 index = 1;
     uint64 term = 2;
