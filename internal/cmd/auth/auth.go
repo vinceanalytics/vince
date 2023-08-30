@@ -130,7 +130,7 @@ func LoadClient() (client *v1.Client, file string) {
 
 func Save(w *ansi.W, client *v1.Client, file string) {
 	err := os.WriteFile(file,
-		must.Must(pj.Marshal(client))("failed encoding client"),
+		must.Must(pj.MarshalIndent(client))("failed encoding client"),
 		0600,
 	)
 	if err != nil {

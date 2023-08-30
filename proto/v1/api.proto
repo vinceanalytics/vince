@@ -524,7 +524,7 @@ message Cluster {
 
   message Config {
     string name = 1;
-    repeated Node nodes = 2;
+    map<string, Node> nodes = 2;
 
     message Node {
       Client.Auth account = 1;
