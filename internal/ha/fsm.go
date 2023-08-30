@@ -17,10 +17,6 @@ type fsm struct {
 
 var _ raft.FSM = (*fsm)(nil)
 
-type fsmSnap struct {
-	base db.Provider
-}
-
 func NewFSM(base db.Provider) raft.FSM {
 	return &fsm{base: base}
 }
@@ -50,6 +46,10 @@ func (f *fsm) Restore(r io.ReadCloser) error {
 	return f.base.With(func(db *badger.DB) error {
 		return db.Load(r, runtime.NumCPU())
 	})
+}
+
+type fsmSnap struct {
+	base db.Provider
 }
 
 var _ raft.FSMSnapshot = (*fsmSnap)(nil)
