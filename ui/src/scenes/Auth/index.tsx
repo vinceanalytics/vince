@@ -18,8 +18,9 @@ const Login = () => {
             generate: true,
         }).then((result) => {
             setLoading(false);
-            const r = result as TokenResult;
-            updateSettings(StoreKey.AUTH_PAYLOAD, r.token)
+            const r = result as TokenResult
+            const { token } = r.auth
+            updateSettings(StoreKey.AUTH_PAYLOAD, token)
         })
             .catch((e) => {
                 console.log(e)

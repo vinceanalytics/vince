@@ -1,6 +1,7 @@
 import { createContext, PropsWithChildren, useState, useContext, useEffect } from "react"
-import { Site, SiteList } from "../../vince"
+import { Site, SiteList, ErrorShape } from "../../vince"
 import { useVince } from "../VinceProvider"
+import { useLocalStorage, StoreKey } from "../LocalStorageProvider"
 
 
 
@@ -19,14 +20,17 @@ const SitesContext = createContext<ContextProps>(defaultValues)
 
 export const SitesProvider = ({ children }: PropsWithChildren<{}>) => {
     const [sites, setSites] = useState<Site[]>([])
+    const { updateSettings } = useLocalStorage()
     const { vince } = useVince()
     const refresh = () => {
         vince.sites().then((result) => {
             const { list } = result as SiteList;
             setSites(list)
         })
-            .catch((e) => {
-                console.log(e)
+            .catch(({ error }: ErrorShape) => {
+                if (error === "Unauthorized") {
+                    updateSettings(StoreKey.AUTH_PAYLOAD, "")
+                }
             })
     }
     useEffect(() => {

@@ -71,6 +71,10 @@ export type Site = {
     domain: string
 }
 
+export type CreateSiteResponse = [
+    site: Site
+]
+
 export type SiteList = {
     list: Site[];
 }
@@ -82,7 +86,12 @@ export type TokenRequest = {
 }
 
 export type TokenResult = {
-    token: string;
+    auth: Auth
+}
+
+export type Auth = {
+    token: string
+    name: string
 }
 
 
@@ -143,8 +152,8 @@ export class Client {
         return this.do<Version>("/version")
     }
 
-    async create(domain: string): Promise<Site | ErrorShape> {
-        return this.do<Site>("/sites", {
+    async create(domain: string): Promise<CreateSiteResponse | ErrorShape> {
+        return this.do<CreateSiteResponse>("/sites", {
             method: "POST",
             body: JSON.stringify({ domain })
         })
