@@ -421,6 +421,7 @@ message Raft {
       Suffrage suffrage = 1;
       string id = 2;
       string address = 3;
+      string token = 4;
 
       enum Suffrage {
         Voter = 0;
