@@ -229,8 +229,9 @@ message Client {
 
     message Node {
       Auth account = 1;
-      // True if this node was used to bootstrap the cluster.
-      bool bootstrapped = 2;
+      // True if this node is used to bootstrap the cluster.
+      bool bootstrap = 2;
+      string address = 3;
     }
   }
 }

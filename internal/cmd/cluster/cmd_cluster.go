@@ -106,9 +106,11 @@ func add() *cli.Command {
 				return w.Complete(fmt.Errorf("account %q does not exist", account))
 			}
 			ax := client.Instance[instance].Accounts[account]
+
 			client.Clusters[name].Nodes = append(client.Clusters[name].Nodes, &v1.Client_ClusterConfig_Node{
-				Account:      ax,
-				Bootstrapped: ctx.Bool("bootstrap"),
+				Address:   instance,
+				Account:   ax,
+				Bootstrap: ctx.Bool("bootstrap"),
 			})
 			auth.Save(w, client, path)
 			return w.Ok(name).Complete(nil)
