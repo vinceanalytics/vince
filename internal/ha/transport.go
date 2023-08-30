@@ -17,17 +17,30 @@ import (
 	"nhooyr.io/websocket"
 )
 
+type Stream interface {
+	Dial(context.Context,
+		raft.ServerID, raft.ServerAddress) (io.ReadWriteCloser, error)
+}
+
 type Transit struct {
 	ctx     context.Context
 	peers   sync.Map
 	consume chan raft.RPC
 	id      raft.ServerID
 	heart   heart
-	dia     func(context.Context,
-		raft.ServerID, raft.ServerAddress) (io.ReadWriteCloser, error)
+	stream  Stream
 }
 
 var _ raft.Transport = (*Transit)(nil)
+
+func NewTransport(ctx context.Context, id raft.ServerID, stream Stream) *Transit {
+	return &Transit{
+		ctx:     ctx,
+		consume: make(chan raft.RPC),
+		id:      id,
+		stream:  stream,
+	}
+}
 
 type heart struct {
 	mu sync.Mutex
@@ -230,7 +243,7 @@ func (t *Transit) peer(id raft.ServerID,
 	if conn, ok := t.peers.Load(id); ok {
 		return conn.(io.ReadWriteCloser), nil
 	}
-	conn, err := t.dia(t.ctx, id, target)
+	conn, err := t.stream.Dial(t.ctx, id, target)
 	if err != nil {
 		return nil, err
 	}
