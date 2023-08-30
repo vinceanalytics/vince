@@ -3,9 +3,9 @@ package engine
 import (
 	"bytes"
 
-	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
+	vdb "github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
@@ -62,31 +62,28 @@ func (DB) Name() string {
 }
 
 func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.Table, ok bool, err error) {
-	db.DB.View(func(txn *badger.Txn) error {
+	db.DB.Txn(false, func(txn vdb.Txn) error {
 		key := keys.Site(tblName)
-		_, err := txn.Get([]byte(key))
-		if err != nil {
-			return err
+		if txn.Has([]byte(key)) {
+			table = &Table{Context: db.Context,
+				name:   tblName,
+				schema: Schema(tblName, Columns)}
+			ok = true
 		}
-		table = &Table{Context: db.Context,
-			name:   tblName,
-			schema: Schema(tblName, Columns)}
-		ok = true
 		return nil
 	})
 	return
 }
 
 func (db *DB) GetTableNames(ctx *sql.Context) (names []string, err error) {
-	db.DB.View(func(txn *badger.Txn) error {
-		prefix := keys.Site("") + "/"
-		o := badger.DefaultIteratorOptions
-		o.PrefetchValues = false
-		o.Prefix = []byte(prefix)
-		it := txn.NewIterator(o)
-		defer it.Close()
+	db.DB.Txn(false, func(txn vdb.Txn) error {
+		prefix := []byte(keys.Site("") + "/")
+		it := txn.Iter(vdb.IterOpts{
+			Prefix: prefix,
+		})
 		for it.Rewind(); it.Valid(); it.Next() {
-			names = append(names, string(bytes.TrimPrefix(it.Item().Key(), o.Prefix)))
+			names = append(names,
+				string(bytes.TrimPrefix(it.Key(), prefix)))
 		}
 		return nil
 	})

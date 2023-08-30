@@ -2,8 +2,10 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"log/slog"
 
@@ -119,9 +121,115 @@ func (cb *Observer) Changed(kv *badger.KVList) error {
 
 type Provider interface {
 	With(func(db *badger.DB) error) error
-	Update(f func(txn *badger.Txn) error) error
-	View(f func(txn *badger.Txn) error) error
-	NewTransaction(update bool) *badger.Txn
+	NewTransaction(update bool) Txn
+	Txn(update bool, f func(txn Txn) error) error
+}
+
+type Txn interface {
+	Set(key, value []byte) error
+	SetTTL(key, value []byte, ttl time.Duration) error
+
+	// Get retrieves a key and calls value with the data. When the key is not found
+	// and nofFound is present then notFound is called.
+	Get(key []byte, value func(val []byte) error, notFound ...func() error) error
+	Has(key []byte) bool
+	Delete(key []byte) error
+	Close() error
+
+	Iter(IterOpts) Iter
+}
+
+type IterOpts struct {
+	Prefix         []byte
+	PrefetchValues bool
+	PrefetchSize   int
+	Reverse        bool
+}
+
+type Iter interface {
+	Rewind()
+	Valid() bool
+	Next()
+	Key() []byte
+	Value(value func([]byte) error) error
+	Close()
+}
+
+type iter struct {
+	i *badger.Iterator
+}
+
+var _ Iter = (*iter)(nil)
+
+func (i *iter) Rewind() {
+	i.i.Rewind()
+}
+
+func (i *iter) Valid() bool {
+	return i.i.Valid()
+}
+func (i *iter) Next() {
+	i.i.Next()
+}
+
+func (i *iter) Key() []byte {
+	return i.i.Item().Key()
+}
+
+func (i *iter) Value(value func([]byte) error) error {
+	return i.i.Item().Value(value)
+}
+
+func (i *iter) Close() {
+	i.i.Close()
+}
+
+type txn struct {
+	x *badger.Txn
+}
+
+var _ Txn = (*txn)(nil)
+
+func (x *txn) Set(key, value []byte) error {
+	return x.x.Set(key, value)
+}
+
+func (x *txn) SetTTL(key, value []byte, ttl time.Duration) error {
+	e := badger.NewEntry(key, value).WithTTL(ttl)
+	return x.x.SetEntry(e)
+}
+
+func (x *txn) Get(key []byte, value func([]byte) error, notFound ...func() error) error {
+	it, err := x.x.Get(key)
+	if err != nil {
+		if len(notFound) > 0 && errors.Is(err, badger.ErrKeyNotFound) {
+			return notFound[0]()
+		}
+		return err
+	}
+	return it.Value(value)
+}
+
+func (x *txn) Has(key []byte) bool {
+	_, err := x.x.Get(key)
+	return err == nil
+}
+func (x *txn) Delete(key []byte) error {
+	return x.x.Delete(key)
+}
+
+func (x *txn) Close() error {
+	return x.x.Commit()
+}
+
+func (x *txn) Iter(o IterOpts) Iter {
+	i := x.x.NewIterator(badger.IteratorOptions{
+		Prefix:         o.Prefix,
+		PrefetchValues: o.PrefetchValues,
+		Reverse:        o.Reverse,
+		PrefetchSize:   o.PrefetchSize,
+	})
+	return &iter{i: i}
 }
 
 type provider struct {
@@ -144,6 +252,14 @@ func (p *provider) Update(f func(txn *badger.Txn) error) error {
 	})
 }
 
-func (p *provider) NewTransaction(update bool) *badger.Txn {
-	return p.db.NewTransaction(update)
+func (p *provider) NewTransaction(update bool) Txn {
+	return &txn{x: p.db.NewTransaction(update)}
+}
+
+func (p *provider) Txn(update bool, f func(txn Txn) error) error {
+	x := p.NewTransaction(update)
+	return errors.Join(
+		f(x),
+		x.Close(),
+	)
 }

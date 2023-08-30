@@ -36,6 +36,11 @@ message Site {
   message ListOptions {}
   message DeleteOptions { string domain = 1; }
 
+  message Delete {
+    message Request { string domain = 1; }
+    message Response {}
+  }
+
   message List { repeated Site list = 1; }
 }
 

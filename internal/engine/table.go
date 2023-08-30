@@ -9,6 +9,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/oklog/ulid/v2"
+	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -50,7 +51,11 @@ func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
 	o := badger.DefaultIteratorOptions
 	o.Prefix = prefix
 	txn := t.DB.NewTransaction(false)
-	it := txn.NewIterator(o)
+	it := txn.Iter(db.IterOpts{
+		Prefix:         prefix,
+		PrefetchValues: true,
+		PrefetchSize:   100,
+	})
 	it.Rewind()
 	return &partitionIter{
 		it:      it,
@@ -105,8 +110,8 @@ type Partition struct {
 func (p *Partition) Key() []byte { return p.Block[:] }
 
 type partitionIter struct {
-	it      *badger.Iterator
-	txn     *badger.Txn
+	it      db.Iter
+	txn     db.Txn
 	baseKey []byte
 	started bool
 }
@@ -121,12 +126,12 @@ func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
 	if !p.it.Valid() {
 		return nil, io.EOF
 	}
-	item := p.it.Item()
+	key := p.it.Key()
 
 	var idx v1.Block_Index
-	id := bytes.TrimPrefix(item.Key(), p.baseKey)
+	id := bytes.TrimPrefix(key, p.baseKey)
 
-	must.One(item.Value(func(val []byte) error {
+	must.One(p.it.Value(func(val []byte) error {
 		return proto.Unmarshal(val, &idx)
 	}))("failed decoding partition block index")
 
@@ -141,7 +146,7 @@ func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
 
 func (p *partitionIter) Close(*sql.Context) error {
 	p.it.Close()
-	p.txn.Discard()
+	p.txn.Close()
 	return nil
 }
 

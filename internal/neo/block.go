@@ -15,7 +15,6 @@ import (
 	"github.com/apache/arrow/go/v14/parquet/file"
 	"github.com/apache/arrow/go/v14/parquet/metadata"
 	"github.com/cespare/xxhash/v2"
-	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
@@ -148,7 +147,7 @@ func (w *writeContext) commit(ctx context.Context) {
 
 	var b bytes.Buffer
 	must.Must(w.w.FileMetadata.WriteTo(&b, nil))("failed serializing block metadata")
-	err := db.Get(ctx).Update(func(txn *badger.Txn) error {
+	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		return errors.Join(
 			txn.Set([]byte(metaKey), b.Bytes()),
 			txn.Set([]byte(indexKey), index),

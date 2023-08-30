@@ -74,17 +74,14 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var a v1.Account
-	err = db.Get(ctx).View(func(txn *badger.Txn) error {
-		key := keys.Account(tr.Name)
-		it, err := txn.Get([]byte(key))
-		if err != nil {
-			return err
-		}
-		return it.Value(func(val []byte) error {
-			return proto.Unmarshal(val, &a)
-		})
+	err = db.Get(ctx).Txn(false, func(txn db.Txn) error {
+		return txn.Get(
+			[]byte(keys.Account(tr.Name)),
+			func(val []byte) error {
+				return proto.Unmarshal(val, &a)
+			},
+		)
 	})
-
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
 			render.ERROR(w, http.StatusBadRequest, "account does not exist")
@@ -104,19 +101,14 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(w, http.StatusInternalServerError)
 		return
 	}
-
-	err = db.Get(ctx).Update(func(txn *badger.Txn) error {
+	err = db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Token(tr.Token)
 		tok := must.Must(
 			proto.Marshal(&v1.Token{
 				PubKey: pub.(ed25519.PublicKey),
 			}),
 		)("failed encoding token")
-		e := badger.NewEntry([]byte(key), tok)
-		issuer := v1.Token_Issuer_value[claims.Issuer]
-		e.WithMeta(byte(issuer)).
-			WithTTL(tr.Ttl.AsDuration())
-		return txn.SetEntry(e)
+		return txn.SetTTL([]byte(key), tok, tr.Ttl.AsDuration())
 	})
 	if err != nil {
 		slog.Error("failed saving token", "err", err)

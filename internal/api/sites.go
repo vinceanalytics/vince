@@ -17,14 +17,17 @@ import (
 
 func ListSites(w http.ResponseWriter, r *http.Request) {
 	o := v1.Site_List{}
-	db.Get(r.Context()).View(func(txn *badger.Txn) error {
-		itO := badger.DefaultIteratorOptions
+	db.Get(r.Context()).Txn(false, func(txn db.Txn) error {
 		prefix := keys.Site("")
-		itO.Prefix = []byte(prefix)
-		it := txn.NewIterator(itO)
+
+		it := txn.Iter(db.IterOpts{
+			Prefix:         []byte(prefix),
+			PrefetchSize:   64,
+			PrefetchValues: true,
+		})
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
-			it.Item().Value(func(val []byte) error {
+			it.Value(func(val []byte) error {
 				var n v1.Site
 				must.One(proto.Unmarshal(val, &n))("failed decoding site object")
 				o.List = append(o.List, &n)
@@ -55,20 +58,15 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	site := v1.Site{
 		Domain: b.Domain,
 	}
-	err = db.Get(r.Context()).Update(func(txn *badger.Txn) error {
+	err = db.Get(r.Context()).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(b.Domain)
-		it, err := txn.Get([]byte(key))
-		if err != nil {
-			if errors.Is(err, badger.ErrKeyNotFound) {
-				return txn.Set(
-					[]byte(key),
-					must.Must(proto.Marshal(&site))("failed encoding site object"),
-				)
-			}
-			return err
-		}
-		return it.Value(func(val []byte) error {
+		return txn.Get([]byte(key), func(val []byte) error {
 			return proto.Unmarshal(val, &site)
+		}, func() error {
+			return txn.Set(
+				[]byte(key),
+				must.Must(proto.Marshal(&site))("failed encoding site object"),
+			)
 		})
 	})
 	if err != nil {
@@ -79,25 +77,15 @@ func Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
-	var b v1.Site_DeleteOptions
+	var b v1.Site_Delete_Request
 	err := pj.UnmarshalDefault(&b, r.Body)
 	if err != nil || b.Domain == "" {
 		render.ERROR(w, http.StatusBadRequest)
 		return
 	}
-	var site v1.Site
-	err = db.Get(r.Context()).Update(func(txn *badger.Txn) error {
+	err = db.Get(r.Context()).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(b.Domain)
-		it, err := txn.Get([]byte(key))
-		if err != nil {
-			return err
-		}
-		return errors.Join(
-			it.Value(func(val []byte) error {
-				return proto.Unmarshal(val, &site)
-			}),
-			txn.Delete([]byte(key)),
-		)
+		return txn.Delete([]byte(key))
 	})
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
@@ -107,5 +95,5 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(w, http.StatusInternalServerError)
 		return
 	}
-	render.JSON(w, http.StatusOK, &site)
+	render.JSON(w, http.StatusOK, &v1.Site_Delete_Response{})
 }

@@ -6,7 +6,6 @@ import (
 
 	"log/slog"
 
-	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
@@ -43,10 +42,9 @@ func Events(w http.ResponseWriter, r *http.Request) {
 
 // returns true if domain is events are accepted. CHecks is done to only ensure
 // there is an existing site registered with the domain.
-func accept(ctx context.Context, domain string) bool {
-	return db.Get(ctx).View(func(txn *badger.Txn) error {
-		key := keys.Site(domain)
-		_, err := txn.Get([]byte(key))
-		return err
-	}) == nil
+func accept(ctx context.Context, domain string) (ok bool) {
+	txn := db.Get(ctx).NewTransaction(false)
+	ok = txn.Has([]byte(keys.Site(domain)))
+	txn.Close()
+	return
 }

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dgraph-io/badger/v4"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/internal/core"
@@ -40,34 +39,33 @@ func Valid(db db.Provider, token string) (ok bool) {
 	return
 }
 
-func ValidWithClaims(db db.Provider, token string) (claims *jwt.RegisteredClaims, ok bool) {
+func ValidWithClaims(vdb db.Provider, token string) (claims *jwt.RegisteredClaims, ok bool) {
 	if token == "" {
 		return
 	}
-	ok = db.View(func(txn *badger.Txn) error {
-		key := keys.Token(token)
-		it, err := txn.Get([]byte(key))
-		if err != nil {
-			return err
-		}
-		return it.Value(func(val []byte) error {
-			var tpub v1.Token
-			err := proto.Unmarshal(val, &tpub)
-			if err != nil {
-				return err
-			}
-			claims = &jwt.RegisteredClaims{}
-			t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
-				return ed25519.PublicKey(tpub.PubKey), nil
-			})
-			if err != nil {
-				return err
-			}
-			if !t.Valid {
-				return errors.New("invalid token")
-			}
-			return nil
-		})
+	ok = vdb.Txn(false, func(txn db.Txn) error {
+		return txn.Get(
+			[]byte(keys.Token(token)),
+			func(val []byte) error {
+				var tpub v1.Token
+				err := proto.Unmarshal(val, &tpub)
+				if err != nil {
+					return err
+				}
+				claims = &jwt.RegisteredClaims{}
+				t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+					return ed25519.PublicKey(tpub.PubKey), nil
+				})
+				if err != nil {
+					return err
+				}
+				if !t.Valid {
+					return errors.New("invalid token")
+				}
+				return nil
+			},
+		)
 	}) == nil
+
 	return
 }
