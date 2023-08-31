@@ -39,6 +39,7 @@ func CMD() *cli.Command {
 				"failed encoding root account",
 			)
 			accountKey := keys.Account(name)
+			defer accountKey.Release()
 			root, err := filepath.Abs(ctx.Args().First())
 			if err != nil {
 				return w.Complete(err)
@@ -78,7 +79,7 @@ func CMD() *cli.Command {
 			_, db := db.Open(context.Background(), mainDB, "silent")
 			defer db.Close()
 			must.One(db.Update(func(txn *badger.Txn) error {
-				return txn.Set([]byte(accountKey), account)
+				return txn.Set(accountKey.Bytes(), account)
 			}))(
 				"failed saving account",
 			)

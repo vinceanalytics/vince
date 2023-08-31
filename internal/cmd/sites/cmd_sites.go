@@ -2,6 +2,7 @@ package sites
 
 import (
 	"context"
+	"strings"
 
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
@@ -35,6 +36,7 @@ func create() *cli.Command {
 					"vince sites create vinceanalytics.github.io",
 				).Exit()
 			}
+			name = strings.TrimSpace(name)
 			token, instance := auth.Account()
 
 			klient.CLI_POST(

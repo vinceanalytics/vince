@@ -142,15 +142,17 @@ func (w *writeContext) commit(ctx context.Context) {
 	}
 	index := must.Must(proto.Marshal(&idx))("failed serializing index")
 
-	metaKey := keys.BlockMeta(w.domain, w.id)
-	indexKey := keys.BlockIndex(w.domain, w.id)
-
 	var b bytes.Buffer
 	must.Must(w.w.FileMetadata.WriteTo(&b, nil))("failed serializing block metadata")
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
+		metaKey := keys.BlockMeta(w.domain, w.id)
+		defer metaKey.Release()
+		indexKey := keys.BlockIndex(w.domain, w.id)
+		defer indexKey.Release()
+
 		return errors.Join(
-			txn.Set([]byte(metaKey), b.Bytes()),
-			txn.Set([]byte(indexKey), index),
+			txn.Set(metaKey.Bytes(), b.Bytes()),
+			txn.Set(indexKey.Bytes(), index),
 		)
 	})
 	must.One(err)("failed saving block metadata to meta storage")

@@ -18,8 +18,9 @@ func (db *DB) Set(key, value []byte) error {
 
 func (db *DB) Get(key []byte) (v []byte, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
-		k := keys.RaftStable(key)
-		it, err := txn.Get([]byte(k))
+		key := keys.RaftStable(key)
+		defer key.Release()
+		it, err := txn.Get(key.Bytes())
 		if err != nil {
 			return err
 		}

@@ -19,17 +19,18 @@ var _ raft.LogStore = (*DB)(nil)
 
 func (db *DB) FirstIndex() (v uint64, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
-		prefix := []byte(keys.RaftLog(-1) + "/")
+		key := keys.RaftLog(-1)
+		defer key.Release()
 		o := badger.DefaultIteratorOptions
 		o.PrefetchValues = false
-		o.Prefix = prefix
+		o.Prefix = key.Bytes()
 		it := txn.NewIterator(o)
 		defer it.Close()
 		it.Rewind()
 		if !it.Valid() {
 			return raft.ErrLogNotFound
 		}
-		id := bytes.TrimPrefix(it.Item().Key(), prefix)
+		id := bytes.TrimPrefix(it.Item().Key(), key.Bytes())
 		v, err = strconv.ParseUint(string(id), 10, 64)
 		return err
 	})
@@ -38,18 +39,19 @@ func (db *DB) FirstIndex() (v uint64, err error) {
 
 func (db *DB) LastIndex() (v uint64, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
-		prefix := []byte(keys.RaftLog(-1) + "/")
+		key := keys.RaftLog(-1)
+		defer key.Release()
 		o := badger.DefaultIteratorOptions
 		o.PrefetchValues = false
 		o.Reverse = true
-		o.Prefix = prefix
+		o.Prefix = key.Bytes()
 		it := txn.NewIterator(o)
 		defer it.Close()
 		it.Rewind()
 		if !it.Valid() {
 			return raft.ErrLogNotFound
 		}
-		id := bytes.TrimPrefix(it.Item().Key(), prefix)
+		id := bytes.TrimPrefix(it.Item().Key(), key.Bytes())
 		v, err = strconv.ParseUint(string(id), 10, 64)
 		return err
 	})
@@ -58,8 +60,9 @@ func (db *DB) LastIndex() (v uint64, err error) {
 
 func (db *DB) GetLog(index uint64, log *raft.Log) error {
 	return db.db.View(func(txn *badger.Txn) error {
-		key := []byte(keys.RaftLog(int64(index)))
-		it, err := txn.Get(key)
+		key := keys.RaftLog(int64(index))
+		defer key.Release()
+		it, err := txn.Get(key.Bytes())
 		if err != nil {
 			if errors.Is(err, badger.ErrKeyNotFound) {
 				return raft.ErrLogNotFound
@@ -88,7 +91,8 @@ func (db *DB) GetLog(index uint64, log *raft.Log) error {
 func (db *DB) StoreLog(log *raft.Log) error {
 	return db.db.Update(func(txn *badger.Txn) error {
 		key := keys.RaftLog(int64(log.Index))
-		return txn.Set([]byte(key), serialize(log))
+		defer key.Release()
+		return txn.Set(key.Bytes(), serialize(log))
 	})
 }
 
@@ -96,28 +100,36 @@ func (db *DB) StoreLogs(logs []*raft.Log) error {
 	return db.db.Update(func(txn *badger.Txn) error {
 		err := make([]error, len(logs))
 		for i, log := range logs {
+			key := keys.RaftLog(int64(log.Index))
 			err[i] = txn.Set(
-				[]byte(keys.RaftLog(int64(log.Index))),
+				key.Bytes(),
 				serialize(log),
 			)
+			key.Release()
 		}
 		return errors.Join(err...)
 	})
 }
 
 func (db *DB) DeleteRange(min, max uint64) error {
-	prefix := []byte(keys.RaftLog(-1))
-	start := []byte(keys.RaftLog(int64(min)))
-	end := []byte(keys.RaftLog(int64(max)))
+	prefix := keys.RaftLog(-1)
+	start := keys.RaftLog(int64(min))
+	end := keys.RaftLog(int64(max))
+
+	defer func() {
+		prefix.Release()
+		start.Release()
+		end.Release()
+	}()
 	txn := db.db.NewTransaction(true)
 	o := badger.DefaultIteratorOptions
 	o.PrefetchValues = false
-	o.Prefix = prefix
+	o.Prefix = prefix.Bytes()
 	it := txn.NewIterator(o)
-	for it.Seek(start); it.Valid(); it.Next() {
+	for it.Seek(start.Bytes()); it.Valid(); it.Next() {
 		x := it.Item()
 		key := x.Key()
-		if bytes.Compare(end, key) == 1 {
+		if bytes.Compare(end.Bytes(), key) == 1 {
 			break
 		}
 		err := txn.Delete(key)

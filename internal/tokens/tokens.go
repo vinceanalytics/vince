@@ -44,8 +44,10 @@ func ValidWithClaims(vdb db.Provider, token string) (claims *jwt.RegisteredClaim
 		return
 	}
 	ok = vdb.Txn(false, func(txn db.Txn) error {
+		key := keys.Token(token)
+		defer key.Release()
 		return txn.Get(
-			[]byte(keys.Token(token)),
+			key.Bytes(),
 			func(val []byte) error {
 				var tpub v1.Token
 				err := proto.Unmarshal(val, &tpub)

@@ -64,7 +64,8 @@ func (DB) Name() string {
 func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.Table, ok bool, err error) {
 	db.DB.Txn(false, func(txn vdb.Txn) error {
 		key := keys.Site(tblName)
-		if txn.Has([]byte(key)) {
+		defer key.Release()
+		if txn.Has(key.Bytes()) {
 			table = &Table{Context: db.Context,
 				name:   tblName,
 				schema: Schema(tblName, Columns)}
@@ -77,13 +78,13 @@ func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.T
 
 func (db *DB) GetTableNames(ctx *sql.Context) (names []string, err error) {
 	db.DB.Txn(false, func(txn vdb.Txn) error {
-		prefix := []byte(keys.Site("") + "/")
+		key := keys.Site("")
 		it := txn.Iter(vdb.IterOpts{
-			Prefix: prefix,
+			Prefix: key.Bytes(),
 		})
 		for it.Rewind(); it.Valid(); it.Next() {
 			names = append(names,
-				string(bytes.TrimPrefix(it.Key(), prefix)))
+				string(bytes.TrimPrefix(it.Key(), key.Bytes())))
 		}
 		return nil
 	})

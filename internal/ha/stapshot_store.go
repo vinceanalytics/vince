@@ -2,7 +2,6 @@ package ha
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"sort"
 
@@ -42,13 +41,13 @@ func (db *DB) Create(version raft.SnapshotVersion, index, term uint64, configura
 func (db *DB) List() (ls []*raft.SnapshotMeta, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
 		prefix := keys.RaftSnapshotMeta("")
+		defer prefix.Release()
 		o := badger.DefaultIteratorOptions
-		o.Prefix = []byte(prefix)
+		o.Prefix = prefix.Bytes()
 		it := txn.NewIterator(o)
 		defer it.Close()
 		var m v1.Raft_Snapshot
 		for it.Rewind(); it.Valid(); it.Next() {
-
 			err := it.Item().Value(func(val []byte) error {
 				err = proto.Unmarshal(val, &m)
 				if err != nil {
@@ -72,7 +71,8 @@ func (db *DB) List() (ls []*raft.SnapshotMeta, err error) {
 func (db *DB) Open(id string) (meta *raft.SnapshotMeta, r io.ReadCloser, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
 		mk := keys.RaftSnapshotMeta(id)
-		xm, err := txn.Get([]byte(mk))
+		defer mk.Release()
+		xm, err := txn.Get(mk.Bytes())
 		if err != nil {
 			return err
 		}
@@ -85,7 +85,8 @@ func (db *DB) Open(id string) (meta *raft.SnapshotMeta, r io.ReadCloser, err err
 		}
 		meta = toMeta(&m)
 		dk := keys.RaftSnapshotData(id)
-		xd, err := txn.Get([]byte(dk))
+		defer dk.Release()
+		xd, err := txn.Get(dk.Bytes())
 		if err != nil {
 			return err
 		}
@@ -134,9 +135,14 @@ func (s *sink) Close() error {
 	return s.db.Update(func(txn *badger.Txn) error {
 		s.meta.Size = int64(s.Len())
 		meta := must.Must(proto.Marshal(s.meta))("failed serializing snapshot metadata")
-		return errors.Join(
-			txn.Set([]byte(keys.RaftSnapshotMeta(s.meta.Id)), meta),
-			txn.Set([]byte(keys.RaftSnapshotData(s.meta.Id)), s.Bytes()),
-		)
+		a := keys.RaftSnapshotMeta(s.meta.Id)
+		defer a.Release()
+		err := txn.Set(a.Bytes(), meta)
+		if err != nil {
+			return err
+		}
+		b := keys.RaftSnapshotData(s.meta.Id)
+		defer b.Release()
+		return txn.Set(b.Bytes(), s.Bytes())
 	})
 }

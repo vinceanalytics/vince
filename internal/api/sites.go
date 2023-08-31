@@ -18,10 +18,11 @@ import (
 func ListSites(w http.ResponseWriter, r *http.Request) {
 	o := v1.Site_List_Response{}
 	db.Get(r.Context()).Txn(false, func(txn db.Txn) error {
-		prefix := keys.Site("")
+		key := keys.Site("")
+		defer key.Release()
 
 		it := txn.Iter(db.IterOpts{
-			Prefix:         []byte(prefix),
+			Prefix:         key.Bytes(),
 			PrefetchSize:   64,
 			PrefetchValues: true,
 		})
@@ -62,12 +63,13 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Get(r.Context()).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(b.Domain)
-		return txn.Get([]byte(key), func(val []byte) error {
-			return proto.Unmarshal(val, &response)
+		defer key.Release()
+		return txn.Get(key.Bytes(), func(val []byte) error {
+			return proto.Unmarshal(val, response.Site)
 		}, func() error {
 			return txn.Set(
-				[]byte(key),
-				must.Must(proto.Marshal(&response))("failed encoding site object"),
+				key.Bytes(),
+				must.Must(proto.Marshal(response.Site))("failed encoding site object"),
 			)
 		})
 	})
@@ -87,7 +89,8 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Get(r.Context()).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(b.Domain)
-		return txn.Delete([]byte(key))
+		defer key.Release()
+		return txn.Delete(key.Bytes())
 	})
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {

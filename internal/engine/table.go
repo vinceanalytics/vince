@@ -47,12 +47,12 @@ func (t *Table) Collation() sql.CollationID {
 }
 
 func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
-	prefix := []byte(keys.BlockIndex(t.name, "") + "/")
+	key := keys.BlockIndex(t.name, "")
 	o := badger.DefaultIteratorOptions
-	o.Prefix = prefix
+	o.Prefix = key.Bytes()
 	txn := t.DB.NewTransaction(false)
 	it := txn.Iter(db.IterOpts{
-		Prefix:         prefix,
+		Prefix:         key.Bytes(),
 		PrefetchValues: true,
 		PrefetchSize:   100,
 	})
@@ -60,7 +60,7 @@ func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
 	return &partitionIter{
 		it:      it,
 		txn:     txn,
-		baseKey: prefix,
+		baseKey: key,
 	}, nil
 }
 
@@ -112,7 +112,7 @@ func (p *Partition) Key() []byte { return p.Block[:] }
 type partitionIter struct {
 	it      db.Iter
 	txn     db.Txn
-	baseKey []byte
+	baseKey *keys.Key
 	started bool
 }
 
@@ -129,7 +129,7 @@ func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
 	key := p.it.Key()
 
 	var idx v1.Block_Index
-	id := bytes.TrimPrefix(key, p.baseKey)
+	id := bytes.TrimPrefix(key, p.baseKey.Bytes())
 
 	must.One(p.it.Value(func(val []byte) error {
 		return proto.Unmarshal(val, &idx)
@@ -145,6 +145,8 @@ func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
 }
 
 func (p *partitionIter) Close(*sql.Context) error {
+	p.baseKey.Release()
+	p.baseKey = nil
 	p.it.Close()
 	p.txn.Close()
 	return nil

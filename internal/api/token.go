@@ -75,8 +75,10 @@ func Token(w http.ResponseWriter, r *http.Request) {
 
 	var a v1.Account
 	err = db.Get(ctx).Txn(false, func(txn db.Txn) error {
+		key := keys.Account(tr.Name)
+		defer key.Release()
 		return txn.Get(
-			[]byte(keys.Account(tr.Name)),
+			key.Bytes(),
 			func(val []byte) error {
 				return proto.Unmarshal(val, &a)
 			},
@@ -103,12 +105,13 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Token(tr.Token)
+		defer key.Release()
 		tok := must.Must(
 			proto.Marshal(&v1.Token{
 				PubKey: pub.(ed25519.PublicKey),
 			}),
 		)("failed encoding token")
-		return txn.SetTTL([]byte(key), tok, tr.Ttl.AsDuration())
+		return txn.SetTTL(key.Bytes(), tok, tr.Ttl.AsDuration())
 	})
 	if err != nil {
 		slog.Error("failed saving token", "err", err)
