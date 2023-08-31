@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/raft"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/must"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
+	"github.com/vinceanalytics/vince/internal/px"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -57,7 +57,7 @@ func (x *txn) Set(key, value []byte) error {
 
 func (x *txn) SetTTL(key, value []byte, ttl time.Duration) error {
 	e := must.Must(
-		proto.Marshal(v1.Raft_EntryFrom(key, value, ttl)),
+		proto.Marshal(px.Raft_EntryFrom(key, value, ttl)),
 	)("failed encoding raft entry")
 	f := x.raft.Apply(e, ApplyTTL)
 	if err := f.Error(); err != nil {

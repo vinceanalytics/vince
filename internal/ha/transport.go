@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/raft"
+	"github.com/vinceanalytics/vince/internal/px"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
 	"nhooyr.io/websocket"
@@ -95,7 +96,7 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			result := make(chan raft.RPCResponse, 1)
 
 			rx := raft.RPC{
-				Command:  req.To(),
+				Command:  px.Raft_RPC_Call_RequestTo(&req),
 				RespChan: result,
 			}
 
@@ -121,7 +122,7 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				log.Info("websocket raft transport is closed")
 				return
 			case res := <-result:
-				o := v1.Raft_RPC_Call_ResponseFrom(res)
+				o := px.Raft_RPC_Call_ResponseFrom(res)
 				ctx, cancel := t.context()
 				err = write(ctx, wrap, o)
 				cancel()
@@ -192,11 +193,11 @@ type RPCResponse interface {
 
 func rpc[Req RPCRequest, Res RPCResponse](t *Transit, id raft.ServerID,
 	target raft.ServerAddress, args Req, resp Res) error {
-	result := t.send(id, target, v1.Raft_RPC_Call_RequestFrom(args))
+	result := t.send(id, target, px.Raft_RPC_Call_RequestFrom(args))
 	if result.Error != "" {
 		return errors.New(result.Error)
 	}
-	r := result.To()
+	r := px.Raft_RPC_Call_ResponseTo(result)
 	switch e := any(resp).(type) {
 	case *raft.AppendEntriesResponse:
 		*e = *r.(*raft.AppendEntriesResponse)
