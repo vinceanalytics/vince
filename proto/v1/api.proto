@@ -531,3 +531,7 @@ message Cluster {
     }
   }
 }
+
+service Vince {
+  rpc CreateSite(Site.Create.Request) returns (Site.Create.Response);
+}

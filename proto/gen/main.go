@@ -6,7 +6,9 @@ func main() {
 	tools.ExecPlainWithWorkingPath(
 		"./v1",
 		"protoc",
-		"-I=.", "--go_out=paths=source_relative:.",
+		"-I=.",
+		"--go_out=paths=source_relative:.",
+		"--go-grpc_out=paths=source_relative:.",
 		"api.proto",
 	)
 }
