@@ -20,7 +20,9 @@ type Input interface {
 		*v1.Site_Create_Request |
 		*v1.Site_List_Request |
 		*v1.Site_Delete_Request |
-		*v1.Query_Request
+		*v1.Query_Request |
+		*v1.Cluster_Apply_Request |
+		*v1.Cluster_Get_Request
 }
 
 type Output interface {
@@ -29,7 +31,9 @@ type Output interface {
 		*v1.Site_Get_Response |
 		*v1.Site_List_Response |
 		*v1.Site_Delete_Response |
-		*v1.Query_Response
+		*v1.Query_Response |
+		*v1.Cluster_Apply_Response |
+		*v1.Cluster_Get_Response
 }
 
 func POST[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) *v1.Error {

@@ -68,6 +68,12 @@ func Apply(w http.ResponseWriter, r *http.Request) {
 }
 
 func Cluster(w http.ResponseWriter, r *http.Request) {
+	var b v1.Cluster_Get_Request
+	err := pj.UnmarshalDefault(&b, r.Body)
+	if err != nil {
+		render.ERROR(w, http.StatusBadRequest)
+		return
+	}
 	var o v1.Cluster_Config
 	db.Get(r.Context()).Txn(false, func(txn db.Txn) error {
 		key := keys.Cluster()
@@ -76,7 +82,9 @@ func Cluster(w http.ResponseWriter, r *http.Request) {
 			return proto.Unmarshal(val, &o)
 		})
 	})
-	render.JSON(w, http.StatusOK, &o)
+	render.JSON(w, http.StatusOK, &v1.Cluster_Get_Response{
+		Config: &o,
+	})
 }
 
 func ping(ctx context.Context, log *slog.Logger, name string, node *v1.Cluster_Config_Node) string {

@@ -514,6 +514,11 @@ message Cluster {
     message Response { string ok = 1; }
   }
 
+  message Get {
+    message Request {}
+    message Response { Config config = 1; }
+  }
+
   message Config {
     string name = 1;
     map<string, Node> nodes = 2;
