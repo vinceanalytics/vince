@@ -103,3 +103,7 @@ func RaftSnapshotMeta(id string) *Key {
 		v1.Raft_Snapshot_Key_META.String(), id,
 	)
 }
+
+func Cluster() *Key {
+	return New(v1.StorePrefix_CLUSTER)
+}

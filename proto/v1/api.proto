@@ -509,17 +509,9 @@ message Raft {
 }
 
 message Cluster {
-  message Bootstrap {
-    message Request {
-      Raft.Config.Server server = 1;
-      string name = 2;
-    }
-    message Response {
-      oneof stats {
-        string ok = 1;
-        Error error = 2;
-      }
-    }
+  message Apply {
+    message Request { Config config = 1; }
+    message Response { string ok = 1; }
   }
 
   message Config {
