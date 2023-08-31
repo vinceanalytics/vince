@@ -1,0 +1,38 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/vinceanalytics/vince/gen/proto/go
+    except:
+      - buf.build/googleapis/googleapis
+
+plugins:
+  # renovate: datasource=github-releases depName=protocolbuffers/protobuf-go
+  - plugin: buf.build/protocolbuffers/go:v1.31.0
+    out: gen/proto/go
+    opt: paths=source_relative
+
+  # renovate: datasource=github-releases depName=planetscale/vtprotobuf
+  - plugin: buf.build/community/planetscale-vtprotobuf:v0.4.0
+    out: gen/proto/go
+    opt:
+      - paths=source_relative,features=marshal+unmarshal+size+pool+grpc
+
+  # renovate: datasource=github-releases depName=timostamm/protobuf-ts
+  - plugin: buf.build/community/timostamm-protobuf-ts:v2.9.1
+    out: ui/src/vince/proto
+    opt:
+      - generate_dependencies
+
+  # renovate: datasource=github-releases depName=grpc-ecosystem/grpc-gateway
+  - plugin: buf.build/grpc-ecosystem/gateway:v2.16.2
+    out: gen/proto/go
+    opt:
+      - paths=source_relative
+      - generate_unbound_methods=true
+
+  # renovate: datasource=github-releases depName=grpc-ecosystem/grpc-gateway
+  - plugin: buf.build/grpc-ecosystem/openapiv2:v2.16.2
+    out: gen/proto/swagger
+    opt:
+      - allow_merge=false
