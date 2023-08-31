@@ -8,10 +8,10 @@ import (
 
 	"github.com/dgraph-io/ristretto"
 	"github.com/go-sql-driver/mysql"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/must"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 func DSN(addr string, a *v1.Client_Auth, tls bool) string {

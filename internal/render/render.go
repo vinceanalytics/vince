@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
 )
 

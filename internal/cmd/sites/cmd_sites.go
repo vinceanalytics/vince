@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v3"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
 	"github.com/vinceanalytics/vince/internal/klient"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 func CMD() *cli.Command {

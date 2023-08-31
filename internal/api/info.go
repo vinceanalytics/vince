@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/version"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 func Version(w http.ResponseWriter, r *http.Request) {

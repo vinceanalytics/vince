@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
 	"github.com/vinceanalytics/vince/internal/render"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 func Health(w http.ResponseWriter, r *http.Request) {

@@ -13,9 +13,9 @@ import (
 	"github.com/apache/arrow/go/v14/parquet/compress"
 	"github.com/apache/arrow/go/v14/parquet/file"
 	"github.com/apache/arrow/go/v14/parquet/schema"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/px"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 type Entry struct {

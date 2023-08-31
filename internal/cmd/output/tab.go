@@ -6,8 +6,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
 	"github.com/vinceanalytics/vince/internal/px"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 func Tab(out io.Writer, result *v1.Query_Response) error {

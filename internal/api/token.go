@@ -10,6 +10,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/golang-jwt/jwt/v5"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
@@ -19,7 +20,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/secrets"
 	"github.com/vinceanalytics/vince/internal/tokens"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"

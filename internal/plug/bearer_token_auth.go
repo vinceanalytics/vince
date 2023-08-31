@@ -3,12 +3,12 @@ package plug
 import (
 	"net/http"
 
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/render"
 	"github.com/vinceanalytics/vince/internal/tokens"
-	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
 func Auth(h http.Handler) http.Handler {
