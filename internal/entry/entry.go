@@ -14,6 +14,7 @@ import (
 	"github.com/apache/arrow/go/v14/parquet/file"
 	"github.com/apache/arrow/go/v14/parquet/schema"
 	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/internal/px"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 )
 
@@ -56,7 +57,8 @@ func (m *MultiEntry) add(name v1.Column, v any) {
 		m.ints[name] = append(m.ints[name], v.(int64))
 		return
 	}
-	m.strings[name.Index()] = append(m.strings[name.Index()], parquet.ByteArray(v.(string)))
+	m.strings[px.ColumnIndex(name)] =
+		append(m.strings[px.ColumnIndex(name)], parquet.ByteArray(v.(string)))
 }
 
 var multiPool = &sync.Pool{

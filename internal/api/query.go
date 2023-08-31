@@ -7,6 +7,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/cmd/output"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/pj"
+	"github.com/vinceanalytics/vince/internal/px"
 	"github.com/vinceanalytics/vince/internal/query"
 	"github.com/vinceanalytics/vince/internal/render"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
@@ -27,7 +28,8 @@ func Query(w http.ResponseWriter, r *http.Request) {
 	}
 	params := make([]any, len(qr.Params))
 	for i := range params {
-		params[i] = sql.Named(qr.Params[i].Name, qr.Params[i].Value.Interface())
+		params[i] = sql.Named(qr.Params[i].Name,
+			px.Interface(qr.Params[i].Value))
 	}
 	db := query.GetInternalClient(ctx)
 	start := core.Now(ctx)

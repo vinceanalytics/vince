@@ -20,6 +20,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/internal/px"
 	v1 "github.com/vinceanalytics/vince/proto/v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -126,7 +127,7 @@ func (w *writeContext) commit(ctx context.Context) {
 		idx.RowGroupBitmap = append(idx.RowGroupBitmap,
 			must.Must(r.MarshalBinary())("failed serializing bitmap"),
 		)
-		g := meta[i].Columns[v1.Column_timestamp.Index()].MetaData.Statistics
+		g := meta[i].Columns[px.ColumnIndex(v1.Column_timestamp)].MetaData.Statistics
 		idx.TimeRange = append(idx.TimeRange, &v1.Block_Index_Range{
 			Min: timestamppb.New(
 				time.UnixMilli(
