@@ -1,25 +1,9 @@
 syntax = "proto3";
 package v1;
 
-option go_package = "github.com/vinceanalytics/vince/proro/v1";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
-
-// StorePrefix defines different kind of data we are storing in the key value
-// store.
-enum StorePrefix {
-  SITES = 0;
-  BLOCKS = 1;
-  ALERTS = 2;
-  ACCOUNT = 3;
-  TOKEN = 4;
-  CLUSTER = 8;
-}
-
-message StoreKey {
-  string namespace = 1;
-  StorePrefix prefix = 2;
-}
+import "vince/store/v1/store.proto";
 
 message Site {
   string domain = 1;
@@ -47,38 +31,6 @@ message Site {
   message Delete {
     message Request { string domain = 1; }
     message Response {}
-  }
-}
-
-message Block {
-  message Key {
-    StoreKey store = 1;
-    Kind kind = 2;
-    string domain = 3;
-    string uid = 4;
-
-    enum Kind {
-      METADATA = 0;
-      INDEX = 1;
-    }
-  }
-
-  message Index {
-
-    // A list of bitmaps each belonging to a row group. This allows us to select
-    // row groups that might contain relevant data based on indexed columns.
-    repeated bytes row_group_bitmap = 1;
-
-    // A list of min/max timestamp observed per row group
-    repeated Range time_range = 2;
-
-    message Range {
-      // The minimum timestamp value observed in a row group.
-      google.protobuf.Timestamp min = 1;
-
-      // The maximum timestamp value observed a row group.
-      google.protobuf.Timestamp max = 2;
-    }
   }
 }
 

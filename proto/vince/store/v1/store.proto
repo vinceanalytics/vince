@@ -1,0 +1,19 @@
+syntax = "proto3";
+package v1;
+
+// StorePrefix defines different kind of data we are storing in the key value
+// store.
+enum StorePrefix {
+  SITES = 0;
+  ALERTS = 2;
+  ACCOUNT = 3;
+  TOKEN = 4;
+  CLUSTER = 8;
+  BLOCK_METADATA = 9;
+  BLOCK_INDEX = 10;
+}
+
+message StoreKey {
+  string namespace = 1;
+  StorePrefix prefix = 2;
+}

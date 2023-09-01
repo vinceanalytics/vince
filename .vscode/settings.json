@@ -3,4 +3,9 @@
         "kubernetes": "chart/crds/*.yaml",
         "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yaml"
     },
+    "protoc": {
+        "options": [
+            "--proto_path=proto",
+        ]
+    }
 }

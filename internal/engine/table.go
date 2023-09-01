@@ -9,6 +9,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/oklog/ulid/v2"
+	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
@@ -128,7 +129,7 @@ func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
 	}
 	key := p.it.Key()
 
-	var idx v1.Block_Index
+	var idx blocksv1.BlockIndex
 	id := bytes.TrimPrefix(key, p.baseKey.Bytes())
 
 	must.One(p.it.Value(func(val []byte) error {

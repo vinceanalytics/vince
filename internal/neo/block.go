@@ -16,6 +16,7 @@ import (
 	"github.com/apache/arrow/go/v14/parquet/metadata"
 	"github.com/cespare/xxhash/v2"
 	"github.com/oklog/ulid/v2"
+	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
@@ -118,9 +119,9 @@ func (w *writeContext) save(ctx context.Context) {
 
 func (w *writeContext) commit(ctx context.Context) {
 	must.One(w.w.Close())("closing parquet file writer ")
-	idx := v1.Block_Index{
+	idx := blocksv1.BlockIndex{
 		RowGroupBitmap: make([][]byte, 0, len(w.blooms)),
-		TimeRange:      make([]*v1.Block_Index_Range, 0, len(w.blooms)),
+		TimeRange:      make([]*blocksv1.BlockIndex_Range, 0, len(w.blooms)),
 	}
 	meta := w.w.FileMetadata.RowGroups
 	for i, r := range w.blooms {
@@ -128,7 +129,7 @@ func (w *writeContext) commit(ctx context.Context) {
 			must.Must(r.MarshalBinary())("failed serializing bitmap"),
 		)
 		g := meta[i].Columns[px.ColumnIndex(v1.Column_timestamp)].MetaData.Statistics
-		idx.TimeRange = append(idx.TimeRange, &v1.Block_Index_Range{
+		idx.TimeRange = append(idx.TimeRange, &blocksv1.BlockIndex_Range{
 			Min: timestamppb.New(
 				time.UnixMilli(
 					metadata.GetStatValue(parquet.Types.Int64, g.MinValue).(int64),

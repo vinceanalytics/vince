@@ -5,7 +5,7 @@ import (
 	"encoding/base32"
 	"sync"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 )
 
 type Key struct {
@@ -57,16 +57,14 @@ func Site(domain string) *Key {
 
 // Returns key which stores a block metadata in badger db.
 func BlockMeta(domain, uid string) *Key {
-	return New(v1.StorePrefix_BLOCKS).Path(
-		v1.Block_Key_METADATA.String(),
+	return New(v1.StorePrefix_BLOCK_METADATA).Path(
 		domain, uid,
 	)
 }
 
 // Returns key which stores a block index in badger db.
 func BlockIndex(domain, uid string) *Key {
-	return New(v1.StorePrefix_BLOCKS).Path(
-		v1.Block_Key_INDEX.String(),
+	return New(v1.StorePrefix_BLOCK_INDEX).Path(
 		domain, uid,
 	)
 }
