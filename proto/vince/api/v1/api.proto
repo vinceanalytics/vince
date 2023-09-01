@@ -4,16 +4,49 @@ package v1;
 import "google/protobuf/duration.proto";
 import "vince/config/v1/config.proto";
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 service Vince {
-  rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse);
-  rpc CreateSite(CreateSiteRequest) returns (CreateSiteResponse);
-  rpc GetSite(GetSiteRequest) returns (GetSiteResponse);
-  rpc ListSites(ListSitesRequest) returns (ListSitesResponse);
-  rpc DeleteSite(DeleteSiteRequest) returns (DeleteSiteResponse);
-  rpc Query(QueryRequest) returns (QueryResponse);
-  rpc ApplyCluster(ApplyClusterRequest) returns (ApplyClusterResponse);
-  rpc GetCluster(GetClusterRequest) returns (GetClusterResponse);
+  rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse) {
+    option (google.api.http) = {
+      post : "/v1/tokens"
+    };
+  };
+  rpc CreateSite(CreateSiteRequest) returns (CreateSiteResponse) {
+    option (google.api.http) = {
+      post : "/v1/sites"
+    };
+  };
+  rpc GetSite(GetSiteRequest) returns (GetSiteResponse) {
+    option (google.api.http) = {
+      get : "/v1/site"
+    };
+  };
+  rpc ListSites(ListSitesRequest) returns (ListSitesResponse) {
+    option (google.api.http) = {
+      get : "/v1/sites"
+    };
+  };
+  rpc DeleteSite(DeleteSiteRequest) returns (DeleteSiteResponse) {
+    option (google.api.http) = {
+      delete : "/v1/site"
+    };
+  };
+  rpc Query(QueryRequest) returns (QueryResponse) {
+    option (google.api.http) = {
+      post : "/v1/query"
+    };
+  };
+  rpc ApplyCluster(ApplyClusterRequest) returns (ApplyClusterResponse) {
+    option (google.api.http) = {
+      post : "/v1/cluster/apply"
+    };
+  };
+  rpc GetCluster(GetClusterRequest) returns (GetClusterResponse) {
+    option (google.api.http) = {
+      get : "/v1/cluster"
+    };
+  };
 }
 
 message Token {

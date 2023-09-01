@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "vince/blocks/v1/blocks.proto",
+    "title": "google/api/field_behavior.proto",
     "version": "version not set"
   },
   "consumes": [

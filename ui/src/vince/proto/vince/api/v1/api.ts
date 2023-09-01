@@ -1608,12 +1608,12 @@ export const Notice = new Notice$Type();
  * @generated ServiceType for protobuf service v1.Vince
  */
 export const Vince = new ServiceType("v1.Vince", [
-    { name: "CreateToken", options: {}, I: CreateTokenRequest, O: CreateTokenResponse },
-    { name: "CreateSite", options: {}, I: CreateSiteRequest, O: CreateSiteResponse },
-    { name: "GetSite", options: {}, I: GetSiteRequest, O: GetSiteResponse },
-    { name: "ListSites", options: {}, I: ListSitesRequest, O: ListSitesResponse },
-    { name: "DeleteSite", options: {}, I: DeleteSiteRequest, O: DeleteSiteResponse },
-    { name: "Query", options: {}, I: QueryRequest, O: QueryResponse },
-    { name: "ApplyCluster", options: {}, I: ApplyClusterRequest, O: ApplyClusterResponse },
-    { name: "GetCluster", options: {}, I: GetClusterRequest, O: GetClusterResponse }
+    { name: "CreateToken", options: { "google.api.http": { post: "/v1/tokens" } }, I: CreateTokenRequest, O: CreateTokenResponse },
+    { name: "CreateSite", options: { "google.api.http": { post: "/v1/sites" } }, I: CreateSiteRequest, O: CreateSiteResponse },
+    { name: "GetSite", options: { "google.api.http": { get: "/v1/site" } }, I: GetSiteRequest, O: GetSiteResponse },
+    { name: "ListSites", options: { "google.api.http": { get: "/v1/sites" } }, I: ListSitesRequest, O: ListSitesResponse },
+    { name: "DeleteSite", options: { "google.api.http": { delete: "/v1/site" } }, I: DeleteSiteRequest, O: DeleteSiteResponse },
+    { name: "Query", options: { "google.api.http": { post: "/v1/query" } }, I: QueryRequest, O: QueryResponse },
+    { name: "ApplyCluster", options: { "google.api.http": { post: "/v1/cluster/apply" } }, I: ApplyClusterRequest, O: ApplyClusterResponse },
+    { name: "GetCluster", options: { "google.api.http": { get: "/v1/cluster" } }, I: GetClusterRequest, O: GetClusterResponse }
 ]);
