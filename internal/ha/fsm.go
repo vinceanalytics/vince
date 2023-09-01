@@ -6,7 +6,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/hashicorp/raft"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"google.golang.org/protobuf/proto"
 )

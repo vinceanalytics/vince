@@ -9,7 +9,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/oklog/ulid/v2"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"

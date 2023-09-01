@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 

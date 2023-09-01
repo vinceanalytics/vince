@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
