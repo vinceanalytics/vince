@@ -471,12 +471,12 @@ class CreateTokenRequest$Type extends MessageType<CreateTokenRequest> {
     constructor() {
         super("v1.CreateTokenRequest", [
             { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
-            { no: 2, name: "password", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "password", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 3, name: "token", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "public_key", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
             { no: 5, name: "generate", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
             { no: 6, name: "ttl", kind: "message", T: () => Duration }
-        ]);
+        ], { "buf.validate.message": { cel: [{ id: "client.token", message: "token  is required", expression: "this.generate ? true : size(this.token)>0" }, { id: "client.pub_key", message: "public_key  is required", expression: "this.generate ? true : size(this.public_key)>0" }] } });
     }
     create(value?: PartialMessage<CreateTokenRequest>): CreateTokenRequest {
         const message = { name: "", password: "", token: "", publicKey: new Uint8Array(0), generate: false };
