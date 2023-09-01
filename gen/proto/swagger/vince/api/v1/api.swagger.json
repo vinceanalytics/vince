@@ -265,6 +265,28 @@
           "Vince"
         ]
       }
+    },
+    "/v1/version": {
+      "get": {
+        "operationId": "Vince_Version",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Build"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Vince"
+        ]
+      }
     }
   },
   "definitions": {
@@ -400,6 +422,14 @@
       "type": "object",
       "properties": {
         "ok": {
+          "type": "string"
+        }
+      }
+    },
+    "v1Build": {
+      "type": "object",
+      "properties": {
+        "version": {
           "type": "string"
         }
       }

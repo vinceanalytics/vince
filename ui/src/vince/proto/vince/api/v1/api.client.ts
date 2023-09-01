@@ -4,6 +4,8 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { Vince } from "./api";
+import type { Build } from "../../config/v1/config";
+import type { Empty } from "../../../google/protobuf/empty";
 import type { GetClusterResponse } from "./api";
 import type { GetClusterRequest } from "./api";
 import type { ApplyClusterResponse } from "./api";
@@ -59,6 +61,10 @@ export interface IVinceClient {
      * @generated from protobuf rpc: GetCluster(v1.GetClusterRequest) returns (v1.GetClusterResponse);
      */
     getCluster(input: GetClusterRequest, options?: RpcOptions): UnaryCall<GetClusterRequest, GetClusterResponse>;
+    /**
+     * @generated from protobuf rpc: Version(google.protobuf.Empty) returns (v1.Build);
+     */
+    version(input: Empty, options?: RpcOptions): UnaryCall<Empty, Build>;
 }
 /**
  * @generated from protobuf service v1.Vince
@@ -124,5 +130,12 @@ export class VinceClient implements IVinceClient, ServiceInfo {
     getCluster(input: GetClusterRequest, options?: RpcOptions): UnaryCall<GetClusterRequest, GetClusterResponse> {
         const method = this.methods[7], opt = this._transport.mergeOptions(options);
         return stackIntercept<GetClusterRequest, GetClusterResponse>("unary", this._transport, method, opt, input);
+    }
+    /**
+     * @generated from protobuf rpc: Version(google.protobuf.Empty) returns (v1.Build);
+     */
+    version(input: Empty, options?: RpcOptions): UnaryCall<Empty, Build> {
+        const method = this.methods[8], opt = this._transport.mergeOptions(options);
+        return stackIntercept<Empty, Build>("unary", this._transport, method, opt, input);
     }
 }

@@ -15,6 +15,7 @@ import (
 	proto "google.golang.org/protobuf/proto"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
@@ -45,6 +46,7 @@ type VinceClient interface {
 	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error)
 	ApplyCluster(ctx context.Context, in *ApplyClusterRequest, opts ...grpc.CallOption) (*ApplyClusterResponse, error)
 	GetCluster(ctx context.Context, in *GetClusterRequest, opts ...grpc.CallOption) (*GetClusterResponse, error)
+	Version(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.Build, error)
 }
 
 type vinceClient struct {
@@ -127,6 +129,15 @@ func (c *vinceClient) GetCluster(ctx context.Context, in *GetClusterRequest, opt
 	return out, nil
 }
 
+func (c *vinceClient) Version(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.Build, error) {
+	out := new(v1.Build)
+	err := c.cc.Invoke(ctx, "/v1.Vince/Version", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VinceServer is the server API for Vince service.
 // All implementations must embed UnimplementedVinceServer
 // for forward compatibility
@@ -139,6 +150,7 @@ type VinceServer interface {
 	Query(context.Context, *QueryRequest) (*QueryResponse, error)
 	ApplyCluster(context.Context, *ApplyClusterRequest) (*ApplyClusterResponse, error)
 	GetCluster(context.Context, *GetClusterRequest) (*GetClusterResponse, error)
+	Version(context.Context, *emptypb.Empty) (*v1.Build, error)
 	mustEmbedUnimplementedVinceServer()
 }
 
@@ -169,6 +181,9 @@ func (UnimplementedVinceServer) ApplyCluster(context.Context, *ApplyClusterReque
 }
 func (UnimplementedVinceServer) GetCluster(context.Context, *GetClusterRequest) (*GetClusterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCluster not implemented")
+}
+func (UnimplementedVinceServer) Version(context.Context, *emptypb.Empty) (*v1.Build, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Version not implemented")
 }
 func (UnimplementedVinceServer) mustEmbedUnimplementedVinceServer() {}
 
@@ -327,6 +342,24 @@ func _Vince_GetCluster_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Vince_Version_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VinceServer).Version(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Vince/Version",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VinceServer).Version(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Vince_ServiceDesc is the grpc.ServiceDesc for Vince service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -365,6 +398,10 @@ var Vince_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCluster",
 			Handler:    _Vince_GetCluster_Handler,
+		},
+		{
+			MethodName: "Version",
+			Handler:    _Vince_Version_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
