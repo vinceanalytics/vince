@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/oklog/ulid/v2"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"

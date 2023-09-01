@@ -7,7 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/ng"
 	"google.golang.org/protobuf/types/known/durationpb"
 )

@@ -5,13 +5,13 @@ import (
 
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	vdb "github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 )
 
-var Columns = func() (o []v1.Column) {
-	for i := v1.Column_bounce; i <= v1.Column_utm_term; i++ {
+var Columns = func() (o []storev1.Column) {
+	for i := storev1.Column_bounce; i <= storev1.Column_utm_term; i++ {
 		o = append(o, i)
 	}
 	return
@@ -21,10 +21,10 @@ var Columns = func() (o []v1.Column) {
 // only table.
 //
 // Physically timestamps are stored as int64, but we expose this a DateTime.
-func Schema(table string, columns []v1.Column) (o sql.Schema) {
+func Schema(table string, columns []storev1.Column) (o sql.Schema) {
 	for _, i := range columns {
-		if i <= v1.Column_timestamp {
-			if i == v1.Column_timestamp {
+		if i <= storev1.Column_timestamp {
+			if i == storev1.Column_timestamp {
 				o = append(o, &sql.Column{
 					Name:     i.String(),
 					Type:     types.Timestamp,

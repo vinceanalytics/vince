@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
 	"github.com/vinceanalytics/vince/internal/klient"
@@ -33,14 +34,14 @@ func CMD() *cli.Command {
 			client, file := auth.LoadClient()
 			priv := ed25519.PrivateKey(client.PrivateKey)
 			if client.Instance == nil {
-				client.Instance = make(map[string]*v1.Client_Instance)
+				client.Instance = make(map[string]*configv1.Client_Instance)
 			}
 			if client.ServerId == nil {
 				client.ServerId = make(map[string]string)
 			}
 			if client.Instance[uri] == nil {
-				client.Instance[uri] = &v1.Client_Instance{
-					Accounts: make(map[string]*v1.Client_Auth),
+				client.Instance[uri] = &configv1.Client_Instance{
+					Accounts: make(map[string]*configv1.Client_Auth),
 				}
 			}
 			token, _ := tokens.Generate(
@@ -50,11 +51,11 @@ func CMD() *cli.Command {
 				name,
 				time.Now().Add(365*24*time.Hour),
 			)
-			var clientAuth v1.Token_Create_Response
-			e := klient.POST(
+			var clientAuth v1.CreateTokenResponse
+			klient.CLI(
 				context.Background(),
-				uri+"/tokens",
-				&v1.Token_Create_Request{
+				uri,
+				&v1.CreateTokenRequest{
 					Name:      name,
 					Password:  password,
 					Token:     token,
@@ -62,14 +63,11 @@ func CMD() *cli.Command {
 				},
 				&clientAuth,
 			)
-			if e != nil {
-				must.Assert(false)(e.Error)
-			}
 			a := clientAuth.Auth
 			client.Instance[uri].Accounts[a.Name] = a
 			client.ServerId[a.ServerId] = uri
 			if client.Active == nil {
-				client.Active = &v1.Client_Active{
+				client.Active = &configv1.Client_Active{
 					Instance: uri,
 					Account:  a.Name,
 				}

@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgraph-io/ristretto"
 	"github.com/go-sql-driver/mysql"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/must"

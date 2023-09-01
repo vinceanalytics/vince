@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
 	"github.com/vinceanalytics/vince/internal/klient"
@@ -39,11 +39,11 @@ func create() *cli.Command {
 			name = strings.TrimSpace(name)
 			token, instance := auth.Account()
 
-			klient.CLI_POST(
+			klient.CLI(
 				context.Background(),
-				instance+"/sites",
-				&v1.Site_Create_Request{Domain: name},
-				&v1.Site_Create_Response{},
+				instance,
+				&v1.CreateSiteRequest{Domain: name},
+				&v1.CreateSiteResponse{},
 				token,
 			)
 			return w.Ok("created").Complete(nil)
@@ -66,11 +66,11 @@ func del() *cli.Command {
 			}
 			token, instance := auth.Account()
 
-			klient.CLI_DELETE(
+			klient.CLI(
 				context.Background(),
-				instance+"/sites",
-				&v1.Site_Delete_Request{Domain: name},
-				&v1.Site_Delete_Response{},
+				instance,
+				&v1.DeleteSiteRequest{Domain: name},
+				&v1.DeleteSiteResponse{},
 				token,
 			)
 			return w.Ok("deleted").Complete(nil)
@@ -85,11 +85,11 @@ func list() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			w := ansi.New()
 			token, instance := auth.Account()
-			var list v1.Site_List_Response
-			klient.CLI_GET(
+			var list v1.ListSitesResponse
+			klient.CLI(
 				context.Background(),
-				instance+"/sites",
-				&v1.Site_List_Request{},
+				instance,
+				&v1.ListSitesRequest{},
 				&list,
 				token,
 			)

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 )
 
 type httpListenerKey struct{}

@@ -10,7 +10,8 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/golang-jwt/jwt/v5"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
@@ -30,7 +31,7 @@ var publicKey = privateKey.Public()
 
 func Token(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var tr v1.Token_Create_Request
+	var tr apiv1.CreateTokenRequest
 	err := pj.UnmarshalDefault(&tr, r.Body)
 	if err != nil {
 		render.ERROR(w, http.StatusBadRequest)
@@ -51,7 +52,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	var claims *jwt.RegisteredClaims
 	pub := publicKey
 	if tr.Generate {
-		tr.Token, claims = tokens.Generate(ctx, privateKey, v1.Token_SERVER,
+		tr.Token, claims = tokens.Generate(ctx, privateKey, apiv1.Token_SERVER,
 			tr.Name, core.Now(ctx).Add(tr.Ttl.AsDuration()))
 	} else {
 		if len(tr.PublicKey) != ed25519.PublicKeySize {
@@ -73,7 +74,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var a v1.Account
+	var a apiv1.Account
 	err = db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Account(tr.Name)
 		defer key.Release()
@@ -107,7 +108,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		key := keys.Token(tr.Token)
 		defer key.Release()
 		tok := must.Must(
-			proto.Marshal(&v1.Token{
+			proto.Marshal(&apiv1.Token{
 				PubKey: pub.(ed25519.PublicKey),
 			}),
 		)("failed encoding token")
@@ -119,8 +120,8 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	o := config.Get(ctx)
-	render.JSON(w, http.StatusOK, &v1.Token_Create_Response{
-		Auth: &v1.Client_Auth{
+	render.JSON(w, http.StatusOK, &apiv1.CreateTokenResponse{
+		Auth: &configv1.Client_Auth{
 			Name:     tr.Name,
 			Token:    tr.Token,
 			ServerId: o.ServerId,

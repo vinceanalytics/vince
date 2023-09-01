@@ -6,11 +6,11 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/px"
 )
 
-func Tab(out io.Writer, result *v1.Query_Response) error {
+func Tab(out io.Writer, result *v1.QueryResponse) error {
 	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
 	var s strings.Builder
 	for i, col := range result.Columns {

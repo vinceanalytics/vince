@@ -1,0 +1,246 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "vince/api/v1/api.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Vince"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {},
+  "definitions": {
+    "ClientAuth": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        }
+      }
+    },
+    "ColumDataType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "NUMBER",
+        "DOUBLE",
+        "STRING",
+        "BOOL",
+        "TIMESTAMP"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ConfigNode": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/ClientAuth"
+        },
+        "bootstrap": {
+          "type": "boolean",
+          "description": "True if this node is used to bootstrap the cluster."
+        },
+        "address": {
+          "type": "string"
+        }
+      }
+    },
+    "QueryColum": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "dataType": {
+          "$ref": "#/definitions/ColumDataType"
+        }
+      }
+    },
+    "QueryParam": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/definitions/QueryValue"
+        }
+      }
+    },
+    "QueryRow": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/QueryValue"
+          }
+        }
+      }
+    },
+    "QueryValue": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "string",
+          "format": "int64"
+        },
+        "double": {
+          "type": "number",
+          "format": "double"
+        },
+        "string": {
+          "type": "string"
+        },
+        "bool": {
+          "type": "boolean"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "v1ApplyClusterResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ClusterConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "nodes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ConfigNode"
+          }
+        }
+      }
+    },
+    "v1CreateSiteResponse": {
+      "type": "object",
+      "properties": {
+        "site": {
+          "$ref": "#/definitions/v1Site"
+        }
+      }
+    },
+    "v1CreateTokenResponse": {
+      "type": "object",
+      "properties": {
+        "auth": {
+          "$ref": "#/definitions/ClientAuth"
+        }
+      }
+    },
+    "v1DeleteSiteResponse": {
+      "type": "object"
+    },
+    "v1GetClusterResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/v1ClusterConfig"
+        }
+      }
+    },
+    "v1GetSiteResponse": {
+      "type": "object",
+      "properties": {
+        "site": {
+          "$ref": "#/definitions/v1Site"
+        }
+      }
+    },
+    "v1ListSitesResponse": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Site"
+          }
+        }
+      }
+    },
+    "v1QueryResponse": {
+      "type": "object",
+      "properties": {
+        "elapsed": {
+          "type": "string"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/QueryColum"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/QueryRow"
+          }
+        }
+      }
+    },
+    "v1Site": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

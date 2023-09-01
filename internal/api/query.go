@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/output"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/pj"
@@ -16,7 +16,7 @@ import (
 
 func Query(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var qr v1.Query_Request
+	var qr v1.QueryRequest
 	err := pj.UnmarshalDefault(&qr, r.Body)
 	if err != nil {
 		render.ERROR(w, http.StatusBadRequest)

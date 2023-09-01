@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
 	"github.com/vinceanalytics/vince/internal/cmd/output"
@@ -22,11 +22,11 @@ func CMD() *cli.Command {
 				return nil
 			}
 			token, instance := auth.Account()
-			var result v1.Query_Response
-			err := klient.POST(
+			var result v1.QueryResponse
+			err := klient.Do(
 				context.Background(),
-				instance+"/query",
-				&v1.Query_Request{
+				instance,
+				&v1.QueryRequest{
 					Query: a,
 				},
 				&result,

@@ -60,6 +60,116 @@ export enum StorePrefix {
      */
     BLOCK_INDEX = 10
 }
+/**
+ * Parquet fields used to store events. There are only two phisical data types
+ * int64 and string.
+ *
+ * The columns are grouped by data types for easy access
+ *
+ * @generated from protobuf enum v1.Column
+ */
+export enum Column {
+    /**
+     * @generated from protobuf enum value: bounce = 0;
+     */
+    bounce = 0,
+    /**
+     * @generated from protobuf enum value: duration = 1;
+     */
+    duration = 1,
+    /**
+     * @generated from protobuf enum value: id = 2;
+     */
+    id = 2,
+    /**
+     * @generated from protobuf enum value: session = 3;
+     */
+    session = 3,
+    /**
+     * @generated from protobuf enum value: timestamp = 4;
+     */
+    timestamp = 4,
+    /**
+     * @generated from protobuf enum value: browser = 5;
+     */
+    browser = 5,
+    /**
+     * @generated from protobuf enum value: browser_version = 6;
+     */
+    browser_version = 6,
+    /**
+     * @generated from protobuf enum value: city = 7;
+     */
+    city = 7,
+    /**
+     * @generated from protobuf enum value: country = 8;
+     */
+    country = 8,
+    /**
+     * @generated from protobuf enum value: entry_page = 9;
+     */
+    entry_page = 9,
+    /**
+     * @generated from protobuf enum value: event = 10;
+     */
+    event = 10,
+    /**
+     * @generated from protobuf enum value: exit_page = 11;
+     */
+    exit_page = 11,
+    /**
+     * @generated from protobuf enum value: host = 12;
+     */
+    host = 12,
+    /**
+     * @generated from protobuf enum value: os = 13;
+     */
+    os = 13,
+    /**
+     * @generated from protobuf enum value: os_version = 14;
+     */
+    os_version = 14,
+    /**
+     * @generated from protobuf enum value: path = 15;
+     */
+    path = 15,
+    /**
+     * @generated from protobuf enum value: referrer = 16;
+     */
+    referrer = 16,
+    /**
+     * @generated from protobuf enum value: referrer_source = 17;
+     */
+    referrer_source = 17,
+    /**
+     * @generated from protobuf enum value: region = 18;
+     */
+    region = 18,
+    /**
+     * @generated from protobuf enum value: screen = 19;
+     */
+    screen = 19,
+    /**
+     * @generated from protobuf enum value: utm_campaign = 20;
+     */
+    utm_campaign = 20,
+    /**
+     * @generated from protobuf enum value: utm_content = 21;
+     */
+    utm_content = 21,
+    /**
+     * @generated from protobuf enum value: utm_medium = 22;
+     */
+    utm_medium = 22,
+    /**
+     * @generated from protobuf enum value: utm_source = 23;
+     */
+    utm_source = 23,
+    /**
+     * @generated from protobuf enum value: utm_term = 24;
+     */
+    utm_term = 24
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class StoreKey$Type extends MessageType<StoreKey> {
     constructor() {

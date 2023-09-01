@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "vince/v1/vince.proto",
+    "title": "vince/config/v1/config.proto",
     "version": "version not set"
   },
   "consumes": [

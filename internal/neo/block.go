@@ -17,7 +17,7 @@ import (
 	"github.com/cespare/xxhash/v2"
 	"github.com/oklog/ulid/v2"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"

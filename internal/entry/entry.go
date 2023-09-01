@@ -13,7 +13,7 @@ import (
 	"github.com/apache/arrow/go/v14/parquet/compress"
 	"github.com/apache/arrow/go/v14/parquet/file"
 	"github.com/apache/arrow/go/v14/parquet/schema"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/px"
 )
@@ -48,12 +48,12 @@ type Entry struct {
 }
 
 type MultiEntry struct {
-	ints    [v1.Column_timestamp + 1][]int64
-	strings [v1.Column_utm_term - v1.Column_timestamp][]parquet.ByteArray
+	ints    [storev1.Column_timestamp + 1][]int64
+	strings [storev1.Column_utm_term - storev1.Column_timestamp][]parquet.ByteArray
 }
 
-func (m *MultiEntry) add(name v1.Column, v any) {
-	if name <= v1.Column_timestamp {
+func (m *MultiEntry) add(name storev1.Column, v any) {
+	if name <= storev1.Column_timestamp {
 		m.ints[name] = append(m.ints[name], v.(int64))
 		return
 	}
@@ -90,34 +90,34 @@ func (m *MultiEntry) Len() int {
 }
 
 func (m *MultiEntry) Append(e *Entry) {
-	m.add(v1.Column_bounce, e.Bounce)
-	m.add(v1.Column_browser, e.Browser)
-	m.add(v1.Column_browser_version, e.BrowserVersion)
-	m.add(v1.Column_city, e.City)
-	m.add(v1.Column_country, e.Country)
-	m.add(v1.Column_duration, int64(e.Duration))
-	m.add(v1.Column_entry_page, e.EntryPage)
-	m.add(v1.Column_event, e.Event)
-	m.add(v1.Column_exit_page, e.ExitPage)
-	m.add(v1.Column_host, e.Host)
-	m.add(v1.Column_id, int64(e.ID))
-	m.add(v1.Column_os, e.Os)
-	m.add(v1.Column_os_version, e.OsVersion)
-	m.add(v1.Column_path, e.Path)
-	m.add(v1.Column_referrer, e.Referrer)
-	m.add(v1.Column_referrer_source, e.ReferrerSource)
-	m.add(v1.Column_region, e.Region)
-	m.add(v1.Column_screen, e.Screen)
-	m.add(v1.Column_session, e.Session)
-	m.add(v1.Column_timestamp, e.Timestamp)
-	m.add(v1.Column_utm_campaign, e.UtmCampaign)
-	m.add(v1.Column_utm_content, e.UtmContent)
-	m.add(v1.Column_utm_medium, e.UtmMedium)
-	m.add(v1.Column_utm_source, e.UtmSource)
-	m.add(v1.Column_utm_term, e.UtmTerm)
+	m.add(storev1.Column_bounce, e.Bounce)
+	m.add(storev1.Column_browser, e.Browser)
+	m.add(storev1.Column_browser_version, e.BrowserVersion)
+	m.add(storev1.Column_city, e.City)
+	m.add(storev1.Column_country, e.Country)
+	m.add(storev1.Column_duration, int64(e.Duration))
+	m.add(storev1.Column_entry_page, e.EntryPage)
+	m.add(storev1.Column_event, e.Event)
+	m.add(storev1.Column_exit_page, e.ExitPage)
+	m.add(storev1.Column_host, e.Host)
+	m.add(storev1.Column_id, int64(e.ID))
+	m.add(storev1.Column_os, e.Os)
+	m.add(storev1.Column_os_version, e.OsVersion)
+	m.add(storev1.Column_path, e.Path)
+	m.add(storev1.Column_referrer, e.Referrer)
+	m.add(storev1.Column_referrer_source, e.ReferrerSource)
+	m.add(storev1.Column_region, e.Region)
+	m.add(storev1.Column_screen, e.Screen)
+	m.add(storev1.Column_session, e.Session)
+	m.add(storev1.Column_timestamp, e.Timestamp)
+	m.add(storev1.Column_utm_campaign, e.UtmCampaign)
+	m.add(storev1.Column_utm_content, e.UtmContent)
+	m.add(storev1.Column_utm_medium, e.UtmMedium)
+	m.add(storev1.Column_utm_source, e.UtmSource)
+	m.add(storev1.Column_utm_term, e.UtmTerm)
 }
 
-func (m *MultiEntry) Write(f *file.Writer, hash func(v1.Column, parquet.ByteArray)) {
+func (m *MultiEntry) Write(f *file.Writer, hash func(storev1.Column, parquet.ByteArray)) {
 	if m.Len() == 0 {
 		return
 	}
@@ -130,7 +130,7 @@ func (m *MultiEntry) Write(f *file.Writer, hash func(v1.Column, parquet.ByteArra
 		)
 		must.One(w.Close())("failed closing column writer")
 	}
-	nextString := func(c v1.Column, v []parquet.ByteArray) {
+	nextString := func(c storev1.Column, v []parquet.ByteArray) {
 		x := must.Must(g.NextColumn())("failed getting next column")
 		w := x.(*file.ByteArrayColumnChunkWriter)
 		must.Must(w.WriteBatch(v, nil, nil))(
@@ -142,15 +142,15 @@ func (m *MultiEntry) Write(f *file.Writer, hash func(v1.Column, parquet.ByteArra
 		nextInt(m.ints[i])
 	}
 	for i := range m.strings {
-		nextString(v1.Column(i+len(m.ints)), m.strings[i])
+		nextString(storev1.Column(i+len(m.ints)), m.strings[i])
 	}
 	must.One(g.Close())("failed closing row group writer")
 }
 
 // Fields for constructing arrow schema on Entry.
 func Fields() (f []arrow.Field) {
-	for i := v1.Column_bounce; i <= v1.Column_utm_term; i++ {
-		if i <= v1.Column_timestamp {
+	for i := storev1.Column_bounce; i <= storev1.Column_utm_term; i++ {
+		if i <= storev1.Column_timestamp {
 			f = append(f, arrow.Field{
 				Name: i.String(),
 				Type: arrow.PrimitiveTypes.Int64,
@@ -172,8 +172,8 @@ var ParquetSchema = parquetSchema()
 func parquetSchema() *schema.Schema {
 	f := Fields()
 	nodes := make(schema.FieldList, 0, len(f))
-	for i := v1.Column_bounce; i <= v1.Column_utm_term; i++ {
-		if i <= v1.Column_timestamp {
+	for i := storev1.Column_bounce; i <= storev1.Column_utm_term; i++ {
+		if i <= storev1.Column_timestamp {
 			nodes = append(nodes, must.Must(
 				schema.NewPrimitiveNodeLogical(i.String(),
 					parquet.Repetitions.Required,
@@ -270,7 +270,7 @@ type colReader interface {
 }
 
 type stringReader struct {
-	col    v1.Column
+	col    storev1.Column
 	values []parquet.ByteArray
 }
 
@@ -294,12 +294,12 @@ func (r *stringReader) Len() int {
 	return len(r.values)
 }
 
-func (r *stringReader) Col() v1.Column {
+func (r *stringReader) Col() storev1.Column {
 	return r.col
 }
 
 type int64Reader struct {
-	col    v1.Column
+	col    storev1.Column
 	values []int64
 }
 
@@ -323,26 +323,26 @@ func (r *int64Reader) Len() int {
 	return len(r.values)
 }
 
-func (r *int64Reader) Col() v1.Column {
+func (r *int64Reader) Col() storev1.Column {
 	return r.col
 }
 
 type ReadResult interface {
-	Col() v1.Column
+	Col() storev1.Column
 	Len() int
 	Value(int) any
 }
 
-func ReadColumns(r *file.Reader, columns []v1.Column, groups []int) (o []ReadResult) {
+func ReadColumns(r *file.Reader, columns []storev1.Column, groups []int) (o []ReadResult) {
 	if len(columns) == 0 {
-		columns = make([]v1.Column, 0, v1.Column_utm_term+1)
-		for i := v1.Column_bounce; i <= v1.Column_utm_term; i++ {
+		columns = make([]storev1.Column, 0, storev1.Column_utm_term+1)
+		for i := storev1.Column_bounce; i <= storev1.Column_utm_term; i++ {
 			columns = append(columns, i)
 		}
 	}
 	cr := make([]colReader, 0, len(columns))
 	for _, i := range columns {
-		if i <= v1.Column_timestamp {
+		if i <= storev1.Column_timestamp {
 			cr = append(cr, &int64Reader{
 				col: i,
 			})

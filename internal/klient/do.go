@@ -5,7 +5,7 @@ import (
 	"context"
 	"net/http"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
@@ -15,43 +15,64 @@ import (
 var client = &http.Client{}
 
 type Input interface {
-	*v1.Token_Create_Request |
-		*v1.Site_Get_Request |
-		*v1.Site_Create_Request |
-		*v1.Site_List_Request |
-		*v1.Site_Delete_Request |
-		*v1.Query_Request |
-		*v1.Cluster_Apply_Request |
-		*v1.Cluster_Get_Request
+	*v1.CreateTokenRequest |
+		*v1.GetSiteRequest |
+		*v1.CreateSiteRequest |
+		*v1.ListSitesRequest |
+		*v1.DeleteSiteRequest |
+		*v1.QueryRequest |
+		*v1.ApplyClusterRequest |
+		*v1.GetClusterRequest
 }
 
 type Output interface {
-	*v1.Token_Create_Response |
-		*v1.Site_Create_Response |
-		*v1.Site_Get_Response |
-		*v1.Site_List_Response |
-		*v1.Site_Delete_Response |
-		*v1.Query_Response |
-		*v1.Cluster_Apply_Response |
-		*v1.Cluster_Get_Response
+	*v1.CreateTokenResponse |
+		*v1.CreateSiteResponse |
+		*v1.GetSiteResponse |
+		*v1.ListSitesResponse |
+		*v1.DeleteSiteResponse |
+		*v1.QueryResponse |
+		*v1.ApplyClusterResponse |
+		*v1.GetClusterResponse
 }
 
-func POST[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) *v1.Error {
-	return Do(ctx, http.MethodPost, uri, in, out, token...)
-}
-
-func DELETE[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) *v1.Error {
-	return Do(ctx, http.MethodDelete, uri, in, out, token...)
-}
-
-func GET[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) *v1.Error {
-	return Do(ctx, http.MethodGet, uri, in, out, token...)
-}
-
-func Do[I Input, O Output](ctx context.Context, method, uri string, in I, out O, token ...string) *v1.Error {
+func Do[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) *v1.Error {
 	data := must.Must(pj.Marshal(any(in).(proto.Message)))(
 		"failed encoding api request object",
 	)
+	var method, path string
+	switch any(in).(type) {
+	case *v1.CreateTokenRequest:
+		path = "/tokens"
+		method = http.MethodPost
+	case *v1.GetSiteRequest:
+		path = "/sites"
+		method = http.MethodGet
+	case *v1.CreateSiteRequest:
+		path = "/sites"
+		method = http.MethodPost
+
+	case *v1.ListSitesRequest:
+		path = "/sites"
+		method = http.MethodGet
+
+	case *v1.DeleteSiteRequest:
+		path = "/sites"
+		method = http.MethodDelete
+
+	case *v1.QueryRequest:
+		path = "/query"
+		method = http.MethodPost
+
+	case *v1.ApplyClusterRequest:
+		path = "/apply"
+		method = http.MethodPost
+
+	case *v1.GetClusterRequest:
+		path = "/cluster"
+		method = http.MethodGet
+	}
+	uri += path
 	r := must.Must(http.NewRequestWithContext(ctx, method, uri, bytes.NewReader(data)))(
 		"failed creating api request",
 	)
@@ -77,16 +98,8 @@ func Do[I Input, O Output](ctx context.Context, method, uri string, in I, out O,
 	return nil
 }
 
-func CLI_POST[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) {
-	cli(POST(ctx, uri, in, out, token...))
-}
-
-func CLI_GET[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) {
-	cli(GET(ctx, uri, in, out, token...))
-}
-
-func CLI_DELETE[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) {
-	cli(DELETE(ctx, uri, in, out, token...))
+func CLI[I Input, O Output](ctx context.Context, uri string, in I, out O, token ...string) {
+	cli(Do(ctx, uri, in, out, token...))
 }
 
 func cli(err *v1.Error) {

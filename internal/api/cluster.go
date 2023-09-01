@@ -6,7 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
@@ -20,7 +21,7 @@ var client = &http.Client{}
 
 func Apply(w http.ResponseWriter, r *http.Request) {
 	log := slog.Default().With("endpoint", "Apply")
-	var b v1.Cluster_Apply_Request
+	var b v1.ApplyClusterRequest
 	err := pj.UnmarshalDefault(&b, r.Body)
 	if err != nil {
 		render.ERROR(w, http.StatusBadRequest)
@@ -40,7 +41,7 @@ func Apply(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	o := config.Get(ctx)
-	var node *v1.Cluster_Config_Node
+	var node *configv1.Cluster_Config_Node
 	for name, n := range b.Config.Nodes {
 		if name == o.ServerId {
 			node = n
@@ -62,19 +63,19 @@ func Apply(w http.ResponseWriter, r *http.Request) {
 			must.Must(proto.Marshal(b.Config))("failed serializing cluster config"),
 		)
 	})
-	render.JSON(w, http.StatusOK, &v1.Cluster_Apply_Response{
+	render.JSON(w, http.StatusOK, &v1.ApplyClusterResponse{
 		Ok: "applied",
 	})
 }
 
 func Cluster(w http.ResponseWriter, r *http.Request) {
-	var b v1.Cluster_Get_Request
+	var b v1.GetClusterRequest
 	err := pj.UnmarshalDefault(&b, r.Body)
 	if err != nil {
 		render.ERROR(w, http.StatusBadRequest)
 		return
 	}
-	var o v1.Cluster_Config
+	var o configv1.Cluster_Config
 	db.Get(r.Context()).Txn(false, func(txn db.Txn) error {
 		key := keys.Cluster()
 		defer key.Release()
@@ -82,12 +83,12 @@ func Cluster(w http.ResponseWriter, r *http.Request) {
 			return proto.Unmarshal(val, &o)
 		})
 	})
-	render.JSON(w, http.StatusOK, &v1.Cluster_Get_Response{
+	render.JSON(w, http.StatusOK, &v1.GetClusterResponse{
 		Config: &o,
 	})
 }
 
-func ping(ctx context.Context, log *slog.Logger, name string, node *v1.Cluster_Config_Node) string {
+func ping(ctx context.Context, log *slog.Logger, name string, node *configv1.Cluster_Config_Node) string {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, node.Address+"/cluster", nil)
 	if err != nil {
 		log.Error("failed creating ping  request for node",

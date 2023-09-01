@@ -6,16 +6,16 @@ import (
 	"time"
 
 	sqld "github.com/dolthub/go-mysql-server/sql"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func Build(rows *sql.Rows) (*v1.Query_Response, error) {
+func Build(rows *sql.Rows) (*v1.QueryResponse, error) {
 	columns, err := rows.ColumnTypes()
 	if err != nil {
 		return nil, err
 	}
-	r := &v1.Query_Response{}
+	r := &v1.QueryResponse{}
 	r.Columns = make([]*v1.Query_Colum, len(columns))
 	for i := range r.Columns {
 		r.Columns[i] = &v1.Query_Colum{

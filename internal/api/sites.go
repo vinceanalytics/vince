@@ -6,7 +6,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dlclark/regexp2"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -16,7 +16,7 @@ import (
 )
 
 func ListSites(w http.ResponseWriter, r *http.Request) {
-	o := v1.Site_List_Response{}
+	o := v1.ListSitesResponse{}
 	db.Get(r.Context()).Txn(false, func(txn db.Txn) error {
 		key := keys.Site("")
 		defer key.Release()
@@ -43,7 +43,7 @@ func ListSites(w http.ResponseWriter, r *http.Request) {
 var domain = regexp2.MustCompile(`^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$`, regexp2.ECMAScript)
 
 func Create(w http.ResponseWriter, r *http.Request) {
-	var b v1.Site_Create_Request
+	var b v1.CreateSiteRequest
 	err := pj.UnmarshalDefault(&b, r.Body)
 	if err != nil || b.Domain == "" {
 		render.ERROR(w, http.StatusBadRequest)
@@ -56,7 +56,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-	response := v1.Site_Create_Response{
+	response := v1.CreateSiteResponse{
 		Site: &v1.Site{
 			Domain: b.Domain,
 		},
@@ -81,7 +81,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
-	var b v1.Site_Delete_Request
+	var b v1.DeleteSiteRequest
 	err := pj.UnmarshalDefault(&b, r.Body)
 	if err != nil || b.Domain == "" {
 		render.ERROR(w, http.StatusBadRequest)
@@ -100,5 +100,5 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		render.ERROR(w, http.StatusInternalServerError)
 		return
 	}
-	render.JSON(w, http.StatusOK, &v1.Site_Delete_Response{})
+	render.JSON(w, http.StatusOK, &v1.DeleteSiteResponse{})
 }

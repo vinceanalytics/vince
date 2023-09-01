@@ -9,7 +9,7 @@ import (
 	"github.com/dlclark/regexp2"
 	"github.com/gympass/goprompt"
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -92,8 +92,8 @@ func Prompt() (name, passwd string) {
 	return
 }
 
-func LoadClient() (client *v1.Client, file string) {
-	client = &v1.Client{}
+func LoadClient() (client *configv1.Client, file string) {
+	client = &configv1.Client{}
 	usr := must.Must(user.Current())(
 		"failed getting current user",
 	)
@@ -128,7 +128,7 @@ func LoadClient() (client *v1.Client, file string) {
 	return
 }
 
-func Save(w *ansi.W, client *v1.Client, file string) {
+func Save(w *ansi.W, client *configv1.Client, file string) {
 	err := os.WriteFile(file,
 		must.Must(pj.MarshalIndent(client))("failed encoding client"),
 		0600,

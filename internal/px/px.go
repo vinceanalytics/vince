@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -61,9 +62,9 @@ func NewQueryValue(v any) *v1.Query_Value {
 	}
 }
 
-func ColumnIndex(c v1.Column) int {
-	if c <= v1.Column_timestamp {
+func ColumnIndex(c storev1.Column) int {
+	if c <= storev1.Column_timestamp {
 		return int(c)
 	}
-	return int(c - v1.Column_browser)
+	return int(c - storev1.Column_browser)
 }

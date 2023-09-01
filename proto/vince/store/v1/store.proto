@@ -17,3 +17,36 @@ message StoreKey {
   string namespace = 1;
   StorePrefix prefix = 2;
 }
+
+// Parquet fields used to store events. There are only two phisical data types
+// int64 and string.
+//
+// The columns are grouped by data types for easy access
+enum Column {
+  bounce = 0;
+  duration = 1;
+  id = 2;
+  session = 3;
+  timestamp = 4;
+
+  browser = 5;
+  browser_version = 6;
+  city = 7;
+  country = 8;
+  entry_page = 9;
+  event = 10;
+  exit_page = 11;
+  host = 12;
+  os = 13;
+  os_version = 14;
+  path = 15;
+  referrer = 16;
+  referrer_source = 17;
+  region = 18;
+  screen = 19;
+  utm_campaign = 20;
+  utm_content = 21;
+  utm_medium = 22;
+  utm_source = 23;
+  utm_term = 24;
+}

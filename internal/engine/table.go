@@ -10,7 +10,7 @@ import (
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/oklog/ulid/v2"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
@@ -22,7 +22,7 @@ type Table struct {
 	Context
 	name    string
 	schema  sql.Schema
-	columns []v1.Column
+	columns []storev1.Column
 }
 
 var _ sql.Table = (*Table)(nil)
@@ -84,9 +84,9 @@ func (t *Table) PartitionRows(_ *sql.Context, p sql.Partition) (sql.RowIter, err
 }
 
 func (t *Table) WithProjections(colNames []string) sql.Table {
-	m := make([]v1.Column, len(colNames))
+	m := make([]storev1.Column, len(colNames))
 	for i := range colNames {
-		m[i] = v1.Column(v1.Column_value[colNames[i]])
+		m[i] = storev1.Column(storev1.Column_value[colNames[i]])
 	}
 	return &Table{Context: t.Context,
 		name:    t.name,
@@ -166,9 +166,9 @@ func (p *rowIter) Next(*sql.Context) (sql.Row, error) {
 		o := make(sql.Row, len(p.result))
 		for i := range p.result {
 			x := p.result[i].Col()
-			if x <= v1.Column_timestamp {
+			if x <= storev1.Column_timestamp {
 				v := p.result[i].Value(p.pos).(int64)
-				if x == v1.Column_timestamp {
+				if x == storev1.Column_timestamp {
 					o[i] = time.UnixMilli(v)
 				} else {
 					o[i] = v
