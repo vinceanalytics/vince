@@ -10,100 +10,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func Raft_RPC_Call_RequestTo(r *v1.Raft_RPC_Call_Request) any {
-	switch e := r.Kind.(type) {
-	case *v1.Raft_RPC_Call_Request_AppendEntries:
-		return Raft_RPC_Command_AppendEntries_RequestTo(e.AppendEntries)
-	case *v1.Raft_RPC_Call_Request_Vote:
-		return Raft_RPC_Command_Vote_RequestTo(e.Vote)
-	case *v1.Raft_RPC_Call_Request_InstallSnapshot:
-		return Raft_RPC_Command_InstallSnapshot_RequestTo(e.InstallSnapshot)
-	case *v1.Raft_RPC_Call_Request_TimeoutNow:
-		return Raft_RPC_Command_TimeoutNow_RequestTo(e.TimeoutNow)
-	default:
-		panic("unreachable")
-	}
-}
-
-func Raft_RPC_Call_RequestFrom(a any) *v1.Raft_RPC_Call_Request {
-	switch e := a.(type) {
-	case *raft.AppendEntriesRequest:
-		return &v1.Raft_RPC_Call_Request{
-			Kind: &v1.Raft_RPC_Call_Request_AppendEntries{
-				AppendEntries: Raft_RPC_Command_AppendEntries_RequestFrom(e),
-			},
-		}
-	case *raft.RequestVoteRequest:
-		return &v1.Raft_RPC_Call_Request{
-			Kind: &v1.Raft_RPC_Call_Request_Vote{
-				Vote: Raft_RPC_Command_Vote_RequestFrom(e),
-			},
-		}
-	case *raft.InstallSnapshotRequest:
-		return &v1.Raft_RPC_Call_Request{
-			Kind: &v1.Raft_RPC_Call_Request_InstallSnapshot{
-				InstallSnapshot: Raft_RPC_Command_InstallSnapshot_RequestFrom(e),
-			},
-		}
-	case *raft.TimeoutNowRequest:
-		return &v1.Raft_RPC_Call_Request{
-			Kind: &v1.Raft_RPC_Call_Request_TimeoutNow{
-				TimeoutNow: Raft_RPC_Command_TimeoutNow_RequestFrom(e),
-			},
-		}
-	default:
-		panic("unreachable")
-	}
-}
-
-func Raft_RPC_Call_ResponseTo(r *v1.Raft_RPC_Call_Response) any {
-	switch e := r.Kind.(type) {
-	case *v1.Raft_RPC_Call_Response_AppendEntries:
-		return Raft_RPC_Command_AppendEntries_ResponseTo(e.AppendEntries)
-	case *v1.Raft_RPC_Call_Response_Vote:
-		return Raft_RPC_Command_Vote_ResponseTo(e.Vote)
-	case *v1.Raft_RPC_Call_Response_InstallSnapshot:
-		return Raft_RPC_Command_InstallSnapshot_ResponseTo(e.InstallSnapshot)
-	case *v1.Raft_RPC_Call_Response_TimeoutNow:
-		return Raft_RPC_Command_TimeoutNow_ResponseTo(e.TimeoutNow)
-	default:
-		panic("unreachable")
-	}
-}
-
-func Raft_RPC_Call_ResponseFrom(a raft.RPCResponse) (o *v1.Raft_RPC_Call_Response) {
-	o = &v1.Raft_RPC_Call_Response{}
-	if a.Error != nil {
-		o.Error = a.Error.Error()
-	}
-	switch e := a.Response.(type) {
-	case *raft.AppendEntriesResponse:
-		o.Kind = &v1.Raft_RPC_Call_Response_AppendEntries{
-			AppendEntries: Raft_RPC_Command_AppendEntries_ResponseFrom(e),
-		}
-	case *raft.RequestVoteResponse:
-		o.Kind = &v1.Raft_RPC_Call_Response_Vote{
-			Vote: Raft_RPC_Command_Vote_ResponseFrom(e),
-		}
-	case *raft.InstallSnapshotResponse:
-		o.Kind = &v1.Raft_RPC_Call_Response_InstallSnapshot{
-			InstallSnapshot: Raft_RPC_Command_InstallSnapshot_ResponseFrom(e),
-		}
-	case *raft.TimeoutNowResponse:
-		o.Kind = &v1.Raft_RPC_Call_Response_TimeoutNow{
-			TimeoutNow: Raft_RPC_Command_TimeoutNow_ResponseFrom(e),
-		}
-	}
-	return
-}
-
-func Raft_RPC_Command_AppendEntries_RequestTo(r *v1.Raft_RPC_Command_AppendEntries_Request) *raft.AppendEntriesRequest {
+func AppendEntriesRequest(r *v1.AppendEntriesRequest) *raft.AppendEntriesRequest {
 	entries := make([]*raft.Log, len(r.Entries))
 	for i := range entries {
-		entries[i] = Raft_LogTo(r.Entries[i])
+		entries[i] = RaftLog(r.Entries[i])
 	}
 	return &raft.AppendEntriesRequest{
-		RPCHeader:         Raft_RPC_Command_HeaderTo(r.Header),
+		RPCHeader:         Header(r.Header),
 		Term:              r.Term,
 		PrevLogEntry:      r.PrevLogEntry,
 		PrevLogTerm:       r.PrevLogTerm,
@@ -112,13 +25,13 @@ func Raft_RPC_Command_AppendEntries_RequestTo(r *v1.Raft_RPC_Command_AppendEntri
 	}
 }
 
-func Raft_RPC_Command_AppendEntries_RequestFrom(r *raft.AppendEntriesRequest) *v1.Raft_RPC_Command_AppendEntries_Request {
-	entries := make([]*v1.Raft_Log, len(r.Entries))
+func AppendEntriesRequestFrom(r *raft.AppendEntriesRequest) *v1.AppendEntriesRequest {
+	entries := make([]*v1.RaftLog, len(r.Entries))
 	for i := range entries {
-		entries[i] = Raft_LogFrom(r.Entries[i])
+		entries[i] = RaftLogFrom(r.Entries[i])
 	}
-	return &v1.Raft_RPC_Command_AppendEntries_Request{
-		Header:            Raft_RPC_Command_HeaderFrom(&r.RPCHeader),
+	return &v1.AppendEntriesRequest{
+		Header:            HeaderFrom(&r.RPCHeader),
 		Term:              r.Term,
 		PrevLogEntry:      r.PrevLogEntry,
 		PrevLogTerm:       r.PrevLogTerm,
@@ -127,9 +40,9 @@ func Raft_RPC_Command_AppendEntries_RequestFrom(r *raft.AppendEntriesRequest) *v
 	}
 }
 
-func Raft_RPC_Command_AppendEntries_ResponseTo(r *v1.Raft_RPC_Command_AppendEntries_Response) *raft.AppendEntriesResponse {
+func AppendEntriesResponse(r *v1.AppendEntriesResponse) *raft.AppendEntriesResponse {
 	return &raft.AppendEntriesResponse{
-		RPCHeader:      Raft_RPC_Command_HeaderTo(r.Header),
+		RPCHeader:      Header(r.Header),
 		Term:           r.Term,
 		LastLog:        r.LastLog,
 		Success:        r.Success,
@@ -137,9 +50,9 @@ func Raft_RPC_Command_AppendEntries_ResponseTo(r *v1.Raft_RPC_Command_AppendEntr
 	}
 }
 
-func Raft_RPC_Command_AppendEntries_ResponseFrom(r *raft.AppendEntriesResponse) *v1.Raft_RPC_Command_AppendEntries_Response {
-	return &v1.Raft_RPC_Command_AppendEntries_Response{
-		Header:         Raft_RPC_Command_HeaderFrom(&r.RPCHeader),
+func AppendEntriesResponseFrom(r *raft.AppendEntriesResponse) *v1.AppendEntriesResponse {
+	return &v1.AppendEntriesResponse{
+		Header:         HeaderFrom(&r.RPCHeader),
 		Term:           r.Term,
 		LastLog:        r.LastLog,
 		Success:        r.Success,
@@ -147,9 +60,9 @@ func Raft_RPC_Command_AppendEntries_ResponseFrom(r *raft.AppendEntriesResponse) 
 	}
 }
 
-func Raft_RPC_Command_Vote_RequestTo(r *v1.Raft_RPC_Command_Vote_Request) *raft.RequestVoteRequest {
+func RequestVoteRequest(r *v1.RequestVoteRequest) *raft.RequestVoteRequest {
 	return &raft.RequestVoteRequest{
-		RPCHeader:          Raft_RPC_Command_HeaderTo(r.Header),
+		RPCHeader:          Header(r.Header),
 		Term:               r.Term,
 		LastLogIndex:       r.LastLogIndex,
 		LastLogTerm:        r.LastLogTerm,
@@ -157,9 +70,9 @@ func Raft_RPC_Command_Vote_RequestTo(r *v1.Raft_RPC_Command_Vote_Request) *raft.
 	}
 }
 
-func Raft_RPC_Command_Vote_RequestFrom(r *raft.RequestVoteRequest) *v1.Raft_RPC_Command_Vote_Request {
-	return &v1.Raft_RPC_Command_Vote_Request{
-		Header:             Raft_RPC_Command_HeaderFrom(&r.RPCHeader),
+func RequestVoteRequestFrom(r *raft.RequestVoteRequest) *v1.RequestVoteRequest {
+	return &v1.RequestVoteRequest{
+		Header:             HeaderFrom(&r.RPCHeader),
 		Term:               r.Term,
 		LastLogIndex:       r.LastLogIndex,
 		LastLogTerm:        r.LastLogTerm,
@@ -167,25 +80,25 @@ func Raft_RPC_Command_Vote_RequestFrom(r *raft.RequestVoteRequest) *v1.Raft_RPC_
 	}
 }
 
-func Raft_RPC_Command_Vote_ResponseTo(r *v1.Raft_RPC_Command_Vote_Response) *raft.RequestVoteResponse {
+func RequestVoteResponse(r *v1.RequestVoteResponse) *raft.RequestVoteResponse {
 	return &raft.RequestVoteResponse{
-		RPCHeader: Raft_RPC_Command_HeaderTo(r.Header),
+		RPCHeader: Header(r.Header),
 		Term:      r.Term,
 		Granted:   r.Granted,
 	}
 }
 
-func Raft_RPC_Command_Vote_ResponseFrom(r *raft.RequestVoteResponse) *v1.Raft_RPC_Command_Vote_Response {
-	return &v1.Raft_RPC_Command_Vote_Response{
-		Header:  Raft_RPC_Command_HeaderFrom(&r.RPCHeader),
+func RequestVoteResponseFrom(r *raft.RequestVoteResponse) *v1.RequestVoteResponse {
+	return &v1.RequestVoteResponse{
+		Header:  HeaderFrom(&r.RPCHeader),
 		Term:    r.Term,
 		Granted: r.Granted,
 	}
 }
 
-func Raft_RPC_Command_InstallSnapshot_RequestTo(r *v1.Raft_RPC_Command_InstallSnapshot_Request) *raft.InstallSnapshotRequest {
+func InstallSnapshotRequest(r *v1.InstallSnapshotRequest) *raft.InstallSnapshotRequest {
 	return &raft.InstallSnapshotRequest{
-		RPCHeader:          Raft_RPC_Command_HeaderTo(r.Header),
+		RPCHeader:          Header(r.Header),
 		Term:               r.Term,
 		Leader:             r.Leader,
 		LastLogIndex:       r.LastLogIndex,
@@ -196,9 +109,9 @@ func Raft_RPC_Command_InstallSnapshot_RequestTo(r *v1.Raft_RPC_Command_InstallSn
 	}
 }
 
-func Raft_RPC_Command_InstallSnapshot_RequestFrom(r *raft.InstallSnapshotRequest) *v1.Raft_RPC_Command_InstallSnapshot_Request {
-	return &v1.Raft_RPC_Command_InstallSnapshot_Request{
-		Header:             Raft_RPC_Command_HeaderFrom(&r.RPCHeader),
+func InstallSnapshotRequestFrom(r *raft.InstallSnapshotRequest) *v1.InstallSnapshotRequest {
+	return &v1.InstallSnapshotRequest{
+		Header:             HeaderFrom(&r.RPCHeader),
 		Term:               r.Term,
 		Leader:             r.Leader,
 		LastLogIndex:       r.LastLogIndex,
@@ -209,47 +122,47 @@ func Raft_RPC_Command_InstallSnapshot_RequestFrom(r *raft.InstallSnapshotRequest
 	}
 }
 
-func Raft_RPC_Command_InstallSnapshot_ResponseTo(r *v1.Raft_RPC_Command_InstallSnapshot_Response) *raft.InstallSnapshotResponse {
+func InstallSnapshotResponse(r *v1.InstallSnapshotResponse) *raft.InstallSnapshotResponse {
 	return &raft.InstallSnapshotResponse{
-		RPCHeader: Raft_RPC_Command_HeaderTo(r.Header),
+		RPCHeader: Header(r.Header),
 		Term:      r.Term,
 		Success:   r.Success,
 	}
 }
 
-func Raft_RPC_Command_InstallSnapshot_ResponseFrom(r *raft.InstallSnapshotResponse) *v1.Raft_RPC_Command_InstallSnapshot_Response {
-	return &v1.Raft_RPC_Command_InstallSnapshot_Response{
-		Header:  Raft_RPC_Command_HeaderFrom(&r.RPCHeader),
+func InstallSnapshotResponseFrom(r *raft.InstallSnapshotResponse) *v1.InstallSnapshotResponse {
+	return &v1.InstallSnapshotResponse{
+		Header:  HeaderFrom(&r.RPCHeader),
 		Term:    r.Term,
 		Success: r.Success,
 	}
 }
 
-func Raft_RPC_Command_TimeoutNow_RequestTo(r *v1.Raft_RPC_Command_TimeoutNow_Request) *raft.TimeoutNowRequest {
+func TimeoutNowRequest(r *v1.TimeoutNowRequest) *raft.TimeoutNowRequest {
 	return &raft.TimeoutNowRequest{
-		RPCHeader: Raft_RPC_Command_HeaderTo(r.Header),
+		RPCHeader: Header(r.Header),
 	}
 }
 
-func Raft_RPC_Command_TimeoutNow_RequestFrom(r *raft.TimeoutNowRequest) *v1.Raft_RPC_Command_TimeoutNow_Request {
-	return &v1.Raft_RPC_Command_TimeoutNow_Request{
-		Header: Raft_RPC_Command_HeaderFrom(&r.RPCHeader),
+func TimeoutNowRequestFrom(r *raft.TimeoutNowRequest) *v1.TimeoutNowRequest {
+	return &v1.TimeoutNowRequest{
+		Header: HeaderFrom(&r.RPCHeader),
 	}
 }
 
-func Raft_RPC_Command_TimeoutNow_ResponseTo(r *v1.Raft_RPC_Command_TimeoutNow_Response) *raft.TimeoutNowResponse {
+func TimeoutNowResponse(r *v1.TimeoutNowResponse) *raft.TimeoutNowResponse {
 	return &raft.TimeoutNowResponse{
-		RPCHeader: Raft_RPC_Command_HeaderTo(r.Header),
+		RPCHeader: Header(r.Header),
 	}
 }
 
-func Raft_RPC_Command_TimeoutNow_ResponseFrom(r *raft.TimeoutNowResponse) *v1.Raft_RPC_Command_TimeoutNow_Response {
-	return &v1.Raft_RPC_Command_TimeoutNow_Response{
-		Header: Raft_RPC_Command_HeaderFrom(&r.RPCHeader),
+func TimeoutNowResponseFrom(r *raft.TimeoutNowResponse) *v1.TimeoutNowResponse {
+	return &v1.TimeoutNowResponse{
+		Header: HeaderFrom(&r.RPCHeader),
 	}
 }
 
-func Raft_RPC_Command_HeaderTo(r *v1.Raft_RPC_Command_Header) raft.RPCHeader {
+func Header(r *v1.Header) raft.RPCHeader {
 	return raft.RPCHeader{
 		ProtocolVersion: raft.ProtocolVersion(r.Version),
 		ID:              r.Id,
@@ -257,15 +170,15 @@ func Raft_RPC_Command_HeaderTo(r *v1.Raft_RPC_Command_Header) raft.RPCHeader {
 	}
 }
 
-func Raft_RPC_Command_HeaderFrom(r *raft.RPCHeader) *v1.Raft_RPC_Command_Header {
-	return &v1.Raft_RPC_Command_Header{
-		Version: v1.Raft_RPC_Command_Header_Version(r.ProtocolVersion),
+func HeaderFrom(r *raft.RPCHeader) *v1.Header {
+	return &v1.Header{
+		Version: v1.Header_Version(r.ProtocolVersion),
 		Id:      r.ID,
 		Addr:    r.Addr,
 	}
 }
 
-func Raft_LogTo(r *v1.Raft_Log) *raft.Log {
+func RaftLog(r *v1.RaftLog) *raft.Log {
 	return &raft.Log{
 		Index:      r.Index,
 		Term:       r.Term,
@@ -276,18 +189,18 @@ func Raft_LogTo(r *v1.Raft_Log) *raft.Log {
 	}
 }
 
-func Raft_LogFrom(r *raft.Log) *v1.Raft_Log {
-	return &v1.Raft_Log{
+func RaftLogFrom(r *raft.Log) *v1.RaftLog {
+	return &v1.RaftLog{
 		Index:      r.Index,
 		Term:       r.Term,
-		Type:       v1.Raft_Log_Type(r.Type),
+		Type:       v1.RaftLog_Type(r.Type),
 		Data:       r.Data,
 		Extensions: r.Extensions,
 		AppendedAt: timestamppb.New(r.AppendedAt),
 	}
 }
 
-func Raft_EntryTo(r *v1.Raft_Entry) *badger.Entry {
+func RaftEntry(r *v1.RaftEntry) *badger.Entry {
 	e := badger.NewEntry(r.Key, r.Value)
 	if r.Expires != nil {
 		e.WithTTL(r.Expires.AsDuration())
@@ -295,8 +208,8 @@ func Raft_EntryTo(r *v1.Raft_Entry) *badger.Entry {
 	return e
 }
 
-func Raft_EntryFrom(key, value []byte, ttl time.Duration) *v1.Raft_Entry {
-	e := &v1.Raft_Entry{
+func RaftEntryFrom(key, value []byte, ttl time.Duration) *v1.RaftEntry {
+	e := &v1.RaftEntry{
 		Key:   key,
 		Value: value,
 	}

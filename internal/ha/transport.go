@@ -1,49 +1,37 @@
 package ha
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"log/slog"
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/hashicorp/raft"
 	raftv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/raft/v1"
 	"github.com/vinceanalytics/vince/internal/px"
-	"google.golang.org/protobuf/proto"
-	"nhooyr.io/websocket"
+	"google.golang.org/grpc"
 )
 
-type Stream interface {
-	Update(*raftv1.Raft_Config)
-	Dial(context.Context,
-		raft.ServerID, raft.ServerAddress) (Conn, error)
-}
-
 type Transit struct {
-	ctx     context.Context
-	peers   sync.Map
-	consume chan raft.RPC
-	svr     *raftv1.Raft_Config_Server
-	heart   heart
-	stream  Stream
-	log     *slog.Logger
-	timeout time.Duration
+	ctx         context.Context
+	dialOptions []grpc.DialOption
+	peers       sync.Map
+	consume     chan raft.RPC
+	heart       heart
+	log         *slog.Logger
+	timeout     time.Duration
+	address     raft.ServerAddress
 }
 
 var _ raft.Transport = (*Transit)(nil)
 
-func NewTransport(ctx context.Context, svr *raftv1.Raft_Config_Server, stream Stream, timeout time.Duration) *Transit {
+func NewTransport(ctx context.Context, addr raft.ServerAddress, timeout time.Duration) *Transit {
 	return &Transit{
 		ctx:     ctx,
+		address: addr,
 		consume: make(chan raft.RPC),
-		svr:     svr,
-		stream:  stream,
 		log:     slog.Default().With("component", "raft-transport"),
 		timeout: timeout,
 	}
@@ -54,12 +42,14 @@ type heart struct {
 	h  func(raft.RPC)
 }
 
-func (h *heart) beat(r raft.RPC) {
+func (h *heart) beat(r raft.RPC) bool {
 	h.mu.Lock()
+	defer h.mu.Unlock()
 	if h.h != nil {
 		h.h(r)
+		return true
 	}
-	h.mu.Unlock()
+	return false
 }
 
 func (t *Transit) SetHeartbeatHandler(cb func(rpc raft.RPC)) {
@@ -68,76 +58,13 @@ func (t *Transit) SetHeartbeatHandler(cb func(rpc raft.RPC)) {
 	t.heart.mu.Unlock()
 }
 
-func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{})
-	if err != nil {
-		t.log.Error("failed accepting websocket connection", "err", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	log := t.log
-	log.Info("accepted raft websocket connection")
-	wrap := newWrap(t.ctx, conn)
-	for {
-		select {
-		case <-t.ctx.Done():
-			log.Info("websocket raft transport is closed")
-			return
-		default:
-			var req raftv1.Raft_RPC_Call_Request
-			ctx, cancel := t.context()
-			err := read(ctx, wrap, &req)
-			cancel()
-			if err != nil {
-				log.Error("failed reading rpc request", "err", err.Error())
-				return
-			}
-
-			result := make(chan raft.RPCResponse, 1)
-
-			rx := raft.RPC{
-				Command:  px.Raft_RPC_Call_RequestTo(&req),
-				RespChan: result,
-			}
-
-			var beat bool
-			if x, ok := req.Kind.(*raftv1.Raft_RPC_Call_Request_AppendEntries); ok {
-				a := x.AppendEntries
-				beat = a.Term != 0 && a.Header.Addr != nil &&
-					a.PrevLogEntry == 0 && a.PrevLogTerm == 0 &&
-					len(a.Entries) == 0 && a.LeaderCommitIndex == 0
-			}
-			if beat {
-				t.heart.beat(rx)
-			} else {
-				select {
-				case <-t.ctx.Done():
-					log.Info("websocket raft transport is closed")
-					return
-				case t.consume <- rx:
-				}
-			}
-			select {
-			case <-t.ctx.Done():
-				log.Info("websocket raft transport is closed")
-				return
-			case res := <-result:
-				o := px.Raft_RPC_Call_ResponseFrom(res)
-				ctx, cancel := t.context()
-				err = write(ctx, wrap, o)
-				cancel()
-				if err != nil {
-					log.Error("failed writing to websocket connection", "err", err.Error())
-					return
-				}
-			}
-		}
-
-	}
+func (t *Transit) Register(s *grpc.Server) {
+	raftv1.RegisterTransportServer(s, &ProtoTransit{
+		tr: t,
+	})
 }
-
 func (t *Transit) LocalAddr() raft.ServerAddress {
-	return raft.ServerAddress(t.svr.Address)
+	return t.address
 }
 
 func (*Transit) EncodePeer(id raft.ServerID, p raft.ServerAddress) []byte {
@@ -145,6 +72,39 @@ func (*Transit) EncodePeer(id raft.ServerID, p raft.ServerAddress) []byte {
 }
 
 func (t *Transit) InstallSnapshot(id raft.ServerID, target raft.ServerAddress, args *raft.InstallSnapshotRequest, resp *raft.InstallSnapshotResponse, data io.Reader) error {
+	c, err := t.peer(id, target)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := t.context()
+	defer cancel()
+	stream, err := c.InstallSnapshot(ctx)
+	if err != nil {
+		return err
+	}
+	if err := stream.Send(px.InstallSnapshotRequestFrom(args)); err != nil {
+		return err
+	}
+	var buf [4 << 10]byte
+	for {
+		n, err := data.Read(buf[:])
+		if err == io.EOF || (err == nil && n == 0) {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		if err := stream.Send(&raftv1.InstallSnapshotRequest{
+			Data: buf[:n],
+		}); err != nil {
+			return err
+		}
+	}
+	r, err := stream.CloseAndRecv()
+	if err != nil {
+		return err
+	}
+	*resp = *px.InstallSnapshotResponse(r)
 	return nil
 }
 
@@ -164,17 +124,50 @@ func (t *Transit) AppendEntries(
 	id raft.ServerID,
 	target raft.ServerAddress,
 	args *raft.AppendEntriesRequest, resp *raft.AppendEntriesResponse) error {
-	return rpc(t, id, target, args, resp)
+	c, err := t.peer(id, target)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := t.context()
+	defer cancel()
+	r, err := c.AppendEntries(ctx, px.AppendEntriesRequestFrom(args))
+	if err != nil {
+		return err
+	}
+	*resp = *px.AppendEntriesResponse(r)
+	return nil
 }
 
 func (t *Transit) RequestVote(id raft.ServerID,
 	target raft.ServerAddress,
 	args *raft.RequestVoteRequest, resp *raft.RequestVoteResponse) error {
-	return rpc(t, id, target, args, resp)
+	c, err := t.peer(id, target)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := t.context()
+	defer cancel()
+	r, err := c.RequestVote(ctx, px.RequestVoteRequestFrom(args))
+	if err != nil {
+		return err
+	}
+	*resp = *px.RequestVoteResponse(r)
+	return nil
 }
 
 func (t *Transit) TimeoutNow(id raft.ServerID, target raft.ServerAddress, args *raft.TimeoutNowRequest, resp *raft.TimeoutNowResponse) error {
-	return rpc(t, id, target, args, resp)
+	c, err := t.peer(id, target)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := t.context()
+	defer cancel()
+	r, err := c.TimeoutNow(ctx, px.TimeoutNowRequestFrom(args))
+	if err != nil {
+		return err
+	}
+	*resp = *px.TimeoutNowResponse(r)
+	return nil
 }
 
 type RPCRequest interface {
@@ -191,52 +184,6 @@ type RPCResponse interface {
 		*raft.TimeoutNowResponse
 }
 
-func rpc[Req RPCRequest, Res RPCResponse](t *Transit, id raft.ServerID,
-	target raft.ServerAddress, args Req, resp Res) error {
-	result := t.send(id, target, px.Raft_RPC_Call_RequestFrom(args))
-	if result.Error != "" {
-		return errors.New(result.Error)
-	}
-	r := px.Raft_RPC_Call_ResponseTo(result)
-	switch e := any(resp).(type) {
-	case *raft.AppendEntriesResponse:
-		*e = *r.(*raft.AppendEntriesResponse)
-	case *raft.RequestVoteResponse:
-		*e = *r.(*raft.RequestVoteResponse)
-	case *raft.InstallSnapshotResponse:
-		*e = *r.(*raft.InstallSnapshotResponse)
-	case *raft.TimeoutNowResponse:
-		*e = *r.(*raft.TimeoutNowResponse)
-	}
-	return nil
-}
-
-func (t *Transit) send(id raft.ServerID,
-	target raft.ServerAddress, r *raftv1.Raft_RPC_Call_Request) *raftv1.Raft_RPC_Call_Response {
-	conn, err := t.peer(id, target)
-	if err != nil {
-		return &raftv1.Raft_RPC_Call_Response{
-			Error: err.Error(),
-		}
-	}
-	ctx, cancel := t.context()
-	err = write(ctx, conn, r)
-	cancel()
-	if err != nil {
-		return &raftv1.Raft_RPC_Call_Response{
-			Error: err.Error(),
-		}
-	}
-	var o raftv1.Raft_RPC_Call_Response
-	err = read(ctx, conn, &o)
-	if err != nil {
-		return &raftv1.Raft_RPC_Call_Response{
-			Error: err.Error(),
-		}
-	}
-	return &o
-}
-
 func (t *Transit) context() (context.Context, context.CancelFunc) {
 	if t.timeout == 0 {
 		return t.ctx, func() {}
@@ -245,132 +192,142 @@ func (t *Transit) context() (context.Context, context.CancelFunc) {
 }
 
 func (t *Transit) Close() error {
+	var err []error
 	t.peers.Range(func(key, value any) bool {
 		t.peers.Delete(key)
-		value.(*websocket.Conn).Close(websocket.StatusGoingAway, "closing transport")
+		x := value.(*conn)
+		err = append(err, x.clientConn.Close())
 		return true
 	})
-	return nil
+	return errors.Join(err...)
 }
 
 func (t *Transit) peer(id raft.ServerID,
-	target raft.ServerAddress) (Conn, error) {
-	if conn, ok := t.peers.Load(id); ok {
-		return conn.(Conn), nil
+	target raft.ServerAddress) (raftv1.TransportClient, error) {
+	if c, ok := t.peers.Load(id); ok {
+		x := c.(*conn)
+		return x.client, nil
 	}
-	ctx, cancel := t.context()
-	defer cancel()
-	conn, err := t.stream.Dial(ctx, id, target)
+	n, err := grpc.Dial(string(target), t.dialOptions...)
 	if err != nil {
 		return nil, err
 	}
-	t.peers.Store(id, conn)
-	return conn, nil
+	x := &conn{clientConn: n, client: raftv1.NewTransportClient(n)}
+	t.peers.Store(id, x)
+	return x.client, nil
 }
 
-func read(ctx context.Context, r Conn, m proto.Message) error {
-	b, err := r.Read()
+type conn struct {
+	clientConn *grpc.ClientConn
+	client     raftv1.TransportClient
+}
+
+type ProtoTransit struct {
+	tr *Transit
+	raftv1.UnsafeTransportServer
+}
+
+var _ raftv1.TransportServer = (*ProtoTransit)(nil)
+
+func (t *ProtoTransit) AppendEntries(ctx context.Context, req *raftv1.AppendEntriesRequest) (*raftv1.AppendEntriesResponse, error) {
+	resp, err := t.handle(px.AppendEntriesRequest(req), nil)
+	if err != nil {
+		return nil, err
+	}
+	return px.AppendEntriesResponseFrom(resp.(*raft.AppendEntriesResponse)), nil
+}
+func (t *ProtoTransit) RequestVote(ctx context.Context, req *raftv1.RequestVoteRequest) (*raftv1.RequestVoteResponse, error) {
+	resp, err := t.handle(px.RequestVoteRequest(req), nil)
+	if err != nil {
+		return nil, err
+	}
+	return px.RequestVoteResponseFrom(resp.(*raft.RequestVoteResponse)), nil
+}
+
+func (t *ProtoTransit) TimeoutNow(ctx context.Context, req *raftv1.TimeoutNowRequest) (*raftv1.TimeoutNowResponse, error) {
+	resp, err := t.handle(px.TimeoutNowRequest(req), nil)
+	if err != nil {
+		return nil, err
+	}
+	return px.TimeoutNowResponseFrom(resp.(*raft.TimeoutNowResponse)), nil
+}
+
+func (t *ProtoTransit) InstallSnapshot(s raftv1.Transport_InstallSnapshotServer) error {
+	isr, err := s.Recv()
 	if err != nil {
 		return err
 	}
-	err = proto.Unmarshal(b, m)
+	resp, err := t.handle(px.InstallSnapshotRequest(isr), &snapshotStream{s, isr.GetData()})
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal protobuf: %w", err)
+		return err
 	}
-	return nil
+	return s.SendAndClose(px.InstallSnapshotResponseFrom(resp.(*raft.InstallSnapshotResponse)))
 }
 
-func write(ctx context.Context, c io.Writer, m proto.Message) error {
-	b, err := proto.Marshal(m)
+type snapshotStream struct {
+	s raftv1.Transport_InstallSnapshotServer
+
+	buf []byte
+}
+
+func (s *snapshotStream) Read(b []byte) (int, error) {
+	if len(s.buf) > 0 {
+		n := copy(b, s.buf)
+		s.buf = s.buf[n:]
+		return n, nil
+	}
+	m, err := s.s.Recv()
 	if err != nil {
-		return fmt.Errorf("failed to marshal protobuf: %w", err)
+		return 0, err
 	}
-	_, err = c.Write(b)
-	return err
-}
-
-var pool = &sync.Pool{
-	New: func() any { return new(bytes.Buffer) },
-}
-
-type wrapSocket struct {
-	ctx   context.Context
-	conn  *websocket.Conn
-	reset bool
-	r     *bufio.Reader
-}
-
-func newWrap(ctx context.Context, c *websocket.Conn) *wrapSocket {
-	return &wrapSocket{
-		ctx:   ctx,
-		conn:  c,
-		reset: true,
-		r:     bufio.NewReader(nil),
+	n := copy(b, m.GetData())
+	if n < len(m.GetData()) {
+		s.buf = m.GetData()[n:]
 	}
+	return n, nil
 }
 
-type Conn interface {
-	Read() ([]byte, error)
-	io.WriteCloser
-}
-
-var _ Conn = (*wrapSocket)(nil)
-
-func (w *wrapSocket) Read() ([]byte, error) {
-	typ, r, err := w.conn.Reader(w.ctx)
-	if err != nil {
-		return nil, err
-	}
-	if typ != websocket.MessageBinary {
-		w.conn.Close(websocket.StatusUnsupportedData, "expected binary message")
-		return nil, fmt.Errorf("expected binary message for protobuf but got: %v", typ)
-	}
-	return io.ReadAll(r)
-}
-
-func (w *wrapSocket) Write(p []byte) (int, error) {
-	err := w.conn.Write(w.ctx, websocket.MessageBinary, p)
-	return len(p), err
-}
-
-func (w *wrapSocket) Close() error {
-	return w.conn.Close(websocket.StatusGoingAway, "closing transport")
-}
-
-type wsStream struct {
-	peers sync.Map
-}
-
-var _ Stream = (*wsStream)(nil)
-
-func NewWsStream() Stream {
-	return &wsStream{}
-}
-
-var client = &http.Client{}
-
-func (ws *wsStream) Update(x *raftv1.Raft_Config) {
-	for _, svr := range x.Servers {
-		ws.peers.Store(svr.Id, svr)
+func (t *ProtoTransit) AppendEntriesPipeline(s raftv1.Transport_AppendEntriesPipelineServer) error {
+	for {
+		msg, err := s.Recv()
+		if err != nil {
+			return err
+		}
+		resp, err := t.handle(px.AppendEntriesRequest(msg), nil)
+		if err != nil {
+			return err
+		}
+		if err := s.Send(px.AppendEntriesResponseFrom(resp.(*raft.AppendEntriesResponse))); err != nil {
+			return err
+		}
 	}
 }
 
-func (ws *wsStream) Dial(
-	ctx context.Context,
-	id raft.ServerID, addr raft.ServerAddress) (Conn, error) {
-	x, ok := ws.peers.Load(string(id))
+func (t *ProtoTransit) handle(command interface{}, data io.Reader) (interface{}, error) {
+	ch := make(chan raft.RPCResponse, 1)
+	rpc := raft.RPC{
+		Command:  command,
+		RespChan: ch,
+		Reader:   data,
+	}
+	if isHeartbeat(command) {
+		if t.tr.heart.beat(rpc) {
+			goto wait
+		}
+	}
+	t.tr.consume <- rpc
+wait:
+	resp := <-ch
+	if resp.Error != nil {
+		return nil, resp.Error
+	}
+	return resp.Response, nil
+}
+
+func isHeartbeat(command interface{}) bool {
+	req, ok := command.(*raft.AppendEntriesRequest)
 	if !ok {
-		return nil, fmt.Errorf("peer %s:%s can not be reached", id, addr)
+		return false
 	}
-	s := x.(*raftv1.Raft_Config_Server)
-	h := make(http.Header)
-	h.Set("authorization", "Bearer "+s.Token)
-	conn, _, err := websocket.Dial(ctx, s.Address+"/raft", &websocket.DialOptions{
-		HTTPClient: client,
-		HTTPHeader: h,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return newWrap(ctx, conn), nil
+	return req.Term != 0 && len(req.Leader) != 0 && req.PrevLogEntry == 0 && req.PrevLogTerm == 0 && len(req.Entries) == 0 && req.LeaderCommitIndex == 0
 }

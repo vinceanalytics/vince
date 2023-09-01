@@ -5,7 +5,11 @@
 package v1
 
 import (
+	context "context"
 	fmt "fmt"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	proto "google.golang.org/protobuf/proto"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
@@ -21,7 +25,309 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-func (m *Raft_Entry) MarshalVT() (dAtA []byte, err error) {
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
+const _ = grpc.SupportPackageIsVersion7
+
+// TransportClient is the client API for Transport service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type TransportClient interface {
+	AppendEntriesPipeline(ctx context.Context, opts ...grpc.CallOption) (Transport_AppendEntriesPipelineClient, error)
+	AppendEntries(ctx context.Context, in *AppendEntriesRequest, opts ...grpc.CallOption) (*AppendEntriesResponse, error)
+	RequestVote(ctx context.Context, in *RequestVoteRequest, opts ...grpc.CallOption) (*RequestVoteResponse, error)
+	TimeoutNow(ctx context.Context, in *TimeoutNowRequest, opts ...grpc.CallOption) (*TimeoutNowResponse, error)
+	InstallSnapshot(ctx context.Context, opts ...grpc.CallOption) (Transport_InstallSnapshotClient, error)
+}
+
+type transportClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewTransportClient(cc grpc.ClientConnInterface) TransportClient {
+	return &transportClient{cc}
+}
+
+func (c *transportClient) AppendEntriesPipeline(ctx context.Context, opts ...grpc.CallOption) (Transport_AppendEntriesPipelineClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Transport_ServiceDesc.Streams[0], "/v1.Transport/AppendEntriesPipeline", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &transportAppendEntriesPipelineClient{stream}
+	return x, nil
+}
+
+type Transport_AppendEntriesPipelineClient interface {
+	Send(*AppendEntriesRequest) error
+	Recv() (*AppendEntriesResponse, error)
+	grpc.ClientStream
+}
+
+type transportAppendEntriesPipelineClient struct {
+	grpc.ClientStream
+}
+
+func (x *transportAppendEntriesPipelineClient) Send(m *AppendEntriesRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *transportAppendEntriesPipelineClient) Recv() (*AppendEntriesResponse, error) {
+	m := new(AppendEntriesResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *transportClient) AppendEntries(ctx context.Context, in *AppendEntriesRequest, opts ...grpc.CallOption) (*AppendEntriesResponse, error) {
+	out := new(AppendEntriesResponse)
+	err := c.cc.Invoke(ctx, "/v1.Transport/AppendEntries", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transportClient) RequestVote(ctx context.Context, in *RequestVoteRequest, opts ...grpc.CallOption) (*RequestVoteResponse, error) {
+	out := new(RequestVoteResponse)
+	err := c.cc.Invoke(ctx, "/v1.Transport/RequestVote", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transportClient) TimeoutNow(ctx context.Context, in *TimeoutNowRequest, opts ...grpc.CallOption) (*TimeoutNowResponse, error) {
+	out := new(TimeoutNowResponse)
+	err := c.cc.Invoke(ctx, "/v1.Transport/TimeoutNow", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transportClient) InstallSnapshot(ctx context.Context, opts ...grpc.CallOption) (Transport_InstallSnapshotClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Transport_ServiceDesc.Streams[1], "/v1.Transport/InstallSnapshot", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &transportInstallSnapshotClient{stream}
+	return x, nil
+}
+
+type Transport_InstallSnapshotClient interface {
+	Send(*InstallSnapshotRequest) error
+	CloseAndRecv() (*InstallSnapshotResponse, error)
+	grpc.ClientStream
+}
+
+type transportInstallSnapshotClient struct {
+	grpc.ClientStream
+}
+
+func (x *transportInstallSnapshotClient) Send(m *InstallSnapshotRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *transportInstallSnapshotClient) CloseAndRecv() (*InstallSnapshotResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(InstallSnapshotResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// TransportServer is the server API for Transport service.
+// All implementations must embed UnimplementedTransportServer
+// for forward compatibility
+type TransportServer interface {
+	AppendEntriesPipeline(Transport_AppendEntriesPipelineServer) error
+	AppendEntries(context.Context, *AppendEntriesRequest) (*AppendEntriesResponse, error)
+	RequestVote(context.Context, *RequestVoteRequest) (*RequestVoteResponse, error)
+	TimeoutNow(context.Context, *TimeoutNowRequest) (*TimeoutNowResponse, error)
+	InstallSnapshot(Transport_InstallSnapshotServer) error
+	mustEmbedUnimplementedTransportServer()
+}
+
+// UnimplementedTransportServer must be embedded to have forward compatible implementations.
+type UnimplementedTransportServer struct {
+}
+
+func (UnimplementedTransportServer) AppendEntriesPipeline(Transport_AppendEntriesPipelineServer) error {
+	return status.Errorf(codes.Unimplemented, "method AppendEntriesPipeline not implemented")
+}
+func (UnimplementedTransportServer) AppendEntries(context.Context, *AppendEntriesRequest) (*AppendEntriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AppendEntries not implemented")
+}
+func (UnimplementedTransportServer) RequestVote(context.Context, *RequestVoteRequest) (*RequestVoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RequestVote not implemented")
+}
+func (UnimplementedTransportServer) TimeoutNow(context.Context, *TimeoutNowRequest) (*TimeoutNowResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TimeoutNow not implemented")
+}
+func (UnimplementedTransportServer) InstallSnapshot(Transport_InstallSnapshotServer) error {
+	return status.Errorf(codes.Unimplemented, "method InstallSnapshot not implemented")
+}
+func (UnimplementedTransportServer) mustEmbedUnimplementedTransportServer() {}
+
+// UnsafeTransportServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TransportServer will
+// result in compilation errors.
+type UnsafeTransportServer interface {
+	mustEmbedUnimplementedTransportServer()
+}
+
+func RegisterTransportServer(s grpc.ServiceRegistrar, srv TransportServer) {
+	s.RegisterService(&Transport_ServiceDesc, srv)
+}
+
+func _Transport_AppendEntriesPipeline_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TransportServer).AppendEntriesPipeline(&transportAppendEntriesPipelineServer{stream})
+}
+
+type Transport_AppendEntriesPipelineServer interface {
+	Send(*AppendEntriesResponse) error
+	Recv() (*AppendEntriesRequest, error)
+	grpc.ServerStream
+}
+
+type transportAppendEntriesPipelineServer struct {
+	grpc.ServerStream
+}
+
+func (x *transportAppendEntriesPipelineServer) Send(m *AppendEntriesResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *transportAppendEntriesPipelineServer) Recv() (*AppendEntriesRequest, error) {
+	m := new(AppendEntriesRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Transport_AppendEntries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AppendEntriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransportServer).AppendEntries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Transport/AppendEntries",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransportServer).AppendEntries(ctx, req.(*AppendEntriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Transport_RequestVote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestVoteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransportServer).RequestVote(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Transport/RequestVote",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransportServer).RequestVote(ctx, req.(*RequestVoteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Transport_TimeoutNow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TimeoutNowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransportServer).TimeoutNow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.Transport/TimeoutNow",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransportServer).TimeoutNow(ctx, req.(*TimeoutNowRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Transport_InstallSnapshot_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TransportServer).InstallSnapshot(&transportInstallSnapshotServer{stream})
+}
+
+type Transport_InstallSnapshotServer interface {
+	SendAndClose(*InstallSnapshotResponse) error
+	Recv() (*InstallSnapshotRequest, error)
+	grpc.ServerStream
+}
+
+type transportInstallSnapshotServer struct {
+	grpc.ServerStream
+}
+
+func (x *transportInstallSnapshotServer) SendAndClose(m *InstallSnapshotResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *transportInstallSnapshotServer) Recv() (*InstallSnapshotRequest, error) {
+	m := new(InstallSnapshotRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// Transport_ServiceDesc is the grpc.ServiceDesc for Transport service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Transport_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "v1.Transport",
+	HandlerType: (*TransportServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AppendEntries",
+			Handler:    _Transport_AppendEntries_Handler,
+		},
+		{
+			MethodName: "RequestVote",
+			Handler:    _Transport_RequestVote_Handler,
+		},
+		{
+			MethodName: "TimeoutNow",
+			Handler:    _Transport_TimeoutNow_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "AppendEntriesPipeline",
+			Handler:       _Transport_AppendEntriesPipeline_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "InstallSnapshot",
+			Handler:       _Transport_InstallSnapshot_Handler,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "vince/raft/v1/raft.proto",
+}
+
+func (m *RaftConfig) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -34,12 +340,116 @@ func (m *Raft_Entry) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Raft_Entry) MarshalToVT(dAtA []byte) (int, error) {
+func (m *RaftConfig) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_Entry) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *RaftConfig) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Servers) > 0 {
+		for iNdEx := len(m.Servers) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.Servers[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RaftServer) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RaftServer) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *RaftServer) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Token) > 0 {
+		i -= len(m.Token)
+		copy(dAtA[i:], m.Token)
+		i = encodeVarint(dAtA, i, uint64(len(m.Token)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarint(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Id) > 0 {
+		i -= len(m.Id)
+		copy(dAtA[i:], m.Id)
+		i = encodeVarint(dAtA, i, uint64(len(m.Id)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Suffrage != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.Suffrage))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RaftEntry) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RaftEntry) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *RaftEntry) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -90,7 +500,7 @@ func (m *Raft_Entry) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_Log) MarshalVT() (dAtA []byte, err error) {
+func (m *AppendEntriesRequest) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -103,12 +513,87 @@ func (m *Raft_Log) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Raft_Log) MarshalToVT(dAtA []byte) (int, error) {
+func (m *AppendEntriesRequest) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_Log) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *AppendEntriesRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.LeaderCommitIndex != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.LeaderCommitIndex))
+		i--
+		dAtA[i] = 0x38
+	}
+	if len(m.Entries) > 0 {
+		for iNdEx := len(m.Entries) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.Entries[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
+	if m.PrevLogTerm != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.PrevLogTerm))
+		i--
+		dAtA[i] = 0x28
+	}
+	if m.PrevLogEntry != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.PrevLogEntry))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.Term != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.Term))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Header != nil {
+		size, err := m.Header.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RaftLog) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RaftLog) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *RaftLog) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -174,7 +659,7 @@ func (m *Raft_Log) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_Config_Server) MarshalVT() (dAtA []byte, err error) {
+func (m *AppendEntriesResponse) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -187,467 +672,12 @@ func (m *Raft_Config_Server) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Raft_Config_Server) MarshalToVT(dAtA []byte) (int, error) {
+func (m *AppendEntriesResponse) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_Config_Server) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	if len(m.Token) > 0 {
-		i -= len(m.Token)
-		copy(dAtA[i:], m.Token)
-		i = encodeVarint(dAtA, i, uint64(len(m.Token)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarint(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Id) > 0 {
-		i -= len(m.Id)
-		copy(dAtA[i:], m.Id)
-		i = encodeVarint(dAtA, i, uint64(len(m.Id)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if m.Suffrage != 0 {
-		i = encodeVarint(dAtA, i, uint64(m.Suffrage))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_Config) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_Config) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	if len(m.Servers) > 0 {
-		for iNdEx := len(m.Servers) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Servers[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarint(dAtA, i, uint64(size))
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC_Call_Request) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Call_Request) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Request) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	if vtmsg, ok := m.Kind.(interface {
-		MarshalToSizedBufferVT([]byte) (int, error)
-	}); ok {
-		size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC_Call_Request_AppendEntries) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Request_AppendEntries) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.AppendEntries != nil {
-		size, err := m.AppendEntries.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-func (m *Raft_RPC_Call_Request_Vote) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Request_Vote) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.Vote != nil {
-		size, err := m.Vote.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x12
-	}
-	return len(dAtA) - i, nil
-}
-func (m *Raft_RPC_Call_Request_InstallSnapshot) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Request_InstallSnapshot) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.InstallSnapshot != nil {
-		size, err := m.InstallSnapshot.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x1a
-	}
-	return len(dAtA) - i, nil
-}
-func (m *Raft_RPC_Call_Request_TimeoutNow) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Request_TimeoutNow) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.TimeoutNow != nil {
-		size, err := m.TimeoutNow.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x22
-	}
-	return len(dAtA) - i, nil
-}
-func (m *Raft_RPC_Call_Response) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Call_Response) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Response) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	if vtmsg, ok := m.Kind.(interface {
-		MarshalToSizedBufferVT([]byte) (int, error)
-	}); ok {
-		size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-	}
-	if len(m.Error) > 0 {
-		i -= len(m.Error)
-		copy(dAtA[i:], m.Error)
-		i = encodeVarint(dAtA, i, uint64(len(m.Error)))
-		i--
-		dAtA[i] = 0x2a
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC_Call_Response_AppendEntries) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Response_AppendEntries) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.AppendEntries != nil {
-		size, err := m.AppendEntries.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-func (m *Raft_RPC_Call_Response_Vote) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Response_Vote) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.Vote != nil {
-		size, err := m.Vote.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x12
-	}
-	return len(dAtA) - i, nil
-}
-func (m *Raft_RPC_Call_Response_InstallSnapshot) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Response_InstallSnapshot) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.InstallSnapshot != nil {
-		size, err := m.InstallSnapshot.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x1a
-	}
-	return len(dAtA) - i, nil
-}
-func (m *Raft_RPC_Call_Response_TimeoutNow) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call_Response_TimeoutNow) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.TimeoutNow != nil {
-		size, err := m.TimeoutNow.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x22
-	}
-	return len(dAtA) - i, nil
-}
-func (m *Raft_RPC_Call) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Call) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Call) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC_Command_AppendEntries_Request) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Command_AppendEntries_Request) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Command_AppendEntries_Request) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	if m.LeaderCommitIndex != 0 {
-		i = encodeVarint(dAtA, i, uint64(m.LeaderCommitIndex))
-		i--
-		dAtA[i] = 0x38
-	}
-	if len(m.Entries) > 0 {
-		for iNdEx := len(m.Entries) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Entries[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarint(dAtA, i, uint64(size))
-			i--
-			dAtA[i] = 0x32
-		}
-	}
-	if m.PrevLogTerm != 0 {
-		i = encodeVarint(dAtA, i, uint64(m.PrevLogTerm))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.PrevLogEntry != 0 {
-		i = encodeVarint(dAtA, i, uint64(m.PrevLogEntry))
-		i--
-		dAtA[i] = 0x20
-	}
-	if m.Term != 0 {
-		i = encodeVarint(dAtA, i, uint64(m.Term))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Header != nil {
-		size, err := m.Header.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC_Command_AppendEntries_Response) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Command_AppendEntries_Response) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Command_AppendEntries_Response) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *AppendEntriesResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -702,7 +732,7 @@ func (m *Raft_RPC_Command_AppendEntries_Response) MarshalToSizedBufferVT(dAtA []
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_RPC_Command_AppendEntries) MarshalVT() (dAtA []byte, err error) {
+func (m *RequestVoteRequest) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -715,45 +745,12 @@ func (m *Raft_RPC_Command_AppendEntries) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Raft_RPC_Command_AppendEntries) MarshalToVT(dAtA []byte) (int, error) {
+func (m *RequestVoteRequest) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_RPC_Command_AppendEntries) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC_Command_Vote_Request) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Command_Vote_Request) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Command_Vote_Request) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *RequestVoteRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -803,7 +800,7 @@ func (m *Raft_RPC_Command_Vote_Request) MarshalToSizedBufferVT(dAtA []byte) (int
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_RPC_Command_Vote_Response) MarshalVT() (dAtA []byte, err error) {
+func (m *RequestVoteResponse) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -816,12 +813,12 @@ func (m *Raft_RPC_Command_Vote_Response) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Raft_RPC_Command_Vote_Response) MarshalToVT(dAtA []byte) (int, error) {
+func (m *RequestVoteResponse) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_RPC_Command_Vote_Response) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *RequestVoteResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -861,7 +858,7 @@ func (m *Raft_RPC_Command_Vote_Response) MarshalToSizedBufferVT(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_RPC_Command_Vote) MarshalVT() (dAtA []byte, err error) {
+func (m *InstallSnapshotRequest) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -874,12 +871,12 @@ func (m *Raft_RPC_Command_Vote) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Raft_RPC_Command_Vote) MarshalToVT(dAtA []byte) (int, error) {
+func (m *InstallSnapshotRequest) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_RPC_Command_Vote) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *InstallSnapshotRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -891,38 +888,12 @@ func (m *Raft_RPC_Command_Vote) MarshalToSizedBufferVT(dAtA []byte) (int, error)
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC_Command_InstallSnapshot_Request) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Command_InstallSnapshot_Request) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Command_InstallSnapshot_Request) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
+	if len(m.Data) > 0 {
+		i -= len(m.Data)
+		copy(dAtA[i:], m.Data)
+		i = encodeVarint(dAtA, i, uint64(len(m.Data)))
+		i--
+		dAtA[i] = 0x52
 	}
 	if m.Size != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.Size))
@@ -981,7 +952,7 @@ func (m *Raft_RPC_Command_InstallSnapshot_Request) MarshalToSizedBufferVT(dAtA [
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_RPC_Command_InstallSnapshot_Response) MarshalVT() (dAtA []byte, err error) {
+func (m *InstallSnapshotResponse) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -994,12 +965,12 @@ func (m *Raft_RPC_Command_InstallSnapshot_Response) MarshalVT() (dAtA []byte, er
 	return dAtA[:n], nil
 }
 
-func (m *Raft_RPC_Command_InstallSnapshot_Response) MarshalToVT(dAtA []byte) (int, error) {
+func (m *InstallSnapshotResponse) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_RPC_Command_InstallSnapshot_Response) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *InstallSnapshotResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -1039,7 +1010,7 @@ func (m *Raft_RPC_Command_InstallSnapshot_Response) MarshalToSizedBufferVT(dAtA 
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_RPC_Command_InstallSnapshot) MarshalVT() (dAtA []byte, err error) {
+func (m *TimeoutNowRequest) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1052,45 +1023,12 @@ func (m *Raft_RPC_Command_InstallSnapshot) MarshalVT() (dAtA []byte, err error) 
 	return dAtA[:n], nil
 }
 
-func (m *Raft_RPC_Command_InstallSnapshot) MarshalToVT(dAtA []byte) (int, error) {
+func (m *TimeoutNowRequest) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_RPC_Command_InstallSnapshot) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC_Command_TimeoutNow_Request) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Command_TimeoutNow_Request) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Command_TimeoutNow_Request) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *TimeoutNowRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -1115,7 +1053,7 @@ func (m *Raft_RPC_Command_TimeoutNow_Request) MarshalToSizedBufferVT(dAtA []byte
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_RPC_Command_TimeoutNow_Response) MarshalVT() (dAtA []byte, err error) {
+func (m *TimeoutNowResponse) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1128,12 +1066,12 @@ func (m *Raft_RPC_Command_TimeoutNow_Response) MarshalVT() (dAtA []byte, err err
 	return dAtA[:n], nil
 }
 
-func (m *Raft_RPC_Command_TimeoutNow_Response) MarshalToVT(dAtA []byte) (int, error) {
+func (m *TimeoutNowResponse) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_RPC_Command_TimeoutNow_Response) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *TimeoutNowResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -1158,7 +1096,7 @@ func (m *Raft_RPC_Command_TimeoutNow_Response) MarshalToSizedBufferVT(dAtA []byt
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_RPC_Command_TimeoutNow) MarshalVT() (dAtA []byte, err error) {
+func (m *Header) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1171,45 +1109,12 @@ func (m *Raft_RPC_Command_TimeoutNow) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Raft_RPC_Command_TimeoutNow) MarshalToVT(dAtA []byte) (int, error) {
+func (m *Header) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Raft_RPC_Command_TimeoutNow) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC_Command_Header) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Command_Header) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Command_Header) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *Header) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -1243,105 +1148,6 @@ func (m *Raft_RPC_Command_Header) MarshalToSizedBufferVT(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
-func (m *Raft_RPC_Command) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC_Command) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC_Command) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft_RPC) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft_RPC) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft_RPC) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Raft) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Raft) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Raft) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	return len(dAtA) - i, nil
-}
-
 func encodeVarint(dAtA []byte, offset int, v uint64) int {
 	offset -= sov(v)
 	base := offset
@@ -1353,7 +1159,48 @@ func encodeVarint(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *Raft_Entry) SizeVT() (n int) {
+func (m *RaftConfig) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Servers) > 0 {
+		for _, e := range m.Servers {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *RaftServer) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Suffrage != 0 {
+		n += 1 + sov(uint64(m.Suffrage))
+	}
+	l = len(m.Id)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	l = len(m.Token)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *RaftEntry) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1381,7 +1228,39 @@ func (m *Raft_Entry) SizeVT() (n int) {
 	return n
 }
 
-func (m *Raft_Log) SizeVT() (n int) {
+func (m *AppendEntriesRequest) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Header != nil {
+		l = m.Header.SizeVT()
+		n += 1 + l + sov(uint64(l))
+	}
+	if m.Term != 0 {
+		n += 1 + sov(uint64(m.Term))
+	}
+	if m.PrevLogEntry != 0 {
+		n += 1 + sov(uint64(m.PrevLogEntry))
+	}
+	if m.PrevLogTerm != 0 {
+		n += 1 + sov(uint64(m.PrevLogTerm))
+	}
+	if len(m.Entries) > 0 {
+		for _, e := range m.Entries {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
+	}
+	if m.LeaderCommitIndex != 0 {
+		n += 1 + sov(uint64(m.LeaderCommitIndex))
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *RaftLog) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1418,216 +1297,7 @@ func (m *Raft_Log) SizeVT() (n int) {
 	return n
 }
 
-func (m *Raft_Config_Server) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Suffrage != 0 {
-		n += 1 + sov(uint64(m.Suffrage))
-	}
-	l = len(m.Id)
-	if l > 0 {
-		n += 1 + l + sov(uint64(l))
-	}
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sov(uint64(l))
-	}
-	l = len(m.Token)
-	if l > 0 {
-		n += 1 + l + sov(uint64(l))
-	}
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_Config) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Servers) > 0 {
-		for _, e := range m.Servers {
-			l = e.SizeVT()
-			n += 1 + l + sov(uint64(l))
-		}
-	}
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC_Call_Request) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if vtmsg, ok := m.Kind.(interface{ SizeVT() int }); ok {
-		n += vtmsg.SizeVT()
-	}
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC_Call_Request_AppendEntries) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.AppendEntries != nil {
-		l = m.AppendEntries.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
-	return n
-}
-func (m *Raft_RPC_Call_Request_Vote) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Vote != nil {
-		l = m.Vote.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
-	return n
-}
-func (m *Raft_RPC_Call_Request_InstallSnapshot) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.InstallSnapshot != nil {
-		l = m.InstallSnapshot.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
-	return n
-}
-func (m *Raft_RPC_Call_Request_TimeoutNow) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.TimeoutNow != nil {
-		l = m.TimeoutNow.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
-	return n
-}
-func (m *Raft_RPC_Call_Response) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if vtmsg, ok := m.Kind.(interface{ SizeVT() int }); ok {
-		n += vtmsg.SizeVT()
-	}
-	l = len(m.Error)
-	if l > 0 {
-		n += 1 + l + sov(uint64(l))
-	}
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC_Call_Response_AppendEntries) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.AppendEntries != nil {
-		l = m.AppendEntries.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
-	return n
-}
-func (m *Raft_RPC_Call_Response_Vote) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Vote != nil {
-		l = m.Vote.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
-	return n
-}
-func (m *Raft_RPC_Call_Response_InstallSnapshot) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.InstallSnapshot != nil {
-		l = m.InstallSnapshot.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
-	return n
-}
-func (m *Raft_RPC_Call_Response_TimeoutNow) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.TimeoutNow != nil {
-		l = m.TimeoutNow.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
-	return n
-}
-func (m *Raft_RPC_Call) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC_Command_AppendEntries_Request) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Header != nil {
-		l = m.Header.SizeVT()
-		n += 1 + l + sov(uint64(l))
-	}
-	if m.Term != 0 {
-		n += 1 + sov(uint64(m.Term))
-	}
-	if m.PrevLogEntry != 0 {
-		n += 1 + sov(uint64(m.PrevLogEntry))
-	}
-	if m.PrevLogTerm != 0 {
-		n += 1 + sov(uint64(m.PrevLogTerm))
-	}
-	if len(m.Entries) > 0 {
-		for _, e := range m.Entries {
-			l = e.SizeVT()
-			n += 1 + l + sov(uint64(l))
-		}
-	}
-	if m.LeaderCommitIndex != 0 {
-		n += 1 + sov(uint64(m.LeaderCommitIndex))
-	}
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC_Command_AppendEntries_Response) SizeVT() (n int) {
+func (m *AppendEntriesResponse) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1653,17 +1323,7 @@ func (m *Raft_RPC_Command_AppendEntries_Response) SizeVT() (n int) {
 	return n
 }
 
-func (m *Raft_RPC_Command_AppendEntries) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC_Command_Vote_Request) SizeVT() (n int) {
+func (m *RequestVoteRequest) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1689,7 +1349,7 @@ func (m *Raft_RPC_Command_Vote_Request) SizeVT() (n int) {
 	return n
 }
 
-func (m *Raft_RPC_Command_Vote_Response) SizeVT() (n int) {
+func (m *RequestVoteResponse) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1709,17 +1369,7 @@ func (m *Raft_RPC_Command_Vote_Response) SizeVT() (n int) {
 	return n
 }
 
-func (m *Raft_RPC_Command_Vote) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC_Command_InstallSnapshot_Request) SizeVT() (n int) {
+func (m *InstallSnapshotRequest) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1755,11 +1405,15 @@ func (m *Raft_RPC_Command_InstallSnapshot_Request) SizeVT() (n int) {
 	if m.Size != 0 {
 		n += 1 + sov(uint64(m.Size))
 	}
+	l = len(m.Data)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
 
-func (m *Raft_RPC_Command_InstallSnapshot_Response) SizeVT() (n int) {
+func (m *InstallSnapshotResponse) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1779,17 +1433,7 @@ func (m *Raft_RPC_Command_InstallSnapshot_Response) SizeVT() (n int) {
 	return n
 }
 
-func (m *Raft_RPC_Command_InstallSnapshot) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC_Command_TimeoutNow_Request) SizeVT() (n int) {
+func (m *TimeoutNowRequest) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1803,7 +1447,7 @@ func (m *Raft_RPC_Command_TimeoutNow_Request) SizeVT() (n int) {
 	return n
 }
 
-func (m *Raft_RPC_Command_TimeoutNow_Response) SizeVT() (n int) {
+func (m *TimeoutNowResponse) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1817,17 +1461,7 @@ func (m *Raft_RPC_Command_TimeoutNow_Response) SizeVT() (n int) {
 	return n
 }
 
-func (m *Raft_RPC_Command_TimeoutNow) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC_Command_Header) SizeVT() (n int) {
+func (m *Header) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1848,43 +1482,13 @@ func (m *Raft_RPC_Command_Header) SizeVT() (n int) {
 	return n
 }
 
-func (m *Raft_RPC_Command) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft_RPC) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Raft) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	n += len(m.unknownFields)
-	return n
-}
-
 func sov(x uint64) (n int) {
 	return (bits.Len64(x|1) + 6) / 7
 }
 func soz(x uint64) (n int) {
 	return sov(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *Raft_Entry) UnmarshalVT(dAtA []byte) error {
+func (m *RaftConfig) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1907,10 +1511,261 @@ func (m *Raft_Entry) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_Entry: wiretype end group for non-group")
+			return fmt.Errorf("proto: RaftConfig: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_Entry: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: RaftConfig: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Servers", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Servers = append(m.Servers, &RaftServer{})
+			if err := m.Servers[len(m.Servers)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RaftServer) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RaftServer: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RaftServer: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Suffrage", wireType)
+			}
+			m.Suffrage = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Suffrage |= RaftServer_Suffrage(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Id = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Token", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Token = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RaftEntry) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RaftEntry: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RaftEntry: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2047,7 +1902,7 @@ func (m *Raft_Entry) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Raft_Log) UnmarshalVT(dAtA []byte) error {
+func (m *AppendEntriesRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2070,10 +1925,207 @@ func (m *Raft_Log) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_Log: wiretype end group for non-group")
+			return fmt.Errorf("proto: AppendEntriesRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_Log: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: AppendEntriesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Header", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Header == nil {
+				m.Header = &Header{}
+			}
+			if err := m.Header.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Term", wireType)
+			}
+			m.Term = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Term |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PrevLogEntry", wireType)
+			}
+			m.PrevLogEntry = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PrevLogEntry |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PrevLogTerm", wireType)
+			}
+			m.PrevLogTerm = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PrevLogTerm |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Entries", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Entries = append(m.Entries, &RaftLog{})
+			if err := m.Entries[len(m.Entries)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LeaderCommitIndex", wireType)
+			}
+			m.LeaderCommitIndex = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LeaderCommitIndex |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RaftLog) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RaftLog: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RaftLog: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2128,7 +2180,7 @@ func (m *Raft_Log) UnmarshalVT(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Type |= Raft_Log_Type(b&0x7F) << shift
+				m.Type |= RaftLog_Type(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2267,7 +2319,7 @@ func (m *Raft_Log) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Raft_Config_Server) UnmarshalVT(dAtA []byte) error {
+func (m *AppendEntriesResponse) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2290,774 +2342,10 @@ func (m *Raft_Config_Server) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_Config_Server: wiretype end group for non-group")
+			return fmt.Errorf("proto: AppendEntriesResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_Config_Server: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Suffrage", wireType)
-			}
-			m.Suffrage = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Suffrage |= Raft_Config_Server_Suffrage(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Id = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Address = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Token", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Token = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_Config) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_Config: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_Config: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Servers", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Servers = append(m.Servers, &Raft_Config_Server{})
-			if err := m.Servers[len(m.Servers)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Call_Request) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Call_Request: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Call_Request: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AppendEntries", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if oneof, ok := m.Kind.(*Raft_RPC_Call_Request_AppendEntries); ok {
-				if err := oneof.AppendEntries.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				v := &Raft_RPC_Command_AppendEntries_Request{}
-				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-				m.Kind = &Raft_RPC_Call_Request_AppendEntries{AppendEntries: v}
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Vote", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if oneof, ok := m.Kind.(*Raft_RPC_Call_Request_Vote); ok {
-				if err := oneof.Vote.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				v := &Raft_RPC_Command_Vote_Request{}
-				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-				m.Kind = &Raft_RPC_Call_Request_Vote{Vote: v}
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InstallSnapshot", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if oneof, ok := m.Kind.(*Raft_RPC_Call_Request_InstallSnapshot); ok {
-				if err := oneof.InstallSnapshot.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				v := &Raft_RPC_Command_InstallSnapshot_Request{}
-				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-				m.Kind = &Raft_RPC_Call_Request_InstallSnapshot{InstallSnapshot: v}
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TimeoutNow", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if oneof, ok := m.Kind.(*Raft_RPC_Call_Request_TimeoutNow); ok {
-				if err := oneof.TimeoutNow.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				v := &Raft_RPC_Command_TimeoutNow_Request{}
-				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-				m.Kind = &Raft_RPC_Call_Request_TimeoutNow{TimeoutNow: v}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Call_Response) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Call_Response: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Call_Response: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AppendEntries", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if oneof, ok := m.Kind.(*Raft_RPC_Call_Response_AppendEntries); ok {
-				if err := oneof.AppendEntries.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				v := &Raft_RPC_Command_AppendEntries_Response{}
-				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-				m.Kind = &Raft_RPC_Call_Response_AppendEntries{AppendEntries: v}
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Vote", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if oneof, ok := m.Kind.(*Raft_RPC_Call_Response_Vote); ok {
-				if err := oneof.Vote.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				v := &Raft_RPC_Command_Vote_Response{}
-				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-				m.Kind = &Raft_RPC_Call_Response_Vote{Vote: v}
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InstallSnapshot", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if oneof, ok := m.Kind.(*Raft_RPC_Call_Response_InstallSnapshot); ok {
-				if err := oneof.InstallSnapshot.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				v := &Raft_RPC_Command_InstallSnapshot_Response{}
-				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-				m.Kind = &Raft_RPC_Call_Response_InstallSnapshot{InstallSnapshot: v}
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TimeoutNow", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if oneof, ok := m.Kind.(*Raft_RPC_Call_Response_TimeoutNow); ok {
-				if err := oneof.TimeoutNow.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-			} else {
-				v := &Raft_RPC_Command_TimeoutNow_Response{}
-				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-					return err
-				}
-				m.Kind = &Raft_RPC_Call_Response_TimeoutNow{TimeoutNow: v}
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Error", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Error = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Call) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Call: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Call: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Command_AppendEntries_Request) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_AppendEntries_Request: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_AppendEntries_Request: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: AppendEntriesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3090,204 +2378,7 @@ func (m *Raft_RPC_Command_AppendEntries_Request) UnmarshalVT(dAtA []byte) error 
 				return io.ErrUnexpectedEOF
 			}
 			if m.Header == nil {
-				m.Header = &Raft_RPC_Command_Header{}
-			}
-			if err := m.Header.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Term", wireType)
-			}
-			m.Term = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Term |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PrevLogEntry", wireType)
-			}
-			m.PrevLogEntry = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.PrevLogEntry |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PrevLogTerm", wireType)
-			}
-			m.PrevLogTerm = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.PrevLogTerm |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Entries", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Entries = append(m.Entries, &Raft_Log{})
-			if err := m.Entries[len(m.Entries)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LeaderCommitIndex", wireType)
-			}
-			m.LeaderCommitIndex = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LeaderCommitIndex |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Command_AppendEntries_Response) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_AppendEntries_Response: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_AppendEntries_Response: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Header", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Header == nil {
-				m.Header = &Raft_RPC_Command_Header{}
+				m.Header = &Header{}
 			}
 			if err := m.Header.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -3393,7 +2484,7 @@ func (m *Raft_RPC_Command_AppendEntries_Response) UnmarshalVT(dAtA []byte) error
 	}
 	return nil
 }
-func (m *Raft_RPC_Command_AppendEntries) UnmarshalVT(dAtA []byte) error {
+func (m *RequestVoteRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3416,61 +2507,10 @@ func (m *Raft_RPC_Command_AppendEntries) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_AppendEntries: wiretype end group for non-group")
+			return fmt.Errorf("proto: RequestVoteRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_AppendEntries: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Command_Vote_Request) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_Vote_Request: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_Vote_Request: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: RequestVoteRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3503,7 +2543,7 @@ func (m *Raft_RPC_Command_Vote_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Header == nil {
-				m.Header = &Raft_RPC_Command_Header{}
+				m.Header = &Header{}
 			}
 			if err := m.Header.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -3608,7 +2648,7 @@ func (m *Raft_RPC_Command_Vote_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Raft_RPC_Command_Vote_Response) UnmarshalVT(dAtA []byte) error {
+func (m *RequestVoteResponse) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3631,10 +2671,10 @@ func (m *Raft_RPC_Command_Vote_Response) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_Vote_Response: wiretype end group for non-group")
+			return fmt.Errorf("proto: RequestVoteResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_Vote_Response: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: RequestVoteResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3667,7 +2707,7 @@ func (m *Raft_RPC_Command_Vote_Response) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Header == nil {
-				m.Header = &Raft_RPC_Command_Header{}
+				m.Header = &Header{}
 			}
 			if err := m.Header.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -3734,7 +2774,7 @@ func (m *Raft_RPC_Command_Vote_Response) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Raft_RPC_Command_Vote) UnmarshalVT(dAtA []byte) error {
+func (m *InstallSnapshotRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3757,61 +2797,10 @@ func (m *Raft_RPC_Command_Vote) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_Vote: wiretype end group for non-group")
+			return fmt.Errorf("proto: InstallSnapshotRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_Vote: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Command_InstallSnapshot_Request) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_InstallSnapshot_Request: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_InstallSnapshot_Request: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InstallSnapshotRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3844,7 +2833,7 @@ func (m *Raft_RPC_Command_InstallSnapshot_Request) UnmarshalVT(dAtA []byte) erro
 				return io.ErrUnexpectedEOF
 			}
 			if m.Header == nil {
-				m.Header = &Raft_RPC_Command_Header{}
+				m.Header = &Header{}
 			}
 			if err := m.Header.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -3864,7 +2853,7 @@ func (m *Raft_RPC_Command_InstallSnapshot_Request) UnmarshalVT(dAtA []byte) erro
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.SnapshotVersion |= Raft_RPC_Command_InstallSnapshot_Request_Version(b&0x7F) << shift
+				m.SnapshotVersion |= InstallSnapshotRequest_Version(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -4032,6 +3021,40 @@ func (m *Raft_RPC_Command_InstallSnapshot_Request) UnmarshalVT(dAtA []byte) erro
 					break
 				}
 			}
+		case 10:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
+			if m.Data == nil {
+				m.Data = []byte{}
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -4054,7 +3077,7 @@ func (m *Raft_RPC_Command_InstallSnapshot_Request) UnmarshalVT(dAtA []byte) erro
 	}
 	return nil
 }
-func (m *Raft_RPC_Command_InstallSnapshot_Response) UnmarshalVT(dAtA []byte) error {
+func (m *InstallSnapshotResponse) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -4077,10 +3100,10 @@ func (m *Raft_RPC_Command_InstallSnapshot_Response) UnmarshalVT(dAtA []byte) err
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_InstallSnapshot_Response: wiretype end group for non-group")
+			return fmt.Errorf("proto: InstallSnapshotResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_InstallSnapshot_Response: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InstallSnapshotResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -4113,7 +3136,7 @@ func (m *Raft_RPC_Command_InstallSnapshot_Response) UnmarshalVT(dAtA []byte) err
 				return io.ErrUnexpectedEOF
 			}
 			if m.Header == nil {
-				m.Header = &Raft_RPC_Command_Header{}
+				m.Header = &Header{}
 			}
 			if err := m.Header.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -4180,7 +3203,7 @@ func (m *Raft_RPC_Command_InstallSnapshot_Response) UnmarshalVT(dAtA []byte) err
 	}
 	return nil
 }
-func (m *Raft_RPC_Command_InstallSnapshot) UnmarshalVT(dAtA []byte) error {
+func (m *TimeoutNowRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -4203,61 +3226,10 @@ func (m *Raft_RPC_Command_InstallSnapshot) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_InstallSnapshot: wiretype end group for non-group")
+			return fmt.Errorf("proto: TimeoutNowRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_InstallSnapshot: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Command_TimeoutNow_Request) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_TimeoutNow_Request: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_TimeoutNow_Request: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: TimeoutNowRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -4290,7 +3262,7 @@ func (m *Raft_RPC_Command_TimeoutNow_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Header == nil {
-				m.Header = &Raft_RPC_Command_Header{}
+				m.Header = &Header{}
 			}
 			if err := m.Header.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -4318,7 +3290,7 @@ func (m *Raft_RPC_Command_TimeoutNow_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Raft_RPC_Command_TimeoutNow_Response) UnmarshalVT(dAtA []byte) error {
+func (m *TimeoutNowResponse) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -4341,10 +3313,10 @@ func (m *Raft_RPC_Command_TimeoutNow_Response) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_TimeoutNow_Response: wiretype end group for non-group")
+			return fmt.Errorf("proto: TimeoutNowResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_TimeoutNow_Response: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: TimeoutNowResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -4377,7 +3349,7 @@ func (m *Raft_RPC_Command_TimeoutNow_Response) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Header == nil {
-				m.Header = &Raft_RPC_Command_Header{}
+				m.Header = &Header{}
 			}
 			if err := m.Header.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -4405,7 +3377,7 @@ func (m *Raft_RPC_Command_TimeoutNow_Response) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Raft_RPC_Command_TimeoutNow) UnmarshalVT(dAtA []byte) error {
+func (m *Header) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -4428,61 +3400,10 @@ func (m *Raft_RPC_Command_TimeoutNow) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_TimeoutNow: wiretype end group for non-group")
+			return fmt.Errorf("proto: Header: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_TimeoutNow: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Command_Header) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command_Header: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command_Header: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Header: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -4499,7 +3420,7 @@ func (m *Raft_RPC_Command_Header) UnmarshalVT(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Version |= Raft_RPC_Command_Header_Version(b&0x7F) << shift
+				m.Version |= Header_Version(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -4572,159 +3493,6 @@ func (m *Raft_RPC_Command_Header) UnmarshalVT(dAtA []byte) error {
 				m.Addr = []byte{}
 			}
 			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC_Command) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC_Command: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC_Command: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft_RPC) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft_RPC: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft_RPC: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Raft) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Raft: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Raft: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

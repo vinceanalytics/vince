@@ -57,7 +57,7 @@ func (x *txn) Set(key, value []byte) error {
 
 func (x *txn) SetTTL(key, value []byte, ttl time.Duration) error {
 	e := must.Must(
-		proto.Marshal(px.Raft_EntryFrom(key, value, ttl)),
+		proto.Marshal(px.RaftEntryFrom(key, value, ttl)),
 	)("failed encoding raft entry")
 	f := x.raft.Apply(e, ApplyTTL)
 	if err := f.Error(); err != nil {

@@ -20,6 +20,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0
 	github.com/gympass/goprompt v0.1.4
+	github.com/hashicorp/go-msgpack v0.5.5
 	github.com/hashicorp/raft v1.5.0
 	github.com/json-iterator/go v1.1.12
 	github.com/oklog/ulid/v2 v2.1.0
@@ -46,7 +47,6 @@ require (
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.1
 	k8s.io/code-generator v0.27.1
-	nhooyr.io/websocket v1.8.7
 	sigs.k8s.io/controller-tools v0.12.0
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3
 )
@@ -108,7 +108,6 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
-	github.com/hashicorp/go-msgpack v0.5.5 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
