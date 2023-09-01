@@ -18,7 +18,10 @@ import (
 
 func Generate(ctx context.Context, key ed25519.PrivateKey,
 	issuer v1.Token_Issuer,
-	account string, expires time.Time) (string, *jwt.RegisteredClaims) {
+	account string, expires time.Time, scopes ...v1.Token_Scope) (string, *jwt.RegisteredClaims) {
+	if len(scopes) == 0 {
+		scopes = []v1.Token_Scope{v1.Token_ALL}
+	}
 	claims := &jwt.RegisteredClaims{
 		Issuer:    issuer.String(),
 		Subject:   account,
@@ -26,12 +29,13 @@ func Generate(ctx context.Context, key ed25519.PrivateKey,
 		ExpiresAt: jwt.NewNumericDate(expires),
 		IssuedAt:  jwt.NewNumericDate(core.Now(ctx)),
 	}
+	for _, scope := range scopes {
+		claims.Audience = append(claims.Audience, scope.String())
+	}
 	token := jwt.NewWithClaims(&jwt.SigningMethodEd25519{}, claims)
-
 	return must.Must(token.SignedString(key))(
 		"failed signing jwt token",
 	), claims
-
 }
 
 func Valid(db db.Provider, token string) (ok bool) {

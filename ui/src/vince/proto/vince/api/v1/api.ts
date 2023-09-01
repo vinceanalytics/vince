@@ -41,6 +41,25 @@ export enum Token_Issuer {
     CLIENT = 1
 }
 /**
+ * Defines the resources that this token has access to
+ *
+ * @generated from protobuf enum v1.Token.Scope
+ */
+export enum Token_Scope {
+    /**
+     * Token has access to all vince resources
+     *
+     * @generated from protobuf enum value: ALL = 0;
+     */
+    ALL = 0,
+    /**
+     * Token  has access to only cluster resources.
+     *
+     * @generated from protobuf enum value: CLUSTER = 2;
+     */
+    CLUSTER = 2
+}
+/**
  * @generated from protobuf message v1.CreateTokenRequest
  */
 export interface CreateTokenRequest {

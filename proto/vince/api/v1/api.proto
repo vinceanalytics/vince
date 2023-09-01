@@ -68,6 +68,13 @@ message Token {
     SERVER = 0;
     CLIENT = 1;
   }
+  // Defines the resources that this token has access to
+  enum Scope {
+    // Token has access to all vince resources
+    ALL = 0;
+    // Token  has access to only cluster resources.
+    CLUSTER = 2;
+  }
 }
 
 message CreateTokenRequest {
