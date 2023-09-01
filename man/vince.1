@@ -24,9 +24,9 @@ vince [GLOBAL OPTIONS] command [COMMAND OPTIONS] [ARGUMENTS...]
 
 
 .SH COMMANDS
-.SH login
+.SH init
 .PP
-Authenticate into vince instance
+Initializes a vince project
 
 .PP
 \fB--password\fP="": password of the root user (default: vince)
@@ -45,6 +45,9 @@ Serves web ui console and expose /api/events that collects web analytics
 \fB--blocks-path\fP="": Path to store block files (default: blocks)
 
 .PP
+\fB--db-path\fP="": path to main database (default: db)
+
+.PP
 \fB--enable-profile\fP: Expose /debug/pprof endpoint
 
 .PP
@@ -60,12 +63,6 @@ Serves web ui console and expose /api/events that collects web analytics
 \fB--log-level\fP="": log level, values are (trace,debug,info,warn,error,fatal,panic) (default: debug)
 
 .PP
-\fB--meta-path\fP="": path to meta data directory (default: meta)
-
-.PP
-\fB--raft-listen-address\fP="": network address for cluster communication (default: :6800)
-
-.PP
 \fB--server-id\fP="": unique id of this server in a cluster
 
 .PP
@@ -76,6 +73,54 @@ Serves web ui console and expose /api/events that collects web analytics
 
 .PP
 \fB--tls-key-file\fP="": path to tls key
+
+.SH login
+.PP
+Authenticate into vince instance
+
+.PP
+\fB--password\fP="": password of the root user (default: vince)
+
+.PP
+\fB--username\fP="": Name of the root user (default: root)
+
+.PP
+\fB-i, --no-i\fP: Shows interactive prompt for username and password
+
+.SH sites
+.PP
+Manage sites
+
+.SS create
+.PP
+Creates a new site
+
+.SS list
+.PP
+Lists  sites
+
+.SS delete
+.PP
+Deletes a  site
+
+.SH query
+.PP
+connect to vince and execute sql query
+
+.SH cluster
+.PP
+Manage vince clusters
+
+.SS new
+.PP
+Initialize a new empty cluster
+
+.SS add
+.PP
+Adds authenticated vince instance to a cluster
+
+.PP
+\fB--bootstrap\fP: use this node to bootstrap the cluster
 
 .SH k8s
 .PP
@@ -101,39 +146,6 @@ kubernetes controller for vince - The Cloud Native Web Analytics Platform.
 
 .PP
 \fB--watch-namespaces\fP="": namespaces to watch for Vince and Site custom resources (default: [])
-
-.SH init
-.PP
-Initializes a vince project
-
-.PP
-\fB--password\fP="": password of the root user (default: vince)
-
-.PP
-\fB--username\fP="": Name of the root user (default: root)
-
-.PP
-\fB-i, --no-i\fP: Shows interactive prompt for username and password
-
-.SH query
-.PP
-connect to vince and execute sql query
-
-.SH sites
-.PP
-Manage sites
-
-.SS create
-.PP
-Creates a new site
-
-.SS list
-.PP
-Lists  sites
-
-.SS delete
-.PP
-Deletes a  site
 
 .SH bench
 .PP
