@@ -1,15 +1,14 @@
 package ha
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/hashicorp/go-msgpack/codec"
 	"github.com/hashicorp/raft"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/must"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var _ raft.LogStore = (*DB)(nil)
@@ -61,20 +60,8 @@ func (db *DB) GetLog(index uint64, log *raft.Log) error {
 			return err
 		}
 		return it.Value(func(val []byte) error {
-			var v v1.Raft_Log
-			err := proto.Unmarshal(val, &v)
-			if err != nil {
-				return err
-			}
-			*log = raft.Log{
-				Index:      v.Index,
-				Term:       v.Term,
-				Type:       raft.LogType(v.Type),
-				Data:       v.Data,
-				Extensions: v.Extensions,
-				AppendedAt: v.AppendedAt.AsTime(),
-			}
-			return nil
+			dec := codec.NewDecoder(bytes.NewReader(val), &codec.BincHandle{})
+			return dec.Decode(log)
 		})
 	})
 }
@@ -139,12 +126,8 @@ func logKey(id uint64) []byte {
 }
 
 func serialize(log *raft.Log) []byte {
-	return must.Must(proto.Marshal(&v1.Raft_Log{
-		Index:      log.Index,
-		Term:       log.Term,
-		Type:       v1.Raft_Log_Type(log.Type),
-		Data:       log.Data,
-		Extensions: log.Extensions,
-		AppendedAt: timestamppb.New(log.AppendedAt),
-	}))("failed serializing raft log")
+	var b bytes.Buffer
+	enc := codec.NewEncoder(&b, &codec.MsgpackHandle{})
+	must.One(enc.Encode(log))("failed serializing log")
+	return b.Bytes()
 }
