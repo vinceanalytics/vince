@@ -297,6 +297,53 @@ func (x *Client) GetClusters() map[string]*Cluster_Config {
 	return nil
 }
 
+type Build struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+}
+
+func (x *Build) Reset() {
+	*x = Build{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Build) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Build) ProtoMessage() {}
+
+func (x *Build) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Build.ProtoReflect.Descriptor instead.
+func (*Build) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Build) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
 type Config_Notifier struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -313,7 +360,7 @@ type Config_Notifier struct {
 func (x *Config_Notifier) Reset() {
 	*x = Config_Notifier{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[3]
+		mi := &file_vince_config_v1_config_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -326,7 +373,7 @@ func (x *Config_Notifier) String() string {
 func (*Config_Notifier) ProtoMessage() {}
 
 func (x *Config_Notifier) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[3]
+	mi := &file_vince_config_v1_config_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -409,7 +456,7 @@ type Config_Email struct {
 func (x *Config_Email) Reset() {
 	*x = Config_Email{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[4]
+		mi := &file_vince_config_v1_config_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -422,7 +469,7 @@ func (x *Config_Email) String() string {
 func (*Config_Email) ProtoMessage() {}
 
 func (x *Config_Email) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[4]
+	mi := &file_vince_config_v1_config_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -541,7 +588,7 @@ type Config_Webhook struct {
 func (x *Config_Webhook) Reset() {
 	*x = Config_Webhook{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[5]
+		mi := &file_vince_config_v1_config_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -554,7 +601,7 @@ func (x *Config_Webhook) String() string {
 func (*Config_Webhook) ProtoMessage() {}
 
 func (x *Config_Webhook) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[5]
+	mi := &file_vince_config_v1_config_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -598,7 +645,7 @@ type Config_HTTP struct {
 func (x *Config_HTTP) Reset() {
 	*x = Config_HTTP{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[6]
+		mi := &file_vince_config_v1_config_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -611,7 +658,7 @@ func (x *Config_HTTP) String() string {
 func (*Config_HTTP) ProtoMessage() {}
 
 func (x *Config_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[6]
+	mi := &file_vince_config_v1_config_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -667,7 +714,7 @@ type Config_HTTP_BasicAuth struct {
 func (x *Config_HTTP_BasicAuth) Reset() {
 	*x = Config_HTTP_BasicAuth{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[8]
+		mi := &file_vince_config_v1_config_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -680,7 +727,7 @@ func (x *Config_HTTP_BasicAuth) String() string {
 func (*Config_HTTP_BasicAuth) ProtoMessage() {}
 
 func (x *Config_HTTP_BasicAuth) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[8]
+	mi := &file_vince_config_v1_config_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -722,7 +769,7 @@ type Config_HTTP_Authorization struct {
 func (x *Config_HTTP_Authorization) Reset() {
 	*x = Config_HTTP_Authorization{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[9]
+		mi := &file_vince_config_v1_config_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -735,7 +782,7 @@ func (x *Config_HTTP_Authorization) String() string {
 func (*Config_HTTP_Authorization) ProtoMessage() {}
 
 func (x *Config_HTTP_Authorization) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[9]
+	mi := &file_vince_config_v1_config_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -781,7 +828,7 @@ type Config_HTTP_OAuth2 struct {
 func (x *Config_HTTP_OAuth2) Reset() {
 	*x = Config_HTTP_OAuth2{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[10]
+		mi := &file_vince_config_v1_config_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -794,7 +841,7 @@ func (x *Config_HTTP_OAuth2) String() string {
 func (*Config_HTTP_OAuth2) ProtoMessage() {}
 
 func (x *Config_HTTP_OAuth2) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[10]
+	mi := &file_vince_config_v1_config_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -865,7 +912,7 @@ type Config_HTTP_TLSConfig struct {
 func (x *Config_HTTP_TLSConfig) Reset() {
 	*x = Config_HTTP_TLSConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[11]
+		mi := &file_vince_config_v1_config_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -878,7 +925,7 @@ func (x *Config_HTTP_TLSConfig) String() string {
 func (*Config_HTTP_TLSConfig) ProtoMessage() {}
 
 func (x *Config_HTTP_TLSConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[11]
+	mi := &file_vince_config_v1_config_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -927,7 +974,7 @@ type Cluster_Config struct {
 func (x *Cluster_Config) Reset() {
 	*x = Cluster_Config{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[13]
+		mi := &file_vince_config_v1_config_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -940,7 +987,7 @@ func (x *Cluster_Config) String() string {
 func (*Cluster_Config) ProtoMessage() {}
 
 func (x *Cluster_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[13]
+	mi := &file_vince_config_v1_config_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -984,7 +1031,7 @@ type Cluster_Config_Node struct {
 func (x *Cluster_Config_Node) Reset() {
 	*x = Cluster_Config_Node{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[15]
+		mi := &file_vince_config_v1_config_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -997,7 +1044,7 @@ func (x *Cluster_Config_Node) String() string {
 func (*Cluster_Config_Node) ProtoMessage() {}
 
 func (x *Cluster_Config_Node) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[15]
+	mi := &file_vince_config_v1_config_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1045,7 +1092,7 @@ type Client_Instance struct {
 func (x *Client_Instance) Reset() {
 	*x = Client_Instance{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[19]
+		mi := &file_vince_config_v1_config_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1058,7 +1105,7 @@ func (x *Client_Instance) String() string {
 func (*Client_Instance) ProtoMessage() {}
 
 func (x *Client_Instance) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[19]
+	mi := &file_vince_config_v1_config_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1093,7 +1140,7 @@ type Client_Active struct {
 func (x *Client_Active) Reset() {
 	*x = Client_Active{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[20]
+		mi := &file_vince_config_v1_config_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1106,7 +1153,7 @@ func (x *Client_Active) String() string {
 func (*Client_Active) ProtoMessage() {}
 
 func (x *Client_Active) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[20]
+	mi := &file_vince_config_v1_config_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1149,7 +1196,7 @@ type Client_Auth struct {
 func (x *Client_Auth) Reset() {
 	*x = Client_Auth{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[21]
+		mi := &file_vince_config_v1_config_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1162,7 +1209,7 @@ func (x *Client_Auth) String() string {
 func (*Client_Auth) ProtoMessage() {}
 
 func (x *Client_Auth) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[21]
+	mi := &file_vince_config_v1_config_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1401,15 +1448,18 @@ var file_vince_config_v1_config_proto_rawDesc = []byte{
 	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65,
 	0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x12, 0x1b,
 	0x0a, 0x09, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x08, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x49, 0x64, 0x42, 0x7b, 0x0a, 0x06, 0x63,
-	0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x0b, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x50, 0x72, 0x6f,
-	0x74, 0x6f, 0x50, 0x01, 0x5a, 0x3c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f,
-	0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f,
-	0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2f,
-	0x76, 0x31, 0xa2, 0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02,
-	0x56, 0x31, 0xe2, 0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
-	0x61, 0x74, 0x61, 0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x09, 0x52, 0x08, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x49, 0x64, 0x22, 0x21, 0x0a, 0x05, 0x42,
+	0x75, 0x69, 0x6c, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x42, 0x7b,
+	0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x0b, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67,
+	0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x3c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69,
+	0x63, 0x73, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x63, 0x6f, 0x6e, 0x66,
+	0x69, 0x67, 0x2f, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31,
+	0xca, 0x02, 0x02, 0x56, 0x31, 0xe2, 0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65,
+	0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1424,58 +1474,59 @@ func file_vince_config_v1_config_proto_rawDescGZIP() []byte {
 	return file_vince_config_v1_config_proto_rawDescData
 }
 
-var file_vince_config_v1_config_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_vince_config_v1_config_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_vince_config_v1_config_proto_goTypes = []interface{}{
 	(*Config)(nil),                    // 0: v1.Config
 	(*Cluster)(nil),                   // 1: v1.Cluster
 	(*Client)(nil),                    // 2: v1.Client
-	(*Config_Notifier)(nil),           // 3: v1.Config.Notifier
-	(*Config_Email)(nil),              // 4: v1.Config.Email
-	(*Config_Webhook)(nil),            // 5: v1.Config.Webhook
-	(*Config_HTTP)(nil),               // 6: v1.Config.HTTP
-	nil,                               // 7: v1.Config.Email.HeadersEntry
-	(*Config_HTTP_BasicAuth)(nil),     // 8: v1.Config.HTTP.BasicAuth
-	(*Config_HTTP_Authorization)(nil), // 9: v1.Config.HTTP.Authorization
-	(*Config_HTTP_OAuth2)(nil),        // 10: v1.Config.HTTP.OAuth2
-	(*Config_HTTP_TLSConfig)(nil),     // 11: v1.Config.HTTP.TLSConfig
-	nil,                               // 12: v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	(*Cluster_Config)(nil),            // 13: v1.Cluster.Config
-	nil,                               // 14: v1.Cluster.Config.NodesEntry
-	(*Cluster_Config_Node)(nil),       // 15: v1.Cluster.Config.Node
-	nil,                               // 16: v1.Client.InstanceEntry
-	nil,                               // 17: v1.Client.ServerIdEntry
-	nil,                               // 18: v1.Client.ClustersEntry
-	(*Client_Instance)(nil),           // 19: v1.Client.Instance
-	(*Client_Active)(nil),             // 20: v1.Client.Active
-	(*Client_Auth)(nil),               // 21: v1.Client.Auth
-	nil,                               // 22: v1.Client.Instance.AccountsEntry
-	(*durationpb.Duration)(nil),       // 23: google.protobuf.Duration
+	(*Build)(nil),                     // 3: v1.Build
+	(*Config_Notifier)(nil),           // 4: v1.Config.Notifier
+	(*Config_Email)(nil),              // 5: v1.Config.Email
+	(*Config_Webhook)(nil),            // 6: v1.Config.Webhook
+	(*Config_HTTP)(nil),               // 7: v1.Config.HTTP
+	nil,                               // 8: v1.Config.Email.HeadersEntry
+	(*Config_HTTP_BasicAuth)(nil),     // 9: v1.Config.HTTP.BasicAuth
+	(*Config_HTTP_Authorization)(nil), // 10: v1.Config.HTTP.Authorization
+	(*Config_HTTP_OAuth2)(nil),        // 11: v1.Config.HTTP.OAuth2
+	(*Config_HTTP_TLSConfig)(nil),     // 12: v1.Config.HTTP.TLSConfig
+	nil,                               // 13: v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	(*Cluster_Config)(nil),            // 14: v1.Cluster.Config
+	nil,                               // 15: v1.Cluster.Config.NodesEntry
+	(*Cluster_Config_Node)(nil),       // 16: v1.Cluster.Config.Node
+	nil,                               // 17: v1.Client.InstanceEntry
+	nil,                               // 18: v1.Client.ServerIdEntry
+	nil,                               // 19: v1.Client.ClustersEntry
+	(*Client_Instance)(nil),           // 20: v1.Client.Instance
+	(*Client_Active)(nil),             // 21: v1.Client.Active
+	(*Client_Auth)(nil),               // 22: v1.Client.Auth
+	nil,                               // 23: v1.Client.Instance.AccountsEntry
+	(*durationpb.Duration)(nil),       // 24: google.protobuf.Duration
 }
 var file_vince_config_v1_config_proto_depIdxs = []int32{
-	23, // 0: v1.Config.sync_interval:type_name -> google.protobuf.Duration
-	3,  // 1: v1.Config.notifiers:type_name -> v1.Config.Notifier
-	16, // 2: v1.Client.instance:type_name -> v1.Client.InstanceEntry
-	17, // 3: v1.Client.server_id:type_name -> v1.Client.ServerIdEntry
-	20, // 4: v1.Client.active:type_name -> v1.Client.Active
-	18, // 5: v1.Client.clusters:type_name -> v1.Client.ClustersEntry
-	4,  // 6: v1.Config.Notifier.email:type_name -> v1.Config.Email
-	5,  // 7: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
-	7,  // 8: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
-	11, // 9: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	6,  // 10: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
-	8,  // 11: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
-	9,  // 12: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
-	10, // 13: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
-	11, // 14: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	12, // 15: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	11, // 16: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	14, // 17: v1.Cluster.Config.nodes:type_name -> v1.Cluster.Config.NodesEntry
-	15, // 18: v1.Cluster.Config.NodesEntry.value:type_name -> v1.Cluster.Config.Node
-	21, // 19: v1.Cluster.Config.Node.account:type_name -> v1.Client.Auth
-	19, // 20: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
-	13, // 21: v1.Client.ClustersEntry.value:type_name -> v1.Cluster.Config
-	22, // 22: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
-	21, // 23: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
+	24, // 0: v1.Config.sync_interval:type_name -> google.protobuf.Duration
+	4,  // 1: v1.Config.notifiers:type_name -> v1.Config.Notifier
+	17, // 2: v1.Client.instance:type_name -> v1.Client.InstanceEntry
+	18, // 3: v1.Client.server_id:type_name -> v1.Client.ServerIdEntry
+	21, // 4: v1.Client.active:type_name -> v1.Client.Active
+	19, // 5: v1.Client.clusters:type_name -> v1.Client.ClustersEntry
+	5,  // 6: v1.Config.Notifier.email:type_name -> v1.Config.Email
+	6,  // 7: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
+	8,  // 8: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
+	12, // 9: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	7,  // 10: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
+	9,  // 11: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
+	10, // 12: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
+	11, // 13: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
+	12, // 14: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	13, // 15: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	12, // 16: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	15, // 17: v1.Cluster.Config.nodes:type_name -> v1.Cluster.Config.NodesEntry
+	16, // 18: v1.Cluster.Config.NodesEntry.value:type_name -> v1.Cluster.Config.Node
+	22, // 19: v1.Cluster.Config.Node.account:type_name -> v1.Client.Auth
+	20, // 20: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
+	14, // 21: v1.Client.ClustersEntry.value:type_name -> v1.Cluster.Config
+	23, // 22: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
+	22, // 23: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
 	24, // [24:24] is the sub-list for method output_type
 	24, // [24:24] is the sub-list for method input_type
 	24, // [24:24] is the sub-list for extension type_name
@@ -1526,7 +1577,7 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 		file_vince_config_v1_config_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Config_Notifier); i {
+			switch v := v.(*Build); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1538,7 +1589,7 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 		file_vince_config_v1_config_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Config_Email); i {
+			switch v := v.(*Config_Notifier); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1550,7 +1601,7 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 		file_vince_config_v1_config_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Config_Webhook); i {
+			switch v := v.(*Config_Email); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1562,6 +1613,18 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 		file_vince_config_v1_config_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Config_Webhook); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP); i {
 			case 0:
 				return &v.state
@@ -1573,7 +1636,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_BasicAuth); i {
 			case 0:
 				return &v.state
@@ -1585,7 +1648,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_Authorization); i {
 			case 0:
 				return &v.state
@@ -1597,7 +1660,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_OAuth2); i {
 			case 0:
 				return &v.state
@@ -1609,7 +1672,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_TLSConfig); i {
 			case 0:
 				return &v.state
@@ -1621,7 +1684,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Config); i {
 			case 0:
 				return &v.state
@@ -1633,7 +1696,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Config_Node); i {
 			case 0:
 				return &v.state
@@ -1645,7 +1708,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Instance); i {
 			case 0:
 				return &v.state
@@ -1657,7 +1720,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Active); i {
 			case 0:
 				return &v.state
@@ -1669,7 +1732,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Auth); i {
 			case 0:
 				return &v.state
@@ -1682,7 +1745,7 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 	}
-	file_vince_config_v1_config_proto_msgTypes[3].OneofWrappers = []interface{}{
+	file_vince_config_v1_config_proto_msgTypes[4].OneofWrappers = []interface{}{
 		(*Config_Notifier_Email)(nil),
 		(*Config_Notifier_Webhook)(nil),
 	}
@@ -1692,7 +1755,7 @@ func file_vince_config_v1_config_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_vince_config_v1_config_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   23,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

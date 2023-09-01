@@ -1,8 +1,0 @@
-syntax = "proto3";
-package v1;
-
-message Status {}
-
-message Build { string version = 1; }
-
-message Notice {}

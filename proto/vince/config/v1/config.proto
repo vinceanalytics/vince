@@ -142,3 +142,5 @@ message Client {
     string server_id = 3;
   }
 }
+
+message Build { string version = 1; }

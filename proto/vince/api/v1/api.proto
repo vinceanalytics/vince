@@ -105,3 +105,7 @@ message ApplyClusterResponse { string ok = 1; }
 
 message GetClusterRequest {}
 message GetClusterResponse { Cluster.Config config = 1; }
+
+message Status {}
+
+message Notice {}

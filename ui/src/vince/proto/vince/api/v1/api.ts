@@ -345,6 +345,16 @@ export interface GetClusterResponse {
      */
     config?: Cluster_Config;
 }
+/**
+ * @generated from protobuf message v1.Status
+ */
+export interface Status {
+}
+/**
+ * @generated from protobuf message v1.Notice
+ */
+export interface Notice {
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class Token$Type extends MessageType<Token> {
     constructor() {
@@ -1542,6 +1552,58 @@ class GetClusterResponse$Type extends MessageType<GetClusterResponse> {
  * @generated MessageType for protobuf message v1.GetClusterResponse
  */
 export const GetClusterResponse = new GetClusterResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Status$Type extends MessageType<Status> {
+    constructor() {
+        super("v1.Status", []);
+    }
+    create(value?: PartialMessage<Status>): Status {
+        const message = {};
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Status>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Status): Status {
+        return target ?? this.create();
+    }
+    internalBinaryWrite(message: Status, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.Status
+ */
+export const Status = new Status$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Notice$Type extends MessageType<Notice> {
+    constructor() {
+        super("v1.Notice", []);
+    }
+    create(value?: PartialMessage<Notice>): Notice {
+        const message = {};
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Notice>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Notice): Notice {
+        return target ?? this.create();
+    }
+    internalBinaryWrite(message: Notice, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.Notice
+ */
+export const Notice = new Notice$Type();
 /**
  * @generated ServiceType for protobuf service v1.Vince
  */

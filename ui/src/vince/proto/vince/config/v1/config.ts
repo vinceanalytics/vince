@@ -401,6 +401,15 @@ export interface Client_Auth {
      */
     serverId: string;
 }
+/**
+ * @generated from protobuf message v1.Build
+ */
+export interface Build {
+    /**
+     * @generated from protobuf field: string version = 1;
+     */
+    version: string;
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class Config$Type extends MessageType<Config> {
     constructor() {
@@ -1609,3 +1618,50 @@ class Client_Auth$Type extends MessageType<Client_Auth> {
  * @generated MessageType for protobuf message v1.Client.Auth
  */
 export const Client_Auth = new Client_Auth$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Build$Type extends MessageType<Build> {
+    constructor() {
+        super("v1.Build", [
+            { no: 1, name: "version", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<Build>): Build {
+        const message = { version: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Build>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Build): Build {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string version */ 1:
+                    message.version = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: Build, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string version = 1; */
+        if (message.version !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.version);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.Build
+ */
+export const Build = new Build$Type();
