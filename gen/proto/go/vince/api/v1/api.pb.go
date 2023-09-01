@@ -7,8 +7,8 @@
 package v1
 
 import (
-	_ "github.com/vinceanalytics/vince/gen/proto/go/google/api"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
