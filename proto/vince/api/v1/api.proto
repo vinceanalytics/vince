@@ -53,6 +53,12 @@ service Vince {
       get : "/v1/version"
     };
   };
+
+  rpc SendEvent(Event) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/event"
+    };
+  };
 }
 
 message Token {
@@ -148,3 +154,18 @@ message GetClusterResponse { Cluster.Config config = 1; }
 message Status {}
 
 message Notice {}
+
+message Event {
+  /// EventName
+  string n = 1;
+  string url = 2;
+  // Domain
+  string d = 3;
+  // Screen width
+  string w = 4;
+  // Hash mode
+  bool h = 5;
+  string ip = 6;
+  // user agent
+  string ua = 7;
+}

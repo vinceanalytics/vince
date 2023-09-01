@@ -357,6 +357,49 @@ export interface Status {
  */
 export interface Notice {
 }
+/**
+ * @generated from protobuf message v1.Event
+ */
+export interface Event {
+    /**
+     * / EventName
+     *
+     * @generated from protobuf field: string n = 1;
+     */
+    n: string;
+    /**
+     * @generated from protobuf field: string url = 2;
+     */
+    url: string;
+    /**
+     * Domain
+     *
+     * @generated from protobuf field: string d = 3;
+     */
+    d: string;
+    /**
+     * Screen width
+     *
+     * @generated from protobuf field: string w = 4;
+     */
+    w: string;
+    /**
+     * Hash mode
+     *
+     * @generated from protobuf field: bool h = 5;
+     */
+    h: boolean;
+    /**
+     * @generated from protobuf field: string ip = 6;
+     */
+    ip: string;
+    /**
+     * user agent
+     *
+     * @generated from protobuf field: string ua = 7;
+     */
+    ua: string;
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class Token$Type extends MessageType<Token> {
     constructor() {
@@ -1606,6 +1649,95 @@ class Notice$Type extends MessageType<Notice> {
  * @generated MessageType for protobuf message v1.Notice
  */
 export const Notice = new Notice$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Event$Type extends MessageType<Event> {
+    constructor() {
+        super("v1.Event", [
+            { no: 1, name: "n", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "url", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "d", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "w", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 5, name: "h", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 6, name: "ip", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 7, name: "ua", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<Event>): Event {
+        const message = { n: "", url: "", d: "", w: "", h: false, ip: "", ua: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Event>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Event): Event {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string n */ 1:
+                    message.n = reader.string();
+                    break;
+                case /* string url */ 2:
+                    message.url = reader.string();
+                    break;
+                case /* string d */ 3:
+                    message.d = reader.string();
+                    break;
+                case /* string w */ 4:
+                    message.w = reader.string();
+                    break;
+                case /* bool h */ 5:
+                    message.h = reader.bool();
+                    break;
+                case /* string ip */ 6:
+                    message.ip = reader.string();
+                    break;
+                case /* string ua */ 7:
+                    message.ua = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: Event, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string n = 1; */
+        if (message.n !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.n);
+        /* string url = 2; */
+        if (message.url !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.url);
+        /* string d = 3; */
+        if (message.d !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.d);
+        /* string w = 4; */
+        if (message.w !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.w);
+        /* bool h = 5; */
+        if (message.h !== false)
+            writer.tag(5, WireType.Varint).bool(message.h);
+        /* string ip = 6; */
+        if (message.ip !== "")
+            writer.tag(6, WireType.LengthDelimited).string(message.ip);
+        /* string ua = 7; */
+        if (message.ua !== "")
+            writer.tag(7, WireType.LengthDelimited).string(message.ua);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.Event
+ */
+export const Event = new Event$Type();
 /**
  * @generated ServiceType for protobuf service v1.Vince
  */
@@ -1618,5 +1750,6 @@ export const Vince = new ServiceType("v1.Vince", [
     { name: "Query", options: { "google.api.http": { post: "/v1/query" } }, I: QueryRequest, O: QueryResponse },
     { name: "ApplyCluster", options: { "google.api.http": { post: "/v1/cluster/apply" } }, I: ApplyClusterRequest, O: ApplyClusterResponse },
     { name: "GetCluster", options: { "google.api.http": { get: "/v1/cluster" } }, I: GetClusterRequest, O: GetClusterResponse },
-    { name: "Version", options: { "google.api.http": { get: "/v1/version" } }, I: Empty, O: Build }
+    { name: "Version", options: { "google.api.http": { get: "/v1/version" } }, I: Empty, O: Build },
+    { name: "SendEvent", options: { "google.api.http": { post: "/api/event" } }, I: Event, O: Empty }
 ]);

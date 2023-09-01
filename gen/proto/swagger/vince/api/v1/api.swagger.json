@@ -16,6 +16,78 @@
     "application/json"
   ],
   "paths": {
+    "/api/event": {
+      "post": {
+        "operationId": "Vince_SendEvent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "n",
+            "description": "/ EventName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "d",
+            "description": "Domain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "w",
+            "description": "Screen width",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "h",
+            "description": "Hash mode",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "ip",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ua",
+            "description": "user agent",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Vince"
+        ]
+      }
+    },
     "/v1/cluster": {
       "get": {
         "operationId": "Vince_GetCluster",
