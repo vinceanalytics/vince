@@ -22,7 +22,7 @@ import (
 type Stream interface {
 	Update(*v1.Raft_Config)
 	Dial(context.Context,
-		raft.ServerID, raft.ServerAddress) (io.ReadWriteCloser, error)
+		raft.ServerID, raft.ServerAddress) (Conn, error)
 }
 
 type Transit struct {
@@ -254,9 +254,9 @@ func (t *Transit) Close() error {
 }
 
 func (t *Transit) peer(id raft.ServerID,
-	target raft.ServerAddress) (io.ReadWriteCloser, error) {
+	target raft.ServerAddress) (Conn, error) {
 	if conn, ok := t.peers.Load(id); ok {
-		return conn.(io.ReadWriteCloser), nil
+		return conn.(Conn), nil
 	}
 	ctx, cancel := t.context()
 	defer cancel()
@@ -268,17 +268,12 @@ func (t *Transit) peer(id raft.ServerID,
 	return conn, nil
 }
 
-func read(ctx context.Context, r io.Reader, m proto.Message) error {
-	b := pool.Get().(*bytes.Buffer)
-	defer func() {
-		b.Reset()
-		pool.Put(b)
-	}()
-	_, err := b.ReadFrom(r)
+func read(ctx context.Context, r Conn, m proto.Message) error {
+	b, err := r.Read()
 	if err != nil {
 		return err
 	}
-	err = proto.Unmarshal(b.Bytes(), m)
+	err = proto.Unmarshal(b, m)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal protobuf: %w", err)
 	}
@@ -314,27 +309,23 @@ func newWrap(ctx context.Context, c *websocket.Conn) *wrapSocket {
 	}
 }
 
-var _ io.ReadWriteCloser = (*wrapSocket)(nil)
+type Conn interface {
+	Read() ([]byte, error)
+	io.WriteCloser
+}
 
-func (w *wrapSocket) Read(p []byte) (n int, err error) {
-	if w.reset {
-		typ, r, err := w.conn.Reader(w.ctx)
-		if err != nil {
-			return 0, err
-		}
-		if typ != websocket.MessageBinary {
-			w.conn.Close(websocket.StatusUnsupportedData, "expected binary message")
-			return 0, fmt.Errorf("expected binary message for protobuf but got: %v", typ)
-		}
-		w.r.Reset(r)
-	}
-	n, err = w.r.Read(p)
+var _ Conn = (*wrapSocket)(nil)
+
+func (w *wrapSocket) Read() ([]byte, error) {
+	typ, r, err := w.conn.Reader(w.ctx)
 	if err != nil {
-		if errors.Is(err, io.EOF) {
-			w.reset = true
-		}
+		return nil, err
 	}
-	return
+	if typ != websocket.MessageBinary {
+		w.conn.Close(websocket.StatusUnsupportedData, "expected binary message")
+		return nil, fmt.Errorf("expected binary message for protobuf but got: %v", typ)
+	}
+	return io.ReadAll(r)
 }
 
 func (w *wrapSocket) Write(p []byte) (int, error) {
@@ -366,7 +357,7 @@ func (ws *wsStream) Update(x *v1.Raft_Config) {
 
 func (ws *wsStream) Dial(
 	ctx context.Context,
-	id raft.ServerID, addr raft.ServerAddress) (io.ReadWriteCloser, error) {
+	id raft.ServerID, addr raft.ServerAddress) (Conn, error) {
 	x, ok := ws.peers.Load(string(id))
 	if !ok {
 		return nil, fmt.Errorf("peer %s:%s can not be reached", id, addr)
