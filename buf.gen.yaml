@@ -5,6 +5,7 @@ managed:
     default: github.com/vinceanalytics/vince/gen/proto/go
     except:
       - buf.build/googleapis/googleapis
+      - buf.build/bufbuild/protovalidate
 
 plugins:
   # renovate: datasource=github-releases depName=protocolbuffers/protobuf-go

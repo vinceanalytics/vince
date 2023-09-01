@@ -6,6 +6,7 @@ import "vince/config/v1/config.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
 
 service Vince {
   rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse) {
@@ -90,7 +91,11 @@ message CreateTokenRequest {
 message CreateTokenResponse { Client.Auth auth = 1; }
 
 message Site { string domain = 1; }
-message CreateSiteRequest { string domain = 1; }
+message CreateSiteRequest {
+  string domain = 1
+      [ (buf.validate.field).string.pattern =
+            "^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$" ];
+}
 message CreateSiteResponse { Site site = 1; }
 message GetSiteRequest {}
 message GetSiteResponse { Site site = 1; }

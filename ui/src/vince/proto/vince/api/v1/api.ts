@@ -646,7 +646,7 @@ export const Site = new Site$Type();
 class CreateSiteRequest$Type extends MessageType<CreateSiteRequest> {
     constructor() {
         super("v1.CreateSiteRequest", [
-            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { string: { pattern: "^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$" } } } }
         ]);
     }
     create(value?: PartialMessage<CreateSiteRequest>): CreateSiteRequest {
