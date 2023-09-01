@@ -1,0 +1,146 @@
+syntax = "proto3";
+package v1;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+message Raft {
+  message Entry {
+    bytes key = 1;
+    bytes value = 2;
+    google.protobuf.Duration expires = 3;
+  }
+
+  message Log {
+    uint64 index = 1;
+    uint64 term = 2;
+    Type type = 3;
+    bytes data = 4;
+    bytes extensions = 5;
+    google.protobuf.Timestamp appended_at = 6;
+
+    enum Type {
+      Command = 0;
+      Noop = 1;
+      AddPeerDeprecated = 2;
+      RemovePeerDeprecated = 3;
+      Barrier = 4;
+      Configuration = 5;
+    }
+  }
+
+  message Config {
+    repeated Server servers = 1;
+
+    message Server {
+      Suffrage suffrage = 1;
+      string id = 2;
+      string address = 3;
+      string token = 4;
+
+      enum Suffrage {
+        Voter = 0;
+        Nonvoter = 1;
+        Staging = 2;
+      }
+    }
+  }
+
+  message RPC {
+
+    message Call {
+      message Request {
+        oneof kind {
+          Command.AppendEntries.Request append_entries = 1;
+          Command.Vote.Request vote = 2;
+          Command.InstallSnapshot.Request install_snapshot = 3;
+          Command.TimeoutNow.Request timeout_now = 4;
+        }
+      }
+      message Response {
+        oneof kind {
+          Command.AppendEntries.Response append_entries = 1;
+          Command.Vote.Response vote = 2;
+          Command.InstallSnapshot.Response install_snapshot = 3;
+          Command.TimeoutNow.Response timeout_now = 4;
+        }
+        string error = 5;
+      }
+    }
+
+    message Command {
+      message AppendEntries {
+        message Request {
+          Header header = 1;
+          uint64 term = 2;
+          uint64 prev_log_entry = 4;
+          uint64 prev_log_term = 5;
+          repeated Log entries = 6;
+          uint64 leader_commit_index = 7;
+        }
+        message Response {
+          Header header = 1;
+          uint64 term = 2;
+          uint64 last_log = 3;
+          bool success = 4;
+          bool no_retry_backoff = 5;
+        }
+      }
+
+      message Vote {
+        message Request {
+          Header header = 1;
+          uint64 term = 2;
+          uint64 last_log_index = 3;
+          uint64 last_log_term = 4;
+          bool leadership_transfer = 5;
+        }
+        message Response {
+          Header header = 1;
+          uint64 term = 2;
+          bool granted = 3;
+        }
+      }
+
+      message InstallSnapshot {
+        message Request {
+          Header header = 1;
+          Version snapshot_version = 2;
+          uint64 term = 3;
+          bytes leader = 4;
+          uint64 last_log_index = 5;
+          uint64 last_log_term = 6;
+          bytes configuration = 7;
+          uint64 configuration_index = 8;
+          int64 size = 9;
+
+          enum Version {
+            Min = 0;
+            Max = 1;
+          }
+        }
+        message Response {
+          Header header = 1;
+          uint64 term = 2;
+          bool success = 3;
+        }
+      }
+
+      message TimeoutNow {
+        message Request { Header header = 1; }
+        message Response { Header header = 1; }
+      }
+
+      message Header {
+        Version version = 1;
+        bytes id = 2;
+        bytes addr = 3;
+
+        enum Version {
+          Min = 0;
+          Max = 1;
+        }
+      }
+    }
+  }
+}

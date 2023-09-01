@@ -246,205 +246,6 @@ func (Query_Colum_DataType) EnumDescriptor() ([]byte, []int) {
 	return file_vince_v1_vince_proto_rawDescGZIP(), []int{8, 4, 0}
 }
 
-type Raft_Log_Type int32
-
-const (
-	Raft_Log_Command              Raft_Log_Type = 0
-	Raft_Log_Noop                 Raft_Log_Type = 1
-	Raft_Log_AddPeerDeprecated    Raft_Log_Type = 2
-	Raft_Log_RemovePeerDeprecated Raft_Log_Type = 3
-	Raft_Log_Barrier              Raft_Log_Type = 4
-	Raft_Log_Configuration        Raft_Log_Type = 5
-)
-
-// Enum value maps for Raft_Log_Type.
-var (
-	Raft_Log_Type_name = map[int32]string{
-		0: "Command",
-		1: "Noop",
-		2: "AddPeerDeprecated",
-		3: "RemovePeerDeprecated",
-		4: "Barrier",
-		5: "Configuration",
-	}
-	Raft_Log_Type_value = map[string]int32{
-		"Command":              0,
-		"Noop":                 1,
-		"AddPeerDeprecated":    2,
-		"RemovePeerDeprecated": 3,
-		"Barrier":              4,
-		"Configuration":        5,
-	}
-)
-
-func (x Raft_Log_Type) Enum() *Raft_Log_Type {
-	p := new(Raft_Log_Type)
-	*p = x
-	return p
-}
-
-func (x Raft_Log_Type) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Raft_Log_Type) Descriptor() protoreflect.EnumDescriptor {
-	return file_vince_v1_vince_proto_enumTypes[3].Descriptor()
-}
-
-func (Raft_Log_Type) Type() protoreflect.EnumType {
-	return &file_vince_v1_vince_proto_enumTypes[3]
-}
-
-func (x Raft_Log_Type) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Raft_Log_Type.Descriptor instead.
-func (Raft_Log_Type) EnumDescriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 1, 0}
-}
-
-type Raft_Config_Server_Suffrage int32
-
-const (
-	Raft_Config_Server_Voter    Raft_Config_Server_Suffrage = 0
-	Raft_Config_Server_Nonvoter Raft_Config_Server_Suffrage = 1
-	Raft_Config_Server_Staging  Raft_Config_Server_Suffrage = 2
-)
-
-// Enum value maps for Raft_Config_Server_Suffrage.
-var (
-	Raft_Config_Server_Suffrage_name = map[int32]string{
-		0: "Voter",
-		1: "Nonvoter",
-		2: "Staging",
-	}
-	Raft_Config_Server_Suffrage_value = map[string]int32{
-		"Voter":    0,
-		"Nonvoter": 1,
-		"Staging":  2,
-	}
-)
-
-func (x Raft_Config_Server_Suffrage) Enum() *Raft_Config_Server_Suffrage {
-	p := new(Raft_Config_Server_Suffrage)
-	*p = x
-	return p
-}
-
-func (x Raft_Config_Server_Suffrage) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Raft_Config_Server_Suffrage) Descriptor() protoreflect.EnumDescriptor {
-	return file_vince_v1_vince_proto_enumTypes[4].Descriptor()
-}
-
-func (Raft_Config_Server_Suffrage) Type() protoreflect.EnumType {
-	return &file_vince_v1_vince_proto_enumTypes[4]
-}
-
-func (x Raft_Config_Server_Suffrage) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Raft_Config_Server_Suffrage.Descriptor instead.
-func (Raft_Config_Server_Suffrage) EnumDescriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 2, 0, 0}
-}
-
-type Raft_RPC_Command_InstallSnapshot_Request_Version int32
-
-const (
-	Raft_RPC_Command_InstallSnapshot_Request_Min Raft_RPC_Command_InstallSnapshot_Request_Version = 0
-	Raft_RPC_Command_InstallSnapshot_Request_Max Raft_RPC_Command_InstallSnapshot_Request_Version = 1
-)
-
-// Enum value maps for Raft_RPC_Command_InstallSnapshot_Request_Version.
-var (
-	Raft_RPC_Command_InstallSnapshot_Request_Version_name = map[int32]string{
-		0: "Min",
-		1: "Max",
-	}
-	Raft_RPC_Command_InstallSnapshot_Request_Version_value = map[string]int32{
-		"Min": 0,
-		"Max": 1,
-	}
-)
-
-func (x Raft_RPC_Command_InstallSnapshot_Request_Version) Enum() *Raft_RPC_Command_InstallSnapshot_Request_Version {
-	p := new(Raft_RPC_Command_InstallSnapshot_Request_Version)
-	*p = x
-	return p
-}
-
-func (x Raft_RPC_Command_InstallSnapshot_Request_Version) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Raft_RPC_Command_InstallSnapshot_Request_Version) Descriptor() protoreflect.EnumDescriptor {
-	return file_vince_v1_vince_proto_enumTypes[5].Descriptor()
-}
-
-func (Raft_RPC_Command_InstallSnapshot_Request_Version) Type() protoreflect.EnumType {
-	return &file_vince_v1_vince_proto_enumTypes[5]
-}
-
-func (x Raft_RPC_Command_InstallSnapshot_Request_Version) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_InstallSnapshot_Request_Version.Descriptor instead.
-func (Raft_RPC_Command_InstallSnapshot_Request_Version) EnumDescriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 2, 0, 0}
-}
-
-type Raft_RPC_Command_Header_Version int32
-
-const (
-	Raft_RPC_Command_Header_Min Raft_RPC_Command_Header_Version = 0
-	Raft_RPC_Command_Header_Max Raft_RPC_Command_Header_Version = 1
-)
-
-// Enum value maps for Raft_RPC_Command_Header_Version.
-var (
-	Raft_RPC_Command_Header_Version_name = map[int32]string{
-		0: "Min",
-		1: "Max",
-	}
-	Raft_RPC_Command_Header_Version_value = map[string]int32{
-		"Min": 0,
-		"Max": 1,
-	}
-)
-
-func (x Raft_RPC_Command_Header_Version) Enum() *Raft_RPC_Command_Header_Version {
-	p := new(Raft_RPC_Command_Header_Version)
-	*p = x
-	return p
-}
-
-func (x Raft_RPC_Command_Header_Version) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Raft_RPC_Command_Header_Version) Descriptor() protoreflect.EnumDescriptor {
-	return file_vince_v1_vince_proto_enumTypes[6].Descriptor()
-}
-
-func (Raft_RPC_Command_Header_Version) Type() protoreflect.EnumType {
-	return &file_vince_v1_vince_proto_enumTypes[6]
-}
-
-func (x Raft_RPC_Command_Header_Version) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_Header_Version.Descriptor instead.
-func (Raft_RPC_Command_Header_Version) EnumDescriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 4, 0}
-}
-
 type Site struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1048,44 +849,6 @@ func (*Notice) Descriptor() ([]byte, []int) {
 	return file_vince_v1_vince_proto_rawDescGZIP(), []int{9}
 }
 
-type Raft struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Raft) Reset() {
-	*x = Raft{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[10]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft) ProtoMessage() {}
-
-func (x *Raft) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[10]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft.ProtoReflect.Descriptor instead.
-func (*Raft) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10}
-}
-
 type Cluster struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1095,7 +858,7 @@ type Cluster struct {
 func (x *Cluster) Reset() {
 	*x = Cluster{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[11]
+		mi := &file_vince_v1_vince_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1108,7 +871,7 @@ func (x *Cluster) String() string {
 func (*Cluster) ProtoMessage() {}
 
 func (x *Cluster) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[11]
+	mi := &file_vince_v1_vince_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1121,7 +884,7 @@ func (x *Cluster) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cluster.ProtoReflect.Descriptor instead.
 func (*Cluster) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{11}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10}
 }
 
 type Site_Key struct {
@@ -1136,7 +899,7 @@ type Site_Key struct {
 func (x *Site_Key) Reset() {
 	*x = Site_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[12]
+		mi := &file_vince_v1_vince_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1149,7 +912,7 @@ func (x *Site_Key) String() string {
 func (*Site_Key) ProtoMessage() {}
 
 func (x *Site_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[12]
+	mi := &file_vince_v1_vince_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1188,7 +951,7 @@ type Site_Create struct {
 func (x *Site_Create) Reset() {
 	*x = Site_Create{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[13]
+		mi := &file_vince_v1_vince_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1201,7 +964,7 @@ func (x *Site_Create) String() string {
 func (*Site_Create) ProtoMessage() {}
 
 func (x *Site_Create) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[13]
+	mi := &file_vince_v1_vince_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1226,7 +989,7 @@ type Site_Get struct {
 func (x *Site_Get) Reset() {
 	*x = Site_Get{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[14]
+		mi := &file_vince_v1_vince_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1239,7 +1002,7 @@ func (x *Site_Get) String() string {
 func (*Site_Get) ProtoMessage() {}
 
 func (x *Site_Get) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[14]
+	mi := &file_vince_v1_vince_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1264,7 +1027,7 @@ type Site_List struct {
 func (x *Site_List) Reset() {
 	*x = Site_List{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[15]
+		mi := &file_vince_v1_vince_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1277,7 +1040,7 @@ func (x *Site_List) String() string {
 func (*Site_List) ProtoMessage() {}
 
 func (x *Site_List) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[15]
+	mi := &file_vince_v1_vince_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1302,7 +1065,7 @@ type Site_Delete struct {
 func (x *Site_Delete) Reset() {
 	*x = Site_Delete{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[16]
+		mi := &file_vince_v1_vince_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1315,7 +1078,7 @@ func (x *Site_Delete) String() string {
 func (*Site_Delete) ProtoMessage() {}
 
 func (x *Site_Delete) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[16]
+	mi := &file_vince_v1_vince_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1342,7 +1105,7 @@ type Site_Create_Request struct {
 func (x *Site_Create_Request) Reset() {
 	*x = Site_Create_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[17]
+		mi := &file_vince_v1_vince_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1355,7 +1118,7 @@ func (x *Site_Create_Request) String() string {
 func (*Site_Create_Request) ProtoMessage() {}
 
 func (x *Site_Create_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[17]
+	mi := &file_vince_v1_vince_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1389,7 +1152,7 @@ type Site_Create_Response struct {
 func (x *Site_Create_Response) Reset() {
 	*x = Site_Create_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[18]
+		mi := &file_vince_v1_vince_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1402,7 +1165,7 @@ func (x *Site_Create_Response) String() string {
 func (*Site_Create_Response) ProtoMessage() {}
 
 func (x *Site_Create_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[18]
+	mi := &file_vince_v1_vince_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1434,7 +1197,7 @@ type Site_Get_Request struct {
 func (x *Site_Get_Request) Reset() {
 	*x = Site_Get_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[19]
+		mi := &file_vince_v1_vince_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1447,7 +1210,7 @@ func (x *Site_Get_Request) String() string {
 func (*Site_Get_Request) ProtoMessage() {}
 
 func (x *Site_Get_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[19]
+	mi := &file_vince_v1_vince_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1474,7 +1237,7 @@ type Site_Get_Response struct {
 func (x *Site_Get_Response) Reset() {
 	*x = Site_Get_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[20]
+		mi := &file_vince_v1_vince_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1487,7 +1250,7 @@ func (x *Site_Get_Response) String() string {
 func (*Site_Get_Response) ProtoMessage() {}
 
 func (x *Site_Get_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[20]
+	mi := &file_vince_v1_vince_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1519,7 +1282,7 @@ type Site_List_Request struct {
 func (x *Site_List_Request) Reset() {
 	*x = Site_List_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[21]
+		mi := &file_vince_v1_vince_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1532,7 +1295,7 @@ func (x *Site_List_Request) String() string {
 func (*Site_List_Request) ProtoMessage() {}
 
 func (x *Site_List_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[21]
+	mi := &file_vince_v1_vince_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1559,7 +1322,7 @@ type Site_List_Response struct {
 func (x *Site_List_Response) Reset() {
 	*x = Site_List_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[22]
+		mi := &file_vince_v1_vince_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1572,7 +1335,7 @@ func (x *Site_List_Response) String() string {
 func (*Site_List_Response) ProtoMessage() {}
 
 func (x *Site_List_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[22]
+	mi := &file_vince_v1_vince_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1606,7 +1369,7 @@ type Site_Delete_Request struct {
 func (x *Site_Delete_Request) Reset() {
 	*x = Site_Delete_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[23]
+		mi := &file_vince_v1_vince_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1619,7 +1382,7 @@ func (x *Site_Delete_Request) String() string {
 func (*Site_Delete_Request) ProtoMessage() {}
 
 func (x *Site_Delete_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[23]
+	mi := &file_vince_v1_vince_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1651,7 +1414,7 @@ type Site_Delete_Response struct {
 func (x *Site_Delete_Response) Reset() {
 	*x = Site_Delete_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[24]
+		mi := &file_vince_v1_vince_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1664,7 +1427,7 @@ func (x *Site_Delete_Response) String() string {
 func (*Site_Delete_Response) ProtoMessage() {}
 
 func (x *Site_Delete_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[24]
+	mi := &file_vince_v1_vince_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1696,7 +1459,7 @@ type Config_Notifier struct {
 func (x *Config_Notifier) Reset() {
 	*x = Config_Notifier{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[25]
+		mi := &file_vince_v1_vince_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1709,7 +1472,7 @@ func (x *Config_Notifier) String() string {
 func (*Config_Notifier) ProtoMessage() {}
 
 func (x *Config_Notifier) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[25]
+	mi := &file_vince_v1_vince_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1792,7 +1555,7 @@ type Config_Email struct {
 func (x *Config_Email) Reset() {
 	*x = Config_Email{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[26]
+		mi := &file_vince_v1_vince_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1805,7 +1568,7 @@ func (x *Config_Email) String() string {
 func (*Config_Email) ProtoMessage() {}
 
 func (x *Config_Email) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[26]
+	mi := &file_vince_v1_vince_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1924,7 +1687,7 @@ type Config_Webhook struct {
 func (x *Config_Webhook) Reset() {
 	*x = Config_Webhook{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[27]
+		mi := &file_vince_v1_vince_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1937,7 +1700,7 @@ func (x *Config_Webhook) String() string {
 func (*Config_Webhook) ProtoMessage() {}
 
 func (x *Config_Webhook) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[27]
+	mi := &file_vince_v1_vince_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1981,7 +1744,7 @@ type Config_HTTP struct {
 func (x *Config_HTTP) Reset() {
 	*x = Config_HTTP{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[28]
+		mi := &file_vince_v1_vince_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1994,7 +1757,7 @@ func (x *Config_HTTP) String() string {
 func (*Config_HTTP) ProtoMessage() {}
 
 func (x *Config_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[28]
+	mi := &file_vince_v1_vince_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2050,7 +1813,7 @@ type Config_HTTP_BasicAuth struct {
 func (x *Config_HTTP_BasicAuth) Reset() {
 	*x = Config_HTTP_BasicAuth{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[30]
+		mi := &file_vince_v1_vince_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2063,7 +1826,7 @@ func (x *Config_HTTP_BasicAuth) String() string {
 func (*Config_HTTP_BasicAuth) ProtoMessage() {}
 
 func (x *Config_HTTP_BasicAuth) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[30]
+	mi := &file_vince_v1_vince_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2105,7 +1868,7 @@ type Config_HTTP_Authorization struct {
 func (x *Config_HTTP_Authorization) Reset() {
 	*x = Config_HTTP_Authorization{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[31]
+		mi := &file_vince_v1_vince_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2118,7 +1881,7 @@ func (x *Config_HTTP_Authorization) String() string {
 func (*Config_HTTP_Authorization) ProtoMessage() {}
 
 func (x *Config_HTTP_Authorization) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[31]
+	mi := &file_vince_v1_vince_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2164,7 +1927,7 @@ type Config_HTTP_OAuth2 struct {
 func (x *Config_HTTP_OAuth2) Reset() {
 	*x = Config_HTTP_OAuth2{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[32]
+		mi := &file_vince_v1_vince_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2177,7 +1940,7 @@ func (x *Config_HTTP_OAuth2) String() string {
 func (*Config_HTTP_OAuth2) ProtoMessage() {}
 
 func (x *Config_HTTP_OAuth2) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[32]
+	mi := &file_vince_v1_vince_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2248,7 +2011,7 @@ type Config_HTTP_TLSConfig struct {
 func (x *Config_HTTP_TLSConfig) Reset() {
 	*x = Config_HTTP_TLSConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[33]
+		mi := &file_vince_v1_vince_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2261,7 +2024,7 @@ func (x *Config_HTTP_TLSConfig) String() string {
 func (*Config_HTTP_TLSConfig) ProtoMessage() {}
 
 func (x *Config_HTTP_TLSConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[33]
+	mi := &file_vince_v1_vince_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2310,7 +2073,7 @@ type Account_Key struct {
 func (x *Account_Key) Reset() {
 	*x = Account_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[35]
+		mi := &file_vince_v1_vince_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2323,7 +2086,7 @@ func (x *Account_Key) String() string {
 func (*Account_Key) ProtoMessage() {}
 
 func (x *Account_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[35]
+	mi := &file_vince_v1_vince_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2364,7 +2127,7 @@ type Client_Instance struct {
 func (x *Client_Instance) Reset() {
 	*x = Client_Instance{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[39]
+		mi := &file_vince_v1_vince_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2377,7 +2140,7 @@ func (x *Client_Instance) String() string {
 func (*Client_Instance) ProtoMessage() {}
 
 func (x *Client_Instance) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[39]
+	mi := &file_vince_v1_vince_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2412,7 +2175,7 @@ type Client_Active struct {
 func (x *Client_Active) Reset() {
 	*x = Client_Active{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[40]
+		mi := &file_vince_v1_vince_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2425,7 +2188,7 @@ func (x *Client_Active) String() string {
 func (*Client_Active) ProtoMessage() {}
 
 func (x *Client_Active) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[40]
+	mi := &file_vince_v1_vince_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2468,7 +2231,7 @@ type Client_Auth struct {
 func (x *Client_Auth) Reset() {
 	*x = Client_Auth{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[41]
+		mi := &file_vince_v1_vince_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2481,7 +2244,7 @@ func (x *Client_Auth) String() string {
 func (*Client_Auth) ProtoMessage() {}
 
 func (x *Client_Auth) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[41]
+	mi := &file_vince_v1_vince_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2527,7 +2290,7 @@ type Token_Create struct {
 func (x *Token_Create) Reset() {
 	*x = Token_Create{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[43]
+		mi := &file_vince_v1_vince_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2540,7 +2303,7 @@ func (x *Token_Create) String() string {
 func (*Token_Create) ProtoMessage() {}
 
 func (x *Token_Create) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[43]
+	mi := &file_vince_v1_vince_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2568,7 +2331,7 @@ type Token_Key struct {
 func (x *Token_Key) Reset() {
 	*x = Token_Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[44]
+		mi := &file_vince_v1_vince_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2581,7 +2344,7 @@ func (x *Token_Key) String() string {
 func (*Token_Key) ProtoMessage() {}
 
 func (x *Token_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[44]
+	mi := &file_vince_v1_vince_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2628,7 +2391,7 @@ type Token_Create_Request struct {
 func (x *Token_Create_Request) Reset() {
 	*x = Token_Create_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[45]
+		mi := &file_vince_v1_vince_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2641,7 +2404,7 @@ func (x *Token_Create_Request) String() string {
 func (*Token_Create_Request) ProtoMessage() {}
 
 func (x *Token_Create_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[45]
+	mi := &file_vince_v1_vince_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2710,7 +2473,7 @@ type Token_Create_Response struct {
 func (x *Token_Create_Response) Reset() {
 	*x = Token_Create_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[46]
+		mi := &file_vince_v1_vince_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2723,7 +2486,7 @@ func (x *Token_Create_Response) String() string {
 func (*Token_Create_Response) ProtoMessage() {}
 
 func (x *Token_Create_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[46]
+	mi := &file_vince_v1_vince_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2764,7 +2527,7 @@ type Query_Value struct {
 func (x *Query_Value) Reset() {
 	*x = Query_Value{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[47]
+		mi := &file_vince_v1_vince_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2777,7 +2540,7 @@ func (x *Query_Value) String() string {
 func (*Query_Value) ProtoMessage() {}
 
 func (x *Query_Value) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[47]
+	mi := &file_vince_v1_vince_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2881,7 +2644,7 @@ type Query_Request struct {
 func (x *Query_Request) Reset() {
 	*x = Query_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[48]
+		mi := &file_vince_v1_vince_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2894,7 +2657,7 @@ func (x *Query_Request) String() string {
 func (*Query_Request) ProtoMessage() {}
 
 func (x *Query_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[48]
+	mi := &file_vince_v1_vince_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2937,7 +2700,7 @@ type Query_Response struct {
 func (x *Query_Response) Reset() {
 	*x = Query_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[49]
+		mi := &file_vince_v1_vince_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2950,7 +2713,7 @@ func (x *Query_Response) String() string {
 func (*Query_Response) ProtoMessage() {}
 
 func (x *Query_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[49]
+	mi := &file_vince_v1_vince_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2999,7 +2762,7 @@ type Query_Param struct {
 func (x *Query_Param) Reset() {
 	*x = Query_Param{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[50]
+		mi := &file_vince_v1_vince_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3012,7 +2775,7 @@ func (x *Query_Param) String() string {
 func (*Query_Param) ProtoMessage() {}
 
 func (x *Query_Param) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[50]
+	mi := &file_vince_v1_vince_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3054,7 +2817,7 @@ type Query_Colum struct {
 func (x *Query_Colum) Reset() {
 	*x = Query_Colum{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[51]
+		mi := &file_vince_v1_vince_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3067,7 +2830,7 @@ func (x *Query_Colum) String() string {
 func (*Query_Colum) ProtoMessage() {}
 
 func (x *Query_Colum) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[51]
+	mi := &file_vince_v1_vince_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3108,7 +2871,7 @@ type Query_Row struct {
 func (x *Query_Row) Reset() {
 	*x = Query_Row{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[52]
+		mi := &file_vince_v1_vince_proto_msgTypes[51]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3121,7 +2884,7 @@ func (x *Query_Row) String() string {
 func (*Query_Row) ProtoMessage() {}
 
 func (x *Query_Row) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[52]
+	mi := &file_vince_v1_vince_proto_msgTypes[51]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3144,1405 +2907,6 @@ func (x *Query_Row) GetValues() []*Query_Value {
 	return nil
 }
 
-type Raft_Entry struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Key     []byte               `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Value   []byte               `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	Expires *durationpb.Duration `protobuf:"bytes,3,opt,name=expires,proto3" json:"expires,omitempty"`
-}
-
-func (x *Raft_Entry) Reset() {
-	*x = Raft_Entry{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[53]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_Entry) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_Entry) ProtoMessage() {}
-
-func (x *Raft_Entry) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[53]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_Entry.ProtoReflect.Descriptor instead.
-func (*Raft_Entry) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 0}
-}
-
-func (x *Raft_Entry) GetKey() []byte {
-	if x != nil {
-		return x.Key
-	}
-	return nil
-}
-
-func (x *Raft_Entry) GetValue() []byte {
-	if x != nil {
-		return x.Value
-	}
-	return nil
-}
-
-func (x *Raft_Entry) GetExpires() *durationpb.Duration {
-	if x != nil {
-		return x.Expires
-	}
-	return nil
-}
-
-type Raft_Log struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Index      uint64                 `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
-	Term       uint64                 `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
-	Type       Raft_Log_Type          `protobuf:"varint,3,opt,name=type,proto3,enum=v1.Raft_Log_Type" json:"type,omitempty"`
-	Data       []byte                 `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
-	Extensions []byte                 `protobuf:"bytes,5,opt,name=extensions,proto3" json:"extensions,omitempty"`
-	AppendedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=appended_at,json=appendedAt,proto3" json:"appended_at,omitempty"`
-}
-
-func (x *Raft_Log) Reset() {
-	*x = Raft_Log{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[54]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_Log) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_Log) ProtoMessage() {}
-
-func (x *Raft_Log) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[54]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_Log.ProtoReflect.Descriptor instead.
-func (*Raft_Log) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 1}
-}
-
-func (x *Raft_Log) GetIndex() uint64 {
-	if x != nil {
-		return x.Index
-	}
-	return 0
-}
-
-func (x *Raft_Log) GetTerm() uint64 {
-	if x != nil {
-		return x.Term
-	}
-	return 0
-}
-
-func (x *Raft_Log) GetType() Raft_Log_Type {
-	if x != nil {
-		return x.Type
-	}
-	return Raft_Log_Command
-}
-
-func (x *Raft_Log) GetData() []byte {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *Raft_Log) GetExtensions() []byte {
-	if x != nil {
-		return x.Extensions
-	}
-	return nil
-}
-
-func (x *Raft_Log) GetAppendedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.AppendedAt
-	}
-	return nil
-}
-
-type Raft_Config struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Servers []*Raft_Config_Server `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
-}
-
-func (x *Raft_Config) Reset() {
-	*x = Raft_Config{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[55]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_Config) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_Config) ProtoMessage() {}
-
-func (x *Raft_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[55]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_Config.ProtoReflect.Descriptor instead.
-func (*Raft_Config) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 2}
-}
-
-func (x *Raft_Config) GetServers() []*Raft_Config_Server {
-	if x != nil {
-		return x.Servers
-	}
-	return nil
-}
-
-type Raft_RPC struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Raft_RPC) Reset() {
-	*x = Raft_RPC{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[56]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC) ProtoMessage() {}
-
-func (x *Raft_RPC) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[56]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC.ProtoReflect.Descriptor instead.
-func (*Raft_RPC) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3}
-}
-
-type Raft_Config_Server struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Suffrage Raft_Config_Server_Suffrage `protobuf:"varint,1,opt,name=suffrage,proto3,enum=v1.Raft_Config_Server_Suffrage" json:"suffrage,omitempty"`
-	Id       string                      `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-	Address  string                      `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
-	Token    string                      `protobuf:"bytes,4,opt,name=token,proto3" json:"token,omitempty"`
-}
-
-func (x *Raft_Config_Server) Reset() {
-	*x = Raft_Config_Server{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[57]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_Config_Server) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_Config_Server) ProtoMessage() {}
-
-func (x *Raft_Config_Server) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[57]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_Config_Server.ProtoReflect.Descriptor instead.
-func (*Raft_Config_Server) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 2, 0}
-}
-
-func (x *Raft_Config_Server) GetSuffrage() Raft_Config_Server_Suffrage {
-	if x != nil {
-		return x.Suffrage
-	}
-	return Raft_Config_Server_Voter
-}
-
-func (x *Raft_Config_Server) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Raft_Config_Server) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *Raft_Config_Server) GetToken() string {
-	if x != nil {
-		return x.Token
-	}
-	return ""
-}
-
-type Raft_RPC_Call struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Raft_RPC_Call) Reset() {
-	*x = Raft_RPC_Call{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[58]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Call) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Call) ProtoMessage() {}
-
-func (x *Raft_RPC_Call) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[58]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Call.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Call) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 0}
-}
-
-type Raft_RPC_Command struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Raft_RPC_Command) Reset() {
-	*x = Raft_RPC_Command{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[59]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command) ProtoMessage() {}
-
-func (x *Raft_RPC_Command) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[59]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1}
-}
-
-type Raft_RPC_Call_Request struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Kind:
-	//
-	//	*Raft_RPC_Call_Request_AppendEntries
-	//	*Raft_RPC_Call_Request_Vote
-	//	*Raft_RPC_Call_Request_InstallSnapshot
-	//	*Raft_RPC_Call_Request_TimeoutNow
-	Kind isRaft_RPC_Call_Request_Kind `protobuf_oneof:"kind"`
-}
-
-func (x *Raft_RPC_Call_Request) Reset() {
-	*x = Raft_RPC_Call_Request{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[60]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Call_Request) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Call_Request) ProtoMessage() {}
-
-func (x *Raft_RPC_Call_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[60]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Call_Request.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Call_Request) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 0, 0}
-}
-
-func (m *Raft_RPC_Call_Request) GetKind() isRaft_RPC_Call_Request_Kind {
-	if m != nil {
-		return m.Kind
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Call_Request) GetAppendEntries() *Raft_RPC_Command_AppendEntries_Request {
-	if x, ok := x.GetKind().(*Raft_RPC_Call_Request_AppendEntries); ok {
-		return x.AppendEntries
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Call_Request) GetVote() *Raft_RPC_Command_Vote_Request {
-	if x, ok := x.GetKind().(*Raft_RPC_Call_Request_Vote); ok {
-		return x.Vote
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Call_Request) GetInstallSnapshot() *Raft_RPC_Command_InstallSnapshot_Request {
-	if x, ok := x.GetKind().(*Raft_RPC_Call_Request_InstallSnapshot); ok {
-		return x.InstallSnapshot
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Call_Request) GetTimeoutNow() *Raft_RPC_Command_TimeoutNow_Request {
-	if x, ok := x.GetKind().(*Raft_RPC_Call_Request_TimeoutNow); ok {
-		return x.TimeoutNow
-	}
-	return nil
-}
-
-type isRaft_RPC_Call_Request_Kind interface {
-	isRaft_RPC_Call_Request_Kind()
-}
-
-type Raft_RPC_Call_Request_AppendEntries struct {
-	AppendEntries *Raft_RPC_Command_AppendEntries_Request `protobuf:"bytes,1,opt,name=append_entries,json=appendEntries,proto3,oneof"`
-}
-
-type Raft_RPC_Call_Request_Vote struct {
-	Vote *Raft_RPC_Command_Vote_Request `protobuf:"bytes,2,opt,name=vote,proto3,oneof"`
-}
-
-type Raft_RPC_Call_Request_InstallSnapshot struct {
-	InstallSnapshot *Raft_RPC_Command_InstallSnapshot_Request `protobuf:"bytes,3,opt,name=install_snapshot,json=installSnapshot,proto3,oneof"`
-}
-
-type Raft_RPC_Call_Request_TimeoutNow struct {
-	TimeoutNow *Raft_RPC_Command_TimeoutNow_Request `protobuf:"bytes,4,opt,name=timeout_now,json=timeoutNow,proto3,oneof"`
-}
-
-func (*Raft_RPC_Call_Request_AppendEntries) isRaft_RPC_Call_Request_Kind() {}
-
-func (*Raft_RPC_Call_Request_Vote) isRaft_RPC_Call_Request_Kind() {}
-
-func (*Raft_RPC_Call_Request_InstallSnapshot) isRaft_RPC_Call_Request_Kind() {}
-
-func (*Raft_RPC_Call_Request_TimeoutNow) isRaft_RPC_Call_Request_Kind() {}
-
-type Raft_RPC_Call_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Kind:
-	//
-	//	*Raft_RPC_Call_Response_AppendEntries
-	//	*Raft_RPC_Call_Response_Vote
-	//	*Raft_RPC_Call_Response_InstallSnapshot
-	//	*Raft_RPC_Call_Response_TimeoutNow
-	Kind  isRaft_RPC_Call_Response_Kind `protobuf_oneof:"kind"`
-	Error string                        `protobuf:"bytes,5,opt,name=error,proto3" json:"error,omitempty"`
-}
-
-func (x *Raft_RPC_Call_Response) Reset() {
-	*x = Raft_RPC_Call_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[61]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Call_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Call_Response) ProtoMessage() {}
-
-func (x *Raft_RPC_Call_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[61]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Call_Response.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Call_Response) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 0, 1}
-}
-
-func (m *Raft_RPC_Call_Response) GetKind() isRaft_RPC_Call_Response_Kind {
-	if m != nil {
-		return m.Kind
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Call_Response) GetAppendEntries() *Raft_RPC_Command_AppendEntries_Response {
-	if x, ok := x.GetKind().(*Raft_RPC_Call_Response_AppendEntries); ok {
-		return x.AppendEntries
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Call_Response) GetVote() *Raft_RPC_Command_Vote_Response {
-	if x, ok := x.GetKind().(*Raft_RPC_Call_Response_Vote); ok {
-		return x.Vote
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Call_Response) GetInstallSnapshot() *Raft_RPC_Command_InstallSnapshot_Response {
-	if x, ok := x.GetKind().(*Raft_RPC_Call_Response_InstallSnapshot); ok {
-		return x.InstallSnapshot
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Call_Response) GetTimeoutNow() *Raft_RPC_Command_TimeoutNow_Response {
-	if x, ok := x.GetKind().(*Raft_RPC_Call_Response_TimeoutNow); ok {
-		return x.TimeoutNow
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Call_Response) GetError() string {
-	if x != nil {
-		return x.Error
-	}
-	return ""
-}
-
-type isRaft_RPC_Call_Response_Kind interface {
-	isRaft_RPC_Call_Response_Kind()
-}
-
-type Raft_RPC_Call_Response_AppendEntries struct {
-	AppendEntries *Raft_RPC_Command_AppendEntries_Response `protobuf:"bytes,1,opt,name=append_entries,json=appendEntries,proto3,oneof"`
-}
-
-type Raft_RPC_Call_Response_Vote struct {
-	Vote *Raft_RPC_Command_Vote_Response `protobuf:"bytes,2,opt,name=vote,proto3,oneof"`
-}
-
-type Raft_RPC_Call_Response_InstallSnapshot struct {
-	InstallSnapshot *Raft_RPC_Command_InstallSnapshot_Response `protobuf:"bytes,3,opt,name=install_snapshot,json=installSnapshot,proto3,oneof"`
-}
-
-type Raft_RPC_Call_Response_TimeoutNow struct {
-	TimeoutNow *Raft_RPC_Command_TimeoutNow_Response `protobuf:"bytes,4,opt,name=timeout_now,json=timeoutNow,proto3,oneof"`
-}
-
-func (*Raft_RPC_Call_Response_AppendEntries) isRaft_RPC_Call_Response_Kind() {}
-
-func (*Raft_RPC_Call_Response_Vote) isRaft_RPC_Call_Response_Kind() {}
-
-func (*Raft_RPC_Call_Response_InstallSnapshot) isRaft_RPC_Call_Response_Kind() {}
-
-func (*Raft_RPC_Call_Response_TimeoutNow) isRaft_RPC_Call_Response_Kind() {}
-
-type Raft_RPC_Command_AppendEntries struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Raft_RPC_Command_AppendEntries) Reset() {
-	*x = Raft_RPC_Command_AppendEntries{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[62]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_AppendEntries) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_AppendEntries) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_AppendEntries) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[62]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_AppendEntries.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_AppendEntries) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 0}
-}
-
-type Raft_RPC_Command_Vote struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Raft_RPC_Command_Vote) Reset() {
-	*x = Raft_RPC_Command_Vote{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[63]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_Vote) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_Vote) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_Vote) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[63]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_Vote.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_Vote) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 1}
-}
-
-type Raft_RPC_Command_InstallSnapshot struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot) Reset() {
-	*x = Raft_RPC_Command_InstallSnapshot{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[64]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_InstallSnapshot) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_InstallSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[64]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_InstallSnapshot.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_InstallSnapshot) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 2}
-}
-
-type Raft_RPC_Command_TimeoutNow struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Raft_RPC_Command_TimeoutNow) Reset() {
-	*x = Raft_RPC_Command_TimeoutNow{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[65]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_TimeoutNow) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_TimeoutNow) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_TimeoutNow) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[65]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_TimeoutNow.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_TimeoutNow) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 3}
-}
-
-type Raft_RPC_Command_Header struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Version Raft_RPC_Command_Header_Version `protobuf:"varint,1,opt,name=version,proto3,enum=v1.Raft_RPC_Command_Header_Version" json:"version,omitempty"`
-	Id      []byte                          `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-	Addr    []byte                          `protobuf:"bytes,3,opt,name=addr,proto3" json:"addr,omitempty"`
-}
-
-func (x *Raft_RPC_Command_Header) Reset() {
-	*x = Raft_RPC_Command_Header{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[66]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_Header) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_Header) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_Header) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[66]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_Header.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_Header) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 4}
-}
-
-func (x *Raft_RPC_Command_Header) GetVersion() Raft_RPC_Command_Header_Version {
-	if x != nil {
-		return x.Version
-	}
-	return Raft_RPC_Command_Header_Min
-}
-
-func (x *Raft_RPC_Command_Header) GetId() []byte {
-	if x != nil {
-		return x.Id
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_Header) GetAddr() []byte {
-	if x != nil {
-		return x.Addr
-	}
-	return nil
-}
-
-type Raft_RPC_Command_AppendEntries_Request struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Header            *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	Term              uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
-	PrevLogEntry      uint64                   `protobuf:"varint,4,opt,name=prev_log_entry,json=prevLogEntry,proto3" json:"prev_log_entry,omitempty"`
-	PrevLogTerm       uint64                   `protobuf:"varint,5,opt,name=prev_log_term,json=prevLogTerm,proto3" json:"prev_log_term,omitempty"`
-	Entries           []*Raft_Log              `protobuf:"bytes,6,rep,name=entries,proto3" json:"entries,omitempty"`
-	LeaderCommitIndex uint64                   `protobuf:"varint,7,opt,name=leader_commit_index,json=leaderCommitIndex,proto3" json:"leader_commit_index,omitempty"`
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Request) Reset() {
-	*x = Raft_RPC_Command_AppendEntries_Request{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[67]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Request) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_AppendEntries_Request) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_AppendEntries_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[67]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_AppendEntries_Request.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_AppendEntries_Request) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 0, 0}
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Request) GetHeader() *Raft_RPC_Command_Header {
-	if x != nil {
-		return x.Header
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Request) GetTerm() uint64 {
-	if x != nil {
-		return x.Term
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Request) GetPrevLogEntry() uint64 {
-	if x != nil {
-		return x.PrevLogEntry
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Request) GetPrevLogTerm() uint64 {
-	if x != nil {
-		return x.PrevLogTerm
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Request) GetEntries() []*Raft_Log {
-	if x != nil {
-		return x.Entries
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Request) GetLeaderCommitIndex() uint64 {
-	if x != nil {
-		return x.LeaderCommitIndex
-	}
-	return 0
-}
-
-type Raft_RPC_Command_AppendEntries_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Header         *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	Term           uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
-	LastLog        uint64                   `protobuf:"varint,3,opt,name=last_log,json=lastLog,proto3" json:"last_log,omitempty"`
-	Success        bool                     `protobuf:"varint,4,opt,name=success,proto3" json:"success,omitempty"`
-	NoRetryBackoff bool                     `protobuf:"varint,5,opt,name=no_retry_backoff,json=noRetryBackoff,proto3" json:"no_retry_backoff,omitempty"`
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Response) Reset() {
-	*x = Raft_RPC_Command_AppendEntries_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[68]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_AppendEntries_Response) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_AppendEntries_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[68]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_AppendEntries_Response.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_AppendEntries_Response) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 0, 1}
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Response) GetHeader() *Raft_RPC_Command_Header {
-	if x != nil {
-		return x.Header
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Response) GetTerm() uint64 {
-	if x != nil {
-		return x.Term
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Response) GetLastLog() uint64 {
-	if x != nil {
-		return x.LastLog
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Response) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *Raft_RPC_Command_AppendEntries_Response) GetNoRetryBackoff() bool {
-	if x != nil {
-		return x.NoRetryBackoff
-	}
-	return false
-}
-
-type Raft_RPC_Command_Vote_Request struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Header             *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	Term               uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
-	LastLogIndex       uint64                   `protobuf:"varint,3,opt,name=last_log_index,json=lastLogIndex,proto3" json:"last_log_index,omitempty"`
-	LastLogTerm        uint64                   `protobuf:"varint,4,opt,name=last_log_term,json=lastLogTerm,proto3" json:"last_log_term,omitempty"`
-	LeadershipTransfer bool                     `protobuf:"varint,5,opt,name=leadership_transfer,json=leadershipTransfer,proto3" json:"leadership_transfer,omitempty"`
-}
-
-func (x *Raft_RPC_Command_Vote_Request) Reset() {
-	*x = Raft_RPC_Command_Vote_Request{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[69]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_Vote_Request) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_Vote_Request) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_Vote_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[69]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_Vote_Request.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_Vote_Request) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 1, 0}
-}
-
-func (x *Raft_RPC_Command_Vote_Request) GetHeader() *Raft_RPC_Command_Header {
-	if x != nil {
-		return x.Header
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_Vote_Request) GetTerm() uint64 {
-	if x != nil {
-		return x.Term
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_Vote_Request) GetLastLogIndex() uint64 {
-	if x != nil {
-		return x.LastLogIndex
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_Vote_Request) GetLastLogTerm() uint64 {
-	if x != nil {
-		return x.LastLogTerm
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_Vote_Request) GetLeadershipTransfer() bool {
-	if x != nil {
-		return x.LeadershipTransfer
-	}
-	return false
-}
-
-type Raft_RPC_Command_Vote_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Header  *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	Term    uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
-	Granted bool                     `protobuf:"varint,3,opt,name=granted,proto3" json:"granted,omitempty"`
-}
-
-func (x *Raft_RPC_Command_Vote_Response) Reset() {
-	*x = Raft_RPC_Command_Vote_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[70]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_Vote_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_Vote_Response) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_Vote_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[70]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_Vote_Response.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_Vote_Response) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 1, 1}
-}
-
-func (x *Raft_RPC_Command_Vote_Response) GetHeader() *Raft_RPC_Command_Header {
-	if x != nil {
-		return x.Header
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_Vote_Response) GetTerm() uint64 {
-	if x != nil {
-		return x.Term
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_Vote_Response) GetGranted() bool {
-	if x != nil {
-		return x.Granted
-	}
-	return false
-}
-
-type Raft_RPC_Command_InstallSnapshot_Request struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Header             *Raft_RPC_Command_Header                         `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	SnapshotVersion    Raft_RPC_Command_InstallSnapshot_Request_Version `protobuf:"varint,2,opt,name=snapshot_version,json=snapshotVersion,proto3,enum=v1.Raft_RPC_Command_InstallSnapshot_Request_Version" json:"snapshot_version,omitempty"`
-	Term               uint64                                           `protobuf:"varint,3,opt,name=term,proto3" json:"term,omitempty"`
-	Leader             []byte                                           `protobuf:"bytes,4,opt,name=leader,proto3" json:"leader,omitempty"`
-	LastLogIndex       uint64                                           `protobuf:"varint,5,opt,name=last_log_index,json=lastLogIndex,proto3" json:"last_log_index,omitempty"`
-	LastLogTerm        uint64                                           `protobuf:"varint,6,opt,name=last_log_term,json=lastLogTerm,proto3" json:"last_log_term,omitempty"`
-	Configuration      []byte                                           `protobuf:"bytes,7,opt,name=configuration,proto3" json:"configuration,omitempty"`
-	ConfigurationIndex uint64                                           `protobuf:"varint,8,opt,name=configuration_index,json=configurationIndex,proto3" json:"configuration_index,omitempty"`
-	Size               int64                                            `protobuf:"varint,9,opt,name=size,proto3" json:"size,omitempty"`
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) Reset() {
-	*x = Raft_RPC_Command_InstallSnapshot_Request{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[71]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_InstallSnapshot_Request) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[71]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_InstallSnapshot_Request.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_InstallSnapshot_Request) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 2, 0}
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) GetHeader() *Raft_RPC_Command_Header {
-	if x != nil {
-		return x.Header
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) GetSnapshotVersion() Raft_RPC_Command_InstallSnapshot_Request_Version {
-	if x != nil {
-		return x.SnapshotVersion
-	}
-	return Raft_RPC_Command_InstallSnapshot_Request_Min
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) GetTerm() uint64 {
-	if x != nil {
-		return x.Term
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) GetLeader() []byte {
-	if x != nil {
-		return x.Leader
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) GetLastLogIndex() uint64 {
-	if x != nil {
-		return x.LastLogIndex
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) GetLastLogTerm() uint64 {
-	if x != nil {
-		return x.LastLogTerm
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) GetConfiguration() []byte {
-	if x != nil {
-		return x.Configuration
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) GetConfigurationIndex() uint64 {
-	if x != nil {
-		return x.ConfigurationIndex
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Request) GetSize() int64 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-type Raft_RPC_Command_InstallSnapshot_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Header  *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	Term    uint64                   `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
-	Success bool                     `protobuf:"varint,3,opt,name=success,proto3" json:"success,omitempty"`
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Response) Reset() {
-	*x = Raft_RPC_Command_InstallSnapshot_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[72]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_InstallSnapshot_Response) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[72]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_InstallSnapshot_Response.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_InstallSnapshot_Response) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 2, 1}
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Response) GetHeader() *Raft_RPC_Command_Header {
-	if x != nil {
-		return x.Header
-	}
-	return nil
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Response) GetTerm() uint64 {
-	if x != nil {
-		return x.Term
-	}
-	return 0
-}
-
-func (x *Raft_RPC_Command_InstallSnapshot_Response) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-type Raft_RPC_Command_TimeoutNow_Request struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Header *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-}
-
-func (x *Raft_RPC_Command_TimeoutNow_Request) Reset() {
-	*x = Raft_RPC_Command_TimeoutNow_Request{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[73]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_TimeoutNow_Request) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_TimeoutNow_Request) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_TimeoutNow_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[73]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_TimeoutNow_Request.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_TimeoutNow_Request) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 3, 0}
-}
-
-func (x *Raft_RPC_Command_TimeoutNow_Request) GetHeader() *Raft_RPC_Command_Header {
-	if x != nil {
-		return x.Header
-	}
-	return nil
-}
-
-type Raft_RPC_Command_TimeoutNow_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Header *Raft_RPC_Command_Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-}
-
-func (x *Raft_RPC_Command_TimeoutNow_Response) Reset() {
-	*x = Raft_RPC_Command_TimeoutNow_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[74]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Raft_RPC_Command_TimeoutNow_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Raft_RPC_Command_TimeoutNow_Response) ProtoMessage() {}
-
-func (x *Raft_RPC_Command_TimeoutNow_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[74]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Raft_RPC_Command_TimeoutNow_Response.ProtoReflect.Descriptor instead.
-func (*Raft_RPC_Command_TimeoutNow_Response) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 3, 1, 3, 1}
-}
-
-func (x *Raft_RPC_Command_TimeoutNow_Response) GetHeader() *Raft_RPC_Command_Header {
-	if x != nil {
-		return x.Header
-	}
-	return nil
-}
-
 type Cluster_Apply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4552,7 +2916,7 @@ type Cluster_Apply struct {
 func (x *Cluster_Apply) Reset() {
 	*x = Cluster_Apply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[75]
+		mi := &file_vince_v1_vince_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4565,7 +2929,7 @@ func (x *Cluster_Apply) String() string {
 func (*Cluster_Apply) ProtoMessage() {}
 
 func (x *Cluster_Apply) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[75]
+	mi := &file_vince_v1_vince_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4578,7 +2942,7 @@ func (x *Cluster_Apply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cluster_Apply.ProtoReflect.Descriptor instead.
 func (*Cluster_Apply) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{11, 0}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 0}
 }
 
 type Cluster_Get struct {
@@ -4590,7 +2954,7 @@ type Cluster_Get struct {
 func (x *Cluster_Get) Reset() {
 	*x = Cluster_Get{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[76]
+		mi := &file_vince_v1_vince_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4603,7 +2967,7 @@ func (x *Cluster_Get) String() string {
 func (*Cluster_Get) ProtoMessage() {}
 
 func (x *Cluster_Get) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[76]
+	mi := &file_vince_v1_vince_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4616,7 +2980,7 @@ func (x *Cluster_Get) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cluster_Get.ProtoReflect.Descriptor instead.
 func (*Cluster_Get) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{11, 1}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 1}
 }
 
 type Cluster_Config struct {
@@ -4631,7 +2995,7 @@ type Cluster_Config struct {
 func (x *Cluster_Config) Reset() {
 	*x = Cluster_Config{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[77]
+		mi := &file_vince_v1_vince_proto_msgTypes[54]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4644,7 +3008,7 @@ func (x *Cluster_Config) String() string {
 func (*Cluster_Config) ProtoMessage() {}
 
 func (x *Cluster_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[77]
+	mi := &file_vince_v1_vince_proto_msgTypes[54]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4657,7 +3021,7 @@ func (x *Cluster_Config) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cluster_Config.ProtoReflect.Descriptor instead.
 func (*Cluster_Config) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{11, 2}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 2}
 }
 
 func (x *Cluster_Config) GetName() string {
@@ -4685,7 +3049,7 @@ type Cluster_Apply_Request struct {
 func (x *Cluster_Apply_Request) Reset() {
 	*x = Cluster_Apply_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[78]
+		mi := &file_vince_v1_vince_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4698,7 +3062,7 @@ func (x *Cluster_Apply_Request) String() string {
 func (*Cluster_Apply_Request) ProtoMessage() {}
 
 func (x *Cluster_Apply_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[78]
+	mi := &file_vince_v1_vince_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4711,7 +3075,7 @@ func (x *Cluster_Apply_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cluster_Apply_Request.ProtoReflect.Descriptor instead.
 func (*Cluster_Apply_Request) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{11, 0, 0}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 0, 0}
 }
 
 func (x *Cluster_Apply_Request) GetConfig() *Cluster_Config {
@@ -4732,7 +3096,7 @@ type Cluster_Apply_Response struct {
 func (x *Cluster_Apply_Response) Reset() {
 	*x = Cluster_Apply_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[79]
+		mi := &file_vince_v1_vince_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4745,7 +3109,7 @@ func (x *Cluster_Apply_Response) String() string {
 func (*Cluster_Apply_Response) ProtoMessage() {}
 
 func (x *Cluster_Apply_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[79]
+	mi := &file_vince_v1_vince_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4758,7 +3122,7 @@ func (x *Cluster_Apply_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cluster_Apply_Response.ProtoReflect.Descriptor instead.
 func (*Cluster_Apply_Response) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{11, 0, 1}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 0, 1}
 }
 
 func (x *Cluster_Apply_Response) GetOk() string {
@@ -4777,7 +3141,7 @@ type Cluster_Get_Request struct {
 func (x *Cluster_Get_Request) Reset() {
 	*x = Cluster_Get_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[80]
+		mi := &file_vince_v1_vince_proto_msgTypes[57]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4790,7 +3154,7 @@ func (x *Cluster_Get_Request) String() string {
 func (*Cluster_Get_Request) ProtoMessage() {}
 
 func (x *Cluster_Get_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[80]
+	mi := &file_vince_v1_vince_proto_msgTypes[57]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4803,7 +3167,7 @@ func (x *Cluster_Get_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cluster_Get_Request.ProtoReflect.Descriptor instead.
 func (*Cluster_Get_Request) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{11, 1, 0}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 1, 0}
 }
 
 type Cluster_Get_Response struct {
@@ -4817,7 +3181,7 @@ type Cluster_Get_Response struct {
 func (x *Cluster_Get_Response) Reset() {
 	*x = Cluster_Get_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[81]
+		mi := &file_vince_v1_vince_proto_msgTypes[58]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4830,7 +3194,7 @@ func (x *Cluster_Get_Response) String() string {
 func (*Cluster_Get_Response) ProtoMessage() {}
 
 func (x *Cluster_Get_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[81]
+	mi := &file_vince_v1_vince_proto_msgTypes[58]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4843,7 +3207,7 @@ func (x *Cluster_Get_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cluster_Get_Response.ProtoReflect.Descriptor instead.
 func (*Cluster_Get_Response) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{11, 1, 1}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 1, 1}
 }
 
 func (x *Cluster_Get_Response) GetConfig() *Cluster_Config {
@@ -4867,7 +3231,7 @@ type Cluster_Config_Node struct {
 func (x *Cluster_Config_Node) Reset() {
 	*x = Cluster_Config_Node{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[83]
+		mi := &file_vince_v1_vince_proto_msgTypes[60]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4880,7 +3244,7 @@ func (x *Cluster_Config_Node) String() string {
 func (*Cluster_Config_Node) ProtoMessage() {}
 
 func (x *Cluster_Config_Node) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[83]
+	mi := &file_vince_v1_vince_proto_msgTypes[60]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4893,7 +3257,7 @@ func (x *Cluster_Config_Node) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cluster_Config_Node.ProtoReflect.Descriptor instead.
 func (*Cluster_Config_Node) Descriptor() ([]byte, []int) {
-	return file_vince_v1_vince_proto_rawDescGZIP(), []int{11, 2, 1}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{10, 2, 1}
 }
 
 func (x *Cluster_Config_Node) GetAccount() *Client_Auth {
@@ -5210,256 +3574,69 @@ var file_vince_v1_vince_proto_rawDesc = []byte{
 	0x0a, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0f,
 	0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52,
 	0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22, 0x08, 0x0a, 0x06, 0x4e, 0x6f, 0x74, 0x69, 0x63,
-	0x65, 0x22, 0xab, 0x17, 0x0a, 0x04, 0x52, 0x61, 0x66, 0x74, 0x1a, 0x64, 0x0a, 0x05, 0x45, 0x6e,
-	0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c,
-	0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x33, 0x0a, 0x07, 0x65,
-	0x78, 0x70, 0x69, 0x72, 0x65, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x67,
-	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x44,
-	0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x07, 0x65, 0x78, 0x70, 0x69, 0x72, 0x65, 0x73,
-	0x1a, 0xb7, 0x02, 0x0a, 0x03, 0x4c, 0x6f, 0x67, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e, 0x64, 0x65,
-	0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x12, 0x12,
-	0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x74, 0x65,
-	0x72, 0x6d, 0x12, 0x25, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e,
-	0x32, 0x11, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x4c, 0x6f, 0x67, 0x2e, 0x54,
-	0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74,
-	0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x1e, 0x0a,
-	0x0a, 0x65, 0x78, 0x74, 0x65, 0x6e, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28,
-	0x0c, 0x52, 0x0a, 0x65, 0x78, 0x74, 0x65, 0x6e, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x3b, 0x0a,
-	0x0b, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x06, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0a,
-	0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x65, 0x64, 0x41, 0x74, 0x22, 0x6e, 0x0a, 0x04, 0x54, 0x79,
-	0x70, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x10, 0x00, 0x12,
-	0x08, 0x0a, 0x04, 0x4e, 0x6f, 0x6f, 0x70, 0x10, 0x01, 0x12, 0x15, 0x0a, 0x11, 0x41, 0x64, 0x64,
-	0x50, 0x65, 0x65, 0x72, 0x44, 0x65, 0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65, 0x64, 0x10, 0x02,
-	0x12, 0x18, 0x0a, 0x14, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x50, 0x65, 0x65, 0x72, 0x44, 0x65,
-	0x70, 0x72, 0x65, 0x63, 0x61, 0x74, 0x65, 0x64, 0x10, 0x03, 0x12, 0x0b, 0x0a, 0x07, 0x42, 0x61,
-	0x72, 0x72, 0x69, 0x65, 0x72, 0x10, 0x04, 0x12, 0x11, 0x0a, 0x0d, 0x43, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x05, 0x1a, 0xf4, 0x01, 0x0a, 0x06, 0x43,
-	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x30, 0x0a, 0x07, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73,
-	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74,
-	0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x07,
-	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x1a, 0xb7, 0x01, 0x0a, 0x06, 0x53, 0x65, 0x72, 0x76,
-	0x65, 0x72, 0x12, 0x3b, 0x0a, 0x08, 0x73, 0x75, 0x66, 0x66, 0x72, 0x61, 0x67, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0e, 0x32, 0x1f, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x43,
-	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x53, 0x75, 0x66,
-	0x66, 0x72, 0x61, 0x67, 0x65, 0x52, 0x08, 0x73, 0x75, 0x66, 0x66, 0x72, 0x61, 0x67, 0x65, 0x12,
-	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12,
-	0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x6b,
-	0x65, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x22,
-	0x30, 0x0a, 0x08, 0x53, 0x75, 0x66, 0x66, 0x72, 0x61, 0x67, 0x65, 0x12, 0x09, 0x0a, 0x05, 0x56,
-	0x6f, 0x74, 0x65, 0x72, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x4e, 0x6f, 0x6e, 0x76, 0x6f, 0x74,
-	0x65, 0x72, 0x10, 0x01, 0x12, 0x0b, 0x0a, 0x07, 0x53, 0x74, 0x61, 0x67, 0x69, 0x6e, 0x67, 0x10,
-	0x02, 0x1a, 0x8b, 0x12, 0x0a, 0x03, 0x52, 0x50, 0x43, 0x1a, 0xb3, 0x05, 0x0a, 0x04, 0x43, 0x61,
-	0x6c, 0x6c, 0x1a, 0xc6, 0x02, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x53,
-	0x0a, 0x0e, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74,
-	0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x41, 0x70, 0x70,
-	0x65, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x48, 0x00, 0x52, 0x0d, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72,
-	0x69, 0x65, 0x73, 0x12, 0x37, 0x0a, 0x04, 0x76, 0x6f, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x21, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e,
-	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x2e, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x04, 0x76, 0x6f, 0x74, 0x65, 0x12, 0x59, 0x0a, 0x10,
-	0x69, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x5f, 0x73, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74,
-	0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x49, 0x6e, 0x73,
-	0x74, 0x61, 0x6c, 0x6c, 0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x0f, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x53,
-	0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x12, 0x4a, 0x0a, 0x0b, 0x74, 0x69, 0x6d, 0x65, 0x6f,
-	0x75, 0x74, 0x5f, 0x6e, 0x6f, 0x77, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x76,
-	0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61,
-	0x6e, 0x64, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x4e, 0x6f, 0x77, 0x2e, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x0a, 0x74, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74,
-	0x4e, 0x6f, 0x77, 0x42, 0x06, 0x0a, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x1a, 0xe1, 0x02, 0x0a, 0x08,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x54, 0x0a, 0x0e, 0x61, 0x70, 0x70, 0x65,
-	0x6e, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x2b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43,
-	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x41, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x45, 0x6e, 0x74,
-	0x72, 0x69, 0x65, 0x73, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x48, 0x00, 0x52,
-	0x0d, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x12, 0x38,
-	0x0a, 0x04, 0x76, 0x6f, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x76,
-	0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61,
-	0x6e, 0x64, 0x2e, 0x56, 0x6f, 0x74, 0x65, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x48, 0x00, 0x52, 0x04, 0x76, 0x6f, 0x74, 0x65, 0x12, 0x5a, 0x0a, 0x10, 0x69, 0x6e, 0x73, 0x74,
-	0x61, 0x6c, 0x6c, 0x5f, 0x73, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43,
-	0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c,
-	0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x48, 0x00, 0x52, 0x0f, 0x69, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x53, 0x6e, 0x61, 0x70,
-	0x73, 0x68, 0x6f, 0x74, 0x12, 0x4b, 0x0a, 0x0b, 0x74, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x5f,
-	0x6e, 0x6f, 0x77, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x76, 0x31, 0x2e, 0x52,
-	0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e,
-	0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x4e, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x48, 0x00, 0x52, 0x0a, 0x74, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x4e, 0x6f,
-	0x77, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x42, 0x06, 0x0a, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x1a,
-	0xcd, 0x0c, 0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x1a, 0xbb, 0x03, 0x0a, 0x0d,
-	0x41, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x1a, 0xf4, 0x01,
-	0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61,
-	0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52,
-	0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e,
-	0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x12,
-	0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x74, 0x65,
-	0x72, 0x6d, 0x12, 0x24, 0x0a, 0x0e, 0x70, 0x72, 0x65, 0x76, 0x5f, 0x6c, 0x6f, 0x67, 0x5f, 0x65,
-	0x6e, 0x74, 0x72, 0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0c, 0x70, 0x72, 0x65, 0x76,
-	0x4c, 0x6f, 0x67, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x22, 0x0a, 0x0d, 0x70, 0x72, 0x65, 0x76,
-	0x5f, 0x6c, 0x6f, 0x67, 0x5f, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x0b, 0x70, 0x72, 0x65, 0x76, 0x4c, 0x6f, 0x67, 0x54, 0x65, 0x72, 0x6d, 0x12, 0x26, 0x0a, 0x07,
-	0x65, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0c, 0x2e,
-	0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x4c, 0x6f, 0x67, 0x52, 0x07, 0x65, 0x6e, 0x74,
-	0x72, 0x69, 0x65, 0x73, 0x12, 0x2e, 0x0a, 0x13, 0x6c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x5f, 0x63,
-	0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x5f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x18, 0x07, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x11, 0x6c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x49,
-	0x6e, 0x64, 0x65, 0x78, 0x1a, 0xb2, 0x01, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e,
-	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06,
-	0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x19, 0x0a, 0x08, 0x6c, 0x61,
-	0x73, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x6c, 0x61,
-	0x73, 0x74, 0x4c, 0x6f, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73,
-	0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12,
-	0x28, 0x0a, 0x10, 0x6e, 0x6f, 0x5f, 0x72, 0x65, 0x74, 0x72, 0x79, 0x5f, 0x62, 0x61, 0x63, 0x6b,
-	0x6f, 0x66, 0x66, 0x18, 0x05, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0e, 0x6e, 0x6f, 0x52, 0x65, 0x74,
-	0x72, 0x79, 0x42, 0x61, 0x63, 0x6b, 0x6f, 0x66, 0x66, 0x1a, 0xc5, 0x02, 0x0a, 0x04, 0x56, 0x6f,
-	0x74, 0x65, 0x1a, 0xcd, 0x01, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x33,
-	0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b,
-	0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d,
-	0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61,
-	0x64, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x24, 0x0a, 0x0e, 0x6c, 0x61, 0x73, 0x74, 0x5f,
-	0x6c, 0x6f, 0x67, 0x5f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x0c, 0x6c, 0x61, 0x73, 0x74, 0x4c, 0x6f, 0x67, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x12, 0x22, 0x0a,
-	0x0d, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x5f, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x6c, 0x61, 0x73, 0x74, 0x4c, 0x6f, 0x67, 0x54, 0x65, 0x72,
-	0x6d, 0x12, 0x2f, 0x0a, 0x13, 0x6c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x68, 0x69, 0x70, 0x5f,
-	0x74, 0x72, 0x61, 0x6e, 0x73, 0x66, 0x65, 0x72, 0x18, 0x05, 0x20, 0x01, 0x28, 0x08, 0x52, 0x12,
-	0x6c, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x68, 0x69, 0x70, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x66,
-	0x65, 0x72, 0x1a, 0x6d, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33,
-	0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b,
-	0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d,
-	0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61,
-	0x64, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x18, 0x0a, 0x07, 0x67, 0x72, 0x61, 0x6e, 0x74,
-	0x65, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x67, 0x72, 0x61, 0x6e, 0x74, 0x65,
-	0x64, 0x1a, 0xa0, 0x04, 0x0a, 0x0f, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x53, 0x6e, 0x61,
-	0x70, 0x73, 0x68, 0x6f, 0x74, 0x1a, 0x9d, 0x03, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e,
-	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06,
-	0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x5f, 0x0a, 0x10, 0x73, 0x6e, 0x61, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e,
-	0x32, 0x34, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43,
-	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x53, 0x6e,
-	0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x56,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x0f, 0x73, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74,
-	0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x16, 0x0a, 0x06, 0x6c,
-	0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x6c, 0x65, 0x61,
-	0x64, 0x65, 0x72, 0x12, 0x24, 0x0a, 0x0e, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x5f,
-	0x69, 0x6e, 0x64, 0x65, 0x78, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0c, 0x6c, 0x61, 0x73,
-	0x74, 0x4c, 0x6f, 0x67, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x12, 0x22, 0x0a, 0x0d, 0x6c, 0x61, 0x73,
-	0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x5f, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x0b, 0x6c, 0x61, 0x73, 0x74, 0x4c, 0x6f, 0x67, 0x54, 0x65, 0x72, 0x6d, 0x12, 0x24, 0x0a,
-	0x0d, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x07,
-	0x20, 0x01, 0x28, 0x0c, 0x52, 0x0d, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x12, 0x2f, 0x0a, 0x13, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x12, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49,
-	0x6e, 0x64, 0x65, 0x78, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x09, 0x20, 0x01,
-	0x28, 0x03, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x22, 0x1b, 0x0a, 0x07, 0x56, 0x65, 0x72, 0x73,
-	0x69, 0x6f, 0x6e, 0x12, 0x07, 0x0a, 0x03, 0x4d, 0x69, 0x6e, 0x10, 0x00, 0x12, 0x07, 0x0a, 0x03,
-	0x4d, 0x61, 0x78, 0x10, 0x01, 0x1a, 0x6d, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e,
-	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06,
-	0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x74, 0x65, 0x72, 0x6d, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75,
-	0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63,
-	0x63, 0x65, 0x73, 0x73, 0x1a, 0x8d, 0x01, 0x0a, 0x0a, 0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74,
-	0x4e, 0x6f, 0x77, 0x1a, 0x3e, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x33,
-	0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b,
-	0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f, 0x6d,
-	0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61,
-	0x64, 0x65, 0x72, 0x1a, 0x3f, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x33, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43, 0x6f,
-	0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65,
-	0x61, 0x64, 0x65, 0x72, 0x1a, 0x88, 0x01, 0x0a, 0x06, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12,
-	0x3d, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e,
-	0x32, 0x23, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x61, 0x66, 0x74, 0x2e, 0x52, 0x50, 0x43, 0x2e, 0x43,
-	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x2e, 0x56, 0x65,
-	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x0e,
-	0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12,
-	0x0a, 0x04, 0x61, 0x64, 0x64, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x61, 0x64,
-	0x64, 0x72, 0x22, 0x1b, 0x0a, 0x07, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x07, 0x0a,
-	0x03, 0x4d, 0x69, 0x6e, 0x10, 0x00, 0x12, 0x07, 0x0a, 0x03, 0x4d, 0x61, 0x78, 0x10, 0x01, 0x22,
-	0xc1, 0x03, 0x0a, 0x07, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x1a, 0x5a, 0x0a, 0x05, 0x41,
-	0x70, 0x70, 0x6c, 0x79, 0x1a, 0x35, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x2a, 0x0a, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x12, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x2e, 0x43, 0x6f, 0x6e,
-	0x66, 0x69, 0x67, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x1a, 0x1a, 0x0a, 0x08, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x6f, 0x6b, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x02, 0x6f, 0x6b, 0x1a, 0x48, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x1a, 0x09,
-	0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x36, 0x0a, 0x08, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2a, 0x0a, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x75, 0x73, 0x74,
-	0x65, 0x72, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x1a, 0x8f, 0x02, 0x0a, 0x06, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x12, 0x0a, 0x04,
-	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-	0x12, 0x33, 0x0a, 0x05, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x1d, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x2e, 0x43, 0x6f, 0x6e,
-	0x66, 0x69, 0x67, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x05,
-	0x6e, 0x6f, 0x64, 0x65, 0x73, 0x1a, 0x51, 0x0a, 0x0a, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x45, 0x6e,
-	0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x2d, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65,
-	0x72, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x1a, 0x69, 0x0a, 0x04, 0x4e, 0x6f, 0x64, 0x65,
-	0x12, 0x29, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x0f, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x2e, 0x41, 0x75,
-	0x74, 0x68, 0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x62,
-	0x6f, 0x6f, 0x74, 0x73, 0x74, 0x72, 0x61, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09,
-	0x62, 0x6f, 0x6f, 0x74, 0x73, 0x74, 0x72, 0x61, 0x70, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72,
-	0x65, 0x73, 0x73, 0x2a, 0xe1, 0x02, 0x0a, 0x06, 0x43, 0x6f, 0x6c, 0x75, 0x6d, 0x6e, 0x12, 0x0a,
-	0x0a, 0x06, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x64, 0x75,
-	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x01, 0x12, 0x06, 0x0a, 0x02, 0x69, 0x64, 0x10, 0x02,
-	0x12, 0x0b, 0x0a, 0x07, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x03, 0x12, 0x0d, 0x0a,
-	0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x10, 0x04, 0x12, 0x0b, 0x0a, 0x07,
-	0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x10, 0x05, 0x12, 0x13, 0x0a, 0x0f, 0x62, 0x72, 0x6f,
-	0x77, 0x73, 0x65, 0x72, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x06, 0x12, 0x08,
-	0x0a, 0x04, 0x63, 0x69, 0x74, 0x79, 0x10, 0x07, 0x12, 0x0b, 0x0a, 0x07, 0x63, 0x6f, 0x75, 0x6e,
-	0x74, 0x72, 0x79, 0x10, 0x08, 0x12, 0x0e, 0x0a, 0x0a, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x5f, 0x70,
-	0x61, 0x67, 0x65, 0x10, 0x09, 0x12, 0x09, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x10, 0x0a,
-	0x12, 0x0d, 0x0a, 0x09, 0x65, 0x78, 0x69, 0x74, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x0b, 0x12,
-	0x08, 0x0a, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x10, 0x0c, 0x12, 0x06, 0x0a, 0x02, 0x6f, 0x73, 0x10,
-	0x0d, 0x12, 0x0e, 0x0a, 0x0a, 0x6f, 0x73, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10,
-	0x0e, 0x12, 0x08, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x10, 0x0f, 0x12, 0x0c, 0x0a, 0x08, 0x72,
-	0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72, 0x10, 0x10, 0x12, 0x13, 0x0a, 0x0f, 0x72, 0x65, 0x66,
-	0x65, 0x72, 0x72, 0x65, 0x72, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x10, 0x11, 0x12, 0x0a,
-	0x0a, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e, 0x10, 0x12, 0x12, 0x0a, 0x0a, 0x06, 0x73, 0x63,
-	0x72, 0x65, 0x65, 0x6e, 0x10, 0x13, 0x12, 0x10, 0x0a, 0x0c, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x61,
-	0x6d, 0x70, 0x61, 0x69, 0x67, 0x6e, 0x10, 0x14, 0x12, 0x0f, 0x0a, 0x0b, 0x75, 0x74, 0x6d, 0x5f,
-	0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x10, 0x15, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d,
-	0x5f, 0x6d, 0x65, 0x64, 0x69, 0x75, 0x6d, 0x10, 0x16, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d,
-	0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x10, 0x17, 0x12, 0x0c, 0x0a, 0x08, 0x75, 0x74, 0x6d,
-	0x5f, 0x74, 0x65, 0x72, 0x6d, 0x10, 0x18, 0x32, 0x47, 0x0a, 0x05, 0x56, 0x69, 0x6e, 0x63, 0x65,
-	0x12, 0x3e, 0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x69, 0x74, 0x65, 0x12, 0x17,
-	0x2e, 0x76, 0x31, 0x2e, 0x53, 0x69, 0x74, 0x65, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x2e,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x69, 0x74,
-	0x65, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x42, 0x73, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x56, 0x69, 0x6e, 0x63,
-	0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74,
-	0x69, 0x63, 0x73, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x76, 0x31, 0xa2,
-	0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02, 0x56, 0x31, 0xe2,
-	0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
-	0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x22, 0xc1, 0x03, 0x0a, 0x07, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x1a, 0x5a, 0x0a,
+	0x05, 0x41, 0x70, 0x70, 0x6c, 0x79, 0x1a, 0x35, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x12, 0x2a, 0x0a, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x12, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x2e, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x1a, 0x1a, 0x0a,
+	0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x6f, 0x6b, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x6f, 0x6b, 0x1a, 0x48, 0x0a, 0x03, 0x47, 0x65, 0x74,
+	0x1a, 0x09, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x36, 0x0a, 0x08, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2a, 0x0a, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69,
+	0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x75,
+	0x73, 0x74, 0x65, 0x72, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x06, 0x63, 0x6f, 0x6e,
+	0x66, 0x69, 0x67, 0x1a, 0x8f, 0x02, 0x0a, 0x06, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x12,
+	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x12, 0x33, 0x0a, 0x05, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x1d, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x2e, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79,
+	0x52, 0x05, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x1a, 0x51, 0x0a, 0x0a, 0x4e, 0x6f, 0x64, 0x65, 0x73,
+	0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x2d, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x75, 0x73,
+	0x74, 0x65, 0x72, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x1a, 0x69, 0x0a, 0x04, 0x4e, 0x6f,
+	0x64, 0x65, 0x12, 0x29, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x2e,
+	0x41, 0x75, 0x74, 0x68, 0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x1c, 0x0a,
+	0x09, 0x62, 0x6f, 0x6f, 0x74, 0x73, 0x74, 0x72, 0x61, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08,
+	0x52, 0x09, 0x62, 0x6f, 0x6f, 0x74, 0x73, 0x74, 0x72, 0x61, 0x70, 0x12, 0x18, 0x0a, 0x07, 0x61,
+	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x2a, 0xe1, 0x02, 0x0a, 0x06, 0x43, 0x6f, 0x6c, 0x75, 0x6d, 0x6e,
+	0x12, 0x0a, 0x0a, 0x06, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08,
+	0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x01, 0x12, 0x06, 0x0a, 0x02, 0x69, 0x64,
+	0x10, 0x02, 0x12, 0x0b, 0x0a, 0x07, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x03, 0x12,
+	0x0d, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x10, 0x04, 0x12, 0x0b,
+	0x0a, 0x07, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x10, 0x05, 0x12, 0x13, 0x0a, 0x0f, 0x62,
+	0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x06,
+	0x12, 0x08, 0x0a, 0x04, 0x63, 0x69, 0x74, 0x79, 0x10, 0x07, 0x12, 0x0b, 0x0a, 0x07, 0x63, 0x6f,
+	0x75, 0x6e, 0x74, 0x72, 0x79, 0x10, 0x08, 0x12, 0x0e, 0x0a, 0x0a, 0x65, 0x6e, 0x74, 0x72, 0x79,
+	0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x09, 0x12, 0x09, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74,
+	0x10, 0x0a, 0x12, 0x0d, 0x0a, 0x09, 0x65, 0x78, 0x69, 0x74, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10,
+	0x0b, 0x12, 0x08, 0x0a, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x10, 0x0c, 0x12, 0x06, 0x0a, 0x02, 0x6f,
+	0x73, 0x10, 0x0d, 0x12, 0x0e, 0x0a, 0x0a, 0x6f, 0x73, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
+	0x6e, 0x10, 0x0e, 0x12, 0x08, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x10, 0x0f, 0x12, 0x0c, 0x0a,
+	0x08, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72, 0x10, 0x10, 0x12, 0x13, 0x0a, 0x0f, 0x72,
+	0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x10, 0x11,
+	0x12, 0x0a, 0x0a, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e, 0x10, 0x12, 0x12, 0x0a, 0x0a, 0x06,
+	0x73, 0x63, 0x72, 0x65, 0x65, 0x6e, 0x10, 0x13, 0x12, 0x10, 0x0a, 0x0c, 0x75, 0x74, 0x6d, 0x5f,
+	0x63, 0x61, 0x6d, 0x70, 0x61, 0x69, 0x67, 0x6e, 0x10, 0x14, 0x12, 0x0f, 0x0a, 0x0b, 0x75, 0x74,
+	0x6d, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x10, 0x15, 0x12, 0x0e, 0x0a, 0x0a, 0x75,
+	0x74, 0x6d, 0x5f, 0x6d, 0x65, 0x64, 0x69, 0x75, 0x6d, 0x10, 0x16, 0x12, 0x0e, 0x0a, 0x0a, 0x75,
+	0x74, 0x6d, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x10, 0x17, 0x12, 0x0c, 0x0a, 0x08, 0x75,
+	0x74, 0x6d, 0x5f, 0x74, 0x65, 0x72, 0x6d, 0x10, 0x18, 0x32, 0x47, 0x0a, 0x05, 0x56, 0x69, 0x6e,
+	0x63, 0x65, 0x12, 0x3e, 0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x69, 0x74, 0x65,
+	0x12, 0x17, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x69, 0x74, 0x65, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74,
+	0x65, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x76, 0x31, 0x2e, 0x53,
+	0x69, 0x74, 0x65, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x42, 0x73, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x56, 0x69,
+	0x6e, 0x63, 0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c,
+	0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x67, 0x65, 0x6e, 0x2f,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x76,
+	0x31, 0xa2, 0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02, 0x56,
+	0x31, 0xe2, 0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61,
+	0x74, 0x61, 0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -5474,178 +3651,127 @@ func file_vince_v1_vince_proto_rawDescGZIP() []byte {
 	return file_vince_v1_vince_proto_rawDescData
 }
 
-var file_vince_v1_vince_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-var file_vince_v1_vince_proto_msgTypes = make([]protoimpl.MessageInfo, 84)
+var file_vince_v1_vince_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_vince_v1_vince_proto_msgTypes = make([]protoimpl.MessageInfo, 61)
 var file_vince_v1_vince_proto_goTypes = []interface{}{
-	(Column)(0),                      // 0: v1.Column
-	(Token_Issuer)(0),                // 1: v1.Token.Issuer
-	(Query_Colum_DataType)(0),        // 2: v1.Query.Colum.DataType
-	(Raft_Log_Type)(0),               // 3: v1.Raft.Log.Type
-	(Raft_Config_Server_Suffrage)(0), // 4: v1.Raft.Config.Server.Suffrage
-	(Raft_RPC_Command_InstallSnapshot_Request_Version)(0), // 5: v1.Raft.RPC.Command.InstallSnapshot.Request.Version
-	(Raft_RPC_Command_Header_Version)(0),                  // 6: v1.Raft.RPC.Command.Header.Version
-	(*Site)(nil),                                          // 7: v1.Site
-	(*Status)(nil),                                        // 8: v1.Status
-	(*Build)(nil),                                         // 9: v1.Build
-	(*Config)(nil),                                        // 10: v1.Config
-	(*Account)(nil),                                       // 11: v1.Account
-	(*Client)(nil),                                        // 12: v1.Client
-	(*Token)(nil),                                         // 13: v1.Token
-	(*Error)(nil),                                         // 14: v1.Error
-	(*Query)(nil),                                         // 15: v1.Query
-	(*Notice)(nil),                                        // 16: v1.Notice
-	(*Raft)(nil),                                          // 17: v1.Raft
-	(*Cluster)(nil),                                       // 18: v1.Cluster
-	(*Site_Key)(nil),                                      // 19: v1.Site.Key
-	(*Site_Create)(nil),                                   // 20: v1.Site.Create
-	(*Site_Get)(nil),                                      // 21: v1.Site.Get
-	(*Site_List)(nil),                                     // 22: v1.Site.List
-	(*Site_Delete)(nil),                                   // 23: v1.Site.Delete
-	(*Site_Create_Request)(nil),                           // 24: v1.Site.Create.Request
-	(*Site_Create_Response)(nil),                          // 25: v1.Site.Create.Response
-	(*Site_Get_Request)(nil),                              // 26: v1.Site.Get.Request
-	(*Site_Get_Response)(nil),                             // 27: v1.Site.Get.Response
-	(*Site_List_Request)(nil),                             // 28: v1.Site.List.Request
-	(*Site_List_Response)(nil),                            // 29: v1.Site.List.Response
-	(*Site_Delete_Request)(nil),                           // 30: v1.Site.Delete.Request
-	(*Site_Delete_Response)(nil),                          // 31: v1.Site.Delete.Response
-	(*Config_Notifier)(nil),                               // 32: v1.Config.Notifier
-	(*Config_Email)(nil),                                  // 33: v1.Config.Email
-	(*Config_Webhook)(nil),                                // 34: v1.Config.Webhook
-	(*Config_HTTP)(nil),                                   // 35: v1.Config.HTTP
-	nil,                                                   // 36: v1.Config.Email.HeadersEntry
-	(*Config_HTTP_BasicAuth)(nil),                         // 37: v1.Config.HTTP.BasicAuth
-	(*Config_HTTP_Authorization)(nil),                     // 38: v1.Config.HTTP.Authorization
-	(*Config_HTTP_OAuth2)(nil),                            // 39: v1.Config.HTTP.OAuth2
-	(*Config_HTTP_TLSConfig)(nil),                         // 40: v1.Config.HTTP.TLSConfig
-	nil,                                                   // 41: v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	(*Account_Key)(nil),                                   // 42: v1.Account.Key
-	nil,                                                   // 43: v1.Client.InstanceEntry
-	nil,                                                   // 44: v1.Client.ServerIdEntry
-	nil,                                                   // 45: v1.Client.ClustersEntry
-	(*Client_Instance)(nil),                               // 46: v1.Client.Instance
-	(*Client_Active)(nil),                                 // 47: v1.Client.Active
-	(*Client_Auth)(nil),                                   // 48: v1.Client.Auth
-	nil,                                                   // 49: v1.Client.Instance.AccountsEntry
-	(*Token_Create)(nil),                                  // 50: v1.Token.Create
-	(*Token_Key)(nil),                                     // 51: v1.Token.Key
-	(*Token_Create_Request)(nil),                          // 52: v1.Token.Create.Request
-	(*Token_Create_Response)(nil),                         // 53: v1.Token.Create.Response
-	(*Query_Value)(nil),                                   // 54: v1.Query.Value
-	(*Query_Request)(nil),                                 // 55: v1.Query.Request
-	(*Query_Response)(nil),                                // 56: v1.Query.Response
-	(*Query_Param)(nil),                                   // 57: v1.Query.Param
-	(*Query_Colum)(nil),                                   // 58: v1.Query.Colum
-	(*Query_Row)(nil),                                     // 59: v1.Query.Row
-	(*Raft_Entry)(nil),                                    // 60: v1.Raft.Entry
-	(*Raft_Log)(nil),                                      // 61: v1.Raft.Log
-	(*Raft_Config)(nil),                                   // 62: v1.Raft.Config
-	(*Raft_RPC)(nil),                                      // 63: v1.Raft.RPC
-	(*Raft_Config_Server)(nil),                            // 64: v1.Raft.Config.Server
-	(*Raft_RPC_Call)(nil),                                 // 65: v1.Raft.RPC.Call
-	(*Raft_RPC_Command)(nil),                              // 66: v1.Raft.RPC.Command
-	(*Raft_RPC_Call_Request)(nil),                         // 67: v1.Raft.RPC.Call.Request
-	(*Raft_RPC_Call_Response)(nil),                        // 68: v1.Raft.RPC.Call.Response
-	(*Raft_RPC_Command_AppendEntries)(nil),                // 69: v1.Raft.RPC.Command.AppendEntries
-	(*Raft_RPC_Command_Vote)(nil),                         // 70: v1.Raft.RPC.Command.Vote
-	(*Raft_RPC_Command_InstallSnapshot)(nil),              // 71: v1.Raft.RPC.Command.InstallSnapshot
-	(*Raft_RPC_Command_TimeoutNow)(nil),                   // 72: v1.Raft.RPC.Command.TimeoutNow
-	(*Raft_RPC_Command_Header)(nil),                       // 73: v1.Raft.RPC.Command.Header
-	(*Raft_RPC_Command_AppendEntries_Request)(nil),    // 74: v1.Raft.RPC.Command.AppendEntries.Request
-	(*Raft_RPC_Command_AppendEntries_Response)(nil),   // 75: v1.Raft.RPC.Command.AppendEntries.Response
-	(*Raft_RPC_Command_Vote_Request)(nil),             // 76: v1.Raft.RPC.Command.Vote.Request
-	(*Raft_RPC_Command_Vote_Response)(nil),            // 77: v1.Raft.RPC.Command.Vote.Response
-	(*Raft_RPC_Command_InstallSnapshot_Request)(nil),  // 78: v1.Raft.RPC.Command.InstallSnapshot.Request
-	(*Raft_RPC_Command_InstallSnapshot_Response)(nil), // 79: v1.Raft.RPC.Command.InstallSnapshot.Response
-	(*Raft_RPC_Command_TimeoutNow_Request)(nil),       // 80: v1.Raft.RPC.Command.TimeoutNow.Request
-	(*Raft_RPC_Command_TimeoutNow_Response)(nil),      // 81: v1.Raft.RPC.Command.TimeoutNow.Response
-	(*Cluster_Apply)(nil),                             // 82: v1.Cluster.Apply
-	(*Cluster_Get)(nil),                               // 83: v1.Cluster.Get
-	(*Cluster_Config)(nil),                            // 84: v1.Cluster.Config
-	(*Cluster_Apply_Request)(nil),                     // 85: v1.Cluster.Apply.Request
-	(*Cluster_Apply_Response)(nil),                    // 86: v1.Cluster.Apply.Response
-	(*Cluster_Get_Request)(nil),                       // 87: v1.Cluster.Get.Request
-	(*Cluster_Get_Response)(nil),                      // 88: v1.Cluster.Get.Response
-	nil,                                               // 89: v1.Cluster.Config.NodesEntry
-	(*Cluster_Config_Node)(nil),                       // 90: v1.Cluster.Config.Node
-	(*durationpb.Duration)(nil),                       // 91: google.protobuf.Duration
-	(*v1.StoreKey)(nil),                               // 92: v1.StoreKey
-	(*timestamppb.Timestamp)(nil),                     // 93: google.protobuf.Timestamp
+	(Column)(0),                       // 0: v1.Column
+	(Token_Issuer)(0),                 // 1: v1.Token.Issuer
+	(Query_Colum_DataType)(0),         // 2: v1.Query.Colum.DataType
+	(*Site)(nil),                      // 3: v1.Site
+	(*Status)(nil),                    // 4: v1.Status
+	(*Build)(nil),                     // 5: v1.Build
+	(*Config)(nil),                    // 6: v1.Config
+	(*Account)(nil),                   // 7: v1.Account
+	(*Client)(nil),                    // 8: v1.Client
+	(*Token)(nil),                     // 9: v1.Token
+	(*Error)(nil),                     // 10: v1.Error
+	(*Query)(nil),                     // 11: v1.Query
+	(*Notice)(nil),                    // 12: v1.Notice
+	(*Cluster)(nil),                   // 13: v1.Cluster
+	(*Site_Key)(nil),                  // 14: v1.Site.Key
+	(*Site_Create)(nil),               // 15: v1.Site.Create
+	(*Site_Get)(nil),                  // 16: v1.Site.Get
+	(*Site_List)(nil),                 // 17: v1.Site.List
+	(*Site_Delete)(nil),               // 18: v1.Site.Delete
+	(*Site_Create_Request)(nil),       // 19: v1.Site.Create.Request
+	(*Site_Create_Response)(nil),      // 20: v1.Site.Create.Response
+	(*Site_Get_Request)(nil),          // 21: v1.Site.Get.Request
+	(*Site_Get_Response)(nil),         // 22: v1.Site.Get.Response
+	(*Site_List_Request)(nil),         // 23: v1.Site.List.Request
+	(*Site_List_Response)(nil),        // 24: v1.Site.List.Response
+	(*Site_Delete_Request)(nil),       // 25: v1.Site.Delete.Request
+	(*Site_Delete_Response)(nil),      // 26: v1.Site.Delete.Response
+	(*Config_Notifier)(nil),           // 27: v1.Config.Notifier
+	(*Config_Email)(nil),              // 28: v1.Config.Email
+	(*Config_Webhook)(nil),            // 29: v1.Config.Webhook
+	(*Config_HTTP)(nil),               // 30: v1.Config.HTTP
+	nil,                               // 31: v1.Config.Email.HeadersEntry
+	(*Config_HTTP_BasicAuth)(nil),     // 32: v1.Config.HTTP.BasicAuth
+	(*Config_HTTP_Authorization)(nil), // 33: v1.Config.HTTP.Authorization
+	(*Config_HTTP_OAuth2)(nil),        // 34: v1.Config.HTTP.OAuth2
+	(*Config_HTTP_TLSConfig)(nil),     // 35: v1.Config.HTTP.TLSConfig
+	nil,                               // 36: v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	(*Account_Key)(nil),               // 37: v1.Account.Key
+	nil,                               // 38: v1.Client.InstanceEntry
+	nil,                               // 39: v1.Client.ServerIdEntry
+	nil,                               // 40: v1.Client.ClustersEntry
+	(*Client_Instance)(nil),           // 41: v1.Client.Instance
+	(*Client_Active)(nil),             // 42: v1.Client.Active
+	(*Client_Auth)(nil),               // 43: v1.Client.Auth
+	nil,                               // 44: v1.Client.Instance.AccountsEntry
+	(*Token_Create)(nil),              // 45: v1.Token.Create
+	(*Token_Key)(nil),                 // 46: v1.Token.Key
+	(*Token_Create_Request)(nil),      // 47: v1.Token.Create.Request
+	(*Token_Create_Response)(nil),     // 48: v1.Token.Create.Response
+	(*Query_Value)(nil),               // 49: v1.Query.Value
+	(*Query_Request)(nil),             // 50: v1.Query.Request
+	(*Query_Response)(nil),            // 51: v1.Query.Response
+	(*Query_Param)(nil),               // 52: v1.Query.Param
+	(*Query_Colum)(nil),               // 53: v1.Query.Colum
+	(*Query_Row)(nil),                 // 54: v1.Query.Row
+	(*Cluster_Apply)(nil),             // 55: v1.Cluster.Apply
+	(*Cluster_Get)(nil),               // 56: v1.Cluster.Get
+	(*Cluster_Config)(nil),            // 57: v1.Cluster.Config
+	(*Cluster_Apply_Request)(nil),     // 58: v1.Cluster.Apply.Request
+	(*Cluster_Apply_Response)(nil),    // 59: v1.Cluster.Apply.Response
+	(*Cluster_Get_Request)(nil),       // 60: v1.Cluster.Get.Request
+	(*Cluster_Get_Response)(nil),      // 61: v1.Cluster.Get.Response
+	nil,                               // 62: v1.Cluster.Config.NodesEntry
+	(*Cluster_Config_Node)(nil),       // 63: v1.Cluster.Config.Node
+	(*durationpb.Duration)(nil),       // 64: google.protobuf.Duration
+	(*v1.StoreKey)(nil),               // 65: v1.StoreKey
+	(*timestamppb.Timestamp)(nil),     // 66: google.protobuf.Timestamp
 }
 var file_vince_v1_vince_proto_depIdxs = []int32{
-	91, // 0: v1.Config.sync_interval:type_name -> google.protobuf.Duration
-	32, // 1: v1.Config.notifiers:type_name -> v1.Config.Notifier
-	43, // 2: v1.Client.instance:type_name -> v1.Client.InstanceEntry
-	44, // 3: v1.Client.server_id:type_name -> v1.Client.ServerIdEntry
-	47, // 4: v1.Client.active:type_name -> v1.Client.Active
-	45, // 5: v1.Client.clusters:type_name -> v1.Client.ClustersEntry
-	92, // 6: v1.Site.Key.store:type_name -> v1.StoreKey
-	7,  // 7: v1.Site.Create.Response.site:type_name -> v1.Site
-	7,  // 8: v1.Site.Get.Response.site:type_name -> v1.Site
-	7,  // 9: v1.Site.List.Response.list:type_name -> v1.Site
-	33, // 10: v1.Config.Notifier.email:type_name -> v1.Config.Email
-	34, // 11: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
-	36, // 12: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
-	40, // 13: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	35, // 14: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
-	37, // 15: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
-	38, // 16: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
-	39, // 17: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
-	40, // 18: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	41, // 19: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	40, // 20: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	92, // 21: v1.Account.Key.store:type_name -> v1.StoreKey
-	46, // 22: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
-	84, // 23: v1.Client.ClustersEntry.value:type_name -> v1.Cluster.Config
-	49, // 24: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
-	48, // 25: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
-	92, // 26: v1.Token.Key.store:type_name -> v1.StoreKey
-	91, // 27: v1.Token.Create.Request.ttl:type_name -> google.protobuf.Duration
-	48, // 28: v1.Token.Create.Response.auth:type_name -> v1.Client.Auth
-	93, // 29: v1.Query.Value.timestamp:type_name -> google.protobuf.Timestamp
-	57, // 30: v1.Query.Request.params:type_name -> v1.Query.Param
-	91, // 31: v1.Query.Response.elapsed:type_name -> google.protobuf.Duration
-	58, // 32: v1.Query.Response.columns:type_name -> v1.Query.Colum
-	59, // 33: v1.Query.Response.rows:type_name -> v1.Query.Row
-	54, // 34: v1.Query.Param.value:type_name -> v1.Query.Value
+	64, // 0: v1.Config.sync_interval:type_name -> google.protobuf.Duration
+	27, // 1: v1.Config.notifiers:type_name -> v1.Config.Notifier
+	38, // 2: v1.Client.instance:type_name -> v1.Client.InstanceEntry
+	39, // 3: v1.Client.server_id:type_name -> v1.Client.ServerIdEntry
+	42, // 4: v1.Client.active:type_name -> v1.Client.Active
+	40, // 5: v1.Client.clusters:type_name -> v1.Client.ClustersEntry
+	65, // 6: v1.Site.Key.store:type_name -> v1.StoreKey
+	3,  // 7: v1.Site.Create.Response.site:type_name -> v1.Site
+	3,  // 8: v1.Site.Get.Response.site:type_name -> v1.Site
+	3,  // 9: v1.Site.List.Response.list:type_name -> v1.Site
+	28, // 10: v1.Config.Notifier.email:type_name -> v1.Config.Email
+	29, // 11: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
+	31, // 12: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
+	35, // 13: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	30, // 14: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
+	32, // 15: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
+	33, // 16: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
+	34, // 17: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
+	35, // 18: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	36, // 19: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	35, // 20: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	65, // 21: v1.Account.Key.store:type_name -> v1.StoreKey
+	41, // 22: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
+	57, // 23: v1.Client.ClustersEntry.value:type_name -> v1.Cluster.Config
+	44, // 24: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
+	43, // 25: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
+	65, // 26: v1.Token.Key.store:type_name -> v1.StoreKey
+	64, // 27: v1.Token.Create.Request.ttl:type_name -> google.protobuf.Duration
+	43, // 28: v1.Token.Create.Response.auth:type_name -> v1.Client.Auth
+	66, // 29: v1.Query.Value.timestamp:type_name -> google.protobuf.Timestamp
+	52, // 30: v1.Query.Request.params:type_name -> v1.Query.Param
+	64, // 31: v1.Query.Response.elapsed:type_name -> google.protobuf.Duration
+	53, // 32: v1.Query.Response.columns:type_name -> v1.Query.Colum
+	54, // 33: v1.Query.Response.rows:type_name -> v1.Query.Row
+	49, // 34: v1.Query.Param.value:type_name -> v1.Query.Value
 	2,  // 35: v1.Query.Colum.data_type:type_name -> v1.Query.Colum.DataType
-	54, // 36: v1.Query.Row.values:type_name -> v1.Query.Value
-	91, // 37: v1.Raft.Entry.expires:type_name -> google.protobuf.Duration
-	3,  // 38: v1.Raft.Log.type:type_name -> v1.Raft.Log.Type
-	93, // 39: v1.Raft.Log.appended_at:type_name -> google.protobuf.Timestamp
-	64, // 40: v1.Raft.Config.servers:type_name -> v1.Raft.Config.Server
-	4,  // 41: v1.Raft.Config.Server.suffrage:type_name -> v1.Raft.Config.Server.Suffrage
-	74, // 42: v1.Raft.RPC.Call.Request.append_entries:type_name -> v1.Raft.RPC.Command.AppendEntries.Request
-	76, // 43: v1.Raft.RPC.Call.Request.vote:type_name -> v1.Raft.RPC.Command.Vote.Request
-	78, // 44: v1.Raft.RPC.Call.Request.install_snapshot:type_name -> v1.Raft.RPC.Command.InstallSnapshot.Request
-	80, // 45: v1.Raft.RPC.Call.Request.timeout_now:type_name -> v1.Raft.RPC.Command.TimeoutNow.Request
-	75, // 46: v1.Raft.RPC.Call.Response.append_entries:type_name -> v1.Raft.RPC.Command.AppendEntries.Response
-	77, // 47: v1.Raft.RPC.Call.Response.vote:type_name -> v1.Raft.RPC.Command.Vote.Response
-	79, // 48: v1.Raft.RPC.Call.Response.install_snapshot:type_name -> v1.Raft.RPC.Command.InstallSnapshot.Response
-	81, // 49: v1.Raft.RPC.Call.Response.timeout_now:type_name -> v1.Raft.RPC.Command.TimeoutNow.Response
-	6,  // 50: v1.Raft.RPC.Command.Header.version:type_name -> v1.Raft.RPC.Command.Header.Version
-	73, // 51: v1.Raft.RPC.Command.AppendEntries.Request.header:type_name -> v1.Raft.RPC.Command.Header
-	61, // 52: v1.Raft.RPC.Command.AppendEntries.Request.entries:type_name -> v1.Raft.Log
-	73, // 53: v1.Raft.RPC.Command.AppendEntries.Response.header:type_name -> v1.Raft.RPC.Command.Header
-	73, // 54: v1.Raft.RPC.Command.Vote.Request.header:type_name -> v1.Raft.RPC.Command.Header
-	73, // 55: v1.Raft.RPC.Command.Vote.Response.header:type_name -> v1.Raft.RPC.Command.Header
-	73, // 56: v1.Raft.RPC.Command.InstallSnapshot.Request.header:type_name -> v1.Raft.RPC.Command.Header
-	5,  // 57: v1.Raft.RPC.Command.InstallSnapshot.Request.snapshot_version:type_name -> v1.Raft.RPC.Command.InstallSnapshot.Request.Version
-	73, // 58: v1.Raft.RPC.Command.InstallSnapshot.Response.header:type_name -> v1.Raft.RPC.Command.Header
-	73, // 59: v1.Raft.RPC.Command.TimeoutNow.Request.header:type_name -> v1.Raft.RPC.Command.Header
-	73, // 60: v1.Raft.RPC.Command.TimeoutNow.Response.header:type_name -> v1.Raft.RPC.Command.Header
-	89, // 61: v1.Cluster.Config.nodes:type_name -> v1.Cluster.Config.NodesEntry
-	84, // 62: v1.Cluster.Apply.Request.config:type_name -> v1.Cluster.Config
-	84, // 63: v1.Cluster.Get.Response.config:type_name -> v1.Cluster.Config
-	90, // 64: v1.Cluster.Config.NodesEntry.value:type_name -> v1.Cluster.Config.Node
-	48, // 65: v1.Cluster.Config.Node.account:type_name -> v1.Client.Auth
-	24, // 66: v1.Vince.CreateSite:input_type -> v1.Site.Create.Request
-	24, // 67: v1.Vince.CreateSite:output_type -> v1.Site.Create.Request
-	67, // [67:68] is the sub-list for method output_type
-	66, // [66:67] is the sub-list for method input_type
-	66, // [66:66] is the sub-list for extension type_name
-	66, // [66:66] is the sub-list for extension extendee
-	0,  // [0:66] is the sub-list for field type_name
+	49, // 36: v1.Query.Row.values:type_name -> v1.Query.Value
+	62, // 37: v1.Cluster.Config.nodes:type_name -> v1.Cluster.Config.NodesEntry
+	57, // 38: v1.Cluster.Apply.Request.config:type_name -> v1.Cluster.Config
+	57, // 39: v1.Cluster.Get.Response.config:type_name -> v1.Cluster.Config
+	63, // 40: v1.Cluster.Config.NodesEntry.value:type_name -> v1.Cluster.Config.Node
+	43, // 41: v1.Cluster.Config.Node.account:type_name -> v1.Client.Auth
+	19, // 42: v1.Vince.CreateSite:input_type -> v1.Site.Create.Request
+	19, // 43: v1.Vince.CreateSite:output_type -> v1.Site.Create.Request
+	43, // [43:44] is the sub-list for method output_type
+	42, // [42:43] is the sub-list for method input_type
+	42, // [42:42] is the sub-list for extension type_name
+	42, // [42:42] is the sub-list for extension extendee
+	0,  // [0:42] is the sub-list for field type_name
 }
 
 func init() { file_vince_v1_vince_proto_init() }
@@ -5775,18 +3901,6 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster); i {
 			case 0:
 				return &v.state
@@ -5798,7 +3912,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Key); i {
 			case 0:
 				return &v.state
@@ -5810,7 +3924,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Create); i {
 			case 0:
 				return &v.state
@@ -5822,7 +3936,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Get); i {
 			case 0:
 				return &v.state
@@ -5834,7 +3948,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_List); i {
 			case 0:
 				return &v.state
@@ -5846,7 +3960,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Delete); i {
 			case 0:
 				return &v.state
@@ -5858,7 +3972,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Create_Request); i {
 			case 0:
 				return &v.state
@@ -5870,7 +3984,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Create_Response); i {
 			case 0:
 				return &v.state
@@ -5882,7 +3996,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Get_Request); i {
 			case 0:
 				return &v.state
@@ -5894,7 +4008,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Get_Response); i {
 			case 0:
 				return &v.state
@@ -5906,7 +4020,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_List_Request); i {
 			case 0:
 				return &v.state
@@ -5918,7 +4032,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_List_Response); i {
 			case 0:
 				return &v.state
@@ -5930,7 +4044,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Delete_Request); i {
 			case 0:
 				return &v.state
@@ -5942,7 +4056,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Site_Delete_Response); i {
 			case 0:
 				return &v.state
@@ -5954,7 +4068,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_Notifier); i {
 			case 0:
 				return &v.state
@@ -5966,7 +4080,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_Email); i {
 			case 0:
 				return &v.state
@@ -5978,7 +4092,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_Webhook); i {
 			case 0:
 				return &v.state
@@ -5990,7 +4104,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP); i {
 			case 0:
 				return &v.state
@@ -6002,7 +4116,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_BasicAuth); i {
 			case 0:
 				return &v.state
@@ -6014,7 +4128,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_Authorization); i {
 			case 0:
 				return &v.state
@@ -6026,7 +4140,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_OAuth2); i {
 			case 0:
 				return &v.state
@@ -6038,7 +4152,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_TLSConfig); i {
 			case 0:
 				return &v.state
@@ -6050,7 +4164,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Account_Key); i {
 			case 0:
 				return &v.state
@@ -6062,7 +4176,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Instance); i {
 			case 0:
 				return &v.state
@@ -6074,7 +4188,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Active); i {
 			case 0:
 				return &v.state
@@ -6086,7 +4200,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Auth); i {
 			case 0:
 				return &v.state
@@ -6098,7 +4212,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Token_Create); i {
 			case 0:
 				return &v.state
@@ -6110,7 +4224,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Token_Key); i {
 			case 0:
 				return &v.state
@@ -6122,7 +4236,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Token_Create_Request); i {
 			case 0:
 				return &v.state
@@ -6134,7 +4248,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Token_Create_Response); i {
 			case 0:
 				return &v.state
@@ -6146,7 +4260,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Value); i {
 			case 0:
 				return &v.state
@@ -6158,7 +4272,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Request); i {
 			case 0:
 				return &v.state
@@ -6170,7 +4284,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Response); i {
 			case 0:
 				return &v.state
@@ -6182,7 +4296,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Param); i {
 			case 0:
 				return &v.state
@@ -6194,7 +4308,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Colum); i {
 			case 0:
 				return &v.state
@@ -6206,7 +4320,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Query_Row); i {
 			case 0:
 				return &v.state
@@ -6218,271 +4332,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_Entry); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_Log); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_Config); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_Config_Server); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Call); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Call_Request); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Call_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_AppendEntries); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_Vote); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_InstallSnapshot); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_TimeoutNow); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_Header); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_AppendEntries_Request); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_AppendEntries_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_Vote_Request); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_Vote_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_InstallSnapshot_Request); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_InstallSnapshot_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_TimeoutNow_Request); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[74].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Raft_RPC_Command_TimeoutNow_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_vince_v1_vince_proto_msgTypes[75].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Apply); i {
 			case 0:
 				return &v.state
@@ -6494,7 +4344,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Get); i {
 			case 0:
 				return &v.state
@@ -6506,7 +4356,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[77].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Config); i {
 			case 0:
 				return &v.state
@@ -6518,7 +4368,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[78].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Apply_Request); i {
 			case 0:
 				return &v.state
@@ -6530,7 +4380,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Apply_Response); i {
 			case 0:
 				return &v.state
@@ -6542,7 +4392,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Get_Request); i {
 			case 0:
 				return &v.state
@@ -6554,7 +4404,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[81].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Get_Response); i {
 			case 0:
 				return &v.state
@@ -6566,7 +4416,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[83].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Config_Node); i {
 			case 0:
 				return &v.state
@@ -6579,36 +4429,24 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 	}
-	file_vince_v1_vince_proto_msgTypes[25].OneofWrappers = []interface{}{
+	file_vince_v1_vince_proto_msgTypes[24].OneofWrappers = []interface{}{
 		(*Config_Notifier_Email)(nil),
 		(*Config_Notifier_Webhook)(nil),
 	}
-	file_vince_v1_vince_proto_msgTypes[47].OneofWrappers = []interface{}{
+	file_vince_v1_vince_proto_msgTypes[46].OneofWrappers = []interface{}{
 		(*Query_Value_Number)(nil),
 		(*Query_Value_Double)(nil),
 		(*Query_Value_String_)(nil),
 		(*Query_Value_Bool)(nil),
 		(*Query_Value_Timestamp)(nil),
 	}
-	file_vince_v1_vince_proto_msgTypes[60].OneofWrappers = []interface{}{
-		(*Raft_RPC_Call_Request_AppendEntries)(nil),
-		(*Raft_RPC_Call_Request_Vote)(nil),
-		(*Raft_RPC_Call_Request_InstallSnapshot)(nil),
-		(*Raft_RPC_Call_Request_TimeoutNow)(nil),
-	}
-	file_vince_v1_vince_proto_msgTypes[61].OneofWrappers = []interface{}{
-		(*Raft_RPC_Call_Response_AppendEntries)(nil),
-		(*Raft_RPC_Call_Response_Vote)(nil),
-		(*Raft_RPC_Call_Response_InstallSnapshot)(nil),
-		(*Raft_RPC_Call_Response_TimeoutNow)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_vince_v1_vince_proto_rawDesc,
-			NumEnums:      7,
-			NumMessages:   84,
+			NumEnums:      3,
+			NumMessages:   61,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

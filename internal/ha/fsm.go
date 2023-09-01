@@ -6,7 +6,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/hashicorp/raft"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	raftv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/raft/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"google.golang.org/protobuf/proto"
 )
@@ -24,7 +24,7 @@ func NewFSM(base db.Provider) raft.FSM {
 func (f *fsm) Apply(l *raft.Log) interface{} {
 	if l.Type == raft.LogCommand {
 		return f.base.Txn(true, func(txn db.Txn) error {
-			var e v1.Raft_Entry
+			var e raftv1.Raft_Entry
 			err := proto.Unmarshal(l.Data, &e)
 			if err != nil {
 				return err

@@ -13,14 +13,14 @@ import (
 	"time"
 
 	"github.com/hashicorp/raft"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
+	raftv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/raft/v1"
 	"github.com/vinceanalytics/vince/internal/px"
 	"google.golang.org/protobuf/proto"
 	"nhooyr.io/websocket"
 )
 
 type Stream interface {
-	Update(*v1.Raft_Config)
+	Update(*raftv1.Raft_Config)
 	Dial(context.Context,
 		raft.ServerID, raft.ServerAddress) (Conn, error)
 }
@@ -29,7 +29,7 @@ type Transit struct {
 	ctx     context.Context
 	peers   sync.Map
 	consume chan raft.RPC
-	svr     *v1.Raft_Config_Server
+	svr     *raftv1.Raft_Config_Server
 	heart   heart
 	stream  Stream
 	log     *slog.Logger
@@ -38,7 +38,7 @@ type Transit struct {
 
 var _ raft.Transport = (*Transit)(nil)
 
-func NewTransport(ctx context.Context, svr *v1.Raft_Config_Server, stream Stream, timeout time.Duration) *Transit {
+func NewTransport(ctx context.Context, svr *raftv1.Raft_Config_Server, stream Stream, timeout time.Duration) *Transit {
 	return &Transit{
 		ctx:     ctx,
 		consume: make(chan raft.RPC),
@@ -84,7 +84,7 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Info("websocket raft transport is closed")
 			return
 		default:
-			var req v1.Raft_RPC_Call_Request
+			var req raftv1.Raft_RPC_Call_Request
 			ctx, cancel := t.context()
 			err := read(ctx, wrap, &req)
 			cancel()
@@ -101,7 +101,7 @@ func (t *Transit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 
 			var beat bool
-			if x, ok := req.Kind.(*v1.Raft_RPC_Call_Request_AppendEntries); ok {
+			if x, ok := req.Kind.(*raftv1.Raft_RPC_Call_Request_AppendEntries); ok {
 				a := x.AppendEntries
 				beat = a.Term != 0 && a.Header.Addr != nil &&
 					a.PrevLogEntry == 0 && a.PrevLogTerm == 0 &&
@@ -212,10 +212,10 @@ func rpc[Req RPCRequest, Res RPCResponse](t *Transit, id raft.ServerID,
 }
 
 func (t *Transit) send(id raft.ServerID,
-	target raft.ServerAddress, r *v1.Raft_RPC_Call_Request) *v1.Raft_RPC_Call_Response {
+	target raft.ServerAddress, r *raftv1.Raft_RPC_Call_Request) *raftv1.Raft_RPC_Call_Response {
 	conn, err := t.peer(id, target)
 	if err != nil {
-		return &v1.Raft_RPC_Call_Response{
+		return &raftv1.Raft_RPC_Call_Response{
 			Error: err.Error(),
 		}
 	}
@@ -223,14 +223,14 @@ func (t *Transit) send(id raft.ServerID,
 	err = write(ctx, conn, r)
 	cancel()
 	if err != nil {
-		return &v1.Raft_RPC_Call_Response{
+		return &raftv1.Raft_RPC_Call_Response{
 			Error: err.Error(),
 		}
 	}
-	var o v1.Raft_RPC_Call_Response
+	var o raftv1.Raft_RPC_Call_Response
 	err = read(ctx, conn, &o)
 	if err != nil {
-		return &v1.Raft_RPC_Call_Response{
+		return &raftv1.Raft_RPC_Call_Response{
 			Error: err.Error(),
 		}
 	}
@@ -349,7 +349,7 @@ func NewWsStream() Stream {
 
 var client = &http.Client{}
 
-func (ws *wsStream) Update(x *v1.Raft_Config) {
+func (ws *wsStream) Update(x *raftv1.Raft_Config) {
 	for _, svr := range x.Servers {
 		ws.peers.Store(svr.Id, svr)
 	}
@@ -362,7 +362,7 @@ func (ws *wsStream) Dial(
 	if !ok {
 		return nil, fmt.Errorf("peer %s:%s can not be reached", id, addr)
 	}
-	s := x.(*v1.Raft_Config_Server)
+	s := x.(*raftv1.Raft_Config_Server)
 	h := make(http.Header)
 	h.Set("authorization", "Bearer "+s.Token)
 	conn, _, err := websocket.Dial(ctx, s.Address+"/raft", &websocket.DialOptions{
