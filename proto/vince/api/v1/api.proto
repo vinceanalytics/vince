@@ -79,7 +79,7 @@ message Token {
 }
 
 message CreateTokenRequest {
-  string name = 1;
+  string name = 1 [ (buf.validate.field).required = true ];
   string password = 2;
   string token = 3;
   bytes public_key = 4;
@@ -92,9 +92,10 @@ message CreateTokenResponse { Client.Auth auth = 1; }
 
 message Site { string domain = 1; }
 message CreateSiteRequest {
-  string domain = 1
-      [ (buf.validate.field).string.pattern =
-            "^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$" ];
+  string domain = 1 [
+    (buf.validate.field).string.hostname = true,
+    (buf.validate.field).required = true
+  ];
 }
 message CreateSiteResponse { Site site = 1; }
 message GetSiteRequest {}

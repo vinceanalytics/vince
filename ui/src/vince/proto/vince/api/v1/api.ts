@@ -470,7 +470,7 @@ export const Token = new Token$Type();
 class CreateTokenRequest$Type extends MessageType<CreateTokenRequest> {
     constructor() {
         super("v1.CreateTokenRequest", [
-            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 2, name: "password", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 3, name: "token", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "public_key", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
@@ -646,7 +646,7 @@ export const Site = new Site$Type();
 class CreateSiteRequest$Type extends MessageType<CreateSiteRequest> {
     constructor() {
         super("v1.CreateSiteRequest", [
-            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { string: { pattern: "^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$" } } } }
+            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } }
         ]);
     }
     create(value?: PartialMessage<CreateSiteRequest>): CreateSiteRequest {
