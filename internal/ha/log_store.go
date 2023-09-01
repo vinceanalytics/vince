@@ -1,15 +1,12 @@
 package ha
 
 import (
-	"bytes"
+	"encoding/binary"
 	"errors"
-	"strconv"
-	"strings"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/hashicorp/raft"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -17,52 +14,46 @@ import (
 
 var _ raft.LogStore = (*DB)(nil)
 
+var logPrefix = []byte{0x0}
+var stablePrefix = []byte{0x1}
+
 func (db *DB) FirstIndex() (v uint64, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
-		key := keys.RaftLog(-1)
-		defer key.Release()
-		o := badger.DefaultIteratorOptions
-		o.PrefetchValues = false
-		o.Prefix = key.Bytes()
-		it := txn.NewIterator(o)
+		it := txn.NewIterator(badger.IteratorOptions{
+			PrefetchValues: false,
+			Reverse:        false,
+		})
 		defer it.Close()
-		it.Rewind()
-		if !it.Valid() {
-			return raft.ErrLogNotFound
+		it.Seek(logPrefix)
+		if it.ValidForPrefix(logPrefix) {
+			v = binary.BigEndian.Uint64(it.Item().Key()[1:])
 		}
-		id := bytes.TrimPrefix(it.Item().Key(), key.Bytes())
-		v, err = strconv.ParseUint(string(id), 10, 64)
-		return err
+		return nil
 	})
 	return
 }
 
 func (db *DB) LastIndex() (v uint64, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
-		key := keys.RaftLog(-1)
-		defer key.Release()
-		o := badger.DefaultIteratorOptions
-		o.PrefetchValues = false
-		o.Reverse = true
-		o.Prefix = key.Bytes()
-		it := txn.NewIterator(o)
+		it := txn.NewIterator(badger.IteratorOptions{
+			PrefetchValues: false,
+			Reverse:        true,
+		})
 		defer it.Close()
-		it.Rewind()
-		if !it.Valid() {
-			return raft.ErrLogNotFound
+
+		it.Seek(append(logPrefix, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff))
+		if it.ValidForPrefix(logPrefix) {
+			v = binary.BigEndian.Uint64(it.Item().Key()[1:])
 		}
-		id := bytes.TrimPrefix(it.Item().Key(), key.Bytes())
-		v, err = strconv.ParseUint(string(id), 10, 64)
-		return err
+		return nil
 	})
 	return
 }
 
 func (db *DB) GetLog(index uint64, log *raft.Log) error {
 	return db.db.View(func(txn *badger.Txn) error {
-		key := keys.RaftLog(int64(index))
-		defer key.Release()
-		it, err := txn.Get(key.Bytes())
+		key := logKey(index)
+		it, err := txn.Get(key)
 		if err != nil {
 			if errors.Is(err, badger.ErrKeyNotFound) {
 				return raft.ErrLogNotFound
@@ -90,9 +81,7 @@ func (db *DB) GetLog(index uint64, log *raft.Log) error {
 
 func (db *DB) StoreLog(log *raft.Log) error {
 	return db.db.Update(func(txn *badger.Txn) error {
-		key := keys.RaftLog(int64(log.Index))
-		defer key.Release()
-		return txn.Set(key.Bytes(), serialize(log))
+		return txn.Set(logKey(log.Index), serialize(log))
 	})
 }
 
@@ -100,57 +89,53 @@ func (db *DB) StoreLogs(logs []*raft.Log) error {
 	return db.db.Update(func(txn *badger.Txn) error {
 		err := make([]error, len(logs))
 		for i, log := range logs {
-			key := keys.RaftLog(int64(log.Index))
 			err[i] = txn.Set(
-				key.Bytes(),
+				logKey(log.Index),
 				serialize(log),
 			)
-			key.Release()
 		}
 		return errors.Join(err...)
 	})
 }
 
 func (db *DB) DeleteRange(min, max uint64) error {
-	prefix := keys.RaftLog(-1)
-	start := keys.RaftLog(int64(min))
-	end := keys.RaftLog(int64(max))
-
-	defer func() {
-		prefix.Release()
-		start.Release()
-		end.Release()
-	}()
+	// we manage the transaction manually in order to avoid ErrTxnTooBig errors
 	txn := db.db.NewTransaction(true)
-	o := badger.DefaultIteratorOptions
-	o.PrefetchValues = false
-	o.Prefix = prefix.Bytes()
-	it := txn.NewIterator(o)
-	for it.Seek(start.Bytes()); it.Valid(); it.Next() {
-		x := it.Item()
-		key := x.Key()
-		if bytes.Compare(end.Bytes(), key) == 1 {
+	it := txn.NewIterator(badger.IteratorOptions{
+		PrefetchValues: false,
+		Reverse:        false,
+	})
+
+	start := logKey(min)
+	for it.Seek(start); it.Valid(); it.Next() {
+		key := make([]byte, 9)
+		it.Item().KeyCopy(key)
+		// Handle out-of-range log index
+		if binary.BigEndian.Uint64(key[1:]) > max {
 			break
 		}
-		err := txn.Delete(key)
-		if err != nil {
-			if errors.Is(err, badger.ErrTxnTooBig) {
+		// Delete in-range log index
+		if err := txn.Delete(key); err != nil {
+			if err == badger.ErrTxnTooBig {
 				it.Close()
 				err = txn.Commit()
 				if err != nil {
 					return err
 				}
-				p := strings.Split(string(key), "/")
-				id, _ := strconv.ParseUint(p[len(p)-1], 10, 64)
-				return db.DeleteRange(id, max)
+				return db.DeleteRange(binary.BigEndian.Uint64(key[1:]), max)
 			}
-			it.Close()
-			txn.Discard()
 			return err
 		}
 	}
 	it.Close()
 	return txn.Commit()
+}
+
+func logKey(id uint64) []byte {
+	var b [9]byte
+	binary.BigEndian.PutUint64(b[1:], id)
+	b[0] = logPrefix[0]
+	return b[:]
 }
 
 func serialize(log *raft.Log) []byte {

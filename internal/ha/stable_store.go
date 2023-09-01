@@ -5,22 +5,19 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/hashicorp/raft"
-	"github.com/vinceanalytics/vince/internal/keys"
 )
 
 var _ raft.StableStore = (*DB)(nil)
 
 func (db *DB) Set(key, value []byte) error {
 	return db.db.Update(func(txn *badger.Txn) error {
-		return txn.Set(key, value)
+		return txn.Set(append(stablePrefix, key...), value)
 	})
 }
 
 func (db *DB) Get(key []byte) (v []byte, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
-		key := keys.RaftStable(key)
-		defer key.Release()
-		it, err := txn.Get(key.Bytes())
+		it, err := txn.Get(append(stablePrefix, key...))
 		if err != nil {
 			return err
 		}

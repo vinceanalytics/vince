@@ -3,7 +3,6 @@ package keys
 import (
 	"bytes"
 	"encoding/base32"
-	"strconv"
 	"sync"
 
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/v1"
@@ -79,29 +78,6 @@ func Account(name string) *Key {
 
 func Token(token string) *Key {
 	return New(v1.StorePrefix_TOKEN).Path(base32.StdEncoding.EncodeToString([]byte(token)))
-}
-
-func RaftLog(id int64) *Key {
-	if id == -1 {
-		return New(v1.StorePrefix_RAFT_LOGS).Path("")
-	}
-	return New(v1.StorePrefix_RAFT_LOGS).Path(strconv.FormatInt(id, 10))
-}
-
-func RaftStable(key []byte) *Key {
-	return New(v1.StorePrefix_RAFT_STABLE).Path(base32.StdEncoding.EncodeToString(key))
-}
-
-func RaftSnapshotData(id string) *Key {
-	return New(v1.StorePrefix_RAFT_SNAPSHOT).Path(
-		v1.Raft_Snapshot_Key_DATA.String(), id,
-	)
-}
-
-func RaftSnapshotMeta(id string) *Key {
-	return New(v1.StorePrefix_RAFT_SNAPSHOT).Path(
-		v1.Raft_Snapshot_Key_META.String(), id,
-	)
 }
 
 func Cluster() *Key {

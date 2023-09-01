@@ -883,19 +883,6 @@ export interface Raft_Log {
     appendedAt?: Timestamp;
 }
 /**
- * @generated from protobuf message v1.Raft.Log.Key
- */
-export interface Raft_Log_Key {
-    /**
-     * @generated from protobuf field: v1.StoreKey store = 1;
-     */
-    store?: StoreKey;
-    /**
-     * @generated from protobuf field: int64 index = 2;
-     */
-    index: bigint;
-}
-/**
  * @generated from protobuf enum v1.Raft.Log.Type
  */
 export enum Raft_Log_Type {
@@ -923,104 +910,6 @@ export enum Raft_Log_Type {
      * @generated from protobuf enum value: Configuration = 5;
      */
     Configuration = 5
-}
-/**
- * @generated from protobuf message v1.Raft.Stable
- */
-export interface Raft_Stable {
-}
-/**
- * @generated from protobuf message v1.Raft.Stable.Key
- */
-export interface Raft_Stable_Key {
-    /**
-     * @generated from protobuf field: v1.StoreKey store = 1;
-     */
-    store?: StoreKey;
-    /**
-     * @generated from protobuf field: bytes key = 2;
-     */
-    key: Uint8Array;
-}
-/**
- * @generated from protobuf message v1.Raft.Snapshot
- */
-export interface Raft_Snapshot {
-    /**
-     * @generated from protobuf field: v1.Raft.Snapshot.Version version = 1;
-     */
-    version: Raft_Snapshot_Version;
-    /**
-     * @generated from protobuf field: string id = 2;
-     */
-    id: string;
-    /**
-     * @generated from protobuf field: uint64 index = 3;
-     */
-    index: bigint;
-    /**
-     * @generated from protobuf field: uint64 term = 4;
-     */
-    term: bigint;
-    /**
-     * @generated from protobuf field: bytes peers = 5;
-     */
-    peers: Uint8Array;
-    /**
-     * @generated from protobuf field: v1.Raft.Config config = 6;
-     */
-    config?: Raft_Config;
-    /**
-     * @generated from protobuf field: uint64 config_index = 7;
-     */
-    configIndex: bigint;
-    /**
-     * @generated from protobuf field: int64 size = 8;
-     */
-    size: bigint;
-}
-/**
- * @generated from protobuf message v1.Raft.Snapshot.Key
- */
-export interface Raft_Snapshot_Key {
-    /**
-     * @generated from protobuf field: v1.StoreKey store = 1;
-     */
-    store?: StoreKey;
-    /**
-     * @generated from protobuf field: v1.Raft.Snapshot.Key.Mode mode = 2;
-     */
-    mode: Raft_Snapshot_Key_Mode;
-    /**
-     * @generated from protobuf field: string id = 3;
-     */
-    id: string;
-}
-/**
- * @generated from protobuf enum v1.Raft.Snapshot.Key.Mode
- */
-export enum Raft_Snapshot_Key_Mode {
-    /**
-     * @generated from protobuf enum value: META = 0;
-     */
-    META = 0,
-    /**
-     * @generated from protobuf enum value: DATA = 1;
-     */
-    DATA = 1
-}
-/**
- * @generated from protobuf enum v1.Raft.Snapshot.Version
- */
-export enum Raft_Snapshot_Version {
-    /**
-     * @generated from protobuf enum value: Min = 0;
-     */
-    Min = 0,
-    /**
-     * @generated from protobuf enum value: Max = 1;
-     */
-    Max = 1
 }
 /**
  * @generated from protobuf message v1.Raft.Config
@@ -1278,9 +1167,9 @@ export interface Raft_RPC_Command_InstallSnapshot_Request {
      */
     header?: Raft_RPC_Command_Header;
     /**
-     * @generated from protobuf field: v1.Raft.Snapshot.Version snapshot_version = 2;
+     * @generated from protobuf field: v1.Raft.RPC.Command.InstallSnapshot.Request.Version snapshot_version = 2;
      */
-    snapshotVersion: Raft_Snapshot_Version;
+    snapshotVersion: Raft_RPC_Command_InstallSnapshot_Request_Version;
     /**
      * @generated from protobuf field: uint64 term = 3;
      */
@@ -1309,6 +1198,19 @@ export interface Raft_RPC_Command_InstallSnapshot_Request {
      * @generated from protobuf field: int64 size = 9;
      */
     size: bigint;
+}
+/**
+ * @generated from protobuf enum v1.Raft.RPC.Command.InstallSnapshot.Request.Version
+ */
+export enum Raft_RPC_Command_InstallSnapshot_Request_Version {
+    /**
+     * @generated from protobuf enum value: Min = 0;
+     */
+    Min = 0,
+    /**
+     * @generated from protobuf enum value: Max = 1;
+     */
+    Max = 1
 }
 /**
  * @generated from protobuf message v1.Raft.RPC.Command.InstallSnapshot.Response
@@ -1488,18 +1390,6 @@ export enum StorePrefix {
      * @generated from protobuf enum value: TOKEN = 4;
      */
     TOKEN = 4,
-    /**
-     * @generated from protobuf enum value: RAFT_LOGS = 5;
-     */
-    RAFT_LOGS = 5,
-    /**
-     * @generated from protobuf enum value: RAFT_STABLE = 6;
-     */
-    RAFT_STABLE = 6,
-    /**
-     * @generated from protobuf enum value: RAFT_SNAPSHOT = 7;
-     */
-    RAFT_SNAPSHOT = 7,
     /**
      * @generated from protobuf enum value: CLUSTER = 8;
      */
@@ -4509,297 +4399,6 @@ class Raft_Log$Type extends MessageType<Raft_Log> {
  */
 export const Raft_Log = new Raft_Log$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class Raft_Log_Key$Type extends MessageType<Raft_Log_Key> {
-    constructor() {
-        super("v1.Raft.Log.Key", [
-            { no: 1, name: "store", kind: "message", T: () => StoreKey },
-            { no: 2, name: "index", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
-        ]);
-    }
-    create(value?: PartialMessage<Raft_Log_Key>): Raft_Log_Key {
-        const message = { index: 0n };
-        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
-        if (value !== undefined)
-            reflectionMergePartial<Raft_Log_Key>(this, message, value);
-        return message;
-    }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Raft_Log_Key): Raft_Log_Key {
-        let message = target ?? this.create(), end = reader.pos + length;
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag();
-            switch (fieldNo) {
-                case /* v1.StoreKey store */ 1:
-                    message.store = StoreKey.internalBinaryRead(reader, reader.uint32(), options, message.store);
-                    break;
-                case /* int64 index */ 2:
-                    message.index = reader.int64().toBigInt();
-                    break;
-                default:
-                    let u = options.readUnknownField;
-                    if (u === "throw")
-                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
-                    let d = reader.skip(wireType);
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
-            }
-        }
-        return message;
-    }
-    internalBinaryWrite(message: Raft_Log_Key, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* v1.StoreKey store = 1; */
-        if (message.store)
-            StoreKey.internalBinaryWrite(message.store, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* int64 index = 2; */
-        if (message.index !== 0n)
-            writer.tag(2, WireType.Varint).int64(message.index);
-        let u = options.writeUnknownFields;
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
-        return writer;
-    }
-}
-/**
- * @generated MessageType for protobuf message v1.Raft.Log.Key
- */
-export const Raft_Log_Key = new Raft_Log_Key$Type();
-// @generated message type with reflection information, may provide speed optimized methods
-class Raft_Stable$Type extends MessageType<Raft_Stable> {
-    constructor() {
-        super("v1.Raft.Stable", []);
-    }
-    create(value?: PartialMessage<Raft_Stable>): Raft_Stable {
-        const message = {};
-        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
-        if (value !== undefined)
-            reflectionMergePartial<Raft_Stable>(this, message, value);
-        return message;
-    }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Raft_Stable): Raft_Stable {
-        return target ?? this.create();
-    }
-    internalBinaryWrite(message: Raft_Stable, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        let u = options.writeUnknownFields;
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
-        return writer;
-    }
-}
-/**
- * @generated MessageType for protobuf message v1.Raft.Stable
- */
-export const Raft_Stable = new Raft_Stable$Type();
-// @generated message type with reflection information, may provide speed optimized methods
-class Raft_Stable_Key$Type extends MessageType<Raft_Stable_Key> {
-    constructor() {
-        super("v1.Raft.Stable.Key", [
-            { no: 1, name: "store", kind: "message", T: () => StoreKey },
-            { no: 2, name: "key", kind: "scalar", T: 12 /*ScalarType.BYTES*/ }
-        ]);
-    }
-    create(value?: PartialMessage<Raft_Stable_Key>): Raft_Stable_Key {
-        const message = { key: new Uint8Array(0) };
-        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
-        if (value !== undefined)
-            reflectionMergePartial<Raft_Stable_Key>(this, message, value);
-        return message;
-    }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Raft_Stable_Key): Raft_Stable_Key {
-        let message = target ?? this.create(), end = reader.pos + length;
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag();
-            switch (fieldNo) {
-                case /* v1.StoreKey store */ 1:
-                    message.store = StoreKey.internalBinaryRead(reader, reader.uint32(), options, message.store);
-                    break;
-                case /* bytes key */ 2:
-                    message.key = reader.bytes();
-                    break;
-                default:
-                    let u = options.readUnknownField;
-                    if (u === "throw")
-                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
-                    let d = reader.skip(wireType);
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
-            }
-        }
-        return message;
-    }
-    internalBinaryWrite(message: Raft_Stable_Key, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* v1.StoreKey store = 1; */
-        if (message.store)
-            StoreKey.internalBinaryWrite(message.store, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* bytes key = 2; */
-        if (message.key.length)
-            writer.tag(2, WireType.LengthDelimited).bytes(message.key);
-        let u = options.writeUnknownFields;
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
-        return writer;
-    }
-}
-/**
- * @generated MessageType for protobuf message v1.Raft.Stable.Key
- */
-export const Raft_Stable_Key = new Raft_Stable_Key$Type();
-// @generated message type with reflection information, may provide speed optimized methods
-class Raft_Snapshot$Type extends MessageType<Raft_Snapshot> {
-    constructor() {
-        super("v1.Raft.Snapshot", [
-            { no: 1, name: "version", kind: "enum", T: () => ["v1.Raft.Snapshot.Version", Raft_Snapshot_Version] },
-            { no: 2, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "index", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 4, name: "term", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 5, name: "peers", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
-            { no: 6, name: "config", kind: "message", T: () => Raft_Config },
-            { no: 7, name: "config_index", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 8, name: "size", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
-        ]);
-    }
-    create(value?: PartialMessage<Raft_Snapshot>): Raft_Snapshot {
-        const message = { version: 0, id: "", index: 0n, term: 0n, peers: new Uint8Array(0), configIndex: 0n, size: 0n };
-        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
-        if (value !== undefined)
-            reflectionMergePartial<Raft_Snapshot>(this, message, value);
-        return message;
-    }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Raft_Snapshot): Raft_Snapshot {
-        let message = target ?? this.create(), end = reader.pos + length;
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag();
-            switch (fieldNo) {
-                case /* v1.Raft.Snapshot.Version version */ 1:
-                    message.version = reader.int32();
-                    break;
-                case /* string id */ 2:
-                    message.id = reader.string();
-                    break;
-                case /* uint64 index */ 3:
-                    message.index = reader.uint64().toBigInt();
-                    break;
-                case /* uint64 term */ 4:
-                    message.term = reader.uint64().toBigInt();
-                    break;
-                case /* bytes peers */ 5:
-                    message.peers = reader.bytes();
-                    break;
-                case /* v1.Raft.Config config */ 6:
-                    message.config = Raft_Config.internalBinaryRead(reader, reader.uint32(), options, message.config);
-                    break;
-                case /* uint64 config_index */ 7:
-                    message.configIndex = reader.uint64().toBigInt();
-                    break;
-                case /* int64 size */ 8:
-                    message.size = reader.int64().toBigInt();
-                    break;
-                default:
-                    let u = options.readUnknownField;
-                    if (u === "throw")
-                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
-                    let d = reader.skip(wireType);
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
-            }
-        }
-        return message;
-    }
-    internalBinaryWrite(message: Raft_Snapshot, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* v1.Raft.Snapshot.Version version = 1; */
-        if (message.version !== 0)
-            writer.tag(1, WireType.Varint).int32(message.version);
-        /* string id = 2; */
-        if (message.id !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.id);
-        /* uint64 index = 3; */
-        if (message.index !== 0n)
-            writer.tag(3, WireType.Varint).uint64(message.index);
-        /* uint64 term = 4; */
-        if (message.term !== 0n)
-            writer.tag(4, WireType.Varint).uint64(message.term);
-        /* bytes peers = 5; */
-        if (message.peers.length)
-            writer.tag(5, WireType.LengthDelimited).bytes(message.peers);
-        /* v1.Raft.Config config = 6; */
-        if (message.config)
-            Raft_Config.internalBinaryWrite(message.config, writer.tag(6, WireType.LengthDelimited).fork(), options).join();
-        /* uint64 config_index = 7; */
-        if (message.configIndex !== 0n)
-            writer.tag(7, WireType.Varint).uint64(message.configIndex);
-        /* int64 size = 8; */
-        if (message.size !== 0n)
-            writer.tag(8, WireType.Varint).int64(message.size);
-        let u = options.writeUnknownFields;
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
-        return writer;
-    }
-}
-/**
- * @generated MessageType for protobuf message v1.Raft.Snapshot
- */
-export const Raft_Snapshot = new Raft_Snapshot$Type();
-// @generated message type with reflection information, may provide speed optimized methods
-class Raft_Snapshot_Key$Type extends MessageType<Raft_Snapshot_Key> {
-    constructor() {
-        super("v1.Raft.Snapshot.Key", [
-            { no: 1, name: "store", kind: "message", T: () => StoreKey },
-            { no: 2, name: "mode", kind: "enum", T: () => ["v1.Raft.Snapshot.Key.Mode", Raft_Snapshot_Key_Mode] },
-            { no: 3, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
-        ]);
-    }
-    create(value?: PartialMessage<Raft_Snapshot_Key>): Raft_Snapshot_Key {
-        const message = { mode: 0, id: "" };
-        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
-        if (value !== undefined)
-            reflectionMergePartial<Raft_Snapshot_Key>(this, message, value);
-        return message;
-    }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Raft_Snapshot_Key): Raft_Snapshot_Key {
-        let message = target ?? this.create(), end = reader.pos + length;
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag();
-            switch (fieldNo) {
-                case /* v1.StoreKey store */ 1:
-                    message.store = StoreKey.internalBinaryRead(reader, reader.uint32(), options, message.store);
-                    break;
-                case /* v1.Raft.Snapshot.Key.Mode mode */ 2:
-                    message.mode = reader.int32();
-                    break;
-                case /* string id */ 3:
-                    message.id = reader.string();
-                    break;
-                default:
-                    let u = options.readUnknownField;
-                    if (u === "throw")
-                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
-                    let d = reader.skip(wireType);
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
-            }
-        }
-        return message;
-    }
-    internalBinaryWrite(message: Raft_Snapshot_Key, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* v1.StoreKey store = 1; */
-        if (message.store)
-            StoreKey.internalBinaryWrite(message.store, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* v1.Raft.Snapshot.Key.Mode mode = 2; */
-        if (message.mode !== 0)
-            writer.tag(2, WireType.Varint).int32(message.mode);
-        /* string id = 3; */
-        if (message.id !== "")
-            writer.tag(3, WireType.LengthDelimited).string(message.id);
-        let u = options.writeUnknownFields;
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
-        return writer;
-    }
-}
-/**
- * @generated MessageType for protobuf message v1.Raft.Snapshot.Key
- */
-export const Raft_Snapshot_Key = new Raft_Snapshot_Key$Type();
-// @generated message type with reflection information, may provide speed optimized methods
 class Raft_Config$Type extends MessageType<Raft_Config> {
     constructor() {
         super("v1.Raft.Config", [
@@ -5535,7 +5134,7 @@ class Raft_RPC_Command_InstallSnapshot_Request$Type extends MessageType<Raft_RPC
     constructor() {
         super("v1.Raft.RPC.Command.InstallSnapshot.Request", [
             { no: 1, name: "header", kind: "message", T: () => Raft_RPC_Command_Header },
-            { no: 2, name: "snapshot_version", kind: "enum", T: () => ["v1.Raft.Snapshot.Version", Raft_Snapshot_Version] },
+            { no: 2, name: "snapshot_version", kind: "enum", T: () => ["v1.Raft.RPC.Command.InstallSnapshot.Request.Version", Raft_RPC_Command_InstallSnapshot_Request_Version] },
             { no: 3, name: "term", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 4, name: "leader", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
             { no: 5, name: "last_log_index", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
@@ -5560,7 +5159,7 @@ class Raft_RPC_Command_InstallSnapshot_Request$Type extends MessageType<Raft_RPC
                 case /* v1.Raft.RPC.Command.Header header */ 1:
                     message.header = Raft_RPC_Command_Header.internalBinaryRead(reader, reader.uint32(), options, message.header);
                     break;
-                case /* v1.Raft.Snapshot.Version snapshot_version */ 2:
+                case /* v1.Raft.RPC.Command.InstallSnapshot.Request.Version snapshot_version */ 2:
                     message.snapshotVersion = reader.int32();
                     break;
                 case /* uint64 term */ 3:
@@ -5599,7 +5198,7 @@ class Raft_RPC_Command_InstallSnapshot_Request$Type extends MessageType<Raft_RPC
         /* v1.Raft.RPC.Command.Header header = 1; */
         if (message.header)
             Raft_RPC_Command_Header.internalBinaryWrite(message.header, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* v1.Raft.Snapshot.Version snapshot_version = 2; */
+        /* v1.Raft.RPC.Command.InstallSnapshot.Request.Version snapshot_version = 2; */
         if (message.snapshotVersion !== 0)
             writer.tag(2, WireType.Varint).int32(message.snapshotVersion);
         /* uint64 term = 3; */
