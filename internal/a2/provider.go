@@ -2,6 +2,7 @@ package a2
 
 import (
 	"errors"
+	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/auth/v1"
 	"github.com/vinceanalytics/vince/internal/db"
@@ -35,7 +36,7 @@ func (p provider) GetClient(id string) (Client, error) {
 
 func (p provider) SaveAuthorize(a *AuthorizeData) error {
 	return p.save(
-		keys.AAuthorize(a.Code), AuthorizeDataTo(a),
+		keys.AAuthorize(a.Code), AuthorizeDataTo(a), a.ExpiresIn,
 	)
 }
 
@@ -55,10 +56,10 @@ func (p provider) RemoveAuthorize(code string) error {
 func (p provider) SaveAccess(a *AccessData) error {
 	return errors.Join(
 		p.save(
-			keys.AAccess(a.AccessToken), AccessDataTo(a),
+			keys.AAccess(a.AccessToken), AccessDataTo(a), a.ExpiresIn,
 		),
 		p.save(
-			keys.ARefresh(a.RefreshToken), AccessDataTo(a),
+			keys.ARefresh(a.RefreshToken), AccessDataTo(a), a.ExpiresIn,
 		),
 	)
 }
@@ -89,11 +90,11 @@ func (p provider) RemoveRefresh(token string) error {
 	return p.remove(keys.ARefresh(token))
 }
 
-func (p provider) save(key *keys.Key, m proto.Message) error {
+func (p provider) save(key *keys.Key, m proto.Message, ttl int32) error {
 	b := must.Must(proto.Marshal(m))("failed serializing data")
 	return p.db.Txn(true, func(txn db.Txn) error {
 		defer key.Release()
-		return txn.Set(key.Bytes(), b)
+		return txn.SetTTL(key.Bytes(), b, time.Duration(ttl)*time.Second)
 	})
 }
 
