@@ -10,6 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
+	"github.com/vinceanalytics/vince/internal/pj"
 	"github.com/vinceanalytics/vince/internal/remoteip"
 	"github.com/vinceanalytics/vince/internal/worker"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -21,19 +22,18 @@ func Events(w http.ResponseWriter, r *http.Request) {
 	xlg := slog.Default().WithGroup("api").
 		With("path", r.URL.Path, "method", r.Method)
 
-	req := entry.NewRequest()
-	defer req.Release()
+	req := &entry.Request{}
 
-	err := req.Parse(r.Body)
+	err := pj.UnmarshalDefault(req, r.Body)
 	if err != nil {
 		xlg.Error("failed parsing request data", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	req.IP = remoteip.Get(r)
-	req.UserAgent = r.UserAgent()
+	req.Ip = remoteip.Get(r)
+	req.Ua = r.UserAgent()
 	ctx := r.Context()
-	if !accept(ctx, req.Domain) {
+	if !accept(ctx, req.D) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -56,5 +56,6 @@ func accept(ctx context.Context, domain string) (ok bool) {
 
 // SendEvent accepts analytics event
 func (a *API) SendEvent(context.Context, *apiv1.Event) (*emptypb.Empty, error) {
+
 	return nil, nil
 }

@@ -18,11 +18,11 @@ var ErrInvalid = errors.New("missing uri")
 var ErrDataScheme = errors.New("data scheme not supported")
 
 func Parse(req *entry.Request, ts time.Time) (*entry.Entry, error) {
-	if req.URI == "" || req.EventName == "" || req.Domain == "" {
+	if req.Url == "" || req.N == "" || req.D == "" {
 		return nil, ErrInvalid
 	}
 
-	uri, err := url.Parse(req.URI)
+	uri, err := url.Parse(req.Url)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func Parse(req *entry.Request, ts time.Time) (*entry.Entry, error) {
 	host := sanitizeHost(uri.Host)
 	query := uri.Query()
 
-	ref, src, err := refSource(query, req.Referrer)
+	ref, src, err := refSource(query, req.R)
 	if err != nil {
 		return nil, err
 	}
@@ -40,31 +40,31 @@ func Parse(req *entry.Request, ts time.Time) (*entry.Entry, error) {
 	if len(path) > 2000 {
 		return nil, ErrInvalid
 	}
-	if req.HashMode && uri.Fragment != "" {
+	if req.H && uri.Fragment != "" {
 		path += "#" + uri.Fragment
 	}
-	domain := req.Domain
-	agent := ua.Parse(req.UserAgent)
+	domain := req.D
+	agent := ua.Parse(req.Ua)
 	var city geoip.Info
-	if req.IP != "" {
-		ip := net.ParseIP(req.IP)
+	if req.Ip != "" {
+		ip := net.ParseIP(req.Ip)
 		city = geoip.Lookup(ip)
 	}
 	var screenSize string
 	switch {
-	case req.ScreenWidth < 576:
+	case req.W < 576:
 		screenSize = "mobile"
-	case req.ScreenWidth < 992:
+	case req.W < 992:
 		screenSize = "tablet"
-	case req.ScreenWidth < 1440:
+	case req.W < 1440:
 		screenSize = "laptop"
-	case req.ScreenWidth >= 1440:
+	case req.W >= 1440:
 		screenSize = "desktop"
 	}
-	userID := userid.Hash(req.IP, req.UserAgent, domain, host)
+	userID := userid.Hash(req.Ip, req.Ua, domain, host)
 	e := entry.NewEntry()
 	e.ID = userID
-	e.Event = req.EventName
+	e.Event = req.N
 	e.Host = host
 	e.Path = path
 	e.Domain = domain

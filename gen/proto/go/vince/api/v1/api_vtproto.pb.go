@@ -1750,6 +1750,13 @@ func (m *Event) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.R) > 0 {
+		i -= len(m.R)
+		copy(dAtA[i:], m.R)
+		i = encodeVarint(dAtA, i, uint64(len(m.R)))
+		i--
+		dAtA[i] = 0x42
+	}
 	if len(m.Ua) > 0 {
 		i -= len(m.Ua)
 		copy(dAtA[i:], m.Ua)
@@ -1774,12 +1781,10 @@ func (m *Event) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x28
 	}
-	if len(m.W) > 0 {
-		i -= len(m.W)
-		copy(dAtA[i:], m.W)
-		i = encodeVarint(dAtA, i, uint64(len(m.W)))
+	if m.W != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.W))
 		i--
-		dAtA[i] = 0x22
+		dAtA[i] = 0x20
 	}
 	if len(m.D) > 0 {
 		i -= len(m.D)
@@ -2305,9 +2310,8 @@ func (m *Event) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
-	l = len(m.W)
-	if l > 0 {
-		n += 1 + l + sov(uint64(l))
+	if m.W != 0 {
+		n += 1 + sov(uint64(m.W))
 	}
 	if m.H {
 		n += 2
@@ -2317,6 +2321,10 @@ func (m *Event) SizeVT() (n int) {
 		n += 1 + l + sov(uint64(l))
 	}
 	l = len(m.Ua)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	l = len(m.R)
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
@@ -4992,10 +5000,10 @@ func (m *Event) UnmarshalVT(dAtA []byte) error {
 			m.D = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
-			if wireType != 2 {
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field W", wireType)
 			}
-			var stringLen uint64
+			m.W = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflow
@@ -5005,24 +5013,11 @@ func (m *Event) UnmarshalVT(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.W |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.W = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		case 5:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field H", wireType)
@@ -5106,6 +5101,38 @@ func (m *Event) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Ua = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field R", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.R = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

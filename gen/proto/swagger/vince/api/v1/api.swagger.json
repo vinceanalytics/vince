@@ -60,7 +60,8 @@
             "description": "Screen width",
             "in": "query",
             "required": false,
-            "type": "string"
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "h",
@@ -78,6 +79,13 @@
           {
             "name": "ua",
             "description": "user agent",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "r",
+            "description": "Referrer",
             "in": "query",
             "required": false,
             "type": "string"

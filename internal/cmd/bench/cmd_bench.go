@@ -3,7 +3,6 @@ package bench
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math/rand"
@@ -21,6 +20,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/geoip"
 	"github.com/vinceanalytics/vince/internal/klient"
+	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/internal/pj"
 	"github.com/vinceanalytics/vince/internal/referrer"
 	"github.com/vinceanalytics/vince/internal/ua"
 	"golang.org/x/sync/errgroup"
@@ -172,9 +173,8 @@ func session(ctx context.Context,
 	s S,
 ) func() error {
 	return func() error {
-		e := entry.NewRequest()
-		var buf bytes.Buffer
-		enc := json.NewEncoder(&buf)
+		e := &entry.Request{}
+		rx := bytes.NewReader(nil)
 		for {
 			select {
 			case <-ctx.Done():
@@ -182,13 +182,14 @@ func session(ctx context.Context,
 			default:
 				for _, path := range s.paths {
 					stats.Requests.Add(1)
-					e.EventName = s.event
-					e.Domain = s.domain
-					e.Referrer = s.referrer
-					e.URI = "http://" + s.domain + path
-					buf.Reset()
-					enc.Encode(e)
-					r, _ := http.NewRequest(http.MethodPost, s.instance+"/api/event", &buf)
+					e.N = s.event
+					e.D = s.domain
+					e.R = s.referrer
+					e.Url = "http://" + s.domain + path
+
+					b := must.Must(pj.Marshal(e))("failed serializing event")
+					rx.Reset(b)
+					r, _ := http.NewRequest(http.MethodPost, s.instance+"/api/event", rx)
 					r.Header.Set("x-forwarded-for", s.usr)
 					r.Header.Set("user-agent", s.agent)
 					r.Header.Set("Accept", "application/json")

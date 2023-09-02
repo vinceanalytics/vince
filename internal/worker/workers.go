@@ -47,7 +47,6 @@ func ProcessRequests(ctx context.Context) {
 			} else {
 				timeseries.Register(ctx, e)
 			}
-			r.Release()
 		}
 	}
 }
