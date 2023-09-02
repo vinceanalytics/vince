@@ -23,6 +23,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/secrets"
 	"github.com/vinceanalytics/vince/internal/tokens"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
@@ -130,6 +132,69 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (a *API) CreateToken(context.Context, *apiv1.CreateTokenRequest) (*apiv1.CreateTokenResponse, error) {
-	return nil, nil
+func (*API) CreateToken(ctx context.Context, tr *apiv1.CreateTokenRequest) (*apiv1.CreateTokenResponse, error) {
+	if tr.Ttl == nil {
+		tr.Ttl = durationpb.New(30 * 24 * time.Hour)
+	}
+	pub := publicKey
+	if tr.Generate {
+		tr.Token, _ = tokens.Generate(ctx, privateKey, apiv1.Token_SERVER,
+			tr.Name, core.Now(ctx).Add(tr.Ttl.AsDuration()))
+	} else {
+		pub = ed25519.PublicKey(tr.PublicKey)
+		tok, err := jwt.Parse(tr.Token, func(t *jwt.Token) (interface{}, error) {
+			return pub, nil
+		})
+		if err != nil || !tok.Valid {
+			return nil, status.Error(codes.InvalidArgument, "invalid token")
+		}
+	}
+	var a apiv1.Account
+	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
+		key := keys.Account(tr.Name)
+		defer key.Release()
+		return txn.Get(
+			key.Bytes(),
+			func(val []byte) error {
+				return proto.Unmarshal(val, &a)
+			},
+		)
+	})
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			return nil, status.Error(codes.NotFound, "no such account")
+		}
+		slog.Error("failed reading account", "err", err)
+		return nil, status.Error(codes.Internal, "something went wrong")
+	}
+	err = bcrypt.CompareHashAndPassword(a.HashedPassword, []byte(tr.Password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return nil, status.Error(codes.InvalidArgument, "invalid password")
+		}
+		slog.Error("failed comparing passwords", "err", err)
+		return nil, status.Error(codes.Internal, "something went wrong")
+	}
+	err = db.Get(ctx).Txn(true, func(txn db.Txn) error {
+		key := keys.Token(tr.Token)
+		defer key.Release()
+		tok := must.Must(
+			proto.Marshal(&apiv1.Token{
+				PubKey: pub.(ed25519.PublicKey),
+			}),
+		)("failed encoding token")
+		return txn.SetTTL(key.Bytes(), tok, tr.Ttl.AsDuration())
+	})
+	if err != nil {
+		slog.Error("failed saving token", "err", err)
+		return nil, status.Error(codes.Internal, "something went wrong")
+	}
+	o := config.Get(ctx)
+	return &apiv1.CreateTokenResponse{
+		Auth: &configv1.Client_Auth{
+			Name:     tr.Name,
+			Token:    tr.Token,
+			ServerId: o.ServerId,
+		},
+	}, nil
 }

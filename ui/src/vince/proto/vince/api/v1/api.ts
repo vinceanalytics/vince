@@ -479,7 +479,7 @@ class CreateTokenRequest$Type extends MessageType<CreateTokenRequest> {
             { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 2, name: "password", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 3, name: "token", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 4, name: "public_key", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
+            { no: 4, name: "public_key", kind: "scalar", T: 12 /*ScalarType.BYTES*/, options: { "buf.validate.field": { bytes: { len: "32" } } } },
             { no: 5, name: "generate", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
             { no: 6, name: "ttl", kind: "message", T: () => Duration }
         ], { "buf.validate.message": { cel: [{ id: "client.token", message: "token  is required", expression: "this.generate ? true : size(this.token)>0" }, { id: "client.pub_key", message: "public_key  is required", expression: "this.generate ? true : size(this.public_key)>0" }] } });
