@@ -6,6 +6,7 @@ import (
 
 	"log/slog"
 
+	"github.com/prometheus/client_golang/prometheus"
 	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
@@ -15,6 +16,22 @@ import (
 	"github.com/vinceanalytics/vince/internal/worker"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+var acceptedEvents = prometheus.NewCounter(prometheus.CounterOpts{
+	Namespace: "vince",
+	Name:      "events_accepted_total",
+	Help:      "Total number of analytics events accepted",
+})
+
+var rejectedEvents = prometheus.NewCounter(prometheus.CounterOpts{
+	Namespace: "vince",
+	Name:      "events_rejected_total",
+	Help:      "Total number of analytics events rejected",
+})
+
+func init() {
+	prometheus.MustRegister(acceptedEvents, rejectedEvents)
+}
 
 // Events accepts events payloads from vince client script.
 func Events(w http.ResponseWriter, r *http.Request) {
@@ -54,8 +71,13 @@ func accept(ctx context.Context, domain string) (ok bool) {
 	return
 }
 
-// SendEvent accepts analytics event
-func (a *API) SendEvent(context.Context, *apiv1.Event) (*emptypb.Empty, error) {
-
+// SendEvent accepts analytics event. Assumes req has already been validated
+func (a *API) SendEvent(ctx context.Context, req *apiv1.Event) (*emptypb.Empty, error) {
+	if !accept(ctx, req.D) {
+		rejectedEvents.Inc()
+		return &emptypb.Empty{}, nil
+	}
+	acceptedEvents.Inc()
+	worker.Submit(ctx, req)
 	return nil, nil
 }
