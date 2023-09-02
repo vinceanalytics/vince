@@ -1344,7 +1344,7 @@ export const Query_Row = new Query_Row$Type();
 class QueryRequest$Type extends MessageType<QueryRequest> {
     constructor() {
         super("v1.QueryRequest", [
-            { no: 1, name: "query", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "query", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 2, name: "params", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Query_Param }
         ]);
     }

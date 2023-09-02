@@ -51,6 +51,25 @@ func Query(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, http.StatusOK, result)
 }
 
-func (a *API) Query(context.Context, *apiv1.QueryRequest) (*apiv1.QueryResponse, error) {
-	return nil, nil
+// Query executes read only query. Assumes req has been validated.
+func (a *API) Query(ctx context.Context, req *apiv1.QueryRequest) (*apiv1.QueryResponse, error) {
+	params := make([]any, len(req.Params))
+	for i := range params {
+		params[i] = sql.Named(req.Params[i].Name,
+			px.Interface(req.Params[i].Value))
+	}
+	db := query.GetInternalClient(ctx)
+	start := core.Now(ctx)
+	rows, err := db.Query(req.Query, params...)
+	if err != nil {
+		return nil, err
+	}
+	elapsed := core.Now(ctx).Sub(start)
+	defer rows.Close()
+	result, err := output.Build(rows)
+	if err != nil {
+		return nil, err
+	}
+	result.Elapsed = durationpb.New(elapsed)
+	return result, nil
 }

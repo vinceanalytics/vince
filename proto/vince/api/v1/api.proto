@@ -159,7 +159,7 @@ message Query {
 }
 
 message QueryRequest {
-  string query = 1;
+  string query = 1 [ (buf.validate.field).required = true ];
   repeated Query.Param params = 2;
 }
 
