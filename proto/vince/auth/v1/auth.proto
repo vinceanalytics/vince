@@ -1,0 +1,34 @@
+syntax = "proto3";
+package v1;
+
+import "google/protobuf/timestamp.proto";
+
+message AccessData {
+  AuthorizedClient client = 1;
+  AuthorizeData authorize_data = 2;
+  AccessData access_data = 3;
+  string access_token = 4;
+  string refresh_token = 5;
+  int32 expires_in = 6;
+  string scope = 7;
+  string redirect_uri = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message AuthorizeData {
+  AuthorizedClient client = 1;
+  string code = 2;
+  int32 expires_in = 3;
+  string scope = 4;
+  string redirect_uri = 5;
+  string state = 6;
+  google.protobuf.Timestamp created_at = 7;
+  string code_challenge = 8;
+  string code_challenge_method = 9;
+}
+
+message AuthorizedClient {
+  string id = 1;
+  string secret = 2;
+  string redirect_url = 3;
+}

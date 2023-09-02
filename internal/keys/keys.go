@@ -81,3 +81,19 @@ func Token(token string) *Key {
 func Cluster() *Key {
 	return New(v1.StorePrefix_CLUSTER)
 }
+
+func AClient(id string) *Key {
+	return New(v1.StorePrefix_OAUTH_CLIENT).Path(id)
+}
+
+func AAccess(id string) *Key {
+	return New(v1.StorePrefix_OAUTH_ACCESS).Path(id)
+}
+
+func AAuthorize(id string) *Key {
+	return New(v1.StorePrefix_OAUTH_AUTHORIZE).Path(id)
+}
+
+func ARefresh(id string) *Key {
+	return New(v1.StorePrefix_OAUTH_REFRESH).Path(id)
+}

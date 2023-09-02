@@ -11,6 +11,10 @@ enum StorePrefix {
   CLUSTER = 8;
   BLOCK_METADATA = 9;
   BLOCK_INDEX = 10;
+  OAUTH_CLIENT = 11;
+  OAUTH_AUTHORIZE = 12;
+  OAUTH_ACCESS = 13;
+  OAUTH_REFRESH = 14;
 }
 
 message StoreKey {
