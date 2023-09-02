@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/ed25519"
 	"errors"
 	"net/http"
@@ -127,4 +128,8 @@ func Token(w http.ResponseWriter, r *http.Request) {
 			ServerId: o.ServerId,
 		},
 	})
+}
+
+func (a *API) CreateToken(context.Context, *apiv1.CreateTokenRequest) (*apiv1.CreateTokenResponse, error) {
+	return nil, nil
 }

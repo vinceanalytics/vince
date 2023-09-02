@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/config"
@@ -112,4 +113,12 @@ func ping(ctx context.Context, log *slog.Logger, name string, node *configv1.Clu
 		return "invalid cluster configuration"
 	}
 	return ""
+}
+
+func (a *API) ApplyCluster(context.Context, *apiv1.ApplyClusterRequest) (*apiv1.ApplyClusterResponse, error) {
+	return nil, nil
+}
+
+func (a *API) GetCluster(context.Context, *apiv1.GetClusterRequest) (*apiv1.GetClusterResponse, error) {
+	return nil, nil
 }

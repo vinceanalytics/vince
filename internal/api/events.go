@@ -6,11 +6,13 @@ import (
 
 	"log/slog"
 
+	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/remoteip"
 	"github.com/vinceanalytics/vince/internal/worker"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Events accepts events payloads from vince client script.
@@ -50,4 +52,9 @@ func accept(ctx context.Context, domain string) (ok bool) {
 	key.Release()
 	txn.Close()
 	return
+}
+
+// SendEvent accepts analytics event
+func (a *API) SendEvent(context.Context, *apiv1.Event) (*emptypb.Empty, error) {
+	return nil, nil
 }

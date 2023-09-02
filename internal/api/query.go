@@ -1,9 +1,11 @@
 package api
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 
+	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/output"
 	"github.com/vinceanalytics/vince/internal/core"
@@ -47,4 +49,8 @@ func Query(w http.ResponseWriter, r *http.Request) {
 	}
 	result.Elapsed = durationpb.New(elapsed)
 	render.JSON(w, http.StatusOK, result)
+}
+
+func (a *API) Query(context.Context, *apiv1.QueryRequest) (*apiv1.QueryResponse, error) {
+	return nil, nil
 }

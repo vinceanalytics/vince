@@ -1,11 +1,13 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dlclark/regexp2"
+	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
@@ -101,4 +103,18 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	render.JSON(w, http.StatusOK, &v1.DeleteSiteResponse{})
+}
+
+func (a *API) CreateSite(context.Context, *apiv1.CreateSiteRequest) (*apiv1.CreateSiteResponse, error) {
+	return nil, nil
+}
+func (a *API) GetSite(context.Context, *apiv1.GetSiteRequest) (*apiv1.GetSiteResponse, error) {
+	return nil, nil
+}
+func (a *API) ListSites(context.Context, *apiv1.ListSitesRequest) (*apiv1.ListSitesResponse, error) {
+	return nil, nil
+}
+
+func (a *API) DeleteSite(context.Context, *apiv1.DeleteSiteRequest) (*apiv1.DeleteSiteResponse, error) {
+	return nil, nil
 }
