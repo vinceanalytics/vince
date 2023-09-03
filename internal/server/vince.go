@@ -14,10 +14,12 @@ import (
 
 	"log/slog"
 
+	"github.com/bufbuild/protovalidate-go"
 	"github.com/go-chi/cors"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	grpc_logging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
+	grpc_protovalidate "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -189,18 +191,21 @@ func New(ctx context.Context) *Vince {
 	met := grpc_prometheus.NewServerMetrics(
 		grpc_prometheus.WithServerHandlingTimeHistogram(),
 	)
+	valid := must.Must(protovalidate.New())("failed creating proto validator")
 	srv := grpc.NewServer(
 		grpc.StreamInterceptor(
 			grpc_middleware.ChainStreamServer(
 				otelgrpc.StreamServerInterceptor(),
 				met.StreamServerInterceptor(),
 				grpc_logging.StreamServerInterceptor(InterceptorLogger(), logOpts...),
+				grpc_protovalidate.StreamServerInterceptor(valid),
 			)),
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
 				otelgrpc.UnaryServerInterceptor(),
 				met.UnaryServerInterceptor(),
 				grpc_logging.UnaryServerInterceptor(InterceptorLogger(), logOpts...),
+				grpc_protovalidate.UnaryServerInterceptor(valid),
 			),
 		),
 	)
