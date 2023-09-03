@@ -89,6 +89,10 @@ export interface Config {
      * @generated from protobuf field: string raft_path = 13;
      */
     raftPath: string;
+    /**
+     * @generated from protobuf field: repeated string allowed_origins = 14;
+     */
+    allowedOrigins: string[];
 }
 /**
  * @generated from protobuf message v1.Config.Notifier
@@ -426,11 +430,12 @@ class Config$Type extends MessageType<Config> {
             { no: 10, name: "events_buffer_size", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 11, name: "notifiers", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Config_Notifier },
             { no: 12, name: "server_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 13, name: "raft_path", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 13, name: "raft_path", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 14, name: "allowed_origins", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<Config>): Config {
-        const message = { dbPath: "", blocksPath: "", listenAddress: "", logLevel: "", enableProfile: false, mysqlListenAddress: "", tlsCertFile: "", tlsKeyFile: "", eventsBufferSize: 0n, notifiers: [], serverId: "", raftPath: "" };
+        const message = { dbPath: "", blocksPath: "", listenAddress: "", logLevel: "", enableProfile: false, mysqlListenAddress: "", tlsCertFile: "", tlsKeyFile: "", eventsBufferSize: 0n, notifiers: [], serverId: "", raftPath: "", allowedOrigins: [] };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Config>(this, message, value);
@@ -479,6 +484,9 @@ class Config$Type extends MessageType<Config> {
                     break;
                 case /* string raft_path */ 13:
                     message.raftPath = reader.string();
+                    break;
+                case /* repeated string allowed_origins */ 14:
+                    message.allowedOrigins.push(reader.string());
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -531,6 +539,9 @@ class Config$Type extends MessageType<Config> {
         /* string raft_path = 13; */
         if (message.raftPath !== "")
             writer.tag(13, WireType.LengthDelimited).string(message.raftPath);
+        /* repeated string allowed_origins = 14; */
+        for (let i = 0; i < message.allowedOrigins.length; i++)
+            writer.tag(14, WireType.LengthDelimited).string(message.allowedOrigins[i]);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

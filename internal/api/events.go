@@ -17,20 +17,20 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var acceptedEvents = prometheus.NewCounter(prometheus.CounterOpts{
+var AcceptedEvents = prometheus.NewCounter(prometheus.CounterOpts{
 	Namespace: "vince",
 	Name:      "events_accepted_total",
 	Help:      "Total number of analytics events accepted",
 })
 
-var rejectedEvents = prometheus.NewCounter(prometheus.CounterOpts{
+var RejectedEvents = prometheus.NewCounter(prometheus.CounterOpts{
 	Namespace: "vince",
 	Name:      "events_rejected_total",
 	Help:      "Total number of analytics events rejected",
 })
 
 func init() {
-	prometheus.MustRegister(acceptedEvents, rejectedEvents)
+	prometheus.MustRegister(AcceptedEvents, RejectedEvents)
 }
 
 // Events accepts events payloads from vince client script.
@@ -74,10 +74,10 @@ func accept(ctx context.Context, domain string) (ok bool) {
 // SendEvent accepts analytics event. Assumes req has already been validated
 func (a *API) SendEvent(ctx context.Context, req *apiv1.Event) (*emptypb.Empty, error) {
 	if !accept(ctx, req.D) {
-		rejectedEvents.Inc()
+		RejectedEvents.Inc()
 		return &emptypb.Empty{}, nil
 	}
-	acceptedEvents.Inc()
+	AcceptedEvents.Inc()
 	worker.Submit(ctx, req)
 	return nil, nil
 }

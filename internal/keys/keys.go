@@ -41,6 +41,9 @@ func (k *Key) Path(parts ...string) *Key {
 }
 
 func (k *Key) Release() {
+	if k == nil {
+		return
+	}
 	k.b.Reset()
 	pool.Put(k)
 }

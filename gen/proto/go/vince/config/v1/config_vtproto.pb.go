@@ -645,6 +645,15 @@ func (m *Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.AllowedOrigins) > 0 {
+		for iNdEx := len(m.AllowedOrigins) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.AllowedOrigins[iNdEx])
+			copy(dAtA[i:], m.AllowedOrigins[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.AllowedOrigins[iNdEx])))
+			i--
+			dAtA[i] = 0x72
+		}
+	}
 	if len(m.RaftPath) > 0 {
 		i -= len(m.RaftPath)
 		copy(dAtA[i:], m.RaftPath)
@@ -1545,6 +1554,12 @@ func (m *Config) SizeVT() (n int) {
 	l = len(m.RaftPath)
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
+	}
+	if len(m.AllowedOrigins) > 0 {
+		for _, s := range m.AllowedOrigins {
+			l = len(s)
+			n += 1 + l + sov(uint64(l))
+		}
 	}
 	n += len(m.unknownFields)
 	return n
@@ -3916,6 +3931,38 @@ func (m *Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.RaftPath = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AllowedOrigins", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AllowedOrigins = append(m.AllowedOrigins, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

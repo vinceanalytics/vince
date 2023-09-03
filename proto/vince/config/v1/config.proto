@@ -42,6 +42,8 @@ message Config {
   string server_id = 12;
   string raft_path = 13;
 
+  repeated string allowed_origins = 14;
+
   message Notifier {
     string name = 1;
     oneof provider {

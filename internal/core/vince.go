@@ -3,15 +3,12 @@ package core
 import (
 	"context"
 	"net"
-	"net/http"
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 )
 
 type httpListenerKey struct{}
-
-type httpServerKey struct{}
 
 func SetHTTPListener(ctx context.Context, ls net.Listener) context.Context {
 	return context.WithValue(ctx, httpListenerKey{}, ls)
@@ -20,17 +17,6 @@ func SetHTTPListener(ctx context.Context, ls net.Listener) context.Context {
 func GetHTTPListener(ctx context.Context) net.Listener {
 	if v := ctx.Value(httpListenerKey{}); v != nil {
 		return v.(net.Listener)
-	}
-	return nil
-}
-
-func SetHTTPServer(ctx context.Context, ls *http.Server) context.Context {
-	return context.WithValue(ctx, httpServerKey{}, ls)
-}
-
-func GetHTTPServer(ctx context.Context) *http.Server {
-	if v := ctx.Value(httpServerKey{}); v != nil {
-		return v.(*http.Server)
 	}
 	return nil
 }

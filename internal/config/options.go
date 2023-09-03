@@ -137,6 +137,13 @@ func Flags(o *Options) []cli.Flag {
 			Destination: &o.ServerId,
 			EnvVars:     []string{"VINCE_SERVER_ID"},
 		},
+		&cli.StringSliceFlag{
+			Name:        "allowed-origins",
+			Usage:       "Origins allowed for cors",
+			Value:       []string{"*"},
+			Destination: &o.AllowedOrigins,
+			EnvVars:     []string{"VINCE_ALLOWED_ORIGINS"},
+		},
 	}
 }
 

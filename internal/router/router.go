@@ -6,14 +6,15 @@ import (
 	"net/http"
 	"net/http/pprof"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/metrics"
 	"github.com/vinceanalytics/vince/internal/plug"
 )
 
-func Pipe(ctx context.Context) plug.Pipeline {
-	metrics := metrics.New()
+func Pipe(ctx context.Context, reg *prometheus.Registry) plug.Pipeline {
+	metrics := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
 
 	browser := plug.Browser()
 	a := plug.API()
