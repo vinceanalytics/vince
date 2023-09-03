@@ -29,6 +29,7 @@ complete -c vince -n '__fish_seen_subcommand_from serve' -f -l sync-interval -r 
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l enable-profile -d 'Expose /debug/pprof endpoint'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l events-buffer-size -r -d 'Number of events to keep in memory before saving'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l server-id -r -d 'unique id of this server in a cluster'
+complete -c vince -n '__fish_seen_subcommand_from serve' -f -l allowed-origins -r -d 'Origins allowed for cors'
 complete -c vince -n '__fish_seen_subcommand_from login' -f -l help -s h -d 'show help'
 complete -r -c vince -n '__fish_vince_no_subcommand' -a 'login' -d 'Authenticate into vince instance'
 complete -c vince -n '__fish_seen_subcommand_from login' -f -l i -s no-i -d 'Shows interactive prompt for username and password'
