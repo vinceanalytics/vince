@@ -5,7 +5,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/run"
 )
 
-//go:generate go run tools/run/main.go
+//go:generate go generate ./ui
+//go:generate go run main.go serve .vince
 
 func main() {
 	run.Main(vince.App())
