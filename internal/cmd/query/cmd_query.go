@@ -17,25 +17,19 @@ func CMD() *cli.Command {
 		Name:  "query",
 		Usage: "connect to vince and execute sql query",
 		Action: func(ctx *cli.Context) error {
+			w := ansi.New()
 			a := ctx.Args().First()
 			if a == "" {
 				return nil
 			}
 			token, instance := auth.Account()
-			var result v1.QueryResponse
-			err := klient.Do(
-				context.Background(),
-				instance,
-				&v1.QueryRequest{
-					Query: a,
-				},
-				&result,
-				token,
+			result, err := klient.Query(context.TODO(),
+				instance, token, &v1.QueryRequest{Query: a},
 			)
 			if err != nil {
-				ansi.New().Err(err.Error).Exit()
+				return w.Complete(err)
 			}
-			return output.Tab(os.Stdout, &result)
+			return output.Tab(os.Stdout, result)
 		},
 	}
 }

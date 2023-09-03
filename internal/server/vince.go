@@ -21,11 +21,14 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	grpc_logging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpc_protovalidate "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/selector"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/assets"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
@@ -200,6 +203,8 @@ func New(ctx context.Context) *Vince {
 				met.StreamServerInterceptor(),
 				grpc_logging.StreamServerInterceptor(InterceptorLogger(), logOpts...),
 				auth.StreamServerInterceptor(plug.AuthGRPC),
+				selector.StreamServerInterceptor(auth.StreamServerInterceptor(plug.AuthGRPCBasic), selector.MatchFunc(plug.AuthGRPCBasicSelector)),
+				selector.StreamServerInterceptor(auth.StreamServerInterceptor(plug.AuthGRPC), selector.MatchFunc(plug.AuthGRPCSelector)),
 				grpc_protovalidate.StreamServerInterceptor(valid),
 			)),
 		grpc.UnaryInterceptor(
@@ -207,13 +212,15 @@ func New(ctx context.Context) *Vince {
 				otelgrpc.UnaryServerInterceptor(),
 				met.UnaryServerInterceptor(),
 				grpc_logging.UnaryServerInterceptor(InterceptorLogger(), logOpts...),
-				auth.UnaryServerInterceptor(plug.AuthGRPC),
+				selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(plug.AuthGRPCBasic), selector.MatchFunc(plug.AuthGRPCBasicSelector)),
+				selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(plug.AuthGRPC), selector.MatchFunc(plug.AuthGRPCSelector)),
 				grpc_protovalidate.UnaryServerInterceptor(valid),
 			),
 		),
 	)
 	reflection.Register(srv)
 	grpc_health.RegisterHealthServer(srv, v.HealthServer())
+	v1.RegisterVinceServer(srv, &api.API{})
 	routes := Handle(ctx, v.Registry)
 	v.Server = http.Server{
 		Addr:              o.ListenAddress,

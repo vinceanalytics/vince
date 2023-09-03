@@ -60,17 +60,9 @@ export enum Token_Scope {
     CLUSTER = 2
 }
 /**
- * @generated from protobuf message v1.CreateTokenRequest
+ * @generated from protobuf message v1.LoginRequest
  */
-export interface CreateTokenRequest {
-    /**
-     * @generated from protobuf field: string name = 1;
-     */
-    name: string;
-    /**
-     * @generated from protobuf field: string password = 2;
-     */
-    password: string;
+export interface LoginRequest {
     /**
      * @generated from protobuf field: string token = 3;
      */
@@ -91,9 +83,9 @@ export interface CreateTokenRequest {
     ttl?: Duration;
 }
 /**
- * @generated from protobuf message v1.CreateTokenResponse
+ * @generated from protobuf message v1.LoginResponse
  */
-export interface CreateTokenResponse {
+export interface LoginResponse {
     /**
      * @generated from protobuf field: v1.Client.Auth auth = 1;
      */
@@ -130,6 +122,10 @@ export interface CreateSiteResponse {
  * @generated from protobuf message v1.GetSiteRequest
  */
 export interface GetSiteRequest {
+    /**
+     * @generated from protobuf field: string domain = 1;
+     */
+    domain: string;
 }
 /**
  * @generated from protobuf message v1.GetSiteResponse
@@ -473,35 +469,27 @@ class Token$Type extends MessageType<Token> {
  */
 export const Token = new Token$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class CreateTokenRequest$Type extends MessageType<CreateTokenRequest> {
+class LoginRequest$Type extends MessageType<LoginRequest> {
     constructor() {
-        super("v1.CreateTokenRequest", [
-            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
-            { no: 2, name: "password", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
+        super("v1.LoginRequest", [
             { no: 3, name: "token", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "public_key", kind: "scalar", T: 12 /*ScalarType.BYTES*/, options: { "buf.validate.field": { bytes: { len: "32" } } } },
             { no: 5, name: "generate", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
             { no: 6, name: "ttl", kind: "message", T: () => Duration }
         ], { "buf.validate.message": { cel: [{ id: "client.token", message: "token  is required", expression: "this.generate ? true : size(this.token)>0" }, { id: "client.pub_key", message: "public_key  is required", expression: "this.generate ? true : size(this.public_key)>0" }] } });
     }
-    create(value?: PartialMessage<CreateTokenRequest>): CreateTokenRequest {
-        const message = { name: "", password: "", token: "", publicKey: new Uint8Array(0), generate: false };
+    create(value?: PartialMessage<LoginRequest>): LoginRequest {
+        const message = { token: "", publicKey: new Uint8Array(0), generate: false };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
-            reflectionMergePartial<CreateTokenRequest>(this, message, value);
+            reflectionMergePartial<LoginRequest>(this, message, value);
         return message;
     }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: CreateTokenRequest): CreateTokenRequest {
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: LoginRequest): LoginRequest {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string name */ 1:
-                    message.name = reader.string();
-                    break;
-                case /* string password */ 2:
-                    message.password = reader.string();
-                    break;
                 case /* string token */ 3:
                     message.token = reader.string();
                     break;
@@ -525,13 +513,7 @@ class CreateTokenRequest$Type extends MessageType<CreateTokenRequest> {
         }
         return message;
     }
-    internalBinaryWrite(message: CreateTokenRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string name = 1; */
-        if (message.name !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.name);
-        /* string password = 2; */
-        if (message.password !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.password);
+    internalBinaryWrite(message: LoginRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
         /* string token = 3; */
         if (message.token !== "")
             writer.tag(3, WireType.LengthDelimited).string(message.token);
@@ -551,24 +533,24 @@ class CreateTokenRequest$Type extends MessageType<CreateTokenRequest> {
     }
 }
 /**
- * @generated MessageType for protobuf message v1.CreateTokenRequest
+ * @generated MessageType for protobuf message v1.LoginRequest
  */
-export const CreateTokenRequest = new CreateTokenRequest$Type();
+export const LoginRequest = new LoginRequest$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class CreateTokenResponse$Type extends MessageType<CreateTokenResponse> {
+class LoginResponse$Type extends MessageType<LoginResponse> {
     constructor() {
-        super("v1.CreateTokenResponse", [
+        super("v1.LoginResponse", [
             { no: 1, name: "auth", kind: "message", T: () => Client_Auth }
         ]);
     }
-    create(value?: PartialMessage<CreateTokenResponse>): CreateTokenResponse {
+    create(value?: PartialMessage<LoginResponse>): LoginResponse {
         const message = {};
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
-            reflectionMergePartial<CreateTokenResponse>(this, message, value);
+            reflectionMergePartial<LoginResponse>(this, message, value);
         return message;
     }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: CreateTokenResponse): CreateTokenResponse {
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: LoginResponse): LoginResponse {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
@@ -587,7 +569,7 @@ class CreateTokenResponse$Type extends MessageType<CreateTokenResponse> {
         }
         return message;
     }
-    internalBinaryWrite(message: CreateTokenResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+    internalBinaryWrite(message: LoginResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
         /* v1.Client.Auth auth = 1; */
         if (message.auth)
             Client_Auth.internalBinaryWrite(message.auth, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
@@ -598,9 +580,9 @@ class CreateTokenResponse$Type extends MessageType<CreateTokenResponse> {
     }
 }
 /**
- * @generated MessageType for protobuf message v1.CreateTokenResponse
+ * @generated MessageType for protobuf message v1.LoginResponse
  */
-export const CreateTokenResponse = new CreateTokenResponse$Type();
+export const LoginResponse = new LoginResponse$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Site$Type extends MessageType<Site> {
     constructor() {
@@ -745,19 +727,40 @@ export const CreateSiteResponse = new CreateSiteResponse$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class GetSiteRequest$Type extends MessageType<GetSiteRequest> {
     constructor() {
-        super("v1.GetSiteRequest", []);
+        super("v1.GetSiteRequest", [
+            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } }
+        ]);
     }
     create(value?: PartialMessage<GetSiteRequest>): GetSiteRequest {
-        const message = {};
+        const message = { domain: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<GetSiteRequest>(this, message, value);
         return message;
     }
     internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: GetSiteRequest): GetSiteRequest {
-        return target ?? this.create();
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string domain */ 1:
+                    message.domain = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
     }
     internalBinaryWrite(message: GetSiteRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string domain = 1; */
+        if (message.domain !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.domain);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -892,7 +895,7 @@ export const ListSitesResponse = new ListSitesResponse$Type();
 class DeleteSiteRequest$Type extends MessageType<DeleteSiteRequest> {
     constructor() {
         super("v1.DeleteSiteRequest", [
-            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } }
         ]);
     }
     create(value?: PartialMessage<DeleteSiteRequest>): DeleteSiteRequest {
@@ -1774,7 +1777,7 @@ export const Event = new Event$Type();
  * @generated ServiceType for protobuf service v1.Vince
  */
 export const Vince = new ServiceType("v1.Vince", [
-    { name: "CreateToken", options: { "google.api.http": { post: "/v1/tokens" } }, I: CreateTokenRequest, O: CreateTokenResponse },
+    { name: "Login", options: { "google.api.http": { post: "/v1/login" } }, I: LoginRequest, O: LoginResponse },
     { name: "CreateSite", options: { "google.api.http": { post: "/v1/sites" } }, I: CreateSiteRequest, O: CreateSiteResponse },
     { name: "GetSite", options: { "google.api.http": { get: "/v1/site" } }, I: GetSiteRequest, O: GetSiteResponse },
     { name: "ListSites", options: { "google.api.http": { get: "/v1/sites" } }, I: ListSitesRequest, O: ListSitesResponse },

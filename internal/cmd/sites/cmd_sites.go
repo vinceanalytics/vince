@@ -38,14 +38,11 @@ func create() *cli.Command {
 			}
 			name = strings.TrimSpace(name)
 			token, instance := auth.Account()
-
-			klient.CLI(
-				context.Background(),
-				instance,
-				&v1.CreateSiteRequest{Domain: name},
-				&v1.CreateSiteResponse{},
-				token,
-			)
+			_, err := klient.CreateSite(context.TODO(),
+				instance, token, &v1.CreateSiteRequest{Domain: name})
+			if err != nil {
+				return w.Complete(err)
+			}
 			return w.Ok("created").Complete(nil)
 		},
 	}
@@ -65,14 +62,11 @@ func del() *cli.Command {
 				).Exit()
 			}
 			token, instance := auth.Account()
-
-			klient.CLI(
-				context.Background(),
-				instance,
-				&v1.DeleteSiteRequest{Domain: name},
-				&v1.DeleteSiteResponse{},
-				token,
-			)
+			_, err := klient.DeleteSite(context.TODO(),
+				instance, token, &v1.DeleteSiteRequest{Domain: name})
+			if err != nil {
+				return w.Complete(err)
+			}
 			return w.Ok("deleted").Complete(nil)
 		},
 	}
@@ -85,14 +79,11 @@ func list() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			w := ansi.New()
 			token, instance := auth.Account()
-			var list v1.ListSitesResponse
-			klient.CLI(
-				context.Background(),
-				instance,
-				&v1.ListSitesRequest{},
-				&list,
-				token,
-			)
+			list, err := klient.ListSites(context.TODO(),
+				instance, token, &v1.ListSitesRequest{})
+			if err != nil {
+				return w.Complete(err)
+			}
 			for _, s := range list.List {
 				w.Ok(s.Domain)
 			}

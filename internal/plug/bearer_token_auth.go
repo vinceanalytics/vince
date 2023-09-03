@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
@@ -32,6 +33,10 @@ func Auth(h http.Handler) http.Handler {
 			ServerId: o.ServerId,
 		})))
 	})
+}
+
+func AuthGRPCSelector(_ context.Context, c interceptors.CallMeta) bool {
+	return c.FullMethod() != "/v1.Vince/Login"
 }
 
 func AuthGRPC(ctx context.Context) (context.Context, error) {

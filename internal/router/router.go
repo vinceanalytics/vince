@@ -18,8 +18,6 @@ func Pipe(ctx context.Context, reg *prometheus.Registry) plug.Pipeline {
 
 	browser := plug.Browser()
 	a := plug.API()
-	protect := plug.APIProtected()
-
 	return plug.Pipeline{
 		browser.PathGET("/metrics", metrics.ServeHTTP),
 		// add prefix matches on the top of the pipeline for faster lookups
@@ -27,15 +25,7 @@ func Pipe(ctx context.Context, reg *prometheus.Registry) plug.Pipeline {
 			browser.Prefix("/debug/pprof/", pprof.Index),
 		),
 		a.PathPOST("/api/event", api.Events),
-		a.PathGET("/health", api.Health),
 		a.PathGET("/version", api.Version),
-		protect.PathGET("/sites", api.ListSites),
-		protect.PathPOST("/sites", api.Create),
-		protect.PathDELETE("/sites", api.Delete),
-		protect.PathPOST("/query", api.Query),
-		a.PathPOST("/tokens", api.Token),
-		protect.PathPOST("/apply", api.Apply),
-		protect.PathGET("/cluster", api.Apply),
 		NotFound,
 	}
 }

@@ -133,7 +133,7 @@ type Txn interface {
 	// and nofFound is present then notFound is called.
 	Get(key []byte, value func(val []byte) error, notFound ...func() error) error
 	Has(key []byte) bool
-	Delete(key []byte) error
+	Delete(key []byte, notFound ...func() error) error
 	Close() error
 
 	Iter(IterOpts) Iter
@@ -214,8 +214,17 @@ func (x *txn) Has(key []byte) bool {
 	_, err := x.x.Get(key)
 	return err == nil
 }
-func (x *txn) Delete(key []byte) error {
-	return x.x.Delete(key)
+func (x *txn) Delete(key []byte, notFound ...func() error) error {
+	err := x.x.Delete(key)
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			if len(notFound) > 0 {
+				return notFound[0]()
+			}
+		}
+		return err
+	}
+	return nil
 }
 
 func (x *txn) Close() error {

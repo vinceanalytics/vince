@@ -60,18 +60,6 @@ func CMD() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			w := ansi.New()
 			token, instance := auth.Account()
-			var list v1.ListSitesResponse
-			klient.CLI(
-				context.Background(),
-				instance,
-				&v1.ListSitesRequest{},
-				&list,
-				token,
-			)
-			m := make(map[string]struct{})
-			for _, s := range list.List {
-				m[s.Domain] = struct{}{}
-			}
 			args := ctx.Args()
 			var g errgroup.Group
 			gCtx, cancel := context.WithTimeout(context.Background(), ctx.Duration("duration"))
@@ -80,11 +68,12 @@ func CMD() *cli.Command {
 			event := ctx.String("event")
 			paths := ctx.StringSlice("paths")
 			var stats []*Stats
-
 			for i := 0; i < ctx.NArg(); i++ {
 				a := args.Get(i)
-				if _, ok := m[a]; !ok {
-					w.Err(fmt.Sprintf("%q does not exist", a)).Flush()
+				_, err := klient.GetSite(context.TODO(),
+					instance, token, &v1.GetSiteRequest{Domain: a})
+				if err != nil {
+					w.Err(err.Error()).Flush()
 					continue
 				}
 				stat := &Stats{

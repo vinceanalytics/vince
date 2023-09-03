@@ -23,6 +23,7 @@ func CMD() *cli.Command {
 		Usage: "Authenticate into vince instance",
 		Flags: auth.Flags,
 		Action: func(ctx *cli.Context) error {
+			w := ansi.New()
 			name, password := auth.Load(ctx)
 			uri := ctx.Args().First()
 			if uri == "" {
@@ -51,18 +52,16 @@ func CMD() *cli.Command {
 				name,
 				time.Now().Add(365*24*time.Hour),
 			)
-			var clientAuth v1.CreateTokenResponse
-			klient.CLI(
-				context.Background(),
-				uri,
-				&v1.CreateTokenRequest{
-					Name:      name,
-					Password:  password,
+
+			clientAuth, err := klient.Login(context.TODO(),
+				uri, name, password, &v1.LoginRequest{
 					Token:     token,
 					PublicKey: priv.Public().(ed25519.PublicKey),
 				},
-				&clientAuth,
 			)
+			if err != nil {
+				return w.Complete(err)
+			}
 			a := clientAuth.Auth
 			client.Instance[uri].Accounts[a.Name] = a
 			client.ServerId[a.ServerId] = uri

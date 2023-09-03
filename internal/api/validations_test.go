@@ -29,26 +29,16 @@ func TestCreateSiteRequest(t *testing.T) {
 	}).Apply(t)
 }
 
-func TestCreateTokenRequest(t *testing.T) {
+func TestLoginRequest(t *testing.T) {
 	(CaseList{
 		{
-			Name:     "name is required",
-			Message:  &v1.CreateTokenRequest{Password: "xxx", Generate: true},
-			Contains: "name: value is required",
-		},
-		{
-			Name:     "password  is required",
-			Message:  &v1.CreateTokenRequest{Name: "test-token", Generate: true},
-			Contains: "password: value is required",
-		},
-		{
 			Name:     "client side token missing token",
-			Message:  &v1.CreateTokenRequest{Name: "test-token", Password: "xxx", PublicKey: []byte("xxx")},
+			Message:  &v1.LoginRequest{PublicKey: []byte("xxx")},
 			Contains: "token  is required ",
 		},
 		{
 			Name:     "client side token missing public key",
-			Message:  &v1.CreateTokenRequest{Name: "test-token", Password: "xxx", Token: "xxx"},
+			Message:  &v1.LoginRequest{Token: "xxx"},
 			Contains: "public_key  is required",
 		},
 	}).Apply(t)

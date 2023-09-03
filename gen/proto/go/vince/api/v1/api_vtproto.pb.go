@@ -38,7 +38,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VinceClient interface {
-	CreateToken(ctx context.Context, in *CreateTokenRequest, opts ...grpc.CallOption) (*CreateTokenResponse, error)
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	CreateSite(ctx context.Context, in *CreateSiteRequest, opts ...grpc.CallOption) (*CreateSiteResponse, error)
 	GetSite(ctx context.Context, in *GetSiteRequest, opts ...grpc.CallOption) (*GetSiteResponse, error)
 	ListSites(ctx context.Context, in *ListSitesRequest, opts ...grpc.CallOption) (*ListSitesResponse, error)
@@ -58,9 +58,9 @@ func NewVinceClient(cc grpc.ClientConnInterface) VinceClient {
 	return &vinceClient{cc}
 }
 
-func (c *vinceClient) CreateToken(ctx context.Context, in *CreateTokenRequest, opts ...grpc.CallOption) (*CreateTokenResponse, error) {
-	out := new(CreateTokenResponse)
-	err := c.cc.Invoke(ctx, "/v1.Vince/CreateToken", in, out, opts...)
+func (c *vinceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, "/v1.Vince/Login", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func (c *vinceClient) SendEvent(ctx context.Context, in *Event, opts ...grpc.Cal
 // All implementations must embed UnimplementedVinceServer
 // for forward compatibility
 type VinceServer interface {
-	CreateToken(context.Context, *CreateTokenRequest) (*CreateTokenResponse, error)
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	CreateSite(context.Context, *CreateSiteRequest) (*CreateSiteResponse, error)
 	GetSite(context.Context, *GetSiteRequest) (*GetSiteResponse, error)
 	ListSites(context.Context, *ListSitesRequest) (*ListSitesResponse, error)
@@ -169,8 +169,8 @@ type VinceServer interface {
 type UnimplementedVinceServer struct {
 }
 
-func (UnimplementedVinceServer) CreateToken(context.Context, *CreateTokenRequest) (*CreateTokenResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateToken not implemented")
+func (UnimplementedVinceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
 func (UnimplementedVinceServer) CreateSite(context.Context, *CreateSiteRequest) (*CreateSiteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSite not implemented")
@@ -212,20 +212,20 @@ func RegisterVinceServer(s grpc.ServiceRegistrar, srv VinceServer) {
 	s.RegisterService(&Vince_ServiceDesc, srv)
 }
 
-func _Vince_CreateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateTokenRequest)
+func _Vince_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(VinceServer).CreateToken(ctx, in)
+		return srv.(VinceServer).Login(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/v1.Vince/CreateToken",
+		FullMethod: "/v1.Vince/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VinceServer).CreateToken(ctx, req.(*CreateTokenRequest))
+		return srv.(VinceServer).Login(ctx, req.(*LoginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -400,8 +400,8 @@ var Vince_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*VinceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateToken",
-			Handler:    _Vince_CreateToken_Handler,
+			MethodName: "Login",
+			Handler:    _Vince_Login_Handler,
 		},
 		{
 			MethodName: "CreateSite",
@@ -484,7 +484,7 @@ func (m *Token) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *CreateTokenRequest) MarshalVT() (dAtA []byte, err error) {
+func (m *LoginRequest) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -497,12 +497,12 @@ func (m *CreateTokenRequest) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *CreateTokenRequest) MarshalToVT(dAtA []byte) (int, error) {
+func (m *LoginRequest) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *CreateTokenRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *LoginRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -560,24 +560,10 @@ func (m *CreateTokenRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1a
 	}
-	if len(m.Password) > 0 {
-		i -= len(m.Password)
-		copy(dAtA[i:], m.Password)
-		i = encodeVarint(dAtA, i, uint64(len(m.Password)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Name) > 0 {
-		i -= len(m.Name)
-		copy(dAtA[i:], m.Name)
-		i = encodeVarint(dAtA, i, uint64(len(m.Name)))
-		i--
-		dAtA[i] = 0xa
-	}
 	return len(dAtA) - i, nil
 }
 
-func (m *CreateTokenResponse) MarshalVT() (dAtA []byte, err error) {
+func (m *LoginResponse) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -590,12 +576,12 @@ func (m *CreateTokenResponse) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *CreateTokenResponse) MarshalToVT(dAtA []byte) (int, error) {
+func (m *LoginResponse) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *CreateTokenResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *LoginResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -772,6 +758,13 @@ func (m *GetSiteRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Domain) > 0 {
+		i -= len(m.Domain)
+		copy(dAtA[i:], m.Domain)
+		i = encodeVarint(dAtA, i, uint64(len(m.Domain)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -1835,20 +1828,12 @@ func (m *Token) SizeVT() (n int) {
 	return n
 }
 
-func (m *CreateTokenRequest) SizeVT() (n int) {
+func (m *LoginRequest) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Name)
-	if l > 0 {
-		n += 1 + l + sov(uint64(l))
-	}
-	l = len(m.Password)
-	if l > 0 {
-		n += 1 + l + sov(uint64(l))
-	}
 	l = len(m.Token)
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
@@ -1874,7 +1859,7 @@ func (m *CreateTokenRequest) SizeVT() (n int) {
 	return n
 }
 
-func (m *CreateTokenResponse) SizeVT() (n int) {
+func (m *LoginResponse) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1936,6 +1921,10 @@ func (m *GetSiteRequest) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
+	l = len(m.Domain)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -2423,7 +2412,7 @@ func (m *Token) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *CreateTokenRequest) UnmarshalVT(dAtA []byte) error {
+func (m *LoginRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2446,76 +2435,12 @@ func (m *CreateTokenRequest) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: CreateTokenRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: LoginRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: CreateTokenRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: LoginRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Name = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Password", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Password = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Token", wireType)
@@ -2668,7 +2593,7 @@ func (m *CreateTokenRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *CreateTokenResponse) UnmarshalVT(dAtA []byte) error {
+func (m *LoginResponse) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2691,10 +2616,10 @@ func (m *CreateTokenResponse) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: CreateTokenResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: LoginResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: CreateTokenResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: LoginResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3037,6 +2962,38 @@ func (m *GetSiteRequest) UnmarshalVT(dAtA []byte) error {
 			return fmt.Errorf("proto: GetSiteRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Domain", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Domain = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

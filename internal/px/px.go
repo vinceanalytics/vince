@@ -6,6 +6,7 @@ import (
 
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	"google.golang.org/protobuf/proto"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -67,4 +68,10 @@ func ColumnIndex(c storev1.Column) int {
 		return int(c)
 	}
 	return int(c - storev1.Column_browser)
+}
+
+func Decode(m proto.Message) func(val []byte) error {
+	return func(val []byte) error {
+		return proto.Unmarshal(val, m)
+	}
 }

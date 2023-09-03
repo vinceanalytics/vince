@@ -22,8 +22,8 @@ import type { GetSiteRequest } from "./api";
 import type { CreateSiteResponse } from "./api";
 import type { CreateSiteRequest } from "./api";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
-import type { CreateTokenResponse } from "./api";
-import type { CreateTokenRequest } from "./api";
+import type { LoginResponse } from "./api";
+import type { LoginRequest } from "./api";
 import type { UnaryCall } from "@protobuf-ts/runtime-rpc";
 import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
 /**
@@ -31,9 +31,9 @@ import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
  */
 export interface IVinceClient {
     /**
-     * @generated from protobuf rpc: CreateToken(v1.CreateTokenRequest) returns (v1.CreateTokenResponse);
+     * @generated from protobuf rpc: Login(v1.LoginRequest) returns (v1.LoginResponse);
      */
-    createToken(input: CreateTokenRequest, options?: RpcOptions): UnaryCall<CreateTokenRequest, CreateTokenResponse>;
+    login(input: LoginRequest, options?: RpcOptions): UnaryCall<LoginRequest, LoginResponse>;
     /**
      * @generated from protobuf rpc: CreateSite(v1.CreateSiteRequest) returns (v1.CreateSiteResponse);
      */
@@ -81,11 +81,11 @@ export class VinceClient implements IVinceClient, ServiceInfo {
     constructor(private readonly _transport: RpcTransport) {
     }
     /**
-     * @generated from protobuf rpc: CreateToken(v1.CreateTokenRequest) returns (v1.CreateTokenResponse);
+     * @generated from protobuf rpc: Login(v1.LoginRequest) returns (v1.LoginResponse);
      */
-    createToken(input: CreateTokenRequest, options?: RpcOptions): UnaryCall<CreateTokenRequest, CreateTokenResponse> {
+    login(input: LoginRequest, options?: RpcOptions): UnaryCall<LoginRequest, LoginResponse> {
         const method = this.methods[0], opt = this._transport.mergeOptions(options);
-        return stackIntercept<CreateTokenRequest, CreateTokenResponse>("unary", this._transport, method, opt, input);
+        return stackIntercept<LoginRequest, LoginResponse>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: CreateSite(v1.CreateSiteRequest) returns (v1.CreateSiteResponse);
