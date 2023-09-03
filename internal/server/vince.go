@@ -118,6 +118,8 @@ func Run(ctx context.Context, resources ResourceList) error {
 			worker.ProcessRequests(ctx)
 			return nil
 		})
+		// analytics data is partitioned daily
+		scheduler.Schedule("timeseries", worker.Daily{}, timeseries.Block(ctx))
 	}
 	o := config.Get(ctx)
 	plain := core.GetHTTPServer(ctx)

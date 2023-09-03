@@ -158,7 +158,7 @@ type Daily struct{}
 var _ Schedule = (*Daily)(nil)
 
 func (Daily) next(ts time.Time) time.Time {
-	return time.Date(ts.Year(), ts.Month(), ts.Day(), 0, 0, 0, 0, ts.Location())
+	return time.Date(ts.Year(), ts.Month(), ts.Day(), 24, 0, 0, 0, ts.Location())
 }
 
 type Every time.Duration

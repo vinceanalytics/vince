@@ -50,6 +50,12 @@ func (a *ActiveBlock) Commit(domain string) {
 
 func (a *ActiveBlock) Close() error {
 	slog.Debug("closing active block")
+	a.Run(a.Context)
+	return nil
+}
+
+// Implements worker.Job. Persists active blocks
+func (a *ActiveBlock) Run(ctx context.Context) {
 	a.ctx.Range(func(key, value any) bool {
 		a.ctx.Delete(key.(string))
 		x := value.(*writeContext)
@@ -57,7 +63,6 @@ func (a *ActiveBlock) Close() error {
 		value.(*writeContext).commit(a.Context)
 		return true
 	})
-	return nil
 }
 
 func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
