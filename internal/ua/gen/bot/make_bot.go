@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/vinceanalytics/vince/internal/tools"
 	"github.com/vinceanalytics/vince/internal/ua"
-	"github.com/vinceanalytics/vince/tools"
 	"gopkg.in/yaml.v2"
 )
 

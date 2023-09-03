@@ -16,7 +16,7 @@ import (
 	"github.com/oschwald/maxminddb-golang"
 	"github.com/vinceanalytics/vince/internal/geoip"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/tools"
+	"github.com/vinceanalytics/vince/internal/tools"
 )
 
 const dateFormat = "2006-01-02T15:04:05-0700"

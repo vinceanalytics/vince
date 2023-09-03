@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vinceanalytics/vince/tools"
+	"github.com/vinceanalytics/vince/internal/tools"
 	_ "k8s.io/code-generator"
 	_ "sigs.k8s.io/controller-tools/pkg/crd"
 )

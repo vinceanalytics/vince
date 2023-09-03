@@ -4,7 +4,7 @@ import (
 	"io/fs"
 	"path/filepath"
 
-	"github.com/vinceanalytics/vince/tools"
+	"github.com/vinceanalytics/vince/internal/tools"
 )
 
 func main() {

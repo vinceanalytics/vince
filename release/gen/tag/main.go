@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vinceanalytics/vince/tools"
+	"github.com/vinceanalytics/vince/internal/tools"
 	"golang.org/x/mod/semver"
 )
 

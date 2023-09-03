@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vinceanalytics/vince/tools"
+	"github.com/vinceanalytics/vince/internal/tools"
 	"gopkg.in/yaml.v2"
 )
 

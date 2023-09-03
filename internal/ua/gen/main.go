@@ -9,12 +9,12 @@ import (
 	"sort"
 
 	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/internal/tools"
 	"github.com/vinceanalytics/vince/internal/ua/gen/bot"
 	"github.com/vinceanalytics/vince/internal/ua/gen/client"
 	"github.com/vinceanalytics/vince/internal/ua/gen/device"
 	uos "github.com/vinceanalytics/vince/internal/ua/gen/os"
 	"github.com/vinceanalytics/vince/internal/ua/gen/vendorfragment"
-	"github.com/vinceanalytics/vince/tools"
 	"gopkg.in/yaml.v2"
 )
 
