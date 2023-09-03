@@ -111,6 +111,9 @@ func Run(ctx context.Context, resources ResourceList) error {
 	defer cancel()
 	var g errgroup.Group
 	{
+		var scheduler *worker.JobScheduler
+		ctx, scheduler = worker.OpenScheduler(ctx, &g)
+		resources = append(resources, scheduler)
 		g.Go(func() error {
 			worker.ProcessRequests(ctx)
 			return nil
