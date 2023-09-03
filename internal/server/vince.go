@@ -18,6 +18,7 @@ import (
 	"github.com/go-chi/cors"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	grpc_logging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpc_protovalidate "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -198,6 +199,7 @@ func New(ctx context.Context) *Vince {
 				otelgrpc.StreamServerInterceptor(),
 				met.StreamServerInterceptor(),
 				grpc_logging.StreamServerInterceptor(InterceptorLogger(), logOpts...),
+				auth.StreamServerInterceptor(plug.AuthGRPC),
 				grpc_protovalidate.StreamServerInterceptor(valid),
 			)),
 		grpc.UnaryInterceptor(
@@ -205,6 +207,7 @@ func New(ctx context.Context) *Vince {
 				otelgrpc.UnaryServerInterceptor(),
 				met.UnaryServerInterceptor(),
 				grpc_logging.UnaryServerInterceptor(InterceptorLogger(), logOpts...),
+				auth.UnaryServerInterceptor(plug.AuthGRPC),
 				grpc_protovalidate.UnaryServerInterceptor(valid),
 			),
 		),

@@ -75,3 +75,13 @@ func ValidWithClaims(vdb db.Provider, token string) (claims *jwt.RegisteredClaim
 
 	return
 }
+
+type tokenKey struct{}
+
+func Set(ctx context.Context, claims *jwt.RegisteredClaims) context.Context {
+	return context.WithValue(ctx, tokenKey{}, claims)
+}
+
+func Get(ctx context.Context) *jwt.RegisteredClaims {
+	return ctx.Value(tokenKey{}).(*jwt.RegisteredClaims)
+}
