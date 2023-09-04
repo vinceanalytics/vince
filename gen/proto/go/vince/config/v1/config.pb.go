@@ -21,6 +21,55 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type BlockStore_S3_BucketLookupType int32
+
+const (
+	BlockStore_S3_AUTO           BlockStore_S3_BucketLookupType = 0
+	BlockStore_S3_VIRTUAL_HOSTED BlockStore_S3_BucketLookupType = 1
+	BlockStore_S3_PATH           BlockStore_S3_BucketLookupType = 2
+)
+
+// Enum value maps for BlockStore_S3_BucketLookupType.
+var (
+	BlockStore_S3_BucketLookupType_name = map[int32]string{
+		0: "AUTO",
+		1: "VIRTUAL_HOSTED",
+		2: "PATH",
+	}
+	BlockStore_S3_BucketLookupType_value = map[string]int32{
+		"AUTO":           0,
+		"VIRTUAL_HOSTED": 1,
+		"PATH":           2,
+	}
+)
+
+func (x BlockStore_S3_BucketLookupType) Enum() *BlockStore_S3_BucketLookupType {
+	p := new(BlockStore_S3_BucketLookupType)
+	*p = x
+	return p
+}
+
+func (x BlockStore_S3_BucketLookupType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (BlockStore_S3_BucketLookupType) Descriptor() protoreflect.EnumDescriptor {
+	return file_vince_config_v1_config_proto_enumTypes[0].Descriptor()
+}
+
+func (BlockStore_S3_BucketLookupType) Type() protoreflect.EnumType {
+	return &file_vince_config_v1_config_proto_enumTypes[0]
+}
+
+func (x BlockStore_S3_BucketLookupType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use BlockStore_S3_BucketLookupType.Descriptor instead.
+func (BlockStore_S3_BucketLookupType) EnumDescriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 7, 0}
+}
+
 // Configuration object for vince instance
 type Config struct {
 	state         protoimpl.MessageState
@@ -305,6 +354,171 @@ func (x *Client) GetClusters() map[string]*Cluster_Config {
 	return nil
 }
 
+type BlockStore struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Provider:
+	//
+	//	*BlockStore_Fs
+	//	*BlockStore_S3_
+	//	*BlockStore_Azure_
+	//	*BlockStore_Bos
+	//	*BlockStore_Cos
+	//	*BlockStore_Gcs
+	//	*BlockStore_Obs
+	//	*BlockStore_Oss
+	Provider isBlockStore_Provider `protobuf_oneof:"provider"`
+}
+
+func (x *BlockStore) Reset() {
+	*x = BlockStore{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore) ProtoMessage() {}
+
+func (x *BlockStore) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore.ProtoReflect.Descriptor instead.
+func (*BlockStore) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3}
+}
+
+func (m *BlockStore) GetProvider() isBlockStore_Provider {
+	if m != nil {
+		return m.Provider
+	}
+	return nil
+}
+
+func (x *BlockStore) GetFs() *BlockStore_Filesystem {
+	if x, ok := x.GetProvider().(*BlockStore_Fs); ok {
+		return x.Fs
+	}
+	return nil
+}
+
+func (x *BlockStore) GetS3() *BlockStore_S3 {
+	if x, ok := x.GetProvider().(*BlockStore_S3_); ok {
+		return x.S3
+	}
+	return nil
+}
+
+func (x *BlockStore) GetAzure() *BlockStore_Azure {
+	if x, ok := x.GetProvider().(*BlockStore_Azure_); ok {
+		return x.Azure
+	}
+	return nil
+}
+
+func (x *BlockStore) GetBos() *BlockStore_BOS {
+	if x, ok := x.GetProvider().(*BlockStore_Bos); ok {
+		return x.Bos
+	}
+	return nil
+}
+
+func (x *BlockStore) GetCos() *BlockStore_COS {
+	if x, ok := x.GetProvider().(*BlockStore_Cos); ok {
+		return x.Cos
+	}
+	return nil
+}
+
+func (x *BlockStore) GetGcs() *BlockStore_GCS {
+	if x, ok := x.GetProvider().(*BlockStore_Gcs); ok {
+		return x.Gcs
+	}
+	return nil
+}
+
+func (x *BlockStore) GetObs() *BlockStore_OBS {
+	if x, ok := x.GetProvider().(*BlockStore_Obs); ok {
+		return x.Obs
+	}
+	return nil
+}
+
+func (x *BlockStore) GetOss() *BlockStore_OSS {
+	if x, ok := x.GetProvider().(*BlockStore_Oss); ok {
+		return x.Oss
+	}
+	return nil
+}
+
+type isBlockStore_Provider interface {
+	isBlockStore_Provider()
+}
+
+type BlockStore_Fs struct {
+	Fs *BlockStore_Filesystem `protobuf:"bytes,1,opt,name=fs,proto3,oneof"`
+}
+
+type BlockStore_S3_ struct {
+	S3 *BlockStore_S3 `protobuf:"bytes,2,opt,name=s3,proto3,oneof"`
+}
+
+type BlockStore_Azure_ struct {
+	Azure *BlockStore_Azure `protobuf:"bytes,3,opt,name=azure,proto3,oneof"`
+}
+
+type BlockStore_Bos struct {
+	Bos *BlockStore_BOS `protobuf:"bytes,4,opt,name=bos,proto3,oneof"`
+}
+
+type BlockStore_Cos struct {
+	Cos *BlockStore_COS `protobuf:"bytes,5,opt,name=cos,proto3,oneof"`
+}
+
+type BlockStore_Gcs struct {
+	Gcs *BlockStore_GCS `protobuf:"bytes,6,opt,name=gcs,proto3,oneof"`
+}
+
+type BlockStore_Obs struct {
+	Obs *BlockStore_OBS `protobuf:"bytes,7,opt,name=obs,proto3,oneof"`
+}
+
+type BlockStore_Oss struct {
+	Oss *BlockStore_OSS `protobuf:"bytes,8,opt,name=oss,proto3,oneof"`
+}
+
+func (*BlockStore_Fs) isBlockStore_Provider() {}
+
+func (*BlockStore_S3_) isBlockStore_Provider() {}
+
+func (*BlockStore_Azure_) isBlockStore_Provider() {}
+
+func (*BlockStore_Bos) isBlockStore_Provider() {}
+
+func (*BlockStore_Cos) isBlockStore_Provider() {}
+
+func (*BlockStore_Gcs) isBlockStore_Provider() {}
+
+func (*BlockStore_Obs) isBlockStore_Provider() {}
+
+func (*BlockStore_Oss) isBlockStore_Provider() {}
+
 type Build struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -316,7 +530,7 @@ type Build struct {
 func (x *Build) Reset() {
 	*x = Build{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[3]
+		mi := &file_vince_config_v1_config_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -329,7 +543,7 @@ func (x *Build) String() string {
 func (*Build) ProtoMessage() {}
 
 func (x *Build) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[3]
+	mi := &file_vince_config_v1_config_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -342,7 +556,7 @@ func (x *Build) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Build.ProtoReflect.Descriptor instead.
 func (*Build) Descriptor() ([]byte, []int) {
-	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3}
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Build) GetVersion() string {
@@ -368,7 +582,7 @@ type Config_Notifier struct {
 func (x *Config_Notifier) Reset() {
 	*x = Config_Notifier{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[4]
+		mi := &file_vince_config_v1_config_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -381,7 +595,7 @@ func (x *Config_Notifier) String() string {
 func (*Config_Notifier) ProtoMessage() {}
 
 func (x *Config_Notifier) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[4]
+	mi := &file_vince_config_v1_config_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -464,7 +678,7 @@ type Config_Email struct {
 func (x *Config_Email) Reset() {
 	*x = Config_Email{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[5]
+		mi := &file_vince_config_v1_config_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -477,7 +691,7 @@ func (x *Config_Email) String() string {
 func (*Config_Email) ProtoMessage() {}
 
 func (x *Config_Email) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[5]
+	mi := &file_vince_config_v1_config_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -596,7 +810,7 @@ type Config_Webhook struct {
 func (x *Config_Webhook) Reset() {
 	*x = Config_Webhook{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[6]
+		mi := &file_vince_config_v1_config_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -609,7 +823,7 @@ func (x *Config_Webhook) String() string {
 func (*Config_Webhook) ProtoMessage() {}
 
 func (x *Config_Webhook) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[6]
+	mi := &file_vince_config_v1_config_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -653,7 +867,7 @@ type Config_HTTP struct {
 func (x *Config_HTTP) Reset() {
 	*x = Config_HTTP{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[7]
+		mi := &file_vince_config_v1_config_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -666,7 +880,7 @@ func (x *Config_HTTP) String() string {
 func (*Config_HTTP) ProtoMessage() {}
 
 func (x *Config_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[7]
+	mi := &file_vince_config_v1_config_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -722,7 +936,7 @@ type Config_HTTP_BasicAuth struct {
 func (x *Config_HTTP_BasicAuth) Reset() {
 	*x = Config_HTTP_BasicAuth{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[9]
+		mi := &file_vince_config_v1_config_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -735,7 +949,7 @@ func (x *Config_HTTP_BasicAuth) String() string {
 func (*Config_HTTP_BasicAuth) ProtoMessage() {}
 
 func (x *Config_HTTP_BasicAuth) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[9]
+	mi := &file_vince_config_v1_config_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -777,7 +991,7 @@ type Config_HTTP_Authorization struct {
 func (x *Config_HTTP_Authorization) Reset() {
 	*x = Config_HTTP_Authorization{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[10]
+		mi := &file_vince_config_v1_config_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -790,7 +1004,7 @@ func (x *Config_HTTP_Authorization) String() string {
 func (*Config_HTTP_Authorization) ProtoMessage() {}
 
 func (x *Config_HTTP_Authorization) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[10]
+	mi := &file_vince_config_v1_config_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -836,7 +1050,7 @@ type Config_HTTP_OAuth2 struct {
 func (x *Config_HTTP_OAuth2) Reset() {
 	*x = Config_HTTP_OAuth2{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[11]
+		mi := &file_vince_config_v1_config_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -849,7 +1063,7 @@ func (x *Config_HTTP_OAuth2) String() string {
 func (*Config_HTTP_OAuth2) ProtoMessage() {}
 
 func (x *Config_HTTP_OAuth2) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[11]
+	mi := &file_vince_config_v1_config_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -920,7 +1134,7 @@ type Config_HTTP_TLSConfig struct {
 func (x *Config_HTTP_TLSConfig) Reset() {
 	*x = Config_HTTP_TLSConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[12]
+		mi := &file_vince_config_v1_config_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -933,7 +1147,7 @@ func (x *Config_HTTP_TLSConfig) String() string {
 func (*Config_HTTP_TLSConfig) ProtoMessage() {}
 
 func (x *Config_HTTP_TLSConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[12]
+	mi := &file_vince_config_v1_config_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -982,7 +1196,7 @@ type Cluster_Config struct {
 func (x *Cluster_Config) Reset() {
 	*x = Cluster_Config{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[14]
+		mi := &file_vince_config_v1_config_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -995,7 +1209,7 @@ func (x *Cluster_Config) String() string {
 func (*Cluster_Config) ProtoMessage() {}
 
 func (x *Cluster_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[14]
+	mi := &file_vince_config_v1_config_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1039,7 +1253,7 @@ type Cluster_Config_Node struct {
 func (x *Cluster_Config_Node) Reset() {
 	*x = Cluster_Config_Node{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[16]
+		mi := &file_vince_config_v1_config_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1052,7 +1266,7 @@ func (x *Cluster_Config_Node) String() string {
 func (*Cluster_Config_Node) ProtoMessage() {}
 
 func (x *Cluster_Config_Node) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[16]
+	mi := &file_vince_config_v1_config_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1100,7 +1314,7 @@ type Client_Instance struct {
 func (x *Client_Instance) Reset() {
 	*x = Client_Instance{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[20]
+		mi := &file_vince_config_v1_config_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1113,7 +1327,7 @@ func (x *Client_Instance) String() string {
 func (*Client_Instance) ProtoMessage() {}
 
 func (x *Client_Instance) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[20]
+	mi := &file_vince_config_v1_config_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1148,7 +1362,7 @@ type Client_Active struct {
 func (x *Client_Active) Reset() {
 	*x = Client_Active{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[21]
+		mi := &file_vince_config_v1_config_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1161,7 +1375,7 @@ func (x *Client_Active) String() string {
 func (*Client_Active) ProtoMessage() {}
 
 func (x *Client_Active) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[21]
+	mi := &file_vince_config_v1_config_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1204,7 +1418,7 @@ type Client_Auth struct {
 func (x *Client_Auth) Reset() {
 	*x = Client_Auth{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_config_v1_config_proto_msgTypes[22]
+		mi := &file_vince_config_v1_config_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1217,7 +1431,7 @@ func (x *Client_Auth) String() string {
 func (*Client_Auth) ProtoMessage() {}
 
 func (x *Client_Auth) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_config_v1_config_proto_msgTypes[22]
+	mi := &file_vince_config_v1_config_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1250,6 +1464,867 @@ func (x *Client_Auth) GetToken() string {
 func (x *Client_Auth) GetServerId() string {
 	if x != nil {
 		return x.ServerId
+	}
+	return ""
+}
+
+type BlockStore_OSS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Endpoint        string `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	Bucket          string `protobuf:"bytes,2,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	AccessKeyId     string `protobuf:"bytes,3,opt,name=access_key_id,json=accessKeyId,proto3" json:"access_key_id,omitempty"`
+	AccessKeySecret string `protobuf:"bytes,4,opt,name=access_key_secret,json=accessKeySecret,proto3" json:"access_key_secret,omitempty"`
+}
+
+func (x *BlockStore_OSS) Reset() {
+	*x = BlockStore_OSS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[25]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_OSS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_OSS) ProtoMessage() {}
+
+func (x *BlockStore_OSS) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[25]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_OSS.ProtoReflect.Descriptor instead.
+func (*BlockStore_OSS) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 0}
+}
+
+func (x *BlockStore_OSS) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *BlockStore_OSS) GetBucket() string {
+	if x != nil {
+		return x.Bucket
+	}
+	return ""
+}
+
+func (x *BlockStore_OSS) GetAccessKeyId() string {
+	if x != nil {
+		return x.AccessKeyId
+	}
+	return ""
+}
+
+func (x *BlockStore_OSS) GetAccessKeySecret() string {
+	if x != nil {
+		return x.AccessKeySecret
+	}
+	return ""
+}
+
+type BlockStore_OBS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Bucket    string `protobuf:"bytes,1,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	Endpoint  string `protobuf:"bytes,2,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	AccessKey string `protobuf:"bytes,3,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
+	SecretKey string `protobuf:"bytes,4,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
+}
+
+func (x *BlockStore_OBS) Reset() {
+	*x = BlockStore_OBS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[26]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_OBS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_OBS) ProtoMessage() {}
+
+func (x *BlockStore_OBS) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[26]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_OBS.ProtoReflect.Descriptor instead.
+func (*BlockStore_OBS) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 1}
+}
+
+func (x *BlockStore_OBS) GetBucket() string {
+	if x != nil {
+		return x.Bucket
+	}
+	return ""
+}
+
+func (x *BlockStore_OBS) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *BlockStore_OBS) GetAccessKey() string {
+	if x != nil {
+		return x.AccessKey
+	}
+	return ""
+}
+
+func (x *BlockStore_OBS) GetSecretKey() string {
+	if x != nil {
+		return x.SecretKey
+	}
+	return ""
+}
+
+type BlockStore_GCS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Bucket         string `protobuf:"bytes,1,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	ServiceAccount string `protobuf:"bytes,2,opt,name=service_account,json=serviceAccount,proto3" json:"service_account,omitempty"`
+}
+
+func (x *BlockStore_GCS) Reset() {
+	*x = BlockStore_GCS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[27]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_GCS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_GCS) ProtoMessage() {}
+
+func (x *BlockStore_GCS) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[27]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_GCS.ProtoReflect.Descriptor instead.
+func (*BlockStore_GCS) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 2}
+}
+
+func (x *BlockStore_GCS) GetBucket() string {
+	if x != nil {
+		return x.Bucket
+	}
+	return ""
+}
+
+func (x *BlockStore_GCS) GetServiceAccount() string {
+	if x != nil {
+		return x.ServiceAccount
+	}
+	return ""
+}
+
+type BlockStore_COS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Bucket    string `protobuf:"bytes,1,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	Region    string `protobuf:"bytes,2,opt,name=region,proto3" json:"region,omitempty"`
+	AppId     string `protobuf:"bytes,3,opt,name=app_id,json=appId,proto3" json:"app_id,omitempty"`
+	Endpoint  string `protobuf:"bytes,4,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	SecretKey string `protobuf:"bytes,5,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
+	SecretId  string `protobuf:"bytes,6,opt,name=secret_id,json=secretId,proto3" json:"secret_id,omitempty"`
+}
+
+func (x *BlockStore_COS) Reset() {
+	*x = BlockStore_COS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[28]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_COS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_COS) ProtoMessage() {}
+
+func (x *BlockStore_COS) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[28]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_COS.ProtoReflect.Descriptor instead.
+func (*BlockStore_COS) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 3}
+}
+
+func (x *BlockStore_COS) GetBucket() string {
+	if x != nil {
+		return x.Bucket
+	}
+	return ""
+}
+
+func (x *BlockStore_COS) GetRegion() string {
+	if x != nil {
+		return x.Region
+	}
+	return ""
+}
+
+func (x *BlockStore_COS) GetAppId() string {
+	if x != nil {
+		return x.AppId
+	}
+	return ""
+}
+
+func (x *BlockStore_COS) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *BlockStore_COS) GetSecretKey() string {
+	if x != nil {
+		return x.SecretKey
+	}
+	return ""
+}
+
+func (x *BlockStore_COS) GetSecretId() string {
+	if x != nil {
+		return x.SecretId
+	}
+	return ""
+}
+
+type BlockStore_BOS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Bucket    string `protobuf:"bytes,1,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	Endpoint  string `protobuf:"bytes,2,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	AccessKey string `protobuf:"bytes,3,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
+	SecretKey string `protobuf:"bytes,4,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
+}
+
+func (x *BlockStore_BOS) Reset() {
+	*x = BlockStore_BOS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[29]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_BOS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_BOS) ProtoMessage() {}
+
+func (x *BlockStore_BOS) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[29]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_BOS.ProtoReflect.Descriptor instead.
+func (*BlockStore_BOS) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 4}
+}
+
+func (x *BlockStore_BOS) GetBucket() string {
+	if x != nil {
+		return x.Bucket
+	}
+	return ""
+}
+
+func (x *BlockStore_BOS) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *BlockStore_BOS) GetAccessKey() string {
+	if x != nil {
+		return x.AccessKey
+	}
+	return ""
+}
+
+func (x *BlockStore_BOS) GetSecretKey() string {
+	if x != nil {
+		return x.SecretKey
+	}
+	return ""
+}
+
+type BlockStore_Azure struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	StorageAccount          string                     `protobuf:"bytes,1,opt,name=storage_account,json=storageAccount,proto3" json:"storage_account,omitempty"`
+	StorageAccountKey       string                     `protobuf:"bytes,2,opt,name=storage_account_key,json=storageAccountKey,proto3" json:"storage_account_key,omitempty"`
+	StorageConnectionString string                     `protobuf:"bytes,3,opt,name=storage_connection_string,json=storageConnectionString,proto3" json:"storage_connection_string,omitempty"`
+	Container               string                     `protobuf:"bytes,4,opt,name=container,proto3" json:"container,omitempty"`
+	Endpoint                string                     `protobuf:"bytes,5,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	UserAssignedId          string                     `protobuf:"bytes,6,opt,name=user_assigned_id,json=userAssignedId,proto3" json:"user_assigned_id,omitempty"`
+	MaxRetries              int32                      `protobuf:"varint,7,opt,name=max_retries,json=maxRetries,proto3" json:"max_retries,omitempty"`
+	ReaderConfig            *BlockStore_Azure_Reader   `protobuf:"bytes,8,opt,name=reader_config,json=readerConfig,proto3" json:"reader_config,omitempty"`
+	PipelineConfig          *BlockStore_Azure_Pipeline `protobuf:"bytes,9,opt,name=pipeline_config,json=pipelineConfig,proto3" json:"pipeline_config,omitempty"`
+}
+
+func (x *BlockStore_Azure) Reset() {
+	*x = BlockStore_Azure{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[30]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_Azure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_Azure) ProtoMessage() {}
+
+func (x *BlockStore_Azure) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[30]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_Azure.ProtoReflect.Descriptor instead.
+func (*BlockStore_Azure) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 5}
+}
+
+func (x *BlockStore_Azure) GetStorageAccount() string {
+	if x != nil {
+		return x.StorageAccount
+	}
+	return ""
+}
+
+func (x *BlockStore_Azure) GetStorageAccountKey() string {
+	if x != nil {
+		return x.StorageAccountKey
+	}
+	return ""
+}
+
+func (x *BlockStore_Azure) GetStorageConnectionString() string {
+	if x != nil {
+		return x.StorageConnectionString
+	}
+	return ""
+}
+
+func (x *BlockStore_Azure) GetContainer() string {
+	if x != nil {
+		return x.Container
+	}
+	return ""
+}
+
+func (x *BlockStore_Azure) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *BlockStore_Azure) GetUserAssignedId() string {
+	if x != nil {
+		return x.UserAssignedId
+	}
+	return ""
+}
+
+func (x *BlockStore_Azure) GetMaxRetries() int32 {
+	if x != nil {
+		return x.MaxRetries
+	}
+	return 0
+}
+
+func (x *BlockStore_Azure) GetReaderConfig() *BlockStore_Azure_Reader {
+	if x != nil {
+		return x.ReaderConfig
+	}
+	return nil
+}
+
+func (x *BlockStore_Azure) GetPipelineConfig() *BlockStore_Azure_Pipeline {
+	if x != nil {
+		return x.PipelineConfig
+	}
+	return nil
+}
+
+type BlockStore_Filesystem struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Directory string `protobuf:"bytes,1,opt,name=directory,proto3" json:"directory,omitempty"`
+}
+
+func (x *BlockStore_Filesystem) Reset() {
+	*x = BlockStore_Filesystem{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[31]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_Filesystem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_Filesystem) ProtoMessage() {}
+
+func (x *BlockStore_Filesystem) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[31]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_Filesystem.ProtoReflect.Descriptor instead.
+func (*BlockStore_Filesystem) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 6}
+}
+
+func (x *BlockStore_Filesystem) GetDirectory() string {
+	if x != nil {
+		return x.Directory
+	}
+	return ""
+}
+
+type BlockStore_S3 struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Bucket             string                         `protobuf:"bytes,1,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	Endpoint           string                         `protobuf:"bytes,2,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	Region             string                         `protobuf:"bytes,3,opt,name=region,proto3" json:"region,omitempty"`
+	AwsSdkAuth         bool                           `protobuf:"varint,4,opt,name=aws_sdk_auth,json=awsSdkAuth,proto3" json:"aws_sdk_auth,omitempty"`
+	AccessKey          string                         `protobuf:"bytes,5,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
+	Insecure           bool                           `protobuf:"varint,6,opt,name=insecure,proto3" json:"insecure,omitempty"`
+	SignatureVersion2  bool                           `protobuf:"varint,7,opt,name=signature_version2,json=signatureVersion2,proto3" json:"signature_version2,omitempty"`
+	SecretKey          string                         `protobuf:"bytes,8,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
+	SessionToken       string                         `protobuf:"bytes,9,opt,name=session_token,json=sessionToken,proto3" json:"session_token,omitempty"`
+	PutUserMetadata    map[string]string              `protobuf:"bytes,10,rep,name=put_user_metadata,json=putUserMetadata,proto3" json:"put_user_metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	ListObjectsVersion string                         `protobuf:"bytes,11,opt,name=list_objects_version,json=listObjectsVersion,proto3" json:"list_objects_version,omitempty"`
+	BucketLookupType   BlockStore_S3_BucketLookupType `protobuf:"varint,12,opt,name=bucket_lookup_type,json=bucketLookupType,proto3,enum=v1.BlockStore_S3_BucketLookupType" json:"bucket_lookup_type,omitempty"`
+	PartSize           uint64                         `protobuf:"varint,13,opt,name=part_size,json=partSize,proto3" json:"part_size,omitempty"`
+	SseConfig          *BlockStore_S3_SSE             `protobuf:"bytes,14,opt,name=sse_config,json=sseConfig,proto3" json:"sse_config,omitempty"`
+	StsEndpoint        string                         `protobuf:"bytes,15,opt,name=sts_endpoint,json=stsEndpoint,proto3" json:"sts_endpoint,omitempty"`
+}
+
+func (x *BlockStore_S3) Reset() {
+	*x = BlockStore_S3{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[32]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_S3) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_S3) ProtoMessage() {}
+
+func (x *BlockStore_S3) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[32]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_S3.ProtoReflect.Descriptor instead.
+func (*BlockStore_S3) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 7}
+}
+
+func (x *BlockStore_S3) GetBucket() string {
+	if x != nil {
+		return x.Bucket
+	}
+	return ""
+}
+
+func (x *BlockStore_S3) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *BlockStore_S3) GetRegion() string {
+	if x != nil {
+		return x.Region
+	}
+	return ""
+}
+
+func (x *BlockStore_S3) GetAwsSdkAuth() bool {
+	if x != nil {
+		return x.AwsSdkAuth
+	}
+	return false
+}
+
+func (x *BlockStore_S3) GetAccessKey() string {
+	if x != nil {
+		return x.AccessKey
+	}
+	return ""
+}
+
+func (x *BlockStore_S3) GetInsecure() bool {
+	if x != nil {
+		return x.Insecure
+	}
+	return false
+}
+
+func (x *BlockStore_S3) GetSignatureVersion2() bool {
+	if x != nil {
+		return x.SignatureVersion2
+	}
+	return false
+}
+
+func (x *BlockStore_S3) GetSecretKey() string {
+	if x != nil {
+		return x.SecretKey
+	}
+	return ""
+}
+
+func (x *BlockStore_S3) GetSessionToken() string {
+	if x != nil {
+		return x.SessionToken
+	}
+	return ""
+}
+
+func (x *BlockStore_S3) GetPutUserMetadata() map[string]string {
+	if x != nil {
+		return x.PutUserMetadata
+	}
+	return nil
+}
+
+func (x *BlockStore_S3) GetListObjectsVersion() string {
+	if x != nil {
+		return x.ListObjectsVersion
+	}
+	return ""
+}
+
+func (x *BlockStore_S3) GetBucketLookupType() BlockStore_S3_BucketLookupType {
+	if x != nil {
+		return x.BucketLookupType
+	}
+	return BlockStore_S3_AUTO
+}
+
+func (x *BlockStore_S3) GetPartSize() uint64 {
+	if x != nil {
+		return x.PartSize
+	}
+	return 0
+}
+
+func (x *BlockStore_S3) GetSseConfig() *BlockStore_S3_SSE {
+	if x != nil {
+		return x.SseConfig
+	}
+	return nil
+}
+
+func (x *BlockStore_S3) GetStsEndpoint() string {
+	if x != nil {
+		return x.StsEndpoint
+	}
+	return ""
+}
+
+type BlockStore_Azure_Reader struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	MaxRetryRequests int32 `protobuf:"varint,1,opt,name=max_retry_requests,json=maxRetryRequests,proto3" json:"max_retry_requests,omitempty"`
+}
+
+func (x *BlockStore_Azure_Reader) Reset() {
+	*x = BlockStore_Azure_Reader{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[33]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_Azure_Reader) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_Azure_Reader) ProtoMessage() {}
+
+func (x *BlockStore_Azure_Reader) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[33]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_Azure_Reader.ProtoReflect.Descriptor instead.
+func (*BlockStore_Azure_Reader) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 5, 0}
+}
+
+func (x *BlockStore_Azure_Reader) GetMaxRetryRequests() int32 {
+	if x != nil {
+		return x.MaxRetryRequests
+	}
+	return 0
+}
+
+type BlockStore_Azure_Pipeline struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	MaxTries      int32                `protobuf:"varint,1,opt,name=max_tries,json=maxTries,proto3" json:"max_tries,omitempty"`
+	TryTimeout    *durationpb.Duration `protobuf:"bytes,2,opt,name=try_timeout,json=tryTimeout,proto3" json:"try_timeout,omitempty"`
+	RetryDelay    *durationpb.Duration `protobuf:"bytes,3,opt,name=retry_delay,json=retryDelay,proto3" json:"retry_delay,omitempty"`
+	MaxRetryDelay *durationpb.Duration `protobuf:"bytes,4,opt,name=max_retry_delay,json=maxRetryDelay,proto3" json:"max_retry_delay,omitempty"`
+}
+
+func (x *BlockStore_Azure_Pipeline) Reset() {
+	*x = BlockStore_Azure_Pipeline{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[34]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_Azure_Pipeline) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_Azure_Pipeline) ProtoMessage() {}
+
+func (x *BlockStore_Azure_Pipeline) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[34]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_Azure_Pipeline.ProtoReflect.Descriptor instead.
+func (*BlockStore_Azure_Pipeline) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 5, 1}
+}
+
+func (x *BlockStore_Azure_Pipeline) GetMaxTries() int32 {
+	if x != nil {
+		return x.MaxTries
+	}
+	return 0
+}
+
+func (x *BlockStore_Azure_Pipeline) GetTryTimeout() *durationpb.Duration {
+	if x != nil {
+		return x.TryTimeout
+	}
+	return nil
+}
+
+func (x *BlockStore_Azure_Pipeline) GetRetryDelay() *durationpb.Duration {
+	if x != nil {
+		return x.RetryDelay
+	}
+	return nil
+}
+
+func (x *BlockStore_Azure_Pipeline) GetMaxRetryDelay() *durationpb.Duration {
+	if x != nil {
+		return x.MaxRetryDelay
+	}
+	return nil
+}
+
+type BlockStore_S3_SSE struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Type                 string            `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	KmsKeyId             string            `protobuf:"bytes,2,opt,name=kms_key_id,json=kmsKeyId,proto3" json:"kms_key_id,omitempty"`
+	KmsEncryptionContext map[string]string `protobuf:"bytes,3,rep,name=kms_encryption_context,json=kmsEncryptionContext,proto3" json:"kms_encryption_context,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	EncryptionKey        string            `protobuf:"bytes,4,opt,name=encryption_key,json=encryptionKey,proto3" json:"encryption_key,omitempty"`
+}
+
+func (x *BlockStore_S3_SSE) Reset() {
+	*x = BlockStore_S3_SSE{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_config_v1_config_proto_msgTypes[36]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *BlockStore_S3_SSE) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockStore_S3_SSE) ProtoMessage() {}
+
+func (x *BlockStore_S3_SSE) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_config_v1_config_proto_msgTypes[36]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockStore_S3_SSE.ProtoReflect.Descriptor instead.
+func (*BlockStore_S3_SSE) Descriptor() ([]byte, []int) {
+	return file_vince_config_v1_config_proto_rawDescGZIP(), []int{3, 7, 1}
+}
+
+func (x *BlockStore_S3_SSE) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *BlockStore_S3_SSE) GetKmsKeyId() string {
+	if x != nil {
+		return x.KmsKeyId
+	}
+	return ""
+}
+
+func (x *BlockStore_S3_SSE) GetKmsEncryptionContext() map[string]string {
+	if x != nil {
+		return x.KmsEncryptionContext
+	}
+	return nil
+}
+
+func (x *BlockStore_S3_SSE) GetEncryptionKey() string {
+	if x != nil {
+		return x.EncryptionKey
 	}
 	return ""
 }
@@ -1459,17 +2534,190 @@ var file_vince_config_v1_config_proto_rawDesc = []byte{
 	0x65, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x12, 0x1b, 0x0a, 0x09, 0x73, 0x65, 0x72, 0x76, 0x65,
 	0x72, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x73, 0x65, 0x72, 0x76,
-	0x65, 0x72, 0x49, 0x64, 0x22, 0x21, 0x0a, 0x05, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x12, 0x18, 0x0a,
-	0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
-	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x42, 0x7b, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e, 0x76,
-	0x31, 0x42, 0x0b, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
-	0x5a, 0x3c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e,
-	0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x76, 0x69, 0x6e, 0x63,
-	0x65, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x2f, 0x76,
-	0x69, 0x6e, 0x63, 0x65, 0x2f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2f, 0x76, 0x31, 0xa2, 0x02,
-	0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02, 0x56, 0x31, 0xe2, 0x02,
-	0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
-	0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x72, 0x49, 0x64, 0x22, 0xc6, 0x15, 0x0a, 0x0a, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74,
+	0x6f, 0x72, 0x65, 0x12, 0x2b, 0x0a, 0x02, 0x66, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x19, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e,
+	0x46, 0x69, 0x6c, 0x65, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x48, 0x00, 0x52, 0x02, 0x66, 0x73,
+	0x12, 0x23, 0x0a, 0x02, 0x73, 0x33, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x76,
+	0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x53, 0x33, 0x48,
+	0x00, 0x52, 0x02, 0x73, 0x33, 0x12, 0x2c, 0x0a, 0x05, 0x61, 0x7a, 0x75, 0x72, 0x65, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53,
+	0x74, 0x6f, 0x72, 0x65, 0x2e, 0x41, 0x7a, 0x75, 0x72, 0x65, 0x48, 0x00, 0x52, 0x05, 0x61, 0x7a,
+	0x75, 0x72, 0x65, 0x12, 0x26, 0x0a, 0x03, 0x62, 0x6f, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x12, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65,
+	0x2e, 0x42, 0x4f, 0x53, 0x48, 0x00, 0x52, 0x03, 0x62, 0x6f, 0x73, 0x12, 0x26, 0x0a, 0x03, 0x63,
+	0x6f, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c,
+	0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x43, 0x4f, 0x53, 0x48, 0x00, 0x52, 0x03,
+	0x63, 0x6f, 0x73, 0x12, 0x26, 0x0a, 0x03, 0x67, 0x63, 0x73, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x12, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65,
+	0x2e, 0x47, 0x43, 0x53, 0x48, 0x00, 0x52, 0x03, 0x67, 0x63, 0x73, 0x12, 0x26, 0x0a, 0x03, 0x6f,
+	0x62, 0x73, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c,
+	0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x4f, 0x42, 0x53, 0x48, 0x00, 0x52, 0x03,
+	0x6f, 0x62, 0x73, 0x12, 0x26, 0x0a, 0x03, 0x6f, 0x73, 0x73, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x12, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65,
+	0x2e, 0x4f, 0x53, 0x53, 0x48, 0x00, 0x52, 0x03, 0x6f, 0x73, 0x73, 0x1a, 0x89, 0x01, 0x0a, 0x03,
+	0x4f, 0x53, 0x53, 0x12, 0x1a, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x12,
+	0x16, 0x0a, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x12, 0x22, 0x0a, 0x0d, 0x61, 0x63, 0x63, 0x65, 0x73,
+	0x73, 0x5f, 0x6b, 0x65, 0x79, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b,
+	0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x4b, 0x65, 0x79, 0x49, 0x64, 0x12, 0x2a, 0x0a, 0x11, 0x61,
+	0x63, 0x63, 0x65, 0x73, 0x73, 0x5f, 0x6b, 0x65, 0x79, 0x5f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x4b, 0x65,
+	0x79, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x1a, 0x77, 0x0a, 0x03, 0x4f, 0x42, 0x53, 0x12, 0x16,
+	0x0a, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69,
+	0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69,
+	0x6e, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x5f, 0x6b, 0x65, 0x79,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x4b, 0x65,
+	0x79, 0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x5f, 0x6b, 0x65, 0x79, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x4b, 0x65, 0x79,
+	0x1a, 0x46, 0x0a, 0x03, 0x47, 0x43, 0x53, 0x12, 0x16, 0x0a, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65,
+	0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x12,
+	0x27, 0x0a, 0x0f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x61, 0x63, 0x63, 0x6f, 0x75,
+	0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x1a, 0xa4, 0x01, 0x0a, 0x03, 0x43, 0x4f, 0x53,
+	0x12, 0x16, 0x0a, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x67, 0x69,
+	0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e,
+	0x12, 0x15, 0x0a, 0x06, 0x61, 0x70, 0x70, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x05, 0x61, 0x70, 0x70, 0x49, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f,
+	0x69, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f,
+	0x69, 0x6e, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x5f, 0x6b, 0x65,
+	0x79, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x4b,
+	0x65, 0x79, 0x12, 0x1b, 0x0a, 0x09, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x5f, 0x69, 0x64, 0x18,
+	0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x49, 0x64, 0x1a,
+	0x77, 0x0a, 0x03, 0x42, 0x4f, 0x53, 0x12, 0x16, 0x0a, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x12, 0x1a,
+	0x0a, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x63,
+	0x63, 0x65, 0x73, 0x73, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
+	0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x4b, 0x65, 0x79, 0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x65, 0x63,
+	0x72, 0x65, 0x74, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73,
+	0x65, 0x63, 0x72, 0x65, 0x74, 0x4b, 0x65, 0x79, 0x1a, 0xc8, 0x05, 0x0a, 0x05, 0x41, 0x7a, 0x75,
+	0x72, 0x65, 0x12, 0x27, 0x0a, 0x0f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x61, 0x63,
+	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x73, 0x74, 0x6f,
+	0x72, 0x61, 0x67, 0x65, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x2e, 0x0a, 0x13, 0x73,
+	0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x6b,
+	0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x11, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
+	0x65, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x4b, 0x65, 0x79, 0x12, 0x3a, 0x0a, 0x19, 0x73,
+	0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f,
+	0x6e, 0x5f, 0x73, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x17,
+	0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f,
+	0x6e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x1c, 0x0a, 0x09, 0x63, 0x6f, 0x6e, 0x74, 0x61,
+	0x69, 0x6e, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x63, 0x6f, 0x6e, 0x74,
+	0x61, 0x69, 0x6e, 0x65, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e,
+	0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e,
+	0x74, 0x12, 0x28, 0x0a, 0x10, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x61, 0x73, 0x73, 0x69, 0x67, 0x6e,
+	0x65, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x75, 0x73, 0x65,
+	0x72, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x49, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x6d,
+	0x61, 0x78, 0x5f, 0x72, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x18, 0x07, 0x20, 0x01, 0x28, 0x05,
+	0x52, 0x0a, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x12, 0x40, 0x0a, 0x0d,
+	0x72, 0x65, 0x61, 0x64, 0x65, 0x72, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x08, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74,
+	0x6f, 0x72, 0x65, 0x2e, 0x41, 0x7a, 0x75, 0x72, 0x65, 0x2e, 0x52, 0x65, 0x61, 0x64, 0x65, 0x72,
+	0x52, 0x0c, 0x72, 0x65, 0x61, 0x64, 0x65, 0x72, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x46,
+	0x0a, 0x0f, 0x70, 0x69, 0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69,
+	0x67, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f,
+	0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x41, 0x7a, 0x75, 0x72, 0x65, 0x2e, 0x50, 0x69,
+	0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x52, 0x0e, 0x70, 0x69, 0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65,
+	0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x1a, 0x36, 0x0a, 0x06, 0x52, 0x65, 0x61, 0x64, 0x65, 0x72,
+	0x12, 0x2c, 0x0a, 0x12, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x74, 0x72, 0x79, 0x5f, 0x72, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x10, 0x6d, 0x61,
+	0x78, 0x52, 0x65, 0x74, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x73, 0x1a, 0xe2,
+	0x01, 0x0a, 0x08, 0x50, 0x69, 0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x6d,
+	0x61, 0x78, 0x5f, 0x74, 0x72, 0x69, 0x65, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x08,
+	0x6d, 0x61, 0x78, 0x54, 0x72, 0x69, 0x65, 0x73, 0x12, 0x3a, 0x0a, 0x0b, 0x74, 0x72, 0x79, 0x5f,
+	0x74, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e,
+	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
+	0x44, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x74, 0x72, 0x79, 0x54, 0x69, 0x6d,
+	0x65, 0x6f, 0x75, 0x74, 0x12, 0x3a, 0x0a, 0x0b, 0x72, 0x65, 0x74, 0x72, 0x79, 0x5f, 0x64, 0x65,
+	0x6c, 0x61, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
+	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x44, 0x75, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x72, 0x65, 0x74, 0x72, 0x79, 0x44, 0x65, 0x6c, 0x61, 0x79,
+	0x12, 0x41, 0x0a, 0x0f, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x74, 0x72, 0x79, 0x5f, 0x64, 0x65,
+	0x6c, 0x61, 0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
+	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x44, 0x75, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0d, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x74, 0x72, 0x79, 0x44, 0x65,
+	0x6c, 0x61, 0x79, 0x1a, 0x2a, 0x0a, 0x0a, 0x46, 0x69, 0x6c, 0x65, 0x73, 0x79, 0x73, 0x74, 0x65,
+	0x6d, 0x12, 0x1c, 0x0a, 0x09, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x79, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x79, 0x1a,
+	0xff, 0x07, 0x0a, 0x02, 0x53, 0x33, 0x12, 0x16, 0x0a, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x12, 0x1a,
+	0x0a, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65,
+	0x67, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x67, 0x69,
+	0x6f, 0x6e, 0x12, 0x20, 0x0a, 0x0c, 0x61, 0x77, 0x73, 0x5f, 0x73, 0x64, 0x6b, 0x5f, 0x61, 0x75,
+	0x74, 0x68, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0a, 0x61, 0x77, 0x73, 0x53, 0x64, 0x6b,
+	0x41, 0x75, 0x74, 0x68, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x5f, 0x6b,
+	0x65, 0x79, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73,
+	0x4b, 0x65, 0x79, 0x12, 0x1a, 0x0a, 0x08, 0x69, 0x6e, 0x73, 0x65, 0x63, 0x75, 0x72, 0x65, 0x18,
+	0x06, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x69, 0x6e, 0x73, 0x65, 0x63, 0x75, 0x72, 0x65, 0x12,
+	0x2d, 0x0a, 0x12, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x5f, 0x76, 0x65, 0x72,
+	0x73, 0x69, 0x6f, 0x6e, 0x32, 0x18, 0x07, 0x20, 0x01, 0x28, 0x08, 0x52, 0x11, 0x73, 0x69, 0x67,
+	0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x32, 0x12, 0x1d,
+	0x0a, 0x0a, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x08, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x09, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x4b, 0x65, 0x79, 0x12, 0x23, 0x0a,
+	0x0d, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x09,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x54, 0x6f, 0x6b,
+	0x65, 0x6e, 0x12, 0x52, 0x0a, 0x11, 0x70, 0x75, 0x74, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x6d,
+	0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x18, 0x0a, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x26, 0x2e,
+	0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x53, 0x33,
+	0x2e, 0x50, 0x75, 0x74, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
+	0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x0f, 0x70, 0x75, 0x74, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65,
+	0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x12, 0x30, 0x0a, 0x14, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x6f,
+	0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x0b,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x12, 0x6c, 0x69, 0x73, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74,
+	0x73, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x50, 0x0a, 0x12, 0x62, 0x75, 0x63, 0x6b,
+	0x65, 0x74, 0x5f, 0x6c, 0x6f, 0x6f, 0x6b, 0x75, 0x70, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x0c,
+	0x20, 0x01, 0x28, 0x0e, 0x32, 0x22, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53,
+	0x74, 0x6f, 0x72, 0x65, 0x2e, 0x53, 0x33, 0x2e, 0x42, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x4c, 0x6f,
+	0x6f, 0x6b, 0x75, 0x70, 0x54, 0x79, 0x70, 0x65, 0x52, 0x10, 0x62, 0x75, 0x63, 0x6b, 0x65, 0x74,
+	0x4c, 0x6f, 0x6f, 0x6b, 0x75, 0x70, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x70, 0x61,
+	0x72, 0x74, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x70,
+	0x61, 0x72, 0x74, 0x53, 0x69, 0x7a, 0x65, 0x12, 0x34, 0x0a, 0x0a, 0x73, 0x73, 0x65, 0x5f, 0x63,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x76, 0x31,
+	0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x53, 0x33, 0x2e, 0x53,
+	0x53, 0x45, 0x52, 0x09, 0x73, 0x73, 0x65, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x21, 0x0a,
+	0x0c, 0x73, 0x74, 0x73, 0x5f, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x18, 0x0f, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x74, 0x73, 0x45, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74,
+	0x1a, 0x42, 0x0a, 0x14, 0x50, 0x75, 0x74, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x74, 0x61, 0x64,
+	0x61, 0x74, 0x61, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61,
+	0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x3a, 0x02, 0x38, 0x01, 0x1a, 0x8e, 0x02, 0x0a, 0x03, 0x53, 0x53, 0x45, 0x12, 0x12, 0x0a, 0x04,
+	0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65,
+	0x12, 0x1c, 0x0a, 0x0a, 0x6b, 0x6d, 0x73, 0x5f, 0x6b, 0x65, 0x79, 0x5f, 0x69, 0x64, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6b, 0x6d, 0x73, 0x4b, 0x65, 0x79, 0x49, 0x64, 0x12, 0x65,
+	0x0a, 0x16, 0x6b, 0x6d, 0x73, 0x5f, 0x65, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2f,
+	0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x2e, 0x53,
+	0x33, 0x2e, 0x53, 0x53, 0x45, 0x2e, 0x4b, 0x6d, 0x73, 0x45, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52,
+	0x14, 0x6b, 0x6d, 0x73, 0x45, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f,
+	0x6e, 0x74, 0x65, 0x78, 0x74, 0x12, 0x25, 0x0a, 0x0e, 0x65, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x65,
+	0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x4b, 0x65, 0x79, 0x1a, 0x47, 0x0a, 0x19,
+	0x4b, 0x6d, 0x73, 0x45, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e,
+	0x74, 0x65, 0x78, 0x74, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76,
+	0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75,
+	0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x3a, 0x0a, 0x10, 0x42, 0x75, 0x63, 0x6b, 0x65, 0x74, 0x4c,
+	0x6f, 0x6f, 0x6b, 0x75, 0x70, 0x54, 0x79, 0x70, 0x65, 0x12, 0x08, 0x0a, 0x04, 0x41, 0x55, 0x54,
+	0x4f, 0x10, 0x00, 0x12, 0x12, 0x0a, 0x0e, 0x56, 0x49, 0x52, 0x54, 0x55, 0x41, 0x4c, 0x5f, 0x48,
+	0x4f, 0x53, 0x54, 0x45, 0x44, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x50, 0x41, 0x54, 0x48, 0x10,
+	0x02, 0x42, 0x0a, 0x0a, 0x08, 0x70, 0x72, 0x6f, 0x76, 0x69, 0x64, 0x65, 0x72, 0x22, 0x21, 0x0a,
+	0x05, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
+	0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
+	0x42, 0x7b, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x0b, 0x43, 0x6f, 0x6e, 0x66,
+	0x69, 0x67, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x3c, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79,
+	0x74, 0x69, 0x63, 0x73, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x63, 0x6f,
+	0x6e, 0x66, 0x69, 0x67, 0x2f, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02,
+	0x56, 0x31, 0xca, 0x02, 0x02, 0x56, 0x31, 0xe2, 0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42,
+	0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1484,64 +2732,97 @@ func file_vince_config_v1_config_proto_rawDescGZIP() []byte {
 	return file_vince_config_v1_config_proto_rawDescData
 }
 
-var file_vince_config_v1_config_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_vince_config_v1_config_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_vince_config_v1_config_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_vince_config_v1_config_proto_goTypes = []interface{}{
-	(*Config)(nil),                    // 0: v1.Config
-	(*Cluster)(nil),                   // 1: v1.Cluster
-	(*Client)(nil),                    // 2: v1.Client
-	(*Build)(nil),                     // 3: v1.Build
-	(*Config_Notifier)(nil),           // 4: v1.Config.Notifier
-	(*Config_Email)(nil),              // 5: v1.Config.Email
-	(*Config_Webhook)(nil),            // 6: v1.Config.Webhook
-	(*Config_HTTP)(nil),               // 7: v1.Config.HTTP
-	nil,                               // 8: v1.Config.Email.HeadersEntry
-	(*Config_HTTP_BasicAuth)(nil),     // 9: v1.Config.HTTP.BasicAuth
-	(*Config_HTTP_Authorization)(nil), // 10: v1.Config.HTTP.Authorization
-	(*Config_HTTP_OAuth2)(nil),        // 11: v1.Config.HTTP.OAuth2
-	(*Config_HTTP_TLSConfig)(nil),     // 12: v1.Config.HTTP.TLSConfig
-	nil,                               // 13: v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	(*Cluster_Config)(nil),            // 14: v1.Cluster.Config
-	nil,                               // 15: v1.Cluster.Config.NodesEntry
-	(*Cluster_Config_Node)(nil),       // 16: v1.Cluster.Config.Node
-	nil,                               // 17: v1.Client.InstanceEntry
-	nil,                               // 18: v1.Client.ServerIdEntry
-	nil,                               // 19: v1.Client.ClustersEntry
-	(*Client_Instance)(nil),           // 20: v1.Client.Instance
-	(*Client_Active)(nil),             // 21: v1.Client.Active
-	(*Client_Auth)(nil),               // 22: v1.Client.Auth
-	nil,                               // 23: v1.Client.Instance.AccountsEntry
-	(*durationpb.Duration)(nil),       // 24: google.protobuf.Duration
+	(BlockStore_S3_BucketLookupType)(0), // 0: v1.BlockStore.S3.BucketLookupType
+	(*Config)(nil),                      // 1: v1.Config
+	(*Cluster)(nil),                     // 2: v1.Cluster
+	(*Client)(nil),                      // 3: v1.Client
+	(*BlockStore)(nil),                  // 4: v1.BlockStore
+	(*Build)(nil),                       // 5: v1.Build
+	(*Config_Notifier)(nil),             // 6: v1.Config.Notifier
+	(*Config_Email)(nil),                // 7: v1.Config.Email
+	(*Config_Webhook)(nil),              // 8: v1.Config.Webhook
+	(*Config_HTTP)(nil),                 // 9: v1.Config.HTTP
+	nil,                                 // 10: v1.Config.Email.HeadersEntry
+	(*Config_HTTP_BasicAuth)(nil),       // 11: v1.Config.HTTP.BasicAuth
+	(*Config_HTTP_Authorization)(nil),   // 12: v1.Config.HTTP.Authorization
+	(*Config_HTTP_OAuth2)(nil),          // 13: v1.Config.HTTP.OAuth2
+	(*Config_HTTP_TLSConfig)(nil),       // 14: v1.Config.HTTP.TLSConfig
+	nil,                                 // 15: v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	(*Cluster_Config)(nil),              // 16: v1.Cluster.Config
+	nil,                                 // 17: v1.Cluster.Config.NodesEntry
+	(*Cluster_Config_Node)(nil),         // 18: v1.Cluster.Config.Node
+	nil,                                 // 19: v1.Client.InstanceEntry
+	nil,                                 // 20: v1.Client.ServerIdEntry
+	nil,                                 // 21: v1.Client.ClustersEntry
+	(*Client_Instance)(nil),             // 22: v1.Client.Instance
+	(*Client_Active)(nil),               // 23: v1.Client.Active
+	(*Client_Auth)(nil),                 // 24: v1.Client.Auth
+	nil,                                 // 25: v1.Client.Instance.AccountsEntry
+	(*BlockStore_OSS)(nil),              // 26: v1.BlockStore.OSS
+	(*BlockStore_OBS)(nil),              // 27: v1.BlockStore.OBS
+	(*BlockStore_GCS)(nil),              // 28: v1.BlockStore.GCS
+	(*BlockStore_COS)(nil),              // 29: v1.BlockStore.COS
+	(*BlockStore_BOS)(nil),              // 30: v1.BlockStore.BOS
+	(*BlockStore_Azure)(nil),            // 31: v1.BlockStore.Azure
+	(*BlockStore_Filesystem)(nil),       // 32: v1.BlockStore.Filesystem
+	(*BlockStore_S3)(nil),               // 33: v1.BlockStore.S3
+	(*BlockStore_Azure_Reader)(nil),     // 34: v1.BlockStore.Azure.Reader
+	(*BlockStore_Azure_Pipeline)(nil),   // 35: v1.BlockStore.Azure.Pipeline
+	nil,                                 // 36: v1.BlockStore.S3.PutUserMetadataEntry
+	(*BlockStore_S3_SSE)(nil),           // 37: v1.BlockStore.S3.SSE
+	nil,                                 // 38: v1.BlockStore.S3.SSE.KmsEncryptionContextEntry
+	(*durationpb.Duration)(nil),         // 39: google.protobuf.Duration
 }
 var file_vince_config_v1_config_proto_depIdxs = []int32{
-	24, // 0: v1.Config.sync_interval:type_name -> google.protobuf.Duration
-	4,  // 1: v1.Config.notifiers:type_name -> v1.Config.Notifier
-	17, // 2: v1.Client.instance:type_name -> v1.Client.InstanceEntry
-	18, // 3: v1.Client.server_id:type_name -> v1.Client.ServerIdEntry
-	21, // 4: v1.Client.active:type_name -> v1.Client.Active
-	19, // 5: v1.Client.clusters:type_name -> v1.Client.ClustersEntry
-	5,  // 6: v1.Config.Notifier.email:type_name -> v1.Config.Email
-	6,  // 7: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
-	8,  // 8: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
-	12, // 9: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	7,  // 10: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
-	9,  // 11: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
-	10, // 12: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
-	11, // 13: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
-	12, // 14: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	13, // 15: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
-	12, // 16: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
-	15, // 17: v1.Cluster.Config.nodes:type_name -> v1.Cluster.Config.NodesEntry
-	16, // 18: v1.Cluster.Config.NodesEntry.value:type_name -> v1.Cluster.Config.Node
-	22, // 19: v1.Cluster.Config.Node.account:type_name -> v1.Client.Auth
-	20, // 20: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
-	14, // 21: v1.Client.ClustersEntry.value:type_name -> v1.Cluster.Config
-	23, // 22: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
-	22, // 23: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
-	24, // [24:24] is the sub-list for method output_type
-	24, // [24:24] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	39, // 0: v1.Config.sync_interval:type_name -> google.protobuf.Duration
+	6,  // 1: v1.Config.notifiers:type_name -> v1.Config.Notifier
+	19, // 2: v1.Client.instance:type_name -> v1.Client.InstanceEntry
+	20, // 3: v1.Client.server_id:type_name -> v1.Client.ServerIdEntry
+	23, // 4: v1.Client.active:type_name -> v1.Client.Active
+	21, // 5: v1.Client.clusters:type_name -> v1.Client.ClustersEntry
+	32, // 6: v1.BlockStore.fs:type_name -> v1.BlockStore.Filesystem
+	33, // 7: v1.BlockStore.s3:type_name -> v1.BlockStore.S3
+	31, // 8: v1.BlockStore.azure:type_name -> v1.BlockStore.Azure
+	30, // 9: v1.BlockStore.bos:type_name -> v1.BlockStore.BOS
+	29, // 10: v1.BlockStore.cos:type_name -> v1.BlockStore.COS
+	28, // 11: v1.BlockStore.gcs:type_name -> v1.BlockStore.GCS
+	27, // 12: v1.BlockStore.obs:type_name -> v1.BlockStore.OBS
+	26, // 13: v1.BlockStore.oss:type_name -> v1.BlockStore.OSS
+	7,  // 14: v1.Config.Notifier.email:type_name -> v1.Config.Email
+	8,  // 15: v1.Config.Notifier.webhook:type_name -> v1.Config.Webhook
+	10, // 16: v1.Config.Email.headers:type_name -> v1.Config.Email.HeadersEntry
+	14, // 17: v1.Config.Email.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	9,  // 18: v1.Config.Webhook.http_config:type_name -> v1.Config.HTTP
+	11, // 19: v1.Config.HTTP.basic_auth:type_name -> v1.Config.HTTP.BasicAuth
+	12, // 20: v1.Config.HTTP.authorization:type_name -> v1.Config.HTTP.Authorization
+	13, // 21: v1.Config.HTTP.pauth2:type_name -> v1.Config.HTTP.OAuth2
+	14, // 22: v1.Config.HTTP.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	15, // 23: v1.Config.HTTP.OAuth2.endpoint_params:type_name -> v1.Config.HTTP.OAuth2.EndpointParamsEntry
+	14, // 24: v1.Config.HTTP.OAuth2.tls_config:type_name -> v1.Config.HTTP.TLSConfig
+	17, // 25: v1.Cluster.Config.nodes:type_name -> v1.Cluster.Config.NodesEntry
+	18, // 26: v1.Cluster.Config.NodesEntry.value:type_name -> v1.Cluster.Config.Node
+	24, // 27: v1.Cluster.Config.Node.account:type_name -> v1.Client.Auth
+	22, // 28: v1.Client.InstanceEntry.value:type_name -> v1.Client.Instance
+	16, // 29: v1.Client.ClustersEntry.value:type_name -> v1.Cluster.Config
+	25, // 30: v1.Client.Instance.accounts:type_name -> v1.Client.Instance.AccountsEntry
+	24, // 31: v1.Client.Instance.AccountsEntry.value:type_name -> v1.Client.Auth
+	34, // 32: v1.BlockStore.Azure.reader_config:type_name -> v1.BlockStore.Azure.Reader
+	35, // 33: v1.BlockStore.Azure.pipeline_config:type_name -> v1.BlockStore.Azure.Pipeline
+	36, // 34: v1.BlockStore.S3.put_user_metadata:type_name -> v1.BlockStore.S3.PutUserMetadataEntry
+	0,  // 35: v1.BlockStore.S3.bucket_lookup_type:type_name -> v1.BlockStore.S3.BucketLookupType
+	37, // 36: v1.BlockStore.S3.sse_config:type_name -> v1.BlockStore.S3.SSE
+	39, // 37: v1.BlockStore.Azure.Pipeline.try_timeout:type_name -> google.protobuf.Duration
+	39, // 38: v1.BlockStore.Azure.Pipeline.retry_delay:type_name -> google.protobuf.Duration
+	39, // 39: v1.BlockStore.Azure.Pipeline.max_retry_delay:type_name -> google.protobuf.Duration
+	38, // 40: v1.BlockStore.S3.SSE.kms_encryption_context:type_name -> v1.BlockStore.S3.SSE.KmsEncryptionContextEntry
+	41, // [41:41] is the sub-list for method output_type
+	41, // [41:41] is the sub-list for method input_type
+	41, // [41:41] is the sub-list for extension type_name
+	41, // [41:41] is the sub-list for extension extendee
+	0,  // [0:41] is the sub-list for field type_name
 }
 
 func init() { file_vince_config_v1_config_proto_init() }
@@ -1587,7 +2868,7 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 		file_vince_config_v1_config_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Build); i {
+			switch v := v.(*BlockStore); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1599,7 +2880,7 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 		file_vince_config_v1_config_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Config_Notifier); i {
+			switch v := v.(*Build); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1611,7 +2892,7 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 		file_vince_config_v1_config_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Config_Email); i {
+			switch v := v.(*Config_Notifier); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1623,7 +2904,7 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 		file_vince_config_v1_config_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Config_Webhook); i {
+			switch v := v.(*Config_Email); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1635,6 +2916,18 @@ func file_vince_config_v1_config_proto_init() {
 			}
 		}
 		file_vince_config_v1_config_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Config_Webhook); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP); i {
 			case 0:
 				return &v.state
@@ -1646,7 +2939,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_BasicAuth); i {
 			case 0:
 				return &v.state
@@ -1658,7 +2951,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_Authorization); i {
 			case 0:
 				return &v.state
@@ -1670,7 +2963,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_OAuth2); i {
 			case 0:
 				return &v.state
@@ -1682,7 +2975,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Config_HTTP_TLSConfig); i {
 			case 0:
 				return &v.state
@@ -1694,7 +2987,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Config); i {
 			case 0:
 				return &v.state
@@ -1706,7 +2999,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Cluster_Config_Node); i {
 			case 0:
 				return &v.state
@@ -1718,7 +3011,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Instance); i {
 			case 0:
 				return &v.state
@@ -1730,7 +3023,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Active); i {
 			case 0:
 				return &v.state
@@ -1742,7 +3035,7 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
-		file_vince_config_v1_config_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_config_v1_config_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Client_Auth); i {
 			case 0:
 				return &v.state
@@ -1754,8 +3047,150 @@ func file_vince_config_v1_config_proto_init() {
 				return nil
 			}
 		}
+		file_vince_config_v1_config_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_OSS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_OBS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_GCS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_COS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_BOS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_Azure); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_Filesystem); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_S3); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_Azure_Reader); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_Azure_Pipeline); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_config_v1_config_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BlockStore_S3_SSE); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
-	file_vince_config_v1_config_proto_msgTypes[4].OneofWrappers = []interface{}{
+	file_vince_config_v1_config_proto_msgTypes[3].OneofWrappers = []interface{}{
+		(*BlockStore_Fs)(nil),
+		(*BlockStore_S3_)(nil),
+		(*BlockStore_Azure_)(nil),
+		(*BlockStore_Bos)(nil),
+		(*BlockStore_Cos)(nil),
+		(*BlockStore_Gcs)(nil),
+		(*BlockStore_Obs)(nil),
+		(*BlockStore_Oss)(nil),
+	}
+	file_vince_config_v1_config_proto_msgTypes[5].OneofWrappers = []interface{}{
 		(*Config_Notifier_Email)(nil),
 		(*Config_Notifier_Webhook)(nil),
 	}
@@ -1764,13 +3199,14 @@ func file_vince_config_v1_config_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_vince_config_v1_config_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   24,
+			NumEnums:      1,
+			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_vince_config_v1_config_proto_goTypes,
 		DependencyIndexes: file_vince_config_v1_config_proto_depIdxs,
+		EnumInfos:         file_vince_config_v1_config_proto_enumTypes,
 		MessageInfos:      file_vince_config_v1_config_proto_msgTypes,
 	}.Build()
 	File_vince_config_v1_config_proto = out.File

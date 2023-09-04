@@ -145,4 +145,102 @@ message Client {
   }
 }
 
+message BlockStore {
+  oneof provider {
+    Filesystem fs = 1;
+    S3 s3 = 2;
+    Azure azure = 3;
+    BOS bos = 4;
+    COS cos = 5;
+    GCS gcs = 6;
+    OBS obs = 7;
+    OSS oss = 8;
+  }
+
+  message OSS {
+    string endpoint = 1;
+    string bucket = 2;
+    string access_key_id = 3;
+    string access_key_secret = 4;
+  }
+  message OBS {
+    string bucket = 1;
+    string endpoint = 2;
+    string access_key = 3;
+    string secret_key = 4;
+  }
+
+  message GCS {
+    string bucket = 1;
+    string service_account = 2;
+  }
+
+  message COS {
+    string bucket = 1;
+    string region = 2;
+    string app_id = 3;
+    string endpoint = 4;
+    string secret_key = 5;
+    string secret_id = 6;
+  }
+
+  message BOS {
+    string bucket = 1;
+    string endpoint = 2;
+    string access_key = 3;
+    string secret_key = 4;
+  }
+  message Azure {
+    string storage_account = 1;
+    string storage_account_key = 2;
+    string storage_connection_string = 3;
+    string container = 4;
+    string endpoint = 5;
+    string user_assigned_id = 6;
+    int32 max_retries = 7;
+    Reader reader_config = 8;
+    Pipeline pipeline_config = 9;
+
+    message Reader { int32 max_retry_requests = 1; }
+
+    message Pipeline {
+      int32 max_tries = 1;
+      google.protobuf.Duration try_timeout = 2;
+      google.protobuf.Duration retry_delay = 3;
+      google.protobuf.Duration max_retry_delay = 4;
+    }
+  }
+  message Filesystem { string directory = 1; }
+
+  message S3 {
+    string bucket = 1;
+    string endpoint = 2;
+    string region = 3;
+    bool aws_sdk_auth = 4;
+    string access_key = 5;
+    bool insecure = 6;
+    bool signature_version2 = 7;
+    string secret_key = 8;
+    string session_token = 9;
+    map<string, string> put_user_metadata = 10;
+    string list_objects_version = 11;
+    BucketLookupType bucket_lookup_type = 12;
+    uint64 part_size = 13;
+    SSE sse_config = 14;
+    string sts_endpoint = 15;
+
+    message SSE {
+      string type = 1;
+      string kms_key_id = 2;
+      map<string, string> kms_encryption_context = 3;
+      string encryption_key = 4;
+    }
+    enum BucketLookupType {
+      AUTO = 0;
+      VIRTUAL_HOSTED = 1;
+      PATH = 2;
+    }
+  }
+}
+
 message Build { string version = 1; }

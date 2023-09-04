@@ -406,6 +406,357 @@ export interface Client_Auth {
     serverId: string;
 }
 /**
+ * @generated from protobuf message v1.BlockStore
+ */
+export interface BlockStore {
+    /**
+     * @generated from protobuf oneof: provider
+     */
+    provider: {
+        oneofKind: "fs";
+        /**
+         * @generated from protobuf field: v1.BlockStore.Filesystem fs = 1;
+         */
+        fs: BlockStore_Filesystem;
+    } | {
+        oneofKind: "s3";
+        /**
+         * @generated from protobuf field: v1.BlockStore.S3 s3 = 2;
+         */
+        s3: BlockStore_S3;
+    } | {
+        oneofKind: "azure";
+        /**
+         * @generated from protobuf field: v1.BlockStore.Azure azure = 3;
+         */
+        azure: BlockStore_Azure;
+    } | {
+        oneofKind: "bos";
+        /**
+         * @generated from protobuf field: v1.BlockStore.BOS bos = 4;
+         */
+        bos: BlockStore_BOS;
+    } | {
+        oneofKind: "cos";
+        /**
+         * @generated from protobuf field: v1.BlockStore.COS cos = 5;
+         */
+        cos: BlockStore_COS;
+    } | {
+        oneofKind: "gcs";
+        /**
+         * @generated from protobuf field: v1.BlockStore.GCS gcs = 6;
+         */
+        gcs: BlockStore_GCS;
+    } | {
+        oneofKind: "obs";
+        /**
+         * @generated from protobuf field: v1.BlockStore.OBS obs = 7;
+         */
+        obs: BlockStore_OBS;
+    } | {
+        oneofKind: "oss";
+        /**
+         * @generated from protobuf field: v1.BlockStore.OSS oss = 8;
+         */
+        oss: BlockStore_OSS;
+    } | {
+        oneofKind: undefined;
+    };
+}
+/**
+ * @generated from protobuf message v1.BlockStore.OSS
+ */
+export interface BlockStore_OSS {
+    /**
+     * @generated from protobuf field: string endpoint = 1;
+     */
+    endpoint: string;
+    /**
+     * @generated from protobuf field: string bucket = 2;
+     */
+    bucket: string;
+    /**
+     * @generated from protobuf field: string access_key_id = 3;
+     */
+    accessKeyId: string;
+    /**
+     * @generated from protobuf field: string access_key_secret = 4;
+     */
+    accessKeySecret: string;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.OBS
+ */
+export interface BlockStore_OBS {
+    /**
+     * @generated from protobuf field: string bucket = 1;
+     */
+    bucket: string;
+    /**
+     * @generated from protobuf field: string endpoint = 2;
+     */
+    endpoint: string;
+    /**
+     * @generated from protobuf field: string access_key = 3;
+     */
+    accessKey: string;
+    /**
+     * @generated from protobuf field: string secret_key = 4;
+     */
+    secretKey: string;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.GCS
+ */
+export interface BlockStore_GCS {
+    /**
+     * @generated from protobuf field: string bucket = 1;
+     */
+    bucket: string;
+    /**
+     * @generated from protobuf field: string service_account = 2;
+     */
+    serviceAccount: string;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.COS
+ */
+export interface BlockStore_COS {
+    /**
+     * @generated from protobuf field: string bucket = 1;
+     */
+    bucket: string;
+    /**
+     * @generated from protobuf field: string region = 2;
+     */
+    region: string;
+    /**
+     * @generated from protobuf field: string app_id = 3;
+     */
+    appId: string;
+    /**
+     * @generated from protobuf field: string endpoint = 4;
+     */
+    endpoint: string;
+    /**
+     * @generated from protobuf field: string secret_key = 5;
+     */
+    secretKey: string;
+    /**
+     * @generated from protobuf field: string secret_id = 6;
+     */
+    secretId: string;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.BOS
+ */
+export interface BlockStore_BOS {
+    /**
+     * @generated from protobuf field: string bucket = 1;
+     */
+    bucket: string;
+    /**
+     * @generated from protobuf field: string endpoint = 2;
+     */
+    endpoint: string;
+    /**
+     * @generated from protobuf field: string access_key = 3;
+     */
+    accessKey: string;
+    /**
+     * @generated from protobuf field: string secret_key = 4;
+     */
+    secretKey: string;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.Azure
+ */
+export interface BlockStore_Azure {
+    /**
+     * @generated from protobuf field: string storage_account = 1;
+     */
+    storageAccount: string;
+    /**
+     * @generated from protobuf field: string storage_account_key = 2;
+     */
+    storageAccountKey: string;
+    /**
+     * @generated from protobuf field: string storage_connection_string = 3;
+     */
+    storageConnectionString: string;
+    /**
+     * @generated from protobuf field: string container = 4;
+     */
+    container: string;
+    /**
+     * @generated from protobuf field: string endpoint = 5;
+     */
+    endpoint: string;
+    /**
+     * @generated from protobuf field: string user_assigned_id = 6;
+     */
+    userAssignedId: string;
+    /**
+     * @generated from protobuf field: int32 max_retries = 7;
+     */
+    maxRetries: number;
+    /**
+     * @generated from protobuf field: v1.BlockStore.Azure.Reader reader_config = 8;
+     */
+    readerConfig?: BlockStore_Azure_Reader;
+    /**
+     * @generated from protobuf field: v1.BlockStore.Azure.Pipeline pipeline_config = 9;
+     */
+    pipelineConfig?: BlockStore_Azure_Pipeline;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.Azure.Reader
+ */
+export interface BlockStore_Azure_Reader {
+    /**
+     * @generated from protobuf field: int32 max_retry_requests = 1;
+     */
+    maxRetryRequests: number;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.Azure.Pipeline
+ */
+export interface BlockStore_Azure_Pipeline {
+    /**
+     * @generated from protobuf field: int32 max_tries = 1;
+     */
+    maxTries: number;
+    /**
+     * @generated from protobuf field: google.protobuf.Duration try_timeout = 2;
+     */
+    tryTimeout?: Duration;
+    /**
+     * @generated from protobuf field: google.protobuf.Duration retry_delay = 3;
+     */
+    retryDelay?: Duration;
+    /**
+     * @generated from protobuf field: google.protobuf.Duration max_retry_delay = 4;
+     */
+    maxRetryDelay?: Duration;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.Filesystem
+ */
+export interface BlockStore_Filesystem {
+    /**
+     * @generated from protobuf field: string directory = 1;
+     */
+    directory: string;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.S3
+ */
+export interface BlockStore_S3 {
+    /**
+     * @generated from protobuf field: string bucket = 1;
+     */
+    bucket: string;
+    /**
+     * @generated from protobuf field: string endpoint = 2;
+     */
+    endpoint: string;
+    /**
+     * @generated from protobuf field: string region = 3;
+     */
+    region: string;
+    /**
+     * @generated from protobuf field: bool aws_sdk_auth = 4;
+     */
+    awsSdkAuth: boolean;
+    /**
+     * @generated from protobuf field: string access_key = 5;
+     */
+    accessKey: string;
+    /**
+     * @generated from protobuf field: bool insecure = 6;
+     */
+    insecure: boolean;
+    /**
+     * @generated from protobuf field: bool signature_version2 = 7;
+     */
+    signatureVersion2: boolean;
+    /**
+     * @generated from protobuf field: string secret_key = 8;
+     */
+    secretKey: string;
+    /**
+     * @generated from protobuf field: string session_token = 9;
+     */
+    sessionToken: string;
+    /**
+     * @generated from protobuf field: map<string, string> put_user_metadata = 10;
+     */
+    putUserMetadata: {
+        [key: string]: string;
+    };
+    /**
+     * @generated from protobuf field: string list_objects_version = 11;
+     */
+    listObjectsVersion: string;
+    /**
+     * @generated from protobuf field: v1.BlockStore.S3.BucketLookupType bucket_lookup_type = 12;
+     */
+    bucketLookupType: BlockStore_S3_BucketLookupType;
+    /**
+     * @generated from protobuf field: uint64 part_size = 13;
+     */
+    partSize: bigint;
+    /**
+     * @generated from protobuf field: v1.BlockStore.S3.SSE sse_config = 14;
+     */
+    sseConfig?: BlockStore_S3_SSE;
+    /**
+     * @generated from protobuf field: string sts_endpoint = 15;
+     */
+    stsEndpoint: string;
+}
+/**
+ * @generated from protobuf message v1.BlockStore.S3.SSE
+ */
+export interface BlockStore_S3_SSE {
+    /**
+     * @generated from protobuf field: string type = 1;
+     */
+    type: string;
+    /**
+     * @generated from protobuf field: string kms_key_id = 2;
+     */
+    kmsKeyId: string;
+    /**
+     * @generated from protobuf field: map<string, string> kms_encryption_context = 3;
+     */
+    kmsEncryptionContext: {
+        [key: string]: string;
+    };
+    /**
+     * @generated from protobuf field: string encryption_key = 4;
+     */
+    encryptionKey: string;
+}
+/**
+ * @generated from protobuf enum v1.BlockStore.S3.BucketLookupType
+ */
+export enum BlockStore_S3_BucketLookupType {
+    /**
+     * @generated from protobuf enum value: AUTO = 0;
+     */
+    AUTO = 0,
+    /**
+     * @generated from protobuf enum value: VIRTUAL_HOSTED = 1;
+     */
+    VIRTUAL_HOSTED = 1,
+    /**
+     * @generated from protobuf enum value: PATH = 2;
+     */
+    PATH = 2
+}
+/**
  * @generated from protobuf message v1.Build
  */
 export interface Build {
@@ -1629,6 +1980,976 @@ class Client_Auth$Type extends MessageType<Client_Auth> {
  * @generated MessageType for protobuf message v1.Client.Auth
  */
 export const Client_Auth = new Client_Auth$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore$Type extends MessageType<BlockStore> {
+    constructor() {
+        super("v1.BlockStore", [
+            { no: 1, name: "fs", kind: "message", oneof: "provider", T: () => BlockStore_Filesystem },
+            { no: 2, name: "s3", kind: "message", oneof: "provider", T: () => BlockStore_S3 },
+            { no: 3, name: "azure", kind: "message", oneof: "provider", T: () => BlockStore_Azure },
+            { no: 4, name: "bos", kind: "message", oneof: "provider", T: () => BlockStore_BOS },
+            { no: 5, name: "cos", kind: "message", oneof: "provider", T: () => BlockStore_COS },
+            { no: 6, name: "gcs", kind: "message", oneof: "provider", T: () => BlockStore_GCS },
+            { no: 7, name: "obs", kind: "message", oneof: "provider", T: () => BlockStore_OBS },
+            { no: 8, name: "oss", kind: "message", oneof: "provider", T: () => BlockStore_OSS }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore>): BlockStore {
+        const message = { provider: { oneofKind: undefined } };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore): BlockStore {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* v1.BlockStore.Filesystem fs */ 1:
+                    message.provider = {
+                        oneofKind: "fs",
+                        fs: BlockStore_Filesystem.internalBinaryRead(reader, reader.uint32(), options, (message.provider as any).fs)
+                    };
+                    break;
+                case /* v1.BlockStore.S3 s3 */ 2:
+                    message.provider = {
+                        oneofKind: "s3",
+                        s3: BlockStore_S3.internalBinaryRead(reader, reader.uint32(), options, (message.provider as any).s3)
+                    };
+                    break;
+                case /* v1.BlockStore.Azure azure */ 3:
+                    message.provider = {
+                        oneofKind: "azure",
+                        azure: BlockStore_Azure.internalBinaryRead(reader, reader.uint32(), options, (message.provider as any).azure)
+                    };
+                    break;
+                case /* v1.BlockStore.BOS bos */ 4:
+                    message.provider = {
+                        oneofKind: "bos",
+                        bos: BlockStore_BOS.internalBinaryRead(reader, reader.uint32(), options, (message.provider as any).bos)
+                    };
+                    break;
+                case /* v1.BlockStore.COS cos */ 5:
+                    message.provider = {
+                        oneofKind: "cos",
+                        cos: BlockStore_COS.internalBinaryRead(reader, reader.uint32(), options, (message.provider as any).cos)
+                    };
+                    break;
+                case /* v1.BlockStore.GCS gcs */ 6:
+                    message.provider = {
+                        oneofKind: "gcs",
+                        gcs: BlockStore_GCS.internalBinaryRead(reader, reader.uint32(), options, (message.provider as any).gcs)
+                    };
+                    break;
+                case /* v1.BlockStore.OBS obs */ 7:
+                    message.provider = {
+                        oneofKind: "obs",
+                        obs: BlockStore_OBS.internalBinaryRead(reader, reader.uint32(), options, (message.provider as any).obs)
+                    };
+                    break;
+                case /* v1.BlockStore.OSS oss */ 8:
+                    message.provider = {
+                        oneofKind: "oss",
+                        oss: BlockStore_OSS.internalBinaryRead(reader, reader.uint32(), options, (message.provider as any).oss)
+                    };
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* v1.BlockStore.Filesystem fs = 1; */
+        if (message.provider.oneofKind === "fs")
+            BlockStore_Filesystem.internalBinaryWrite(message.provider.fs, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* v1.BlockStore.S3 s3 = 2; */
+        if (message.provider.oneofKind === "s3")
+            BlockStore_S3.internalBinaryWrite(message.provider.s3, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* v1.BlockStore.Azure azure = 3; */
+        if (message.provider.oneofKind === "azure")
+            BlockStore_Azure.internalBinaryWrite(message.provider.azure, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* v1.BlockStore.BOS bos = 4; */
+        if (message.provider.oneofKind === "bos")
+            BlockStore_BOS.internalBinaryWrite(message.provider.bos, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        /* v1.BlockStore.COS cos = 5; */
+        if (message.provider.oneofKind === "cos")
+            BlockStore_COS.internalBinaryWrite(message.provider.cos, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
+        /* v1.BlockStore.GCS gcs = 6; */
+        if (message.provider.oneofKind === "gcs")
+            BlockStore_GCS.internalBinaryWrite(message.provider.gcs, writer.tag(6, WireType.LengthDelimited).fork(), options).join();
+        /* v1.BlockStore.OBS obs = 7; */
+        if (message.provider.oneofKind === "obs")
+            BlockStore_OBS.internalBinaryWrite(message.provider.obs, writer.tag(7, WireType.LengthDelimited).fork(), options).join();
+        /* v1.BlockStore.OSS oss = 8; */
+        if (message.provider.oneofKind === "oss")
+            BlockStore_OSS.internalBinaryWrite(message.provider.oss, writer.tag(8, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore
+ */
+export const BlockStore = new BlockStore$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_OSS$Type extends MessageType<BlockStore_OSS> {
+    constructor() {
+        super("v1.BlockStore.OSS", [
+            { no: 1, name: "endpoint", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "bucket", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "access_key_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "access_key_secret", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_OSS>): BlockStore_OSS {
+        const message = { endpoint: "", bucket: "", accessKeyId: "", accessKeySecret: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_OSS>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_OSS): BlockStore_OSS {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string endpoint */ 1:
+                    message.endpoint = reader.string();
+                    break;
+                case /* string bucket */ 2:
+                    message.bucket = reader.string();
+                    break;
+                case /* string access_key_id */ 3:
+                    message.accessKeyId = reader.string();
+                    break;
+                case /* string access_key_secret */ 4:
+                    message.accessKeySecret = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore_OSS, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string endpoint = 1; */
+        if (message.endpoint !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.endpoint);
+        /* string bucket = 2; */
+        if (message.bucket !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.bucket);
+        /* string access_key_id = 3; */
+        if (message.accessKeyId !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.accessKeyId);
+        /* string access_key_secret = 4; */
+        if (message.accessKeySecret !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.accessKeySecret);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.OSS
+ */
+export const BlockStore_OSS = new BlockStore_OSS$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_OBS$Type extends MessageType<BlockStore_OBS> {
+    constructor() {
+        super("v1.BlockStore.OBS", [
+            { no: 1, name: "bucket", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "endpoint", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "access_key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "secret_key", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_OBS>): BlockStore_OBS {
+        const message = { bucket: "", endpoint: "", accessKey: "", secretKey: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_OBS>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_OBS): BlockStore_OBS {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string bucket */ 1:
+                    message.bucket = reader.string();
+                    break;
+                case /* string endpoint */ 2:
+                    message.endpoint = reader.string();
+                    break;
+                case /* string access_key */ 3:
+                    message.accessKey = reader.string();
+                    break;
+                case /* string secret_key */ 4:
+                    message.secretKey = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore_OBS, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string bucket = 1; */
+        if (message.bucket !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.bucket);
+        /* string endpoint = 2; */
+        if (message.endpoint !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.endpoint);
+        /* string access_key = 3; */
+        if (message.accessKey !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.accessKey);
+        /* string secret_key = 4; */
+        if (message.secretKey !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.secretKey);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.OBS
+ */
+export const BlockStore_OBS = new BlockStore_OBS$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_GCS$Type extends MessageType<BlockStore_GCS> {
+    constructor() {
+        super("v1.BlockStore.GCS", [
+            { no: 1, name: "bucket", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "service_account", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_GCS>): BlockStore_GCS {
+        const message = { bucket: "", serviceAccount: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_GCS>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_GCS): BlockStore_GCS {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string bucket */ 1:
+                    message.bucket = reader.string();
+                    break;
+                case /* string service_account */ 2:
+                    message.serviceAccount = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore_GCS, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string bucket = 1; */
+        if (message.bucket !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.bucket);
+        /* string service_account = 2; */
+        if (message.serviceAccount !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.serviceAccount);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.GCS
+ */
+export const BlockStore_GCS = new BlockStore_GCS$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_COS$Type extends MessageType<BlockStore_COS> {
+    constructor() {
+        super("v1.BlockStore.COS", [
+            { no: 1, name: "bucket", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "region", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "app_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "endpoint", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 5, name: "secret_key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 6, name: "secret_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_COS>): BlockStore_COS {
+        const message = { bucket: "", region: "", appId: "", endpoint: "", secretKey: "", secretId: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_COS>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_COS): BlockStore_COS {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string bucket */ 1:
+                    message.bucket = reader.string();
+                    break;
+                case /* string region */ 2:
+                    message.region = reader.string();
+                    break;
+                case /* string app_id */ 3:
+                    message.appId = reader.string();
+                    break;
+                case /* string endpoint */ 4:
+                    message.endpoint = reader.string();
+                    break;
+                case /* string secret_key */ 5:
+                    message.secretKey = reader.string();
+                    break;
+                case /* string secret_id */ 6:
+                    message.secretId = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore_COS, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string bucket = 1; */
+        if (message.bucket !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.bucket);
+        /* string region = 2; */
+        if (message.region !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.region);
+        /* string app_id = 3; */
+        if (message.appId !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.appId);
+        /* string endpoint = 4; */
+        if (message.endpoint !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.endpoint);
+        /* string secret_key = 5; */
+        if (message.secretKey !== "")
+            writer.tag(5, WireType.LengthDelimited).string(message.secretKey);
+        /* string secret_id = 6; */
+        if (message.secretId !== "")
+            writer.tag(6, WireType.LengthDelimited).string(message.secretId);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.COS
+ */
+export const BlockStore_COS = new BlockStore_COS$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_BOS$Type extends MessageType<BlockStore_BOS> {
+    constructor() {
+        super("v1.BlockStore.BOS", [
+            { no: 1, name: "bucket", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "endpoint", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "access_key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "secret_key", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_BOS>): BlockStore_BOS {
+        const message = { bucket: "", endpoint: "", accessKey: "", secretKey: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_BOS>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_BOS): BlockStore_BOS {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string bucket */ 1:
+                    message.bucket = reader.string();
+                    break;
+                case /* string endpoint */ 2:
+                    message.endpoint = reader.string();
+                    break;
+                case /* string access_key */ 3:
+                    message.accessKey = reader.string();
+                    break;
+                case /* string secret_key */ 4:
+                    message.secretKey = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore_BOS, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string bucket = 1; */
+        if (message.bucket !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.bucket);
+        /* string endpoint = 2; */
+        if (message.endpoint !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.endpoint);
+        /* string access_key = 3; */
+        if (message.accessKey !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.accessKey);
+        /* string secret_key = 4; */
+        if (message.secretKey !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.secretKey);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.BOS
+ */
+export const BlockStore_BOS = new BlockStore_BOS$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_Azure$Type extends MessageType<BlockStore_Azure> {
+    constructor() {
+        super("v1.BlockStore.Azure", [
+            { no: 1, name: "storage_account", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "storage_account_key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "storage_connection_string", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "container", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 5, name: "endpoint", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 6, name: "user_assigned_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 7, name: "max_retries", kind: "scalar", T: 5 /*ScalarType.INT32*/ },
+            { no: 8, name: "reader_config", kind: "message", T: () => BlockStore_Azure_Reader },
+            { no: 9, name: "pipeline_config", kind: "message", T: () => BlockStore_Azure_Pipeline }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_Azure>): BlockStore_Azure {
+        const message = { storageAccount: "", storageAccountKey: "", storageConnectionString: "", container: "", endpoint: "", userAssignedId: "", maxRetries: 0 };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_Azure>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_Azure): BlockStore_Azure {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string storage_account */ 1:
+                    message.storageAccount = reader.string();
+                    break;
+                case /* string storage_account_key */ 2:
+                    message.storageAccountKey = reader.string();
+                    break;
+                case /* string storage_connection_string */ 3:
+                    message.storageConnectionString = reader.string();
+                    break;
+                case /* string container */ 4:
+                    message.container = reader.string();
+                    break;
+                case /* string endpoint */ 5:
+                    message.endpoint = reader.string();
+                    break;
+                case /* string user_assigned_id */ 6:
+                    message.userAssignedId = reader.string();
+                    break;
+                case /* int32 max_retries */ 7:
+                    message.maxRetries = reader.int32();
+                    break;
+                case /* v1.BlockStore.Azure.Reader reader_config */ 8:
+                    message.readerConfig = BlockStore_Azure_Reader.internalBinaryRead(reader, reader.uint32(), options, message.readerConfig);
+                    break;
+                case /* v1.BlockStore.Azure.Pipeline pipeline_config */ 9:
+                    message.pipelineConfig = BlockStore_Azure_Pipeline.internalBinaryRead(reader, reader.uint32(), options, message.pipelineConfig);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore_Azure, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string storage_account = 1; */
+        if (message.storageAccount !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.storageAccount);
+        /* string storage_account_key = 2; */
+        if (message.storageAccountKey !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.storageAccountKey);
+        /* string storage_connection_string = 3; */
+        if (message.storageConnectionString !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.storageConnectionString);
+        /* string container = 4; */
+        if (message.container !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.container);
+        /* string endpoint = 5; */
+        if (message.endpoint !== "")
+            writer.tag(5, WireType.LengthDelimited).string(message.endpoint);
+        /* string user_assigned_id = 6; */
+        if (message.userAssignedId !== "")
+            writer.tag(6, WireType.LengthDelimited).string(message.userAssignedId);
+        /* int32 max_retries = 7; */
+        if (message.maxRetries !== 0)
+            writer.tag(7, WireType.Varint).int32(message.maxRetries);
+        /* v1.BlockStore.Azure.Reader reader_config = 8; */
+        if (message.readerConfig)
+            BlockStore_Azure_Reader.internalBinaryWrite(message.readerConfig, writer.tag(8, WireType.LengthDelimited).fork(), options).join();
+        /* v1.BlockStore.Azure.Pipeline pipeline_config = 9; */
+        if (message.pipelineConfig)
+            BlockStore_Azure_Pipeline.internalBinaryWrite(message.pipelineConfig, writer.tag(9, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.Azure
+ */
+export const BlockStore_Azure = new BlockStore_Azure$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_Azure_Reader$Type extends MessageType<BlockStore_Azure_Reader> {
+    constructor() {
+        super("v1.BlockStore.Azure.Reader", [
+            { no: 1, name: "max_retry_requests", kind: "scalar", T: 5 /*ScalarType.INT32*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_Azure_Reader>): BlockStore_Azure_Reader {
+        const message = { maxRetryRequests: 0 };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_Azure_Reader>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_Azure_Reader): BlockStore_Azure_Reader {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* int32 max_retry_requests */ 1:
+                    message.maxRetryRequests = reader.int32();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore_Azure_Reader, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* int32 max_retry_requests = 1; */
+        if (message.maxRetryRequests !== 0)
+            writer.tag(1, WireType.Varint).int32(message.maxRetryRequests);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.Azure.Reader
+ */
+export const BlockStore_Azure_Reader = new BlockStore_Azure_Reader$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_Azure_Pipeline$Type extends MessageType<BlockStore_Azure_Pipeline> {
+    constructor() {
+        super("v1.BlockStore.Azure.Pipeline", [
+            { no: 1, name: "max_tries", kind: "scalar", T: 5 /*ScalarType.INT32*/ },
+            { no: 2, name: "try_timeout", kind: "message", T: () => Duration },
+            { no: 3, name: "retry_delay", kind: "message", T: () => Duration },
+            { no: 4, name: "max_retry_delay", kind: "message", T: () => Duration }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_Azure_Pipeline>): BlockStore_Azure_Pipeline {
+        const message = { maxTries: 0 };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_Azure_Pipeline>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_Azure_Pipeline): BlockStore_Azure_Pipeline {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* int32 max_tries */ 1:
+                    message.maxTries = reader.int32();
+                    break;
+                case /* google.protobuf.Duration try_timeout */ 2:
+                    message.tryTimeout = Duration.internalBinaryRead(reader, reader.uint32(), options, message.tryTimeout);
+                    break;
+                case /* google.protobuf.Duration retry_delay */ 3:
+                    message.retryDelay = Duration.internalBinaryRead(reader, reader.uint32(), options, message.retryDelay);
+                    break;
+                case /* google.protobuf.Duration max_retry_delay */ 4:
+                    message.maxRetryDelay = Duration.internalBinaryRead(reader, reader.uint32(), options, message.maxRetryDelay);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore_Azure_Pipeline, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* int32 max_tries = 1; */
+        if (message.maxTries !== 0)
+            writer.tag(1, WireType.Varint).int32(message.maxTries);
+        /* google.protobuf.Duration try_timeout = 2; */
+        if (message.tryTimeout)
+            Duration.internalBinaryWrite(message.tryTimeout, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* google.protobuf.Duration retry_delay = 3; */
+        if (message.retryDelay)
+            Duration.internalBinaryWrite(message.retryDelay, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* google.protobuf.Duration max_retry_delay = 4; */
+        if (message.maxRetryDelay)
+            Duration.internalBinaryWrite(message.maxRetryDelay, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.Azure.Pipeline
+ */
+export const BlockStore_Azure_Pipeline = new BlockStore_Azure_Pipeline$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_Filesystem$Type extends MessageType<BlockStore_Filesystem> {
+    constructor() {
+        super("v1.BlockStore.Filesystem", [
+            { no: 1, name: "directory", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_Filesystem>): BlockStore_Filesystem {
+        const message = { directory: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_Filesystem>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_Filesystem): BlockStore_Filesystem {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string directory */ 1:
+                    message.directory = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BlockStore_Filesystem, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string directory = 1; */
+        if (message.directory !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.directory);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.Filesystem
+ */
+export const BlockStore_Filesystem = new BlockStore_Filesystem$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_S3$Type extends MessageType<BlockStore_S3> {
+    constructor() {
+        super("v1.BlockStore.S3", [
+            { no: 1, name: "bucket", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "endpoint", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "region", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "aws_sdk_auth", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 5, name: "access_key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 6, name: "insecure", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 7, name: "signature_version2", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 8, name: "secret_key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 9, name: "session_token", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 10, name: "put_user_metadata", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "scalar", T: 9 /*ScalarType.STRING*/ } },
+            { no: 11, name: "list_objects_version", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 12, name: "bucket_lookup_type", kind: "enum", T: () => ["v1.BlockStore.S3.BucketLookupType", BlockStore_S3_BucketLookupType] },
+            { no: 13, name: "part_size", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 14, name: "sse_config", kind: "message", T: () => BlockStore_S3_SSE },
+            { no: 15, name: "sts_endpoint", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_S3>): BlockStore_S3 {
+        const message = { bucket: "", endpoint: "", region: "", awsSdkAuth: false, accessKey: "", insecure: false, signatureVersion2: false, secretKey: "", sessionToken: "", putUserMetadata: {}, listObjectsVersion: "", bucketLookupType: 0, partSize: 0n, stsEndpoint: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_S3>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_S3): BlockStore_S3 {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string bucket */ 1:
+                    message.bucket = reader.string();
+                    break;
+                case /* string endpoint */ 2:
+                    message.endpoint = reader.string();
+                    break;
+                case /* string region */ 3:
+                    message.region = reader.string();
+                    break;
+                case /* bool aws_sdk_auth */ 4:
+                    message.awsSdkAuth = reader.bool();
+                    break;
+                case /* string access_key */ 5:
+                    message.accessKey = reader.string();
+                    break;
+                case /* bool insecure */ 6:
+                    message.insecure = reader.bool();
+                    break;
+                case /* bool signature_version2 */ 7:
+                    message.signatureVersion2 = reader.bool();
+                    break;
+                case /* string secret_key */ 8:
+                    message.secretKey = reader.string();
+                    break;
+                case /* string session_token */ 9:
+                    message.sessionToken = reader.string();
+                    break;
+                case /* map<string, string> put_user_metadata */ 10:
+                    this.binaryReadMap10(message.putUserMetadata, reader, options);
+                    break;
+                case /* string list_objects_version */ 11:
+                    message.listObjectsVersion = reader.string();
+                    break;
+                case /* v1.BlockStore.S3.BucketLookupType bucket_lookup_type */ 12:
+                    message.bucketLookupType = reader.int32();
+                    break;
+                case /* uint64 part_size */ 13:
+                    message.partSize = reader.uint64().toBigInt();
+                    break;
+                case /* v1.BlockStore.S3.SSE sse_config */ 14:
+                    message.sseConfig = BlockStore_S3_SSE.internalBinaryRead(reader, reader.uint32(), options, message.sseConfig);
+                    break;
+                case /* string sts_endpoint */ 15:
+                    message.stsEndpoint = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    private binaryReadMap10(map: BlockStore_S3["putUserMetadata"], reader: IBinaryReader, options: BinaryReadOptions): void {
+        let len = reader.uint32(), end = reader.pos + len, key: keyof BlockStore_S3["putUserMetadata"] | undefined, val: BlockStore_S3["putUserMetadata"][any] | undefined;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case 1:
+                    key = reader.string();
+                    break;
+                case 2:
+                    val = reader.string();
+                    break;
+                default: throw new globalThis.Error("unknown map entry field for field v1.BlockStore.S3.put_user_metadata");
+            }
+        }
+        map[key ?? ""] = val ?? "";
+    }
+    internalBinaryWrite(message: BlockStore_S3, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string bucket = 1; */
+        if (message.bucket !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.bucket);
+        /* string endpoint = 2; */
+        if (message.endpoint !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.endpoint);
+        /* string region = 3; */
+        if (message.region !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.region);
+        /* bool aws_sdk_auth = 4; */
+        if (message.awsSdkAuth !== false)
+            writer.tag(4, WireType.Varint).bool(message.awsSdkAuth);
+        /* string access_key = 5; */
+        if (message.accessKey !== "")
+            writer.tag(5, WireType.LengthDelimited).string(message.accessKey);
+        /* bool insecure = 6; */
+        if (message.insecure !== false)
+            writer.tag(6, WireType.Varint).bool(message.insecure);
+        /* bool signature_version2 = 7; */
+        if (message.signatureVersion2 !== false)
+            writer.tag(7, WireType.Varint).bool(message.signatureVersion2);
+        /* string secret_key = 8; */
+        if (message.secretKey !== "")
+            writer.tag(8, WireType.LengthDelimited).string(message.secretKey);
+        /* string session_token = 9; */
+        if (message.sessionToken !== "")
+            writer.tag(9, WireType.LengthDelimited).string(message.sessionToken);
+        /* map<string, string> put_user_metadata = 10; */
+        for (let k of Object.keys(message.putUserMetadata))
+            writer.tag(10, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k).tag(2, WireType.LengthDelimited).string(message.putUserMetadata[k]).join();
+        /* string list_objects_version = 11; */
+        if (message.listObjectsVersion !== "")
+            writer.tag(11, WireType.LengthDelimited).string(message.listObjectsVersion);
+        /* v1.BlockStore.S3.BucketLookupType bucket_lookup_type = 12; */
+        if (message.bucketLookupType !== 0)
+            writer.tag(12, WireType.Varint).int32(message.bucketLookupType);
+        /* uint64 part_size = 13; */
+        if (message.partSize !== 0n)
+            writer.tag(13, WireType.Varint).uint64(message.partSize);
+        /* v1.BlockStore.S3.SSE sse_config = 14; */
+        if (message.sseConfig)
+            BlockStore_S3_SSE.internalBinaryWrite(message.sseConfig, writer.tag(14, WireType.LengthDelimited).fork(), options).join();
+        /* string sts_endpoint = 15; */
+        if (message.stsEndpoint !== "")
+            writer.tag(15, WireType.LengthDelimited).string(message.stsEndpoint);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.S3
+ */
+export const BlockStore_S3 = new BlockStore_S3$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockStore_S3_SSE$Type extends MessageType<BlockStore_S3_SSE> {
+    constructor() {
+        super("v1.BlockStore.S3.SSE", [
+            { no: 1, name: "type", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "kms_key_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "kms_encryption_context", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "scalar", T: 9 /*ScalarType.STRING*/ } },
+            { no: 4, name: "encryption_key", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BlockStore_S3_SSE>): BlockStore_S3_SSE {
+        const message = { type: "", kmsKeyId: "", kmsEncryptionContext: {}, encryptionKey: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockStore_S3_SSE>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockStore_S3_SSE): BlockStore_S3_SSE {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string type */ 1:
+                    message.type = reader.string();
+                    break;
+                case /* string kms_key_id */ 2:
+                    message.kmsKeyId = reader.string();
+                    break;
+                case /* map<string, string> kms_encryption_context */ 3:
+                    this.binaryReadMap3(message.kmsEncryptionContext, reader, options);
+                    break;
+                case /* string encryption_key */ 4:
+                    message.encryptionKey = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    private binaryReadMap3(map: BlockStore_S3_SSE["kmsEncryptionContext"], reader: IBinaryReader, options: BinaryReadOptions): void {
+        let len = reader.uint32(), end = reader.pos + len, key: keyof BlockStore_S3_SSE["kmsEncryptionContext"] | undefined, val: BlockStore_S3_SSE["kmsEncryptionContext"][any] | undefined;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case 1:
+                    key = reader.string();
+                    break;
+                case 2:
+                    val = reader.string();
+                    break;
+                default: throw new globalThis.Error("unknown map entry field for field v1.BlockStore.S3.SSE.kms_encryption_context");
+            }
+        }
+        map[key ?? ""] = val ?? "";
+    }
+    internalBinaryWrite(message: BlockStore_S3_SSE, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string type = 1; */
+        if (message.type !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.type);
+        /* string kms_key_id = 2; */
+        if (message.kmsKeyId !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.kmsKeyId);
+        /* map<string, string> kms_encryption_context = 3; */
+        for (let k of Object.keys(message.kmsEncryptionContext))
+            writer.tag(3, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k).tag(2, WireType.LengthDelimited).string(message.kmsEncryptionContext[k]).join();
+        /* string encryption_key = 4; */
+        if (message.encryptionKey !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.encryptionKey);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockStore.S3.SSE
+ */
+export const BlockStore_S3_SSE = new BlockStore_S3_SSE$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Build$Type extends MessageType<Build> {
     constructor() {
