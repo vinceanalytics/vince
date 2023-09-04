@@ -25,7 +25,6 @@ func Pipe(ctx context.Context, reg *prometheus.Registry) plug.Pipeline {
 			browser.Prefix("/debug/pprof/", pprof.Index),
 		),
 		a.PathPOST("/api/event", api.Events),
-		a.PathGET("/version", api.Version),
 		NotFound,
 	}
 }
