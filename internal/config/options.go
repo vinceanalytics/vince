@@ -28,10 +28,16 @@ type Options = v1.Config
 
 func Defaults() *v1.Config {
 	o := &v1.Config{
-		ListenAddress:      ":8080",
-		LogLevel:           "debug",
-		DbPath:             DB_PATH,
-		BlocksPath:         BLOCKS_PATH,
+		ListenAddress: ":8080",
+		LogLevel:      "debug",
+		DbPath:        DB_PATH,
+		BlocksStore: &v1.BlockStore{
+			Provider: &v1.BlockStore_Fs{
+				Fs: &v1.BlockStore_Filesystem{
+					Directory: BLOCKS_PATH,
+				},
+			},
+		},
 		RaftPath:           RAFT_PATH,
 		SyncInterval:       DefaultSyncInterval,
 		MysqlListenAddress: ":3306",
@@ -100,15 +106,6 @@ func Flags(o *Options) []cli.Flag {
 			Destination: &o.DbPath,
 			EnvVars:     []string{"VINCE_DB_PATH"},
 		},
-		&cli.StringFlag{
-			Category:    "core",
-			Name:        "blocks-path",
-			Usage:       "Path to store block files",
-			Value:       BLOCKS_PATH,
-			Destination: &o.BlocksPath,
-			EnvVars:     []string{"VINCE_BLOCK_PATH"},
-		},
-
 		&cli.DurationFlag{
 			Category: "intervals",
 			Name:     "sync-interval",

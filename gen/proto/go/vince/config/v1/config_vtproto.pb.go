@@ -752,10 +752,13 @@ func (m *Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1a
 	}
-	if len(m.BlocksPath) > 0 {
-		i -= len(m.BlocksPath)
-		copy(dAtA[i:], m.BlocksPath)
-		i = encodeVarint(dAtA, i, uint64(len(m.BlocksPath)))
+	if m.BlocksStore != nil {
+		size, err := m.BlocksStore.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -2513,8 +2516,8 @@ func (m *Config) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
-	l = len(m.BlocksPath)
-	if l > 0 {
+	if m.BlocksStore != nil {
+		l = m.BlocksStore.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
 	l = len(m.ListenAddress)
@@ -5026,9 +5029,9 @@ func (m *Config) UnmarshalVT(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlocksPath", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field BlocksStore", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflow
@@ -5038,23 +5041,27 @@ func (m *Config) UnmarshalVT(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLength
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLength
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.BlocksPath = string(dAtA[iNdEx:postIndex])
+			if m.BlocksStore == nil {
+				m.BlocksStore = &BlockStore{}
+			}
+			if err := m.BlocksStore.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {

@@ -29,6 +29,7 @@ import (
 	"github.com/vinceanalytics/vince/assets"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/api"
+	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
@@ -105,7 +106,10 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 	resources = append(resources, dba)
 	ctx, dbr := db.OpenRaft(ctx, o.RaftPath)
 	resources = append(resources, dbr)
-	ctx, ts := timeseries.Open(ctx, o.BlocksPath, int(o.GetEventsBufferSize()))
+	ctx, os := b3.Open(ctx, o.BlocksStore)
+	resources = append(resources, os)
+
+	ctx, ts := timeseries.Open(ctx, os, int(o.GetEventsBufferSize()))
 	resources = append(resources, ts)
 	ctx, eng := engine.Open(ctx)
 	resources = append(resources, eng)

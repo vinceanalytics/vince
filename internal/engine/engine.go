@@ -26,9 +26,8 @@ type engineKey struct{}
 
 func Open(ctx context.Context) (context.Context, *Engine) {
 	e := New(Context{
-		DB:                   db.Get(ctx),
-		ReadBlock:            timeseries.Block(ctx).ReadBlock,
-		PrepareTableForQuery: timeseries.Block(ctx).Commit,
+		DB:        db.Get(ctx),
+		ReadBlock: timeseries.Block(ctx).ReadBlock,
 	})
 	return context.WithValue(ctx, engineKey{}, e), e
 }
@@ -38,7 +37,6 @@ func Get(ctx context.Context) *Engine {
 }
 
 type Context struct {
-	DB                   db.Provider
-	ReadBlock            func(ulid.ULID, func(parquet.ReaderAtSeeker))
-	PrepareTableForQuery func(string)
+	DB        db.Provider
+	ReadBlock func(ulid.ULID, func(parquet.ReaderAtSeeker))
 }

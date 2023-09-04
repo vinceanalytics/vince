@@ -15,6 +15,7 @@ import (
 	"github.com/apache/arrow/go/v14/parquet/schema"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/internal/px"
 )
 
 type Entry struct {
@@ -80,55 +81,40 @@ func (m *MultiEntry) Len() int {
 }
 
 func (m *MultiEntry) Append(e *Entry) {
-	{
-		m.ints[storev1.Column_bounce] = append(m.ints[storev1.Column_bounce], e.Bounce)
-		m.ints[storev1.Column_duration] = append(m.ints[storev1.Column_duration], int64(e.Duration))
-		m.ints[storev1.Column_id] = append(m.ints[storev1.Column_id], int64(e.ID))
-		m.ints[storev1.Column_session] = append(m.ints[storev1.Column_session], e.Session)
-		m.ints[storev1.Column_timestamp] = append(m.ints[storev1.Column_timestamp], e.Timestamp)
+	m.add(storev1.Column_bounce, e.Bounce)
+	m.add(storev1.Column_browser, e.Browser)
+	m.add(storev1.Column_browser_version, e.BrowserVersion)
+	m.add(storev1.Column_city, e.City)
+	m.add(storev1.Column_country, e.Country)
+	m.add(storev1.Column_duration, int64(e.Duration))
+	m.add(storev1.Column_entry_page, e.EntryPage)
+	m.add(storev1.Column_event, e.Event)
+	m.add(storev1.Column_exit_page, e.ExitPage)
+	m.add(storev1.Column_host, e.Host)
+	m.add(storev1.Column_id, int64(e.ID))
+	m.add(storev1.Column_os, e.Os)
+	m.add(storev1.Column_os_version, e.OsVersion)
+	m.add(storev1.Column_path, e.Path)
+	m.add(storev1.Column_referrer, e.Referrer)
+	m.add(storev1.Column_referrer_source, e.ReferrerSource)
+	m.add(storev1.Column_region, e.Region)
+	m.add(storev1.Column_screen, e.Screen)
+	m.add(storev1.Column_session, e.Session)
+	m.add(storev1.Column_timestamp, e.Timestamp)
+	m.add(storev1.Column_utm_campaign, e.UtmCampaign)
+	m.add(storev1.Column_utm_content, e.UtmContent)
+	m.add(storev1.Column_utm_medium, e.UtmMedium)
+	m.add(storev1.Column_utm_source, e.UtmSource)
+	m.add(storev1.Column_utm_term, e.UtmTerm)
+}
+
+func (m *MultiEntry) add(name storev1.Column, v any) {
+	if name <= storev1.Column_timestamp {
+		m.ints[name] = append(m.ints[name], v.(int64))
+		return
 	}
-	{
-		m.strings[storev1.Column_browser] =
-			append(m.strings[storev1.Column_browser], parquet.ByteArray(e.Browser))
-		m.strings[storev1.Column_browser_version-storev1.Column_browser] =
-			append(m.strings[storev1.Column_browser_version-storev1.Column_browser], parquet.ByteArray(e.BrowserVersion))
-		m.strings[storev1.Column_city-storev1.Column_browser] =
-			append(m.strings[storev1.Column_city-storev1.Column_browser], parquet.ByteArray(e.City))
-		m.strings[storev1.Column_country-storev1.Column_browser] =
-			append(m.strings[storev1.Column_country-storev1.Column_browser], parquet.ByteArray(e.Country))
-		m.strings[storev1.Column_entry_page-storev1.Column_browser] =
-			append(m.strings[storev1.Column_entry_page-storev1.Column_browser], parquet.ByteArray(e.EntryPage))
-		m.strings[storev1.Column_event-storev1.Column_browser] =
-			append(m.strings[storev1.Column_event-storev1.Column_browser], parquet.ByteArray(e.Event))
-		m.strings[storev1.Column_exit_page-storev1.Column_browser] =
-			append(m.strings[storev1.Column_exit_page-storev1.Column_browser], parquet.ByteArray(e.ExitPage))
-		m.strings[storev1.Column_host-storev1.Column_browser] =
-			append(m.strings[storev1.Column_host-storev1.Column_browser], parquet.ByteArray(e.Host))
-		m.strings[storev1.Column_os-storev1.Column_browser] =
-			append(m.strings[storev1.Column_os-storev1.Column_browser], parquet.ByteArray(e.Os))
-		m.strings[storev1.Column_os_version-storev1.Column_browser] =
-			append(m.strings[storev1.Column_os_version-storev1.Column_browser], parquet.ByteArray(e.OsVersion))
-		m.strings[storev1.Column_path-storev1.Column_browser] =
-			append(m.strings[storev1.Column_path-storev1.Column_browser], parquet.ByteArray(e.Path))
-		m.strings[storev1.Column_referrer-storev1.Column_browser] =
-			append(m.strings[storev1.Column_referrer-storev1.Column_browser], parquet.ByteArray(e.Referrer))
-		m.strings[storev1.Column_referrer_source-storev1.Column_browser] =
-			append(m.strings[storev1.Column_referrer_source-storev1.Column_browser], parquet.ByteArray(e.ReferrerSource))
-		m.strings[storev1.Column_region-storev1.Column_browser] =
-			append(m.strings[storev1.Column_region-storev1.Column_browser], parquet.ByteArray(e.Region))
-		m.strings[storev1.Column_screen-storev1.Column_browser] =
-			append(m.strings[storev1.Column_screen-storev1.Column_browser], parquet.ByteArray(e.Screen))
-		m.strings[storev1.Column_utm_campaign-storev1.Column_browser] =
-			append(m.strings[storev1.Column_utm_campaign-storev1.Column_browser], parquet.ByteArray(e.UtmCampaign))
-		m.strings[storev1.Column_utm_content-storev1.Column_browser] =
-			append(m.strings[storev1.Column_utm_content-storev1.Column_browser], parquet.ByteArray(e.UtmContent))
-		m.strings[storev1.Column_utm_medium-storev1.Column_browser] =
-			append(m.strings[storev1.Column_utm_medium-storev1.Column_browser], parquet.ByteArray(e.UtmMedium))
-		m.strings[storev1.Column_utm_source-storev1.Column_browser] =
-			append(m.strings[storev1.Column_utm_source-storev1.Column_browser], parquet.ByteArray(e.UtmSource))
-		m.strings[storev1.Column_utm_term-storev1.Column_browser] =
-			append(m.strings[storev1.Column_utm_term-storev1.Column_browser], parquet.ByteArray(e.UtmTerm))
-	}
+	m.strings[px.ColumnIndex(name)] =
+		append(m.strings[px.ColumnIndex(name)], parquet.ByteArray(v.(string)))
 }
 
 func (m *MultiEntry) Write(f *file.Writer, hash func(storev1.Column, parquet.ByteArray)) {

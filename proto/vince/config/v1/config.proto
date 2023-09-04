@@ -11,7 +11,7 @@ message Config {
 
   // Path to where block files are stored. Blocks are stored as files with ULID
   // as filenames
-  string blocks_path = 2;
+  BlockStore blocks_store = 2;
 
   // host:port to bind for http api. This is used by serve command. The server
   // serves ui console

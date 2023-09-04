@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	"github.com/apache/arrow/go/v14/parquet/metadata"
 	"github.com/cespare/xxhash/v2"
 	"github.com/oklog/ulid/v2"
+	"github.com/thanos-io/objstore"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/db"
@@ -27,45 +27,34 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type ActiveBlock struct {
+type Ingest struct {
 	context.Context
-	dir      string
 	capacity int
 	ctx      sync.Map
+	os       objstore.Bucket
+	log      *slog.Logger
 }
 
-func NewBlock(ctx context.Context, dir string, capacity int) *ActiveBlock {
-	return &ActiveBlock{dir: dir, Context: ctx, capacity: capacity}
+func NewIngest(ctx context.Context, o objstore.Bucket, capacity int) *Ingest {
+	return &Ingest{os: o, Context: ctx, capacity: capacity, log: slog.Default().With("component", "ingest")}
 }
 
-func (a *ActiveBlock) Commit(domain string) {
-	w, ok := a.ctx.LoadAndDelete(domain)
-	if !ok {
-		return
-	}
-	x := w.(*writeContext)
-	x.save(a.Context)
-	x.commit(a.Context)
-}
-
-func (a *ActiveBlock) Close() error {
-	slog.Debug("closing active block")
+func (a *Ingest) Close() error {
+	a.log.Info("closing")
 	a.Run(a.Context)
 	return nil
 }
 
 // Implements worker.Job. Persists active blocks
-func (a *ActiveBlock) Run(ctx context.Context) {
+func (a *Ingest) Run(ctx context.Context) {
 	a.ctx.Range(func(key, value any) bool {
 		a.ctx.Delete(key.(string))
-		x := value.(*writeContext)
-		x.save(a.Context)
-		value.(*writeContext).commit(a.Context)
+		value.(*writeContext).Save(a.Context)
 		return true
 	})
 }
 
-func (a *ActiveBlock) WriteEntry(e *entry.Entry) {
+func (a *Ingest) WriteEntry(e *entry.Entry) {
 	a.wctx(e.Domain).append(a.Context, e)
 }
 
@@ -74,10 +63,12 @@ type writeContext struct {
 	capacity   int
 	mu         sync.Mutex
 	m          *entry.MultiEntry
+	f          *os.File
 	w          *file.Writer
 	log        *slog.Logger
 	h          xxhash.Digest
 	blooms     []*roaring64.Bitmap
+	o          objstore.Bucket
 }
 
 var bitmapPool = &sync.Pool{New: func() any { return roaring64.New() }}
@@ -102,7 +93,13 @@ func (w *writeContext) append(ctx context.Context, e *entry.Entry) {
 	e.Release()
 }
 
+func (w *writeContext) Save(ctx context.Context) {
+	w.save(ctx)
+	w.commit(ctx)
+}
+
 func (w *writeContext) save(ctx context.Context) {
+	w.log.Info("saving buffered events")
 	b := []byte{0}
 	r := bloom()
 	w.m.Write(w.w, func(c v1.Column, ba parquet.ByteArray) {
@@ -116,13 +113,14 @@ func (w *writeContext) save(ctx context.Context) {
 		r.CheckedAdd(w.h.Sum64())
 	})
 	w.blooms = append(w.blooms, r)
-	w.log.Debug("saved events to block",
+	w.log.Info("saved events to block",
 		slog.Int("rows", w.w.NumRows()),
 		slog.Int("groups", w.w.NumRowGroups()),
 	)
 }
 
 func (w *writeContext) commit(ctx context.Context) {
+	w.log.Info("committing active block")
 	must.One(w.w.Close())("closing parquet file writer ")
 	idx := blocksv1.BlockIndex{
 		RowGroupBitmap: make([][]byte, 0, len(w.blooms)),
@@ -151,6 +149,13 @@ func (w *writeContext) commit(ctx context.Context) {
 
 	var b bytes.Buffer
 	must.Must(w.w.FileMetadata.WriteTo(&b, nil))("failed serializing block metadata")
+
+	// We make sure we commit metadata after we have successfully uploaded the
+	// block to the object store. This avoids having metadata about blocks that are
+	// not in the permanent storage
+	w.upload(ctx)
+
+	w.log.Info("saving block metadata")
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		metaKey := keys.BlockMeta(w.domain, w.id)
 		defer metaKey.Release()
@@ -177,35 +182,42 @@ func (w *writeContext) commit(ctx context.Context) {
 	w.blooms = nil
 }
 
-func (a *ActiveBlock) ReadBlock(id ulid.ULID, f func(parquet.ReaderAtSeeker)) {
-	o, err := os.Open(filepath.Join(a.dir, id.String()))
-	if err != nil {
-		slog.Error("failed opening block", "id", id.String())
-		return
-	}
-	f(o)
-	o.Close()
+func (a *Ingest) ReadBlock(id ulid.ULID, f func(parquet.ReaderAtSeeker)) {
 }
 
-func (a *ActiveBlock) wctx(domain string) *writeContext {
+func (a *Ingest) wctx(domain string) *writeContext {
 	df, ok := a.ctx.Load(domain)
 	if !ok {
 		id := ulid.Make().String()
+		file := must.Must(os.CreateTemp("", "vince"))("failed creating temporary file for block write")
 		w := &writeContext{
 			domain:   domain,
 			capacity: a.capacity,
 			id:       id,
-			w: entry.NewFileWriter(must.Must(os.Create(filepath.Join(a.dir, id)))(
-				"failed creating active stats file", "file", id,
-			)),
+			f:        file,
+			o:        a.os,
+			// calling w.Close will also close file, which we don't want. We need to keep
+			// the file open until it is uploaded to the object store.
+			//
+			// We use noopClose to to make the close call on file a no op
+			w: entry.NewFileWriter(file),
 			m: entry.NewMulti(),
-			log: slog.Default().With(
+			log: a.log.With(
 				slog.String("block", id),
 				slog.String("domain", domain),
+				slog.String("temp_file", file.Name()),
 			),
 		}
 		a.ctx.Store(domain, w)
 		return w
 	}
 	return df.(*writeContext)
+}
+
+func (w *writeContext) upload(ctx context.Context) {
+	w.log.Info("uploading block to permanent storage")
+	f := must.Must(os.Open(w.f.Name()))("failed opening block file")
+	must.One(w.o.Upload(ctx, w.id, f))("failed uploading block to permanent storage")
+	f.Close()
+	must.One(os.Remove(f.Name()))("failed removing uploaded block file")
 }

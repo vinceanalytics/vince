@@ -28,9 +28,9 @@ export interface Config {
      * Path to where block files are stored. Blocks are stored as files with ULID
      * as filenames
      *
-     * @generated from protobuf field: string blocks_path = 2;
+     * @generated from protobuf field: v1.BlockStore blocks_store = 2;
      */
-    blocksPath: string;
+    blocksStore?: BlockStore;
     /**
      * host:port to bind for http api. This is used by serve command. The server
      * serves ui console
@@ -770,7 +770,7 @@ class Config$Type extends MessageType<Config> {
     constructor() {
         super("v1.Config", [
             { no: 1, name: "db_path", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "blocks_path", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "blocks_store", kind: "message", T: () => BlockStore },
             { no: 3, name: "listen_address", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "log_level", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 5, name: "sync_interval", kind: "message", T: () => Duration },
@@ -786,7 +786,7 @@ class Config$Type extends MessageType<Config> {
         ]);
     }
     create(value?: PartialMessage<Config>): Config {
-        const message = { dbPath: "", blocksPath: "", listenAddress: "", logLevel: "", enableProfile: false, mysqlListenAddress: "", tlsCertFile: "", tlsKeyFile: "", eventsBufferSize: 0n, notifiers: [], serverId: "", raftPath: "", allowedOrigins: [] };
+        const message = { dbPath: "", listenAddress: "", logLevel: "", enableProfile: false, mysqlListenAddress: "", tlsCertFile: "", tlsKeyFile: "", eventsBufferSize: 0n, notifiers: [], serverId: "", raftPath: "", allowedOrigins: [] };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Config>(this, message, value);
@@ -800,8 +800,8 @@ class Config$Type extends MessageType<Config> {
                 case /* string db_path */ 1:
                     message.dbPath = reader.string();
                     break;
-                case /* string blocks_path */ 2:
-                    message.blocksPath = reader.string();
+                case /* v1.BlockStore blocks_store */ 2:
+                    message.blocksStore = BlockStore.internalBinaryRead(reader, reader.uint32(), options, message.blocksStore);
                     break;
                 case /* string listen_address */ 3:
                     message.listenAddress = reader.string();
@@ -854,9 +854,9 @@ class Config$Type extends MessageType<Config> {
         /* string db_path = 1; */
         if (message.dbPath !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.dbPath);
-        /* string blocks_path = 2; */
-        if (message.blocksPath !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.blocksPath);
+        /* v1.BlockStore blocks_store = 2; */
+        if (message.blocksStore)
+            BlockStore.internalBinaryWrite(message.blocksStore, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
         /* string listen_address = 3; */
         if (message.listenAddress !== "")
             writer.tag(3, WireType.LengthDelimited).string(message.listenAddress);

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/urfave/cli/v3"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
 	"google.golang.org/protobuf/proto"
@@ -33,8 +34,10 @@ func Load(base *Options, x *cli.Context) (context.Context, error) {
 	proto.Merge(base, &f)
 
 	base.DbPath = resolve(root, base.DbPath)
-	base.BlocksPath = resolve(root, base.BlocksPath)
 	base.RaftPath = resolve(root, base.RaftPath)
+	if e, ok := base.BlocksStore.Provider.(*v1.BlockStore_Fs); ok {
+		e.Fs.Directory = resolve(root, e.Fs.Directory)
+	}
 	baseCtx := context.WithValue(context.Background(), configKey{}, base)
 	return baseCtx, nil
 }
