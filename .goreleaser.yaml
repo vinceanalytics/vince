@@ -143,6 +143,7 @@ release:
     owner: vinceanalytics
     name: vince
   extra_files:
+    - glob: ./manifests/**/*.yaml
     - glob: ./install.sh
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
