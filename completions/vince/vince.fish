@@ -24,8 +24,6 @@ complete -c vince -n '__fish_seen_subcommand_from serve' -f -l tls-cert-file -r 
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l tls-key-file -r -d 'path to tls key'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l log-level -r -d 'log level, values are (trace,debug,info,warn,error,fatal,panic)'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l db-path -r -d 'path to main database'
-complete -c vince -n '__fish_seen_subcommand_from serve' -f -l blocks-path -r -d 'Path to store block files'
-complete -c vince -n '__fish_seen_subcommand_from serve' -f -l sync-interval -r -d 'window for buffering timeseries in memory before saving them'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l enable-profile -d 'Expose /debug/pprof endpoint'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l events-buffer-size -r -d 'Number of events to keep in memory before saving'
 complete -c vince -n '__fish_seen_subcommand_from serve' -f -l server-id -r -d 'unique id of this server in a cluster'
