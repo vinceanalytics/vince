@@ -11,6 +11,7 @@ import (
 	"github.com/thanos-io/objstore/providers/filesystem"
 	"github.com/thanos-io/objstore/providers/gcs"
 	"github.com/thanos-io/objstore/providers/obs"
+	"github.com/thanos-io/objstore/providers/oss"
 	"github.com/thanos-io/objstore/providers/s3"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
@@ -85,7 +86,7 @@ func Decode(m proto.Message) func(val []byte) error {
 	}
 }
 
-func Azure(o *configv1.BlockStore_Azure) *azure.Config {
+func Azure(o *configv1.BlockStore_Azure) azure.Config {
 	var reader azure.ReaderConfig
 	if o.ReaderConfig != nil {
 		reader.MaxRetryRequests = int(o.ReaderConfig.MaxRetryRequests)
@@ -97,7 +98,7 @@ func Azure(o *configv1.BlockStore_Azure) *azure.Config {
 		pipe.RetryDelay = model.Duration(o.PipelineConfig.RetryDelay.AsDuration())
 		pipe.MaxRetryDelay = model.Duration(o.PipelineConfig.MaxRetryDelay.AsDuration())
 	}
-	return &azure.Config{
+	return azure.Config{
 		StorageAccountName:      o.StorageAccount,
 		StorageAccountKey:       o.StorageAccount,
 		StorageConnectionString: o.StorageConnectionString,
@@ -110,8 +111,8 @@ func Azure(o *configv1.BlockStore_Azure) *azure.Config {
 	}
 }
 
-func Bos(o *configv1.BlockStore_BOS) *bos.Config {
-	return &bos.Config{
+func Bos(o *configv1.BlockStore_BOS) bos.Config {
+	return bos.Config{
 		Bucket:    o.Bucket,
 		Endpoint:  o.Endpoint,
 		AccessKey: o.AccessKey,
@@ -119,8 +120,8 @@ func Bos(o *configv1.BlockStore_BOS) *bos.Config {
 	}
 }
 
-func Cos(o *configv1.BlockStore_COS) *cos.Config {
-	return &cos.Config{
+func Cos(o *configv1.BlockStore_COS) cos.Config {
+	return cos.Config{
 		Bucket:    o.Bucket,
 		Region:    o.Region,
 		AppId:     o.AppId,
@@ -136,15 +137,15 @@ func Filesystem(o *configv1.BlockStore_Filesystem) *filesystem.Config {
 	}
 }
 
-func GCS(o *configv1.BlockStore_GCS) *gcs.Config {
-	return &gcs.Config{
+func GCS(o *configv1.BlockStore_GCS) gcs.Config {
+	return gcs.Config{
 		Bucket:         o.Bucket,
 		ServiceAccount: o.ServiceAccount,
 	}
 }
 
-func OBS(o *configv1.BlockStore_OBS) *obs.Config {
-	return &obs.Config{
+func OBS(o *configv1.BlockStore_OBS) obs.Config {
+	return obs.Config{
 		Bucket:    o.Bucket,
 		Endpoint:  o.Endpoint,
 		AccessKey: o.AccessKey,
@@ -152,7 +153,16 @@ func OBS(o *configv1.BlockStore_OBS) *obs.Config {
 	}
 }
 
-func S3(o *configv1.BlockStore_S3) *s3.Config {
+func OSS(o *configv1.BlockStore_OSS) oss.Config {
+	return oss.Config{
+		Endpoint:        o.Endpoint,
+		Bucket:          o.Bucket,
+		AccessKeyID:     o.AccessKeyId,
+		AccessKeySecret: o.AccessKeySecret,
+	}
+}
+
+func S3(o *configv1.BlockStore_S3) s3.Config {
 	var ss s3.SSEConfig
 	if s := o.SseConfig; s != nil {
 		ss.Type = s.Type
@@ -160,7 +170,7 @@ func S3(o *configv1.BlockStore_S3) *s3.Config {
 		ss.KMSEncryptionContext = s.KmsEncryptionContext
 		ss.EncryptionKey = s.EncryptionKey
 	}
-	return &s3.Config{
+	return s3.Config{
 		Bucket:             o.Bucket,
 		Endpoint:           o.Endpoint,
 		Region:             o.Region,
