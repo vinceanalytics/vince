@@ -3,7 +3,7 @@ import { TableIcon, GraphIcon, DownloadIcon } from "@primer/octicons-react";
 import { DataTable, UnderlineNav } from '@primer/react/drafts'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useQuery } from "../../providers";
-import { QueryResult, Value } from "../../vince";
+import { QueryResponse, Query_Value } from "../../vince";
 import { Chart } from "frappe-charts/dist/frappe-charts.min.esm";
 
 export const Result = () => {
@@ -62,11 +62,14 @@ export const Result = () => {
 }
 
 
-const Grid = ({ result }: { result: QueryResult }) => {
+const Grid = ({ result }: { result: QueryResponse | undefined }) => {
+    if (result == undefined) {
+        result = { columns: [], rows: [] }
+    }
     const data = result.rows ? (result.rows.map((row, id) => (
         row.values.reduce((a, v, idx) => ({
             ...a, ...Object.fromEntries([
-                [result.columns[idx].name, v]
+                [result!.columns[idx].name, v]
             ])
         }), { id })
     ))) : [];

@@ -7,8 +7,6 @@ import { PlusIcon, DatabaseIcon, ColumnsIcon } from "@primer/octicons-react";
 import { Dialog, PageHeader } from '@primer/react/drafts'
 import { columns } from "../Editor/Monaco/sql";
 import styled from "styled-components"
-import { Site, SiteList, Client } from "../../vince";
-import { useLocalStorage } from "../../providers/LocalStorageProvider";
 import { useSites, useVince } from "../../providers";
 
 
@@ -67,10 +65,12 @@ const Sites = () => {
 
   const submitNewSite = useCallback(() => {
     setIsOpen(false)
-    vince.create(domain).then(() => {
+    vince?.createSite({ domain }).then((result) => {
       refresh()
     })
-      .catch((e) => { })
+      .catch((e) => {
+        console.log(e)
+      })
   }, [domain, refresh])
 
   const [validDomain, setValidDomain] = useState(true)

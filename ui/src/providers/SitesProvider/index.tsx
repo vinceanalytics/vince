@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useState, useContext, useEffect } from "react"
-import { Site, SiteList, ErrorShape } from "../../vince"
+import { Site } from "../../vince"
 import { useVince } from "../VinceProvider"
 import { useLocalStorage, StoreKey } from "../LocalStorageProvider"
 
@@ -23,18 +23,15 @@ export const SitesProvider = ({ children }: PropsWithChildren<{}>) => {
     const { updateSettings } = useLocalStorage()
     const { vince } = useVince()
     const refresh = () => {
-        vince.sites().then((result) => {
-            const { list } = result as SiteList;
-            setSites(list)
+        vince?.listSites({}).then((result) => {
+            setSites(result.response.list)
         })
-            .catch(({ error }: ErrorShape) => {
-                if (error === "Unauthorized") {
-                    updateSettings(StoreKey.AUTH_PAYLOAD, "")
-                }
+            .catch((e) => {
+                console.log(e)
             })
     }
     useEffect(() => {
-        if (vince.authenticated()) {
+        if (vince) {
             refresh()
         }
     }, [vince])

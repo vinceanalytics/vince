@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useState, useContext, useEffect, useCallback } from "react"
-import { QueryResult, ErrorResult } from "../../vince"
+import { QueryResponse } from "../../vince"
 import { useEditor } from "../EditorProvider"
 import { getQueryRequestFromEditor } from "../../scenes/Editor/Monaco/utils"
 import { useVince } from "../VinceProvider"
@@ -8,7 +8,7 @@ import { useVince } from "../VinceProvider"
 type ContextProps = {
     running: boolean
     request: string
-    result: QueryResult
+    result: QueryResponse | undefined
     toggleRun: () => void
     stopRunning: () => void
 }
@@ -20,7 +20,7 @@ const emptyResult = {
 const defaultValues = {
     running: false,
     request: "",
-    result: emptyResult,
+    result: undefined,
     toggleRun: () => undefined,
     stopRunning: () => undefined,
 }
@@ -31,18 +31,19 @@ const QueryContext = createContext<ContextProps>(defaultValues)
 export const QueryProvider = ({ children }: PropsWithChildren<{}>) => {
     const [running, setRunning] = useState<boolean>(false)
     const [request, setRequest] = useState<string>("")
-    const [result, setResult] = useState<QueryResult>(emptyResult)
+    const [result, setResult] = useState<QueryResponse | undefined>(undefined)
     const { editorRef } = useEditor()
     const { vince } = useVince()
     useEffect(() => {
         if (running && request !== "") {
-            vince.query({ query: request })
-                .then((result) => {
-                    const q = result as QueryResult;
-                    setResult(q)
-                })
-                .catch((error) => {
-                    console.log(error)
+            vince?.query({
+                query: request,
+                params: [],
+            }).then((result) => {
+                setResult(result.response)
+            })
+                .catch((e) => {
+                    console.log(e)
                 })
         }
     }, [running, vince, request])
@@ -64,7 +65,6 @@ export const QueryProvider = ({ children }: PropsWithChildren<{}>) => {
     }
 
     const stopRunning = () => {
-        vince.abort()
         setRunning(false)
     }
 

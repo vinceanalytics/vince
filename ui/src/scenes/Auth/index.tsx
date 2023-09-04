@@ -1,30 +1,21 @@
 
 import { Box, Button, Portal, TextInput, registerPortalRoot } from "@primer/react";
 import { useCallback, useState } from "react";
-import { Client, TokenResult } from "../../vince";
+import { login } from "../../vince";
 import { useLocalStorage, StoreKey } from "../../providers/LocalStorageProvider";
 
 const Login = () => {
-    const vince = new Client();
     const { updateSettings } = useLocalStorage()
     const [userName, setUserName] = useState<string>("")
     const [password, setPassWord] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(false)
     const submit = useCallback(() => {
         setLoading(true)
-        vince.login({
-            name: userName,
-            password: password,
-            generate: true,
-        }).then((result) => {
-            setLoading(false);
-            const r = result as TokenResult
-            const { token } = r.auth
-            updateSettings(StoreKey.AUTH_PAYLOAD, token)
+        login(userName, password).then((result) => {
+            updateSettings(StoreKey.AUTH_PAYLOAD, result.response.auth?.token!)
+        }).catch((e) => {
+            console.log(e)
         })
-            .catch((e) => {
-                console.log(e)
-            })
     }, [userName, password, setLoading])
     return (
         <Box

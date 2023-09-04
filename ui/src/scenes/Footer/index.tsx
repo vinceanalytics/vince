@@ -1,6 +1,5 @@
 import { Box, Text, Link, Label } from '@primer/react'
 import { useVince } from "../../providers";
-import { Version } from "../../vince";
 import { MarkGithubIcon } from "@primer/octicons-react";
 import { useEffect, useState } from 'react';
 
@@ -8,11 +7,9 @@ const Footer = () => {
     const [version, setVersion] = useState<string>()
     const { vince } = useVince()
     useEffect(() => {
-        vince.version().then((v) => {
-            const r = v as Version;
-            setVersion(r.version)
-        })
-            .catch((e) => { })
+        vince?.version({}).then((result) => {
+            setVersion(result.response.version)
+        }).catch((e) => { console.log(e) })
     }, [vince, setVersion])
     return (
         <Box id="footer"
