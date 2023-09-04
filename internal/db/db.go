@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -51,14 +52,19 @@ func Open(ctx context.Context, path string, logLevel ...string) (context.Context
 	}()
 
 	ctx = context.WithValue(ctx, observeKey{}, obs)
-	return context.WithValue(ctx, key{}, db), db
+	return Set(ctx, &provider{db: db}), db
+}
+
+func Set(ctx context.Context, p Provider) context.Context {
+	return context.WithValue(ctx, key{}, p)
 }
 
 func Get(ctx context.Context) Provider {
-	return &provider{db: ctx.Value(key{}).(*badger.DB)}
+	return ctx.Value(key{}).(Provider)
 }
 
 func OpenRaft(ctx context.Context, path string) (context.Context, *badger.DB) {
+	path = filepath.Join(path, "db")
 	slog.Info("opening raft storage", "path", path)
 	o := badger.DefaultOptions(path).
 		WithLogger(badgerLogger{}).

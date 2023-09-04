@@ -1,6 +1,7 @@
 package ha
 
 import (
+	"sync/atomic"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
@@ -14,8 +15,9 @@ import (
 const ApplyTTL = time.Second
 
 type provider struct {
-	raft *raft.Raft
-	base db.Provider
+	raft   *raft.Raft
+	active atomic.Bool
+	base   db.Provider
 }
 
 var _ db.Provider = (*provider)(nil)
@@ -34,6 +36,11 @@ func (p *provider) With(f func(db *badger.DB) error) error {
 }
 
 func (p *provider) NewTransaction(update bool) db.Txn {
+	if !p.active.Load() {
+		// We are in a single node mode. No need to to go through raft since we get
+		// serialized snapshot guarantee from badger already.
+		return p.base.NewTransaction(update)
+	}
 	return &txn{raft: p.raft, Txn: p.base.NewTransaction(update)}
 }
 

@@ -2,6 +2,7 @@ package ha
 
 import (
 	"encoding/binary"
+	"errors"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/hashicorp/raft"
@@ -19,6 +20,9 @@ func (db *DB) Get(key []byte) (v []byte, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
 		it, err := txn.Get(append(stablePrefix, key...))
 		if err != nil {
+			if errors.Is(err, badger.ErrKeyNotFound) {
+				return errors.New("not found")
+			}
 			return err
 		}
 		v, err = it.ValueCopy(nil)
