@@ -34,6 +34,7 @@ func Defaults() *v1.Config {
 					Directory: BLOCKS_PATH,
 				},
 			},
+			CacheDir: BLOCKS_PATH,
 		},
 		RaftPath:           RAFT_PATH,
 		MysqlListenAddress: ":3306",

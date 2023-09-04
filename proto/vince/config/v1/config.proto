@@ -148,6 +148,8 @@ message Client {
 
 message BlockStore {
   oneof provider {
+    option (buf.validate.oneof).required = true;
+
     Filesystem fs = 1;
     S3 s3 = 2;
     Azure azure = 3;
@@ -157,6 +159,7 @@ message BlockStore {
     OBS obs = 7;
     OSS oss = 8;
   }
+  string cache_dir = 9 [ (buf.validate.field).required = true ];
 
   message OSS {
     string endpoint = 1;

@@ -455,6 +455,10 @@ export interface BlockStore {
     } | {
         oneofKind: undefined;
     };
+    /**
+     * @generated from protobuf field: string cache_dir = 9;
+     */
+    cacheDir: string;
 }
 /**
  * @generated from protobuf message v1.BlockStore.OSS
@@ -1976,11 +1980,12 @@ class BlockStore$Type extends MessageType<BlockStore> {
             { no: 5, name: "cos", kind: "message", oneof: "provider", T: () => BlockStore_COS },
             { no: 6, name: "gcs", kind: "message", oneof: "provider", T: () => BlockStore_GCS },
             { no: 7, name: "obs", kind: "message", oneof: "provider", T: () => BlockStore_OBS },
-            { no: 8, name: "oss", kind: "message", oneof: "provider", T: () => BlockStore_OSS }
+            { no: 8, name: "oss", kind: "message", oneof: "provider", T: () => BlockStore_OSS },
+            { no: 9, name: "cache_dir", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
         ]);
     }
     create(value?: PartialMessage<BlockStore>): BlockStore {
-        const message = { provider: { oneofKind: undefined } };
+        const message = { provider: { oneofKind: undefined }, cacheDir: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<BlockStore>(this, message, value);
@@ -2039,6 +2044,9 @@ class BlockStore$Type extends MessageType<BlockStore> {
                         oss: BlockStore_OSS.internalBinaryRead(reader, reader.uint32(), options, (message.provider as any).oss)
                     };
                     break;
+                case /* string cache_dir */ 9:
+                    message.cacheDir = reader.string();
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -2075,6 +2083,9 @@ class BlockStore$Type extends MessageType<BlockStore> {
         /* v1.BlockStore.OSS oss = 8; */
         if (message.provider.oneofKind === "oss")
             BlockStore_OSS.internalBinaryWrite(message.provider.oss, writer.tag(8, WireType.LengthDelimited).fork(), options).join();
+        /* string cache_dir = 9; */
+        if (message.cacheDir !== "")
+            writer.tag(9, WireType.LengthDelimited).string(message.cacheDir);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

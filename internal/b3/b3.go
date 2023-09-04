@@ -2,7 +2,12 @@ package b3
 
 import (
 	"context"
+	"io"
+	"os"
+	"path/filepath"
 
+	"github.com/apache/arrow/go/v14/parquet"
+	"github.com/oklog/ulid/v2"
 	"github.com/thanos-io/objstore"
 	"github.com/thanos-io/objstore/providers/azure"
 	"github.com/thanos-io/objstore/providers/bos"
@@ -44,9 +49,62 @@ type b3Key struct{}
 
 func Open(ctx context.Context, o *v1.BlockStore) (context.Context, objstore.Bucket) {
 	b := must.Must(New(o))("failed opening object storage")
+	ctx = SetReader(ctx, NewCache(b, o.CacheDir))
 	return context.WithValue(ctx, b3Key{}, b), b
 }
 
 func Get(ctx context.Context) objstore.Bucket {
 	return ctx.Value(b3Key{}).(objstore.Bucket)
+}
+
+type Reader interface {
+	Read(ctx context.Context, id ulid.ULID, f func(parquet.ReaderAtSeeker) error) error
+}
+
+type readerKey struct{}
+
+func SetReader(ctx context.Context, r Reader) context.Context {
+	return context.WithValue(ctx, readerKey{}, r)
+}
+
+func GetReader(ctx context.Context) Reader {
+	return ctx.Value(readerKey{}).(Reader)
+}
+
+type Cache struct {
+	bucket objstore.Bucket
+	dir    string
+}
+
+var _ Reader = (*Cache)(nil)
+
+func NewCache(o objstore.Bucket, dir string) *Cache {
+	return &Cache{
+		bucket: o,
+		dir:    dir,
+	}
+}
+
+func (c *Cache) Read(ctx context.Context, id ulid.ULID, f func(parquet.ReaderAtSeeker) error) error {
+	s := id.String()
+	c.ensure(ctx, s)
+	x, err := os.Open(filepath.Join(c.dir, s))
+	if err != nil {
+		return err
+	}
+	defer x.Close()
+	return f(x)
+}
+
+func (c *Cache) ensure(ctx context.Context, id string) {
+	file := filepath.Join(c.dir, id)
+	_, err := os.Stat(file)
+	if !os.IsNotExist(err) {
+		// try to download from object store
+		if r, err := c.bucket.Get(ctx, id); err == nil {
+			f := must.Must(os.Open(file))("failed opening local bloc file")
+			io.Copy(f, r)
+			f.Close()
+		}
+	}
 }

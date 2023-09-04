@@ -42,6 +42,7 @@ func Load(base *Options, x *cli.Context) (context.Context, error) {
 	if e, ok := base.BlocksStore.Provider.(*v1.BlockStore_Fs); ok {
 		e.Fs.Directory = resolve(root, e.Fs.Directory)
 	}
+	base.BlocksStore.CacheDir = resolve(root, base.BlocksStore.CacheDir)
 	baseCtx := context.WithValue(context.Background(), configKey{}, base)
 	return baseCtx, nil
 }

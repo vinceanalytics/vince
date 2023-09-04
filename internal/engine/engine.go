@@ -3,11 +3,9 @@ package engine
 import (
 	"context"
 
-	"github.com/apache/arrow/go/v14/parquet"
 	sqle "github.com/dolthub/go-mysql-server"
-	"github.com/oklog/ulid/v2"
+	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/timeseries"
 )
 
 type Engine struct {
@@ -26,8 +24,8 @@ type engineKey struct{}
 
 func Open(ctx context.Context) (context.Context, *Engine) {
 	e := New(Context{
-		DB:        db.Get(ctx),
-		ReadBlock: timeseries.Block(ctx).ReadBlock,
+		DB:     db.Get(ctx),
+		Reader: b3.GetReader(ctx),
 	})
 	return context.WithValue(ctx, engineKey{}, e), e
 }
@@ -37,6 +35,6 @@ func Get(ctx context.Context) *Engine {
 }
 
 type Context struct {
-	DB        db.Provider
-	ReadBlock func(ulid.ULID, func(parquet.ReaderAtSeeker))
+	DB     db.Provider
+	Reader b3.Reader
 }

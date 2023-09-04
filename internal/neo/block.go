@@ -182,9 +182,6 @@ func (w *writeContext) commit(ctx context.Context) {
 	w.blooms = nil
 }
 
-func (a *Ingest) ReadBlock(id ulid.ULID, f func(parquet.ReaderAtSeeker)) {
-}
-
 func (a *Ingest) wctx(domain string) *writeContext {
 	df, ok := a.ctx.Load(domain)
 	if !ok {

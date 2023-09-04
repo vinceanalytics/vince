@@ -49,5 +49,10 @@ func AuthGRPC(ctx context.Context) (context.Context, error) {
 		return nil, status.Error(codes.Unauthenticated, "invalid auth token")
 	}
 	ctx = logging.InjectFields(ctx, logging.Fields{"auth.sub", claims.Subject})
+	ctx = core.SetAuth(ctx, &v1.Client_Auth{
+		Name:     claims.Subject,
+		Token:    token,
+		ServerId: config.Get(ctx).ServerId,
+	})
 	return tokens.Set(ctx, claims), nil
 }
