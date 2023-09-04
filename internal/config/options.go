@@ -2,14 +2,12 @@ package config
 
 import (
 	"os"
-	"time"
 
 	"log/slog"
 
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/ng"
-	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 const (
@@ -20,7 +18,6 @@ const (
 )
 
 var (
-	DefaultSyncInterval     = durationpb.New(time.Minute)
 	DefaultEventsBufferSize = 10 << 10
 )
 
@@ -39,7 +36,6 @@ func Defaults() *v1.Config {
 			},
 		},
 		RaftPath:           RAFT_PATH,
-		SyncInterval:       DefaultSyncInterval,
 		MysqlListenAddress: ":3306",
 		EventsBufferSize:   int64(DefaultEventsBufferSize),
 		ServerId:           ng.Name(),
@@ -106,14 +102,6 @@ func Flags(o *Options) []cli.Flag {
 			Destination: &o.DbPath,
 			EnvVars:     []string{"VINCE_DB_PATH"},
 		},
-		&cli.DurationFlag{
-			Category: "intervals",
-			Name:     "sync-interval",
-			Usage:    "window for buffering timeseries in memory before saving them",
-			Value:    time.Minute,
-			EnvVars:  []string{"VINCE_SYNC_INTERVAL"},
-		},
-
 		&cli.BoolFlag{
 			Category:    "core",
 			Name:        "enable-profile",

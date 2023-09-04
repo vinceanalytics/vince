@@ -40,18 +40,10 @@ export interface Config {
     listenAddress: string;
     /**
      * Control how much is logged options are
-     * trace,debug,info,warn,error,fatal,panic
      *
      * @generated from protobuf field: string log_level = 4;
      */
     logLevel: string;
-    /**
-     * Interval for syncing buffered entries. By default events are buffered and
-     * periodically saved.
-     *
-     * @generated from protobuf field: google.protobuf.Duration sync_interval = 5;
-     */
-    syncInterval?: Duration;
     /**
      * Expose /debug/pprof endpoint when serving
      *
@@ -769,19 +761,18 @@ export interface Build {
 class Config$Type extends MessageType<Config> {
     constructor() {
         super("v1.Config", [
-            { no: 1, name: "db_path", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "blocks_store", kind: "message", T: () => BlockStore },
-            { no: 3, name: "listen_address", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 4, name: "log_level", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 5, name: "sync_interval", kind: "message", T: () => Duration },
+            { no: 1, name: "db_path", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
+            { no: 2, name: "blocks_store", kind: "message", T: () => BlockStore, options: { "buf.validate.field": { required: true } } },
+            { no: 3, name: "listen_address", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
+            { no: 4, name: "log_level", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { string: { in: ["debug", "info", "warn", "error"] } } } },
             { no: 6, name: "enable_profile", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
-            { no: 7, name: "mysql_listen_address", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 7, name: "mysql_listen_address", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 8, name: "tls_cert_file", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 9, name: "tls_key_file", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 10, name: "events_buffer_size", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 11, name: "notifiers", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Config_Notifier },
             { no: 12, name: "server_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 13, name: "raft_path", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 13, name: "raft_path", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 14, name: "allowed_origins", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ }
         ]);
     }
@@ -808,9 +799,6 @@ class Config$Type extends MessageType<Config> {
                     break;
                 case /* string log_level */ 4:
                     message.logLevel = reader.string();
-                    break;
-                case /* google.protobuf.Duration sync_interval */ 5:
-                    message.syncInterval = Duration.internalBinaryRead(reader, reader.uint32(), options, message.syncInterval);
                     break;
                 case /* bool enable_profile */ 6:
                     message.enableProfile = reader.bool();
@@ -863,9 +851,6 @@ class Config$Type extends MessageType<Config> {
         /* string log_level = 4; */
         if (message.logLevel !== "")
             writer.tag(4, WireType.LengthDelimited).string(message.logLevel);
-        /* google.protobuf.Duration sync_interval = 5; */
-        if (message.syncInterval)
-            Duration.internalBinaryWrite(message.syncInterval, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
         /* bool enable_profile = 6; */
         if (message.enableProfile !== false)
             writer.tag(6, WireType.Varint).bool(message.enableProfile);

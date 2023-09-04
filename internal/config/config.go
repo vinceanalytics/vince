@@ -5,12 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 type configKey struct{}
@@ -24,7 +24,6 @@ func Load(base *Options, x *cli.Context) (context.Context, error) {
 	if err != nil {
 		return nil, err
 	}
-	base.SyncInterval = durationpb.New(x.Duration("sync-interval"))
 	file := filepath.Join(root, FILE)
 	b := must.Must(os.ReadFile(file))(
 		"called vince on non vince project, call vince init and try again",
@@ -33,6 +32,11 @@ func Load(base *Options, x *cli.Context) (context.Context, error) {
 	must.One(pj.Unmarshal(b, &f))("invalid configuration file")
 	proto.Merge(base, &f)
 
+	valid := must.Must(protovalidate.New())("failed initializing protovalidate")
+	if err := valid.Validate(base); err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
 	base.DbPath = resolve(root, base.DbPath)
 	base.RaftPath = resolve(root, base.RaftPath)
 	if e, ok := base.BlocksStore.Provider.(*v1.BlockStore_Fs); ok {

@@ -3,34 +3,35 @@ syntax = "proto3";
 package v1;
 
 import "google/protobuf/duration.proto";
+import "buf/validate/validate.proto";
 
 // Configuration object for vince instance
 message Config {
   // Path to the main badger database.
-  string db_path = 1;
+  string db_path = 1 [ (buf.validate.field).required = true ];
 
   // Path to where block files are stored. Blocks are stored as files with ULID
   // as filenames
-  BlockStore blocks_store = 2;
+  BlockStore blocks_store = 2 [ (buf.validate.field).required = true ];
 
   // host:port to bind for http api. This is used by serve command. The server
   // serves ui console
-  string listen_address = 3;
+  string listen_address = 3 [ (buf.validate.field).required = true ];
 
   // Control how much is logged options are
-  // trace,debug,info,warn,error,fatal,panic
-  string log_level = 4;
-
-  // Interval for syncing buffered entries. By default events are buffered and
-  // periodically saved.
-  google.protobuf.Duration sync_interval = 5;
+  string log_level = 4 [
+    (buf.validate.field).string.in = "debug",
+    (buf.validate.field).string.in = "info",
+    (buf.validate.field).string.in = "warn",
+    (buf.validate.field).string.in = "error"
+  ];
 
   // Expose /debug/pprof endpoint when serving
   bool enable_profile = 6;
 
   // host:port to bind myslq server. Serves web analytics via MySQL compliant
   // wire protocol.
-  string mysql_listen_address = 7;
+  string mysql_listen_address = 7 [ (buf.validate.field).required = true ];
 
   string tls_cert_file = 8;
   string tls_key_file = 9;
@@ -40,7 +41,7 @@ message Config {
   repeated Notifier notifiers = 11;
 
   string server_id = 12;
-  string raft_path = 13;
+  string raft_path = 13 [ (buf.validate.field).required = true ];
 
   repeated string allowed_origins = 14;
 
