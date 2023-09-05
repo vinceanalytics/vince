@@ -19,32 +19,32 @@ import (
 )
 
 type Entry struct {
-	Bounce         int64
-	Session        int64
-	Browser        string
-	BrowserVersion string
-	City           string
-	Country        string
-	Domain         string
-	Duration       time.Duration
-	EntryPage      string
-	ExitPage       string
-	Host           string
-	ID             uint64
-	Event          string
-	Os             string
-	OsVersion      string
-	Path           string
-	Referrer       string
-	ReferrerSource string
-	Region         string
-	Screen         string
-	Timestamp      int64
-	UtmCampaign    string
-	UtmContent     string
-	UtmMedium      string
-	UtmSource      string
-	UtmTerm        string
+	Bounce         int64         `parquet:"bounce,dict,zstd"`
+	Session        int64         `parquet:"session,dict,zstd"`
+	Browser        string        `parquet:"browser,dict,zstd"`
+	BrowserVersion string        `parquet:"browser_version,dict,zstd"`
+	City           string        `parquet:"city,dict,zstd"`
+	Country        string        `parquet:"country,dict,zstd"`
+	Domain         string        `parquet:"domain,dict,zstd"`
+	Duration       time.Duration `parquet:"duration,dict,zstd"`
+	EntryPage      string        `parquet:"entry_page,dict,zstd"`
+	ExitPage       string        `parquet:"exit_page,dict,zstd"`
+	Host           string        `parquet:"host,dict,zstd"`
+	ID             uint64        `parquet:"id,dict,zstd"`
+	Event          string        `parquet:"event,dict,zstd"`
+	Os             string        `parquet:"os,dict,zstd"`
+	OsVersion      string        `parquet:"os_version,dict,zstd"`
+	Path           string        `parquet:"path,dict,zstd"`
+	Referrer       string        `parquet:"referrer,dict,zstd"`
+	ReferrerSource string        `parquet:"referrer_source,dict,zstd"`
+	Region         string        `parquet:"region,dict,zstd"`
+	Screen         string        `parquet:"screen,dict,zstd"`
+	Timestamp      int64         `parquet:"timestamp,dict,zstd"`
+	UtmCampaign    string        `parquet:"utm_campaign,dict,zstd"`
+	UtmContent     string        `parquet:"utm_content,dict,zstd"`
+	UtmMedium      string        `parquet:"utm_medium,dict,zstd"`
+	UtmSource      string        `parquet:"utm_source,dict,zstd"`
+	UtmTerm        string        `parquet:"utm_term,dict,zstd"`
 }
 
 type MultiEntry struct {

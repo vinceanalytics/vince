@@ -4,18 +4,15 @@ package v1;
 import "google/protobuf/timestamp.proto";
 
 message BlockIndex {
-  // A list of bitmaps each belonging to a row group. This allows us to select
-  // row groups that might contain relevant data based on indexed columns.
-  repeated bytes row_group_bitmap = 1;
+  repeated Bloom bloom = 1;
 
   // A list of min/max timestamp observed per row group
   repeated Range time_range = 2;
 
   message Range {
-    // The minimum timestamp value observed in a row group.
-    google.protobuf.Timestamp min = 1;
-
-    // The maximum timestamp value observed a row group.
-    google.protobuf.Timestamp max = 2;
+    int64 min = 1;
+    int64 max = 2;
   }
+
+  message Bloom { map<string, bytes> filters = 1; }
 }

@@ -16,6 +16,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	"github.com/vinceanalytics/vince/internal/must"
 	"google.golang.org/protobuf/proto"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -86,6 +87,9 @@ func Decode(m proto.Message) func(val []byte) error {
 	}
 }
 
+func Encode(m proto.Message) []byte {
+	return must.Must(proto.Marshal(m))("failed to encode proto message")
+}
 func Azure(o *configv1.BlockStore_Azure) azure.Config {
 	var reader azure.ReaderConfig
 	if o.ReaderConfig != nil {

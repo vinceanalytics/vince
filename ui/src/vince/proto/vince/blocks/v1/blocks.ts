@@ -11,18 +11,14 @@ import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { Timestamp } from "../../../google/protobuf/timestamp";
 /**
  * @generated from protobuf message v1.BlockIndex
  */
 export interface BlockIndex {
     /**
-     * A list of bitmaps each belonging to a row group. This allows us to select
-     * row groups that might contain relevant data based on indexed columns.
-     *
-     * @generated from protobuf field: repeated bytes row_group_bitmap = 1;
+     * @generated from protobuf field: repeated v1.BlockIndex.Bloom bloom = 1;
      */
-    rowGroupBitmap: Uint8Array[];
+    bloom: BlockIndex_Bloom[];
     /**
      * A list of min/max timestamp observed per row group
      *
@@ -35,28 +31,35 @@ export interface BlockIndex {
  */
 export interface BlockIndex_Range {
     /**
-     * The minimum timestamp value observed in a row group.
-     *
-     * @generated from protobuf field: google.protobuf.Timestamp min = 1;
+     * @generated from protobuf field: int64 min = 1;
      */
-    min?: Timestamp;
+    min: bigint;
     /**
-     * The maximum timestamp value observed a row group.
-     *
-     * @generated from protobuf field: google.protobuf.Timestamp max = 2;
+     * @generated from protobuf field: int64 max = 2;
      */
-    max?: Timestamp;
+    max: bigint;
+}
+/**
+ * @generated from protobuf message v1.BlockIndex.Bloom
+ */
+export interface BlockIndex_Bloom {
+    /**
+     * @generated from protobuf field: map<string, bytes> filters = 1;
+     */
+    filters: {
+        [key: string]: Uint8Array;
+    };
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class BlockIndex$Type extends MessageType<BlockIndex> {
     constructor() {
         super("v1.BlockIndex", [
-            { no: 1, name: "row_group_bitmap", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 12 /*ScalarType.BYTES*/ },
+            { no: 1, name: "bloom", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => BlockIndex_Bloom },
             { no: 2, name: "time_range", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => BlockIndex_Range }
         ]);
     }
     create(value?: PartialMessage<BlockIndex>): BlockIndex {
-        const message = { rowGroupBitmap: [], timeRange: [] };
+        const message = { bloom: [], timeRange: [] };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<BlockIndex>(this, message, value);
@@ -67,8 +70,8 @@ class BlockIndex$Type extends MessageType<BlockIndex> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* repeated bytes row_group_bitmap */ 1:
-                    message.rowGroupBitmap.push(reader.bytes());
+                case /* repeated v1.BlockIndex.Bloom bloom */ 1:
+                    message.bloom.push(BlockIndex_Bloom.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 case /* repeated v1.BlockIndex.Range time_range */ 2:
                     message.timeRange.push(BlockIndex_Range.internalBinaryRead(reader, reader.uint32(), options));
@@ -85,9 +88,9 @@ class BlockIndex$Type extends MessageType<BlockIndex> {
         return message;
     }
     internalBinaryWrite(message: BlockIndex, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* repeated bytes row_group_bitmap = 1; */
-        for (let i = 0; i < message.rowGroupBitmap.length; i++)
-            writer.tag(1, WireType.LengthDelimited).bytes(message.rowGroupBitmap[i]);
+        /* repeated v1.BlockIndex.Bloom bloom = 1; */
+        for (let i = 0; i < message.bloom.length; i++)
+            BlockIndex_Bloom.internalBinaryWrite(message.bloom[i], writer.tag(1, WireType.LengthDelimited).fork(), options).join();
         /* repeated v1.BlockIndex.Range time_range = 2; */
         for (let i = 0; i < message.timeRange.length; i++)
             BlockIndex_Range.internalBinaryWrite(message.timeRange[i], writer.tag(2, WireType.LengthDelimited).fork(), options).join();
@@ -105,12 +108,12 @@ export const BlockIndex = new BlockIndex$Type();
 class BlockIndex_Range$Type extends MessageType<BlockIndex_Range> {
     constructor() {
         super("v1.BlockIndex.Range", [
-            { no: 1, name: "min", kind: "message", T: () => Timestamp },
-            { no: 2, name: "max", kind: "message", T: () => Timestamp }
+            { no: 1, name: "min", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 2, name: "max", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
         ]);
     }
     create(value?: PartialMessage<BlockIndex_Range>): BlockIndex_Range {
-        const message = {};
+        const message = { min: 0n, max: 0n };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<BlockIndex_Range>(this, message, value);
@@ -121,11 +124,11 @@ class BlockIndex_Range$Type extends MessageType<BlockIndex_Range> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* google.protobuf.Timestamp min */ 1:
-                    message.min = Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.min);
+                case /* int64 min */ 1:
+                    message.min = reader.int64().toBigInt();
                     break;
-                case /* google.protobuf.Timestamp max */ 2:
-                    message.max = Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.max);
+                case /* int64 max */ 2:
+                    message.max = reader.int64().toBigInt();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -139,12 +142,12 @@ class BlockIndex_Range$Type extends MessageType<BlockIndex_Range> {
         return message;
     }
     internalBinaryWrite(message: BlockIndex_Range, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* google.protobuf.Timestamp min = 1; */
-        if (message.min)
-            Timestamp.internalBinaryWrite(message.min, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* google.protobuf.Timestamp max = 2; */
-        if (message.max)
-            Timestamp.internalBinaryWrite(message.max, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* int64 min = 1; */
+        if (message.min !== 0n)
+            writer.tag(1, WireType.Varint).int64(message.min);
+        /* int64 max = 2; */
+        if (message.max !== 0n)
+            writer.tag(2, WireType.Varint).int64(message.max);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -155,3 +158,66 @@ class BlockIndex_Range$Type extends MessageType<BlockIndex_Range> {
  * @generated MessageType for protobuf message v1.BlockIndex.Range
  */
 export const BlockIndex_Range = new BlockIndex_Range$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BlockIndex_Bloom$Type extends MessageType<BlockIndex_Bloom> {
+    constructor() {
+        super("v1.BlockIndex.Bloom", [
+            { no: 1, name: "filters", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "scalar", T: 12 /*ScalarType.BYTES*/ } }
+        ]);
+    }
+    create(value?: PartialMessage<BlockIndex_Bloom>): BlockIndex_Bloom {
+        const message = { filters: {} };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BlockIndex_Bloom>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockIndex_Bloom): BlockIndex_Bloom {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* map<string, bytes> filters */ 1:
+                    this.binaryReadMap1(message.filters, reader, options);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    private binaryReadMap1(map: BlockIndex_Bloom["filters"], reader: IBinaryReader, options: BinaryReadOptions): void {
+        let len = reader.uint32(), end = reader.pos + len, key: keyof BlockIndex_Bloom["filters"] | undefined, val: BlockIndex_Bloom["filters"][any] | undefined;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case 1:
+                    key = reader.string();
+                    break;
+                case 2:
+                    val = reader.bytes();
+                    break;
+                default: throw new globalThis.Error("unknown map entry field for field v1.BlockIndex.Bloom.filters");
+            }
+        }
+        map[key ?? ""] = val ?? new Uint8Array(0);
+    }
+    internalBinaryWrite(message: BlockIndex_Bloom, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* map<string, bytes> filters = 1; */
+        for (let k of Object.keys(message.filters))
+            writer.tag(1, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k).tag(2, WireType.LengthDelimited).bytes(message.filters[k]).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BlockIndex.Bloom
+ */
+export const BlockIndex_Bloom = new BlockIndex_Bloom$Type();

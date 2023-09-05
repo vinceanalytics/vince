@@ -139,7 +139,7 @@ func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
 	// for now read all row groups
 	var pat Partition
 	pat.Block = ulid.MustParse(string(id))
-	for i := range idx.RowGroupBitmap {
+	for i := range idx.Bloom {
 		pat.RowGroups = append(pat.RowGroups, i)
 	}
 	return &pat, nil
