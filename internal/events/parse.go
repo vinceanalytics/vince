@@ -62,7 +62,7 @@ func Parse(req *entry.Request, ts time.Time) (*entry.Entry, error) {
 		screenSize = "desktop"
 	}
 	userID := userid.Hash(req.Ip, req.Ua, domain, host)
-	e := entry.NewEntry()
+	e := &entry.Entry{}
 	e.ID = userID
 	e.Event = req.N
 	e.Host = host
@@ -83,7 +83,7 @@ func Parse(req *entry.Request, ts time.Time) (*entry.Entry, error) {
 	e.Region = city.Region
 	e.City = city.City
 	e.Screen = screenSize
-	e.Timestamp = ts.UnixMilli()
+	e.Timestamp = ts
 	return e, nil
 }
 

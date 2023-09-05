@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/apache/arrow/go/v14/parquet"
 	"github.com/oklog/ulid/v2"
 	"github.com/thanos-io/objstore"
 	"github.com/thanos-io/objstore/providers/azure"
@@ -58,7 +57,7 @@ func Get(ctx context.Context) objstore.Bucket {
 }
 
 type Reader interface {
-	Read(ctx context.Context, id ulid.ULID, f func(parquet.ReaderAtSeeker) error) error
+	Read(ctx context.Context, id ulid.ULID, f func(io.ReaderAt) error) error
 }
 
 type readerKey struct{}
@@ -85,7 +84,7 @@ func NewCache(o objstore.Bucket, dir string) *Cache {
 	}
 }
 
-func (c *Cache) Read(ctx context.Context, id ulid.ULID, f func(parquet.ReaderAtSeeker) error) error {
+func (c *Cache) Read(ctx context.Context, id ulid.ULID, f func(io.ReaderAt) error) error {
 	s := id.String()
 	c.ensure(ctx, s)
 	x, err := os.Open(filepath.Join(c.dir, s))

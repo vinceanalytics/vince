@@ -68,16 +68,7 @@ func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
 func (t *Table) PartitionRows(ctx *sql.Context, p sql.Partition) (sql.RowIter, error) {
 	x := p.(*Partition)
 	var result []entry.ReadResult
-	t.Reader.Read(ctx, x.Block, func(ras parquet.ReaderAtSeeker) error {
-		cols := t.columns
-		if len(cols) == 0 {
-			cols = Columns
-		}
-		result = entry.ReadColumns(
-			entry.NewFileReader(ras),
-			cols,
-			x.RowGroups,
-		)
+	t.Reader.Read(ctx, x.Block, func(ras io.ReaderAt) error {
 		return nil
 	})
 	return &rowIter{result: result}, nil
