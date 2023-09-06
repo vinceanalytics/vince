@@ -89,6 +89,8 @@ github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9 h
 github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9/go.mod h1:pSwJ0fSY5KhvocuWSx4fz3BA8OrA1bQn+K1Eli3BRwM=
 github.com/apache/arrow/go/v14 v14.0.0-20230825230106-c9bfca5ec40d h1:VY3jOV6QRGJOlhXHob0GSNybSyws1n4628xdvczv12Q=
 github.com/apache/arrow/go/v14 v14.0.0-20230825230106-c9bfca5ec40d/go.mod h1:QQ18IZU2Y3BFqHtF2HyvrjEEmk8TyzzmXgUVjep3bCw=
+github.com/apache/arrow/go/v14 v14.0.0-20230906231735-7f604b2e2ad1 h1:R4gb44TDmdw4Wvn5cUhICQEyJVW0OdMvbZko1U7y3bg=
+github.com/apache/arrow/go/v14 v14.0.0-20230906231735-7f604b2e2ad1/go.mod h1:QQ18IZU2Y3BFqHtF2HyvrjEEmk8TyzzmXgUVjep3bCw=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/apache/thrift v0.13.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/apache/thrift v0.16.0 h1:qEy6UW60iVOlUy+b9ZR0d5WzUWYGOo4HfopoyBaNmoY=
