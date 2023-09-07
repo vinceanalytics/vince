@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "vince/sites/v1/sites.proto",
+    "title": "vince/goals/v1/goals.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "Sites"
+      "name": "Goals"
     }
   ],
   "consumes": [
@@ -16,14 +16,14 @@
     "application/json"
   ],
   "paths": {
-    "/v1/site": {
+    "/v1/goal": {
       "get": {
-        "operationId": "Sites_GetSite",
+        "operationId": "Goals_GetGoal",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetSiteResponse"
+              "$ref": "#/definitions/v1Goal"
             }
           },
           "default": {
@@ -33,25 +33,17 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "domain",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
         "tags": [
-          "Sites"
+          "Goals"
         ]
       },
       "delete": {
-        "operationId": "Sites_DeleteSite",
+        "operationId": "Goals_DeleteGoal",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1DeleteSiteResponse"
+              "$ref": "#/definitions/v1DeleteGoalResponse"
             }
           },
           "default": {
@@ -63,25 +55,25 @@
         },
         "parameters": [
           {
-            "name": "domain",
+            "name": "id",
             "in": "query",
             "required": false,
             "type": "string"
           }
         ],
         "tags": [
-          "Sites"
+          "Goals"
         ]
       }
     },
-    "/v1/sites": {
+    "/v1/goals": {
       "get": {
-        "operationId": "Sites_ListSites",
+        "operationId": "Goals_ListGoals",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ListSitesResponse"
+              "$ref": "#/definitions/v1ListGoalsResponse"
             }
           },
           "default": {
@@ -92,16 +84,16 @@
           }
         },
         "tags": [
-          "Sites"
+          "Goals"
         ]
       },
       "post": {
-        "operationId": "Sites_CreateSite",
+        "operationId": "Goals_CreateGoal",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1CreateSiteResponse"
+              "$ref": "#/definitions/v1CreateGoalResponse"
             }
           },
           "default": {
@@ -117,10 +109,27 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "EVENT",
+              "PATH"
+            ],
+            "default": "EVENT"
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
-          "Sites"
+          "Goals"
         ]
       }
     }
@@ -154,24 +163,16 @@
       },
       "additionalProperties": {}
     },
-    "v1CreateSiteResponse": {
+    "v1CreateGoalResponse": {
       "type": "object",
       "properties": {
-        "site": {
-          "$ref": "#/definitions/v1Site"
+        "goal": {
+          "$ref": "#/definitions/v1Goal"
         }
       }
     },
-    "v1DeleteSiteResponse": {
+    "v1DeleteGoalResponse": {
       "type": "object"
-    },
-    "v1GetSiteResponse": {
-      "type": "object",
-      "properties": {
-        "site": {
-          "$ref": "#/definitions/v1Site"
-        }
-      }
     },
     "v1Goal": {
       "type": "object",
@@ -195,24 +196,9 @@
       ],
       "default": "EVENT"
     },
-    "v1ListSitesResponse": {
+    "v1ListGoalsResponse": {
       "type": "object",
       "properties": {
-        "list": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Site"
-          }
-        }
-      }
-    },
-    "v1Site": {
-      "type": "object",
-      "properties": {
-        "domain": {
-          "type": "string"
-        },
         "goals": {
           "type": "array",
           "items": {

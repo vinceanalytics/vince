@@ -12,6 +12,7 @@ import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+import { Goal } from "../../goals/v1/goals";
 /**
  * @generated from protobuf message v1.Site
  */
@@ -20,6 +21,10 @@ export interface Site {
      * @generated from protobuf field: string domain = 1;
      */
     domain: string;
+    /**
+     * @generated from protobuf field: repeated v1.Goal goals = 2;
+     */
+    goals: Goal[];
 }
 /**
  * @generated from protobuf message v1.CreateSiteRequest
@@ -89,11 +94,12 @@ export interface DeleteSiteResponse {
 class Site$Type extends MessageType<Site> {
     constructor() {
         super("v1.Site", [
-            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "goals", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Goal }
         ]);
     }
     create(value?: PartialMessage<Site>): Site {
-        const message = { domain: "" };
+        const message = { domain: "", goals: [] };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Site>(this, message, value);
@@ -106,6 +112,9 @@ class Site$Type extends MessageType<Site> {
             switch (fieldNo) {
                 case /* string domain */ 1:
                     message.domain = reader.string();
+                    break;
+                case /* repeated v1.Goal goals */ 2:
+                    message.goals.push(Goal.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -122,6 +131,9 @@ class Site$Type extends MessageType<Site> {
         /* string domain = 1; */
         if (message.domain !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.domain);
+        /* repeated v1.Goal goals = 2; */
+        for (let i = 0; i < message.goals.length; i++)
+            Goal.internalBinaryWrite(message.goals[i], writer.tag(2, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

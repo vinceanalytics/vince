@@ -3,6 +3,7 @@ package v1;
 
 import "google/protobuf/duration.proto";
 import "vince/config/v1/config.proto";
+import "vince/goals/v1/goals.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
@@ -31,7 +32,10 @@ service Sites {
   };
 }
 
-message Site { string domain = 1; }
+message Site {
+  string domain = 1;
+  repeated Goal goals = 2;
+}
 
 message CreateSiteRequest {
   string domain = 1 [
