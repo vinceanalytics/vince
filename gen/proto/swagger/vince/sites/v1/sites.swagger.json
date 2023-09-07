@@ -186,7 +186,8 @@
           "type": "string"
         },
         "createdAt": {
-          "type": "string"
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -217,9 +218,8 @@
           "type": "string"
         },
         "goals": {
-          "type": "array",
-          "items": {
-            "type": "object",
+          "type": "object",
+          "additionalProperties": {
             "$ref": "#/definitions/v1Goal"
           }
         }

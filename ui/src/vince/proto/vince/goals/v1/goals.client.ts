@@ -7,8 +7,9 @@ import { Goals } from "./goals";
 import type { DeleteGoalResponse } from "./goals";
 import type { DeleteGoalRequest } from "./goals";
 import type { ListGoalsResponse } from "./goals";
-import type { Goal } from "./goals";
 import type { ListGoalsRequest } from "./goals";
+import type { Goal } from "./goals";
+import type { GetGoalRequest } from "./goals";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
 import type { CreateGoalResponse } from "./goals";
 import type { CreateGoalRequest } from "./goals";
@@ -23,9 +24,9 @@ export interface IGoalsClient {
      */
     createGoal(input: CreateGoalRequest, options?: RpcOptions): UnaryCall<CreateGoalRequest, CreateGoalResponse>;
     /**
-     * @generated from protobuf rpc: GetGoal(v1.ListGoalsRequest) returns (v1.Goal);
+     * @generated from protobuf rpc: GetGoal(v1.GetGoalRequest) returns (v1.Goal);
      */
-    getGoal(input: ListGoalsRequest, options?: RpcOptions): UnaryCall<ListGoalsRequest, Goal>;
+    getGoal(input: GetGoalRequest, options?: RpcOptions): UnaryCall<GetGoalRequest, Goal>;
     /**
      * @generated from protobuf rpc: ListGoals(v1.ListGoalsRequest) returns (v1.ListGoalsResponse);
      */
@@ -52,11 +53,11 @@ export class GoalsClient implements IGoalsClient, ServiceInfo {
         return stackIntercept<CreateGoalRequest, CreateGoalResponse>("unary", this._transport, method, opt, input);
     }
     /**
-     * @generated from protobuf rpc: GetGoal(v1.ListGoalsRequest) returns (v1.Goal);
+     * @generated from protobuf rpc: GetGoal(v1.GetGoalRequest) returns (v1.Goal);
      */
-    getGoal(input: ListGoalsRequest, options?: RpcOptions): UnaryCall<ListGoalsRequest, Goal> {
+    getGoal(input: GetGoalRequest, options?: RpcOptions): UnaryCall<GetGoalRequest, Goal> {
         const method = this.methods[1], opt = this._transport.mergeOptions(options);
-        return stackIntercept<ListGoalsRequest, Goal>("unary", this._transport, method, opt, input);
+        return stackIntercept<GetGoalRequest, Goal>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: ListGoals(v1.ListGoalsRequest) returns (v1.ListGoalsResponse);

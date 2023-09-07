@@ -34,7 +34,7 @@ service Sites {
 
 message Site {
   string domain = 1;
-  repeated Goal goals = 2;
+  map<string, Goal> goals = 2;
 }
 
 message CreateSiteRequest {

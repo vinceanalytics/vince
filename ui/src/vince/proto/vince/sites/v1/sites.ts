@@ -22,9 +22,11 @@ export interface Site {
      */
     domain: string;
     /**
-     * @generated from protobuf field: repeated v1.Goal goals = 2;
+     * @generated from protobuf field: map<string, v1.Goal> goals = 2;
      */
-    goals: Goal[];
+    goals: {
+        [key: string]: Goal;
+    };
 }
 /**
  * @generated from protobuf message v1.CreateSiteRequest
@@ -95,11 +97,11 @@ class Site$Type extends MessageType<Site> {
     constructor() {
         super("v1.Site", [
             { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "goals", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Goal }
+            { no: 2, name: "goals", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => Goal } }
         ]);
     }
     create(value?: PartialMessage<Site>): Site {
-        const message = { domain: "", goals: [] };
+        const message = { domain: "", goals: {} };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Site>(this, message, value);
@@ -113,8 +115,8 @@ class Site$Type extends MessageType<Site> {
                 case /* string domain */ 1:
                     message.domain = reader.string();
                     break;
-                case /* repeated v1.Goal goals */ 2:
-                    message.goals.push(Goal.internalBinaryRead(reader, reader.uint32(), options));
+                case /* map<string, v1.Goal> goals */ 2:
+                    this.binaryReadMap2(message.goals, reader, options);
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -127,13 +129,33 @@ class Site$Type extends MessageType<Site> {
         }
         return message;
     }
+    private binaryReadMap2(map: Site["goals"], reader: IBinaryReader, options: BinaryReadOptions): void {
+        let len = reader.uint32(), end = reader.pos + len, key: keyof Site["goals"] | undefined, val: Site["goals"][any] | undefined;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case 1:
+                    key = reader.string();
+                    break;
+                case 2:
+                    val = Goal.internalBinaryRead(reader, reader.uint32(), options);
+                    break;
+                default: throw new globalThis.Error("unknown map entry field for field v1.Site.goals");
+            }
+        }
+        map[key ?? ""] = val ?? Goal.create();
+    }
     internalBinaryWrite(message: Site, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
         /* string domain = 1; */
         if (message.domain !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.domain);
-        /* repeated v1.Goal goals = 2; */
-        for (let i = 0; i < message.goals.length; i++)
-            Goal.internalBinaryWrite(message.goals[i], writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* map<string, v1.Goal> goals = 2; */
+        for (let k of Object.keys(message.goals)) {
+            writer.tag(2, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k);
+            writer.tag(2, WireType.LengthDelimited).fork();
+            Goal.internalBinaryWrite(message.goals[k], writer, options);
+            writer.join().join();
+        }
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

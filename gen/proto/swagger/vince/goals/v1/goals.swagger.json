@@ -33,6 +33,20 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "Goals"
         ]
@@ -54,6 +68,12 @@
           }
         },
         "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
           {
             "name": "id",
             "in": "query",
@@ -83,6 +103,14 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "Goals"
         ]
@@ -187,7 +215,8 @@
           "type": "string"
         },
         "createdAt": {
-          "type": "string"
+          "type": "string",
+          "format": "date-time"
         }
       }
     },

@@ -12,7 +12,7 @@ import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { Duration } from "../../../google/protobuf/duration";
+import { Timestamp } from "../../../google/protobuf/timestamp";
 /**
  * @generated from protobuf message v1.Goal
  */
@@ -30,9 +30,9 @@ export interface Goal {
      */
     value: string;
     /**
-     * @generated from protobuf field: google.protobuf.Duration created_at = 4;
+     * @generated from protobuf field: google.protobuf.Timestamp created_at = 4;
      */
-    createdAt?: Duration;
+    createdAt?: Timestamp;
 }
 /**
  * @generated from protobuf enum v1.Goal.Type
@@ -74,11 +74,15 @@ export interface CreateGoalResponse {
     goal?: Goal;
 }
 /**
- * @generated from protobuf message v1.GetGoal
+ * @generated from protobuf message v1.GetGoalRequest
  */
-export interface GetGoal {
+export interface GetGoalRequest {
     /**
-     * @generated from protobuf field: string id = 1;
+     * @generated from protobuf field: string domain = 1;
+     */
+    domain: string;
+    /**
+     * @generated from protobuf field: string id = 2;
      */
     id: string;
 }
@@ -86,6 +90,10 @@ export interface GetGoal {
  * @generated from protobuf message v1.ListGoalsRequest
  */
 export interface ListGoalsRequest {
+    /**
+     * @generated from protobuf field: string domain = 1;
+     */
+    domain: string;
 }
 /**
  * @generated from protobuf message v1.ListGoalsResponse
@@ -101,7 +109,11 @@ export interface ListGoalsResponse {
  */
 export interface DeleteGoalRequest {
     /**
-     * @generated from protobuf field: string id = 1;
+     * @generated from protobuf field: string domain = 1;
+     */
+    domain: string;
+    /**
+     * @generated from protobuf field: string id = 2;
      */
     id: string;
 }
@@ -117,7 +129,7 @@ class Goal$Type extends MessageType<Goal> {
             { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "type", kind: "enum", T: () => ["v1.Goal.Type", Goal_Type] },
             { no: 3, name: "value", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 4, name: "created_at", kind: "message", T: () => Duration }
+            { no: 4, name: "created_at", kind: "message", T: () => Timestamp }
         ]);
     }
     create(value?: PartialMessage<Goal>): Goal {
@@ -141,8 +153,8 @@ class Goal$Type extends MessageType<Goal> {
                 case /* string value */ 3:
                     message.value = reader.string();
                     break;
-                case /* google.protobuf.Duration created_at */ 4:
-                    message.createdAt = Duration.internalBinaryRead(reader, reader.uint32(), options, message.createdAt);
+                case /* google.protobuf.Timestamp created_at */ 4:
+                    message.createdAt = Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.createdAt);
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -165,9 +177,9 @@ class Goal$Type extends MessageType<Goal> {
         /* string value = 3; */
         if (message.value !== "")
             writer.tag(3, WireType.LengthDelimited).string(message.value);
-        /* google.protobuf.Duration created_at = 4; */
+        /* google.protobuf.Timestamp created_at = 4; */
         if (message.createdAt)
-            Duration.internalBinaryWrite(message.createdAt, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+            Timestamp.internalBinaryWrite(message.createdAt, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -287,25 +299,29 @@ class CreateGoalResponse$Type extends MessageType<CreateGoalResponse> {
  */
 export const CreateGoalResponse = new CreateGoalResponse$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class GetGoal$Type extends MessageType<GetGoal> {
+class GetGoalRequest$Type extends MessageType<GetGoalRequest> {
     constructor() {
-        super("v1.GetGoal", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        super("v1.GetGoalRequest", [
+            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } },
+            { no: 2, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
         ]);
     }
-    create(value?: PartialMessage<GetGoal>): GetGoal {
-        const message = { id: "" };
+    create(value?: PartialMessage<GetGoalRequest>): GetGoalRequest {
+        const message = { domain: "", id: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
-            reflectionMergePartial<GetGoal>(this, message, value);
+            reflectionMergePartial<GetGoalRequest>(this, message, value);
         return message;
     }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: GetGoal): GetGoal {
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: GetGoalRequest): GetGoalRequest {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string id */ 1:
+                case /* string domain */ 1:
+                    message.domain = reader.string();
+                    break;
+                case /* string id */ 2:
                     message.id = reader.string();
                     break;
                 default:
@@ -319,10 +335,13 @@ class GetGoal$Type extends MessageType<GetGoal> {
         }
         return message;
     }
-    internalBinaryWrite(message: GetGoal, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string id = 1; */
+    internalBinaryWrite(message: GetGoalRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string domain = 1; */
+        if (message.domain !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.domain);
+        /* string id = 2; */
         if (message.id !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.id);
+            writer.tag(2, WireType.LengthDelimited).string(message.id);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -330,25 +349,46 @@ class GetGoal$Type extends MessageType<GetGoal> {
     }
 }
 /**
- * @generated MessageType for protobuf message v1.GetGoal
+ * @generated MessageType for protobuf message v1.GetGoalRequest
  */
-export const GetGoal = new GetGoal$Type();
+export const GetGoalRequest = new GetGoalRequest$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class ListGoalsRequest$Type extends MessageType<ListGoalsRequest> {
     constructor() {
-        super("v1.ListGoalsRequest", []);
+        super("v1.ListGoalsRequest", [
+            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } }
+        ]);
     }
     create(value?: PartialMessage<ListGoalsRequest>): ListGoalsRequest {
-        const message = {};
+        const message = { domain: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<ListGoalsRequest>(this, message, value);
         return message;
     }
     internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: ListGoalsRequest): ListGoalsRequest {
-        return target ?? this.create();
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string domain */ 1:
+                    message.domain = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
     }
     internalBinaryWrite(message: ListGoalsRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string domain = 1; */
+        if (message.domain !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.domain);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -410,11 +450,12 @@ export const ListGoalsResponse = new ListGoalsResponse$Type();
 class DeleteGoalRequest$Type extends MessageType<DeleteGoalRequest> {
     constructor() {
         super("v1.DeleteGoalRequest", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } },
+            { no: 2, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
         ]);
     }
     create(value?: PartialMessage<DeleteGoalRequest>): DeleteGoalRequest {
-        const message = { id: "" };
+        const message = { domain: "", id: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<DeleteGoalRequest>(this, message, value);
@@ -425,7 +466,10 @@ class DeleteGoalRequest$Type extends MessageType<DeleteGoalRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string id */ 1:
+                case /* string domain */ 1:
+                    message.domain = reader.string();
+                    break;
+                case /* string id */ 2:
                     message.id = reader.string();
                     break;
                 default:
@@ -440,9 +484,12 @@ class DeleteGoalRequest$Type extends MessageType<DeleteGoalRequest> {
         return message;
     }
     internalBinaryWrite(message: DeleteGoalRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string id = 1; */
+        /* string domain = 1; */
+        if (message.domain !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.domain);
+        /* string id = 2; */
         if (message.id !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.id);
+            writer.tag(2, WireType.LengthDelimited).string(message.id);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -484,7 +531,7 @@ export const DeleteGoalResponse = new DeleteGoalResponse$Type();
  */
 export const Goals = new ServiceType("v1.Goals", [
     { name: "CreateGoal", options: { "google.api.http": { post: "/v1/goals" } }, I: CreateGoalRequest, O: CreateGoalResponse },
-    { name: "GetGoal", options: { "google.api.http": { get: "/v1/goal" } }, I: ListGoalsRequest, O: Goal },
+    { name: "GetGoal", options: { "google.api.http": { get: "/v1/goal" } }, I: GetGoalRequest, O: Goal },
     { name: "ListGoals", options: { "google.api.http": { get: "/v1/goals" } }, I: ListGoalsRequest, O: ListGoalsResponse },
     { name: "DeleteGoal", options: { "google.api.http": { delete: "/v1/goal" } }, I: DeleteGoalRequest, O: DeleteGoalResponse }
 ]);

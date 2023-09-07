@@ -28,6 +28,7 @@ import (
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/assets"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	goalsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
 	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/api"
@@ -234,6 +235,7 @@ func New(ctx context.Context) *Vince {
 	v1.RegisterVinceServer(srv, &api.API{})
 	sitesv1.RegisterSitesServer(srv, &api.API{})
 	queryv1.RegisterQueryServer(srv, &api.API{})
+	goalsv1.RegisterGoalsServer(srv, &api.API{})
 
 	routes := Handle(ctx, v.Registry)
 	v.Server = http.Server{

@@ -12,7 +12,7 @@ import (
 	status "google.golang.org/grpc/status"
 	proto "google.golang.org/protobuf/proto"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	durationpb "google.golang.org/protobuf/types/known/durationpb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	bits "math/bits"
 )
@@ -34,7 +34,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GoalsClient interface {
 	CreateGoal(ctx context.Context, in *CreateGoalRequest, opts ...grpc.CallOption) (*CreateGoalResponse, error)
-	GetGoal(ctx context.Context, in *ListGoalsRequest, opts ...grpc.CallOption) (*Goal, error)
+	GetGoal(ctx context.Context, in *GetGoalRequest, opts ...grpc.CallOption) (*Goal, error)
 	ListGoals(ctx context.Context, in *ListGoalsRequest, opts ...grpc.CallOption) (*ListGoalsResponse, error)
 	DeleteGoal(ctx context.Context, in *DeleteGoalRequest, opts ...grpc.CallOption) (*DeleteGoalResponse, error)
 }
@@ -56,7 +56,7 @@ func (c *goalsClient) CreateGoal(ctx context.Context, in *CreateGoalRequest, opt
 	return out, nil
 }
 
-func (c *goalsClient) GetGoal(ctx context.Context, in *ListGoalsRequest, opts ...grpc.CallOption) (*Goal, error) {
+func (c *goalsClient) GetGoal(ctx context.Context, in *GetGoalRequest, opts ...grpc.CallOption) (*Goal, error) {
 	out := new(Goal)
 	err := c.cc.Invoke(ctx, "/v1.Goals/GetGoal", in, out, opts...)
 	if err != nil {
@@ -88,7 +88,7 @@ func (c *goalsClient) DeleteGoal(ctx context.Context, in *DeleteGoalRequest, opt
 // for forward compatibility
 type GoalsServer interface {
 	CreateGoal(context.Context, *CreateGoalRequest) (*CreateGoalResponse, error)
-	GetGoal(context.Context, *ListGoalsRequest) (*Goal, error)
+	GetGoal(context.Context, *GetGoalRequest) (*Goal, error)
 	ListGoals(context.Context, *ListGoalsRequest) (*ListGoalsResponse, error)
 	DeleteGoal(context.Context, *DeleteGoalRequest) (*DeleteGoalResponse, error)
 	mustEmbedUnimplementedGoalsServer()
@@ -101,7 +101,7 @@ type UnimplementedGoalsServer struct {
 func (UnimplementedGoalsServer) CreateGoal(context.Context, *CreateGoalRequest) (*CreateGoalResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGoal not implemented")
 }
-func (UnimplementedGoalsServer) GetGoal(context.Context, *ListGoalsRequest) (*Goal, error) {
+func (UnimplementedGoalsServer) GetGoal(context.Context, *GetGoalRequest) (*Goal, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGoal not implemented")
 }
 func (UnimplementedGoalsServer) ListGoals(context.Context, *ListGoalsRequest) (*ListGoalsResponse, error) {
@@ -142,7 +142,7 @@ func _Goals_CreateGoal_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Goals_GetGoal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListGoalsRequest)
+	in := new(GetGoalRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func _Goals_GetGoal_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/v1.Goals/GetGoal",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GoalsServer).GetGoal(ctx, req.(*ListGoalsRequest))
+		return srv.(GoalsServer).GetGoal(ctx, req.(*GetGoalRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -392,7 +392,7 @@ func (m *CreateGoalResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *GetGoal) MarshalVT() (dAtA []byte, err error) {
+func (m *GetGoalRequest) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -405,12 +405,12 @@ func (m *GetGoal) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GetGoal) MarshalToVT(dAtA []byte) (int, error) {
+func (m *GetGoalRequest) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *GetGoal) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *GetGoalRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -426,6 +426,13 @@ func (m *GetGoal) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.Id)
 		copy(dAtA[i:], m.Id)
 		i = encodeVarint(dAtA, i, uint64(len(m.Id)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Domain) > 0 {
+		i -= len(m.Domain)
+		copy(dAtA[i:], m.Domain)
+		i = encodeVarint(dAtA, i, uint64(len(m.Domain)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -461,6 +468,13 @@ func (m *ListGoalsRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Domain) > 0 {
+		i -= len(m.Domain)
+		copy(dAtA[i:], m.Domain)
+		i = encodeVarint(dAtA, i, uint64(len(m.Domain)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -544,6 +558,13 @@ func (m *DeleteGoalRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.Id)
 		copy(dAtA[i:], m.Id)
 		i = encodeVarint(dAtA, i, uint64(len(m.Id)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Domain) > 0 {
+		i -= len(m.Domain)
+		copy(dAtA[i:], m.Domain)
+		i = encodeVarint(dAtA, i, uint64(len(m.Domain)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -660,12 +681,16 @@ func (m *CreateGoalResponse) SizeVT() (n int) {
 	return n
 }
 
-func (m *GetGoal) SizeVT() (n int) {
+func (m *GetGoalRequest) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
+	l = len(m.Domain)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
 	l = len(m.Id)
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
@@ -680,6 +705,10 @@ func (m *ListGoalsRequest) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
+	l = len(m.Domain)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -706,6 +735,10 @@ func (m *DeleteGoalRequest) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
+	l = len(m.Domain)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
 	l = len(m.Id)
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
@@ -872,7 +905,7 @@ func (m *Goal) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.CreatedAt == nil {
-				m.CreatedAt = &durationpb.Duration{}
+				m.CreatedAt = &timestamppb.Timestamp{}
 			}
 			if unmarshal, ok := interface{}(m.CreatedAt).(interface {
 				UnmarshalVT([]byte) error
@@ -1129,7 +1162,7 @@ func (m *CreateGoalResponse) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GetGoal) UnmarshalVT(dAtA []byte) error {
+func (m *GetGoalRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1152,13 +1185,45 @@ func (m *GetGoal) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GetGoal: wiretype end group for non-group")
+			return fmt.Errorf("proto: GetGoalRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetGoal: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GetGoalRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Domain", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Domain = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
 			}
@@ -1241,6 +1306,38 @@ func (m *ListGoalsRequest) UnmarshalVT(dAtA []byte) error {
 			return fmt.Errorf("proto: ListGoalsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Domain", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Domain = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -1378,6 +1475,38 @@ func (m *DeleteGoalRequest) UnmarshalVT(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Domain", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Domain = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
 			}

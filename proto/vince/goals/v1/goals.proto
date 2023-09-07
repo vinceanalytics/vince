@@ -1,8 +1,6 @@
 syntax = "proto3";
 package v1;
 
-import "google/protobuf/duration.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
@@ -13,7 +11,7 @@ service Goals {
       post : "/v1/goals"
     };
   };
-  rpc GetGoal(ListGoalsRequest) returns (Goal) {
+  rpc GetGoal(GetGoalRequest) returns (Goal) {
     option (google.api.http) = {
       get : "/v1/goal"
     };
@@ -34,7 +32,7 @@ message Goal {
   string id = 1;
   Type type = 2;
   string value = 3;
-  google.protobuf.Duration created_at = 4;
+  google.protobuf.Timestamp created_at = 4;
 
   enum Type {
     EVENT = 0;
@@ -53,11 +51,29 @@ message CreateGoalRequest {
 
 message CreateGoalResponse { Goal goal = 1; }
 
-message GetGoal { string id = 1; }
+message GetGoalRequest {
+  string domain = 1 [
+    (buf.validate.field).string.hostname = true,
+    (buf.validate.field).required = true
+  ];
+  string id = 2 [ (buf.validate.field).required = true ];
+}
 
-message ListGoalsRequest {}
+message ListGoalsRequest {
+  string domain = 1 [
+    (buf.validate.field).string.hostname = true,
+    (buf.validate.field).required = true
+  ];
+}
+
 message ListGoalsResponse { repeated Goal goals = 1; }
 
-message DeleteGoalRequest { string id = 1; }
+message DeleteGoalRequest {
+  string domain = 1 [
+    (buf.validate.field).string.hostname = true,
+    (buf.validate.field).required = true
+  ];
+  string id = 2 [ (buf.validate.field).required = true ];
+}
 
 message DeleteGoalResponse {}
