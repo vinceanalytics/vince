@@ -1,9 +1,9 @@
-import { Box, Label, Text } from "@primer/react"
+import { Box, Text } from "@primer/react"
 import { TableIcon, GraphIcon, DownloadIcon } from "@primer/octicons-react";
 import { DataTable, UnderlineNav } from '@primer/react/drafts'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useQuery } from "../../providers";
-import { QueryResponse } from "../../vince";
+import { QueryResponse, QueryValue, Timestamp } from "../../vince";
 import { Chart } from "frappe-charts/dist/frappe-charts.min.esm";
 
 export const Result = () => {
@@ -81,13 +81,27 @@ const Grid = ({ result }: { result: QueryResponse | undefined }) => {
                     header: name,
                     renderCell(data) {
                         //@ts-ignore
-                        const value = data[name] as Value;
+                        const { value } = data[name] as QueryValue;
                         let format = ''
-                        if (value.number) format = value.number.toString();
-                        if (value.double) format = value.double.toString();
-                        if (value.bool) format = value.bool.toString();
-                        if (value.string) format = value.string;
-                        if (value.timestamp) format = value.timestamp;
+                        switch (value.oneofKind) {
+                            case "string":
+                                format = value.string
+                                break;
+                            case "bool":
+                                format = value.bool.toString()
+                                break;
+                            case "number":
+                                format = value.number.toString()
+                                break;
+                            case "double":
+                                format = value.double.toString()
+                                break;
+                            case "timestamp":
+                                format = Timestamp.toJson(value.timestamp)?.toString()!
+                                break;
+                            default:
+                                break;
+                        }
                         return (<Text>{format}</Text>)
                     },
                 }))}
