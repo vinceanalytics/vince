@@ -18,15 +18,19 @@ import { Duration } from "../../../google/protobuf/duration";
  */
 export interface Goal {
     /**
-     * @generated from protobuf field: v1.Goal.Type type = 1;
+     * @generated from protobuf field: string id = 1;
+     */
+    id: string;
+    /**
+     * @generated from protobuf field: v1.Goal.Type type = 2;
      */
     type: Goal_Type;
     /**
-     * @generated from protobuf field: string value = 2;
+     * @generated from protobuf field: string value = 3;
      */
     value: string;
     /**
-     * @generated from protobuf field: google.protobuf.Duration created_at = 3;
+     * @generated from protobuf field: google.protobuf.Duration created_at = 4;
      */
     createdAt?: Duration;
 }
@@ -110,13 +114,14 @@ export interface DeleteGoalResponse {
 class Goal$Type extends MessageType<Goal> {
     constructor() {
         super("v1.Goal", [
-            { no: 1, name: "type", kind: "enum", T: () => ["v1.Goal.Type", Goal_Type] },
-            { no: 2, name: "value", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "created_at", kind: "message", T: () => Duration }
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "type", kind: "enum", T: () => ["v1.Goal.Type", Goal_Type] },
+            { no: 3, name: "value", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "created_at", kind: "message", T: () => Duration }
         ]);
     }
     create(value?: PartialMessage<Goal>): Goal {
-        const message = { type: 0, value: "" };
+        const message = { id: "", type: 0, value: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Goal>(this, message, value);
@@ -127,13 +132,16 @@ class Goal$Type extends MessageType<Goal> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* v1.Goal.Type type */ 1:
+                case /* string id */ 1:
+                    message.id = reader.string();
+                    break;
+                case /* v1.Goal.Type type */ 2:
                     message.type = reader.int32();
                     break;
-                case /* string value */ 2:
+                case /* string value */ 3:
                     message.value = reader.string();
                     break;
-                case /* google.protobuf.Duration created_at */ 3:
+                case /* google.protobuf.Duration created_at */ 4:
                     message.createdAt = Duration.internalBinaryRead(reader, reader.uint32(), options, message.createdAt);
                     break;
                 default:
@@ -148,15 +156,18 @@ class Goal$Type extends MessageType<Goal> {
         return message;
     }
     internalBinaryWrite(message: Goal, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* v1.Goal.Type type = 1; */
+        /* string id = 1; */
+        if (message.id !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* v1.Goal.Type type = 2; */
         if (message.type !== 0)
-            writer.tag(1, WireType.Varint).int32(message.type);
-        /* string value = 2; */
+            writer.tag(2, WireType.Varint).int32(message.type);
+        /* string value = 3; */
         if (message.value !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.value);
-        /* google.protobuf.Duration created_at = 3; */
+            writer.tag(3, WireType.LengthDelimited).string(message.value);
+        /* google.protobuf.Duration created_at = 4; */
         if (message.createdAt)
-            Duration.internalBinaryWrite(message.createdAt, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+            Duration.internalBinaryWrite(message.createdAt, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

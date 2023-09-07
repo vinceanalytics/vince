@@ -31,9 +31,10 @@ service Goals {
 }
 
 message Goal {
-  Type type = 1;
-  string value = 2;
-  google.protobuf.Duration created_at = 3;
+  string id = 1;
+  Type type = 2;
+  string value = 3;
+  google.protobuf.Duration created_at = 4;
 
   enum Type {
     EVENT = 0;

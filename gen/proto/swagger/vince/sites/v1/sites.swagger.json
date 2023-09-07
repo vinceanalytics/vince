@@ -176,6 +176,9 @@
     "v1Goal": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string"
+        },
         "type": {
           "$ref": "#/definitions/v1GoalType"
         },
