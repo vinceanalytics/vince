@@ -33,10 +33,10 @@ export const QueryProvider = ({ children }: PropsWithChildren<{}>) => {
     const [request, setRequest] = useState<string>("")
     const [result, setResult] = useState<QueryResponse | undefined>(undefined)
     const { editorRef } = useEditor()
-    const { vince } = useVince()
+    const { queryClient } = useVince()
     useEffect(() => {
         if (running && request !== "") {
-            vince?.query({
+            queryClient?.query({
                 query: request,
                 params: [],
             }).then((result) => {
@@ -46,7 +46,7 @@ export const QueryProvider = ({ children }: PropsWithChildren<{}>) => {
                     console.log(e)
                 })
         }
-    }, [running, vince, request])
+    }, [running, queryClient, request])
 
     useEffect(() => {
         if (running && result) {

@@ -3,7 +3,7 @@ import { TableIcon, GraphIcon, DownloadIcon } from "@primer/octicons-react";
 import { DataTable, UnderlineNav } from '@primer/react/drafts'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useQuery } from "../../providers";
-import { QueryResponse, Query_Value } from "../../vince";
+import { QueryResponse } from "../../vince";
 import { Chart } from "frappe-charts/dist/frappe-charts.min.esm";
 
 export const Result = () => {
