@@ -16,7 +16,7 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 - [ ] Conversion tracking 
 - [x] Multiple site management
 - [ ] User Interaction Management 
-- [ ] Campaign Management 
+- [x] Campaign Management 
 - [ ] Report Generation
 - [x] Goal Tracking 
 - [x] Event Tracking 
