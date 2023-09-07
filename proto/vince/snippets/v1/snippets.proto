@@ -1,0 +1,57 @@
+syntax = "proto3";
+package v1;
+
+import "vince/query/v1/query.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
+
+service Snippets {
+  rpc CreateSnippet(CreateSnippetRequest) returns (Snippet) {
+    option (google.api.http) = {
+      post : "/v1/snippets"
+    };
+  };
+  rpc UpdateSnippet(UpdateSnippetRequest) returns (Snippet) {
+    option (google.api.http) = {
+      put : "/v1/snippets"
+    };
+  };
+  rpc ListSnippets(ListSnippetsRequest) returns (ListSnippetsResponse) {
+    option (google.api.http) = {
+      get : "/v1/snippets"
+    };
+  };
+  rpc DeteteSnippet(DeleteSnippetRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/snippets"
+    };
+  };
+}
+
+message Snippet {
+  string id = 1;
+  string name = 2;
+  string query = 3;
+  repeated QueryParam params = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message CreateSnippetRequest {
+  string name = 1;
+  string query = 2;
+  repeated QueryParam params = 3;
+}
+
+message UpdateSnippetRequest {
+  string id = 1;
+  string name = 2;
+  string query = 3;
+  repeated QueryParam params = 4;
+}
+
+message DeleteSnippetRequest { string id = 1; }
+message ListSnippetsRequest {}
+message ListSnippetsResponse { repeated Snippet snippets = 1; }
