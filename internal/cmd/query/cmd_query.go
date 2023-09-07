@@ -9,7 +9,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
 	"github.com/vinceanalytics/vince/internal/cmd/output"
-	"github.com/vinceanalytics/vince/internal/klient"
+	"github.com/vinceanalytics/vince/internal/do"
 )
 
 func CMD() *cli.Command {
@@ -23,7 +23,7 @@ func CMD() *cli.Command {
 				return nil
 			}
 			token, instance := auth.Account()
-			result, err := klient.Query(context.TODO(),
+			result, err := do.Query(context.TODO(),
 				instance, token, &v1.QueryRequest{Query: a},
 			)
 			if err != nil {

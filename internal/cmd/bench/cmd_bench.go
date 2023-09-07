@@ -17,9 +17,9 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
+	"github.com/vinceanalytics/vince/internal/do"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/geoip"
-	"github.com/vinceanalytics/vince/internal/klient"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
 	"github.com/vinceanalytics/vince/internal/referrer"
@@ -70,7 +70,7 @@ func CMD() *cli.Command {
 			var stats []*Stats
 			for i := 0; i < ctx.NArg(); i++ {
 				a := args.Get(i)
-				_, err := klient.GetSite(context.TODO(),
+				_, err := do.GetSite(context.TODO(),
 					instance, token, &v1.GetSiteRequest{Domain: a})
 				if err != nil {
 					w.Err(err.Error()).Flush()

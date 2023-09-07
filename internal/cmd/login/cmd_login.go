@@ -11,7 +11,7 @@ import (
 	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
-	"github.com/vinceanalytics/vince/internal/klient"
+	"github.com/vinceanalytics/vince/internal/do"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
 	"github.com/vinceanalytics/vince/internal/tokens"
@@ -53,7 +53,7 @@ func CMD() *cli.Command {
 				time.Now().Add(365*24*time.Hour),
 			)
 
-			clientAuth, err := klient.Login(context.TODO(),
+			clientAuth, err := do.Login(context.TODO(),
 				uri, name, password, &v1.LoginRequest{
 					Token:     token,
 					PublicKey: priv.Public().(ed25519.PublicKey),

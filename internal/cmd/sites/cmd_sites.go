@@ -8,7 +8,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
-	"github.com/vinceanalytics/vince/internal/klient"
+	"github.com/vinceanalytics/vince/internal/do"
 )
 
 func CMD() *cli.Command {
@@ -38,7 +38,7 @@ func create() *cli.Command {
 			}
 			name = strings.TrimSpace(name)
 			token, instance := auth.Account()
-			_, err := klient.CreateSite(context.TODO(),
+			_, err := do.CreateSite(context.TODO(),
 				instance, token, &v1.CreateSiteRequest{Domain: name})
 			if err != nil {
 				return w.Complete(err)
@@ -62,7 +62,7 @@ func del() *cli.Command {
 				).Exit()
 			}
 			token, instance := auth.Account()
-			_, err := klient.DeleteSite(context.TODO(),
+			_, err := do.DeleteSite(context.TODO(),
 				instance, token, &v1.DeleteSiteRequest{Domain: name})
 			if err != nil {
 				return w.Complete(err)
@@ -79,7 +79,7 @@ func list() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			w := ansi.New()
 			token, instance := auth.Account()
-			list, err := klient.ListSites(context.TODO(),
+			list, err := do.ListSites(context.TODO(),
 				instance, token, &v1.ListSitesRequest{})
 			if err != nil {
 				return w.Complete(err)
