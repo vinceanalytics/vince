@@ -3,17 +3,17 @@ package engine
 import (
 	"bytes"
 	"io"
-	"time"
 
-	"github.com/apache/arrow/go/v14/parquet"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/oklog/ulid/v2"
+	"github.com/parquet-go/parquet-go"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
+	"github.com/vinceanalytics/vince/internal/mem"
 	"github.com/vinceanalytics/vince/internal/must"
 	"google.golang.org/protobuf/proto"
 )
@@ -68,7 +68,16 @@ func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
 func (t *Table) PartitionRows(ctx *sql.Context, p sql.Partition) (sql.RowIter, error) {
 	x := p.(*Partition)
 	var result []entry.ReadResult
-	t.Reader.Read(ctx, x.Block, func(ras io.ReaderAt) error {
+	t.Reader.Read(ctx, x.Block, func(f io.ReaderAt, size int64) error {
+		r, err := parquet.OpenFile(f, size)
+		if err != nil {
+			return err
+		}
+		cols := t.columns
+		if len(cols) == 0 {
+			cols = Columns
+		}
+		result = append(result, mem.ReadColumns(r, cols, x.RowGroups)...)
 		return nil
 	})
 	return &rowIter{result: result}, nil
@@ -153,20 +162,11 @@ func (p *rowIter) Next(*sql.Context) (sql.Row, error) {
 	if len(p.result) == 0 {
 		return nil, io.EOF
 	}
-	if p.pos < p.result[0].Len() {
+	rows := p.result[0].Len()
+	if p.pos < rows {
 		o := make(sql.Row, len(p.result))
 		for i := range p.result {
-			x := p.result[i].Col()
-			if x <= storev1.Column_timestamp {
-				v := p.result[i].Value(p.pos).(int64)
-				if x == storev1.Column_timestamp {
-					o[i] = time.UnixMilli(v)
-				} else {
-					o[i] = v
-				}
-				continue
-			}
-			o[i] = string(p.result[i].Value(p.pos).(parquet.ByteArray))
+			o[i] = p.result[i].Value(p.pos)
 		}
 		p.pos++
 		return o, nil

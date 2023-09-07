@@ -31,7 +31,7 @@ type Entry struct {
 	ReferrerSource string        `parquet:"referrer_source,dict,zstd"`
 	Region         string        `parquet:"region,dict,zstd"`
 	Screen         string        `parquet:"screen,dict,zstd"`
-	Timestamp      time.Time     `parquet:"timestamp,dict,zstd"`
+	Timestamp      time.Time     `parquet:"timestamp,timestamp,dict,zstd"`
 	UtmCampaign    string        `parquet:"utm_campaign,dict,zstd"`
 	UtmContent     string        `parquet:"utm_content,dict,zstd"`
 	UtmMedium      string        `parquet:"utm_medium,dict,zstd"`

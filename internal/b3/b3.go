@@ -57,7 +57,7 @@ func Get(ctx context.Context) objstore.Bucket {
 }
 
 type Reader interface {
-	Read(ctx context.Context, id ulid.ULID, f func(io.ReaderAt) error) error
+	Read(ctx context.Context, id ulid.ULID, f func(f io.ReaderAt, size int64) error) error
 }
 
 type readerKey struct{}
@@ -84,7 +84,7 @@ func NewCache(o objstore.Bucket, dir string) *Cache {
 	}
 }
 
-func (c *Cache) Read(ctx context.Context, id ulid.ULID, f func(io.ReaderAt) error) error {
+func (c *Cache) Read(ctx context.Context, id ulid.ULID, f func(io.ReaderAt, int64) error) error {
 	s := id.String()
 	c.ensure(ctx, s)
 	x, err := os.Open(filepath.Join(c.dir, s))
@@ -92,7 +92,11 @@ func (c *Cache) Read(ctx context.Context, id ulid.ULID, f func(io.ReaderAt) erro
 		return err
 	}
 	defer x.Close()
-	return f(x)
+	stat, err := x.Stat()
+	if err != nil {
+		return err
+	}
+	return f(x, stat.Size())
 }
 
 func (c *Cache) ensure(ctx context.Context, id string) {

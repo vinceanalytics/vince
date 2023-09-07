@@ -33,6 +33,15 @@ func Schema(table string, columns []storev1.Column) (o sql.Schema) {
 				})
 				continue
 			}
+			if i == storev1.Column_duration {
+				o = append(o, &sql.Column{
+					Name:     i.String(),
+					Type:     types.Float64,
+					Nullable: false,
+					Source:   table,
+				})
+				continue
+			}
 			o = append(o, &sql.Column{
 				Name:     i.String(),
 				Type:     types.Int64,
