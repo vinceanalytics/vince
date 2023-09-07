@@ -1,0 +1,58 @@
+syntax = "proto3";
+package v1;
+
+import "google/protobuf/duration.proto";
+import "vince/config/v1/config.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
+
+service Query {
+  rpc Query(QueryRequest) returns (QueryResponse) {
+    option (google.api.http) = {
+      post : "/v1/query"
+    };
+  };
+}
+
+message QueryValue {
+  oneof value {
+    int64 number = 1;
+    double double = 2;
+    string string = 3;
+    bool bool = 4;
+    google.protobuf.Timestamp timestamp = 5;
+  }
+}
+
+message QueryParam {
+  string name = 1;
+  QueryValue value = 2;
+}
+
+message QueryColum {
+  string name = 1;
+  DataType data_type = 2;
+
+  enum DataType {
+    UNKNOWN = 0;
+    NUMBER = 1;
+    DOUBLE = 2;
+    STRING = 3;
+    BOOL = 4;
+    TIMESTAMP = 5;
+  }
+}
+message QueryRow { repeated QueryValue values = 1; }
+
+message QueryRequest {
+  string query = 1 [ (buf.validate.field).required = true ];
+  repeated QueryParam params = 2;
+}
+
+message QueryResponse {
+  google.protobuf.Duration elapsed = 1;
+  repeated QueryColum columns = 2;
+  repeated QueryRow rows = 3;
+}

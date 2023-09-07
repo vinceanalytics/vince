@@ -14,11 +14,6 @@ service Vince {
       post : "/v1/login"
     };
   };
-  rpc Query(QueryRequest) returns (QueryResponse) {
-    option (google.api.http) = {
-      post : "/v1/query"
-    };
-  };
   rpc ApplyCluster(ApplyClusterRequest) returns (ApplyClusterResponse) {
     option (google.api.http) = {
       post : "/v1/cluster/apply"
@@ -87,49 +82,6 @@ message Account {
 message Error {
   string error = 1;
   int32 code = 2;
-}
-
-message Query {
-  message Value {
-    oneof value {
-      int64 number = 1;
-      double double = 2;
-      string string = 3;
-      bool bool = 4;
-      google.protobuf.Timestamp timestamp = 5;
-    }
-  }
-
-  message Param {
-    string name = 1;
-    Value value = 2;
-  }
-
-  message Colum {
-    string name = 1;
-    DataType data_type = 2;
-
-    enum DataType {
-      UNKNOWN = 0;
-      NUMBER = 1;
-      DOUBLE = 2;
-      STRING = 3;
-      BOOL = 4;
-      TIMESTAMP = 5;
-    }
-  }
-  message Row { repeated Value values = 1; }
-}
-
-message QueryRequest {
-  string query = 1 [ (buf.validate.field).required = true ];
-  repeated Query.Param params = 2;
-}
-
-message QueryResponse {
-  google.protobuf.Duration elapsed = 1;
-  repeated Query.Colum columns = 2;
-  repeated Query.Row rows = 3;
 }
 
 message ApplyClusterRequest { Cluster.Config config = 1; }

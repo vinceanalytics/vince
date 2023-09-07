@@ -6,7 +6,7 @@ import (
 	"time"
 
 	sqld "github.com/dolthub/go-mysql-server/sql"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -16,32 +16,32 @@ func Build(rows *sql.Rows) (*v1.QueryResponse, error) {
 		return nil, err
 	}
 	r := &v1.QueryResponse{}
-	r.Columns = make([]*v1.Query_Colum, len(columns))
+	r.Columns = make([]*v1.QueryColum, len(columns))
 	for i := range r.Columns {
-		r.Columns[i] = &v1.Query_Colum{
+		r.Columns[i] = &v1.QueryColum{
 			Name:     columns[i].Name(),
 			DataType: fromDBType(columns[i].DatabaseTypeName()),
 		}
 	}
 
-	row := make([]*v1.Query_Value, len(columns))
+	row := make([]*v1.QueryValue, len(columns))
 	clone := make([]any, len(columns))
 
 	for i := range clone {
 		switch r.Columns[i].DataType {
-		case v1.Query_Colum_NUMBER:
+		case v1.QueryColum_NUMBER:
 			var v int64
 			clone[i] = &v
-		case v1.Query_Colum_DOUBLE:
+		case v1.QueryColum_DOUBLE:
 			var v float64
 			clone[i] = &v
-		case v1.Query_Colum_BOOL:
+		case v1.QueryColum_BOOL:
 			var v bool
 			clone[i] = &v
-		case v1.Query_Colum_STRING:
+		case v1.QueryColum_STRING:
 			var v string
 			clone[i] = &v
-		case v1.Query_Colum_TIMESTAMP:
+		case v1.QueryColum_TIMESTAMP:
 			var v Time
 			clone[i] = &v
 		}
@@ -56,32 +56,32 @@ func Build(rows *sql.Rows) (*v1.QueryResponse, error) {
 		for i := range clone {
 			switch e := clone[i].(type) {
 			case *string:
-				row = append(row, &v1.Query_Value{
-					Value: &v1.Query_Value_String_{
+				row = append(row, &v1.QueryValue{
+					Value: &v1.QueryValue_String_{
 						String_: *e,
 					},
 				})
 			case *int64:
-				row = append(row, &v1.Query_Value{
-					Value: &v1.Query_Value_Number{
+				row = append(row, &v1.QueryValue{
+					Value: &v1.QueryValue_Number{
 						Number: *e,
 					},
 				})
 			case *float64:
-				row = append(row, &v1.Query_Value{
-					Value: &v1.Query_Value_Double{
+				row = append(row, &v1.QueryValue{
+					Value: &v1.QueryValue_Double{
 						Double: *e,
 					},
 				})
 			case *bool:
-				row = append(row, &v1.Query_Value{
-					Value: &v1.Query_Value_Bool{
+				row = append(row, &v1.QueryValue{
+					Value: &v1.QueryValue_Bool{
 						Bool: *e,
 					},
 				})
 			case *Time:
-				row = append(row, &v1.Query_Value{
-					Value: &v1.Query_Value_Timestamp{
+				row = append(row, &v1.QueryValue{
+					Value: &v1.QueryValue_Timestamp{
 						Timestamp: timestamppb.New(
 							e.Time,
 						),
@@ -89,7 +89,7 @@ func Build(rows *sql.Rows) (*v1.QueryResponse, error) {
 				})
 			}
 		}
-		r.Rows = append(r.Rows, &v1.Query_Row{
+		r.Rows = append(r.Rows, &v1.QueryRow{
 			Values: row,
 		})
 	}

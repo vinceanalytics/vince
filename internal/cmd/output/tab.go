@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
 	"github.com/vinceanalytics/vince/internal/px"
 )
 
@@ -35,6 +35,6 @@ func Tab(out io.Writer, result *v1.QueryResponse) error {
 	return w.Flush()
 }
 
-func formatValue(w io.Writer, v *v1.Query_Value) {
+func formatValue(w io.Writer, v *v1.QueryValue) {
 	fmt.Fprint(w, px.Interface(v))
 }

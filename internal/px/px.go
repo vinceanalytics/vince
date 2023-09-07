@@ -13,59 +13,59 @@ import (
 	"github.com/thanos-io/objstore/providers/obs"
 	"github.com/thanos-io/objstore/providers/oss"
 	"github.com/thanos-io/objstore/providers/s3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
+	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/must"
 	"google.golang.org/protobuf/proto"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func Interface(v *v1.Query_Value) (val any) {
+func Interface(v *queryv1.QueryValue) (val any) {
 	switch e := v.Value.(type) {
-	case *v1.Query_Value_Number:
+	case *queryv1.QueryValue_Number:
 		val = e.Number
-	case *v1.Query_Value_Double:
+	case *queryv1.QueryValue_Double:
 		val = e.Double
-	case *v1.Query_Value_String_:
+	case *queryv1.QueryValue_String_:
 		val = e.String_
-	case *v1.Query_Value_Bool:
+	case *queryv1.QueryValue_Bool:
 		val = e.Bool
-	case *v1.Query_Value_Timestamp:
+	case *queryv1.QueryValue_Timestamp:
 		val = e.Timestamp.AsTime()
 	}
 	return
 }
 
-func NewQueryValue(v any) *v1.Query_Value {
+func NewQueryValue(v any) *queryv1.QueryValue {
 	switch e := v.(type) {
 	case int64:
-		return &v1.Query_Value{
-			Value: &v1.Query_Value_Number{
+		return &queryv1.QueryValue{
+			Value: &queryv1.QueryValue_Number{
 				Number: e,
 			},
 		}
 	case float64:
-		return &v1.Query_Value{
-			Value: &v1.Query_Value_Double{
+		return &queryv1.QueryValue{
+			Value: &queryv1.QueryValue_Double{
 				Double: e,
 			},
 		}
 	case string:
-		return &v1.Query_Value{
-			Value: &v1.Query_Value_String_{
+		return &queryv1.QueryValue{
+			Value: &queryv1.QueryValue_String_{
 				String_: e,
 			},
 		}
 	case bool:
-		return &v1.Query_Value{
-			Value: &v1.Query_Value_Bool{
+		return &queryv1.QueryValue{
+			Value: &queryv1.QueryValue_Bool{
 				Bool: e,
 			},
 		}
 	case time.Time:
-		return &v1.Query_Value{
-			Value: &v1.Query_Value_Timestamp{
+		return &queryv1.QueryValue{
+			Value: &queryv1.QueryValue_Timestamp{
 				Timestamp: timestamppb.New(e),
 			},
 		}

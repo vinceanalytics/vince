@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/tokens"
 	"google.golang.org/grpc"
@@ -21,6 +22,10 @@ type Sites struct {
 	sitesv1.SitesClient
 	*grpc.ClientConn
 }
+type QueryClient struct {
+	queryv1.QueryClient
+	*grpc.ClientConn
+}
 
 func Do(ctx context.Context,
 	addr string, token credentials.PerRPCCredentials,
@@ -32,10 +37,22 @@ func Do(ctx context.Context,
 	defer g.Close()
 	return f(ctx, g)
 }
+
 func DoSite(ctx context.Context,
 	addr string, token credentials.PerRPCCredentials,
 	f func(context.Context, sitesv1.SitesClient) error) error {
 	g, err := DialSites(addr, token)
+	if err != nil {
+		return err
+	}
+	defer g.Close()
+	return f(ctx, g)
+}
+
+func DoQuery(ctx context.Context,
+	addr string, token credentials.PerRPCCredentials,
+	f func(context.Context, queryv1.QueryClient) error) error {
+	g, err := DialQuery(addr, token)
 	if err != nil {
 		return err
 	}
@@ -59,9 +76,9 @@ func Login(ctx context.Context,
 
 func Query(ctx context.Context,
 	addr, token string,
-	in *v1.QueryRequest,
-) (o *v1.QueryResponse, err error) {
-	err = Do(ctx, addr, tokens.Source(token), func(ctx context.Context, vc v1.VinceClient) error {
+	in *queryv1.QueryRequest,
+) (o *queryv1.QueryResponse, err error) {
+	err = DoQuery(ctx, addr, tokens.Source(token), func(ctx context.Context, vc queryv1.QueryClient) error {
 		o, err = vc.Query(ctx, in)
 		return err
 	})
@@ -125,6 +142,13 @@ func DialSites(addr string, token credentials.PerRPCCredentials) (*Sites, error)
 		return nil, err
 	}
 	return &Sites{ClientConn: conn, SitesClient: sitesv1.NewSitesClient(conn)}, nil
+}
+func DialQuery(addr string, token credentials.PerRPCCredentials) (*QueryClient, error) {
+	conn, err := dial(addr, token)
+	if err != nil {
+		return nil, err
+	}
+	return &QueryClient{ClientConn: conn, QueryClient: queryv1.NewQueryClient(conn)}, nil
 }
 
 func dial(addr string, token credentials.PerRPCCredentials) (*grpc.ClientConn, error) {
