@@ -55,14 +55,14 @@ func New(clients k8s.Client, o Options, ready func()) *Control {
 		FilterFunc: x.isWatchedResource,
 		Handler:    &enqueueWorkHandler{queue: x.queue},
 	}
-	x.list.site = x.form.vince.Staples().V1alpha1().Sites().Lister()
-	x.list.vince = x.form.vince.Staples().V1alpha1().Vinces().Lister()
-	x.form.vince.Staples().V1alpha1().Sites().Informer().AddEventHandler(handler)
-	x.form.vince.Staples().V1alpha1().Vinces().Informer().AddEventHandler(handler)
+	x.list.site = x.form.vince.Vince().V1alpha1().Sites().Lister()
+	x.list.vince = x.form.vince.Vince().V1alpha1().Configs().Lister()
+	x.form.vince.Vince().V1alpha1().Sites().Informer().AddEventHandler(handler)
+	x.form.vince.Vince().V1alpha1().Configs().Informer().AddEventHandler(handler)
 	x.top = NewTopology(
 		clients,
-		x.form.vince.Staples().V1alpha1().Vinces().Lister(),
-		x.form.vince.Staples().V1alpha1().Sites().Lister(),
+		x.form.vince.Vince().V1alpha1().Configs().Lister(),
+		x.form.vince.Vince().V1alpha1().Sites().Lister(),
 		x.form.k8s.Apps().V1().StatefulSets().Lister(),
 		x.form.k8s.Core().V1().Services().Lister(),
 		x.form.k8s.Core().V1().Secrets().Lister(),
@@ -77,7 +77,7 @@ type Inform struct {
 
 type List struct {
 	site  vince_listers.SiteLister
-	vince vince_listers.VinceLister
+	vince vince_listers.ConfigLister
 }
 
 func (c *Control) Run(ctx context.Context) error {

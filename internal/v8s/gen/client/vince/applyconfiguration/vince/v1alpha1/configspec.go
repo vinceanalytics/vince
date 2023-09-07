@@ -11,23 +11,23 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// VinceSpecApplyConfiguration represents an declarative configuration of the VinceSpec type for use
+// ConfigSpecApplyConfiguration represents an declarative configuration of the ConfigSpec type for use
 // with apply.
-type VinceSpecApplyConfiguration struct {
+type ConfigSpecApplyConfiguration struct {
 	*VolumeApplyConfiguration    `json:"volume,omitempty"`
 	*ContainerApplyConfiguration `json:"container,omitempty"`
 }
 
-// VinceSpecApplyConfiguration constructs an declarative configuration of the VinceSpec type for use with
+// ConfigSpecApplyConfiguration constructs an declarative configuration of the ConfigSpec type for use with
 // apply.
-func VinceSpec() *VinceSpecApplyConfiguration {
-	return &VinceSpecApplyConfiguration{}
+func ConfigSpec() *ConfigSpecApplyConfiguration {
+	return &ConfigSpecApplyConfiguration{}
 }
 
 // WithSelector sets the Selector field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Selector field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithSelector(value v1.LabelSelector) *VinceSpecApplyConfiguration {
+func (b *ConfigSpecApplyConfiguration) WithSelector(value v1.LabelSelector) *ConfigSpecApplyConfiguration {
 	b.ensureVolumeApplyConfigurationExists()
 	b.Selector = &value
 	return b
@@ -36,7 +36,7 @@ func (b *VinceSpecApplyConfiguration) WithSelector(value v1.LabelSelector) *Vinc
 // WithSize sets the Size field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Size field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithSize(value resource.Quantity) *VinceSpecApplyConfiguration {
+func (b *ConfigSpecApplyConfiguration) WithSize(value resource.Quantity) *ConfigSpecApplyConfiguration {
 	b.ensureVolumeApplyConfigurationExists()
 	b.Size = &value
 	return b
@@ -45,7 +45,7 @@ func (b *VinceSpecApplyConfiguration) WithSize(value resource.Quantity) *VinceSp
 // WithStorageClass sets the StorageClass field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the StorageClass field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithStorageClass(value string) *VinceSpecApplyConfiguration {
+func (b *ConfigSpecApplyConfiguration) WithStorageClass(value string) *ConfigSpecApplyConfiguration {
 	b.ensureVolumeApplyConfigurationExists()
 	b.StorageClass = &value
 	return b
@@ -54,13 +54,13 @@ func (b *VinceSpecApplyConfiguration) WithStorageClass(value string) *VinceSpecA
 // WithSubPath sets the SubPath field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the SubPath field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithSubPath(value string) *VinceSpecApplyConfiguration {
+func (b *ConfigSpecApplyConfiguration) WithSubPath(value string) *ConfigSpecApplyConfiguration {
 	b.ensureVolumeApplyConfigurationExists()
 	b.SubPath = &value
 	return b
 }
 
-func (b *VinceSpecApplyConfiguration) ensureVolumeApplyConfigurationExists() {
+func (b *ConfigSpecApplyConfiguration) ensureVolumeApplyConfigurationExists() {
 	if b.VolumeApplyConfiguration == nil {
 		b.VolumeApplyConfiguration = &VolumeApplyConfiguration{}
 	}
@@ -69,7 +69,7 @@ func (b *VinceSpecApplyConfiguration) ensureVolumeApplyConfigurationExists() {
 // WithImage sets the Image field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Image field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithImage(value string) *VinceSpecApplyConfiguration {
+func (b *ConfigSpecApplyConfiguration) WithImage(value string) *ConfigSpecApplyConfiguration {
 	b.ensureContainerApplyConfigurationExists()
 	b.Image = &value
 	return b
@@ -78,7 +78,7 @@ func (b *VinceSpecApplyConfiguration) WithImage(value string) *VinceSpecApplyCon
 // WithEnv adds the given value to the Env field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Env field.
-func (b *VinceSpecApplyConfiguration) WithEnv(values ...corev1.EnvVar) *VinceSpecApplyConfiguration {
+func (b *ConfigSpecApplyConfiguration) WithEnv(values ...corev1.EnvVar) *ConfigSpecApplyConfiguration {
 	b.ensureContainerApplyConfigurationExists()
 	for i := range values {
 		b.Env = append(b.Env, values[i])
@@ -89,13 +89,13 @@ func (b *VinceSpecApplyConfiguration) WithEnv(values ...corev1.EnvVar) *VinceSpe
 // WithResources sets the Resources field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Resources field is set to the value of the last call.
-func (b *VinceSpecApplyConfiguration) WithResources(value corev1.ResourceRequirements) *VinceSpecApplyConfiguration {
+func (b *ConfigSpecApplyConfiguration) WithResources(value corev1.ResourceRequirements) *ConfigSpecApplyConfiguration {
 	b.ensureContainerApplyConfigurationExists()
 	b.Resources = &value
 	return b
 }
 
-func (b *VinceSpecApplyConfiguration) ensureContainerApplyConfigurationExists() {
+func (b *ConfigSpecApplyConfiguration) ensureContainerApplyConfigurationExists() {
 	if b.ContainerApplyConfiguration == nil {
 		b.ContainerApplyConfiguration = &ContainerApplyConfiguration{}
 	}

@@ -5,6 +5,14 @@ Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3
 
 package v1alpha1
 
+// ConfigListerExpansion allows custom methods to be added to
+// ConfigLister.
+type ConfigListerExpansion interface{}
+
+// ConfigNamespaceListerExpansion allows custom methods to be added to
+// ConfigNamespaceLister.
+type ConfigNamespaceListerExpansion interface{}
+
 // SiteListerExpansion allows custom methods to be added to
 // SiteLister.
 type SiteListerExpansion interface{}
@@ -12,11 +20,3 @@ type SiteListerExpansion interface{}
 // SiteNamespaceListerExpansion allows custom methods to be added to
 // SiteNamespaceLister.
 type SiteNamespaceListerExpansion interface{}
-
-// VinceListerExpansion allows custom methods to be added to
-// VinceLister.
-type VinceListerExpansion interface{}
-
-// VinceNamespaceListerExpansion allows custom methods to be added to
-// VinceNamespaceLister.
-type VinceNamespaceListerExpansion interface{}

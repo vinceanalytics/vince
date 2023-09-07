@@ -11,30 +11,30 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// VinceApplyConfiguration represents an declarative configuration of the Vince type for use
+// ConfigApplyConfiguration represents an declarative configuration of the Config type for use
 // with apply.
-type VinceApplyConfiguration struct {
+type ConfigApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *VinceSpecApplyConfiguration   `json:"spec,omitempty"`
-	Status                           *VinceStatusApplyConfiguration `json:"status,omitempty"`
+	Spec                             *ConfigSpecApplyConfiguration   `json:"spec,omitempty"`
+	Status                           *ConfigStatusApplyConfiguration `json:"status,omitempty"`
 }
 
-// Vince constructs an declarative configuration of the Vince type for use with
+// Config constructs an declarative configuration of the Config type for use with
 // apply.
-func Vince(name, namespace string) *VinceApplyConfiguration {
-	b := &VinceApplyConfiguration{}
+func Config(name, namespace string) *ConfigApplyConfiguration {
+	b := &ConfigApplyConfiguration{}
 	b.WithName(name)
 	b.WithNamespace(namespace)
-	b.WithKind("Vince")
-	b.WithAPIVersion("staples/v1alpha1")
+	b.WithKind("Config")
+	b.WithAPIVersion("vince/v1alpha1")
 	return b
 }
 
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithKind(value string) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithKind(value string) *ConfigApplyConfiguration {
 	b.Kind = &value
 	return b
 }
@@ -42,7 +42,7 @@ func (b *VinceApplyConfiguration) WithKind(value string) *VinceApplyConfiguratio
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithAPIVersion(value string) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithAPIVersion(value string) *ConfigApplyConfiguration {
 	b.APIVersion = &value
 	return b
 }
@@ -50,7 +50,7 @@ func (b *VinceApplyConfiguration) WithAPIVersion(value string) *VinceApplyConfig
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithName(value string) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithName(value string) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Name = &value
 	return b
@@ -59,7 +59,7 @@ func (b *VinceApplyConfiguration) WithName(value string) *VinceApplyConfiguratio
 // WithGenerateName sets the GenerateName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GenerateName field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithGenerateName(value string) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithGenerateName(value string) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.GenerateName = &value
 	return b
@@ -68,7 +68,7 @@ func (b *VinceApplyConfiguration) WithGenerateName(value string) *VinceApplyConf
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithNamespace(value string) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithNamespace(value string) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Namespace = &value
 	return b
@@ -77,7 +77,7 @@ func (b *VinceApplyConfiguration) WithNamespace(value string) *VinceApplyConfigu
 // WithUID sets the UID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UID field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithUID(value types.UID) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithUID(value types.UID) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.UID = &value
 	return b
@@ -86,7 +86,7 @@ func (b *VinceApplyConfiguration) WithUID(value types.UID) *VinceApplyConfigurat
 // WithResourceVersion sets the ResourceVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithResourceVersion(value string) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithResourceVersion(value string) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ResourceVersion = &value
 	return b
@@ -95,7 +95,7 @@ func (b *VinceApplyConfiguration) WithResourceVersion(value string) *VinceApplyC
 // WithGeneration sets the Generation field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Generation field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithGeneration(value int64) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithGeneration(value int64) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Generation = &value
 	return b
@@ -104,7 +104,7 @@ func (b *VinceApplyConfiguration) WithGeneration(value int64) *VinceApplyConfigu
 // WithCreationTimestamp sets the CreationTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithCreationTimestamp(value metav1.Time) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithCreationTimestamp(value metav1.Time) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.CreationTimestamp = &value
 	return b
@@ -113,7 +113,7 @@ func (b *VinceApplyConfiguration) WithCreationTimestamp(value metav1.Time) *Vinc
 // WithDeletionTimestamp sets the DeletionTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionTimestamp = &value
 	return b
@@ -122,7 +122,7 @@ func (b *VinceApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *Vinc
 // WithDeletionGracePeriodSeconds sets the DeletionGracePeriodSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionGracePeriodSeconds = &value
 	return b
@@ -132,7 +132,7 @@ func (b *VinceApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *V
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Labels field,
 // overwriting an existing map entries in Labels field with the same key.
-func (b *VinceApplyConfiguration) WithLabels(entries map[string]string) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithLabels(entries map[string]string) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Labels == nil && len(entries) > 0 {
 		b.Labels = make(map[string]string, len(entries))
@@ -147,7 +147,7 @@ func (b *VinceApplyConfiguration) WithLabels(entries map[string]string) *VinceAp
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Annotations field,
 // overwriting an existing map entries in Annotations field with the same key.
-func (b *VinceApplyConfiguration) WithAnnotations(entries map[string]string) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithAnnotations(entries map[string]string) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Annotations == nil && len(entries) > 0 {
 		b.Annotations = make(map[string]string, len(entries))
@@ -161,7 +161,7 @@ func (b *VinceApplyConfiguration) WithAnnotations(entries map[string]string) *Vi
 // WithOwnerReferences adds the given value to the OwnerReferences field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the OwnerReferences field.
-func (b *VinceApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		if values[i] == nil {
@@ -175,7 +175,7 @@ func (b *VinceApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferen
 // WithFinalizers adds the given value to the Finalizers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Finalizers field.
-func (b *VinceApplyConfiguration) WithFinalizers(values ...string) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithFinalizers(values ...string) *ConfigApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.Finalizers = append(b.Finalizers, values[i])
@@ -183,7 +183,7 @@ func (b *VinceApplyConfiguration) WithFinalizers(values ...string) *VinceApplyCo
 	return b
 }
 
-func (b *VinceApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
+func (b *ConfigApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &v1.ObjectMetaApplyConfiguration{}
 	}
@@ -192,7 +192,7 @@ func (b *VinceApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithSpec(value *VinceSpecApplyConfiguration) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithSpec(value *ConfigSpecApplyConfiguration) *ConfigApplyConfiguration {
 	b.Spec = value
 	return b
 }
@@ -200,7 +200,7 @@ func (b *VinceApplyConfiguration) WithSpec(value *VinceSpecApplyConfiguration) *
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *VinceApplyConfiguration) WithStatus(value *VinceStatusApplyConfiguration) *VinceApplyConfiguration {
+func (b *ConfigApplyConfiguration) WithStatus(value *ConfigStatusApplyConfiguration) *ConfigApplyConfiguration {
 	b.Status = value
 	return b
 }

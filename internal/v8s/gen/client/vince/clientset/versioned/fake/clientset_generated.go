@@ -7,8 +7,8 @@ package fake
 
 import (
 	clientset "github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/clientset/versioned"
-	staplesv1alpha1 "github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
-	fakestaplesv1alpha1 "github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/clientset/versioned/typed/vince/v1alpha1/fake"
+	vincev1alpha1 "github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
+	fakevincev1alpha1 "github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/clientset/versioned/typed/vince/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -66,7 +66,7 @@ var (
 	_ testing.FakeClient  = &Clientset{}
 )
 
-// StaplesV1alpha1 retrieves the StaplesV1alpha1Client
-func (c *Clientset) StaplesV1alpha1() staplesv1alpha1.StaplesV1alpha1Interface {
-	return &fakestaplesv1alpha1.FakeStaplesV1alpha1{Fake: &c.Fake}
+// VinceV1alpha1 retrieves the VinceV1alpha1Client
+func (c *Clientset) VinceV1alpha1() vincev1alpha1.VinceV1alpha1Interface {
+	return &fakevincev1alpha1.FakeVinceV1alpha1{Fake: &c.Fake}
 }

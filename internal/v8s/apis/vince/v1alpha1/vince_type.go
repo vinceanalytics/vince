@@ -9,18 +9,16 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type Vince struct {
+// Config holds configuration for a vince instance
+type Config struct {
 	metav1.TypeMeta `json:",inline"`
-
-	// Standard object's metadata.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              VinceSpec   `json:"spec"`
-	Status            VinceStatus `json:"status,omitempty"`
+	Spec              ConfigSpec   `json:"spec"`
+	Status            ConfigStatus `json:"status,omitempty"`
 }
 
-type VinceSpec struct {
+type ConfigSpec struct {
 	Volume    `json:"volume"`
 	Container `json:"container"`
 }
@@ -42,16 +40,15 @@ type Container struct {
 	Resources v1.ResourceRequirements `json:"resources"`
 }
 
-// VinceStatus tracks status of resources that are created from Vince.
-type VinceStatus struct {
+type ConfigStatus struct {
 	// A list of sites attached to this Vince instance.
 	//+optional
 	Sites []string `json:"sites,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type VinceList struct {
+type ConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
-	Items           []Vince `json:"items"`
+	Items           []Config `json:"items"`
 }

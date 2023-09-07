@@ -15,7 +15,13 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=staples, Version=v1alpha1
+	// Group=vince, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("Config"):
+		return &vincev1alpha1.ConfigApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ConfigSpec"):
+		return &vincev1alpha1.ConfigSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ConfigStatus"):
+		return &vincev1alpha1.ConfigStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Container"):
 		return &vincev1alpha1.ContainerApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Site"):
@@ -26,12 +32,6 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &vincev1alpha1.SiteStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Target"):
 		return &vincev1alpha1.TargetApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("Vince"):
-		return &vincev1alpha1.VinceApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("VinceSpec"):
-		return &vincev1alpha1.VinceSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("VinceStatus"):
-		return &vincev1alpha1.VinceStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Volume"):
 		return &vincev1alpha1.VolumeApplyConfiguration{}
 

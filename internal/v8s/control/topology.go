@@ -22,7 +22,7 @@ import (
 
 type Topology struct {
 	clients           k8s.Client
-	vinceLister       vince_listers.VinceLister
+	vinceLister       vince_listers.ConfigLister
 	siteLister        vince_listers.SiteLister
 	statefulSetLister app_listers.StatefulSetLister
 	serviceLister     listers.ServiceLister
@@ -32,7 +32,7 @@ type Topology struct {
 
 func NewTopology(
 	clients k8s.Client,
-	vinceLister vince_listers.VinceLister,
+	vinceLister vince_listers.ConfigLister,
 	siteLister vince_listers.SiteLister,
 	statefulSetLister app_listers.StatefulSetLister,
 	serviceLister listers.ServiceLister,
@@ -61,7 +61,7 @@ func (t *Topology) loadResources(filter *k8s.ResourceFilter) (*Resources, error)
 	r := &Resources{
 		Secrets:     make(map[string]*corev1.Secret),
 		Service:     make(map[string]*corev1.Service),
-		Vinces:      make(map[string]*v1alpha1.Vince),
+		Vinces:      make(map[string]*v1alpha1.Config),
 		Sites:       make(map[string][]*v1alpha1.Site),
 		StatefulSet: make(map[string]*appsv1.StatefulSet),
 	}
@@ -138,7 +138,7 @@ type Resources struct {
 	Secrets     map[string]*corev1.Secret
 	Service     map[string]*corev1.Service
 	StatefulSet map[string]*appsv1.StatefulSet
-	Vinces      map[string]*v1alpha1.Vince
+	Vinces      map[string]*v1alpha1.Config
 	Sites       map[string][]*v1alpha1.Site
 }
 
@@ -289,7 +289,7 @@ func key(o metav1.Object) string {
 	return ts.String()
 }
 
-func createSecret(o *v1alpha1.Vince) *corev1.Secret {
+func createSecret(o *v1alpha1.Config) *corev1.Secret {
 	var ok bool
 	ok = true
 	return &corev1.Secret{
@@ -307,7 +307,7 @@ func createSecret(o *v1alpha1.Vince) *corev1.Secret {
 	}
 }
 
-func createStatefulSet(o *v1alpha1.Vince, defaultImage string) (*corev1.Service, *appsv1.StatefulSet) {
+func createStatefulSet(o *v1alpha1.Config, defaultImage string) (*corev1.Service, *appsv1.StatefulSet) {
 	volume := v1.PersistentVolumeClaimSpec{
 		AccessModes: []corev1.PersistentVolumeAccessMode{
 			corev1.ReadWriteOncePod,

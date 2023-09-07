@@ -4,19 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.0
-  name: vinces.staples
+  name: configs.vince
 spec:
-  group: staples
+  group: vince
   names:
-    kind: Vince
-    listKind: VinceList
-    plural: vinces
-    singular: vince
+    kind: Config
+    listKind: ConfigList
+    plural: configs
+    singular: config
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
+        description: Config holds configuration for a vince instance
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -270,8 +271,6 @@ spec:
             - volume
             type: object
           status:
-            description: VinceStatus tracks status of resources that are created from
-              Vince.
             properties:
               sites:
                 description: A list of sites attached to this Vince instance.

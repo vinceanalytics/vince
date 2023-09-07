@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"net/http"
 
-	staplesv1alpha1 "github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
+	vincev1alpha1 "github.com/vinceanalytics/vince/internal/v8s/gen/client/vince/clientset/versioned/typed/vince/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -17,18 +17,18 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	StaplesV1alpha1() staplesv1alpha1.StaplesV1alpha1Interface
+	VinceV1alpha1() vincev1alpha1.VinceV1alpha1Interface
 }
 
 // Clientset contains the clients for groups.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	staplesV1alpha1 *staplesv1alpha1.StaplesV1alpha1Client
+	vinceV1alpha1 *vincev1alpha1.VinceV1alpha1Client
 }
 
-// StaplesV1alpha1 retrieves the StaplesV1alpha1Client
-func (c *Clientset) StaplesV1alpha1() staplesv1alpha1.StaplesV1alpha1Interface {
-	return c.staplesV1alpha1
+// VinceV1alpha1 retrieves the VinceV1alpha1Client
+func (c *Clientset) VinceV1alpha1() vincev1alpha1.VinceV1alpha1Interface {
+	return c.vinceV1alpha1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -75,7 +75,7 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 
 	var cs Clientset
 	var err error
-	cs.staplesV1alpha1, err = staplesv1alpha1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	cs.vinceV1alpha1, err = vincev1alpha1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.staplesV1alpha1 = staplesv1alpha1.New(c)
+	cs.vinceV1alpha1 = vincev1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

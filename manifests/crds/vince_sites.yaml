@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.0
-  name: sites.staples
+  name: sites.vince
 spec:
-  group: staples
+  group: vince
   names:
     kind: Site
     listKind: SiteList

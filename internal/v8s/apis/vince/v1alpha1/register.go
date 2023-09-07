@@ -9,7 +9,7 @@ import (
 // SchemeGroupVersion is the identifier for the API which includes
 // the name of the group and the version of the API
 var SchemeGroupVersion = schema.GroupVersion{
-	Group:   "staples",
+	Group:   "vince",
 	Version: "v1alpha1",
 }
 
@@ -40,8 +40,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Site{},
 		&SiteList{},
-		&Vince{},
-		&VinceList{},
+		&Config{},
+		&ConfigList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

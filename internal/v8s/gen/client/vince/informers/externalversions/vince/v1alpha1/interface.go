@@ -11,10 +11,10 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// Configs returns a ConfigInformer.
+	Configs() ConfigInformer
 	// Sites returns a SiteInformer.
 	Sites() SiteInformer
-	// Vinces returns a VinceInformer.
-	Vinces() VinceInformer
 }
 
 type version struct {
@@ -28,12 +28,12 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
+// Configs returns a ConfigInformer.
+func (v *version) Configs() ConfigInformer {
+	return &configInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
 // Sites returns a SiteInformer.
 func (v *version) Sites() SiteInformer {
 	return &siteInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// Vinces returns a VinceInformer.
-func (v *version) Vinces() VinceInformer {
-	return &vinceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

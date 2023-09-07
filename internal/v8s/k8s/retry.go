@@ -89,8 +89,8 @@ func (r *Retry) DeleteStatefulSet(ctx context.Context, clients Client, set *apps
 	}, r.opts)
 }
 
-func (r *Retry) UpdateVinceStatus(ctx context.Context, clients Client, set *v1alpha1.Vince) error {
-	x := clients.Vince().StaplesV1alpha1().Vinces(set.Namespace)
+func (r *Retry) UpdateVinceStatus(ctx context.Context, clients Client, set *v1alpha1.Config) error {
+	x := clients.Vince().VinceV1alpha1().Configs(set.Namespace)
 	r.opts.Reset()
 	return backoff.Retry(func() error {
 		_, err := x.UpdateStatus(ctx, set.DeepCopy(), metav1.UpdateOptions{})

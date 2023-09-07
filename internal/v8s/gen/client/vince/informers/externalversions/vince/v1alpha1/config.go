@@ -19,59 +19,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// VinceInformer provides access to a shared informer and lister for
-// Vinces.
-type VinceInformer interface {
+// ConfigInformer provides access to a shared informer and lister for
+// Configs.
+type ConfigInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.VinceLister
+	Lister() v1alpha1.ConfigLister
 }
 
-type vinceInformer struct {
+type configInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewVinceInformer constructs a new informer for Vince type.
+// NewConfigInformer constructs a new informer for Config type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewVinceInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredVinceInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewConfigInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredConfigInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredVinceInformer constructs a new informer for Vince type.
+// NewFilteredConfigInformer constructs a new informer for Config type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredVinceInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredConfigInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.StaplesV1alpha1().Vinces(namespace).List(context.TODO(), options)
+				return client.VinceV1alpha1().Configs(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.StaplesV1alpha1().Vinces(namespace).Watch(context.TODO(), options)
+				return client.VinceV1alpha1().Configs(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&vincev1alpha1.Vince{},
+		&vincev1alpha1.Config{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *vinceInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredVinceInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *configInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredConfigInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *vinceInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&vincev1alpha1.Vince{}, f.defaultInformer)
+func (f *configInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&vincev1alpha1.Config{}, f.defaultInformer)
 }
 
-func (f *vinceInformer) Lister() v1alpha1.VinceLister {
-	return v1alpha1.NewVinceLister(f.Informer().GetIndexer())
+func (f *configInformer) Lister() v1alpha1.ConfigLister {
+	return v1alpha1.NewConfigLister(f.Informer().GetIndexer())
 }

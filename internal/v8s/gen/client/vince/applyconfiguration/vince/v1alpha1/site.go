@@ -27,7 +27,7 @@ func Site(name, namespace string) *SiteApplyConfiguration {
 	b.WithName(name)
 	b.WithNamespace(namespace)
 	b.WithKind("Site")
-	b.WithAPIVersion("staples/v1alpha1")
+	b.WithAPIVersion("vince/v1alpha1")
 	return b
 }
 
