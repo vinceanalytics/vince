@@ -3,8 +3,7 @@ package api
 import (
 	"context"
 
-	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -14,9 +13,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (a *API) CreateSite(ctx context.Context, req *apiv1.CreateSiteRequest) (*apiv1.CreateSiteResponse, error) {
-	response := v1.CreateSiteResponse{
-		Site: &v1.Site{
+var _ sitesv1.SitesServer = (*API)(nil)
+
+func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*sitesv1.CreateSiteResponse, error) {
+	response := sitesv1.CreateSiteResponse{
+		Site: &sitesv1.Site{
 			Domain: req.Domain,
 		},
 	}
@@ -38,8 +39,8 @@ func (a *API) CreateSite(ctx context.Context, req *apiv1.CreateSiteRequest) (*ap
 	return &response, nil
 }
 
-func (a *API) GetSite(ctx context.Context, req *apiv1.GetSiteRequest) (*apiv1.GetSiteResponse, error) {
-	var o apiv1.Site
+func (a *API) GetSite(ctx context.Context, req *sitesv1.GetSiteRequest) (*sitesv1.GetSiteResponse, error) {
+	var o sitesv1.Site
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
 		defer key.Release()
@@ -53,11 +54,11 @@ func (a *API) GetSite(ctx context.Context, req *apiv1.GetSiteRequest) (*apiv1.Ge
 	if err != nil {
 		return nil, err
 	}
-	return &apiv1.GetSiteResponse{Site: &o}, nil
+	return &sitesv1.GetSiteResponse{Site: &o}, nil
 }
 
-func (a *API) ListSites(ctx context.Context, req *apiv1.ListSitesRequest) (*apiv1.ListSitesResponse, error) {
-	o := v1.ListSitesResponse{}
+func (a *API) ListSites(ctx context.Context, req *sitesv1.ListSitesRequest) (*sitesv1.ListSitesResponse, error) {
+	o := sitesv1.ListSitesResponse{}
 	db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site("")
 		defer key.Release()
@@ -69,7 +70,7 @@ func (a *API) ListSites(ctx context.Context, req *apiv1.ListSitesRequest) (*apiv
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
 			it.Value(func(val []byte) error {
-				var n v1.Site
+				var n sitesv1.Site
 				must.One(proto.Unmarshal(val, &n))("failed decoding site object")
 				o.List = append(o.List, &n)
 				return nil
@@ -80,7 +81,7 @@ func (a *API) ListSites(ctx context.Context, req *apiv1.ListSitesRequest) (*apiv
 	return &o, nil
 }
 
-func (a *API) DeleteSite(ctx context.Context, req *apiv1.DeleteSiteRequest) (*apiv1.DeleteSiteResponse, error) {
+func (a *API) DeleteSite(ctx context.Context, req *sitesv1.DeleteSiteRequest) (*sitesv1.DeleteSiteResponse, error) {
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
 		defer key.Release()
@@ -94,5 +95,5 @@ func (a *API) DeleteSite(ctx context.Context, req *apiv1.DeleteSiteRequest) (*ap
 	if err != nil {
 		return nil, err
 	}
-	return &apiv1.DeleteSiteResponse{}, nil
+	return &sitesv1.DeleteSiteResponse{}, nil
 }

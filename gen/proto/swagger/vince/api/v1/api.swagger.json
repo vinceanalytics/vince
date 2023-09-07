@@ -234,114 +234,6 @@
         ]
       }
     },
-    "/v1/site": {
-      "get": {
-        "operationId": "Vince_GetSite",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetSiteResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "domain",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "Vince"
-        ]
-      },
-      "delete": {
-        "operationId": "Vince_DeleteSite",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1DeleteSiteResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "domain",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "Vince"
-        ]
-      }
-    },
-    "/v1/sites": {
-      "get": {
-        "operationId": "Vince_ListSites",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListSitesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "Vince"
-        ]
-      },
-      "post": {
-        "operationId": "Vince_CreateSite",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1CreateSiteResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "domain",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "Vince"
-        ]
-      }
-    },
     "/v1/version": {
       "get": {
         "operationId": "Vince_Version",
@@ -522,42 +414,11 @@
         }
       }
     },
-    "v1CreateSiteResponse": {
-      "type": "object",
-      "properties": {
-        "site": {
-          "$ref": "#/definitions/v1Site"
-        }
-      }
-    },
-    "v1DeleteSiteResponse": {
-      "type": "object"
-    },
     "v1GetClusterResponse": {
       "type": "object",
       "properties": {
         "config": {
           "$ref": "#/definitions/v1ClusterConfig"
-        }
-      }
-    },
-    "v1GetSiteResponse": {
-      "type": "object",
-      "properties": {
-        "site": {
-          "$ref": "#/definitions/v1Site"
-        }
-      }
-    },
-    "v1ListSitesResponse": {
-      "type": "object",
-      "properties": {
-        "list": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Site"
-          }
         }
       }
     },
@@ -588,14 +449,6 @@
             "type": "object",
             "$ref": "#/definitions/QueryRow"
           }
-        }
-      }
-    },
-    "v1Site": {
-      "type": "object",
-      "properties": {
-        "domain": {
-          "type": "string"
         }
       }
     }

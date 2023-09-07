@@ -1,7 +1,7 @@
 
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
 import {
-    VinceClient
+    VinceClient, SitesClient
 } from "./proto";
 
 export * from "./proto"
@@ -30,7 +30,16 @@ export type Basic = {
     password: string
 }
 
-export const createClient = ({ token, basic }: CreateOptions) => {
+
+export const createVinceClient = (opts: CreateOptions) => {
+    return new VinceClient(createTransport(opts))
+}
+
+export const createSitesClient = (opts: CreateOptions) => {
+    return new SitesClient(createTransport(opts))
+}
+
+const createTransport = ({ token, basic }: CreateOptions) => {
     let auth = ''
     if (token) {
         auth = `Bearer ${token}`
@@ -39,7 +48,7 @@ export const createClient = ({ token, basic }: CreateOptions) => {
         const base = btoa(basic.username + ":" + basic.password)
         auth = `Basic ${base}`
     }
-    return new VinceClient(new GrpcWebFetchTransport({
+    return new GrpcWebFetchTransport({
         baseUrl: window.location.origin,
         interceptors: [
             {
@@ -52,11 +61,11 @@ export const createClient = ({ token, basic }: CreateOptions) => {
                 },
             },
         ],
-    }))
+    })
 }
 
 export const login = (username: string, password: string) => {
-    const client = createClient({
+    const client = createVinceClient({
         basic: {
             username, password,
         }

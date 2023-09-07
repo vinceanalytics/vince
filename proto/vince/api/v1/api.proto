@@ -14,26 +14,6 @@ service Vince {
       post : "/v1/login"
     };
   };
-  rpc CreateSite(CreateSiteRequest) returns (CreateSiteResponse) {
-    option (google.api.http) = {
-      post : "/v1/sites"
-    };
-  };
-  rpc GetSite(GetSiteRequest) returns (GetSiteResponse) {
-    option (google.api.http) = {
-      get : "/v1/site"
-    };
-  };
-  rpc ListSites(ListSitesRequest) returns (ListSitesResponse) {
-    option (google.api.http) = {
-      get : "/v1/sites"
-    };
-  };
-  rpc DeleteSite(DeleteSiteRequest) returns (DeleteSiteResponse) {
-    option (google.api.http) = {
-      delete : "/v1/site"
-    };
-  };
   rpc Query(QueryRequest) returns (QueryResponse) {
     option (google.api.http) = {
       post : "/v1/query"
@@ -98,31 +78,6 @@ message LoginRequest {
 }
 
 message LoginResponse { Client.Auth auth = 1; }
-
-message Site { string domain = 1; }
-message CreateSiteRequest {
-  string domain = 1 [
-    (buf.validate.field).string.hostname = true,
-    (buf.validate.field).required = true
-  ];
-}
-message CreateSiteResponse { Site site = 1; }
-message GetSiteRequest {
-  string domain = 1 [
-    (buf.validate.field).string.hostname = true,
-    (buf.validate.field).required = true
-  ];
-}
-message GetSiteResponse { Site site = 1; }
-message ListSitesRequest {}
-message ListSitesResponse { repeated Site list = 1; }
-message DeleteSiteRequest {
-  string domain = 1 [
-    (buf.validate.field).string.hostname = true,
-    (buf.validate.field).required = true
-  ];
-}
-message DeleteSiteResponse {}
 
 message Account {
   string name = 1;

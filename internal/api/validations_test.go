@@ -6,6 +6,7 @@ import (
 
 	"github.com/bufbuild/protovalidate-go"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -13,18 +14,18 @@ func TestCreateSiteRequest(t *testing.T) {
 	(CaseList{
 		{
 			Name:     "domain is required",
-			Message:  &v1.CreateSiteRequest{},
+			Message:  &sitesv1.CreateSiteRequest{},
 			Contains: "domain: value is required ",
 		},
 		{
 			Name:     "reject invalid hostname",
-			Message:  &v1.CreateSiteRequest{Domain: "https://vinceanalytics.github.com"},
+			Message:  &sitesv1.CreateSiteRequest{Domain: "https://vinceanalytics.github.com"},
 			Contains: "domain: value must be a valid hostname ",
 		},
 		{
 			Name:    "accept valid hostname",
 			Pass:    true,
-			Message: &v1.CreateSiteRequest{Domain: "vinceanalytics.github.com"},
+			Message: &sitesv1.CreateSiteRequest{Domain: "vinceanalytics.github.com"},
 		},
 	}).Apply(t)
 }

@@ -1,6 +1,9 @@
 import React, { createContext, PropsWithChildren, useContext, useEffect, useState } from "react"
 
-import { VinceClient, createClient } from "../../vince";
+import {
+    VinceClient, createVinceClient,
+    SitesClient, createSitesClient
+} from "../../vince";
 import { useLocalStorage } from "../LocalStorageProvider";
 
 
@@ -8,26 +11,30 @@ type Props = {}
 
 type ContextProps = {
     vince: VinceClient | undefined
+    sitesClient: SitesClient | undefined
 }
 
 const defaultValues = {
     vince: undefined,
+    sitesClient: undefined,
 }
 
 export const VinceContext = createContext<ContextProps>(defaultValues)
 
 export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
     const { authPayload } = useLocalStorage()
-    const [vince, setClient] = useState<VinceClient | undefined>(undefined)
+    const [vince, setVinceClient] = useState<VinceClient | undefined>(undefined)
+    const [sitesClient, setSitesClient] = useState<SitesClient | undefined>(undefined)
     useEffect(() => {
         if (authPayload !== "") {
-            setClient(createClient({ token: authPayload }))
+            setVinceClient(createVinceClient({ token: authPayload }))
+            setSitesClient(createSitesClient({ token: authPayload }))
         }
-    }, [authPayload, setClient])
+    }, [authPayload, setVinceClient, setSitesClient])
     return (
         <VinceContext.Provider
             value={{
-                vince,
+                vince, sitesClient: sitesClient,
             }}
         >
             {children}

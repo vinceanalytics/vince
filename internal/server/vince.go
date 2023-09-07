@@ -28,6 +28,7 @@ import (
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/assets"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/config"
@@ -230,6 +231,8 @@ func New(ctx context.Context) *Vince {
 	reflection.Register(srv)
 	grpc_health.RegisterHealthServer(srv, v.HealthServer())
 	v1.RegisterVinceServer(srv, &api.API{})
+	sitesv1.RegisterSitesServer(srv, &api.API{})
+
 	routes := Handle(ctx, v.Registry)
 	v.Server = http.Server{
 		Addr:              o.ListenAddress,

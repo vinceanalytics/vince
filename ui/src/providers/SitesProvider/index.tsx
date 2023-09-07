@@ -20,10 +20,9 @@ const SitesContext = createContext<ContextProps>(defaultValues)
 
 export const SitesProvider = ({ children }: PropsWithChildren<{}>) => {
     const [sites, setSites] = useState<Site[]>([])
-    const { updateSettings } = useLocalStorage()
-    const { vince } = useVince()
+    const { sitesClient } = useVince()
     const refresh = () => {
-        vince?.listSites({}).then((result) => {
+        sitesClient?.listSites({}).then((result) => {
             setSites(result.response.list)
         })
             .catch((e) => {
@@ -31,10 +30,10 @@ export const SitesProvider = ({ children }: PropsWithChildren<{}>) => {
             })
     }
     useEffect(() => {
-        if (vince) {
+        if (sitesClient) {
             refresh()
         }
-    }, [vince])
+    }, [sitesClient])
 
     return (
         <SitesContext.Provider

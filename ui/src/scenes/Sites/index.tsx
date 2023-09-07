@@ -55,7 +55,7 @@ const Columns = ({ id }: ColumnProps) => {
 }
 
 const Sites = () => {
-  const { vince } = useVince()
+  const { sitesClient } = useVince()
   const { sites, refresh } = useSites()
 
   const [isOpen, setIsOpen] = useState(false);
@@ -65,7 +65,7 @@ const Sites = () => {
 
   const submitNewSite = useCallback(() => {
     setIsOpen(false)
-    vince?.createSite({ domain }).then((result) => {
+    sitesClient?.createSite({ domain }).then((result) => {
       refresh()
     })
       .catch((e) => {

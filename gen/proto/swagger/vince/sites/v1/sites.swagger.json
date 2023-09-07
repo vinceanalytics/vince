@@ -1,0 +1,197 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "vince/sites/v1/sites.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Sites"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/site": {
+      "get": {
+        "operationId": "Sites_GetSite",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetSiteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Sites"
+        ]
+      },
+      "delete": {
+        "operationId": "Sites_DeleteSite",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteSiteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Sites"
+        ]
+      }
+    },
+    "/v1/sites": {
+      "get": {
+        "operationId": "Sites_ListSites",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSitesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Sites"
+        ]
+      },
+      "post": {
+        "operationId": "Sites_CreateSite",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateSiteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Sites"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "v1CreateSiteResponse": {
+      "type": "object",
+      "properties": {
+        "site": {
+          "$ref": "#/definitions/v1Site"
+        }
+      }
+    },
+    "v1DeleteSiteResponse": {
+      "type": "object"
+    },
+    "v1GetSiteResponse": {
+      "type": "object",
+      "properties": {
+        "site": {
+          "$ref": "#/definitions/v1Site"
+        }
+      }
+    },
+    "v1ListSitesResponse": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Site"
+          }
+        }
+      }
+    },
+    "v1Site": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
