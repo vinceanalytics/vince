@@ -56,7 +56,7 @@ func (*API) Login(ctx context.Context, tr *apiv1.LoginRequest) (*apiv1.LoginResp
 	})
 	if err != nil {
 		slog.Error("failed saving token", "err", err)
-		return nil, status.Error(codes.Internal, "something went wrong")
+		return nil, e500
 	}
 	o := config.Get(ctx)
 	return &apiv1.LoginResponse{

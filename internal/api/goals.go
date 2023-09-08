@@ -18,6 +18,12 @@ import (
 
 var _ goalsv1.GoalsServer = (*API)(nil)
 
+var goalE404 = status.Error(codes.NotFound, "goal does not exist")
+
+func GoalE404() error {
+	return goalE404
+}
+
 func (a *API) CreateGoal(ctx context.Context, req *goalsv1.CreateGoalRequest) (*goalsv1.CreateGoalResponse, error) {
 	var site sitesv1.Site
 	goal := &goalsv1.Goal{
@@ -29,9 +35,7 @@ func (a *API) CreateGoal(ctx context.Context, req *goalsv1.CreateGoalRequest) (*
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
 		defer key.Release()
-		err := txn.Get(key.Bytes(), px.Decode(&site), func() error {
-			return status.Error(codes.NotFound, "site does not exist")
-		})
+		err := txn.Get(key.Bytes(), px.Decode(&site), GoalE404)
 		if err != nil {
 			return err
 		}
@@ -59,9 +63,7 @@ func (a *API) GetGoal(ctx context.Context, req *goalsv1.GetGoalRequest) (*goalsv
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
 		defer key.Release()
-		err := txn.Get(key.Bytes(), px.Decode(&site), func() error {
-			return status.Error(codes.NotFound, "site does not exist")
-		})
+		err := txn.Get(key.Bytes(), px.Decode(&site), Sites404)
 		if err != nil {
 			return err
 		}
@@ -74,7 +76,7 @@ func (a *API) GetGoal(ctx context.Context, req *goalsv1.GetGoalRequest) (*goalsv
 		return nil, err
 	}
 	if goal == nil {
-		return nil, status.Error(codes.NotFound, "goal does not exist")
+		return nil, goalE404
 	}
 	return goal, nil
 }
@@ -85,9 +87,7 @@ func (a *API) ListGoals(ctx context.Context, req *goalsv1.ListGoalsRequest) (*go
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
 		defer key.Release()
-		err := txn.Get(key.Bytes(), px.Decode(&site), func() error {
-			return status.Error(codes.NotFound, "site does not exist")
-		})
+		err := txn.Get(key.Bytes(), px.Decode(&site), Sites404)
 		if err != nil {
 			return err
 		}
@@ -112,14 +112,12 @@ func (a *API) DeleteGoal(ctx context.Context, req *goalsv1.DeleteGoalRequest) (*
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
 		defer key.Release()
-		err := txn.Get(key.Bytes(), px.Decode(&site), func() error {
-			return status.Error(codes.NotFound, "site does not exist")
-		})
+		err := txn.Get(key.Bytes(), px.Decode(&site), Sites404)
 		if err != nil {
 			return err
 		}
 		if site.Goals == nil || site.Goals[req.Id] == nil {
-			return status.Error(codes.NotFound, "goal does not exist")
+			return goalE404
 		}
 		delete(site.Goals, req.Id)
 		return txn.Set(key.Bytes(), px.Encode(&site))

@@ -10,6 +10,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/px"
 	"github.com/vinceanalytics/vince/internal/tokens"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -17,7 +19,7 @@ import (
 
 var _ snippetsv1.SnippetsServer = (*API)(nil)
 
-var snippets404 = E404("snippet does not exists")
+var snippets404 = status.Error(codes.NotFound, "snippet does not exists")
 
 func SnippetsE404() error {
 	return snippets404
@@ -100,9 +102,7 @@ func (a *API) DeleteSnippet(ctx context.Context, req *snippetsv1.DeleteSnippetRe
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Snippet(me.Name, req.Id)
 		defer key.Release()
-		return txn.Delete(key.Bytes(), func() error {
-			return E404("snippet does not exist")
-		})
+		return txn.Delete(key.Bytes(), SnippetsE404)
 	})
 	if err != nil {
 		return nil, err

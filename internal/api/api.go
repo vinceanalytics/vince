@@ -20,6 +20,8 @@ type API struct {
 
 var _ v1.VinceServer = (*API)(nil)
 
-func E404(msg string) error {
-	return status.Error(codes.NotFound, msg)
+var e500 = status.Error(codes.Internal, "something went wrong")
+
+func E500() error {
+	return e500
 }
