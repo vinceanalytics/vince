@@ -45,6 +45,24 @@ message Config {
 
   repeated string allowed_origins = 14;
 
+  // Ed5519 private key used for generating and verifying jwt tokens.
+  SecretKey secret_key = 15 [ (buf.validate.field).required = true ];
+
+  // ED25519 private key used for generating JWT tokens.
+  message SecretKey {
+    // pem encoded PRIVATE KEY
+    oneof value {
+      // Environment variable that key will be read from. The value of the env
+      // variable must be base64 encoded.
+      string env = 1;
+
+      // Path to file on disk that contains the secret.
+      string file = 2;
+
+      // base64 encoded string of the key
+      string raw = 3;
+    }
+  }
   message Notifier {
     string name = 1;
     oneof provider {

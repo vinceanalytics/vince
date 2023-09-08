@@ -85,6 +85,50 @@ export interface Config {
      * @generated from protobuf field: repeated string allowed_origins = 14;
      */
     allowedOrigins: string[];
+    /**
+     * Ed5519 private key used for generating and verifying jwt tokens.
+     *
+     * @generated from protobuf field: v1.Config.SecretKey secret_key = 15;
+     */
+    secretKey?: Config_SecretKey;
+}
+/**
+ * ED25519 private key used for generating JWT tokens.
+ *
+ * @generated from protobuf message v1.Config.SecretKey
+ */
+export interface Config_SecretKey {
+    /**
+     * @generated from protobuf oneof: value
+     */
+    value: {
+        oneofKind: "env";
+        /**
+         * Environment variable that key will be read from. The value of the env
+         * variable must be base64 encoded.
+         *
+         * @generated from protobuf field: string env = 1;
+         */
+        env: string;
+    } | {
+        oneofKind: "file";
+        /**
+         * Path to file on disk that contains the secret.
+         *
+         * @generated from protobuf field: string file = 2;
+         */
+        file: string;
+    } | {
+        oneofKind: "raw";
+        /**
+         * base64 encoded string of the key
+         *
+         * @generated from protobuf field: string raw = 3;
+         */
+        raw: string;
+    } | {
+        oneofKind: undefined;
+    };
 }
 /**
  * @generated from protobuf message v1.Config.Notifier
@@ -777,7 +821,8 @@ class Config$Type extends MessageType<Config> {
             { no: 11, name: "notifiers", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Config_Notifier },
             { no: 12, name: "server_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 13, name: "raft_path", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
-            { no: 14, name: "allowed_origins", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ }
+            { no: 14, name: "allowed_origins", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
+            { no: 15, name: "secret_key", kind: "message", T: () => Config_SecretKey, options: { "buf.validate.field": { required: true } } }
         ]);
     }
     create(value?: PartialMessage<Config>): Config {
@@ -831,6 +876,9 @@ class Config$Type extends MessageType<Config> {
                 case /* repeated string allowed_origins */ 14:
                     message.allowedOrigins.push(reader.string());
                     break;
+                case /* v1.Config.SecretKey secret_key */ 15:
+                    message.secretKey = Config_SecretKey.internalBinaryRead(reader, reader.uint32(), options, message.secretKey);
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -882,6 +930,9 @@ class Config$Type extends MessageType<Config> {
         /* repeated string allowed_origins = 14; */
         for (let i = 0; i < message.allowedOrigins.length; i++)
             writer.tag(14, WireType.LengthDelimited).string(message.allowedOrigins[i]);
+        /* v1.Config.SecretKey secret_key = 15; */
+        if (message.secretKey)
+            Config_SecretKey.internalBinaryWrite(message.secretKey, writer.tag(15, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -892,6 +943,76 @@ class Config$Type extends MessageType<Config> {
  * @generated MessageType for protobuf message v1.Config
  */
 export const Config = new Config$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Config_SecretKey$Type extends MessageType<Config_SecretKey> {
+    constructor() {
+        super("v1.Config.SecretKey", [
+            { no: 1, name: "env", kind: "scalar", oneof: "value", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "file", kind: "scalar", oneof: "value", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "raw", kind: "scalar", oneof: "value", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<Config_SecretKey>): Config_SecretKey {
+        const message = { value: { oneofKind: undefined } };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Config_SecretKey>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Config_SecretKey): Config_SecretKey {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string env */ 1:
+                    message.value = {
+                        oneofKind: "env",
+                        env: reader.string()
+                    };
+                    break;
+                case /* string file */ 2:
+                    message.value = {
+                        oneofKind: "file",
+                        file: reader.string()
+                    };
+                    break;
+                case /* string raw */ 3:
+                    message.value = {
+                        oneofKind: "raw",
+                        raw: reader.string()
+                    };
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: Config_SecretKey, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string env = 1; */
+        if (message.value.oneofKind === "env")
+            writer.tag(1, WireType.LengthDelimited).string(message.value.env);
+        /* string file = 2; */
+        if (message.value.oneofKind === "file")
+            writer.tag(2, WireType.LengthDelimited).string(message.value.file);
+        /* string raw = 3; */
+        if (message.value.oneofKind === "raw")
+            writer.tag(3, WireType.LengthDelimited).string(message.value.raw);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.Config.SecretKey
+ */
+export const Config_SecretKey = new Config_SecretKey$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Config_Notifier$Type extends MessageType<Config_Notifier> {
     constructor() {

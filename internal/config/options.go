@@ -15,6 +15,7 @@ const (
 	DB_PATH     = "db"
 	BLOCKS_PATH = "blocks"
 	RAFT_PATH   = "raft"
+	SECRET_KEY  = "secret_key"
 )
 
 var (
@@ -40,6 +41,11 @@ func Defaults() *v1.Config {
 		MysqlListenAddress: ":3306",
 		EventsBufferSize:   int64(DefaultEventsBufferSize),
 		ServerId:           ng.Name(),
+		SecretKey: &v1.Config_SecretKey{
+			Value: &v1.Config_SecretKey_File{
+				File: SECRET_KEY,
+			},
+		},
 	}
 	return o
 }

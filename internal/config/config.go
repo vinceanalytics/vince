@@ -2,6 +2,8 @@ package config
 
 import (
 	"context"
+	"encoding/base64"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -10,6 +12,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
+	"github.com/vinceanalytics/vince/internal/secrets"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -37,13 +40,38 @@ func Load(base *Options, x *cli.Context) (context.Context, error) {
 		println(err.Error())
 		os.Exit(1)
 	}
+	var secretKey string
+	switch e := base.SecretKey.Value.(type) {
+	case *v1.Config_SecretKey_Env:
+		env := os.Getenv(e.Env)
+		must.Assert(env == "")("failed getting secret from env %s", e.Env)
+		es := must.Must(base64.StdEncoding.DecodeString(env))(
+			"failed decoding key from env %s", e.Env,
+		)
+		secretKey = string(es)
+	case *v1.Config_SecretKey_File:
+		e.File = resolve(root, e.File)
+		b := must.Must(os.ReadFile(e.File))(
+			"failed reading  secret file %s", e.File,
+		)
+		fs := must.Must(base64.StdEncoding.DecodeString(string(b)))(
+			"failed decoding key from file %s", e.File,
+		)
+		secretKey = string(fs)
+	case *v1.Config_SecretKey_Raw:
+		rs := must.Must(base64.StdEncoding.DecodeString(string(e.Raw)))(
+			"failed decoding raw key",
+		)
+		secretKey = string(rs)
+	}
+	baseCtx := secrets.Open(context.Background(), slog.Default(), secretKey)
 	base.DbPath = resolve(root, base.DbPath)
 	base.RaftPath = resolve(root, base.RaftPath)
 	if e, ok := base.BlocksStore.Provider.(*v1.BlockStore_Fs); ok {
 		e.Fs.Directory = resolve(root, e.Fs.Directory)
 	}
 	base.BlocksStore.CacheDir = resolve(root, base.BlocksStore.CacheDir)
-	baseCtx := context.WithValue(context.Background(), configKey{}, base)
+	baseCtx = context.WithValue(baseCtx, configKey{}, base)
 	return baseCtx, nil
 }
 

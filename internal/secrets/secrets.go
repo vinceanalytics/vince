@@ -1,11 +1,15 @@
 package secrets
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
+	"fmt"
+	"log/slog"
+	"os"
 
 	"filippo.io/age"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -51,4 +55,29 @@ func ED25519Raw() ed25519.PrivateKey {
 	_, priv, err := ed25519.GenerateKey(rand.Reader)
 	must.One(err)("failed to generate ed25519 key pair")
 	return priv
+}
+
+type privateKey struct{}
+
+func Open(ctx context.Context, log *slog.Logger, key string) context.Context {
+	block, _ := pem.Decode([]byte(key))
+	if block == nil || block.Type != "PRIVATE KEY" {
+		log.Error("failed to decode pem block containing private key")
+		os.Exit(1)
+	}
+	priv, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		log.Error("failed parsing private key", "err", err)
+		os.Exit(1)
+	}
+	a, ok := priv.(ed25519.PrivateKey)
+	if !ok {
+		log.Error("only ed25519.PrivateKey is supported ", "key", fmt.Sprintf("%#T", priv))
+		os.Exit(1)
+	}
+	return context.WithValue(ctx, privateKey{}, a)
+}
+
+func Get(ctx context.Context) ed25519.PrivateKey {
+	return ctx.Value(privateKey{}).(ed25519.PrivateKey)
 }

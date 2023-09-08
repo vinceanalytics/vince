@@ -16,6 +16,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
+	"github.com/vinceanalytics/vince/internal/secrets"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
 )
@@ -66,6 +67,10 @@ func CMD() *cli.Command {
 				"failed to create raft directory",
 			)
 			w.KV("raft", raft)
+			secret := filepath.Join(root, config.SECRET_KEY)
+			must.One(os.WriteFile(secret, []byte(secrets.ED25519()), 0600))("failed creating secret key")
+			w.KV("secret_key", secret)
+
 			b := must.Must(pj.MarshalIndent(config.Defaults()))(
 				"failed encoding default config",
 			)

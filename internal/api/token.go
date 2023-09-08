@@ -23,17 +23,15 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
-var privateKey = secrets.ED25519Raw()
-var publicKey = privateKey.Public()
-
 func (*API) Login(ctx context.Context, tr *apiv1.LoginRequest) (*apiv1.LoginResponse, error) {
 	a := tokens.GetAccount(ctx)
 	if tr.Ttl == nil {
 		tr.Ttl = durationpb.New(30 * 24 * time.Hour)
 	}
-	pub := publicKey
+	priv := secrets.Get(ctx)
+	pub := priv.Public()
 	if tr.Generate {
-		tr.Token, _ = tokens.Generate(ctx, privateKey, apiv1.Token_SERVER,
+		tr.Token, _ = tokens.Generate(ctx, priv, apiv1.Token_SERVER,
 			a.Name, core.Now(ctx).Add(tr.Ttl.AsDuration()))
 	} else {
 		pub = ed25519.PublicKey(tr.PublicKey)

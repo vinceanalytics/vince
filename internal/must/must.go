@@ -26,10 +26,10 @@ func One(err error) func(msg string, args ...any) {
 	}
 }
 
-func Assert(ok bool) func(msg ...any) {
-	return func(msg ...any) {
+func Assert(ok bool) func(msg string, args ...any) {
+	return func(msg string, args ...any) {
 		if !ok {
-			slog.Error(fmt.Sprint(msg...))
+			slog.Error(fmt.Sprintf(msg, args...))
 			os.Exit(1)
 		}
 	}
