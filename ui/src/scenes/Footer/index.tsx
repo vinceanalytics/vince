@@ -15,7 +15,7 @@ const Footer = () => {
         <Portal containerName="footer">
             <Box
                 display={'grid'}
-                gridTemplateColumns={"auto auto"}
+                gridTemplateColumns={"1fr auto"}
             >
                 <Box>
                     <Text>
@@ -23,8 +23,11 @@ const Footer = () => {
                     </Text>
                 </Box>
                 <Box
-                    display={'grid'}
-                    gridTemplateColumns={"auto auto"}
+                    sx={{
+                        display: "flex",
+                        paddingRight: "1rem",
+                        alignItems: "center",
+                    }}
                 >
                     <Label variant="primary" sx={{
                         marginRight: 1,
