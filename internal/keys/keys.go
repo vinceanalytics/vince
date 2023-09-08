@@ -100,3 +100,7 @@ func AAuthorize(id string) *Key {
 func ARefresh(id string) *Key {
 	return New(v1.StorePrefix_OAUTH_REFRESH).Path(id)
 }
+
+func Snippet(uid, sid string) *Key {
+	return New(v1.StorePrefix_SNIPPET).Path(uid, sid)
+}

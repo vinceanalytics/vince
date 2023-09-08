@@ -15,6 +15,7 @@ enum StorePrefix {
   OAUTH_AUTHORIZE = 12;
   OAUTH_ACCESS = 13;
   OAUTH_REFRESH = 14;
+  SNIPPET = 15;
 }
 
 message StoreKey {
