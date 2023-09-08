@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { Box, NavList, Tooltip } from "@primer/react";
+import { Box, NavList, Portal, Tooltip } from "@primer/react";
 import styled from "styled-components"
 import { HomeIcon, GearIcon } from "@primer/octicons-react";
 
@@ -36,22 +36,8 @@ export const Sidebar = ({ onPanelChange }: SideBarProps) => {
     }, [onPanelChange, setSelected])
 
     return (
-        <Box
-            sx={{
-                display: "flex",
-                position: "absolute",
-                left: "0",
-                top: "0",
-                width: "56px",
-                paddingLeft: "8px",
-                height: "calc(100% - 4rem)",
-                flex: " 0 0 4.5rem",
-                flexDirection: "column",
-                zIndex: 20001,
-                borderRightWidth: 1,
-                borderRightStyle: 'solid',
-                borderColor: 'border.default',
-            }}>
+        <Portal containerName="sidebar"
+        >
             <Logo>
                 <a href="https://vinceanalytics.github.io" rel="noreferrer" target="_blank">
                     <img alt="VinceAnalytics Logo" height="26" src="/logo.svg" />
@@ -79,9 +65,8 @@ export const Sidebar = ({ onPanelChange }: SideBarProps) => {
                         </NavList.LeadingVisual>
                     </NavList.Item>
                 </Tooltip>
-
             </NavList>
-        </Box>
+        </Portal>
     )
 }
 

@@ -42,21 +42,27 @@ export const Result = () => {
                     SVG
                 </UnderlineNav.Item>
             </UnderlineNav>
-            {panel === "grid" && <Grid result={result} />}
-            {panel === "graph" && <FChart
-                ref={chartRef}
-                type="line"
-                data={{
-                    labels: labels,
-                    datasets: [{ values: [18, 40, 30, 35, 8, 52, 17, 4] }],
-                }}
-                colors={["#21ba45", "#98d85b"]}
-                axisOptions={{
-                    xAxisMode: "tick",
-                    yAxisMode: "tick",
-                    xIsSeries: 1
-                }}
-            />}
+            <Box
+                overflow={"auto"}
+                height={"100%"}
+            >
+                {panel === "grid" && <Grid result={result} />}
+                {panel === "graph" && <FChart
+                    ref={chartRef}
+                    type="line"
+                    data={{
+                        labels: labels,
+                        datasets: [{ values: [18, 40, 30, 35, 8, 52, 17, 4] }],
+                    }}
+                    colors={["#21ba45", "#98d85b"]}
+                    axisOptions={{
+                        xAxisMode: "tick",
+                        yAxisMode: "tick",
+                        xIsSeries: 1
+                    }}
+                />}
+            </Box>
+
         </Box >
     )
 }

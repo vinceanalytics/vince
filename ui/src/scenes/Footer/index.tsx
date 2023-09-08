@@ -1,4 +1,4 @@
-import { Box, Text, Link, Label } from '@primer/react'
+import { Box, Text, Link, Label, Portal } from '@primer/react'
 import { useVince } from "../../providers";
 import { MarkGithubIcon } from "@primer/octicons-react";
 import { useEffect, useState } from 'react';
@@ -12,49 +12,35 @@ const Footer = () => {
         }).catch((e) => { console.log(e) })
     }, [vince, setVersion])
     return (
-        <Box id="footer"
-            sx={{
-                display: "flex",
-                position: "absolute",
-                height: "4rem",
-                bottom: "0",
-                left: "0",
-                right: "0",
-                paddingLeft: "45px",
-            }}
-        >
+        <Portal containerName="footer">
             <Box
-                sx={{
-                    display: "flex",
-                    paddingLeft: "1rem",
-                    alignItems: "center",
-                    flex: "1",
-                }}
+                display={'grid'}
+                gridTemplateColumns={"auto auto"}
             >
-                <Text>
-                    Copyright &copy; {new Date().getFullYear()} Vince Analytics
-                </Text>
-            </Box>
-
-            <Box sx={{
-                display: "flex",
-                paddingRight: "1rem",
-                alignItems: "center",
-            }}>
-                <Label variant="primary" sx={{
-                    marginRight: 1,
-                }}>
-                    vince: {version}
-                </Label>
-                <Link
-                    href='https://github.com/vinceanalytics/vince'
-                    target='_blank'
-                    rel='noreferrer'
+                <Box>
+                    <Text>
+                        Copyright &copy; {new Date().getFullYear()} Vince Analytics
+                    </Text>
+                </Box>
+                <Box
+                    display={'grid'}
+                    gridTemplateColumns={"auto auto"}
                 >
-                    <MarkGithubIcon size={"medium"} />
-                </Link>
+                    <Label variant="primary" sx={{
+                        marginRight: 1,
+                    }}>
+                        vince: {version}
+                    </Label>
+                    <Link
+                        href='https://github.com/vinceanalytics/vince'
+                        target='_blank'
+                        rel='noreferrer'
+                    >
+                        <MarkGithubIcon size={"medium"} />
+                    </Link>
+                </Box>
             </Box>
-        </Box>
+        </Portal>
     )
 }
 

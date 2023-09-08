@@ -15,6 +15,8 @@ import { Result } from "../Result";
 
 registerPortalRoot(document.getElementById("console")!, "console")
 registerPortalRoot(document.getElementById("settings")!, "settings")
+registerPortalRoot(document.getElementById("sidebar")!, "sidebar")
+registerPortalRoot(document.getElementById("footer")!, "footer")
 
 const Layout = () => {
     const [activePane, setActivePane] = useState<string>("console")
