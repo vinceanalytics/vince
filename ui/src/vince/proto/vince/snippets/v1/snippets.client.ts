@@ -31,9 +31,9 @@ export interface ISnippetsClient {
      */
     listSnippets(input: ListSnippetsRequest, options?: RpcOptions): UnaryCall<ListSnippetsRequest, ListSnippetsResponse>;
     /**
-     * @generated from protobuf rpc: DeteteSnippet(v1.DeleteSnippetRequest) returns (google.protobuf.Empty);
+     * @generated from protobuf rpc: DeleteSnippet(v1.DeleteSnippetRequest) returns (google.protobuf.Empty);
      */
-    deteteSnippet(input: DeleteSnippetRequest, options?: RpcOptions): UnaryCall<DeleteSnippetRequest, Empty>;
+    deleteSnippet(input: DeleteSnippetRequest, options?: RpcOptions): UnaryCall<DeleteSnippetRequest, Empty>;
 }
 /**
  * @generated from protobuf service v1.Snippets
@@ -66,9 +66,9 @@ export class SnippetsClient implements ISnippetsClient, ServiceInfo {
         return stackIntercept<ListSnippetsRequest, ListSnippetsResponse>("unary", this._transport, method, opt, input);
     }
     /**
-     * @generated from protobuf rpc: DeteteSnippet(v1.DeleteSnippetRequest) returns (google.protobuf.Empty);
+     * @generated from protobuf rpc: DeleteSnippet(v1.DeleteSnippetRequest) returns (google.protobuf.Empty);
      */
-    deteteSnippet(input: DeleteSnippetRequest, options?: RpcOptions): UnaryCall<DeleteSnippetRequest, Empty> {
+    deleteSnippet(input: DeleteSnippetRequest, options?: RpcOptions): UnaryCall<DeleteSnippetRequest, Empty> {
         const method = this.methods[3], opt = this._transport.mergeOptions(options);
         return stackIntercept<DeleteSnippetRequest, Empty>("unary", this._transport, method, opt, input);
     }

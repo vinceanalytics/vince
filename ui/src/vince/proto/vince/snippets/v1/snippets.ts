@@ -443,5 +443,5 @@ export const Snippets = new ServiceType("v1.Snippets", [
     { name: "CreateSnippet", options: { "google.api.http": { post: "/v1/snippets" } }, I: CreateSnippetRequest, O: Snippet },
     { name: "UpdateSnippet", options: { "google.api.http": { put: "/v1/snippets" } }, I: UpdateSnippetRequest, O: Snippet },
     { name: "ListSnippets", options: { "google.api.http": { get: "/v1/snippets" } }, I: ListSnippetsRequest, O: ListSnippetsResponse },
-    { name: "DeteteSnippet", options: { "google.api.http": { delete: "/v1/snippets" } }, I: DeleteSnippetRequest, O: Empty }
+    { name: "DeleteSnippet", options: { "google.api.http": { delete: "/v1/snippets" } }, I: DeleteSnippetRequest, O: Empty }
 ]);

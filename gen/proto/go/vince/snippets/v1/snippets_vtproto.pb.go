@@ -38,7 +38,7 @@ type SnippetsClient interface {
 	CreateSnippet(ctx context.Context, in *CreateSnippetRequest, opts ...grpc.CallOption) (*Snippet, error)
 	UpdateSnippet(ctx context.Context, in *UpdateSnippetRequest, opts ...grpc.CallOption) (*Snippet, error)
 	ListSnippets(ctx context.Context, in *ListSnippetsRequest, opts ...grpc.CallOption) (*ListSnippetsResponse, error)
-	DeteteSnippet(ctx context.Context, in *DeleteSnippetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteSnippet(ctx context.Context, in *DeleteSnippetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type snippetsClient struct {
@@ -76,9 +76,9 @@ func (c *snippetsClient) ListSnippets(ctx context.Context, in *ListSnippetsReque
 	return out, nil
 }
 
-func (c *snippetsClient) DeteteSnippet(ctx context.Context, in *DeleteSnippetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *snippetsClient) DeleteSnippet(ctx context.Context, in *DeleteSnippetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/v1.Snippets/DeteteSnippet", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/v1.Snippets/DeleteSnippet", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ type SnippetsServer interface {
 	CreateSnippet(context.Context, *CreateSnippetRequest) (*Snippet, error)
 	UpdateSnippet(context.Context, *UpdateSnippetRequest) (*Snippet, error)
 	ListSnippets(context.Context, *ListSnippetsRequest) (*ListSnippetsResponse, error)
-	DeteteSnippet(context.Context, *DeleteSnippetRequest) (*emptypb.Empty, error)
+	DeleteSnippet(context.Context, *DeleteSnippetRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedSnippetsServer()
 }
 
@@ -109,8 +109,8 @@ func (UnimplementedSnippetsServer) UpdateSnippet(context.Context, *UpdateSnippet
 func (UnimplementedSnippetsServer) ListSnippets(context.Context, *ListSnippetsRequest) (*ListSnippetsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListSnippets not implemented")
 }
-func (UnimplementedSnippetsServer) DeteteSnippet(context.Context, *DeleteSnippetRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeteteSnippet not implemented")
+func (UnimplementedSnippetsServer) DeleteSnippet(context.Context, *DeleteSnippetRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSnippet not implemented")
 }
 func (UnimplementedSnippetsServer) mustEmbedUnimplementedSnippetsServer() {}
 
@@ -179,20 +179,20 @@ func _Snippets_ListSnippets_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Snippets_DeteteSnippet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Snippets_DeleteSnippet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteSnippetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SnippetsServer).DeteteSnippet(ctx, in)
+		return srv.(SnippetsServer).DeleteSnippet(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/v1.Snippets/DeteteSnippet",
+		FullMethod: "/v1.Snippets/DeleteSnippet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SnippetsServer).DeteteSnippet(ctx, req.(*DeleteSnippetRequest))
+		return srv.(SnippetsServer).DeleteSnippet(ctx, req.(*DeleteSnippetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -217,8 +217,8 @@ var Snippets_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Snippets_ListSnippets_Handler,
 		},
 		{
-			MethodName: "DeteteSnippet",
-			Handler:    _Snippets_DeteteSnippet_Handler,
+			MethodName: "DeleteSnippet",
+			Handler:    _Snippets_DeleteSnippet_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

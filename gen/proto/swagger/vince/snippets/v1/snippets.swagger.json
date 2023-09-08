@@ -38,7 +38,7 @@
         ]
       },
       "delete": {
-        "operationId": "Snippets_DeteteSnippet",
+        "operationId": "Snippets_DeleteSnippet",
         "responses": {
           "200": {
             "description": "A successful response.",

@@ -23,7 +23,7 @@ service Snippets {
       get : "/v1/snippets"
     };
   };
-  rpc DeteteSnippet(DeleteSnippetRequest) returns (google.protobuf.Empty) {
+  rpc DeleteSnippet(DeleteSnippetRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/v1/snippets"
     };
