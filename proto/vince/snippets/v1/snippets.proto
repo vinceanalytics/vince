@@ -40,18 +40,20 @@ message Snippet {
 }
 
 message CreateSnippetRequest {
-  string name = 1;
-  string query = 2;
+  string name = 1 [ (buf.validate.field).required = true ];
+  string query = 2 [ (buf.validate.field).required = true ];
   repeated QueryParam params = 3;
 }
 
 message UpdateSnippetRequest {
-  string id = 1;
+  string id = 1 [ (buf.validate.field).required = true ];
   string name = 2;
   string query = 3;
   repeated QueryParam params = 4;
 }
 
-message DeleteSnippetRequest { string id = 1; }
+message DeleteSnippetRequest {
+  string id = 1 [ (buf.validate.field).required = true ];
+}
 message ListSnippetsRequest {}
 message ListSnippetsResponse { repeated Snippet snippets = 1; }

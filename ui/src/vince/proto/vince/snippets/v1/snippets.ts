@@ -191,8 +191,8 @@ export const Snippet = new Snippet$Type();
 class CreateSnippetRequest$Type extends MessageType<CreateSnippetRequest> {
     constructor() {
         super("v1.CreateSnippetRequest", [
-            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "query", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
+            { no: 2, name: "query", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 3, name: "params", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => QueryParam }
         ]);
     }
@@ -252,7 +252,7 @@ export const CreateSnippetRequest = new CreateSnippetRequest$Type();
 class UpdateSnippetRequest$Type extends MessageType<UpdateSnippetRequest> {
     constructor() {
         super("v1.UpdateSnippetRequest", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 3, name: "query", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "params", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => QueryParam }
@@ -320,7 +320,7 @@ export const UpdateSnippetRequest = new UpdateSnippetRequest$Type();
 class DeleteSnippetRequest$Type extends MessageType<DeleteSnippetRequest> {
     constructor() {
         super("v1.DeleteSnippetRequest", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
         ]);
     }
     create(value?: PartialMessage<DeleteSnippetRequest>): DeleteSnippetRequest {
