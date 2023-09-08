@@ -18,9 +18,7 @@ export const Result = () => {
         }
     };
     return (
-        <Box
-            overflow={"hidden"}
-        >
+        <Box>
             <UnderlineNav aria-label="Results">
                 <UnderlineNav.Item
                     icon={TableIcon}
@@ -43,8 +41,8 @@ export const Result = () => {
                 </UnderlineNav.Item>
             </UnderlineNav>
             <Box
-                overflow={"auto"}
-                height={"100%"}
+                width={"100vw"}
+                overflow={"hidden"}
             >
                 {panel === "grid" && <Grid result={result} />}
                 {panel === "graph" && <FChart
