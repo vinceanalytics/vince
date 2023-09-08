@@ -196,7 +196,7 @@ func RegisterSitesHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Sites/GetSite", runtime.WithHTTPPathPattern("/v1/site"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Sites/GetSite", runtime.WithHTTPPathPattern("/v1/sites"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -221,7 +221,7 @@ func RegisterSitesHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Sites/ListSites", runtime.WithHTTPPathPattern("/v1/sites"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Sites/ListSites", runtime.WithHTTPPathPattern("/v1/site"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -332,7 +332,7 @@ func RegisterSitesHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/v1.Sites/GetSite", runtime.WithHTTPPathPattern("/v1/site"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/v1.Sites/GetSite", runtime.WithHTTPPathPattern("/v1/sites"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -354,7 +354,7 @@ func RegisterSitesHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/v1.Sites/ListSites", runtime.WithHTTPPathPattern("/v1/sites"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/v1.Sites/ListSites", runtime.WithHTTPPathPattern("/v1/site"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -398,9 +398,9 @@ func RegisterSitesHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 var (
 	pattern_Sites_CreateSite_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "sites"}, ""))
 
-	pattern_Sites_GetSite_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "site"}, ""))
+	pattern_Sites_GetSite_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "sites"}, ""))
 
-	pattern_Sites_ListSites_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "sites"}, ""))
+	pattern_Sites_ListSites_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "site"}, ""))
 
 	pattern_Sites_DeleteSite_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "site"}, ""))
 )

@@ -8,7 +8,7 @@ import type { DeleteSiteResponse } from "./sites";
 import type { DeleteSiteRequest } from "./sites";
 import type { ListSitesResponse } from "./sites";
 import type { ListSitesRequest } from "./sites";
-import type { GetSiteResponse } from "./sites";
+import type { Site } from "./sites";
 import type { GetSiteRequest } from "./sites";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
 import type { CreateSiteResponse } from "./sites";
@@ -24,9 +24,9 @@ export interface ISitesClient {
      */
     createSite(input: CreateSiteRequest, options?: RpcOptions): UnaryCall<CreateSiteRequest, CreateSiteResponse>;
     /**
-     * @generated from protobuf rpc: GetSite(v1.GetSiteRequest) returns (v1.GetSiteResponse);
+     * @generated from protobuf rpc: GetSite(v1.GetSiteRequest) returns (v1.Site);
      */
-    getSite(input: GetSiteRequest, options?: RpcOptions): UnaryCall<GetSiteRequest, GetSiteResponse>;
+    getSite(input: GetSiteRequest, options?: RpcOptions): UnaryCall<GetSiteRequest, Site>;
     /**
      * @generated from protobuf rpc: ListSites(v1.ListSitesRequest) returns (v1.ListSitesResponse);
      */
@@ -53,11 +53,11 @@ export class SitesClient implements ISitesClient, ServiceInfo {
         return stackIntercept<CreateSiteRequest, CreateSiteResponse>("unary", this._transport, method, opt, input);
     }
     /**
-     * @generated from protobuf rpc: GetSite(v1.GetSiteRequest) returns (v1.GetSiteResponse);
+     * @generated from protobuf rpc: GetSite(v1.GetSiteRequest) returns (v1.Site);
      */
-    getSite(input: GetSiteRequest, options?: RpcOptions): UnaryCall<GetSiteRequest, GetSiteResponse> {
+    getSite(input: GetSiteRequest, options?: RpcOptions): UnaryCall<GetSiteRequest, Site> {
         const method = this.methods[1], opt = this._transport.mergeOptions(options);
-        return stackIntercept<GetSiteRequest, GetSiteResponse>("unary", this._transport, method, opt, input);
+        return stackIntercept<GetSiteRequest, Site>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: ListSites(v1.ListSitesRequest) returns (v1.ListSitesResponse);

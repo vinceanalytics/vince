@@ -39,7 +39,7 @@ func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*
 	return &response, nil
 }
 
-func (a *API) GetSite(ctx context.Context, req *sitesv1.GetSiteRequest) (*sitesv1.GetSiteResponse, error) {
+func (a *API) GetSite(ctx context.Context, req *sitesv1.GetSiteRequest) (*sitesv1.Site, error) {
 	var o sitesv1.Site
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
@@ -54,7 +54,7 @@ func (a *API) GetSite(ctx context.Context, req *sitesv1.GetSiteRequest) (*sitesv
 	if err != nil {
 		return nil, err
 	}
-	return &sitesv1.GetSiteResponse{Site: &o}, nil
+	return &o, nil
 }
 
 func (a *API) ListSites(ctx context.Context, req *sitesv1.ListSitesRequest) (*sitesv1.ListSitesResponse, error) {

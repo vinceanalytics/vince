@@ -15,14 +15,14 @@ service Sites {
       post : "/v1/sites"
     };
   };
-  rpc GetSite(GetSiteRequest) returns (GetSiteResponse) {
+  rpc GetSite(GetSiteRequest) returns (Site) {
     option (google.api.http) = {
-      get : "/v1/site"
+      get : "/v1/sites"
     };
   };
   rpc ListSites(ListSitesRequest) returns (ListSitesResponse) {
     option (google.api.http) = {
-      get : "/v1/sites"
+      get : "/v1/site"
     };
   };
   rpc DeleteSite(DeleteSiteRequest) returns (DeleteSiteResponse) {
@@ -50,7 +50,6 @@ message GetSiteRequest {
     (buf.validate.field).required = true
   ];
 }
-message GetSiteResponse { Site site = 1; }
 message ListSitesRequest {}
 message ListSitesResponse { repeated Site list = 1; }
 message DeleteSiteRequest {

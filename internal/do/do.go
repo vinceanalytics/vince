@@ -121,7 +121,7 @@ func ListSites(ctx context.Context,
 func GetSite(ctx context.Context,
 	addr, token string,
 	in *sitesv1.GetSiteRequest,
-) (o *sitesv1.GetSiteResponse, err error) {
+) (o *sitesv1.Site, err error) {
 	err = DoSite(ctx, addr, tokens.Source(token), func(ctx context.Context, vc sitesv1.SitesClient) error {
 		o, err = vc.GetSite(ctx, in)
 		return err

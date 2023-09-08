@@ -56,15 +56,6 @@ export interface GetSiteRequest {
     domain: string;
 }
 /**
- * @generated from protobuf message v1.GetSiteResponse
- */
-export interface GetSiteResponse {
-    /**
-     * @generated from protobuf field: v1.Site site = 1;
-     */
-    site?: Site;
-}
-/**
  * @generated from protobuf message v1.ListSitesRequest
  */
 export interface ListSitesRequest {
@@ -308,53 +299,6 @@ class GetSiteRequest$Type extends MessageType<GetSiteRequest> {
  */
 export const GetSiteRequest = new GetSiteRequest$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class GetSiteResponse$Type extends MessageType<GetSiteResponse> {
-    constructor() {
-        super("v1.GetSiteResponse", [
-            { no: 1, name: "site", kind: "message", T: () => Site }
-        ]);
-    }
-    create(value?: PartialMessage<GetSiteResponse>): GetSiteResponse {
-        const message = {};
-        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
-        if (value !== undefined)
-            reflectionMergePartial<GetSiteResponse>(this, message, value);
-        return message;
-    }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: GetSiteResponse): GetSiteResponse {
-        let message = target ?? this.create(), end = reader.pos + length;
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag();
-            switch (fieldNo) {
-                case /* v1.Site site */ 1:
-                    message.site = Site.internalBinaryRead(reader, reader.uint32(), options, message.site);
-                    break;
-                default:
-                    let u = options.readUnknownField;
-                    if (u === "throw")
-                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
-                    let d = reader.skip(wireType);
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
-            }
-        }
-        return message;
-    }
-    internalBinaryWrite(message: GetSiteResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* v1.Site site = 1; */
-        if (message.site)
-            Site.internalBinaryWrite(message.site, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        let u = options.writeUnknownFields;
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
-        return writer;
-    }
-}
-/**
- * @generated MessageType for protobuf message v1.GetSiteResponse
- */
-export const GetSiteResponse = new GetSiteResponse$Type();
-// @generated message type with reflection information, may provide speed optimized methods
 class ListSitesRequest$Type extends MessageType<ListSitesRequest> {
     constructor() {
         super("v1.ListSitesRequest", []);
@@ -505,7 +449,7 @@ export const DeleteSiteResponse = new DeleteSiteResponse$Type();
  */
 export const Sites = new ServiceType("v1.Sites", [
     { name: "CreateSite", options: { "google.api.http": { post: "/v1/sites" } }, I: CreateSiteRequest, O: CreateSiteResponse },
-    { name: "GetSite", options: { "google.api.http": { get: "/v1/site" } }, I: GetSiteRequest, O: GetSiteResponse },
-    { name: "ListSites", options: { "google.api.http": { get: "/v1/sites" } }, I: ListSitesRequest, O: ListSitesResponse },
+    { name: "GetSite", options: { "google.api.http": { get: "/v1/sites" } }, I: GetSiteRequest, O: Site },
+    { name: "ListSites", options: { "google.api.http": { get: "/v1/site" } }, I: ListSitesRequest, O: ListSitesResponse },
     { name: "DeleteSite", options: { "google.api.http": { delete: "/v1/site" } }, I: DeleteSiteRequest, O: DeleteSiteResponse }
 ]);

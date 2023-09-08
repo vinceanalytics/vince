@@ -18,12 +18,12 @@
   "paths": {
     "/v1/site": {
       "get": {
-        "operationId": "Sites_GetSite",
+        "operationId": "Sites_ListSites",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetSiteResponse"
+              "$ref": "#/definitions/v1ListSitesResponse"
             }
           },
           "default": {
@@ -33,14 +33,6 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "domain",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
         "tags": [
           "Sites"
         ]
@@ -76,12 +68,12 @@
     },
     "/v1/sites": {
       "get": {
-        "operationId": "Sites_ListSites",
+        "operationId": "Sites_GetSite",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ListSitesResponse"
+              "$ref": "#/definitions/v1Site"
             }
           },
           "default": {
@@ -91,6 +83,14 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "Sites"
         ]
@@ -164,14 +164,6 @@
     },
     "v1DeleteSiteResponse": {
       "type": "object"
-    },
-    "v1GetSiteResponse": {
-      "type": "object",
-      "properties": {
-        "site": {
-          "$ref": "#/definitions/v1Site"
-        }
-      }
     },
     "v1Goal": {
       "type": "object",
