@@ -16,6 +16,11 @@ const Footer = () => {
             <Box
                 display={'grid'}
                 gridTemplateColumns={"1fr auto"}
+                padding={1}
+                borderTopWidth={1}
+                borderTopStyle={"solid"}
+                borderColor={"border.default"}
+                height={"100%"}
             >
                 <Box>
                     <Text>

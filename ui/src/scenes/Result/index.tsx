@@ -18,31 +18,42 @@ export const Result = () => {
         }
     };
     return (
-        <Box>
-            <UnderlineNav aria-label="Results">
-                <UnderlineNav.Item
-                    icon={TableIcon}
-                    aria-current={panel === "grid" ? "page" : undefined}
-                    onSelect={() => setPanel("grid")}
-                >
-                    Grid
-                </UnderlineNav.Item>
-                <UnderlineNav.Item icon={GraphIcon}
-                    aria-current={panel === "graph" ? "page" : undefined}
-                    onSelect={() => setPanel("graph")}
-                >
-                    Graph
-                </UnderlineNav.Item>
-                <UnderlineNav.Item icon={DownloadIcon}>
-                    CSV
-                </UnderlineNav.Item>
-                <UnderlineNav.Item icon={DownloadIcon} onSelect={exportChart}>
-                    SVG
-                </UnderlineNav.Item>
-            </UnderlineNav>
+        <Box
+            display={"flex"}
+            flexDirection={"column"}
+            flex={1}
+            overflow={"hidden"}
+        >
+            <Box
+                position={"relative"}
+                zIndex={5}
+                padding={"0 1rem"}
+            >
+                <UnderlineNav aria-label="Results">
+                    <UnderlineNav.Item
+                        icon={TableIcon}
+                        aria-current={panel === "grid" ? "page" : undefined}
+                        onSelect={() => setPanel("grid")}
+                    >
+                        Grid
+                    </UnderlineNav.Item>
+                    <UnderlineNav.Item icon={GraphIcon}
+                        aria-current={panel === "graph" ? "page" : undefined}
+                        onSelect={() => setPanel("graph")}
+                    >
+                        Graph
+                    </UnderlineNav.Item>
+                    <UnderlineNav.Item icon={DownloadIcon}>
+                        CSV
+                    </UnderlineNav.Item>
+                    <UnderlineNav.Item icon={DownloadIcon} onSelect={exportChart}>
+                        SVG
+                    </UnderlineNav.Item>
+                </UnderlineNav>
+            </Box>
             <Box
                 width={"100vw"}
-                overflow={"hidden"}
+                overflow={"auto"}
             >
                 {panel === "grid" && <Grid result={result} />}
                 {panel === "graph" && <FChart
