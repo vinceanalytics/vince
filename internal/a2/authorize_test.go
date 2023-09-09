@@ -1,6 +1,7 @@
 package a2
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"strings"
@@ -227,7 +228,7 @@ func TestAuthorizeCodePKCEPlain(t *testing.T) {
 		t.Fatalf("Unexpected authorization code: %s", code)
 	}
 
-	token, err := server.Storage.LoadAuthorize(code)
+	token, err := server.Storage.LoadAuthorize(context.TODO(), code)
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -283,7 +284,7 @@ func TestAuthorizeCodePKCES256(t *testing.T) {
 		t.Fatalf("Unexpected authorization code: %s", code)
 	}
 
-	token, err := server.Storage.LoadAuthorize(code)
+	token, err := server.Storage.LoadAuthorize(context.TODO(), code)
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}

@@ -1,6 +1,7 @@
 package a2
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"testing"
@@ -79,7 +80,7 @@ func TestAccessRefreshToken(t *testing.T) {
 	}
 	//fmt.Printf("%+v", resp)
 
-	if _, err := server.Storage.LoadRefresh("r9999"); err == nil {
+	if _, err := server.Storage.LoadRefresh(context.TODO(), "r9999"); err == nil {
 		t.Fatalf("token was not deleted")
 	}
 
@@ -130,7 +131,7 @@ func TestAccessRefreshTokenSaveToken(t *testing.T) {
 	}
 	//fmt.Printf("%+v", resp)
 
-	if _, err := server.Storage.LoadRefresh("r9999"); err != nil {
+	if _, err := server.Storage.LoadRefresh(context.TODO(), "r9999"); err != nil {
 		t.Fatalf("token incorrectly deleted: %s", err.Error())
 	}
 
@@ -301,7 +302,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "invalidsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(context.TODO(), auth, storage, w)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -322,7 +323,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "nonexistent",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(context.TODO(), auth, storage, w)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -343,7 +344,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "myclientsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(context.TODO(), auth, storage, w)
 		if client != myclient {
 			t.Errorf("Expected client, got nil with response: %v", w)
 		}
@@ -382,7 +383,7 @@ func TestGetClientSecretMatcher(t *testing.T) {
 			Password: "invalidsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(context.TODO(), auth, storage, w)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -395,7 +396,7 @@ func TestGetClientSecretMatcher(t *testing.T) {
 			Password: "myclientsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(context.TODO(), auth, storage, w)
 		if client != myclient {
 			t.Errorf("Expected client, got nil with response: %v", w)
 		}
@@ -442,15 +443,16 @@ func TestAccessAuthorizationCodePKCE(t *testing.T) {
 		sconfig.AllowedAccessTypes = AllowedAccessType{AUTHORIZATION_CODE}
 		server := NewServer(sconfig, testStorage)
 		server.AccessTokenGen = &TestingAccessTokenGen{}
-		server.Storage.SaveAuthorize(&AuthorizeData{
-			Client:              testStorage.clients["public-client"],
-			Code:                "pkce-code",
-			ExpiresIn:           3600,
-			CreatedAt:           time.Now(),
-			RedirectUri:         "http://localhost:14000/appauth",
-			CodeChallenge:       test.Challenge,
-			CodeChallengeMethod: test.ChallengeMethod,
-		})
+		server.Storage.SaveAuthorize(context.TODO(),
+			&AuthorizeData{
+				Client:              testStorage.clients["public-client"],
+				Code:                "pkce-code",
+				ExpiresIn:           3600,
+				CreatedAt:           time.Now(),
+				RedirectUri:         "http://localhost:14000/appauth",
+				CodeChallenge:       test.Challenge,
+				CodeChallengeMethod: test.ChallengeMethod,
+			})
 		resp := server.NewResponse()
 
 		req, err := http.NewRequest("POST", "http://localhost:14000/appauth", nil)

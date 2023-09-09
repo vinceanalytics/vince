@@ -1,6 +1,7 @@
 package a2
 
 import (
+	"context"
 	"errors"
 )
 
@@ -18,42 +19,42 @@ type Storage interface {
 	// to avoid concurrent access problems.
 	// This is to avoid cloning the connection at each method access.
 	// Can return itself if not a problem.
-	Clone() Storage
+	Clone(context.Context) Storage
 
 	// Close the resources the Storage potentially holds (using Clone for example)
-	Close()
+	Close(context.Context)
 
 	// GetClient loads the client by id (client_id)
-	GetClient(id string) (Client, error)
+	GetClient(ctx context.Context, id string) (Client, error)
 
 	// SaveAuthorize saves authorize data.
-	SaveAuthorize(*AuthorizeData) error
+	SaveAuthorize(context.Context, *AuthorizeData) error
 
 	// LoadAuthorize looks up AuthorizeData by a code.
 	// Client information MUST be loaded together.
 	// Optionally can return error if expired.
-	LoadAuthorize(code string) (*AuthorizeData, error)
+	LoadAuthorize(ctx context.Context, code string) (*AuthorizeData, error)
 
 	// RemoveAuthorize revokes or deletes the authorization code.
-	RemoveAuthorize(code string) error
+	RemoveAuthorize(ctx context.Context, code string) error
 
 	// SaveAccess writes AccessData.
 	// If RefreshToken is not blank, it must save in a way that can be loaded using LoadRefresh.
-	SaveAccess(*AccessData) error
+	SaveAccess(context.Context, *AccessData) error
 
 	// LoadAccess retrieves access data by token. Client information MUST be loaded together.
 	// AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 	// Optionally can return error if expired.
-	LoadAccess(token string) (*AccessData, error)
+	LoadAccess(ctx context.Context, token string) (*AccessData, error)
 
 	// RemoveAccess revokes or deletes an AccessData.
-	RemoveAccess(token string) error
+	RemoveAccess(ctx context.Context, token string) error
 
 	// LoadRefresh retrieves refresh AccessData. Client information MUST be loaded together.
 	// AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 	// Optionally can return error if expired.
-	LoadRefresh(token string) (*AccessData, error)
+	LoadRefresh(ctx context.Context, token string) (*AccessData, error)
 
 	// RemoveRefresh revokes or deletes refresh AccessData.
-	RemoveRefresh(token string) error
+	RemoveRefresh(ctx context.Context, token string) error
 }

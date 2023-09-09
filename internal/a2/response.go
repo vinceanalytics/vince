@@ -1,6 +1,7 @@
 package a2
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -44,7 +45,7 @@ func NewResponse(storage Storage) *Response {
 		Output:          make(ResponseData),
 		Headers:         make(http.Header),
 		IsError:         false,
-		Storage:         storage.Clone(),
+		Storage:         storage.Clone(context.TODO()),
 	}
 	r.Headers.Add(
 		"Cache-Control",
@@ -147,5 +148,5 @@ func (r *Response) GetRedirectUrl() (string, error) {
 }
 
 func (r *Response) Close() {
-	r.Storage.Close()
+	r.Storage.Close(context.TODO())
 }

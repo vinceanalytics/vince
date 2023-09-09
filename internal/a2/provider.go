@@ -1,6 +1,7 @@
 package a2
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -22,75 +23,75 @@ func New(db db.Provider) Storage {
 
 var _ Storage = (*provider)(nil)
 
-func (provider) Close()            {}
-func (p *provider) Clone() Storage { return p }
+func (provider) Close(ctx context.Context)          {}
+func (p *provider) Clone(_ context.Context) Storage { return p }
 
-func (p provider) GetClient(id string) (Client, error) {
+func (p provider) GetClient(ctx context.Context, id string) (Client, error) {
 	var o v1.AuthorizedClient
-	err := p.get(keys.AClient(id), &o)
+	err := p.get(ctx, keys.AClient(id), &o)
 	if err != nil {
 		return nil, err
 	}
 	return xclient{b: &o}, nil
 }
 
-func (p provider) SaveAuthorize(a *AuthorizeData) error {
-	return p.save(
+func (p provider) SaveAuthorize(ctx context.Context, a *AuthorizeData) error {
+	return p.save(ctx,
 		keys.AAuthorize(a.Code), AuthorizeDataTo(a), a.ExpiresIn,
 	)
 }
 
-func (p provider) LoadAuthorize(code string) (*AuthorizeData, error) {
+func (p provider) LoadAuthorize(ctx context.Context, code string) (*AuthorizeData, error) {
 	var o v1.AuthorizeData
-	err := p.get(keys.AAuthorize(code), &o)
+	err := p.get(ctx, keys.AAuthorize(code), &o)
 	if err != nil {
 		return nil, err
 	}
 	return AuthorizeDataFrom(&o), nil
 }
 
-func (p provider) RemoveAuthorize(code string) error {
-	return p.remove(keys.AAuthorize(code))
+func (p provider) RemoveAuthorize(ctx context.Context, code string) error {
+	return p.remove(ctx, keys.AAuthorize(code))
 }
 
-func (p provider) SaveAccess(a *AccessData) error {
+func (p provider) SaveAccess(ctx context.Context, a *AccessData) error {
 	return errors.Join(
-		p.save(
+		p.save(ctx,
 			keys.AAccess(a.AccessToken), AccessDataTo(a), a.ExpiresIn,
 		),
-		p.save(
+		p.save(ctx,
 			keys.ARefresh(a.RefreshToken), AccessDataTo(a), a.ExpiresIn,
 		),
 	)
 }
 
-func (p provider) LoadAccess(token string) (*AccessData, error) {
+func (p provider) LoadAccess(ctx context.Context, token string) (*AccessData, error) {
 	var o v1.AccessData
-	err := p.get(keys.AAccess(token), &o)
+	err := p.get(ctx, keys.AAccess(token), &o)
 	if err != nil {
 		return nil, err
 	}
 	return AccessDataFrom(&o), nil
 }
 
-func (p provider) RemoveAccess(token string) error {
-	return p.remove(keys.AAccess(token))
+func (p provider) RemoveAccess(ctx context.Context, token string) error {
+	return p.remove(ctx, keys.AAccess(token))
 }
 
-func (p provider) LoadRefresh(token string) (*AccessData, error) {
+func (p provider) LoadRefresh(ctx context.Context, token string) (*AccessData, error) {
 	var o v1.AccessData
-	err := p.get(keys.ARefresh(token), &o)
+	err := p.get(ctx, keys.ARefresh(token), &o)
 	if err != nil {
 		return nil, err
 	}
 	return AccessDataFrom(&o), nil
 }
 
-func (p provider) RemoveRefresh(token string) error {
-	return p.remove(keys.ARefresh(token))
+func (p provider) RemoveRefresh(ctx context.Context, token string) error {
+	return p.remove(ctx, keys.ARefresh(token))
 }
 
-func (p provider) save(key *keys.Key, m proto.Message, ttl int32) error {
+func (p provider) save(ctx context.Context, key *keys.Key, m proto.Message, ttl int32) error {
 	b := must.Must(proto.Marshal(m))("failed serializing data")
 	return p.db.Txn(true, func(txn db.Txn) error {
 		defer key.Release()
@@ -98,14 +99,14 @@ func (p provider) save(key *keys.Key, m proto.Message, ttl int32) error {
 	})
 }
 
-func (p provider) remove(key *keys.Key) error {
+func (p provider) remove(ctx context.Context, key *keys.Key) error {
 	return p.db.Txn(true, func(txn db.Txn) error {
 		defer key.Release()
 		return txn.Delete(key.Bytes())
 	})
 }
 
-func (p provider) get(key *keys.Key, o proto.Message) error {
+func (p provider) get(ctx context.Context, key *keys.Key, o proto.Message) error {
 	return p.db.Txn(false, func(txn db.Txn) error {
 		defer key.Release()
 		return txn.Get(key.Bytes(), func(val []byte) error {

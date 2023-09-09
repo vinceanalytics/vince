@@ -1,6 +1,7 @@
 package a2
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -98,7 +99,7 @@ func (d *AuthorizeData) ExpireAt() time.Time {
 
 // AuthorizeTokenGen is the token generator interface
 type AuthorizeTokenGen interface {
-	GenerateAuthorizeToken(data *AuthorizeData) (string, error)
+	GenerateAuthorizeToken(ctx context.Context, data *AuthorizeData) (string, error)
 }
 
 // HandleAuthorizeRequest is the main http.HandlerFunc for handling
@@ -123,7 +124,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	}
 
 	// must have a valid client
-	ret.Client, err = w.Storage.GetClient(r.FormValue("client_id"))
+	ret.Client, err = w.Storage.GetClient(r.Context(), r.FormValue("client_id"))
 	if err == ErrNotFound {
 		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "", ret.State)
 		return nil
@@ -251,7 +252,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			}
 
 			// generate token code
-			code, err := s.AuthorizeTokenGen.GenerateAuthorizeToken(ret)
+			code, err := s.AuthorizeTokenGen.GenerateAuthorizeToken(r.Context(), ret)
 			if err != nil {
 				w.SetErrorState(E_SERVER_ERROR, "", ar.State)
 				w.InternalError = err
@@ -260,7 +261,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			ret.Code = code
 
 			// save authorization token
-			if err = w.Storage.SaveAuthorize(ret); err != nil {
+			if err = w.Storage.SaveAuthorize(r.Context(), ret); err != nil {
 				w.SetErrorState(E_SERVER_ERROR, "", ar.State)
 				w.InternalError = err
 				return
