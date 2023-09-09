@@ -27,7 +27,7 @@ var ui = must.Must(fs.Sub(static, "ui"))("failed getting sub directory")
 
 var FS = http.FileServer(http.FS(ui))
 
-func match(path string) bool {
+func Match(path string) bool {
 	return strings.HasPrefix(path, "/static") ||
 		strings.HasPrefix(path, "/vs") ||
 		strings.HasPrefix(path, "/min-map") ||
@@ -37,7 +37,7 @@ func match(path string) bool {
 func Plug() plug.Plug {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if match(r.URL.Path) {
+			if Match(r.URL.Path) {
 				FS.ServeHTTP(w, r)
 				return
 			}

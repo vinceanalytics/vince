@@ -26,7 +26,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/urfave/cli/v3"
-	"github.com/vinceanalytics/vince/assets"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	goalsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
 	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
@@ -175,17 +174,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 }
 
 func Handle(ctx context.Context, reg *prometheus.Registry) http.Handler {
-	pipe := append(
-		plug.Pipeline{
-			plug.Track(),
-			assets.Plug(),
-		},
-		router.Pipe(ctx, reg)...,
-	)
-	h := pipe.Pass(plug.NOOP)
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h.ServeHTTP(w, r)
-	})
+	return router.New(ctx, reg)
 }
 
 type Vince struct {
