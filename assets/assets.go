@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/internal/plug"
 )
 
 var files = map[string]bool{
@@ -32,16 +31,4 @@ func Match(path string) bool {
 		strings.HasPrefix(path, "/vs") ||
 		strings.HasPrefix(path, "/min-map") ||
 		files[path]
-}
-
-func Plug() plug.Plug {
-	return func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if Match(r.URL.Path) {
-				FS.ServeHTTP(w, r)
-				return
-			}
-			h.ServeHTTP(w, r)
-		})
-	}
 }

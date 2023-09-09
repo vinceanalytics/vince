@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -18,7 +19,9 @@ import (
 	"github.com/go-chi/cors"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpc_logging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpc_protovalidate "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/selector"
@@ -27,6 +30,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	goalsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
 	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
@@ -38,14 +42,17 @@ import (
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/engine"
 	"github.com/vinceanalytics/vince/internal/ha"
+	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/metrics"
 	"github.com/vinceanalytics/vince/internal/must"
-	"github.com/vinceanalytics/vince/internal/plug"
 	"github.com/vinceanalytics/vince/internal/prober"
+	"github.com/vinceanalytics/vince/internal/px"
 	"github.com/vinceanalytics/vince/internal/router"
 	"github.com/vinceanalytics/vince/internal/timeseries"
+	"github.com/vinceanalytics/vince/internal/tokens"
 	"github.com/vinceanalytics/vince/internal/worker"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"golang.org/x/sync/errgroup"
@@ -53,6 +60,7 @@ import (
 	"google.golang.org/grpc/codes"
 	grpc_health "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 func Serve(o *config.Options, x *cli.Context) error {
@@ -204,9 +212,9 @@ func New(ctx context.Context) *Vince {
 				otelgrpc.StreamServerInterceptor(),
 				met.StreamServerInterceptor(),
 				grpc_logging.StreamServerInterceptor(InterceptorLogger(), logOpts...),
-				auth.StreamServerInterceptor(plug.AuthGRPC),
-				selector.StreamServerInterceptor(auth.StreamServerInterceptor(plug.AuthGRPCBasic), selector.MatchFunc(plug.AuthGRPCBasicSelector)),
-				selector.StreamServerInterceptor(auth.StreamServerInterceptor(plug.AuthGRPC), selector.MatchFunc(plug.AuthGRPCSelector)),
+				auth.StreamServerInterceptor(AuthGRPC),
+				selector.StreamServerInterceptor(auth.StreamServerInterceptor(AuthGRPCBasic), selector.MatchFunc(AuthGRPCBasicSelector)),
+				selector.StreamServerInterceptor(auth.StreamServerInterceptor(AuthGRPC), selector.MatchFunc(AuthGRPCSelector)),
 				grpc_protovalidate.StreamServerInterceptor(valid),
 			)),
 		grpc.UnaryInterceptor(
@@ -214,8 +222,8 @@ func New(ctx context.Context) *Vince {
 				otelgrpc.UnaryServerInterceptor(),
 				met.UnaryServerInterceptor(),
 				grpc_logging.UnaryServerInterceptor(InterceptorLogger(), logOpts...),
-				selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(plug.AuthGRPCBasic), selector.MatchFunc(plug.AuthGRPCBasicSelector)),
-				selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(plug.AuthGRPC), selector.MatchFunc(plug.AuthGRPCSelector)),
+				selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(AuthGRPCBasic), selector.MatchFunc(AuthGRPCBasicSelector)),
+				selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(AuthGRPC), selector.MatchFunc(AuthGRPCSelector)),
 				grpc_protovalidate.UnaryServerInterceptor(valid),
 			),
 		),
@@ -318,4 +326,73 @@ func InterceptorLogger() grpc_logging.Logger {
 			panic(fmt.Sprintf("unknown level %v", lvl))
 		}
 	})
+}
+
+func AuthGRPCSelector(_ context.Context, c interceptors.CallMeta) bool {
+	return c.FullMethod() != "/v1.Vince/Login"
+}
+
+func AuthGRPC(ctx context.Context) (context.Context, error) {
+	token, err := auth.AuthFromMD(ctx, "bearer")
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := tokens.ValidWithClaims(db.Get(ctx), token)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "invalid auth token")
+	}
+	ctx = logging.InjectFields(ctx, logging.Fields{"auth.sub", claims.Subject})
+	ctx = core.SetAuth(ctx, &configv1.Client_Auth{
+		Name:     claims.Subject,
+		Token:    token,
+		ServerId: config.Get(ctx).ServerId,
+	})
+	return tokens.Set(ctx, claims), nil
+}
+
+func AuthGRPCBasicSelector(_ context.Context, c interceptors.CallMeta) bool {
+	return c.FullMethod() == "/v1.Vince/Login"
+}
+
+func AuthGRPCBasic(ctx context.Context) (context.Context, error) {
+	token, err := auth.AuthFromMD(ctx, "basic")
+	if err != nil {
+		return nil, err
+	}
+	username, passsword, ok := parseBasicAuth(token)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "invalid basic auth")
+	}
+	var a v1.Account
+	err = db.Get(ctx).Txn(false, func(txn db.Txn) error {
+		key := keys.Account(username)
+		defer key.Release()
+		return txn.Get(key.Bytes(), px.Decode(&a), func() error {
+			return status.Error(codes.Unauthenticated, "invalid basic auth")
+		})
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = bcrypt.CompareHashAndPassword(a.HashedPassword, []byte(passsword))
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "invalid basic auth")
+	}
+	ctx = logging.InjectFields(ctx, logging.Fields{"auth.sub", a.Name})
+	return tokens.SetAccount(ctx, &a), nil
+}
+
+// parseBasicAuth parses an HTTP Basic Authentication string.
+// "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" returns ("Aladdin", "open sesame", true).
+func parseBasicAuth(auth string) (username, password string, ok bool) {
+	c, err := base64.StdEncoding.DecodeString(auth)
+	if err != nil {
+		return "", "", false
+	}
+	cs := string(c)
+	username, password, ok = strings.Cut(cs, ":")
+	if !ok {
+		return "", "", false
+	}
+	return username, password, true
 }

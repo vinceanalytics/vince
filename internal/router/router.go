@@ -31,6 +31,13 @@ func New(ctx context.Context, reg *prometheus.Registry) *Router {
 }
 
 func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("x-frame-options", "SAMEORIGIN")
+	w.Header().Set("x-xss-protection", "1; mode=block")
+	w.Header().Set("x-content-type-options", "nosniff")
+	w.Header().Set("x-download-options", "noopen")
+	w.Header().Set("x-permitted-cross-domain-policies", "none")
+	w.Header().Set("cross-origin-window-policy", "deny")
+
 	if strings.HasPrefix(r.URL.Path, "/js/vince") {
 		w.Header().Set("x-content-type-options", "nosniff")
 		w.Header().Set("cross-origin-resource-policy", "cross-origin")
