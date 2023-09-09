@@ -116,17 +116,26 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 	// Only allow GET or POST
 	if r.Method == "GET" {
 		if !s.Config.AllowGetAccessRequest {
-			s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Request must be POST"), "access_request=%s", "GET request not allowed")
+			s.setErrorAndLog(w, E_INVALID_GRANT, errors.New("Request must be POST"),
+				"access_request",
+				"GET request not allowed",
+			)
 			return nil
 		}
 	} else if r.Method != "POST" {
-		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Request must be POST"), "access_request=%s", "request must be POST")
+		s.setErrorAndLog(w, E_INVALID_GRANT, errors.New("Request must be POST"),
+			"access_request",
+			"request must be POST",
+		)
 		return nil
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		s.setErrorAndLog(w, E_INVALID_REQUEST, err, "access_request=%s", "parsing error")
+		s.setErrorAndLog(w, E_INVALID_GRANT, err,
+			"access_request",
+			"parsing error",
+		)
 		return nil
 	}
 
@@ -145,8 +154,10 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 			return s.handleAssertionRequest(w, r)
 		}
 	}
-
-	s.setErrorAndLog(w, E_UNSUPPORTED_GRANT_TYPE, nil, "access_request=%s", "unknown grant type")
+	s.setErrorAndLog(w, E_UNSUPPORTED_GRANT_TYPE, nil,
+		"access_request",
+		"unknown grant type",
+	)
 	return nil
 }
 
@@ -170,7 +181,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 
 	// "code" is required
 	if ret.Code == "" {
-		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "auth_code_request=%s", "code is required")
+		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "auth_code_request", "code is required")
 		return nil
 	}
 
@@ -183,29 +194,29 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	var err error
 	ret.AuthorizeData, err = w.Storage.LoadAuthorize(r.Context(), ret.Code)
 	if err != nil {
-		s.setErrorAndLog(w, E_INVALID_GRANT, err, "auth_code_request=%s", "error loading authorize data")
+		s.setErrorAndLog(w, E_INVALID_GRANT, err, "auth_code_request", "error loading authorize data")
 		return nil
 	}
 	if ret.AuthorizeData == nil {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "auth_code_request=%s", "authorization data is nil")
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "auth_code_request", "authorization data is nil")
 		return nil
 	}
 	if ret.AuthorizeData.Client == nil {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "auth_code_request=%s", "authorization client is nil")
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "auth_code_request", "authorization client is nil")
 		return nil
 	}
 	if ret.AuthorizeData.Client.GetRedirectUri() == "" {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "auth_code_request=%s", "client redirect uri is empty")
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "auth_code_request", "client redirect uri is empty")
 		return nil
 	}
 	if ret.AuthorizeData.IsExpiredAt(s.Now()) {
-		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "auth_code_request=%s", "authorization data is expired")
+		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "auth_code_request", "authorization data is expired")
 		return nil
 	}
 
 	// code must be from the client
 	if ret.AuthorizeData.Client.GetId() != ret.Client.GetId() {
-		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "auth_code_request=%s", "client code does not match")
+		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "auth_code_request", "client code does not match")
 		return nil
 	}
 
@@ -214,13 +225,13 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 	}
 	if realRedirectUri, err := ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
-		s.setErrorAndLog(w, E_INVALID_REQUEST, err, "auth_code_request=%s", "error validating client redirect")
+		s.setErrorAndLog(w, E_INVALID_REQUEST, err, "auth_code_request", "error validating client redirect")
 		return nil
 	} else {
 		ret.RedirectUri = realRedirectUri
 	}
 	if ret.AuthorizeData.RedirectUri != ret.RedirectUri {
-		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Redirect uri is different"), "auth_code_request=%s", "client redirect does not match authorization data")
+		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Redirect uri is different"), "auth_code_request", "client redirect does not match authorization data")
 		return nil
 	}
 
@@ -229,7 +240,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		// https://tools.ietf.org/html/rfc7636#section-4.1
 		if matched := pkceMatcher.MatchString(ret.CodeVerifier); !matched {
 			s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("code_verifier has invalid format"),
-				"auth_code_request=%s", "pkce code challenge verifier does not match")
+				"auth_code_request", "pkce code challenge verifier does not match")
 			return nil
 		}
 
@@ -243,12 +254,12 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 			codeVerifier = base64.RawURLEncoding.EncodeToString(hash[:])
 		default:
 			s.setErrorAndLog(w, E_INVALID_REQUEST, nil,
-				"auth_code_request=%s", "pkce transform algorithm not supported (rfc7636)")
+				"auth_code_request", "pkce transform algorithm not supported (rfc7636)")
 			return nil
 		}
 		if codeVerifier != ret.AuthorizeData.CodeChallenge {
 			s.setErrorAndLog(w, E_INVALID_GRANT, errors.New("code_verifier failed comparison with code_challenge"),
-				"auth_code_request=%s", "pkce code verifier does not match challenge")
+				"auth_code_request", "pkce code verifier does not match challenge")
 			return nil
 		}
 	}
@@ -303,7 +314,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 
 	// "refresh_token" is required
 	if ret.Code == "" {
-		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "refresh_token=%s", "refresh_token is required")
+		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "refresh_token", "refresh_token is required")
 		return nil
 	}
 
@@ -316,25 +327,25 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	var err error
 	ret.AccessData, err = w.Storage.LoadRefresh(r.Context(), ret.Code)
 	if err != nil {
-		s.setErrorAndLog(w, E_INVALID_GRANT, err, "refresh_token=%s", "error loading access data")
+		s.setErrorAndLog(w, E_INVALID_GRANT, err, "refresh_token", "error loading access data")
 		return nil
 	}
 	if ret.AccessData == nil {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "refresh_token=%s", "access data is nil")
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "refresh_token", "access data is nil")
 		return nil
 	}
 	if ret.AccessData.Client == nil {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "refresh_token=%s", "access data client is nil")
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "refresh_token", "access data client is nil")
 		return nil
 	}
 	if ret.AccessData.Client.GetRedirectUri() == "" {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "refresh_token=%s", "access data client redirect uri is empty")
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "refresh_token", "access data client redirect uri is empty")
 		return nil
 	}
 
 	// client must be the same as the previous token
 	if ret.AccessData.Client.GetId() != ret.Client.GetId() {
-		s.setErrorAndLog(w, E_INVALID_CLIENT, errors.New("Client id must be the same from previous token"), "refresh_token=%s, current=%v, previous=%v", "client mismatch", ret.Client.GetId(), ret.AccessData.Client.GetId())
+		s.setErrorAndLog(w, E_INVALID_CLIENT, errors.New("Client id must be the same from previous token"), "refresh_token", "client mismatch", "current", ret.Client.GetId(), "previous", ret.AccessData.Client.GetId())
 		return nil
 
 	}
@@ -348,7 +359,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 
 	if extraScopes(ret.AccessData.Scope, ret.Scope) {
 		msg := "the requested scope must not include any scope not originally granted by the resource owner"
-		s.setErrorAndLog(w, E_ACCESS_DENIED, errors.New(msg), "refresh_token=%s", msg)
+		s.setErrorAndLog(w, E_ACCESS_DENIED, errors.New(msg), "refresh_token", msg)
 		return nil
 	}
 
@@ -375,7 +386,7 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 
 	// "username" and "password" is required
 	if ret.Username == "" || ret.Password == "" {
-		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_password=%s", "username and pass required")
+		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_password", "username and pass required")
 		return nil
 	}
 
@@ -437,7 +448,7 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 
 	// "assertion_type" and "assertion" is required
 	if ret.AssertionType == "" || ret.Assertion == "" {
-		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_assertion_request=%s", "assertion and assertion_type required")
+		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_assertion_request", "assertion and assertion_type required")
 		return nil
 	}
 
@@ -482,7 +493,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 			// generate access token
 			ret.AccessToken, ret.RefreshToken, err = s.AccessTokenGen.GenerateAccessToken(r.Context(), ret, ar.GenerateRefresh)
 			if err != nil {
-				s.setErrorAndLog(w, E_SERVER_ERROR, err, "finish_access_request=%s", "error generating token")
+				s.setErrorAndLog(w, E_SERVER_ERROR, err, "finish_access_request", "error generating token")
 				return
 			}
 		} else {
@@ -491,7 +502,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 
 		// save access token
 		if err = w.Storage.SaveAccess(r.Context(), ret); err != nil {
-			s.setErrorAndLog(w, E_SERVER_ERROR, err, "finish_access_request=%s", "error saving access token")
+			s.setErrorAndLog(w, E_SERVER_ERROR, err, "finish_access_request", "error saving access token")
 			return
 		}
 
@@ -519,7 +530,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 			w.Output["scope"] = ret.Scope
 		}
 	} else {
-		s.setErrorAndLog(w, E_ACCESS_DENIED, nil, "finish_access_request=%s", "authorization failed")
+		s.setErrorAndLog(w, E_ACCESS_DENIED, nil, "finish_access_request", "authorization failed")
 	}
 }
 
@@ -530,36 +541,40 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 func (s Server) getClient(ctx context.Context, auth *BasicAuth, storage Storage, w *Response) Client {
 	client, err := storage.GetClient(ctx, auth.Username)
 	if err == ErrNotFound {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s", "not found")
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client", "not found")
 		return nil
 	}
 	if err != nil {
-		s.setErrorAndLog(w, E_SERVER_ERROR, err, "get_client=%s", "error finding client")
+		s.setErrorAndLog(w, E_SERVER_ERROR, err, "get_client", "error finding client")
 		return nil
 	}
 	if client == nil {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s", "client is nil")
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client", "client is nil")
 		return nil
 	}
 
 	if !CheckClientSecret(client, auth.Password) {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s, client_id=%v", "client check failed", client.GetId())
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client", "client check failed", "client_id", client.GetId())
 		return nil
 	}
 
 	if client.GetRedirectUri() == "" {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s", "client redirect uri is empty")
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client", "client redirect uri is empty")
 		return nil
 	}
 	return client
 }
 
+type LogMessage struct {
+	Message string
+	Args    []any
+}
+
 // setErrorAndLog sets the response error and internal error (if non-nil) and logs them along with the provided debug format string and arguments.
-func (s Server) setErrorAndLog(w *Response, responseError string, internalError error, debugFormat string, debugArgs ...interface{}) {
-	format := "error=%v, internal_error=%#v " + debugFormat
-
-	w.InternalError = internalError
-	w.SetError(responseError, "")
-
-	s.Logger.Printf(format, append([]interface{}{responseError, internalError}, debugArgs...)...)
+func (s Server) setErrorAndLog(w *Response, code string, internal error, action string, msg string, args ...any) {
+	w.InternalError = internal
+	w.SetError(code, "")
+	if s.Logger != nil {
+		s.Logger.Error(msg, append([]any{"action", action}, args...)...)
+	}
 }
