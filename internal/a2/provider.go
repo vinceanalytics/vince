@@ -2,6 +2,7 @@ package a2
 
 import (
 	"context"
+	"crypto/subtle"
 	"errors"
 	"time"
 
@@ -191,9 +192,14 @@ type xclient struct {
 }
 
 var _ Client = (*xclient)(nil)
+var _ ClientSecretMatcher = (*xclient)(nil)
 
 func (x xclient) GetId() string {
 	return x.b.Id
+}
+
+func (x xclient) ClientSecretMatches(secret string) bool {
+	return subtle.ConstantTimeCompare([]byte(secret), []byte(x.b.Secret)) == 1
 }
 
 func (x xclient) GetSecret() string {

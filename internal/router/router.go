@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"net/http/pprof"
 	"strings"
@@ -9,14 +10,21 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vinceanalytics/vince/assets"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	"github.com/vinceanalytics/vince/internal/a2"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/keys"
+	"github.com/vinceanalytics/vince/internal/px"
 	"github.com/vinceanalytics/vince/internal/tracker"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Router struct {
 	metrics http.Handler
 	pprof   http.Handler
+	a2      *a2.Server
 }
 
 func New(ctx context.Context, reg *prometheus.Registry) *Router {
@@ -27,6 +35,7 @@ func New(ctx context.Context, reg *prometheus.Registry) *Router {
 	} else {
 		h.pprof = http.HandlerFunc(NotFound)
 	}
+	h.a2 = a2.New(slog.Default())
 	return h
 }
 
@@ -61,8 +70,56 @@ func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/api/event":
 		api.Events(w, r)
 		return
+	case "/authorize":
+		resp := h.a2.NewResponse()
+		defer resp.Close()
+		if ar := h.a2.HandleAuthorizeRequest(resp, r); ar != nil {
+			ar.Authorized = true
+			h.a2.FinishAuthorizeRequest(resp, r, ar)
+		}
+		a2.OutputJSON(resp, w, r)
+		return
+	case "/token":
+		resp := h.a2.NewResponse()
+		defer resp.Close()
+		ctx := r.Context()
+		if ar := h.a2.HandleAccessRequest(resp, r); ar != nil {
+			switch ar.Type {
+			case a2.REFRESH_TOKEN:
+				ar.Authorized = true
+			case a2.PASSWORD:
+				ar.Authorized = basic(ctx, ar)
+			case a2.CLIENT_CREDENTIALS:
+				ar.Authorized = true
+			}
+			h.a2.FinishAccessRequest(resp, r, ar)
+		}
+		a2.OutputJSON(resp, w, r)
+		return
+	case "/info":
+		resp := h.a2.NewResponse()
+		defer resp.Close()
+		if ar := h.a2.HandleInfoRequest(resp, r); ar != nil {
+			h.a2.FinishInfoRequest(resp, r, ar)
+		}
+		a2.OutputJSON(resp, w, r)
+		return
 	}
 	NotFound(w, r)
+}
+
+func basic(ctx context.Context, ar *a2.AccessRequest) bool {
+	var a v1.Account
+	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
+		key := keys.Account(ar.Username)
+		defer key.Release()
+		return txn.Get(key.Bytes(), px.Decode(&a))
+	})
+	if err != nil {
+		return false
+	}
+	err = bcrypt.CompareHashAndPassword(a.HashedPassword, []byte(ar.Password))
+	return err == nil
 }
 
 func NotFound(w http.ResponseWriter, r *http.Request) {
