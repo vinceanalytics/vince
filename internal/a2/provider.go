@@ -13,20 +13,15 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type provider struct {
-	db db.Provider
+type Provider struct {
 }
 
-func New(db db.Provider) Storage {
-	return &provider{}
-}
+var _ Storage = (*Provider)(nil)
 
-var _ Storage = (*provider)(nil)
+func (Provider) Close(ctx context.Context)          {}
+func (p *Provider) Clone(_ context.Context) Storage { return p }
 
-func (provider) Close(ctx context.Context)          {}
-func (p *provider) Clone(_ context.Context) Storage { return p }
-
-func (p provider) GetClient(ctx context.Context, id string) (Client, error) {
+func (p Provider) GetClient(ctx context.Context, id string) (Client, error) {
 	var o v1.AuthorizedClient
 	err := p.get(ctx, keys.AClient(id), &o)
 	if err != nil {
@@ -35,13 +30,13 @@ func (p provider) GetClient(ctx context.Context, id string) (Client, error) {
 	return xclient{b: &o}, nil
 }
 
-func (p provider) SaveAuthorize(ctx context.Context, a *AuthorizeData) error {
+func (p Provider) SaveAuthorize(ctx context.Context, a *AuthorizeData) error {
 	return p.save(ctx,
 		keys.AAuthorize(a.Code), AuthorizeDataTo(a), a.ExpiresIn,
 	)
 }
 
-func (p provider) LoadAuthorize(ctx context.Context, code string) (*AuthorizeData, error) {
+func (p Provider) LoadAuthorize(ctx context.Context, code string) (*AuthorizeData, error) {
 	var o v1.AuthorizeData
 	err := p.get(ctx, keys.AAuthorize(code), &o)
 	if err != nil {
@@ -50,11 +45,11 @@ func (p provider) LoadAuthorize(ctx context.Context, code string) (*AuthorizeDat
 	return AuthorizeDataFrom(&o), nil
 }
 
-func (p provider) RemoveAuthorize(ctx context.Context, code string) error {
+func (p Provider) RemoveAuthorize(ctx context.Context, code string) error {
 	return p.remove(ctx, keys.AAuthorize(code))
 }
 
-func (p provider) SaveAccess(ctx context.Context, a *AccessData) error {
+func (p Provider) SaveAccess(ctx context.Context, a *AccessData) error {
 	return errors.Join(
 		p.save(ctx,
 			keys.AAccess(a.AccessToken), AccessDataTo(a), a.ExpiresIn,
@@ -65,7 +60,7 @@ func (p provider) SaveAccess(ctx context.Context, a *AccessData) error {
 	)
 }
 
-func (p provider) LoadAccess(ctx context.Context, token string) (*AccessData, error) {
+func (p Provider) LoadAccess(ctx context.Context, token string) (*AccessData, error) {
 	var o v1.AccessData
 	err := p.get(ctx, keys.AAccess(token), &o)
 	if err != nil {
@@ -74,11 +69,11 @@ func (p provider) LoadAccess(ctx context.Context, token string) (*AccessData, er
 	return AccessDataFrom(&o), nil
 }
 
-func (p provider) RemoveAccess(ctx context.Context, token string) error {
+func (p Provider) RemoveAccess(ctx context.Context, token string) error {
 	return p.remove(ctx, keys.AAccess(token))
 }
 
-func (p provider) LoadRefresh(ctx context.Context, token string) (*AccessData, error) {
+func (p Provider) LoadRefresh(ctx context.Context, token string) (*AccessData, error) {
 	var o v1.AccessData
 	err := p.get(ctx, keys.ARefresh(token), &o)
 	if err != nil {
@@ -87,27 +82,27 @@ func (p provider) LoadRefresh(ctx context.Context, token string) (*AccessData, e
 	return AccessDataFrom(&o), nil
 }
 
-func (p provider) RemoveRefresh(ctx context.Context, token string) error {
+func (p Provider) RemoveRefresh(ctx context.Context, token string) error {
 	return p.remove(ctx, keys.ARefresh(token))
 }
 
-func (p provider) save(ctx context.Context, key *keys.Key, m proto.Message, ttl int32) error {
+func (p Provider) save(ctx context.Context, key *keys.Key, m proto.Message, ttl int32) error {
 	b := must.Must(proto.Marshal(m))("failed serializing data")
-	return p.db.Txn(true, func(txn db.Txn) error {
+	return db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		defer key.Release()
 		return txn.SetTTL(key.Bytes(), b, time.Duration(ttl)*time.Second)
 	})
 }
 
-func (p provider) remove(ctx context.Context, key *keys.Key) error {
-	return p.db.Txn(true, func(txn db.Txn) error {
+func (p Provider) remove(ctx context.Context, key *keys.Key) error {
+	return db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		defer key.Release()
 		return txn.Delete(key.Bytes())
 	})
 }
 
-func (p provider) get(ctx context.Context, key *keys.Key, o proto.Message) error {
-	return p.db.Txn(false, func(txn db.Txn) error {
+func (p Provider) get(ctx context.Context, key *keys.Key, o proto.Message) error {
+	return db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		defer key.Release()
 		return txn.Get(key.Bytes(), func(val []byte) error {
 			return proto.Unmarshal(val, o)
