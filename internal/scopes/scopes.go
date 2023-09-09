@@ -40,11 +40,15 @@ var _ json.Marshaler = (*Scope)(nil)
 var _ json.Unmarshaler = (*Scope)(nil)
 
 func (s Scope) String() string {
+	return ResourceBaseURL + nameToValue[s]
+}
+
+func (s Scope) FullMethod() string {
 	return nameToValue[s]
 }
 
 func (s Scope) MarshalJSON() ([]byte, error) {
-	return json.Marshal(ResourceBaseURL + s.String())
+	return json.Marshal(s.String())
 }
 
 func (s *Scope) UnmarshalJSON(b []byte) error {
@@ -53,6 +57,10 @@ func (s *Scope) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
+	return s.Parse(o)
+}
+
+func (s *Scope) Parse(o string) error {
 	if !strings.HasPrefix(o, ResourceBaseURL) {
 		return fmt.Errorf("invalid scope :%q", o)
 	}
