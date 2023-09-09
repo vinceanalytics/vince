@@ -71,13 +71,13 @@ func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		api.Events(w, r)
 		return
 	case "/authorize":
-		resp := h.a2.NewResponse()
-		defer resp.Close()
-		if ar := h.a2.HandleAuthorizeRequest(resp, r); ar != nil {
-			ar.Authorized = true
-			h.a2.FinishAuthorizeRequest(resp, r, ar)
-		}
-		a2.OutputJSON(resp, w, r)
+		// resp := h.a2.NewResponse()
+		// defer resp.Close()
+		// if ar := h.a2.HandleAuthorizeRequest(resp, r); ar != nil {
+		// 	ar.Authorized = true
+		// 	h.a2.FinishAuthorizeRequest(resp, r, ar)
+		// }
+		// a2.OutputJSON(resp, w, r)
 		return
 	case "/token":
 		resp := h.a2.NewResponse()
