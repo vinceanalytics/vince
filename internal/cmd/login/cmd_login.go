@@ -2,19 +2,15 @@ package login
 
 import (
 	"context"
-	"crypto/ed25519"
 	"os"
-	"time"
 
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
 	"github.com/vinceanalytics/vince/internal/do"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
-	"github.com/vinceanalytics/vince/internal/tokens"
 )
 
 func CMD() *cli.Command {
@@ -32,8 +28,23 @@ func CMD() *cli.Command {
 			must.Assert(uri != "")(
 				"missing instance argument",
 			)
+			token, err := do.LoginBase(
+				context.TODO(), uri, name, password,
+			)
+			if err != nil {
+				return w.Complete(err)
+			}
+			info, err := do.Build(context.TODO(), uri, token.AccessToken)
+			if err != nil {
+				return w.Complete(err)
+			}
+			a := &configv1.Client_Auth{
+				Name:          name,
+				AccessToken:   token.AccessToken,
+				RerfreshToken: token.RefreshToken,
+				ServerId:      info.ServerId,
+			}
 			client, file := auth.LoadClient()
-			priv := ed25519.PrivateKey(client.PrivateKey)
 			if client.Instance == nil {
 				client.Instance = make(map[string]*configv1.Client_Instance)
 			}
@@ -45,24 +56,6 @@ func CMD() *cli.Command {
 					Accounts: make(map[string]*configv1.Client_Auth),
 				}
 			}
-			token, _ := tokens.Generate(
-				context.Background(),
-				priv,
-				v1.Token_CLIENT,
-				name,
-				time.Now().Add(365*24*time.Hour),
-			)
-
-			clientAuth, err := do.Login(context.TODO(),
-				uri, name, password, &v1.LoginRequest{
-					Token:     token,
-					PublicKey: priv.Public().(ed25519.PublicKey),
-				},
-			)
-			if err != nil {
-				return w.Complete(err)
-			}
-			a := clientAuth.Auth
 			client.Instance[uri].Accounts[a.Name] = a
 			client.ServerId[a.ServerId] = uri
 			if client.Active == nil {

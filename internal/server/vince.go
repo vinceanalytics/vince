@@ -48,6 +48,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/prober"
 	"github.com/vinceanalytics/vince/internal/px"
 	"github.com/vinceanalytics/vince/internal/router"
+	"github.com/vinceanalytics/vince/internal/secrets"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/internal/tokens"
 	"github.com/vinceanalytics/vince/internal/worker"
@@ -337,15 +338,15 @@ func AuthGRPC(ctx context.Context) (context.Context, error) {
 	if err != nil {
 		return nil, err
 	}
-	claims, ok := tokens.ValidWithClaims(db.Get(ctx), token)
+	claims, ok := tokens.ValidWithClaims(secrets.Get(ctx), token)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "invalid auth token")
 	}
 	ctx = logging.InjectFields(ctx, logging.Fields{"auth.sub", claims.Subject})
 	ctx = core.SetAuth(ctx, &configv1.Client_Auth{
-		Name:     claims.Subject,
-		Token:    token,
-		ServerId: config.Get(ctx).ServerId,
+		Name:        claims.Subject,
+		AccessToken: token,
+		ServerId:    config.Get(ctx).ServerId,
 	})
 	return tokens.Set(ctx, claims), nil
 }

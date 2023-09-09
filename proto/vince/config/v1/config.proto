@@ -159,8 +159,9 @@ message Client {
   }
   message Auth {
     string name = 1;
-    string token = 2;
-    string server_id = 3;
+    string access_token = 2;
+    string rerfresh_token = 3;
+    string server_id = 4;
   }
 }
 
@@ -265,4 +266,7 @@ message BlockStore {
   }
 }
 
-message Build { string version = 1; }
+message Build {
+  string version = 1;
+  string server_id = 2;
+}

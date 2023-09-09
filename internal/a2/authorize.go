@@ -168,7 +168,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 
 			// Optional PKCE support (https://tools.ietf.org/html/rfc7636)
 			if codeChallenge := r.FormValue("code_challenge"); len(codeChallenge) == 0 {
-				if s.Config.RequirePKCEForPublicClients && CheckClientSecret(ret.Client, "") {
+				if s.Config.RequirePKCEForPublicClients && CheckClientSecret(r.Context(), ret.Client, "") {
 					// https://tools.ietf.org/html/rfc7636#section-4.4.1
 					w.SetErrorState(E_INVALID_REQUEST, "code_challenge (rfc7636) required for public clients", ret.State)
 					return nil

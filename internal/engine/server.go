@@ -9,6 +9,7 @@ import (
 	"github.com/dolthub/vitess/go/mysql"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/secrets"
 )
 
 func Listen(ctx context.Context) (*Server, error) {
@@ -27,8 +28,11 @@ func Listen(ctx context.Context) (*Server, error) {
 		return nil, err
 	}
 	listenerCfg := mysql.ListenerConfig{
-		Listener:                 l,
-		AuthServer:               &Auth{DB: db.Get(ctx)},
+		Listener: l,
+		AuthServer: &Auth{
+			DB:         db.Get(ctx),
+			PrivateKey: secrets.Get(ctx),
+		},
 		Handler:                  handler,
 		ConnReadBufferSize:       mysql.DefaultConnBufferSize,
 		AllowClearTextWithoutTLS: true,

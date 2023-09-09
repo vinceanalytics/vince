@@ -234,7 +234,10 @@
         "name": {
           "type": "string"
         },
-        "token": {
+        "accessToken": {
+          "type": "string"
+        },
+        "rerfreshToken": {
           "type": "string"
         },
         "serverId": {
@@ -297,6 +300,9 @@
       "type": "object",
       "properties": {
         "version": {
+          "type": "string"
+        },
+        "serverId": {
           "type": "string"
         }
       }

@@ -553,7 +553,7 @@ func (s Server) getClient(ctx context.Context, auth *BasicAuth, storage Storage,
 		return nil
 	}
 
-	if !CheckClientSecret(client, auth.Password) {
+	if !CheckClientSecret(ctx, client, auth.Password) {
 		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client", "client check failed", "client_id", client.GetId())
 		return nil
 	}

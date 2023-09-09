@@ -59,9 +59,9 @@ func (*API) Login(ctx context.Context, tr *apiv1.LoginRequest) (*apiv1.LoginResp
 	o := config.Get(ctx)
 	return &apiv1.LoginResponse{
 		Auth: &configv1.Client_Auth{
-			Name:     a.Name,
-			Token:    tr.Token,
-			ServerId: o.ServerId,
+			Name:        a.Name,
+			AccessToken: tr.Token,
+			ServerId:    o.ServerId,
 		},
 	}, nil
 }

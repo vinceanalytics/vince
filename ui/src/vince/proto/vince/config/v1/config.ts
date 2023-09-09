@@ -433,11 +433,15 @@ export interface Client_Auth {
      */
     name: string;
     /**
-     * @generated from protobuf field: string token = 2;
+     * @generated from protobuf field: string access_token = 2;
      */
-    token: string;
+    accessToken: string;
     /**
-     * @generated from protobuf field: string server_id = 3;
+     * @generated from protobuf field: string rerfresh_token = 3;
+     */
+    rerfreshToken: string;
+    /**
+     * @generated from protobuf field: string server_id = 4;
      */
     serverId: string;
 }
@@ -804,6 +808,10 @@ export interface Build {
      * @generated from protobuf field: string version = 1;
      */
     version: string;
+    /**
+     * @generated from protobuf field: string server_id = 2;
+     */
+    serverId: string;
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class Config$Type extends MessageType<Config> {
@@ -2034,12 +2042,13 @@ class Client_Auth$Type extends MessageType<Client_Auth> {
     constructor() {
         super("v1.Client.Auth", [
             { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "token", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "server_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 2, name: "access_token", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "rerfresh_token", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "server_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<Client_Auth>): Client_Auth {
-        const message = { name: "", token: "", serverId: "" };
+        const message = { name: "", accessToken: "", rerfreshToken: "", serverId: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Client_Auth>(this, message, value);
@@ -2053,10 +2062,13 @@ class Client_Auth$Type extends MessageType<Client_Auth> {
                 case /* string name */ 1:
                     message.name = reader.string();
                     break;
-                case /* string token */ 2:
-                    message.token = reader.string();
+                case /* string access_token */ 2:
+                    message.accessToken = reader.string();
                     break;
-                case /* string server_id */ 3:
+                case /* string rerfresh_token */ 3:
+                    message.rerfreshToken = reader.string();
+                    break;
+                case /* string server_id */ 4:
                     message.serverId = reader.string();
                     break;
                 default:
@@ -2074,12 +2086,15 @@ class Client_Auth$Type extends MessageType<Client_Auth> {
         /* string name = 1; */
         if (message.name !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.name);
-        /* string token = 2; */
-        if (message.token !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.token);
-        /* string server_id = 3; */
+        /* string access_token = 2; */
+        if (message.accessToken !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.accessToken);
+        /* string rerfresh_token = 3; */
+        if (message.rerfreshToken !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.rerfreshToken);
+        /* string server_id = 4; */
         if (message.serverId !== "")
-            writer.tag(3, WireType.LengthDelimited).string(message.serverId);
+            writer.tag(4, WireType.LengthDelimited).string(message.serverId);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -3071,11 +3086,12 @@ export const BlockStore_S3_SSE = new BlockStore_S3_SSE$Type();
 class Build$Type extends MessageType<Build> {
     constructor() {
         super("v1.Build", [
-            { no: 1, name: "version", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "version", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "server_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<Build>): Build {
-        const message = { version: "" };
+        const message = { version: "", serverId: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Build>(this, message, value);
@@ -3088,6 +3104,9 @@ class Build$Type extends MessageType<Build> {
             switch (fieldNo) {
                 case /* string version */ 1:
                     message.version = reader.string();
+                    break;
+                case /* string server_id */ 2:
+                    message.serverId = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -3104,6 +3123,9 @@ class Build$Type extends MessageType<Build> {
         /* string version = 1; */
         if (message.version !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.version);
+        /* string server_id = 2; */
+        if (message.serverId !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.serverId);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

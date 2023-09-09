@@ -1,6 +1,7 @@
 package a2
 
 import (
+	"context"
 	"crypto/subtle"
 	"encoding/base64"
 	"errors"
@@ -22,11 +23,11 @@ type BearerAuth struct {
 
 // CheckClientSecret determines whether the given secret matches a secret held by the client.
 // Public clients return true for a secret of ""
-func CheckClientSecret(client Client, secret string) bool {
+func CheckClientSecret(ctx context.Context, client Client, secret string) bool {
 	switch client := client.(type) {
 	case ClientSecretMatcher:
 		// Prefer the more secure method of giving the secret to the client for comparison
-		return client.ClientSecretMatches(secret)
+		return client.ClientSecretMatches(ctx, secret)
 	default:
 		// Fallback to the less secure method of extracting the plain text secret from the client for comparison
 		return subtle.ConstantTimeCompare([]byte(client.GetSecret()), []byte(secret)) == 1
@@ -114,7 +115,7 @@ func (s Server) getClientAuth(w *Response, r *http.Request, allowQueryParams boo
 		return nil
 	}
 	if auth == nil {
-		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Client authentication not sent"), "get_client_auth=%s", "client authentication not sent")
+		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Client authentication not sent"), "get_client_auth", "client authentication not sent")
 		return nil
 	}
 	return auth

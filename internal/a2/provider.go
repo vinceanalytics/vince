@@ -6,10 +6,13 @@ import (
 	"errors"
 	"time"
 
+	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/auth/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
+	"github.com/vinceanalytics/vince/internal/px"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -23,12 +26,24 @@ func (Provider) Close(ctx context.Context)       {}
 func (Provider) Clone(_ context.Context) Storage { return Provider{} }
 
 func (Provider) GetClient(ctx context.Context, id string) (Client, error) {
-	var o v1.AuthorizedClient
-	err := Provider{}.get(ctx, keys.AClient(id), &o)
+	o := &v1.AuthorizedClient{}
+	err := Provider{}.get(ctx, keys.AClient(id), o)
 	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			// we support login with passwords.
+			return xclient{b: o}, db.Get(ctx).Txn(false, func(txn db.Txn) error {
+				key := keys.Account(id)
+				defer key.Release()
+				if !txn.Has(key.Bytes()) {
+					return ErrNotFound
+				}
+				*o = v1.AuthorizedClient{Id: id, RedirectUrl: "/"}
+				return nil
+			})
+		}
 		return nil, err
 	}
-	return xclient{b: &o}, nil
+	return xclient{b: o}, nil
 }
 
 func (Provider) SaveAuthorize(ctx context.Context, a *AuthorizeData) error {
@@ -132,6 +147,9 @@ func AuthorizeDataFrom(a *v1.AuthorizeData) *AuthorizeData {
 }
 
 func AuthorizeDataTo(a *AuthorizeData) *v1.AuthorizeData {
+	if a == nil {
+		return nil
+	}
 	return &v1.AuthorizeData{
 		Client: &v1.AuthorizedClient{
 			Id:          a.Client.GetId(),
@@ -198,8 +216,20 @@ func (x xclient) GetId() string {
 	return x.b.Id
 }
 
-func (x xclient) ClientSecretMatches(secret string) bool {
-	return subtle.ConstantTimeCompare([]byte(secret), []byte(x.b.Secret)) == 1
+func (x xclient) ClientSecretMatches(ctx context.Context, secret string) bool {
+	if x.b.Secret != "" {
+		return subtle.ConstantTimeCompare([]byte(secret), []byte(x.b.Secret)) == 1
+	}
+	return db.Get(ctx).Txn(false, func(txn db.Txn) error {
+		key := keys.Account(x.b.Id)
+		defer key.Release()
+		var a apiv1.Account
+		err := txn.Get(key.Bytes(), px.Decode(&a))
+		if err != nil {
+			return err
+		}
+		return bcrypt.CompareHashAndPassword(a.HashedPassword, []byte(secret))
+	}) == nil
 }
 
 func (x xclient) GetSecret() string {
@@ -207,7 +237,7 @@ func (x xclient) GetSecret() string {
 }
 
 func (x xclient) GetRedirectUri() string {
-	return x.b.Secret
+	return x.b.RedirectUrl
 }
 
 func (x xclient) GetUserData() any {

@@ -1,6 +1,9 @@
 package a2
 
-import "crypto/subtle"
+import (
+	"context"
+	"crypto/subtle"
+)
 
 // Client information
 type Client interface {
@@ -22,7 +25,7 @@ type Client interface {
 // If a Client implements ClientSecretMatcher, the framework will never call GetSecret
 type ClientSecretMatcher interface {
 	// SecretMatches returns true if the given secret matches
-	ClientSecretMatches(secret string) bool
+	ClientSecretMatches(ctx context.Context, secret string) bool
 }
 
 // DefaultClient stores all data in struct variables

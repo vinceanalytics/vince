@@ -148,7 +148,7 @@ func Account() (token string, api string) {
 			"select existing vince instance/account using [vince use] command",
 		).Exit()
 	}
-	token = o.Instance[o.Active.Instance].Accounts[o.Active.Account].Token
+	token = o.Instance[o.Active.Instance].Accounts[o.Active.Account].AccessToken
 	api = o.Active.Instance
 	return
 }

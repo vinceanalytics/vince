@@ -17,7 +17,7 @@ import (
 func DSN(addr string, a *v1.Client_Auth, tls bool) string {
 	x := mysql.Config{
 		User:                    a.Name,
-		Passwd:                  a.Token,
+		Passwd:                  a.AccessToken,
 		Net:                     "tcp",
 		Addr:                    addr,
 		DBName:                  "vince",

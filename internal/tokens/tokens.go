@@ -4,18 +4,14 @@ import (
 	"context"
 	"crypto/ed25519"
 	"encoding/base64"
-	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/oklog/ulid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/core"
-	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/protobuf/proto"
 )
 
 func Generate(ctx context.Context, key ed25519.PrivateKey,
@@ -40,42 +36,20 @@ func Generate(ctx context.Context, key ed25519.PrivateKey,
 	), claims
 }
 
-func Valid(db db.Provider, token string) (ok bool) {
-	_, ok = ValidWithClaims(db, token)
+func Valid(priv ed25519.PrivateKey, token string) (ok bool) {
+	_, ok = ValidWithClaims(priv, token)
 	return
 }
 
-func ValidWithClaims(vdb db.Provider, token string) (claims *jwt.RegisteredClaims, ok bool) {
+func ValidWithClaims(priv ed25519.PrivateKey, token string) (claims *jwt.RegisteredClaims, ok bool) {
 	if token == "" {
 		return
 	}
-	ok = vdb.Txn(false, func(txn db.Txn) error {
-		key := keys.Token(token)
-		defer key.Release()
-		return txn.Get(
-			key.Bytes(),
-			func(val []byte) error {
-				var tpub v1.Token
-				err := proto.Unmarshal(val, &tpub)
-				if err != nil {
-					return err
-				}
-				claims = &jwt.RegisteredClaims{}
-				t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
-					return ed25519.PublicKey(tpub.PubKey), nil
-				})
-				if err != nil {
-					return err
-				}
-				if !t.Valid {
-					return errors.New("invalid token")
-				}
-				return nil
-			},
-		)
-	}) == nil
-
-	return
+	claims = &jwt.RegisteredClaims{}
+	t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+		return priv.Public(), nil
+	})
+	return claims, err == nil && t.Valid
 }
 
 type tokenKey struct{}

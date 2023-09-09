@@ -5,12 +5,14 @@ import (
 	"strings"
 
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/tokens"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type Vince struct {
@@ -124,6 +126,16 @@ func GetSite(ctx context.Context,
 ) (o *sitesv1.Site, err error) {
 	err = DoSite(ctx, addr, tokens.Source(token), func(ctx context.Context, vc sitesv1.SitesClient) error {
 		o, err = vc.GetSite(ctx, in)
+		return err
+	})
+	return
+}
+
+func Build(ctx context.Context,
+	addr, token string,
+) (o *configv1.Build, err error) {
+	err = Do(ctx, addr, tokens.Source(token), func(ctx context.Context, vc v1.VinceClient) error {
+		o, err = vc.Version(ctx, &emptypb.Empty{})
 		return err
 	})
 	return
