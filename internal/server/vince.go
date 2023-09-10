@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -42,18 +41,15 @@ import (
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/engine"
 	"github.com/vinceanalytics/vince/internal/ha"
-	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/metrics"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/prober"
-	"github.com/vinceanalytics/vince/internal/px"
 	"github.com/vinceanalytics/vince/internal/router"
 	"github.com/vinceanalytics/vince/internal/secrets"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/internal/tokens"
 	"github.com/vinceanalytics/vince/internal/worker"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"golang.org/x/sync/errgroup"
@@ -214,7 +210,6 @@ func New(ctx context.Context) *Vince {
 				met.StreamServerInterceptor(),
 				grpc_logging.StreamServerInterceptor(InterceptorLogger(), logOpts...),
 				auth.StreamServerInterceptor(AuthGRPC),
-				selector.StreamServerInterceptor(auth.StreamServerInterceptor(AuthGRPCBasic), selector.MatchFunc(AuthGRPCBasicSelector)),
 				selector.StreamServerInterceptor(auth.StreamServerInterceptor(AuthGRPC), selector.MatchFunc(AuthGRPCSelector)),
 				grpc_protovalidate.StreamServerInterceptor(valid),
 			)),
@@ -223,7 +218,6 @@ func New(ctx context.Context) *Vince {
 				otelgrpc.UnaryServerInterceptor(),
 				met.UnaryServerInterceptor(),
 				grpc_logging.UnaryServerInterceptor(InterceptorLogger(), logOpts...),
-				selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(AuthGRPCBasic), selector.MatchFunc(AuthGRPCBasicSelector)),
 				selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(AuthGRPC), selector.MatchFunc(AuthGRPCSelector)),
 				grpc_protovalidate.UnaryServerInterceptor(valid),
 			),
@@ -330,7 +324,8 @@ func InterceptorLogger() grpc_logging.Logger {
 }
 
 func AuthGRPCSelector(_ context.Context, c interceptors.CallMeta) bool {
-	return c.FullMethod() != "/v1.Vince/Login"
+	// All grpc services are protected
+	return true
 }
 
 func AuthGRPC(ctx context.Context) (context.Context, error) {
@@ -349,51 +344,4 @@ func AuthGRPC(ctx context.Context) (context.Context, error) {
 		ServerId:    config.Get(ctx).ServerId,
 	})
 	return tokens.Set(ctx, claims), nil
-}
-
-func AuthGRPCBasicSelector(_ context.Context, c interceptors.CallMeta) bool {
-	return c.FullMethod() == "/v1.Vince/Login"
-}
-
-func AuthGRPCBasic(ctx context.Context) (context.Context, error) {
-	token, err := auth.AuthFromMD(ctx, "basic")
-	if err != nil {
-		return nil, err
-	}
-	username, passsword, ok := parseBasicAuth(token)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "invalid basic auth")
-	}
-	var a v1.Account
-	err = db.Get(ctx).Txn(false, func(txn db.Txn) error {
-		key := keys.Account(username)
-		defer key.Release()
-		return txn.Get(key.Bytes(), px.Decode(&a), func() error {
-			return status.Error(codes.Unauthenticated, "invalid basic auth")
-		})
-	})
-	if err != nil {
-		return nil, err
-	}
-	err = bcrypt.CompareHashAndPassword(a.HashedPassword, []byte(passsword))
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "invalid basic auth")
-	}
-	ctx = logging.InjectFields(ctx, logging.Fields{"auth.sub", a.Name})
-	return tokens.SetAccount(ctx, &a), nil
-}
-
-// parseBasicAuth parses an HTTP Basic Authentication string.
-// "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" returns ("Aladdin", "open sesame", true).
-func parseBasicAuth(auth string) (username, password string, ok bool) {
-	c, err := base64.StdEncoding.DecodeString(auth)
-	if err != nil {
-		return "", "", false
-	}
-	cs := string(c)
-	username, password, ok = strings.Cut(cs, ":")
-	if !ok {
-		return "", "", false
-	}
-	return username, password, true
 }
