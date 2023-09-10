@@ -1,7 +1,7 @@
 
 import { Box, Button, Portal, TextInput, registerPortalRoot } from "@primer/react";
 import { useCallback, useState } from "react";
-import { login } from "../../vince";
+import { OauthToken, parseOauthToken, passwordCredentialsToken } from "../../vince";
 import { useLocalStorage, StoreKey } from "../../providers/LocalStorageProvider";
 
 const Login = () => {
@@ -11,11 +11,17 @@ const Login = () => {
     const [loading, setLoading] = useState<boolean>(false)
     const submit = useCallback(() => {
         setLoading(true)
-        login(userName, password).then((result) => {
-            updateSettings(StoreKey.AUTH_PAYLOAD, result.response.auth?.token!)
-        }).catch((e) => {
-            console.log(e)
-        })
+        passwordCredentialsToken(userName, password).then((response) => response.json())
+            .then((result) => {
+                // OauthToken has expires_in in seconds. We store this token in
+                // local storage, so we explicitly convert the seconds into an
+                // actual date that this token will expire.
+                const token = parseOauthToken(result as OauthToken)
+                updateSettings(StoreKey.AUTH_PAYLOAD, JSON.stringify(token))
+            })
+            .catch((e) => {
+                console.log(e)
+            })
     }, [userName, password, setLoading])
     return (
         <Box

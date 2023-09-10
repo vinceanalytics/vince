@@ -25,7 +25,8 @@ func New(log *slog.Logger) *Server {
 			AllowedAccessTypes: AllowedAccessType{
 				CLIENT_CREDENTIALS, PASSWORD, REFRESH_TOKEN,
 			},
-			ErrorStatusCode: 200,
+			ErrorStatusCode:           200,
+			AllowClientSecretInParams: true,
 		},
 		Storage:           Provider{},
 		AuthorizeTokenGen: JWT{},

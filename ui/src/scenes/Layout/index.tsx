@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { VinceProvider, EditorProvider, SitesProvider, QueryProvider } from "../../providers";
+import { VinceProvider, EditorProvider, SitesProvider, QueryProvider, TokenSourceProvider } from "../../providers";
 import Footer from "../Footer";
 import { Sidebar } from "../Sidebar"
 import Editor from "../Editor"
@@ -36,65 +36,67 @@ const Layout = () => {
     }
 
     return (
-        <VinceProvider>
-            <SitesProvider>
-                <Auth>
-                    <Sidebar onPanelChange={paneChange} />
-                    <Footer />
-                    <Portal containerName="console">
-                        <Box
-                            display={activePane === "console" ? "flex" : "none"}
-                            flex={1}
-                            flexDirection={"column"}
-                            height={"100vh"}
-                        >
-                            <EditorProvider>
-                                <QueryProvider>
-                                    <Splitter
-                                        direction="vertical"
-                                        fallback={editorSplitterBasis}
-                                        min={100}
-                                        onChange={handleEditorSplitterChange}
-                                    >
-                                        <Box
-                                            position={"relative"}
-                                            overflow={"hidden"}
+        <TokenSourceProvider>
+            <VinceProvider>
+                <SitesProvider>
+                    <Auth>
+                        <Sidebar onPanelChange={paneChange} />
+                        <Footer />
+                        <Portal containerName="console">
+                            <Box
+                                display={activePane === "console" ? "flex" : "none"}
+                                flex={1}
+                                flexDirection={"column"}
+                                height={"100vh"}
+                            >
+                                <EditorProvider>
+                                    <QueryProvider>
+                                        <Splitter
+                                            direction="vertical"
+                                            fallback={editorSplitterBasis}
+                                            min={100}
+                                            onChange={handleEditorSplitterChange}
                                         >
-                                            <Splitter
-                                                direction="horizontal"
-                                                fallback={resultsSplitterBasis}
-                                                max={500}
-                                                onChange={handleResultsSplitterChange}
+                                            <Box
+                                                position={"relative"}
+                                                overflow={"hidden"}
                                             >
-                                                <Box >
-                                                    <Sites />
-                                                </Box>
-                                                <Editor />
-                                            </Splitter>
-                                        </Box>
-                                        <Result />
-                                    </Splitter>
-                                </QueryProvider>
-                            </EditorProvider>
-                        </Box>
-                    </Portal>
-                    <Portal containerName="settings">
-                        <Box
-                            display={activePane === "settings" ? "flex" : "none"}
-                            flex={1}
-                            flexDirection={"column"}
-                            maxHeight={"100%"}
-                        >
-                            <PageHeader>
-                                <PageHeader.TitleArea>
-                                    <PageHeader.Title>Settings</PageHeader.Title>
-                                </PageHeader.TitleArea>
-                            </PageHeader>
-                        </Box>
-                    </Portal>
-                </Auth>
-            </SitesProvider>
-        </VinceProvider >
+                                                <Splitter
+                                                    direction="horizontal"
+                                                    fallback={resultsSplitterBasis}
+                                                    max={500}
+                                                    onChange={handleResultsSplitterChange}
+                                                >
+                                                    <Box >
+                                                        <Sites />
+                                                    </Box>
+                                                    <Editor />
+                                                </Splitter>
+                                            </Box>
+                                            <Result />
+                                        </Splitter>
+                                    </QueryProvider>
+                                </EditorProvider>
+                            </Box>
+                        </Portal>
+                        <Portal containerName="settings">
+                            <Box
+                                display={activePane === "settings" ? "flex" : "none"}
+                                flex={1}
+                                flexDirection={"column"}
+                                maxHeight={"100%"}
+                            >
+                                <PageHeader>
+                                    <PageHeader.TitleArea>
+                                        <PageHeader.Title>Settings</PageHeader.Title>
+                                    </PageHeader.TitleArea>
+                                </PageHeader>
+                            </Box>
+                        </Portal>
+                    </Auth>
+                </SitesProvider>
+            </VinceProvider >
+        </TokenSourceProvider>
     )
 }
 export default Layout

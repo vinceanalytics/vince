@@ -7,6 +7,7 @@ import {
     SnippetsClient, createSnippetsClient
 } from "../../vince";
 import { useLocalStorage } from "../LocalStorageProvider";
+import { useTokenSource } from "../TokenSourceProvider";
 
 
 type Props = {}
@@ -28,19 +29,19 @@ const defaultValues = {
 export const VinceContext = createContext<ContextProps>(defaultValues)
 
 export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
-    const { authPayload } = useLocalStorage()
+    const { tokenSource } = useTokenSource()
     const [vince, setVinceClient] = useState<VinceClient | undefined>(undefined)
     const [sitesClient, setSitesClient] = useState<SitesClient | undefined>(undefined)
     const [queryClient, setQueryClient] = useState<QueryClient | undefined>(undefined)
     const [snippetsClient, setSnippetsClient] = useState<SnippetsClient | undefined>(undefined)
     useEffect(() => {
-        if (authPayload !== "") {
-            setVinceClient(createVinceClient({ token: authPayload }))
-            setSitesClient(createSitesClient({ token: authPayload }))
-            setQueryClient(createQueryClient({ token: authPayload }))
-            setSnippetsClient(createSnippetsClient({ token: authPayload }))
+        if (tokenSource !== undefined) {
+            setVinceClient(createVinceClient(tokenSource))
+            setSitesClient(createSitesClient(tokenSource))
+            setQueryClient(createQueryClient(tokenSource))
+            setSnippetsClient(createSnippetsClient(tokenSource))
         }
-    }, [authPayload, setVinceClient, setSitesClient])
+    }, [tokenSource, setVinceClient, setSitesClient, setQueryClient, setSnippetsClient])
     return (
         <VinceContext.Provider
             value={{
