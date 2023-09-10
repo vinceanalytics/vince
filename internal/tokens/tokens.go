@@ -4,37 +4,11 @@ import (
 	"context"
 	"crypto/ed25519"
 	"encoding/base64"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/oklog/ulid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
-	"github.com/vinceanalytics/vince/internal/core"
-	"github.com/vinceanalytics/vince/internal/must"
 	"google.golang.org/grpc/credentials"
 )
-
-func Generate(ctx context.Context, key ed25519.PrivateKey,
-	issuer v1.Token_Issuer,
-	account string, expires time.Time, scopes ...v1.Token_Scope) (string, *jwt.RegisteredClaims) {
-	if len(scopes) == 0 {
-		scopes = []v1.Token_Scope{v1.Token_ALL}
-	}
-	claims := &jwt.RegisteredClaims{
-		Issuer:    issuer.String(),
-		Subject:   account,
-		ID:        ulid.Make().String(),
-		ExpiresAt: jwt.NewNumericDate(expires),
-		IssuedAt:  jwt.NewNumericDate(core.Now(ctx)),
-	}
-	for _, scope := range scopes {
-		claims.Audience = append(claims.Audience, scope.String())
-	}
-	token := jwt.NewWithClaims(&jwt.SigningMethodEd25519{}, claims)
-	return must.Must(token.SignedString(key))(
-		"failed signing jwt token",
-	), claims
-}
 
 func Valid(priv ed25519.PrivateKey, token string) (ok bool) {
 	_, ok = ValidWithClaims(priv, token)

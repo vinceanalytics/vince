@@ -62,20 +62,6 @@ func DoQuery(ctx context.Context,
 	return f(ctx, g)
 }
 
-func Login(ctx context.Context,
-	addr, username, password string,
-	in *v1.LoginRequest,
-) (o *v1.LoginResponse, err error) {
-	err = Do(ctx, addr, tokens.Basic{
-		Username: username,
-		Password: password,
-	}, func(ctx context.Context, vc v1.VinceClient) error {
-		o, err = vc.Login(ctx, in)
-		return err
-	})
-	return
-}
-
 func Query(ctx context.Context,
 	addr, token string,
 	in *queryv1.QueryRequest,

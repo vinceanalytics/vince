@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/bufbuild/protovalidate-go"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"google.golang.org/protobuf/proto"
 )
@@ -26,21 +25,6 @@ func TestCreateSiteRequest(t *testing.T) {
 			Name:    "accept valid hostname",
 			Pass:    true,
 			Message: &sitesv1.CreateSiteRequest{Domain: "vinceanalytics.github.com"},
-		},
-	}).Apply(t)
-}
-
-func TestLoginRequest(t *testing.T) {
-	(CaseList{
-		{
-			Name:     "client side token missing token",
-			Message:  &v1.LoginRequest{PublicKey: []byte("xxx")},
-			Contains: "token  is required ",
-		},
-		{
-			Name:     "client side token missing public key",
-			Message:  &v1.LoginRequest{Token: "xxx"},
-			Contains: "public_key  is required",
 		},
 	}).Apply(t)
 }
