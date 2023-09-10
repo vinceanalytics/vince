@@ -45,7 +45,7 @@ func completion(root string) {
 	tools.WriteFile(filepath.Join(root, "completions", "vince", "vince.fish"), []byte(vinceFish))
 }
 
-func mannPage(root string, app *cli.App) {
+func mannPage(root string, app *cli.Command) {
 	println("> man page", app.Name)
 	m, err := app.ToMan()
 	if err != nil {

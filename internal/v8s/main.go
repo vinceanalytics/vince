@@ -24,45 +24,45 @@ func CMD() *cli.Command {
 				Name:        "master-url",
 				Usage:       "The address of the Kubernetes API server. Overrides any value in kubeconfig.",
 				Destination: &o.MasterURL,
-				EnvVars:     []string{"V8S_MASTER_URL"},
+				Sources:     cli.EnvVars("V8S_MASTER_URL"),
 			},
 			&cli.StringFlag{
 				Name:        "kubeconfig",
 				Usage:       "Path to a kubeconfig. Only required if out-of-cluster.",
 				Destination: &o.KubeConfig,
-				EnvVars:     []string{"KUBECONFIG"},
+				Sources:     cli.EnvVars("KUBECONFIG"),
 			},
 			&cli.StringFlag{
 				Name:        "default-image",
 				Usage:       "Default image of vince to use",
 				Value:       "ghcr.io/vinceanalytics/vince:latest",
 				Destination: &o.Image,
-				EnvVars:     []string{"V8S_VINCE_IMAGE"},
+				Sources:     cli.EnvVars("VINCE_IMAGE"),
 			},
 			&cli.IntFlag{
 				Name:        "port",
 				Usage:       "controller api port",
 				Value:       9000,
 				Destination: &o.Port,
-				EnvVars:     []string{"V8S_API_PORT"},
+				Sources:     cli.EnvVars("V8S_API_PORT"),
 			},
 			&cli.StringFlag{
 				Name:        "namespace",
 				Usage:       "default namespace where resource managed by v8s will be deployed",
 				Destination: &o.Namespace,
-				EnvVars:     []string{"V8S_NAMESPACE"},
+				Sources:     cli.EnvVars("V8S_NAMESPACE"),
 			},
 			&cli.StringSliceFlag{
 				Name:        "watch-namespaces",
 				Usage:       "namespaces to watch for Vince and Site custom resources",
 				Destination: &o.WatchNamespaces,
-				EnvVars:     []string{"V8S_WATCH_NAMESPACES"},
+				Sources:     cli.EnvVars("V8S_WATCH_NAMESPACES"),
 			},
 			&cli.StringSliceFlag{
 				Name:        "ignore-namespaces",
 				Usage:       "namespaces to ignore for Vince and Site custom resources",
 				Destination: &o.IgnoreNamespaces,
-				EnvVars:     []string{"V8S_IGNORE_NAMESPACES"},
+				Sources:     cli.EnvVars("V8S_IGNORE_NAMESPACES"),
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -74,7 +74,7 @@ func CMD() *cli.Command {
 
 func run(o *control.Options) error {
 	slog.SetDefault(config.Logger("debug"))
-	slog.Debug("starting controller", slog.Int("port", o.Port))
+	slog.Debug("starting controller", slog.Int64("port", o.Port))
 
 	xk8 := k8s.New(o.MasterURL, o.KubeConfig)
 	a := &api{}

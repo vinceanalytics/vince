@@ -68,7 +68,7 @@ func Flags(o *Options) []cli.Flag {
 			Usage:       "http address to listen to",
 			Value:       ":8080",
 			Destination: &o.ListenAddress,
-			EnvVars:     []string{"VINCE_LISTEN"},
+			Sources:     cli.EnvVars("VINCE_LISTEN"),
 		},
 		&cli.StringFlag{
 			Category:    "core",
@@ -76,21 +76,21 @@ func Flags(o *Options) []cli.Flag {
 			Usage:       "serve mysql clients on this address",
 			Value:       ":3306",
 			Destination: &o.ListenAddress,
-			EnvVars:     []string{"VINCE_MYSQL_LISTEN"},
+			Sources:     cli.EnvVars("VINCE_MYSQL_LISTEN"),
 		},
 		&cli.StringFlag{
 			Category:    "core",
 			Name:        "tls-cert-file",
 			Usage:       "path to tls certificate",
 			Destination: &o.TlsCertFile,
-			EnvVars:     []string{"VINCE_TLS_CERT_FILE"},
+			Sources:     cli.EnvVars("VINCE_TLS_CERT_FILE"),
 		},
 		&cli.StringFlag{
 			Category:    "core",
 			Name:        "tls-key-file",
 			Usage:       "path to tls key",
 			Destination: &o.TlsKeyFile,
-			EnvVars:     []string{"VINCE_TLS_KEY_FILE"},
+			Sources:     cli.EnvVars("VINCE_TLS_KEY_FILE"),
 		},
 		&cli.StringFlag{
 			Category:    "core",
@@ -98,7 +98,7 @@ func Flags(o *Options) []cli.Flag {
 			Usage:       "log level, values are (trace,debug,info,warn,error,fatal,panic)",
 			Value:       "debug",
 			Destination: &o.LogLevel,
-			EnvVars:     []string{"VINCE_LOG_LEVEL"},
+			Sources:     cli.EnvVars("VINCE_LOG_LEVEL"),
 		},
 
 		&cli.StringFlag{
@@ -107,34 +107,34 @@ func Flags(o *Options) []cli.Flag {
 			Usage:       "path to main database",
 			Value:       DB_PATH,
 			Destination: &o.DbPath,
-			EnvVars:     []string{"VINCE_DB_PATH"},
+			Sources:     cli.EnvVars("VINCE_DB_PATH"),
 		},
 		&cli.BoolFlag{
 			Category:    "core",
 			Name:        "enable-profile",
 			Usage:       "Expose /debug/pprof endpoint",
 			Destination: &o.EnableProfile,
-			EnvVars:     []string{"VINCE_ENABLE_PROFILE"},
+			Sources:     cli.EnvVars("VINCE_ENABLE_PROFILE"),
 		},
-		&cli.Int64Flag{
+		&cli.IntFlag{
 			Name:        "events-buffer-size",
 			Usage:       "Number of events to keep in memory before saving",
 			Value:       int64(DefaultEventsBufferSize),
 			Destination: &o.EventsBufferSize,
-			EnvVars:     []string{"VINCE_EVENTS_BUFFER_SIZE"},
+			Sources:     cli.EnvVars("VINCE_EVENTS_BUFFER_SIZE"),
 		},
 		&cli.StringFlag{
 			Name:        "server-id",
 			Usage:       "unique id of this server in a cluster",
 			Destination: &o.ServerId,
-			EnvVars:     []string{"VINCE_SERVER_ID"},
+			Sources:     cli.EnvVars("VINCE_SERVER_ID"),
 		},
 		&cli.StringSliceFlag{
 			Name:        "allowed-origins",
 			Usage:       "Origins allowed for cors",
 			Value:       []string{"*"},
 			Destination: &o.AllowedOrigins,
-			EnvVars:     []string{"VINCE_ALLOWED_ORIGINS"},
+			Sources:     cli.EnvVars("VINCE_ALLOWED_ORIGINS"),
 		},
 	}
 }

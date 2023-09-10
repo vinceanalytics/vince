@@ -19,7 +19,7 @@ import (
 type Options struct {
 	MasterURL        string
 	KubeConfig       string
-	Port             int
+	Port             int64
 	Image            string
 	Namespace        string
 	WatchNamespaces  []string

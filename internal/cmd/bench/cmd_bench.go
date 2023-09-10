@@ -36,25 +36,25 @@ func CMD() *cli.Command {
 				Name:    "users,u",
 				Usage:   "Number of concurrent users",
 				Value:   1,
-				EnvVars: []string{"VINCE_BENCH_USERS"},
+				Sources: cli.EnvVars("VINCE_BENCH_USERS"),
 			},
 			&cli.StringFlag{
 				Name:    "event,e",
 				Usage:   "Name of the event to send",
 				Value:   "pageview",
-				EnvVars: []string{"VINCE_BENCH_EVENT"},
+				Sources: cli.EnvVars("VINCE_BENCH_EVENT"),
 			},
 			&cli.StringSliceFlag{
 				Name:    "paths",
 				Usage:   "Url path visited by the users",
 				Value:   []string{"/", "/pricing", "/company"},
-				EnvVars: []string{"VINCE_BENCH_PATHS"},
+				Sources: cli.EnvVars("VINCE_BENCH_PATHS"),
 			},
 			&cli.DurationFlag{
 				Name:    "duration,d",
 				Usage:   "How long to run the benchmark",
 				Value:   time.Second,
-				EnvVars: []string{"VINCE_BENCH_DURATIOn"},
+				Sources: cli.EnvVars("VINCE_BENCH_DURATIOn"),
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -82,7 +82,7 @@ func CMD() *cli.Command {
 				}
 				stats = append(stats, stat)
 				g.Go(bench(gCtx, stat, B{
-					users:    users,
+					users:    int(users),
 					instance: instance,
 					site:     a,
 					event:    event,

@@ -13,15 +13,15 @@ import (
 	"github.com/vinceanalytics/vince/internal/version"
 )
 
-func App() *cli.App {
-	return &cli.App{
+func App() *cli.Command {
+	return &cli.Command{
 		Name:    "vince",
 		Usage:   "The Cloud Native Web Analytics Platform.",
 		Version: version.Build().String(),
 		Authors: []any{
 			"Geofrey Ernest",
 		},
-		Copyright: "@2033 - present",
+		Copyright: "@2023 - present",
 		Commands: []*cli.Command{
 			vinit.CMD(),
 			serve.CMD(),

@@ -33,13 +33,13 @@ var Flags = []cli.Flag{
 		Name:    "username",
 		Usage:   "Name of the root user",
 		Value:   "root",
-		EnvVars: []string{"VINCE_ROOT_USER"},
+		Sources: cli.EnvVars("VINCE_ROOT_USER"),
 	},
 	&cli.StringFlag{
 		Name:    "password",
 		Usage:   "password of the root user",
 		Value:   "vince",
-		EnvVars: []string{"VINCE_ROOT_PASSWORD"},
+		Sources: cli.EnvVars("VINCE_ROOT_PASSWORD"),
 	},
 }
 
