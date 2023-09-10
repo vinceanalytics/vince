@@ -6,6 +6,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
+	"github.com/dolthub/go-mysql-server/sql/expression"
 	"github.com/oklog/ulid/v2"
 	"github.com/parquet-go/parquet-go"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
@@ -175,3 +176,48 @@ func (p *rowIter) Next(*sql.Context) (sql.Row, error) {
 }
 
 func (p *rowIter) Close(*sql.Context) error { return nil }
+
+func (t *Table) getField(col string) (int, *sql.Column) {
+	i := t.schema.IndexOf(col, t.name)
+	if i == -1 {
+		return -1, nil
+	}
+	return i, t.schema[i]
+}
+
+func (t *Table) createIndex(name string, columns []sql.IndexColumn) sql.Index {
+	if name == "" {
+		for _, column := range columns {
+			name += column.Name + "_"
+		}
+	}
+	exprs := make([]sql.Expression, len(columns))
+	colNames := make([]string, len(columns))
+	for i, column := range columns {
+		idx, field := t.getField(column.Name)
+		exprs[i] = expression.NewGetFieldWithTable(idx, field.Type, t.name, field.Name, field.Nullable)
+		colNames[i] = column.Name
+	}
+
+	var hasNonZeroLengthColumn bool
+	for _, column := range columns {
+		if column.Length > 0 {
+			hasNonZeroLengthColumn = true
+			break
+		}
+	}
+	var prefixLengths []uint16
+	if hasNonZeroLengthColumn {
+		prefixLengths = make([]uint16, len(columns))
+		for i, column := range columns {
+			prefixLengths[i] = uint16(column.Length)
+		}
+	}
+	return &Index{
+		DB:         "",
+		Tbl:        t,
+		TableName:  t.name,
+		Exprs:      exprs,
+		PrefixLens: prefixLengths,
+	}
+}
