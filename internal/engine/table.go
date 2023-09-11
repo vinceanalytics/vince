@@ -24,10 +24,12 @@ type Table struct {
 	name    string
 	schema  sql.Schema
 	columns []storev1.Column
+	filters []sql.Expression
 }
 
 var _ sql.Table = (*Table)(nil)
 var _ sql.ProjectedTable = (*Table)(nil)
+var _ sql.FilteredTable = (*Table)(nil)
 
 func (t *Table) Name() string {
 	return t.name
@@ -220,4 +222,38 @@ func (t *Table) createIndex(name string, columns []sql.IndexColumn) sql.Index {
 		Exprs:      exprs,
 		PrefixLens: prefixLengths,
 	}
+}
+
+func (t *Table) Filters() []sql.Expression {
+	return t.filters
+}
+
+func (t *Table) HandledFilters(filters []sql.Expression) []sql.Expression {
+	var handled []sql.Expression
+	for _, f := range filters {
+		var hasOtherFields bool
+		sql.Inspect(f, func(e sql.Expression) bool {
+			if e, ok := e.(*expression.GetField); ok {
+				if e.Table() != t.name || !t.schema.Contains(e.Name(), t.name) {
+					hasOtherFields = true
+					return false
+				}
+			}
+			return true
+		})
+		if !hasOtherFields {
+			handled = append(handled, f)
+		}
+	}
+	return handled
+}
+
+func (t *Table) WithFilters(ctx *sql.Context, filters []sql.Expression) sql.Table {
+	if len(filters) == 0 {
+		return t
+	}
+
+	nt := *t
+	nt.filters = filters
+	return &nt
 }
