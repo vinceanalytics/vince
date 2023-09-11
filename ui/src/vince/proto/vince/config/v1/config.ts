@@ -91,6 +91,10 @@ export interface Config {
      * @generated from protobuf field: v1.Config.SecretKey secret_key = 15;
      */
     secretKey?: Config_SecretKey;
+    /**
+     * @generated from protobuf field: v1.Config.Env env = 16;
+     */
+    env: Config_Env;
 }
 /**
  * ED25519 private key used for generating JWT tokens.
@@ -323,6 +327,27 @@ export interface Config_HTTP_TLSConfig {
      * @generated from protobuf field: bool insecure_skip_verify = 3;
      */
     insecureSkipVerify: boolean;
+}
+/**
+ * @generated from protobuf enum v1.Config.Env
+ */
+export enum Config_Env {
+    /**
+     * @generated from protobuf enum value: unknown = 0;
+     */
+    unknown = 0,
+    /**
+     * @generated from protobuf enum value: dev = 1;
+     */
+    dev = 1,
+    /**
+     * @generated from protobuf enum value: staging = 2;
+     */
+    staging = 2,
+    /**
+     * @generated from protobuf enum value: production = 3;
+     */
+    production = 3
 }
 /**
  * @generated from protobuf message v1.Cluster
@@ -830,11 +855,12 @@ class Config$Type extends MessageType<Config> {
             { no: 12, name: "server_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 13, name: "raft_path", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 14, name: "allowed_origins", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
-            { no: 15, name: "secret_key", kind: "message", T: () => Config_SecretKey, options: { "buf.validate.field": { required: true } } }
+            { no: 15, name: "secret_key", kind: "message", T: () => Config_SecretKey, options: { "buf.validate.field": { required: true } } },
+            { no: 16, name: "env", kind: "enum", T: () => ["v1.Config.Env", Config_Env], options: { "buf.validate.field": { required: true } } }
         ]);
     }
     create(value?: PartialMessage<Config>): Config {
-        const message = { dbPath: "", listenAddress: "", logLevel: "", enableProfile: false, mysqlListenAddress: "", tlsCertFile: "", tlsKeyFile: "", eventsBufferSize: 0n, notifiers: [], serverId: "", raftPath: "", allowedOrigins: [] };
+        const message = { dbPath: "", listenAddress: "", logLevel: "", enableProfile: false, mysqlListenAddress: "", tlsCertFile: "", tlsKeyFile: "", eventsBufferSize: 0n, notifiers: [], serverId: "", raftPath: "", allowedOrigins: [], env: 0 };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Config>(this, message, value);
@@ -886,6 +912,9 @@ class Config$Type extends MessageType<Config> {
                     break;
                 case /* v1.Config.SecretKey secret_key */ 15:
                     message.secretKey = Config_SecretKey.internalBinaryRead(reader, reader.uint32(), options, message.secretKey);
+                    break;
+                case /* v1.Config.Env env */ 16:
+                    message.env = reader.int32();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -941,6 +970,9 @@ class Config$Type extends MessageType<Config> {
         /* v1.Config.SecretKey secret_key = 15; */
         if (message.secretKey)
             Config_SecretKey.internalBinaryWrite(message.secretKey, writer.tag(15, WireType.LengthDelimited).fork(), options).join();
+        /* v1.Config.Env env = 16; */
+        if (message.env !== 0)
+            writer.tag(16, WireType.Varint).int32(message.env);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

@@ -33,6 +33,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/exp/slog"
 	"gopkg.in/src-d/go-errors.v1"
 
 	sqle "github.com/dolthub/go-mysql-server"
@@ -83,6 +84,7 @@ type Handler struct {
 	encodeLoggedQuery bool
 	sel               server.ServerEventListener
 	metrics           *metrics.Metrics
+	log               *slog.Logger
 }
 
 var _ mysql.Handler = (*Handler)(nil)

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
@@ -23,6 +24,12 @@ func Get(ctx context.Context) *Options {
 }
 
 func Load(base *Options, x *cli.Context) (context.Context, error) {
+	// parse env
+	base.Env = v1.Config_dev
+	if env := x.String("env"); env != "" {
+		env = strings.ToLower(env)
+		base.Env = v1.Config_Env(v1.Config_Env_value[env])
+	}
 	root, err := filepath.Abs(x.Args().First())
 	if err != nil {
 		return nil, err

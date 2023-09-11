@@ -46,22 +46,49 @@ func Defaults() *v1.Config {
 				File: SECRET_KEY,
 			},
 		},
+		Env: v1.Config_dev,
 	}
 	return o
 }
 
-func Logger(level string) *slog.Logger {
+func Logger(env, level string) *slog.Logger {
 	var lvl slog.Level
 	lvl.UnmarshalText([]byte(level))
+	r := replace(env)
 	return slog.New(slog.NewTextHandler(
 		os.Stdout, &slog.HandlerOptions{
-			Level: lvl,
+			Level:       lvl,
+			ReplaceAttr: r,
 		},
 	))
 }
 
+func replace(env string) func(groups []string, a slog.Attr) slog.Attr {
+	var f func(groups []string, a slog.Attr) slog.Attr
+	switch env {
+	case "dev":
+		f = func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey || a.Key == "server_id" {
+				return slog.Attr{}
+			}
+			return a
+		}
+
+	default:
+		f = func(groups []string, a slog.Attr) slog.Attr { return a }
+	}
+	return f
+}
+
 func Flags(o *Options) []cli.Flag {
 	return []cli.Flag{
+		&cli.StringFlag{
+			Category: "core",
+			Name:     "env",
+			Value:    "dev",
+			Usage:    "Deployment environment",
+			Sources:  cli.EnvVars("VINCE_ENV"),
+		},
 		&cli.StringFlag{
 			Category:    "core",
 			Name:        "listen",

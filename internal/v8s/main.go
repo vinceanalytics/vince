@@ -73,7 +73,7 @@ func CMD() *cli.Command {
 }
 
 func run(o *control.Options) error {
-	slog.SetDefault(config.Logger("debug"))
+	slog.SetDefault(config.Logger("", "debug"))
 	slog.Debug("starting controller", slog.Int64("port", o.Port))
 
 	xk8 := k8s.New(o.MasterURL, o.KubeConfig)

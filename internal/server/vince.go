@@ -98,7 +98,7 @@ func (r ResourceList) CloseWithGrace(ctx context.Context) error {
 }
 
 func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList) {
-	slog.SetDefault(config.Logger(o.LogLevel).With("id", o.ServerId))
+	slog.SetDefault(config.Logger(o.Env.String(), o.LogLevel).With("server_id", o.ServerId))
 
 	var resources ResourceList
 

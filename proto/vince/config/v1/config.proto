@@ -48,6 +48,14 @@ message Config {
   // Ed5519 private key used for generating and verifying jwt tokens.
   SecretKey secret_key = 15 [ (buf.validate.field).required = true ];
 
+  Env env = 16 [ (buf.validate.field).required = true ];
+
+  enum Env {
+    unknown = 0;
+    dev = 1;
+    staging = 2;
+    production = 3;
+  }
   // ED25519 private key used for generating JWT tokens.
   message SecretKey {
     // pem encoded PRIVATE KEY
