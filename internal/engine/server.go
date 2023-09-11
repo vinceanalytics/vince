@@ -20,8 +20,9 @@ func Listen(ctx context.Context) (*Server, error) {
 		sql.NoopTracer, e.Analyzer.Catalog.Database, e.MemoryManager,
 		e.ProcessList, o.MysqlListenAddress)
 	handler := &Handler{
-		e:  e.Engine,
-		sm: sm,
+		e:       e.Engine,
+		sm:      sm,
+		metrics: e.Metrics,
 	}
 	l, err := server.NewListener("tcp", o.MysqlListenAddress, "")
 	if err != nil {

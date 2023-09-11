@@ -25,7 +25,6 @@ import (
 	grpc_protovalidate "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/selector"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
@@ -110,6 +109,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 	)
 	resources = append(resources, httpListener)
 	ctx = core.SetHTTPListener(ctx, httpListener)
+	ctx = metrics.Open(ctx)
 
 	ctx, dba := db.Open(ctx, o.DbPath)
 	resources = append(resources, dba)
@@ -178,22 +178,19 @@ func Run(ctx context.Context, resources ResourceList) error {
 	return g.Wait()
 }
 
-func Handle(ctx context.Context, reg *prometheus.Registry) http.Handler {
-	return router.New(ctx, reg)
+func Handle(ctx context.Context) http.Handler {
+	return router.New(ctx)
 }
 
 type Vince struct {
 	http.Server
 	*prober.GRPCProbe
-	*prometheus.Registry
 }
 
 func New(ctx context.Context) *Vince {
 	v := &Vince{
 		GRPCProbe: prober.NewGRPC(),
-		Registry:  prometheus.NewRegistry(),
 	}
-	ctx = metrics.Open(ctx, v.Registry)
 	o := config.Get(ctx)
 	logOpts := []grpc_logging.Option{
 		grpc_logging.WithLogOnEvents(grpc_logging.FinishCall),
@@ -231,7 +228,7 @@ func New(ctx context.Context) *Vince {
 	goalsv1.RegisterGoalsServer(srv, &api.API{})
 	snippetsv1.RegisterSnippetsServer(srv, &api.API{})
 
-	routes := Handle(ctx, v.Registry)
+	routes := Handle(ctx)
 	v.Server = http.Server{
 		Addr:              o.ListenAddress,
 		Handler:           handleGRPC(srv, routes, o.AllowedOrigins),
@@ -244,7 +241,7 @@ func New(ctx context.Context) *Vince {
 		},
 	}
 	met.InitializeMetrics(srv)
-	v.MustRegister(met,
+	metrics.Get(ctx).MustRegister(met,
 		collectors.NewBuildInfoCollector(),
 		collectors.NewGoCollector(),
 		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),

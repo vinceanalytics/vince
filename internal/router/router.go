@@ -7,7 +7,6 @@ import (
 	"net/http/pprof"
 	"strings"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vinceanalytics/vince/assets"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
@@ -16,6 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
+	"github.com/vinceanalytics/vince/internal/metrics"
 	"github.com/vinceanalytics/vince/internal/px"
 	"github.com/vinceanalytics/vince/internal/tracker"
 	"golang.org/x/crypto/bcrypt"
@@ -27,9 +27,9 @@ type Router struct {
 	a2      *a2.Server
 }
 
-func New(ctx context.Context, reg *prometheus.Registry) *Router {
+func New(ctx context.Context) *Router {
 	h := &Router{}
-	h.metrics = promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
+	h.metrics = promhttp.HandlerFor(metrics.Get(ctx), promhttp.HandlerOpts{})
 	if config.Get(ctx).EnableProfile {
 		h.pprof = http.HandlerFunc(pprof.Index)
 	} else {

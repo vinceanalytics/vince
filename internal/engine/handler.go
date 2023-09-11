@@ -28,9 +28,9 @@ import (
 	"github.com/dolthub/vitess/go/vt/log"
 	"github.com/dolthub/vitess/go/vt/proto/query"
 	"github.com/dolthub/vitess/go/vt/sqlparser"
-	"github.com/go-kit/kit/metrics/discard"
 	"github.com/sirupsen/logrus"
 	sockstate "github.com/vinceanalytics/vince/internal/engine/socketstate"
+	"github.com/vinceanalytics/vince/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"gopkg.in/src-d/go-errors.v1"
@@ -44,23 +44,24 @@ import (
 	"github.com/dolthub/go-mysql-server/sql/types"
 )
 
-var errConnectionNotFound = errors.NewKind("connection not found: %c")
+var (
 
-// ErrRowTimeout will be returned if the wait for the row is longer than the connection timeout
-var ErrRowTimeout = errors.NewKind("row read wait bigger than connection timeout")
+	// ErrRowTimeout will be returned if the wait for the row is longer than the connection timeout
+	ErrRowTimeout = errors.NewKind("row read wait bigger than connection timeout")
 
-// ErrConnectionWasClosed will be returned if we try to use a previously closed connection
-var ErrConnectionWasClosed = errors.NewKind("connection was closed")
+	// ErrConnectionWasClosed will be returned if we try to use a previously closed connection
+	ErrConnectionWasClosed = errors.NewKind("connection was closed")
 
-const rowsBatch = 128
-
-var tcpCheckerSleepDuration time.Duration = 1 * time.Second
+	tcpCheckerSleepDuration time.Duration = 1 * time.Second
+)
 
 type MultiStmtMode int
 
 const (
 	MultiStmtModeOff MultiStmtMode = 0
 	MultiStmtModeOn  MultiStmtMode = 1
+
+	rowsBatch = 128
 )
 
 func init() {
@@ -81,6 +82,7 @@ type Handler struct {
 	maxLoggedQueryLen int
 	encodeLoggedQuery bool
 	sel               server.ServerEventListener
+	metrics           *metrics.Metrics
 }
 
 var _ mysql.Handler = (*Handler)(nil)
@@ -241,7 +243,7 @@ func (h *Handler) doQuery(
 	}
 	ctx.GetLogger().Debugf("Starting query")
 
-	finish := observeQuery(ctx, query)
+	finish := h.observeQuery(ctx, query)
 	defer finish(err)
 
 	start := time.Now()
@@ -615,27 +617,16 @@ func schemaToFields(ctx *sql.Context, s sql.Schema) []*query.Field {
 	return fields
 }
 
-var (
-	// QueryCounter describes a metric that accumulates number of queries monotonically.
-	QueryCounter = discard.NewCounter()
-
-	// QueryErrorCounter describes a metric that accumulates number of failed queries monotonically.
-	QueryErrorCounter = discard.NewCounter()
-
-	// QueryHistogram describes a queries latency.
-	QueryHistogram = discard.NewHistogram()
-)
-
-func observeQuery(ctx *sql.Context, query string) func(err error) {
+func (h *Handler) observeQuery(ctx *sql.Context, query string) func(err error) {
 	span, ctx := ctx.Span("query", trace.WithAttributes(attribute.String("query", query)))
 
 	t := time.Now()
 	return func(err error) {
 		if err != nil {
-			QueryErrorCounter.With("query", query, "error", err.Error()).Add(1)
+			h.metrics.Query.QueryError.Inc()
 		} else {
-			QueryCounter.With("query", query).Add(1)
-			QueryHistogram.With("query", query, "duration", "seconds").Observe(time.Since(t).Seconds())
+			h.metrics.Query.Query.Inc()
+			h.metrics.Query.QueryDuration.Observe(time.Since(t).Seconds())
 		}
 
 		span.End()
