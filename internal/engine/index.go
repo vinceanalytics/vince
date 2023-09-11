@@ -75,3 +75,7 @@ func (idx *Index) ExtendedColumnExpressionTypes() []sql.ColumnExpressionType {
 	}
 	return cets
 }
+
+func (idx *Index) rangeFilterExpr(ctx *sql.Context, ranges ...sql.Range) (sql.Expression, error) {
+	return expression.NewRangeFilterExpr(idx.Exprs, ranges)
+}

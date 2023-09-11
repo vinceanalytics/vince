@@ -24,12 +24,11 @@ type Table struct {
 	name    string
 	schema  sql.Schema
 	columns []storev1.Column
-	filters []sql.Expression
 }
 
 var _ sql.Table = (*Table)(nil)
 var _ sql.ProjectedTable = (*Table)(nil)
-var _ sql.FilteredTable = (*Table)(nil)
+var _ sql.IndexAddressable = (*Table)(nil)
 
 func (t *Table) Name() string {
 	return t.name
@@ -68,8 +67,15 @@ func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
 	}, nil
 }
 
-func (t *Table) PartitionRows(ctx *sql.Context, p sql.Partition) (sql.RowIter, error) {
-	x := p.(*Partition)
+func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
+	var p *Partition
+	switch e := partition.(type) {
+	case *rangePartition:
+		p = e.Partition
+	case *Partition:
+		p = e
+	}
+	x := p
 	var result []entry.ReadResult
 	t.Reader.Read(ctx, x.Block, func(f io.ReaderAt, size int64) error {
 		r, err := parquet.OpenFile(f, size)
@@ -187,73 +193,81 @@ func (t *Table) getField(col string) (int, *sql.Column) {
 	return i, t.schema[i]
 }
 
-func (t *Table) createIndex(name string, columns []sql.IndexColumn) sql.Index {
-	if name == "" {
-		for _, column := range columns {
-			name += column.Name + "_"
+func (t *Table) GetIndexes(ctx *sql.Context) ([]sql.Index, error) {
+	return []sql.Index{t.createIndex()}, nil
+}
+
+func (t *Table) createIndex() sql.Index {
+	exprs := make([]sql.Expression, len(t.schema))
+	for i, column := range t.schema {
+		if !Indexed[column.Name] {
+			continue
 		}
-	}
-	exprs := make([]sql.Expression, len(columns))
-	colNames := make([]string, len(columns))
-	for i, column := range columns {
 		idx, field := t.getField(column.Name)
 		exprs[i] = expression.NewGetFieldWithTable(idx, field.Type, t.name, field.Name, field.Nullable)
-		colNames[i] = column.Name
-	}
-
-	var hasNonZeroLengthColumn bool
-	for _, column := range columns {
-		if column.Length > 0 {
-			hasNonZeroLengthColumn = true
-			break
-		}
-	}
-	var prefixLengths []uint16
-	if hasNonZeroLengthColumn {
-		prefixLengths = make([]uint16, len(columns))
-		for i, column := range columns {
-			prefixLengths[i] = uint16(column.Length)
-		}
 	}
 	return &Index{
-		DB:         "",
-		Tbl:        t,
-		TableName:  t.name,
-		Exprs:      exprs,
-		PrefixLens: prefixLengths,
+		DB:        "vince",
+		Tbl:       t,
+		TableName: t.name,
+		Exprs:     exprs,
 	}
 }
 
-func (t *Table) Filters() []sql.Expression {
-	return t.filters
+type IndexedTable struct {
+	*Table
+	Lookup sql.IndexLookup
 }
 
-func (t *Table) HandledFilters(filters []sql.Expression) []sql.Expression {
-	var handled []sql.Expression
-	for _, f := range filters {
-		var hasOtherFields bool
-		sql.Inspect(f, func(e sql.Expression) bool {
-			if e, ok := e.(*expression.GetField); ok {
-				if e.Table() != t.name || !t.schema.Contains(e.Name(), t.name) {
-					hasOtherFields = true
-					return false
-				}
-			}
-			return true
-		})
-		if !hasOtherFields {
-			handled = append(handled, f)
-		}
+func (t *IndexedTable) LookupPartitions(ctx *sql.Context, lookup sql.IndexLookup) (sql.PartitionIter, error) {
+	filter, err := lookup.Index.(*Index).rangeFilterExpr(ctx, lookup.Ranges...)
+	if err != nil {
+		return nil, err
 	}
-	return handled
+	child, err := t.Table.Partitions(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return rangePartitionIter{child: child.(*partitionIter), ranges: filter}, nil
 }
 
-func (t *Table) WithFilters(ctx *sql.Context, filters []sql.Expression) sql.Table {
-	if len(filters) == 0 {
-		return t
-	}
+func (t *Table) IndexedAccess(i sql.IndexLookup) sql.IndexedTable {
+	return &IndexedTable{Table: t, Lookup: i}
+}
 
-	nt := *t
-	nt.filters = filters
-	return &nt
+// PartitionRows implements the sql.PartitionRows interface.
+func (t *IndexedTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
+	iter, err := t.Table.PartitionRows(ctx, partition)
+	if err != nil {
+		return nil, err
+	}
+	return iter, nil
+}
+
+// rangePartitionIter returns a partition that has range and table data access
+type rangePartitionIter struct {
+	child  *partitionIter
+	ranges sql.Expression
+}
+
+var _ sql.PartitionIter = (*rangePartitionIter)(nil)
+
+func (i rangePartitionIter) Close(ctx *sql.Context) error {
+	return i.child.Close(ctx)
+}
+
+func (i rangePartitionIter) Next(ctx *sql.Context) (sql.Partition, error) {
+	part, err := i.child.Next(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &rangePartition{
+		Partition: part.(*Partition),
+		rang:      i.ranges,
+	}, nil
+}
+
+type rangePartition struct {
+	*Partition
+	rang sql.Expression
 }
