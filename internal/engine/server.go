@@ -10,7 +10,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/secrets"
-	"golang.org/x/exp/slog"
 )
 
 func Listen(ctx context.Context) (*Server, error) {
@@ -24,7 +23,6 @@ func Listen(ctx context.Context) (*Server, error) {
 		e:       e.Engine,
 		sm:      sm,
 		metrics: e.Metrics,
-		log:     slog.Default().With("component", "mysql"),
 	}
 	l, err := server.NewListener("tcp", o.MysqlListenAddress, "")
 	if err != nil {
