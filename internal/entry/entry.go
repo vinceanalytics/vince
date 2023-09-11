@@ -2,6 +2,7 @@ package entry
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"github.com/apache/arrow/go/v14/arrow/compute"
@@ -76,3 +77,13 @@ func Context(ctx ...context.Context) context.Context {
 }
 
 var Schema = parquet.SchemaOf(Entry{})
+
+func NewWriter(input io.Writer) *parquet.GenericWriter[*Entry] {
+	var bloom []parquet.BloomFilterColumn
+	for i := v1.Column_bounce; i <= v1.Column_utm_term; i++ {
+		bloom = append(bloom, parquet.SplitBlockFilter(10, i.String()))
+	}
+	return parquet.NewGenericWriter[*Entry](input,
+		parquet.BloomFilters(bloom...),
+	)
+}

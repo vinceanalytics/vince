@@ -112,6 +112,7 @@ func summary(w *ansi.W, stats []*Stats) {
 		duration := stat.End.Sub(stat.Start)
 		rate := float64(requests) / duration.Seconds()
 		w.KV("users", fmt.Sprint(users))
+		w.KV("requests", fmt.Sprint(requests))
 		w.KV("throughput", "%.2f req/s", rate).Flush()
 	}
 }

@@ -36,7 +36,6 @@ func IndexBlockFile(f *os.File) (b *blockv1.BlockIndex, err error) {
 		bf := &blockv1.BlockIndex_Bloom{
 			Filters: make(map[string][]byte),
 		}
-
 		// we only save filters for string fields
 		for i := storev1.Column_browser; i <= storev1.Column_utm_term; i++ {
 			bf.Filters[i.String()] = readFilter(chunks[m[i]].BloomFilter())

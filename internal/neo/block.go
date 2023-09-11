@@ -100,7 +100,7 @@ func (a *Ingest) get(domain string) *writeContext {
 		file := must.Must(os.CreateTemp("", "vince"))("failed creating temporary file for block write")
 		w := writePool.Get().(*writeContext)
 		if w.w == nil {
-			w.w = parquet.NewGenericWriter[*entry.Entry](file)
+			w.w = entry.NewWriter(file)
 		}
 		w.domain = domain
 		w.id = id
