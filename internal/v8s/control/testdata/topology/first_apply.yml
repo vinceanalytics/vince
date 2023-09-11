@@ -1,5 +1,5 @@
-apiVersion: staples/v1alpha1
-kind: Vince
+apiVersion: vince/v1alpha1
+kind: Config
 metadata:
   creationTimestamp: null
   labels:
@@ -15,3 +15,4 @@ spec:
     resources: {}
   volume:
     size: 1Gi
+status: {}

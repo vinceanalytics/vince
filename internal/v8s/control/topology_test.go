@@ -27,8 +27,8 @@ func build(clients k8s.Client) *Topology {
 	k8s := informers.NewSharedInformerFactory(clients.Kube(), k8s.ResyncPeriod)
 	return NewTopology(
 		clients,
-		vince.Staples().V1alpha1().Vinces().Lister(),
-		vince.Staples().V1alpha1().Sites().Lister(),
+		vince.Vince().V1alpha1().Configs().Lister(),
+		vince.Vince().V1alpha1().Sites().Lister(),
 		k8s.Apps().V1().StatefulSets().Lister(),
 		k8s.Core().V1().Services().Lister(),
 		k8s.Core().V1().Secrets().Lister(),
@@ -45,17 +45,17 @@ func TestFirstApply(t *testing.T) {
 	}
 	var b bytes.Buffer
 	err = k8s.Encode(&b,
-		&v1alpha1.Vince{
+		&v1alpha1.Config{
 			TypeMeta: metav1.TypeMeta{
-				Kind:       "Vince",
-				APIVersion: "staples/v1alpha1",
+				Kind:       "Config",
+				APIVersion: "vince/v1alpha1",
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "topology",
 				Namespace: "ns0",
 				Labels:    baseLabels(),
 			},
-			Spec: v1alpha1.VinceSpec{
+			Spec: v1alpha1.ConfigSpec{
 				Volume: v1alpha1.Volume{
 					Size: resource.MustParse("1Gi"),
 				},
