@@ -23,8 +23,6 @@ export const Result = () => {
             flexDirection={"column"}
             flex={1}
             overflow={"hidden"}
-            height={"100%"}
-            width={"100%"}
         >
             <Box
                 position={"relative"}
@@ -55,8 +53,8 @@ export const Result = () => {
             </Box>
             <Box
                 overflow={"auto"}
-                width={"100%"}
-                height={"100%"}
+                maxWidth={"99vw"}
+                maxHeight={"90vh"}
             >
                 {panel === "grid" && <Grid result={result} />}
                 {panel === "graph" && <FChart
