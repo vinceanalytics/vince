@@ -4,33 +4,65 @@ import (
 	"context"
 	"crypto/ed25519"
 	"encoding/base64"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	"github.com/vinceanalytics/vince/internal/scopes"
 	"google.golang.org/grpc/credentials"
 )
 
-func Valid(priv ed25519.PrivateKey, token string) (ok bool) {
-	_, ok = ValidWithClaims(priv, token)
+type Claims struct {
+	jwt.RegisteredClaims
+	Scopes scopes.List
+}
+
+func (c *Claims) ValidFor(scope scopes.Scope) bool {
+	if c.Scopes.Test(uint(scopes.All)) {
+		return true
+	}
+	return c.Scopes.Test(uint(scope)) &&
+		len(c.Audience) > 0 && c.Audience[0] == c.Subject
+}
+
+func NewClaims(scopeStr string, claims jwt.RegisteredClaims) (claim *Claims, err error) {
+	if scopeStr == "" {
+		scopeStr = scopes.All.String()
+	}
+	scope := strings.Split(scopeStr, ",")
+	claim = &Claims{RegisteredClaims: claims}
+	var s scopes.Scope
+	for i := range scope {
+		err := s.Parse(scope[i])
+		if err != nil {
+			return nil, err
+		}
+		claim.Scopes.Set(uint(s))
+	}
 	return
 }
 
-func ValidWithClaims(priv ed25519.PrivateKey, token string) (claims *jwt.RegisteredClaims, ok bool) {
+func Valid(priv ed25519.PrivateKey, token string, method scopes.Scope) (ok bool) {
+	_, ok = ValidWithClaims(priv, token, method)
+	return
+}
+
+func ValidWithClaims(priv ed25519.PrivateKey, token string, method scopes.Scope) (claims *Claims, ok bool) {
 	if token == "" {
 		return
 	}
-	claims = &jwt.RegisteredClaims{}
+	claims = &Claims{}
 	t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
 		return priv.Public(), nil
 	})
-	return claims, err == nil && t.Valid
+	return claims, err == nil && t.Valid && claims.ValidFor(method)
 }
 
 type tokenKey struct{}
 
 type accountKey struct{}
 
-func Set(ctx context.Context, claims *jwt.RegisteredClaims) context.Context {
+func Set(ctx context.Context, claims *Claims) context.Context {
 	return context.WithValue(ctx, tokenKey{}, claims)
 }
 

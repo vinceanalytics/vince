@@ -6,7 +6,8 @@ package scopes
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
+
+	"github.com/bits-and-blooms/bitset"
 )
 
 const (
@@ -16,7 +17,7 @@ const (
 type Scope uint
 
 const (
-	All Scope = iota
+	All Scope = 1 + iota
 	Query
 
 	CreateSite
@@ -33,6 +34,8 @@ const (
 	GetGoal
 	ListGoals
 	DeleteGoal
+
+	Version
 )
 
 var _ json.Marshaler = (*Scope)(nil)
@@ -40,7 +43,7 @@ var _ json.Marshaler = (*Scope)(nil)
 var _ json.Unmarshaler = (*Scope)(nil)
 
 func (s Scope) String() string {
-	return ResourceBaseURL + nameToValue[s]
+	return nameToValue[s]
 }
 
 func (s Scope) FullMethod() string {
@@ -61,21 +64,16 @@ func (s *Scope) UnmarshalJSON(b []byte) error {
 }
 
 func (s *Scope) Parse(o string) error {
-	if !strings.HasPrefix(o, ResourceBaseURL) {
-		return fmt.Errorf("invalid scope :%q", o)
-	}
-	full := strings.TrimPrefix(o, ResourceBaseURL)
-	scope := valueToName[full]
+	scope := valueToName[o]
 	if scope == 0 {
-		if !strings.HasPrefix(o, ResourceBaseURL) {
-			return fmt.Errorf("invalid scope :%q", o)
-		}
+		return fmt.Errorf("invalid scope :%q", o)
 	}
 	*s = scope
 	return nil
 }
 
 var nameToValue = map[Scope]string{
+	All:           "*",
 	Query:         "/v1.Query/Query",
 	CreateSite:    "/v1.Sites/CreateSite",
 	GetSite:       "/v1.Sites/GetSite",
@@ -89,9 +87,11 @@ var nameToValue = map[Scope]string{
 	GetGoal:       "/v1.Goals/GetGoal",
 	ListGoals:     "/v1.Goals/ListGoals",
 	DeleteGoal:    "/v1.Goals/DeleteGoal",
+	Version:       "/v1.Vince/Version",
 }
 
 var valueToName = map[string]Scope{
+	"*":                          All,
 	"/v1.Query/Query":            Query,
 	"/v1.Sites/CreateSite":       CreateSite,
 	"/v1.Sites/GetSite":          GetSite,
@@ -105,4 +105,7 @@ var valueToName = map[string]Scope{
 	"/v1.Goals/GetGoal":          GetGoal,
 	"/v1.Goals/ListGoals":        ListGoals,
 	"/v1.Goals/DeleteGoal":       DeleteGoal,
+	"/v1.Vince/Version":          Version,
 }
+
+type List = bitset.BitSet

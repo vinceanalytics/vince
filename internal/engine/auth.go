@@ -7,6 +7,7 @@ import (
 	"github.com/dolthub/vitess/go/mysql"
 	querypb "github.com/dolthub/vitess/go/vt/proto/query"
 	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/scopes"
 	"github.com/vinceanalytics/vince/internal/tokens"
 )
 
@@ -35,7 +36,7 @@ func (a *Auth) Negotiate(c *mysql.Conn, user string, remoteAddr net.Addr) (mysql
 	if err != nil {
 		return nil, err
 	}
-	if !tokens.Valid(a.PrivateKey, password) {
+	if !tokens.Valid(a.PrivateKey, password, scopes.Query) {
 		return &mysql.StaticUserData{}, mysql.NewSQLError(mysql.ERAccessDeniedError, mysql.SSAccessDeniedError, "Access denied for user '%v'", user)
 	}
 	return StaticUserData(user), nil

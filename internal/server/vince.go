@@ -18,12 +18,10 @@ import (
 	"github.com/go-chi/cors"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpc_logging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpc_protovalidate "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/selector"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/urfave/cli/v3"
@@ -44,6 +42,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/prober"
 	"github.com/vinceanalytics/vince/internal/router"
+	"github.com/vinceanalytics/vince/internal/scopes"
 	"github.com/vinceanalytics/vince/internal/secrets"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/internal/tokens"
@@ -206,8 +205,7 @@ func New(ctx context.Context) *Vince {
 				otelgrpc.StreamServerInterceptor(),
 				met.StreamServerInterceptor(),
 				grpc_logging.StreamServerInterceptor(InterceptorLogger(), logOpts...),
-				auth.StreamServerInterceptor(AuthGRPC),
-				selector.StreamServerInterceptor(auth.StreamServerInterceptor(AuthGRPC), selector.MatchFunc(AuthGRPCSelector)),
+				AuthGRPC(),
 				grpc_protovalidate.StreamServerInterceptor(valid),
 			)),
 		grpc.UnaryInterceptor(
@@ -215,7 +213,7 @@ func New(ctx context.Context) *Vince {
 				otelgrpc.UnaryServerInterceptor(),
 				met.UnaryServerInterceptor(),
 				grpc_logging.UnaryServerInterceptor(InterceptorLogger(), logOpts...),
-				selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(AuthGRPC), selector.MatchFunc(AuthGRPCSelector)),
+				AuthGRPCUnary(),
 				grpc_protovalidate.UnaryServerInterceptor(valid),
 			),
 		),
@@ -320,17 +318,27 @@ func InterceptorLogger() grpc_logging.Logger {
 	})
 }
 
-func AuthGRPCSelector(_ context.Context, c interceptors.CallMeta) bool {
-	// All grpc services are protected
-	return true
+func AuthGRPCUnary() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		ctx, err = authorize(ctx, info.FullMethod)
+		if err != nil {
+			return nil, err
+		}
+		return handler(ctx, req)
+	}
 }
 
-func AuthGRPC(ctx context.Context) (context.Context, error) {
+func authorize(ctx context.Context, method string) (context.Context, error) {
 	token, err := auth.AuthFromMD(ctx, "bearer")
 	if err != nil {
 		return nil, err
 	}
-	claims, ok := tokens.ValidWithClaims(secrets.Get(ctx), token)
+	var m scopes.Scope
+	err = m.Parse(method)
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := tokens.ValidWithClaims(secrets.Get(ctx), token, m)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "invalid auth token")
 	}
@@ -341,4 +349,18 @@ func AuthGRPC(ctx context.Context) (context.Context, error) {
 		ServerId:    config.Get(ctx).ServerId,
 	})
 	return tokens.Set(ctx, claims), nil
+}
+
+func AuthGRPC() grpc.StreamServerInterceptor {
+	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		ctx := ss.Context()
+		var err error
+		ctx, err = authorize(ctx, info.FullMethod)
+		if err != nil {
+			return err
+		}
+		wrapped := grpc_middleware.WrapServerStream(ss)
+		wrapped.WrappedContext = ctx
+		return handler(srv, wrapped)
+	}
 }
