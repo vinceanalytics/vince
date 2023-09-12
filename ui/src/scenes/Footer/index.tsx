@@ -15,30 +15,23 @@ const Footer = () => {
         <Portal containerName="footer">
             <Box
                 display={'grid'}
-                gridTemplateColumns={"1fr auto"}
-                padding={1}
-                borderTopWidth={1}
-                borderTopStyle={"solid"}
-                borderColor={"border.default"}
-                height={"100%"}
+                gridTemplateColumns={"1fr  auto auto"}
+                backgroundColor={"accent.muted"}
+                alignItems={"center"}
+                padding={2}
+                sx={{ gap: "1px" }}
             >
                 <Box>
                     <Text>
                         Copyright &copy; {new Date().getFullYear()} Vince Analytics
                     </Text>
                 </Box>
-                <Box
-                    sx={{
-                        display: "flex",
-                        paddingRight: "1rem",
-                        alignItems: "center",
-                    }}
-                >
-                    <Label variant="primary" sx={{
-                        marginRight: 1,
-                    }}>
+                <Box>
+                    <Label variant="primary">
                         vince: {version}
                     </Label>
+                </Box>
+                <Box>
                     <Link
                         href='https://github.com/vinceanalytics/vince'
                         target='_blank'
@@ -47,8 +40,9 @@ const Footer = () => {
                         <MarkGithubIcon size={"medium"} />
                     </Link>
                 </Box>
+
             </Box>
-        </Portal>
+        </Portal >
     )
 }
 

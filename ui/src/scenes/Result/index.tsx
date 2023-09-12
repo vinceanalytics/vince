@@ -23,6 +23,8 @@ export const Result = () => {
             flexDirection={"column"}
             flex={1}
             overflow={"hidden"}
+            height={"100%"}
+            width={"100%"}
         >
             <Box
                 position={"relative"}
@@ -52,8 +54,9 @@ export const Result = () => {
                 </UnderlineNav>
             </Box>
             <Box
-                width={"100vw"}
                 overflow={"auto"}
+                width={"100%"}
+                height={"100%"}
             >
                 {panel === "grid" && <Grid result={result} />}
                 {panel === "graph" && <FChart
@@ -89,7 +92,7 @@ const Grid = ({ result }: { result: QueryResponse | undefined }) => {
         }), { id })
     ))) : [];
     return (
-        <Box marginTop={1} overflow={"auto"}>
+        <Box paddingTop={1} overflow={"auto"}>
             {result && <DataTable
                 columns={result.columns.map(({ name }, idx) => ({
                     id: idx.toString(),

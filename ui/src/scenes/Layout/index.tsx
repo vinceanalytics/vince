@@ -47,7 +47,7 @@ const Layout = () => {
                                 display={activePane === "console" ? "flex" : "none"}
                                 flex={1}
                                 flexDirection={"column"}
-                                height={"100vh"}
+                                minHeight={"100%"}
                             >
                                 <EditorProvider>
                                     <QueryProvider>
@@ -84,7 +84,6 @@ const Layout = () => {
                                 display={activePane === "settings" ? "flex" : "none"}
                                 flex={1}
                                 flexDirection={"column"}
-                                maxHeight={"100%"}
                             >
                                 <PageHeader>
                                     <PageHeader.TitleArea>

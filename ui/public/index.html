@@ -11,18 +11,16 @@
   <title>VINCE ANALYTICS | The Cloud Native Web Analytics Platform.</title>
 </head>
 <style>
-  .main-grid {
-    display: grid;
-    min-height: 100vh;
-    grid-template-columns: auto 1fr;
+  footer {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
   }
 
-  .main-app {
-    height: 100vh;
-    width: 100vw;
+  .main-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 10vh;
+    grid-template-columns: auto 1fr;
   }
 </style>
 
@@ -36,9 +34,10 @@
         <div id="console"></div>
         <div id="settings"></div>
       </div>
-      <div id="footer"></div>
     </div>
   </div>
+  <footer id="footer">
+  </footer>
 </body>
 
 </html>
