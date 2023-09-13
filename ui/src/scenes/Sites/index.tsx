@@ -1,13 +1,14 @@
 import { useState, useCallback, ReactNode, useEffect } from "react";
 import {
   Text, TextInput, FormControl,
-  TreeView, Box, themeGet, IconButton, Octicon, Spinner,
+  TreeView, Box, ButtonGroup, IconButton, Octicon, Spinner, Tooltip,
 } from "@primer/react";
-import { PlusIcon, DatabaseIcon, ColumnsIcon } from "@primer/octicons-react";
+import { PlusIcon, DatabaseIcon, ColumnsIcon, GoalIcon, AlertFillIcon } from "@primer/octicons-react";
 import { Dialog, PageHeader } from '@primer/react/drafts'
 import { columns } from "../Editor/Monaco/sql";
 import styled from "styled-components"
 import { useSites, useVince } from "../../providers";
+import { CreateSiteDialog } from "../dialogs";
 
 
 export const PaneWrapper = styled.div`
@@ -55,78 +56,32 @@ const Columns = ({ id }: ColumnProps) => {
 }
 
 const Sites = () => {
-  const { sitesClient } = useVince()
   const { sites, refresh } = useSites()
-
-  const [isOpen, setIsOpen] = useState(false);
-  const openDialog = useCallback(() => setIsOpen(true), [setIsOpen])
-  const closeDialog = useCallback(() => setIsOpen(false), [setIsOpen])
-  const [domain, setDomain] = useState<string>("")
-
-  const submitNewSite = useCallback(() => {
-    setIsOpen(false)
-    sitesClient?.createSite({ domain }).then((result) => {
-      refresh()
-    })
-      .catch((e) => {
-        console.log(e)
-      })
-  }, [domain, refresh])
-
-  const [validDomain, setValidDomain] = useState(true)
-
-
-  useEffect(() => {
-    if (domain != "") {
-      if (domainRe.test(domain)) {
-        setValidDomain(true)
-      } else {
-        setValidDomain(false)
-      }
-    }
-  }, [domain])
-
   return (
     <Wrapper>
-      <Box paddingX={2} sx={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderColor: 'border.default', pb: 1 }}>
-        <PageHeader>
-          <PageHeader.TitleArea>
-            <PageHeader.LeadingAction>
-              <DatabaseIcon />
-            </PageHeader.LeadingAction>
-            <PageHeader.Title>Sites</PageHeader.Title>
-            <PageHeader.Actions>
-              <IconButton variant="primary" aria-label="New Site" icon={PlusIcon} onClick={openDialog} />
-              {isOpen && (
-                <Dialog
-                  title="Create New Site"
-                  footerButtons={
-                    [{
-                      content: 'Create', onClick: submitNewSite,
-                    }]
-                  }
-                  onClose={closeDialog}
-                >
-                  <Box>
-                    <FormControl>
-                      <FormControl.Label>Domain</FormControl.Label>
-                      <TextInput
-                        monospace
-                        block
-                        placeholder="vinceanalytics.github.io"
-                        onChange={(e) => setDomain(e.currentTarget.value)}
-                      />
-                      {!validDomain &&
-                        <FormControl.Validation id="new-site" variant="error">
-                          Domain must be the
-                        </FormControl.Validation>}
-                    </FormControl>
-                  </Box>
-                </Dialog>
-              )}
-            </PageHeader.Actions>
-          </PageHeader.TitleArea>
-        </PageHeader>
+      <Box
+        display={"grid"}
+        gridTemplateColumns={"1fr auto"}
+        alignItems={"center"}
+        borderBottomWidth={1}
+        borderBottomStyle={"solid"}
+        borderBottomColor={"border.default"}
+        paddingX={1}
+      >
+        <Box>
+        </Box>
+        <Box>
+          <ButtonGroup>
+            <CreateSiteDialog afterCreate={refresh} />
+            <Tooltip aria-label="Create  new Goal" direction="sw">
+              <IconButton aria-label="new goal" icon={GoalIcon} />
+            </Tooltip>
+            <Tooltip aria-label="Create  new Alert" direction="sw">
+              <IconButton aria-label="new alert" icon={AlertFillIcon} />
+            </Tooltip>
+          </ButtonGroup>
+        </Box>
+
       </Box>
       <Box display={"flex"} overflow={"auto"}>
 
