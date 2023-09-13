@@ -1,7 +1,7 @@
 import { useState, useCallback, ReactNode, useEffect } from "react";
 import {
   Text, TextInput, FormControl,
-  TreeView, Box, ButtonGroup, IconButton, Octicon, Spinner, Tooltip,
+  TreeView, Box, ButtonGroup, IconButton, Octicon, Spinner, Tooltip, Label,
 } from "@primer/react";
 import { PlusIcon, DatabaseIcon, ColumnsIcon, GoalIcon, AlertFillIcon } from "@primer/octicons-react";
 import { Dialog, PageHeader } from '@primer/react/drafts'
@@ -113,6 +113,9 @@ const Sites = () => {
                       <TreeView.DirectoryIcon />
                     </TreeView.LeadingVisual>
                     {site.domain}
+                    <TreeView.TrailingVisual>
+                      <Label>site</Label>
+                    </TreeView.TrailingVisual>
                     <TreeView.SubTree>
                       <Columns id={site.domain} />
                     </TreeView.SubTree>
