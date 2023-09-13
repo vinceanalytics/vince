@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	eventsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/events/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
@@ -55,8 +55,10 @@ func accept(ctx context.Context, domain string) (ok bool) {
 	return
 }
 
+var _ eventsv1.EventsServer = (*API)(nil)
+
 // SendEvent accepts analytics event. Assumes req has already been validated
-func (a *API) SendEvent(ctx context.Context, req *apiv1.Event) (*emptypb.Empty, error) {
+func (a *API) SendEvent(ctx context.Context, req *eventsv1.Event) (*emptypb.Empty, error) {
 	m := metrics.Get(ctx)
 	if !accept(ctx, req.D) {
 		m.Events.Rejected.Inc()

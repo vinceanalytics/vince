@@ -28,6 +28,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	clusterv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/cluster/v1"
 	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
+	eventsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/events/v1"
 	goalsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
 	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
@@ -227,6 +228,7 @@ func New(ctx context.Context) *Vince {
 	goalsv1.RegisterGoalsServer(srv, &api.API{})
 	snippetsv1.RegisterSnippetsServer(srv, &api.API{})
 	clusterv1.RegisterClusterServer(srv, &api.API{})
+	eventsv1.RegisterEventsServer(srv, &api.API{})
 
 	routes := Handle(ctx)
 	v.Server = http.Server{

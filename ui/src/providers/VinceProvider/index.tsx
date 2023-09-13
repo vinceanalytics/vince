@@ -5,7 +5,8 @@ import {
     SitesClient, createSitesClient,
     QueryClient, createQueryClient,
     SnippetsClient, createSnippetsClient,
-    ClusterClient, createClusterClient
+    ClusterClient, createClusterClient,
+    EventsClient, createEventsClient,
 } from "../../vince";
 import { useTokenSource } from "../TokenSourceProvider";
 
@@ -18,6 +19,7 @@ type ContextProps = {
     queryClient: QueryClient | undefined
     snippetsClient: SnippetsClient | undefined
     clusterClient: ClusterClient | undefined
+    eventsClient: EventsClient | undefined
 }
 
 const defaultValues = {
@@ -25,7 +27,8 @@ const defaultValues = {
     sitesClient: undefined,
     queryClient: undefined,
     snippetsClient: undefined,
-    clusterClient: undefined
+    clusterClient: undefined,
+    eventsClient: undefined
 }
 
 export const VinceContext = createContext<ContextProps>(defaultValues)
@@ -37,6 +40,7 @@ export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
     const [queryClient, setQueryClient] = useState<QueryClient | undefined>(undefined)
     const [snippetsClient, setSnippetsClient] = useState<SnippetsClient | undefined>(undefined)
     const [clusterClient, setClusterClient] = useState<ClusterClient | undefined>(undefined)
+    const [eventsClient, setEventsClient] = useState<EventsClient | undefined>(undefined)
     useEffect(() => {
         if (tokenSource !== undefined) {
             setVinceClient(createVinceClient(tokenSource))
@@ -44,13 +48,15 @@ export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
             setQueryClient(createQueryClient(tokenSource))
             setSnippetsClient(createSnippetsClient(tokenSource))
             setClusterClient(createClusterClient(tokenSource))
+            setEventsClient(createEventsClient(tokenSource))
         }
     }, [tokenSource, setVinceClient, setSitesClient,
-        setQueryClient, setSnippetsClient, setClusterClient])
+        setQueryClient, setSnippetsClient, setClusterClient, setEventsClient])
     return (
         <VinceContext.Provider
             value={{
-                vince, sitesClient, queryClient, snippetsClient, clusterClient
+                vince, sitesClient,
+                queryClient, snippetsClient, clusterClient, eventsClient
             }}
         >
             {children}

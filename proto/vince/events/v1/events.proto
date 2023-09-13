@@ -1,0 +1,38 @@
+syntax = "proto3";
+package v1;
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
+
+service Events {
+  rpc SendEvent(Event) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/event"
+    };
+  };
+}
+
+message Event {
+  /// EventName
+  string n = 1 [ (buf.validate.field).required = true ];
+  string url = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.uri = true
+  ];
+  // Domain
+  string d = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.hostname = true
+  ];
+  // Screen width
+  int32 w = 4;
+  // Hash mode
+  bool h = 5;
+  string ip = 6 [ (buf.validate.field).string.ip = true ];
+  // user agent
+  string ua = 7;
+
+  // Referrer
+  string r = 8;
+}

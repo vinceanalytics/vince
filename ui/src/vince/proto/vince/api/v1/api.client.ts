@@ -4,7 +4,6 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { Vince } from "./api";
-import type { Event } from "./api";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
 import type { Build } from "../../config/v1/config";
 import type { Empty } from "../../../google/protobuf/empty";
@@ -18,10 +17,6 @@ export interface IVinceClient {
      * @generated from protobuf rpc: Version(google.protobuf.Empty) returns (v1.Build);
      */
     version(input: Empty, options?: RpcOptions): UnaryCall<Empty, Build>;
-    /**
-     * @generated from protobuf rpc: SendEvent(v1.Event) returns (google.protobuf.Empty);
-     */
-    sendEvent(input: Event, options?: RpcOptions): UnaryCall<Event, Empty>;
 }
 /**
  * @generated from protobuf service v1.Vince
@@ -38,12 +33,5 @@ export class VinceClient implements IVinceClient, ServiceInfo {
     version(input: Empty, options?: RpcOptions): UnaryCall<Empty, Build> {
         const method = this.methods[0], opt = this._transport.mergeOptions(options);
         return stackIntercept<Empty, Build>("unary", this._transport, method, opt, input);
-    }
-    /**
-     * @generated from protobuf rpc: SendEvent(v1.Event) returns (google.protobuf.Empty);
-     */
-    sendEvent(input: Event, options?: RpcOptions): UnaryCall<Event, Empty> {
-        const method = this.methods[1], opt = this._transport.mergeOptions(options);
-        return stackIntercept<Event, Empty>("unary", this._transport, method, opt, input);
     }
 }

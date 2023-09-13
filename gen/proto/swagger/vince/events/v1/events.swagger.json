@@ -1,0 +1,130 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "vince/events/v1/events.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Events"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/event": {
+      "post": {
+        "operationId": "Events_SendEvent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "n",
+            "description": "/ EventName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "d",
+            "description": "Domain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "w",
+            "description": "Screen width",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "h",
+            "description": "Hash mode",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "ip",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ua",
+            "description": "user agent",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "r",
+            "description": "Referrer",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Events"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    }
+  }
+}

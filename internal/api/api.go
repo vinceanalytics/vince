@@ -3,6 +3,7 @@ package api
 import (
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	clusterv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/cluster/v1"
+	eventsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/events/v1"
 	goalsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
 	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
@@ -18,6 +19,7 @@ type API struct {
 	goalsv1.UnsafeGoalsServer
 	snippetsv1.UnsafeSnippetsServer
 	clusterv1.UnsafeClusterServer
+	eventsv1.UnsafeEventsServer
 }
 
 var _ v1.VinceServer = (*API)(nil)
