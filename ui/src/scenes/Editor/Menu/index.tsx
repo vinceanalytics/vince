@@ -1,6 +1,6 @@
 
 
-import { Box, Button, LabelGroup, Label, Spinner, Token } from "@primer/react";
+import { Box, Button, LabelGroup, Label, Spinner, Token, BranchName } from "@primer/react";
 import { PageHeader } from '@primer/react/drafts'
 import {
     TriangleRightIcon, XIcon,
@@ -28,7 +28,7 @@ export const Menu = () => {
             >
                 <Run />
                 <Box>
-                    <Token text={selectedSite} />
+                    <BranchName>{selectedSite}</BranchName>
                 </Box>
             </Box>
             <Box>
