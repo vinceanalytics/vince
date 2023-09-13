@@ -8,7 +8,7 @@ import { Dialog, PageHeader } from '@primer/react/drafts'
 import { columns } from "../Editor/Monaco/sql";
 import styled from "styled-components"
 import { useSites, useVince } from "../../providers";
-import { CreateSiteDialog } from "../dialogs";
+import { CreateSiteDialog, DeleteSiteDialog } from "../dialogs";
 
 
 export const PaneWrapper = styled.div`
@@ -56,7 +56,7 @@ const Columns = ({ id }: ColumnProps) => {
 }
 
 const Sites = () => {
-  const { sites, refresh } = useSites()
+  const { sites, refresh, selectSite } = useSites()
   return (
     <Wrapper>
       <Box
@@ -104,7 +104,11 @@ const Sites = () => {
             <nav>
               <TreeView aria-label="Sites">
                 {sites?.map((site) => (
-                  <TreeView.Item id={site.domain}>
+                  <TreeView.Item id={site.domain}
+                    onSelect={() => {
+                      selectSite(site.domain)
+                    }}
+                  >
                     <TreeView.LeadingVisual>
                       <TreeView.DirectoryIcon />
                     </TreeView.LeadingVisual>

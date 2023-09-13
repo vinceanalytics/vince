@@ -1,14 +1,15 @@
 
 
-import { Box, Button, LabelGroup, Label, Spinner } from "@primer/react";
+import { Box, Button, LabelGroup, Label, Spinner, Token } from "@primer/react";
 import { PageHeader } from '@primer/react/drafts'
 import {
     TriangleRightIcon, XIcon,
     ZapIcon,
 } from "@primer/octicons-react";
-import { useQuery } from "../../../providers";
+import { useQuery, useSites } from "../../../providers";
 
 export const Menu = () => {
+    const { selectedSite } = useSites()
     return (
         <Box
             display={"grid"}
@@ -19,8 +20,16 @@ export const Menu = () => {
             borderBottomColor={"border.default"}
             paddingX={1}
         >
-            <Box>
+            <Box
+                display={"grid"}
+                gridTemplateColumns={"auto 1fr"}
+                alignItems={"center"}
+                sx={{ gap: "1" }}
+            >
                 <Run />
+                <Box>
+                    <Token text={selectedSite} />
+                </Box>
             </Box>
             <Box>
                 <Button

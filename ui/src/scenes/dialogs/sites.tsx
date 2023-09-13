@@ -2,7 +2,7 @@ import { Box, FormControl, IconButton, TextInput, Tooltip } from "@primer/react"
 import { useVince } from "../../providers";
 import { useCallback, useEffect, useState } from "react";
 import { Dialog } from '@primer/react/drafts'
-import { PlusIcon } from "@primer/octicons-react";
+import { PlusIcon, RepoDeletedIcon } from "@primer/octicons-react";
 
 
 
@@ -74,5 +74,20 @@ export const CreateSiteDialog = ({ afterCreate }: CreateSiteDialogProps) => {
                 </Box>
             </Dialog>}
         </>
+    )
+}
+
+export type DeleteSiteDialogProps = {
+    afterDelete: () => void,
+}
+
+export const DeleteSiteDialog = () => {
+    return (
+        <Box
+            position={"relative"}
+            right={0}
+        >
+            <IconButton aria-label="delete site" icon={RepoDeletedIcon} />
+        </Box>
     )
 }
