@@ -198,19 +198,23 @@ func (t *Table) GetIndexes(ctx *sql.Context) ([]sql.Index, error) {
 }
 
 func (t *Table) createIndex() sql.Index {
-	exprs := make([]sql.Expression, len(t.schema))
-	for i, column := range t.schema {
+	exprs := make([]sql.Expression, 0, len(t.schema))
+	exprsString := make([]string, 0, len(t.schema))
+	for _, column := range t.schema {
 		if !Indexed[column.Name] {
 			continue
 		}
 		idx, field := t.getField(column.Name)
-		exprs[i] = expression.NewGetFieldWithTable(idx, field.Type, t.name, field.Name, field.Nullable)
+		ex := expression.NewGetFieldWithTable(idx, field.Type, t.name, field.Name, field.Nullable)
+		exprs = append(exprs, ex)
+		exprsString = append(exprsString, ex.String())
 	}
 	return &Index{
-		DB:        "vince",
-		Tbl:       t,
-		TableName: t.name,
-		Exprs:     exprs,
+		DB:         "vince",
+		Tbl:        t,
+		TableName:  t.name,
+		Exprs:      exprs,
+		exprString: exprsString,
 	}
 }
 

@@ -13,6 +13,7 @@ type Index struct {
 	TableName  string
 	Name       string
 	Exprs      []sql.Expression
+	exprString []string
 	PrefixLens []uint16
 }
 
@@ -21,32 +22,16 @@ var _ sql.Index = (*Index)(nil)
 func (idx *Index) Database() string                    { return idx.DB }
 func (idx *Index) ColumnExpressions() []sql.Expression { return idx.Exprs }
 func (idx *Index) IsGenerated() bool                   { return false }
-func (idx *Index) Expressions() []string {
-	var exprs []string
-	for _, e := range idx.Exprs {
-		exprs = append(exprs, e.String())
-	}
-	return exprs
-}
-
-func (idx *Index) ExtendedExpressions() []string {
-	var exprs []string
-	foundCols := make(map[string]struct{})
-	for _, e := range idx.Exprs {
-		foundCols[strings.ToLower(e.(*expression.GetField).Name())] = struct{}{}
-		exprs = append(exprs, e.String())
-	}
-	return exprs
-}
-
-func (idx *Index) CanSupport(...sql.Range) bool { return true }
-func (idx *Index) IsUnique() bool               { return false }
-func (idx *Index) IsSpatial() bool              { return false }
-func (idx *Index) IsFullText() bool             { return false }
-func (idx *Index) Comment() string              { return "" }
-func (idx *Index) IndexType() string            { return "BTREE" }
-func (idx *Index) Table() string                { return idx.TableName }
-func (idx *Index) ID() string                   { return idx.Name }
+func (idx *Index) Expressions() []string               { return idx.exprString }
+func (idx *Index) ExtendedExpressions() []string       { return idx.exprString }
+func (idx *Index) CanSupport(...sql.Range) bool        { return true }
+func (idx *Index) IsUnique() bool                      { return false }
+func (idx *Index) IsSpatial() bool                     { return false }
+func (idx *Index) IsFullText() bool                    { return false }
+func (idx *Index) Comment() string                     { return "" }
+func (idx *Index) IndexType() string                   { return "BTREE" }
+func (idx *Index) Table() string                       { return idx.TableName }
+func (idx *Index) ID() string                          { return idx.Name }
 
 func (idx *Index) PrefixLengths() []uint16 {
 	return idx.PrefixLens
