@@ -2,12 +2,12 @@ package engine
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/expression"
-	"github.com/oklog/ulid/v2"
 	"github.com/parquet-go/parquet-go"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
@@ -15,8 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/mem"
-	"github.com/vinceanalytics/vince/internal/must"
-	"google.golang.org/protobuf/proto"
+	"github.com/vinceanalytics/vince/internal/px"
 )
 
 type Table struct {
@@ -68,16 +67,9 @@ func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
 }
 
 func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
-	var p *Partition
-	switch e := partition.(type) {
-	case *rangePartition:
-		p = e.Partition
-	case *Partition:
-		p = e
-	}
-	x := p
+	x := partition.(basePartition)
 	var result []entry.ReadResult
-	t.Reader.Read(ctx, x.Block, func(f io.ReaderAt, size int64) error {
+	t.Reader.Read(ctx, x.Key(), func(f io.ReaderAt, size int64) error {
 		r, err := parquet.OpenFile(f, size)
 		if err != nil {
 			return err
@@ -86,7 +78,7 @@ func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.Ro
 		if len(cols) == 0 {
 			cols = Columns
 		}
-		result = append(result, mem.ReadColumns(r, cols, x.RowGroups)...)
+		result = append(result, mem.ReadColumns(r, cols, x.Groups())...)
 		return nil
 	})
 	return &rowIter{result: result}, nil
@@ -113,17 +105,31 @@ func (t *Table) Projections() (o []string) {
 }
 
 type Partition struct {
-	RowGroups []int
-	Block     ulid.ULID
+	BlockID    []byte
+	BlockIndex *blocksv1.BlockIndex
+	RowGroups  []int
 }
 
-func (p *Partition) Key() []byte { return p.Block[:] }
+var _ basePartition = (*Partition)(nil)
+
+func (p *Partition) Index() *blocksv1.BlockIndex { return p.BlockIndex }
+func (p *Partition) Groups() []int               { return p.RowGroups }
+
+type basePartition interface {
+	sql.Partition
+	Index() *blocksv1.BlockIndex
+	Groups() []int
+}
+
+func (p *Partition) Key() []byte { return p.BlockID }
 
 type partitionIter struct {
-	it      db.Iter
-	txn     db.Txn
-	baseKey *keys.Key
-	started bool
+	it         db.Iter
+	txn        db.Txn
+	baseKey    *keys.Key
+	blockIndex blocksv1.BlockIndex
+	partition  Partition
+	started    bool
 }
 
 func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
@@ -138,20 +144,14 @@ func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
 	}
 	key := p.it.Key()
 
-	var idx blocksv1.BlockIndex
 	id := bytes.TrimPrefix(key, p.baseKey.Bytes())
-
-	must.One(p.it.Value(func(val []byte) error {
-		return proto.Unmarshal(val, &idx)
-	}))("failed decoding partition block index")
-
-	// for now read all row groups
-	var pat Partition
-	pat.Block = ulid.MustParse(string(id))
-	for i := range idx.Bloom {
-		pat.RowGroups = append(pat.RowGroups, i)
+	err := p.it.Value(px.Decode(&p.blockIndex))
+	if err != nil {
+		return nil, fmt.Errorf("failed decoding block index err:%v", err)
 	}
-	return &pat, nil
+	p.partition.BlockID = id
+	p.partition.BlockIndex = &p.blockIndex
+	return &p.partition, nil
 }
 
 func (p *partitionIter) Close(*sql.Context) error {
