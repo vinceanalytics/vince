@@ -4,7 +4,8 @@ import {
     VinceClient, createVinceClient,
     SitesClient, createSitesClient,
     QueryClient, createQueryClient,
-    SnippetsClient, createSnippetsClient
+    SnippetsClient, createSnippetsClient,
+    ClusterClient, createClusterClient
 } from "../../vince";
 import { useLocalStorage } from "../LocalStorageProvider";
 import { useTokenSource } from "../TokenSourceProvider";
@@ -17,6 +18,7 @@ type ContextProps = {
     sitesClient: SitesClient | undefined
     queryClient: QueryClient | undefined
     snippetsClient: SnippetsClient | undefined
+    clusterClient: ClusterClient | undefined
 }
 
 const defaultValues = {
@@ -24,6 +26,7 @@ const defaultValues = {
     sitesClient: undefined,
     queryClient: undefined,
     snippetsClient: undefined,
+    clusterClient: undefined
 }
 
 export const VinceContext = createContext<ContextProps>(defaultValues)
@@ -34,18 +37,21 @@ export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
     const [sitesClient, setSitesClient] = useState<SitesClient | undefined>(undefined)
     const [queryClient, setQueryClient] = useState<QueryClient | undefined>(undefined)
     const [snippetsClient, setSnippetsClient] = useState<SnippetsClient | undefined>(undefined)
+    const [clusterClient, setClusterClient] = useState<ClusterClient | undefined>(undefined)
     useEffect(() => {
         if (tokenSource !== undefined) {
             setVinceClient(createVinceClient(tokenSource))
             setSitesClient(createSitesClient(tokenSource))
             setQueryClient(createQueryClient(tokenSource))
             setSnippetsClient(createSnippetsClient(tokenSource))
+            setClusterClient(createClusterClient(tokenSource))
         }
-    }, [tokenSource, setVinceClient, setSitesClient, setQueryClient, setSnippetsClient])
+    }, [tokenSource, setVinceClient, setSitesClient,
+        setQueryClient, setSnippetsClient, setClusterClient])
     return (
         <VinceContext.Provider
             value={{
-                vince, sitesClient, queryClient, snippetsClient
+                vince, sitesClient, queryClient, snippetsClient, clusterClient
             }}
         >
             {children}

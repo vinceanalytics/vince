@@ -131,17 +131,15 @@ message Config {
   }
 }
 
-message Cluster {
-  message Config {
-    string name = 1;
-    map<string, Node> nodes = 2;
+message ClusterConfig {
+  string name = 1;
+  map<string, Node> nodes = 2;
 
-    message Node {
-      Client.Auth account = 1;
-      // True if this node is used to bootstrap the cluster.
-      bool bootstrap = 2;
-      string address = 3;
-    }
+  message Node {
+    Client.Auth account = 1;
+    // True if this node is used to bootstrap the cluster.
+    bool bootstrap = 2;
+    string address = 3;
   }
 }
 
@@ -157,7 +155,7 @@ message Client {
   // The default auth name to use.
   Active active = 4;
 
-  map<string, Cluster.Config> clusters = 5;
+  map<string, ClusterConfig> clusters = 5;
 
   message Instance { map<string, Auth> accounts = 1; }
 

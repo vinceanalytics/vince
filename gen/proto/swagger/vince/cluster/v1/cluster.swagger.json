@@ -1,0 +1,170 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "vince/cluster/v1/cluster.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Cluster"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/cluster": {
+      "get": {
+        "operationId": "Cluster_GetCluster",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetClusterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Cluster"
+        ]
+      }
+    },
+    "/v1/cluster/apply": {
+      "post": {
+        "operationId": "Cluster_ApplyCluster",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ApplyClusterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "config.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "config.nodes",
+            "description": "This is a request variable of the map type. The query format is \"map_name[key]=value\", e.g. If the map name is Age, the key type is string, and the value type is integer, the query parameter is expressed as Age[\"bob\"]=18",
+            "in": "query",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Cluster"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ClientAuth": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "accessToken": {
+          "type": "string"
+        },
+        "rerfreshToken": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        }
+      }
+    },
+    "ClusterConfigNode": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/ClientAuth"
+        },
+        "bootstrap": {
+          "type": "boolean",
+          "description": "True if this node is used to bootstrap the cluster."
+        },
+        "address": {
+          "type": "string"
+        }
+      }
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "v1ApplyClusterResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ClusterConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "nodes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ClusterConfigNode"
+          }
+        }
+      }
+    },
+    "v1GetClusterResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/v1ClusterConfig"
+        }
+      }
+    }
+  }
+}

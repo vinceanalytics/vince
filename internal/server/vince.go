@@ -26,6 +26,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	clusterv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/cluster/v1"
 	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
 	goalsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
 	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
@@ -225,6 +226,7 @@ func New(ctx context.Context) *Vince {
 	queryv1.RegisterQueryServer(srv, &api.API{})
 	goalsv1.RegisterGoalsServer(srv, &api.API{})
 	snippetsv1.RegisterSnippetsServer(srv, &api.API{})
+	clusterv1.RegisterClusterServer(srv, &api.API{})
 
 	routes := Handle(ctx)
 	v.Server = http.Server{

@@ -851,7 +851,7 @@ func (m *Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Cluster_Config_Node) MarshalVT() (dAtA []byte, err error) {
+func (m *ClusterConfig_Node) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -864,12 +864,12 @@ func (m *Cluster_Config_Node) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Cluster_Config_Node) MarshalToVT(dAtA []byte) (int, error) {
+func (m *ClusterConfig_Node) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Cluster_Config_Node) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *ClusterConfig_Node) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -911,7 +911,7 @@ func (m *Cluster_Config_Node) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Cluster_Config) MarshalVT() (dAtA []byte, err error) {
+func (m *ClusterConfig) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -924,12 +924,12 @@ func (m *Cluster_Config) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Cluster_Config) MarshalToVT(dAtA []byte) (int, error) {
+func (m *ClusterConfig) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Cluster_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *ClusterConfig) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -969,39 +969,6 @@ func (m *Cluster_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i = encodeVarint(dAtA, i, uint64(len(m.Name)))
 		i--
 		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Cluster) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Cluster) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *Cluster) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
 	}
 	return len(dAtA) - i, nil
 }
@@ -2720,7 +2687,7 @@ func (m *Config) SizeVT() (n int) {
 	return n
 }
 
-func (m *Cluster_Config_Node) SizeVT() (n int) {
+func (m *ClusterConfig_Node) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2741,7 +2708,7 @@ func (m *Cluster_Config_Node) SizeVT() (n int) {
 	return n
 }
 
-func (m *Cluster_Config) SizeVT() (n int) {
+func (m *ClusterConfig) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2764,16 +2731,6 @@ func (m *Cluster_Config) SizeVT() (n int) {
 			n += mapEntrySize + 1 + sov(uint64(mapEntrySize))
 		}
 	}
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *Cluster) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
 	n += len(m.unknownFields)
 	return n
 }
@@ -5768,7 +5725,7 @@ func (m *Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Cluster_Config_Node) UnmarshalVT(dAtA []byte) error {
+func (m *ClusterConfig_Node) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5791,10 +5748,10 @@ func (m *Cluster_Config_Node) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Cluster_Config_Node: wiretype end group for non-group")
+			return fmt.Errorf("proto: ClusterConfig_Node: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Cluster_Config_Node: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ClusterConfig_Node: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -5907,7 +5864,7 @@ func (m *Cluster_Config_Node) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Cluster_Config) UnmarshalVT(dAtA []byte) error {
+func (m *ClusterConfig) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5930,10 +5887,10 @@ func (m *Cluster_Config) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Cluster_Config: wiretype end group for non-group")
+			return fmt.Errorf("proto: ClusterConfig: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Cluster_Config: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ClusterConfig: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -5998,10 +5955,10 @@ func (m *Cluster_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Nodes == nil {
-				m.Nodes = make(map[string]*Cluster_Config_Node)
+				m.Nodes = make(map[string]*ClusterConfig_Node)
 			}
 			var mapkey string
-			var mapvalue *Cluster_Config_Node
+			var mapvalue *ClusterConfig_Node
 			for iNdEx < postIndex {
 				entryPreIndex := iNdEx
 				var wire uint64
@@ -6075,7 +6032,7 @@ func (m *Cluster_Config) UnmarshalVT(dAtA []byte) error {
 					if postmsgIndex > l {
 						return io.ErrUnexpectedEOF
 					}
-					mapvalue = &Cluster_Config_Node{}
+					mapvalue = &ClusterConfig_Node{}
 					if err := mapvalue.UnmarshalVT(dAtA[iNdEx:postmsgIndex]); err != nil {
 						return err
 					}
@@ -6097,57 +6054,6 @@ func (m *Cluster_Config) UnmarshalVT(dAtA []byte) error {
 			}
 			m.Nodes[mapkey] = mapvalue
 			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Cluster) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Cluster: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Cluster: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -7029,10 +6935,10 @@ func (m *Client) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Clusters == nil {
-				m.Clusters = make(map[string]*Cluster_Config)
+				m.Clusters = make(map[string]*ClusterConfig)
 			}
 			var mapkey string
-			var mapvalue *Cluster_Config
+			var mapvalue *ClusterConfig
 			for iNdEx < postIndex {
 				entryPreIndex := iNdEx
 				var wire uint64
@@ -7106,7 +7012,7 @@ func (m *Client) UnmarshalVT(dAtA []byte) error {
 					if postmsgIndex > l {
 						return io.ErrUnexpectedEOF
 					}
-					mapvalue = &Cluster_Config{}
+					mapvalue = &ClusterConfig{}
 					if err := mapvalue.UnmarshalVT(dAtA[iNdEx:postmsgIndex]); err != nil {
 						return err
 					}

@@ -1,0 +1,24 @@
+syntax = "proto3";
+package v1;
+
+import "vince/config/v1/config.proto";
+import "google/api/annotations.proto";
+
+service Cluster {
+  rpc ApplyCluster(ApplyClusterRequest) returns (ApplyClusterResponse) {
+    option (google.api.http) = {
+      post : "/v1/cluster/apply"
+    };
+  };
+  rpc GetCluster(GetClusterRequest) returns (GetClusterResponse) {
+    option (google.api.http) = {
+      get : "/v1/cluster"
+    };
+  };
+}
+
+message ApplyClusterRequest { ClusterConfig config = 1; }
+message ApplyClusterResponse { string ok = 1; }
+
+message GetClusterRequest {}
+message GetClusterResponse { ClusterConfig config = 1; }

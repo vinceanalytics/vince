@@ -9,16 +9,6 @@ import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
 
 service Vince {
-  rpc ApplyCluster(ApplyClusterRequest) returns (ApplyClusterResponse) {
-    option (google.api.http) = {
-      post : "/v1/cluster/apply"
-    };
-  };
-  rpc GetCluster(GetClusterRequest) returns (GetClusterResponse) {
-    option (google.api.http) = {
-      get : "/v1/cluster"
-    };
-  };
   rpc Version(google.protobuf.Empty) returns (Build) {
     option (google.api.http) = {
       get : "/v1/version"
@@ -41,12 +31,6 @@ message Error {
   string error = 1;
   int32 code = 2;
 }
-
-message ApplyClusterRequest { Cluster.Config config = 1; }
-message ApplyClusterResponse { string ok = 1; }
-
-message GetClusterRequest {}
-message GetClusterResponse { Cluster.Config config = 1; }
 
 message Status {}
 

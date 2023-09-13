@@ -38,9 +38,9 @@ func setup() *cli.Command {
 				return w.Ok("cluster %q already exists", name).Complete(nil)
 			}
 			if client.Clusters == nil {
-				client.Clusters = make(map[string]*v1.Cluster_Config)
+				client.Clusters = make(map[string]*v1.ClusterConfig)
 			}
-			client.Clusters[name] = &v1.Cluster_Config{
+			client.Clusters[name] = &v1.ClusterConfig{
 				Name: name,
 			}
 			auth.Save(w, client, path)
@@ -107,9 +107,9 @@ func add() *cli.Command {
 			}
 			ax := client.Instance[instance].Accounts[account]
 			if client.Clusters[name].Nodes == nil {
-				client.Clusters[name].Nodes = make(map[string]*v1.Cluster_Config_Node)
+				client.Clusters[name].Nodes = make(map[string]*v1.ClusterConfig_Node)
 			}
-			client.Clusters[name].Nodes[ax.ServerId] = &v1.Cluster_Config_Node{
+			client.Clusters[name].Nodes[ax.ServerId] = &v1.ClusterConfig_Node{
 				Address:   instance,
 				Account:   ax,
 				Bootstrap: ctx.Bool("bootstrap"),

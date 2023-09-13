@@ -350,29 +350,24 @@ export enum Config_Env {
     production = 3
 }
 /**
- * @generated from protobuf message v1.Cluster
+ * @generated from protobuf message v1.ClusterConfig
  */
-export interface Cluster {
-}
-/**
- * @generated from protobuf message v1.Cluster.Config
- */
-export interface Cluster_Config {
+export interface ClusterConfig {
     /**
      * @generated from protobuf field: string name = 1;
      */
     name: string;
     /**
-     * @generated from protobuf field: map<string, v1.Cluster.Config.Node> nodes = 2;
+     * @generated from protobuf field: map<string, v1.ClusterConfig.Node> nodes = 2;
      */
     nodes: {
-        [key: string]: Cluster_Config_Node;
+        [key: string]: ClusterConfig_Node;
     };
 }
 /**
- * @generated from protobuf message v1.Cluster.Config.Node
+ * @generated from protobuf message v1.ClusterConfig.Node
  */
-export interface Cluster_Config_Node {
+export interface ClusterConfig_Node {
     /**
      * @generated from protobuf field: v1.Client.Auth account = 1;
      */
@@ -419,10 +414,10 @@ export interface Client {
      */
     active?: Client_Active;
     /**
-     * @generated from protobuf field: map<string, v1.Cluster.Config> clusters = 5;
+     * @generated from protobuf field: map<string, v1.ClusterConfig> clusters = 5;
      */
     clusters: {
-        [key: string]: Cluster_Config;
+        [key: string]: ClusterConfig;
     };
 }
 /**
@@ -1657,47 +1652,21 @@ class Config_HTTP_TLSConfig$Type extends MessageType<Config_HTTP_TLSConfig> {
  */
 export const Config_HTTP_TLSConfig = new Config_HTTP_TLSConfig$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class Cluster$Type extends MessageType<Cluster> {
+class ClusterConfig$Type extends MessageType<ClusterConfig> {
     constructor() {
-        super("v1.Cluster", []);
-    }
-    create(value?: PartialMessage<Cluster>): Cluster {
-        const message = {};
-        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
-        if (value !== undefined)
-            reflectionMergePartial<Cluster>(this, message, value);
-        return message;
-    }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Cluster): Cluster {
-        return target ?? this.create();
-    }
-    internalBinaryWrite(message: Cluster, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        let u = options.writeUnknownFields;
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
-        return writer;
-    }
-}
-/**
- * @generated MessageType for protobuf message v1.Cluster
- */
-export const Cluster = new Cluster$Type();
-// @generated message type with reflection information, may provide speed optimized methods
-class Cluster_Config$Type extends MessageType<Cluster_Config> {
-    constructor() {
-        super("v1.Cluster.Config", [
+        super("v1.ClusterConfig", [
             { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "nodes", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => Cluster_Config_Node } }
+            { no: 2, name: "nodes", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => ClusterConfig_Node } }
         ]);
     }
-    create(value?: PartialMessage<Cluster_Config>): Cluster_Config {
+    create(value?: PartialMessage<ClusterConfig>): ClusterConfig {
         const message = { name: "", nodes: {} };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
-            reflectionMergePartial<Cluster_Config>(this, message, value);
+            reflectionMergePartial<ClusterConfig>(this, message, value);
         return message;
     }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Cluster_Config): Cluster_Config {
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: ClusterConfig): ClusterConfig {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
@@ -1705,7 +1674,7 @@ class Cluster_Config$Type extends MessageType<Cluster_Config> {
                 case /* string name */ 1:
                     message.name = reader.string();
                     break;
-                case /* map<string, v1.Cluster.Config.Node> nodes */ 2:
+                case /* map<string, v1.ClusterConfig.Node> nodes */ 2:
                     this.binaryReadMap2(message.nodes, reader, options);
                     break;
                 default:
@@ -1719,8 +1688,8 @@ class Cluster_Config$Type extends MessageType<Cluster_Config> {
         }
         return message;
     }
-    private binaryReadMap2(map: Cluster_Config["nodes"], reader: IBinaryReader, options: BinaryReadOptions): void {
-        let len = reader.uint32(), end = reader.pos + len, key: keyof Cluster_Config["nodes"] | undefined, val: Cluster_Config["nodes"][any] | undefined;
+    private binaryReadMap2(map: ClusterConfig["nodes"], reader: IBinaryReader, options: BinaryReadOptions): void {
+        let len = reader.uint32(), end = reader.pos + len, key: keyof ClusterConfig["nodes"] | undefined, val: ClusterConfig["nodes"][any] | undefined;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
@@ -1728,22 +1697,22 @@ class Cluster_Config$Type extends MessageType<Cluster_Config> {
                     key = reader.string();
                     break;
                 case 2:
-                    val = Cluster_Config_Node.internalBinaryRead(reader, reader.uint32(), options);
+                    val = ClusterConfig_Node.internalBinaryRead(reader, reader.uint32(), options);
                     break;
-                default: throw new globalThis.Error("unknown map entry field for field v1.Cluster.Config.nodes");
+                default: throw new globalThis.Error("unknown map entry field for field v1.ClusterConfig.nodes");
             }
         }
-        map[key ?? ""] = val ?? Cluster_Config_Node.create();
+        map[key ?? ""] = val ?? ClusterConfig_Node.create();
     }
-    internalBinaryWrite(message: Cluster_Config, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+    internalBinaryWrite(message: ClusterConfig, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
         /* string name = 1; */
         if (message.name !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.name);
-        /* map<string, v1.Cluster.Config.Node> nodes = 2; */
+        /* map<string, v1.ClusterConfig.Node> nodes = 2; */
         for (let k of Object.keys(message.nodes)) {
             writer.tag(2, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k);
             writer.tag(2, WireType.LengthDelimited).fork();
-            Cluster_Config_Node.internalBinaryWrite(message.nodes[k], writer, options);
+            ClusterConfig_Node.internalBinaryWrite(message.nodes[k], writer, options);
             writer.join().join();
         }
         let u = options.writeUnknownFields;
@@ -1753,26 +1722,26 @@ class Cluster_Config$Type extends MessageType<Cluster_Config> {
     }
 }
 /**
- * @generated MessageType for protobuf message v1.Cluster.Config
+ * @generated MessageType for protobuf message v1.ClusterConfig
  */
-export const Cluster_Config = new Cluster_Config$Type();
+export const ClusterConfig = new ClusterConfig$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class Cluster_Config_Node$Type extends MessageType<Cluster_Config_Node> {
+class ClusterConfig_Node$Type extends MessageType<ClusterConfig_Node> {
     constructor() {
-        super("v1.Cluster.Config.Node", [
+        super("v1.ClusterConfig.Node", [
             { no: 1, name: "account", kind: "message", T: () => Client_Auth },
             { no: 2, name: "bootstrap", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
             { no: 3, name: "address", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
-    create(value?: PartialMessage<Cluster_Config_Node>): Cluster_Config_Node {
+    create(value?: PartialMessage<ClusterConfig_Node>): ClusterConfig_Node {
         const message = { bootstrap: false, address: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
-            reflectionMergePartial<Cluster_Config_Node>(this, message, value);
+            reflectionMergePartial<ClusterConfig_Node>(this, message, value);
         return message;
     }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Cluster_Config_Node): Cluster_Config_Node {
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: ClusterConfig_Node): ClusterConfig_Node {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
@@ -1797,7 +1766,7 @@ class Cluster_Config_Node$Type extends MessageType<Cluster_Config_Node> {
         }
         return message;
     }
-    internalBinaryWrite(message: Cluster_Config_Node, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+    internalBinaryWrite(message: ClusterConfig_Node, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
         /* v1.Client.Auth account = 1; */
         if (message.account)
             Client_Auth.internalBinaryWrite(message.account, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
@@ -1814,9 +1783,9 @@ class Cluster_Config_Node$Type extends MessageType<Cluster_Config_Node> {
     }
 }
 /**
- * @generated MessageType for protobuf message v1.Cluster.Config.Node
+ * @generated MessageType for protobuf message v1.ClusterConfig.Node
  */
-export const Cluster_Config_Node = new Cluster_Config_Node$Type();
+export const ClusterConfig_Node = new ClusterConfig_Node$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Client$Type extends MessageType<Client> {
     constructor() {
@@ -1825,7 +1794,7 @@ class Client$Type extends MessageType<Client> {
             { no: 2, name: "instance", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => Client_Instance } },
             { no: 3, name: "server_id", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "scalar", T: 9 /*ScalarType.STRING*/ } },
             { no: 4, name: "active", kind: "message", T: () => Client_Active },
-            { no: 5, name: "clusters", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => Cluster_Config } }
+            { no: 5, name: "clusters", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => ClusterConfig } }
         ]);
     }
     create(value?: PartialMessage<Client>): Client {
@@ -1852,7 +1821,7 @@ class Client$Type extends MessageType<Client> {
                 case /* v1.Client.Active active */ 4:
                     message.active = Client_Active.internalBinaryRead(reader, reader.uint32(), options, message.active);
                     break;
-                case /* map<string, v1.Cluster.Config> clusters */ 5:
+                case /* map<string, v1.ClusterConfig> clusters */ 5:
                     this.binaryReadMap5(message.clusters, reader, options);
                     break;
                 default:
@@ -1907,12 +1876,12 @@ class Client$Type extends MessageType<Client> {
                     key = reader.string();
                     break;
                 case 2:
-                    val = Cluster_Config.internalBinaryRead(reader, reader.uint32(), options);
+                    val = ClusterConfig.internalBinaryRead(reader, reader.uint32(), options);
                     break;
                 default: throw new globalThis.Error("unknown map entry field for field v1.Client.clusters");
             }
         }
-        map[key ?? ""] = val ?? Cluster_Config.create();
+        map[key ?? ""] = val ?? ClusterConfig.create();
     }
     internalBinaryWrite(message: Client, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
         /* bytes private_key = 1; */
@@ -1931,11 +1900,11 @@ class Client$Type extends MessageType<Client> {
         /* v1.Client.Active active = 4; */
         if (message.active)
             Client_Active.internalBinaryWrite(message.active, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
-        /* map<string, v1.Cluster.Config> clusters = 5; */
+        /* map<string, v1.ClusterConfig> clusters = 5; */
         for (let k of Object.keys(message.clusters)) {
             writer.tag(5, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k);
             writer.tag(2, WireType.LengthDelimited).fork();
-            Cluster_Config.internalBinaryWrite(message.clusters[k], writer, options);
+            ClusterConfig.internalBinaryWrite(message.clusters[k], writer, options);
             writer.join().join();
         }
         let u = options.writeUnknownFields;
