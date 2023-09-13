@@ -7,7 +7,6 @@ import {
     SnippetsClient, createSnippetsClient,
     ClusterClient, createClusterClient
 } from "../../vince";
-import { useLocalStorage } from "../LocalStorageProvider";
 import { useTokenSource } from "../TokenSourceProvider";
 
 
