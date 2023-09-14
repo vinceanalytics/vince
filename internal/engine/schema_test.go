@@ -67,3 +67,11 @@ func TestSchema(t *testing.T) {
 		}
 	})
 }
+
+func BenchmarkCreateSchema(b *testing.B) {
+	b.ReportAllocs()
+	source := "vince"
+	for i := 0; i < b.N; i++ {
+		createSchema(source, Columns)
+	}
+}
