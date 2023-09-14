@@ -94,10 +94,9 @@ func (ts *tableSchema) readColum(
 			for i := range buf.values {
 				e.UnsafeAppend(arrow.Timestamp(buf.values[i].Int64()))
 			}
-		case *array.DurationBuilder:
+		case *array.Float64Builder:
 			for i := range buf.values {
-				e.UnsafeAppend(arrow.Duration(
-					time.Duration(buf.values[i].Int64()).Milliseconds()))
+				e.UnsafeAppend(time.Duration(buf.values[i].Int64()).Seconds())
 			}
 		case *array.StringBuilder:
 			for i := range buf.values {
@@ -173,8 +172,8 @@ func (r *recordIter) value(a arrow.Array, idx int) any {
 		return e.Value(idx)
 	case *array.Timestamp:
 		return e.Value(idx).ToTime(arrow.Millisecond)
-	case *array.Duration:
-		return int64(e.Value(idx))
+	case *array.Float64:
+		return e.Value(idx)
 	case *array.String:
 		return e.Value(idx)
 	default:
@@ -211,12 +210,12 @@ func createSchema(table string, columns []storev1.Column) (o tableSchema) {
 			case storev1.Column_duration:
 				o.sql = append(o.sql, &sql.Column{
 					Name:   i.String(),
-					Type:   types.Int64,
+					Type:   types.Float64,
 					Source: table,
 				})
 				fields = append(fields, arrow.Field{
 					Name: i.String(),
-					Type: arrow.FixedWidthTypes.Duration_ms,
+					Type: arrow.PrimitiveTypes.Float64,
 				})
 			case storev1.Column_timestamp:
 				o.sql = append(o.sql, &sql.Column{
