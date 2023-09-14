@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -300,9 +301,18 @@ func (DB) IsReadOnly() bool {
 }
 
 var _ sql.DatabaseProvider = (*Provider)(nil)
+var _ sql.FunctionProvider = (*Provider)(nil)
 
 type Provider struct {
 	Context
+}
+
+func (p *Provider) Function(ctx *sql.Context, name string) (sql.Function, error) {
+	fn, ok := funcs[strings.ToLower(name)]
+	if !ok {
+		return nil, sql.ErrFunctionNotFound.New(name)
+	}
+	return fn, nil
 }
 
 func (p *Provider) Database(_ *sql.Context, name string) (sql.Database, error) {

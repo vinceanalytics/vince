@@ -22,9 +22,14 @@ func CMD() *cli.Command {
 			if a == "" {
 				return nil
 			}
+			file, err := os.ReadFile(a)
+			if err != nil {
+				return w.Complete(err)
+			}
 			token, instance := auth.Account()
+
 			result, err := do.Query(context.TODO(),
-				instance, token, &v1.QueryRequest{Query: a},
+				instance, token, &v1.QueryRequest{Query: string(file)},
 			)
 			if err != nil {
 				return w.Complete(err)

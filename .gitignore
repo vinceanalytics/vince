@@ -17,3 +17,4 @@ node_modules
 .vitepress/caches
 package-lock.json
 .env
+query.sql
