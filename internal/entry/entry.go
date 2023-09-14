@@ -40,12 +40,6 @@ type Entry struct {
 	UtmTerm        string        `parquet:"utm_term,dict,zstd"`
 }
 
-type ReadResult interface {
-	Col() v1.Column
-	Len() int
-	Value(int) any
-}
-
 var Pool = memory.NewGoAllocator()
 
 func (e *Entry) Clone() *Entry {

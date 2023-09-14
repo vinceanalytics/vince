@@ -13,7 +13,6 @@ import (
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/px"
 )
@@ -153,29 +152,6 @@ func (p *partitionIter) Close(*sql.Context) error {
 	p.txn.Close()
 	return nil
 }
-
-type rowIter struct {
-	result []entry.ReadResult
-	pos    int
-}
-
-func (p *rowIter) Next(*sql.Context) (sql.Row, error) {
-	if len(p.result) == 0 {
-		return nil, io.EOF
-	}
-	rows := p.result[0].Len()
-	if p.pos < rows {
-		o := make(sql.Row, len(p.result))
-		for i := range p.result {
-			o[i] = p.result[i].Value(p.pos)
-		}
-		p.pos++
-		return o, nil
-	}
-	return nil, io.EOF
-}
-
-func (p *rowIter) Close(*sql.Context) error { return nil }
 
 func (t *Table) getField(col string) (int, *sql.Column) {
 	i := t.schema.sql.IndexOf(col, t.name)
