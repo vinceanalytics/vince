@@ -2,17 +2,29 @@ package engine
 
 import (
 	"bytes"
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"slices"
+	"sync"
+	"time"
 
+	"github.com/apache/arrow/go/v14/arrow"
+	"github.com/apache/arrow/go/v14/arrow/array"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
+	"github.com/parquet-go/parquet-go"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	vdb "github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
+	"golang.org/x/sync/errgroup"
 )
 
 var Columns, Indexed = func() (o []storev1.Column, idx map[string]bool) {
 	idx = make(map[string]bool)
-	for i := storev1.Column_timestamp; i <= storev1.Column_utm_term; i++ {
+	for i := storev1.Column_bounce; i <= storev1.Column_utm_term; i++ {
 		if i > storev1.Column_timestamp {
 			idx[i.String()] = true
 		}
@@ -21,46 +33,226 @@ var Columns, Indexed = func() (o []storev1.Column, idx map[string]bool) {
 	return
 }()
 
-// Creates a schema for a site table. Each site is treated as an individual read
-// only table.
-//
-// Physically timestamps are stored as int64, but we expose this a DateTime.
-func Schema(table string, columns []storev1.Column) (o sql.Schema) {
+type tableSchema struct {
+	sql   sql.Schema
+	arrow *arrow.Schema
+}
+
+func (ts *tableSchema) read(ctx context.Context, r *parquet.File) (arrow.Record, error) {
+	b := array.NewRecordBuilder(entry.Pool, ts.arrow)
+	defer b.Release()
+
+	fields := ts.arrow.Fields()
+	schema := r.Schema()
+	fieldToColIdx := make(map[string]int)
+	for i := range fields {
+		column, ok := schema.Lookup(fields[i].Name)
+		if !ok {
+			return nil, fmt.Errorf("column %q not found in parquet file", fields[i].Name)
+		}
+		fieldToColIdx[fields[i].Name] = column.ColumnIndex
+	}
+
+	var eg errgroup.Group
+
+	for _, g := range r.RowGroups() {
+		chunks := g.ColumnChunks()
+		for i := range fields {
+			eg.Go(ts.readColum(
+				ctx,
+				&fields[i], b.Field(i),
+				chunks[fieldToColIdx[fields[i].Name]],
+			))
+		}
+	}
+	err := eg.Wait()
+	if err != nil {
+		return nil, err
+	}
+	return b.NewRecord(), nil
+}
+
+func (ts *tableSchema) readColum(
+	ctx context.Context,
+	field *arrow.Field,
+	b array.Builder,
+	chunk parquet.ColumnChunk,
+) func() error {
+	return func() error {
+		buf, err := readValuesPages(chunk.Pages())
+		if err != nil {
+			return err
+		}
+		defer buf.release()
+		b.Reserve(len(buf.values))
+		switch e := b.(type) {
+		case *array.Int64Builder:
+			for i := range buf.values {
+				e.UnsafeAppend(buf.values[i].Int64())
+			}
+		case *array.TimestampBuilder:
+			for i := range buf.values {
+				e.UnsafeAppend(arrow.Timestamp(buf.values[i].Int64()))
+			}
+		case *array.DurationBuilder:
+			for i := range buf.values {
+				e.UnsafeAppend(arrow.Duration(
+					time.Duration(buf.values[i].Int64()).Milliseconds()))
+			}
+		case *array.StringBuilder:
+			for i := range buf.values {
+				e.Append(buf.values[i].String())
+			}
+		}
+		return nil
+	}
+}
+
+func readValuesPages(pages parquet.Pages) (*valuesBuf, error) {
+	defer pages.Close()
+	buf := valuesBufPool.Get().(*valuesBuf)
+	for {
+		page, err := pages.ReadPage()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return buf, nil
+			}
+			buf.release()
+			return nil, err
+		}
+		size := page.NumValues()
+		o := buf.get(int(size))
+		page.Values().ReadValues(o)
+	}
+}
+
+type valuesBuf struct {
+	values []parquet.Value
+}
+
+func (i *valuesBuf) release() {
+	i.values = i.values[:0]
+	valuesBufPool.Put(i)
+}
+
+func (i *valuesBuf) get(n int) []parquet.Value {
+	x := len(i.values)
+	i.values = slices.Grow(i.values, n)
+	i.values = i.values[:x+n]
+	return i.values[x:n]
+}
+
+var valuesBufPool = &sync.Pool{New: func() any { return &valuesBuf{} }}
+
+type recordIter struct {
+	pos        int
+	rows, cols int
+	values     sql.Row
+	record     arrow.Record
+}
+
+var _ sql.RowIter = (*recordIter)(nil)
+
+func (r *recordIter) Next(ctx *sql.Context) (sql.Row, error) {
+	r.pos++
+	if r.pos < r.rows {
+		for i := range r.values {
+			r.values[i] = r.value(
+				r.record.Column(i),
+				r.pos,
+			)
+		}
+		return r.values, nil
+	}
+	return nil, io.EOF
+}
+
+func (r *recordIter) value(a arrow.Array, idx int) any {
+	switch e := a.(type) {
+	case *array.Int64:
+		return e.Value(idx)
+	case *array.Timestamp:
+		return e.Value(idx).ToTime(arrow.Millisecond)
+	case *array.Duration:
+		return int64(e.Value(idx))
+	case *array.String:
+		return e.Value(idx)
+	default:
+		panic(fmt.Sprintf("unsupported array data type %#T", e))
+	}
+}
+
+func (r *recordIter) Close(*sql.Context) error {
+	r.record.Release()
+	r.record = nil
+	r.pos, r.cols, r.rows = 0, 0, 0
+	r.values = r.values[:0]
+	recordIterPool.Put(r)
+	return nil
+}
+
+var recordIterPool = &sync.Pool{New: func() any { return new(recordIter) }}
+
+func newRecordIter(r arrow.Record) *recordIter {
+	x := recordIterPool.Get().(*recordIter)
+	x.pos = -1
+	x.rows = int(r.NumRows())
+	x.cols = int(r.NumCols())
+	x.values = slices.Grow(x.values, x.cols)[:x.cols]
+	x.record = r
+	return x
+}
+
+func createSchema(table string, columns []storev1.Column) (o tableSchema) {
+	fields := make([]arrow.Field, 0, len(columns))
 	for _, i := range columns {
 		if i <= storev1.Column_timestamp {
-			if i == storev1.Column_timestamp {
-				o = append(o, &sql.Column{
-					Name:     i.String(),
-					Type:     types.Timestamp,
-					Nullable: false,
-					Source:   table,
+			switch i {
+			case storev1.Column_duration:
+				o.sql = append(o.sql, &sql.Column{
+					Name:   i.String(),
+					Type:   types.Int64,
+					Source: table,
 				})
-				continue
-			}
-			if i == storev1.Column_duration {
-				o = append(o, &sql.Column{
-					Name:     i.String(),
-					Type:     types.Float64,
-					Nullable: false,
-					Source:   table,
+				fields = append(fields, arrow.Field{
+					Name: i.String(),
+					Type: arrow.FixedWidthTypes.Duration_ms,
 				})
-				continue
+			case storev1.Column_timestamp:
+				o.sql = append(o.sql, &sql.Column{
+					Name:   i.String(),
+					Type:   types.Timestamp,
+					Source: table,
+				})
+				fields = append(fields, arrow.Field{
+					Name: i.String(),
+					Type: arrow.FixedWidthTypes.Timestamp_ms,
+				})
+			default:
+				o.sql = append(o.sql, &sql.Column{
+					Name:   i.String(),
+					Type:   types.Int64,
+					Source: table,
+				})
+				fields = append(fields, arrow.Field{
+					Name: i.String(),
+					Type: arrow.PrimitiveTypes.Int64,
+				})
 			}
-			o = append(o, &sql.Column{
-				Name:     i.String(),
-				Type:     types.Int64,
-				Nullable: false,
-				Source:   table,
-			})
 			continue
 		}
-		o = append(o, &sql.Column{
+		o.sql = append(o.sql, &sql.Column{
 			Name:     i.String(),
 			Type:     types.Text,
 			Nullable: false,
 			Source:   table,
 		})
+		fields = append(fields, arrow.Field{
+			Name: i.String(),
+			Type: arrow.BinaryTypes.String,
+		})
 	}
+	o.arrow = arrow.NewSchema(fields, nil)
 	return
 }
 
@@ -81,7 +273,7 @@ func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.T
 		if txn.Has(key.Bytes()) {
 			table = &Table{Context: db.Context,
 				name:   tblName,
-				schema: Schema(tblName, Columns)}
+				schema: createSchema(tblName, Columns)}
 			ok = true
 		}
 		return nil

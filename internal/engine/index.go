@@ -49,7 +49,7 @@ func (idx *Index) ColumnExpressionTypes() []sql.ColumnExpressionType {
 }
 
 func (idx *Index) ExtendedColumnExpressionTypes() []sql.ColumnExpressionType {
-	cets := make([]sql.ColumnExpressionType, 0, len(idx.Tbl.schema))
+	cets := make([]sql.ColumnExpressionType, 0, len(idx.Exprs))
 	cetsInExprs := make(map[string]struct{})
 	for _, expr := range idx.Exprs {
 		cetsInExprs[strings.ToLower(expr.(*expression.GetField).Name())] = struct{}{}

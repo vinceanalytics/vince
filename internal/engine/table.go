@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/expression"
@@ -14,15 +15,14 @@ import (
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
-	"github.com/vinceanalytics/vince/internal/mem"
 	"github.com/vinceanalytics/vince/internal/px"
 )
 
 type Table struct {
 	Context
-	name    string
-	schema  sql.Schema
-	columns []storev1.Column
+	name        string
+	schema      tableSchema
+	projections []string
 }
 
 var _ sql.Table = (*Table)(nil)
@@ -38,10 +38,7 @@ func (t *Table) String() string {
 }
 
 func (t *Table) Schema() sql.Schema {
-	if len(t.columns) > 0 {
-		return Schema(t.name, t.columns)
-	}
-	return t.schema
+	return t.schema.sql
 }
 
 func (t *Table) Collation() sql.CollationID {
@@ -68,20 +65,19 @@ func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
 
 func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
 	x := partition.(basePartition)
-	var result []entry.ReadResult
-	t.Reader.Read(ctx, x.Key(), func(f io.ReaderAt, size int64) error {
+	var record arrow.Record
+	err := t.Reader.Read(ctx, x.Key(), func(f io.ReaderAt, size int64) error {
 		r, err := parquet.OpenFile(f, size)
 		if err != nil {
 			return err
 		}
-		cols := t.columns
-		if len(cols) == 0 {
-			cols = Columns
-		}
-		result = append(result, mem.ReadColumns(r, cols, x.Groups())...)
-		return nil
+		record, err = t.schema.read(ctx, r)
+		return err
 	})
-	return &rowIter{result: result}, nil
+	if err != nil {
+		return nil, err
+	}
+	return newRecordIter(record), nil
 }
 
 func (t *Table) WithProjections(colNames []string) sql.Table {
@@ -90,18 +86,14 @@ func (t *Table) WithProjections(colNames []string) sql.Table {
 		m[i] = storev1.Column(storev1.Column_value[colNames[i]])
 	}
 	return &Table{Context: t.Context,
-		name:    t.name,
-		columns: m,
-		schema:  Schema(t.name, m),
+		name:        t.name,
+		schema:      createSchema(t.name, m),
+		projections: colNames,
 	}
 }
 
 func (t *Table) Projections() (o []string) {
-	o = make([]string, len(t.columns))
-	for i := range t.columns {
-		o[i] = t.columns[i].String()
-	}
-	return
+	return t.projections
 }
 
 type Partition struct {
@@ -186,11 +178,11 @@ func (p *rowIter) Next(*sql.Context) (sql.Row, error) {
 func (p *rowIter) Close(*sql.Context) error { return nil }
 
 func (t *Table) getField(col string) (int, *sql.Column) {
-	i := t.schema.IndexOf(col, t.name)
+	i := t.schema.sql.IndexOf(col, t.name)
 	if i == -1 {
 		return -1, nil
 	}
-	return i, t.schema[i]
+	return i, t.schema.sql[i]
 }
 
 func (t *Table) GetIndexes(ctx *sql.Context) ([]sql.Index, error) {
@@ -198,9 +190,9 @@ func (t *Table) GetIndexes(ctx *sql.Context) ([]sql.Index, error) {
 }
 
 func (t *Table) createIndex() sql.Index {
-	exprs := make([]sql.Expression, 0, len(t.schema))
-	exprsString := make([]string, 0, len(t.schema))
-	for _, column := range t.schema {
+	exprs := make([]sql.Expression, 0, len(t.schema.sql))
+	exprsString := make([]string, 0, len(t.schema.sql))
+	for _, column := range t.schema.sql {
 		if !Indexed[column.Name] {
 			continue
 		}
