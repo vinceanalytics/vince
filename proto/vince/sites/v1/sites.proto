@@ -35,6 +35,7 @@ service Sites {
 message Site {
   string domain = 1;
   map<string, Goal> goals = 2;
+  string description = 3;
 }
 
 message CreateSiteRequest {
@@ -42,6 +43,7 @@ message CreateSiteRequest {
     (buf.validate.field).string.hostname = true,
     (buf.validate.field).required = true
   ];
+  string description = 2;
 }
 message CreateSiteResponse { Site site = 1; }
 message GetSiteRequest {

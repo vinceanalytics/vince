@@ -27,6 +27,10 @@ export interface Site {
     goals: {
         [key: string]: Goal;
     };
+    /**
+     * @generated from protobuf field: string description = 3;
+     */
+    description: string;
 }
 /**
  * @generated from protobuf message v1.CreateSiteRequest
@@ -36,6 +40,10 @@ export interface CreateSiteRequest {
      * @generated from protobuf field: string domain = 1;
      */
     domain: string;
+    /**
+     * @generated from protobuf field: string description = 2;
+     */
+    description: string;
 }
 /**
  * @generated from protobuf message v1.CreateSiteResponse
@@ -88,11 +96,12 @@ class Site$Type extends MessageType<Site> {
     constructor() {
         super("v1.Site", [
             { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "goals", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => Goal } }
+            { no: 2, name: "goals", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => Goal } },
+            { no: 3, name: "description", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<Site>): Site {
-        const message = { domain: "", goals: {} };
+        const message = { domain: "", goals: {}, description: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Site>(this, message, value);
@@ -108,6 +117,9 @@ class Site$Type extends MessageType<Site> {
                     break;
                 case /* map<string, v1.Goal> goals */ 2:
                     this.binaryReadMap2(message.goals, reader, options);
+                    break;
+                case /* string description */ 3:
+                    message.description = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -147,6 +159,9 @@ class Site$Type extends MessageType<Site> {
             Goal.internalBinaryWrite(message.goals[k], writer, options);
             writer.join().join();
         }
+        /* string description = 3; */
+        if (message.description !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.description);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -161,11 +176,12 @@ export const Site = new Site$Type();
 class CreateSiteRequest$Type extends MessageType<CreateSiteRequest> {
     constructor() {
         super("v1.CreateSiteRequest", [
-            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } }
+            { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } },
+            { no: 2, name: "description", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<CreateSiteRequest>): CreateSiteRequest {
-        const message = { domain: "" };
+        const message = { domain: "", description: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<CreateSiteRequest>(this, message, value);
@@ -178,6 +194,9 @@ class CreateSiteRequest$Type extends MessageType<CreateSiteRequest> {
             switch (fieldNo) {
                 case /* string domain */ 1:
                     message.domain = reader.string();
+                    break;
+                case /* string description */ 2:
+                    message.description = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -194,6 +213,9 @@ class CreateSiteRequest$Type extends MessageType<CreateSiteRequest> {
         /* string domain = 1; */
         if (message.domain !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.domain);
+        /* string description = 2; */
+        if (message.description !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.description);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

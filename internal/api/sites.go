@@ -22,7 +22,8 @@ func Sites404() error {
 func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*sitesv1.CreateSiteResponse, error) {
 	response := sitesv1.CreateSiteResponse{
 		Site: &sitesv1.Site{
-			Domain: req.Domain,
+			Domain:      req.Domain,
+			Description: req.Description,
 		},
 	}
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
