@@ -19,16 +19,17 @@ export const CreateSiteDialog = ({ afterCreate }: CreateSiteDialogProps) => {
     const openDialog = useCallback(() => setIsOpen(true), [setIsOpen])
     const closeDialog = useCallback(() => setIsOpen(false), [setIsOpen])
     const [domain, setDomain] = useState<string>("")
+    const [description, setDescription] = useState<string>("")
 
     const submitNewSite = useCallback(() => {
         setIsOpen(false)
-        sitesClient?.createSite({ domain }).then((result) => {
+        sitesClient?.createSite({ domain, description }).then((result) => {
             afterCreate()
         })
             .catch((e) => {
                 console.log(e)
             })
-    }, [domain, afterCreate])
+    }, [domain, description, afterCreate])
 
     const [validDomain, setValidDomain] = useState(true)
 
@@ -70,6 +71,15 @@ export const CreateSiteDialog = ({ afterCreate }: CreateSiteDialogProps) => {
                             <FormControl.Validation id="new-site" variant="error">
                                 Domain must be the
                             </FormControl.Validation>}
+                    </FormControl>
+                    <FormControl>
+                        <FormControl.Label>Description</FormControl.Label>
+                        <TextInput
+                            monospace
+                            block
+                            placeholder="describe what this site is about"
+                            onChange={(e) => setDescription(e.currentTarget.value)}
+                        />
                     </FormControl>
                 </Box>
             </Dialog>}
