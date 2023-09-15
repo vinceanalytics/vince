@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/urfave/cli/v3"
@@ -9,6 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
 	"github.com/vinceanalytics/vince/internal/cmd/output"
+	"github.com/vinceanalytics/vince/internal/cmd/queryfmt"
 	"github.com/vinceanalytics/vince/internal/do"
 )
 
@@ -16,6 +18,12 @@ func CMD() *cli.Command {
 	return &cli.Command{
 		Name:  "query",
 		Usage: "connect to vince and execute sql query",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "show-query",
+				Aliases: []string{"s"},
+			},
+		},
 		Action: func(ctx *cli.Context) error {
 			w := ansi.New()
 			a := ctx.Args().First()
@@ -34,6 +42,11 @@ func CMD() *cli.Command {
 			if err != nil {
 				return w.Complete(err)
 			}
+			if ctx.Bool("show-query") {
+				queryfmt.Format(os.Stdout, string(file))
+				fmt.Fprint(os.Stdout, "-----------")
+			}
+			fmt.Fprintln(os.Stdout)
 			return output.Tab(os.Stdout, result)
 		},
 	}
