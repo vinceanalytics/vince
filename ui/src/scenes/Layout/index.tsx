@@ -10,6 +10,7 @@ import { Splitter, } from "../../components"
 import Sites from "../Sites";
 import { Auth } from "../Auth";
 import { Result } from "../Result";
+import { Settings } from "../Settings";
 
 
 
@@ -80,17 +81,7 @@ const Layout = () => {
                             </Box>
                         </Portal>
                         <Portal containerName="settings">
-                            <Box
-                                display={activePane === "settings" ? "flex" : "none"}
-                                flex={1}
-                                flexDirection={"column"}
-                            >
-                                <PageHeader>
-                                    <PageHeader.TitleArea>
-                                        <PageHeader.Title>Settings</PageHeader.Title>
-                                    </PageHeader.TitleArea>
-                                </PageHeader>
-                            </Box>
+                            <Settings activePane={activePane} />
                         </Portal>
                     </Auth>
                 </SitesProvider>
