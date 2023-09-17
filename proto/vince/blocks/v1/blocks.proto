@@ -3,16 +3,28 @@ package v1;
 
 import "google/protobuf/timestamp.proto";
 
-message BlockIndex {
-  repeated Bloom bloom = 1;
+message BlockInfo {
+  string id = 1;
+  string domain = 2;
+  int64 min = 3;
+  int64 max = 4;
+}
 
-  // A list of min/max timestamp observed per row group
-  repeated Range time_range = 2;
+message ColumnIndex {
+  repeated RowGroup row_groups = 1;
+  int64 min = 2;
+  int64 max = 3;
 
-  message Range {
+  message Page {
     int64 min = 1;
     int64 max = 2;
   }
 
-  message Bloom { map<string, bytes> filters = 1; }
+  message RowGroup {
+    int64 min = 1;
+    int64 max = 2;
+    bytes bloom_filter = 3;
+    // This will only be set for timestamp columns
+    repeated Page pages = 4;
+  }
 }

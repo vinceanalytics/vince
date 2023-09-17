@@ -12,24 +12,47 @@ import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
 /**
- * @generated from protobuf message v1.BlockIndex
+ * @generated from protobuf message v1.BlockInfo
  */
-export interface BlockIndex {
+export interface BlockInfo {
     /**
-     * @generated from protobuf field: repeated v1.BlockIndex.Bloom bloom = 1;
+     * @generated from protobuf field: string id = 1;
      */
-    bloom: BlockIndex_Bloom[];
+    id: string;
     /**
-     * A list of min/max timestamp observed per row group
-     *
-     * @generated from protobuf field: repeated v1.BlockIndex.Range time_range = 2;
+     * @generated from protobuf field: string domain = 2;
      */
-    timeRange: BlockIndex_Range[];
+    domain: string;
+    /**
+     * @generated from protobuf field: int64 min = 3;
+     */
+    min: bigint;
+    /**
+     * @generated from protobuf field: int64 max = 4;
+     */
+    max: bigint;
 }
 /**
- * @generated from protobuf message v1.BlockIndex.Range
+ * @generated from protobuf message v1.ColumnIndex
  */
-export interface BlockIndex_Range {
+export interface ColumnIndex {
+    /**
+     * @generated from protobuf field: repeated v1.ColumnIndex.RowGroup row_groups = 1;
+     */
+    rowGroups: ColumnIndex_RowGroup[];
+    /**
+     * @generated from protobuf field: int64 min = 2;
+     */
+    min: bigint;
+    /**
+     * @generated from protobuf field: int64 max = 3;
+     */
+    max: bigint;
+}
+/**
+ * @generated from protobuf message v1.ColumnIndex.Page
+ */
+export interface ColumnIndex_Page {
     /**
      * @generated from protobuf field: int64 min = 1;
      */
@@ -40,41 +63,61 @@ export interface BlockIndex_Range {
     max: bigint;
 }
 /**
- * @generated from protobuf message v1.BlockIndex.Bloom
+ * @generated from protobuf message v1.ColumnIndex.RowGroup
  */
-export interface BlockIndex_Bloom {
+export interface ColumnIndex_RowGroup {
     /**
-     * @generated from protobuf field: map<string, bytes> filters = 1;
+     * @generated from protobuf field: int64 min = 1;
      */
-    filters: {
-        [key: string]: Uint8Array;
-    };
+    min: bigint;
+    /**
+     * @generated from protobuf field: int64 max = 2;
+     */
+    max: bigint;
+    /**
+     * @generated from protobuf field: bytes bloom_filter = 3;
+     */
+    bloomFilter: Uint8Array;
+    /**
+     * This will only be set for timestamp columns
+     *
+     * @generated from protobuf field: repeated v1.ColumnIndex.Page pages = 4;
+     */
+    pages: ColumnIndex_Page[];
 }
 // @generated message type with reflection information, may provide speed optimized methods
-class BlockIndex$Type extends MessageType<BlockIndex> {
+class BlockInfo$Type extends MessageType<BlockInfo> {
     constructor() {
-        super("v1.BlockIndex", [
-            { no: 1, name: "bloom", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => BlockIndex_Bloom },
-            { no: 2, name: "time_range", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => BlockIndex_Range }
+        super("v1.BlockInfo", [
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "min", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 4, name: "max", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
         ]);
     }
-    create(value?: PartialMessage<BlockIndex>): BlockIndex {
-        const message = { bloom: [], timeRange: [] };
+    create(value?: PartialMessage<BlockInfo>): BlockInfo {
+        const message = { id: "", domain: "", min: 0n, max: 0n };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
-            reflectionMergePartial<BlockIndex>(this, message, value);
+            reflectionMergePartial<BlockInfo>(this, message, value);
         return message;
     }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockIndex): BlockIndex {
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockInfo): BlockInfo {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* repeated v1.BlockIndex.Bloom bloom */ 1:
-                    message.bloom.push(BlockIndex_Bloom.internalBinaryRead(reader, reader.uint32(), options));
+                case /* string id */ 1:
+                    message.id = reader.string();
                     break;
-                case /* repeated v1.BlockIndex.Range time_range */ 2:
-                    message.timeRange.push(BlockIndex_Range.internalBinaryRead(reader, reader.uint32(), options));
+                case /* string domain */ 2:
+                    message.domain = reader.string();
+                    break;
+                case /* int64 min */ 3:
+                    message.min = reader.int64().toBigInt();
+                    break;
+                case /* int64 max */ 4:
+                    message.max = reader.int64().toBigInt();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -87,13 +130,19 @@ class BlockIndex$Type extends MessageType<BlockIndex> {
         }
         return message;
     }
-    internalBinaryWrite(message: BlockIndex, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* repeated v1.BlockIndex.Bloom bloom = 1; */
-        for (let i = 0; i < message.bloom.length; i++)
-            BlockIndex_Bloom.internalBinaryWrite(message.bloom[i], writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* repeated v1.BlockIndex.Range time_range = 2; */
-        for (let i = 0; i < message.timeRange.length; i++)
-            BlockIndex_Range.internalBinaryWrite(message.timeRange[i], writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+    internalBinaryWrite(message: BlockInfo, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string id = 1; */
+        if (message.id !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* string domain = 2; */
+        if (message.domain !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.domain);
+        /* int64 min = 3; */
+        if (message.min !== 0n)
+            writer.tag(3, WireType.Varint).int64(message.min);
+        /* int64 max = 4; */
+        if (message.max !== 0n)
+            writer.tag(4, WireType.Varint).int64(message.max);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -101,25 +150,86 @@ class BlockIndex$Type extends MessageType<BlockIndex> {
     }
 }
 /**
- * @generated MessageType for protobuf message v1.BlockIndex
+ * @generated MessageType for protobuf message v1.BlockInfo
  */
-export const BlockIndex = new BlockIndex$Type();
+export const BlockInfo = new BlockInfo$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class BlockIndex_Range$Type extends MessageType<BlockIndex_Range> {
+class ColumnIndex$Type extends MessageType<ColumnIndex> {
     constructor() {
-        super("v1.BlockIndex.Range", [
+        super("v1.ColumnIndex", [
+            { no: 1, name: "row_groups", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => ColumnIndex_RowGroup },
+            { no: 2, name: "min", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 3, name: "max", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
+        ]);
+    }
+    create(value?: PartialMessage<ColumnIndex>): ColumnIndex {
+        const message = { rowGroups: [], min: 0n, max: 0n };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<ColumnIndex>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: ColumnIndex): ColumnIndex {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* repeated v1.ColumnIndex.RowGroup row_groups */ 1:
+                    message.rowGroups.push(ColumnIndex_RowGroup.internalBinaryRead(reader, reader.uint32(), options));
+                    break;
+                case /* int64 min */ 2:
+                    message.min = reader.int64().toBigInt();
+                    break;
+                case /* int64 max */ 3:
+                    message.max = reader.int64().toBigInt();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: ColumnIndex, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* repeated v1.ColumnIndex.RowGroup row_groups = 1; */
+        for (let i = 0; i < message.rowGroups.length; i++)
+            ColumnIndex_RowGroup.internalBinaryWrite(message.rowGroups[i], writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* int64 min = 2; */
+        if (message.min !== 0n)
+            writer.tag(2, WireType.Varint).int64(message.min);
+        /* int64 max = 3; */
+        if (message.max !== 0n)
+            writer.tag(3, WireType.Varint).int64(message.max);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.ColumnIndex
+ */
+export const ColumnIndex = new ColumnIndex$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class ColumnIndex_Page$Type extends MessageType<ColumnIndex_Page> {
+    constructor() {
+        super("v1.ColumnIndex.Page", [
             { no: 1, name: "min", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 2, name: "max", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
         ]);
     }
-    create(value?: PartialMessage<BlockIndex_Range>): BlockIndex_Range {
+    create(value?: PartialMessage<ColumnIndex_Page>): ColumnIndex_Page {
         const message = { min: 0n, max: 0n };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
-            reflectionMergePartial<BlockIndex_Range>(this, message, value);
+            reflectionMergePartial<ColumnIndex_Page>(this, message, value);
         return message;
     }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockIndex_Range): BlockIndex_Range {
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: ColumnIndex_Page): ColumnIndex_Page {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
@@ -141,7 +251,7 @@ class BlockIndex_Range$Type extends MessageType<BlockIndex_Range> {
         }
         return message;
     }
-    internalBinaryWrite(message: BlockIndex_Range, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+    internalBinaryWrite(message: ColumnIndex_Page, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
         /* int64 min = 1; */
         if (message.min !== 0n)
             writer.tag(1, WireType.Varint).int64(message.min);
@@ -155,30 +265,42 @@ class BlockIndex_Range$Type extends MessageType<BlockIndex_Range> {
     }
 }
 /**
- * @generated MessageType for protobuf message v1.BlockIndex.Range
+ * @generated MessageType for protobuf message v1.ColumnIndex.Page
  */
-export const BlockIndex_Range = new BlockIndex_Range$Type();
+export const ColumnIndex_Page = new ColumnIndex_Page$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class BlockIndex_Bloom$Type extends MessageType<BlockIndex_Bloom> {
+class ColumnIndex_RowGroup$Type extends MessageType<ColumnIndex_RowGroup> {
     constructor() {
-        super("v1.BlockIndex.Bloom", [
-            { no: 1, name: "filters", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "scalar", T: 12 /*ScalarType.BYTES*/ } }
+        super("v1.ColumnIndex.RowGroup", [
+            { no: 1, name: "min", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 2, name: "max", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 3, name: "bloom_filter", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
+            { no: 4, name: "pages", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => ColumnIndex_Page }
         ]);
     }
-    create(value?: PartialMessage<BlockIndex_Bloom>): BlockIndex_Bloom {
-        const message = { filters: {} };
+    create(value?: PartialMessage<ColumnIndex_RowGroup>): ColumnIndex_RowGroup {
+        const message = { min: 0n, max: 0n, bloomFilter: new Uint8Array(0), pages: [] };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
-            reflectionMergePartial<BlockIndex_Bloom>(this, message, value);
+            reflectionMergePartial<ColumnIndex_RowGroup>(this, message, value);
         return message;
     }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BlockIndex_Bloom): BlockIndex_Bloom {
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: ColumnIndex_RowGroup): ColumnIndex_RowGroup {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* map<string, bytes> filters */ 1:
-                    this.binaryReadMap1(message.filters, reader, options);
+                case /* int64 min */ 1:
+                    message.min = reader.int64().toBigInt();
+                    break;
+                case /* int64 max */ 2:
+                    message.max = reader.int64().toBigInt();
+                    break;
+                case /* bytes bloom_filter */ 3:
+                    message.bloomFilter = reader.bytes();
+                    break;
+                case /* repeated v1.ColumnIndex.Page pages */ 4:
+                    message.pages.push(ColumnIndex_Page.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -191,26 +313,19 @@ class BlockIndex_Bloom$Type extends MessageType<BlockIndex_Bloom> {
         }
         return message;
     }
-    private binaryReadMap1(map: BlockIndex_Bloom["filters"], reader: IBinaryReader, options: BinaryReadOptions): void {
-        let len = reader.uint32(), end = reader.pos + len, key: keyof BlockIndex_Bloom["filters"] | undefined, val: BlockIndex_Bloom["filters"][any] | undefined;
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag();
-            switch (fieldNo) {
-                case 1:
-                    key = reader.string();
-                    break;
-                case 2:
-                    val = reader.bytes();
-                    break;
-                default: throw new globalThis.Error("unknown map entry field for field v1.BlockIndex.Bloom.filters");
-            }
-        }
-        map[key ?? ""] = val ?? new Uint8Array(0);
-    }
-    internalBinaryWrite(message: BlockIndex_Bloom, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* map<string, bytes> filters = 1; */
-        for (let k of Object.keys(message.filters))
-            writer.tag(1, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k).tag(2, WireType.LengthDelimited).bytes(message.filters[k]).join();
+    internalBinaryWrite(message: ColumnIndex_RowGroup, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* int64 min = 1; */
+        if (message.min !== 0n)
+            writer.tag(1, WireType.Varint).int64(message.min);
+        /* int64 max = 2; */
+        if (message.max !== 0n)
+            writer.tag(2, WireType.Varint).int64(message.max);
+        /* bytes bloom_filter = 3; */
+        if (message.bloomFilter.length)
+            writer.tag(3, WireType.LengthDelimited).bytes(message.bloomFilter);
+        /* repeated v1.ColumnIndex.Page pages = 4; */
+        for (let i = 0; i < message.pages.length; i++)
+            ColumnIndex_Page.internalBinaryWrite(message.pages[i], writer.tag(4, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -218,6 +333,6 @@ class BlockIndex_Bloom$Type extends MessageType<BlockIndex_Bloom> {
     }
 }
 /**
- * @generated MessageType for protobuf message v1.BlockIndex.Bloom
+ * @generated MessageType for protobuf message v1.ColumnIndex.RowGroup
  */
-export const BlockIndex_Bloom = new BlockIndex_Bloom$Type();
+export const ColumnIndex_RowGroup = new ColumnIndex_RowGroup$Type();

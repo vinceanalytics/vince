@@ -40,6 +40,18 @@ func (k *Key) Path(parts ...string) *Key {
 	return k
 }
 
+func Path(prefix v1.StorePrefix, parts ...string) []byte {
+	var b bytes.Buffer
+	b.WriteString(DefaultNS)
+	b.WriteByte('/')
+	b.WriteString(prefix.String())
+	for i := range parts {
+		b.WriteByte('/')
+		b.WriteString(parts[i])
+	}
+	return b.Bytes()
+}
+
 func (k *Key) Release() {
 	if k == nil {
 		return
@@ -58,17 +70,16 @@ func Site(domain string) *Key {
 	return New(v1.StorePrefix_SITES).Path(domain)
 }
 
-// Returns key which stores a block metadata in badger db.
-func BlockMeta(domain, uid string) *Key {
-	return New(v1.StorePrefix_BLOCK_METADATA).Path(
+// Returns key which stores a block index in badger db.
+func BlockMetadata(domain, uid string) []byte {
+	return Path(v1.StorePrefix_BLOCK_METADATA,
 		domain, uid,
 	)
 }
 
-// Returns key which stores a block index in badger db.
-func BlockIndex(domain, uid string) *Key {
-	return New(v1.StorePrefix_BLOCK_INDEX).Path(
-		domain, uid,
+func BlockIndex(domain, uid string, col v1.Column) []byte {
+	return Path(v1.StorePrefix_BLOCK_INDEX,
+		domain, uid, col.String(),
 	)
 }
 

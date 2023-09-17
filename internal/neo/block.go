@@ -2,6 +2,7 @@ package neo
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"os"
 	"sync"
@@ -9,6 +10,8 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/parquet-go/parquet-go"
 	"github.com/thanos-io/objstore"
+	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
@@ -128,10 +131,28 @@ func (w *writeContext) index(ctx context.Context) {
 	w.log.Info("indexing block")
 	f := must.Must(os.Open(w.name))("failed opening block file")
 	db.Get(ctx).Txn(true, func(txn db.Txn) error {
-		key := keys.BlockIndex(w.domain, w.id)
-		defer key.Release()
-		idx := must.Must(IndexBlockFile(f))("failed to index the block file")
-		return txn.Set(key.Bytes(), px.Encode(idx))
+		index, err := IndexBlockFile(f)
+		if err != nil {
+			return err
+		}
+		ts := index[v1.Column_timestamp]
+		info := &blocksv1.BlockInfo{
+			Id:     w.id,
+			Domain: w.domain,
+			Min:    ts.Min,
+			Max:    ts.Max,
+		}
+
+		errs := make([]error, 0, len(index)+1)
+		errs = append(errs,
+			txn.Set(keys.BlockMetadata(w.domain, w.id), px.Encode(info)),
+		)
+		for k, v := range index {
+			errs = append(errs,
+				txn.Set(keys.BlockIndex(w.domain, w.id, k), px.Encode(v)),
+			)
+		}
+		return errors.Join(errs...)
 	})
 	f.Close()
 }

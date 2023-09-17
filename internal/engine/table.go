@@ -1,12 +1,10 @@
 package engine
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 
 	"github.com/apache/arrow/go/v14/arrow"
-	"github.com/dgraph-io/badger/v4"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/expression"
 	"github.com/parquet-go/parquet-go"
@@ -45,25 +43,20 @@ func (t *Table) Collation() sql.CollationID {
 }
 
 func (t *Table) Partitions(*sql.Context) (sql.PartitionIter, error) {
-	key := keys.BlockIndex(t.name, "")
-	o := badger.DefaultIteratorOptions
-	o.Prefix = key.Bytes()
 	txn := t.DB.NewTransaction(false)
 	it := txn.Iter(db.IterOpts{
-		Prefix:         key.Bytes(),
-		PrefetchValues: true,
-		PrefetchSize:   100,
+		Prefix:         keys.BlockMetadata(t.name, ""),
+		PrefetchValues: false,
 	})
 	it.Rewind()
 	return &partitionIter{
-		it:      it,
-		txn:     txn,
-		baseKey: key,
+		it:  it,
+		txn: txn,
 	}, nil
 }
 
 func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
-	x := partition.(basePartition)
+	x := partition.(*rangePartition)
 	var record arrow.Record
 	err := t.Reader.Read(ctx, x.Key(), func(f io.ReaderAt, size int64) error {
 		r, err := parquet.OpenFile(f, size)
@@ -96,31 +89,16 @@ func (t *Table) Projections() (o []string) {
 }
 
 type Partition struct {
-	BlockID    []byte
-	BlockIndex *blocksv1.BlockIndex
-	RowGroups  []int
+	Info blocksv1.BlockInfo
 }
 
-var _ basePartition = (*Partition)(nil)
-
-func (p *Partition) Index() *blocksv1.BlockIndex { return p.BlockIndex }
-func (p *Partition) Groups() []int               { return p.RowGroups }
-
-type basePartition interface {
-	sql.Partition
-	Index() *blocksv1.BlockIndex
-	Groups() []int
-}
-
-func (p *Partition) Key() []byte { return p.BlockID }
+func (p *Partition) Key() []byte { return []byte(p.Info.Id) }
 
 type partitionIter struct {
-	it         db.Iter
-	txn        db.Txn
-	baseKey    *keys.Key
-	blockIndex blocksv1.BlockIndex
-	partition  Partition
-	started    bool
+	it        db.Iter
+	txn       db.Txn
+	partition Partition
+	started   bool
 }
 
 func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
@@ -133,21 +111,14 @@ func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
 	if !p.it.Valid() {
 		return nil, io.EOF
 	}
-	key := p.it.Key()
-
-	id := bytes.TrimPrefix(key, p.baseKey.Bytes())
-	err := p.it.Value(px.Decode(&p.blockIndex))
+	err := p.it.Value(px.Decode(&p.partition.Info))
 	if err != nil {
 		return nil, fmt.Errorf("failed decoding block index err:%v", err)
 	}
-	p.partition.BlockID = id
-	p.partition.BlockIndex = &p.blockIndex
 	return &p.partition, nil
 }
 
 func (p *partitionIter) Close(*sql.Context) error {
-	p.baseKey.Release()
-	p.baseKey = nil
 	p.it.Close()
 	p.txn.Close()
 	return nil

@@ -18,7 +18,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-func (m *BlockIndex_Range) MarshalVT() (dAtA []byte, err error) {
+func (m *BlockInfo) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -31,12 +31,69 @@ func (m *BlockIndex_Range) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BlockIndex_Range) MarshalToVT(dAtA []byte) (int, error) {
+func (m *BlockInfo) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *BlockIndex_Range) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *BlockInfo) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Max != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.Max))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.Min != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.Min))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Domain) > 0 {
+		i -= len(m.Domain)
+		copy(dAtA[i:], m.Domain)
+		i = encodeVarint(dAtA, i, uint64(len(m.Domain)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Id) > 0 {
+		i -= len(m.Id)
+		copy(dAtA[i:], m.Id)
+		i = encodeVarint(dAtA, i, uint64(len(m.Id)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ColumnIndex_Page) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ColumnIndex_Page) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ColumnIndex_Page) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -61,7 +118,7 @@ func (m *BlockIndex_Range) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *BlockIndex_Bloom) MarshalVT() (dAtA []byte, err error) {
+func (m *ColumnIndex_RowGroup) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -74,12 +131,12 @@ func (m *BlockIndex_Bloom) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BlockIndex_Bloom) MarshalToVT(dAtA []byte) (int, error) {
+func (m *ColumnIndex_RowGroup) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *BlockIndex_Bloom) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *ColumnIndex_RowGroup) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -91,73 +148,81 @@ func (m *BlockIndex_Bloom) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if len(m.Filters) > 0 {
-		for k := range m.Filters {
-			v := m.Filters[k]
-			baseI := i
-			i -= len(v)
-			copy(dAtA[i:], v)
-			i = encodeVarint(dAtA, i, uint64(len(v)))
-			i--
-			dAtA[i] = 0x12
-			i -= len(k)
-			copy(dAtA[i:], k)
-			i = encodeVarint(dAtA, i, uint64(len(k)))
-			i--
-			dAtA[i] = 0xa
-			i = encodeVarint(dAtA, i, uint64(baseI-i))
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *BlockIndex) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *BlockIndex) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *BlockIndex) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	if len(m.TimeRange) > 0 {
-		for iNdEx := len(m.TimeRange) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.TimeRange[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+	if len(m.Pages) > 0 {
+		for iNdEx := len(m.Pages) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.Pages[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
 			i -= size
 			i = encodeVarint(dAtA, i, uint64(size))
 			i--
-			dAtA[i] = 0x12
+			dAtA[i] = 0x22
 		}
 	}
-	if len(m.Bloom) > 0 {
-		for iNdEx := len(m.Bloom) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Bloom[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+	if len(m.BloomFilter) > 0 {
+		i -= len(m.BloomFilter)
+		copy(dAtA[i:], m.BloomFilter)
+		i = encodeVarint(dAtA, i, uint64(len(m.BloomFilter)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.Max != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.Max))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Min != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.Min))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ColumnIndex) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ColumnIndex) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *ColumnIndex) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Max != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.Max))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.Min != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.Min))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.RowGroups) > 0 {
+		for iNdEx := len(m.RowGroups) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.RowGroups[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -181,7 +246,31 @@ func encodeVarint(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *BlockIndex_Range) SizeVT() (n int) {
+func (m *BlockInfo) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Id)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	l = len(m.Domain)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	if m.Min != 0 {
+		n += 1 + sov(uint64(m.Min))
+	}
+	if m.Max != 0 {
+		n += 1 + sov(uint64(m.Max))
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *ColumnIndex_Page) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -197,42 +286,49 @@ func (m *BlockIndex_Range) SizeVT() (n int) {
 	return n
 }
 
-func (m *BlockIndex_Bloom) SizeVT() (n int) {
+func (m *ColumnIndex_RowGroup) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.Filters) > 0 {
-		for k, v := range m.Filters {
-			_ = k
-			_ = v
-			l = 1 + len(v) + sov(uint64(len(v)))
-			mapEntrySize := 1 + len(k) + sov(uint64(len(k))) + l
-			n += mapEntrySize + 1 + sov(uint64(mapEntrySize))
+	if m.Min != 0 {
+		n += 1 + sov(uint64(m.Min))
+	}
+	if m.Max != 0 {
+		n += 1 + sov(uint64(m.Max))
+	}
+	l = len(m.BloomFilter)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	if len(m.Pages) > 0 {
+		for _, e := range m.Pages {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
 		}
 	}
 	n += len(m.unknownFields)
 	return n
 }
 
-func (m *BlockIndex) SizeVT() (n int) {
+func (m *ColumnIndex) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.Bloom) > 0 {
-		for _, e := range m.Bloom {
+	if len(m.RowGroups) > 0 {
+		for _, e := range m.RowGroups {
 			l = e.SizeVT()
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if len(m.TimeRange) > 0 {
-		for _, e := range m.TimeRange {
-			l = e.SizeVT()
-			n += 1 + l + sov(uint64(l))
-		}
+	if m.Min != 0 {
+		n += 1 + sov(uint64(m.Min))
+	}
+	if m.Max != 0 {
+		n += 1 + sov(uint64(m.Max))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -244,7 +340,7 @@ func sov(x uint64) (n int) {
 func soz(x uint64) (n int) {
 	return sov(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *BlockIndex_Range) UnmarshalVT(dAtA []byte) error {
+func (m *BlockInfo) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -267,10 +363,163 @@ func (m *BlockIndex_Range) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BlockIndex_Range: wiretype end group for non-group")
+			return fmt.Errorf("proto: BlockInfo: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BlockIndex_Range: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: BlockInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Id = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Domain", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Domain = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Min", wireType)
+			}
+			m.Min = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Min |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Max", wireType)
+			}
+			m.Max = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Max |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ColumnIndex_Page) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ColumnIndex_Page: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ColumnIndex_Page: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -333,7 +582,7 @@ func (m *BlockIndex_Range) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BlockIndex_Bloom) UnmarshalVT(dAtA []byte) error {
+func (m *ColumnIndex_RowGroup) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -356,15 +605,87 @@ func (m *BlockIndex_Bloom) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BlockIndex_Bloom: wiretype end group for non-group")
+			return fmt.Errorf("proto: ColumnIndex_RowGroup: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BlockIndex_Bloom: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ColumnIndex_RowGroup: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Min", wireType)
+			}
+			m.Min = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Min |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Max", wireType)
+			}
+			m.Max = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Max |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Filters", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field BloomFilter", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.BloomFilter = append(m.BloomFilter[:0], dAtA[iNdEx:postIndex]...)
+			if m.BloomFilter == nil {
+				m.BloomFilter = []byte{}
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pages", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -391,104 +712,10 @@ func (m *BlockIndex_Bloom) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Filters == nil {
-				m.Filters = make(map[string][]byte)
+			m.Pages = append(m.Pages, &ColumnIndex_Page{})
+			if err := m.Pages[len(m.Pages)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
-			var mapkey string
-			var mapvalue []byte
-			for iNdEx < postIndex {
-				entryPreIndex := iNdEx
-				var wire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					wire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				fieldNum := int32(wire >> 3)
-				if fieldNum == 1 {
-					var stringLenmapkey uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflow
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapkey |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapkey := int(stringLenmapkey)
-					if intStringLenmapkey < 0 {
-						return ErrInvalidLength
-					}
-					postStringIndexmapkey := iNdEx + intStringLenmapkey
-					if postStringIndexmapkey < 0 {
-						return ErrInvalidLength
-					}
-					if postStringIndexmapkey > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
-					iNdEx = postStringIndexmapkey
-				} else if fieldNum == 2 {
-					var mapbyteLen uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflow
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						mapbyteLen |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intMapbyteLen := int(mapbyteLen)
-					if intMapbyteLen < 0 {
-						return ErrInvalidLength
-					}
-					postbytesIndex := iNdEx + intMapbyteLen
-					if postbytesIndex < 0 {
-						return ErrInvalidLength
-					}
-					if postbytesIndex > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapvalue = make([]byte, mapbyteLen)
-					copy(mapvalue, dAtA[iNdEx:postbytesIndex])
-					iNdEx = postbytesIndex
-				} else {
-					iNdEx = entryPreIndex
-					skippy, err := skip(dAtA[iNdEx:])
-					if err != nil {
-						return err
-					}
-					if (skippy < 0) || (iNdEx+skippy) < 0 {
-						return ErrInvalidLength
-					}
-					if (iNdEx + skippy) > postIndex {
-						return io.ErrUnexpectedEOF
-					}
-					iNdEx += skippy
-				}
-			}
-			m.Filters[mapkey] = mapvalue
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -512,7 +739,7 @@ func (m *BlockIndex_Bloom) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BlockIndex) UnmarshalVT(dAtA []byte) error {
+func (m *ColumnIndex) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -535,15 +762,15 @@ func (m *BlockIndex) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BlockIndex: wiretype end group for non-group")
+			return fmt.Errorf("proto: ColumnIndex: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BlockIndex: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ColumnIndex: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Bloom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field RowGroups", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -570,16 +797,16 @@ func (m *BlockIndex) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Bloom = append(m.Bloom, &BlockIndex_Bloom{})
-			if err := m.Bloom[len(m.Bloom)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			m.RowGroups = append(m.RowGroups, &ColumnIndex_RowGroup{})
+			if err := m.RowGroups[len(m.RowGroups)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TimeRange", wireType)
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Min", wireType)
 			}
-			var msglen int
+			m.Min = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflow
@@ -589,26 +816,30 @@ func (m *BlockIndex) UnmarshalVT(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				m.Min |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
-				return ErrInvalidLength
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Max", wireType)
 			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLength
+			m.Max = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Max |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.TimeRange = append(m.TimeRange, &BlockIndex_Range{})
-			if err := m.TimeRange[len(m.TimeRange)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
