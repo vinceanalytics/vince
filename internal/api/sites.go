@@ -28,9 +28,8 @@ func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*
 	}
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
-		defer key.Release()
-		return txn.Get(key.Bytes(), px.Decode(response.Site), func() error {
-			return txn.Set(key.Bytes(), px.Encode(response.Site))
+		return txn.Get(key, px.Decode(response.Site), func() error {
+			return txn.Set(key, px.Encode(response.Site))
 		})
 	})
 	if err != nil {
@@ -43,8 +42,7 @@ func (a *API) GetSite(ctx context.Context, req *sitesv1.GetSiteRequest) (*sitesv
 	var o sitesv1.Site
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
-		defer key.Release()
-		return txn.Get(key.Bytes(), px.Decode(&o), Sites404)
+		return txn.Get(key, px.Decode(&o), Sites404)
 	})
 	if err != nil {
 		return nil, err
@@ -56,9 +54,8 @@ func (a *API) ListSites(ctx context.Context, req *sitesv1.ListSitesRequest) (*si
 	o := sitesv1.ListSitesResponse{}
 	db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site("")
-		defer key.Release()
 		it := txn.Iter(db.IterOpts{
-			Prefix:         key.Bytes(),
+			Prefix:         key,
 			PrefetchSize:   64,
 			PrefetchValues: true,
 		})
@@ -79,8 +76,7 @@ func (a *API) ListSites(ctx context.Context, req *sitesv1.ListSitesRequest) (*si
 func (a *API) DeleteSite(ctx context.Context, req *sitesv1.DeleteSiteRequest) (*sitesv1.DeleteSiteResponse, error) {
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
-		defer key.Release()
-		return txn.Delete(key.Bytes(), Sites404)
+		return txn.Delete(key, Sites404)
 	})
 	if err != nil {
 		return nil, err

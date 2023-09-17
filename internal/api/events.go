@@ -47,10 +47,7 @@ func Events(w http.ResponseWriter, r *http.Request) {
 // there is an existing site registered with the domain.
 func accept(ctx context.Context, domain string) (ok bool) {
 	txn := db.Get(ctx).NewTransaction(false)
-	key := keys.Site(domain)
-	defer key.Release()
-	ok = txn.Has(key.Bytes())
-	key.Release()
+	ok = txn.Has(keys.Site(domain))
 	txn.Close()
 	return
 }

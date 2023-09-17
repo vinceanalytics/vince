@@ -34,8 +34,7 @@ func (a *API) CreateGoal(ctx context.Context, req *goalsv1.CreateGoalRequest) (*
 	}
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
-		defer key.Release()
-		err := txn.Get(key.Bytes(), px.Decode(&site), GoalE404)
+		err := txn.Get(key, px.Decode(&site), GoalE404)
 		if err != nil {
 			return err
 		}
@@ -49,7 +48,7 @@ func (a *API) CreateGoal(ctx context.Context, req *goalsv1.CreateGoalRequest) (*
 			site.Goals = make(map[string]*goalsv1.Goal)
 		}
 		site.Goals[goal.Id] = goal
-		return txn.Set(key.Bytes(), px.Encode(&site))
+		return txn.Set(key, px.Encode(&site))
 	})
 	if err != nil {
 		return nil, err
@@ -62,8 +61,7 @@ func (a *API) GetGoal(ctx context.Context, req *goalsv1.GetGoalRequest) (*goalsv
 	var goal *goalsv1.Goal
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
-		defer key.Release()
-		err := txn.Get(key.Bytes(), px.Decode(&site), Sites404)
+		err := txn.Get(key, px.Decode(&site), Sites404)
 		if err != nil {
 			return err
 		}
@@ -86,8 +84,7 @@ func (a *API) ListGoals(ctx context.Context, req *goalsv1.ListGoalsRequest) (*go
 	var goals goalsv1.ListGoalsResponse
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
-		defer key.Release()
-		err := txn.Get(key.Bytes(), px.Decode(&site), Sites404)
+		err := txn.Get(key, px.Decode(&site), Sites404)
 		if err != nil {
 			return err
 		}
@@ -111,8 +108,7 @@ func (a *API) DeleteGoal(ctx context.Context, req *goalsv1.DeleteGoalRequest) (*
 	var site sitesv1.Site
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Site(req.Domain)
-		defer key.Release()
-		err := txn.Get(key.Bytes(), px.Decode(&site), Sites404)
+		err := txn.Get(key, px.Decode(&site), Sites404)
 		if err != nil {
 			return err
 		}
@@ -120,7 +116,7 @@ func (a *API) DeleteGoal(ctx context.Context, req *goalsv1.DeleteGoalRequest) (*
 			return goalE404
 		}
 		delete(site.Goals, req.Id)
-		return txn.Set(key.Bytes(), px.Encode(&site))
+		return txn.Set(key, px.Encode(&site))
 	})
 	if err != nil {
 		return nil, err

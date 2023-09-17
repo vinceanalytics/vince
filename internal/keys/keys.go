@@ -66,8 +66,8 @@ func (k *Key) Bytes() []byte {
 
 // Returns a key that stores Site object in the badger database with the given
 // domain.
-func Site(domain string) *Key {
-	return New(v1.StorePrefix_SITES).Path(domain)
+func Site(domain string) []byte {
+	return Path(v1.StorePrefix_SITES, domain)
 }
 
 // Returns key which stores a block index in badger db.

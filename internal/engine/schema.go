@@ -269,8 +269,7 @@ func (DB) Name() string {
 func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.Table, ok bool, err error) {
 	db.DB.Txn(false, func(txn vdb.Txn) error {
 		key := keys.Site(tblName)
-		defer key.Release()
-		if txn.Has(key.Bytes()) {
+		if txn.Has(key) {
 			table = &Table{Context: db.Context,
 				name:   tblName,
 				schema: createSchema(tblName, Columns)}
@@ -285,11 +284,11 @@ func (db *DB) GetTableNames(ctx *sql.Context) (names []string, err error) {
 	db.DB.Txn(false, func(txn vdb.Txn) error {
 		key := keys.Site("")
 		it := txn.Iter(vdb.IterOpts{
-			Prefix: key.Bytes(),
+			Prefix: key,
 		})
 		for it.Rewind(); it.Valid(); it.Next() {
 			names = append(names,
-				string(bytes.TrimPrefix(it.Key(), key.Bytes())))
+				string(bytes.TrimPrefix(it.Key(), key)))
 		}
 		return nil
 	})
