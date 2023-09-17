@@ -70,9 +70,9 @@ func TestSchema(t *testing.T) {
 	t.Run("read", func(t *testing.T) {
 		ts := createSchema(testSource, []v1.Column{
 			v1.Column_id,        // int64
-			v1.Column_timestamp, // time.Time
-			v1.Column_duration,  // time.Duration
-			v1.Column_event,     // time.Duration
+			v1.Column_timestamp, // arrow.Timestamp
+			v1.Column_duration,  // float64
+			v1.Column_event,     // string
 		})
 
 		f, err := testParquetFile()
@@ -111,9 +111,9 @@ const testSource = "vince"
 func testSchema() tableSchema {
 	return createSchema(testSource, []v1.Column{
 		v1.Column_id,        // int64
-		v1.Column_timestamp, // time.Time
-		v1.Column_duration,  // time.Duration
-		v1.Column_event,     // time.Duration
+		v1.Column_timestamp, // arrow.Timestamp
+		v1.Column_duration,  // float64
+		v1.Column_event,     // string
 	})
 }
 
