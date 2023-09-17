@@ -38,8 +38,7 @@ func (a *API) CreateSnippet(ctx context.Context, req *snippetsv1.CreateSnippetRe
 	}
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Snippet(me.Name, o.Id)
-		defer key.Release()
-		return txn.Set(key.Bytes(), px.Encode(&o))
+		return txn.Set(key, px.Encode(&o))
 	})
 	if err != nil {
 		return nil, err
@@ -52,8 +51,7 @@ func (a *API) UpdateSnippet(ctx context.Context, req *snippetsv1.UpdateSnippetRe
 	var o snippetsv1.Snippet
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Snippet(me.Name, req.Id)
-		defer key.Release()
-		err := txn.Get(key.Bytes(), px.Decode(&o), SnippetsE404)
+		err := txn.Get(key, px.Decode(&o), SnippetsE404)
 		if err != nil {
 			return err
 		}
@@ -62,7 +60,7 @@ func (a *API) UpdateSnippet(ctx context.Context, req *snippetsv1.UpdateSnippetRe
 			Query:  req.Query,
 			Params: req.Params,
 		})
-		return txn.Set(key.Bytes(), px.Encode(&o))
+		return txn.Set(key, px.Encode(&o))
 	})
 	if err != nil {
 		return nil, err
@@ -76,7 +74,7 @@ func (a *API) ListSnippets(ctx context.Context, req *snippetsv1.ListSnippetsRequ
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Snippet(me.Name, "")
 		it := txn.Iter(db.IterOpts{
-			Prefix:         key.Bytes(),
+			Prefix:         key,
 			PrefetchValues: true,
 			PrefetchSize:   5,
 		})
@@ -101,8 +99,7 @@ func (a *API) DeleteSnippet(ctx context.Context, req *snippetsv1.DeleteSnippetRe
 	me := tokens.GetAccount(ctx)
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		key := keys.Snippet(me.Name, req.Id)
-		defer key.Release()
-		return txn.Delete(key.Bytes(), SnippetsE404)
+		return txn.Delete(key, SnippetsE404)
 	})
 	if err != nil {
 		return nil, err

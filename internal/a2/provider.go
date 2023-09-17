@@ -101,25 +101,22 @@ func (Provider) RemoveRefresh(ctx context.Context, token string) error {
 	return Provider{}.remove(ctx, keys.ARefresh(token))
 }
 
-func (Provider) save(ctx context.Context, key *keys.Key, m proto.Message, ttl int32) error {
+func (Provider) save(ctx context.Context, key []byte, m proto.Message, ttl int32) error {
 	b := must.Must(proto.Marshal(m))("failed serializing data")
 	return db.Get(ctx).Txn(true, func(txn db.Txn) error {
-		defer key.Release()
-		return txn.SetTTL(key.Bytes(), b, time.Duration(ttl)*time.Second)
+		return txn.SetTTL(key, b, time.Duration(ttl)*time.Second)
 	})
 }
 
-func (Provider) remove(ctx context.Context, key *keys.Key) error {
+func (Provider) remove(ctx context.Context, key []byte) error {
 	return db.Get(ctx).Txn(true, func(txn db.Txn) error {
-		defer key.Release()
-		return txn.Delete(key.Bytes())
+		return txn.Delete(key)
 	})
 }
 
-func (Provider) get(ctx context.Context, key *keys.Key, o proto.Message) error {
+func (Provider) get(ctx context.Context, key []byte, o proto.Message) error {
 	return db.Get(ctx).Txn(false, func(txn db.Txn) error {
-		defer key.Release()
-		return txn.Get(key.Bytes(), func(val []byte) error {
+		return txn.Get(key, func(val []byte) error {
 			return proto.Unmarshal(val, o)
 		}, func() error {
 			return ErrNotFound
