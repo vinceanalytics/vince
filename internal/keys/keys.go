@@ -84,8 +84,8 @@ func BlockIndex(domain, uid string, col v1.Column) []byte {
 }
 
 // Returns a key which stores account object in badger db.
-func Account(name string) *Key {
-	return New(v1.StorePrefix_ACCOUNT).Path(name)
+func Account(name string) []byte {
+	return Path(v1.StorePrefix_ACCOUNT, name)
 }
 
 func Token(token string) *Key {

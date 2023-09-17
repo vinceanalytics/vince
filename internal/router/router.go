@@ -112,8 +112,7 @@ func basic(ctx context.Context, ar *a2.AccessRequest) bool {
 	var a v1.Account
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Account(ar.Username)
-		defer key.Release()
-		return txn.Get(key.Bytes(), px.Decode(&a))
+		return txn.Get(key, px.Decode(&a))
 	})
 	if err != nil {
 		return false

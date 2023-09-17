@@ -33,8 +33,7 @@ func (Provider) GetClient(ctx context.Context, id string) (Client, error) {
 			// we support login with passwords.
 			return xclient{b: o}, db.Get(ctx).Txn(false, func(txn db.Txn) error {
 				key := keys.Account(id)
-				defer key.Release()
-				if !txn.Has(key.Bytes()) {
+				if !txn.Has(key) {
 					return ErrNotFound
 				}
 				*o = v1.AuthorizedClient{Id: id, RedirectUrl: "/"}
@@ -222,9 +221,8 @@ func (x xclient) ClientSecretMatches(ctx context.Context, secret string) bool {
 	}
 	return db.Get(ctx).Txn(false, func(txn db.Txn) error {
 		key := keys.Account(x.b.Id)
-		defer key.Release()
 		var a apiv1.Account
-		err := txn.Get(key.Bytes(), px.Decode(&a))
+		err := txn.Get(key, px.Decode(&a))
 		if err != nil {
 			return err
 		}
