@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"slices"
 	"sort"
 
 	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/apache/arrow/go/v14/arrow/array"
 	"github.com/apache/arrow/go/v14/arrow/compute"
 	"github.com/apache/arrow/go/v14/arrow/scalar"
+	"github.com/bits-and-blooms/bitset"
+	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/entry"
 )
@@ -54,58 +57,110 @@ func (o Op) String() string {
 
 var ErrNoFilter = errors.New("no filters")
 
-type Filter interface {
-	Column() v1.Column
+type Filters struct {
+	Index []IndexFilter
+	Value []ValueFilter
 }
 
+// IndexFilter is an interface for choosing row groups and row group pages to
+// read based on a column index.
+//
+// This filter is first applied before values are read into arrow.Record. Only
+// row groups and row group pages that matches across all IndexFilter are
+// selected for reads
 type IndexFilter interface {
-	Filter
-	// Returns row groups to read from in the index
-	FilterIndex(ctx context.Context, rowGroups []int) ([]int, error)
+	Column() v1.Column
+	FilterIndex(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error)
 }
 
-type FilterIndex func(ctx context.Context, rowGroups []int) ([]int, error)
+type RowGroups struct {
+	groups bitset.BitSet
+	pages  map[uint]*bitset.BitSet
+}
+
+func (g *RowGroups) Set(index uint, pages []uint) {
+	g.groups.Set(index)
+	if g.pages == nil {
+		g.pages = make(map[uint]*bitset.BitSet)
+	}
+	p := new(bitset.BitSet)
+	for i := range pages {
+		p.Set(pages[i])
+	}
+}
+
+func (g *RowGroups) SelectGroup(groups *bitset.BitSet, f func(uint, *bitset.BitSet)) {
+	for k, v := range g.pages {
+		if groups.Test(k) {
+			f(k, v)
+		}
+	}
+}
+
+type FilterIndex func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error)
 
 type ValueFilter interface {
-	Filter
+	Column() v1.Column
 	FilterValue(ctx context.Context, value arrow.Array) (arrow.Array, error)
 }
 
 type FilterValue func(ctx context.Context, b *array.BooleanBuilder, value arrow.Array) (arrow.Array, error)
 
+type IndexFilterResult struct {
+	RowGroups []uint
+	Pages     []*bitset.BitSet
+}
+
 func BuildIndexFilter(
 	ctx context.Context,
-	f []IndexFilter, source func(v1.Column) []int) ([]int, error) {
+	f []IndexFilter, source func(v1.Column) *blocksv1.ColumnIndex) (*IndexFilterResult, error) {
+	if len(f) == 0 {
+		return nil, ErrNoFilter
+	}
 	// Make sure timestamp is processed first
 	sort.Slice(f, func(i, j int) bool {
 		return f[i].Column() == v1.Column_timestamp
 	})
-	seen := make(map[int]struct{})
+	groups := make([]*RowGroups, len(f))
 	for i := range f {
 		g, err := f[i].FilterIndex(ctx, source(f[i].Column()))
 		if err != nil {
 			return nil, err
 		}
+		groups[i] = g
+	}
+	g := &groups[0].groups
+	for i := range groups {
 		if i == 0 {
-			// FIrst iteration select all row groups returned by this filter
-			for _, n := range g {
-				seen[n] = struct{}{}
-			}
-		} else {
-			for _, n := range g {
-				_, ok := seen[n]
-				if !ok {
-					delete(seen, n)
-				}
-			}
+			continue
 		}
+		g = groups[i].groups.Intersection(g)
 	}
-	o := make([]int, 0, len(seen))
-	for k := range seen {
-		o = append(o, k)
+	o := make([]uint, g.Count())
+	_, all := g.NextSetMany(0, o)
+	slices.Sort(o)
+	r := &IndexFilterResult{
+		RowGroups: make([]uint, len(all)),
+		Pages:     make([]*bitset.BitSet, len(all)),
 	}
-	sort.Ints(o)
-	return o, nil
+	pages := make(map[uint]*bitset.BitSet)
+	for _, a := range all {
+		pages[a] = new(bitset.BitSet)
+	}
+	for i := range groups {
+		groups[i].SelectGroup(g, func(u uint, bs *bitset.BitSet) {
+			if i == 0 {
+				pages[u] = bs
+			} else {
+				pages[u] = pages[u].Intersection(bs)
+			}
+		})
+	}
+	for i := range all {
+		r.RowGroups[i] = all[i]
+		r.Pages[i] = pages[all[i]]
+	}
+	return r, nil
 }
 
 func BuildValueFilter(ctx context.Context,
@@ -154,7 +209,7 @@ func call(name string, o compute.FunctionOptions, a any, b any, fn ...func()) (a
 
 type IndexMatchFuncs struct {
 	Col             v1.Column
-	FilterIndexFunc func(ctx context.Context, rowGroups []int) ([]int, error)
+	FilterIndexFunc func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error)
 }
 
 var _ IndexFilter = (*IndexMatchFuncs)(nil)
@@ -163,8 +218,8 @@ func (i *IndexMatchFuncs) Column() v1.Column {
 	return i.Col
 }
 
-func (i *IndexMatchFuncs) FilterIndex(ctx context.Context, rowGroups []int) ([]int, error) {
-	return i.FilterIndexFunc(ctx, rowGroups)
+func (i *IndexMatchFuncs) FilterIndex(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error) {
+	return i.FilterIndexFunc(ctx, idx)
 }
 
 type ValueMatchFuncs struct {
@@ -182,7 +237,12 @@ func (i *ValueMatchFuncs) FilterValue(ctx context.Context, value arrow.Array) (a
 	return i.FilterValueFunc(ctx, value)
 }
 
-func Match[T int64 | arrow.Timestamp | float64 | string](col v1.Column, matchValue any, op Op) ValueFilter {
+type Value interface {
+	~int64 | // support arrow.Timestamp
+		float64 | string
+}
+
+func Match[T Value](col v1.Column, matchValue T, op Op) ValueFilter {
 	return &ValueMatchFuncs{
 		Col: col,
 		FilterValueFunc: func(ctx context.Context, value arrow.Array) (arrow.Array, error) {

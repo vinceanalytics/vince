@@ -140,7 +140,7 @@ func (t *Table) createIndex() sql.Index {
 	exprs := make([]sql.Expression, 0, len(t.schema.sql))
 	exprsString := make([]string, 0, len(t.schema.sql))
 	for _, column := range t.schema.sql {
-		if !Indexed[column.Name] {
+		if _, ok := Indexed[column.Name]; !ok {
 			continue
 		}
 		idx, field := t.getField(column.Name)
@@ -163,7 +163,7 @@ type IndexedTable struct {
 }
 
 func (t *IndexedTable) LookupPartitions(ctx *sql.Context, lookup sql.IndexLookup) (sql.PartitionIter, error) {
-	filter, err := lookup.Index.(*Index).rangeFilterExpr(ctx, lookup.Ranges...)
+	filterExpr, filters, err := lookup.Index.(*Index).rangeFilterExpr(ctx, lookup.Ranges...)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,10 @@ func (t *IndexedTable) LookupPartitions(ctx *sql.Context, lookup sql.IndexLookup
 	if err != nil {
 		return nil, err
 	}
-	return rangePartitionIter{child: child.(*partitionIter), ranges: filter}, nil
+	return rangePartitionIter{child: child.(*partitionIter),
+		ranges:  filterExpr,
+		filters: filters,
+	}, nil
 }
 
 func (t *Table) IndexedAccess(i sql.IndexLookup) sql.IndexedTable {
@@ -189,8 +192,9 @@ func (t *IndexedTable) PartitionRows(ctx *sql.Context, partition sql.Partition) 
 
 // rangePartitionIter returns a partition that has range and table data access
 type rangePartitionIter struct {
-	child  *partitionIter
-	ranges sql.Expression
+	child   *partitionIter
+	ranges  sql.Expression
+	filters *Filters
 }
 
 var _ sql.PartitionIter = (*rangePartitionIter)(nil)

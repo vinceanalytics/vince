@@ -23,12 +23,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var Columns, Indexed = func() (o []storev1.Column, idx map[string]bool) {
-	idx = make(map[string]bool)
+var Columns, Indexed = func() (o []storev1.Column, idx map[string]storev1.Column) {
+	idx = make(map[string]storev1.Column)
 	for i := storev1.Column_bounce; i <= storev1.Column_utm_term; i++ {
-		if i > storev1.Column_timestamp {
-			idx[i.String()] = true
-		}
+		idx[i.String()] = i
 		o = append(o, i)
 	}
 	return
