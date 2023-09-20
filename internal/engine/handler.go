@@ -216,8 +216,7 @@ func (h *Handler) doQuery(
 		return "", err
 	}
 
-	// Vince is a time series database. All query must have filter by timestamp.
-	query, err = h.timestamp(ctx, query)
+	query, err = h.resolveIndexedFields(ctx, query)
 	if err != nil {
 		return "", err
 	}
@@ -424,7 +423,7 @@ func (h *Handler) doQuery(
 	return remainder, callback(r, more)
 }
 
-func (h *Handler) timestamp(ctx *sql.Context, query string) (string, error) {
+func (h *Handler) resolveIndexedFields(ctx *sql.Context, query string) (string, error) {
 	stmt, err := sqlparser.ParseWithOptions(query, sqlparser.ParserOptions{})
 	if err != nil {
 		return "", err
