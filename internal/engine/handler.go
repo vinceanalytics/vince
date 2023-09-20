@@ -39,7 +39,6 @@ import (
 	"github.com/dolthub/go-mysql-server/server"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/analyzer"
-	"github.com/dolthub/go-mysql-server/sql/expression"
 	"github.com/dolthub/go-mysql-server/sql/plan"
 	"github.com/dolthub/go-mysql-server/sql/planbuilder"
 	"github.com/dolthub/go-mysql-server/sql/transform"
@@ -215,8 +214,7 @@ func (h *Handler) doQuery(
 	if err != nil {
 		return "", err
 	}
-
-	query, err = h.resolveIndexedFields(ctx, query)
+	ctx, err = h.resolveIndexedFields(ctx, query)
 	if err != nil {
 		return "", err
 	}
@@ -423,131 +421,14 @@ func (h *Handler) doQuery(
 	return remainder, callback(r, more)
 }
 
-func (h *Handler) resolveIndexedFields(ctx *sql.Context, query string) (string, error) {
-	stmt, err := sqlparser.ParseWithOptions(query, sqlparser.ParserOptions{})
-	if err != nil {
-		return "", err
-	}
-	var filters []*sqlparser.ComparisonExpr
-	sqlparser.Walk(func(node sqlparser.SQLNode) (bool, error) {
-		switch e := node.(type) {
-		case *sqlparser.Select:
-			sqlparser.Walk(func(node sqlparser.SQLNode) (bool, error) {
-				switch n := node.(type) {
-				case *sqlparser.ComparisonExpr:
-					col, ok := n.Left.(*sqlparser.ColName)
-					if !ok {
-						return false, nil
-					}
-					if _, ok := Indexed[col.Name.String()]; !ok {
-						// We only care about indexed columns
-						return false, nil
-					}
-					filters = append(filters, n)
-					return false, nil
-				default:
-					return true, nil
-				}
-			}, e.Where)
-			return false, nil
-		default:
-			return true, nil
-		}
-	}, stmt)
-	if len(filters) == 0 {
-		return query, nil
-	}
+func (h *Handler) resolveIndexedFields(ctx *sql.Context, query string) (*sql.Context, error) {
 	node, err := h.e.AnalyzeQuery(ctx, query)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	vs := &visit{}
+	vs := &IndexHint{}
 	transform.WalkExpressionsWithNode(vs, node)
-	patchFilters(filters, vs.resolved)
-	return query, nil
-}
-
-func patchFilters(a []*sqlparser.ComparisonExpr, b []sql.Expression) {
-	if len(a) != len(b) {
-		return
-	}
-	for i := range a {
-		_, ok := a[i].Right.(*sqlparser.SQLVal)
-		if !ok {
-			// We check if we have resolved the expression to a literal
-			lit, ok := b[i].(*expression.Literal)
-			if !ok {
-				continue
-			}
-			a[i].Right = &sqlparser.SQLVal{
-				Type: toVal(lit.Type()),
-				Val:  []byte(lit.String()),
-			}
-		}
-	}
-}
-
-func toVal(typ sql.Type) sqlparser.ValType {
-	switch typ.Type() {
-	case query.Type_INT64:
-		return sqlparser.BitVal
-	case query.Type_FLOAT64:
-		return sqlparser.FloatVal
-	default:
-		return sqlparser.StrVal
-	}
-}
-
-type visit struct {
-	resolved []sql.Expression
-}
-
-func (v *visit) Visit(node sql.Node, expr sql.Expression) sql.NodeVisitor {
-	e, ok := node.(*plan.Filter)
-	if !ok {
-		return v
-	}
-	transform.WalkExpressions(&visitFilters{v: v}, e)
-	return nil
-}
-
-type visitFilters struct {
-	v *visit
-}
-
-func (v *visitFilters) Visit(expr sql.Expression) sql.Visitor {
-	switch e := expr.(type) {
-	case *expression.Equals:
-		return pickFilter(v, e)
-	case *expression.GreaterThan:
-		return pickFilter(v, e)
-	case *expression.GreaterThanOrEqual:
-		return pickFilter(v, e)
-	case *expression.LessThan:
-		return pickFilter(v, e)
-	case *expression.LessThanOrEqual:
-		return pickFilter(v, e)
-	default:
-		return v
-	}
-}
-
-type comparison interface {
-	sql.Expression
-	Left() sql.Expression
-	Right() sql.Expression
-}
-
-func pickFilter(v *visitFilters, cmp comparison) sql.Visitor {
-	f, ok := cmp.Left().(*expression.GetField)
-	if !ok {
-		return nil
-	}
-	if _, ok := Indexed[f.Name()]; !ok {
-		return nil
-	}
-	v.v.resolved = append(v.v.resolved, cmp.Right())
-	return nil
+	return ctx.WithContext(SetIndexHint(ctx, vs)), nil
 }
 
 // See https://dev.mysql.com/doc/internals/en/status-flags.html
