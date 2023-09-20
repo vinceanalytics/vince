@@ -15,7 +15,7 @@ require (
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/dolthub/go-mysql-server v0.17.0
-	github.com/dolthub/vitess v0.0.0-20230823204737-4a21a94e90c3
+	github.com/dolthub/vitess v0.0.0-20230915082726-ef1b92774b14
 	github.com/go-chi/cors v1.2.1
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang-jwt/jwt/v5 v5.0.0
