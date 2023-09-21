@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/core"
+	"github.com/vinceanalytics/vince/internal/g"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -35,14 +36,14 @@ func (s *JobScheduler) Schedule(id string, schedule Schedule, job Job) {
 
 type schedulerKey struct{}
 
-func OpenScheduler(ctx context.Context, g *errgroup.Group) (context.Context, *JobScheduler) {
+func OpenScheduler(ctx context.Context) (context.Context, *JobScheduler) {
 	s := &JobScheduler{
 		add:    make(chan *jobEntry),
 		remove: make(chan string),
 		log:    slog.Default().With("component", "scheduler"),
-		g:      g,
+		g:      g.Get(ctx),
 	}
-	g.Go(func() error {
+	g.Get(ctx).Go(func() error {
 		s.run(ctx)
 		return nil
 	})

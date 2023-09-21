@@ -39,6 +39,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/engine"
+	"github.com/vinceanalytics/vince/internal/g"
 	"github.com/vinceanalytics/vince/internal/ha"
 	"github.com/vinceanalytics/vince/internal/metrics"
 	"github.com/vinceanalytics/vince/internal/must"
@@ -52,7 +53,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	grpc_health "google.golang.org/grpc/health/grpc_health_v1"
@@ -100,6 +100,7 @@ func (r ResourceList) CloseWithGrace(ctx context.Context) error {
 
 func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList) {
 	slog.SetDefault(config.Logger(o.Env.String(), o.LogLevel).With("server_id", o.ServerId))
+	ctx = g.Open(ctx)
 
 	var resources ResourceList
 
@@ -135,12 +136,11 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 func Run(ctx context.Context, resources ResourceList) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
-	var g errgroup.Group
 	{
 		var scheduler *worker.JobScheduler
-		ctx, scheduler = worker.OpenScheduler(ctx, &g)
+		ctx, scheduler = worker.OpenScheduler(ctx)
 		resources = append(resources, scheduler)
-		g.Go(func() error {
+		g.Get(ctx).Go(func() error {
 			worker.ProcessRequests(ctx)
 			return nil
 		})
@@ -152,7 +152,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 	resources = append(resources, svr)
 
 	plainLS := core.GetHTTPListener(ctx)
-	g.Go(func() error {
+	g.Get(ctx).Go(func() error {
 		defer cancel()
 		if config.IsTLS(o) {
 			return svr.ServeTLS(plainLS, o.TlsCertFile, o.TlsKeyFile)
@@ -164,11 +164,11 @@ func Run(ctx context.Context, resources ResourceList) error {
 		"failed initializing mysql server",
 	)
 	resources = append(resources, msvr)
-	g.Go(func() error {
+	g.Get(ctx).Go(func() error {
 		defer cancel()
 		return msvr.Start()
 	})
-	g.Go(func() error {
+	g.Get(ctx).Go(func() error {
 		// Ensure we close the servers.
 		<-ctx.Done()
 		slog.Debug("shutting down gracefully")
@@ -176,7 +176,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 	})
 	slog.Debug("started serving http traffic", slog.String("address", plainLS.Addr().String()))
 	slog.Debug("started serving mysql clients", slog.String("address", msvr.Listener.Addr().String()))
-	return g.Wait()
+	return g.Get(ctx).Wait()
 }
 
 func Handle(ctx context.Context) http.Handler {
