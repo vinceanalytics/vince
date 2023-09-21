@@ -44,7 +44,10 @@ func Open(ctx context.Context, path string, logLevel ...string) (context.Context
 	db := must.Must(badger.Open(o))(
 		"failed to open badger db:", path,
 	)
-	obs := &Observer{ctx: ctx, Silent: len(logLevel) > 0 && logLevel[0] == "silent"}
+	obs := &Observer{ctx: ctx}
+	obs.OnChange = append(obs.OnChange,
+		logKeys(len(logLevel) > 0 && logLevel[0] == "silent"),
+	)
 	go func() {
 		db.Subscribe(ctx, obs.Changed, []pb.Match{
 			{Prefix: []byte("vince/")},
@@ -101,28 +104,32 @@ func (b badgerLogger) Debugf(format string, args ...interface{}) {
 
 type Observer struct {
 	ctx      context.Context
-	Silent   bool
-	OnChange func(context.Context, *badger.KVList) error
+	OnChange []func(context.Context, *badger.KVList)
 }
 
 type observeKey struct{}
 
-func SetKeyChangeObserver(ctx context.Context, obs func(context.Context, *badger.KVList) error) {
+func SetKeyChangeObserver(ctx context.Context, obs func(context.Context, *badger.KVList)) {
 	cb := ctx.Value(observeKey{}).(*Observer)
-	cb.OnChange = obs
+	cb.OnChange = append(cb.OnChange, obs)
 }
 
 func (cb *Observer) Changed(kv *badger.KVList) error {
-	if cb.OnChange != nil {
-		return cb.OnChange(cb.ctx, kv)
-	}
-	if cb.Silent {
-		return nil
-	}
-	for _, v := range kv.Kv {
-		slog.Info("Key Change", "key", string(v.Key))
+	for i := range cb.OnChange {
+		cb.OnChange[i](cb.ctx, kv)
 	}
 	return nil
+}
+
+func logKeys(silent bool) func(context.Context, *badger.KVList) {
+	if silent {
+		return func(ctx context.Context, k *badger.KVList) {}
+	}
+	return func(ctx context.Context, k *badger.KVList) {
+		for _, v := range k.Kv {
+			slog.Info("Key Change", "key", string(v.Key))
+		}
+	}
 }
 
 type Provider interface {
