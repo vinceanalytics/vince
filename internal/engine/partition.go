@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"context"
-
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/expression"
 	"github.com/dolthub/go-mysql-server/sql/plan"
@@ -17,19 +15,6 @@ type FieldHint struct {
 	Field string
 	Op    Op
 	Value any
-}
-
-type indexHintKey struct{}
-
-func SetIndexHint(ctx context.Context, h *IndexHint) context.Context {
-	return context.WithValue(ctx, indexHintKey{}, h)
-}
-
-func GetIndexHint(ctx context.Context) *IndexHint {
-	if h := ctx.Value(indexHintKey{}); h != nil {
-		return h.(*IndexHint)
-	}
-	return nil
 }
 
 func (v *IndexHint) Visit(node sql.Node, expr sql.Expression) sql.NodeVisitor {
