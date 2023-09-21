@@ -80,15 +80,17 @@ func validateUserAccess(ctx context.Context) PlaintextAuthPluginFunc {
 }
 
 func listUsers(provider db.Provider) (usr []string) {
-	txn := provider.NewTransaction(false)
-	prefix := keys.Account("")
-	it := txn.Iter(db.IterOpts{
-		Prefix:         prefix,
-		PrefetchValues: false,
+	provider.Txn(false, func(txn db.Txn) error {
+		prefix := keys.Account("")
+		it := txn.Iter(db.IterOpts{
+			Prefix:         prefix,
+			PrefetchValues: false,
+		})
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			usr = append(usr, string(bytes.TrimPrefix(it.Key(), prefix)))
+		}
+		return nil
 	})
-	defer it.Close()
-	for it.Rewind(); it.Valid(); it.Next() {
-		usr = append(usr, string(bytes.TrimPrefix(it.Key(), prefix)))
-	}
 	return
 }
