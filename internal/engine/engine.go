@@ -13,10 +13,12 @@ type Engine struct {
 }
 
 func New(ctx context.Context) *Engine {
-	e := sqle.NewDefault(&Provider{
+	pro := &Provider{
 		db:     db.Get(ctx),
 		reader: b3.GetReader(ctx),
-	})
+	}
+	e := sqle.NewDefault(pro)
+	pro.e = func() *sqle.Engine { return e }
 	setupAuth(ctx, e)
 	e.ReadOnly.Store(true)
 	return &Engine{Engine: e}

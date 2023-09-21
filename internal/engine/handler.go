@@ -41,7 +41,6 @@ import (
 	"github.com/dolthub/go-mysql-server/sql/analyzer"
 	"github.com/dolthub/go-mysql-server/sql/plan"
 	"github.com/dolthub/go-mysql-server/sql/planbuilder"
-	"github.com/dolthub/go-mysql-server/sql/transform"
 	"github.com/dolthub/go-mysql-server/sql/types"
 )
 
@@ -211,10 +210,6 @@ func (h *Handler) doQuery(
 	callback func(*sqltypes.Result, bool) error,
 ) (string, error) {
 	ctx, err := h.sm.NewContext(c)
-	if err != nil {
-		return "", err
-	}
-	ctx, err = h.resolveIndexedFields(ctx, query)
 	if err != nil {
 		return "", err
 	}
@@ -419,16 +414,6 @@ func (h *Handler) doQuery(
 	}
 
 	return remainder, callback(r, more)
-}
-
-func (h *Handler) resolveIndexedFields(ctx *sql.Context, query string) (*sql.Context, error) {
-	node, err := h.e.AnalyzeQuery(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	vs := &IndexHint{}
-	transform.WalkExpressionsWithNode(vs, node)
-	return ctx.WithContext(SetIndexHint(ctx, vs)), nil
 }
 
 // See https://dev.mysql.com/doc/internals/en/status-flags.html

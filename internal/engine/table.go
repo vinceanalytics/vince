@@ -5,7 +5,9 @@ import (
 	"io"
 
 	"github.com/apache/arrow/go/v14/arrow"
+	sqle "github.com/dolthub/go-mysql-server"
 	"github.com/dolthub/go-mysql-server/sql"
+	"github.com/dolthub/go-mysql-server/sql/transform"
 	"github.com/parquet-go/parquet-go"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
@@ -18,6 +20,7 @@ import (
 type Table struct {
 	db          db.Provider
 	reader      b3.Reader
+	e           func() *sqle.Engine
 	name        string
 	schema      tableSchema
 	projections []string
@@ -43,7 +46,10 @@ func (t *Table) Collation() sql.CollationID {
 }
 
 func (t *Table) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
-	hints := GetIndexHint(ctx)
+	hints, err := t.resolveIndexedFields(ctx)
+	if err != nil {
+		return nil, err
+	}
 	txn := t.db.NewTransaction(false)
 	it := txn.Iter(db.IterOpts{
 		Prefix:         keys.BlockMetadata(t.name, ""),
@@ -85,6 +91,7 @@ func (t *Table) WithProjections(colNames []string) sql.Table {
 		db:          t.db,
 		reader:      t.reader,
 		name:        t.name,
+		e:           t.e,
 		schema:      createSchema(t.name, m),
 		projections: colNames,
 	}
@@ -129,4 +136,14 @@ func (p *partitionIter) Close(*sql.Context) error {
 	p.it.Close()
 	p.txn.Close()
 	return nil
+}
+
+func (t *Table) resolveIndexedFields(ctx *sql.Context) (*IndexHint, error) {
+	node, err := t.e().AnalyzeQuery(ctx, ctx.Query())
+	if err != nil {
+		return nil, err
+	}
+	hint := &IndexHint{}
+	transform.WalkExpressionsWithNode(hint, node)
+	return hint, nil
 }
