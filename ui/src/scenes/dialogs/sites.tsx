@@ -64,7 +64,7 @@ export const CreateSiteDialog = ({ afterCreate }: CreateSiteDialogProps) => {
                         <TextInput
                             monospace
                             block
-                            placeholder="vinceanalytics.github.io"
+                            placeholder="vinceanalytics.com"
                             onChange={(e) => setDomain(e.currentTarget.value)}
                         />
                         {!validDomain &&

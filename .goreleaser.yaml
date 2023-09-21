@@ -125,7 +125,7 @@ brews:
       email: geofreyernest@live.com
     name: vince
     folder: Formula
-    homepage: https://vinceanalytics.github.io
+    homepage: https://vinceanalytics.com
     description: The Cloud Native Web Analytics Platform
     license: AGPL-3.0
     ids:

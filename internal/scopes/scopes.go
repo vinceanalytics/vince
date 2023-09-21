@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ResourceBaseURL = "https://vinceanalytics.github.io"
+	ResourceBaseURL = "https://vinceanalytics.com"
 )
 
 type Scope uint

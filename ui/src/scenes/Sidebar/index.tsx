@@ -36,7 +36,7 @@ export const Sidebar = ({ onPanelChange }: SideBarProps) => {
                     alignItems={"center"}
                     justifyContent={"center"}
                 >
-                    <a href="https://vinceanalytics.github.io" rel="noreferrer" target="_blank">
+                    <a href="https://vinceanalytics.com" rel="noreferrer" target="_blank">
                         <img alt="VinceAnalytics Logo" height="32" src="/logo.svg" />
                     </a>
                 </Box>
