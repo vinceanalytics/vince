@@ -9,13 +9,15 @@ import (
 	"github.com/parquet-go/parquet-go"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/px"
 )
 
 type Table struct {
-	Context
+	db          db.Provider
+	reader      b3.Reader
 	name        string
 	schema      tableSchema
 	projections []string
@@ -42,7 +44,7 @@ func (t *Table) Collation() sql.CollationID {
 
 func (t *Table) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
 	hints := GetIndexHint(ctx)
-	txn := t.DB.NewTransaction(false)
+	txn := t.db.NewTransaction(false)
 	it := txn.Iter(db.IterOpts{
 		Prefix:         keys.BlockMetadata(t.name, ""),
 		PrefetchValues: false,
@@ -60,7 +62,7 @@ func (t *Table) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
 func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
 	x := partition.(*Partition)
 	var record arrow.Record
-	err := t.Reader.Read(ctx, x.Key(), func(f io.ReaderAt, size int64) error {
+	err := t.reader.Read(ctx, x.Key(), func(f io.ReaderAt, size int64) error {
 		r, err := parquet.OpenFile(f, size)
 		if err != nil {
 			return err
@@ -79,7 +81,9 @@ func (t *Table) WithProjections(colNames []string) sql.Table {
 	for i := range colNames {
 		m[i] = storev1.Column(storev1.Column_value[colNames[i]])
 	}
-	return &Table{Context: t.Context,
+	return &Table{
+		db:          t.db,
+		reader:      t.reader,
 		name:        t.name,
 		schema:      createSchema(t.name, m),
 		projections: colNames,

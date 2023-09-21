@@ -8,8 +8,7 @@ import (
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/vitess/go/mysql"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/secrets"
+	"github.com/vinceanalytics/vince/internal/metrics"
 )
 
 func Listen(ctx context.Context) (*Server, error) {
@@ -22,7 +21,7 @@ func Listen(ctx context.Context) (*Server, error) {
 	handler := &Handler{
 		e:                 e.Engine,
 		sm:                sm,
-		metrics:           e.Metrics,
+		metrics:           metrics.Get(ctx),
 		disableMultiStmts: true,
 	}
 	l, err := server.NewListener("tcp", o.MysqlListenAddress, "")
@@ -30,11 +29,8 @@ func Listen(ctx context.Context) (*Server, error) {
 		return nil, err
 	}
 	listenerCfg := mysql.ListenerConfig{
-		Listener: l,
-		AuthServer: &Auth{
-			DB:         db.Get(ctx),
-			PrivateKey: secrets.Get(ctx),
-		},
+		Listener:                 l,
+		AuthServer:               e.Analyzer.Catalog.MySQLDb,
 		Handler:                  handler,
 		ConnReadBufferSize:       mysql.DefaultConnBufferSize,
 		AllowClearTextWithoutTLS: true,

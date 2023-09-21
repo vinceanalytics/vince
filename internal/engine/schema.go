@@ -1,13 +1,11 @@
 package engine
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"slices"
-	"strings"
 	"sync"
 	"time"
 
@@ -17,9 +15,7 @@ import (
 	"github.com/dolthub/go-mysql-server/sql/types"
 	"github.com/parquet-go/parquet-go"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
-	vdb "github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
-	"github.com/vinceanalytics/vince/internal/keys"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -252,77 +248,4 @@ func createSchema(table string, columns []storev1.Column) (o tableSchema) {
 	}
 	o.arrow = arrow.NewSchema(fields, nil)
 	return
-}
-
-type DB struct {
-	Context
-}
-
-var _ sql.Database = (*DB)(nil)
-
-func (DB) Name() string {
-	return "vince"
-}
-
-func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.Table, ok bool, err error) {
-	db.DB.Txn(false, func(txn vdb.Txn) error {
-		key := keys.Site(tblName)
-		if txn.Has(key) {
-			table = &Table{Context: db.Context,
-				name:   tblName,
-				schema: createSchema(tblName, Columns)}
-			ok = true
-		}
-		return nil
-	})
-	return
-}
-
-func (db *DB) GetTableNames(ctx *sql.Context) (names []string, err error) {
-	db.DB.Txn(false, func(txn vdb.Txn) error {
-		key := keys.Site("")
-		it := txn.Iter(vdb.IterOpts{
-			Prefix: key,
-		})
-		for it.Rewind(); it.Valid(); it.Next() {
-			names = append(names,
-				string(bytes.TrimPrefix(it.Key(), key)))
-		}
-		return nil
-	})
-	return
-}
-
-func (DB) IsReadOnly() bool {
-	return true
-}
-
-var _ sql.DatabaseProvider = (*Provider)(nil)
-var _ sql.FunctionProvider = (*Provider)(nil)
-
-type Provider struct {
-	Context
-}
-
-func (p *Provider) Function(ctx *sql.Context, name string) (sql.Function, error) {
-	fn, ok := funcs[strings.ToLower(name)]
-	if !ok {
-		return nil, sql.ErrFunctionNotFound.New(name)
-	}
-	return fn, nil
-}
-
-func (p *Provider) Database(_ *sql.Context, name string) (sql.Database, error) {
-	if name != "vince" {
-		return nil, sql.ErrDatabaseNotFound.New(name)
-	}
-	return &DB{Context: p.Context}, nil
-}
-
-func (p *Provider) AllDatabases(_ *sql.Context) []sql.Database {
-	return []sql.Database{&DB{Context: p.Context}}
-}
-
-func (p *Provider) HasDatabase(_ *sql.Context, name string) bool {
-	return name == "vince"
 }
