@@ -61,7 +61,7 @@ func setupAuth(ctx context.Context, e *sqle.Engine) {
 	set()
 	m.SetEnabled(true)
 	prefix := keys.Account("")
-	db.SetKeyChangeObserver(ctx, func(ctx context.Context, k *badger.KVList) {
+	db.Observe(ctx, keys.Account(""), func(ctx context.Context, k *badger.KVList) {
 		for i := range k.Kv {
 			if bytes.HasPrefix(k.Kv[i].Key, prefix) {
 				set()

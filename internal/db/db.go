@@ -13,6 +13,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/dgraph-io/badger/v4/pb"
+	"github.com/vinceanalytics/vince/internal/g"
 	"github.com/vinceanalytics/vince/internal/must"
 )
 
@@ -44,19 +45,12 @@ func Open(ctx context.Context, path string, logLevel ...string) (context.Context
 	db := must.Must(badger.Open(o))(
 		"failed to open badger db:", path,
 	)
-	obs := &Observer{ctx: ctx}
-	obs.OnChange = append(obs.OnChange,
-		logKeys(len(logLevel) > 0 && logLevel[0] == "silent"),
-	)
-	go func() {
-		db.Subscribe(ctx, obs.Changed, []pb.Match{
-			{Prefix: []byte("vince/")},
-		})
-	}()
 
-	ctx = context.WithValue(ctx, observeKey{}, obs)
+	ctx = context.WithValue(ctx, rawKey{}, db)
 	return Set(ctx, &provider{db: db}), db
 }
+
+type rawKey struct{}
 
 func Set(ctx context.Context, p Provider) context.Context {
 	return context.WithValue(ctx, key{}, p)
@@ -102,33 +96,19 @@ func (b badgerLogger) Debugf(format string, args ...interface{}) {
 	slog.Debug(fmt.Sprintf(format, args...))
 }
 
-type Observer struct {
-	ctx      context.Context
-	OnChange []func(context.Context, *badger.KVList)
+// Observe watches for database changes on key prefix and call obs withe changed keys.
+func Observe(ctx context.Context, prefix []byte, obs func(context.Context, *badger.KVList)) {
+	g.Get(ctx).Go(obsFunc(ctx, prefix, obs))
 }
 
-type observeKey struct{}
-
-func SetKeyChangeObserver(ctx context.Context, obs func(context.Context, *badger.KVList)) {
-	cb := ctx.Value(observeKey{}).(*Observer)
-	cb.OnChange = append(cb.OnChange, obs)
-}
-
-func (cb *Observer) Changed(kv *badger.KVList) error {
-	for i := range cb.OnChange {
-		cb.OnChange[i](cb.ctx, kv)
-	}
-	return nil
-}
-
-func logKeys(silent bool) func(context.Context, *badger.KVList) {
-	if silent {
-		return func(ctx context.Context, k *badger.KVList) {}
-	}
-	return func(ctx context.Context, k *badger.KVList) {
-		for _, v := range k.Kv {
-			slog.Info("Key Change", "key", string(v.Key))
-		}
+func obsFunc(ctx context.Context, prefix []byte, obs func(context.Context, *badger.KVList)) func() error {
+	db := ctx.Value(raftKey{}).(*badger.DB)
+	return func() error {
+		slog.Info("watching key changes", "prefix", string(prefix))
+		return db.Subscribe(ctx, func(kv *badger.KVList) error {
+			obs(ctx, kv)
+			return nil
+		}, []pb.Match{{Prefix: prefix}})
 	}
 }
 
