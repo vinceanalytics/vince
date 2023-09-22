@@ -88,3 +88,9 @@ func resolve(root, path string) string {
 	}
 	return filepath.Join(root, filepath.Clean(path))
 }
+
+// SocketFile returns path to mysql socket file. Internally we use this socket
+// for query endpoint.
+func SocketFile(o *Options) string {
+	return filepath.Join(o.DbPath, MYSQL_SOCKET)
+}

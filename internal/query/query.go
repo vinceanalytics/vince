@@ -14,12 +14,12 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 )
 
-func DSN(addr string, a *v1.Client_Auth, tls bool) string {
+func DSN(socket string, a *v1.Client_Auth, tls bool) string {
 	x := mysql.Config{
 		User:                    a.Name,
 		Passwd:                  a.AccessToken,
-		Net:                     "tcp",
-		Addr:                    addr,
+		Net:                     "unix",
+		Addr:                    socket,
 		DBName:                  "vince",
 		AllowNativePasswords:    true,
 		AllowCleartextPasswords: true,
@@ -61,7 +61,7 @@ func GetInternalClient(ctx context.Context) *sql.DB {
 		return x.(*sql.DB)
 	}
 	o := config.Get(ctx)
-	dns := DSN(o.MysqlListenAddress, a, config.IsTLS(o))
+	dns := DSN(config.SocketFile(o), a, config.IsTLS(o))
 	db := must.Must(Open(dns))(
 		"failed to open mysql db connection for internal client",
 	)
