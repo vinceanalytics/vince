@@ -14,22 +14,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 )
 
-func DSN(socket string, a *v1.Client_Auth, tls bool) string {
-	x := mysql.Config{
-		User:                    a.Name,
-		Passwd:                  a.AccessToken,
-		Net:                     "unix",
-		Addr:                    socket,
-		DBName:                  "vince",
-		AllowNativePasswords:    true,
-		AllowCleartextPasswords: true,
-		Params: map[string]string{
-			"tls": strconv.FormatBool(tls),
-		},
-	}
-	return x.FormatDSN()
-}
-
 func Open(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -61,7 +45,7 @@ func GetInternalClient(ctx context.Context) *sql.DB {
 		return x.(*sql.DB)
 	}
 	o := config.Get(ctx)
-	dns := DSN(config.SocketFile(o), a, config.IsTLS(o))
+	dns := dsn(config.SocketFile(o), a, config.IsTLS(o))
 	db := must.Must(Open(dns))(
 		"failed to open mysql db connection for internal client",
 	)
@@ -70,4 +54,20 @@ func GetInternalClient(ctx context.Context) *sql.DB {
 	db.SetMaxIdleConns(5)
 	clients.SetWithTTL(a.Name, db, 1, TTL)
 	return db
+}
+
+func dsn(socket string, a *v1.Client_Auth, tls bool) string {
+	x := mysql.Config{
+		User:                    a.Name,
+		Passwd:                  a.AccessToken,
+		Net:                     "unix",
+		Addr:                    socket,
+		DBName:                  "vince",
+		AllowNativePasswords:    true,
+		AllowCleartextPasswords: true,
+		Params: map[string]string{
+			"tls": strconv.FormatBool(tls),
+		},
+	}
+	return x.FormatDSN()
 }
