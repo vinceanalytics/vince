@@ -28,12 +28,11 @@ var sessionCache = must.Must(ristretto.NewCache(&ristretto.Config{
 // - bounce rate
 func Register(ctx context.Context, e *entry.Entry) {
 	e.Hit()
-	cacheKey := e.ID
-	if o, ok := sessionCache.Get(cacheKey); ok {
+	if o, ok := sessionCache.Get(e.ID); ok {
 		s := o.(*entry.Entry)
 		s.Update(e)
 	} else {
-		sessionCache.SetWithTTL(e.ID, e.Clone(), 1, DefaultSession)
+		sessionCache.SetWithTTL(e.ID, e, 1, DefaultSession)
 	}
 	Block(ctx).WriteEntry(e)
 }

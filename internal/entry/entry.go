@@ -42,11 +42,6 @@ type Entry struct {
 
 var Pool = memory.NewGoAllocator()
 
-func (e *Entry) Clone() *Entry {
-	o := *e
-	return &o
-}
-
 func (e *Entry) Hit() {
 	e.EntryPage = e.Path
 	e.Bounce = 1
