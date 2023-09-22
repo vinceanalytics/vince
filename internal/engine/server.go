@@ -5,63 +5,28 @@ import (
 	"crypto/tls"
 
 	"github.com/dolthub/go-mysql-server/server"
-	"github.com/dolthub/go-mysql-server/sql"
-	"github.com/dolthub/vitess/go/mysql"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/metrics"
 )
 
-func Listen(ctx context.Context) (*Server, error) {
+func Listen(ctx context.Context) (*server.Server, error) {
 	o := config.Get(ctx)
 	e := Get(ctx)
-
-	sm := server.NewSessionManager(server.DefaultSessionBuilder,
-		sql.NoopTracer, e.Analyzer.Catalog.Database, e.MemoryManager,
-		e.ProcessList, o.MysqlListenAddress)
-	handler := &Handler{
-		e:                 e.Engine,
-		sm:                sm,
-		metrics:           metrics.Get(ctx),
-		disableMultiStmts: true,
-	}
-	l, err := server.NewListener("tcp", o.MysqlListenAddress, "")
-	if err != nil {
-		return nil, err
-	}
-	listenerCfg := mysql.ListenerConfig{
-		Listener:                 l,
-		AuthServer:               e.Analyzer.Catalog.MySQLDb,
-		Handler:                  handler,
-		ConnReadBufferSize:       mysql.DefaultConnBufferSize,
-		AllowClearTextWithoutTLS: true,
-	}
-	ls, err := mysql.NewListenerWithConfig(listenerCfg)
-	if err != nil {
-		return nil, err
+	svrConfig := server.Config{
+		Protocol:                     "tcp",
+		Address:                      o.MysqlListenAddress,
+		DisableClientMultiStatements: true,
 	}
 	if config.IsTLS(o) {
 		cert, err := tls.LoadX509KeyPair(o.TlsCertFile, o.TlsKeyFile)
 		if err != nil {
 			return nil, err
 		}
-		ls.TLSConfig = &tls.Config{
+		svrConfig.TLSConfig = &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		}
-		ls.RequireSecureTransport = true
+		svrConfig.RequireSecureTransport = true
+	} else {
+		svrConfig.AllowClearTextWithoutTLS = true
 	}
-	return &Server{Listener: ls}, nil
-}
-
-type Server struct {
-	*mysql.Listener
-}
-
-func (s *Server) Start() error {
-	s.Accept()
-	return nil
-}
-
-func (s *Server) Close() error {
-	s.Listener.Close()
-	return nil
+	return server.NewDefaultServer(svrConfig, e.Engine)
 }
