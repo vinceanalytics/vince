@@ -66,6 +66,9 @@ changelog:
     - title: "Kubernetes Controller"
       regexp: '^.*?k8s(\([[:word:]]+\))??!?:.+$'
       order: 200
+    - title: "SQL Engine"
+      regexp: '^.*?sql(\([[:word:]]+\))??!?:.+$'
+      order: 250
     - title: "Documentation updates"
       regexp: ^.*?docs(\([[:word:]]+\))??!?:.+$
       order: 400
