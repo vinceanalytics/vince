@@ -47,15 +47,15 @@ func CMD() *cli.Command {
 			os.MkdirAll(root, 0755)
 			w.KV("root", root)
 
-			mainDB := config.DB_PATH
+			dbPath := config.DB_PATH
 			if root != "" {
-				mainDB = filepath.Join(root, mainDB)
+				dbPath = filepath.Join(root, dbPath)
 			}
 
-			must.One(os.Mkdir(mainDB, 0755))(
+			must.One(os.Mkdir(dbPath, 0755))(
 				"failed to create db directory",
 			)
-			w.KV("db", mainDB)
+			w.KV("db", dbPath)
 			blocks := filepath.Join(root, config.BLOCKS_PATH)
 			must.One(os.Mkdir(blocks, 0755))(
 				"failed to create blocks directory",
@@ -80,7 +80,7 @@ func CMD() *cli.Command {
 				"failed to create vince configuration",
 			)
 			w.KV("config file", file).Flush()
-			_, db := db.Open(context.Background(), mainDB, "silent")
+			_, db := db.Open(context.Background(), dbPath, "silent")
 			defer db.Close()
 			must.One(db.Update(func(txn *badger.Txn) error {
 				return txn.Set(accountKey, account)

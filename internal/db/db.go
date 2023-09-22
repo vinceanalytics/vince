@@ -17,11 +17,19 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 )
 
+// Path returns full path where badger db is created. We also store socket file
+// to mysql inside dbPath directory to avoid having non badger managed files in
+// its directory we create a subdirectory for badger.
+func Path(dbPath string) string {
+	return filepath.Join(dbPath, "vince")
+}
+
 type key struct{}
 
 type raftKey struct{}
 
 func Open(ctx context.Context, path string, logLevel ...string) (context.Context, *badger.DB) {
+	path = Path(path)
 	if len(logLevel) == 0 || logLevel[0] != "silent" {
 		slog.Info("opening main storage", "path", path)
 	}
