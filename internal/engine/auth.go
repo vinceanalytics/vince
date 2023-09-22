@@ -60,14 +60,8 @@ func setupAuth(ctx context.Context, e *sqle.Engine) {
 	// ensure we load users when ww startup
 	set()
 	m.SetEnabled(true)
-	prefix := keys.Account("")
-	db.Observe(ctx, keys.Account(""), func(ctx context.Context, k *badger.KVList) {
-		for i := range k.Kv {
-			if bytes.HasPrefix(k.Kv[i].Key, prefix) {
-				set()
-				break
-			}
-		}
+	db.Observe(ctx, keys.Account(""), func(_ context.Context, _ *badger.KVList) {
+		set()
 	})
 }
 
