@@ -30,25 +30,13 @@ export const Sidebar = ({ onPanelChange }: SideBarProps) => {
                 borderColor={"border.default"}
                 height={"100vh"}
             >
-                <Box
-                    display={"flex"}
-                    flex={1}
-                    alignItems={"center"}
-                    justifyContent={"center"}
-                >
-                    <a href="https://vinceanalytics.com" rel="noreferrer" target="_blank">
-                        <img alt="VinceAnalytics Logo" height="32" src="/logo.svg" />
-                    </a>
-                </Box>
                 <NavList >
-                    <Tooltip aria-label="Console" direction="e">
+                    <Tooltip aria-label="Console" direction="se">
                         <NavList.Item
                             aria-current={selected === "console"}
                             onClick={handleConsoleClick}
                         >
-                            <NavList.LeadingVisual>
-                                <HomeIcon />
-                            </NavList.LeadingVisual>
+                            <HomeIcon size={"medium"} />
                         </NavList.Item>
                     </Tooltip>
                     <NavList.Divider sx={{ marginY: "1rem" }} />
@@ -57,9 +45,7 @@ export const Sidebar = ({ onPanelChange }: SideBarProps) => {
                             aria-current={selected === "settings"}
                             onClick={handleSettingsClick}
                         >
-                            <NavList.LeadingVisual>
-                                <GearIcon />
-                            </NavList.LeadingVisual>
+                            <GearIcon size={"medium"} />
                         </NavList.Item>
                     </Tooltip>
                 </NavList>
