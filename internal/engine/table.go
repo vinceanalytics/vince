@@ -1,16 +1,18 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
 	"github.com/apache/arrow/go/v14/arrow"
-	sqle "github.com/dolthub/go-mysql-server"
+	"github.com/bits-and-blooms/bitset"
 	"github.com/dolthub/go-mysql-server/sql"
-	"github.com/dolthub/go-mysql-server/sql/transform"
 	"github.com/parquet-go/parquet-go"
+	"github.com/sirupsen/logrus"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
@@ -20,7 +22,6 @@ import (
 type Table struct {
 	db          db.Provider
 	reader      b3.Reader
-	e           func() *sqle.Engine
 	name        string
 	schema      tableSchema
 	projections []string
@@ -46,10 +47,6 @@ func (t *Table) Collation() sql.CollationID {
 }
 
 func (t *Table) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
-	hints, err := t.resolveIndexedFields(ctx)
-	if err != nil {
-		return nil, err
-	}
 	txn := t.db.NewTransaction(false)
 	it := txn.Iter(db.IterOpts{
 		Prefix:         keys.BlockMetadata(t.name, ""),
@@ -59,21 +56,21 @@ func (t *Table) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
 	return &partitionIter{
 		it:  it,
 		txn: txn,
-		partition: Partition{
-			Hints: hints,
-		},
 	}, nil
 }
 
 func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
-	x := partition.(*Partition)
 	var record arrow.Record
-	err := t.reader.Read(ctx, x.Key(), func(f io.ReaderAt, size int64) error {
+	part := partition.(*Partition)
+	if err := part.Valid(); err != nil {
+		return nil, err
+	}
+	err := t.reader.Read(ctx, partition.Key(), func(f io.ReaderAt, size int64) error {
 		r, err := parquet.OpenFile(f, size)
 		if err != nil {
 			return err
 		}
-		record, err = t.schema.read(ctx, r)
+		record, err = t.schema.read(ctx, r, part.RowGroups, part.Pages)
 		return err
 	})
 	if err != nil {
@@ -91,7 +88,6 @@ func (t *Table) WithProjections(colNames []string) sql.Table {
 		db:          t.db,
 		reader:      t.reader,
 		name:        t.name,
-		e:           t.e,
 		schema:      createSchema(t.name, m),
 		projections: colNames,
 	}
@@ -102,8 +98,30 @@ func (t *Table) Projections() (o []string) {
 }
 
 type Partition struct {
-	Info  blocksv1.BlockInfo
-	Hints *IndexHint
+	Info      blocksv1.BlockInfo
+	Index     []IndexFilter
+	Values    []ValueFilter
+	Expr      sql.Expression
+	RowGroups []uint
+	Pages     []*bitset.BitSet
+	Range     bool
+}
+
+func (p *Partition) Valid() error {
+	if !p.Range {
+		return errors.New("non range queries are not supported for sites table")
+	}
+	var hasTs bool
+	for i := range p.Index {
+		if p.Index[i].Column() == v1.Column_timestamp {
+			hasTs = true
+			break
+		}
+	}
+	if !hasTs {
+		return errors.New("timestamp filter is required in the where clause")
+	}
+	return nil
 }
 
 func (p *Partition) Key() []byte { return []byte(p.Info.Id) }
@@ -112,6 +130,7 @@ type partitionIter struct {
 	it        db.Iter
 	txn       db.Txn
 	partition Partition
+	idx       blocksv1.ColumnIndex
 	started   bool
 }
 
@@ -138,12 +157,19 @@ func (p *partitionIter) Close(*sql.Context) error {
 	return nil
 }
 
-func (t *Table) resolveIndexedFields(ctx *sql.Context) (*IndexHint, error) {
-	node, err := t.e().AnalyzeQuery(ctx, ctx.Query())
+func (p *partitionIter) readIndex(ctx *sql.Context, column v1.Column) *blocksv1.ColumnIndex {
+	key := keys.BlockIndex(p.partition.Info.Domain, p.partition.Info.Id, column)
+	err := p.txn.Get(key, px.Decode(&p.idx))
 	if err != nil {
-		return nil, err
+		ctx.GetLogger().
+			WithFields(logrus.Fields{
+				logrus.ErrorKey: err,
+				"column":        column.String(),
+				"block_id":      p.partition.Info.Id,
+				"domain":        p.partition.Info.Domain,
+			}).
+			Warn("failed to retrieve column index")
+		return nil
 	}
-	hint := &IndexHint{}
-	transform.WalkExpressionsWithNode(hint, node)
-	return hint, nil
+	return &p.idx
 }

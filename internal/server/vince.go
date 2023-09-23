@@ -2,9 +2,7 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"os"
@@ -44,6 +42,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/metrics"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/prober"
+	"github.com/vinceanalytics/vince/internal/resource"
 	"github.com/vinceanalytics/vince/internal/router"
 	"github.com/vinceanalytics/vince/internal/scopes"
 	"github.com/vinceanalytics/vince/internal/secrets"
@@ -72,37 +71,11 @@ func Serve(o *config.Options, x *cli.Context) error {
 	return Run(ctx, resources)
 }
 
-type ResourceList []io.Closer
-
-func (r ResourceList) Close() error {
-	e := make([]error, 0, len(r))
-	for i := len(r) - 1; i > 0; i-- {
-		e = append(e, r[i].Close())
-	}
-	return errors.Join(e...)
-}
-
-type shutdown interface {
-	Shutdown(context.Context) error
-}
-
-func (r ResourceList) CloseWithGrace(ctx context.Context) error {
-	e := make([]error, 0, len(r))
-	for i := len(r) - 1; i > 0; i-- {
-		if shut, ok := r[i].(shutdown); ok {
-			e = append(e, shut.Shutdown(ctx))
-		} else {
-			e = append(e, r[i].Close())
-		}
-	}
-	return errors.Join(e...)
-}
-
-func Configure(ctx context.Context, o *config.Options) (context.Context, ResourceList) {
+func Configure(ctx context.Context, o *config.Options) (context.Context, resource.List) {
 	slog.SetDefault(config.Logger(o.Env.String(), o.LogLevel).With("server_id", o.ServerId))
 	ctx = g.Open(ctx)
 
-	var resources ResourceList
+	var resources resource.List
 
 	// we start listeners early to make sure we can actually bind to the network.
 	// This saves us managing all long running goroutines we start in this process.
@@ -133,7 +106,7 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, Resourc
 	return ctx, resources
 }
 
-func Run(ctx context.Context, resources ResourceList) error {
+func Run(ctx context.Context, resources resource.List) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 	{
@@ -164,6 +137,11 @@ func Run(ctx context.Context, resources ResourceList) error {
 		"failed initializing mysql server",
 	)
 	resources = append(resources, msvr)
+	resources = append(resources, resource.Func(func() error {
+		// remove the socket file
+		return os.Remove(config.SocketFile(o))
+	}))
+
 	g.Get(ctx).Go(func() error {
 		defer cancel()
 		return msvr.Start()
@@ -174,6 +152,7 @@ func Run(ctx context.Context, resources ResourceList) error {
 		slog.Debug("shutting down gracefully")
 		return resources.CloseWithGrace(ctx)
 	})
+
 	slog.Debug("started serving http traffic", slog.String("address", plainLS.Addr().String()))
 	slog.Debug("started serving mysql clients", slog.String("address", msvr.Listener.Addr().String()))
 	return g.Get(ctx).Wait()

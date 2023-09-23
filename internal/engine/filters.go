@@ -8,12 +8,16 @@ import (
 	"regexp"
 	"slices"
 	"sort"
+	"time"
 
 	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/apache/arrow/go/v14/arrow/array"
 	"github.com/apache/arrow/go/v14/arrow/compute"
 	"github.com/apache/arrow/go/v14/arrow/scalar"
 	"github.com/bits-and-blooms/bitset"
+	"github.com/dolthub/go-mysql-server/sql"
+	"github.com/parquet-go/parquet-go"
+	"github.com/parquet-go/parquet-go/bloom"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/entry"
@@ -56,6 +60,7 @@ func (o Op) String() string {
 }
 
 var ErrNoFilter = errors.New("no filters")
+var ErrSkipBlock = errors.New("skip block")
 
 type Filters struct {
 	Index []IndexFilter
@@ -78,15 +83,21 @@ type RowGroups struct {
 	pages  map[uint]*bitset.BitSet
 }
 
+func NewRowGroups() *RowGroups {
+	return &RowGroups{pages: make(map[uint]*bitset.BitSet)}
+}
+
+func (g *RowGroups) Empty() bool {
+	return g.groups.Count() == 0
+}
+
 func (g *RowGroups) Set(index uint, pages []uint) {
 	g.groups.Set(index)
-	if g.pages == nil {
-		g.pages = make(map[uint]*bitset.BitSet)
-	}
 	p := new(bitset.BitSet)
 	for i := range pages {
 		p.Set(pages[i])
 	}
+	g.pages[index] = p
 }
 
 func (g *RowGroups) SelectGroup(groups *bitset.BitSet, f func(uint, *bitset.BitSet)) {
@@ -111,21 +122,24 @@ type IndexFilterResult struct {
 	Pages     []*bitset.BitSet
 }
 
-func BuildIndexFilter(
-	ctx context.Context,
-	f []IndexFilter, source func(v1.Column) *blocksv1.ColumnIndex) (*IndexFilterResult, error) {
+func buildIndexFilter(
+	ctx *sql.Context,
+	f []IndexFilter, source func(*sql.Context, v1.Column) *blocksv1.ColumnIndex) (*IndexFilterResult, error) {
 	if len(f) == 0 {
 		return nil, ErrNoFilter
 	}
 	// Make sure timestamp is processed first
-	sort.Slice(f, func(i, j int) bool {
+	sort.SliceStable(f, func(i, j int) bool {
 		return f[i].Column() == v1.Column_timestamp
 	})
 	groups := make([]*RowGroups, len(f))
 	for i := range f {
-		g, err := f[i].FilterIndex(ctx, source(f[i].Column()))
+		g, err := f[i].FilterIndex(ctx, source(ctx, f[i].Column()))
 		if err != nil {
 			return nil, err
+		}
+		if g.Empty() {
+			return nil, ErrSkipBlock
 		}
 		groups[i] = g
 	}
@@ -167,7 +181,7 @@ func BuildValueFilter(ctx context.Context,
 	f []ValueFilter,
 	source func(v1.Column) arrow.Array) (arrow.Array, error) {
 	// Make sure timestamp is processed first
-	sort.Slice(f, func(i, j int) bool {
+	sort.SliceStable(f, func(i, j int) bool {
 		return f[i].Column() == v1.Column_timestamp
 	})
 	var filter arrow.Array
@@ -207,9 +221,12 @@ func call(name string, o compute.FunctionOptions, a any, b any, fn ...func()) (a
 	return out.(*compute.ArrayDatum).MakeArray(), nil
 }
 
+type FilterIndexFunc func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error)
+
 type IndexMatchFuncs struct {
 	Col             v1.Column
-	FilterIndexFunc func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error)
+	Value           any
+	FilterIndexFunc FilterIndexFunc
 }
 
 var _ IndexFilter = (*IndexMatchFuncs)(nil)
@@ -222,8 +239,107 @@ func (i *IndexMatchFuncs) FilterIndex(ctx context.Context, idx *blocksv1.ColumnI
 	return i.FilterIndexFunc(ctx, idx)
 }
 
+func buildIndex(col v1.Column, lo, hi any, op Op) *IndexMatchFuncs {
+	var value any
+	switch op {
+	case Eq, Gt, GtEg:
+		value = lo
+	case Lt, LtEq:
+		value = hi
+	}
+	if value == nil {
+		return nil
+	}
+	return &IndexMatchFuncs{
+		Col:   col,
+		Value: value,
+		FilterIndexFunc: func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error) {
+			if col == v1.Column_timestamp {
+				return filterTimestamp(value.(time.Time), op)(ctx, idx)
+			}
+			return filterBloom(value)(ctx, idx)
+		},
+	}
+}
+
+func filterTimestamp(timestamp time.Time, op Op) FilterIndexFunc {
+	return func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error) {
+		ts := timestamp.UTC().UnixMilli()
+		if !timeInRange(ts, idx.Min, idx.Max, op) {
+			return nil, ErrSkipBlock
+		}
+		g := NewRowGroups()
+		pages := make([]uint, 0, 32)
+		for i := len(idx.RowGroups) - 1; i >= 0; i-- {
+			rg := idx.RowGroups[i]
+			if !timeInRange(ts, rg.Min, rg.Max, op) {
+				break
+			}
+
+			pages = slices.Grow(pages, len(rg.Pages))[:0]
+			for j := len(rg.Pages) - 1; j >= 0; j-- {
+				page := rg.Pages[j]
+				if !timeInRange(ts, page.Min, page.Max, op) {
+					break
+				}
+				pages = append(pages, uint(j))
+			}
+			g.Set(uint(i), pages)
+		}
+		return g, nil
+	}
+}
+
+func filterBloom(value any) FilterIndexFunc {
+	h := bloom.XXH64{}
+	v := parquet.ValueOf(value)
+	var hash uint64
+	switch v.Kind() {
+	case parquet.Int64, parquet.Double:
+		hash = h.Sum64Uint64(v.Uint64())
+	default:
+		hash = h.Sum64(v.ByteArray())
+	}
+	return func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error) {
+		g := NewRowGroups()
+		pages := make([]uint, 0, 1<<10)
+		for i := len(idx.RowGroups) - 1; i >= 0; i-- {
+			rg := idx.RowGroups[i]
+			if !inBloom(hash, rg.BloomFilter) {
+				continue
+			}
+			pages = slices.Grow(pages, len(rg.Pages))[:0]
+			for j := range rg.Pages {
+				pages = append(pages, uint(j))
+			}
+			g.Set(uint(i), pages)
+		}
+		return g, nil
+	}
+}
+
+func inBloom(hash uint64, b []byte) bool {
+	return bloom.MakeSplitBlockFilter(b).Check(hash)
+}
+
+func timeInRange(timestamp int64, a, b int64, op Op) bool {
+	switch op {
+	case Lt:
+		return a <= timestamp
+	case LtEq:
+		return a < timestamp
+	case Gt:
+		return b >= timestamp
+	case GtEg:
+		return b > timestamp
+	default:
+		return a < timestamp && timestamp < b
+	}
+}
+
 type ValueMatchFuncs struct {
 	Col             v1.Column
+	Value           any
 	FilterValueFunc func(ctx context.Context, value arrow.Array) (arrow.Array, error)
 }
 

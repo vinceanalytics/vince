@@ -8,6 +8,7 @@ import (
 
 	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/apache/arrow/go/v14/arrow/array"
+	"github.com/bits-and-blooms/bitset"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
 	"github.com/parquet-go/parquet-go"
@@ -79,7 +80,9 @@ func TestSchema(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		r, err := ts.read(context.TODO(), f)
+		page := new(bitset.BitSet)
+		page.Set(0)
+		r, err := ts.read(context.TODO(), f, []uint{0}, []*bitset.BitSet{page})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -150,6 +153,10 @@ func BenchmarkSchema_read(b *testing.B) {
 	ctx := context.TODO()
 	var buf bytes.Buffer
 	writeTestParquetFile(&buf)
+	g := []uint{0}
+	page := new(bitset.BitSet)
+	page.Set(0)
+	pages := []*bitset.BitSet{page}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
@@ -158,7 +165,7 @@ func BenchmarkSchema_read(b *testing.B) {
 			b.Fatal(err)
 		}
 		b.StartTimer()
-		r, err := ts.read(ctx, f)
+		r, err := ts.read(ctx, f, g, pages)
 		if err != nil {
 			b.Fatal(err)
 		}

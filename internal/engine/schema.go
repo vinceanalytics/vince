@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"sort"
 	"sync"
 	"time"
 
 	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/apache/arrow/go/v14/arrow/array"
+	"github.com/bits-and-blooms/bitset"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
 	"github.com/parquet-go/parquet-go"
@@ -22,7 +24,9 @@ import (
 var Columns, Indexed = func() (o []storev1.Column, idx map[string]storev1.Column) {
 	idx = make(map[string]storev1.Column)
 	for i := storev1.Column_bounce; i <= storev1.Column_utm_term; i++ {
-		idx[i.String()] = i
+		if i >= storev1.Column_timestamp {
+			idx[i.String()] = i
+		}
 		o = append(o, i)
 	}
 	return
@@ -33,10 +37,13 @@ type tableSchema struct {
 	arrow *arrow.Schema
 }
 
-func (ts *tableSchema) read(ctx context.Context, r *parquet.File) (arrow.Record, error) {
+func (ts *tableSchema) read(ctx context.Context,
+	r *parquet.File,
+	rowGroups []uint,
+	pages []*bitset.BitSet,
+) (arrow.Record, error) {
 	b := array.NewRecordBuilder(entry.Pool, ts.arrow)
 	defer b.Release()
-
 	fields := ts.arrow.Fields()
 	schema := r.Schema()
 	fieldToColIdx := make(map[string]int)
@@ -47,16 +54,28 @@ func (ts *tableSchema) read(ctx context.Context, r *parquet.File) (arrow.Record,
 		}
 		fieldToColIdx[fields[i].Name] = column.ColumnIndex
 	}
+	groups := r.RowGroups()
 
 	var eg errgroup.Group
 
-	for _, g := range r.RowGroups() {
+	accept := make(map[uint]int)
+	for i, g := range rowGroups {
+		accept[g] = i
+	}
+
+	for i, g := range groups {
+		n, ok := accept[uint(i)]
+		if !ok {
+			continue
+		}
+		page := pages[n]
 		chunks := g.ColumnChunks()
 		for i := range fields {
 			eg.Go(ts.readColum(
 				ctx,
 				&fields[i], b.Field(i),
 				chunks[fieldToColIdx[fields[i].Name]],
+				page.Clone(),
 			))
 		}
 	}
@@ -72,9 +91,10 @@ func (ts *tableSchema) readColum(
 	field *arrow.Field,
 	b array.Builder,
 	chunk parquet.ColumnChunk,
+	accept *bitset.BitSet,
 ) func() error {
 	return func() error {
-		buf, err := readValuesPages(chunk.Pages())
+		buf, err := readValuesPages(chunk.Pages(), accept)
 		if err != nil {
 			return err
 		}
@@ -102,10 +122,10 @@ func (ts *tableSchema) readColum(
 	}
 }
 
-func readValuesPages(pages parquet.Pages) (*valuesBuf, error) {
+func readValuesPages(pages parquet.Pages, accept *bitset.BitSet) (*valuesBuf, error) {
 	defer pages.Close()
 	buf := valuesBufPool.Get().(*valuesBuf)
-	for {
+	for i := uint(0); ; i++ {
 		page, err := pages.ReadPage()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
@@ -113,6 +133,9 @@ func readValuesPages(pages parquet.Pages) (*valuesBuf, error) {
 			}
 			buf.release()
 			return nil, err
+		}
+		if !accept.Test(i) {
+			continue
 		}
 		size := page.NumValues()
 		o := buf.get(int(size))
@@ -198,6 +221,13 @@ func newRecordIter(r arrow.Record) *recordIter {
 }
 
 func createSchema(table string, columns []storev1.Column) (o tableSchema) {
+	// Make timestamp the first column we read. This ensures we pick the right
+	// pages to read from the blocks
+	sort.SliceStable(columns, func(i, j int) bool {
+		return columns[i] == storev1.Column_timestamp ||
+			// move string columns up front
+			columns[i] > storev1.Column_timestamp
+	})
 	fields := make([]arrow.Field, 0, len(columns))
 	for _, i := range columns {
 		if i <= storev1.Column_timestamp {

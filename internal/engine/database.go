@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"strings"
 
-	sqle "github.com/dolthub/go-mysql-server"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/db"
@@ -15,16 +14,14 @@ import (
 type DB struct {
 	db     db.Provider
 	reader b3.Reader
-	e      func() *sqle.Engine
 	views  map[string]sql.ViewDefinition
 }
 
 var _ sql.Database = (*DB)(nil)
 var _ sql.ViewDatabase = (*DB)(nil)
 
-func NewDB(db db.Provider, rd b3.Reader, e func() *sqle.Engine) *DB {
+func NewDB(db db.Provider, rd b3.Reader) *DB {
 	return &DB{db: db, reader: rd,
-		e:     e,
 		views: make(map[string]sql.ViewDefinition)}
 }
 
@@ -40,7 +37,6 @@ func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.T
 				db:     db.db,
 				reader: db.reader,
 				name:   tblName,
-				e:      db.e,
 				schema: createSchema(tblName, Columns)}
 			ok = true
 		}
@@ -112,7 +108,6 @@ var _ sql.FunctionProvider = (*Provider)(nil)
 type Provider struct {
 	db     db.Provider
 	reader b3.Reader
-	e      func() *sqle.Engine
 }
 
 func (p *Provider) Function(ctx *sql.Context, name string) (sql.Function, error) {
@@ -127,11 +122,11 @@ func (p *Provider) Database(_ *sql.Context, name string) (sql.Database, error) {
 	if name != "vince" {
 		return nil, sql.ErrDatabaseNotFound.New(name)
 	}
-	return NewDB(p.db, p.reader, p.e), nil
+	return NewDB(p.db, p.reader), nil
 }
 
 func (p *Provider) AllDatabases(_ *sql.Context) []sql.Database {
-	return []sql.Database{NewDB(p.db, p.reader, p.e)}
+	return []sql.Database{NewDB(p.db, p.reader)}
 }
 
 func (p *Provider) HasDatabase(_ *sql.Context, name string) bool {
