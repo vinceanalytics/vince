@@ -1,6 +1,7 @@
 syntax = "proto3";
 package v1;
 
+import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
 
@@ -10,6 +11,12 @@ service Import {
       post : "/v1/import"
     };
   };
+}
+
+message ImportData {
+  bytes data = 1;
+  string created_by = 2;
+  google.protobuf.Timestamp created_at = 3;
 }
 
 message ImportRequest {
@@ -36,7 +43,7 @@ message Schema {
   }
 
   enum FieldType {
-    Int64 = 0;
+    INT64 = 0;
     FLOAT64 = 1;
     STRING = 2;
     BOOL = 3;

@@ -70,13 +70,13 @@
     "SchemaFieldType": {
       "type": "string",
       "enum": [
-        "Int64",
+        "INT64",
         "FLOAT64",
         "STRING",
         "BOOL",
         "TIMESTAMP"
       ],
-      "default": "Int64"
+      "default": "INT64"
     },
     "googlerpcStatus": {
       "type": "object",
