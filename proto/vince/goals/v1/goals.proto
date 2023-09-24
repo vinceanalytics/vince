@@ -29,7 +29,7 @@ service Goals {
 }
 
 message Goal {
-  string id = 1;
+  string name = 1;
   Type type = 2;
   string value = 3;
   google.protobuf.Timestamp created_at = 4;
@@ -47,16 +47,17 @@ message CreateGoalRequest {
   ];
   Goal.Type type = 2 [ (buf.validate.field).required = true ];
   string value = 3 [ (buf.validate.field).required = true ];
+  string name = 4 [ (buf.validate.field).required = true ];
 }
 
-message CreateGoalResponse { Goal goal = 1; }
+message CreateGoalResponse {}
 
 message GetGoalRequest {
   string domain = 1 [
     (buf.validate.field).string.hostname = true,
     (buf.validate.field).required = true
   ];
-  string id = 2 [ (buf.validate.field).required = true ];
+  string name = 2 [ (buf.validate.field).required = true ];
 }
 
 message ListGoalsRequest {
@@ -73,7 +74,7 @@ message DeleteGoalRequest {
     (buf.validate.field).string.hostname = true,
     (buf.validate.field).required = true
   ];
-  string id = 2 [ (buf.validate.field).required = true ];
+  string name = 2 [ (buf.validate.field).required = true ];
 }
 
 message DeleteGoalResponse {}

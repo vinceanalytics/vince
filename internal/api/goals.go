@@ -4,7 +4,6 @@ import (
 	"context"
 	"sort"
 
-	"github.com/oklog/ulid/v2"
 	goalsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/core"
@@ -25,56 +24,53 @@ func GoalE404() error {
 }
 
 func (a *API) CreateGoal(ctx context.Context, req *goalsv1.CreateGoalRequest) (*goalsv1.CreateGoalResponse, error) {
-	var site sitesv1.Site
-	goal := &goalsv1.Goal{
-		Id:        ulid.Make().String(),
-		Type:      req.Type,
-		Value:     req.Value,
-		CreatedAt: timestamppb.New(core.Now(ctx)),
-	}
+	key := keys.Site(req.Domain)
+
 	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
-		key := keys.Site(req.Domain)
-		err := txn.Get(key, px.Decode(&site), GoalE404)
+		var site sitesv1.Site
+		err := txn.Get(key, px.Decode(&site), Sites404)
 		if err != nil {
 			return err
 		}
-		for _, g := range site.Goals {
-			if g.Type == req.Type && g.Value == req.Value {
-				goal = g
-				return nil
-			}
+		if site.Goals != nil && site.Goals[req.Name] != nil {
+			return status.Error(codes.AlreadyExists, "goal already exists")
 		}
 		if site.Goals == nil {
 			site.Goals = make(map[string]*goalsv1.Goal)
 		}
-		site.Goals[goal.Id] = goal
+		site.Goals[req.Name] = &goalsv1.Goal{
+			Name:      req.Name,
+			Type:      req.Type,
+			Value:     req.Value,
+			CreatedAt: timestamppb.New(core.Now(ctx)),
+		}
 		return txn.Set(key, px.Encode(&site))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return nil, nil
+	return &goalsv1.CreateGoalResponse{}, nil
 }
 
 func (a *API) GetGoal(ctx context.Context, req *goalsv1.GetGoalRequest) (*goalsv1.Goal, error) {
-	var site sitesv1.Site
 	var goal *goalsv1.Goal
+	key := keys.Site(req.Domain)
 	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
-		key := keys.Site(req.Domain)
+		var site sitesv1.Site
 		err := txn.Get(key, px.Decode(&site), Sites404)
 		if err != nil {
 			return err
 		}
 		if site.Goals != nil {
-			goal = site.Goals[req.Id]
+			goal = site.Goals[req.Name]
+		}
+		if goal == nil {
+			return goalE404
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
-	}
-	if goal == nil {
-		return nil, goalE404
 	}
 	return goal, nil
 }
@@ -112,10 +108,10 @@ func (a *API) DeleteGoal(ctx context.Context, req *goalsv1.DeleteGoalRequest) (*
 		if err != nil {
 			return err
 		}
-		if site.Goals == nil || site.Goals[req.Id] == nil {
+		if site.Goals == nil || site.Goals[req.Name] == nil {
 			return goalE404
 		}
-		delete(site.Goals, req.Id)
+		delete(site.Goals, req.Name)
 		return txn.Set(key, px.Encode(&site))
 	})
 	if err != nil {

@@ -15,6 +15,7 @@ export const CreateGoalDialog = ({ afterCreate }: CreateGoalDialogProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const openDialog = useCallback(() => setIsOpen(true), [setIsOpen])
     const closeDialog = useCallback(() => setIsOpen(false), [setIsOpen])
+    const [name, setName] = useState<string>("")
     const [domain, setDomain] = useState<string>("")
     const [goalType, setGoalType] = useState<Goal_Type>(Goal_Type.PATH)
     const [value, setValue] = useState<string>("")
@@ -22,6 +23,7 @@ export const CreateGoalDialog = ({ afterCreate }: CreateGoalDialogProps) => {
     const submit = useCallback(() => {
         setIsOpen(false)
         goalsClient?.createGoal({
+            name,
             domain,
             type: goalType,
             value,
@@ -31,7 +33,7 @@ export const CreateGoalDialog = ({ afterCreate }: CreateGoalDialogProps) => {
             .catch((e) => {
                 console.log(e)
             })
-    }, [domain, setIsOpen, goalsClient, goalType, value, afterCreate])
+    }, [domain, setIsOpen, name, goalsClient, goalType, value, afterCreate])
 
     return (
         <>
@@ -48,6 +50,10 @@ export const CreateGoalDialog = ({ afterCreate }: CreateGoalDialogProps) => {
                 onClose={closeDialog}
             >
                 <Box>
+                    <FormControl>
+                        <FormControl.Label id="goal-name">Name</FormControl.Label>
+                        <TextInput block onChange={e => setName(e.currentTarget.value)} />
+                    </FormControl>
                     <FormControl>
                         <FormControl.Label>Select Site</FormControl.Label>
                         <SelectSite

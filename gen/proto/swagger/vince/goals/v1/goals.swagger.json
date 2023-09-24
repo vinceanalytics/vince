@@ -41,7 +41,7 @@
             "type": "string"
           },
           {
-            "name": "id",
+            "name": "name",
             "in": "query",
             "required": false,
             "type": "string"
@@ -75,7 +75,7 @@
             "type": "string"
           },
           {
-            "name": "id",
+            "name": "name",
             "in": "query",
             "required": false,
             "type": "string"
@@ -154,6 +154,12 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -192,12 +198,7 @@
       "additionalProperties": {}
     },
     "v1CreateGoalResponse": {
-      "type": "object",
-      "properties": {
-        "goal": {
-          "$ref": "#/definitions/v1Goal"
-        }
-      }
+      "type": "object"
     },
     "v1DeleteGoalResponse": {
       "type": "object"
@@ -205,7 +206,7 @@
     "v1Goal": {
       "type": "object",
       "properties": {
-        "id": {
+        "name": {
           "type": "string"
         },
         "type": {

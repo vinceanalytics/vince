@@ -174,7 +174,7 @@
     "v1Goal": {
       "type": "object",
       "properties": {
-        "id": {
+        "name": {
           "type": "string"
         },
         "type": {

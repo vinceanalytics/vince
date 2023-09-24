@@ -18,9 +18,9 @@ import { Timestamp } from "../../../google/protobuf/timestamp";
  */
 export interface Goal {
     /**
-     * @generated from protobuf field: string id = 1;
+     * @generated from protobuf field: string name = 1;
      */
-    id: string;
+    name: string;
     /**
      * @generated from protobuf field: v1.Goal.Type type = 2;
      */
@@ -63,15 +63,15 @@ export interface CreateGoalRequest {
      * @generated from protobuf field: string value = 3;
      */
     value: string;
+    /**
+     * @generated from protobuf field: string name = 4;
+     */
+    name: string;
 }
 /**
  * @generated from protobuf message v1.CreateGoalResponse
  */
 export interface CreateGoalResponse {
-    /**
-     * @generated from protobuf field: v1.Goal goal = 1;
-     */
-    goal?: Goal;
 }
 /**
  * @generated from protobuf message v1.GetGoalRequest
@@ -82,9 +82,9 @@ export interface GetGoalRequest {
      */
     domain: string;
     /**
-     * @generated from protobuf field: string id = 2;
+     * @generated from protobuf field: string name = 2;
      */
-    id: string;
+    name: string;
 }
 /**
  * @generated from protobuf message v1.ListGoalsRequest
@@ -113,9 +113,9 @@ export interface DeleteGoalRequest {
      */
     domain: string;
     /**
-     * @generated from protobuf field: string id = 2;
+     * @generated from protobuf field: string name = 2;
      */
-    id: string;
+    name: string;
 }
 /**
  * @generated from protobuf message v1.DeleteGoalResponse
@@ -126,14 +126,14 @@ export interface DeleteGoalResponse {
 class Goal$Type extends MessageType<Goal> {
     constructor() {
         super("v1.Goal", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "type", kind: "enum", T: () => ["v1.Goal.Type", Goal_Type] },
             { no: 3, name: "value", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "created_at", kind: "message", T: () => Timestamp }
         ]);
     }
     create(value?: PartialMessage<Goal>): Goal {
-        const message = { id: "", type: 0, value: "" };
+        const message = { name: "", type: 0, value: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Goal>(this, message, value);
@@ -144,8 +144,8 @@ class Goal$Type extends MessageType<Goal> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string id */ 1:
-                    message.id = reader.string();
+                case /* string name */ 1:
+                    message.name = reader.string();
                     break;
                 case /* v1.Goal.Type type */ 2:
                     message.type = reader.int32();
@@ -168,9 +168,9 @@ class Goal$Type extends MessageType<Goal> {
         return message;
     }
     internalBinaryWrite(message: Goal, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string id = 1; */
-        if (message.id !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* string name = 1; */
+        if (message.name !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.name);
         /* v1.Goal.Type type = 2; */
         if (message.type !== 0)
             writer.tag(2, WireType.Varint).int32(message.type);
@@ -196,11 +196,12 @@ class CreateGoalRequest$Type extends MessageType<CreateGoalRequest> {
         super("v1.CreateGoalRequest", [
             { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } },
             { no: 2, name: "type", kind: "enum", T: () => ["v1.Goal.Type", Goal_Type], options: { "buf.validate.field": { required: true } } },
-            { no: 3, name: "value", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
+            { no: 3, name: "value", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
+            { no: 4, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
         ]);
     }
     create(value?: PartialMessage<CreateGoalRequest>): CreateGoalRequest {
-        const message = { domain: "", type: 0, value: "" };
+        const message = { domain: "", type: 0, value: "", name: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<CreateGoalRequest>(this, message, value);
@@ -219,6 +220,9 @@ class CreateGoalRequest$Type extends MessageType<CreateGoalRequest> {
                     break;
                 case /* string value */ 3:
                     message.value = reader.string();
+                    break;
+                case /* string name */ 4:
+                    message.name = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -241,6 +245,9 @@ class CreateGoalRequest$Type extends MessageType<CreateGoalRequest> {
         /* string value = 3; */
         if (message.value !== "")
             writer.tag(3, WireType.LengthDelimited).string(message.value);
+        /* string name = 4; */
+        if (message.name !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.name);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -254,9 +261,7 @@ export const CreateGoalRequest = new CreateGoalRequest$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class CreateGoalResponse$Type extends MessageType<CreateGoalResponse> {
     constructor() {
-        super("v1.CreateGoalResponse", [
-            { no: 1, name: "goal", kind: "message", T: () => Goal }
-        ]);
+        super("v1.CreateGoalResponse", []);
     }
     create(value?: PartialMessage<CreateGoalResponse>): CreateGoalResponse {
         const message = {};
@@ -266,28 +271,9 @@ class CreateGoalResponse$Type extends MessageType<CreateGoalResponse> {
         return message;
     }
     internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: CreateGoalResponse): CreateGoalResponse {
-        let message = target ?? this.create(), end = reader.pos + length;
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag();
-            switch (fieldNo) {
-                case /* v1.Goal goal */ 1:
-                    message.goal = Goal.internalBinaryRead(reader, reader.uint32(), options, message.goal);
-                    break;
-                default:
-                    let u = options.readUnknownField;
-                    if (u === "throw")
-                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
-                    let d = reader.skip(wireType);
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
-            }
-        }
-        return message;
+        return target ?? this.create();
     }
     internalBinaryWrite(message: CreateGoalResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* v1.Goal goal = 1; */
-        if (message.goal)
-            Goal.internalBinaryWrite(message.goal, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -303,11 +289,11 @@ class GetGoalRequest$Type extends MessageType<GetGoalRequest> {
     constructor() {
         super("v1.GetGoalRequest", [
             { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } },
-            { no: 2, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
+            { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
         ]);
     }
     create(value?: PartialMessage<GetGoalRequest>): GetGoalRequest {
-        const message = { domain: "", id: "" };
+        const message = { domain: "", name: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<GetGoalRequest>(this, message, value);
@@ -321,8 +307,8 @@ class GetGoalRequest$Type extends MessageType<GetGoalRequest> {
                 case /* string domain */ 1:
                     message.domain = reader.string();
                     break;
-                case /* string id */ 2:
-                    message.id = reader.string();
+                case /* string name */ 2:
+                    message.name = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -339,9 +325,9 @@ class GetGoalRequest$Type extends MessageType<GetGoalRequest> {
         /* string domain = 1; */
         if (message.domain !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.domain);
-        /* string id = 2; */
-        if (message.id !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.id);
+        /* string name = 2; */
+        if (message.name !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.name);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -451,11 +437,11 @@ class DeleteGoalRequest$Type extends MessageType<DeleteGoalRequest> {
     constructor() {
         super("v1.DeleteGoalRequest", [
             { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true, string: { hostname: true } } } },
-            { no: 2, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
+            { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
         ]);
     }
     create(value?: PartialMessage<DeleteGoalRequest>): DeleteGoalRequest {
-        const message = { domain: "", id: "" };
+        const message = { domain: "", name: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<DeleteGoalRequest>(this, message, value);
@@ -469,8 +455,8 @@ class DeleteGoalRequest$Type extends MessageType<DeleteGoalRequest> {
                 case /* string domain */ 1:
                     message.domain = reader.string();
                     break;
-                case /* string id */ 2:
-                    message.id = reader.string();
+                case /* string name */ 2:
+                    message.name = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -487,9 +473,9 @@ class DeleteGoalRequest$Type extends MessageType<DeleteGoalRequest> {
         /* string domain = 1; */
         if (message.domain !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.domain);
-        /* string id = 2; */
-        if (message.id !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.id);
+        /* string name = 2; */
+        if (message.name !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.name);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
