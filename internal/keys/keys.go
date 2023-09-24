@@ -69,8 +69,8 @@ func ARefresh(id string) []byte {
 	return Path(v1.StorePrefix_OAUTH_REFRESH, id)
 }
 
-func Snippet(uid, sid string) []byte {
-	return Path(v1.StorePrefix_SNIPPET, uid, sid)
+func Snippet(sid string) []byte {
+	return Path(v1.StorePrefix_SNIPPET, sid)
 }
 
 func Import(name string) []byte {

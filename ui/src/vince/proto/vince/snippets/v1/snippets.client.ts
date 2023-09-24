@@ -8,9 +8,10 @@ import type { Empty } from "../../../google/protobuf/empty";
 import type { DeleteSnippetRequest } from "./snippets";
 import type { ListSnippetsResponse } from "./snippets";
 import type { ListSnippetsRequest } from "./snippets";
+import type { UpdateSnippetResposnes } from "./snippets";
 import type { UpdateSnippetRequest } from "./snippets";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
-import type { Snippet } from "./snippets";
+import type { CreateSnippetResponse } from "./snippets";
 import type { CreateSnippetRequest } from "./snippets";
 import type { UnaryCall } from "@protobuf-ts/runtime-rpc";
 import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
@@ -19,13 +20,13 @@ import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
  */
 export interface ISnippetsClient {
     /**
-     * @generated from protobuf rpc: CreateSnippet(v1.CreateSnippetRequest) returns (v1.Snippet);
+     * @generated from protobuf rpc: CreateSnippet(v1.CreateSnippetRequest) returns (v1.CreateSnippetResponse);
      */
-    createSnippet(input: CreateSnippetRequest, options?: RpcOptions): UnaryCall<CreateSnippetRequest, Snippet>;
+    createSnippet(input: CreateSnippetRequest, options?: RpcOptions): UnaryCall<CreateSnippetRequest, CreateSnippetResponse>;
     /**
-     * @generated from protobuf rpc: UpdateSnippet(v1.UpdateSnippetRequest) returns (v1.Snippet);
+     * @generated from protobuf rpc: UpdateSnippet(v1.UpdateSnippetRequest) returns (v1.UpdateSnippetResposnes);
      */
-    updateSnippet(input: UpdateSnippetRequest, options?: RpcOptions): UnaryCall<UpdateSnippetRequest, Snippet>;
+    updateSnippet(input: UpdateSnippetRequest, options?: RpcOptions): UnaryCall<UpdateSnippetRequest, UpdateSnippetResposnes>;
     /**
      * @generated from protobuf rpc: ListSnippets(v1.ListSnippetsRequest) returns (v1.ListSnippetsResponse);
      */
@@ -45,18 +46,18 @@ export class SnippetsClient implements ISnippetsClient, ServiceInfo {
     constructor(private readonly _transport: RpcTransport) {
     }
     /**
-     * @generated from protobuf rpc: CreateSnippet(v1.CreateSnippetRequest) returns (v1.Snippet);
+     * @generated from protobuf rpc: CreateSnippet(v1.CreateSnippetRequest) returns (v1.CreateSnippetResponse);
      */
-    createSnippet(input: CreateSnippetRequest, options?: RpcOptions): UnaryCall<CreateSnippetRequest, Snippet> {
+    createSnippet(input: CreateSnippetRequest, options?: RpcOptions): UnaryCall<CreateSnippetRequest, CreateSnippetResponse> {
         const method = this.methods[0], opt = this._transport.mergeOptions(options);
-        return stackIntercept<CreateSnippetRequest, Snippet>("unary", this._transport, method, opt, input);
+        return stackIntercept<CreateSnippetRequest, CreateSnippetResponse>("unary", this._transport, method, opt, input);
     }
     /**
-     * @generated from protobuf rpc: UpdateSnippet(v1.UpdateSnippetRequest) returns (v1.Snippet);
+     * @generated from protobuf rpc: UpdateSnippet(v1.UpdateSnippetRequest) returns (v1.UpdateSnippetResposnes);
      */
-    updateSnippet(input: UpdateSnippetRequest, options?: RpcOptions): UnaryCall<UpdateSnippetRequest, Snippet> {
+    updateSnippet(input: UpdateSnippetRequest, options?: RpcOptions): UnaryCall<UpdateSnippetRequest, UpdateSnippetResposnes> {
         const method = this.methods[1], opt = this._transport.mergeOptions(options);
-        return stackIntercept<UpdateSnippetRequest, Snippet>("unary", this._transport, method, opt, input);
+        return stackIntercept<UpdateSnippetRequest, UpdateSnippetResposnes>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: ListSnippets(v1.ListSnippetsRequest) returns (v1.ListSnippetsResponse);

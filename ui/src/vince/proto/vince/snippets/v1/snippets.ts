@@ -20,21 +20,21 @@ import { QueryParam } from "../../query/v1/query";
  */
 export interface Snippet {
     /**
-     * @generated from protobuf field: string id = 1;
-     */
-    id: string;
-    /**
-     * @generated from protobuf field: string name = 2;
+     * @generated from protobuf field: string name = 1;
      */
     name: string;
     /**
-     * @generated from protobuf field: string query = 3;
+     * @generated from protobuf field: string query = 2;
      */
     query: string;
     /**
-     * @generated from protobuf field: repeated v1.QueryParam params = 4;
+     * @generated from protobuf field: repeated v1.QueryParam params = 3;
      */
     params: QueryParam[];
+    /**
+     * @generated from protobuf field: string created_by = 4;
+     */
+    createdBy: string;
     /**
      * @generated from protobuf field: google.protobuf.Timestamp created_at = 5;
      */
@@ -62,34 +62,40 @@ export interface CreateSnippetRequest {
     params: QueryParam[];
 }
 /**
+ * @generated from protobuf message v1.CreateSnippetResponse
+ */
+export interface CreateSnippetResponse {
+}
+/**
  * @generated from protobuf message v1.UpdateSnippetRequest
  */
 export interface UpdateSnippetRequest {
     /**
-     * @generated from protobuf field: string id = 1;
-     */
-    id: string;
-    /**
-     * @generated from protobuf field: string name = 2;
+     * @generated from protobuf field: string name = 1;
      */
     name: string;
     /**
-     * @generated from protobuf field: string query = 3;
+     * @generated from protobuf field: string query = 2;
      */
     query: string;
     /**
-     * @generated from protobuf field: repeated v1.QueryParam params = 4;
+     * @generated from protobuf field: repeated v1.QueryParam params = 3;
      */
     params: QueryParam[];
+}
+/**
+ * @generated from protobuf message v1.UpdateSnippetResposnes
+ */
+export interface UpdateSnippetResposnes {
 }
 /**
  * @generated from protobuf message v1.DeleteSnippetRequest
  */
 export interface DeleteSnippetRequest {
     /**
-     * @generated from protobuf field: string id = 1;
+     * @generated from protobuf field: string name = 1;
      */
-    id: string;
+    name: string;
 }
 /**
  * @generated from protobuf message v1.ListSnippetsRequest
@@ -109,16 +115,16 @@ export interface ListSnippetsResponse {
 class Snippet$Type extends MessageType<Snippet> {
     constructor() {
         super("v1.Snippet", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "query", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 4, name: "params", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => QueryParam },
+            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "query", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "params", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => QueryParam },
+            { no: 4, name: "created_by", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 5, name: "created_at", kind: "message", T: () => Timestamp },
             { no: 6, name: "updated_at", kind: "message", T: () => Timestamp }
         ]);
     }
     create(value?: PartialMessage<Snippet>): Snippet {
-        const message = { id: "", name: "", query: "", params: [] };
+        const message = { name: "", query: "", params: [], createdBy: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Snippet>(this, message, value);
@@ -129,17 +135,17 @@ class Snippet$Type extends MessageType<Snippet> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string id */ 1:
-                    message.id = reader.string();
-                    break;
-                case /* string name */ 2:
+                case /* string name */ 1:
                     message.name = reader.string();
                     break;
-                case /* string query */ 3:
+                case /* string query */ 2:
                     message.query = reader.string();
                     break;
-                case /* repeated v1.QueryParam params */ 4:
+                case /* repeated v1.QueryParam params */ 3:
                     message.params.push(QueryParam.internalBinaryRead(reader, reader.uint32(), options));
+                    break;
+                case /* string created_by */ 4:
+                    message.createdBy = reader.string();
                     break;
                 case /* google.protobuf.Timestamp created_at */ 5:
                     message.createdAt = Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.createdAt);
@@ -159,18 +165,18 @@ class Snippet$Type extends MessageType<Snippet> {
         return message;
     }
     internalBinaryWrite(message: Snippet, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string id = 1; */
-        if (message.id !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.id);
-        /* string name = 2; */
+        /* string name = 1; */
         if (message.name !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.name);
-        /* string query = 3; */
+            writer.tag(1, WireType.LengthDelimited).string(message.name);
+        /* string query = 2; */
         if (message.query !== "")
-            writer.tag(3, WireType.LengthDelimited).string(message.query);
-        /* repeated v1.QueryParam params = 4; */
+            writer.tag(2, WireType.LengthDelimited).string(message.query);
+        /* repeated v1.QueryParam params = 3; */
         for (let i = 0; i < message.params.length; i++)
-            QueryParam.internalBinaryWrite(message.params[i], writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+            QueryParam.internalBinaryWrite(message.params[i], writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* string created_by = 4; */
+        if (message.createdBy !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.createdBy);
         /* google.protobuf.Timestamp created_at = 5; */
         if (message.createdAt)
             Timestamp.internalBinaryWrite(message.createdAt, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
@@ -249,17 +255,42 @@ class CreateSnippetRequest$Type extends MessageType<CreateSnippetRequest> {
  */
 export const CreateSnippetRequest = new CreateSnippetRequest$Type();
 // @generated message type with reflection information, may provide speed optimized methods
+class CreateSnippetResponse$Type extends MessageType<CreateSnippetResponse> {
+    constructor() {
+        super("v1.CreateSnippetResponse", []);
+    }
+    create(value?: PartialMessage<CreateSnippetResponse>): CreateSnippetResponse {
+        const message = {};
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<CreateSnippetResponse>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: CreateSnippetResponse): CreateSnippetResponse {
+        return target ?? this.create();
+    }
+    internalBinaryWrite(message: CreateSnippetResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.CreateSnippetResponse
+ */
+export const CreateSnippetResponse = new CreateSnippetResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
 class UpdateSnippetRequest$Type extends MessageType<UpdateSnippetRequest> {
     constructor() {
         super("v1.UpdateSnippetRequest", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
-            { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "query", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 4, name: "params", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => QueryParam }
+            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
+            { no: 2, name: "query", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "params", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => QueryParam }
         ]);
     }
     create(value?: PartialMessage<UpdateSnippetRequest>): UpdateSnippetRequest {
-        const message = { id: "", name: "", query: "", params: [] };
+        const message = { name: "", query: "", params: [] };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<UpdateSnippetRequest>(this, message, value);
@@ -270,16 +301,13 @@ class UpdateSnippetRequest$Type extends MessageType<UpdateSnippetRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string id */ 1:
-                    message.id = reader.string();
-                    break;
-                case /* string name */ 2:
+                case /* string name */ 1:
                     message.name = reader.string();
                     break;
-                case /* string query */ 3:
+                case /* string query */ 2:
                     message.query = reader.string();
                     break;
-                case /* repeated v1.QueryParam params */ 4:
+                case /* repeated v1.QueryParam params */ 3:
                     message.params.push(QueryParam.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 default:
@@ -294,18 +322,15 @@ class UpdateSnippetRequest$Type extends MessageType<UpdateSnippetRequest> {
         return message;
     }
     internalBinaryWrite(message: UpdateSnippetRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string id = 1; */
-        if (message.id !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.id);
-        /* string name = 2; */
+        /* string name = 1; */
         if (message.name !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.name);
-        /* string query = 3; */
+            writer.tag(1, WireType.LengthDelimited).string(message.name);
+        /* string query = 2; */
         if (message.query !== "")
-            writer.tag(3, WireType.LengthDelimited).string(message.query);
-        /* repeated v1.QueryParam params = 4; */
+            writer.tag(2, WireType.LengthDelimited).string(message.query);
+        /* repeated v1.QueryParam params = 3; */
         for (let i = 0; i < message.params.length; i++)
-            QueryParam.internalBinaryWrite(message.params[i], writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+            QueryParam.internalBinaryWrite(message.params[i], writer.tag(3, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -317,14 +342,40 @@ class UpdateSnippetRequest$Type extends MessageType<UpdateSnippetRequest> {
  */
 export const UpdateSnippetRequest = new UpdateSnippetRequest$Type();
 // @generated message type with reflection information, may provide speed optimized methods
+class UpdateSnippetResposnes$Type extends MessageType<UpdateSnippetResposnes> {
+    constructor() {
+        super("v1.UpdateSnippetResposnes", []);
+    }
+    create(value?: PartialMessage<UpdateSnippetResposnes>): UpdateSnippetResposnes {
+        const message = {};
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<UpdateSnippetResposnes>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: UpdateSnippetResposnes): UpdateSnippetResposnes {
+        return target ?? this.create();
+    }
+    internalBinaryWrite(message: UpdateSnippetResposnes, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.UpdateSnippetResposnes
+ */
+export const UpdateSnippetResposnes = new UpdateSnippetResposnes$Type();
+// @generated message type with reflection information, may provide speed optimized methods
 class DeleteSnippetRequest$Type extends MessageType<DeleteSnippetRequest> {
     constructor() {
         super("v1.DeleteSnippetRequest", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
+            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } }
         ]);
     }
     create(value?: PartialMessage<DeleteSnippetRequest>): DeleteSnippetRequest {
-        const message = { id: "" };
+        const message = { name: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<DeleteSnippetRequest>(this, message, value);
@@ -335,8 +386,8 @@ class DeleteSnippetRequest$Type extends MessageType<DeleteSnippetRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string id */ 1:
-                    message.id = reader.string();
+                case /* string name */ 1:
+                    message.name = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -350,9 +401,9 @@ class DeleteSnippetRequest$Type extends MessageType<DeleteSnippetRequest> {
         return message;
     }
     internalBinaryWrite(message: DeleteSnippetRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string id = 1; */
-        if (message.id !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* string name = 1; */
+        if (message.name !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.name);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -440,8 +491,8 @@ export const ListSnippetsResponse = new ListSnippetsResponse$Type();
  * @generated ServiceType for protobuf service v1.Snippets
  */
 export const Snippets = new ServiceType("v1.Snippets", [
-    { name: "CreateSnippet", options: { "google.api.http": { post: "/v1/snippets" } }, I: CreateSnippetRequest, O: Snippet },
-    { name: "UpdateSnippet", options: { "google.api.http": { put: "/v1/snippets" } }, I: UpdateSnippetRequest, O: Snippet },
+    { name: "CreateSnippet", options: { "google.api.http": { post: "/v1/snippets" } }, I: CreateSnippetRequest, O: CreateSnippetResponse },
+    { name: "UpdateSnippet", options: { "google.api.http": { put: "/v1/snippets" } }, I: UpdateSnippetRequest, O: UpdateSnippetResposnes },
     { name: "ListSnippets", options: { "google.api.http": { get: "/v1/snippets" } }, I: ListSnippetsRequest, O: ListSnippetsResponse },
     { name: "DeleteSnippet", options: { "google.api.http": { delete: "/v1/snippets" } }, I: DeleteSnippetRequest, O: Empty }
 ]);

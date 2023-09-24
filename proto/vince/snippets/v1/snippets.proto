@@ -8,12 +8,12 @@ import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
 
 service Snippets {
-  rpc CreateSnippet(CreateSnippetRequest) returns (Snippet) {
+  rpc CreateSnippet(CreateSnippetRequest) returns (CreateSnippetResponse) {
     option (google.api.http) = {
       post : "/v1/snippets"
     };
   };
-  rpc UpdateSnippet(UpdateSnippetRequest) returns (Snippet) {
+  rpc UpdateSnippet(UpdateSnippetRequest) returns (UpdateSnippetResposnes) {
     option (google.api.http) = {
       put : "/v1/snippets"
     };
@@ -31,10 +31,10 @@ service Snippets {
 }
 
 message Snippet {
-  string id = 1;
-  string name = 2;
-  string query = 3;
-  repeated QueryParam params = 4;
+  string name = 1;
+  string query = 2;
+  repeated QueryParam params = 3;
+  string created_by = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
 }
@@ -45,15 +45,18 @@ message CreateSnippetRequest {
   repeated QueryParam params = 3;
 }
 
+message CreateSnippetResponse {}
+
 message UpdateSnippetRequest {
-  string id = 1 [ (buf.validate.field).required = true ];
-  string name = 2;
-  string query = 3;
-  repeated QueryParam params = 4;
+  string name = 1 [ (buf.validate.field).required = true ];
+  string query = 2;
+  repeated QueryParam params = 3;
 }
 
+message UpdateSnippetResposnes {}
+
 message DeleteSnippetRequest {
-  string id = 1 [ (buf.validate.field).required = true ];
+  string name = 1 [ (buf.validate.field).required = true ];
 }
 message ListSnippetsRequest {}
 message ListSnippetsResponse { repeated Snippet snippets = 1; }

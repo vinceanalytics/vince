@@ -56,7 +56,7 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "name",
             "in": "query",
             "required": false,
             "type": "string"
@@ -72,7 +72,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1Snippet"
+              "$ref": "#/definitions/v1CreateSnippetResponse"
             }
           },
           "default": {
@@ -106,7 +106,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1Snippet"
+              "$ref": "#/definitions/v1UpdateSnippetResposnes"
             }
           },
           "default": {
@@ -117,12 +117,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
           {
             "name": "name",
             "in": "query",
@@ -170,6 +164,9 @@
         }
       },
       "additionalProperties": {}
+    },
+    "v1CreateSnippetResponse": {
+      "type": "object"
     },
     "v1ListSnippetsResponse": {
       "type": "object",
@@ -220,9 +217,6 @@
     "v1Snippet": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
         "name": {
           "type": "string"
         },
@@ -236,6 +230,9 @@
             "$ref": "#/definitions/v1QueryParam"
           }
         },
+        "createdBy": {
+          "type": "string"
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
@@ -245,6 +242,9 @@
           "format": "date-time"
         }
       }
+    },
+    "v1UpdateSnippetResposnes": {
+      "type": "object"
     }
   }
 }
