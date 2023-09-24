@@ -23,14 +23,6 @@ const Wrapper = styled(PaneWrapper)`
 `
 
 
-
-
-
-
-
-
-const domainRe = new RegExp("^(?!-)[A-Za-z0-9-]+([-.]{1}[a-z0-9]+)*.[A-Za-z]{2,6}$")
-
 type ColumnProps = {
   id: string,
 }
@@ -70,16 +62,24 @@ const Sites = () => {
       >
         <Box>
         </Box>
-        <Box>
-          <ButtonGroup>
+        <Box
+          display={"grid"}
+          gridTemplateColumns={"auto auto auto"}
+          sx={{ gap: "1" }}
+        >
+          <Box>
             <CreateSiteDialog afterCreate={refresh} />
+          </Box>
+          <Box>
             <Tooltip aria-label="Create  new Goal" direction="sw">
               <IconButton aria-label="new goal" icon={GoalIcon} />
             </Tooltip>
+          </Box>
+          <Box>
             <Tooltip aria-label="Create  new Alert" direction="sw">
               <IconButton aria-label="new alert" icon={AlertFillIcon} />
             </Tooltip>
-          </ButtonGroup>
+          </Box>
         </Box>
 
       </Box>
