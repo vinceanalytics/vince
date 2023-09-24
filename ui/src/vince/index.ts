@@ -2,7 +2,7 @@
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
 import {
     VinceClient, SitesClient, QueryClient, SnippetsClient, ClusterClient, EventsClient,
-    ImportClient
+    ImportClient, GoalsClient
 } from "./proto";
 
 export * from "./proto"
@@ -48,6 +48,10 @@ export const createEventsClient = (source: TokenSource) => {
 
 export const createImportClient = (source: TokenSource) => {
     return new ImportClient(createTransport(source))
+}
+
+export const createGoalsClient = (source: TokenSource) => {
+    return new GoalsClient(createTransport(source))
 }
 
 const createTransport = (source: TokenSource) => {

@@ -9,6 +9,7 @@ import { columns } from "../Editor/Monaco/sql";
 import styled from "styled-components"
 import { useSites, useVince } from "../../providers";
 import { CreateSiteDialog, DeleteSiteDialog } from "../dialogs";
+import { CreateGoalDialog } from "../dialogs/goals";
 
 
 export const PaneWrapper = styled.div`
@@ -71,14 +72,7 @@ const Sites = () => {
             <CreateSiteDialog afterCreate={refresh} />
           </Box>
           <Box>
-            <Tooltip aria-label="Create  new Goal" direction="sw">
-              <IconButton aria-label="new goal" icon={GoalIcon} />
-            </Tooltip>
-          </Box>
-          <Box>
-            <Tooltip aria-label="Create  new Alert" direction="sw">
-              <IconButton aria-label="new alert" icon={AlertFillIcon} />
-            </Tooltip>
+            <CreateGoalDialog afterCreate={refresh} />
           </Box>
         </Box>
 
