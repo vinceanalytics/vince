@@ -78,7 +78,11 @@ export enum StorePrefix {
     /**
      * @generated from protobuf enum value: SNIPPET = 15;
      */
-    SNIPPET = 15
+    SNIPPET = 15,
+    /**
+     * @generated from protobuf enum value: IMPORT = 16;
+     */
+    IMPORT = 16
 }
 /**
  * Parquet fields used to store events. There are only two phisical data types

@@ -7,6 +7,7 @@ import {
     SnippetsClient, createSnippetsClient,
     ClusterClient, createClusterClient,
     EventsClient, createEventsClient,
+    IClusterClient, createImportClient, ImportClient,
 } from "../../vince";
 import { useTokenSource } from "../TokenSourceProvider";
 
@@ -20,6 +21,7 @@ type ContextProps = {
     snippetsClient: SnippetsClient | undefined
     clusterClient: ClusterClient | undefined
     eventsClient: EventsClient | undefined
+    importClient: ImportClient | undefined
 }
 
 const defaultValues = {
@@ -28,7 +30,8 @@ const defaultValues = {
     queryClient: undefined,
     snippetsClient: undefined,
     clusterClient: undefined,
-    eventsClient: undefined
+    eventsClient: undefined,
+    importClient: undefined
 }
 
 export const VinceContext = createContext<ContextProps>(defaultValues)
@@ -41,6 +44,7 @@ export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
     const [snippetsClient, setSnippetsClient] = useState<SnippetsClient | undefined>(undefined)
     const [clusterClient, setClusterClient] = useState<ClusterClient | undefined>(undefined)
     const [eventsClient, setEventsClient] = useState<EventsClient | undefined>(undefined)
+    const [importClient, setImportClient] = useState<ImportClient | undefined>(undefined)
     useEffect(() => {
         if (tokenSource !== undefined) {
             setVinceClient(createVinceClient(tokenSource))
@@ -49,6 +53,7 @@ export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
             setSnippetsClient(createSnippetsClient(tokenSource))
             setClusterClient(createClusterClient(tokenSource))
             setEventsClient(createEventsClient(tokenSource))
+            setImportClient(createImportClient(tokenSource))
         }
     }, [tokenSource, setVinceClient, setSitesClient,
         setQueryClient, setSnippetsClient, setClusterClient, setEventsClient])
@@ -56,7 +61,7 @@ export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
         <VinceContext.Provider
             value={{
                 vince, sitesClient,
-                queryClient, snippetsClient, clusterClient, eventsClient
+                queryClient, snippetsClient, clusterClient, eventsClient, importClient,
             }}
         >
             {children}

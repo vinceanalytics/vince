@@ -1,0 +1,130 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "vince/import/v1/import.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Import"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/import": {
+      "post": {
+        "operationId": "Import_Import",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ImportResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "schema.name",
+            "description": "The name of the schema. This serves as database table name when querying",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "csv",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          }
+        ],
+        "tags": [
+          "Import"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "SchemaField": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/SchemaFieldType"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "SchemaFieldType": {
+      "type": "string",
+      "enum": [
+        "Int64",
+        "FLOAT64",
+        "STRING",
+        "BOOL",
+        "TIMESTAMP"
+      ],
+      "default": "Int64"
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "v1ImportResponse": {
+      "type": "object"
+    },
+    "v1Schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The name of the schema. This serves as database table name when querying"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/SchemaField"
+          }
+        }
+      },
+      "description": "Schema defines the structure of a csv file. This maps directly to arrow\nschema, we limit the datatypes of fields to reflect the datatypes supported\nby the sites table schema.\n\nSites schema doesn't have bool fields, bool is included due to its useful\nnature when doing joins."
+    }
+  }
+}

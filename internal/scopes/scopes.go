@@ -19,6 +19,7 @@ type Scope uint
 const (
 	All Scope = 1 + iota
 	Query
+	Import
 
 	CreateSite
 	GetSite
@@ -75,6 +76,7 @@ func (s *Scope) Parse(o string) error {
 var nameToValue = map[Scope]string{
 	All:           "*",
 	Query:         "/v1.Query/Query",
+	Import:        "/v1.Import/Import",
 	CreateSite:    "/v1.Sites/CreateSite",
 	GetSite:       "/v1.Sites/GetSite",
 	ListSites:     "/v1.Sites/ListSites",
@@ -93,6 +95,7 @@ var nameToValue = map[Scope]string{
 var valueToName = map[string]Scope{
 	"*":                          All,
 	"/v1.Query/Query":            Query,
+	"/v1.Import/Import":          Import,
 	"/v1.Sites/CreateSite":       CreateSite,
 	"/v1.Sites/GetSite":          GetSite,
 	"/v1.Sites/ListSites":        ListSites,
