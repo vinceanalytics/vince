@@ -1,14 +1,11 @@
 package engine
 
 import (
-	"bytes"
 	"strings"
 
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/db"
-	vdb "github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/keys"
 )
 
 type DB struct {
@@ -30,33 +27,22 @@ func (DB) Name() string {
 }
 
 func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.Table, ok bool, err error) {
-	db.db.Txn(false, func(txn vdb.Txn) error {
-		key := keys.Site(tblName)
-		if txn.Has(key) {
-			table = &Table{
-				db:     db.db,
-				reader: db.reader,
-				name:   tblName,
-				schema: createSchema(tblName, Columns)}
-			ok = true
-		}
-		return nil
-	})
-	return
+	switch tblName {
+	case "sites":
+		return &SitesTable{
+			db:     db.db,
+			reader: db.reader,
+			// sites table adds name column that returns the site name
+			schema: createSchema(append([]string{"name"}, Columns...)),
+		}, false, nil
+	default:
+		return
+	}
+
 }
 
-func (db *DB) GetTableNames(ctx *sql.Context) (names []string, err error) {
-	db.db.Txn(false, func(txn vdb.Txn) error {
-		key := keys.Site("")
-		it := txn.Iter(vdb.IterOpts{
-			Prefix: key,
-		})
-		for it.Rewind(); it.Valid(); it.Next() {
-			names = append(names,
-				string(bytes.TrimPrefix(it.Key(), key)))
-		}
-		return nil
-	})
+func (DB) GetTableNames(ctx *sql.Context) (names []string, err error) {
+	names = append(names, SitesTableName)
 	return
 }
 

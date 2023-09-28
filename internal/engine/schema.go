@@ -17,17 +17,18 @@ import (
 	"github.com/dolthub/go-mysql-server/sql/types"
 	"github.com/parquet-go/parquet-go"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"golang.org/x/sync/errgroup"
 )
 
-var Columns, Indexed = func() (o []storev1.Column, idx map[string]storev1.Column) {
+var Columns, Indexed = func() (o []string, idx map[string]storev1.Column) {
 	idx = make(map[string]storev1.Column)
 	for i := storev1.Column_bounce; i <= storev1.Column_utm_term; i++ {
 		if i >= storev1.Column_timestamp {
 			idx[i.String()] = i
 		}
-		o = append(o, i)
+		o = append(o, i.String())
 	}
 	return
 }()
@@ -38,6 +39,7 @@ type tableSchema struct {
 }
 
 func (ts *tableSchema) read(ctx context.Context,
+	domain string,
 	r *parquet.File,
 	rowGroups []uint,
 	pages []*bitset.BitSet,
@@ -47,7 +49,12 @@ func (ts *tableSchema) read(ctx context.Context,
 	fields := ts.arrow.Fields()
 	schema := r.Schema()
 	fieldToColIdx := make(map[string]int)
+	name := -1
 	for i := range fields {
+		if fields[i].Name == "name" {
+			name = i
+			continue
+		}
 		column, ok := schema.Lookup(fields[i].Name)
 		if !ok {
 			return nil, fmt.Errorf("column %q not found in parquet file", fields[i].Name)
@@ -71,6 +78,9 @@ func (ts *tableSchema) read(ctx context.Context,
 		page := pages[n]
 		chunks := g.ColumnChunks()
 		for i := range fields {
+			if fields[i].Name == "name" {
+				continue
+			}
 			eg.Go(ts.readColum(
 				ctx,
 				&fields[i], b.Field(i),
@@ -82,6 +92,21 @@ func (ts *tableSchema) read(ctx context.Context,
 	err := eg.Wait()
 	if err != nil {
 		return nil, err
+	}
+	if name != -1 {
+		// domain name is not stored as part of the parquet file. We need to manually
+		// add the name column when it is selected.
+		for i := range fields {
+			if i != name {
+				nb := b.Field(name).(*array.StringBuilder)
+				size := b.Field(i).Len()
+				nb.Reserve(size)
+				for n := 0; n < size; n++ {
+					nb.Append(domain)
+				}
+				break
+			}
+		}
 	}
 	return b.NewRecord(), nil
 }
@@ -220,23 +245,39 @@ func newRecordIter(r arrow.Record) *recordIter {
 	return x
 }
 
-func createSchema(table string, columns []storev1.Column) (o tableSchema) {
+const SitesTableName = "sites"
+
+func createSchema(columns []string) (o tableSchema) {
+
 	// Make timestamp the first column we read. This ensures we pick the right
 	// pages to read from the blocks
+	ts := storev1.Column_timestamp.String()
 	sort.SliceStable(columns, func(i, j int) bool {
-		return columns[i] == storev1.Column_timestamp ||
-			// move string columns up front
-			columns[i] > storev1.Column_timestamp
+		return columns[i] == ts
 	})
 	fields := make([]arrow.Field, 0, len(columns))
-	for _, i := range columns {
+	for _, col := range columns {
+		if col == "name" {
+			// name f
+			o.sql = append(o.sql, &sql.Column{
+				Name:   col,
+				Type:   types.Text,
+				Source: SitesTableName,
+			})
+			fields = append(fields, arrow.Field{
+				Name: col,
+				Type: arrow.BinaryTypes.String,
+			})
+			continue
+		}
+		i := v1.Column(v1.Column_value[col])
 		if i <= storev1.Column_timestamp {
 			switch i {
 			case storev1.Column_duration:
 				o.sql = append(o.sql, &sql.Column{
 					Name:   i.String(),
 					Type:   types.Float64,
-					Source: table,
+					Source: SitesTableName,
 				})
 				fields = append(fields, arrow.Field{
 					Name: i.String(),
@@ -246,7 +287,7 @@ func createSchema(table string, columns []storev1.Column) (o tableSchema) {
 				o.sql = append(o.sql, &sql.Column{
 					Name:   i.String(),
 					Type:   types.Timestamp,
-					Source: table,
+					Source: SitesTableName,
 				})
 				fields = append(fields, arrow.Field{
 					Name: i.String(),
@@ -256,7 +297,7 @@ func createSchema(table string, columns []storev1.Column) (o tableSchema) {
 				o.sql = append(o.sql, &sql.Column{
 					Name:   i.String(),
 					Type:   types.Int64,
-					Source: table,
+					Source: SitesTableName,
 				})
 				fields = append(fields, arrow.Field{
 					Name: i.String(),
@@ -269,7 +310,7 @@ func createSchema(table string, columns []storev1.Column) (o tableSchema) {
 			Name:     i.String(),
 			Type:     types.Text,
 			Nullable: false,
-			Source:   table,
+			Source:   SitesTableName,
 		})
 		fields = append(fields, arrow.Field{
 			Name: i.String(),

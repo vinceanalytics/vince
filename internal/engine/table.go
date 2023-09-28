@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"container/heap"
 	"errors"
 	"fmt"
 	"io"
@@ -11,7 +12,6 @@ import (
 	"github.com/parquet-go/parquet-go"
 	"github.com/sirupsen/logrus"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
-	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/db"
@@ -19,47 +19,28 @@ import (
 	"github.com/vinceanalytics/vince/internal/px"
 )
 
-type Table struct {
+type SitesTable struct {
 	db          db.Provider
 	reader      b3.Reader
-	name        string
 	schema      tableSchema
 	projections []string
 }
 
-var _ sql.Table = (*Table)(nil)
-var _ sql.ProjectedTable = (*Table)(nil)
+var _ sql.Table = (*SitesTable)(nil)
+var _ sql.ProjectedTable = (*SitesTable)(nil)
 
-func (t *Table) Name() string {
-	return t.name
-}
+func (*SitesTable) Name() string                 { return SitesTableName }
+func (*SitesTable) String() string               { return SitesTableName }
+func (t *SitesTable) Schema() sql.Schema         { return t.schema.sql }
+func (t *SitesTable) Collation() sql.CollationID { return sql.Collation_Default }
 
-func (t *Table) String() string {
-	return t.name
-}
-
-func (t *Table) Schema() sql.Schema {
-	return t.schema.sql
-}
-
-func (t *Table) Collation() sql.CollationID {
-	return sql.Collation_Default
-}
-
-func (t *Table) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
-	txn := t.db.NewTransaction(false)
-	it := txn.Iter(db.IterOpts{
-		Prefix:         keys.BlockMetadata(t.name, ""),
-		PrefetchValues: false,
-	})
-	it.Rewind()
+func (t *SitesTable) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
 	return &partitionIter{
-		it:  it,
-		txn: txn,
+		txn: t.db.NewTransaction(false),
 	}, nil
 }
 
-func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
+func (t *SitesTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
 	var record arrow.Record
 	part := partition.(*Partition)
 	if err := part.Valid(); err != nil {
@@ -70,7 +51,7 @@ func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.Ro
 		if err != nil {
 			return err
 		}
-		record, err = t.schema.read(ctx, r, part.RowGroups, part.Pages)
+		record, err = t.schema.read(ctx, part.Info.Domain, r, part.RowGroups, part.Pages)
 		return err
 	})
 	if err != nil {
@@ -79,41 +60,30 @@ func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.Ro
 	return newRecordIter(record), nil
 }
 
-func (t *Table) WithProjections(colNames []string) sql.Table {
-	m := make([]storev1.Column, len(colNames))
-	for i := range colNames {
-		m[i] = storev1.Column(storev1.Column_value[colNames[i]])
-	}
-	return &Table{
+func (t *SitesTable) WithProjections(colNames []string) sql.Table {
+	return &SitesTable{
 		db:          t.db,
 		reader:      t.reader,
-		name:        t.name,
-		schema:      createSchema(t.name, m),
+		schema:      createSchema(colNames),
 		projections: colNames,
 	}
 }
 
-func (t *Table) Projections() (o []string) {
+func (t *SitesTable) Projections() (o []string) {
 	return t.projections
 }
 
 type Partition struct {
 	Info      blocksv1.BlockInfo
-	Index     []IndexFilter
-	Values    []ValueFilter
-	Expr      sql.Expression
+	Filters   FilterContext
 	RowGroups []uint
 	Pages     []*bitset.BitSet
-	Range     bool
 }
 
 func (p *Partition) Valid() error {
-	if !p.Range {
-		return errors.New("non range queries are not supported for sites table")
-	}
 	var hasTs bool
-	for i := range p.Index {
-		if p.Index[i].Column() == v1.Column_timestamp {
+	for i := range p.Filters.Index {
+		if p.Filters.Index[i].Column() == v1.Column_timestamp {
 			hasTs = true
 			break
 		}
@@ -134,19 +104,49 @@ type partitionIter struct {
 	started   bool
 }
 
-func (p *partitionIter) Next(*sql.Context) (sql.Partition, error) {
+func (p *partitionIter) Next(ctx *sql.Context) (sql.Partition, error) {
+	domains := p.partition.Filters.Domains
 	if !p.started {
+		if domains.Len() > 0 {
+			site := heap.Pop(&domains)
+			p.it = p.txn.Iter(db.IterOpts{
+				Prefix: keys.BlockMetadata(site.(string), ""),
+			})
+		} else {
+			// all sites
+			p.it = p.txn.Iter(db.IterOpts{
+				Prefix: keys.BlockMetadataPrefix(),
+			})
+		}
 		p.started = true
 		p.it.Rewind()
 	} else {
 		p.it.Next()
 	}
 	if !p.it.Valid() {
+		if domains.Len() > 0 {
+			// we still have domains to work with
+			p.it.Close()
+			p.started = false
+			return p.Next(ctx)
+		}
 		return nil, io.EOF
 	}
 	err := p.it.Value(px.Decode(&p.partition.Info))
 	if err != nil {
 		return nil, fmt.Errorf("failed decoding block index err:%v", err)
+	}
+	rs, err := buildIndexFilter(ctx, p.partition.Filters.Index, p.readIndex)
+	if err != nil {
+		if errors.Is(err, ErrSkipBlock) {
+			return p.Next(ctx)
+		}
+		if !errors.Is(err, ErrNoFilter) {
+			ctx.GetLogger().WithError(err).Warn("failed to build index filter")
+		}
+	} else {
+		p.partition.RowGroups = rs.RowGroups
+		p.partition.Pages = rs.Pages
 	}
 	return &p.partition, nil
 }

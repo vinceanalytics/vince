@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -19,7 +18,7 @@ type Index struct {
 }
 
 var _ sql.Index = (*Index)(nil)
-var _ sql.IndexAddressable = (*Table)(nil)
+var _ sql.IndexAddressable = (*SitesTable)(nil)
 
 func (idx *Index) Database() string                    { return "vince" }
 func (idx *Index) ColumnExpressions() []sql.Expression { return idx.Exprs }
@@ -61,8 +60,19 @@ func (idx *Index) ExtendedColumnExpressionTypes() []sql.ColumnExpressionType {
 	return cets
 }
 
+type FilterContext struct {
+	Domains Domains
+	Index   []IndexFilter
+	Values  []ValueFilter
+	Expr    sql.Expression
+}
+
+func (i *FilterContext) buildIndex(col v1.Column, lo, hi any, op Op) {
+	i.Index = append(i.Index, buildIndex(col, lo, hi, op))
+}
+
 func (idx *Index) build(ctx *sql.Context,
-	ranges ...sql.Range) (idxFilters []IndexFilter, valFilters []ValueFilter, rangeCollectionExpr sql.Expression, err error) {
+	ranges ...sql.Range) (o FilterContext, err error) {
 	if len(ranges) == 0 {
 		return
 	}
@@ -89,47 +99,35 @@ func (idx *Index) build(ctx *sql.Context,
 				rangeColumnExpr = expression.NewIsNull(exprs[i])
 			case sql.RangeType_GreaterThan:
 				if sql.RangeCutIsBinding(rce.LowerBound) {
-					idxFilters = append(idxFilters,
-						buildIndex(field, lo, hi, Gt),
-					)
+					o.buildIndex(field, lo, hi, Gt)
 					rangeColumnExpr = expression.NewGreaterThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote()))
 				} else {
 					rangeColumnExpr = expression.NewNot(expression.NewIsNull(exprs[i]))
 				}
 			case sql.RangeType_GreaterOrEqual:
-				idxFilters = append(idxFilters,
-					buildIndex(field, lo, hi, GtEg),
-				)
+				o.buildIndex(field, lo, hi, GtEg)
 				rangeColumnExpr = expression.NewGreaterThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote()))
 			case sql.RangeType_LessThanOrNull:
-				idxFilters = append(idxFilters,
-					buildIndex(field, lo, hi, Lt),
-				)
+				o.buildIndex(field, lo, hi, Lt)
 				rangeColumnExpr = expression.JoinOr(
 					expression.NewLessThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
 					expression.NewIsNull(exprs[i]),
 				)
 			case sql.RangeType_LessOrEqualOrNull:
-				idxFilters = append(idxFilters,
-					buildIndex(field, lo, hi, LtEq),
-				)
+				o.buildIndex(field, lo, hi, LtEq)
 				rangeColumnExpr = expression.JoinOr(
 					expression.NewLessThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
 					expression.NewIsNull(exprs[i]),
 				)
 			case sql.RangeType_ClosedClosed:
-				idxFilters = append(idxFilters,
-					buildIndex(field, lo, hi, Eq),
-				)
+				o.buildIndex(field, lo, hi, Eq)
 				rangeColumnExpr = expression.JoinAnd(
 					expression.NewGreaterThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote())),
 					expression.NewLessThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
 				)
 			case sql.RangeType_OpenOpen:
 				if sql.RangeCutIsBinding(rce.LowerBound) {
-					idxFilters = append(idxFilters,
-						buildIndex(field, lo, hi, Gt),
-					)
+					o.buildIndex(field, lo, hi, Gt)
 					rangeColumnExpr = expression.JoinAnd(
 						expression.NewGreaterThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote())),
 						expression.NewLessThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
@@ -156,7 +154,7 @@ func (idx *Index) build(ctx *sql.Context,
 			}
 			rangeExpr = expression.JoinAnd(rangeExpr, rangeColumnExpr)
 		}
-		rangeCollectionExpr = expression.JoinOr(rangeCollectionExpr, rangeExpr)
+		o.Expr = expression.JoinOr(o.Expr, rangeExpr)
 	}
 	return
 }
@@ -182,31 +180,34 @@ func indexedField(expr sql.Expression) v1.Column {
 	return Indexed[f.Name()]
 }
 
-func (t *Table) GetIndexes(ctx *sql.Context) ([]sql.Index, error) {
+func (t *SitesTable) GetIndexes(ctx *sql.Context) ([]sql.Index, error) {
 	return []sql.Index{t.createIndex()}, nil
 }
 
-func (t *Table) createIndex() sql.Index {
+func (t *SitesTable) createIndex() sql.Index {
 	exprs := make([]sql.Expression, 0, len(t.schema.sql))
 	exprsString := make([]string, 0, len(t.schema.sql))
 	for _, column := range t.schema.sql {
-		if _, ok := Indexed[column.Name]; !ok {
-			continue
+		if column.Name != "name" {
+			if _, ok := Indexed[column.Name]; !ok {
+				continue
+			}
 		}
+
 		idx, field := t.getField(column.Name)
-		ex := expression.NewGetFieldWithTable(idx, field.Type, t.name, field.Name, field.Nullable)
+		ex := expression.NewGetFieldWithTable(idx, field.Type, SitesTableName, field.Name, field.Nullable)
 		exprs = append(exprs, ex)
 		exprsString = append(exprsString, ex.String())
 	}
 	return &Index{
-		TableName:  t.name,
+		TableName:  SitesTableName,
 		Exprs:      exprs,
 		exprString: exprsString,
 	}
 }
 
-func (t *Table) getField(col string) (int, *sql.Column) {
-	i := t.schema.sql.IndexOf(col, t.name)
+func (t *SitesTable) getField(col string) (int, *sql.Column) {
+	i := t.schema.sql.IndexOf(col, SitesTableName)
 	if i == -1 {
 		return -1, nil
 	}
@@ -214,77 +215,51 @@ func (t *Table) getField(col string) (int, *sql.Column) {
 }
 
 type IndexedTable struct {
-	*Table
+	*SitesTable
 	Lookup sql.IndexLookup
 }
 
 func (t *IndexedTable) LookupPartitions(ctx *sql.Context, lookup sql.IndexLookup) (sql.PartitionIter, error) {
-	idxFilters, valFilters, filterExpr, err := lookup.Index.(*Index).build(ctx, lookup.Ranges...)
+	o, err := lookup.Index.(*Index).build(ctx, lookup.Ranges...)
 	if err != nil {
 		return nil, err
 	}
-	child, err := t.Table.Partitions(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &rangePartitionIter{
-		child: child.(*partitionIter),
-		part: Partition{
-			Expr:   filterExpr,
-			Index:  idxFilters,
-			Values: valFilters,
-			Range:  true,
+	return &partitionIter{
+		txn: t.db.NewTransaction(false),
+		partition: Partition{
+			Filters: o,
 		},
 	}, nil
+
 }
 
-func (t *Table) IndexedAccess(i sql.IndexLookup) sql.IndexedTable {
-	return &IndexedTable{Table: t, Lookup: i}
+func (t *SitesTable) IndexedAccess(i sql.IndexLookup) sql.IndexedTable {
+	return &IndexedTable{SitesTable: t, Lookup: i}
 }
 
 // PartitionRows implements the sql.PartitionRows interface.
 func (t *IndexedTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
-	iter, err := t.Table.PartitionRows(ctx, partition)
+	iter, err := t.SitesTable.PartitionRows(ctx, partition)
 	if err != nil {
 		return nil, err
 	}
 	return iter, nil
 }
 
-// rangePartitionIter returns a partition that has range and table data access
-type rangePartitionIter struct {
-	child *partitionIter
-	part  Partition
+type Domains []string
+
+func (h Domains) Len() int           { return len(h) }
+func (h Domains) Less(i, j int) bool { return h[i] < h[j] }
+func (h Domains) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *Domains) Push(x any) {
+	*h = append(*h, x.(string))
 }
 
-var _ sql.PartitionIter = (*rangePartitionIter)(nil)
-
-func (i *rangePartitionIter) Close(ctx *sql.Context) error {
-	return i.child.Close(ctx)
-}
-
-func (i *rangePartitionIter) Next(ctx *sql.Context) (sql.Partition, error) {
-	part, err := i.child.Next(ctx)
-	if err != nil {
-		return nil, err
-	}
-	p := part.(*Partition)
-	i.part.Info.Id = p.Info.Id
-	i.part.Info.Domain = p.Info.Domain
-	i.part.Info.Min = p.Info.Min
-	i.part.Info.Max = p.Info.Max
-	rs, err := buildIndexFilter(ctx, i.part.Index, i.child.readIndex)
-	if err != nil {
-		if errors.Is(err, ErrSkipBlock) {
-			return i.Next(ctx)
-		}
-		if !errors.Is(err, ErrNoFilter) {
-			ctx.GetLogger().WithError(err).Warn("failed to build index filter")
-		}
-	} else {
-		i.part.RowGroups = rs.RowGroups
-		i.part.Pages = rs.Pages
-	}
-	return &i.part, nil
+func (h *Domains) Pop() any {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
 }

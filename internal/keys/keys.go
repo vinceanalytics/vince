@@ -34,6 +34,10 @@ func BlockMetadata(domain, uid string) []byte {
 	)
 }
 
+func BlockMetadataPrefix() []byte {
+	return Path(v1.StorePrefix_BLOCK_METADATA)
+}
+
 func BlockIndex(domain, uid string, col v1.Column) []byte {
 	return Path(v1.StorePrefix_BLOCK_INDEX,
 		domain, uid, col.String(),
