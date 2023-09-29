@@ -52,6 +52,10 @@ func (t *SitesTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (s
 			return err
 		}
 		record, err = t.schema.read(ctx, part.Info.Domain, r, part.RowGroups, part.Pages)
+		if err != nil {
+			return err
+		}
+		record, err = applyValueFilter(ctx, part.Filters.Values, record)
 		return err
 	})
 	if err != nil {

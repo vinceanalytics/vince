@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"regexp"
 	"slices"
 	"sort"
 	"time"
@@ -19,7 +18,6 @@ import (
 	"github.com/parquet-go/parquet-go/bloom"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
-	"github.com/vinceanalytics/vince/internal/entry"
 )
 
 type Op uint
@@ -176,6 +174,32 @@ func buildIndexFilter(
 	return r, nil
 }
 
+func applyValueFilter(ctx context.Context,
+	f []ValueFilter,
+	record arrow.Record,
+) (arrow.Record, error) {
+	if len(f) == 0 {
+		return record, nil
+	}
+	defer record.Release()
+
+	fields := make(map[string]arrow.Array)
+	for i := 0; i < int(record.NumCols()); i++ {
+		fields[record.ColumnName(i)] = record.Column(i)
+	}
+	source := func(c v1.Column) arrow.Array {
+		if c == -1 {
+			return fields["name"]
+		}
+		return fields[c.String()]
+	}
+	a, err := BuildValueFilter(ctx, f, source)
+	if err != nil {
+		return nil, err
+	}
+	return compute.FilterRecordBatch(ctx, record, a, compute.DefaultFilterOptions())
+}
+
 func BuildValueFilter(ctx context.Context,
 	f []ValueFilter,
 	source func(v1.Column) arrow.Array) (arrow.Array, error) {
@@ -189,11 +213,11 @@ func BuildValueFilter(ctx context.Context,
 		if err != nil {
 			return nil, err
 		}
-		if i == 0 {
+		if filter == nil {
 			filter = g
 		} else {
 			// we and all filters
-			filter, err = call("and", nil, filter, g, filter.Release, g.Release)
+			filter, err = call(ctx, "and", nil, filter, g, filter.Release, g.Release)
 			if err != nil {
 				return nil, err
 			}
@@ -203,9 +227,10 @@ func BuildValueFilter(ctx context.Context,
 	return filter, nil
 }
 
-func call(name string, o compute.FunctionOptions, a any, b any, fn ...func()) (arrow.Array, error) {
+func call(ctx context.Context, name string, o compute.FunctionOptions, a any, b any, fn ...func()) (arrow.Array, error) {
 	ad := compute.NewDatum(a)
 	bd := compute.NewDatum(b)
+
 	defer ad.Release()
 	defer bd.Release()
 	defer func() {
@@ -213,7 +238,7 @@ func call(name string, o compute.FunctionOptions, a any, b any, fn ...func()) (a
 			f()
 		}
 	}()
-	out, err := compute.CallFunction(context.TODO(), name, o, ad, bd)
+	out, err := compute.CallFunction(ctx, name, o, ad, bd)
 	if err != nil {
 		return nil, err
 	}
@@ -387,30 +412,18 @@ func Match(col v1.Column, matchValue any, op Op) *ValueMatchFuncs {
 	return &ValueMatchFuncs{
 		Col: col,
 		FilterValueFunc: func(ctx context.Context, value arrow.Array) (arrow.Array, error) {
-			return call(op.String(), nil, value, &compute.ScalarDatum{
-				Value: scalar.MakeScalar(matchValue),
+			var fv scalar.Scalar
+			if ts, ok := matchValue.(time.Time); ok {
+				fv = scalar.NewTimestampScalar(
+					arrow.Timestamp(ts.UnixMilli()),
+					arrow.FixedWidthTypes.Timestamp_ms,
+				)
+			} else {
+				fv = scalar.MakeScalar(matchValue)
+			}
+			return call(ctx, op.String(), nil, value, &compute.ScalarDatum{
+				Value: fv,
 			})
 		},
 	}
-}
-
-func not(m func(string) bool) func(string) bool {
-	return func(s string) bool {
-		return !m(s)
-	}
-}
-
-func reMatch(r string) func(s string) bool {
-	x := regexp.MustCompile(r)
-	return x.MatchString
-}
-
-func boolExpr(s *array.String, f func(string) bool) (arrow.Array, error) {
-	b := array.NewBooleanBuilder(entry.Pool)
-	defer b.Release()
-	b.Reserve(s.Len())
-	for i := 0; i < s.Len(); i++ {
-		b.UnsafeAppend(f(s.Value(i)))
-	}
-	return b.NewBooleanArray(), nil
 }
