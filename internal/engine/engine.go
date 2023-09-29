@@ -18,7 +18,6 @@ func New(ctx context.Context) *Engine {
 		reader: b3.GetReader(ctx),
 	}
 	e := sqle.NewDefault(pro)
-	setupAuth(ctx, e)
 	e.ReadOnly.Store(true)
 	return &Engine{Engine: e}
 }

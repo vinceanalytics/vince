@@ -1,90 +1,54 @@
 package engine
 
 import (
-	"bytes"
 	"context"
-	"log/slog"
+	"net"
 
-	"github.com/dgraph-io/badger/v4"
-	sqle "github.com/dolthub/go-mysql-server"
-	"github.com/dolthub/go-mysql-server/sql"
-	"github.com/dolthub/go-mysql-server/sql/mysql_db"
-	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/keys"
+	"github.com/dolthub/vitess/go/mysql"
+	"github.com/dolthub/vitess/go/vt/proto/query"
 	"github.com/vinceanalytics/vince/internal/scopes"
 	"github.com/vinceanalytics/vince/internal/secrets"
 	"github.com/vinceanalytics/vince/internal/tokens"
 )
 
-type PlaintextAuthPluginFunc func(db *mysql_db.MySQLDb,
-	user string, userEntry *mysql_db.User, pass string) (bool, error)
-
-func (f PlaintextAuthPluginFunc) Authenticate(db *mysql_db.MySQLDb,
-	user string, userEntry *mysql_db.User, pass string) (bool, error) {
-	return f(db, user, userEntry, pass)
+type Auth struct {
+	ctx context.Context
 }
 
-var _ mysql_db.PlaintextAuthPlugin = (*PlaintextAuthPluginFunc)(nil)
+var _ mysql.AuthServer = (*Auth)(nil)
 
-const authPluginName = "vince"
+func (a *Auth) Salt() ([]byte, error) {
+	return mysql.NewSalt()
+}
 
-// sets up authorization of the clients. Clients are forced to use
-// mysql_clear_password where password is the jwt access token.
-//
-// we set the users in e.Analyzer.Catalog.MySQLDb with only
-// sql.PrivilegeType_Select privilege. To ensure we always have up to date users
-// information we watch key changes on the accounts namespace and refresh the
-// users info whenever we detect there were changes in the accounts namespace.
-func setupAuth(ctx context.Context, e *sqle.Engine) {
-	m := e.Analyzer.Catalog.MySQLDb
-	m.SetPlugins(map[string]mysql_db.PlaintextAuthPlugin{
-		authPluginName: validateUserAccess(ctx),
-	})
-	set := func() {
-		ed := m.Editor()
-		defer ed.Close()
-		for _, v := range listUsers(db.Get(ctx)) {
-			slog.Debug("adding user to the catalog", "user", v)
-			pset := mysql_db.NewPrivilegeSet()
-			pset.AddGlobalStatic(
-				sql.PrivilegeType_Select,
-			)
-			ed.PutUser(&mysql_db.User{
-				User:         v,
-				Plugin:       authPluginName,
-				PrivilegeSet: pset,
-				Host:         "localhost",
-			})
-		}
+func (a *Auth) ValidateHash(salt []byte, user string, authResponse []byte, remoteAddr net.Addr) (mysql.Getter, error) {
+	return &mysql.StaticUserData{}, mysql.NewSQLError(mysql.ERAccessDeniedError, mysql.SSAccessDeniedError, "Access denied for user '%v'", user)
+}
+
+func (a *Auth) AuthMethod(user, addr string) (string, error) {
+	return mysql.MysqlClearPassword, nil
+}
+
+func (a *Auth) Negotiate(c *mysql.Conn, user string, remoteAddr net.Addr) (mysql.Getter, error) {
+	// Finish the negotiation.
+	password, err := mysql.AuthServerNegotiateClearOrDialog(c, mysql.MysqlClearPassword)
+	if err != nil {
+		return nil, err
 	}
-	// ensure we load users when ww startup
-	set()
-	m.SetEnabled(true)
-	db.Observe(ctx, keys.Account(""), func(_ context.Context, _ *badger.KVList) {
-		set()
-	})
-}
-
-func validateUserAccess(ctx context.Context) PlaintextAuthPluginFunc {
-	return func(db *mysql_db.MySQLDb, user string, userEntry *mysql_db.User, pass string) (bool, error) {
-		slog.Debug("authorize mysql_db user ", "user", user)
-		return tokens.Valid(
-			secrets.Get(ctx), pass, scopes.Query), nil
+	claim, ok := tokens.ValidWithClaims(
+		secrets.Get(a.ctx),
+		password, scopes.Query)
+	if !ok {
+		return &mysql.StaticUserData{}, mysql.NewSQLError(mysql.ERAccessDeniedError, mysql.SSAccessDeniedError, "Access denied for user '%v'", user)
 	}
+	return &Claim{Username: user, Claims: claim}, nil
 }
 
-func listUsers(provider db.Provider) (usr []string) {
-	provider.Txn(false, func(txn db.Txn) error {
-		prefix := keys.Account("")
-		it := txn.Iter(db.IterOpts{
-			Prefix:         prefix,
-			PrefetchValues: false,
-		})
-		defer it.Close()
-		for it.Rewind(); it.Valid(); it.Next() {
-			usr = append(usr, string(bytes.TrimPrefix(it.Key(), prefix)))
-		}
-		return nil
-	})
-	return
+type Claim struct {
+	Username string
+	Claims   *tokens.Claims
+}
+
+func (c *Claim) Get() *query.VTGateCallerID {
+	return &query.VTGateCallerID{Username: c.Username}
 }

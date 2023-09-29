@@ -10,7 +10,8 @@ import (
 
 type Session struct {
 	sql.Session
-	base func() context.Context
+	Claim *Claim
+	base  func() context.Context
 }
 
 func (s *Session) Context() context.Context {

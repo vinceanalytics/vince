@@ -59,7 +59,7 @@ func Listen(ctx context.Context) (*Server, error) {
 
 	listenerCfg := mysql.ListenerConfig{
 		Listener:                 ls,
-		AuthServer:               e.Analyzer.Catalog.MySQLDb,
+		AuthServer:               &Auth{ctx: ctx},
 		Handler:                  h,
 		ConnReadTimeout:          svrConfig.ConnReadTimeout,
 		ConnWriteTimeout:         svrConfig.ConnWriteTimeout,
@@ -87,6 +87,7 @@ func buildSession(base context.Context) server.SessionBuilder {
 		if err != nil {
 			return nil, err
 		}
-		return &Session{Session: s, base: func() context.Context { return base }}, nil
+		return &Session{Session: s, Claim: conn.UserData.(*Claim),
+			base: func() context.Context { return base }}, nil
 	}
 }
