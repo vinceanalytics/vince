@@ -4,28 +4,19 @@ import (
 	"strings"
 
 	"github.com/dolthub/go-mysql-server/sql"
-	"github.com/vinceanalytics/vince/internal/b3"
-	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/engine/procedures"
 )
 
 type DB struct {
-	views              map[string]sql.ViewDefinition
-	externalProcedures sql.ExternalStoredProcedureRegistry
+	views map[string]sql.ViewDefinition
 }
 
 var _ sql.Database = (*DB)(nil)
 var _ sql.ViewDatabase = (*DB)(nil)
-var _ sql.ExternalStoredProcedureProvider = (*DB)(nil)
 
 func NewDB() *DB {
-	externalProcedures := sql.NewExternalStoredProcedureRegistry()
-	for _, esp := range procedures.Procedures {
-		externalProcedures.Register(esp)
-	}
 	return &DB{
-		views:              make(map[string]sql.ViewDefinition),
-		externalProcedures: externalProcedures,
+		views: make(map[string]sql.ViewDefinition),
 	}
 }
 
@@ -93,22 +84,20 @@ func (db *DB) AllViews(ctx *sql.Context) ([]sql.ViewDefinition, error) {
 	return views, nil
 }
 
-// ExternalStoredProcedure implements the sql.ExternalStoredProcedureProvider interface
-func (db DB) ExternalStoredProcedure(_ *sql.Context, name string, numOfParams int) (*sql.ExternalStoredProcedureDetails, error) {
-	return db.externalProcedures.LookupByNameAndParamCount(name, numOfParams)
-}
-
-// ExternalStoredProcedures implements the sql.ExternalStoredProcedureProvider interface
-func (db DB) ExternalStoredProcedures(_ *sql.Context, name string) ([]sql.ExternalStoredProcedureDetails, error) {
-	return db.externalProcedures.LookupByName(name)
-}
-
 var _ sql.DatabaseProvider = (*Provider)(nil)
 var _ sql.FunctionProvider = (*Provider)(nil)
+var _ sql.ExternalStoredProcedureProvider = (*Provider)(nil)
 
 type Provider struct {
-	db     db.Provider
-	reader b3.Reader
+	externalProcedures sql.ExternalStoredProcedureRegistry
+}
+
+func NewProvider() *Provider {
+	externalProcedures := sql.NewExternalStoredProcedureRegistry()
+	for _, esp := range procedures.Procedures {
+		externalProcedures.Register(esp)
+	}
+	return &Provider{externalProcedures: externalProcedures}
 }
 
 func (p *Provider) Function(ctx *sql.Context, name string) (sql.Function, error) {
@@ -132,4 +121,14 @@ func (p *Provider) AllDatabases(_ *sql.Context) []sql.Database {
 
 func (p *Provider) HasDatabase(_ *sql.Context, name string) bool {
 	return name == "vince"
+}
+
+// ExternalStoredProcedure implements the sql.ExternalStoredProcedureProvider interface
+func (p *Provider) ExternalStoredProcedure(_ *sql.Context, name string, numOfParams int) (*sql.ExternalStoredProcedureDetails, error) {
+	return p.externalProcedures.LookupByNameAndParamCount(name, numOfParams)
+}
+
+// ExternalStoredProcedures implements the sql.ExternalStoredProcedureProvider interface
+func (p *Provider) ExternalStoredProcedures(_ *sql.Context, name string) ([]sql.ExternalStoredProcedureDetails, error) {
+	return p.externalProcedures.LookupByName(name)
 }

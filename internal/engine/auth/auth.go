@@ -1,4 +1,4 @@
-package engine
+package auth
 
 import (
 	"context"
@@ -13,6 +13,10 @@ import (
 
 type Auth struct {
 	ctx context.Context
+}
+
+func New(ctx context.Context) *Auth {
+	return &Auth{ctx: ctx}
 }
 
 var _ mysql.AuthServer = (*Auth)(nil)

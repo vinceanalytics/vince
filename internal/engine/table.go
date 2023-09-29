@@ -14,6 +14,7 @@ import (
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/engine/session"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/px"
 )
@@ -32,7 +33,7 @@ func (t *SitesTable) Schema() sql.Schema         { return t.schema.sql }
 func (t *SitesTable) Collation() sql.CollationID { return sql.Collation_Default }
 
 func (t *SitesTable) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
-	db := GetSession(ctx).DB()
+	db := session.Get(ctx).DB()
 	return &partitionIter{
 		txn: db.NewTransaction(false),
 	}, nil
@@ -44,7 +45,7 @@ func (t *SitesTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (s
 	if err := part.Valid(); err != nil {
 		return nil, err
 	}
-	reader := GetSession(ctx).B3()
+	reader := session.Get(ctx).B3()
 	err := reader.Read(ctx, partition.Key(), func(f io.ReaderAt, size int64) error {
 		r, err := parquet.OpenFile(f, size)
 		if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/expression"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	"github.com/vinceanalytics/vince/internal/engine/session"
 )
 
 type Index struct {
@@ -203,7 +204,7 @@ func (t *IndexedTable) LookupPartitions(ctx *sql.Context, lookup sql.IndexLookup
 		return nil, err
 	}
 	heap.Init(&o.Domains)
-	db := GetSession(ctx).DB()
+	db := session.Get(ctx).DB()
 	return &partitionIter{
 		txn: db.NewTransaction(false),
 		partition: Partition{

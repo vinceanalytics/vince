@@ -1,11 +1,18 @@
 package procedures
 
 import (
+	"github.com/bufbuild/protovalidate-go"
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
+	"github.com/vinceanalytics/vince/internal/must"
 )
 
-var Procedures = []sql.ExternalStoredProcedureDetails{}
+var Procedures = []sql.ExternalStoredProcedureDetails{
+	{Name: "add_site", Schema: stringSchema("status"), Function: addSite},
+	{Name: "add_site", Schema: stringSchema("status"), Function: addSiteWithDescription},
+}
+
+var valid = must.Must(protovalidate.New())("failed creating validator")
 
 // stringSchema returns a non-nullable schema with all columns as LONGTEXT.
 func stringSchema(columnNames ...string) sql.Schema {

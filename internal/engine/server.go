@@ -8,7 +8,9 @@ import (
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/vitess/go/mysql"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/engine/auth"
 	"github.com/vinceanalytics/vince/internal/engine/handler"
+	"github.com/vinceanalytics/vince/internal/engine/session"
 )
 
 type Server struct {
@@ -59,7 +61,7 @@ func Listen(ctx context.Context) (*Server, error) {
 
 	listenerCfg := mysql.ListenerConfig{
 		Listener:                 ls,
-		AuthServer:               &Auth{ctx: ctx},
+		AuthServer:               auth.New(ctx),
 		Handler:                  h,
 		ConnReadTimeout:          svrConfig.ConnReadTimeout,
 		ConnWriteTimeout:         svrConfig.ConnWriteTimeout,
@@ -87,7 +89,6 @@ func buildSession(base context.Context) server.SessionBuilder {
 		if err != nil {
 			return nil, err
 		}
-		return &Session{Session: s, Claim: conn.UserData.(*Claim),
-			base: func() context.Context { return base }}, nil
+		return session.New(base, s, conn.UserData.(*auth.Claim)), nil
 	}
 }

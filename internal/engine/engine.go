@@ -4,8 +4,6 @@ import (
 	"context"
 
 	sqle "github.com/dolthub/go-mysql-server"
-	"github.com/vinceanalytics/vince/internal/b3"
-	"github.com/vinceanalytics/vince/internal/db"
 )
 
 type Engine struct {
@@ -13,10 +11,7 @@ type Engine struct {
 }
 
 func New(ctx context.Context) *Engine {
-	pro := &Provider{
-		db:     db.Get(ctx),
-		reader: b3.GetReader(ctx),
-	}
+	pro := NewProvider()
 	e := sqle.NewDefault(pro)
 	e.ReadOnly.Store(true)
 	return &Engine{Engine: e}
