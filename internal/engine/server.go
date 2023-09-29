@@ -5,6 +5,8 @@ import (
 	"crypto/tls"
 
 	"github.com/dolthub/go-mysql-server/server"
+	"github.com/dolthub/go-mysql-server/sql"
+	"github.com/dolthub/vitess/go/mysql"
 	"github.com/vinceanalytics/vince/internal/config"
 )
 
@@ -29,5 +31,15 @@ func Listen(ctx context.Context) (*server.Server, error) {
 	} else {
 		svrConfig.AllowClearTextWithoutTLS = true
 	}
-	return server.NewDefaultServer(svrConfig, e.Engine)
+	return server.NewServer(svrConfig, e.Engine, buildSession(ctx), nil)
+}
+
+func buildSession(base context.Context) server.SessionBuilder {
+	return func(ctx context.Context, conn *mysql.Conn, addr string) (sql.Session, error) {
+		s, err := server.DefaultSessionBuilder(ctx, conn, addr)
+		if err != nil {
+			return nil, err
+		}
+		return &Session{Session: s, base: func() context.Context { return base }}, nil
+	}
 }
