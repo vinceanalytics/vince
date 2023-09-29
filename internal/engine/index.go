@@ -6,7 +6,6 @@ import (
 
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/expression"
-	"github.com/dolthub/go-mysql-server/sql/types"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 )
 
@@ -64,11 +63,15 @@ type FilterContext struct {
 	Domains Domains
 	Index   []IndexFilter
 	Values  []ValueFilter
-	Expr    sql.Expression
 }
 
-func (i *FilterContext) buildIndex(col v1.Column, lo, hi any, op Op) {
-	i.Index = append(i.Index, buildIndex(col, lo, hi, op))
+func (i *FilterContext) all(col v1.Column) {
+	i.Index = append(i.Index, all(col))
+}
+
+func (i *FilterContext) build(col v1.Column, lo, hi any, op Op) {
+	i.Index = append(i.Index, buildIndexFilterMatch(col, lo, hi, op))
+	i.Values = append(i.Values, buildValueFilterMatch(col, lo, hi, op))
 }
 
 func (idx *Index) build(ctx *sql.Context,
@@ -77,84 +80,50 @@ func (idx *Index) build(ctx *sql.Context,
 		return
 	}
 	exprs := idx.Exprs
-
 	for rangIdx, rang := range ranges {
 		if len(exprs) < len(rang) {
 			err = fmt.Errorf("expected different key count: exprs(%d) < (ranges[%d])(%d)", len(exprs), rangIdx, len(rang))
 			return
 		}
-		var rangeExpr sql.Expression
 		for i, rce := range rang {
 			field := indexedField(exprs[i])
 			lo, hi := bounds(rce)
-			var rangeColumnExpr sql.Expression
 			switch rce.Type() {
-			// Both Empty and All may seem like strange inclusions, but if only one range is given we need some
-			// expression to evaluate, otherwise our expression would be a nil expression which would panic.
-			case sql.RangeType_Empty:
-				rangeColumnExpr = expression.NewEquals(expression.NewLiteral(1, types.Int8), expression.NewLiteral(2, types.Int8))
 			case sql.RangeType_All:
-				rangeColumnExpr = expression.NewEquals(expression.NewLiteral(1, types.Int8), expression.NewLiteral(1, types.Int8))
+				o.all(field)
 			case sql.RangeType_EqualNull:
-				rangeColumnExpr = expression.NewIsNull(exprs[i])
+				// All indexed fields are non nullable
 			case sql.RangeType_GreaterThan:
 				if sql.RangeCutIsBinding(rce.LowerBound) {
-					o.buildIndex(field, lo, hi, Gt)
-					rangeColumnExpr = expression.NewGreaterThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote()))
-				} else {
-					rangeColumnExpr = expression.NewNot(expression.NewIsNull(exprs[i]))
+					o.build(field, lo, hi, Gt)
 				}
 			case sql.RangeType_GreaterOrEqual:
-				o.buildIndex(field, lo, hi, GtEg)
-				rangeColumnExpr = expression.NewGreaterThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote()))
+				o.build(field, lo, hi, GtEg)
 			case sql.RangeType_LessThanOrNull:
-				o.buildIndex(field, lo, hi, Lt)
-				rangeColumnExpr = expression.JoinOr(
-					expression.NewLessThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
-					expression.NewIsNull(exprs[i]),
-				)
+				o.build(field, lo, hi, Lt)
 			case sql.RangeType_LessOrEqualOrNull:
-				o.buildIndex(field, lo, hi, LtEq)
-				rangeColumnExpr = expression.JoinOr(
-					expression.NewLessThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
-					expression.NewIsNull(exprs[i]),
-				)
+				o.build(field, lo, hi, LtEq)
 			case sql.RangeType_ClosedClosed:
-				o.buildIndex(field, lo, hi, Eq)
-				rangeColumnExpr = expression.JoinAnd(
-					expression.NewGreaterThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote())),
-					expression.NewLessThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
-				)
+				o.build(field, lo, hi, Eq)
 			case sql.RangeType_OpenOpen:
 				if sql.RangeCutIsBinding(rce.LowerBound) {
-					o.buildIndex(field, lo, hi, Gt)
-					rangeColumnExpr = expression.JoinAnd(
-						expression.NewGreaterThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote())),
-						expression.NewLessThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
-					)
+					o.build(field, lo, hi, Gt)
 				} else {
 					// Lower bound is (NULL, ...)
-					rangeColumnExpr = expression.NewLessThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote()))
+					o.build(field, lo, hi, Lt)
 				}
 			case sql.RangeType_OpenClosed:
 				if sql.RangeCutIsBinding(rce.LowerBound) {
-					rangeColumnExpr = expression.JoinAnd(
-						expression.NewGreaterThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote())),
-						expression.NewLessThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
-					)
+					o.build(field, lo, hi, Lt)
+					o.build(field, lo, hi, GtEg)
 				} else {
-					// Lower bound is (NULL, ...]
-					rangeColumnExpr = expression.NewLessThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote()))
+					o.build(field, lo, hi, LtEq)
 				}
 			case sql.RangeType_ClosedOpen:
-				rangeColumnExpr = expression.JoinAnd(
-					expression.NewGreaterThanOrEqual(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.LowerBound), rce.Typ.Promote())),
-					expression.NewLessThan(exprs[i], expression.NewLiteral(sql.GetRangeCutKey(rce.UpperBound), rce.Typ.Promote())),
-				)
+				o.build(field, lo, hi, GtEg)
+				o.build(field, lo, hi, Lt)
 			}
-			rangeExpr = expression.JoinAnd(rangeExpr, rangeColumnExpr)
 		}
-		o.Expr = expression.JoinOr(o.Expr, rangeExpr)
 	}
 	return
 }

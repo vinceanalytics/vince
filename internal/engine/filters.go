@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"regexp"
 	"slices"
 	"sort"
@@ -239,7 +238,21 @@ func (i *IndexMatchFuncs) FilterIndex(ctx context.Context, idx *blocksv1.ColumnI
 	return i.FilterIndexFunc(ctx, idx)
 }
 
-func buildIndex(col v1.Column, lo, hi any, op Op) *IndexMatchFuncs {
+func buildValueFilterMatch(col v1.Column, lo, hi any, op Op) *ValueMatchFuncs {
+	var value any
+	switch op {
+	case Eq, Gt, GtEg:
+		value = lo
+	case Lt, LtEq:
+		value = hi
+	}
+	if value == nil {
+		return nil
+	}
+	return Match(col, value, op)
+}
+
+func buildIndexFilterMatch(col v1.Column, lo, hi any, op Op) *IndexMatchFuncs {
 	var value any
 	switch op {
 	case Eq, Gt, GtEg:
@@ -258,6 +271,23 @@ func buildIndex(col v1.Column, lo, hi any, op Op) *IndexMatchFuncs {
 				return filterTimestamp(value.(time.Time), op)(ctx, idx)
 			}
 			return filterBloom(value)(ctx, idx)
+		},
+	}
+}
+
+func all(col v1.Column) *IndexMatchFuncs {
+	return &IndexMatchFuncs{
+		Col: col,
+		FilterIndexFunc: func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error) {
+			g := NewRowGroups()
+			for rgi, rg := range idx.RowGroups {
+				pages := make([]uint, len(rg.Pages))
+				for i := range pages {
+					pages[i] = uint(i)
+				}
+				g.Set(uint(rgi), pages)
+			}
+			return g, nil
 		},
 	}
 }
@@ -353,41 +383,13 @@ func (i *ValueMatchFuncs) FilterValue(ctx context.Context, value arrow.Array) (a
 	return i.FilterValueFunc(ctx, value)
 }
 
-type Value interface {
-	~int64 | // support arrow.Timestamp
-		float64 | string
-}
-
-func Match[T Value](col v1.Column, matchValue T, op Op) ValueFilter {
+func Match(col v1.Column, matchValue any, op Op) *ValueMatchFuncs {
 	return &ValueMatchFuncs{
 		Col: col,
 		FilterValueFunc: func(ctx context.Context, value arrow.Array) (arrow.Array, error) {
-			switch op {
-			case ReEq:
-				m, ok := any(matchValue).(string)
-				if !ok {
-					slog.Warn("using regex for not string columns is not supported",
-						"column", col.String(),
-						"value", any(matchValue),
-					)
-					return nil, ErrNoFilter
-				}
-				return boolExpr(value.(*array.String), reMatch(m))
-			case ReNe:
-				m, ok := any(matchValue).(string)
-				if !ok {
-					slog.Warn("using regex for not string columns is not supported",
-						"column", col.String(),
-						"value", any(matchValue),
-					)
-					return nil, ErrNoFilter
-				}
-				return boolExpr(value.(*array.String), not(reMatch(m)))
-			default:
-				return call(op.String(), nil, value, &compute.ScalarDatum{
-					Value: scalar.MakeScalar(matchValue),
-				})
-			}
+			return call(op.String(), nil, value, &compute.ScalarDatum{
+				Value: scalar.MakeScalar(matchValue),
+			})
 		},
 	}
 }
