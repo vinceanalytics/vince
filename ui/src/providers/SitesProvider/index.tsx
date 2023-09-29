@@ -2,6 +2,7 @@ import { createContext, PropsWithChildren, useState, useContext, useEffect } fro
 import { Site } from "../../vince"
 import { useVince } from "../VinceProvider"
 import { useLocalStorage, StoreKey } from "../LocalStorageProvider"
+import { RpcError } from "@protobuf-ts/runtime-rpc"
 
 
 
@@ -26,12 +27,16 @@ export const SitesProvider = ({ children }: PropsWithChildren<{}>) => {
     const [sites, setSites] = useState<Site[]>([])
     const { sitesClient } = useVince()
     const [selectedSite, setSelectedSite] = useState<string>("(no site)")
+    const { updateSettings } = useLocalStorage()
     const refresh = () => {
         sitesClient?.listSites({}).then((result) => {
             setSites(result.response.list)
         })
-            .catch((e) => {
-                console.log(e)
+            .catch((e: RpcError) => {
+                if (e.code === "UNAUTHENTICATED") {
+                    // TODO: use the refresh_token to request a new token
+                    updateSettings(StoreKey.AUTH_PAYLOAD, "")
+                }
             })
     }
     const selectSite = (id: string) => setSelectedSite(id)
