@@ -203,8 +203,9 @@ func (t *IndexedTable) LookupPartitions(ctx *sql.Context, lookup sql.IndexLookup
 		return nil, err
 	}
 	heap.Init(&o.Domains)
+	db := GetSession(ctx).DB()
 	return &partitionIter{
-		txn: t.db.NewTransaction(false),
+		txn: db.NewTransaction(false),
 		partition: Partition{
 			Filters: o,
 		},

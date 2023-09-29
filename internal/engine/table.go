@@ -13,15 +13,12 @@ import (
 	"github.com/sirupsen/logrus"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
-	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/px"
 )
 
 type SitesTable struct {
-	db          db.Provider
-	reader      b3.Reader
 	schema      tableSchema
 	projections []string
 }
@@ -35,8 +32,9 @@ func (t *SitesTable) Schema() sql.Schema         { return t.schema.sql }
 func (t *SitesTable) Collation() sql.CollationID { return sql.Collation_Default }
 
 func (t *SitesTable) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
+	db := GetSession(ctx).DB()
 	return &partitionIter{
-		txn: t.db.NewTransaction(false),
+		txn: db.NewTransaction(false),
 	}, nil
 }
 
@@ -46,7 +44,8 @@ func (t *SitesTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (s
 	if err := part.Valid(); err != nil {
 		return nil, err
 	}
-	err := t.reader.Read(ctx, partition.Key(), func(f io.ReaderAt, size int64) error {
+	reader := GetSession(ctx).B3()
+	err := reader.Read(ctx, partition.Key(), func(f io.ReaderAt, size int64) error {
 		r, err := parquet.OpenFile(f, size)
 		if err != nil {
 			return err
@@ -66,8 +65,6 @@ func (t *SitesTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (s
 
 func (t *SitesTable) WithProjections(colNames []string) sql.Table {
 	return &SitesTable{
-		db:          t.db,
-		reader:      t.reader,
 		schema:      createSchema(colNames),
 		projections: colNames,
 	}

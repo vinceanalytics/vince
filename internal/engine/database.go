@@ -9,16 +9,14 @@ import (
 )
 
 type DB struct {
-	db     db.Provider
-	reader b3.Reader
-	views  map[string]sql.ViewDefinition
+	views map[string]sql.ViewDefinition
 }
 
 var _ sql.Database = (*DB)(nil)
 var _ sql.ViewDatabase = (*DB)(nil)
 
-func NewDB(db db.Provider, rd b3.Reader) *DB {
-	return &DB{db: db, reader: rd,
+func NewDB() *DB {
+	return &DB{
 		views: make(map[string]sql.ViewDefinition)}
 }
 
@@ -30,8 +28,6 @@ func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.T
 	switch tblName {
 	case "sites":
 		return &SitesTable{
-			db:     db.db,
-			reader: db.reader,
 			// sites table adds name column that returns the site name
 			schema: createSchema(append([]string{"name"}, Columns...)),
 		}, false, nil
@@ -108,11 +104,11 @@ func (p *Provider) Database(_ *sql.Context, name string) (sql.Database, error) {
 	if name != "vince" {
 		return nil, sql.ErrDatabaseNotFound.New(name)
 	}
-	return NewDB(p.db, p.reader), nil
+	return NewDB(), nil
 }
 
 func (p *Provider) AllDatabases(_ *sql.Context) []sql.Database {
-	return []sql.Database{NewDB(p.db, p.reader)}
+	return []sql.Database{NewDB()}
 }
 
 func (p *Provider) HasDatabase(_ *sql.Context, name string) bool {
