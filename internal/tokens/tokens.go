@@ -66,8 +66,8 @@ func Set(ctx context.Context, claims *Claims) context.Context {
 	return context.WithValue(ctx, tokenKey{}, claims)
 }
 
-func Get(ctx context.Context) *jwt.RegisteredClaims {
-	return ctx.Value(tokenKey{}).(*jwt.RegisteredClaims)
+func Get(ctx context.Context) *Claims {
+	return ctx.Value(tokenKey{}).(*Claims)
 }
 
 func SetAccount(ctx context.Context, a *v1.Account) context.Context {

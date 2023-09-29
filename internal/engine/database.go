@@ -6,18 +6,27 @@ import (
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/engine/procedures"
 )
 
 type DB struct {
-	views map[string]sql.ViewDefinition
+	views              map[string]sql.ViewDefinition
+	externalProcedures sql.ExternalStoredProcedureRegistry
 }
 
 var _ sql.Database = (*DB)(nil)
 var _ sql.ViewDatabase = (*DB)(nil)
+var _ sql.ExternalStoredProcedureProvider = (*DB)(nil)
 
 func NewDB() *DB {
+	externalProcedures := sql.NewExternalStoredProcedureRegistry()
+	for _, esp := range procedures.Procedures {
+		externalProcedures.Register(esp)
+	}
 	return &DB{
-		views: make(map[string]sql.ViewDefinition)}
+		views:              make(map[string]sql.ViewDefinition),
+		externalProcedures: externalProcedures,
+	}
 }
 
 func (DB) Name() string {
@@ -25,7 +34,7 @@ func (DB) Name() string {
 }
 
 func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.Table, ok bool, err error) {
-	switch tblName {
+	switch strings.ToLower(tblName) {
 	case "sites":
 		return &SitesTable{
 			// sites table adds name column that returns the site name
@@ -82,6 +91,16 @@ func (db *DB) AllViews(ctx *sql.Context) ([]sql.ViewDefinition, error) {
 		views = append(views, def)
 	}
 	return views, nil
+}
+
+// ExternalStoredProcedure implements the sql.ExternalStoredProcedureProvider interface
+func (db DB) ExternalStoredProcedure(_ *sql.Context, name string, numOfParams int) (*sql.ExternalStoredProcedureDetails, error) {
+	return db.externalProcedures.LookupByNameAndParamCount(name, numOfParams)
+}
+
+// ExternalStoredProcedures implements the sql.ExternalStoredProcedureProvider interface
+func (db DB) ExternalStoredProcedures(_ *sql.Context, name string) ([]sql.ExternalStoredProcedureDetails, error) {
+	return db.externalProcedures.LookupByName(name)
 }
 
 var _ sql.DatabaseProvider = (*Provider)(nil)
