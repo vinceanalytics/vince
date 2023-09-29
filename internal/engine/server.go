@@ -8,9 +8,29 @@ import (
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/vitess/go/mysql"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/engine/handler"
 )
 
-func Listen(ctx context.Context) (*server.Server, error) {
+type Server struct {
+	Listener *mysql.Listener
+}
+
+func (s *Server) Close() error {
+	s.Listener.Close()
+	return nil
+}
+
+func (s *Server) Shutdown(_ context.Context) error {
+	s.Listener.Shutdown()
+	return nil
+}
+
+func (s *Server) Start() error {
+	s.Listener.Accept()
+	return nil
+}
+
+func Listen(ctx context.Context) (*Server, error) {
 	o := config.Get(ctx)
 	e := Get(ctx)
 	svrConfig := server.Config{
@@ -31,7 +51,34 @@ func Listen(ctx context.Context) (*server.Server, error) {
 	} else {
 		svrConfig.AllowClearTextWithoutTLS = true
 	}
-	return server.NewServer(svrConfig, e.Engine, buildSession(ctx), nil)
+	h := handler.NewServer(svrConfig, e.Engine, buildSession(ctx), nil)
+	ls, err := server.NewListener(svrConfig.Protocol, svrConfig.Address, svrConfig.Socket)
+	if err != nil {
+		return nil, err
+	}
+
+	listenerCfg := mysql.ListenerConfig{
+		Listener:                 ls,
+		AuthServer:               e.Analyzer.Catalog.MySQLDb,
+		Handler:                  h,
+		ConnReadTimeout:          svrConfig.ConnReadTimeout,
+		ConnWriteTimeout:         svrConfig.ConnWriteTimeout,
+		MaxConns:                 svrConfig.MaxConnections,
+		ConnReadBufferSize:       mysql.DefaultConnBufferSize,
+		AllowClearTextWithoutTLS: svrConfig.AllowClearTextWithoutTLS,
+	}
+	vtListnr, err := mysql.NewListenerWithConfig(listenerCfg)
+	if err != nil {
+		return nil, err
+	}
+
+	if svrConfig.Version != "" {
+		vtListnr.ServerVersion = svrConfig.Version
+	}
+	vtListnr.TLSConfig = svrConfig.TLSConfig
+	vtListnr.RequireSecureTransport = svrConfig.RequireSecureTransport
+
+	return &Server{Listener: vtListnr}, nil
 }
 
 func buildSession(base context.Context) server.SessionBuilder {
