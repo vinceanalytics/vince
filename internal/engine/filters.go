@@ -260,7 +260,7 @@ func buildIndexFilterMatch(col v1.Column, lo, hi any, op Op) *IndexMatchFuncs {
 	case Lt, LtEq:
 		value = hi
 	}
-	if value == nil {
+	if value == nil || col == -1 {
 		return nil
 	}
 	return &IndexMatchFuncs{

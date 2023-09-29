@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"container/heap"
 	"fmt"
 	"strings"
 
@@ -70,7 +71,12 @@ func (i *FilterContext) all(col v1.Column) {
 }
 
 func (i *FilterContext) build(col v1.Column, lo, hi any, op Op) {
-	i.Index = append(i.Index, buildIndexFilterMatch(col, lo, hi, op))
+	if f := buildIndexFilterMatch(col, lo, hi, op); f != nil {
+		i.Index = append(i.Index, f)
+	}
+	if col == -1 && op == Eq {
+		i.Domains = append(i.Domains, lo.(string))
+	}
 	i.Values = append(i.Values, buildValueFilterMatch(col, lo, hi, op))
 }
 
@@ -146,6 +152,9 @@ func bounds(rce sql.RangeColumnExpr) (lo, hi any) {
 
 func indexedField(expr sql.Expression) v1.Column {
 	f := expr.(*expression.GetField)
+	if f.Name() == "name" {
+		return -1
+	}
 	return Indexed[f.Name()]
 }
 
@@ -193,6 +202,7 @@ func (t *IndexedTable) LookupPartitions(ctx *sql.Context, lookup sql.IndexLookup
 	if err != nil {
 		return nil, err
 	}
+	heap.Init(&o.Domains)
 	return &partitionIter{
 		txn: t.db.NewTransaction(false),
 		partition: Partition{

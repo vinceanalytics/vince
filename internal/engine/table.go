@@ -105,10 +105,9 @@ type partitionIter struct {
 }
 
 func (p *partitionIter) Next(ctx *sql.Context) (sql.Partition, error) {
-	domains := p.partition.Filters.Domains
 	if !p.started {
-		if domains.Len() > 0 {
-			site := heap.Pop(&domains)
+		if p.partition.Filters.Domains.Len() > 0 {
+			site := heap.Pop(&p.partition.Filters.Domains)
 			p.it = p.txn.Iter(db.IterOpts{
 				Prefix: keys.BlockMetadata(site.(string), ""),
 			})
@@ -124,7 +123,7 @@ func (p *partitionIter) Next(ctx *sql.Context) (sql.Partition, error) {
 		p.it.Next()
 	}
 	if !p.it.Valid() {
-		if domains.Len() > 0 {
+		if p.partition.Filters.Domains.Len() > 0 {
 			// we still have domains to work with
 			p.it.Close()
 			p.started = false
