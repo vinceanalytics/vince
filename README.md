@@ -65,6 +65,15 @@ Web analytics events are collected on `localhost:8080/api/events` endpoint.
 </details>
 
 <details markdown="1">
+<summary>Login: `vince`</summary>
+
+```bash
+VINCE_ROOT_PASSWORD=xxxxx vince login http://localhost:8080
+```
+
+</details>
+
+<details markdown="1">
 <summary>Connect with mysql</summary>
 
 ```bash
