@@ -5,7 +5,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.5.1",
     "@primer/octicons-react": "^19.5.0",
-    "@primer/react": "^35.27.0",
+    "@primer/react": "^35.31.0",
     "@protobuf-ts/grpcweb-transport": "^2.9.1",
     "@protobuf-ts/runtime": "^2.9.1",
     "@protobuf-ts/runtime-rpc": "^2.9.1",
