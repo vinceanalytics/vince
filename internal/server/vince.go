@@ -138,10 +138,6 @@ func Run(ctx context.Context, resources resource.List) error {
 		"failed initializing mysql server",
 	)
 	resources = append(resources, msvr)
-	resources = append(resources, resource.Func(func() error {
-		// remove the socket file
-		return os.Remove(config.SocketFile(o))
-	}))
 
 	g.Get(ctx).Go(func() error {
 		defer cancel()

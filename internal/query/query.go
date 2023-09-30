@@ -45,7 +45,7 @@ func GetInternalClient(ctx context.Context) *sql.DB {
 		return x.(*sql.DB)
 	}
 	o := config.Get(ctx)
-	dns := dsn(config.SocketFile(o), a, config.IsTLS(o))
+	dns := dsn(o.MysqlListenAddress, a, config.IsTLS(o))
 	db := must.Must(Open(dns))(
 		"failed to open mysql db connection for internal client",
 	)
@@ -60,7 +60,7 @@ func dsn(socket string, a *v1.Client_Auth, tls bool) string {
 	x := mysql.Config{
 		User:                    a.Name,
 		Passwd:                  a.AccessToken,
-		Net:                     "unix",
+		Net:                     "tcp",
 		Addr:                    socket,
 		DBName:                  "vince",
 		AllowNativePasswords:    true,

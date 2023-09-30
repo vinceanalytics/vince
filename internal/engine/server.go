@@ -38,7 +38,6 @@ func Listen(ctx context.Context) (*Server, error) {
 	svrConfig := server.Config{
 		Protocol:                     "tcp",
 		Address:                      o.MysqlListenAddress,
-		Socket:                       config.SocketFile(o),
 		DisableClientMultiStatements: true,
 	}
 	if config.IsTLS(o) {

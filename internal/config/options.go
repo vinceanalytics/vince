@@ -11,12 +11,11 @@ import (
 )
 
 const (
-	FILE         = "vince.json"
-	DB_PATH      = "db"
-	BLOCKS_PATH  = "blocks"
-	RAFT_PATH    = "raft"
-	SECRET_KEY   = "secret_key"
-	MYSQL_SOCKET = "sql.sock"
+	FILE        = "vince.json"
+	DB_PATH     = "db"
+	BLOCKS_PATH = "blocks"
+	RAFT_PATH   = "raft"
+	SECRET_KEY  = "secret_key"
 )
 
 var (
