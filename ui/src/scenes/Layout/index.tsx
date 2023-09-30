@@ -48,7 +48,7 @@ const Layout = () => {
                                 display={activePane === "console" ? "flex" : "none"}
                                 flex={1}
                                 flexDirection={"column"}
-                                minHeight={"100%"}
+                                maxHeight={"100vh"}
                             >
                                 <EditorProvider>
                                     <QueryProvider>
