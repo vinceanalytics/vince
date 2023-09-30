@@ -67,10 +67,6 @@ type FilterContext struct {
 	Values  []ValueFilter
 }
 
-func (i *FilterContext) all(col v1.Column) {
-	i.Index = append(i.Index, all(col))
-}
-
 func (i *FilterContext) build(col v1.Column, lo, hi any, op Op) {
 	if f := buildIndexFilterMatch(col, lo, hi, op); f != nil {
 		i.Index = append(i.Index, f)
@@ -96,8 +92,6 @@ func (idx *Index) build(ctx *sql.Context,
 			field := indexedField(exprs[i])
 			lo, hi := bounds(rce)
 			switch rce.Type() {
-			case sql.RangeType_All:
-				o.all(field)
 			case sql.RangeType_EqualNull:
 				// All indexed fields are non nullable
 			case sql.RangeType_GreaterThan:

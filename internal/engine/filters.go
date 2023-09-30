@@ -300,23 +300,6 @@ func buildIndexFilterMatch(col v1.Column, lo, hi any, op Op) *IndexMatchFuncs {
 	}
 }
 
-func all(col v1.Column) *IndexMatchFuncs {
-	return &IndexMatchFuncs{
-		Col: col,
-		FilterIndexFunc: func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error) {
-			g := NewRowGroups()
-			for rgi, rg := range idx.RowGroups {
-				pages := make([]uint, len(rg.Pages))
-				for i := range pages {
-					pages[i] = uint(i)
-				}
-				g.Set(uint(rgi), pages)
-			}
-			return g, nil
-		},
-	}
-}
-
 func filterTimestamp(timestamp time.Time, op Op) FilterIndexFunc {
 	return func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error) {
 		ts := timestamp.UTC().UnixMilli()
