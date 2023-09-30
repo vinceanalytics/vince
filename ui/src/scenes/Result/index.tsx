@@ -1,6 +1,6 @@
 import { Box, Text } from "@primer/react"
 import { TableIcon, GraphIcon, DownloadIcon } from "@primer/octicons-react";
-import { DataTable, UnderlineNav } from '@primer/react/drafts'
+import { DataTable, UnderlineNav, Table } from '@primer/react/drafts'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useQuery } from "../../providers";
 import { QueryResponse, QueryValue, Timestamp } from "../../vince";
@@ -23,6 +23,10 @@ export const Result = () => {
             flexDirection={"column"}
             flex={1}
             overflow={"hidden"}
+            padding={2}
+            borderWidth={1}
+            borderColor={"border.default"}
+            borderStyle={"solid"}
         >
             <Box
                 position={"relative"}
@@ -91,43 +95,49 @@ const Grid = ({ result }: { result: QueryResponse | undefined }) => {
     ))) : [];
     return (
         <Box paddingTop={1} overflow={"auto"}>
-            {result && <DataTable
-                columns={result.columns.map(({ name }, idx) => ({
-                    id: idx.toString(),
-                    header: name,
-                    renderCell(data) {
-                        //@ts-ignore
-                        const { value } = data[name] as QueryValue;
-                        let format = ''
-                        switch (value.oneofKind) {
-                            case "string":
-                                format = value.string
-                                break;
-                            case "bool":
-                                format = value.bool.toString()
-                                break;
-                            case "number":
-                                format = value.number.toString()
-                                break;
-                            case "double":
-                                format = value.double.toString()
-                                break;
-                            case "timestamp":
-                                format = Timestamp.toJson(value.timestamp)?.toString()!
-                                break;
-                            default:
-                                break;
-                        }
-                        return (<Text>{format}</Text>)
-                    },
-                }))}
-                //@ts-ignore
-                data={data}
-            />}
+            {result && <Table.Container>
+                <DataTable
+                    columns={result.columns.map(({ name }, idx) => ({
+                        id: idx.toString(),
+                        header: name,
+                        renderCell(data) {
+                            //@ts-ignore
+                            const value = data[name] as QueryValue;
+                            return formatValue(value)
+                        },
+                    }))}
+                    //@ts-ignore
+                    data={data}
+                />
+            </Table.Container>}
         </Box>
     )
 }
 
+
+const formatValue = ({ value }: QueryValue) => {
+    let format = ''
+    switch (value.oneofKind) {
+        case "string":
+            format = value.string
+            break;
+        case "bool":
+            format = value.bool.toString()
+            break;
+        case "number":
+            format = value.number.toString()
+            break;
+        case "double":
+            format = value.double.toString()
+            break;
+        case "timestamp":
+            format = Timestamp.toJson(value.timestamp)?.toString()!
+            break;
+        default:
+            break;
+    }
+    return (<Text>{format}</Text>)
+}
 
 const labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
