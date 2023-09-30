@@ -153,7 +153,9 @@ func (p *partitionIter) Next(ctx *sql.Context) (sql.Partition, error) {
 }
 
 func (p *partitionIter) Close(*sql.Context) error {
-	p.it.Close()
+	if p.it != nil {
+		p.it.Close()
+	}
 	p.txn.Close()
 	return nil
 }

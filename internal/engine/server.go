@@ -89,6 +89,7 @@ func buildSession(base context.Context) server.SessionBuilder {
 		if err != nil {
 			return nil, err
 		}
-		return session.New(base, s, conn.UserData.(*auth.Claim)), nil
+		claim, _ := conn.UserData.(*auth.Claim)
+		return session.New(base, s, claim), nil
 	}
 }
