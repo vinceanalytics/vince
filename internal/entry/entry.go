@@ -3,8 +3,11 @@ package entry
 import (
 	"context"
 	"io"
+	"slices"
+	"sync"
 	"time"
 
+	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/apache/arrow/go/v14/arrow/compute"
 	"github.com/apache/arrow/go/v14/arrow/memory"
 	"github.com/parquet-go/parquet-go"
@@ -75,4 +78,44 @@ func NewWriter(input io.Writer) *parquet.GenericWriter[*Entry] {
 	return parquet.NewGenericWriter[*Entry](input,
 		parquet.BloomFilters(bloom...),
 	)
+}
+
+type ValuesBuf struct {
+	Values []parquet.Value
+}
+
+func NewValuesBuf() *ValuesBuf {
+	return valuesBufPool.Get().(*ValuesBuf)
+}
+
+func (i *ValuesBuf) Release() {
+	i.Values = i.Values[:0]
+	valuesBufPool.Put(i)
+}
+
+func (i *ValuesBuf) Get(n int) []parquet.Value {
+	x := len(i.Values)
+	i.Values = slices.Grow(i.Values, n)
+	i.Values = i.Values[:x+n]
+	return i.Values[x:n]
+}
+
+var valuesBufPool = &sync.Pool{New: func() any { return &ValuesBuf{} }}
+
+func Call(ctx context.Context, name string, o compute.FunctionOptions, a any, b any, fn ...func()) (arrow.Array, error) {
+	ad := compute.NewDatum(a)
+	bd := compute.NewDatum(b)
+
+	defer ad.Release()
+	defer bd.Release()
+	defer func() {
+		for _, f := range fn {
+			f()
+		}
+	}()
+	out, err := compute.CallFunction(ctx, name, o, ad, bd)
+	if err != nil {
+		return nil, err
+	}
+	return out.(*compute.ArrayDatum).MakeArray(), nil
 }

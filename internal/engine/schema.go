@@ -123,68 +123,50 @@ func (ts *tableSchema) readColum(
 		if err != nil {
 			return err
 		}
-		defer buf.release()
-		b.Reserve(len(buf.values))
+		defer buf.Release()
+		b.Reserve(len(buf.Values))
 		switch e := b.(type) {
 		case *array.Int64Builder:
-			for i := range buf.values {
-				e.UnsafeAppend(buf.values[i].Int64())
+			for i := range buf.Values {
+				e.UnsafeAppend(buf.Values[i].Int64())
 			}
 		case *array.TimestampBuilder:
-			for i := range buf.values {
-				e.UnsafeAppend(arrow.Timestamp(buf.values[i].Int64()))
+			for i := range buf.Values {
+				e.UnsafeAppend(arrow.Timestamp(buf.Values[i].Int64()))
 			}
 		case *array.Float64Builder:
-			for i := range buf.values {
-				e.UnsafeAppend(time.Duration(buf.values[i].Int64()).Seconds())
+			for i := range buf.Values {
+				e.UnsafeAppend(time.Duration(buf.Values[i].Int64()).Seconds())
 			}
 		case *array.StringBuilder:
-			for i := range buf.values {
-				e.Append(buf.values[i].String())
+			for i := range buf.Values {
+				e.Append(buf.Values[i].String())
 			}
 		}
 		return nil
 	}
 }
 
-func readValuesPages(pages parquet.Pages, accept *bitset.BitSet) (*valuesBuf, error) {
+func readValuesPages(pages parquet.Pages, accept *bitset.BitSet) (*entry.ValuesBuf, error) {
 	defer pages.Close()
-	buf := valuesBufPool.Get().(*valuesBuf)
+	buf := entry.NewValuesBuf()
 	for i := uint(0); ; i++ {
 		page, err := pages.ReadPage()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return buf, nil
 			}
-			buf.release()
+			buf.Release()
 			return nil, err
 		}
 		if !accept.Test(i) {
 			continue
 		}
 		size := page.NumValues()
-		o := buf.get(int(size))
+		o := buf.Get(int(size))
 		page.Values().ReadValues(o)
 	}
 }
-
-type valuesBuf struct {
-	values []parquet.Value
-}
-
-func (i *valuesBuf) release() {
-	i.values = i.values[:0]
-	valuesBufPool.Put(i)
-}
-
-func (i *valuesBuf) get(n int) []parquet.Value {
-	x := len(i.values)
-	i.values = slices.Grow(i.values, n)
-	i.values = i.values[:x+n]
-	return i.values[x:n]
-}
-
-var valuesBufPool = &sync.Pool{New: func() any { return &valuesBuf{} }}
 
 type recordIter struct {
 	pos        int

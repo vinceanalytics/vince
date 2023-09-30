@@ -18,6 +18,7 @@ import (
 	"github.com/parquet-go/parquet-go/bloom"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	"github.com/vinceanalytics/vince/internal/entry"
 )
 
 type Op uint
@@ -217,7 +218,7 @@ func BuildValueFilter(ctx context.Context,
 			filter = g
 		} else {
 			// we and all filters
-			filter, err = call(ctx, "and", nil, filter, g, filter.Release, g.Release)
+			filter, err = entry.Call(ctx, "and", nil, filter, g, filter.Release, g.Release)
 			if err != nil {
 				return nil, err
 			}
@@ -225,24 +226,6 @@ func BuildValueFilter(ctx context.Context,
 	}
 
 	return filter, nil
-}
-
-func call(ctx context.Context, name string, o compute.FunctionOptions, a any, b any, fn ...func()) (arrow.Array, error) {
-	ad := compute.NewDatum(a)
-	bd := compute.NewDatum(b)
-
-	defer ad.Release()
-	defer bd.Release()
-	defer func() {
-		for _, f := range fn {
-			f()
-		}
-	}()
-	out, err := compute.CallFunction(ctx, name, o, ad, bd)
-	if err != nil {
-		return nil, err
-	}
-	return out.(*compute.ArrayDatum).MakeArray(), nil
 }
 
 type FilterIndexFunc func(ctx context.Context, idx *blocksv1.ColumnIndex) (*RowGroups, error)
@@ -404,7 +387,7 @@ func Match(col v1.Column, matchValue any, op Op) *ValueMatchFuncs {
 			} else {
 				fv = scalar.MakeScalar(matchValue)
 			}
-			return call(ctx, op.String(), nil, value, &compute.ScalarDatum{
+			return entry.Call(ctx, op.String(), nil, value, &compute.ScalarDatum{
 				Value: fv,
 			})
 		},

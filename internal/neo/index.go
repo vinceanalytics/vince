@@ -1,22 +1,31 @@
 package neo
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
 	"os"
+	"sync"
 
+	"github.com/apache/arrow/go/v14/arrow/array"
+	"github.com/apache/arrow/go/v14/arrow/compute"
+	"github.com/apache/arrow/go/v14/arrow/scalar"
 	"github.com/parquet-go/parquet-go"
 	blockv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	"github.com/vinceanalytics/vince/internal/entry"
+	"golang.org/x/sync/errgroup"
 )
 
-func IndexBlockFile(f *os.File) (cols map[storev1.Column]*blockv1.ColumnIndex, err error) {
+func IndexBlockFile(ctx context.Context, f *os.File) (map[storev1.Column]*blockv1.ColumnIndex, *blockv1.BaseStats, error) {
 	stat, err := f.Stat()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	r, err := parquet.OpenFile(f, stat.Size())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	m := make(map[storev1.Column]int)
 	schema := r.Schema()
@@ -25,7 +34,7 @@ func IndexBlockFile(f *os.File) (cols map[storev1.Column]*blockv1.ColumnIndex, e
 		m[i] = n.ColumnIndex
 	}
 
-	cols = make(map[v1.Column]*blockv1.ColumnIndex)
+	cols := make(map[storev1.Column]*blockv1.ColumnIndex)
 	groups := r.RowGroups()
 	for gi := range groups {
 		g := groups[gi]
@@ -69,7 +78,13 @@ func IndexBlockFile(f *os.File) (cols map[storev1.Column]*blockv1.ColumnIndex, e
 			idx.RowGroups = append(idx.RowGroups, rg)
 		}
 	}
-	return
+	views, visitors, visits, err := baseStats(ctx, r)
+	if err != nil {
+		return nil, nil, err
+	}
+	return cols, &blockv1.BaseStats{
+		PageViews: views, Visitors: visitors, Visits: visits,
+	}, nil
 }
 
 func readFilter(b parquet.BloomFilter) []byte {
@@ -79,4 +94,139 @@ func readFilter(b parquet.BloomFilter) []byte {
 	o := make([]byte, b.Size())
 	b.ReadAt(o, 0)
 	return o
+}
+
+// Computes base stats per parquet file
+func baseStats(ctx context.Context, r *parquet.File) (pageViews, visitors, visits int64, err error) {
+	ctx = entry.Context(ctx)
+	schema := r.Schema()
+	c, ok := schema.Lookup(storev1.Column_event.String())
+	if !ok {
+		err = errors.New("parquet file missing event column")
+		return
+	}
+	event := c.ColumnIndex
+	c, ok = schema.Lookup(storev1.Column_id.String())
+	if !ok {
+		err = errors.New("parquet file missing id column")
+		return
+	}
+	id := c.ColumnIndex
+	c, ok = schema.Lookup(storev1.Column_session.String())
+	if !ok {
+		err = errors.New("parquet file missing session column")
+		return
+	}
+	session := c.ColumnIndex
+
+	pageviewBuilder := array.NewStringBuilder(entry.Pool)
+	idBuilder := array.NewInt64Builder(entry.Pool)
+	sessionBuilder := array.NewInt64Builder(entry.Pool)
+	defer func() {
+		pageviewBuilder.Release()
+		idBuilder.Release()
+		sessionBuilder.Release()
+	}()
+	readPages := readString(pageviewBuilder)
+	readId := readInt64(idBuilder)
+	readSession := readInt64(sessionBuilder)
+	var eg errgroup.Group
+	for _, rg := range r.RowGroups() {
+		chunks := rg.ColumnChunks()
+		eg.Go(readColumn(readPages, chunks[event]))
+		eg.Go(readColumn(readId, chunks[id]))
+		eg.Go(readColumn(readSession, chunks[session]))
+	}
+	err = eg.Wait()
+	if err != nil {
+		err = fmt.Errorf("failed reading base stat columns from parquet file:%v", err)
+		return
+	}
+	pages := pageviewBuilder.NewArray()
+	// select pageview
+	p, err := entry.Call(ctx, "equal", nil, pages, scalar.MakeScalar("pageview"))
+	if err != nil {
+		err = fmt.Errorf("failed applying equal filter to page view array :%v", err)
+		return
+	}
+	f, err := entry.Call(ctx, "filter", nil, pages, p, pages.Release, p.Release)
+	if err != nil {
+		err = fmt.Errorf("failed applying  filter to page view array: %v2", err)
+		return
+	}
+	pageViews = int64(f.Len())
+	f.Release()
+	// calculate visitors
+	va := idBuilder.NewArray()
+	vb, err := compute.UniqueArray(ctx, va)
+	if err != nil {
+		err = fmt.Errorf("failed computing unique id: %v", err)
+		return
+	}
+	visitors = int64(vb.Len())
+	vb.Release()
+	// calculate visits
+	sa := sessionBuilder.NewArray()
+	sb, err := compute.UniqueArray(ctx, sa)
+	if err != nil {
+		err = fmt.Errorf("failed computing unique sessions: %v", err)
+		return
+	}
+	visits = int64(sb.Len())
+	sb.Release()
+	return
+}
+
+func readString(b *array.StringBuilder) func(*entry.ValuesBuf) {
+	var lock sync.Mutex
+	return func(vb *entry.ValuesBuf) {
+		lock.Lock()
+		b.Reserve(len(vb.Values))
+		for i := range vb.Values {
+			b.Append(vb.Values[i].String())
+		}
+		lock.Unlock()
+	}
+}
+
+func readInt64(b *array.Int64Builder) func(*entry.ValuesBuf) {
+	var lock sync.Mutex
+	return func(vb *entry.ValuesBuf) {
+		lock.Lock()
+		b.Reserve(len(vb.Values))
+		for i := range vb.Values {
+			b.UnsafeAppend(vb.Values[i].Int64())
+		}
+		lock.Unlock()
+	}
+}
+
+func readColumn(b func(*entry.ValuesBuf), chunk parquet.ColumnChunk) func() error {
+	return func() error {
+		buf := entry.NewValuesBuf()
+		defer buf.Release()
+		err := readValuesPages(buf, chunk.Pages())
+		if err != nil {
+			return err
+		}
+		b(buf)
+		return nil
+	}
+}
+
+func readValuesPages(buf *entry.ValuesBuf, pages parquet.Pages) error {
+	defer pages.Close()
+	for {
+		page, err := pages.ReadPage()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			buf.Release()
+			return err
+		}
+		size := page.NumValues()
+		o := buf.Get(int(size))
+		page.Values().ReadValues(o)
+	}
 }

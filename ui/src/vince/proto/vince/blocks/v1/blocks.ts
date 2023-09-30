@@ -31,6 +31,10 @@ export interface BlockInfo {
      * @generated from protobuf field: int64 max = 4;
      */
     max: bigint;
+    /**
+     * @generated from protobuf field: v1.BaseStats stats = 5;
+     */
+    stats?: BaseStats;
 }
 /**
  * @generated from protobuf message v1.ColumnIndex
@@ -85,6 +89,23 @@ export interface ColumnIndex_RowGroup {
      */
     pages: ColumnIndex_Page[];
 }
+/**
+ * @generated from protobuf message v1.BaseStats
+ */
+export interface BaseStats {
+    /**
+     * @generated from protobuf field: int64 page_views = 1;
+     */
+    pageViews: bigint;
+    /**
+     * @generated from protobuf field: int64 visitors = 2;
+     */
+    visitors: bigint;
+    /**
+     * @generated from protobuf field: int64 visits = 3;
+     */
+    visits: bigint;
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class BlockInfo$Type extends MessageType<BlockInfo> {
     constructor() {
@@ -92,7 +113,8 @@ class BlockInfo$Type extends MessageType<BlockInfo> {
             { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 3, name: "min", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 4, name: "max", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
+            { no: 4, name: "max", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 5, name: "stats", kind: "message", T: () => BaseStats }
         ]);
     }
     create(value?: PartialMessage<BlockInfo>): BlockInfo {
@@ -119,6 +141,9 @@ class BlockInfo$Type extends MessageType<BlockInfo> {
                 case /* int64 max */ 4:
                     message.max = reader.int64().toBigInt();
                     break;
+                case /* v1.BaseStats stats */ 5:
+                    message.stats = BaseStats.internalBinaryRead(reader, reader.uint32(), options, message.stats);
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -143,6 +168,9 @@ class BlockInfo$Type extends MessageType<BlockInfo> {
         /* int64 max = 4; */
         if (message.max !== 0n)
             writer.tag(4, WireType.Varint).int64(message.max);
+        /* v1.BaseStats stats = 5; */
+        if (message.stats)
+            BaseStats.internalBinaryWrite(message.stats, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -336,3 +364,64 @@ class ColumnIndex_RowGroup$Type extends MessageType<ColumnIndex_RowGroup> {
  * @generated MessageType for protobuf message v1.ColumnIndex.RowGroup
  */
 export const ColumnIndex_RowGroup = new ColumnIndex_RowGroup$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class BaseStats$Type extends MessageType<BaseStats> {
+    constructor() {
+        super("v1.BaseStats", [
+            { no: 1, name: "page_views", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 2, name: "visitors", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 3, name: "visits", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
+        ]);
+    }
+    create(value?: PartialMessage<BaseStats>): BaseStats {
+        const message = { pageViews: 0n, visitors: 0n, visits: 0n };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<BaseStats>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: BaseStats): BaseStats {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* int64 page_views */ 1:
+                    message.pageViews = reader.int64().toBigInt();
+                    break;
+                case /* int64 visitors */ 2:
+                    message.visitors = reader.int64().toBigInt();
+                    break;
+                case /* int64 visits */ 3:
+                    message.visits = reader.int64().toBigInt();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: BaseStats, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* int64 page_views = 1; */
+        if (message.pageViews !== 0n)
+            writer.tag(1, WireType.Varint).int64(message.pageViews);
+        /* int64 visitors = 2; */
+        if (message.visitors !== 0n)
+            writer.tag(2, WireType.Varint).int64(message.visitors);
+        /* int64 visits = 3; */
+        if (message.visits !== 0n)
+            writer.tag(3, WireType.Varint).int64(message.visits);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.BaseStats
+ */
+export const BaseStats = new BaseStats$Type();

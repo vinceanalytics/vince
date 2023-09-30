@@ -131,7 +131,7 @@ func (w *writeContext) index(ctx context.Context) {
 	w.log.Info("indexing block")
 	f := must.Must(os.Open(w.name))("failed opening block file")
 	db.Get(ctx).Txn(true, func(txn db.Txn) error {
-		index, err := IndexBlockFile(f)
+		index, stats, err := IndexBlockFile(ctx, f)
 		if err != nil {
 			return err
 		}
@@ -141,6 +141,7 @@ func (w *writeContext) index(ctx context.Context) {
 			Domain: w.domain,
 			Min:    ts.Min,
 			Max:    ts.Max,
+			Stats:  stats,
 		}
 
 		errs := make([]error, 0, len(index)+1)

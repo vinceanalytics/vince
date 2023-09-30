@@ -8,6 +8,7 @@ message BlockInfo {
   string domain = 2;
   int64 min = 3;
   int64 max = 4;
+  BaseStats stats = 5;
 }
 
 message ColumnIndex {
@@ -27,4 +28,10 @@ message ColumnIndex {
     // This will only be set for timestamp columns
     repeated Page pages = 4;
   }
+}
+
+message BaseStats {
+  int64 page_views = 1;
+  int64 visitors = 2;
+  int64 visits = 3;
 }
