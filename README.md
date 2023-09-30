@@ -94,6 +94,12 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 mysql> 
 ```
 
+You can obtain `VINCE_ACCESS_TOKEN` via vince client
+
+```bash
+vince login --token
+```
+
 </details>
 
 ## Contributing

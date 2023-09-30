@@ -17,7 +17,10 @@ func CMD() *cli.Command {
 	return &cli.Command{
 		Name:  "login",
 		Usage: "Authenticate into vince instance",
-		Flags: auth.Flags,
+		Flags: append(auth.Flags, &cli.BoolFlag{
+			Name:  "token",
+			Usage: "Prints access token to stdout",
+		}),
 		Action: func(ctx *cli.Context) error {
 			w := ansi.New()
 			name, password := auth.Load(ctx)
@@ -71,6 +74,10 @@ func CMD() *cli.Command {
 				0600))(
 				"failed writing client config", "path", file,
 			)
+			if ctx.Bool("token") {
+				os.Stdout.WriteString(a.AccessToken)
+				return nil
+			}
 			ansi.New().Ok("signed in %q", a.ServerId).Flush()
 			return nil
 		},
