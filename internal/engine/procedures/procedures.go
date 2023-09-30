@@ -12,7 +12,7 @@ var Procedures = []sql.ExternalStoredProcedureDetails{
 	{Name: "add_site", Schema: stringSchema("status"), Function: addSiteWithDescription},
 }
 
-var valid = must.Must(protovalidate.New())("failed creating validator")
+var valid = must.Must(protovalidate.New(protovalidate.WithFailFast(true)))("failed creating validator")
 
 // stringSchema returns a non-nullable schema with all columns as LONGTEXT.
 func stringSchema(columnNames ...string) sql.Schema {
