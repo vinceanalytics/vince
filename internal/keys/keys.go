@@ -80,7 +80,3 @@ func Snippet(sid string) []byte {
 func Import(name string) []byte {
 	return Path(v1.StorePrefix_IMPORT, name)
 }
-
-func BaseStats(domain string) []byte {
-	return Path(v1.StorePrefix_BASE_STATS, domain)
-}

@@ -12,6 +12,7 @@ import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+import { BaseStats } from "../../blocks/v1/blocks";
 import { Goal } from "../../goals/v1/goals";
 /**
  * @generated from protobuf message v1.Site
@@ -31,6 +32,10 @@ export interface Site {
      * @generated from protobuf field: string description = 3;
      */
     description: string;
+    /**
+     * @generated from protobuf field: v1.BaseStats base_stats = 4;
+     */
+    baseStats?: BaseStats;
 }
 /**
  * @generated from protobuf message v1.CreateSiteRequest
@@ -97,7 +102,8 @@ class Site$Type extends MessageType<Site> {
         super("v1.Site", [
             { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "goals", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => Goal } },
-            { no: 3, name: "description", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 3, name: "description", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "base_stats", kind: "message", T: () => BaseStats }
         ]);
     }
     create(value?: PartialMessage<Site>): Site {
@@ -120,6 +126,9 @@ class Site$Type extends MessageType<Site> {
                     break;
                 case /* string description */ 3:
                     message.description = reader.string();
+                    break;
+                case /* v1.BaseStats base_stats */ 4:
+                    message.baseStats = BaseStats.internalBinaryRead(reader, reader.uint32(), options, message.baseStats);
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -162,6 +171,9 @@ class Site$Type extends MessageType<Site> {
         /* string description = 3; */
         if (message.description !== "")
             writer.tag(3, WireType.LengthDelimited).string(message.description);
+        /* v1.BaseStats base_stats = 4; */
+        if (message.baseStats)
+            BaseStats.internalBinaryWrite(message.baseStats, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

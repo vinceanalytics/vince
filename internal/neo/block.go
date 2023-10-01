@@ -11,6 +11,7 @@ import (
 	"github.com/parquet-go/parquet-go"
 	"github.com/thanos-io/objstore"
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
+	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
@@ -160,19 +161,20 @@ func (w *writeContext) index(ctx context.Context) {
 }
 
 func updateBaseStats(txn db.Txn, domain string, stats *blocksv1.BaseStats) error {
-	key := keys.BaseStats(domain)
-	if !txn.Has(key) {
-		return txn.Set(key, px.Encode(stats))
-	}
-	var o blocksv1.BaseStats
-	err := txn.Get(key, px.Decode(&o))
+	key := keys.Site(domain)
+	var site sitesv1.Site
+	err := txn.Get(key, px.Decode(&site))
 	if err != nil {
 		return err
 	}
-	o.PageViews += stats.PageViews
-	o.Visitors += stats.Visitors
-	o.Visits += stats.Visits
-	return txn.Set(key, px.Encode(&o))
+	if o := site.BaseStats; o != nil {
+		o.PageViews += stats.PageViews
+		o.Visitors += stats.Visitors
+		o.Visits += stats.Visits
+	} else {
+		site.BaseStats = o
+	}
+	return txn.Set(key, px.Encode(&site))
 }
 
 func (w *writeContext) cleanup(ctx context.Context) {

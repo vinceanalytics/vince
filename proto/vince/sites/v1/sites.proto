@@ -4,6 +4,7 @@ package v1;
 import "google/protobuf/duration.proto";
 import "vince/config/v1/config.proto";
 import "vince/goals/v1/goals.proto";
+import "vince/blocks/v1/blocks.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
@@ -36,6 +37,7 @@ message Site {
   string domain = 1;
   map<string, Goal> goals = 2;
   string description = 3;
+  BaseStats base_stats = 4;
 }
 
 message CreateSiteRequest {

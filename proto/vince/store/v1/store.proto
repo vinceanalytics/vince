@@ -17,7 +17,6 @@ enum StorePrefix {
   OAUTH_REFRESH = 14;
   SNIPPET = 15;
   IMPORT = 16;
-  BASE_STATS = 17;
 }
 
 message StoreKey {
