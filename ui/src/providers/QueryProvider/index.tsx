@@ -3,11 +3,13 @@ import { QueryResponse } from "../../vince"
 import { useEditor } from "../EditorProvider"
 import { getQueryRequestFromEditor } from "../../scenes/Editor/Monaco/utils"
 import { useVince } from "../VinceProvider"
+import { RpcError } from "@protobuf-ts/runtime-rpc"
 
 
 type ContextProps = {
     running: boolean
     request: string
+    error: RpcError | undefined
     result: QueryResponse | undefined
     toggleRun: () => void
     stopRunning: () => void
@@ -21,6 +23,7 @@ const defaultValues = {
     running: false,
     request: "",
     result: undefined,
+    error: undefined,
     toggleRun: () => undefined,
     stopRunning: () => undefined,
 }
@@ -32,18 +35,21 @@ export const QueryProvider = ({ children }: PropsWithChildren<{}>) => {
     const [running, setRunning] = useState<boolean>(false)
     const [request, setRequest] = useState<string>("")
     const [result, setResult] = useState<QueryResponse | undefined>(undefined)
+    const [error, setErr] = useState<RpcError | undefined>(undefined)
     const { editorRef } = useEditor()
     const { queryClient } = useVince()
     useEffect(() => {
         if (running && request !== "") {
+            setErr(undefined)
             queryClient?.query({
                 query: request,
                 params: [],
             }).then((result) => {
                 setResult(result.response)
             })
-                .catch((e) => {
-                    console.log(e)
+                .catch((e: RpcError) => {
+                    setErr(e)
+                    setRunning(false)
                 })
         }
     }, [running, queryClient, request])
@@ -70,7 +76,10 @@ export const QueryProvider = ({ children }: PropsWithChildren<{}>) => {
 
     return (
         <QueryContext.Provider
-            value={{ running, toggleRun, stopRunning, request, result }}
+            value={{
+                running, toggleRun,
+                stopRunning, request, result, error
+            }}
         >
             {children}
         </QueryContext.Provider>

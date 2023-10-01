@@ -3,6 +3,7 @@ import React, { CSSProperties, forwardRef, Ref } from "react"
 import { BoxProps, Box } from "@primer/react";
 import Monaco from "./Monaco"
 import { Menu } from "./Menu";
+import { Error } from "./Flash";
 
 
 
@@ -27,7 +28,9 @@ const Editor = ({
         overflow={"hidden"}
         ref={innerRef} {...rest}
     >
+
         <Menu />
+        <Error />
         <Monaco />
     </Box>
 )
