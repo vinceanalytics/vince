@@ -144,8 +144,9 @@ func (w *writeContext) index(ctx context.Context) {
 			Stats:  stats,
 		}
 
-		errs := make([]error, 0, len(index)+1)
+		errs := make([]error, 0, len(index)+2)
 		errs = append(errs,
+			updateBaseStats(txn, w.domain, stats),
 			txn.Set(keys.BlockMetadata(w.domain, w.id), px.Encode(info)),
 		)
 		for k, v := range index {
@@ -156,6 +157,22 @@ func (w *writeContext) index(ctx context.Context) {
 		return errors.Join(errs...)
 	})
 	f.Close()
+}
+
+func updateBaseStats(txn db.Txn, domain string, stats *blocksv1.BaseStats) error {
+	key := keys.BaseStats(domain)
+	if !txn.Has(key) {
+		return txn.Set(key, px.Encode(stats))
+	}
+	var o blocksv1.BaseStats
+	err := txn.Get(key, px.Decode(&o))
+	if err != nil {
+		return err
+	}
+	o.PageViews += stats.PageViews
+	o.Visitors += stats.Visitors
+	o.Visits += stats.Visits
+	return txn.Set(key, px.Encode(&o))
 }
 
 func (w *writeContext) cleanup(ctx context.Context) {
