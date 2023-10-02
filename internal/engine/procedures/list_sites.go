@@ -23,10 +23,10 @@ func listSites(ctx *sql.Context) (sql.RowIter, error) {
 	if err != nil {
 		return nil, err
 	}
-	return sitesToRowIter(ls.List), nil
+	return sitesToRowIter(ls.List...), nil
 }
 
-func sitesToRowIter(sites []*v1.Site) sql.RowIter {
+func sitesToRowIter(sites ...*v1.Site) sql.RowIter {
 	rows := make([]sql.Row, len(sites))
 	for i := range sites {
 		rows[i] = siteToRow(sites[i])
