@@ -10,6 +10,7 @@ import (
 var Procedures = []sql.ExternalStoredProcedureDetails{
 	{Name: "add_site", Schema: stringSchema("status"), Function: addSite},
 	{Name: "add_site", Schema: stringSchema("status"), Function: addSiteWithDescription},
+	{Name: "delete_site", Schema: stringSchema("status"), Function: deleteSite},
 }
 
 var valid = must.Must(protovalidate.New(protovalidate.WithFailFast(true)))("failed creating validator")
@@ -42,9 +43,5 @@ func int64Schema(columnNames ...string) sql.Schema {
 
 // rowToIter returns a sql.RowIter with a single row containing the values passed in.
 func rowToIter(vals ...interface{}) sql.RowIter {
-	row := make(sql.Row, len(vals))
-	for i, val := range vals {
-		row[i] = val
-	}
-	return sql.RowsToRowIter(row)
+	return sql.RowsToRowIter(vals)
 }
