@@ -5,6 +5,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/engine/session"
+	"github.com/vinceanalytics/vince/internal/scopes"
 )
 
 func addSite(ctx *sql.Context, domain string) (sql.RowIter, error) {
@@ -34,6 +35,9 @@ func doAddSite(ctx *sql.Context, req *v1.CreateSiteRequest) error {
 		return err
 	}
 	base := session.Get(ctx)
+	if err = base.Allow(scopes.CreateSite); err != nil {
+		return err
+	}
 	_, err = (&api.API{}).CreateSite(base.Context(), req)
 	return err
 }
