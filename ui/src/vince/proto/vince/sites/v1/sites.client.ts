@@ -11,7 +11,7 @@ import type { ListSitesRequest } from "./sites";
 import type { Site } from "./sites";
 import type { GetSiteRequest } from "./sites";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
-import type { CreateSiteResponse } from "./sites";
+import type { Empty } from "../../../google/protobuf/empty";
 import type { CreateSiteRequest } from "./sites";
 import type { UnaryCall } from "@protobuf-ts/runtime-rpc";
 import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
@@ -20,9 +20,9 @@ import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
  */
 export interface ISitesClient {
     /**
-     * @generated from protobuf rpc: CreateSite(v1.CreateSiteRequest) returns (v1.CreateSiteResponse);
+     * @generated from protobuf rpc: CreateSite(v1.CreateSiteRequest) returns (google.protobuf.Empty);
      */
-    createSite(input: CreateSiteRequest, options?: RpcOptions): UnaryCall<CreateSiteRequest, CreateSiteResponse>;
+    createSite(input: CreateSiteRequest, options?: RpcOptions): UnaryCall<CreateSiteRequest, Empty>;
     /**
      * @generated from protobuf rpc: GetSite(v1.GetSiteRequest) returns (v1.Site);
      */
@@ -46,11 +46,11 @@ export class SitesClient implements ISitesClient, ServiceInfo {
     constructor(private readonly _transport: RpcTransport) {
     }
     /**
-     * @generated from protobuf rpc: CreateSite(v1.CreateSiteRequest) returns (v1.CreateSiteResponse);
+     * @generated from protobuf rpc: CreateSite(v1.CreateSiteRequest) returns (google.protobuf.Empty);
      */
-    createSite(input: CreateSiteRequest, options?: RpcOptions): UnaryCall<CreateSiteRequest, CreateSiteResponse> {
+    createSite(input: CreateSiteRequest, options?: RpcOptions): UnaryCall<CreateSiteRequest, Empty> {
         const method = this.methods[0], opt = this._transport.mergeOptions(options);
-        return stackIntercept<CreateSiteRequest, CreateSiteResponse>("unary", this._transport, method, opt, input);
+        return stackIntercept<CreateSiteRequest, Empty>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: GetSite(v1.GetSiteRequest) returns (v1.Site);

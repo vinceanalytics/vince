@@ -76,7 +76,7 @@ func Query(ctx context.Context,
 func CreateSite(ctx context.Context,
 	addr, token string,
 	in *sitesv1.CreateSiteRequest,
-) (o *sitesv1.CreateSiteResponse, err error) {
+) (o *emptypb.Empty, err error) {
 	err = DoSite(ctx, addr, tokens.Source(token), func(ctx context.Context, vc sitesv1.SitesClient) error {
 		o, err = vc.CreateSite(ctx, in)
 		return err

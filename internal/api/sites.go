@@ -3,12 +3,14 @@ package api
 import (
 	"context"
 
+	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/px"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var _ sitesv1.SitesServer = (*API)(nil)
@@ -19,23 +21,22 @@ func Sites404() error {
 	return sites404
 }
 
-func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*sitesv1.CreateSiteResponse, error) {
-	response := sitesv1.CreateSiteResponse{
-		Site: &sitesv1.Site{
+func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*emptypb.Empty, error) {
+	key := keys.Site(req.Domain)
+	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
+		if txn.Has(key) {
+			return status.Error(codes.AlreadyExists, "site already exists")
+		}
+		return txn.Set(key, px.Encode(&sitesv1.Site{
 			Domain:      req.Domain,
 			Description: req.Description,
-		},
-	}
-	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
-		key := keys.Site(req.Domain)
-		return txn.Get(key, px.Decode(response.Site), func() error {
-			return txn.Set(key, px.Encode(response.Site))
-		})
+			BaseStats:   &v1.BaseStats{},
+		}))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &response, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (a *API) GetSite(ctx context.Context, req *sitesv1.GetSiteRequest) (*sitesv1.Site, error) {

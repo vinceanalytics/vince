@@ -101,7 +101,8 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1CreateSiteResponse"
+              "type": "object",
+              "properties": {}
             }
           },
           "default": {
@@ -174,14 +175,6 @@
         "visits": {
           "type": "string",
           "format": "int64"
-        }
-      }
-    },
-    "v1CreateSiteResponse": {
-      "type": "object",
-      "properties": {
-        "site": {
-          "$ref": "#/definitions/v1Site"
         }
       }
     },

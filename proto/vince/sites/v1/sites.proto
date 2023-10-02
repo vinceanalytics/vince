@@ -11,7 +11,7 @@ import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
 
 service Sites {
-  rpc CreateSite(CreateSiteRequest) returns (CreateSiteResponse) {
+  rpc CreateSite(CreateSiteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/v1/sites"
     };
@@ -47,7 +47,6 @@ message CreateSiteRequest {
   ];
   string description = 2;
 }
-message CreateSiteResponse { Site site = 1; }
 message GetSiteRequest {
   string domain = 1 [
     (buf.validate.field).string.hostname = true,
