@@ -30,19 +30,6 @@ func stringSchema(columnNames ...string) sql.Schema {
 	return sch
 }
 
-// int64Schema returns a non-nullable schema with all columns as BIGINT.
-func int64Schema(columnNames ...string) sql.Schema {
-	sch := make(sql.Schema, len(columnNames))
-	for i, colName := range columnNames {
-		sch[i] = &sql.Column{
-			Name:     colName,
-			Type:     types.Int64,
-			Nullable: false,
-		}
-	}
-	return sch
-}
-
 // rowToIter returns a sql.RowIter with a single row containing the values passed in.
 func rowToIter(vals ...interface{}) sql.RowIter {
 	return sql.RowsToRowIter(vals)
