@@ -26,10 +26,9 @@ func (DB) Name() string {
 
 func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.Table, ok bool, err error) {
 	switch strings.ToLower(tblName) {
-	case "sites":
-		return &SitesTable{
-			// sites table adds name column that returns the site name
-			schema: createSchema(append([]string{"name"}, Columns...)),
+	case eventsTableName:
+		return &eventsTable{
+			schema: createSchema(Columns),
 		}, false, nil
 	default:
 		return
@@ -38,7 +37,7 @@ func (db *DB) GetTableInsensitive(ctx *sql.Context, tblName string) (table sql.T
 }
 
 func (DB) GetTableNames(ctx *sql.Context) (names []string, err error) {
-	names = append(names, SitesTableName)
+	names = append(names, eventsTableName)
 	return
 }
 

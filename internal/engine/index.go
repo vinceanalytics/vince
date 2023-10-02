@@ -19,7 +19,7 @@ type Index struct {
 }
 
 var _ sql.Index = (*Index)(nil)
-var _ sql.IndexAddressable = (*SitesTable)(nil)
+var _ sql.IndexAddressable = (*eventsTable)(nil)
 
 func (idx *Index) Database() string                    { return "vince" }
 func (idx *Index) ColumnExpressions() []sql.Expression { return idx.Exprs }
@@ -71,7 +71,7 @@ func (i *FilterContext) build(col v1.Column, lo, hi any, op Op) {
 	if f := buildIndexFilterMatch(col, lo, hi, op); f != nil {
 		i.Index = append(i.Index, f)
 	}
-	if col == -1 && op == Eq {
+	if col == v1.Column_domain && op == Eq {
 		i.Domains = append(i.Domains, lo.(string))
 	}
 	i.Values = append(i.Values, buildValueFilterMatch(col, lo, hi, op))
@@ -147,40 +147,34 @@ func bounds(rce sql.RangeColumnExpr) (lo, hi any) {
 
 func indexedField(expr sql.Expression) v1.Column {
 	f := expr.(*expression.GetField)
-	if f.Name() == "name" {
-		return -1
-	}
 	return Indexed[f.Name()]
 }
 
-func (t *SitesTable) GetIndexes(ctx *sql.Context) ([]sql.Index, error) {
+func (t *eventsTable) GetIndexes(ctx *sql.Context) ([]sql.Index, error) {
 	return []sql.Index{t.createIndex()}, nil
 }
 
-func (t *SitesTable) createIndex() sql.Index {
+func (t *eventsTable) createIndex() sql.Index {
 	exprs := make([]sql.Expression, 0, len(t.schema.sql))
 	exprsString := make([]string, 0, len(t.schema.sql))
 	for _, column := range t.schema.sql {
-		if column.Name != "name" {
-			if _, ok := Indexed[column.Name]; !ok {
-				continue
-			}
+		if _, ok := Indexed[column.Name]; !ok {
+			continue
 		}
-
 		idx, field := t.getField(column.Name)
-		ex := expression.NewGetFieldWithTable(idx, field.Type, SitesTableName, field.Name, field.Nullable)
+		ex := expression.NewGetFieldWithTable(idx, field.Type, eventsTableName, field.Name, field.Nullable)
 		exprs = append(exprs, ex)
 		exprsString = append(exprsString, ex.String())
 	}
 	return &Index{
-		TableName:  SitesTableName,
+		TableName:  eventsTableName,
 		Exprs:      exprs,
 		exprString: exprsString,
 	}
 }
 
-func (t *SitesTable) getField(col string) (int, *sql.Column) {
-	i := t.schema.sql.IndexOf(col, SitesTableName)
+func (t *eventsTable) getField(col string) (int, *sql.Column) {
+	i := t.schema.sql.IndexOf(col, eventsTableName)
 	if i == -1 {
 		return -1, nil
 	}
@@ -188,7 +182,7 @@ func (t *SitesTable) getField(col string) (int, *sql.Column) {
 }
 
 type IndexedTable struct {
-	*SitesTable
+	*eventsTable
 	Lookup sql.IndexLookup
 }
 
@@ -201,20 +195,20 @@ func (t *IndexedTable) LookupPartitions(ctx *sql.Context, lookup sql.IndexLookup
 	db := session.Get(ctx).DB()
 	return &partitionIter{
 		txn: db.NewTransaction(false),
-		partition: Partition{
+		partition: eventPartition{
 			Filters: o,
 		},
 	}, nil
 
 }
 
-func (t *SitesTable) IndexedAccess(i sql.IndexLookup) sql.IndexedTable {
-	return &IndexedTable{SitesTable: t, Lookup: i}
+func (t *eventsTable) IndexedAccess(i sql.IndexLookup) sql.IndexedTable {
+	return &IndexedTable{eventsTable: t, Lookup: i}
 }
 
 // PartitionRows implements the sql.PartitionRows interface.
 func (t *IndexedTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
-	iter, err := t.SitesTable.PartitionRows(ctx, partition)
+	iter, err := t.eventsTable.PartitionRows(ctx, partition)
 	if err != nil {
 		return nil, err
 	}

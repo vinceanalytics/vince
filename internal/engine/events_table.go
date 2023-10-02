@@ -19,29 +19,29 @@ import (
 	"github.com/vinceanalytics/vince/internal/px"
 )
 
-type SitesTable struct {
+type eventsTable struct {
 	schema      tableSchema
 	projections []string
 }
 
-var _ sql.Table = (*SitesTable)(nil)
-var _ sql.ProjectedTable = (*SitesTable)(nil)
+var _ sql.Table = (*eventsTable)(nil)
+var _ sql.ProjectedTable = (*eventsTable)(nil)
 
-func (*SitesTable) Name() string                 { return SitesTableName }
-func (*SitesTable) String() string               { return SitesTableName }
-func (t *SitesTable) Schema() sql.Schema         { return t.schema.sql }
-func (t *SitesTable) Collation() sql.CollationID { return sql.Collation_Default }
+func (*eventsTable) Name() string                 { return eventsTableName }
+func (*eventsTable) String() string               { return eventsTableName }
+func (t *eventsTable) Schema() sql.Schema         { return t.schema.sql }
+func (t *eventsTable) Collation() sql.CollationID { return sql.Collation_Default }
 
-func (t *SitesTable) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
+func (t *eventsTable) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
 	db := session.Get(ctx).DB()
 	return &partitionIter{
 		txn: db.NewTransaction(false),
 	}, nil
 }
 
-func (t *SitesTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
+func (t *eventsTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
 	var record arrow.Record
-	part := partition.(*Partition)
+	part := partition.(*eventPartition)
 	if err := part.Valid(); err != nil {
 		return nil, err
 	}
@@ -64,25 +64,25 @@ func (t *SitesTable) PartitionRows(ctx *sql.Context, partition sql.Partition) (s
 	return newRecordIter(record), nil
 }
 
-func (t *SitesTable) WithProjections(colNames []string) sql.Table {
-	return &SitesTable{
+func (t *eventsTable) WithProjections(colNames []string) sql.Table {
+	return &eventsTable{
 		schema:      createSchema(colNames),
 		projections: colNames,
 	}
 }
 
-func (t *SitesTable) Projections() (o []string) {
+func (t *eventsTable) Projections() (o []string) {
 	return t.projections
 }
 
-type Partition struct {
+type eventPartition struct {
 	Info      blocksv1.BlockInfo
 	Filters   FilterContext
 	RowGroups []uint
 	Pages     []*bitset.BitSet
 }
 
-func (p *Partition) Valid() error {
+func (p *eventPartition) Valid() error {
 	var hasTs bool
 	for i := range p.Filters.Index {
 		if p.Filters.Index[i].Column() == v1.Column_timestamp {
@@ -96,12 +96,12 @@ func (p *Partition) Valid() error {
 	return nil
 }
 
-func (p *Partition) Key() []byte { return []byte(p.Info.Id) }
+func (p *eventPartition) Key() []byte { return []byte(p.Info.Id) }
 
 type partitionIter struct {
 	it        db.Iter
 	txn       db.Txn
-	partition Partition
+	partition eventPartition
 	idx       blocksv1.ColumnIndex
 	started   bool
 }

@@ -227,10 +227,9 @@ func newRecordIter(r arrow.Record) *recordIter {
 	return x
 }
 
-const SitesTableName = "sites"
+const eventsTableName = "events"
 
 func createSchema(columns []string) (o tableSchema) {
-
 	// Make timestamp the first column we read. This ensures we pick the right
 	// pages to read from the blocks
 	ts := storev1.Column_timestamp.String()
@@ -239,19 +238,6 @@ func createSchema(columns []string) (o tableSchema) {
 	})
 	fields := make([]arrow.Field, 0, len(columns))
 	for _, col := range columns {
-		if col == "name" {
-			// name f
-			o.sql = append(o.sql, &sql.Column{
-				Name:   col,
-				Type:   types.Text,
-				Source: SitesTableName,
-			})
-			fields = append(fields, arrow.Field{
-				Name: col,
-				Type: arrow.BinaryTypes.String,
-			})
-			continue
-		}
 		i := v1.Column(v1.Column_value[col])
 		if i <= storev1.Column_timestamp {
 			switch i {
@@ -259,7 +245,7 @@ func createSchema(columns []string) (o tableSchema) {
 				o.sql = append(o.sql, &sql.Column{
 					Name:   i.String(),
 					Type:   types.Float64,
-					Source: SitesTableName,
+					Source: eventsTableName,
 				})
 				fields = append(fields, arrow.Field{
 					Name: i.String(),
@@ -269,7 +255,7 @@ func createSchema(columns []string) (o tableSchema) {
 				o.sql = append(o.sql, &sql.Column{
 					Name:   i.String(),
 					Type:   types.Timestamp,
-					Source: SitesTableName,
+					Source: eventsTableName,
 				})
 				fields = append(fields, arrow.Field{
 					Name: i.String(),
@@ -279,7 +265,7 @@ func createSchema(columns []string) (o tableSchema) {
 				o.sql = append(o.sql, &sql.Column{
 					Name:   i.String(),
 					Type:   types.Int64,
-					Source: SitesTableName,
+					Source: eventsTableName,
 				})
 				fields = append(fields, arrow.Field{
 					Name: i.String(),
@@ -292,7 +278,7 @@ func createSchema(columns []string) (o tableSchema) {
 			Name:     i.String(),
 			Type:     types.Text,
 			Nullable: false,
-			Source:   SitesTableName,
+			Source:   eventsTableName,
 		})
 		fields = append(fields, arrow.Field{
 			Name: i.String(),

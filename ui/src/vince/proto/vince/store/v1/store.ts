@@ -130,69 +130,73 @@ export enum Column {
      */
     country = 8,
     /**
-     * @generated from protobuf enum value: entry_page = 9;
+     * @generated from protobuf enum value: domain = 9;
      */
-    entry_page = 9,
+    domain = 9,
     /**
-     * @generated from protobuf enum value: event = 10;
+     * @generated from protobuf enum value: entry_page = 10;
      */
-    event = 10,
+    entry_page = 10,
     /**
-     * @generated from protobuf enum value: exit_page = 11;
+     * @generated from protobuf enum value: event = 11;
      */
-    exit_page = 11,
+    event = 11,
     /**
-     * @generated from protobuf enum value: host = 12;
+     * @generated from protobuf enum value: exit_page = 12;
      */
-    host = 12,
+    exit_page = 12,
     /**
-     * @generated from protobuf enum value: os = 13;
+     * @generated from protobuf enum value: host = 13;
      */
-    os = 13,
+    host = 13,
     /**
-     * @generated from protobuf enum value: os_version = 14;
+     * @generated from protobuf enum value: os = 14;
      */
-    os_version = 14,
+    os = 14,
     /**
-     * @generated from protobuf enum value: path = 15;
+     * @generated from protobuf enum value: os_version = 15;
      */
-    path = 15,
+    os_version = 15,
     /**
-     * @generated from protobuf enum value: referrer = 16;
+     * @generated from protobuf enum value: path = 16;
      */
-    referrer = 16,
+    path = 16,
     /**
-     * @generated from protobuf enum value: referrer_source = 17;
+     * @generated from protobuf enum value: referrer = 17;
      */
-    referrer_source = 17,
+    referrer = 17,
     /**
-     * @generated from protobuf enum value: region = 18;
+     * @generated from protobuf enum value: referrer_source = 18;
      */
-    region = 18,
+    referrer_source = 18,
     /**
-     * @generated from protobuf enum value: screen = 19;
+     * @generated from protobuf enum value: region = 19;
      */
-    screen = 19,
+    region = 19,
     /**
-     * @generated from protobuf enum value: utm_campaign = 20;
+     * @generated from protobuf enum value: screen = 20;
      */
-    utm_campaign = 20,
+    screen = 20,
     /**
-     * @generated from protobuf enum value: utm_content = 21;
+     * @generated from protobuf enum value: utm_campaign = 21;
      */
-    utm_content = 21,
+    utm_campaign = 21,
     /**
-     * @generated from protobuf enum value: utm_medium = 22;
+     * @generated from protobuf enum value: utm_content = 22;
      */
-    utm_medium = 22,
+    utm_content = 22,
     /**
-     * @generated from protobuf enum value: utm_source = 23;
+     * @generated from protobuf enum value: utm_medium = 23;
      */
-    utm_source = 23,
+    utm_medium = 23,
     /**
-     * @generated from protobuf enum value: utm_term = 24;
+     * @generated from protobuf enum value: utm_source = 24;
      */
-    utm_term = 24
+    utm_source = 24,
+    /**
+     * @generated from protobuf enum value: utm_term = 25;
+     */
+    utm_term = 25
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class StoreKey$Type extends MessageType<StoreKey> {

@@ -189,9 +189,6 @@ func applyValueFilter(ctx context.Context,
 		fields[record.ColumnName(i)] = record.Column(i)
 	}
 	source := func(c v1.Column) arrow.Array {
-		if c == -1 {
-			return fields["name"]
-		}
 		return fields[c.String()]
 	}
 	a, err := BuildValueFilter(ctx, f, source)
