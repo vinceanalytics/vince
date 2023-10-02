@@ -26,7 +26,7 @@ type Entry struct {
 	EntryPage      string        `parquet:"entry_page,dict,zstd"`
 	ExitPage       string        `parquet:"exit_page,dict,zstd"`
 	Host           string        `parquet:"host,dict,zstd"`
-	ID             uint64        `parquet:"id,dict,zstd"`
+	ID             int64         `parquet:"id,dict,zstd"`
 	Event          string        `parquet:"event,dict,zstd"`
 	Os             string        `parquet:"os,dict,zstd"`
 	OsVersion      string        `parquet:"os_version,dict,zstd"`

@@ -63,7 +63,7 @@ func Parse(req *entry.Request, ts time.Time) (*entry.Entry, error) {
 	}
 	userID := userid.Hash(req.Ip, req.Ua, domain, host)
 	e := &entry.Entry{}
-	e.ID = userID
+	e.ID = int64(userID)
 	e.Event = req.N
 	e.Host = host
 	e.Path = path
