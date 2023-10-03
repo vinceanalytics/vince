@@ -38,7 +38,7 @@ func siteToRow(site *v1.Site) (o sql.Row) {
 	o = make(sql.Row, 5)
 	o[0] = site.Domain
 	o[1] = site.Description
-	b := site.BaseStats
+	b := site.Stats.BaseStats
 	o[2] = b.PageViews
 	o[3] = b.Visitors
 	o[4] = b.Visits

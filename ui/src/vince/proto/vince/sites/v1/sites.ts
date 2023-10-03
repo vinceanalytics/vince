@@ -13,6 +13,7 @@ import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+import { Timestamp } from "../../../google/protobuf/timestamp";
 import { BaseStats } from "../../blocks/v1/blocks";
 import { Goal } from "../../goals/v1/goals";
 /**
@@ -34,9 +35,22 @@ export interface Site {
      */
     description: string;
     /**
-     * @generated from protobuf field: v1.BaseStats base_stats = 4;
+     * @generated from protobuf field: v1.Site.Stats stats = 4;
+     */
+    stats?: Site_Stats;
+}
+/**
+ * @generated from protobuf message v1.Site.Stats
+ */
+export interface Site_Stats {
+    /**
+     * @generated from protobuf field: v1.BaseStats base_stats = 1;
      */
     baseStats?: BaseStats;
+    /**
+     * @generated from protobuf field: google.protobuf.Timestamp updated_at = 2;
+     */
+    updatedAt?: Timestamp;
 }
 /**
  * @generated from protobuf message v1.CreateSiteRequest
@@ -95,7 +109,7 @@ class Site$Type extends MessageType<Site> {
             { no: 1, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "goals", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "message", T: () => Goal } },
             { no: 3, name: "description", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 4, name: "base_stats", kind: "message", T: () => BaseStats }
+            { no: 4, name: "stats", kind: "message", T: () => Site_Stats }
         ]);
     }
     create(value?: PartialMessage<Site>): Site {
@@ -119,8 +133,8 @@ class Site$Type extends MessageType<Site> {
                 case /* string description */ 3:
                     message.description = reader.string();
                     break;
-                case /* v1.BaseStats base_stats */ 4:
-                    message.baseStats = BaseStats.internalBinaryRead(reader, reader.uint32(), options, message.baseStats);
+                case /* v1.Site.Stats stats */ 4:
+                    message.stats = Site_Stats.internalBinaryRead(reader, reader.uint32(), options, message.stats);
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -163,9 +177,9 @@ class Site$Type extends MessageType<Site> {
         /* string description = 3; */
         if (message.description !== "")
             writer.tag(3, WireType.LengthDelimited).string(message.description);
-        /* v1.BaseStats base_stats = 4; */
-        if (message.baseStats)
-            BaseStats.internalBinaryWrite(message.baseStats, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        /* v1.Site.Stats stats = 4; */
+        if (message.stats)
+            Site_Stats.internalBinaryWrite(message.stats, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -176,6 +190,60 @@ class Site$Type extends MessageType<Site> {
  * @generated MessageType for protobuf message v1.Site
  */
 export const Site = new Site$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Site_Stats$Type extends MessageType<Site_Stats> {
+    constructor() {
+        super("v1.Site.Stats", [
+            { no: 1, name: "base_stats", kind: "message", T: () => BaseStats },
+            { no: 2, name: "updated_at", kind: "message", T: () => Timestamp }
+        ]);
+    }
+    create(value?: PartialMessage<Site_Stats>): Site_Stats {
+        const message = {};
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Site_Stats>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Site_Stats): Site_Stats {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* v1.BaseStats base_stats */ 1:
+                    message.baseStats = BaseStats.internalBinaryRead(reader, reader.uint32(), options, message.baseStats);
+                    break;
+                case /* google.protobuf.Timestamp updated_at */ 2:
+                    message.updatedAt = Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.updatedAt);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: Site_Stats, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* v1.BaseStats base_stats = 1; */
+        if (message.baseStats)
+            BaseStats.internalBinaryWrite(message.baseStats, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* google.protobuf.Timestamp updated_at = 2; */
+        if (message.updatedAt)
+            Timestamp.internalBinaryWrite(message.updatedAt, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message v1.Site.Stats
+ */
+export const Site_Stats = new Site_Stats$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class CreateSiteRequest$Type extends MessageType<CreateSiteRequest> {
     constructor() {

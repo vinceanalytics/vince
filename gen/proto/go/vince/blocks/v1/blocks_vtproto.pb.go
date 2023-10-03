@@ -5,9 +5,13 @@
 package v1
 
 import (
+	binary "encoding/binary"
 	fmt "fmt"
+	proto "google.golang.org/protobuf/proto"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
+	math "math"
 	bits "math/bits"
 )
 
@@ -47,6 +51,28 @@ func (m *BlockInfo) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.CreatedAt != nil {
+		if vtmsg, ok := interface{}(m.CreatedAt).(interface {
+			MarshalToSizedBufferVT([]byte) (int, error)
+		}); ok {
+			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+		} else {
+			encoded, err := proto.Marshal(m.CreatedAt)
+			if err != nil {
+				return 0, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = encodeVarint(dAtA, i, uint64(len(encoded)))
+		}
+		i--
+		dAtA[i] = 0x32
 	}
 	if m.Stats != nil {
 		size, err := m.Stats.MarshalToSizedBufferVT(dAtA[:i])
@@ -275,6 +301,18 @@ func (m *BaseStats) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.BounceRate != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.BounceRate))))
+		i--
+		dAtA[i] = 0x29
+	}
+	if m.Duration != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.Duration))))
+		i--
+		dAtA[i] = 0x21
+	}
 	if m.Visits != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.Visits))
 		i--
@@ -326,6 +364,16 @@ func (m *BlockInfo) SizeVT() (n int) {
 	}
 	if m.Stats != nil {
 		l = m.Stats.SizeVT()
+		n += 1 + l + sov(uint64(l))
+	}
+	if m.CreatedAt != nil {
+		if size, ok := interface{}(m.CreatedAt).(interface {
+			SizeVT() int
+		}); ok {
+			l = size.SizeVT()
+		} else {
+			l = proto.Size(m.CreatedAt)
+		}
 		n += 1 + l + sov(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -410,6 +458,12 @@ func (m *BaseStats) SizeVT() (n int) {
 	}
 	if m.Visits != 0 {
 		n += 1 + sov(uint64(m.Visits))
+	}
+	if m.Duration != 0 {
+		n += 9
+	}
+	if m.BounceRate != 0 {
+		n += 9
 	}
 	n += len(m.unknownFields)
 	return n
@@ -586,6 +640,50 @@ func (m *BlockInfo) UnmarshalVT(dAtA []byte) error {
 			}
 			if err := m.Stats.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CreatedAt", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.CreatedAt == nil {
+				m.CreatedAt = &timestamppb.Timestamp{}
+			}
+			if unmarshal, ok := interface{}(m.CreatedAt).(interface {
+				UnmarshalVT([]byte) error
+			}); ok {
+				if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+					return err
+				}
+			} else {
+				if err := proto.Unmarshal(dAtA[iNdEx:postIndex], m.CreatedAt); err != nil {
+					return err
+				}
 			}
 			iNdEx = postIndex
 		default:
@@ -1065,6 +1163,28 @@ func (m *BaseStats) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
+		case 4:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Duration", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.Duration = float64(math.Float64frombits(v))
+		case 5:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BounceRate", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.BounceRate = float64(math.Float64frombits(v))
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

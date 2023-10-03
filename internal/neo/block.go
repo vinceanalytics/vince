@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/oklog/ulid/v2"
 	"github.com/parquet-go/parquet-go"
@@ -13,11 +14,13 @@ import (
 	blocksv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/px"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Ingest struct {
@@ -131,6 +134,7 @@ func (w *writeContext) upload(ctx context.Context) {
 func (w *writeContext) index(ctx context.Context) {
 	w.log.Info("indexing block")
 	f := must.Must(os.Open(w.name))("failed opening block file")
+	now := core.Now(ctx)
 	db.Get(ctx).Txn(true, func(txn db.Txn) error {
 		index, stats, err := IndexBlockFile(ctx, f)
 		if err != nil {
@@ -138,16 +142,17 @@ func (w *writeContext) index(ctx context.Context) {
 		}
 		ts := index[v1.Column_timestamp]
 		info := &blocksv1.BlockInfo{
-			Id:     w.id,
-			Domain: w.domain,
-			Min:    ts.Min,
-			Max:    ts.Max,
-			Stats:  stats,
+			Id:        w.id,
+			Domain:    w.domain,
+			Min:       ts.Min,
+			Max:       ts.Max,
+			Stats:     stats,
+			CreatedAt: timestamppb.New(now),
 		}
 
 		errs := make([]error, 0, len(index)+2)
 		errs = append(errs,
-			updateBaseStats(txn, w.domain, stats),
+			updateBaseStats(txn, now, w.domain, stats),
 			txn.Set(keys.BlockMetadata(w.domain, w.id), px.Encode(info)),
 		)
 		for k, v := range index {
@@ -160,19 +165,16 @@ func (w *writeContext) index(ctx context.Context) {
 	f.Close()
 }
 
-func updateBaseStats(txn db.Txn, domain string, stats *blocksv1.BaseStats) error {
+func updateBaseStats(txn db.Txn, ts time.Time, domain string, stats *blocksv1.BaseStats) error {
 	key := keys.Site(domain)
 	var site sitesv1.Site
 	err := txn.Get(key, px.Decode(&site))
 	if err != nil {
 		return err
 	}
-	if o := site.BaseStats; o != nil {
-		o.PageViews += stats.PageViews
-		o.Visitors += stats.Visitors
-		o.Visits += stats.Visits
-	} else {
-		site.BaseStats = o
+	site.Stats = &sitesv1.Site_Stats{
+		BaseStats: stats,
+		UpdatedAt: timestamppb.New(ts),
 	}
 	return txn.Set(key, px.Encode(&site))
 }

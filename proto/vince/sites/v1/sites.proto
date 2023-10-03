@@ -37,7 +37,12 @@ message Site {
   string domain = 1;
   map<string, Goal> goals = 2;
   string description = 3;
-  BaseStats base_stats = 4;
+  Stats stats = 4;
+
+  message Stats {
+    BaseStats base_stats = 1;
+    google.protobuf.Timestamp updated_at = 2;
+  }
 }
 
 message CreateSiteRequest {

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/dolthub/go-mysql-server/sql"
+	"github.com/vinceanalytics/vince/internal/engine/functions"
 	"github.com/vinceanalytics/vince/internal/engine/procedures"
 )
 
@@ -85,6 +86,7 @@ func (db *DB) AllViews(ctx *sql.Context) ([]sql.ViewDefinition, error) {
 
 var _ sql.DatabaseProvider = (*Provider)(nil)
 var _ sql.FunctionProvider = (*Provider)(nil)
+var _ sql.TableFunctionProvider = (*Provider)(nil)
 var _ sql.ExternalStoredProcedureProvider = (*Provider)(nil)
 
 type Provider struct {
@@ -105,6 +107,15 @@ func (p *Provider) Function(ctx *sql.Context, name string) (sql.Function, error)
 		return nil, sql.ErrFunctionNotFound.New(name)
 	}
 	return fn, nil
+}
+
+func (p *Provider) TableFunction(_ *sql.Context, name string) (sql.TableFunction, error) {
+	switch strings.ToLower(name) {
+	case "base_stats":
+		return &functions.BaseStats{}, nil
+	default:
+		return nil, sql.ErrTableFunctionNotFound.New(name)
+	}
 }
 
 func (p *Provider) Database(_ *sql.Context, name string) (sql.Database, error) {

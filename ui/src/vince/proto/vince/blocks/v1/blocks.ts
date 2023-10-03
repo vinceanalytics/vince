@@ -11,6 +11,7 @@ import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+import { Timestamp } from "../../../google/protobuf/timestamp";
 /**
  * @generated from protobuf message v1.BlockInfo
  */
@@ -35,6 +36,10 @@ export interface BlockInfo {
      * @generated from protobuf field: v1.BaseStats stats = 5;
      */
     stats?: BaseStats;
+    /**
+     * @generated from protobuf field: google.protobuf.Timestamp created_at = 6;
+     */
+    createdAt?: Timestamp;
 }
 /**
  * @generated from protobuf message v1.ColumnIndex
@@ -105,6 +110,14 @@ export interface BaseStats {
      * @generated from protobuf field: int64 visits = 3;
      */
     visits: bigint;
+    /**
+     * @generated from protobuf field: double duration = 4;
+     */
+    duration: number;
+    /**
+     * @generated from protobuf field: double bounce_rate = 5;
+     */
+    bounceRate: number;
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class BlockInfo$Type extends MessageType<BlockInfo> {
@@ -114,7 +127,8 @@ class BlockInfo$Type extends MessageType<BlockInfo> {
             { no: 2, name: "domain", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 3, name: "min", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 4, name: "max", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 5, name: "stats", kind: "message", T: () => BaseStats }
+            { no: 5, name: "stats", kind: "message", T: () => BaseStats },
+            { no: 6, name: "created_at", kind: "message", T: () => Timestamp }
         ]);
     }
     create(value?: PartialMessage<BlockInfo>): BlockInfo {
@@ -144,6 +158,9 @@ class BlockInfo$Type extends MessageType<BlockInfo> {
                 case /* v1.BaseStats stats */ 5:
                     message.stats = BaseStats.internalBinaryRead(reader, reader.uint32(), options, message.stats);
                     break;
+                case /* google.protobuf.Timestamp created_at */ 6:
+                    message.createdAt = Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.createdAt);
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -171,6 +188,9 @@ class BlockInfo$Type extends MessageType<BlockInfo> {
         /* v1.BaseStats stats = 5; */
         if (message.stats)
             BaseStats.internalBinaryWrite(message.stats, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
+        /* google.protobuf.Timestamp created_at = 6; */
+        if (message.createdAt)
+            Timestamp.internalBinaryWrite(message.createdAt, writer.tag(6, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -370,11 +390,13 @@ class BaseStats$Type extends MessageType<BaseStats> {
         super("v1.BaseStats", [
             { no: 1, name: "page_views", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 2, name: "visitors", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 3, name: "visits", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
+            { no: 3, name: "visits", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 4, name: "duration", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
+            { no: 5, name: "bounce_rate", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
         ]);
     }
     create(value?: PartialMessage<BaseStats>): BaseStats {
-        const message = { pageViews: 0n, visitors: 0n, visits: 0n };
+        const message = { pageViews: 0n, visitors: 0n, visits: 0n, duration: 0, bounceRate: 0 };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<BaseStats>(this, message, value);
@@ -393,6 +415,12 @@ class BaseStats$Type extends MessageType<BaseStats> {
                     break;
                 case /* int64 visits */ 3:
                     message.visits = reader.int64().toBigInt();
+                    break;
+                case /* double duration */ 4:
+                    message.duration = reader.double();
+                    break;
+                case /* double bounce_rate */ 5:
+                    message.bounceRate = reader.double();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -415,6 +443,12 @@ class BaseStats$Type extends MessageType<BaseStats> {
         /* int64 visits = 3; */
         if (message.visits !== 0n)
             writer.tag(3, WireType.Varint).int64(message.visits);
+        /* double duration = 4; */
+        if (message.duration !== 0)
+            writer.tag(4, WireType.Bit64).double(message.duration);
+        /* double bounce_rate = 5; */
+        if (message.bounceRate !== 0)
+            writer.tag(5, WireType.Bit64).double(message.bounceRate);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

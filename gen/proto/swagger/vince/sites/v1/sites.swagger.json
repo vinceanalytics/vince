@@ -133,6 +133,18 @@
     }
   },
   "definitions": {
+    "SiteStats": {
+      "type": "object",
+      "properties": {
+        "baseStats": {
+          "$ref": "#/definitions/v1BaseStats"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "googlerpcStatus": {
       "type": "object",
       "properties": {
@@ -175,6 +187,14 @@
         "visits": {
           "type": "string",
           "format": "int64"
+        },
+        "duration": {
+          "type": "number",
+          "format": "double"
+        },
+        "bounceRate": {
+          "type": "number",
+          "format": "double"
         }
       }
     },
@@ -234,8 +254,8 @@
         "description": {
           "type": "string"
         },
-        "baseStats": {
-          "$ref": "#/definitions/v1BaseStats"
+        "stats": {
+          "$ref": "#/definitions/SiteStats"
         }
       }
     }

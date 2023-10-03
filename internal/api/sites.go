@@ -5,12 +5,14 @@ import (
 
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
 	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
+	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/px"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var _ sitesv1.SitesServer = (*API)(nil)
@@ -30,7 +32,10 @@ func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*
 		return txn.Set(key, px.Encode(&sitesv1.Site{
 			Domain:      req.Domain,
 			Description: req.Description,
-			BaseStats:   &v1.BaseStats{},
+			Stats: &sitesv1.Site_Stats{
+				BaseStats: &v1.BaseStats{},
+				UpdatedAt: timestamppb.New(core.Now(ctx)),
+			},
 		}))
 	})
 	if err != nil {

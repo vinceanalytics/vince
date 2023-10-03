@@ -9,6 +9,7 @@ message BlockInfo {
   int64 min = 3;
   int64 max = 4;
   BaseStats stats = 5;
+  google.protobuf.Timestamp created_at = 6;
 }
 
 message ColumnIndex {
@@ -34,4 +35,6 @@ message BaseStats {
   int64 page_views = 1;
   int64 visitors = 2;
   int64 visits = 3;
+  double duration = 4;
+  double bounce_rate = 5;
 }
