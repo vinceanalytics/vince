@@ -35,13 +35,15 @@ func sitesToRowIter(sites ...*v1.Site) sql.RowIter {
 }
 
 func siteToRow(site *v1.Site) (o sql.Row) {
-	o = make(sql.Row, 5)
+	o = make(sql.Row, 7)
 	o[0] = site.Domain
 	o[1] = site.Description
 	b := site.Stats.BaseStats
 	o[2] = b.PageViews
 	o[3] = b.Visitors
 	o[4] = b.Visits
+	o[5] = b.BounceRate
+	o[7] = b.Duration
 	return
 }
 
@@ -52,5 +54,7 @@ func siteSchema() sql.Schema {
 		{Name: "page_views", Type: types.Int64},
 		{Name: "visitors", Type: types.Int64},
 		{Name: "visits", Type: types.Int64},
+		{Name: "bounce_rate", Type: types.Float64},
+		{Name: "visit_duration", Type: types.Float64},
 	}
 }

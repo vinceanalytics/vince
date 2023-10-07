@@ -7,9 +7,11 @@ import (
 	"io"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/apache/arrow/go/v14/arrow/array"
 	"github.com/apache/arrow/go/v14/arrow/compute"
+	"github.com/apache/arrow/go/v14/arrow/math"
 	"github.com/apache/arrow/go/v14/arrow/scalar"
 	"github.com/parquet-go/parquet-go"
 	blockv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
@@ -78,12 +80,13 @@ func IndexBlockFile(ctx context.Context, f *os.File) (map[storev1.Column]*blockv
 			idx.RowGroups = append(idx.RowGroups, rg)
 		}
 	}
-	views, visitors, visits, err := baseStats(ctx, r)
+	views, visitors, visits, sessionDuration, bounceRate, err := baseStats(ctx, r)
 	if err != nil {
 		return nil, nil, err
 	}
 	return cols, &blockv1.BaseStats{
 		PageViews: views, Visitors: visitors, Visits: visits,
+		Duration: sessionDuration, BounceRate: bounceRate,
 	}, nil
 }
 
@@ -97,7 +100,9 @@ func readFilter(b parquet.BloomFilter) []byte {
 }
 
 // Computes base stats per parquet file
-func baseStats(ctx context.Context, r *parquet.File) (pageViews, visitors, visits int64, err error) {
+func baseStats(ctx context.Context, r *parquet.File) (
+	pageViews, visitors, visits int64,
+	sessionDuration, bounceRate float64, err error) {
 	ctx = entry.Context(ctx)
 	schema := r.Schema()
 	c, ok := schema.Lookup(storev1.Column_event.String())
@@ -118,24 +123,44 @@ func baseStats(ctx context.Context, r *parquet.File) (pageViews, visitors, visit
 		return
 	}
 	session := c.ColumnIndex
+	d, ok := schema.Lookup(storev1.Column_duration.String())
+	if !ok {
+		err = errors.New("parquet file missing duration column")
+		return
+	}
+	duration := d.ColumnIndex
+	b, ok := schema.Lookup(storev1.Column_bounce.String())
+	if !ok {
+		err = errors.New("parquet file missing duration column")
+		return
+	}
+	bounce := b.ColumnIndex
 
 	pageviewBuilder := array.NewStringBuilder(entry.Pool)
 	idBuilder := array.NewInt64Builder(entry.Pool)
 	sessionBuilder := array.NewInt64Builder(entry.Pool)
+	durationBuilder := array.NewInt64Builder(entry.Pool)
+	bounceBuilder := array.NewInt64Builder(entry.Pool)
 	defer func() {
 		pageviewBuilder.Release()
 		idBuilder.Release()
 		sessionBuilder.Release()
+		durationBuilder.Release()
+		bounceBuilder.Release()
 	}()
 	readPages := readString(pageviewBuilder)
 	readId := readInt64(idBuilder)
 	readSession := readInt64(sessionBuilder)
+	readDuration := readInt64(durationBuilder)
+	readBounce := readInt64(bounceBuilder)
 	var eg errgroup.Group
 	for _, rg := range r.RowGroups() {
 		chunks := rg.ColumnChunks()
 		eg.Go(readColumn(readPages, chunks[event]))
 		eg.Go(readColumn(readId, chunks[id]))
 		eg.Go(readColumn(readSession, chunks[session]))
+		eg.Go(readColumn(readDuration, chunks[duration]))
+		eg.Go(readColumn(readBounce, chunks[bounce]))
 	}
 	err = eg.Wait()
 	if err != nil {
@@ -174,6 +199,16 @@ func baseStats(ctx context.Context, r *parquet.File) (pageViews, visitors, visit
 	}
 	visits = int64(sb.Len())
 	sb.Release()
+
+	da := durationBuilder.NewInt64Array()
+	durationSum := math.Int64.Sum(da)
+	da.Release()
+	sessionDuration = time.Duration(durationSum).Seconds() / float64(visits)
+
+	ba := bounceBuilder.NewInt64Array()
+	bounceSum := math.Int64.Sum(ba)
+	ba.Release()
+	bounceRate = float64(bounceSum) / float64(visits) * 100
 	return
 }
 
