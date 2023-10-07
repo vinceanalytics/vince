@@ -99,7 +99,14 @@ func readFilter(b parquet.BloomFilter) []byte {
 	return o
 }
 
-// Computes base stats per parquet file
+// Computes base stats per parquet file. Row groups are read concurrently. Base
+// stats are calculated as follows.
+//
+//	pageViews: Counts name column with value "pageview"
+//	visitors: counts unique id column values
+//	visits: counts unique session column
+//	sessionDuration: sum of duration column divide vy visits
+//	bounceRate: percentage of sum of bounce column to visits
 func baseStats(ctx context.Context, r *parquet.File) (
 	pageViews, visitors, visits int64,
 	sessionDuration, bounceRate float64, err error) {
