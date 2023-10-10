@@ -108,8 +108,8 @@ vince login --token
 You can add a website to allow collection of web analytics using mysql api with
 the procedure `add_site` which accepts the domain name of the site as the first argument and optionally site description as a second argument.
 
-Site domain, is the part of the website url without `http://``|``http://` or
-`wwww`. Example domain for https:www.vinceanalytics.com is `vinceanalytics.com`
+Site domain, is the part of the website url without `http://` or `http://` or
+`wwww`. Example domain for `https://www.vinceanalytics.com` is `vinceanalytics.com`
 
 There is no limit on the number of sites that can be added. Also you can setup and sent events for sites that have not been added (the events will just be dropped).
 
