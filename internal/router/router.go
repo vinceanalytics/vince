@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/vinceanalytics/vince/assets"
 	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/a2"
 	"github.com/vinceanalytics/vince/internal/api"
@@ -55,10 +54,7 @@ func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		tracker.Serve(w, r)
 		return
 	}
-	if assets.Match(r.URL.Path) {
-		assets.FS.ServeHTTP(w, r)
-		return
-	}
+
 	if strings.HasPrefix(r.URL.Path, "/debug/pprof/") {
 		h.pprof.ServeHTTP(w, r)
 		return

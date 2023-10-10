@@ -1,6 +1,6 @@
 
 <p align="center">
-    <img src="./assets/ui/logo.svg" alt="Vince Logo" />
+    <img src="./assets/logo.svg" alt="Vince Logo" />
 </p>
 
 > :warning: **This is still under early development its not in a usable state yet**. 
