@@ -10,11 +10,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/must"
 )
 
-var funcs = map[string]sql.Function{
-	TimeBucketName: sql.FunctionN{
-		Name: TimeBucketName,
-		Fn:   NewTimeBucket,
-	},
+var VinceFuncs = []sql.Function{
+	sql.FunctionN{Name: TimeBucketName, Fn: NewTimeBucket},
 }
 
 const TimeBucketName = "time_bucket"

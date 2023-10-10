@@ -91,6 +91,7 @@ var _ sql.ExternalStoredProcedureProvider = (*Provider)(nil)
 
 type Provider struct {
 	externalProcedures sql.ExternalStoredProcedureRegistry
+	funcs              map[string]sql.Function
 }
 
 func NewProvider() *Provider {
@@ -98,11 +99,15 @@ func NewProvider() *Provider {
 	for _, esp := range procedures.Procedures {
 		externalProcedures.Register(esp)
 	}
-	return &Provider{externalProcedures: externalProcedures}
+	funcs := make(map[string]sql.Function)
+	for _, f := range VinceFuncs {
+		funcs[strings.ToLower(f.FunctionName())] = f
+	}
+	return &Provider{externalProcedures: externalProcedures, funcs: funcs}
 }
 
 func (p *Provider) Function(ctx *sql.Context, name string) (sql.Function, error) {
-	fn, ok := funcs[strings.ToLower(name)]
+	fn, ok := p.funcs[strings.ToLower(name)]
 	if !ok {
 		return nil, sql.ErrFunctionNotFound.New(name)
 	}

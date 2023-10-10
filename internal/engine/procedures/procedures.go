@@ -18,6 +18,9 @@ var Procedures = []sql.ExternalStoredProcedureDetails{
 	{Name: "get_goal", Schema: goalSchema, Function: getGoal},
 	{Name: "list_goals", Schema: goalSchema, Function: listGoal},
 	{Name: "delete_goal", Schema: stringSchema("status"), Function: deleteGoal},
+
+	// build
+	{Name: "get_info", Schema: infoSchema, Function: getInfo},
 }
 
 var valid = must.Must(protovalidate.New(protovalidate.WithFailFast(true)))("failed creating validator")
