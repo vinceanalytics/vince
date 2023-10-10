@@ -101,3 +101,27 @@ vince login --token
 ```
 
 </details>
+
+<details markdown=1>
+<summary>Add site</summary>
+
+You can add a website to allow collection of web analytics using mysql api with
+the procedure `add_site` which accepts the domain name of the site as the first argument and optionally site description as a second argument.
+
+Site domain, is the part of the website url without `http://``|``http://` or
+`wwww`. Example domain for https:www.vinceanalytics.com is `vinceanalytics.com`
+
+There is no limit on the number of sites that can be added. Also you can setup and sent events for sites that have not been added (the events will just be dropped).
+
+Please see `Embedding js tracker` section on how to setup tracker script on your website to start collecting and send web analytics to your vince instance.
+</details>
+
+```shell
+mysql> call add_site('example.com');
++--------+
+| status |
++--------+
+| ok     |
++--------+
+1 row in set (0.00 sec)
+```
