@@ -26,6 +26,8 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 
 ## Usage
 
+Throughout this guide we will be using `http://localhost:8080` to refer to the url where you self hosted vince instance. We expect the url to change to the internet accessible url where you self hosted your vince instance.`example.com` is used to represent your website that you wish to track.
+
 <details markdown="1">
 <summary>Install</summary>
 
@@ -124,4 +126,18 @@ mysql> call add_site('example.com');
 | ok     |
 +--------+
 1 row in set (0.00 sec)
+```
+
+
+<details markdown="1">
+<summary>Embedding js tracker</summary>
+Vince instance hosts and serve the javascript tracker that you can embed in
+your website.
+
+Update `html` of your website to include the script in the `head` tag of your
+`html`
+</details>
+
+```html
+<script defer data-domain="example.com" src="http://localhost:8080/js/vince.js"></script>
 ```
