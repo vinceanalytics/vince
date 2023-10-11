@@ -32,6 +32,7 @@ Throughout this guide we will be using `http://localhost:8080` to refer to the u
 
 <details markdown="1">
 <summary>Install</summary>
+
 vince provides a single binary `vince` that provides both the server and client
 functionality. For now only `Mac OS` and `Linux` are supported. 
 </details>
@@ -51,6 +52,7 @@ docker pull ghcr.io/vinceanalytics/vince
 
 <details markdown="1">
 <summary>Initialize a project</summary>
+
 `vince init` sets up a directory for serving vince instance. This includes creating directories for databases and generating of configurations. You can later edit generated configuration file to reflect what you need.
 
 ```bash
