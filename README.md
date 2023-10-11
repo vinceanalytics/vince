@@ -3,7 +3,9 @@
     <img src="./assets/logo.svg" alt="Vince Logo" />
 </p>
 
-> :warning: **This is still under early development its not in a usable state yet**. 
+
+> **Warning**
+> This is still under early development its not in a usable state yet
 
 # vince
 
