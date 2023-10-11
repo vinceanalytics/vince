@@ -13,7 +13,8 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 
 > **note**
 > Vince does not support realtime queries. Events are processed daily at configured time of the day.
-> There is a possibility you will have to wait 24h to be able to get actionable insight from your site.
+> There is a possibility you will have to wait 24h to be able to get actionable insight from your site
+> when you configure it for the first time.
 
 # Features
 
