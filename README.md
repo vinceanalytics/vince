@@ -86,7 +86,7 @@ VINCE_ROOT_PASSWORD=xxxxx vince init example
 
 Vince binds to two ports, one for vince api and another for mysql api.
 
-``bash
+```bash
 NAME:
    vince serve - Serves web ui console and expose /api/events that collects web analytics
 
