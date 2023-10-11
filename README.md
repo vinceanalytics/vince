@@ -48,26 +48,36 @@ docker pull ghcr.io/vinceanalytics/vince
 
 <details markdown="1">
 <summary>Initialize a project</summary>
+`vince init` sets up a directory for serving vince instance. This includes creating directories for databases and generating of configurations. You can later edit generated configuration file to reflect what you need.
 
+```bash
+NAME:
+   vince init - Initializes a vince project
+
+USAGE:
+   vince init [command [command options]] [arguments...]
+
+OPTIONS:
+   -i                Shows interactive prompt for username and password (default: false) || --no-i  Shows interactive prompt for username and password (default: false)
+   --username value  Name of the root user (default: "root") [$VINCE_ROOT_USER]
+   --password value  password of the root user (default: "vince") [$VINCE_ROOT_PASSWORD]
+   --help, -h        show help (default: false)
+```
+
+Vince instances are password protected. Access to resources is provided via JWT tokens served using the builtin oauth2 server.
+
+</details>
 ```bash
 VINCE_ROOT_PASSWORD=xxxxx vince init example
 ```
 
-</details>
-
 <details markdown="1">
-<summary>Serve analytics collection api and web console</summary>
-
-__Start server__
+<summary>Start  server</summary>
+Vince binds to two ports, one for vince api and another for mysql api.
+</details>
 ```bash
 vince serve example
 ```
-
-The script for embedding will be served under `localhost:8080/js/vince.js`.
-Web analytics events are collected on `localhost:8080/api/events` endpoint.
-
-</details>
-
 <details markdown="1">
 <summary>Login</summary>
 
