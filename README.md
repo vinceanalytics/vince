@@ -17,12 +17,11 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 - :white_check_mark: Time on site tracking
 - :white_check_mark: Conversion tracking 
 - :white_check_mark: Multiple site management
-- :negative_squared_cross_mark: User Interaction Management 
 - :white_check_mark: Campaign Management 
-- :negative_squared_cross_mark: Report Generation
+- :x: Report Generation
 - :white_check_mark: Goal Tracking 
 - :white_check_mark: Event Tracking 
-- :negative_squared_cross_mark: Cloud Native (seamless k8s integration)
+- :x: Cloud Native (seamless k8s integration)
 - :white_check_mark: API for sites management
 - :white_check_mark: No runtime dependency (Static binary with everything you need)
 
