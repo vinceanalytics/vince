@@ -83,6 +83,7 @@ Vince binds to two ports, one for vince api and another for mysql api.
 ```bash
 vince serve example
 ```
+
 <details markdown="1">
 <summary>Login</summary>
 
