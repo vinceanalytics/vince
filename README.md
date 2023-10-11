@@ -11,6 +11,10 @@
 
 The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parquet.
 
+> **note**
+> Vince does not support realtime queries. Events are processed daily at configured time of the day.
+> There is a possibility you will have to wait 24h to be able to analyze your site traffick
+
 # Features
 
 - :white_check_mark: SQL for querying stats (All MySQL compatible clients are supported)
