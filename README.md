@@ -67,6 +67,7 @@ OPTIONS:
 Vince instances are password protected. Access to resources is provided via JWT tokens served using the builtin oauth2 server.
 
 </details>
+
 ```bash
 VINCE_ROOT_PASSWORD=xxxxx vince init example
 ```
