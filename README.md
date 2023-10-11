@@ -32,6 +32,10 @@ Throughout this guide we will be using `http://localhost:8080` to refer to the u
 
 <details markdown="1">
 <summary>Install</summary>
+vince provides a single binary `vince` that provides both the server and client
+functionality. For now only `Mac OS` and `Linux` are supported. 
+</details>
+
 
 ```bash
 curl -fsSL https://github.com/vinceanalytics/vince/releases/latest/download/install.sh | bash
@@ -44,7 +48,6 @@ brew install vinceanalytics/tap/vince
 ```bash
 docker pull ghcr.io/vinceanalytics/vince
 ```
-</details>
 
 <details markdown="1">
 <summary>Initialize a project</summary>
@@ -76,6 +79,7 @@ VINCE_ROOT_PASSWORD=xxxxx vince init example
 <summary>Start  server</summary>
 Vince binds to two ports, one for vince api and another for mysql api.
 </details>
+
 ```bash
 vince serve example
 ```
