@@ -83,7 +83,30 @@ VINCE_ROOT_PASSWORD=xxxxx vince init example
 
 <details markdown="1">
 <summary>Start  server</summary>
+
 Vince binds to two ports, one for vince api and another for mysql api.
+
+``bash
+NAME:
+   vince serve - Serves web ui console and expose /api/events that collects web analytics
+
+USAGE:
+   vince serve [command [command options]] [arguments...]
+
+OPTIONS:
+   core
+
+   --db-path value        path to main database (default: "db") [$VINCE_DB_PATH]
+   --enable-profile       Expose /debug/pprof endpoint (default: false) [$VINCE_ENABLE_PROFILE]
+   --env value            Deployment environment (default: "dev") [$VINCE_ENV]
+   --listen value         http address to listen to (default: ":8080") [$VINCE_LISTEN]
+   --listen-mysql value   serve mysql clients on this address (default: ":3306") [$VINCE_MYSQL_LISTEN]
+   --log-level value      log level, values are (trace,debug,info,warn,error,fatal,panic) (default: "debug") [$VINCE_LOG_LEVEL]
+   --tls-cert-file value  path to tls certificate [$VINCE_TLS_CERT_FILE]
+   --tls-key-file value   path to tls key [$VINCE_TLS_KEY_FILE]
+
+```
+
 </details>
 
 ```bash
