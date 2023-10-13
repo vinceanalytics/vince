@@ -17,6 +17,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
+	"github.com/vinceanalytics/vince/internal/g"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/px"
@@ -119,6 +120,7 @@ func (a *Ingest) get(domain string) *writeContext {
 			slog.String("temp_file", file.Name()),
 		)
 		a.ctx.Store(domain, w)
+		a.seen(domain)
 		return w
 	}
 	return df.(*writeContext)
@@ -129,6 +131,32 @@ func (w *writeContext) upload(ctx context.Context) {
 	f := must.Must(os.Open(w.name))("failed opening block file")
 	must.One(w.o.Upload(ctx, w.id, f))("failed uploading block to permanent storage")
 	f.Close()
+}
+
+func (a *Ingest) seen(domain string) {
+	g.Get(a).Go(a.setSeen(domain))
+}
+
+func (a *Ingest) setSeen(domain string) func() error {
+	return func() error {
+		key := keys.Site(domain)
+		err := db.Get(a).Txn(true, func(txn db.Txn) error {
+			var site sitesv1.Site
+			err := txn.Get(key, px.Decode(&site))
+			if err != nil {
+				return err
+			}
+			site.SeenFirstEvent = true
+			return txn.Set(key, px.Encode(&site))
+		})
+		if err != nil {
+			a.log.Error("failed to set SeenFirstEvent on site",
+				"domain", domain,
+				"err", err,
+			)
+		}
+		return nil
+	}
 }
 
 func (w *writeContext) index(ctx context.Context) {

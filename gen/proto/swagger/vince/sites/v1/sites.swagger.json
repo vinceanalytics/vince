@@ -256,6 +256,10 @@
         },
         "stats": {
           "$ref": "#/definitions/SiteStats"
+        },
+        "seenFirstEvent": {
+          "type": "boolean",
+          "description": "Set to true if this site has received first event. Only used to signal if\nthe site was properly configured."
         }
       }
     }

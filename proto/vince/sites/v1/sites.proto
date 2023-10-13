@@ -39,6 +39,10 @@ message Site {
   string description = 3;
   Stats stats = 4;
 
+  // Set to true if this site has received first event. Only used to signal if
+  // the site was properly configured.
+  bool seen_first_event = 5;
+
   message Stats {
     BaseStats base_stats = 1;
     google.protobuf.Timestamp updated_at = 2;

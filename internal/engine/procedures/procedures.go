@@ -13,6 +13,8 @@ var Procedures = []sql.ExternalStoredProcedureDetails{
 	{Name: "get_site", Schema: siteSchema(), Function: getSite},
 	{Name: "list_sites", Schema: siteSchema(), Function: listSites},
 	{Name: "delete_site", Schema: stringSchema("status"), Function: deleteSite},
+	{Name: "seen_first_event", Schema: boolSchema("seen_first_event"), Function: seenFirstEvent},
+
 	// goals api
 	{Name: "create_goal", Schema: stringSchema("status"), Function: createGoal},
 	{Name: "get_goal", Schema: goalSchema, Function: getGoal},
@@ -41,4 +43,16 @@ func stringSchema(columnNames ...string) sql.Schema {
 // rowToIter returns a sql.RowIter with a single row containing the values passed in.
 func rowToIter(vals ...interface{}) sql.RowIter {
 	return sql.RowsToRowIter(vals)
+}
+
+func boolSchema(columnNames ...string) sql.Schema {
+	sch := make(sql.Schema, len(columnNames))
+	for i, colName := range columnNames {
+		sch[i] = &sql.Column{
+			Name:     colName,
+			Type:     types.Boolean,
+			Nullable: false,
+		}
+	}
+	return sch
 }
