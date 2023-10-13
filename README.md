@@ -199,18 +199,6 @@ site.
 - `0`: when not configured
 - `1`: when configured
 
-When site is not configured
-
-```bash
-mysql> call seen_first_event('example.com');
-+------------------+
-| seen_first_event |
-+------------------+
-|                0 |
-+------------------+
-1 row in set (0.00 sec)
-```
-
 </details>
 
 ```bash
