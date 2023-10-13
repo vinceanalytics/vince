@@ -188,3 +188,37 @@ Update `html` of your website to include the script in the `head` tag of your
 ```html
 <script defer data-domain="example.com" src="http://localhost:8080/js/vince.js"></script>
 ```
+
+
+<details markdown="1">
+<summary>Check if the site is configured</summary>
+
+Procedures `seen_first_event` shows if the vince is processing events from the
+site.
+
+- `0`: when not configured
+- `1`: when configured
+
+When site is not configured
+
+```bash
+mysql> call seen_first_event('example.com');
++------------------+
+| seen_first_event |
++------------------+
+|                0 |
++------------------+
+1 row in set (0.00 sec)
+```
+
+</details>
+
+```bash
+mysql> call seen_first_event('example.com');
++------------------+
+| seen_first_event |
++------------------+
+|                1 |
++------------------+
+1 row in set (0.00 sec)
+```
