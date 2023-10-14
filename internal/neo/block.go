@@ -51,6 +51,15 @@ func (a *Ingest) Run(ctx context.Context) {
 	})
 }
 
+func (a *Ingest) ForceSave(ctx context.Context, domain string) bool {
+	value, ok := a.ctx.LoadAndDelete(domain)
+	if !ok {
+		return false
+	}
+	value.(*writeContext).Save(a.Context)
+	return true
+}
+
 func (a *Ingest) WriteEntry(e *entry.Entry) {
 	a.get(e.Domain).append(a.Context, e)
 }

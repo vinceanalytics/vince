@@ -14,6 +14,7 @@ var Procedures = []sql.ExternalStoredProcedureDetails{
 	{Name: "list_sites", Schema: siteSchema(), Function: listSites},
 	{Name: "delete_site", Schema: stringSchema("status"), Function: deleteSite},
 	{Name: "seen_first_event", Schema: boolSchema("seen_first_event"), Function: seenFirstEvent},
+	{Name: "force_save", Schema: boolSchema("status"), Function: forceSave},
 
 	// goals api
 	{Name: "create_goal", Schema: stringSchema("status"), Function: createGoal},

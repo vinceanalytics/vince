@@ -43,7 +43,7 @@ func siteToRow(site *v1.Site) (o sql.Row) {
 	o[3] = b.Visitors
 	o[4] = b.Visits
 	o[5] = b.BounceRate
-	o[7] = b.Duration
+	o[6] = b.Duration
 	return
 }
 

@@ -15,6 +15,10 @@ The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parque
 > Vince does not support realtime queries. Events are processed daily at configured time of the day.
 > There is a possibility you will have to wait 24h to be able to get actionable insight from your site
 > when you configure it for the first time.
+>
+> However , if you wish to trigger saving manually (This is not recommended ,
+> do this only when testing vince not in production) we provide `force_save`
+> procedure which you can call any time.
 
 # Features
 
@@ -210,3 +214,4 @@ mysql> call seen_first_event('example.com');
 +------------------+
 1 row in set (0.00 sec)
 ```
+
