@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	snippetsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/snippets/v1"
+	snippetsv1 "github.com/vinceanalytics/proto/gen/go/vince/snippets/v1"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"

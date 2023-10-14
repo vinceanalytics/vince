@@ -10,7 +10,7 @@ import (
 
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/pj"
 	"github.com/vinceanalytics/vince/internal/secrets"

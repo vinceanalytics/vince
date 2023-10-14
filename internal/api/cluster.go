@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	clusterv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/cluster/v1"
+	clusterv1 "github.com/vinceanalytics/proto/gen/go/vince/cluster/v1"
 )
 
 var _ clusterv1.ClusterServer = (*API)(nil)

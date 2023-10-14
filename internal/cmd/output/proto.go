@@ -1,7 +1,7 @@
 package output
 
 import (
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/query/v1"
 )
 
 func fromDBType(typ string) v1.QueryColum_DataType {

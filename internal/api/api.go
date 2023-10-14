@@ -1,14 +1,14 @@
 package api
 
 import (
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
-	clusterv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/cluster/v1"
-	eventsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/events/v1"
-	goalsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
-	importv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/import/v1"
-	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
-	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
-	snippetsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/snippets/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/api/v1"
+	clusterv1 "github.com/vinceanalytics/proto/gen/go/vince/cluster/v1"
+	eventsv1 "github.com/vinceanalytics/proto/gen/go/vince/events/v1"
+	goalsv1 "github.com/vinceanalytics/proto/gen/go/vince/goals/v1"
+	importv1 "github.com/vinceanalytics/proto/gen/go/vince/import/v1"
+	queryv1 "github.com/vinceanalytics/proto/gen/go/vince/query/v1"
+	sitesv1 "github.com/vinceanalytics/proto/gen/go/vince/sites/v1"
+	snippetsv1 "github.com/vinceanalytics/proto/gen/go/vince/snippets/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

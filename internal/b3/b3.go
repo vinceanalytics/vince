@@ -15,7 +15,7 @@ import (
 	"github.com/thanos-io/objstore/providers/obs"
 	"github.com/thanos-io/objstore/providers/oss"
 	"github.com/thanos-io/objstore/providers/s3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/px"
 )

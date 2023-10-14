@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/version"
 	"google.golang.org/protobuf/types/known/emptypb"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	queryv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
+	queryv1 "github.com/vinceanalytics/proto/gen/go/vince/query/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/output"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/px"

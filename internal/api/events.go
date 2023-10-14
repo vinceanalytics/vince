@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	eventsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/events/v1"
+	eventsv1 "github.com/vinceanalytics/proto/gen/go/vince/events/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"

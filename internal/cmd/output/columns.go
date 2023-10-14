@@ -6,7 +6,7 @@ import (
 	"time"
 
 	sqld "github.com/dolthub/go-mysql-server/sql"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/query/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/query/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

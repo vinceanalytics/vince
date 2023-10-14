@@ -5,7 +5,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/hashicorp/raft"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/raft/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/raft/v1"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

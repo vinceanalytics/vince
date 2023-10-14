@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	apiv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/auth/v1"
+	apiv1 "github.com/vinceanalytics/proto/gen/go/vince/api/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/auth/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/must"

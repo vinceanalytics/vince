@@ -4,8 +4,8 @@ import (
 	"context"
 	"sort"
 
-	goalsv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
-	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
+	goalsv1 "github.com/vinceanalytics/proto/gen/go/vince/goals/v1"
+	sitesv1 "github.com/vinceanalytics/proto/gen/go/vince/sites/v1"
 	"github.com/vinceanalytics/vince/internal/core"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"

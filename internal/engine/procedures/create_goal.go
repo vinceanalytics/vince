@@ -5,7 +5,7 @@ import (
 
 	"github.com/dolthub/go-mysql-server/sql"
 	"github.com/dolthub/go-mysql-server/sql/types"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/goals/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/goals/v1"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/engine/session"
 	"github.com/vinceanalytics/vince/internal/scopes"

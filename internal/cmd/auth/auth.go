@@ -9,7 +9,7 @@ import (
 	"github.com/dlclark/regexp2"
 	"github.com/gympass/goprompt"
 	"github.com/urfave/cli/v3"
-	configv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/config/v1"
+	configv1 "github.com/vinceanalytics/proto/gen/go/vince/config/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/must"

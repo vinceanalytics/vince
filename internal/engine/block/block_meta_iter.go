@@ -2,7 +2,7 @@ package block
 
 import (
 	"github.com/dolthub/go-mysql-server/sql"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/blocks/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/px"

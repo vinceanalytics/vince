@@ -11,7 +11,7 @@ import (
 	"github.com/apache/arrow/go/v14/arrow/compute"
 	"github.com/apache/arrow/go/v14/arrow/memory"
 	"github.com/parquet-go/parquet-go"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/store/v1"
 )
 
 type Entry struct {

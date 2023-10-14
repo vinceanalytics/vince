@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/sites/v1"
 )
 
 type VinceAPI interface {

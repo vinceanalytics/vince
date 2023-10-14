@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/a2"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/config"

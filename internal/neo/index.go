@@ -14,8 +14,8 @@ import (
 	"github.com/apache/arrow/go/v14/arrow/math"
 	"github.com/apache/arrow/go/v14/arrow/scalar"
 	"github.com/parquet-go/parquet-go"
-	blockv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/blocks/v1"
-	storev1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	blockv1 "github.com/vinceanalytics/proto/gen/go/vince/blocks/v1"
+	storev1 "github.com/vinceanalytics/proto/gen/go/vince/store/v1"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"golang.org/x/sync/errgroup"
 )

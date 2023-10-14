@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/cmd/ansi"
 	"github.com/vinceanalytics/vince/internal/cmd/auth"
 	"github.com/vinceanalytics/vince/internal/config"

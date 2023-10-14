@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/api/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/api/v1"
 	"github.com/vinceanalytics/vince/internal/scopes"
 	"google.golang.org/grpc/credentials"
 )

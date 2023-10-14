@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/base32"
 
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/store/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/store/v1"
 )
 
 const DefaultNS = "vince"

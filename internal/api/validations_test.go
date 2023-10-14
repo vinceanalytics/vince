@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/bufbuild/protovalidate-go"
-	sitesv1 "github.com/vinceanalytics/vince/gen/proto/go/vince/sites/v1"
+	sitesv1 "github.com/vinceanalytics/proto/gen/go/vince/sites/v1"
 	"google.golang.org/protobuf/proto"
 )
 

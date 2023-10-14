@@ -8,7 +8,7 @@ import (
 	"github.com/apache/arrow/go/v14/arrow"
 	"github.com/apache/arrow/go/v14/arrow/csv"
 	"github.com/apache/arrow/go/v14/arrow/ipc"
-	v1 "github.com/vinceanalytics/vince/gen/proto/go/vince/import/v1"
+	v1 "github.com/vinceanalytics/proto/gen/go/vince/import/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/entry"
 	"github.com/vinceanalytics/vince/internal/keys"
