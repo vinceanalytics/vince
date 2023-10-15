@@ -61,11 +61,6 @@ func CMD() *cli.Command {
 				"failed to create blocks directory",
 			)
 			w.KV("blocks", blocks)
-			raft := filepath.Join(root, config.RAFT_PATH)
-			must.One(os.Mkdir(raft, 0755))(
-				"failed to create raft directory",
-			)
-			w.KV("raft", raft)
 			secret := filepath.Join(root, config.SECRET_KEY)
 			must.One(os.WriteFile(secret, []byte(secrets.ED25519()), 0600))("failed creating secret key")
 			w.KV("secret_key", secret)

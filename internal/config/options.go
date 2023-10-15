@@ -14,7 +14,6 @@ const (
 	FILE        = "vince.json"
 	DB_PATH     = "db"
 	BLOCKS_PATH = "blocks"
-	RAFT_PATH   = "raft"
 	SECRET_KEY  = "secret_key"
 )
 
@@ -37,7 +36,6 @@ func Defaults() *v1.Config {
 			},
 			CacheDir: BLOCKS_PATH,
 		},
-		RaftPath:           RAFT_PATH,
 		MysqlListenAddress: ":3306",
 		EventsBufferSize:   int64(DefaultEventsBufferSize),
 		ServerId:           ng.Name(),

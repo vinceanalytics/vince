@@ -39,7 +39,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/engine"
 	"github.com/vinceanalytics/vince/internal/g"
-	"github.com/vinceanalytics/vince/internal/ha"
 	"github.com/vinceanalytics/vince/internal/metrics"
 	"github.com/vinceanalytics/vince/internal/must"
 	"github.com/vinceanalytics/vince/internal/prober"
@@ -89,15 +88,8 @@ func Configure(ctx context.Context, o *config.Options) (context.Context, resourc
 
 	ctx, dba := db.Open(ctx, o.DbPath)
 	resources = append(resources, dba)
-	ctx, dbr := db.OpenRaft(ctx, o.RaftPath)
-	resources = append(resources, dbr)
 	ctx, os := b3.Open(ctx, o.BlocksStore)
 	resources = append(resources, os)
-
-	// NOTE: we must open ha before timeseries. This is to allow graceful
-	// propagation of block writes when shutting down.
-	ctx, hr := ha.Open(ctx)
-	resources = append(resources, hr)
 	ctx, ts := timeseries.Open(ctx, os, int(o.GetEventsBufferSize()))
 	resources = append(resources, ts)
 	ctx, eng := engine.Open(ctx)

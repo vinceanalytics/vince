@@ -12,8 +12,6 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
-	"github.com/dgraph-io/badger/v4/pb"
-	"github.com/vinceanalytics/vince/internal/g"
 	"github.com/vinceanalytics/vince/internal/must"
 )
 
@@ -25,8 +23,6 @@ func Path(dbPath string) string {
 }
 
 type key struct{}
-
-type raftKey struct{}
 
 func Open(ctx context.Context, path string, logLevel ...string) (context.Context, *badger.DB) {
 	path = Path(path)
@@ -68,23 +64,6 @@ func Get(ctx context.Context) Provider {
 	return ctx.Value(key{}).(Provider)
 }
 
-func OpenRaft(ctx context.Context, path string) (context.Context, *badger.DB) {
-	path = filepath.Join(path, "db")
-	slog.Info("opening raft storage", "path", path)
-	o := badger.DefaultOptions(path).
-		WithLogger(badgerLogger{}).
-		WithLoggingLevel(10).
-		WithCompression(options.ZSTD)
-	db := must.Must(badger.Open(o))(
-		"failed to open badger db:", path,
-	)
-	return context.WithValue(ctx, raftKey{}, db), db
-}
-
-func GetRaft(ctx context.Context) *badger.DB {
-	return ctx.Value(raftKey{}).(*badger.DB)
-}
-
 var _ badger.Logger = (*badgerLogger)(nil)
 
 type badgerLogger struct{}
@@ -102,22 +81,6 @@ func (badgerLogger) Infof(format string, args ...interface{}) {
 
 func (b badgerLogger) Debugf(format string, args ...interface{}) {
 	slog.Debug(fmt.Sprintf(format, args...))
-}
-
-// Observe watches for database changes on key prefix and call obs withe changed keys.
-func Observe(ctx context.Context, prefix []byte, obs func(context.Context, *badger.KVList)) {
-	g.Get(ctx).Go(obsFunc(ctx, prefix, obs))
-}
-
-func obsFunc(ctx context.Context, prefix []byte, obs func(context.Context, *badger.KVList)) func() error {
-	db := ctx.Value(raftKey{}).(*badger.DB)
-	return func() error {
-		slog.Info("watching key changes", "prefix", string(prefix))
-		return db.Subscribe(ctx, func(kv *badger.KVList) error {
-			obs(ctx, kv)
-			return nil
-		}, []pb.Match{{Prefix: prefix}})
-	}
 }
 
 type Provider interface {

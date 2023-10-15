@@ -73,7 +73,6 @@ func Load(base *Options, x *cli.Context) (context.Context, error) {
 	}
 	baseCtx := secrets.Open(context.Background(), slog.Default(), secretKey)
 	base.DbPath = resolve(root, base.DbPath)
-	base.RaftPath = resolve(root, base.RaftPath)
 	if e, ok := base.BlocksStore.Provider.(*v1.BlockStore_Fs); ok {
 		e.Fs.Directory = resolve(root, e.Fs.Directory)
 	}
