@@ -35,7 +35,7 @@ require (
 	github.com/tdewolff/minify/v2 v2.12.8
 	github.com/thanos-io/objstore v0.0.0-20230829152104-1b257a36f9a3
 	github.com/urfave/cli/v3 v3.0.0-alpha4
-	github.com/vinceanalytics/proto v0.0.2
+	github.com/vinceanalytics/proto v0.0.3
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.35.0
 	go.opentelemetry.io/otel v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
