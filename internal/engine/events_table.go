@@ -120,7 +120,6 @@ func (p *partitionIter) Next(ctx *sql.Context) (sql.Partition, error) {
 			})
 		}
 		p.started = true
-		p.it.Rewind()
 	} else {
 		p.it.Next()
 	}

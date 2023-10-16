@@ -29,7 +29,6 @@ func (m *MetaIter) Next() bool {
 			PrefetchValues: true,
 			PrefetchSize:   64,
 		})
-		m.it.Rewind()
 	} else {
 		m.it.Next()
 	}

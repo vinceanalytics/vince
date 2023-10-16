@@ -120,7 +120,6 @@ type IterOpts struct {
 }
 
 type Iter interface {
-	Rewind()
 	Valid() bool
 	Next()
 	Key() []byte
@@ -133,10 +132,6 @@ type iter struct {
 }
 
 var _ Iter = (*iter)(nil)
-
-func (i *iter) Rewind() {
-	i.i.Rewind()
-}
 
 func (i *iter) Valid() bool {
 	return i.i.Valid()
@@ -210,6 +205,7 @@ func (x *txn) Iter(o IterOpts) Iter {
 		Reverse:        o.Reverse,
 		PrefetchSize:   o.PrefetchSize,
 	})
+	i.Rewind()
 	return &iter{i: i}
 }
 

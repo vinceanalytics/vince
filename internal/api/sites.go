@@ -66,7 +66,7 @@ func (a *API) ListSites(ctx context.Context, req *sitesv1.ListSitesRequest) (*si
 			PrefetchValues: true,
 		})
 		defer it.Close()
-		for it.Rewind(); it.Valid(); it.Next() {
+		for ; it.Valid(); it.Next() {
 			var m sitesv1.Site
 			err := it.Value(px.Decode(&m))
 			if err != nil {
