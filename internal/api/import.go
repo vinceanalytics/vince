@@ -29,7 +29,7 @@ var _ v1.ImportServer = (*API)(nil)
 func (API) Import(ctx context.Context, req *v1.ImportRequest) (*v1.ImportResponse, error) {
 	me := tokens.GetAccount(ctx)
 	key := keys.Import(req.Schema.Name)
-	err := db.Update(ctx, func(txn db.Txn) error {
+	err := db.Update(ctx, func(txn db.Transaction) error {
 		if txn.Has(key) {
 			return status.Error(codes.AlreadyExists, "an import for the schema already exists")
 		}
@@ -56,7 +56,7 @@ func (API) Import(ctx context.Context, req *v1.ImportRequest) (*v1.ImportRespons
 			Data:      o.Bytes(),
 			CreatedBy: me.Name,
 			CreatedAt: timestamppb.Now(),
-		}))
+		}), 0)
 	})
 	if err != nil {
 		return nil, err

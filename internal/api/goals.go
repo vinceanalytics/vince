@@ -26,7 +26,7 @@ func GoalE404() error {
 func (a *API) CreateGoal(ctx context.Context, req *goalsv1.CreateGoalRequest) (*goalsv1.CreateGoalResponse, error) {
 	key := keys.Site(req.Domain)
 
-	err := db.Update(ctx, func(txn db.Txn) error {
+	err := db.Update(ctx, func(txn db.Transaction) error {
 		var site sitesv1.Site
 		err := txn.Get(key, px.Decode(&site), Sites404)
 		if err != nil {
@@ -44,7 +44,7 @@ func (a *API) CreateGoal(ctx context.Context, req *goalsv1.CreateGoalRequest) (*
 			Value:     req.Value,
 			CreatedAt: timestamppb.New(core.Now(ctx)),
 		}
-		return txn.Set(key, px.Encode(&site))
+		return txn.Set(key, px.Encode(&site), 0)
 	})
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (a *API) CreateGoal(ctx context.Context, req *goalsv1.CreateGoalRequest) (*
 func (a *API) GetGoal(ctx context.Context, req *goalsv1.GetGoalRequest) (*goalsv1.Goal, error) {
 	var goal *goalsv1.Goal
 	key := keys.Site(req.Domain)
-	err := db.View(ctx, func(txn db.Txn) error {
+	err := db.View(ctx, func(txn db.Transaction) error {
 		var site sitesv1.Site
 		err := txn.Get(key, px.Decode(&site), Sites404)
 		if err != nil {
@@ -78,7 +78,7 @@ func (a *API) GetGoal(ctx context.Context, req *goalsv1.GetGoalRequest) (*goalsv
 func (a *API) ListGoals(ctx context.Context, req *goalsv1.ListGoalsRequest) (*goalsv1.ListGoalsResponse, error) {
 	var site sitesv1.Site
 	var goals goalsv1.ListGoalsResponse
-	err := db.View(ctx, func(txn db.Txn) error {
+	err := db.View(ctx, func(txn db.Transaction) error {
 		key := keys.Site(req.Domain)
 		err := txn.Get(key, px.Decode(&site), Sites404)
 		if err != nil {
@@ -102,7 +102,7 @@ func (a *API) ListGoals(ctx context.Context, req *goalsv1.ListGoalsRequest) (*go
 
 func (a *API) DeleteGoal(ctx context.Context, req *goalsv1.DeleteGoalRequest) (*goalsv1.DeleteGoalResponse, error) {
 	var site sitesv1.Site
-	err := db.View(ctx, func(txn db.Txn) error {
+	err := db.View(ctx, func(txn db.Transaction) error {
 		key := keys.Site(req.Domain)
 		err := txn.Get(key, px.Decode(&site), Sites404)
 		if err != nil {
@@ -112,7 +112,7 @@ func (a *API) DeleteGoal(ctx context.Context, req *goalsv1.DeleteGoalRequest) (*
 			return goalE404
 		}
 		delete(site.Goals, req.Name)
-		return txn.Set(key, px.Encode(&site))
+		return txn.Set(key, px.Encode(&site), 0)
 	})
 	if err != nil {
 		return nil, err

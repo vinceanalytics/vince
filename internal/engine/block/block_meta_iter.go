@@ -12,7 +12,7 @@ type MetaIter struct {
 	meta   v1.BlockInfo
 	domain string
 	it     db.Iter
-	txn    db.Txn
+	txn    db.Transaction
 }
 
 func NewMetaIter(db db.Provider, domain string) *MetaIter {

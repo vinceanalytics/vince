@@ -149,14 +149,14 @@ func (a *Ingest) seen(domain string) {
 func (a *Ingest) setSeen(domain string) func() error {
 	return func() error {
 		key := keys.Site(domain)
-		err := db.Update(a, func(txn db.Txn) error {
+		err := db.Update(a, func(txn db.Transaction) error {
 			var site sitesv1.Site
 			err := txn.Get(key, px.Decode(&site))
 			if err != nil {
 				return err
 			}
 			site.SeenFirstEvent = true
-			return txn.Set(key, px.Encode(&site))
+			return txn.Set(key, px.Encode(&site), 0)
 		})
 		if err != nil {
 			a.log.Error("failed to set SeenFirstEvent on site",
@@ -172,7 +172,7 @@ func (w *writeContext) index(ctx context.Context) {
 	w.log.Info("indexing block")
 	f := must.Must(os.Open(w.name))("failed opening block file")
 	now := core.Now(ctx)
-	db.Update(ctx, func(txn db.Txn) error {
+	db.Update(ctx, func(txn db.Transaction) error {
 		index, stats, err := IndexBlockFile(ctx, f)
 		if err != nil {
 			return err
@@ -190,11 +190,11 @@ func (w *writeContext) index(ctx context.Context) {
 		errs := make([]error, 0, len(index)+2)
 		errs = append(errs,
 			updateBaseStats(txn, now, w.domain, stats),
-			txn.Set(keys.BlockMetadata(w.domain, w.id), px.Encode(info)),
+			txn.Set(keys.BlockMetadata(w.domain, w.id), px.Encode(info), 0),
 		)
 		for k, v := range index {
 			errs = append(errs,
-				txn.Set(keys.BlockIndex(w.domain, w.id, k), px.Encode(v)),
+				txn.Set(keys.BlockIndex(w.domain, w.id, k), px.Encode(v), 0),
 			)
 		}
 		return errors.Join(errs...)
@@ -202,7 +202,7 @@ func (w *writeContext) index(ctx context.Context) {
 	f.Close()
 }
 
-func updateBaseStats(txn db.Txn, ts time.Time, domain string, stats *blocksv1.BaseStats) error {
+func updateBaseStats(txn db.Transaction, ts time.Time, domain string, stats *blocksv1.BaseStats) error {
 	key := keys.Site(domain)
 	var site sitesv1.Site
 	err := txn.Get(key, px.Decode(&site))
@@ -213,7 +213,7 @@ func updateBaseStats(txn db.Txn, ts time.Time, domain string, stats *blocksv1.Ba
 		BaseStats: stats,
 		UpdatedAt: timestamppb.New(ts),
 	}
-	return txn.Set(key, px.Encode(&site))
+	return txn.Set(key, px.Encode(&site), 0)
 }
 
 func (w *writeContext) cleanup(ctx context.Context) {

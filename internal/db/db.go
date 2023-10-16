@@ -84,32 +84,27 @@ func (b badgerLogger) Debugf(format string, args ...interface{}) {
 }
 
 type Provider interface {
-	NewTransaction(update bool) Txn
+	NewTransaction(update bool) Transaction
 }
 
-func Update(ctx context.Context, f func(txn Txn) error) error {
+func Update(ctx context.Context, f func(txn Transaction) error) error {
 	txn := Get(ctx).NewTransaction(true)
 	defer txn.Close()
 	return f(txn)
 }
 
-func View(ctx context.Context, f func(txn Txn) error) error {
+func View(ctx context.Context, f func(txn Transaction) error) error {
 	txn := Get(ctx).NewTransaction(false)
 	defer txn.Close()
 	return f(txn)
 }
 
-type Txn interface {
-	Set(key, value []byte) error
-	SetTTL(key, value []byte, ttl time.Duration) error
-
-	// Get retrieves a key and calls value with the data. When the key is not found
-	// and nofFound is present then notFound is called.
+type Transaction interface {
+	Set(key, value []byte, ttl time.Duration) error
 	Get(key []byte, value func(val []byte) error, notFound ...func() error) error
 	Has(key []byte) bool
 	Delete(key []byte, notFound ...func() error) error
 	Close() error
-
 	Iter(IterOpts) Iter
 }
 
@@ -162,14 +157,13 @@ type txn struct {
 	x *badger.Txn
 }
 
-var _ Txn = (*txn)(nil)
+var _ Transaction = (*txn)(nil)
 
-func (x *txn) Set(key, value []byte) error {
-	return x.x.Set(key, value)
-}
-
-func (x *txn) SetTTL(key, value []byte, ttl time.Duration) error {
-	e := badger.NewEntry(key, value).WithTTL(ttl)
+func (x *txn) Set(key, value []byte, ttl time.Duration) error {
+	e := badger.NewEntry(key, value)
+	if ttl != 0 {
+		e = e.WithTTL(ttl)
+	}
 	return x.x.SetEntry(e)
 }
 
@@ -235,11 +229,11 @@ func (p *provider) Update(f func(txn *badger.Txn) error) error {
 	})
 }
 
-func (p *provider) NewTransaction(update bool) Txn {
+func (p *provider) NewTransaction(update bool) Transaction {
 	return &txn{x: p.db.NewTransaction(update)}
 }
 
-func (p *provider) Txn(update bool, f func(txn Txn) error) error {
+func (p *provider) Txn(update bool, f func(txn Transaction) error) error {
 	x := p.NewTransaction(update)
 	err := f(x)
 	x.Close()

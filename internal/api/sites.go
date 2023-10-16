@@ -25,7 +25,7 @@ func Sites404() error {
 
 func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*emptypb.Empty, error) {
 	key := keys.Site(req.Domain)
-	err := db.Update(ctx, func(txn db.Txn) error {
+	err := db.Update(ctx, func(txn db.Transaction) error {
 		if txn.Has(key) {
 			return status.Error(codes.AlreadyExists, "site already exists")
 		}
@@ -36,7 +36,7 @@ func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*
 				BaseStats: &v1.BaseStats{},
 				UpdatedAt: timestamppb.New(core.Now(ctx)),
 			},
-		}))
+		}), 0)
 	})
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*
 
 func (a *API) GetSite(ctx context.Context, req *sitesv1.GetSiteRequest) (*sitesv1.Site, error) {
 	var o sitesv1.Site
-	err := db.View(ctx, func(txn db.Txn) error {
+	err := db.View(ctx, func(txn db.Transaction) error {
 		key := keys.Site(req.Domain)
 		return txn.Get(key, px.Decode(&o), Sites404)
 	})
@@ -58,7 +58,7 @@ func (a *API) GetSite(ctx context.Context, req *sitesv1.GetSiteRequest) (*sitesv
 
 func (a *API) ListSites(ctx context.Context, req *sitesv1.ListSitesRequest) (*sitesv1.ListSitesResponse, error) {
 	o := sitesv1.ListSitesResponse{}
-	db.View(ctx, func(txn db.Txn) error {
+	db.View(ctx, func(txn db.Transaction) error {
 		key := keys.Site("")
 		it := txn.Iter(db.IterOpts{
 			Prefix:         key,
@@ -80,7 +80,7 @@ func (a *API) ListSites(ctx context.Context, req *sitesv1.ListSitesRequest) (*si
 }
 
 func (a *API) DeleteSite(ctx context.Context, req *sitesv1.DeleteSiteRequest) (*sitesv1.DeleteSiteResponse, error) {
-	err := db.Update(ctx, func(txn db.Txn) error {
+	err := db.Update(ctx, func(txn db.Transaction) error {
 		key := keys.Site(req.Domain)
 		return txn.Delete(key, Sites404)
 	})

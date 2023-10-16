@@ -31,7 +31,7 @@ func (Provider) GetClient(ctx context.Context, id string) (Client, error) {
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			// we support login with passwords.
-			return xclient{b: o}, db.View(ctx, func(txn db.Txn) error {
+			return xclient{b: o}, db.View(ctx, func(txn db.Transaction) error {
 				key := keys.Account(id)
 				if !txn.Has(key) {
 					return ErrNotFound
@@ -103,19 +103,19 @@ func (Provider) RemoveRefresh(ctx context.Context, token string) error {
 
 func (Provider) save(ctx context.Context, key []byte, m proto.Message, ttl int32) error {
 	b := must.Must(proto.Marshal(m))("failed serializing data")
-	return db.Update(ctx, func(txn db.Txn) error {
-		return txn.SetTTL(key, b, time.Duration(ttl)*time.Second)
+	return db.Update(ctx, func(txn db.Transaction) error {
+		return txn.Set(key, b, time.Duration(ttl)*time.Second)
 	})
 }
 
 func (Provider) remove(ctx context.Context, key []byte) error {
-	return db.Update(ctx, func(txn db.Txn) error {
+	return db.Update(ctx, func(txn db.Transaction) error {
 		return txn.Delete(key)
 	})
 }
 
 func (Provider) get(ctx context.Context, key []byte, o proto.Message) error {
-	return db.View(ctx, func(txn db.Txn) error {
+	return db.View(ctx, func(txn db.Transaction) error {
 		return txn.Get(key, func(val []byte) error {
 			return proto.Unmarshal(val, o)
 		}, func() error {
@@ -216,7 +216,7 @@ func (x xclient) ClientSecretMatches(ctx context.Context, secret string) bool {
 	if x.b.Secret != "" {
 		return subtle.ConstantTimeCompare([]byte(secret), []byte(x.b.Secret)) == 1
 	}
-	return db.View(ctx, func(txn db.Txn) error {
+	return db.View(ctx, func(txn db.Transaction) error {
 		key := keys.Account(x.b.Id)
 		var a apiv1.Account
 		err := txn.Get(key, px.Decode(&a))

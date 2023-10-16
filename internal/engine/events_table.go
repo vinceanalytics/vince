@@ -100,7 +100,7 @@ func (p *eventPartition) Key() []byte { return []byte(p.Info.Id) }
 
 type partitionIter struct {
 	it        db.Iter
-	txn       db.Txn
+	txn       db.Transaction
 	partition eventPartition
 	idx       blocksv1.ColumnIndex
 	started   bool
