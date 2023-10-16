@@ -29,7 +29,7 @@ var _ v1.ImportServer = (*API)(nil)
 func (API) Import(ctx context.Context, req *v1.ImportRequest) (*v1.ImportResponse, error) {
 	me := tokens.GetAccount(ctx)
 	key := keys.Import(req.Schema.Name)
-	err := db.Get(ctx).Txn(true, func(txn db.Txn) error {
+	err := db.Update(ctx, func(txn db.Txn) error {
 		if txn.Has(key) {
 			return status.Error(codes.AlreadyExists, "an import for the schema already exists")
 		}

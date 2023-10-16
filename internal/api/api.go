@@ -8,7 +8,6 @@ import (
 	importv1 "github.com/vinceanalytics/proto/gen/go/vince/import/v1"
 	queryv1 "github.com/vinceanalytics/proto/gen/go/vince/query/v1"
 	sitesv1 "github.com/vinceanalytics/proto/gen/go/vince/sites/v1"
-	snippetsv1 "github.com/vinceanalytics/proto/gen/go/vince/snippets/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -18,7 +17,6 @@ type API struct {
 	sitesv1.UnsafeSitesServer
 	queryv1.UnsafeQueryServer
 	goalsv1.UnsafeGoalsServer
-	snippetsv1.UnsafeSnippetsServer
 	clusterv1.UnsafeClusterServer
 	eventsv1.UnsafeEventsServer
 	importv1.UnsafeImportServer

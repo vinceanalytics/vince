@@ -149,7 +149,7 @@ func (a *Ingest) seen(domain string) {
 func (a *Ingest) setSeen(domain string) func() error {
 	return func() error {
 		key := keys.Site(domain)
-		err := db.Get(a).Txn(true, func(txn db.Txn) error {
+		err := db.Update(a, func(txn db.Txn) error {
 			var site sitesv1.Site
 			err := txn.Get(key, px.Decode(&site))
 			if err != nil {
@@ -172,7 +172,7 @@ func (w *writeContext) index(ctx context.Context) {
 	w.log.Info("indexing block")
 	f := must.Must(os.Open(w.name))("failed opening block file")
 	now := core.Now(ctx)
-	db.Get(ctx).Txn(true, func(txn db.Txn) error {
+	db.Update(ctx, func(txn db.Txn) error {
 		index, stats, err := IndexBlockFile(ctx, f)
 		if err != nil {
 			return err

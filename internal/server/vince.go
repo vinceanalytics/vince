@@ -31,7 +31,6 @@ import (
 	importv1 "github.com/vinceanalytics/proto/gen/go/vince/import/v1"
 	queryv1 "github.com/vinceanalytics/proto/gen/go/vince/query/v1"
 	sitesv1 "github.com/vinceanalytics/proto/gen/go/vince/sites/v1"
-	snippetsv1 "github.com/vinceanalytics/proto/gen/go/vince/snippets/v1"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/b3"
 	"github.com/vinceanalytics/vince/internal/config"
@@ -194,7 +193,6 @@ func New(ctx context.Context) *Vince {
 	sitesv1.RegisterSitesServer(srv, &api.API{})
 	queryv1.RegisterQueryServer(srv, &api.API{})
 	goalsv1.RegisterGoalsServer(srv, &api.API{})
-	snippetsv1.RegisterSnippetsServer(srv, &api.API{})
 	clusterv1.RegisterClusterServer(srv, &api.API{})
 	eventsv1.RegisterEventsServer(srv, &api.API{})
 	importv1.RegisterImportServer(srv, &api.API{})

@@ -106,7 +106,7 @@ func (h *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func basic(ctx context.Context, ar *a2.AccessRequest) bool {
 	var a v1.Account
-	err := db.Get(ctx).Txn(false, func(txn db.Txn) error {
+	err := db.View(ctx, func(txn db.Txn) error {
 		key := keys.Account(ar.Username)
 		return txn.Get(key, px.Decode(&a))
 	})

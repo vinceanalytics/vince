@@ -85,7 +85,18 @@ func (b badgerLogger) Debugf(format string, args ...interface{}) {
 
 type Provider interface {
 	NewTransaction(update bool) Txn
-	Txn(update bool, f func(txn Txn) error) error
+}
+
+func Update(ctx context.Context, f func(txn Txn) error) error {
+	txn := Get(ctx).NewTransaction(true)
+	defer txn.Close()
+	return f(txn)
+}
+
+func View(ctx context.Context, f func(txn Txn) error) error {
+	txn := Get(ctx).NewTransaction(false)
+	defer txn.Close()
+	return f(txn)
 }
 
 type Txn interface {
