@@ -84,7 +84,6 @@ func (b badgerLogger) Debugf(format string, args ...interface{}) {
 }
 
 type Provider interface {
-	With(func(db *badger.DB) error) error
 	NewTransaction(update bool) Txn
 	Txn(update bool, f func(txn Txn) error) error
 }
