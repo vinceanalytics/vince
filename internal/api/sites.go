@@ -26,7 +26,7 @@ func Sites404() error {
 func (a *API) CreateSite(ctx context.Context, req *sitesv1.CreateSiteRequest) (*emptypb.Empty, error) {
 	key := keys.Site(req.Domain)
 	err := db.Update(ctx, func(txn db.Transaction) error {
-		if txn.Has(key) {
+		if db.Has(txn, key) {
 			return status.Error(codes.AlreadyExists, "site already exists")
 		}
 		return txn.Set(key, px.Encode(&sitesv1.Site{

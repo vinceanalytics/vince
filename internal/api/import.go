@@ -30,7 +30,7 @@ func (API) Import(ctx context.Context, req *v1.ImportRequest) (*v1.ImportRespons
 	me := tokens.GetAccount(ctx)
 	key := keys.Import(req.Schema.Name)
 	err := db.Update(ctx, func(txn db.Transaction) error {
-		if txn.Has(key) {
+		if db.Has(txn, key) {
 			return status.Error(codes.AlreadyExists, "an import for the schema already exists")
 		}
 		r := csv.NewReader(bytes.NewReader(req.Csv), schema(req.Schema),

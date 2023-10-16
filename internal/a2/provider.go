@@ -33,7 +33,7 @@ func (Provider) GetClient(ctx context.Context, id string) (Client, error) {
 			// we support login with passwords.
 			return xclient{b: o}, db.View(ctx, func(txn db.Transaction) error {
 				key := keys.Account(id)
-				if !txn.Has(key) {
+				if !db.Has(txn, key) {
 					return ErrNotFound
 				}
 				*o = v1.AuthorizedClient{Id: id, RedirectUrl: "/"}

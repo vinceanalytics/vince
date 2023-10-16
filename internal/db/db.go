@@ -102,10 +102,14 @@ func View(ctx context.Context, f func(txn Transaction) error) error {
 type Transaction interface {
 	Set(key, value []byte, ttl time.Duration) error
 	Get(key []byte, value func(val []byte) error, notFound ...func() error) error
-	Has(key []byte) bool
 	Delete(key []byte, notFound ...func() error) error
 	Close() error
 	Iter(IterOpts) Iter
+}
+
+// Has returns true if key is in the database
+func Has(t Transaction, key []byte) bool {
+	return t.Get(key, func(val []byte) error { return nil }) == nil
 }
 
 type IterOpts struct {
