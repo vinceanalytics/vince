@@ -1,5 +1,10 @@
 package staples
 
+import (
+	"sync"
+	"time"
+)
+
 type Event struct {
 	Timestamp int64
 	ID        int64
@@ -36,4 +41,36 @@ type Event struct {
 	Utm_Medium      string
 	Utm_Source      string
 	Utm_Term        string
+}
+
+var eventsPool = &sync.Pool{New: func() any { return new(Event) }}
+
+func NewEvent() *Event {
+	return eventsPool.Get().(*Event)
+}
+
+func (e *Event) Release() {
+	*e = Event{}
+	eventsPool.Put(e)
+}
+
+func (e *Event) TS() int64 { return e.Timestamp }
+
+func (e *Event) Hit() {
+	e.Entry_Page = e.Path
+	e.Bounce = 1
+	e.Session = 1
+}
+
+func (s *Event) Update(e *Event) {
+	if s.Bounce == 1 {
+		s.Bounce, e.Bounce = -1, -1
+	} else {
+		s.Bounce, e.Bounce = 0, 0
+	}
+	e.Session = 0
+	e.Exit_Page = e.Path
+	// Track duration since last visit.
+	e.Duration = time.UnixMilli(e.Timestamp).Sub(time.UnixMilli(s.Timestamp)).Seconds()
+	s.Timestamp = e.Timestamp
 }
