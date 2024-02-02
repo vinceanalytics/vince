@@ -20,20 +20,20 @@ type Event struct {
 	City            string
 	Country         string
 	Domain          string
-	EntryPage       string
-	ExitPage        string
+	Entry_Page      string
+	Exit_Page       string
 	Host            string
 	Event           string
 	Os              string
 	OsVersion       string
 	Path            string
 	Referrer        string
-	ReferrerSource  string
+	Referrer_Source string
 	Region          string
 	Screen          string
-	UtmCampaign     string
-	UtmContent      string
-	UtmMedium       string
-	UtmSource       string
-	UtmTerm         string
+	Utm_Campaign    string
+	Utm_Content     string
+	Utm_Medium      string
+	Utm_Source      string
+	Utm_Term        string
 }
