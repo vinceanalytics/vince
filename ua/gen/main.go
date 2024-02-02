@@ -11,7 +11,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/ipc"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/blevesearch/vellum"
-	"github.com/gernest/ots/models"
+	"github.com/vinceanalytics/staples"
 	"gopkg.in/yaml.v2"
 )
 
@@ -168,7 +168,7 @@ func main() {
 		names = append(names, k)
 	}
 	sort.Strings(names)
-	o := models.NewArrow[Model](memory.DefaultAllocator)
+	o := staples.NewArrow[Model](memory.DefaultAllocator)
 	for i := range names {
 		o.Append(m[names[i]].Model())
 	}
