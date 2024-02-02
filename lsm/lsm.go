@@ -91,12 +91,16 @@ func WithTTL(ttl time.Duration) Option {
 	}
 }
 
-func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, indexer index.Index, primary index.Primary, o Options) *Tree[T] {
+func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, indexer index.Index, primary index.Primary, opts ...Option) *Tree[T] {
 	schema := staples.Schema[T]()
 	m := staples.NewMerger(mem, schema)
 	mapping := make(map[string]int)
 	for i, f := range schema.Fields() {
 		mapping[f.Name] = i
+	}
+	o := DefaultLSMOptions()
+	for _, f := range opts {
+		f(&o)
 	}
 	return &Tree[T]{
 		tree:     &Node{},
