@@ -1,6 +1,7 @@
 package geo
 
 import (
+	"context"
 	"net"
 
 	"github.com/oschwald/maxminddb-golang"
@@ -64,4 +65,14 @@ type Info struct {
 	City    string
 	Country string
 	Region  string
+}
+
+type geoKey struct{}
+
+func With(ctx context.Context, g *Geo) context.Context {
+	return context.WithValue(ctx, geoKey{}, g)
+}
+
+func Get(ctx context.Context) *Geo {
+	return ctx.Value(geoKey{}).(*Geo)
 }
