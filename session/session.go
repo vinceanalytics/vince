@@ -41,7 +41,7 @@ func New(mem memory.Allocator, resource string, storage db.Storage,
 		build: staples.NewArrow[staples.Event](mem),
 		cache: cache,
 		tree: lsm.NewTree[staples.Event](
-			mem, "", storage, indexer, primary, opts...,
+			mem, resource, storage, indexer, primary, opts...,
 		),
 		log: slog.Default().With("component", "session"),
 	}
