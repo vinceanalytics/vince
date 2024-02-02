@@ -1,0 +1,125 @@
+syntax = "proto3";
+package v1;
+
+import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
+
+message ScanRequest {
+  TimeRange timestamp = 1 [ (buf.validate.field).required = true ];
+  Filters filters = 2 [ (buf.validate.field).required = true ];
+}
+
+message ScanResponse { bytes record = 1; }
+
+message TimeRange {
+  google.protobuf.Timestamp start = 1 [ (buf.validate.field).required = true ];
+  google.protobuf.Timestamp end = 2 [ (buf.validate.field).required = true ];
+}
+
+message KeyValue {
+  string key = 1;
+  string value = 2;
+}
+
+message Filters {
+  repeated Filter list = 1;
+  // columns returned
+  repeated Projection projection = 2;
+
+  enum Projection {
+    // common
+    ResourceSchema = 0;
+    ResourceAttributes = 2;
+    ScopeName = 3;
+    ScopeSchema = 4;
+    ScopeVersion = 5;
+    ScopeAttributes = 6;
+    Flags = 14;
+    ResourceHash = 28;
+    ScopeHash = 29;
+    Hash = 30;
+
+    // metrics
+    Name = 7;
+    Description = 8;
+    Unit = 9;
+    StartTimeUnixNano = 10;
+    TimeUnixNano = 11;
+    Data = 12;
+    Exemplars = 13;
+
+    // logs
+    ObservedTimeUnixNano = 15;
+    SeverityNumber = 16;
+    SeverityText = 17;
+    Body = 18;
+    TraceID = 19;
+    SpanID = 20;
+
+    // trace
+    TraceState = 21;
+    ParentSpanID = 22;
+    Kind = 23;
+    EndTimeUnixNano = 24;
+    Events = 25;
+    Links = 26;
+    Status = 27;
+  }
+}
+
+message Filter {
+  oneof column {
+    BaseColumn base = 1;
+    string resource_attributes = 2;
+    string scope_attributes = 3;
+    string attributes = 4;
+  }
+
+  oneof value {
+    bytes equal = 5;
+    bytes not_equal = 6;
+    bytes re_equal = 7;
+    bytes re_not_equal = 8;
+    Latest latest = 9;
+  }
+
+  message Latest {}
+
+  enum BaseColumn {
+    ResourceSchema = 0;
+    ScopeName = 1;
+    ScopeSchema = 2;
+    ScopeVersion = 3;
+    Name = 4;
+    TraceID = 5;
+    ResourceHash = 6;
+    ScopeHash = 7;
+    Hash = 8;
+  }
+}
+
+message Event {
+  /// EventName
+  string n = 1 [ (buf.validate.field).required = true ];
+  string url = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.uri = true
+  ];
+  // Domain
+  string d = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.hostname = true
+  ];
+  // Screen width
+  int32 w = 4;
+  // Hash mode
+  bool h = 5;
+  string ip = 6 [ (buf.validate.field).string.ip = true ];
+  // user agent
+  string ua = 7;
+
+  // Referrer
+  string r = 8;
+
+  google.protobuf.Timestamp timestamp = 9;
+}
