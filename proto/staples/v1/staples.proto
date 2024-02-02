@@ -15,12 +15,6 @@ service Staples {
       get : "/api/v1/version"
     };
   };
-  rpc SendEvent(Event) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/api/event",
-      body : "*"
-    };
-  };
 }
 
 message Version { string version = 1; }

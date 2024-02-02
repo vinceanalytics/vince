@@ -20,8 +20,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Staples_Build_FullMethodName     = "/v1.Staples/Build"
-	Staples_SendEvent_FullMethodName = "/v1.Staples/SendEvent"
+	Staples_Build_FullMethodName = "/v1.Staples/Build"
 )
 
 // StaplesClient is the client API for Staples service.
@@ -30,7 +29,6 @@ const (
 type StaplesClient interface {
 	// Build returns version details of the current ots binary.
 	Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Version, error)
-	SendEvent(ctx context.Context, in *Event, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type staplesClient struct {
@@ -50,22 +48,12 @@ func (c *staplesClient) Build(ctx context.Context, in *emptypb.Empty, opts ...gr
 	return out, nil
 }
 
-func (c *staplesClient) SendEvent(ctx context.Context, in *Event, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Staples_SendEvent_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // StaplesServer is the server API for Staples service.
 // All implementations must embed UnimplementedStaplesServer
 // for forward compatibility
 type StaplesServer interface {
 	// Build returns version details of the current ots binary.
 	Build(context.Context, *emptypb.Empty) (*Version, error)
-	SendEvent(context.Context, *Event) (*emptypb.Empty, error)
 	mustEmbedUnimplementedStaplesServer()
 }
 
@@ -75,9 +63,6 @@ type UnimplementedStaplesServer struct {
 
 func (UnimplementedStaplesServer) Build(context.Context, *emptypb.Empty) (*Version, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
-}
-func (UnimplementedStaplesServer) SendEvent(context.Context, *Event) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendEvent not implemented")
 }
 func (UnimplementedStaplesServer) mustEmbedUnimplementedStaplesServer() {}
 
@@ -110,24 +95,6 @@ func _Staples_Build_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Staples_SendEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Event)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StaplesServer).SendEvent(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Staples_SendEvent_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StaplesServer).SendEvent(ctx, req.(*Event))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Staples_ServiceDesc is the grpc.ServiceDesc for Staples service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -138,10 +105,6 @@ var Staples_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Build",
 			Handler:    _Staples_Build_Handler,
-		},
-		{
-			MethodName: "SendEvent",
-			Handler:    _Staples_SendEvent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

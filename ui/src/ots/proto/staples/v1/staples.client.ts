@@ -4,7 +4,6 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { Staples } from "./staples";
-import type { Event } from "./base";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
 import type { Version } from "./staples";
 import type { Empty } from "../../google/protobuf/empty";
@@ -20,10 +19,6 @@ export interface IStaplesClient {
      * @generated from protobuf rpc: Build(google.protobuf.Empty) returns (v1.Version);
      */
     build(input: Empty, options?: RpcOptions): UnaryCall<Empty, Version>;
-    /**
-     * @generated from protobuf rpc: SendEvent(v1.Event) returns (google.protobuf.Empty);
-     */
-    sendEvent(input: Event, options?: RpcOptions): UnaryCall<Event, Empty>;
 }
 /**
  * @generated from protobuf service v1.Staples
@@ -42,12 +37,5 @@ export class StaplesClient implements IStaplesClient, ServiceInfo {
     build(input: Empty, options?: RpcOptions): UnaryCall<Empty, Version> {
         const method = this.methods[0], opt = this._transport.mergeOptions(options);
         return stackIntercept<Empty, Version>("unary", this._transport, method, opt, input);
-    }
-    /**
-     * @generated from protobuf rpc: SendEvent(v1.Event) returns (google.protobuf.Empty);
-     */
-    sendEvent(input: Event, options?: RpcOptions): UnaryCall<Event, Empty> {
-        const method = this.methods[1], opt = this._transport.mergeOptions(options);
-        return stackIntercept<Event, Empty>("unary", this._transport, method, opt, input);
     }
 }
