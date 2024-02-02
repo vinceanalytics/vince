@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/cespare/xxhash/v2"
-	v1 "github.com/vinceanalytics/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/geo"
-	"github.com/vinceanalytics/staples/logger"
-	"github.com/vinceanalytics/staples/ref"
-	"github.com/vinceanalytics/staples/ua"
+	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
+	"github.com/vinceanalytics/staples/staples/geo"
+	"github.com/vinceanalytics/staples/staples/logger"
+	"github.com/vinceanalytics/staples/staples/ref"
+	"github.com/vinceanalytics/staples/staples/ua"
 )
 
 type Event struct {

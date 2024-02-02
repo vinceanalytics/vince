@@ -16,8 +16,8 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
-	v1 "github.com/vinceanalytics/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/index"
+	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
+	"github.com/vinceanalytics/staples/staples/index"
 )
 
 var ErrKeyNotFound = errors.New("db: key not found")

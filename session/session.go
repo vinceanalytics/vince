@@ -8,12 +8,12 @@ import (
 
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/dgraph-io/ristretto"
-	"github.com/vinceanalytics/staples"
-	"github.com/vinceanalytics/staples/db"
-	v1 "github.com/vinceanalytics/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/index"
-	"github.com/vinceanalytics/staples/logger"
-	"github.com/vinceanalytics/staples/lsm"
+	"github.com/vinceanalytics/staples/staples/db"
+	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
+	"github.com/vinceanalytics/staples/staples/index"
+	"github.com/vinceanalytics/staples/staples/logger"
+	"github.com/vinceanalytics/staples/staples/lsm"
+	"github.com/vinceanalytics/staples/staples/staples"
 )
 
 const DefaultSession = 15 * time.Minute

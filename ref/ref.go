@@ -12,7 +12,7 @@ import (
 	"github.com/blevesearch/vellum"
 	"github.com/blevesearch/vellum/levenshtein"
 	"github.com/dgraph-io/ristretto"
-	"github.com/vinceanalytics/staples/logger"
+	"github.com/vinceanalytics/staples/staples/logger"
 )
 
 //go:generate go run gen/main.go

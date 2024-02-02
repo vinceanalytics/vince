@@ -11,7 +11,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/blevesearch/vellum"
-	"github.com/vinceanalytics/staples/filters"
+	"github.com/vinceanalytics/staples/staples/filters"
 )
 
 type FullColumn struct {

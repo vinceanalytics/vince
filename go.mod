@@ -1,4 +1,4 @@
-module github.com/vinceanalytics/staples
+module github.com/vinceanalytics/staples/staples
 
 go 1.21.4
 

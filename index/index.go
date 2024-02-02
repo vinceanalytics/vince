@@ -3,8 +3,8 @@ package index
 import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow"
-	"github.com/vinceanalytics/staples/filters"
-	v1 "github.com/vinceanalytics/staples/gen/go/staples/v1"
+	"github.com/vinceanalytics/staples/staples/filters"
+	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
 )
 
 type Full interface {

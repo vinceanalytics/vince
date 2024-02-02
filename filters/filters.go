@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	"github.com/blevesearch/vellum/regexp"
-	v1 "github.com/vinceanalytics/staples/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
 )
 
 const (
