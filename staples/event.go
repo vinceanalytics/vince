@@ -28,9 +28,10 @@ type Event struct {
 	//
 	// NOTE: Bounce is calculated per session. We simply want to know if a user
 	// stayed and browsed the website.
-	Bounce         int64
-	Session        int64
-	Duration       float64
+	Bounce   int64
+	Session  int64
+	Duration float64
+
 	Browser        string
 	BrowserVersion string
 	City           string

@@ -3,7 +3,6 @@ package index
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"slices"
 	"sort"
 	"sync"
@@ -12,6 +11,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/blevesearch/vellum"
 	"github.com/vinceanalytics/staples/staples/filters"
+	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
 )
 
 type FullColumn struct {
@@ -20,7 +20,6 @@ type FullColumn struct {
 	NumRows uint32
 	bitmaps []*roaring.Bitmap
 	fst     *vellum.FST
-	latest  *roaring.Bitmap
 }
 
 var _ Column = (*FullColumn)(nil)
@@ -51,14 +50,14 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 		return new(roaring.Bitmap)
 	}
 	fst := f.Load()
-	switch m.Op {
-	case filters.Equal:
+	switch m.Base.Op {
+	case v1.Filter_equal:
 		r, ok, _ := fst.Get(m.Value)
 		if !ok {
 			return new(roaring.Bitmap)
 		}
 		return f.bitmaps[r].Clone()
-	case filters.NotEqual:
+	case v1.Filter_not_equal:
 		r, ok, _ := fst.Get(m.Value)
 		if !ok {
 			return new(roaring.Bitmap)
@@ -73,7 +72,7 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 			}
 		}
 		return o
-	case filters.ReMatch:
+	case v1.Filter_re_equal:
 		var b *roaring.Bitmap
 		it, err := fst.Search(m.Re, nil, nil)
 		for err == nil {
@@ -89,7 +88,7 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 			b = new(roaring.Bitmap)
 		}
 		return b
-	case filters.ReNotMatch:
+	case v1.Filter_re_not_equal:
 		var b *roaring.Bitmap
 		it, err := fst.Search(m.Re, nil, nil)
 		for err == nil {
@@ -111,8 +110,6 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 			}
 		}
 		return o
-	case filters.Latest:
-		return f.Latest()
 	default:
 		return new(roaring.Bitmap)
 	}
@@ -130,24 +127,6 @@ func (f *FullColumn) Load() *vellum.FST {
 	}
 	f.fst = fst
 	return fst
-}
-
-func (f *FullColumn) Latest() *roaring.Bitmap {
-	if f.latest != nil {
-		return f.latest
-	}
-	b := new(roaring.Bitmap)
-	it, err := f.Load().Iterator(nil, nil)
-	for err == nil {
-		_, val := it.Current()
-		b.Add(f.bitmaps[val].Maximum())
-		err = it.Next()
-	}
-	if !errors.Is(err, vellum.ErrIteratorDone) {
-		panic("invalid state of fst iteration " + err.Error())
-	}
-	f.latest = b
-	return f.latest
 }
 
 func (f *FullColumn) Size() (n uint64) {
@@ -168,7 +147,7 @@ func (m FullMapColumn) Size() (n uint64) {
 }
 
 func (f FullMapColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
-	c, ok := f[m.Column]
+	c, ok := f[m.Base.Column.String()]
 	if !ok {
 		return new(roaring.Bitmap)
 	}

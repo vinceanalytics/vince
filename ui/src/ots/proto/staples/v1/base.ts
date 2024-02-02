@@ -80,250 +80,236 @@ export interface Filters {
  */
 export enum Filters_Projection {
     /**
-     * common
-     *
-     * @generated from protobuf enum value: ResourceSchema = 0;
+     * @generated from protobuf enum value: Timestamp = 0;
      */
-    ResourceSchema = 0,
+    Timestamp = 0,
     /**
-     * @generated from protobuf enum value: ResourceAttributes = 2;
+     * @generated from protobuf enum value: ID = 1;
      */
-    ResourceAttributes = 2,
+    ID = 1,
     /**
-     * @generated from protobuf enum value: ScopeName = 3;
+     * @generated from protobuf enum value: Bounce = 2;
      */
-    ScopeName = 3,
+    Bounce = 2,
     /**
-     * @generated from protobuf enum value: ScopeSchema = 4;
+     * @generated from protobuf enum value: Session = 3;
      */
-    ScopeSchema = 4,
+    Session = 3,
     /**
-     * @generated from protobuf enum value: ScopeVersion = 5;
+     * @generated from protobuf enum value: Duration = 4;
      */
-    ScopeVersion = 5,
+    Duration = 4,
     /**
-     * @generated from protobuf enum value: ScopeAttributes = 6;
+     * @generated from protobuf enum value: Browser = 5;
      */
-    ScopeAttributes = 6,
+    Browser = 5,
     /**
-     * @generated from protobuf enum value: Flags = 14;
+     * @generated from protobuf enum value: BrowserVersion = 6;
      */
-    Flags = 14,
+    BrowserVersion = 6,
     /**
-     * @generated from protobuf enum value: ResourceHash = 28;
+     * @generated from protobuf enum value: City = 7;
      */
-    ResourceHash = 28,
+    City = 7,
     /**
-     * @generated from protobuf enum value: ScopeHash = 29;
+     * @generated from protobuf enum value: Country = 8;
      */
-    ScopeHash = 29,
+    Country = 8,
     /**
-     * @generated from protobuf enum value: Hash = 30;
+     * @generated from protobuf enum value: Domain = 9;
      */
-    Hash = 30,
+    Domain = 9,
     /**
-     * metrics
-     *
-     * @generated from protobuf enum value: Name = 7;
+     * @generated from protobuf enum value: EntryPage = 10;
      */
-    Name = 7,
+    EntryPage = 10,
     /**
-     * @generated from protobuf enum value: Description = 8;
+     * @generated from protobuf enum value: ExitPage = 11;
      */
-    Description = 8,
+    ExitPage = 11,
     /**
-     * @generated from protobuf enum value: Unit = 9;
+     * @generated from protobuf enum value: Host = 12;
      */
-    Unit = 9,
+    Host = 12,
     /**
-     * @generated from protobuf enum value: StartTimeUnixNano = 10;
+     * @generated from protobuf enum value: Event = 13;
      */
-    StartTimeUnixNano = 10,
+    Event = 13,
     /**
-     * @generated from protobuf enum value: TimeUnixNano = 11;
+     * @generated from protobuf enum value: Os = 14;
      */
-    TimeUnixNano = 11,
+    Os = 14,
     /**
-     * @generated from protobuf enum value: Data = 12;
+     * @generated from protobuf enum value: OsVersion = 15;
      */
-    Data = 12,
+    OsVersion = 15,
     /**
-     * @generated from protobuf enum value: Exemplars = 13;
+     * @generated from protobuf enum value: Path = 16;
      */
-    Exemplars = 13,
+    Path = 16,
     /**
-     * logs
-     *
-     * @generated from protobuf enum value: ObservedTimeUnixNano = 15;
+     * @generated from protobuf enum value: Referrer = 17;
      */
-    ObservedTimeUnixNano = 15,
+    Referrer = 17,
     /**
-     * @generated from protobuf enum value: SeverityNumber = 16;
+     * @generated from protobuf enum value: ReferrerSource = 18;
      */
-    SeverityNumber = 16,
+    ReferrerSource = 18,
     /**
-     * @generated from protobuf enum value: SeverityText = 17;
+     * @generated from protobuf enum value: Region = 19;
      */
-    SeverityText = 17,
+    Region = 19,
     /**
-     * @generated from protobuf enum value: Body = 18;
+     * @generated from protobuf enum value: Screen = 20;
      */
-    Body = 18,
+    Screen = 20,
     /**
-     * @generated from protobuf enum value: TraceID = 19;
+     * @generated from protobuf enum value: UtmCampaign = 21;
      */
-    TraceID = 19,
+    UtmCampaign = 21,
     /**
-     * @generated from protobuf enum value: SpanID = 20;
+     * @generated from protobuf enum value: UtmContent = 22;
      */
-    SpanID = 20,
+    UtmContent = 22,
     /**
-     * trace
-     *
-     * @generated from protobuf enum value: TraceState = 21;
+     * @generated from protobuf enum value: UtmMedium = 23;
      */
-    TraceState = 21,
+    UtmMedium = 23,
     /**
-     * @generated from protobuf enum value: ParentSpanID = 22;
+     * @generated from protobuf enum value: UtmSource = 24;
      */
-    ParentSpanID = 22,
+    UtmSource = 24,
     /**
-     * @generated from protobuf enum value: Kind = 23;
+     * @generated from protobuf enum value: UtmTerm = 25;
      */
-    Kind = 23,
-    /**
-     * @generated from protobuf enum value: EndTimeUnixNano = 24;
-     */
-    EndTimeUnixNano = 24,
-    /**
-     * @generated from protobuf enum value: Events = 25;
-     */
-    Events = 25,
-    /**
-     * @generated from protobuf enum value: Links = 26;
-     */
-    Links = 26,
-    /**
-     * @generated from protobuf enum value: Status = 27;
-     */
-    Status = 27
+    UtmTerm = 25
 }
 /**
  * @generated from protobuf message v1.Filter
  */
 export interface Filter {
     /**
-     * @generated from protobuf oneof: column
+     * @generated from protobuf field: v1.Filter.Column column = 1;
      */
-    column: {
-        oneofKind: "base";
-        /**
-         * @generated from protobuf field: v1.Filter.BaseColumn base = 1;
-         */
-        base: Filter_BaseColumn;
-    } | {
-        oneofKind: "resourceAttributes";
-        /**
-         * @generated from protobuf field: string resource_attributes = 2;
-         */
-        resourceAttributes: string;
-    } | {
-        oneofKind: "scopeAttributes";
-        /**
-         * @generated from protobuf field: string scope_attributes = 3;
-         */
-        scopeAttributes: string;
-    } | {
-        oneofKind: "attributes";
-        /**
-         * @generated from protobuf field: string attributes = 4;
-         */
-        attributes: string;
-    } | {
-        oneofKind: undefined;
-    };
+    column: Filter_Column;
     /**
-     * @generated from protobuf oneof: value
+     * @generated from protobuf field: v1.Filter.Op op = 2;
      */
-    value: {
-        oneofKind: "equal";
-        /**
-         * @generated from protobuf field: bytes equal = 5;
-         */
-        equal: Uint8Array;
-    } | {
-        oneofKind: "notEqual";
-        /**
-         * @generated from protobuf field: bytes not_equal = 6;
-         */
-        notEqual: Uint8Array;
-    } | {
-        oneofKind: "reEqual";
-        /**
-         * @generated from protobuf field: bytes re_equal = 7;
-         */
-        reEqual: Uint8Array;
-    } | {
-        oneofKind: "reNotEqual";
-        /**
-         * @generated from protobuf field: bytes re_not_equal = 8;
-         */
-        reNotEqual: Uint8Array;
-    } | {
-        oneofKind: "latest";
-        /**
-         * @generated from protobuf field: v1.Filter.Latest latest = 9;
-         */
-        latest: Filter_Latest;
-    } | {
-        oneofKind: undefined;
-    };
+    op: Filter_Op;
+    /**
+     * @generated from protobuf field: string value = 3;
+     */
+    value: string;
 }
 /**
- * @generated from protobuf message v1.Filter.Latest
+ * @generated from protobuf enum v1.Filter.Op
  */
-export interface Filter_Latest {
+export enum Filter_Op {
+    /**
+     * @generated from protobuf enum value: equal = 0;
+     */
+    equal = 0,
+    /**
+     * @generated from protobuf enum value: not_equal = 2;
+     */
+    not_equal = 2,
+    /**
+     * @generated from protobuf enum value: re_equal = 3;
+     */
+    re_equal = 3,
+    /**
+     * @generated from protobuf enum value: re_not_equal = 4;
+     */
+    re_not_equal = 4
 }
 /**
- * @generated from protobuf enum v1.Filter.BaseColumn
+ * @generated from protobuf enum v1.Filter.Column
  */
-export enum Filter_BaseColumn {
+export enum Filter_Column {
     /**
-     * @generated from protobuf enum value: ResourceSchema = 0;
+     * @generated from protobuf enum value: Browser = 0;
      */
-    ResourceSchema = 0,
+    Browser = 0,
     /**
-     * @generated from protobuf enum value: ScopeName = 1;
+     * @generated from protobuf enum value: BrowserVersion = 6;
      */
-    ScopeName = 1,
+    BrowserVersion = 6,
     /**
-     * @generated from protobuf enum value: ScopeSchema = 2;
+     * @generated from protobuf enum value: City = 7;
      */
-    ScopeSchema = 2,
+    City = 7,
     /**
-     * @generated from protobuf enum value: ScopeVersion = 3;
+     * @generated from protobuf enum value: Country = 8;
      */
-    ScopeVersion = 3,
+    Country = 8,
     /**
-     * @generated from protobuf enum value: Name = 4;
+     * @generated from protobuf enum value: Domain = 9;
      */
-    Name = 4,
+    Domain = 9,
     /**
-     * @generated from protobuf enum value: TraceID = 5;
+     * @generated from protobuf enum value: EntryPage = 10;
      */
-    TraceID = 5,
+    EntryPage = 10,
     /**
-     * @generated from protobuf enum value: ResourceHash = 6;
+     * @generated from protobuf enum value: ExitPage = 11;
      */
-    ResourceHash = 6,
+    ExitPage = 11,
     /**
-     * @generated from protobuf enum value: ScopeHash = 7;
+     * @generated from protobuf enum value: Host = 12;
      */
-    ScopeHash = 7,
+    Host = 12,
     /**
-     * @generated from protobuf enum value: Hash = 8;
+     * @generated from protobuf enum value: Event = 13;
      */
-    Hash = 8
+    Event = 13,
+    /**
+     * @generated from protobuf enum value: Os = 14;
+     */
+    Os = 14,
+    /**
+     * @generated from protobuf enum value: OsVersion = 15;
+     */
+    OsVersion = 15,
+    /**
+     * @generated from protobuf enum value: Path = 16;
+     */
+    Path = 16,
+    /**
+     * @generated from protobuf enum value: Referrer = 17;
+     */
+    Referrer = 17,
+    /**
+     * @generated from protobuf enum value: ReferrerSource = 18;
+     */
+    ReferrerSource = 18,
+    /**
+     * @generated from protobuf enum value: Region = 19;
+     */
+    Region = 19,
+    /**
+     * @generated from protobuf enum value: Screen = 20;
+     */
+    Screen = 20,
+    /**
+     * @generated from protobuf enum value: UtmCampaign = 21;
+     */
+    UtmCampaign = 21,
+    /**
+     * @generated from protobuf enum value: UtmContent = 22;
+     */
+    UtmContent = 22,
+    /**
+     * @generated from protobuf enum value: UtmMedium = 23;
+     */
+    UtmMedium = 23,
+    /**
+     * @generated from protobuf enum value: UtmSource = 24;
+     */
+    UtmSource = 24,
+    /**
+     * @generated from protobuf enum value: UtmTerm = 25;
+     */
+    UtmTerm = 25
 }
 /**
  * @generated from protobuf message v1.Event
@@ -653,19 +639,13 @@ export const Filters = new Filters$Type();
 class Filter$Type extends MessageType<Filter> {
     constructor() {
         super("v1.Filter", [
-            { no: 1, name: "base", kind: "enum", oneof: "column", T: () => ["v1.Filter.BaseColumn", Filter_BaseColumn] },
-            { no: 2, name: "resource_attributes", kind: "scalar", oneof: "column", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "scope_attributes", kind: "scalar", oneof: "column", T: 9 /*ScalarType.STRING*/ },
-            { no: 4, name: "attributes", kind: "scalar", oneof: "column", T: 9 /*ScalarType.STRING*/ },
-            { no: 5, name: "equal", kind: "scalar", oneof: "value", T: 12 /*ScalarType.BYTES*/ },
-            { no: 6, name: "not_equal", kind: "scalar", oneof: "value", T: 12 /*ScalarType.BYTES*/ },
-            { no: 7, name: "re_equal", kind: "scalar", oneof: "value", T: 12 /*ScalarType.BYTES*/ },
-            { no: 8, name: "re_not_equal", kind: "scalar", oneof: "value", T: 12 /*ScalarType.BYTES*/ },
-            { no: 9, name: "latest", kind: "message", oneof: "value", T: () => Filter_Latest }
+            { no: 1, name: "column", kind: "enum", T: () => ["v1.Filter.Column", Filter_Column] },
+            { no: 2, name: "op", kind: "enum", T: () => ["v1.Filter.Op", Filter_Op] },
+            { no: 3, name: "value", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<Filter>): Filter {
-        const message = { column: { oneofKind: undefined }, value: { oneofKind: undefined } };
+        const message = { column: 0, op: 0, value: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Filter>(this, message, value);
@@ -676,59 +656,14 @@ class Filter$Type extends MessageType<Filter> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* v1.Filter.BaseColumn base */ 1:
-                    message.column = {
-                        oneofKind: "base",
-                        base: reader.int32()
-                    };
+                case /* v1.Filter.Column column */ 1:
+                    message.column = reader.int32();
                     break;
-                case /* string resource_attributes */ 2:
-                    message.column = {
-                        oneofKind: "resourceAttributes",
-                        resourceAttributes: reader.string()
-                    };
+                case /* v1.Filter.Op op */ 2:
+                    message.op = reader.int32();
                     break;
-                case /* string scope_attributes */ 3:
-                    message.column = {
-                        oneofKind: "scopeAttributes",
-                        scopeAttributes: reader.string()
-                    };
-                    break;
-                case /* string attributes */ 4:
-                    message.column = {
-                        oneofKind: "attributes",
-                        attributes: reader.string()
-                    };
-                    break;
-                case /* bytes equal */ 5:
-                    message.value = {
-                        oneofKind: "equal",
-                        equal: reader.bytes()
-                    };
-                    break;
-                case /* bytes not_equal */ 6:
-                    message.value = {
-                        oneofKind: "notEqual",
-                        notEqual: reader.bytes()
-                    };
-                    break;
-                case /* bytes re_equal */ 7:
-                    message.value = {
-                        oneofKind: "reEqual",
-                        reEqual: reader.bytes()
-                    };
-                    break;
-                case /* bytes re_not_equal */ 8:
-                    message.value = {
-                        oneofKind: "reNotEqual",
-                        reNotEqual: reader.bytes()
-                    };
-                    break;
-                case /* v1.Filter.Latest latest */ 9:
-                    message.value = {
-                        oneofKind: "latest",
-                        latest: Filter_Latest.internalBinaryRead(reader, reader.uint32(), options, (message.value as any).latest)
-                    };
+                case /* string value */ 3:
+                    message.value = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -742,33 +677,15 @@ class Filter$Type extends MessageType<Filter> {
         return message;
     }
     internalBinaryWrite(message: Filter, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* v1.Filter.BaseColumn base = 1; */
-        if (message.column.oneofKind === "base")
-            writer.tag(1, WireType.Varint).int32(message.column.base);
-        /* string resource_attributes = 2; */
-        if (message.column.oneofKind === "resourceAttributes")
-            writer.tag(2, WireType.LengthDelimited).string(message.column.resourceAttributes);
-        /* string scope_attributes = 3; */
-        if (message.column.oneofKind === "scopeAttributes")
-            writer.tag(3, WireType.LengthDelimited).string(message.column.scopeAttributes);
-        /* string attributes = 4; */
-        if (message.column.oneofKind === "attributes")
-            writer.tag(4, WireType.LengthDelimited).string(message.column.attributes);
-        /* bytes equal = 5; */
-        if (message.value.oneofKind === "equal")
-            writer.tag(5, WireType.LengthDelimited).bytes(message.value.equal);
-        /* bytes not_equal = 6; */
-        if (message.value.oneofKind === "notEqual")
-            writer.tag(6, WireType.LengthDelimited).bytes(message.value.notEqual);
-        /* bytes re_equal = 7; */
-        if (message.value.oneofKind === "reEqual")
-            writer.tag(7, WireType.LengthDelimited).bytes(message.value.reEqual);
-        /* bytes re_not_equal = 8; */
-        if (message.value.oneofKind === "reNotEqual")
-            writer.tag(8, WireType.LengthDelimited).bytes(message.value.reNotEqual);
-        /* v1.Filter.Latest latest = 9; */
-        if (message.value.oneofKind === "latest")
-            Filter_Latest.internalBinaryWrite(message.value.latest, writer.tag(9, WireType.LengthDelimited).fork(), options).join();
+        /* v1.Filter.Column column = 1; */
+        if (message.column !== 0)
+            writer.tag(1, WireType.Varint).int32(message.column);
+        /* v1.Filter.Op op = 2; */
+        if (message.op !== 0)
+            writer.tag(2, WireType.Varint).int32(message.op);
+        /* string value = 3; */
+        if (message.value !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.value);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -779,32 +696,6 @@ class Filter$Type extends MessageType<Filter> {
  * @generated MessageType for protobuf message v1.Filter
  */
 export const Filter = new Filter$Type();
-// @generated message type with reflection information, may provide speed optimized methods
-class Filter_Latest$Type extends MessageType<Filter_Latest> {
-    constructor() {
-        super("v1.Filter.Latest", []);
-    }
-    create(value?: PartialMessage<Filter_Latest>): Filter_Latest {
-        const message = {};
-        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
-        if (value !== undefined)
-            reflectionMergePartial<Filter_Latest>(this, message, value);
-        return message;
-    }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Filter_Latest): Filter_Latest {
-        return target ?? this.create();
-    }
-    internalBinaryWrite(message: Filter_Latest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        let u = options.writeUnknownFields;
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
-        return writer;
-    }
-}
-/**
- * @generated MessageType for protobuf message v1.Filter.Latest
- */
-export const Filter_Latest = new Filter_Latest$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Event$Type extends MessageType<Event> {
     constructor() {

@@ -27,74 +27,70 @@ message Filters {
   repeated Projection projection = 2;
 
   enum Projection {
-    // common
-    ResourceSchema = 0;
-    ResourceAttributes = 2;
-    ScopeName = 3;
-    ScopeSchema = 4;
-    ScopeVersion = 5;
-    ScopeAttributes = 6;
-    Flags = 14;
-    ResourceHash = 28;
-    ScopeHash = 29;
-    Hash = 30;
+    Timestamp = 0;
+    ID = 1;
+    Bounce = 2;
+    Session = 3;
+    Duration = 4;
 
-    // metrics
-    Name = 7;
-    Description = 8;
-    Unit = 9;
-    StartTimeUnixNano = 10;
-    TimeUnixNano = 11;
-    Data = 12;
-    Exemplars = 13;
-
-    // logs
-    ObservedTimeUnixNano = 15;
-    SeverityNumber = 16;
-    SeverityText = 17;
-    Body = 18;
-    TraceID = 19;
-    SpanID = 20;
-
-    // trace
-    TraceState = 21;
-    ParentSpanID = 22;
-    Kind = 23;
-    EndTimeUnixNano = 24;
-    Events = 25;
-    Links = 26;
-    Status = 27;
+    Browser = 5;
+    BrowserVersion = 6;
+    City = 7;
+    Country = 8;
+    Domain = 9;
+    EntryPage = 10;
+    ExitPage = 11;
+    Host = 12;
+    Event = 13;
+    Os = 14;
+    OsVersion = 15;
+    Path = 16;
+    Referrer = 17;
+    ReferrerSource = 18;
+    Region = 19;
+    Screen = 20;
+    UtmCampaign = 21;
+    UtmContent = 22;
+    UtmMedium = 23;
+    UtmSource = 24;
+    UtmTerm = 25;
   }
 }
 
 message Filter {
-  oneof column {
-    BaseColumn base = 1;
-    string resource_attributes = 2;
-    string scope_attributes = 3;
-    string attributes = 4;
+  Column column = 1;
+  Op op = 2;
+  string value = 3;
+
+  enum Op {
+    equal = 0;
+    not_equal = 2;
+    re_equal = 3;
+    re_not_equal = 4;
   }
 
-  oneof value {
-    bytes equal = 5;
-    bytes not_equal = 6;
-    bytes re_equal = 7;
-    bytes re_not_equal = 8;
-    Latest latest = 9;
-  }
-
-  message Latest {}
-
-  enum BaseColumn {
-    ResourceSchema = 0;
-    ScopeName = 1;
-    ScopeSchema = 2;
-    ScopeVersion = 3;
-    Name = 4;
-    TraceID = 5;
-    ResourceHash = 6;
-    ScopeHash = 7;
-    Hash = 8;
+  enum Column {
+    Browser = 0;
+    BrowserVersion = 6;
+    City = 7;
+    Country = 8;
+    Domain = 9;
+    EntryPage = 10;
+    ExitPage = 11;
+    Host = 12;
+    Event = 13;
+    Os = 14;
+    OsVersion = 15;
+    Path = 16;
+    Referrer = 17;
+    ReferrerSource = 18;
+    Region = 19;
+    Screen = 20;
+    UtmCampaign = 21;
+    UtmContent = 22;
+    UtmMedium = 23;
+    UtmSource = 24;
+    UtmTerm = 25;
   }
 }
 
