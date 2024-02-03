@@ -77,6 +77,58 @@ func (Metric) EnumDescriptor() ([]byte, []int) {
 	return file_staples_v1_base_proto_rawDescGZIP(), []int{0}
 }
 
+type Interval int32
+
+const (
+	Interval_Day   Interval = 0
+	Interval_Week  Interval = 2
+	Interval_Month Interval = 3
+	Interval_Year  Interval = 4
+)
+
+// Enum value maps for Interval.
+var (
+	Interval_name = map[int32]string{
+		0: "Day",
+		2: "Week",
+		3: "Month",
+		4: "Year",
+	}
+	Interval_value = map[string]int32{
+		"Day":   0,
+		"Week":  2,
+		"Month": 3,
+		"Year":  4,
+	}
+)
+
+func (x Interval) Enum() *Interval {
+	p := new(Interval)
+	*p = x
+	return p
+}
+
+func (x Interval) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Interval) Descriptor() protoreflect.EnumDescriptor {
+	return file_staples_v1_base_proto_enumTypes[1].Descriptor()
+}
+
+func (Interval) Type() protoreflect.EnumType {
+	return &file_staples_v1_base_proto_enumTypes[1]
+}
+
+func (x Interval) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Interval.Descriptor instead.
+func (Interval) EnumDescriptor() ([]byte, []int) {
+	return file_staples_v1_base_proto_rawDescGZIP(), []int{1}
+}
+
 type Filters_Projection int32
 
 const (
@@ -179,11 +231,11 @@ func (x Filters_Projection) String() string {
 }
 
 func (Filters_Projection) Descriptor() protoreflect.EnumDescriptor {
-	return file_staples_v1_base_proto_enumTypes[1].Descriptor()
+	return file_staples_v1_base_proto_enumTypes[2].Descriptor()
 }
 
 func (Filters_Projection) Type() protoreflect.EnumType {
-	return &file_staples_v1_base_proto_enumTypes[1]
+	return &file_staples_v1_base_proto_enumTypes[2]
 }
 
 func (x Filters_Projection) Number() protoreflect.EnumNumber {
@@ -231,11 +283,11 @@ func (x Filter_Op) String() string {
 }
 
 func (Filter_Op) Descriptor() protoreflect.EnumDescriptor {
-	return file_staples_v1_base_proto_enumTypes[2].Descriptor()
+	return file_staples_v1_base_proto_enumTypes[3].Descriptor()
 }
 
 func (Filter_Op) Type() protoreflect.EnumType {
-	return &file_staples_v1_base_proto_enumTypes[2]
+	return &file_staples_v1_base_proto_enumTypes[3]
 }
 
 func (x Filter_Op) Number() protoreflect.EnumNumber {
@@ -334,11 +386,11 @@ func (x Filter_Column) String() string {
 }
 
 func (Filter_Column) Descriptor() protoreflect.EnumDescriptor {
-	return file_staples_v1_base_proto_enumTypes[3].Descriptor()
+	return file_staples_v1_base_proto_enumTypes[4].Descriptor()
 }
 
 func (Filter_Column) Type() protoreflect.EnumType {
-	return &file_staples_v1_base_proto_enumTypes[3]
+	return &file_staples_v1_base_proto_enumTypes[4]
 }
 
 func (x Filter_Column) Number() protoreflect.EnumNumber {
@@ -905,14 +957,17 @@ var file_staples_v1_base_proto_rawDesc = []byte{
 	0x73, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x76, 0x69, 0x73, 0x69, 0x74, 0x73, 0x10, 0x02, 0x12,
 	0x0f, 0x0a, 0x0b, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x10, 0x03,
 	0x12, 0x12, 0x0a, 0x0e, 0x76, 0x69, 0x73, 0x69, 0x74, 0x5f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x10, 0x04, 0x42, 0x6c, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x09,
-	0x42, 0x61, 0x73, 0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2f, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61,
-	0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x74, 0x73, 0x75, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67,
-	0x6f, 0x2f, 0x73, 0x74, 0x61, 0x70, 0x6c, 0x65, 0x73, 0x2f, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x56,
-	0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02, 0x56, 0x31, 0xe2, 0x02, 0x0e, 0x56,
-	0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x02,
-	0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x6e, 0x10, 0x04, 0x2a, 0x32, 0x0a, 0x08, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c,
+	0x12, 0x07, 0x0a, 0x03, 0x44, 0x61, 0x79, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x57, 0x65, 0x65,
+	0x6b, 0x10, 0x02, 0x12, 0x09, 0x0a, 0x05, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x10, 0x03, 0x12, 0x08,
+	0x0a, 0x04, 0x59, 0x65, 0x61, 0x72, 0x10, 0x04, 0x42, 0x6c, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e,
+	0x76, 0x31, 0x42, 0x09, 0x42, 0x61, 0x73, 0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
+	0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63,
+	0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x74, 0x73, 0x75, 0x2f, 0x67,
+	0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x73, 0x74, 0x61, 0x70, 0x6c, 0x65, 0x73, 0x2f, 0x76, 0x31,
+	0xa2, 0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02, 0x56, 0x31,
+	0xe2, 0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74,
+	0x61, 0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -927,32 +982,33 @@ func file_staples_v1_base_proto_rawDescGZIP() []byte {
 	return file_staples_v1_base_proto_rawDescData
 }
 
-var file_staples_v1_base_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_staples_v1_base_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
 var file_staples_v1_base_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_staples_v1_base_proto_goTypes = []interface{}{
 	(Metric)(0),                   // 0: v1.Metric
-	(Filters_Projection)(0),       // 1: v1.Filters.Projection
-	(Filter_Op)(0),                // 2: v1.Filter.Op
-	(Filter_Column)(0),            // 3: v1.Filter.Column
-	(*ScanRequest)(nil),           // 4: v1.ScanRequest
-	(*ScanResponse)(nil),          // 5: v1.ScanResponse
-	(*TimeRange)(nil),             // 6: v1.TimeRange
-	(*KeyValue)(nil),              // 7: v1.KeyValue
-	(*Filters)(nil),               // 8: v1.Filters
-	(*Filter)(nil),                // 9: v1.Filter
-	(*Event)(nil),                 // 10: v1.Event
-	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
+	(Interval)(0),                 // 1: v1.Interval
+	(Filters_Projection)(0),       // 2: v1.Filters.Projection
+	(Filter_Op)(0),                // 3: v1.Filter.Op
+	(Filter_Column)(0),            // 4: v1.Filter.Column
+	(*ScanRequest)(nil),           // 5: v1.ScanRequest
+	(*ScanResponse)(nil),          // 6: v1.ScanResponse
+	(*TimeRange)(nil),             // 7: v1.TimeRange
+	(*KeyValue)(nil),              // 8: v1.KeyValue
+	(*Filters)(nil),               // 9: v1.Filters
+	(*Filter)(nil),                // 10: v1.Filter
+	(*Event)(nil),                 // 11: v1.Event
+	(*timestamppb.Timestamp)(nil), // 12: google.protobuf.Timestamp
 }
 var file_staples_v1_base_proto_depIdxs = []int32{
-	6,  // 0: v1.ScanRequest.timestamp:type_name -> v1.TimeRange
-	8,  // 1: v1.ScanRequest.filters:type_name -> v1.Filters
-	11, // 2: v1.TimeRange.start:type_name -> google.protobuf.Timestamp
-	11, // 3: v1.TimeRange.end:type_name -> google.protobuf.Timestamp
-	9,  // 4: v1.Filters.list:type_name -> v1.Filter
-	1,  // 5: v1.Filters.projection:type_name -> v1.Filters.Projection
-	3,  // 6: v1.Filter.column:type_name -> v1.Filter.Column
-	2,  // 7: v1.Filter.op:type_name -> v1.Filter.Op
-	11, // 8: v1.Event.timestamp:type_name -> google.protobuf.Timestamp
+	7,  // 0: v1.ScanRequest.timestamp:type_name -> v1.TimeRange
+	9,  // 1: v1.ScanRequest.filters:type_name -> v1.Filters
+	12, // 2: v1.TimeRange.start:type_name -> google.protobuf.Timestamp
+	12, // 3: v1.TimeRange.end:type_name -> google.protobuf.Timestamp
+	10, // 4: v1.Filters.list:type_name -> v1.Filter
+	2,  // 5: v1.Filters.projection:type_name -> v1.Filters.Projection
+	4,  // 6: v1.Filter.column:type_name -> v1.Filter.Column
+	3,  // 7: v1.Filter.op:type_name -> v1.Filter.Op
+	12, // 8: v1.Event.timestamp:type_name -> google.protobuf.Timestamp
 	9,  // [9:9] is the sub-list for method output_type
 	9,  // [9:9] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
@@ -1056,7 +1112,7 @@ func file_staples_v1_base_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_staples_v1_base_proto_rawDesc,
-			NumEnums:      4,
+			NumEnums:      5,
 			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,

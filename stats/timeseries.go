@@ -7,10 +7,11 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/compute"
-	"github.com/apache/arrow/go/v8/arrow/math"
+	"github.com/apache/arrow/go/v15/arrow/math"
 	"github.com/vinceanalytics/staples/staples/db"
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
 	"github.com/vinceanalytics/staples/staples/logger"
+	"github.com/vinceanalytics/staples/staples/timeutil"
 )
 
 func TimeSeries(
@@ -19,6 +20,7 @@ func TimeSeries(
 	start, end int64,
 	metrics []v1.Metric,
 	filters *v1.Filters,
+	interval timeutil.Interval,
 ) arrow.Record {
 	log := logger.Get(ctx).With("call", "stats.TimeSeries")
 	slices.Sort(metrics)
@@ -45,18 +47,26 @@ func TimeSeries(
 	for i := 0; i < int(r.NumCols()); i++ {
 		mapping[r.ColumnName(i)] = i
 	}
-
-	err = buckets(r, func(ts int64, r arrow.Record) error {
-		b.Field(0).(*array.Int64Builder).Append(ts)
+	ts := r.Column(mapping[v1.Filters_Timestamp.String()]).(*array.Int64).Int64Values()
+	err = timeutil.TimeBuckets(interval, ts, func(bucket int64, start, end int) error {
+		n := r.NewSlice(int64(start), int64(end))
+		defer n.Release()
+		b.Field(0).(*array.Int64Builder).Append(bucket)
 		for i, x := range metrics {
 			var visits *float64
 			switch x {
 			case v1.Metric_pageviews:
 				b.Field(i + 1).(*array.Float64Builder).Append(0)
 			case v1.Metric_visitors:
-				b.Field(i + 1).(*array.Float64Builder).Append(0)
+				a := n.Column(mapping[v1.Filters_ID.String()])
+				u, err := compute.Unique(ctx, compute.NewDatumWithoutOwning(a))
+				if err != nil {
+					return err
+				}
+				b.Field(i + 1).(*array.Float64Builder).Append(float64(u.Len()))
+				u.Release()
 			case v1.Metric_visits:
-				a := r.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
+				a := n.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
 				sum := float64(math.Int64.Sum(a))
 				visits = &sum
 				b.Field(i + 1).(*array.Float64Builder).Append(sum)
@@ -65,17 +75,17 @@ func TimeSeries(
 				if visits != nil {
 					vis = *visits
 				} else {
-					a := r.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
+					a := n.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
 					vis = float64(math.Int64.Sum(a))
 				}
-				a := r.Column(mapping[v1.Filters_Bounce.String()]).(*array.Int64)
+				a := n.Column(mapping[v1.Filters_Bounce.String()]).(*array.Int64)
 				sum := float64(math.Int64.Sum(a))
 				if vis != 0 {
 					sum /= vis
 				}
 				b.Field(i + 1).(*array.Float64Builder).Append(sum)
 			case v1.Metric_visit_duration:
-				a := r.Column(mapping[v1.Filters_Duration.String()]).(*array.Float64)
+				a := n.Column(mapping[v1.Filters_Duration.String()]).(*array.Float64)
 				sum := float64(math.Float64.Sum(a))
 				b.Field(i + 1).(*array.Float64Builder).Append(sum)
 			}

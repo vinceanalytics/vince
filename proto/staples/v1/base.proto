@@ -102,6 +102,13 @@ enum Metric {
   visit_duration = 4;
 }
 
+enum Interval {
+  Day = 0;
+  Week = 2;
+  Month = 3;
+  Year = 4;
+}
+
 message Event {
   /// EventName
   string n = 1 [ (buf.validate.field).required = true ];

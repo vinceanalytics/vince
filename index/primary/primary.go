@@ -15,7 +15,7 @@ type PrimaryIndex struct {
 	mu       sync.RWMutex
 	resource string
 	base     *v1.PrimaryIndex
-	stamps   map[string][]uint64
+	stamps   map[string][]int64
 	ids      map[string][]string
 	db       db.Storage
 }
@@ -24,7 +24,7 @@ func LoadPrimaryIndex(o *v1.PrimaryIndex, storage db.Storage) *PrimaryIndex {
 	p := &PrimaryIndex{
 		db:     storage,
 		base:   &v1.PrimaryIndex{Resources: make(map[string]*v1.PrimaryIndex_Resource)},
-		stamps: make(map[string][]uint64),
+		stamps: make(map[string][]int64),
 		ids:    make(map[string][]string),
 	}
 	for r, x := range o.Resources {
@@ -35,7 +35,7 @@ func LoadPrimaryIndex(o *v1.PrimaryIndex, storage db.Storage) *PrimaryIndex {
 		sort.Slice(gs, func(i, j int) bool {
 			return gs[i].Min < gs[j].Min
 		})
-		ts := make([]uint64, len(gs))
+		ts := make([]int64, len(gs))
 		ids := make([]string, len(gs))
 		for i := range gs {
 			ts[i] = gs[i].Min
@@ -63,7 +63,7 @@ func NewPrimary(store db.Storage) (idx *PrimaryIndex, err error) {
 	return &PrimaryIndex{
 		db:     store,
 		base:   &v1.PrimaryIndex{Resources: make(map[string]*v1.PrimaryIndex_Resource)},
-		stamps: make(map[string][]uint64),
+		stamps: make(map[string][]int64),
 		ids:    make(map[string][]string),
 	}, nil
 }
@@ -89,7 +89,7 @@ func (p *PrimaryIndex) Add(resource string, granule *v1.Granule) {
 	}
 }
 
-func (p *PrimaryIndex) FindGranules(resource string, start, end uint64) []string {
+func (p *PrimaryIndex) FindGranules(resource string, start, end int64) []string {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	ts := p.stamps[resource]

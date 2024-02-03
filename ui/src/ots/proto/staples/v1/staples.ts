@@ -93,11 +93,11 @@ export interface Granule {
      */
     id: string;
     /**
-     * @generated from protobuf field: uint64 min = 2;
+     * @generated from protobuf field: int64 min = 2;
      */
     min: bigint;
     /**
-     * @generated from protobuf field: uint64 max = 3;
+     * @generated from protobuf field: int64 max = 3;
      */
     max: bigint;
     /**
@@ -391,8 +391,8 @@ class Granule$Type extends MessageType<Granule> {
     constructor() {
         super("v1.Granule", [
             { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "min", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 3, name: "max", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 2, name: "min", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 3, name: "max", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 4, name: "size", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 5, name: "rows", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ }
         ]);
@@ -412,11 +412,11 @@ class Granule$Type extends MessageType<Granule> {
                 case /* string id */ 1:
                     message.id = reader.string();
                     break;
-                case /* uint64 min */ 2:
-                    message.min = reader.uint64().toBigInt();
+                case /* int64 min */ 2:
+                    message.min = reader.int64().toBigInt();
                     break;
-                case /* uint64 max */ 3:
-                    message.max = reader.uint64().toBigInt();
+                case /* int64 max */ 3:
+                    message.max = reader.int64().toBigInt();
                     break;
                 case /* uint64 size */ 4:
                     message.size = reader.uint64().toBigInt();
@@ -439,12 +439,12 @@ class Granule$Type extends MessageType<Granule> {
         /* string id = 1; */
         if (message.id !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.id);
-        /* uint64 min = 2; */
+        /* int64 min = 2; */
         if (message.min !== 0n)
-            writer.tag(2, WireType.Varint).uint64(message.min);
-        /* uint64 max = 3; */
+            writer.tag(2, WireType.Varint).int64(message.min);
+        /* int64 max = 3; */
         if (message.max !== 0n)
-            writer.tag(3, WireType.Varint).uint64(message.max);
+            writer.tag(3, WireType.Varint).int64(message.max);
         /* uint64 size = 4; */
         if (message.size !== 0n)
             writer.tag(4, WireType.Varint).uint64(message.size);

@@ -43,8 +43,8 @@ message PrimaryIndex {
 
 message Granule {
   string id = 1;
-  uint64 min = 2;
-  uint64 max = 3;
+  int64 min = 2;
+  int64 max = 3;
   uint64 size = 4;
   uint64 rows = 5;
 }

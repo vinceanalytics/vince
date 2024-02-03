@@ -389,6 +389,27 @@ export enum Metric {
      */
     visit_duration = 4
 }
+/**
+ * @generated from protobuf enum v1.Interval
+ */
+export enum Interval {
+    /**
+     * @generated from protobuf enum value: Day = 0;
+     */
+    Day = 0,
+    /**
+     * @generated from protobuf enum value: Week = 2;
+     */
+    Week = 2,
+    /**
+     * @generated from protobuf enum value: Month = 3;
+     */
+    Month = 3,
+    /**
+     * @generated from protobuf enum value: Year = 4;
+     */
+    Year = 4
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class ScanRequest$Type extends MessageType<ScanRequest> {
     constructor() {
