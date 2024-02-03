@@ -16,7 +16,11 @@ import (
 	"github.com/vinceanalytics/staples/staples/staples"
 )
 
-const DefaultSession = 15 * time.Minute
+const (
+	DefaultSession = 15 * time.Minute
+	// To make sure we always have fresh data for current visitors
+	DefaultFlushInterval = 5 * time.Minute
+)
 
 type Session struct {
 	build *staples.Arrow[staples.Event]
@@ -70,11 +74,32 @@ func (s *Session) Flush() {
 	r := s.build.NewRecord()
 	s.mu.Unlock()
 	if r.NumRows() == 0 {
+		r.Release()
 		return
 	}
 	err := s.tree.Add(r)
 	if err != nil {
 		logger.Fail("Failed adding record to lsm", "err", err)
+	}
+}
+
+func (s *Session) Start(ctx context.Context) {
+	go s.doFlush(ctx)
+}
+
+func (s *Session) doFlush(ctx context.Context) {
+
+	s.log.Info("Starting session flushing loop", slog.Duration("interval", DefaultFlushInterval))
+	tk := time.NewTicker(DefaultFlushInterval)
+	defer tk.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-tk.C:
+			s.Flush()
+		}
 	}
 }
 

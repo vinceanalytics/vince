@@ -159,6 +159,8 @@ func app() *cli.Command {
 				Handler:     a,
 				BaseContext: func(l net.Listener) context.Context { return ctx },
 			}
+			// start services
+			sess.Start(ctx)
 			go func() {
 				defer cancel()
 				log.Info("starting server", "addr", base.Listen)
