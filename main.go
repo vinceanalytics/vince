@@ -19,6 +19,7 @@ import (
 	"github.com/vinceanalytics/staples/staples/logger"
 	"github.com/vinceanalytics/staples/staples/session"
 	"github.com/vinceanalytics/staples/staples/staples"
+	"github.com/vinceanalytics/staples/staples/version"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -33,7 +34,10 @@ func main() {
 
 func app() *cli.Command {
 	return &cli.Command{
-		Name: "staples",
+		Name:      "staples",
+		Usage:     "API first Cloud Native Web Analytics For Startups",
+		Copyright: "@2024-present Geofrey Ernest",
+		Version:   version.VERSION,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "data",
