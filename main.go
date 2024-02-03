@@ -13,6 +13,7 @@ import (
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/staples/staples/db"
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
+	"github.com/vinceanalytics/staples/staples/geo"
 	"github.com/vinceanalytics/staples/staples/index/primary"
 	"github.com/vinceanalytics/staples/staples/logger"
 	"github.com/vinceanalytics/staples/staples/session"
@@ -123,6 +124,9 @@ func app() *cli.Command {
 			idx := staples.NewIndex()
 			sess := session.New(alloc, "staples", store, idx, pidx)
 			ctx = session.With(ctx, sess)
+			log.Info("Setup geo ip")
+			gip := geo.Open(base.GeoipDbPath)
+			ctx = geo.With(ctx, gip)
 			ctx = logger.With(ctx, log)
 			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 			defer cancel()
