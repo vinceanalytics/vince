@@ -131,6 +131,9 @@ func app() *cli.Command {
 			ctx = session.With(ctx, sess)
 			log.Info("Setup geo ip")
 			gip := geo.Open(base.GeoipDbPath)
+			if base.GeoipDbPath == "" {
+				log.Warn("Skipping geo ip, missing database path")
+			}
 			ctx = geo.With(ctx, gip)
 			log.Info("Setup guard", "rate-limit", base.RateLimit)
 			gd := guard.New(base)
