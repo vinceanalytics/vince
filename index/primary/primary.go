@@ -11,6 +11,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var Key = []byte("index")
+
 type PrimaryIndex struct {
 	mu       sync.RWMutex
 	resource string
@@ -48,7 +50,7 @@ func LoadPrimaryIndex(o *v1.PrimaryIndex, storage db.Storage) *PrimaryIndex {
 }
 
 func NewPrimary(store db.Storage) (idx *PrimaryIndex, err error) {
-	err = store.Get([]byte{}, func(b []byte) error {
+	err = store.Get(Key, func(b []byte) error {
 		var o v1.PrimaryIndex
 		err := proto.Unmarshal(b, &o)
 		if err != nil {
@@ -83,7 +85,7 @@ func (p *PrimaryIndex) Add(resource string, granule *v1.Granule) {
 	p.ids[resource] = append(p.ids[resource], granule.Id)
 	data, _ := proto.Marshal(p.base)
 	p.mu.Unlock()
-	err := p.db.Set([]byte{}, data, 0)
+	err := p.db.Set(Key, data, 0)
 	if err != nil {
 		panic("failed saving primary index " + err.Error())
 	}
