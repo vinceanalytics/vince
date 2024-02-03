@@ -14,6 +14,7 @@ import (
 	"github.com/vinceanalytics/staples/staples/db"
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
 	"github.com/vinceanalytics/staples/staples/geo"
+	"github.com/vinceanalytics/staples/staples/guard"
 	"github.com/vinceanalytics/staples/staples/index/primary"
 	"github.com/vinceanalytics/staples/staples/logger"
 	"github.com/vinceanalytics/staples/staples/session"
@@ -127,6 +128,9 @@ func app() *cli.Command {
 			log.Info("Setup geo ip")
 			gip := geo.Open(base.GeoipDbPath)
 			ctx = geo.With(ctx, gip)
+			log.Info("Setup guard", "rate-limit", base.RateLimit)
+			gd := guard.New(base)
+			ctx = guard.With(ctx, gd)
 			ctx = logger.With(ctx, log)
 			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 			defer cancel()

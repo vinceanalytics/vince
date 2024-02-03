@@ -18,6 +18,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tdewolff/minify/v2 v2.20.16
 	github.com/urfave/cli/v3 v3.0.0-alpha8
+	golang.org/x/time v0.5.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/grpc v1.61.0
 	google.golang.org/protobuf v1.32.0
