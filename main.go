@@ -39,8 +39,11 @@ func app() *cli.Command {
 	return &cli.Command{
 		Name:      "staples",
 		Usage:     "API first Cloud Native Web Analytics For Startups",
-		Copyright: "@2024-present Geofrey Ernest",
+		Copyright: "@2024-present",
 		Version:   version.VERSION,
+		Authors: []any{
+			"Geofrey Ernest",
+		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "data",
