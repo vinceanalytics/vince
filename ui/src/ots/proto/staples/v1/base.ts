@@ -364,6 +364,31 @@ export interface Event {
      */
     timestamp?: Timestamp;
 }
+/**
+ * @generated from protobuf enum v1.Metric
+ */
+export enum Metric {
+    /**
+     * @generated from protobuf enum value: pageviews = 0;
+     */
+    pageviews = 0,
+    /**
+     * @generated from protobuf enum value: visitors = 1;
+     */
+    visitors = 1,
+    /**
+     * @generated from protobuf enum value: visits = 2;
+     */
+    visits = 2,
+    /**
+     * @generated from protobuf enum value: bounce_rate = 3;
+     */
+    bounce_rate = 3,
+    /**
+     * @generated from protobuf enum value: visit_duration = 4;
+     */
+    visit_duration = 4
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class ScanRequest$Type extends MessageType<ScanRequest> {
     constructor() {

@@ -94,6 +94,14 @@ message Filter {
   }
 }
 
+enum Metric {
+  pageviews = 0;
+  visitors = 1;
+  visits = 2;
+  bounce_rate = 3;
+  visit_duration = 4;
+}
+
 message Event {
   /// EventName
   string n = 1 [ (buf.validate.field).required = true ];

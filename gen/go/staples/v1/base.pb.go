@@ -22,6 +22,61 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Metric int32
+
+const (
+	Metric_pageviews      Metric = 0
+	Metric_visitors       Metric = 1
+	Metric_visits         Metric = 2
+	Metric_bounce_rate    Metric = 3
+	Metric_visit_duration Metric = 4
+)
+
+// Enum value maps for Metric.
+var (
+	Metric_name = map[int32]string{
+		0: "pageviews",
+		1: "visitors",
+		2: "visits",
+		3: "bounce_rate",
+		4: "visit_duration",
+	}
+	Metric_value = map[string]int32{
+		"pageviews":      0,
+		"visitors":       1,
+		"visits":         2,
+		"bounce_rate":    3,
+		"visit_duration": 4,
+	}
+)
+
+func (x Metric) Enum() *Metric {
+	p := new(Metric)
+	*p = x
+	return p
+}
+
+func (x Metric) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Metric) Descriptor() protoreflect.EnumDescriptor {
+	return file_staples_v1_base_proto_enumTypes[0].Descriptor()
+}
+
+func (Metric) Type() protoreflect.EnumType {
+	return &file_staples_v1_base_proto_enumTypes[0]
+}
+
+func (x Metric) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Metric.Descriptor instead.
+func (Metric) EnumDescriptor() ([]byte, []int) {
+	return file_staples_v1_base_proto_rawDescGZIP(), []int{0}
+}
+
 type Filters_Projection int32
 
 const (
@@ -124,11 +179,11 @@ func (x Filters_Projection) String() string {
 }
 
 func (Filters_Projection) Descriptor() protoreflect.EnumDescriptor {
-	return file_staples_v1_base_proto_enumTypes[0].Descriptor()
+	return file_staples_v1_base_proto_enumTypes[1].Descriptor()
 }
 
 func (Filters_Projection) Type() protoreflect.EnumType {
-	return &file_staples_v1_base_proto_enumTypes[0]
+	return &file_staples_v1_base_proto_enumTypes[1]
 }
 
 func (x Filters_Projection) Number() protoreflect.EnumNumber {
@@ -176,11 +231,11 @@ func (x Filter_Op) String() string {
 }
 
 func (Filter_Op) Descriptor() protoreflect.EnumDescriptor {
-	return file_staples_v1_base_proto_enumTypes[1].Descriptor()
+	return file_staples_v1_base_proto_enumTypes[2].Descriptor()
 }
 
 func (Filter_Op) Type() protoreflect.EnumType {
-	return &file_staples_v1_base_proto_enumTypes[1]
+	return &file_staples_v1_base_proto_enumTypes[2]
 }
 
 func (x Filter_Op) Number() protoreflect.EnumNumber {
@@ -279,11 +334,11 @@ func (x Filter_Column) String() string {
 }
 
 func (Filter_Column) Descriptor() protoreflect.EnumDescriptor {
-	return file_staples_v1_base_proto_enumTypes[2].Descriptor()
+	return file_staples_v1_base_proto_enumTypes[3].Descriptor()
 }
 
 func (Filter_Column) Type() protoreflect.EnumType {
-	return &file_staples_v1_base_proto_enumTypes[2]
+	return &file_staples_v1_base_proto_enumTypes[3]
 }
 
 func (x Filter_Column) Number() protoreflect.EnumNumber {
@@ -844,15 +899,20 @@ var file_staples_v1_base_proto_rawDesc = []byte{
 	0x01, 0x72, 0x12, 0x38, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18,
 	0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
-	0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42, 0x6c, 0x0a, 0x06,
-	0x63, 0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x09, 0x42, 0x61, 0x73, 0x65, 0x50, 0x72, 0x6f, 0x74,
-	0x6f, 0x50, 0x01, 0x5a, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x74,
-	0x73, 0x75, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x73, 0x74, 0x61, 0x70, 0x6c, 0x65,
-	0x73, 0x2f, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca,
-	0x02, 0x02, 0x56, 0x31, 0xe2, 0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74,
-	0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2a, 0x56, 0x0a, 0x06,
+	0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x12, 0x0d, 0x0a, 0x09, 0x70, 0x61, 0x67, 0x65, 0x76, 0x69,
+	0x65, 0x77, 0x73, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x76, 0x69, 0x73, 0x69, 0x74, 0x6f, 0x72,
+	0x73, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x76, 0x69, 0x73, 0x69, 0x74, 0x73, 0x10, 0x02, 0x12,
+	0x0f, 0x0a, 0x0b, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x10, 0x03,
+	0x12, 0x12, 0x0a, 0x0e, 0x76, 0x69, 0x73, 0x69, 0x74, 0x5f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x10, 0x04, 0x42, 0x6c, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x09,
+	0x42, 0x61, 0x73, 0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2f, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61,
+	0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x74, 0x73, 0x75, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67,
+	0x6f, 0x2f, 0x73, 0x74, 0x61, 0x70, 0x6c, 0x65, 0x73, 0x2f, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x56,
+	0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02, 0x56, 0x31, 0xe2, 0x02, 0x0e, 0x56,
+	0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x02,
+	0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -867,31 +927,32 @@ func file_staples_v1_base_proto_rawDescGZIP() []byte {
 	return file_staples_v1_base_proto_rawDescData
 }
 
-var file_staples_v1_base_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_staples_v1_base_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
 var file_staples_v1_base_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_staples_v1_base_proto_goTypes = []interface{}{
-	(Filters_Projection)(0),       // 0: v1.Filters.Projection
-	(Filter_Op)(0),                // 1: v1.Filter.Op
-	(Filter_Column)(0),            // 2: v1.Filter.Column
-	(*ScanRequest)(nil),           // 3: v1.ScanRequest
-	(*ScanResponse)(nil),          // 4: v1.ScanResponse
-	(*TimeRange)(nil),             // 5: v1.TimeRange
-	(*KeyValue)(nil),              // 6: v1.KeyValue
-	(*Filters)(nil),               // 7: v1.Filters
-	(*Filter)(nil),                // 8: v1.Filter
-	(*Event)(nil),                 // 9: v1.Event
-	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
+	(Metric)(0),                   // 0: v1.Metric
+	(Filters_Projection)(0),       // 1: v1.Filters.Projection
+	(Filter_Op)(0),                // 2: v1.Filter.Op
+	(Filter_Column)(0),            // 3: v1.Filter.Column
+	(*ScanRequest)(nil),           // 4: v1.ScanRequest
+	(*ScanResponse)(nil),          // 5: v1.ScanResponse
+	(*TimeRange)(nil),             // 6: v1.TimeRange
+	(*KeyValue)(nil),              // 7: v1.KeyValue
+	(*Filters)(nil),               // 8: v1.Filters
+	(*Filter)(nil),                // 9: v1.Filter
+	(*Event)(nil),                 // 10: v1.Event
+	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
 }
 var file_staples_v1_base_proto_depIdxs = []int32{
-	5,  // 0: v1.ScanRequest.timestamp:type_name -> v1.TimeRange
-	7,  // 1: v1.ScanRequest.filters:type_name -> v1.Filters
-	10, // 2: v1.TimeRange.start:type_name -> google.protobuf.Timestamp
-	10, // 3: v1.TimeRange.end:type_name -> google.protobuf.Timestamp
-	8,  // 4: v1.Filters.list:type_name -> v1.Filter
-	0,  // 5: v1.Filters.projection:type_name -> v1.Filters.Projection
-	2,  // 6: v1.Filter.column:type_name -> v1.Filter.Column
-	1,  // 7: v1.Filter.op:type_name -> v1.Filter.Op
-	10, // 8: v1.Event.timestamp:type_name -> google.protobuf.Timestamp
+	6,  // 0: v1.ScanRequest.timestamp:type_name -> v1.TimeRange
+	8,  // 1: v1.ScanRequest.filters:type_name -> v1.Filters
+	11, // 2: v1.TimeRange.start:type_name -> google.protobuf.Timestamp
+	11, // 3: v1.TimeRange.end:type_name -> google.protobuf.Timestamp
+	9,  // 4: v1.Filters.list:type_name -> v1.Filter
+	1,  // 5: v1.Filters.projection:type_name -> v1.Filters.Projection
+	3,  // 6: v1.Filter.column:type_name -> v1.Filter.Column
+	2,  // 7: v1.Filter.op:type_name -> v1.Filter.Op
+	11, // 8: v1.Event.timestamp:type_name -> google.protobuf.Timestamp
 	9,  // [9:9] is the sub-list for method output_type
 	9,  // [9:9] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
@@ -995,7 +1056,7 @@ func file_staples_v1_base_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_staples_v1_base_proto_rawDesc,
-			NumEnums:      3,
+			NumEnums:      4,
 			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
