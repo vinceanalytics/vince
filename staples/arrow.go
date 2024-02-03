@@ -3,7 +3,9 @@ package staples
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
+	"unicode"
 
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
@@ -61,7 +63,7 @@ func build(r reflect.Type) (o []arrow.Field) {
 		}
 		if base, ok := baseTypes[typ.Kind()]; ok {
 			o = append(o, arrow.Field{
-				Name:     f.Name,
+				Name:     camel(f.Name),
 				Type:     base,
 				Nullable: f.Type.Kind() == reflect.Ptr || typ.Kind() == reflect.String,
 			})
@@ -70,6 +72,17 @@ func build(r reflect.Type) (o []arrow.Field) {
 		panic(typ.String() + " slices are not supported")
 	}
 	return
+}
+
+func camel(name string) string {
+	first := true
+	return strings.Map(func(r rune) rune {
+		if first {
+			first = false
+			return unicode.ToLower(r)
+		}
+		return r
+	}, name)
 }
 
 var baseTypes = map[reflect.Kind]arrow.DataType{

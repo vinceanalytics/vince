@@ -1,0 +1,28 @@
+schema:
+  fields: 26
+    - timestamp: type=int64
+    - iD: type=int64
+    - bounce: type=int64
+    - session: type=int64
+    - duration: type=float64
+    - browser: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - browserVersion: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - city: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - country: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - domain: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - entryPage: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - exitPage: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - host: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - event: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - os: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - osVersion: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - path: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - referrer: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - referrerSource: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - region: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - screen: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utmCampaign: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utmContent: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utmMedium: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utmSource: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utmTerm: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
