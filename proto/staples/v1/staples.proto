@@ -23,12 +23,10 @@ message Config {
   string data = 1 [ (buf.validate.field).required = true ];
   string listen = 2 [ (buf.validate.field).required = true ];
   double rate_limit = 3 [ (buf.validate.field).required = true ];
-  google.protobuf.Duration ttl = 4 [ (buf.validate.field).required = true ];
   int64 granule_size = 5 [ (buf.validate.field).required = true ];
-  int64 max_sample_size = 6 [ (buf.validate.field).required = true ];
-
   // Path to the geoiip database used to set web analytics country attribute.
   string geoip_db_path = 8;
+  repeated string domains = 9;
 }
 
 message PrimaryIndex {

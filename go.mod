@@ -7,6 +7,7 @@ require (
 	github.com/RoaringBitmap/roaring v1.9.0
 	github.com/apache/arrow/go/v15 v15.0.0
 	github.com/blevesearch/vellum v1.0.10
+	github.com/bufbuild/protovalidate-go v0.5.0
 	github.com/cespare/xxhash/v2 v2.2.0
 	github.com/chanced/powerset v0.0.1
 	github.com/dgraph-io/badger/v4 v4.2.0
@@ -16,6 +17,7 @@ require (
 	github.com/oschwald/maxminddb-golang v1.12.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tdewolff/minify/v2 v2.20.16
+	github.com/urfave/cli/v3 v3.0.0-alpha8
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/grpc v1.61.0
 	google.golang.org/protobuf v1.32.0
@@ -24,6 +26,7 @@ require (
 
 require (
 	github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c // indirect
+	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/bits-and-blooms/bitset v1.12.0 // indirect
 	github.com/blevesearch/mmap-go v1.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -34,6 +37,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/cel-go v0.18.2 // indirect
 	github.com/google/flatbuffers v23.5.26+incompatible // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
@@ -41,7 +45,9 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/tdewolff/parse/v2 v2.7.11 // indirect
+	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opencensus.io v0.22.5 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect

@@ -13,7 +13,6 @@ import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { Duration } from "../../google/protobuf/duration";
 /**
  * @generated from protobuf message v1.Version
  */
@@ -40,23 +39,19 @@ export interface Config {
      */
     rateLimit: number;
     /**
-     * @generated from protobuf field: google.protobuf.Duration ttl = 4;
-     */
-    ttl?: Duration;
-    /**
      * @generated from protobuf field: int64 granule_size = 5;
      */
     granuleSize: bigint;
-    /**
-     * @generated from protobuf field: int64 max_sample_size = 6;
-     */
-    maxSampleSize: bigint;
     /**
      * Path to the geoiip database used to set web analytics country attribute.
      *
      * @generated from protobuf field: string geoip_db_path = 8;
      */
     geoipDbPath: string;
+    /**
+     * @generated from protobuf field: repeated string domains = 9;
+     */
+    domains: string[];
 }
 /**
  * @generated from protobuf message v1.PrimaryIndex
@@ -163,14 +158,13 @@ class Config$Type extends MessageType<Config> {
             { no: 1, name: "data", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 2, name: "listen", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "buf.validate.field": { required: true } } },
             { no: 3, name: "rate_limit", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/, options: { "buf.validate.field": { required: true } } },
-            { no: 4, name: "ttl", kind: "message", T: () => Duration, options: { "buf.validate.field": { required: true } } },
             { no: 5, name: "granule_size", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/, options: { "buf.validate.field": { required: true } } },
-            { no: 6, name: "max_sample_size", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/, options: { "buf.validate.field": { required: true } } },
-            { no: 8, name: "geoip_db_path", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 8, name: "geoip_db_path", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 9, name: "domains", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<Config>): Config {
-        const message = { data: "", listen: "", rateLimit: 0, granuleSize: 0n, maxSampleSize: 0n, geoipDbPath: "" };
+        const message = { data: "", listen: "", rateLimit: 0, granuleSize: 0n, geoipDbPath: "", domains: [] };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Config>(this, message, value);
@@ -190,17 +184,14 @@ class Config$Type extends MessageType<Config> {
                 case /* double rate_limit */ 3:
                     message.rateLimit = reader.double();
                     break;
-                case /* google.protobuf.Duration ttl */ 4:
-                    message.ttl = Duration.internalBinaryRead(reader, reader.uint32(), options, message.ttl);
-                    break;
                 case /* int64 granule_size */ 5:
                     message.granuleSize = reader.int64().toBigInt();
                     break;
-                case /* int64 max_sample_size */ 6:
-                    message.maxSampleSize = reader.int64().toBigInt();
-                    break;
                 case /* string geoip_db_path */ 8:
                     message.geoipDbPath = reader.string();
+                    break;
+                case /* repeated string domains */ 9:
+                    message.domains.push(reader.string());
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -223,18 +214,15 @@ class Config$Type extends MessageType<Config> {
         /* double rate_limit = 3; */
         if (message.rateLimit !== 0)
             writer.tag(3, WireType.Bit64).double(message.rateLimit);
-        /* google.protobuf.Duration ttl = 4; */
-        if (message.ttl)
-            Duration.internalBinaryWrite(message.ttl, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
         /* int64 granule_size = 5; */
         if (message.granuleSize !== 0n)
             writer.tag(5, WireType.Varint).int64(message.granuleSize);
-        /* int64 max_sample_size = 6; */
-        if (message.maxSampleSize !== 0n)
-            writer.tag(6, WireType.Varint).int64(message.maxSampleSize);
         /* string geoip_db_path = 8; */
         if (message.geoipDbPath !== "")
             writer.tag(8, WireType.LengthDelimited).string(message.geoipDbPath);
+        /* repeated string domains = 9; */
+        for (let i = 0; i < message.domains.length; i++)
+            writer.tag(9, WireType.LengthDelimited).string(message.domains[i]);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
