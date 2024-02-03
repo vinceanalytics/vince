@@ -28,8 +28,8 @@ type Part struct {
 	Record arrow.Record
 	Index  index.Full
 	Size   uint64
-	Min    uint64
-	Max    uint64
+	Min    int64
+	Max    int64
 }
 
 func NewPart(r arrow.Record, idx index.Full) *Part {
@@ -154,7 +154,7 @@ type ScanCallback func(context.Context, arrow.Record) error
 
 func (lsm *Tree[T]) Scan(
 	ctx context.Context,
-	start, end uint64,
+	start, end int64,
 	fs *v1.Filters,
 ) (arrow.Record, error) {
 	ctx = compute.WithAllocator(ctx, lsm.mem)
@@ -206,9 +206,9 @@ func (lsm *Tree[T]) Scan(
 	return tr.NewRecord(), nil
 }
 
-func ScanTimestamp(r arrow.Record, timestampColumn int, start, end uint64) *roaring.Bitmap {
+func ScanTimestamp(r arrow.Record, timestampColumn int, start, end int64) *roaring.Bitmap {
 	b := new(roaring.Bitmap)
-	ls := r.Column(timestampColumn).(*array.Uint64).Uint64Values()
+	ls := r.Column(timestampColumn).(*array.Int64).Int64Values()
 	from, _ := slices.BinarySearch(ls, start)
 	to, _ := slices.BinarySearch(ls, end)
 	for i := from; i < to; i++ {
