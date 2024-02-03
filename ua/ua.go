@@ -40,15 +40,15 @@ func init() {
 	for i := 0; i < int(r.NumCols()); i++ {
 		a := r.Column(i)
 		switch r.ColumnName(i) {
-		case "IsBot":
-			record.IsBot = a.(*array.Boolean)
-		case "OSName":
+		case "isBot":
+			record.IsBot = a.(*array.Int64)
+		case "oSName":
 			record.OSName = *newStr(a)
-		case "OSVersion":
+		case "oSVersion":
 			record.OSVersion = *newStr(a)
-		case "ClientName":
+		case "clientName":
 			record.ClientName = *newStr(a)
-		case "ClientVersion":
+		case "clientVersion":
 			record.ClientVersion = *newStr(a)
 		}
 	}
@@ -71,7 +71,7 @@ func init() {
 }
 
 type Record struct {
-	IsBot         *array.Boolean
+	IsBot         *array.Int64
 	OSName        Field
 	OSVersion     Field
 	ClientName    Field
@@ -80,7 +80,7 @@ type Record struct {
 
 func (r *Record) Get(i int) *Model {
 	return &Model{
-		IsBot:          r.IsBot.Value(i),
+		IsBot:          r.IsBot.Value(i) == 1,
 		Os:             r.OSName.Get(i),
 		OsVersion:      r.OSVersion.Get(i),
 		Browser:        r.ClientName.Get(i),

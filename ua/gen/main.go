@@ -17,7 +17,7 @@ import (
 
 type Model struct {
 	// UserAgent   string
-	IsBot bool
+	IsBot int64
 	// BotName     string
 	// BotCategory string
 
@@ -57,7 +57,7 @@ func (f *Fixture) Model() (m *Model) {
 	}
 
 	if v := f.Bot; v != nil {
-		m.IsBot = true
+		m.IsBot = 1
 		// m.BotName = v.Name
 		// m.BotCategory = v.Category
 	}
