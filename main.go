@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
 
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
+	"github.com/vinceanalytics/staples/staples/api"
 	"github.com/vinceanalytics/staples/staples/db"
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
 	"github.com/vinceanalytics/staples/staples/geo"
@@ -138,12 +141,29 @@ func app() *cli.Command {
 			log.Info("Setup guard", "rate-limit", base.RateLimit)
 			gd := guard.New(base)
 			ctx = guard.With(ctx, gd)
+
+			log.Info("Setup api")
+			a, err := api.New(ctx, base)
+			if err != nil {
+				return err
+			}
 			ctx = logger.With(ctx, log)
 			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 			defer cancel()
 
+			svr := &http.Server{
+				Addr:        base.Listen,
+				Handler:     a,
+				BaseContext: func(l net.Listener) context.Context { return ctx },
+			}
+			go func() {
+				defer cancel()
+				log.Info("starting server", "addr", base.Listen)
+				err = svr.ListenAndServe()
+			}()
 			<-ctx.Done()
-			return nil
+			svr.Shutdown(context.Background())
+			return err
 		},
 	}
 }
