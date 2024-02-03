@@ -21,8 +21,3 @@ plugins:
     opt:
       - paths=source_relative
       - generate_unbound_methods=true
-
-  - plugin: buf.build/community/timostamm-protobuf-ts:v2.9.1
-    out: ui/src/ots/proto
-    opt:
-      - generate_dependencies
