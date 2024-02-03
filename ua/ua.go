@@ -43,13 +43,13 @@ func init() {
 		case "isBot":
 			record.IsBot = a.(*array.Int64)
 		case "oSName":
-			record.OSName = *newStr(a)
+			record.OSName = newStr(a)
 		case "oSVersion":
-			record.OSVersion = *newStr(a)
+			record.OSVersion = newStr(a)
 		case "clientName":
-			record.ClientName = *newStr(a)
+			record.ClientName = newStr(a)
 		case "clientVersion":
-			record.ClientVersion = *newStr(a)
+			record.ClientVersion = newStr(a)
 		}
 	}
 	fst, err = vellum.Load(fstBytes)
@@ -72,10 +72,10 @@ func init() {
 
 type Record struct {
 	IsBot         *array.Int64
-	OSName        Field
-	OSVersion     Field
-	ClientName    Field
-	ClientVersion Field
+	OSName        *Field
+	OSVersion     *Field
+	ClientName    *Field
+	ClientVersion *Field
 }
 
 func (r *Record) Get(i int) *Model {
