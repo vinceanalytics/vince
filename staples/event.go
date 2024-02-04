@@ -14,6 +14,7 @@ import (
 	"github.com/vinceanalytics/staples/staples/logger"
 	"github.com/vinceanalytics/staples/staples/ref"
 	"github.com/vinceanalytics/staples/staples/ua"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Event struct {
@@ -135,6 +136,9 @@ func Parse(ctx context.Context, req *v1.Event) *Event {
 		screenSize = "laptop"
 	case req.W >= 1440:
 		screenSize = "desktop"
+	}
+	if req.Timestamp == nil {
+		req.Timestamp = timestamppb.Now()
 	}
 	userID := Fingerprint(req.Ip, req.Ua, domain, host)
 	e := NewEvent()
