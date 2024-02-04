@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>staples - API first Cloud Native Web Analytics For Startups</title>
+    <style>{{.CSS}}</style>
+</head>
+<script>{{.JS}}</script>
+
+<body>
+    <nav>
+        <div id="shadow"></div>
+        <div id="menu">
+        <ul>
+        {{range .Menus}}
+        <li>
+            <a href="#{{.ID}}">{{.Text}}</a>
+            <ul class="h2">
+            {{range .Items}}
+                <li id="nav-{{.ID}}">
+                    <a href="#{{.ID}}">{{.Text}}</a>
+                </li>
+            {{end}}
+            </ul>
+        </li>
+        {{end}}
+        </ul>
+        </div>
+    </nav>
+    <main>
+        {{range .Pages}}
+        <div>{{.}}</div>
+        {{end}}
+    </main>
+</body>
+
+</html>
