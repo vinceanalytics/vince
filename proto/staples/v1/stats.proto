@@ -98,9 +98,13 @@ message Timeseries {
 }
 
 enum Interval {
-  date = 0;
-  month = 1;
+  minute = 0;
+  hour = 1;
+  date = 2;
+  week = 3;
+  month = 4;
 }
+
 message BreakDown {
   message GetBreakDownRequest {
     string site_id = 1 [

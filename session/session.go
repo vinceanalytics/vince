@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/apache/arrow/go/v15/arrow/memory"
+	"github.com/apache/arrow/go/v8/arrow"
 	"github.com/dgraph-io/ristretto"
 	"github.com/vinceanalytics/staples/staples/db"
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
@@ -26,8 +27,9 @@ type Session struct {
 	build *staples.Arrow[staples.Event]
 	mu    sync.Mutex
 	cache *ristretto.Cache
-	tree  *lsm.Tree[staples.Event]
-	log   *slog.Logger
+
+	tree *lsm.Tree[staples.Event]
+	log  *slog.Logger
 }
 
 func New(mem memory.Allocator, resource string, storage db.Storage,
@@ -67,6 +69,10 @@ func (s *Session) Queue(ctx context.Context, req *v1.Event) {
 	s.mu.Lock()
 	s.build.Append(e)
 	s.mu.Unlock()
+}
+
+func (s *Session) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
+	return s.tree.Scan(ctx, start, end, fs)
 }
 
 func (s *Session) Flush() {
