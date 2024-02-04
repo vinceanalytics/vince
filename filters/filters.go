@@ -5,24 +5,34 @@ import (
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
 )
 
-const (
-	TimeUnixNano       = "TimeUnixNano"
-	ResourceSchema     = "ResourceSchema"
-	ResourceAttributes = "ResourceAttributes"
-	ScopeName          = "ScopeName"
-	ScopeSchema        = "ScopeSchema"
-	ScopeVersion       = "ScopeVersion"
-	ScopeAttributes    = "ScopeAttributes"
-	ScopeHash          = "ScopeHash"
-	Name               = "Name"
-	AttributesColumn   = "Attributes"
-	TraceID            = "TraceID"
-)
+var PropToProjection = map[v1.Property]v1.Filters_Projection{
+	v1.Property_event:           v1.Filters_Event,
+	v1.Property_page:            v1.Filters_Path,
+	v1.Property_entry_page:      v1.Filters_EntryPage,
+	v1.Property_exit_page:       v1.Filters_EntryPage,
+	v1.Property_source:          v1.Filters_ReferrerSource,
+	v1.Property_referrer:        v1.Filters_Referrer,
+	v1.Property_utm_source:      v1.Filters_UtmSource,
+	v1.Property_utm_medium:      v1.Filters_UtmMedium,
+	v1.Property_utm_campaign:    v1.Filters_UtmCampaign,
+	v1.Property_utm_content:     v1.Filters_UtmContent,
+	v1.Property_utm_term:        v1.Filters_UtmTerm,
+	v1.Property_device:          v1.Filters_Screen,
+	v1.Property_browser:         v1.Filters_Browser,
+	v1.Property_browser_version: v1.Filters_BrowserVersion,
+	v1.Property_os:              v1.Filters_Os,
+	v1.Property_os_version:      v1.Filters_OsVersion,
+	v1.Property_country:         v1.Filters_Country,
+	v1.Property_region:          v1.Filters_Region,
+	v1.Property_domain:          v1.Filters_Domain,
+	v1.Property_city:            v1.Filters_City,
+}
 
 type CompiledFilter struct {
-	Base  *v1.Filter
-	Value []byte
-	Re    *regexp.Regexp
+	Column string
+	Op     v1.Filter_OP
+	Value  []byte
+	Re     *regexp.Regexp
 }
 
 func CompileFilters(f *v1.Filters) ([]*CompiledFilter, error) {
@@ -38,7 +48,10 @@ func CompileFilters(f *v1.Filters) ([]*CompiledFilter, error) {
 }
 
 func compileFilter(f *v1.Filter) (*CompiledFilter, error) {
-	o := &CompiledFilter{Base: f}
+	o := &CompiledFilter{
+		Column: PropToProjection[f.Property].String(),
+		Op:     f.Op,
+	}
 	o.Value = []byte(f.Value)
 	switch f.Op {
 	case v1.Filter_re_equal, v1.Filter_re_not_equal:

@@ -1,8 +1,0 @@
-syntax = "proto3";
-package v1;
-
-import "buf/validate/validate.proto";
-import "google/protobuf/timestamp.proto";
-import "staples/v1/base.proto";
-
-service Query {}

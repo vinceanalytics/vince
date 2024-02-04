@@ -22,7 +22,7 @@ func CurrentVisitors(ctx context.Context, domain string, scanner db.Scanner) int
 				v1.Filters_ID,
 			},
 			List: []*v1.Filter{
-				{Column: v1.Filter_Domain, Op: v1.Filter_equal, Value: domain},
+				{Property: v1.Property_domain, Op: v1.Filter_equal, Value: domain},
 			},
 		},
 	)

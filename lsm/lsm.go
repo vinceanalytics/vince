@@ -191,7 +191,7 @@ func (lsm *Tree[T]) Scan(
 				r := n.part.Record
 				r.Retain()
 				defer r.Release()
-				ts := ScanTimestamp(r, lsm.mapping[filters.TimeUnixNano], start, end)
+				ts := ScanTimestamp(r, lsm.mapping[v1.Filters_Timestamp.String()], start, end)
 				n.part.Index.Match(ts, compiled)
 				if ts.IsEmpty() {
 					return true

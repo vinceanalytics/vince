@@ -49,7 +49,7 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 		return new(roaring.Bitmap)
 	}
 	fst := f.Load()
-	switch m.Base.Op {
+	switch m.Op {
 	case v1.Filter_equal:
 		r, ok, _ := fst.Get(m.Value)
 		if !ok {
@@ -146,7 +146,7 @@ func (m FullMapColumn) Size() (n uint64) {
 }
 
 func (f FullMapColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
-	c, ok := f[m.Base.Column.String()]
+	c, ok := f[m.Column]
 	if !ok {
 		return new(roaring.Bitmap)
 	}

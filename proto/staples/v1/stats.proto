@@ -1,0 +1,161 @@
+syntax = "proto3";
+package v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+message Realtime {
+  message GetVisitorsRequest {
+    string site_id = 1 [
+      (buf.validate.field).required = true,
+      (buf.validate.field).string.hostname = true
+    ];
+  }
+  message GetVisitorsResponse { uint64 visitors = 1; }
+}
+
+message Aggregate {
+  message GetAggegateRequest {
+    string site_id = 1 [
+      (buf.validate.field).required = true,
+      (buf.validate.field).string.hostname = true
+    ];
+    TimePeriod period = 2;
+    repeated Metric metrics = 3;
+    bool compare = 4;
+    repeated Filter filters = 5;
+  }
+
+  message GetAggregateResponse {
+    repeated Result results = 1;
+
+    message Result {
+      Metric metric = 1;
+      double value = 2;
+    }
+  }
+}
+
+message Timeseries {
+  message GetTimeseriesRequest {
+    string site_id = 1 [
+      (buf.validate.field).required = true,
+      (buf.validate.field).string.hostname = true
+    ];
+
+    TimePeriod period = 2;
+    repeated Metric metrics = 3;
+    Interval interval = 4;
+    repeated Filter filters = 5;
+  }
+
+  message GetTimeseriesResponse { repeated Bucket results = 1; }
+
+  message Bucket {
+    google.protobuf.Timestamp timestamp = 1;
+    repeated Value values = 2;
+  }
+
+  message Value {
+    Metric metric = 1;
+    double value = 2;
+  }
+}
+
+enum Interval {
+  date = 0;
+  month = 1;
+}
+message BreakDown {
+  message GetBreakDownRequest {
+    string site_id = 1 [
+      (buf.validate.field).required = true,
+      (buf.validate.field).string.hostname = true
+    ];
+    Property property = 2 [ (buf.validate.field).required = true ];
+    TimePeriod period = 3;
+    repeated Metric metrics = 4;
+    uint32 limit = 5 [ (buf.validate.field).fixed64.lt = 1000 ];
+  }
+
+  message GetBreakDownResponse {
+    repeated Group results = 1;
+
+    message Group {
+      string key = 1;
+      repeated Value values = 2;
+    }
+    message Value {
+      Metric metric = 1;
+      double value = 2;
+    }
+  }
+}
+
+enum Metric {
+  visitors = 0;
+  visits = 2;
+  pageviews = 3;
+  views_per_visit = 4;
+  bounce_rate = 5;
+  visit_duration = 6;
+  events = 7;
+}
+
+message TimePeriod {
+  oneof value {
+    Base base = 1;
+    Custom custom = 2;
+  }
+
+  enum Base {
+    day = 0;
+    _7d = 1;
+    _30d = 3;
+    mo = 4;
+    _6mo = 5;
+    _12mo = 6;
+    year = 7;
+  }
+  message Custom {
+    google.protobuf.Timestamp start = 1;
+    google.protobuf.Timestamp end = 2;
+  }
+}
+
+enum Property {
+  event = 0;
+  page = 2;
+  entry_page = 3;
+  exit_page = 4;
+  source = 5;
+  referrer = 6;
+  utm_source = 7;
+  utm_medium = 8;
+  utm_campaign = 9;
+  utm_content = 10;
+  utm_term = 11;
+  device = 12;
+  browser = 13;
+  browser_version = 14;
+  os = 15;
+  os_version = 16;
+  country = 17;
+  region = 18;
+  domain = 19;
+  city = 20;
+}
+
+message Filter {
+  Property property = 1;
+  OP op = 2;
+  string value = 3;
+
+  enum OP {
+    equal = 0;
+    not_equal = 1;
+    re_equal = 2;
+    re_not_equal = 3;
+  }
+}

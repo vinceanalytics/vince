@@ -103,9 +103,9 @@ var _ index.Full = (*FullIndex)(nil)
 
 func (idx FullIndex) Match(b *roaring.Bitmap, m []*filters.CompiledFilter) {
 	for _, x := range m {
-		v, ok := idx[x.Base.Column.String()]
+		v, ok := idx[x.Column]
 		if !ok {
-			logger.Fail("Missing index column", "column", x.Base.Column.String())
+			logger.Fail("Missing index column", "column", x.Column)
 		}
 		b.And(v.Match(x))
 	}
