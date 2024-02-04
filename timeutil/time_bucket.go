@@ -4,6 +4,7 @@ import (
 	"time"
 
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
+	"github.com/vinceanalytics/staples/staples/logger"
 )
 
 func TimeBuckets(interval v1.Interval, source []int64, cb func(bucket int64, start, end int) error) error {
@@ -11,9 +12,10 @@ func TimeBuckets(interval v1.Interval, source []int64, cb func(bucket int64, sta
 		return nil
 	}
 	var start int
-	bucket := hash(source[0], interval)
+	hash := call(interval)
+	bucket := hash(source[0])
 	for i := 0; i < len(source); i++ {
-		h := hash(source[i], interval)
+		h := hash(source[i])
 		if h == bucket {
 			continue
 		}
@@ -26,18 +28,30 @@ func TimeBuckets(interval v1.Interval, source []int64, cb func(bucket int64, sta
 	return cb(bucket, start, len(source))
 }
 
-func hash(ts int64, i v1.Interval) (v int64) {
+func call(i v1.Interval) func(ts int64) int64 {
 	switch i {
 	case v1.Interval_minute:
-		v = EndOfMinute(time.UnixMilli(ts)).UnixMilli()
+		return func(ts int64) int64 {
+			return EndOfMinute(time.UnixMilli(ts)).UnixMilli()
+		}
 	case v1.Interval_hour:
-		v = EndOfHour(time.UnixMilli(ts)).UnixMilli()
+		return func(ts int64) int64 {
+			return EndOfHour(time.UnixMilli(ts)).UnixMilli()
+		}
 	case v1.Interval_date:
-		v = EndDay(time.UnixMilli(ts)).UnixMilli()
+		return func(ts int64) int64 {
+			return EndDay(time.UnixMilli(ts)).UnixMilli()
+		}
 	case v1.Interval_week:
-		v = EndWeek(time.UnixMilli(ts)).UnixMilli()
+		return func(ts int64) int64 {
+			return EndWeek(time.UnixMilli(ts)).UnixMilli()
+		}
 	case v1.Interval_month:
-		v = EndDay(time.UnixMilli(ts)).UnixMilli()
+		return func(ts int64) int64 {
+			return EndDay(time.UnixMilli(ts)).UnixMilli()
+		}
+	default:
+		logger.Fail("Unexpected interval", "interval", i.String())
+		return nil
 	}
-	return
 }

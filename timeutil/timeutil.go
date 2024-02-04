@@ -6,6 +6,15 @@ func Today() time.Time {
 	return BeginDay(time.Now().UTC())
 }
 
+func beginMinute(ts time.Time) time.Time {
+	return ts.Truncate(time.Minute)
+}
+
+func beginHour(ts time.Time) time.Time {
+	y, m, d := ts.Date()
+	return time.Date(y, m, d, ts.Hour(), 0, 0, 0, time.UTC)
+}
+
 func BeginDay(ts time.Time) time.Time {
 	yy, mm, dd := ts.Date()
 	return time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC)
@@ -27,21 +36,16 @@ func BeginMonth(ts time.Time) time.Time {
 }
 
 func EndOfHour(ts time.Time) time.Time {
-	yy, mm, dd := ts.Date()
-	hh := ts.Hour()
-	return time.Date(yy, mm, dd, hh, 59, 0, 0, time.UTC)
+	return beginHour(ts).Add(time.Hour - time.Nanosecond)
 }
 
 func EndOfMinute(ts time.Time) time.Time {
-	yy, mm, dd := ts.Date()
-	hh := ts.Hour()
-	xx := ts.Minute()
-	return time.Date(yy, mm, dd, hh, xx, 59, 0, time.UTC)
+	return beginMinute(ts).Add(time.Minute - time.Nanosecond)
 }
 
 func EndDay(ts time.Time) time.Time {
 	yy, mm, dd := ts.Date()
-	return time.Date(yy, mm, dd, 23, 59, 59, int(time.Second-time.Nanosecond), ts.Location())
+	return time.Date(yy, mm, dd, 23, 59, 59, int(time.Second-time.Nanosecond), time.UTC)
 }
 
 func EndWeek(ts time.Time) time.Time {

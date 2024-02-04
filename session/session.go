@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/memory"
-	"github.com/apache/arrow/go/v8/arrow"
 	"github.com/dgraph-io/ristretto"
 	"github.com/vinceanalytics/staples/staples/db"
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
