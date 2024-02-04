@@ -5,6 +5,40 @@ import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
+service Stats {
+  rpc GetRealtimeVisitors(Realtime.GetVisitorsRequest)
+      returns (Realtime.GetVisitorsResponse) {
+    option (google.api.http) = {
+      post : "/api/v1/stats/realtime/visitors/{site_id}",
+      body : "*"
+    };
+  };
+
+  rpc GetAggregate(Aggregate.GetAggegateRequest)
+      returns (Aggregate.GetAggregateResponse) {
+    option (google.api.http) = {
+      post : "/api/v1/stats/aggregate/{site_id}",
+      body : "*"
+    };
+  };
+
+  rpc GetTimeseries(Timeseries.GetTimeseriesRequest)
+      returns (Timeseries.GetTimeseriesResponse) {
+    option (google.api.http) = {
+      post : "/api/v1/stats/timeseries/{site_id}",
+      body : "*"
+    };
+  };
+
+  rpc GetBreakDown(BreakDown.GetBreakDownRequest)
+      returns (BreakDown.GetBreakDownResponse) {
+    option (google.api.http) = {
+      post : "/api/v1/stats/breakdown/{site_id}/{property}",
+      body : "*"
+    };
+  };
+}
+
 message Realtime {
   message GetVisitorsRequest {
     string site_id = 1 [
