@@ -22,7 +22,8 @@ import (
 
 type API struct {
 	v1.UnsafeStaplesServer
-	hand http.Handler
+	config *v1.Config
+	hand   http.Handler
 }
 
 var _ v1.StaplesServer = (*API)(nil)
@@ -30,7 +31,9 @@ var _ v1.StaplesServer = (*API)(nil)
 var trackerServer = http.FileServer(http.FS(tracker.JS))
 
 func New(ctx context.Context, o *v1.Config) (*API, error) {
-	a := &API{}
+	a := &API{
+		config: o,
+	}
 	valid, err := protovalidate.New()
 	if err != nil {
 		return nil, err
@@ -90,8 +93,16 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.hand.ServeHTTP(w, r)
 }
 
-func (a *API) Build(_ context.Context, _ *emptypb.Empty) (*v1.Version, error) {
+func (a *API) GetVersion(_ context.Context, _ *emptypb.Empty) (*v1.Version, error) {
 	return &v1.Version{
 		Version: version.VERSION,
 	}, nil
+}
+
+func (a *API) GetDomains(_ context.Context, _ *v1.GetDomainRequest) (*v1.GetDomainResponse, error) {
+	o := make([]*v1.Domain, 0, len(a.config.Domains))
+	for _, n := range a.config.Domains {
+		o = append(o, &v1.Domain{Name: n})
+	}
+	return &v1.GetDomainResponse{Domains: o}, nil
 }

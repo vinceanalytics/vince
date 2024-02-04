@@ -20,15 +20,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Staples_Build_FullMethodName = "/v1.Staples/Build"
+	Staples_GetVersion_FullMethodName = "/v1.Staples/GetVersion"
+	Staples_GetDomains_FullMethodName = "/v1.Staples/GetDomains"
 )
 
 // StaplesClient is the client API for Staples service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StaplesClient interface {
-	// Build returns version details of the current ots binary.
-	Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Version, error)
+	GetVersion(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Version, error)
+	GetDomains(ctx context.Context, in *GetDomainRequest, opts ...grpc.CallOption) (*GetDomainResponse, error)
 }
 
 type staplesClient struct {
@@ -39,9 +40,18 @@ func NewStaplesClient(cc grpc.ClientConnInterface) StaplesClient {
 	return &staplesClient{cc}
 }
 
-func (c *staplesClient) Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Version, error) {
+func (c *staplesClient) GetVersion(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Version, error) {
 	out := new(Version)
-	err := c.cc.Invoke(ctx, Staples_Build_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Staples_GetVersion_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *staplesClient) GetDomains(ctx context.Context, in *GetDomainRequest, opts ...grpc.CallOption) (*GetDomainResponse, error) {
+	out := new(GetDomainResponse)
+	err := c.cc.Invoke(ctx, Staples_GetDomains_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +62,8 @@ func (c *staplesClient) Build(ctx context.Context, in *emptypb.Empty, opts ...gr
 // All implementations must embed UnimplementedStaplesServer
 // for forward compatibility
 type StaplesServer interface {
-	// Build returns version details of the current ots binary.
-	Build(context.Context, *emptypb.Empty) (*Version, error)
+	GetVersion(context.Context, *emptypb.Empty) (*Version, error)
+	GetDomains(context.Context, *GetDomainRequest) (*GetDomainResponse, error)
 	mustEmbedUnimplementedStaplesServer()
 }
 
@@ -61,8 +71,11 @@ type StaplesServer interface {
 type UnimplementedStaplesServer struct {
 }
 
-func (UnimplementedStaplesServer) Build(context.Context, *emptypb.Empty) (*Version, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
+func (UnimplementedStaplesServer) GetVersion(context.Context, *emptypb.Empty) (*Version, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVersion not implemented")
+}
+func (UnimplementedStaplesServer) GetDomains(context.Context, *GetDomainRequest) (*GetDomainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDomains not implemented")
 }
 func (UnimplementedStaplesServer) mustEmbedUnimplementedStaplesServer() {}
 
@@ -77,20 +90,38 @@ func RegisterStaplesServer(s grpc.ServiceRegistrar, srv StaplesServer) {
 	s.RegisterService(&Staples_ServiceDesc, srv)
 }
 
-func _Staples_Build_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Staples_GetVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StaplesServer).Build(ctx, in)
+		return srv.(StaplesServer).GetVersion(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Staples_Build_FullMethodName,
+		FullMethod: Staples_GetVersion_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StaplesServer).Build(ctx, req.(*emptypb.Empty))
+		return srv.(StaplesServer).GetVersion(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Staples_GetDomains_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDomainRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StaplesServer).GetDomains(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Staples_GetDomains_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StaplesServer).GetDomains(ctx, req.(*GetDomainRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -103,8 +134,12 @@ var Staples_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*StaplesServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Build",
-			Handler:    _Staples_Build_Handler,
+			MethodName: "GetVersion",
+			Handler:    _Staples_GetVersion_Handler,
+		},
+		{
+			MethodName: "GetDomains",
+			Handler:    _Staples_GetDomains_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

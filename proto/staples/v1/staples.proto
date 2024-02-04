@@ -8,10 +8,15 @@ import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
 
 service Staples {
-  // Build returns version details of the current ots binary.
-  rpc Build(google.protobuf.Empty) returns (Version) {
+  rpc GetVersion(google.protobuf.Empty) returns (Version) {
     option (google.api.http) = {
       get : "/api/v1/version"
+    };
+  };
+
+  rpc GetDomains(GetDomainRequest) returns (GetDomainResponse) {
+    option (google.api.http) = {
+      get : "/api/v1/domains",
     };
   };
 }
@@ -71,3 +76,13 @@ message Event {
 
   google.protobuf.Timestamp timestamp = 9;
 }
+
+message Domain {
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.hostname = true
+  ];
+}
+
+message GetDomainRequest {}
+message GetDomainResponse { repeated Domain domains = 1; }
