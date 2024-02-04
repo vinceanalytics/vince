@@ -10,13 +10,17 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
+	"github.com/vinceanalytics/staples/staples/guard"
+	"github.com/vinceanalytics/staples/staples/session"
 	"github.com/vinceanalytics/staples/staples/tracker"
 	"github.com/vinceanalytics/staples/staples/version"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -105,4 +109,16 @@ func (a *API) GetDomains(_ context.Context, _ *v1.GetDomainRequest) (*v1.GetDoma
 		o = append(o, &v1.Domain{Name: n})
 	}
 	return &v1.GetDomainResponse{Domains: o}, nil
+}
+
+func (a *API) SendEvent(ctx context.Context, req *v1.Event) (*v1.SendEventResponse, error) {
+	xg := guard.Get(ctx)
+	if !xg.Allow() {
+		return nil, status.Error(codes.Unavailable, "Limit exceeded")
+	}
+	if !xg.Accept(req.D) {
+		return &v1.SendEventResponse{Dropped: true}, nil
+	}
+	session.Get(ctx).Queue(ctx, req)
+	return &v1.SendEventResponse{}, nil
 }

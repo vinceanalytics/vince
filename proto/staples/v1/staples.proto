@@ -19,6 +19,13 @@ service Staples {
       get : "/api/v1/domains",
     };
   };
+
+  rpc SendEvent(Event) returns (SendEventResponse) {
+    option (google.api.http) = {
+      post : "/api/v1/event",
+      body : "*"
+    };
+  };
 }
 
 message Version { string version = 1; }
@@ -86,3 +93,5 @@ message Domain {
 
 message GetDomainRequest {}
 message GetDomainResponse { repeated Domain domains = 1; }
+
+message SendEventResponse { bool dropped = 1; }

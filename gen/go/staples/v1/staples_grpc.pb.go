@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Staples_GetVersion_FullMethodName = "/v1.Staples/GetVersion"
 	Staples_GetDomains_FullMethodName = "/v1.Staples/GetDomains"
+	Staples_SendEvent_FullMethodName  = "/v1.Staples/SendEvent"
 )
 
 // StaplesClient is the client API for Staples service.
@@ -30,6 +31,7 @@ const (
 type StaplesClient interface {
 	GetVersion(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Version, error)
 	GetDomains(ctx context.Context, in *GetDomainRequest, opts ...grpc.CallOption) (*GetDomainResponse, error)
+	SendEvent(ctx context.Context, in *Event, opts ...grpc.CallOption) (*SendEventResponse, error)
 }
 
 type staplesClient struct {
@@ -58,12 +60,22 @@ func (c *staplesClient) GetDomains(ctx context.Context, in *GetDomainRequest, op
 	return out, nil
 }
 
+func (c *staplesClient) SendEvent(ctx context.Context, in *Event, opts ...grpc.CallOption) (*SendEventResponse, error) {
+	out := new(SendEventResponse)
+	err := c.cc.Invoke(ctx, Staples_SendEvent_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StaplesServer is the server API for Staples service.
 // All implementations must embed UnimplementedStaplesServer
 // for forward compatibility
 type StaplesServer interface {
 	GetVersion(context.Context, *emptypb.Empty) (*Version, error)
 	GetDomains(context.Context, *GetDomainRequest) (*GetDomainResponse, error)
+	SendEvent(context.Context, *Event) (*SendEventResponse, error)
 	mustEmbedUnimplementedStaplesServer()
 }
 
@@ -76,6 +88,9 @@ func (UnimplementedStaplesServer) GetVersion(context.Context, *emptypb.Empty) (*
 }
 func (UnimplementedStaplesServer) GetDomains(context.Context, *GetDomainRequest) (*GetDomainResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDomains not implemented")
+}
+func (UnimplementedStaplesServer) SendEvent(context.Context, *Event) (*SendEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendEvent not implemented")
 }
 func (UnimplementedStaplesServer) mustEmbedUnimplementedStaplesServer() {}
 
@@ -126,6 +141,24 @@ func _Staples_GetDomains_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Staples_SendEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Event)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StaplesServer).SendEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Staples_SendEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StaplesServer).SendEvent(ctx, req.(*Event))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Staples_ServiceDesc is the grpc.ServiceDesc for Staples service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -140,6 +173,10 @@ var Staples_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDomains",
 			Handler:    _Staples_GetDomains_Handler,
+		},
+		{
+			MethodName: "SendEvent",
+			Handler:    _Staples_SendEvent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
