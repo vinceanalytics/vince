@@ -54,9 +54,13 @@ func TimeSeries(
 		b.Field(0).(*array.Int64Builder).Append(bucket)
 		for i, x := range metrics {
 			var visits *float64
+			var view *float64
 			switch x {
 			case v1.Metric_pageviews:
-				b.Field(i + 1).(*array.Float64Builder).Append(0)
+				a := n.Column(mapping[v1.Filters_Event.String()])
+				count := calcPageViews(a)
+				view = &count
+				b.Field(i + 1).(*array.Float64Builder).Append(count)
 			case v1.Metric_visitors:
 				a := n.Column(mapping[v1.Filters_ID.String()])
 				u, err := compute.Unique(ctx, compute.NewDatumWithoutOwning(a))
@@ -88,6 +92,28 @@ func TimeSeries(
 				a := n.Column(mapping[v1.Filters_Duration.String()]).(*array.Float64)
 				sum := float64(math.Float64.Sum(a))
 				b.Field(i + 1).(*array.Float64Builder).Append(sum)
+			case v1.Metric_views_per_visit:
+				var vis float64
+				if visits != nil {
+					vis = *visits
+				} else {
+					a := n.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
+					vis = float64(math.Int64.Sum(a))
+				}
+				var vw float64
+				if view != nil {
+					vw = *view
+				} else {
+					a := n.Column(mapping[v1.Filters_Event.String()])
+					vw = calcPageViews(a)
+				}
+				if vis != 0 {
+					vw /= vis
+				}
+				b.Field(i + 1).(*array.Float64Builder).Append(vw)
+			case v1.Metric_events:
+				a := n.Column(mapping[v1.Filters_Event.String()])
+				b.Field(i + 1).(*array.Float64Builder).Append(float64(a.Len()))
 			}
 		}
 		return nil
@@ -97,6 +123,22 @@ func TimeSeries(
 		return nil
 	}
 	return b.NewRecord()
+}
+
+const viewStr = "pageview"
+
+func calcPageViews(a arrow.Array) (n float64) {
+	d := a.(*array.Dictionary)
+	x := d.Dictionary().(*array.String)
+	for i := 0; i < d.Len(); i++ {
+		if d.IsNull(i) {
+			continue
+		}
+		if x.Value(d.GetValueIndex(i)) == viewStr {
+			n++
+		}
+	}
+	return
 }
 
 func buckets(r arrow.Record, f func(int64, arrow.Record) error) error {
@@ -118,6 +160,9 @@ func metricsToProjection(f *v1.Filters, me []v1.Metric) {
 			m[v1.Filters_Session] = struct{}{}
 			m[v1.Filters_Bounce] = struct{}{}
 		case v1.Metric_visit_duration:
+			m[v1.Filters_Duration] = struct{}{}
+		case v1.Metric_views_per_visit:
+			m[v1.Filters_Event] = struct{}{}
 			m[v1.Filters_Duration] = struct{}{}
 		}
 	}
