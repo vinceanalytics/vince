@@ -179,7 +179,7 @@ func take(ctx context.Context, metric v1.Metric, f v1.Filters_Projection, mappin
 	if err != nil {
 		idx.Release()
 		logger.Get(ctx).Error("Failed taking array values",
-			"err", err, "metric", metric)
+			"err", err, "metric", metric, "projection", f)
 		return nil, InternalError
 	}
 	return a, nil
