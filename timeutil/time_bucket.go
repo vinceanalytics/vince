@@ -3,8 +3,8 @@ package timeutil
 import (
 	"time"
 
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/staples/logger"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/logger"
 )
 
 func TimeBuckets(interval v1.Interval, source []int64, cb func(bucket int64, start, end int) error) error {

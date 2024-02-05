@@ -6,8 +6,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/vinceanalytics/staples/staples/db"
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/db"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"google.golang.org/protobuf/proto"
 )
 

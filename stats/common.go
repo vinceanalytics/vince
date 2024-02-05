@@ -3,8 +3,8 @@ package stats
 import (
 	"time"
 
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/staples/timeutil"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/timeutil"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

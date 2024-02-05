@@ -9,12 +9,12 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/dgraph-io/ristretto"
-	"github.com/vinceanalytics/staples/staples/db"
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/staples/index"
-	"github.com/vinceanalytics/staples/staples/logger"
-	"github.com/vinceanalytics/staples/staples/lsm"
-	"github.com/vinceanalytics/staples/staples/staples"
+	"github.com/vinceanalytics/vince/db"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/index"
+	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/lsm"
+	"github.com/vinceanalytics/vince/staples"
 )
 
 const (

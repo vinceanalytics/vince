@@ -9,8 +9,8 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/blevesearch/vellum"
-	"github.com/vinceanalytics/staples/staples/filters"
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/filters"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 )
 
 type FullColumn struct {

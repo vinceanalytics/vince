@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"github.com/oschwald/maxminddb-golang"
-	"github.com/vinceanalytics/staples/staples/logger"
+	"github.com/vinceanalytics/vince/logger"
 )
 
 type Geo struct {

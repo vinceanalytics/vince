@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/cespare/xxhash/v2"
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/staples/geo"
-	"github.com/vinceanalytics/staples/staples/logger"
-	"github.com/vinceanalytics/staples/staples/ref"
-	"github.com/vinceanalytics/staples/staples/ua"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/geo"
+	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/ref"
+	"github.com/vinceanalytics/vince/ua"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

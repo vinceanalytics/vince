@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/apache/arrow/go/v15/arrow/compute"
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/staples/logger"
-	"github.com/vinceanalytics/staples/staples/session"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/session"
 )
 
 func Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error) {

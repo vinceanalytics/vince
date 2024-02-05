@@ -16,11 +16,11 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/apache/arrow/go/v15/arrow/util"
 	"github.com/oklog/ulid/v2"
-	"github.com/vinceanalytics/staples/staples/db"
-	"github.com/vinceanalytics/staples/staples/filters"
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/staples/index"
-	"github.com/vinceanalytics/staples/staples/staples"
+	"github.com/vinceanalytics/vince/db"
+	"github.com/vinceanalytics/vince/filters"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/index"
+	"github.com/vinceanalytics/vince/staples"
 )
 
 type Part struct {

@@ -7,9 +7,9 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
-	"github.com/vinceanalytics/staples/staples/filters"
-	"github.com/vinceanalytics/staples/staples/index"
-	"github.com/vinceanalytics/staples/staples/logger"
+	"github.com/vinceanalytics/vince/filters"
+	"github.com/vinceanalytics/vince/index"
+	"github.com/vinceanalytics/vince/logger"
 )
 
 type Index struct {

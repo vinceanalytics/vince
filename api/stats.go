@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/staples/stats"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/stats"
 )
 
 var _ v1.StatsServer = (*API)(nil)

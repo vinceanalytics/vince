@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/apache/arrow/go/v15/arrow"
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 )
 
 type Scanner interface {

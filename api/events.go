@@ -5,9 +5,9 @@ import (
 	"net"
 	"net/http"
 
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/staples/guard"
-	"github.com/vinceanalytics/staples/staples/session"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/guard"
+	"github.com/vinceanalytics/vince/session"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 

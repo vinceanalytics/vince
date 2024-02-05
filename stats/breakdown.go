@@ -10,10 +10,10 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/compute"
 	"github.com/apache/arrow/go/v15/arrow/math"
-	"github.com/vinceanalytics/staples/staples/filters"
-	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
-	"github.com/vinceanalytics/staples/staples/logger"
-	"github.com/vinceanalytics/staples/staples/session"
+	"github.com/vinceanalytics/vince/filters"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/session"
 )
 
 func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error) {
