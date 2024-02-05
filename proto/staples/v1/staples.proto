@@ -38,6 +38,9 @@ message Config {
   // Path to the geoiip database used to set web analytics country attribute.
   string geoip_db_path = 8;
   repeated string domains = 9;
+  // How long data will be persisted, Older data is automatically deleted.
+  google.protobuf.Duration retention_period = 10
+      [ (buf.validate.field).required = true ];
 }
 
 message PrimaryIndex {

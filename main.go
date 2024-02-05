@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/bufbuild/protovalidate-go"
@@ -20,11 +21,13 @@ import (
 	"github.com/vinceanalytics/vince/guard"
 	"github.com/vinceanalytics/vince/index/primary"
 	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/lsm"
 	"github.com/vinceanalytics/vince/session"
 	"github.com/vinceanalytics/vince/staples"
 	"github.com/vinceanalytics/vince/version"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 func main() {
@@ -84,15 +87,22 @@ func app() *cli.Command {
 				Usage:   "Path to configuration file",
 				Sources: cli.EnvVars("VINCE_CONFIG"),
 			},
+			&cli.DurationFlag{
+				Name:    "retention-period",
+				Usage:   "How long data will be persisted",
+				Value:   30 * 24 * time.Hour,
+				Sources: cli.EnvVars("VINCE_RETENTION_PERIOD"),
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			base := &v1.Config{
-				Data:        c.String("data"),
-				Listen:      c.String("listen"),
-				RateLimit:   c.Float("rate-limit"),
-				GranuleSize: c.Int("granule-size"),
-				GeoipDbPath: c.String("geoip-db"),
-				Domains:     c.StringSlice("domains"),
+				Data:            c.String("data"),
+				Listen:          c.String("listen"),
+				RateLimit:       c.Float("rate-limit"),
+				GranuleSize:     c.Int("granule-size"),
+				GeoipDbPath:     c.String("geoip-db"),
+				Domains:         c.StringSlice("domains"),
+				RetentionPeriod: durationpb.New(c.Duration("retention-period")),
 			}
 			if co := c.String("config"); co != "" {
 				d, err := os.ReadFile(co)
@@ -140,7 +150,9 @@ func app() *cli.Command {
 				return err
 			}
 			idx := staples.NewIndex()
-			sess := session.New(alloc, "staples", store, idx, pidx)
+			sess := session.New(alloc, "staples", store, idx, pidx, lsm.WithTTL(
+				base.RetentionPeriod.AsDuration(),
+			))
 			ctx = session.With(ctx, sess)
 			log.Info("Setup geo ip")
 			gip := geo.Open(base.GeoipDbPath)
