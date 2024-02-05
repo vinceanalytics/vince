@@ -51,6 +51,11 @@ func NewStore(db Storage, mem memory.Allocator, resource string, ttl time.Durati
 }
 
 func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
+
+	// We don't call this frequently. So make sure we run GC when we are done. This
+	// removes the need for periodic GC calls.
+	defer s.db.GC()
+
 	id := ulid.Make().String()
 	var key bytes.Buffer
 	key.WriteString(s.resource)
