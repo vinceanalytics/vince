@@ -115,6 +115,7 @@ message BreakDown {
     TimePeriod period = 3;
     repeated Metric metrics = 4;
     uint32 limit = 5 [ (buf.validate.field).fixed64.lt = 1000 ];
+    repeated Filter filters = 6;
   }
 
   message GetBreakDownResponse {
