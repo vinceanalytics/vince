@@ -83,6 +83,7 @@ func (s *Session) Flush() {
 		r.Release()
 		return
 	}
+	s.log.Debug("Flushing sessions", "numROws", r.NumRows())
 	err := s.tree.Add(r)
 	if err != nil {
 		logger.Fail("Failed adding record to lsm", "err", err)
@@ -94,7 +95,6 @@ func (s *Session) Start(ctx context.Context) {
 }
 
 func (s *Session) doFlush(ctx context.Context) {
-
 	s.log.Info("Starting session flushing loop", slog.Duration("interval", DefaultFlushInterval))
 	tk := time.NewTicker(DefaultFlushInterval)
 	defer tk.Stop()
