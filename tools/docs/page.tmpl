@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>staples - API first Cloud Native Web Analytics For Startups</title>
-    <link rel="icon" {{.Logo}}>
+    <link rel="icon" {{.Icon}}>
     <style>{{.CSS}}</style>
 </head>
 {{range .JS}}
@@ -15,6 +15,7 @@
     <nav>
         <div id="shadow"></div>
         <div id="menu">
+        <a href="/" class="logo">vince </a>
         <ul>
         {{range .Menus}}
         <li>
@@ -45,6 +46,10 @@
         </div>
     </nav>
     <main>
+        <div class="index">
+            <h1>vince</h1>
+            <blockquote>API first Cloud Native Web Analytics for Startups</blockquote>
+        </div>
         {{range .Pages}}
         <div>{{.}}</div>
         {{end}}
