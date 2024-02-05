@@ -37,7 +37,7 @@ func main() {
 
 func app() *cli.Command {
 	return &cli.Command{
-		Name:      "staples",
+		Name:      "vince",
 		Usage:     "API first Cloud Native Web Analytics For Startups",
 		Copyright: "@2024-present",
 		Version:   version.VERSION,
@@ -46,36 +46,43 @@ func app() *cli.Command {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "data",
-				Usage: "Path to store data",
-				Value: "staples-data",
+				Name:    "data",
+				Usage:   "Path to store data",
+				Value:   "staples-data",
+				Sources: cli.EnvVars("VINCE_DATA"),
 			},
 			&cli.StringFlag{
-				Name:  "listen",
-				Usage: "HTTP address to listen",
-				Value: ":8080",
+				Name:    "listen",
+				Usage:   "HTTP address to listen",
+				Value:   ":8080",
+				Sources: cli.EnvVars("VINCE_LISTEN"),
 			},
 			&cli.FloatFlag{
-				Name:  "rate-limit",
-				Usage: "Rate limit requests",
-				Value: math.MaxFloat64,
+				Name:    "rate-limit",
+				Usage:   "Rate limit requests",
+				Value:   math.MaxFloat64,
+				Sources: cli.EnvVars("VINCE_RATE_LIMIT"),
 			},
 			&cli.IntFlag{
-				Name:  "granule-size",
-				Usage: "Maximum size of block to persist",
-				Value: 256 << 20, //256 MB
+				Name:    "granule-size",
+				Usage:   "Maximum size of block to persist",
+				Value:   256 << 20, //256 MB
+				Sources: cli.EnvVars("VINCE_GRANULE_SIZE"),
 			},
 			&cli.StringFlag{
-				Name:  "geoip-db",
-				Usage: "Path to geo ip database file",
+				Name:    "geoip-db",
+				Usage:   "Path to geo ip database file",
+				Sources: cli.EnvVars("VINCE_GEOIP_DB"),
 			},
 			&cli.StringSliceFlag{
-				Name:  "domains",
-				Usage: "Domain names to accept",
+				Name:    "domains",
+				Usage:   "Domain names to accept",
+				Sources: cli.EnvVars("VINCE_DOMAINS"),
 			},
 			&cli.StringFlag{
-				Name:  "config",
-				Usage: "Path to configuration file",
+				Name:    "config",
+				Usage:   "Path to configuration file",
+				Sources: cli.EnvVars("VINCE_CONFIG"),
 			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
