@@ -1,0 +1,25 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/vinceanalytics/tsu/gen/go
+    except:
+      - buf.build/googleapis/googleapis
+      - buf.build/bufbuild/protovalidate
+plugins:
+  - plugin: go
+    out: gen/go
+    opt: paths=source_relative
+
+  - plugin: go-grpc
+    out: gen/go
+    opt:
+      - paths=source_relative
+
+  - plugin: grpc-gateway
+    out: gen/go
+    opt:
+      - paths=source_relative
+      - generate_unbound_methods=true
+  - name: openapiv2
+    out: gen

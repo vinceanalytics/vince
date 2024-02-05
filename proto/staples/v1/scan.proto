@@ -1,0 +1,59 @@
+syntax = "proto3";
+package v1;
+
+import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
+import "staples/v1/stats.proto";
+
+message ScanRequest {
+  TimeRange timestamp = 1 [ (buf.validate.field).required = true ];
+  Filters filters = 2 [ (buf.validate.field).required = true ];
+}
+
+message ScanResponse { bytes record = 1; }
+
+message TimeRange {
+  google.protobuf.Timestamp start = 1 [ (buf.validate.field).required = true ];
+  google.protobuf.Timestamp end = 2 [ (buf.validate.field).required = true ];
+}
+
+message KeyValue {
+  string key = 1;
+  string value = 2;
+}
+
+message Filters {
+  repeated Filter list = 1;
+  // columns returned
+  repeated Projection projection = 2;
+
+  enum Projection {
+    Timestamp = 0;
+    ID = 1;
+    Bounce = 2;
+    Session = 3;
+    Duration = 4;
+
+    Browser = 5;
+    BrowserVersion = 6;
+    City = 7;
+    Country = 8;
+    Domain = 9;
+    EntryPage = 10;
+    ExitPage = 11;
+    Host = 12;
+    Event = 13;
+    Os = 14;
+    OsVersion = 15;
+    Path = 16;
+    Referrer = 17;
+    ReferrerSource = 18;
+    Region = 19;
+    Screen = 20;
+    UtmCampaign = 21;
+    UtmContent = 22;
+    UtmMedium = 23;
+    UtmSource = 24;
+    UtmTerm = 25;
+  }
+}

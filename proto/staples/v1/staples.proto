@@ -1,0 +1,97 @@
+syntax = "proto3";
+package v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
+
+service Staples {
+  rpc GetVersion(google.protobuf.Empty) returns (Version) {
+    option (google.api.http) = {
+      get : "/api/v1/version"
+    };
+  };
+
+  rpc GetDomains(GetDomainRequest) returns (GetDomainResponse) {
+    option (google.api.http) = {
+      get : "/api/v1/domains",
+    };
+  };
+
+  rpc SendEvent(Event) returns (SendEventResponse) {
+    option (google.api.http) = {
+      post : "/api/v1/event",
+      body : "*"
+    };
+  };
+}
+
+message Version { string version = 1; }
+
+message Config {
+  string data = 1 [ (buf.validate.field).required = true ];
+  string listen = 2 [ (buf.validate.field).required = true ];
+  double rate_limit = 3 [ (buf.validate.field).required = true ];
+  int64 granule_size = 5 [ (buf.validate.field).required = true ];
+  // Path to the geoiip database used to set web analytics country attribute.
+  string geoip_db_path = 8;
+  repeated string domains = 9;
+}
+
+message PrimaryIndex {
+
+  map<string, Resource> resources = 1;
+
+  message Resource {
+    string name = 1;
+    map<string, Granule> granules = 2;
+  }
+}
+
+message Granule {
+  string id = 1;
+  int64 min = 2;
+  int64 max = 3;
+  uint64 size = 4;
+  uint64 rows = 5;
+}
+
+message Event {
+  /// EventName
+  string n = 1 [ (buf.validate.field).required = true ];
+  string url = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.uri = true
+  ];
+  // Domain
+  string d = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.hostname = true
+  ];
+  // Screen width
+  int32 w = 4;
+  // Hash mode
+  bool h = 5;
+  string ip = 6 [ (buf.validate.field).string.ip = true ];
+  // user agent
+  string ua = 7;
+
+  // Referrer
+  string r = 8;
+
+  google.protobuf.Timestamp timestamp = 9;
+}
+
+message Domain {
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.hostname = true
+  ];
+}
+
+message GetDomainRequest {}
+message GetDomainResponse { repeated Domain domains = 1; }
+
+message SendEventResponse { bool dropped = 1; }
