@@ -8,21 +8,20 @@ import "google/api/annotations.proto";
 service Stats {
   rpc RealtimeVisitors(Realtime.Request) returns (Realtime.Response) {
     option (google.api.http) = {
-      post : "/api/v1/stats/realtime/visitors/{site_id}",
-      body : "*"
+      get : "/api/v1/visitors/{site_id}",
     };
   };
 
   rpc Aggregate(Aggregate.Request) returns (Aggregate.Response) {
     option (google.api.http) = {
-      post : "/api/v1/stats/aggregate/{site_id}",
+      post : "/api/v1/aggregate/{site_id}",
       body : "*"
     };
   };
 
   rpc Timeseries(Timeseries.Request) returns (Timeseries.Response) {
     option (google.api.http) = {
-      post : "/api/v1/stats/timeseries/{site_id}",
+      post : "/api/v1/timeseries/{site_id}",
       body : "*"
     };
   };

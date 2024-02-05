@@ -35,14 +35,6 @@ func request_Stats_RealtimeVisitors_0(ctx context.Context, marshaler runtime.Mar
 	var protoReq Realtime_Request
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
 	var (
 		val string
 		ok  bool
@@ -68,14 +60,6 @@ func request_Stats_RealtimeVisitors_0(ctx context.Context, marshaler runtime.Mar
 func local_request_Stats_RealtimeVisitors_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Realtime_Request
 	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
 
 	var (
 		val string
@@ -309,13 +293,13 @@ func local_request_Stats_BreakDown_0(ctx context.Context, marshaler runtime.Mars
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterStatsHandlerFromEndpoint instead.
 func RegisterStatsHandlerServer(ctx context.Context, mux *runtime.ServeMux, server StatsServer) error {
 
-	mux.Handle("POST", pattern_Stats_RealtimeVisitors_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Stats_RealtimeVisitors_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/RealtimeVisitors", runtime.WithHTTPPathPattern("/api/v1/stats/realtime/visitors/{site_id}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/RealtimeVisitors", runtime.WithHTTPPathPattern("/api/v1/visitors/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -338,7 +322,7 @@ func RegisterStatsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/Aggregate", runtime.WithHTTPPathPattern("/api/v1/stats/aggregate/{site_id}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/Aggregate", runtime.WithHTTPPathPattern("/api/v1/aggregate/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -361,7 +345,7 @@ func RegisterStatsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/Timeseries", runtime.WithHTTPPathPattern("/api/v1/stats/timeseries/{site_id}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/Timeseries", runtime.WithHTTPPathPattern("/api/v1/timeseries/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -442,11 +426,11 @@ func RegisterStatsHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.
 // "StatsClient" to call the correct interceptors.
 func RegisterStatsHandlerClient(ctx context.Context, mux *runtime.ServeMux, client StatsClient) error {
 
-	mux.Handle("POST", pattern_Stats_RealtimeVisitors_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Stats_RealtimeVisitors_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/RealtimeVisitors", runtime.WithHTTPPathPattern("/api/v1/stats/realtime/visitors/{site_id}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/RealtimeVisitors", runtime.WithHTTPPathPattern("/api/v1/visitors/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -466,7 +450,7 @@ func RegisterStatsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/Aggregate", runtime.WithHTTPPathPattern("/api/v1/stats/aggregate/{site_id}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/Aggregate", runtime.WithHTTPPathPattern("/api/v1/aggregate/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -486,7 +470,7 @@ func RegisterStatsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/Timeseries", runtime.WithHTTPPathPattern("/api/v1/stats/timeseries/{site_id}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/Timeseries", runtime.WithHTTPPathPattern("/api/v1/timeseries/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -526,11 +510,11 @@ func RegisterStatsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Stats_RealtimeVisitors_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "stats", "realtime", "visitors", "site_id"}, ""))
+	pattern_Stats_RealtimeVisitors_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "visitors", "site_id"}, ""))
 
-	pattern_Stats_Aggregate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "aggregate", "site_id"}, ""))
+	pattern_Stats_Aggregate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "aggregate", "site_id"}, ""))
 
-	pattern_Stats_Timeseries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "timeseries", "site_id"}, ""))
+	pattern_Stats_Timeseries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "timeseries", "site_id"}, ""))
 
 	pattern_Stats_BreakDown_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "breakdown", "site_id"}, ""))
 )

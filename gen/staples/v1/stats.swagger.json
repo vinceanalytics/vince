@@ -16,7 +16,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/stats/aggregate/{siteId}": {
+    "/api/v1/aggregate/{siteId}": {
       "post": {
         "operationId": "Stats_Aggregate",
         "responses": {
@@ -139,45 +139,7 @@
         ]
       }
     },
-    "/api/v1/stats/realtime/visitors/{siteId}": {
-      "post": {
-        "operationId": "Stats_RealtimeVisitors",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1RealtimeResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "siteId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object"
-            }
-          }
-        ],
-        "tags": [
-          "Stats"
-        ]
-      }
-    },
-    "/api/v1/stats/timeseries/{siteId}": {
+    "/api/v1/timeseries/{siteId}": {
       "post": {
         "operationId": "Stats_Timeseries",
         "responses": {
@@ -228,6 +190,36 @@
                 }
               }
             }
+          }
+        ],
+        "tags": [
+          "Stats"
+        ]
+      }
+    },
+    "/api/v1/visitors/{siteId}": {
+      "get": {
+        "operationId": "Stats_RealtimeVisitors",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RealtimeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "siteId",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
