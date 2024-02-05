@@ -249,7 +249,6 @@ func request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.Marshal
 
 	var (
 		val string
-		es  []int32
 		ok  bool
 		err error
 		_   = err
@@ -264,22 +263,6 @@ func request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.Marshal
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
-
-	val, ok = pathParams["property"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "property")
-	}
-
-	es, err = runtime.EnumSlice(val, ",", Property_value)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "property", err)
-	}
-
-	s := make([]Property, len(es))
-	for i, v := range es {
-		s[i] = Property(v)
-	}
-	protoReq.Property = s
 
 	msg, err := client.GetBreakDown(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -300,7 +283,6 @@ func local_request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.M
 
 	var (
 		val string
-		es  []int32
 		ok  bool
 		err error
 		_   = err
@@ -315,22 +297,6 @@ func local_request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.M
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
-
-	val, ok = pathParams["property"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "property")
-	}
-
-	es, err = runtime.EnumSlice(val, ",", Property_value)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "property", err)
-	}
-
-	s := make([]Property, len(es))
-	for i, v := range es {
-		s[i] = Property(v)
-	}
-	protoReq.Property = s
 
 	msg, err := server.GetBreakDown(ctx, &protoReq)
 	return msg, metadata, err
@@ -418,7 +384,7 @@ func RegisterStatsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/GetBreakDown", runtime.WithHTTPPathPattern("/api/v1/stats/breakdown/{site_id}/{property}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/GetBreakDown", runtime.WithHTTPPathPattern("/api/v1/stats/breakdown/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -540,7 +506,7 @@ func RegisterStatsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/GetBreakDown", runtime.WithHTTPPathPattern("/api/v1/stats/breakdown/{site_id}/{property}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/GetBreakDown", runtime.WithHTTPPathPattern("/api/v1/stats/breakdown/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -566,7 +532,7 @@ var (
 
 	pattern_Stats_GetTimeseries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "timeseries", "site_id"}, ""))
 
-	pattern_Stats_GetBreakDown_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "stats", "breakdown", "site_id", "property"}, ""))
+	pattern_Stats_GetBreakDown_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "breakdown", "site_id"}, ""))
 )
 
 var (

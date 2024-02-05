@@ -33,7 +33,7 @@ service Stats {
   rpc GetBreakDown(BreakDown.GetBreakDownRequest)
       returns (BreakDown.GetBreakDownResponse) {
     option (google.api.http) = {
-      post : "/api/v1/stats/breakdown/{site_id}/{property}",
+      post : "/api/v1/stats/breakdown/{site_id}",
       body : "*"
     };
   };

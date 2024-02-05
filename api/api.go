@@ -26,6 +26,7 @@ import (
 
 type API struct {
 	v1.UnsafeStaplesServer
+	v1.UnsafeStatsServer
 	config *v1.Config
 	hand   http.Handler
 }
@@ -51,6 +52,7 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 		),
 	)
 	v1.RegisterStaplesServer(svr, a)
+	v1.RegisterStatsServer(svr, a)
 	web := grpcweb.WrapServer(svr,
 		grpcweb.WithAllowNonRootResource(true),
 		grpcweb.WithOriginFunc(func(origin string) bool {
