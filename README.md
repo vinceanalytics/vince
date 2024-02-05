@@ -9,7 +9,7 @@
 
 # vince
 
-The Cloud Native Web Analytics Platform. Built on Apache Arrow and Apache Parquet.
+API first Cloud Native Web Analytics For Startups Built on Apache Arrow and Apache Parquet.
 
 > **note**
 > Vince does not support realtime queries. Events are processed daily at configured time of the day.
