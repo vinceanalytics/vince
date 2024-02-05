@@ -99,7 +99,7 @@ message BreakDown {
       (buf.validate.field).required = true,
       (buf.validate.field).string.hostname = true
     ];
-    Property property = 2 [ (buf.validate.field).required = true ];
+    repeated Property property = 2 [ (buf.validate.field).required = true ];
     TimePeriod period = 3;
     repeated Metric metrics = 4;
     uint32 limit = 5 [ (buf.validate.field).fixed64.lt = 1000 ];
@@ -107,7 +107,12 @@ message BreakDown {
   }
 
   message GetBreakDownResponse {
-    repeated Group results = 1;
+    repeated Result results = 1;
+
+    message Result {
+      Property property = 1;
+      repeated Group groups = 2;
+    }
 
     message Group {
       string key = 1;

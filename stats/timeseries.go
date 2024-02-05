@@ -9,6 +9,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/compute"
 	"github.com/apache/arrow/go/v15/arrow/math"
+	"github.com/vinceanalytics/staples/staples/filters"
 	v1 "github.com/vinceanalytics/staples/staples/gen/go/staples/v1"
 	"github.com/vinceanalytics/staples/staples/logger"
 	"github.com/vinceanalytics/staples/staples/session"
@@ -161,9 +162,12 @@ func buckets(r arrow.Record, f func(int64, arrow.Record) error) error {
 	return nil
 }
 
-func metricsToProjection(f *v1.Filters, me []v1.Metric) {
+func metricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) {
 	m := make(map[v1.Filters_Projection]struct{})
 	m[v1.Filters_Timestamp] = struct{}{}
+	for _, p := range props {
+		m[filters.PropToProjection[p]] = struct{}{}
+	}
 	for _, v := range me {
 		switch v {
 		case v1.Metric_pageviews:

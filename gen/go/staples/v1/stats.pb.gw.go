@@ -249,7 +249,7 @@ func request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.Marshal
 
 	var (
 		val string
-		e   int32
+		es  []int32
 		ok  bool
 		err error
 		_   = err
@@ -270,12 +270,16 @@ func request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.Marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "property")
 	}
 
-	e, err = runtime.Enum(val, Property_value)
+	es, err = runtime.EnumSlice(val, ",", Property_value)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "property", err)
 	}
 
-	protoReq.Property = Property(e)
+	s := make([]Property, len(es))
+	for i, v := range es {
+		s[i] = Property(v)
+	}
+	protoReq.Property = s
 
 	msg, err := client.GetBreakDown(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -296,7 +300,7 @@ func local_request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.M
 
 	var (
 		val string
-		e   int32
+		es  []int32
 		ok  bool
 		err error
 		_   = err
@@ -317,12 +321,16 @@ func local_request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.M
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "property")
 	}
 
-	e, err = runtime.Enum(val, Property_value)
+	es, err = runtime.EnumSlice(val, ",", Property_value)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "property", err)
 	}
 
-	protoReq.Property = Property(e)
+	s := make([]Property, len(es))
+	for i, v := range es {
+		s[i] = Property(v)
+	}
+	protoReq.Property = s
 
 	msg, err := server.GetBreakDown(ctx, &protoReq)
 	return msg, metadata, err
