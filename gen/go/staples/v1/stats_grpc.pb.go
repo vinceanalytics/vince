@@ -29,10 +29,10 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StatsClient interface {
-	RealtimeVisitors(ctx context.Context, in *Realtime_GetVisitorsRequest, opts ...grpc.CallOption) (*Realtime_GetVisitorsResponse, error)
-	Aggregate(ctx context.Context, in *Aggregate_GetAggegateRequest, opts ...grpc.CallOption) (*Aggregate_GetAggregateResponse, error)
-	Timeseries(ctx context.Context, in *Timeseries_GetTimeseriesRequest, opts ...grpc.CallOption) (*Timeseries_GetTimeseriesResponse, error)
-	BreakDown(ctx context.Context, in *BreakDown_GetBreakDownRequest, opts ...grpc.CallOption) (*BreakDown_GetBreakDownResponse, error)
+	RealtimeVisitors(ctx context.Context, in *Realtime_Request, opts ...grpc.CallOption) (*Realtime_Response, error)
+	Aggregate(ctx context.Context, in *Aggregate_Request, opts ...grpc.CallOption) (*Aggregate_Response, error)
+	Timeseries(ctx context.Context, in *Timeseries_Request, opts ...grpc.CallOption) (*Timeseries_Response, error)
+	BreakDown(ctx context.Context, in *BreakDown_Request, opts ...grpc.CallOption) (*BreakDown_Response, error)
 }
 
 type statsClient struct {
@@ -43,8 +43,8 @@ func NewStatsClient(cc grpc.ClientConnInterface) StatsClient {
 	return &statsClient{cc}
 }
 
-func (c *statsClient) RealtimeVisitors(ctx context.Context, in *Realtime_GetVisitorsRequest, opts ...grpc.CallOption) (*Realtime_GetVisitorsResponse, error) {
-	out := new(Realtime_GetVisitorsResponse)
+func (c *statsClient) RealtimeVisitors(ctx context.Context, in *Realtime_Request, opts ...grpc.CallOption) (*Realtime_Response, error) {
+	out := new(Realtime_Response)
 	err := c.cc.Invoke(ctx, Stats_RealtimeVisitors_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,8 +52,8 @@ func (c *statsClient) RealtimeVisitors(ctx context.Context, in *Realtime_GetVisi
 	return out, nil
 }
 
-func (c *statsClient) Aggregate(ctx context.Context, in *Aggregate_GetAggegateRequest, opts ...grpc.CallOption) (*Aggregate_GetAggregateResponse, error) {
-	out := new(Aggregate_GetAggregateResponse)
+func (c *statsClient) Aggregate(ctx context.Context, in *Aggregate_Request, opts ...grpc.CallOption) (*Aggregate_Response, error) {
+	out := new(Aggregate_Response)
 	err := c.cc.Invoke(ctx, Stats_Aggregate_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -61,8 +61,8 @@ func (c *statsClient) Aggregate(ctx context.Context, in *Aggregate_GetAggegateRe
 	return out, nil
 }
 
-func (c *statsClient) Timeseries(ctx context.Context, in *Timeseries_GetTimeseriesRequest, opts ...grpc.CallOption) (*Timeseries_GetTimeseriesResponse, error) {
-	out := new(Timeseries_GetTimeseriesResponse)
+func (c *statsClient) Timeseries(ctx context.Context, in *Timeseries_Request, opts ...grpc.CallOption) (*Timeseries_Response, error) {
+	out := new(Timeseries_Response)
 	err := c.cc.Invoke(ctx, Stats_Timeseries_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -70,8 +70,8 @@ func (c *statsClient) Timeseries(ctx context.Context, in *Timeseries_GetTimeseri
 	return out, nil
 }
 
-func (c *statsClient) BreakDown(ctx context.Context, in *BreakDown_GetBreakDownRequest, opts ...grpc.CallOption) (*BreakDown_GetBreakDownResponse, error) {
-	out := new(BreakDown_GetBreakDownResponse)
+func (c *statsClient) BreakDown(ctx context.Context, in *BreakDown_Request, opts ...grpc.CallOption) (*BreakDown_Response, error) {
+	out := new(BreakDown_Response)
 	err := c.cc.Invoke(ctx, Stats_BreakDown_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -83,10 +83,10 @@ func (c *statsClient) BreakDown(ctx context.Context, in *BreakDown_GetBreakDownR
 // All implementations must embed UnimplementedStatsServer
 // for forward compatibility
 type StatsServer interface {
-	RealtimeVisitors(context.Context, *Realtime_GetVisitorsRequest) (*Realtime_GetVisitorsResponse, error)
-	Aggregate(context.Context, *Aggregate_GetAggegateRequest) (*Aggregate_GetAggregateResponse, error)
-	Timeseries(context.Context, *Timeseries_GetTimeseriesRequest) (*Timeseries_GetTimeseriesResponse, error)
-	BreakDown(context.Context, *BreakDown_GetBreakDownRequest) (*BreakDown_GetBreakDownResponse, error)
+	RealtimeVisitors(context.Context, *Realtime_Request) (*Realtime_Response, error)
+	Aggregate(context.Context, *Aggregate_Request) (*Aggregate_Response, error)
+	Timeseries(context.Context, *Timeseries_Request) (*Timeseries_Response, error)
+	BreakDown(context.Context, *BreakDown_Request) (*BreakDown_Response, error)
 	mustEmbedUnimplementedStatsServer()
 }
 
@@ -94,16 +94,16 @@ type StatsServer interface {
 type UnimplementedStatsServer struct {
 }
 
-func (UnimplementedStatsServer) RealtimeVisitors(context.Context, *Realtime_GetVisitorsRequest) (*Realtime_GetVisitorsResponse, error) {
+func (UnimplementedStatsServer) RealtimeVisitors(context.Context, *Realtime_Request) (*Realtime_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RealtimeVisitors not implemented")
 }
-func (UnimplementedStatsServer) Aggregate(context.Context, *Aggregate_GetAggegateRequest) (*Aggregate_GetAggregateResponse, error) {
+func (UnimplementedStatsServer) Aggregate(context.Context, *Aggregate_Request) (*Aggregate_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Aggregate not implemented")
 }
-func (UnimplementedStatsServer) Timeseries(context.Context, *Timeseries_GetTimeseriesRequest) (*Timeseries_GetTimeseriesResponse, error) {
+func (UnimplementedStatsServer) Timeseries(context.Context, *Timeseries_Request) (*Timeseries_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Timeseries not implemented")
 }
-func (UnimplementedStatsServer) BreakDown(context.Context, *BreakDown_GetBreakDownRequest) (*BreakDown_GetBreakDownResponse, error) {
+func (UnimplementedStatsServer) BreakDown(context.Context, *BreakDown_Request) (*BreakDown_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BreakDown not implemented")
 }
 func (UnimplementedStatsServer) mustEmbedUnimplementedStatsServer() {}
@@ -120,7 +120,7 @@ func RegisterStatsServer(s grpc.ServiceRegistrar, srv StatsServer) {
 }
 
 func _Stats_RealtimeVisitors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Realtime_GetVisitorsRequest)
+	in := new(Realtime_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -132,13 +132,13 @@ func _Stats_RealtimeVisitors_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: Stats_RealtimeVisitors_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatsServer).RealtimeVisitors(ctx, req.(*Realtime_GetVisitorsRequest))
+		return srv.(StatsServer).RealtimeVisitors(ctx, req.(*Realtime_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Stats_Aggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Aggregate_GetAggegateRequest)
+	in := new(Aggregate_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -150,13 +150,13 @@ func _Stats_Aggregate_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: Stats_Aggregate_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatsServer).Aggregate(ctx, req.(*Aggregate_GetAggegateRequest))
+		return srv.(StatsServer).Aggregate(ctx, req.(*Aggregate_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Stats_Timeseries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Timeseries_GetTimeseriesRequest)
+	in := new(Timeseries_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -168,13 +168,13 @@ func _Stats_Timeseries_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: Stats_Timeseries_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatsServer).Timeseries(ctx, req.(*Timeseries_GetTimeseriesRequest))
+		return srv.(StatsServer).Timeseries(ctx, req.(*Timeseries_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Stats_BreakDown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BreakDown_GetBreakDownRequest)
+	in := new(BreakDown_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func _Stats_BreakDown_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: Stats_BreakDown_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatsServer).BreakDown(ctx, req.(*BreakDown_GetBreakDownRequest))
+		return srv.(StatsServer).BreakDown(ctx, req.(*BreakDown_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }

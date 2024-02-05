@@ -10,7 +10,7 @@ import (
 	"github.com/vinceanalytics/staples/staples/session"
 )
 
-func Realtime(ctx context.Context, req *v1.Realtime_GetVisitorsRequest) (*v1.Realtime_GetVisitorsResponse, error) {
+func Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error) {
 	now := time.Now().UTC()
 	firstTime := now.Add(-5 * time.Minute)
 	r, err := session.Get(ctx).Scan(ctx,
@@ -36,5 +36,5 @@ func Realtime(ctx context.Context, req *v1.Realtime_GetVisitorsRequest) (*v1.Rea
 		return nil, InternalError
 	}
 	defer res.Release()
-	return &v1.Realtime_GetVisitorsResponse{Visitors: uint64(res.Len())}, nil
+	return &v1.Realtime_Response{Visitors: uint64(res.Len())}, nil
 }

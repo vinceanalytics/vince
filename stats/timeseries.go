@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func TimeSeries(ctx context.Context, req *v1.Timeseries_GetTimeseriesRequest) (*v1.Timeseries_GetTimeseriesResponse, error) {
+func TimeSeries(ctx context.Context, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error) {
 	log := logger.Get(ctx)
 	// make sure we have valid interval
 	if !ValidByPeriod(req.Period, req.Interval) {
@@ -139,7 +139,7 @@ func TimeSeries(ctx context.Context, req *v1.Timeseries_GetTimeseriesRequest) (*
 		log.Error("Failed processing buckets", "err", err)
 		return nil, InternalError
 	}
-	return &v1.Timeseries_GetTimeseriesResponse{Results: buckets}, nil
+	return &v1.Timeseries_Response{Results: buckets}, nil
 }
 
 const viewStr = "pageview"

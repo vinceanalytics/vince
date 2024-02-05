@@ -32,7 +32,7 @@ var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
 func request_Stats_RealtimeVisitors_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Realtime_GetVisitorsRequest
+	var protoReq Realtime_Request
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -66,7 +66,7 @@ func request_Stats_RealtimeVisitors_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func local_request_Stats_RealtimeVisitors_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Realtime_GetVisitorsRequest
+	var protoReq Realtime_Request
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -100,7 +100,7 @@ func local_request_Stats_RealtimeVisitors_0(ctx context.Context, marshaler runti
 }
 
 func request_Stats_Aggregate_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Aggregate_GetAggegateRequest
+	var protoReq Aggregate_Request
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -134,7 +134,7 @@ func request_Stats_Aggregate_0(ctx context.Context, marshaler runtime.Marshaler,
 }
 
 func local_request_Stats_Aggregate_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Aggregate_GetAggegateRequest
+	var protoReq Aggregate_Request
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -168,7 +168,7 @@ func local_request_Stats_Aggregate_0(ctx context.Context, marshaler runtime.Mars
 }
 
 func request_Stats_Timeseries_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Timeseries_GetTimeseriesRequest
+	var protoReq Timeseries_Request
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -202,7 +202,7 @@ func request_Stats_Timeseries_0(ctx context.Context, marshaler runtime.Marshaler
 }
 
 func local_request_Stats_Timeseries_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Timeseries_GetTimeseriesRequest
+	var protoReq Timeseries_Request
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -236,7 +236,7 @@ func local_request_Stats_Timeseries_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func request_Stats_BreakDown_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq BreakDown_GetBreakDownRequest
+	var protoReq BreakDown_Request
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -270,7 +270,7 @@ func request_Stats_BreakDown_0(ctx context.Context, marshaler runtime.Marshaler,
 }
 
 func local_request_Stats_BreakDown_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq BreakDown_GetBreakDownRequest
+	var protoReq BreakDown_Request
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)

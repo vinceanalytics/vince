@@ -6,32 +6,28 @@ import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
 service Stats {
-  rpc RealtimeVisitors(Realtime.GetVisitorsRequest)
-      returns (Realtime.GetVisitorsResponse) {
+  rpc RealtimeVisitors(Realtime.Request) returns (Realtime.Response) {
     option (google.api.http) = {
       post : "/api/v1/stats/realtime/visitors/{site_id}",
       body : "*"
     };
   };
 
-  rpc Aggregate(Aggregate.GetAggegateRequest)
-      returns (Aggregate.GetAggregateResponse) {
+  rpc Aggregate(Aggregate.Request) returns (Aggregate.Response) {
     option (google.api.http) = {
       post : "/api/v1/stats/aggregate/{site_id}",
       body : "*"
     };
   };
 
-  rpc Timeseries(Timeseries.GetTimeseriesRequest)
-      returns (Timeseries.GetTimeseriesResponse) {
+  rpc Timeseries(Timeseries.Request) returns (Timeseries.Response) {
     option (google.api.http) = {
       post : "/api/v1/stats/timeseries/{site_id}",
       body : "*"
     };
   };
 
-  rpc BreakDown(BreakDown.GetBreakDownRequest)
-      returns (BreakDown.GetBreakDownResponse) {
+  rpc BreakDown(BreakDown.Request) returns (BreakDown.Response) {
     option (google.api.http) = {
       post : "/api/v1/stats/breakdown/{site_id}",
       body : "*"
@@ -40,17 +36,17 @@ service Stats {
 }
 
 message Realtime {
-  message GetVisitorsRequest {
+  message Request {
     string site_id = 1 [
       (buf.validate.field).required = true,
       (buf.validate.field).string.hostname = true
     ];
   }
-  message GetVisitorsResponse { uint64 visitors = 1; }
+  message Response { uint64 visitors = 1; }
 }
 
 message Aggregate {
-  message GetAggegateRequest {
+  message Request {
     string site_id = 1 [
       (buf.validate.field).required = true,
       (buf.validate.field).string.hostname = true
@@ -61,11 +57,11 @@ message Aggregate {
     repeated Filter filters = 5;
   }
 
-  message GetAggregateResponse { repeated Value results = 1; }
+  message Response { repeated Value results = 1; }
 }
 
 message Timeseries {
-  message GetTimeseriesRequest {
+  message Request {
     string site_id = 1 [
       (buf.validate.field).required = true,
       (buf.validate.field).string.hostname = true
@@ -77,7 +73,7 @@ message Timeseries {
     repeated Filter filters = 5;
   }
 
-  message GetTimeseriesResponse { repeated Bucket results = 1; }
+  message Response { repeated Bucket results = 1; }
 
   message Bucket {
     google.protobuf.Timestamp timestamp = 1;
@@ -94,7 +90,7 @@ enum Interval {
 }
 
 message BreakDown {
-  message GetBreakDownRequest {
+  message Request {
     string site_id = 1 [
       (buf.validate.field).required = true,
       (buf.validate.field).string.hostname = true
@@ -106,7 +102,7 @@ message BreakDown {
     repeated Filter filters = 6;
   }
 
-  message GetBreakDownResponse {
+  message Response {
     repeated Result results = 1;
 
     message Result {

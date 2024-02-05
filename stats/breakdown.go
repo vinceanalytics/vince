@@ -16,7 +16,7 @@ import (
 	"github.com/vinceanalytics/staples/staples/session"
 )
 
-func BreakDown(ctx context.Context, req *v1.BreakDown_GetBreakDownRequest) (*v1.BreakDown_GetBreakDownResponse, error) {
+func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error) {
 	period := req.Period
 	if period == nil {
 		period = &v1.TimePeriod{
@@ -50,10 +50,10 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_GetBreakDownRequest) (*v1.
 	// build key mapping
 	b := array.NewUint32Builder(compute.GetAllocator(ctx))
 	defer b.Release()
-	var result []*v1.BreakDown_GetBreakDownResponse_Result
+	var result []*v1.BreakDown_Response_Result
 	// TODO: run this concurrently
 	for _, prop := range req.Property {
-		var groups []*v1.BreakDown_GetBreakDownResponse_Group
+		var groups []*v1.BreakDown_Response_Group
 		for key, bitmap := range hashProp(mapping[filters.PropToProjection[prop].String()]) {
 			b.AppendValues(bitmap.ToArray(), nil)
 			idx := b.NewUint32Array()
@@ -165,18 +165,18 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_GetBreakDownRequest) (*v1.
 					Value:  value,
 				})
 			}
-			groups = append(groups, &v1.BreakDown_GetBreakDownResponse_Group{
+			groups = append(groups, &v1.BreakDown_Response_Group{
 				Key:    key,
 				Values: values,
 			})
 			idx.Release()
 		}
-		result = append(result, &v1.BreakDown_GetBreakDownResponse_Result{
+		result = append(result, &v1.BreakDown_Response_Result{
 			Property: prop,
 			Groups:   groups,
 		})
 	}
-	return &v1.BreakDown_GetBreakDownResponse{Results: result}, nil
+	return &v1.BreakDown_Response{Results: result}, nil
 }
 
 func take(ctx context.Context, metric v1.Metric, f v1.Filters_Projection, mapping map[string]arrow.Array, idx *array.Uint32) (arrow.Array, error) {

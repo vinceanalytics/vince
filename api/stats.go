@@ -9,15 +9,15 @@ import (
 
 var _ v1.StatsServer = (*API)(nil)
 
-func (a *API) RealtimeVisitors(ctx context.Context, req *v1.Realtime_GetVisitorsRequest) (*v1.Realtime_GetVisitorsResponse, error) {
+func (a *API) RealtimeVisitors(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error) {
 	return stats.Realtime(ctx, req)
 }
-func (a *API) Aggregate(ctx context.Context, req *v1.Aggregate_GetAggegateRequest) (*v1.Aggregate_GetAggregateResponse, error) {
+func (a *API) Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error) {
 	return stats.Aggregate(ctx, req)
 }
-func (a *API) Timeseries(ctx context.Context, req *v1.Timeseries_GetTimeseriesRequest) (*v1.Timeseries_GetTimeseriesResponse, error) {
+func (a *API) Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error) {
 	return stats.TimeSeries(ctx, req)
 }
-func (a *API) BreakDown(ctx context.Context, req *v1.BreakDown_GetBreakDownRequest) (*v1.BreakDown_GetBreakDownResponse, error) {
+func (a *API) BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error) {
 	return stats.BreakDown(ctx, req)
 }

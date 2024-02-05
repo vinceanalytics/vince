@@ -13,7 +13,7 @@ import (
 	"github.com/vinceanalytics/staples/staples/session"
 )
 
-func Aggregate(ctx context.Context, req *v1.Aggregate_GetAggegateRequest) (*v1.Aggregate_GetAggregateResponse, error) {
+func Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error) {
 	filters := &v1.Filters{
 		List: append(req.Filters, &v1.Filter{
 			Property: v1.Property_domain,
@@ -111,5 +111,5 @@ func Aggregate(ctx context.Context, req *v1.Aggregate_GetAggegateRequest) (*v1.A
 			Value:  value,
 		})
 	}
-	return &v1.Aggregate_GetAggregateResponse{Results: result}, nil
+	return &v1.Aggregate_Response{Results: result}, nil
 }
