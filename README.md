@@ -1,6 +1,7 @@
 
 <p align="center">
     <img src="./logo.svg" alt="Vince Logo" />
+    <br>
     <a href="https://vinceanalytics.com/">Website</a> |
     <a href="https://vinceanalytics.com/#getting-started">Getting started</a> |
     <a href="https://vinceanalytics.com/#api">API</a>
@@ -40,6 +41,14 @@ I need my web analytics analysis served raw and cold. So there is only storing a
 - **Unlimited sites**: There is no limit on how many sites you can manage.
 
 - **Privacy friendly**: No cookies and fully compliant with GDPR, CCPA and PECR.
+
+
+### example checking for current visitors
+
+```bash
+curl -X 'GET' 'http://localhost:8080/api/v1/visitors/example.com'
+{"visitors":"4"}
+```
 
 
 Check out the [getting started](https://vinceanalytics.com/#getting-started) instructions if you want to give `vince` a try.

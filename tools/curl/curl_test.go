@@ -16,6 +16,9 @@ var API = CMD("http://localhost:8080")
 func TestVersion(t *testing.T) {
 	check(t, false, "version.sh", "/api/v1/version", http.MethodGet, nil, nil)
 }
+func TestVisitors(t *testing.T) {
+	check(t, false, "visitors.sh", "/api/v1/visitors/example.com", http.MethodGet, nil, nil)
+}
 
 func check(t *testing.T, write bool, file string, path, method string, headers http.Header, body proto.Message) {
 	t.Helper()
