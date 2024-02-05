@@ -18,6 +18,8 @@ import (
 	"time"
 
 	"github.com/Depado/bfchroma/v2"
+	bhtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/websocket"
 	"github.com/russross/blackfriday/v2"
@@ -250,8 +252,14 @@ func renderPage(w io.Writer, id func() int, text []byte) (o []Item) {
 	m := blackfriday.New(
 		blackfriday.WithExtensions(blackfriday.CommonExtensions),
 	)
-
-	r := bfchroma.NewRenderer()
+	r := &bfchroma.Renderer{
+		Base: blackfriday.NewHTMLRenderer(blackfriday.HTMLRendererParameters{
+			Flags: blackfriday.CommonHTMLFlags,
+		}),
+		Style:      styles.SolarizedLight,
+		Autodetect: true,
+	}
+	r.Formatter = bhtml.New(r.ChromaOptions...)
 	ast := m.Parse(text)
 	var inHeading bool
 	var lastNode *blackfriday.Node
