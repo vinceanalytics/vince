@@ -1,6 +1,0 @@
-DELETE /api/v1/sites/example.com HTTP/1.1
-Host: vince.default.svc.cluster.local:80
-User-Agent: Go-http-client/1.1
-Authorization: Bearer c2VjcmV0
-Accept-Encoding: gzip
-
