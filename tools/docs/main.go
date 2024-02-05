@@ -26,6 +26,7 @@ import (
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
 	"github.com/tdewolff/minify/v2/html"
+	"github.com/tdewolff/minify/v2/js"
 )
 
 //go:embed page.tmpl
@@ -37,6 +38,9 @@ var styleData []byte
 //go:embed reload.js
 var reloadData []byte
 
+//go:embed script.js
+var scriptData []byte
+
 var style template.CSS
 var script []template.JS
 
@@ -47,11 +51,17 @@ func init() {
 	minifier = minify.New()
 	minifier.AddFunc("text/css", css.Minify)
 	minifier.AddFunc("text/html", html.Minify)
+	minifier.AddFunc("text/js", js.Minify)
 	o, err := minifier.Bytes("text/css", styleData)
 	if err != nil {
 		panic(err)
 	}
 	style = template.CSS(o)
+	o, err = minifier.Bytes("text/js", scriptData)
+	if err != nil {
+		panic(err)
+	}
+	script = append(script, template.JS(o))
 }
 
 var serve = flag.Bool("s", true, "serves")

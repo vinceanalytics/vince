@@ -8,10 +8,10 @@
     <link rel="icon" {{.Icon}}>
     <style>{{.CSS}}</style>
 </head>
-{{range .JS}}
-<script>{{.}}</script>
-{{end}}
+
 <body>
+
+<div id="menubar"><a id="menutoggle" href="javascript:void 0" aria-label="Toggle the menu"><svg width="50" height="50" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="18" width="20" height="2" stroke-width="0"></rect><rect x="15" y="24" width="20" height="2" stroke-width="0"></rect><rect x="15" y="30" width="20" height="2" stroke-width="0"></rect></svg></a></div>
     <nav>
         <div id="shadow"></div>
         <div id="menu">
@@ -54,6 +54,10 @@
         <div>{{.}}</div>
         {{end}}
     </main>
+
+{{range .JS}}
+<script>{{.}}</script>
+{{end}}
 </body>
 
 </html>
