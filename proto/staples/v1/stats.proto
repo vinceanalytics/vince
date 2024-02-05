@@ -61,14 +61,7 @@ message Aggregate {
     repeated Filter filters = 5;
   }
 
-  message GetAggregateResponse {
-    repeated Result results = 1;
-
-    message Result {
-      Metric metric = 1;
-      double value = 2;
-    }
-  }
+  message GetAggregateResponse { repeated Value results = 1; }
 }
 
 message Timeseries {
@@ -89,11 +82,6 @@ message Timeseries {
   message Bucket {
     google.protobuf.Timestamp timestamp = 1;
     repeated Value values = 2;
-  }
-
-  message Value {
-    Metric metric = 1;
-    double value = 2;
   }
 }
 
@@ -125,11 +113,12 @@ message BreakDown {
       string key = 1;
       repeated Value values = 2;
     }
-    message Value {
-      Metric metric = 1;
-      double value = 2;
-    }
   }
+}
+
+message Value {
+  Metric metric = 1;
+  double value = 2;
 }
 
 enum Metric {

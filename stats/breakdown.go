@@ -55,7 +55,7 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_GetBreakDownRequest) (*v1.
 	for key, bitmap := range hashProp(prop) {
 		b.AppendValues(bitmap.ToArray(), nil)
 		idx := b.NewUint32Array()
-		var values []*v1.BreakDown_GetBreakDownResponse_Value
+		var values []*v1.Value
 		var visits *float64
 		var view *float64
 		for _, metric := range metrics {
@@ -158,7 +158,7 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_GetBreakDownRequest) (*v1.
 			case v1.Metric_events:
 				value = float64(idx.Len())
 			}
-			values = append(values, &v1.BreakDown_GetBreakDownResponse_Value{
+			values = append(values, &v1.Value{
 				Metric: metric,
 				Value:  value,
 			})

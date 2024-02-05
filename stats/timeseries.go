@@ -126,7 +126,7 @@ func TimeSeries(ctx context.Context, req *v1.Timeseries_GetTimeseriesRequest) (*
 				a := n.Column(mapping[v1.Filters_Event.String()])
 				value = float64(a.Len())
 			}
-			buck.Values = append(buck.Values, &v1.Timeseries_Value{
+			buck.Values = append(buck.Values, &v1.Value{
 				Metric: x,
 				Value:  value,
 			})

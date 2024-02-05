@@ -35,7 +35,7 @@ func Aggregate(ctx context.Context, req *v1.Aggregate_GetAggegateRequest) (*v1.A
 	for i := 0; i < int(r.NumCols()); i++ {
 		mapping[r.ColumnName(i)] = i
 	}
-	var result []*v1.Aggregate_GetAggregateResponse_Result
+	var result []*v1.Value
 	var visits *float64
 	var view *float64
 	for _, metric := range metrics {
@@ -106,7 +106,7 @@ func Aggregate(ctx context.Context, req *v1.Aggregate_GetAggegateRequest) (*v1.A
 			a := r.Column(mapping[v1.Filters_Event.String()])
 			value = float64(a.Len())
 		}
-		result = append(result, &v1.Aggregate_GetAggregateResponse_Result{
+		result = append(result, &v1.Value{
 			Metric: metric,
 			Value:  value,
 		})
