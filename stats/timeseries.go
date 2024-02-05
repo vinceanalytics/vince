@@ -32,7 +32,6 @@ func TimeSeries(ctx context.Context, req *v1.Timeseries_GetTimeseriesRequest) (*
 		}),
 	}
 	metrics := slices.Clone(req.Metrics)
-
 	slices.Sort(metrics)
 	metricsToProjection(filters, metrics)
 	from, to := PeriodToRange(time.Now, req.Period)
@@ -98,7 +97,12 @@ func TimeSeries(ctx context.Context, req *v1.Timeseries_GetTimeseriesRequest) (*
 			case v1.Metric_visit_duration:
 				a := n.Column(mapping[v1.Filters_Duration.String()]).(*array.Float64)
 				sum := float64(math.Float64.Sum(a))
-				value = sum
+				count := float64(a.Len())
+				var avg float64
+				if count != 0 {
+					avg = sum / count
+				}
+				value = avg
 			case v1.Metric_views_per_visit:
 				var vis float64
 				if visits != nil {
