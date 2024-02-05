@@ -23,8 +23,6 @@ archives:
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
     files:
-      - man/vince.1
-      - completions/vince/*
       - LICENSE
 checksum:
   name_template: "checksums.txt"
@@ -129,7 +127,7 @@ brews:
     name: vince
     folder: Formula
     homepage: https://vinceanalytics.com
-    description: The Cloud Native Web Analytics Platform
+    description: API first Cloud Native Web Analytics For Startups
     license: AGPL-3.0
     ids:
       - vince
@@ -137,16 +135,11 @@ brews:
       system "#{bin}/vince --version"
     install: |-
       bin.install "vince"
-      bash_completion.install "completions/vince/vince.bash" => "vince"
-      zsh_completion.install "completions/vince/vince.zsh" => "_vince"
-      fish_completion.install "completions/vince/vince.fish"
-      man1.install "man/vince.1"
 release:
   github:
     owner: vinceanalytics
     name: vince
   extra_files:
-    - glob: ./manifests/**/*.yaml
     - glob: ./install.sh
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
