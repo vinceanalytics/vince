@@ -9,13 +9,17 @@ import (
 	"io"
 	"io/fs"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Depado/bfchroma/v2"
+	"github.com/fsnotify/fsnotify"
+	"github.com/gorilla/websocket"
 	"github.com/russross/blackfriday/v2"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
@@ -28,7 +32,11 @@ var data string
 //go:embed style.css
 var styleData []byte
 
+//go:embed reload.js
+var reloadData []byte
+
 var style template.CSS
+var script []template.JS
 
 var page = template.Must(template.New("main").Parse(data))
 var minifier *minify.M
@@ -44,9 +52,107 @@ func init() {
 	style = template.CSS(o)
 }
 
+var serve = flag.Bool("s", true, "serves")
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:    4096,
+	WriteBufferSize:   4096,
+	EnableCompression: true,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+const (
+	// Time allowed to read the next pong message from the client.
+	pongWait = 60 * time.Second
+
+	// Send pings to client with this period. Must be less than pongWait.
+	pingPeriod = (pongWait * 9) / 10
+)
+
 func main() {
 	flag.Parse()
+
+	if *serve {
+		script = append(script, template.JS(reloadData))
+		reload := make(chan struct{})
+		var b bytes.Buffer
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer watcher.Close()
+		go func() {
+			for {
+				select {
+				case event, ok := <-watcher.Events:
+					if !ok {
+						return
+					}
+					log.Println("event:", event)
+					reload <- struct{}{}
+				case err, ok := <-watcher.Errors:
+					if !ok {
+						return
+					}
+					log.Println("error:", err)
+				}
+			}
+		}()
+		err = watcher.Add(flag.Arg(0))
+		if err != nil {
+			log.Fatal(err)
+		}
+		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println(r.URL.Path)
+			switch r.URL.Path {
+			case "/":
+				b.Reset()
+				err := Build(&b, flag.Arg(0))
+				if err != nil {
+					log.Println("Build:", err)
+				}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				w.WriteHeader(http.StatusOK)
+				w.Write(b.Bytes())
+				return
+			case "/reload":
+				conn, err := upgrader.Upgrade(w, r, nil)
+				if err != nil {
+					log.Println("Upgrade:", err)
+					return
+				}
+				pingTicker := time.NewTicker(pingPeriod)
+				defer func() {
+					pingTicker.Stop()
+					conn.Close()
+				}()
+				for {
+					select {
+					case <-reload:
+						w, err := conn.NextWriter(websocket.TextMessage)
+						if err != nil {
+							return
+						}
+						w.Write([]byte("reload"))
+					case <-pingTicker.C:
+						if err := conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+							return
+						}
+					}
+				}
+			}
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		})
+		err = http.ListenAndServe(":8081", h)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	var b bytes.Buffer
+
 	err := Build(&b, flag.Arg(0))
 	if err != nil {
 		log.Fatal(err)
@@ -70,6 +176,7 @@ func Build(w io.Writer, dir string) error {
 	var b bytes.Buffer
 	m := Model{
 		CSS: style,
+		JS:  script,
 	}
 	var positions []int
 	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
@@ -189,7 +296,7 @@ type Item struct {
 
 type Model struct {
 	CSS   template.CSS
-	JS    template.JS
+	JS    []template.JS
 	Menus []Menu
 	Pages []template.HTML
 }
