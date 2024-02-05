@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
 service Stats {
-  rpc GetRealtimeVisitors(Realtime.GetVisitorsRequest)
+  rpc RealtimeVisitors(Realtime.GetVisitorsRequest)
       returns (Realtime.GetVisitorsResponse) {
     option (google.api.http) = {
       post : "/api/v1/stats/realtime/visitors/{site_id}",
@@ -14,7 +14,7 @@ service Stats {
     };
   };
 
-  rpc GetAggregate(Aggregate.GetAggegateRequest)
+  rpc Aggregate(Aggregate.GetAggegateRequest)
       returns (Aggregate.GetAggregateResponse) {
     option (google.api.http) = {
       post : "/api/v1/stats/aggregate/{site_id}",
@@ -22,7 +22,7 @@ service Stats {
     };
   };
 
-  rpc GetTimeseries(Timeseries.GetTimeseriesRequest)
+  rpc Timeseries(Timeseries.GetTimeseriesRequest)
       returns (Timeseries.GetTimeseriesResponse) {
     option (google.api.http) = {
       post : "/api/v1/stats/timeseries/{site_id}",
@@ -30,7 +30,7 @@ service Stats {
     };
   };
 
-  rpc GetBreakDown(BreakDown.GetBreakDownRequest)
+  rpc BreakDown(BreakDown.GetBreakDownRequest)
       returns (BreakDown.GetBreakDownResponse) {
     option (google.api.http) = {
       post : "/api/v1/stats/breakdown/{site_id}",

@@ -19,20 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Stats_GetRealtimeVisitors_FullMethodName = "/v1.Stats/GetRealtimeVisitors"
-	Stats_GetAggregate_FullMethodName        = "/v1.Stats/GetAggregate"
-	Stats_GetTimeseries_FullMethodName       = "/v1.Stats/GetTimeseries"
-	Stats_GetBreakDown_FullMethodName        = "/v1.Stats/GetBreakDown"
+	Stats_RealtimeVisitors_FullMethodName = "/v1.Stats/RealtimeVisitors"
+	Stats_Aggregate_FullMethodName        = "/v1.Stats/Aggregate"
+	Stats_Timeseries_FullMethodName       = "/v1.Stats/Timeseries"
+	Stats_BreakDown_FullMethodName        = "/v1.Stats/BreakDown"
 )
 
 // StatsClient is the client API for Stats service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StatsClient interface {
-	GetRealtimeVisitors(ctx context.Context, in *Realtime_GetVisitorsRequest, opts ...grpc.CallOption) (*Realtime_GetVisitorsResponse, error)
-	GetAggregate(ctx context.Context, in *Aggregate_GetAggegateRequest, opts ...grpc.CallOption) (*Aggregate_GetAggregateResponse, error)
-	GetTimeseries(ctx context.Context, in *Timeseries_GetTimeseriesRequest, opts ...grpc.CallOption) (*Timeseries_GetTimeseriesResponse, error)
-	GetBreakDown(ctx context.Context, in *BreakDown_GetBreakDownRequest, opts ...grpc.CallOption) (*BreakDown_GetBreakDownResponse, error)
+	RealtimeVisitors(ctx context.Context, in *Realtime_GetVisitorsRequest, opts ...grpc.CallOption) (*Realtime_GetVisitorsResponse, error)
+	Aggregate(ctx context.Context, in *Aggregate_GetAggegateRequest, opts ...grpc.CallOption) (*Aggregate_GetAggregateResponse, error)
+	Timeseries(ctx context.Context, in *Timeseries_GetTimeseriesRequest, opts ...grpc.CallOption) (*Timeseries_GetTimeseriesResponse, error)
+	BreakDown(ctx context.Context, in *BreakDown_GetBreakDownRequest, opts ...grpc.CallOption) (*BreakDown_GetBreakDownResponse, error)
 }
 
 type statsClient struct {
@@ -43,36 +43,36 @@ func NewStatsClient(cc grpc.ClientConnInterface) StatsClient {
 	return &statsClient{cc}
 }
 
-func (c *statsClient) GetRealtimeVisitors(ctx context.Context, in *Realtime_GetVisitorsRequest, opts ...grpc.CallOption) (*Realtime_GetVisitorsResponse, error) {
+func (c *statsClient) RealtimeVisitors(ctx context.Context, in *Realtime_GetVisitorsRequest, opts ...grpc.CallOption) (*Realtime_GetVisitorsResponse, error) {
 	out := new(Realtime_GetVisitorsResponse)
-	err := c.cc.Invoke(ctx, Stats_GetRealtimeVisitors_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Stats_RealtimeVisitors_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *statsClient) GetAggregate(ctx context.Context, in *Aggregate_GetAggegateRequest, opts ...grpc.CallOption) (*Aggregate_GetAggregateResponse, error) {
+func (c *statsClient) Aggregate(ctx context.Context, in *Aggregate_GetAggegateRequest, opts ...grpc.CallOption) (*Aggregate_GetAggregateResponse, error) {
 	out := new(Aggregate_GetAggregateResponse)
-	err := c.cc.Invoke(ctx, Stats_GetAggregate_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Stats_Aggregate_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *statsClient) GetTimeseries(ctx context.Context, in *Timeseries_GetTimeseriesRequest, opts ...grpc.CallOption) (*Timeseries_GetTimeseriesResponse, error) {
+func (c *statsClient) Timeseries(ctx context.Context, in *Timeseries_GetTimeseriesRequest, opts ...grpc.CallOption) (*Timeseries_GetTimeseriesResponse, error) {
 	out := new(Timeseries_GetTimeseriesResponse)
-	err := c.cc.Invoke(ctx, Stats_GetTimeseries_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Stats_Timeseries_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *statsClient) GetBreakDown(ctx context.Context, in *BreakDown_GetBreakDownRequest, opts ...grpc.CallOption) (*BreakDown_GetBreakDownResponse, error) {
+func (c *statsClient) BreakDown(ctx context.Context, in *BreakDown_GetBreakDownRequest, opts ...grpc.CallOption) (*BreakDown_GetBreakDownResponse, error) {
 	out := new(BreakDown_GetBreakDownResponse)
-	err := c.cc.Invoke(ctx, Stats_GetBreakDown_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Stats_BreakDown_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,10 +83,10 @@ func (c *statsClient) GetBreakDown(ctx context.Context, in *BreakDown_GetBreakDo
 // All implementations must embed UnimplementedStatsServer
 // for forward compatibility
 type StatsServer interface {
-	GetRealtimeVisitors(context.Context, *Realtime_GetVisitorsRequest) (*Realtime_GetVisitorsResponse, error)
-	GetAggregate(context.Context, *Aggregate_GetAggegateRequest) (*Aggregate_GetAggregateResponse, error)
-	GetTimeseries(context.Context, *Timeseries_GetTimeseriesRequest) (*Timeseries_GetTimeseriesResponse, error)
-	GetBreakDown(context.Context, *BreakDown_GetBreakDownRequest) (*BreakDown_GetBreakDownResponse, error)
+	RealtimeVisitors(context.Context, *Realtime_GetVisitorsRequest) (*Realtime_GetVisitorsResponse, error)
+	Aggregate(context.Context, *Aggregate_GetAggegateRequest) (*Aggregate_GetAggregateResponse, error)
+	Timeseries(context.Context, *Timeseries_GetTimeseriesRequest) (*Timeseries_GetTimeseriesResponse, error)
+	BreakDown(context.Context, *BreakDown_GetBreakDownRequest) (*BreakDown_GetBreakDownResponse, error)
 	mustEmbedUnimplementedStatsServer()
 }
 
@@ -94,17 +94,17 @@ type StatsServer interface {
 type UnimplementedStatsServer struct {
 }
 
-func (UnimplementedStatsServer) GetRealtimeVisitors(context.Context, *Realtime_GetVisitorsRequest) (*Realtime_GetVisitorsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRealtimeVisitors not implemented")
+func (UnimplementedStatsServer) RealtimeVisitors(context.Context, *Realtime_GetVisitorsRequest) (*Realtime_GetVisitorsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RealtimeVisitors not implemented")
 }
-func (UnimplementedStatsServer) GetAggregate(context.Context, *Aggregate_GetAggegateRequest) (*Aggregate_GetAggregateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAggregate not implemented")
+func (UnimplementedStatsServer) Aggregate(context.Context, *Aggregate_GetAggegateRequest) (*Aggregate_GetAggregateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Aggregate not implemented")
 }
-func (UnimplementedStatsServer) GetTimeseries(context.Context, *Timeseries_GetTimeseriesRequest) (*Timeseries_GetTimeseriesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTimeseries not implemented")
+func (UnimplementedStatsServer) Timeseries(context.Context, *Timeseries_GetTimeseriesRequest) (*Timeseries_GetTimeseriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Timeseries not implemented")
 }
-func (UnimplementedStatsServer) GetBreakDown(context.Context, *BreakDown_GetBreakDownRequest) (*BreakDown_GetBreakDownResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetBreakDown not implemented")
+func (UnimplementedStatsServer) BreakDown(context.Context, *BreakDown_GetBreakDownRequest) (*BreakDown_GetBreakDownResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BreakDown not implemented")
 }
 func (UnimplementedStatsServer) mustEmbedUnimplementedStatsServer() {}
 
@@ -119,74 +119,74 @@ func RegisterStatsServer(s grpc.ServiceRegistrar, srv StatsServer) {
 	s.RegisterService(&Stats_ServiceDesc, srv)
 }
 
-func _Stats_GetRealtimeVisitors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Stats_RealtimeVisitors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Realtime_GetVisitorsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StatsServer).GetRealtimeVisitors(ctx, in)
+		return srv.(StatsServer).RealtimeVisitors(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Stats_GetRealtimeVisitors_FullMethodName,
+		FullMethod: Stats_RealtimeVisitors_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatsServer).GetRealtimeVisitors(ctx, req.(*Realtime_GetVisitorsRequest))
+		return srv.(StatsServer).RealtimeVisitors(ctx, req.(*Realtime_GetVisitorsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Stats_GetAggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Stats_Aggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Aggregate_GetAggegateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StatsServer).GetAggregate(ctx, in)
+		return srv.(StatsServer).Aggregate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Stats_GetAggregate_FullMethodName,
+		FullMethod: Stats_Aggregate_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatsServer).GetAggregate(ctx, req.(*Aggregate_GetAggegateRequest))
+		return srv.(StatsServer).Aggregate(ctx, req.(*Aggregate_GetAggegateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Stats_GetTimeseries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Stats_Timeseries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Timeseries_GetTimeseriesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StatsServer).GetTimeseries(ctx, in)
+		return srv.(StatsServer).Timeseries(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Stats_GetTimeseries_FullMethodName,
+		FullMethod: Stats_Timeseries_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatsServer).GetTimeseries(ctx, req.(*Timeseries_GetTimeseriesRequest))
+		return srv.(StatsServer).Timeseries(ctx, req.(*Timeseries_GetTimeseriesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Stats_GetBreakDown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Stats_BreakDown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BreakDown_GetBreakDownRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StatsServer).GetBreakDown(ctx, in)
+		return srv.(StatsServer).BreakDown(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Stats_GetBreakDown_FullMethodName,
+		FullMethod: Stats_BreakDown_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatsServer).GetBreakDown(ctx, req.(*BreakDown_GetBreakDownRequest))
+		return srv.(StatsServer).BreakDown(ctx, req.(*BreakDown_GetBreakDownRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -199,20 +199,20 @@ var Stats_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*StatsServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetRealtimeVisitors",
-			Handler:    _Stats_GetRealtimeVisitors_Handler,
+			MethodName: "RealtimeVisitors",
+			Handler:    _Stats_RealtimeVisitors_Handler,
 		},
 		{
-			MethodName: "GetAggregate",
-			Handler:    _Stats_GetAggregate_Handler,
+			MethodName: "Aggregate",
+			Handler:    _Stats_Aggregate_Handler,
 		},
 		{
-			MethodName: "GetTimeseries",
-			Handler:    _Stats_GetTimeseries_Handler,
+			MethodName: "Timeseries",
+			Handler:    _Stats_Timeseries_Handler,
 		},
 		{
-			MethodName: "GetBreakDown",
-			Handler:    _Stats_GetBreakDown_Handler,
+			MethodName: "BreakDown",
+			Handler:    _Stats_BreakDown_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

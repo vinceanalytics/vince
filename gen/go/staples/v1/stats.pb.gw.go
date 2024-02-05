@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_Stats_GetRealtimeVisitors_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Stats_RealtimeVisitors_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Realtime_GetVisitorsRequest
 	var metadata runtime.ServerMetadata
 
@@ -60,12 +60,12 @@ func request_Stats_GetRealtimeVisitors_0(ctx context.Context, marshaler runtime.
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
 
-	msg, err := client.GetRealtimeVisitors(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.RealtimeVisitors(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Stats_GetRealtimeVisitors_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_Stats_RealtimeVisitors_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Realtime_GetVisitorsRequest
 	var metadata runtime.ServerMetadata
 
@@ -94,12 +94,12 @@ func local_request_Stats_GetRealtimeVisitors_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
 
-	msg, err := server.GetRealtimeVisitors(ctx, &protoReq)
+	msg, err := server.RealtimeVisitors(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_Stats_GetAggregate_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Stats_Aggregate_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Aggregate_GetAggegateRequest
 	var metadata runtime.ServerMetadata
 
@@ -128,12 +128,12 @@ func request_Stats_GetAggregate_0(ctx context.Context, marshaler runtime.Marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
 
-	msg, err := client.GetAggregate(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.Aggregate(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Stats_GetAggregate_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_Stats_Aggregate_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Aggregate_GetAggegateRequest
 	var metadata runtime.ServerMetadata
 
@@ -162,12 +162,12 @@ func local_request_Stats_GetAggregate_0(ctx context.Context, marshaler runtime.M
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
 
-	msg, err := server.GetAggregate(ctx, &protoReq)
+	msg, err := server.Aggregate(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_Stats_GetTimeseries_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Stats_Timeseries_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Timeseries_GetTimeseriesRequest
 	var metadata runtime.ServerMetadata
 
@@ -196,12 +196,12 @@ func request_Stats_GetTimeseries_0(ctx context.Context, marshaler runtime.Marsha
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
 
-	msg, err := client.GetTimeseries(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.Timeseries(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Stats_GetTimeseries_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_Stats_Timeseries_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Timeseries_GetTimeseriesRequest
 	var metadata runtime.ServerMetadata
 
@@ -230,12 +230,12 @@ func local_request_Stats_GetTimeseries_0(ctx context.Context, marshaler runtime.
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
 
-	msg, err := server.GetTimeseries(ctx, &protoReq)
+	msg, err := server.Timeseries(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Stats_BreakDown_0(ctx context.Context, marshaler runtime.Marshaler, client StatsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq BreakDown_GetBreakDownRequest
 	var metadata runtime.ServerMetadata
 
@@ -264,12 +264,12 @@ func request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.Marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
 
-	msg, err := client.GetBreakDown(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.BreakDown(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_Stats_BreakDown_0(ctx context.Context, marshaler runtime.Marshaler, server StatsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq BreakDown_GetBreakDownRequest
 	var metadata runtime.ServerMetadata
 
@@ -298,7 +298,7 @@ func local_request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.M
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "site_id", err)
 	}
 
-	msg, err := server.GetBreakDown(ctx, &protoReq)
+	msg, err := server.BreakDown(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -309,18 +309,18 @@ func local_request_Stats_GetBreakDown_0(ctx context.Context, marshaler runtime.M
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterStatsHandlerFromEndpoint instead.
 func RegisterStatsHandlerServer(ctx context.Context, mux *runtime.ServeMux, server StatsServer) error {
 
-	mux.Handle("POST", pattern_Stats_GetRealtimeVisitors_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Stats_RealtimeVisitors_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/GetRealtimeVisitors", runtime.WithHTTPPathPattern("/api/v1/stats/realtime/visitors/{site_id}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/RealtimeVisitors", runtime.WithHTTPPathPattern("/api/v1/stats/realtime/visitors/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Stats_GetRealtimeVisitors_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Stats_RealtimeVisitors_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -328,22 +328,22 @@ func RegisterStatsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Stats_GetRealtimeVisitors_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Stats_RealtimeVisitors_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Stats_GetAggregate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Stats_Aggregate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/GetAggregate", runtime.WithHTTPPathPattern("/api/v1/stats/aggregate/{site_id}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/Aggregate", runtime.WithHTTPPathPattern("/api/v1/stats/aggregate/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Stats_GetAggregate_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Stats_Aggregate_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -351,22 +351,22 @@ func RegisterStatsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Stats_GetAggregate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Stats_Aggregate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Stats_GetTimeseries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Stats_Timeseries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/GetTimeseries", runtime.WithHTTPPathPattern("/api/v1/stats/timeseries/{site_id}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/Timeseries", runtime.WithHTTPPathPattern("/api/v1/stats/timeseries/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Stats_GetTimeseries_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Stats_Timeseries_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -374,22 +374,22 @@ func RegisterStatsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Stats_GetTimeseries_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Stats_Timeseries_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Stats_GetBreakDown_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Stats_BreakDown_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/GetBreakDown", runtime.WithHTTPPathPattern("/api/v1/stats/breakdown/{site_id}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/v1.Stats/BreakDown", runtime.WithHTTPPathPattern("/api/v1/stats/breakdown/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Stats_GetBreakDown_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Stats_BreakDown_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -397,7 +397,7 @@ func RegisterStatsHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Stats_GetBreakDown_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Stats_BreakDown_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -442,83 +442,83 @@ func RegisterStatsHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.
 // "StatsClient" to call the correct interceptors.
 func RegisterStatsHandlerClient(ctx context.Context, mux *runtime.ServeMux, client StatsClient) error {
 
-	mux.Handle("POST", pattern_Stats_GetRealtimeVisitors_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Stats_RealtimeVisitors_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/GetRealtimeVisitors", runtime.WithHTTPPathPattern("/api/v1/stats/realtime/visitors/{site_id}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/RealtimeVisitors", runtime.WithHTTPPathPattern("/api/v1/stats/realtime/visitors/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Stats_GetRealtimeVisitors_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Stats_RealtimeVisitors_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Stats_GetRealtimeVisitors_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Stats_RealtimeVisitors_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Stats_GetAggregate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Stats_Aggregate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/GetAggregate", runtime.WithHTTPPathPattern("/api/v1/stats/aggregate/{site_id}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/Aggregate", runtime.WithHTTPPathPattern("/api/v1/stats/aggregate/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Stats_GetAggregate_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Stats_Aggregate_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Stats_GetAggregate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Stats_Aggregate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Stats_GetTimeseries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Stats_Timeseries_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/GetTimeseries", runtime.WithHTTPPathPattern("/api/v1/stats/timeseries/{site_id}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/Timeseries", runtime.WithHTTPPathPattern("/api/v1/stats/timeseries/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Stats_GetTimeseries_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Stats_Timeseries_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Stats_GetTimeseries_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Stats_Timeseries_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Stats_GetBreakDown_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Stats_BreakDown_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/GetBreakDown", runtime.WithHTTPPathPattern("/api/v1/stats/breakdown/{site_id}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/v1.Stats/BreakDown", runtime.WithHTTPPathPattern("/api/v1/stats/breakdown/{site_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Stats_GetBreakDown_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Stats_BreakDown_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Stats_GetBreakDown_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Stats_BreakDown_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -526,21 +526,21 @@ func RegisterStatsHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Stats_GetRealtimeVisitors_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "stats", "realtime", "visitors", "site_id"}, ""))
+	pattern_Stats_RealtimeVisitors_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "stats", "realtime", "visitors", "site_id"}, ""))
 
-	pattern_Stats_GetAggregate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "aggregate", "site_id"}, ""))
+	pattern_Stats_Aggregate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "aggregate", "site_id"}, ""))
 
-	pattern_Stats_GetTimeseries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "timeseries", "site_id"}, ""))
+	pattern_Stats_Timeseries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "timeseries", "site_id"}, ""))
 
-	pattern_Stats_GetBreakDown_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "breakdown", "site_id"}, ""))
+	pattern_Stats_BreakDown_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "stats", "breakdown", "site_id"}, ""))
 )
 
 var (
-	forward_Stats_GetRealtimeVisitors_0 = runtime.ForwardResponseMessage
+	forward_Stats_RealtimeVisitors_0 = runtime.ForwardResponseMessage
 
-	forward_Stats_GetAggregate_0 = runtime.ForwardResponseMessage
+	forward_Stats_Aggregate_0 = runtime.ForwardResponseMessage
 
-	forward_Stats_GetTimeseries_0 = runtime.ForwardResponseMessage
+	forward_Stats_Timeseries_0 = runtime.ForwardResponseMessage
 
-	forward_Stats_GetBreakDown_0 = runtime.ForwardResponseMessage
+	forward_Stats_BreakDown_0 = runtime.ForwardResponseMessage
 )
