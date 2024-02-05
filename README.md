@@ -1,217 +1,45 @@
 
 <p align="center">
-    <img src="./assets/logo.svg" alt="Vince Logo" />
+    <img src="./logo.svg" alt="Vince Logo" />
+    <a href="https://vinceanalytics.com/">Website</a> |
+    <a href="https://vinceanalytics.com/#getting-started">Getting started</a> |
+    <a href="https://vinceanalytics.com/#api">API</a>
 </p>
 
 
-> **Warning**
-> This is still under early development its not in a usable state yet
+## What ?
 
-# vince
+`vice` is a modern server for collecting and analyzing website analytics. `vince` focuses on modern web application development by emphasizing easy of use for both deployment, maintenance and integration with existing infrastructure.
 
-API first Cloud Native Web Analytics For Startups Built on Apache Arrow and Apache Parquet.
+## Why ?
 
-> **note**
-> Vince does not support realtime queries. Events are processed daily at configured time of the day.
-> There is a possibility you will have to wait 24h to be able to get actionable insight from your site
-> when you configure it for the first time.
->
-> However , if you wish to trigger saving manually (This is not recommended ,
-> do this only when testing vince not in production) we provide `force_save`
-> procedure which you can call any time.
+All existing solutions are hard to self host and license is `AGPL`. Also they emphasis more on visual and a lot of corners are cut in deriving the numbers.
 
-# Features
+I need my web analytics analysis served raw and cold. So there is only storing and analysis nothing more. And the license is Apache 2.0 so self host as you please. 
 
-- :white_check_mark: SQL for querying stats (All MySQL compatible clients are supported)
-- :white_check_mark: Time on site tracking
-- :white_check_mark: Conversion tracking 
-- :white_check_mark: Multiple site management
-- :white_check_mark: Campaign Management 
-- :x: Report Generation
-- :white_check_mark: Goal Tracking 
-- :white_check_mark: Event Tracking 
-- :x: Cloud Native (seamless k8s integration)
-- :white_check_mark: API for sites management
-- :white_check_mark: No runtime dependency (Static binary with everything you need)
-
-## Usage
-
-Throughout this guide we will be using `http://localhost:8080` to refer to the url where you self hosted vince instance. We expect the url to change to the internet accessible url where you self hosted your vince instance.`example.com` is used to represent your website that you wish to track.
-
-<details markdown="1">
-<summary>Install</summary>
-
-vince provides a single binary `vince` that provides both the server and client
-functionality. For now only `Mac OS` and `Linux` are supported. 
-</details>
+- There is no UI . Use http api to query for stats.
+- Extremely fast and the api is composable, you can integrate the results anywhere `http` works.
 
 
-```bash
-curl -fsSL https://github.com/vinceanalytics/vince/releases/latest/download/install.sh | bash
-```
+## Features
 
-```bash
-brew install vinceanalytics/tap/vince
-```
+- **Extremely fast** relative to competitors. Uses apache `arrow` for fast vectorized in memory computation. It is designed from grounds up, and highly optimized for web analytics use case.
 
-```bash
-docker pull ghcr.io/vinceanalytics/vince
-```
+- **Zero Dependency**: Ships a single binary with everything in it. No runtime dependency.
 
-<details markdown="1">
-<summary>Initialize a project</summary>
+- **High events ingestion rate** : Non blocking ingestion, you can deploy for very popular sites without worrying.
 
-`vince init` sets up a directory for serving vince instance. This includes creating directories for databases and generating of configurations. You can later edit generated configuration file to reflect what you need.
+- **Fast query api** : Instant results for active and historical data.
 
-```bash
-NAME:
-   vince init - Initializes a vince project
+- **Easy to operate**: One line commandline flags with env variables is all you need.
 
-USAGE:
-   vince init [command [command options]] [arguments...]
+- **Works with any language and tooling**: No need for special sdk, a simple `http` `api` is exposed. Anything that can speak `http` can work with `vince`
 
-OPTIONS:
-   -i                Shows interactive prompt for username and password (default: false) || --no-i  Shows interactive prompt for username and password (default: false)
-   --username value  Name of the root user (default: "root") [$VINCE_ROOT_USER]
-   --password value  password of the root user (default: "vince") [$VINCE_ROOT_PASSWORD]
-   --help, -h        show help (default: false)
-```
+- **10X more data storage** : We use columnar storage with extensive compression schemes. Don't worry about running out of disk. Store and query large volume of data.
 
-Vince instances are password protected. Access to resources is provided via JWT tokens served using the builtin oauth2 server.
+- **Unlimited sites**: There is no limit on how many sites you can manage.
 
-</details>
-
-```bash
-VINCE_ROOT_PASSWORD=xxxxx vince init example
-```
-
-<details markdown="1">
-<summary>Start  server</summary>
-
-Vince binds to two ports, one for vince api and another for mysql api.
-
-```bash
-NAME:
-   vince serve - Serves web ui console and expose /api/events that collects web analytics
-
-USAGE:
-   vince serve [command [command options]] [arguments...]
-
-OPTIONS:
-   core
-
-   --db-path value        path to main database (default: "db") [$VINCE_DB_PATH]
-   --enable-profile       Expose /debug/pprof endpoint (default: false) [$VINCE_ENABLE_PROFILE]
-   --env value            Deployment environment (default: "dev") [$VINCE_ENV]
-   --listen value         http address to listen to (default: ":8080") [$VINCE_LISTEN]
-   --listen-mysql value   serve mysql clients on this address (default: ":3306") [$VINCE_MYSQL_LISTEN]
-   --log-level value      log level, values are (trace,debug,info,warn,error,fatal,panic) (default: "debug") [$VINCE_LOG_LEVEL]
-   --tls-cert-file value  path to tls certificate [$VINCE_TLS_CERT_FILE]
-   --tls-key-file value   path to tls key [$VINCE_TLS_KEY_FILE]
-
-```
-
-</details>
-
-```bash
-vince serve example
-```
-
-<details markdown="1">
-<summary>Login</summary>
-
-```bash
-VINCE_ROOT_PASSWORD=xxxxx vince login http://localhost:8080
-```
-
-</details>
-
-<details markdown="1">
-<summary>Connect with mysql</summary>
-
-```bash
-LIBMYSQL_ENABLE_CLEARTEXT_PLUGIN=y mysql --host 127.0.0.1 --port 3306 -uroot -p$VINCE_ACCESS_TOKEN
-mysql: [Warning] Using a password on the command line interface can be insecure.
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 2
-Server version: 5.7.9-Vitess Dolt
-
-Copyright (c) 2000, 2023, Oracle and/or its affiliates.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql> 
-```
-
-You can obtain `VINCE_ACCESS_TOKEN` via vince client
-
-```bash
-vince login --token
-```
-
-</details>
-
-<details markdown=1>
-<summary>Add site</summary>
-
-You can add a website to allow collection of web analytics using mysql api with
-the procedure `add_site` which accepts the domain name of the site as the first argument and optionally site description as a second argument.
-
-Site domain, is the part of the website url without `http://` or `http://` or
-`wwww`. Example domain for `https://www.vinceanalytics.com` is `vinceanalytics.com`
-
-There is no limit on the number of sites that can be added. Also you can setup and sent events for sites that have not been added (the events will just be dropped).
-
-Please see `Embedding js tracker` section on how to setup tracker script on your website to start collecting and send web analytics to your vince instance.
-</details>
-
-```shell
-mysql> call add_site('example.com');
-+--------+
-| status |
-+--------+
-| ok     |
-+--------+
-1 row in set (0.00 sec)
-```
+- **Privacy friendly**: No cookies and fully compliant with GDPR, CCPA and PECR.
 
 
-<details markdown="1">
-<summary>Embedding js tracker</summary>
-Vince instance hosts and serve the javascript tracker that you can embed in
-your website.
-
-Update `html` of your website to include the script in the `head` tag of your
-`html`
-</details>
-
-```html
-<script defer data-domain="example.com" src="http://localhost:8080/js/vince.js"></script>
-```
-
-
-<details markdown="1">
-<summary>Check if the site is configured</summary>
-
-Procedures `seen_first_event` shows if the vince is processing events from the
-site.
-
-- `0`: when not configured
-- `1`: when configured
-
-</details>
-
-```bash
-mysql> call seen_first_event('example.com');
-+------------------+
-| seen_first_event |
-+------------------+
-|                1 |
-+------------------+
-1 row in set (0.00 sec)
-```
-
+Check out the [getting started](https://vinceanalytics.com/#getting-started) instructions if you want to give `vince` a try.
