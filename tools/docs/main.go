@@ -92,11 +92,10 @@ func Build(w io.Writer, dir string) error {
 			return err
 		}
 		positions = append(positions, i)
-		name = strings.TrimSuffix(name, filepath.Ext(path))
-		name = strings.ReplaceAll(name, "-", " ")
 		x := Menu{
-			Text:  name,
-			Items: items,
+			ID:    items[0].ID,
+			Text:  items[0].Text,
+			Items: items[1:],
 		}
 		if len(items) > 0 {
 			x.ID = items[0].ID
@@ -142,35 +141,45 @@ func renderPage(w io.Writer, id func() int, text []byte) (o []Item) {
 	r := bfchroma.NewRenderer()
 	ast := m.Parse(text)
 	var inHeading bool
-	var level int
-	var count string
-
+	var lastNode *blackfriday.Node
 	ast.Walk(func(node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
 		if node.Type == blackfriday.Heading && !node.HeadingData.IsTitleblock {
 			inHeading = entering
 			if entering {
-				node.HeadingData.HeadingID = strconv.Itoa(id())
-				level = node.HeadingData.Level
-				count = node.HeadingID
+				lastNode = node
 			}
 			return blackfriday.GoToNext
 		}
 		if inHeading {
-			if level == 2 {
-				// only count top level
+			switch lastNode.HeadingData.Level {
+			case 1, 2:
+				lastNode.HeadingData.HeadingID = toLink(id, string(node.Literal))
 				o = append(o, Item{
-					ID:   count,
+					ID:   lastNode.HeadingData.HeadingID,
 					Text: string(node.Literal),
 				})
-				fmt.Println(level, count, string(node.Literal))
 			}
 		}
 		return blackfriday.GoToNext
 	})
+
 	ast.Walk(func(node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
 		return r.RenderNode(w, node, entering)
 	})
 	return
+}
+
+var seen = map[string]struct{}{}
+
+func toLink(id func() int, txt string) string {
+	txt = strings.Replace(txt, " ", "-", -1)
+	txt = strings.ToLower(txt)
+	_, ok := seen[txt]
+	if !ok {
+		seen[txt] = struct{}{}
+		return txt
+	}
+	return fmt.Sprintf("%d-%s", id(), txt)
 }
 
 type Item struct {
