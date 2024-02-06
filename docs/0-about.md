@@ -1,6 +1,4 @@
-# About vince
-
-## What is vince ?
+# What is vince ?
 Vince is a modern server for collecting and analyzing website analytics. `Vince` focuses on modern web application development by emphasizing easy of use for both deployment, maintenance and integration with existing infrastructure.
 
 It ships with a standalone binary with zero dependency called `vince`
