@@ -224,7 +224,8 @@ func ScanTimestamp(r arrow.Record, timestampColumn int, start, end int64) *roari
 
 func (lsm *Tree[T]) Start(ctx context.Context) {
 	interval := 10 * time.Minute
-	lsm.log.Info("Start compaction loop", "interval", interval.String())
+	lsm.log.Info("Start compaction loop", "interval", interval.String(),
+		"compactSize", units.BytesSize(float64(lsm.opts.compactSize)))
 	tick := time.NewTicker(interval)
 	defer tick.Stop()
 	for {

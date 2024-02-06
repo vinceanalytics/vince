@@ -171,9 +171,14 @@ func app() *cli.Command {
 				return err
 			}
 			idx := staples.NewIndex()
-			sess := session.New(alloc, "staples", store, idx, pidx, lsm.WithTTL(
-				base.RetentionPeriod.AsDuration(),
-			))
+			sess := session.New(alloc, "staples", store, idx, pidx,
+				lsm.WithTTL(
+					base.RetentionPeriod.AsDuration(),
+				),
+				lsm.WithCompactSize(
+					uint64(base.GranuleSize),
+				),
+			)
 			ctx = session.With(ctx, sess)
 			log.Info("Setup geo ip")
 			gip := geo.Open(base.GeoipDbPath)
