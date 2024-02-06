@@ -95,8 +95,27 @@ func app() *cli.Command {
 				Value:   30 * 24 * time.Hour,
 				Sources: cli.EnvVars("VINCE_RETENTION_PERIOD"),
 			},
+			&cli.StringFlag{
+				Name:    "log-level",
+				Value:   "INFO",
+				Sources: cli.EnvVars("VINCE_LOG_LEVEL"),
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
+			var level slog.Level
+			level.UnmarshalText([]byte(c.String("log-level")))
+			lvl := &slog.LevelVar{}
+			lvl.Set(level)
+			slog.SetDefault(
+				slog.New(
+					slog.NewJSONHandler(
+						os.Stdout,
+						&slog.HandlerOptions{
+							Level: lvl,
+						},
+					),
+				),
+			)
 			base := &v1.Config{
 				Data:            c.String("data"),
 				Listen:          c.String("listen"),

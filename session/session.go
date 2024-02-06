@@ -66,6 +66,7 @@ func (s *Session) Queue(ctx context.Context, req *v1.Event) {
 	} else {
 		s.cache.SetWithTTL(e.ID, e, 1, DefaultSession)
 	}
+	s.log.Debug("Buffer event")
 	s.mu.Lock()
 	s.build.Append(e)
 	s.mu.Unlock()
