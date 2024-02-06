@@ -95,7 +95,7 @@ func (s *Session) Start(ctx context.Context) {
 }
 
 func (s *Session) doFlush(ctx context.Context) {
-	s.log.Info("Starting session flushing loop", slog.Duration("interval", DefaultFlushInterval))
+	s.log.Info("Starting session flushing loop", "interval", DefaultFlushInterval.String())
 	tk := time.NewTicker(DefaultFlushInterval)
 	defer tk.Stop()
 
