@@ -17,6 +17,7 @@ html:not([data-theme=dark]) {
     --td: #ddd;
     --tr: #f7f7f7;
     --warn-info: #222;
+    --border: #FFCF00;
 }
 
 /* Theme: dark (JS triggered) */
@@ -495,6 +496,23 @@ body[data-os2=windows] pre.windows2 {
 .repl-in+.repl-in,
 .repl-out+.repl-in {
     margin-top: 20px;
+}
+
+blockquote {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 40px;
+    margin-inline-end: 40px;
+    padding: 0 1em;
+    color: var(--fg);
+    border-left: .25em solid var(--border);
+}
+
+.markdown-body blockquote {
+    padding: 0 1em;
+    color: var(--fgColor-muted, var(--color-fg-muted));
+    border-left: .25em solid var(--borderColor-default, var(--color-border-default));
 }
 
 /* ---------- Switch ---------- */
