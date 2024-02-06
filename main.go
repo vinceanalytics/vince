@@ -69,7 +69,7 @@ func app() *cli.Command {
 				Sources: cli.EnvVars("VINCE_RATE_LIMIT"),
 			},
 			&cli.IntFlag{
-				Name:    "granule-size",
+				Name:    "granuleSize",
 				Usage:   "Maximum size of block to persist",
 				Value:   256 << 20, //256 MB
 				Sources: cli.EnvVars("VINCE_GRANULE_SIZE"),
