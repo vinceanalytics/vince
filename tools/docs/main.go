@@ -197,6 +197,7 @@ func Build(w io.Writer, dir string) error {
 		Icon: Icon,
 	}
 	var positions []int
+	seen := make(map[string]struct{})
 	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
@@ -209,7 +210,7 @@ func Build(w io.Writer, dir string) error {
 			return err
 		}
 		b.Reset()
-		items := renderPage(&b, id, data)
+		items := renderPage(&b, id, seen, data)
 		name := filepath.Base(path)
 		order, name, _ := strings.Cut(name, "-")
 		i, err := strconv.Atoi(order)
@@ -258,7 +259,7 @@ func (m *ms) Swap(i, j int) {
 	m.m.Pages[i], m.m.Pages[j] = m.m.Pages[j], m.m.Pages[i]
 }
 
-func renderPage(w io.Writer, id func() int, text []byte) (o []Item) {
+func renderPage(w io.Writer, id func() int, seen map[string]struct{}, text []byte) (o []Item) {
 	m := blackfriday.New(
 		blackfriday.WithExtensions(blackfriday.CommonExtensions),
 	)
@@ -284,7 +285,7 @@ func renderPage(w io.Writer, id func() int, text []byte) (o []Item) {
 		if inHeading {
 			switch lastNode.HeadingData.Level {
 			case 1, 2:
-				lastNode.HeadingData.HeadingID = toLink(id, string(node.Literal))
+				lastNode.HeadingData.HeadingID = toLink(id, seen, string(node.Literal))
 				o = append(o, Item{
 					ID:   lastNode.HeadingData.HeadingID,
 					Text: string(node.Literal),
@@ -300,9 +301,7 @@ func renderPage(w io.Writer, id func() int, text []byte) (o []Item) {
 	return
 }
 
-var seen = map[string]struct{}{}
-
-func toLink(id func() int, txt string) string {
+func toLink(id func() int, seen map[string]struct{}, txt string) string {
 	txt = strings.Replace(txt, " ", "-", -1)
 	txt = strings.ToLower(txt)
 	_, ok := seen[txt]
