@@ -166,10 +166,14 @@ type Merger struct {
 	merge func(arrow.Record)
 }
 
-func (m *Merger) Merge(a arrow.Record) {
+func (m *Merger) Merge(records ...arrow.Record) arrow.Record {
 	m.mu.Lock()
-	m.merge(a)
-	m.mu.Unlock()
+	defer m.mu.Unlock()
+
+	for _, record := range records {
+		m.merge(record)
+	}
+	return m.b.NewRecord()
 }
 
 func (m *Merger) NewRecord() arrow.Record {
