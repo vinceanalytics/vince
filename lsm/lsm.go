@@ -15,6 +15,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/compute"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/apache/arrow/go/v15/arrow/util"
+	"github.com/docker/go-units"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/db"
 	"github.com/vinceanalytics/vince/filters"
@@ -133,6 +134,7 @@ func (lsm *Tree[T]) Add(r arrow.Record) error {
 	part := NewPart(r, idx)
 	lsm.size.Add(part.Size)
 	lsm.tree.Prepend(part)
+	lsm.log.Debug("Added new part", "size", units.BytesSize(float64(part.Size)))
 	if lsm.size.Load() >= lsm.opts.compactSize {
 		lsm.compact()
 	}
