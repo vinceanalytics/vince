@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"sync"
 	"unicode"
 
 	"github.com/apache/arrow/go/v15/arrow"
@@ -161,24 +160,14 @@ func write(b array.Builder) func(reflect.Value) {
 }
 
 type Merger struct {
-	mu    sync.Mutex
 	b     *array.RecordBuilder
 	merge func(arrow.Record)
 }
 
 func (m *Merger) Merge(records ...arrow.Record) arrow.Record {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	for _, record := range records {
 		m.merge(record)
 	}
-	return m.b.NewRecord()
-}
-
-func (m *Merger) NewRecord() arrow.Record {
-	m.mu.Lock()
-	defer m.mu.Unlock()
 	return m.b.NewRecord()
 }
 

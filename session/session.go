@@ -91,6 +91,7 @@ func (s *Session) Flush() {
 }
 
 func (s *Session) Start(ctx context.Context) {
+	go s.tree.Start(ctx)
 	go s.doFlush(ctx)
 }
 

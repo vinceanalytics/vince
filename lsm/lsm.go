@@ -34,6 +34,7 @@ type Part struct {
 }
 
 func NewPart(r arrow.Record, idx index.Full) *Part {
+	r.Retain()
 	lo, hi := db.Timestamps(r)
 	return &Part{
 		ID:     ulid.Make(),
@@ -60,6 +61,9 @@ type Tree[T any] struct {
 	resource string
 	mapping  map[string]int
 	schema   *arrow.Schema
+
+	nodes   []*Node
+	records []arrow.Record
 }
 
 type Options struct {
@@ -114,6 +118,8 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 		opts:     o,
 		mapping:  mapping,
 		schema:   schema,
+		nodes:    make([]*Node, 0, 64),
+		records:  make([]arrow.Record, 0, 64),
 		log: slog.Default().With(
 			slog.String("component", "lsm-tree"),
 			slog.String("resource", resource),
@@ -135,9 +141,6 @@ func (lsm *Tree[T]) Add(r arrow.Record) error {
 	lsm.size.Add(part.Size)
 	lsm.tree.Prepend(part)
 	lsm.log.Debug("Added new part", "size", units.BytesSize(float64(part.Size)))
-	if lsm.size.Load() >= lsm.opts.compactSize {
-		lsm.compact()
-	}
 	return nil
 }
 
@@ -219,34 +222,73 @@ func ScanTimestamp(r arrow.Record, timestampColumn int, start, end int64) *roari
 	return b
 }
 
-func (lsm *Tree[T]) compact() {
-	var ls []*Node
+func (lsm *Tree[T]) Start(ctx context.Context) {
+	interval := 10 * time.Minute
+	lsm.log.Info("Start compaction loop", "interval", interval.String())
+	tick := time.NewTicker(interval)
+	defer tick.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-tick.C:
+			lsm.Compact()
+		}
+	}
+
+}
+
+func (lsm *Tree[T]) Compact() {
+	lsm.log.Debug("Start compaction")
+	start := time.Now()
+	defer func() {
+		for _, r := range lsm.nodes {
+			r.part.Record.Release()
+		}
+		clear(lsm.nodes)
+		clear(lsm.records)
+		lsm.nodes = lsm.nodes[:0]
+		lsm.records = lsm.records[:0]
+	}()
+
+	var oldSizes uint64
 	lsm.tree.Iterate(func(n *Node) bool {
 		if n.part == nil {
 			return true
 		}
-		ls = append(ls, n)
+		lsm.nodes = append(lsm.nodes, n)
+		lsm.records = append(lsm.records, n.part.Record)
+		oldSizes += n.part.Size
 		return true
 	})
-	size := lsm.merge(ls)
-	node := lsm.findNode(ls[0])
+	if oldSizes == 0 {
+		lsm.log.Debug("Skipping compaction, there is nothing in lsm tree")
+		return
+	}
+	lsm.log.Debug("Compacting", "nodes", len(lsm.nodes), "size", oldSizes)
+	r := lsm.merger.Merge(lsm.records...)
+	defer r.Release()
+	node := lsm.findNode(lsm.nodes[0])
 	x := &Node{}
-	for !node.next.CompareAndSwap(ls[0], x) {
-		node = lsm.findNode(ls[0])
+	for !node.next.CompareAndSwap(lsm.nodes[0], x) {
+		node = lsm.findNode(lsm.nodes[0])
 	}
-	lsm.size.Add(-size)
-	for _, n := range ls {
-		n.part.Record.Release()
+	lsm.size.Add(-oldSizes)
+	if oldSizes >= lsm.opts.compactSize {
+		// Store in permanent storage
+		lsm.log.Debug("Moving data to permanent storage")
+		lsm.persist(r)
+		return
 	}
+	err := lsm.Add(r)
+	if err != nil {
+		lsm.log.Error("Failed adding compacted record to lsm", "err", err)
+		return
+	}
+	lsm.log.Debug("Completed compaction", "elapsed", time.Since(start).String())
 }
 
-func (lsm *Tree[T]) merge(ls []*Node) (n uint64) {
-	for i := range ls {
-		lsm.merger.Merge(ls[i].part.Record)
-		n += ls[i].part.Size
-	}
-	r := lsm.merger.NewRecord()
-	defer r.Release()
+func (lsm *Tree[T]) persist(r arrow.Record) {
 	idx, err := lsm.index.Index(r)
 	if err != nil {
 		lsm.log.Error("Failed building index for record", "err", err)
@@ -259,7 +301,6 @@ func (lsm *Tree[T]) merge(ls []*Node) (n uint64) {
 	}
 	lsm.log.Info("Saved indexed record to permanent storage",
 		slog.String("id", result.Id),
-		slog.Uint64("before_merge_size", n),
 		slog.Uint64("after_merge_size", result.Size),
 		slog.Time("min_ts", time.Unix(0, int64(result.Min))),
 		slog.Time("max_ts", time.Unix(0, int64(result.Max))),
