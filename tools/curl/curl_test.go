@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -33,11 +32,4 @@ func check(t *testing.T, write bool, file string, path, method string, headers h
 	want, err := os.ReadFile(file)
 	require.NoError(t, err)
 	require.Equal(t, string(want), b.String())
-}
-
-func TestConfig(t *testing.T) {
-	data, _ := m.Marshal(&v1.Config{
-		Data: "path/to/storage",
-	})
-	os.WriteFile("testdata/config.json", data, 0600)
 }

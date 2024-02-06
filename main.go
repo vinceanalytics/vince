@@ -63,7 +63,7 @@ func app() *cli.Command {
 				Sources: cli.EnvVars("VINCE_LISTEN"),
 			},
 			&cli.FloatFlag{
-				Name:    "rate-limit",
+				Name:    "rateLimit",
 				Usage:   "Rate limit requests",
 				Value:   math.MaxFloat64,
 				Sources: cli.EnvVars("VINCE_RATE_LIMIT"),
@@ -75,7 +75,7 @@ func app() *cli.Command {
 				Sources: cli.EnvVars("VINCE_GRANULE_SIZE"),
 			},
 			&cli.StringFlag{
-				Name:    "geoip-db",
+				Name:    "geoipDbPath",
 				Usage:   "Path to geo ip database file",
 				Sources: cli.EnvVars("VINCE_GEOIP_DB"),
 			},
@@ -96,14 +96,14 @@ func app() *cli.Command {
 				Sources: cli.EnvVars("VINCE_RETENTION_PERIOD"),
 			},
 			&cli.StringFlag{
-				Name:    "log-level",
+				Name:    "logLevel",
 				Value:   "INFO",
 				Sources: cli.EnvVars("VINCE_LOG_LEVEL"),
 			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			var level slog.Level
-			level.UnmarshalText([]byte(c.String("log-level")))
+			level.UnmarshalText([]byte(c.String("logLevel")))
 			lvl := &slog.LevelVar{}
 			lvl.Set(level)
 			slog.SetDefault(
@@ -119,9 +119,9 @@ func app() *cli.Command {
 			base := &v1.Config{
 				Data:            c.String("data"),
 				Listen:          c.String("listen"),
-				RateLimit:       c.Float("rate-limit"),
-				GranuleSize:     c.Int("granule-size"),
-				GeoipDbPath:     c.String("geoip-db"),
+				RateLimit:       c.Float("rateLimit"),
+				GranuleSize:     c.Int("granuleSize"),
+				GeoipDbPath:     c.String("geoipDbPath"),
 				Domains:         c.StringSlice("domains"),
 				RetentionPeriod: durationpb.New(c.Duration("retention-period")),
 			}
