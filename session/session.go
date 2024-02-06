@@ -20,7 +20,7 @@ import (
 const (
 	DefaultSession = 15 * time.Minute
 	// To make sure we always have fresh data for current visitors
-	DefaultFlushInterval = 5 * time.Minute
+	DefaultFlushInterval = time.Minute
 )
 
 type Session struct {
@@ -66,7 +66,6 @@ func (s *Session) Queue(ctx context.Context, req *v1.Event) {
 	} else {
 		s.cache.SetWithTTL(e.ID, e, 1, DefaultSession)
 	}
-	s.log.Debug("Buffer event")
 	s.mu.Lock()
 	s.build.Append(e)
 	s.mu.Unlock()
@@ -84,7 +83,7 @@ func (s *Session) Flush() {
 		r.Release()
 		return
 	}
-	s.log.Debug("Flushing sessions", "numROws", r.NumRows())
+	s.log.Debug("Flushing sessions", "rows", r.NumRows())
 	err := s.tree.Add(r)
 	if err != nil {
 		logger.Fail("Failed adding record to lsm", "err", err)
