@@ -60,13 +60,13 @@ func CMD() *cli.Command {
 			vm := goja.New()
 			vm.Set("createSession", program.NewSession)
 			var data []byte
-			if a := c.Args().First(); a != "" {
-				data, err = os.ReadFile(a)
-				if err != nil {
-					return fmt.Errorf("failed reading js file %q %v", a, err)
-				}
-			} else {
-				data, err = io.ReadAll(os.Stdin)
+			a := c.Args().First()
+			if a == "" {
+				return nil
+			}
+			data, err = os.ReadFile(a)
+			if err != nil {
+				return fmt.Errorf("failed reading js file %q %v", a, err)
 			}
 			_, err = vm.RunString(string(data))
 			return err
@@ -125,6 +125,7 @@ func (s *Session) send(name, path string, dump bool) error {
 		Url: s.Website + path,
 		D:   s.Domain,
 		Ua:  s.Ua,
+		Ip:  "127.0.0.1",
 		R:   s.Referrer,
 	}
 	data, _ := protojson.Marshal(e)
