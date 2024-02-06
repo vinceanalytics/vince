@@ -68,7 +68,7 @@ func generate(dir string) error {
 		for _, x := range v {
 			m[strings.Replace(x, "-", "_", -1)] = true
 		}
-		file := strings.Join(append([]string{"staples"}, v...), ".") + ".js"
+		file := strings.Join(append([]string{"vince"}, v...), ".") + ".js"
 		b.Reset()
 		err := Render(&b, m)
 		if err != nil {
@@ -84,5 +84,5 @@ func generate(dir string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(dir, "staples.js"), min(), 0600)
+	return os.WriteFile(filepath.Join(dir, "vince.js"), min(), 0600)
 }
