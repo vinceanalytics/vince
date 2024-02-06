@@ -20,6 +20,7 @@ import (
 	"github.com/vinceanalytics/vince/geo"
 	"github.com/vinceanalytics/vince/guard"
 	"github.com/vinceanalytics/vince/index/primary"
+	"github.com/vinceanalytics/vince/load"
 	"github.com/vinceanalytics/vince/logger"
 	"github.com/vinceanalytics/vince/lsm"
 	"github.com/vinceanalytics/vince/session"
@@ -47,6 +48,7 @@ func app() *cli.Command {
 		Authors: []any{
 			"Geofrey Ernest",
 		},
+		Commands: []*cli.Command{load.CMD()},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "data",

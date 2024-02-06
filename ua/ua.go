@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"log/slog"
+	"math/rand"
 	"sync"
 
 	"github.com/apache/arrow/go/v15/arrow"
@@ -138,4 +139,26 @@ func Get(agent string) *Model {
 		return r
 	}
 	return &Model{}
+}
+
+func Random(count int) (o []string) {
+	top := fst.Len() - 1
+	from := rand.Intn(top)
+	if from+count > top {
+		from -= count
+	}
+	o = make([]string, 0, count)
+	it, err := fst.Iterator(nil, nil)
+	end := from + count
+	var n int
+	for err == nil && end > 0 {
+		end--
+		key, _ := it.Current()
+		if n > from {
+			o = append(o, string(key))
+		}
+		err = it.Next()
+		n++
+	}
+	return
 }
