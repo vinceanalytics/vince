@@ -64,7 +64,7 @@ func init() {
 	script = append(script, template.JS(o))
 }
 
-var serve = flag.Bool("s", true, "serves")
+var serve = flag.Bool("s", false, "serves")
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:    4096,
