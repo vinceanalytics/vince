@@ -75,48 +75,48 @@ changelog:
       order: 400
     - title: "Other work"
       order: 9999
-# dockers:
-#   - id: vince-amd64
-#     ids:
-#       - vince
-#     image_templates:
-#       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
-#     goos: linux
-#     goarch: amd64
-#     dockerfile: "vince.Dockerfile"
-#     build_flag_templates:
-#       - "--pull"
-#       - "--label=org.opencontainers.image.created={{.Date}}"
-#       - "--label=org.opencontainers.image.title={{.ProjectName}}"
-#       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-#       - "--label=org.opencontainers.image.version={{.Tag}}"
-#       - "--platform=linux/amd64"
-#   - id: vince-arm64
-#     ids:
-#       - vince
-#     image_templates:
-#       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
-#     goos: linux
-#     goarch: arm64
-#     dockerfile: "vince.Dockerfile"
-#     build_flag_templates:
-#       - "--pull"
-#       - "--label=org.opencontainers.image.created={{.Date}}"
-#       - "--label=org.opencontainers.image.title={{.ProjectName}}"
-#       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-#       - "--label=org.opencontainers.image.version={{.Tag}}"
-#       - "--platform=linux/arm64"
-# docker_manifests:
-#   - id: vince
-#     name_template: "ghcr.io/vinceanalytics/vince:{{.Tag}}"
-#     image_templates:
-#       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
-#       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
-#   - id: vince-latest
-#     name_template: "ghcr.io/vinceanalytics/vince:latest"
-#     image_templates:
-#       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
-#       - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
+dockers:
+  - id: vince-amd64
+    ids:
+      - vince
+    image_templates:
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
+    goos: linux
+    goarch: amd64
+    dockerfile: "vince.Dockerfile"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
+      - "--platform=linux/amd64"
+  - id: vince-arm64
+    ids:
+      - vince
+    image_templates:
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
+    goos: linux
+    goarch: arm64
+    dockerfile: "vince.Dockerfile"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
+      - "--platform=linux/arm64"
+docker_manifests:
+  - id: vince
+    name_template: "ghcr.io/vinceanalytics/vince:{{.Tag}}"
+    image_templates:
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
+  - id: vince-latest
+    name_template: "ghcr.io/vinceanalytics/vince:latest"
+    image_templates:
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
 brews:
   - tap:
       owner: vinceanalytics
@@ -143,9 +143,8 @@ nfpms:
       API first web analytics platform
     maintainer: Geofrey Ernest<geofreyernest@live.com>
     license: Apache 2.0
-    vendor: VinceAnalytics
+    vendor: Geofrey Ernest
     bindir: /usr/bin
-    section: utils
     contents:
       - src: ./deploy/deb/etc
         dst: /etc
