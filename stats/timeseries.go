@@ -1,7 +1,7 @@
 package stats
 
 import (
-	"context"
+	"net/http"
 	"slices"
 	"time"
 
@@ -12,18 +12,22 @@ import (
 	"github.com/vinceanalytics/vince/filters"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/request"
 	"github.com/vinceanalytics/vince/session"
 	"github.com/vinceanalytics/vince/timeutil"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func TimeSeries(ctx context.Context, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error) {
-	log := logger.Get(ctx)
+func TimeSeries(w http.ResponseWriter, r *http.Request) {
+	var req v1.Timeseries_Request
+	if !request.Read(w, r, &req) {
+		return
+	}
+	ctx := r.Context()
 	// make sure we have valid interval
 	if !ValidByPeriod(req.Period, req.Interval) {
-		return nil, status.Error(codes.InvalidArgument, "Interval out of range")
+		request.Error(ctx, w, http.StatusBadRequest, "Interval out of range")
+		return
 	}
 	filters := &v1.Filters{
 		List: append(req.Filters, &v1.Filter{
@@ -36,22 +40,23 @@ func TimeSeries(ctx context.Context, req *v1.Timeseries_Request) (*v1.Timeseries
 	slices.Sort(metrics)
 	metricsToProjection(filters, metrics)
 	from, to := PeriodToRange(time.Now, req.Period)
-	r, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
+	scanRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
-		log.Error("Failed scanning", "err", err)
-		return nil, InternalError
+		logger.Get(ctx).Error("Failed scanning", "err", err)
+		request.Internal(ctx, w)
+		return
 	}
 
 	mapping := map[string]int{}
-	for i := 0; i < int(r.NumCols()); i++ {
-		mapping[r.ColumnName(i)] = i
+	for i := 0; i < int(scanRecord.NumCols()); i++ {
+		mapping[scanRecord.ColumnName(i)] = i
 	}
 	tsKey := mapping[v1.Filters_Timestamp.String()]
-	ts := r.Column(tsKey).(*array.Int64).Int64Values()
+	ts := scanRecord.Column(tsKey).(*array.Int64).Int64Values()
 	var buckets []*v1.Timeseries_Bucket
 
 	err = timeutil.TimeBuckets(req.Interval, ts, func(bucket int64, start, end int) error {
-		n := r.NewSlice(int64(start), int64(end))
+		n := scanRecord.NewSlice(int64(start), int64(end))
 		defer n.Release()
 		buck := &v1.Timeseries_Bucket{
 			Timestamp: timestamppb.New(
@@ -136,10 +141,11 @@ func TimeSeries(ctx context.Context, req *v1.Timeseries_Request) (*v1.Timeseries
 		return nil
 	})
 	if err != nil {
-		log.Error("Failed processing buckets", "err", err)
-		return nil, InternalError
+		logger.Get(ctx).Error("Failed processing buckets", "err", err)
+		request.Internal(ctx, w)
+		return
 	}
-	return &v1.Timeseries_Response{Results: buckets}, nil
+	request.Write(ctx, w, &v1.Timeseries_Response{Results: buckets})
 }
 
 const viewStr = "pageview"

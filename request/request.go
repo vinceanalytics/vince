@@ -18,7 +18,17 @@ const (
 	maxBodySize = 1 << 20
 )
 
-func Read(w http.ResponseWriter, r *http.Request, o proto.Message, valid *protovalidate.Validator) bool {
+type validatorKey struct{}
+
+func With(ctx context.Context, v *protovalidate.Validator) context.Context {
+	return context.WithValue(ctx, validatorKey{}, v)
+}
+
+func Get(ctx context.Context) *protovalidate.Validator {
+	return ctx.Value(validatorKey{}).(*protovalidate.Validator)
+}
+
+func Read(w http.ResponseWriter, r *http.Request, o proto.Message) bool {
 	ctx := r.Context()
 	if r.ContentLength == 0 || r.ContentLength > maxBodySize {
 		logger.Get(ctx).Error("Invalid content length", "contentLength", r.ContentLength)
@@ -37,7 +47,7 @@ func Read(w http.ResponseWriter, r *http.Request, o proto.Message, valid *protov
 		Error(ctx, w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return false
 	}
-	if err := valid.Validate(o); err != nil {
+	if err := Get(ctx).Validate(o); err != nil {
 		logger.Get(ctx).Error("Failed validating request body", "err", err)
 		Error(ctx, w, http.StatusBadRequest, err.Error())
 		return false
@@ -65,6 +75,10 @@ func Error(ctx context.Context, w http.ResponseWriter, code int, reason string) 
 	if err != nil {
 		logger.Get(ctx).Error("S", "err", err)
 	}
+}
+
+func Internal(ctx context.Context, w http.ResponseWriter) {
+	Error(ctx, w, http.StatusInternalServerError, "Something went wrong")
 }
 
 type errResult struct {

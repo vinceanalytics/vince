@@ -1,7 +1,7 @@
 package stats
 
 import (
-	"context"
+	"net/http"
 	"slices"
 	"time"
 
@@ -10,10 +10,16 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/math"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/request"
 	"github.com/vinceanalytics/vince/session"
 )
 
-func Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error) {
+func Aggregate(w http.ResponseWriter, r *http.Request) {
+	var req v1.Aggregate_Request
+	if !request.Read(w, r, &req) {
+		return
+	}
+	ctx := r.Context()
 	filters := &v1.Filters{
 		List: append(req.Filters, &v1.Filter{
 			Property: v1.Property_domain,
@@ -25,15 +31,16 @@ func Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Re
 	slices.Sort(metrics)
 	metricsToProjection(filters, metrics)
 	from, to := PeriodToRange(time.Now, req.Period)
-	r, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
+	resultRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
-		return nil, InternalError
+		request.Internal(ctx, w)
+		return
 	}
-	defer r.Release()
+	defer resultRecord.Release()
 	mapping := map[string]int{}
-	for i := 0; i < int(r.NumCols()); i++ {
-		mapping[r.ColumnName(i)] = i
+	for i := 0; i < int(resultRecord.NumCols()); i++ {
+		mapping[resultRecord.ColumnName(i)] = i
 	}
 	var result []*v1.Value
 	var visits *float64
@@ -42,21 +49,22 @@ func Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Re
 		var value float64
 		switch metric {
 		case v1.Metric_pageviews:
-			a := r.Column(mapping[v1.Filters_Event.String()])
+			a := resultRecord.Column(mapping[v1.Filters_Event.String()])
 			count := calcPageViews(a)
 			view = &count
 			value = count
 		case v1.Metric_visitors:
-			a := r.Column(mapping[v1.Filters_ID.String()])
+			a := resultRecord.Column(mapping[v1.Filters_ID.String()])
 			u, err := compute.Unique(ctx, compute.NewDatumWithoutOwning(a))
 			if err != nil {
 				logger.Get(ctx).Error("Failed calculating visitors", "err", err)
-				return nil, InternalError
+				request.Internal(ctx, w)
+				return
 			}
 			value = float64(u.Len())
 			u.Release()
 		case v1.Metric_visits:
-			a := r.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
+			a := resultRecord.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
 			sum := float64(math.Int64.Sum(a))
 			visits = &sum
 			value = sum
@@ -65,17 +73,17 @@ func Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Re
 			if visits != nil {
 				vis = *visits
 			} else {
-				a := r.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
+				a := resultRecord.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
 				vis = float64(math.Int64.Sum(a))
 			}
-			a := r.Column(mapping[v1.Filters_Bounce.String()]).(*array.Int64)
+			a := resultRecord.Column(mapping[v1.Filters_Bounce.String()]).(*array.Int64)
 			sum := float64(math.Int64.Sum(a))
 			if vis != 0 {
 				sum /= vis
 			}
 			value = sum
 		case v1.Metric_visit_duration:
-			a := r.Column(mapping[v1.Filters_Duration.String()]).(*array.Float64)
+			a := resultRecord.Column(mapping[v1.Filters_Duration.String()]).(*array.Float64)
 			sum := math.Float64.Sum(a)
 			count := float64(a.Len())
 			var avg float64
@@ -88,14 +96,14 @@ func Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Re
 			if visits != nil {
 				vis = *visits
 			} else {
-				a := r.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
+				a := resultRecord.Column(mapping[v1.Filters_Session.String()]).(*array.Int64)
 				vis = float64(math.Int64.Sum(a))
 			}
 			var vw float64
 			if view != nil {
 				vw = *view
 			} else {
-				a := r.Column(mapping[v1.Filters_Event.String()])
+				a := resultRecord.Column(mapping[v1.Filters_Event.String()])
 				vw = calcPageViews(a)
 			}
 			if vis != 0 {
@@ -103,7 +111,7 @@ func Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Re
 			}
 			value = vw
 		case v1.Metric_events:
-			a := r.Column(mapping[v1.Filters_Event.String()])
+			a := resultRecord.Column(mapping[v1.Filters_Event.String()])
 			value = float64(a.Len())
 		}
 		result = append(result, &v1.Value{
@@ -111,5 +119,6 @@ func Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Re
 			Value:  value,
 		})
 	}
-	return &v1.Aggregate_Response{Results: result}, nil
+	request.Write(ctx, w, &v1.Aggregate_Response{Results: result})
+	return
 }

@@ -2,6 +2,7 @@ package stats
 
 import (
 	"context"
+	"net/http"
 	"slices"
 	"time"
 
@@ -13,10 +14,17 @@ import (
 	"github.com/vinceanalytics/vince/filters"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/request"
 	"github.com/vinceanalytics/vince/session"
 )
 
-func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error) {
+func BreakDown(w http.ResponseWriter, r *http.Request) {
+
+	var req v1.BreakDown_Request
+	if !request.Read(w, r, &req) {
+		return
+	}
+	ctx := r.Context()
 	period := req.Period
 	if period == nil {
 		period = &v1.TimePeriod{
@@ -36,15 +44,16 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Re
 	slices.Sort(req.Property)
 	metricsToProjection(filter, req.Metrics, req.Property...)
 	from, to := PeriodToRange(time.Now, period)
-	r, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filter)
+	scannedRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filter)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
-		return nil, InternalError
+		request.Internal(ctx, w)
+		return
 	}
-	defer r.Release()
+	defer scannedRecord.Release()
 	mapping := map[string]arrow.Array{}
-	for i := 0; i < int(r.NumCols()); i++ {
-		mapping[r.ColumnName(i)] = r.Column(i)
+	for i := 0; i < int(scannedRecord.NumCols()); i++ {
+		mapping[scannedRecord.ColumnName(i)] = scannedRecord.Column(i)
 	}
 	defer clear(mapping)
 	// build key mapping
@@ -64,32 +73,32 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Re
 				var value float64
 				switch metric {
 				case v1.Metric_pageviews:
-					a, err := take(ctx, metric, v1.Filters_Event, mapping, idx)
-					if err != nil {
-						return nil, err
-					}
+					a := mapping[v1.Filters_Event.String()]
 					count := calcPageViews(a)
 					a.Release()
 					view = &count
 					value = count
 				case v1.Metric_visitors:
-					a, err := take(ctx, metric, v1.Filters_ID, mapping, idx)
-					if err != nil {
-						return nil, err
+					a, ok := take(ctx, metric, v1.Filters_ID, mapping, idx)
+					if !ok {
+						request.Internal(ctx, w)
+						return
 					}
 					u, err := compute.Unique(ctx, compute.NewDatumWithoutOwning(a))
 					if err != nil {
 						a.Release()
 						logger.Get(ctx).Error("Failed calculating visitors", "err", err)
-						return nil, InternalError
+						request.Internal(ctx, w)
+						return
 					}
 					a.Release()
 					value = float64(u.Len())
 					u.Release()
 				case v1.Metric_visits:
-					a, err := take(ctx, metric, v1.Filters_Session, mapping, idx)
-					if err != nil {
-						return nil, err
+					a, ok := take(ctx, metric, v1.Filters_Session, mapping, idx)
+					if !ok {
+						request.Internal(ctx, w)
+						return
 					}
 					sum := float64(math.Int64.Sum(a.(*array.Int64)))
 					a.Release()
@@ -100,16 +109,18 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Re
 					if visits != nil {
 						vis = *visits
 					} else {
-						a, err := take(ctx, metric, v1.Filters_Session, mapping, idx)
-						if err != nil {
-							return nil, err
+						a, ok := take(ctx, metric, v1.Filters_Session, mapping, idx)
+						if !ok {
+							request.Internal(ctx, w)
+							return
 						}
 						vis = float64(math.Int64.Sum(a.(*array.Int64)))
 						a.Release()
 					}
-					a, err := take(ctx, metric, v1.Filters_Bounce, mapping, idx)
-					if err != nil {
-						return nil, err
+					a, ok := take(ctx, metric, v1.Filters_Bounce, mapping, idx)
+					if !ok {
+						request.Internal(ctx, w)
+						return
 					}
 					sum := float64(math.Int64.Sum(a.(*array.Int64)))
 					a.Release()
@@ -118,9 +129,10 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Re
 					}
 					value = sum
 				case v1.Metric_visit_duration:
-					a, err := take(ctx, metric, v1.Filters_Duration, mapping, idx)
-					if err != nil {
-						return nil, err
+					a, ok := take(ctx, metric, v1.Filters_Duration, mapping, idx)
+					if !ok {
+						request.Internal(ctx, w)
+						return
 					}
 					sum := math.Float64.Sum(a.(*array.Float64))
 					a.Release()
@@ -135,9 +147,10 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Re
 					if visits != nil {
 						vis = *visits
 					} else {
-						a, err := take(ctx, metric, v1.Filters_Session, mapping, idx)
-						if err != nil {
-							return nil, err
+						a, ok := take(ctx, metric, v1.Filters_Session, mapping, idx)
+						if !ok {
+							request.Internal(ctx, w)
+							return
 						}
 						vis = float64(math.Int64.Sum(a.(*array.Int64)))
 						a.Release()
@@ -146,9 +159,10 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Re
 					if view != nil {
 						vw = *view
 					} else {
-						a, err := take(ctx, metric, v1.Filters_Event, mapping, idx)
-						if err != nil {
-							return nil, err
+						a, ok := take(ctx, metric, v1.Filters_Event, mapping, idx)
+						if !ok {
+							request.Internal(ctx, w)
+							return
 						}
 						vw = calcPageViews(a)
 						a.Release()
@@ -176,10 +190,10 @@ func BreakDown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Re
 			Groups:   groups,
 		})
 	}
-	return &v1.BreakDown_Response{Results: result}, nil
+	request.Write(ctx, w, &v1.BreakDown_Response{Results: result})
 }
 
-func take(ctx context.Context, metric v1.Metric, f v1.Filters_Projection, mapping map[string]arrow.Array, idx *array.Uint32) (arrow.Array, error) {
+func take(ctx context.Context, metric v1.Metric, f v1.Filters_Projection, mapping map[string]arrow.Array, idx *array.Uint32) (arrow.Array, bool) {
 	a, err := compute.TakeArray(ctx,
 		mapping[f.String()], idx,
 	)
@@ -187,9 +201,9 @@ func take(ctx context.Context, metric v1.Metric, f v1.Filters_Projection, mappin
 		idx.Release()
 		logger.Get(ctx).Error("Failed taking array values",
 			"err", err, "metric", metric, "projection", f)
-		return nil, InternalError
+		return nil, false
 	}
-	return a, nil
+	return a, true
 }
 func hashProp(a arrow.Array) map[string]*roaring.Bitmap {
 	o := make(map[string]*roaring.Bitmap)

@@ -1,19 +1,25 @@
 package stats
 
 import (
-	"context"
+	"net/http"
 	"time"
 
 	"github.com/apache/arrow/go/v15/arrow/compute"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/request"
 	"github.com/vinceanalytics/vince/session"
 )
 
-func Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error) {
+func Realtime(w http.ResponseWriter, r *http.Request) {
+	var req v1.Realtime_Request
+	if !request.Read(w, r, &req) {
+		return
+	}
+	ctx := r.Context()
 	now := time.Now().UTC()
 	firstTime := now.Add(-5 * time.Minute)
-	r, err := session.Get(ctx).Scan(ctx,
+	result, err := session.Get(ctx).Scan(ctx,
 		firstTime.UnixMilli(),
 		now.UnixMilli(),
 		&v1.Filters{
@@ -27,14 +33,16 @@ func Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Respo
 	)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
-		return nil, InternalError
+		request.Internal(ctx, w)
+		return
 	}
-	defer r.Release()
-	res, err := compute.Unique(ctx, compute.NewDatumWithoutOwning(r.Column(0)))
+	defer result.Release()
+	res, err := compute.Unique(ctx, compute.NewDatumWithoutOwning(result.Column(0)))
 	if err != nil {
 		logger.Get(ctx).Error("Failed computing unique user id", "err", err)
-		return nil, InternalError
+		request.Internal(ctx, w)
+		return
 	}
 	defer res.Release()
-	return &v1.Realtime_Response{Visitors: uint64(res.Len())}, nil
+	request.Write(ctx, w, &v1.Realtime_Response{Visitors: uint64(res.Len())})
 }
