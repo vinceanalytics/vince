@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"time"
 
 	"github.com/apache/arrow/go/v15/arrow/memory"
@@ -26,6 +27,7 @@ import (
 	"github.com/vinceanalytics/vince/session"
 	"github.com/vinceanalytics/vince/staples"
 	"github.com/vinceanalytics/vince/version"
+	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -100,6 +102,19 @@ func app() *cli.Command {
 				Value:   "INFO",
 				Sources: cli.EnvVars("VINCE_LOG_LEVEL"),
 			},
+			&cli.BoolFlag{
+				Name:    "autoTls",
+				Usage:   "Enables automatic tls with lets encrypt",
+				Sources: cli.EnvVars("VINCE_AUTO_TLS"),
+			},
+			&cli.StringFlag{
+				Name:    "acmeEmail",
+				Sources: cli.EnvVars("VINCE_ACME_EMAIL"),
+			},
+			&cli.StringFlag{
+				Name:    "acmeDomain",
+				Sources: cli.EnvVars("VINCE_ACME_DOMAIN"),
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			var level slog.Level
@@ -124,7 +139,15 @@ func app() *cli.Command {
 				GeoipDbPath:     c.String("geoipDbPath"),
 				Domains:         c.StringSlice("domains"),
 				RetentionPeriod: durationpb.New(c.Duration("retention-period")),
+				AutoTls:         c.Bool("autoTls"),
 			}
+			if base.AutoTls {
+				base.Acme = &v1.Acme{
+					Email:  c.String("acmeEmail"),
+					Domain: c.String("acmeDomain"),
+				}
+			}
+
 			if co := c.String("config"); co != "" {
 				d, err := os.ReadFile(co)
 				if err == nil {
@@ -205,12 +228,25 @@ func app() *cli.Command {
 				Handler:     a,
 				BaseContext: func(l net.Listener) context.Context { return ctx },
 			}
+			if base.AutoTls {
+				m := &autocert.Manager{
+					Prompt:     autocert.AcceptTOS,
+					HostPolicy: autocert.HostWhitelist(base.Acme.Domain),
+					Email:      base.Acme.Email,
+					Cache:      autocert.DirCache(filepath.Join(base.Data, "certs")),
+				}
+				svr.TLSConfig = m.TLSConfig()
+			}
 			// start services
 			sess.Start(ctx)
 			go func() {
 				defer cancel()
 				log.Info("starting server", "addr", base.Listen)
-				err = svr.ListenAndServe()
+				if base.AutoTls {
+					err = svr.ListenAndServeTLS("", "")
+				} else {
+					err = svr.ListenAndServe()
+				}
 			}()
 			<-ctx.Done()
 			svr.Shutdown(context.Background())

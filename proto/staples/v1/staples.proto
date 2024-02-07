@@ -41,6 +41,20 @@ message Config {
   // How long data will be persisted, Older data is automatically deleted.
   google.protobuf.Duration retention_period = 10
       [ (buf.validate.field).required = true ];
+
+  bool auto_tls = 11;
+  Acme acme = 12;
+}
+
+message Acme {
+  string email = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.email = true
+  ];
+  string domain = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.hostname = true
+  ];
 }
 
 message PrimaryIndex {

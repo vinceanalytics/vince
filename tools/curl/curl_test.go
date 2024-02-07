@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -32,4 +34,14 @@ func check(t *testing.T, write bool, file string, path, method string, headers h
 	want, err := os.ReadFile(file)
 	require.NoError(t, err)
 	require.Equal(t, string(want), b.String())
+}
+
+func TestConfig(t *testing.T) {
+	d, _ := protojson.Marshal(&v1.Config{
+		Acme: &v1.Acme{
+			Email:  "example@example.org",
+			Domain: "example.org",
+		},
+	})
+	t.Error(string(d))
 }
