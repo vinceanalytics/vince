@@ -92,7 +92,7 @@ func app() *cli.Command {
 				Sources: cli.EnvVars("VINCE_CONFIG"),
 			},
 			&cli.DurationFlag{
-				Name:    "retention-period",
+				Name:    "retentionPeriod",
 				Usage:   "How long data will be persisted",
 				Value:   30 * 24 * time.Hour,
 				Sources: cli.EnvVars("VINCE_RETENTION_PERIOD"),
@@ -138,7 +138,7 @@ func app() *cli.Command {
 				GranuleSize:     c.Int("granuleSize"),
 				GeoipDbPath:     c.String("geoipDbPath"),
 				Domains:         c.StringSlice("domains"),
-				RetentionPeriod: durationpb.New(c.Duration("retention-period")),
+				RetentionPeriod: durationpb.New(c.Duration("retentionPeriod")),
 				AutoTls:         c.Bool("autoTls"),
 			}
 			if base.AutoTls {
