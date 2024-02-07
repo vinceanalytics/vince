@@ -1,27 +1,18 @@
 [Unit]
-Description=vince is a API first Cloud Native Web Analytics platform.
+Description=API first Cloud Native Web Analytics platform.
 After=network.target
 
 [Service]
 Type=simple
-User=vince
-Group=vince
-WorkingDirectory=/var/lib/vince
 StartLimitBurst=5
 StartLimitInterval=0
 Restart=on-failure
-RestartSec=5
+RestartSec=1
 EnvironmentFile=-/etc/vince/vince.conf
 ExecStart=/usr/bin/vince $ARGS
 ExecStop=/bin/kill -s SIGTERM $MAINPID
-ExecReload=/bin/kill -HUP $MAINPID
-ProtectSystem=full
-LimitNOFILE=1048576
-LimitNPROC=1048576
-LimitCORE=infinity
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=vince
+LimitNOFILE=65536
+LimitNPROC=32000
 
 [Install]
 WantedBy=multi-user.target
