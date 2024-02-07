@@ -1,0 +1,3 @@
+go build -o bin/docs ./tools/docs/
+
+./bin/docs docs/ ../vinceanalytics.github.io/index.html
