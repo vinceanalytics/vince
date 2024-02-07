@@ -149,10 +149,6 @@ nfpms:
       - src: ./deploy/deb/etc
         dst: /etc
         type: tree
-      - dst: /var/lib/vince-data
-        type: dir
-        file_info:
-          mode: 0700
       - src: ./LICENSE
         dst: /usr/share/doc/vince/copyright
         file_info:
