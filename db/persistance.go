@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -200,7 +201,7 @@ type KV struct {
 }
 
 func NewKV(path string) (*KV, error) {
-	db, err := badger.Open(badger.DefaultOptions(path).
+	db, err := badger.Open(badger.DefaultOptions(filepath.Join(path, "db")).
 		WithLogger(&badgerLogger{
 			log: slog.Default().With(
 				slog.String("component", "key-value-store"),

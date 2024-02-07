@@ -53,7 +53,7 @@ func app() *cli.Command {
 			&cli.StringFlag{
 				Name:    "data",
 				Usage:   "Path to store data",
-				Value:   "staples-data",
+				Value:   "vince-data",
 				Sources: cli.EnvVars("VINCE_DATA"),
 			},
 			&cli.StringFlag{
@@ -147,6 +147,7 @@ func app() *cli.Command {
 
 			log := slog.Default()
 			log.Info("Setup storage")
+
 			_, err = os.Stat(base.Data)
 			if err != nil {
 				if os.IsNotExist(err) {
