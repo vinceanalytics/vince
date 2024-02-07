@@ -128,13 +128,38 @@ brews:
     folder: Formula
     homepage: https://vinceanalytics.com
     description: API first Cloud Native Web Analytics For Startups
-    license: AGPL-3.0
+    license: Apache 2.0
     ids:
       - vince
     test: |
       system "#{bin}/vince --version"
     install: |-
       bin.install "vince"
+nfpms:
+  - file_name_template: "{{ .ConventionalFileName }}"
+    id: packages
+    homepage: https://vinceanalytics.com
+    description: |-
+      API first web analytics platform
+    maintainer: Geofrey Ernest<geofreyernest@live.com>
+    license: Apache 2.0
+    vendor: VinceAnalytics
+    bindir: /usr/bin
+    section: utils
+    contents:
+      - src: ./deploy/deb/etc
+        dst: /etc
+        type: tree
+      - src: ./LICENSE.md
+        dst: /usr/share/doc/vince/copyright
+        file_info:
+          mode: 0644
+    formats:
+      - deb
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
 release:
   github:
     owner: vinceanalytics
