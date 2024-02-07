@@ -152,7 +152,8 @@ nfpms:
       - dst: /var/lib/vince
         type: dir
         file_info:
-          mode: 0700
+          mode: 0766
+          owner: vince
       - src: ./LICENSE
         dst: /usr/share/doc/vince/copyright
         file_info:
