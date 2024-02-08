@@ -26,6 +26,7 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 		Period:   ParsePeriod(ctx, query),
 		Metrics:  ParseMetrics(ctx, query),
 		Interval: ParseInterval(ctx, query),
+		Filters:  ParseFilters(ctx, query),
 	}
 	if !request.Validate(ctx, w, &req) {
 		return

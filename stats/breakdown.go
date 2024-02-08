@@ -25,6 +25,7 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 		SiteId:  query.Get("site_id"),
 		Period:  ParsePeriod(ctx, query),
 		Metrics: ParseMetrics(ctx, query),
+		Filters: ParseFilters(ctx, query),
 	}
 	if !request.Validate(ctx, w, &req) {
 		return

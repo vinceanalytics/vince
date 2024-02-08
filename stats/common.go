@@ -160,3 +160,48 @@ func ParseInterval(ctx context.Context, query url.Values) v1.Interval {
 	}
 	return v1.Interval(v)
 }
+
+func ParseFilters(ctx context.Context, query url.Values) (o []*v1.Filter) {
+	for _, f := range strings.Split(query.Get("filters"), ",") {
+		key, value, op, ok := sep(f)
+		if !ok {
+			logger.Get(ctx).Error("Skipping unexpected filter ", "filter", f)
+			continue
+		}
+		p, ok := v1.Property_value[key]
+		if !ok {
+			logger.Get(ctx).Error("Skipping unexpected filter property ", "filter", f, "property", key)
+			continue
+		}
+		o = append(o, &v1.Filter{
+			Property: v1.Property(p),
+			Op:       op,
+			Value:    value,
+		})
+	}
+	return
+}
+
+func sep(f string) (key, value string, op v1.Filter_OP, ok bool) {
+	key, value, ok = strings.Cut(f, "==")
+	if ok {
+		op = v1.Filter_equal
+		return
+	}
+	key, value, ok = strings.Cut(f, "!=")
+	if ok {
+		op = v1.Filter_not_equal
+		return
+	}
+	key, value, ok = strings.Cut(f, "~=")
+	if ok {
+		op = v1.Filter_re_equal
+		return
+	}
+	key, value, ok = strings.Cut(f, "~=")
+	if ok {
+		op = v1.Filter_re_not_equal
+		return
+	}
+	return
+}
