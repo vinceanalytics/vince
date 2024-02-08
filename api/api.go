@@ -52,8 +52,14 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 				}
 				request.Write(r.Context(), w, &v1.GetDomainResponse{Domains: o})
 				return
-			case "/api/v1/visitors":
+			case "/api/v1/stats/realtime/visitors":
 				stats.Realtime(w, r)
+				return
+			case "/api/v1/stats/aggregate":
+				stats.Aggregate(w, r)
+				return
+			case "/api/v1/stats/timeseries":
+				stats.TimeSeries(w, r)
 				return
 			default:
 				if strings.HasPrefix(r.URL.Path, "/js/") {
@@ -65,12 +71,6 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 			switch r.URL.Path {
 			case "/api/v1/event":
 				SendEvent(w, r)
-				return
-			case "/api/v1/aggregate":
-				stats.Aggregate(w, r)
-				return
-			case "/api/v1/timeseries":
-				stats.TimeSeries(w, r)
 				return
 			case "/api/event":
 				ReceiveEvent(w, r)
