@@ -17,6 +17,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/util"
 	"github.com/docker/go-units"
 	"github.com/oklog/ulid/v2"
+	"github.com/vinceanalytics/vince/camel"
 	"github.com/vinceanalytics/vince/db"
 	"github.com/vinceanalytics/vince/filters"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
@@ -173,7 +174,7 @@ func (lsm *Tree[T]) Scan(
 	}
 	project := make([]int, 0, len(fs.Projection))
 	for _, name := range fs.Projection {
-		col, ok := lsm.mapping[staples.Camel(name.String())]
+		col, ok := lsm.mapping[camel.Case(name.String())]
 		if !ok {
 			return nil, fmt.Errorf("column %s does not exist", name)
 		}

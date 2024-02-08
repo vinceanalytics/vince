@@ -173,7 +173,7 @@ func metricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) {
 	m := make(map[v1.Filters_Projection]struct{})
 	m[v1.Filters_Timestamp] = struct{}{}
 	for _, p := range props {
-		m[filters.PropToProjection[p]] = struct{}{}
+		m[filters.Projection(p)] = struct{}{}
 	}
 	for _, v := range me {
 		switch v {

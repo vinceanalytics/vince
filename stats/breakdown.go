@@ -63,7 +63,7 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 	// TODO: run this concurrently
 	for _, prop := range req.Property {
 		var groups []*v1.BreakDown_Response_Group
-		for key, bitmap := range hashProp(mapping[filters.PropToProjection[prop].String()]) {
+		for key, bitmap := range hashProp(mapping[filters.Column(prop)]) {
 			b.AppendValues(bitmap.ToArray(), nil)
 			idx := b.NewUint32Array()
 			var values []*v1.Value

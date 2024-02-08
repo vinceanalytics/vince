@@ -2,10 +2,11 @@ package filters
 
 import (
 	"github.com/blevesearch/vellum/regexp"
+	"github.com/vinceanalytics/vince/camel"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 )
 
-var PropToProjection = map[v1.Property]v1.Filters_Projection{
+var propToProjection = map[v1.Property]v1.Filters_Projection{
 	v1.Property_event:           v1.Filters_Event,
 	v1.Property_page:            v1.Filters_Path,
 	v1.Property_entry_page:      v1.Filters_EntryPage,
@@ -26,6 +27,14 @@ var PropToProjection = map[v1.Property]v1.Filters_Projection{
 	v1.Property_region:          v1.Filters_Region,
 	v1.Property_domain:          v1.Filters_Domain,
 	v1.Property_city:            v1.Filters_City,
+}
+
+func Column(p v1.Property) string {
+	return camel.Case(propToProjection[p].String())
+}
+
+func Projection(p v1.Property) v1.Filters_Projection {
+	return propToProjection[p]
 }
 
 type CompiledFilter struct {
@@ -49,7 +58,7 @@ func CompileFilters(f *v1.Filters) ([]*CompiledFilter, error) {
 
 func compileFilter(f *v1.Filter) (*CompiledFilter, error) {
 	o := &CompiledFilter{
-		Column: PropToProjection[f.Property].String(),
+		Column: Column(f.Property),
 		Op:     f.Op,
 	}
 	o.Value = []byte(f.Value)

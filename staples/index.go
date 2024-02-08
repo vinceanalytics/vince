@@ -7,6 +7,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
+	"github.com/vinceanalytics/vince/camel"
 	"github.com/vinceanalytics/vince/filters"
 	"github.com/vinceanalytics/vince/index"
 	"github.com/vinceanalytics/vince/logger"
@@ -70,7 +71,7 @@ func NewIndex() *Index {
 		if !f.IsExported() {
 			continue
 		}
-		idx.mapping[Camel(f.Name)] = r.Field(i).Interface().(*index.ColumnImpl)
+		idx.mapping[camel.Case(f.Name)] = r.Field(i).Interface().(*index.ColumnImpl)
 	}
 	return idx
 }

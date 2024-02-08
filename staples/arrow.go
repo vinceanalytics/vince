@@ -3,12 +3,11 @@ package staples
 import (
 	"fmt"
 	"reflect"
-	"strings"
-	"unicode"
 
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/memory"
+	"github.com/vinceanalytics/vince/camel"
 )
 
 type Arrow[T any] struct {
@@ -62,7 +61,7 @@ func build(r reflect.Type) (o []arrow.Field) {
 		}
 		if base, ok := baseTypes[typ.Kind()]; ok {
 			o = append(o, arrow.Field{
-				Name:     Camel(f.Name),
+				Name:     camel.Case(f.Name),
 				Type:     base,
 				Nullable: f.Type.Kind() == reflect.Ptr || typ.Kind() == reflect.String,
 			})
@@ -71,17 +70,6 @@ func build(r reflect.Type) (o []arrow.Field) {
 		panic(typ.String() + " slices are not supported")
 	}
 	return
-}
-
-func Camel(name string) string {
-	first := true
-	return strings.Map(func(r rune) rune {
-		if first {
-			first = false
-			return unicode.ToLower(r)
-		}
-		return r
-	}, name)
 }
 
 var baseTypes = map[reflect.Kind]arrow.DataType{
@@ -229,8 +217,8 @@ func NewTaker(mem memory.Allocator, as *arrow.Schema) (*array.RecordBuilder, fun
 		fields[i] = take(b.Field(i))
 	}
 	return b, func(v arrow.Record, columns []int, rows []uint32) {
-		for _, i := range columns {
-			fields[i](v.Column(i), rows)
+		for idx, col := range columns {
+			fields[idx](v.Column(col), rows)
 		}
 	}
 }
