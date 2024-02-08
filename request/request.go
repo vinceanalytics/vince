@@ -30,6 +30,10 @@ func Get(ctx context.Context) *protovalidate.Validator {
 
 func Read(w http.ResponseWriter, r *http.Request, o proto.Message) bool {
 	ctx := r.Context()
+	if r.Header.Get("Content-Type") != "application/json" {
+		Error(ctx, w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+		return false
+	}
 	if r.ContentLength == 0 || r.ContentLength > maxBodySize {
 		logger.Get(ctx).Error("Invalid content length", "contentLength", r.ContentLength)
 		Error(ctx, w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))

@@ -72,7 +72,7 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 				return
 			}
 		}
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		request.Error(r.Context(), w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	})
 
 	a.hand = base
