@@ -4,7 +4,7 @@
 
 > **CC-BY-S-4.0** *This section was initially copied from Plausible Analytics docs*
 
-The`VinceAnalytics` API offers a way to retrieve your stats programmatically. It's a read-only interface to present historical and real-time stats only. Take a look at our [events API](#events) if you want to send pageviews or custom events.
+The`vince` API offers a way to retrieve your stats programmatically. It's a read-only interface to present historical and real-time stats only. Take a look at our [events API](#events-api) if you want to send pageviews or custom events.
 
 The API accepts GET requests with query parameters and returns standard HTTP responses along with a JSON-encoded body. All API requests must be made over HTTPS. Calls made over plain HTTP will fail. API requests without authentication will also fail.
 
