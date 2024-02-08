@@ -59,6 +59,15 @@ func Read(w http.ResponseWriter, r *http.Request, o proto.Message) bool {
 	return true
 }
 
+func Validate(ctx context.Context, w http.ResponseWriter, o proto.Message) bool {
+	if err := Get(ctx).Validate(o); err != nil {
+		logger.Get(ctx).Error("Failed validating request body", "err", err)
+		Error(ctx, w, http.StatusBadRequest, err.Error())
+		return false
+	}
+	return true
+}
+
 func Write(ctx context.Context, w http.ResponseWriter, o proto.Message) {
 	data, err := m.Marshal(o)
 	if err != nil {

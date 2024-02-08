@@ -51,9 +51,9 @@ message Timeseries {
 }
 
 enum Interval {
-  minute = 0;
-  hour = 1;
-  date = 2;
+  date = 0;
+  minute = 1;
+  hour = 2;
   week = 3;
   month = 4;
 }

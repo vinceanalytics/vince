@@ -12,12 +12,12 @@ import (
 )
 
 func Realtime(w http.ResponseWriter, r *http.Request) {
-	var req v1.Realtime_Request
-	req.SiteId = r.URL.Query().Get("site_id")
 	ctx := r.Context()
-	if err := request.Get(r.Context()).Validate(&req); err != nil {
-		logger.Get(ctx).Error("Failed validating request body", "err", err)
-		request.Error(ctx, w, http.StatusBadRequest, err.Error())
+	query := r.URL.Query()
+	req := v1.Realtime_Request{
+		SiteId: query.Get("site_id"),
+	}
+	if !request.Validate(ctx, w, &req) {
 		return
 	}
 	now := time.Now().UTC()

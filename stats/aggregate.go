@@ -15,12 +15,16 @@ import (
 )
 
 func Aggregate(w http.ResponseWriter, r *http.Request) {
-	var req v1.Aggregate_Request
-	req.SiteId = r.URL.Query().Get("site_id")
-	if !request.Read(w, r, &req) {
+	ctx := r.Context()
+	query := r.URL.Query()
+	req := v1.Aggregate_Request{
+		SiteId:  query.Get("site_id"),
+		Period:  ParsePeriod(ctx, query),
+		Metrics: ParseMetrics(ctx, query),
+	}
+	if !request.Validate(ctx, w, &req) {
 		return
 	}
-	ctx := r.Context()
 	filters := &v1.Filters{
 		List: append(req.Filters, &v1.Filter{
 			Property: v1.Property_domain,
@@ -31,7 +35,7 @@ func Aggregate(w http.ResponseWriter, r *http.Request) {
 	metrics := slices.Clone(req.Metrics)
 	slices.Sort(metrics)
 	metricsToProjection(filters, metrics)
-	from, to := PeriodToRange(time.Now, req.Period)
+	from, to := PeriodToRange(ctx, time.Now, req.Period, r.URL.Query())
 	resultRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)

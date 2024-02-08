@@ -19,12 +19,16 @@ import (
 )
 
 func BreakDown(w http.ResponseWriter, r *http.Request) {
-
-	var req v1.BreakDown_Request
-	if !request.Read(w, r, &req) {
+	ctx := r.Context()
+	query := r.URL.Query()
+	req := v1.BreakDown_Request{
+		SiteId:  query.Get("site_id"),
+		Period:  ParsePeriod(ctx, query),
+		Metrics: ParseMetrics(ctx, query),
+	}
+	if !request.Validate(ctx, w, &req) {
 		return
 	}
-	ctx := r.Context()
 	period := req.Period
 	if period == nil {
 		period = &v1.TimePeriod{
@@ -43,7 +47,7 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 	slices.Sort(req.Metrics)
 	slices.Sort(req.Property)
 	metricsToProjection(filter, req.Metrics, req.Property...)
-	from, to := PeriodToRange(time.Now, period)
+	from, to := PeriodToRange(ctx, time.Now, period, r.URL.Query())
 	scannedRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filter)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
@@ -205,6 +209,7 @@ func take(ctx context.Context, metric v1.Metric, f v1.Filters_Projection, mappin
 	}
 	return a, true
 }
+
 func hashProp(a arrow.Array) map[string]*roaring.Bitmap {
 	o := make(map[string]*roaring.Bitmap)
 	d := a.(*array.Dictionary)

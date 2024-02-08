@@ -19,12 +19,17 @@ import (
 )
 
 func TimeSeries(w http.ResponseWriter, r *http.Request) {
-	var req v1.Timeseries_Request
-	req.SiteId = r.URL.Query().Get("site_id")
-	if !request.Read(w, r, &req) {
+	ctx := r.Context()
+	query := r.URL.Query()
+	req := v1.Timeseries_Request{
+		SiteId:   query.Get("site_id"),
+		Period:   ParsePeriod(ctx, query),
+		Metrics:  ParseMetrics(ctx, query),
+		Interval: ParseInterval(ctx, query),
+	}
+	if !request.Validate(ctx, w, &req) {
 		return
 	}
-	ctx := r.Context()
 	// make sure we have valid interval
 	if !ValidByPeriod(req.Period, req.Interval) {
 		request.Error(ctx, w, http.StatusBadRequest, "Interval out of range")
@@ -40,7 +45,7 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 	metrics := slices.Clone(req.Metrics)
 	slices.Sort(metrics)
 	metricsToProjection(filters, metrics)
-	from, to := PeriodToRange(time.Now, req.Period)
+	from, to := PeriodToRange(ctx, time.Now, req.Period, r.URL.Query())
 	scanRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
