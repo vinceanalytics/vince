@@ -118,7 +118,9 @@ func ParsePeriod(ctx context.Context, query url.Values) *v1.TimePeriod {
 			},
 		}
 	default:
-		return nil
+		return &v1.TimePeriod{
+			Value: &v1.TimePeriod_Base_{Base: v1.TimePeriod__30d},
+		}
 	}
 }
 
