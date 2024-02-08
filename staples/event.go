@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/cespare/xxhash/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
@@ -54,6 +55,36 @@ type Event struct {
 	UtmMedium      string
 	UtmSource      string
 	UtmTerm        string
+}
+
+// Size without strings
+var baseSize = unsafe.Sizeof(Event{})
+
+// Size in bytes of e in memory. We use this as a cost to control cache size.
+func (e *Event) Size() (n int) {
+	n = int(baseSize)
+	n += len(e.Browser)
+	n += len(e.BrowserVersion)
+	n += len(e.City)
+	n += len(e.Country)
+	n += len(e.Domain)
+	n += len(e.EntryPage)
+	n += len(e.ExitPage)
+	n += len(e.Host)
+	n += len(e.Event)
+	n += len(e.Os)
+	n += len(e.OsVersion)
+	n += len(e.Path)
+	n += len(e.Referrer)
+	n += len(e.ReferrerSource)
+	n += len(e.Region)
+	n += len(e.Screen)
+	n += len(e.UtmCampaign)
+	n += len(e.UtmContent)
+	n += len(e.UtmMedium)
+	n += len(e.UtmSource)
+	n += len(e.UtmTerm)
+	return
 }
 
 var eventsPool = &sync.Pool{New: func() any { return new(Event) }}

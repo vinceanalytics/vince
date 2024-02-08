@@ -38,7 +38,7 @@ func New(mem memory.Allocator, resource string, storage db.Storage,
 	primary index.Primary, opts ...lsm.Option) *Session {
 	cache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1e7,
-		MaxCost:     2 << 20,
+		MaxCost:     100 << 20, // 100MiB
 		BufferItems: 64,
 		OnEvict: func(item *ristretto.Item) {
 			item.Value.(*staples.Event).Release()
@@ -98,7 +98,7 @@ func (s *Session) process(ctx context.Context, req *v1.Event) {
 	s.mu.Lock()
 	s.build.Append(e)
 	s.mu.Unlock()
-	s.cache.SetWithTTL(e.ID, e, 1, DefaultSession)
+	s.cache.SetWithTTL(e.ID, e, int64(e.Size()), DefaultSession)
 }
 
 func (s *Session) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
