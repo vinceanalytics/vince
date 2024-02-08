@@ -69,6 +69,9 @@ func (s *Session) Queue(ctx context.Context, req *v1.Event) {
 
 func (s *Session) doProcess(ctx context.Context) {
 	s.log.Info("Starting events processing loop")
+	defer func() {
+		s.log.Info("Exiting events processing loop")
+	}()
 	for {
 		select {
 		case <-ctx.Done():
@@ -128,8 +131,12 @@ func (s *Session) Start(ctx context.Context) {
 
 func (s *Session) doFlush(ctx context.Context) {
 	s.log.Info("Starting session flushing loop", "interval", DefaultFlushInterval.String())
+
 	tk := time.NewTicker(DefaultFlushInterval)
-	defer tk.Stop()
+	defer func() {
+		tk.Stop()
+		s.log.Info("Exiting flushing loop")
+	}()
 
 	for {
 		select {

@@ -228,7 +228,11 @@ func (lsm *Tree[T]) Start(ctx context.Context) {
 	lsm.log.Info("Start compaction loop", "interval", interval.String(),
 		"compactSize", units.BytesSize(float64(lsm.opts.compactSize)))
 	tick := time.NewTicker(interval)
-	defer tick.Stop()
+	defer func() {
+		tick.Stop()
+		lsm.log.Info("exiting compaction loop")
+	}()
+
 	for {
 		select {
 		case <-ctx.Done():
