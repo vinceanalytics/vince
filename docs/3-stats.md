@@ -8,7 +8,7 @@ The`vince` API offers a way to retrieve your stats programmatically. It's a read
 
 The API accepts GET requests with query parameters and returns standard HTTP responses along with a JSON-encoded body. All API requests must be made over HTTPS. Calls made over plain HTTP will fail. API requests without authentication will also fail.
 
-Each request must be authenticated with an [authToken](#authorization)y using the Bearer Token method.
+Each request must be authenticated with an [authToken](#authorization) using the Bearer Token method.
 
 
 ## Concepts
@@ -32,7 +32,7 @@ You can specify a `metrics` option in the query, to choose the metrics for each 
 | `visit_duration`  | Visit duration in seconds                                                                                                                                 |
 | `events`          | The number of events (pageviews + custom events)                                                                                                          |
 
-### Time periods
+## Time periods
 
 The options are identical for each endpoint that supports configurable time periods. Each period is relative to a `date` parameter. The date should follow the standard ISO-8601 format. When not specified, the `date` field defaults to `today(site.timezone)`.
 All time calculations on our backend are done in the time zone that the site is configured in.
@@ -46,7 +46,7 @@ All time calculations on our backend are done in the time zone that the site is 
 When using a custom range, the `date` parameter expects two ISO-8601 formatted dates joined with a comma as follows `?period=custom&date=2021-01-01,2021-01-31`.
 Stats will be returned for the whole date range inclusive of the start and end dates.
 
-### Properties
+## Properties
 
 Each pageview and custom event in our database has some predefined _properties_ associated with it. In other analytics tools, these
 are often referred to as _dimensions_ as well. Properties can be used for filtering and breaking down your stats to drill into
@@ -73,13 +73,21 @@ more depth. Here's the full list of properties we collect automatically:
 | `region`          | England                         | Region the visitor region.                                                                                                  |
 | `city`            | London                      | City of the visitor city.                                                                            |
 
-#### Custom properties
+### Custom properties
 
 TBD
 
-### Filtering
+## Filtering
 
-TBD
+Most endpoints support a `filters` query parameter to drill down into your data. You can filter by all properties described in the [Properties table](#properties), using the following operators:
+
+| Operator        | Usage example                              | Explanation                                                               |
+|-----------------|--------------------------------------------|---------------------------------------------------------------------------|
+| `==`            | `name==Signup`                       | Simple equality - custom event "Signup"                                 |
+| `!=`            | `country!=Tanzania`                        | Simple inequality - country is not Tanzania                                 |
+| `~=`             | `page~=^/blog/.*?`                      | Regex - matches a regular expression
+| `!~`             | `page!~^/blog/.*?`                      | Regex - matches not  a regular expression
+
 
 
 ## Endpoints
