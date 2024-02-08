@@ -20,7 +20,7 @@ Each request requires a `site_id` parameter which is the domain of your site as 
 
 ### Metrics
 
-You can specify a `metrics` option in the query, to choose the metrics for each instance returned. See here for a full overview of [metrics and their definitions](#all-metrics-and-their-definitions). The metrics currently supported in Stats API are:
+You can specify a `metrics` option in the query, to choose the metrics for each instance returned. See here for a full overview of [metrics and their definitions](#all-metrics). The metrics currently supported in Stats API are:
 
 | Metric            | Description                                                                                                                                               |
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
