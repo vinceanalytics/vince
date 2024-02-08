@@ -39,6 +39,14 @@ func New(mem memory.Allocator, resource string, storage db.Storage,
 		NumCounters: 1e7,
 		MaxCost:     2 << 20,
 		BufferItems: 64,
+		OnEvict: func(item *ristretto.Item) {
+			item.Value.(*staples.Event).Release()
+			item.Value = nil
+		},
+		OnReject: func(item *ristretto.Item) {
+			item.Value.(*staples.Event).Release()
+			item.Value = nil
+		},
 	})
 	if err != nil {
 		logger.Fail("Failed initializing cache", "err", err)
