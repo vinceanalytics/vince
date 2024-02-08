@@ -47,6 +47,7 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 				return
 			case "/v1/visitors":
 				stats.Realtime(w, r)
+				return
 			default:
 				if strings.HasPrefix(r.URL.Path, "/js/") {
 					trackerServer.ServeHTTP(w, r)
@@ -60,8 +61,10 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 				return
 			case "/v1/aggregate":
 				stats.Aggregate(w, r)
+				return
 			case "/v1/timeseries":
 				stats.TimeSeries(w, r)
+				return
 			case "/api/event":
 				ReceiveEvent(w, r)
 				return
