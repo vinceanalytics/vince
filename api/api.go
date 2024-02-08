@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/bufbuild/protovalidate-go"
-	"github.com/segmentio/asm/ascii"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/guard"
 	"github.com/vinceanalytics/vince/request"
@@ -34,6 +33,7 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 	}
 	ctx = request.With(ctx, valid)
 	base := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		println("======?", r.URL.Path)
 		if a.config.AuthToken != "" && r.URL.Path != "/api/event" {
 			if subtle.ConstantTimeCompare([]byte(a.config.AuthToken), []byte(parseBearer(r.Header.Get("Authorization")))) != 1 {
 				request.Error(r.Context(), w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
@@ -93,7 +93,7 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 func parseBearer(auth string) (token string) {
 	const prefix = "Bearer "
 	// Case insensitive prefix match. See Issue 22736.
-	if len(auth) < len(prefix) || !ascii.EqualFold(auth[:len(prefix)], prefix) {
+	if len(auth) < len(prefix) || !strings.EqualFold(auth[:len(prefix)], prefix) {
 		return ""
 	}
 	return auth[len(prefix):]
