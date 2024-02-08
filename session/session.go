@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	DefaultSession = 15 * time.Minute
+	DefaultSession = 30 * time.Minute
 	// To make sure we always have fresh data for current visitors
 	DefaultFlushInterval = time.Minute
 )
