@@ -54,25 +54,24 @@ more depth. Here's the full list of properties we collect automatically:
 
 | Property              | Example                       | Description                                                                                                                             |
 | --------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| event:goal            | Register                      | A custom action that you want your users to take. To use this property, you first need to configure some goals in the [site settings](/website-settings), or via the [Sites API](/sites-api). Learn more about goals [here](/goal-conversions).                            |
-| event:page            | /blog/remove-google-analytics | Pathname of the page where the event is triggered. You can also use an asterisk to group multiple pages (`/blog*`)  |
-| visit:entry_page      | /home                         | Page on which the visit session started (landing page).                                                                                 |
-| visit:exit_page       | /home                         | Page on which the visit session ended (last page viewed).                                                                               |
-| visit:source          | Twitter                       | Visit source, populated from an url query parameter tag (`utm_source`, `source` or `ref`) or the `Referer` HTTP header.                 |
-| visit:referrer        | t.co/fzWTE9OTPt               | Raw `Referer` header without `http://`, `http://` or `www.`.                                                                            |
-| visit:utm_medium      | social                        | Raw value of the `utm_medium` query param on the entry page.                                                                            |
-| visit:utm_source      | twitter                       | Raw value of the `utm_source` query param on the entry page.                                                                            |
-| visit:utm_campaign    | profile                       | Raw value of the `utm_campaign` query param on the entry page.                                                                          |
-| visit:utm_content     | banner                        | Raw value of the `utm_content` query param on the entry page.                                                                           |
-| visit:utm_term        | keyword                       | Raw value of the `utm_term` query param on the entry page.                                                                              |
-| visit:device          | Desktop                       | Device type. Possible values are `Desktop`, `Laptop`, `Tablet` and `Mobile`.                                                            |
-| visit:browser         | Chrome                        | Name of the browser vendor. Most popular ones are `Chrome`, `Safari` and `Firefox`.                                                     |
-| visit:browser_version | 88.0.4324.146                 | Version number of the browser used by the visitor.                                                                                      |
-| visit:os              | Mac                           | Name of the operating system. Most popular ones are `Mac`, `Windows`, `iOS` and `Android`. Linux distributions are reported separately. |
-| visit:os_version      | 10.6                          | Version number of the operating system used by the visitor.                                                                             |
-| visit:country         | US                            | ISO 3166-1 alpha-2 code of the visitor country.                                                                                         |
-| visit:region          | US-MD                         | ISO 3166-2 code of the visitor region.                                                                                                  |
-| visit:city            | 4347778                       | [GeoName ID](https://www.geonames.org/) of the visitor city.                                                                            |
+| `page`            | /blog/remove-google-analytics | Pathname of the page where the event is triggered. You can also use an asterisk to group multiple pages (`/blog*`)  |
+| `entry_page`      | /home                         | Page on which the visit session started (landing page).                                                                                 |
+| `exit_page`       | /home                         | Page on which the visit session ended (last page viewed).                                                                               |
+| `source`          | Twitter                       | Visit source, populated from an url query parameter tag (`utm_source`, `source` or `ref`) or the `Referer` HTTP header.                 |
+| `referrer`        | t.co/fzWTE9OTPt               | Raw `Referer` header without `http://`, `http://` or `www.`.                                                                            |
+| `utm_medium`      | social                        | Raw value of the `utm_medium` query param on the entry page.                                                                            |
+| `utm_source`      | twitter                       | Raw value of the `utm_source` query param on the entry page.                                                                            |
+| `utm_campaign`    | profile                       | Raw value of the `utm_campaign` query param on the entry page.                                                                          |
+| `utm_content`     | banner                        | Raw value of the `utm_content` query param on the entry page.                                                                           |
+| `utm_term`        | keyword                       | Raw value of the `utm_term` query param on the entry page.                                                                              |
+| `device`          | Desktop                       | Device type. Possible values are `Desktop`, `Laptop`, `Tablet` and `Mobile`.                                                            |
+| `browser`         | Chrome                        | Name of the browser vendor. Most popular ones are `Chrome`, `Safari` and `Firefox`.                                                     |
+| `browser_version` | 88.0.4324.146                 | Version number of the browser used by the visitor.                                                                                      |
+| os              | Mac                           | Name of the operating system. Most popular ones are `Mac`, `Windows`, `iOS` and `Android`. Linux distributions are reported separately. |
+| `os_version`      | 10.6                          | Version number of the operating system used by the visitor.                                                                             |
+| `country`         | US                            | ISO 3166-1 alpha-2 code of the visitor country.                                                                                         |
+| `region`          | US-MD                         | ISO 3166-2 code of the visitor region.                                                                                                  |
+| `city`            | 4347778                       | [GeoName ID](https://www.geonames.org/) of the visitor city.                                                                            |
 
 #### Custom properties
 
@@ -219,7 +218,7 @@ This endpoint can be used to fetch data for `Top sources`, `Top pages`, `Top cou
 
 
 ```bash title="Try it yourself"
-curl 'https://cloud.vinceanalytics.com/api/v1/stats/breakdown?site_id=$SITE_ID&period=6mo&property=visit:source&metrics=visitors,bounce_rate&limit=5' \
+curl 'https://cloud.vinceanalytics.com/api/v1/stats/breakdown?site_id=$SITE_ID&period=6mo&property=`source`&metrics=visitors,bounce_rate&limit=5' \
   -H "Authorization: Bearer ${TOKEN}"
 ```
 
