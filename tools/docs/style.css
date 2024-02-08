@@ -103,7 +103,7 @@ code {
     padding: 1px 4px;
     margin: -1px 0;
     border-radius: 5px;
-    white-space: nowrap;
+    white-space: pre;
 }
 
 .dl {
@@ -507,6 +507,22 @@ blockquote {
     padding: 0 1em;
     color: var(--fg);
     border-left: .25em solid var(--border);
+}
+
+.required {
+    color: #ED8936;
+    font-size: 0.7rem;
+    font-weight: bold;
+    position: relative;
+    bottom: 4px;
+}
+
+.optional {
+    color: #718096;
+    font-size: 0.7rem;
+    font-weight: bold;
+    position: relative;
+    bottom: 4px;
 }
 
 .markdown-body blockquote {

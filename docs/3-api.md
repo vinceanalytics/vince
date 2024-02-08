@@ -1,0 +1,269 @@
+
+
+# API 
+
+> **CC-BY-S-4.0** *This section was initially copied from Plausible Analytics docs*
+
+The`VinceAnalytics` API offers a way to retrieve your stats programmatically. It's a read-only interface to present historical and real-time stats only. Take a look at our [events API](#events) if you want to send pageviews or custom events.
+
+The API accepts GET requests with query parameters and returns standard HTTP responses along with a JSON-encoded body. All API requests must be made over HTTPS. Calls made over plain HTTP will fail. API requests without authentication will also fail.
+
+Each request must be authenticated with an [authToken](#authorization)y using the Bearer Token method.
+
+
+## Concepts
+
+Querying the `vince` API will feel familiar if you have used time-series databases before. You can't query individual records from
+our stats database. You can only request aggregated metrics over a certain time period.
+
+Each request requires a `site_id` parameter which is the domain of your site as configured in [domains](#domains). 
+
+### Metrics
+
+You can specify a `metrics` option in the query, to choose the metrics for each instance returned. See here for a full overview of [metrics and their definitions](#all-metrics-and-their-definitions). The metrics currently supported in Stats API are:
+
+| Metric            | Description                                                                                                                                               |
+|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `visitors`        | The number of unique visitors.                                                                                                                            |
+| `visits`          | The number of visits/sessions                                                                                                                             |
+| `pageviews`       | The number of pageview events                                                                                                                             |
+| `views_per_visit` | The number of pageviews divided by the number of visits. Returns a floating point number. currently only supported in Aggregate and Timeseries endpoints. |
+| `bounce_rate`     | Bounce rate percentage                                                                                                                                    |
+| `visit_duration`  | Visit duration in seconds                                                                                                                                 |
+| `events`          | The number of events (pageviews + custom events)                                                                                                          |
+
+### Time periods
+
+The options are identical for each endpoint that supports configurable time periods. Each period is relative to a `date` parameter. The date should follow the standard ISO-8601 format. When not specified, the `date` field defaults to `today(site.timezone)`.
+All time calculations on our backend are done in the time zone that the site is configured in.
+
+* `12mo,6mo` - Last n calendar months relative to `date`.
+* `month` - The calendar month that `date` falls into.
+* `30d,7d` - Last n days relative to `date`.
+* `day` - Stats for the full day specified in `date`.
+* `custom` - Provide a custom range in the `date` parameter.
+
+When using a custom range, the `date` parameter expects two ISO-8601 formatted dates joined with a comma as follows `?period=custom&date=2021-01-01,2021-01-31`.
+Stats will be returned for the whole date range inclusive of the start and end dates.
+
+### Properties
+
+Each pageview and custom event in our database has some predefined _properties_ associated with it. In other analytics tools, these
+are often referred to as _dimensions_ as well. Properties can be used for filtering and breaking down your stats to drill into
+more depth. Here's the full list of properties we collect automatically:
+
+| Property              | Example                       | Description                                                                                                                             |
+| --------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| event:goal            | Register                      | A custom action that you want your users to take. To use this property, you first need to configure some goals in the [site settings](/website-settings), or via the [Sites API](/sites-api). Learn more about goals [here](/goal-conversions).                            |
+| event:page            | /blog/remove-google-analytics | Pathname of the page where the event is triggered. You can also use an asterisk to group multiple pages (`/blog*`)  |
+| visit:entry_page      | /home                         | Page on which the visit session started (landing page).                                                                                 |
+| visit:exit_page       | /home                         | Page on which the visit session ended (last page viewed).                                                                               |
+| visit:source          | Twitter                       | Visit source, populated from an url query parameter tag (`utm_source`, `source` or `ref`) or the `Referer` HTTP header.                 |
+| visit:referrer        | t.co/fzWTE9OTPt               | Raw `Referer` header without `http://`, `http://` or `www.`.                                                                            |
+| visit:utm_medium      | social                        | Raw value of the `utm_medium` query param on the entry page.                                                                            |
+| visit:utm_source      | twitter                       | Raw value of the `utm_source` query param on the entry page.                                                                            |
+| visit:utm_campaign    | profile                       | Raw value of the `utm_campaign` query param on the entry page.                                                                          |
+| visit:utm_content     | banner                        | Raw value of the `utm_content` query param on the entry page.                                                                           |
+| visit:utm_term        | keyword                       | Raw value of the `utm_term` query param on the entry page.                                                                              |
+| visit:device          | Desktop                       | Device type. Possible values are `Desktop`, `Laptop`, `Tablet` and `Mobile`.                                                            |
+| visit:browser         | Chrome                        | Name of the browser vendor. Most popular ones are `Chrome`, `Safari` and `Firefox`.                                                     |
+| visit:browser_version | 88.0.4324.146                 | Version number of the browser used by the visitor.                                                                                      |
+| visit:os              | Mac                           | Name of the operating system. Most popular ones are `Mac`, `Windows`, `iOS` and `Android`. Linux distributions are reported separately. |
+| visit:os_version      | 10.6                          | Version number of the operating system used by the visitor.                                                                             |
+| visit:country         | US                            | ISO 3166-1 alpha-2 code of the visitor country.                                                                                         |
+| visit:region          | US-MD                         | ISO 3166-2 code of the visitor region.                                                                                                  |
+| visit:city            | 4347778                       | [GeoName ID](https://www.geonames.org/) of the visitor city.                                                                            |
+
+#### Custom properties
+
+TBD
+
+### Filtering
+
+TBD
+
+
+## Endpoints
+
+### GET /api/v1/stats/realtime/visitors
+
+This endpoint returns the number of current visitors on your site. A current visitor is defined as a visitor who triggered a pageview on your site
+in the last 5 minutes.
+
+```bash title="Try it yourself"
+curl 'https://plausible.io/api/v1/stats/realtime/visitors?site_id=$SITE_ID'
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+```json 
+21
+```
+
+#### Parameters
+<hr/>
+
+**site_id** <span class="required">REQUIRED<span/>
+
+Domain of your site on `vince`.
+<hr / >
+
+### GET /api/v1/stats/aggregate
+
+This endpoint aggregates metrics over a certain time period. If you are familiar with the Plausible dashboard, this endpoint corresponds to the top row of stats that include `Unique Visitors` Pageviews, `Bounce rate` and `Visit duration`. You can retrieve any number and combination of these metrics in one request.
+
+
+```bash
+curl 'https://plausible.io/api/v1/stats/aggregate?site_id=$SITE_ID&period=6mo&metrics=visitors,pageviews,bounce_rate,visit_duration' \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+```
+{
+  "results": {
+    "bounce_rate": {
+        "value": 53.0
+    },
+    "pageviews": {
+        "value": 673814
+    },
+    "visit_duration": {
+        "value": 86.0
+    },
+    "visitors": {
+        "value": 201524
+    }
+  }
+}
+```
+
+#### Parameters
+<hr / >
+
+**site_id** <span class="required">REQUIRED<span/>
+
+Domain of your site on Plausible.
+
+<hr / >
+
+**period** <span class="optional">optional<span/>
+
+See [time periods](#time-periods). If not specified, it will default to `30d`.
+
+<hr / >
+
+**metrics** <span class="optional">optional<span/>
+
+List of metrics to aggregate. Valid options are `visitors`, `visits`, `pageviews`, `views_per_visit`, `bounce_rate`, `visit_duration` and `events`. If not specified, it will default to `visitors`.
+
+<hr / >
+
+**filters** <span class="optional">optional<span/>
+
+See [filtering](#filtering)
+<hr / >
+
+### GET /api/v1/stats/timeseries
+
+This endpoint provides timeseries data over a certain time period. If you are familiar with the Plausible dashboard, this endpoint corresponds to
+the main visitor graph.
+
+
+```bash title="Try it yourself"
+curl 'https://plausible.io/api/v1/stats/timeseries?site_id=$SITE_ID&period=6mo'
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+TBD
+
+#### Parameters
+<hr / >
+
+**site_id** <span class="required">REQUIRED<span/>
+
+Domain of your site on Plausible.
+
+<hr / >
+
+**period** <span class="optional">optional<span/>
+
+See [time periods](#time-periods). If not specified, it will default to `30d`.
+
+<hr / >
+
+**filters** <span class="optional">optional<span/>
+
+See [filtering](#filtering)
+
+<hr / >
+
+**metrics** <span class="optional">optional<span/>
+
+Comma-separated list of metrics to show for each time bucket. Valid options are `visitors`, `visits`, `pageviews`, `views_per_visit`, `bounce_rate`, `visit_duration` and `events`. If not
+specified, it will default to `visitors`.
+
+<hr / >
+
+**interval** <span class="optional">optional<span/>
+
+Choose your reporting interval. Valid options are `date` (always) and `month` (when specified period is longer than one calendar month). Defaults to
+`month` for `6mo` and `12mo`, otherwise falls back to `date`.
+
+### GET /api/v1/stats/breakdown
+
+This endpoint allows you to break down your stats by some property. If you are familiar with SQL family databases, this endpoint corresponds to
+running `GROUP BY` on a certain property in your stats, then ordering by the count.
+
+Check out the [properties](#properties) section for a reference of all the properties you can use in this query.
+
+This endpoint can be used to fetch data for `Top sources`, `Top pages`, `Top countries` and similar reports.
+
+
+```bash title="Try it yourself"
+curl 'https://plausible.io/api/v1/stats/breakdown?site_id=$SITE_ID&period=6mo&property=visit:source&metrics=visitors,bounce_rate&limit=5' \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+TBD 
+
+#### Parameters
+<hr / >
+
+**site_id** <span class="required">REQUIRED<span/>
+
+Domain of your site on Plausible.
+
+<hr / >
+
+**property** <span class="required">REQUIRED<span/>
+
+Which property to break down the stats by. Valid options are listed in the [properties](#properties) section above.
+
+<hr / >
+
+**period** <span class="optional">optional<span/>
+
+See [time periods](#time-periods). If not specified, it will default to `30d`.
+
+<hr / >
+
+**metrics** <span class="optional">optional<span/>
+
+Comma-separated list of metrics to show for each item in breakdown. Valid options are `visitors`, `pageviews`, `bounce_rate`, `visit_duration`, `visits` and `events`. If not
+specified, it will default to `visitors`.
+
+<hr / >
+
+**limit** <span class="optional">optional<span/>
+
+Limit the number of results. Maximum value is 1000. Defaults to 100. If you want to get more than 1000 results, you can make multiple requests and paginate the results by specifying the `page` parameter (e.g. make the same request with `page=1`, then `page=2`, etc)
+
+<hr / >
+**page** <span class="optional">optional<span/>
+
+Number of the page, used to paginate results. Importantly, the page numbers start from 1 not 0.
+
+<hr / >
+**filters** <span class="optional">optional<span/>
+
+See [filtering](#filtering)
+
