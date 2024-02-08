@@ -1,5 +1,5 @@
+set -euo pipefail
+
 go build -o bin/vince
 
-export VINCE_LOG_LEVEL=DEBUG
-export VINCE_DOMAINS=vinceanalytics.com
-./bin/vince
+VINCE_LOG_LEVEL=DEBUG VINCE_DOMAINS=vinceanalytics.com ./bin/vince
