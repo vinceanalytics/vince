@@ -1,6 +1,6 @@
 
 
-# API 
+# Stats API
 
 > **CC-BY-S-4.0** *This section was initially copied from Plausible Analytics docs*
 
@@ -91,7 +91,7 @@ This endpoint returns the number of current visitors on your site. A current vis
 in the last 5 minutes.
 
 ```bash title="Try it yourself"
-curl 'https://plausible.io/api/v1/stats/realtime/visitors?site_id=$SITE_ID'
+curl 'https://cloud.vinceanalytics.com/api/v1/stats/realtime/visitors?site_id=$SITE_ID'
   -H "Authorization: Bearer ${TOKEN}"
 ```
 
@@ -113,7 +113,7 @@ This endpoint aggregates metrics over a certain time period. If you are familiar
 
 
 ```bash
-curl 'https://plausible.io/api/v1/stats/aggregate?site_id=$SITE_ID&period=6mo&metrics=visitors,pageviews,bounce_rate,visit_duration' \
+curl 'https://cloud.vinceanalytics.com/api/v1/stats/aggregate?site_id=$SITE_ID&period=6mo&metrics=visitors,pageviews,bounce_rate,visit_duration' \
   -H "Authorization: Bearer ${TOKEN}"
 ```
 
@@ -169,7 +169,7 @@ the main visitor graph.
 
 
 ```bash title="Try it yourself"
-curl 'https://plausible.io/api/v1/stats/timeseries?site_id=$SITE_ID&period=6mo'
+curl 'https://cloud.vinceanalytics.com/api/v1/stats/timeseries?site_id=$SITE_ID&period=6mo'
   -H "Authorization: Bearer ${TOKEN}"
 ```
 
@@ -219,7 +219,7 @@ This endpoint can be used to fetch data for `Top sources`, `Top pages`, `Top cou
 
 
 ```bash title="Try it yourself"
-curl 'https://plausible.io/api/v1/stats/breakdown?site_id=$SITE_ID&period=6mo&property=visit:source&metrics=visitors,bounce_rate&limit=5' \
+curl 'https://cloud.vinceanalytics.com/api/v1/stats/breakdown?site_id=$SITE_ID&period=6mo&property=visit:source&metrics=visitors,bounce_rate&limit=5' \
   -H "Authorization: Bearer ${TOKEN}"
 ```
 

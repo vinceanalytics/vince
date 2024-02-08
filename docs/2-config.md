@@ -201,7 +201,7 @@ with issued certificates.
 
 ### acmeDomain
 > `acmeDomain` should be the domain name that is used to point to your server. 
-> For example we host vince instance on `api.vinceanalytics.com` so we use this as `acmeDomain`
+> For example we host vince instance on `cloud.vinceanalytics.com` so we use this as `acmeDomain`
 
 *env*
 : `VINCE_ACME_DOMAIN` example `VINCE_ACME_DOMAIN=example.org`

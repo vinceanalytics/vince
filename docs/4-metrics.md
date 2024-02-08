@@ -35,7 +35,7 @@ The number of people currently on your site. This metric does not depend on the 
 
 ## Direct / None
 
-Includes visitors who typed your URL into their browser or clicked a link in an email. It also includes other visitors who were [missing a referrer header](https://plausible.io/blog/referrer-policy).
+Includes visitors who typed your URL into their browser or clicked a link in an email. It also includes other visitors who were [missing a referrer header](https://cloud.vinceanalytics.com/blog/referrer-policy).
 
 ## Entry Pages
 
@@ -117,7 +117,7 @@ When a visitor converts for a particular goal they’ll be counted as a unique c
 
 ## Unique Visitors
 
-The number of people who visited your site. We are privacy-friendly so we don't use cookies and other persistent identifiers. If a person visits from multiple devices or on multiple days, they are counted as separate visitors. You can learn more about [how we count unique visitors](https://plausible.io/data-policy).
+The number of people who visited your site. We are privacy-friendly so we don't use cookies and other persistent identifiers. If a person visits from multiple devices or on multiple days, they are counted as separate visitors. You can learn more about [how we count unique visitors](https://cloud.vinceanalytics.com/data-policy).
 
 ## Views Per Visit (or Pages / Session)
 
@@ -133,4 +133,4 @@ If you have issues with high bounce rates on your site, you can try to set up so
 
 A session (also known as a visit) is a set of actions that a user takes on your site. A visit is started when a visitor first lands on your page and ends when no action is taken on your site for 30 minutes.
 
-You can read more about how you can use these metrics to [measure your website's or startup's progress and make better decisions](https://plausible.io/blog/analytics-metrics-definitions).
+You can read more about how you can use these metrics to [measure your website's or startup's progress and make better decisions](https://cloud.vinceanalytics.com/blog/analytics-metrics-definitions).
