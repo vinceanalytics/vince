@@ -1,14 +1,13 @@
 package api
 
 import (
-	"io"
 	"net"
 	"net/http"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/guard"
+	"github.com/vinceanalytics/vince/request"
 	"github.com/vinceanalytics/vince/session"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func ReceiveEvent(w http.ResponseWriter, r *http.Request) {
@@ -20,10 +19,7 @@ func ReceiveEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var ev v1.Event
-	b, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20))
-	err := protojson.Unmarshal(b, &ev)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+	if !request.Read(w, r, &ev) {
 		return
 	}
 	if !xg.Accept(ev.D) {
