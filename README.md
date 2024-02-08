@@ -10,7 +10,7 @@
 
 ## What ?
 
-`vice` is a modern server for collecting and analyzing website analytics. `vince` focuses on modern web application development by emphasizing easy of use for both deployment, maintenance and integration with existing infrastructure.
+`vince` is a modern server for collecting and analyzing website analytics. `vince` focuses on modern web application development by emphasizing easy of use for both deployment, maintenance and integration with existing infrastructure.
 
 ## Why ?
 
