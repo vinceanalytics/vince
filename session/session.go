@@ -24,9 +24,10 @@ const (
 )
 
 type Session struct {
-	build *staples.Arrow[staples.Event]
-	mu    sync.Mutex
-	cache *ristretto.Cache
+	build  *staples.Arrow[staples.Event]
+	events chan *v1.Event
+	mu     sync.Mutex
+	cache  *ristretto.Cache
 
 	tree *lsm.Tree[staples.Event]
 	log  *slog.Logger
@@ -52,8 +53,9 @@ func New(mem memory.Allocator, resource string, storage db.Storage,
 		logger.Fail("Failed initializing cache", "err", err)
 	}
 	return &Session{
-		build: staples.NewArrow[staples.Event](mem),
-		cache: cache,
+		build:  staples.NewArrow[staples.Event](mem),
+		cache:  cache,
+		events: make(chan *v1.Event, 4<<10),
 		tree: lsm.NewTree[staples.Event](
 			mem, resource, storage, indexer, primary, opts...,
 		),
@@ -62,6 +64,22 @@ func New(mem memory.Allocator, resource string, storage db.Storage,
 }
 
 func (s *Session) Queue(ctx context.Context, req *v1.Event) {
+	s.events <- req
+}
+
+func (s *Session) doProcess(ctx context.Context) {
+	s.log.Info("Starting events processing loop")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case e := <-s.events:
+			s.process(ctx, e)
+		}
+	}
+}
+
+func (s *Session) process(ctx context.Context, req *v1.Event) {
 	e := staples.Parse(ctx, req)
 	if e == nil {
 		return
@@ -69,14 +87,18 @@ func (s *Session) Queue(ctx context.Context, req *v1.Event) {
 	e.Hit()
 	if o, ok := s.cache.Get(e.ID); ok {
 		cached := o.(*staples.Event)
-		cached.Update(e)
 		defer e.Release()
-	} else {
-		s.cache.SetWithTTL(e.ID, e, 1, DefaultSession)
+		s.mu.Lock()
+		// cached can be accessed concurrently. Protect it together with build.
+		cached.Update(e)
+		s.build.Append(e)
+		s.mu.Unlock()
+		return
 	}
 	s.mu.Lock()
 	s.build.Append(e)
 	s.mu.Unlock()
+	s.cache.SetWithTTL(e.ID, e, 1, DefaultSession)
 }
 
 func (s *Session) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
@@ -101,6 +123,7 @@ func (s *Session) Flush() {
 func (s *Session) Start(ctx context.Context) {
 	go s.tree.Start(ctx)
 	go s.doFlush(ctx)
+	go s.doProcess(ctx)
 }
 
 func (s *Session) doFlush(ctx context.Context) {
