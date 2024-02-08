@@ -3,36 +3,6 @@ package v1;
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
-import "google/api/annotations.proto";
-
-service Stats {
-  rpc RealtimeVisitors(Realtime.Request) returns (Realtime.Response) {
-    option (google.api.http) = {
-      get : "/api/v1/visitors/{site_id}",
-    };
-  };
-
-  rpc Aggregate(Aggregate.Request) returns (Aggregate.Response) {
-    option (google.api.http) = {
-      post : "/api/v1/aggregate/{site_id}",
-      body : "*"
-    };
-  };
-
-  rpc Timeseries(Timeseries.Request) returns (Timeseries.Response) {
-    option (google.api.http) = {
-      post : "/api/v1/timeseries/{site_id}",
-      body : "*"
-    };
-  };
-
-  rpc BreakDown(BreakDown.Request) returns (BreakDown.Response) {
-    option (google.api.http) = {
-      post : "/api/v1/stats/breakdown/{site_id}",
-      body : "*"
-    };
-  };
-}
 
 message Realtime {
   message Request {

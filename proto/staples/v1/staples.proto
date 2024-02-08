@@ -4,29 +4,7 @@ package v1;
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
-import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
-
-service Staples {
-  rpc GetVersion(google.protobuf.Empty) returns (Version) {
-    option (google.api.http) = {
-      get : "/api/v1/version"
-    };
-  };
-
-  rpc GetDomains(GetDomainRequest) returns (GetDomainResponse) {
-    option (google.api.http) = {
-      get : "/api/v1/domains",
-    };
-  };
-
-  rpc SendEvent(Event) returns (SendEventResponse) {
-    option (google.api.http) = {
-      post : "/api/v1/event",
-      body : "*"
-    };
-  };
-}
 
 message Version { string version = 1; }
 

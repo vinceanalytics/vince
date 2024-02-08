@@ -16,6 +16,7 @@ import (
 
 func Aggregate(w http.ResponseWriter, r *http.Request) {
 	var req v1.Aggregate_Request
+	req.SiteId = r.URL.Query().Get("domain")
 	if !request.Read(w, r, &req) {
 		return
 	}

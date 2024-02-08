@@ -4,95 +4,13 @@
     "title": "staples/v1/staples.proto",
     "version": "version not set"
   },
-  "tags": [
-    {
-      "name": "Staples"
-    }
-  ],
   "consumes": [
     "application/json"
   ],
   "produces": [
     "application/json"
   ],
-  "paths": {
-    "/api/v1/domains": {
-      "get": {
-        "operationId": "Staples_GetDomains",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetDomainResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "Staples"
-        ]
-      }
-    },
-    "/api/v1/event": {
-      "post": {
-        "operationId": "Staples_SendEvent",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1SendEventResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1Event"
-            }
-          }
-        ],
-        "tags": [
-          "Staples"
-        ]
-      }
-    },
-    "/api/v1/version": {
-      "get": {
-        "operationId": "Staples_GetVersion",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1Version"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "Staples"
-        ]
-      }
-    }
-  },
+  "paths": {},
   "definitions": {
     "protobufAny": {
       "type": "object",
@@ -118,81 +36,6 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
-        }
-      }
-    },
-    "v1Domain": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "v1Event": {
-      "type": "object",
-      "properties": {
-        "n": {
-          "type": "string",
-          "title": "/ EventName"
-        },
-        "url": {
-          "type": "string"
-        },
-        "d": {
-          "type": "string",
-          "title": "Domain"
-        },
-        "w": {
-          "type": "integer",
-          "format": "int32",
-          "title": "Screen width"
-        },
-        "h": {
-          "type": "boolean",
-          "title": "Hash mode"
-        },
-        "ip": {
-          "type": "string"
-        },
-        "ua": {
-          "type": "string",
-          "title": "user agent"
-        },
-        "r": {
-          "type": "string",
-          "title": "Referrer"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "v1GetDomainResponse": {
-      "type": "object",
-      "properties": {
-        "domains": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1Domain"
-          }
-        }
-      }
-    },
-    "v1SendEventResponse": {
-      "type": "object",
-      "properties": {
-        "dropped": {
-          "type": "boolean"
-        }
-      }
-    },
-    "v1Version": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "type": "string"
         }
       }
     }

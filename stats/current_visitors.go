@@ -13,6 +13,7 @@ import (
 
 func Realtime(w http.ResponseWriter, r *http.Request) {
 	var req v1.Realtime_Request
+	req.SiteId = r.URL.Query().Get("domain")
 	if !request.Read(w, r, &req) {
 		return
 	}
