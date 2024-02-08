@@ -115,6 +115,11 @@ func app() *cli.Command {
 				Name:    "acmeDomain",
 				Sources: cli.EnvVars("VINCE_ACME_DOMAIN"),
 			},
+			&cli.StringFlag{
+				Name:    "authToken",
+				Usage:   "Bearer token to authenticate api calls",
+				Sources: cli.EnvVars("VINCE_AUTH_TOKEN"),
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			var level slog.Level

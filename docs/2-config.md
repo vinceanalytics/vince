@@ -215,3 +215,18 @@ with issued certificates.
 {"acme":{"email":"example@example.org","domain":"example.org"}}
 ```
 
+
+## Authorization
+`vince` supports bearer token authorization via `authToken` option. All endpoints except `/api/event` will be protected.
+
+### authToken
+When  set, clients calls without this bearer token will be rejected. 
+
+> This is sensitive info use env var to set it.
+
+*env*
+: `VINCE_AUTH_TOKEN` example `VINCE_AUTH_TOKEN=xxx`
+
+*flag*
+: `--authToken` example `--authToken=xxx`
+

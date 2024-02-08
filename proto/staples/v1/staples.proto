@@ -22,6 +22,7 @@ message Config {
 
   bool auto_tls = 11;
   Acme acme = 12;
+  string auth_token = 13;
 }
 
 message Acme {
