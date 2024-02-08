@@ -69,9 +69,9 @@ more depth. Here's the full list of properties we collect automatically:
 | `browser_version` | 88.0.4324.146                 | Version number of the browser used by the visitor.                                                                                      |
 | os              | Mac                           | Name of the operating system. Most popular ones are `Mac`, `Windows`, `iOS` and `Android`. Linux distributions are reported separately. |
 | `os_version`      | 10.6                          | Version number of the operating system used by the visitor.                                                                             |
-| `country`         | US                            | ISO 3166-1 alpha-2 code of the visitor country.                                                                                         |
-| `region`          | US-MD                         | ISO 3166-2 code of the visitor region.                                                                                                  |
-| `city`            | 4347778                       | [GeoName ID](https://www.geonames.org/) of the visitor city.                                                                            |
+| `country`         | United Kingdom                 | Country of the visitor country.                                                                                         |
+| `region`          | England                         | Region the visitor region.                                                                                                  |
+| `city`            | London                      | City of the visitor city.                                                                            |
 
 #### Custom properties
 
