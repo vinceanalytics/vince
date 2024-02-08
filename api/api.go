@@ -13,7 +13,6 @@ import (
 	"github.com/vinceanalytics/vince/stats"
 	"github.com/vinceanalytics/vince/tracker"
 	"github.com/vinceanalytics/vince/version"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type API struct {
@@ -82,12 +81,6 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 
 func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.hand.ServeHTTP(w, r)
-}
-
-func (a *API) GetVersion(_ context.Context, _ *emptypb.Empty) (*v1.Version, error) {
-	return &v1.Version{
-		Version: version.VERSION,
-	}, nil
 }
 
 func SendEvent(w http.ResponseWriter, r *http.Request) {
