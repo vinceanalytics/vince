@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bufbuild/protovalidate-go"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/guard"
+	"github.com/vinceanalytics/vince/logger"
 	"github.com/vinceanalytics/vince/request"
 	"github.com/vinceanalytics/vince/session"
 	"github.com/vinceanalytics/vince/stats"
@@ -27,13 +27,12 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 	a := &API{
 		config: o,
 	}
-	valid, err := protovalidate.New()
-	if err != nil {
-		return nil, err
-	}
-	ctx = request.With(ctx, valid)
 	base := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		println("======?", r.URL.Path)
+		code := &responseCode{ResponseWriter: w}
+		defer func() {
+			logger.Get(r.Context()).Debug(r.URL.String(), "method", r.Method, "status", code.code)
+		}()
+		w = code
 		if a.config.AuthToken != "" && r.URL.Path != "/api/event" {
 			if subtle.ConstantTimeCompare([]byte(a.config.AuthToken), []byte(parseBearer(r.Header.Get("Authorization")))) != 1 {
 				request.Error(r.Context(), w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
@@ -88,6 +87,16 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 
 	a.hand = base
 	return a, nil
+}
+
+type responseCode struct {
+	http.ResponseWriter
+	code int
+}
+
+func (r *responseCode) WriteHeader(code int) {
+	r.code = code
+	r.ResponseWriter.WriteHeader(code)
 }
 
 func parseBearer(auth string) (token string) {

@@ -13,11 +13,13 @@ import (
 
 func Realtime(w http.ResponseWriter, r *http.Request) {
 	var req v1.Realtime_Request
-	req.SiteId = r.URL.Query().Get("domain")
-	if !request.Read(w, r, &req) {
+	req.SiteId = r.URL.Query().Get("site_id")
+	ctx := r.Context()
+	if err := request.Get(r.Context()).Validate(&req); err != nil {
+		logger.Get(ctx).Error("Failed validating request body", "err", err)
+		request.Error(ctx, w, http.StatusBadRequest, err.Error())
 		return
 	}
-	ctx := r.Context()
 	now := time.Now().UTC()
 	firstTime := now.Add(-5 * time.Minute)
 	result, err := session.Get(ctx).Scan(ctx,

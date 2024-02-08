@@ -38,20 +38,6 @@ func CMD() *cli.Command {
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			vince := c.String("vince")
-			// check if it is reachable
-			req, err := http.NewRequest(http.MethodGet, vince+"/api/v1/version", nil)
-			if err != nil {
-				return err
-			}
-			req.Header.Set("Content-Type", "application/json")
-			res, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer res.Body.Close()
-			if res.StatusCode != http.StatusOK {
-				return fmt.Errorf("%s is not accessible", vince)
-			}
 			program := &Program{
 				Agents:   Agents(),
 				Referrer: Referrer(),
@@ -64,7 +50,7 @@ func CMD() *cli.Command {
 			if a == "" {
 				return nil
 			}
-			data, err = os.ReadFile(a)
+			data, err := os.ReadFile(a)
 			if err != nil {
 				return fmt.Errorf("failed reading js file %q %v", a, err)
 			}

@@ -24,6 +24,7 @@ import (
 	"github.com/vinceanalytics/vince/load"
 	"github.com/vinceanalytics/vince/logger"
 	"github.com/vinceanalytics/vince/lsm"
+	"github.com/vinceanalytics/vince/request"
 	"github.com/vinceanalytics/vince/session"
 	"github.com/vinceanalytics/vince/staples"
 	"github.com/vinceanalytics/vince/version"
@@ -220,6 +221,11 @@ func app() *cli.Command {
 			ctx = guard.With(ctx, gd)
 
 			log.Info("Setup api")
+			validate, err := protovalidate.New()
+			if err != nil {
+				return err
+			}
+			ctx = request.With(ctx, validate)
 			a, err := api.New(ctx, base)
 			if err != nil {
 				return err

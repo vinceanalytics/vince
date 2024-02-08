@@ -20,7 +20,7 @@ import (
 
 func TimeSeries(w http.ResponseWriter, r *http.Request) {
 	var req v1.Timeseries_Request
-	req.SiteId = r.URL.Query().Get("domain")
+	req.SiteId = r.URL.Query().Get("site_id")
 	if !request.Read(w, r, &req) {
 		return
 	}
