@@ -6,7 +6,7 @@
 
 ### Installation script
 ```bash
-curl -fsSL https://github.com/vinceanalytics/vince/releases/latest/download/install.sh | bash
+curl -fsSL https://vinceanalytics.com/install.sh | bash
 ```
 
 ### Homebrew
