@@ -173,7 +173,7 @@ func (lsm *Tree[T]) Scan(
 	}
 	project := make([]int, 0, len(fs.Projection))
 	for _, name := range fs.Projection {
-		col, ok := lsm.mapping[name.String()]
+		col, ok := lsm.mapping[staples.Camel(name.String())]
 		if !ok {
 			return nil, fmt.Errorf("column %s does not exist", name)
 		}

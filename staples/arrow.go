@@ -62,7 +62,7 @@ func build(r reflect.Type) (o []arrow.Field) {
 		}
 		if base, ok := baseTypes[typ.Kind()]; ok {
 			o = append(o, arrow.Field{
-				Name:     camel(f.Name),
+				Name:     Camel(f.Name),
 				Type:     base,
 				Nullable: f.Type.Kind() == reflect.Ptr || typ.Kind() == reflect.String,
 			})
@@ -73,7 +73,7 @@ func build(r reflect.Type) (o []arrow.Field) {
 	return
 }
 
-func camel(name string) string {
+func Camel(name string) string {
 	first := true
 	return strings.Map(func(r rune) rune {
 		if first {

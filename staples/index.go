@@ -70,7 +70,7 @@ func NewIndex() *Index {
 		if !f.IsExported() {
 			continue
 		}
-		idx.mapping[camel(f.Name)] = r.Field(i).Interface().(*index.ColumnImpl)
+		idx.mapping[Camel(f.Name)] = r.Field(i).Interface().(*index.ColumnImpl)
 	}
 	return idx
 }
