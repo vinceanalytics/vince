@@ -43,17 +43,17 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 		switch r.Method {
 		case http.MethodGet:
 			switch r.URL.Path {
-			case "/v1/version":
+			case "/api/v1/version":
 				request.Write(r.Context(), w, &v1.Version{Version: version.VERSION})
 				return
-			case "/v1/domains":
+			case "/api/v1/domains":
 				o := make([]*v1.Domain, 0, len(a.config.Domains))
 				for _, n := range a.config.Domains {
 					o = append(o, &v1.Domain{Name: n})
 				}
 				request.Write(r.Context(), w, &v1.GetDomainResponse{Domains: o})
 				return
-			case "/v1/visitors":
+			case "/api/v1/visitors":
 				stats.Realtime(w, r)
 				return
 			default:
@@ -64,13 +64,13 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 			}
 		case http.MethodPost:
 			switch r.URL.Path {
-			case "/v1/event":
+			case "/api/v1/event":
 				SendEvent(w, r)
 				return
-			case "/v1/aggregate":
+			case "/api/v1/aggregate":
 				stats.Aggregate(w, r)
 				return
-			case "/v1/timeseries":
+			case "/api/v1/timeseries":
 				stats.TimeSeries(w, r)
 				return
 			case "/api/event":
