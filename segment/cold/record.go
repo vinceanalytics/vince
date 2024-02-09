@@ -32,7 +32,9 @@ func (r *Record) Release() {
 
 func (r *Record) EachField(vf segment.VisitField) {
 	for i := 0; i < int(r.record.NumCols()); i++ {
-		visitArray(r.record.Column(i), r.record.ColumnName(i), vf)
+		if r.accept(r.record, i) {
+			visitArray(r.record.Column(i), r.record.ColumnName(i), vf)
+		}
 	}
 }
 
