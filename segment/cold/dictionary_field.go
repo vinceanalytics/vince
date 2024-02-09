@@ -42,7 +42,7 @@ func (f *base) Value() []byte { return nil }
 
 func (f *base) Index() bool          { return true }
 func (f *base) Store() bool          { return true }
-func (f *base) IndexDocValues() bool { return true }
+func (f *base) IndexDocValues() bool { return false }
 
 func (f *DictionaryField) EachTerm(vt segment.VisitTerm) {
 	for i := 0; i < f.array.Len(); i++ {
