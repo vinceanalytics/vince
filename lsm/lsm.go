@@ -54,7 +54,6 @@ type Tree[T any] struct {
 	index  index.Index
 	mem    memory.Allocator
 	merger *staples.Merger
-	store  *db.Store
 
 	opts Options
 	log  *slog.Logger
@@ -114,7 +113,6 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 		index:    indexer,
 		mem:      mem,
 		merger:   m,
-		store:    db.NewStore(storage, mem, resource, o.ttl),
 		primary:  primary,
 		resource: resource,
 		opts:     o,
@@ -298,23 +296,6 @@ func (lsm *Tree[T]) Compact() {
 }
 
 func (lsm *Tree[T]) persist(r arrow.Record) {
-	idx, err := lsm.index.Index(r)
-	if err != nil {
-		lsm.log.Error("Failed building index for record", "err", err)
-		return
-	}
-	result, err := lsm.store.Save(r, idx)
-	if err != nil {
-		lsm.log.Error("Failed saving record to permanent storage", "err", err)
-		return
-	}
-	lsm.log.Info("Saved indexed record to permanent storage",
-		slog.String("id", result.Id),
-		slog.Uint64("after_merge_size", result.Size),
-		slog.Time("min_ts", time.Unix(0, int64(result.Min))),
-		slog.Time("max_ts", time.Unix(0, int64(result.Max))),
-	)
-	lsm.primary.Add(lsm.resource, result)
 	return
 }
 
