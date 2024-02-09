@@ -76,7 +76,7 @@ var baseTypes = map[reflect.Kind]arrow.DataType{
 	reflect.Bool: arrow.FixedWidthTypes.Boolean,
 	reflect.String: &arrow.DictionaryType{
 		IndexType: arrow.PrimitiveTypes.Uint32,
-		ValueType: arrow.BinaryTypes.String,
+		ValueType: arrow.BinaryTypes.Binary,
 	},
 	reflect.Int64:   arrow.PrimitiveTypes.Int64,
 	reflect.Float64: arrow.PrimitiveTypes.Float64,
@@ -124,17 +124,6 @@ func write(b array.Builder) func(reflect.Value) {
 		}
 	case *array.BinaryDictionaryBuilder:
 		return func(v reflect.Value) {
-			if v.Kind() == reflect.Slice {
-				if v.IsNil() {
-					e.AppendNull()
-					return
-				}
-				err := e.Append(v.Bytes())
-				if err != nil {
-					panic(err)
-				}
-				return
-			}
 			s := v.String()
 			if s == "" {
 				e.AppendNull()
@@ -196,13 +185,13 @@ func merge(b array.Builder) func(arrow.Array) {
 	case *array.BinaryDictionaryBuilder:
 		return func(v arrow.Array) {
 			a := v.(*array.Dictionary)
-			x := a.Dictionary().(*array.String)
+			x := a.Dictionary().(*array.Binary)
 			for i := 0; i < a.Len(); i++ {
 				if a.IsNull(i) {
 					e.AppendNull()
 					continue
 				}
-				e.AppendString(x.Value(a.GetValueIndex(i)))
+				e.Append(x.Value(a.GetValueIndex(i)))
 			}
 		}
 	default:

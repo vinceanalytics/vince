@@ -104,18 +104,18 @@ func (m *Model) Size() int {
 
 type Field struct {
 	Dict *array.Dictionary
-	Str  *array.String
+	Str  *array.Binary
 }
 
 func (f *Field) Get(i int) string {
-	return f.Str.Value(f.Dict.GetValueIndex(i))
+	return string(f.Str.Value(f.Dict.GetValueIndex(i)))
 }
 
 func newStr(a arrow.Array) *Field {
 	d := a.(*array.Dictionary)
 	return &Field{
 		Dict: d,
-		Str:  d.Dictionary().(*array.String),
+		Str:  d.Dictionary().(*array.Binary),
 	}
 }
 
