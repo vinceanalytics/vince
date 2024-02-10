@@ -80,7 +80,7 @@ func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
 	return &v1.Granule{
 		Min:  int64(idx.Min()),
 		Max:  int64(idx.Max()),
-		Size: size + idx.Size(),
+		Size: size + uint64(buf.Len()),
 		Id:   id,
 		Rows: uint64(r.NumRows()),
 	}, nil
