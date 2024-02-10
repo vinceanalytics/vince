@@ -11,6 +11,8 @@ type Full interface {
 	Columns(f func(column Column) error) error
 	Match(b *roaring.Bitmap, m []*filters.CompiledFilter)
 	Size() uint64
+	Min() uint64
+	Max() uint64
 }
 
 type Column interface {

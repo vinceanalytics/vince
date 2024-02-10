@@ -28,7 +28,10 @@ type ReaderAtSeeker interface {
 func writeFull(w io.Writer, full Full) error {
 	chunk := new(chunkWriter)
 	b := new(bytes.Buffer)
-	meta := &v1.Metadata{}
+	meta := &v1.Metadata{
+		Min: full.Min(),
+		Max: full.Max(),
+	}
 	var startOffset uint64
 	err := full.Columns(func(column Column) (err error) {
 		var col *v1.Metadata_Column
