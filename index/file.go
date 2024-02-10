@@ -29,10 +29,25 @@ type ReaderAtSeeker interface {
 }
 
 type FileIndex struct {
-	dataSize uint64
-	r        ReaderAtSeeker
-	meta     *v1.Metadata
-	m        map[string]*FullColumn
+	r    ReaderAtSeeker
+	meta *v1.Metadata
+	m    map[string]*FullColumn
+}
+
+func NewFileIndex(r ReaderAtSeeker) (*FileIndex, error) {
+	meta, err := readMetadata(r)
+	if err != nil {
+		return nil, err
+	}
+	_, err = r.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	return &FileIndex{
+		r:    r,
+		meta: meta,
+		m:    make(map[string]*FullColumn),
+	}, nil
 }
 
 var _ Full = (*FileIndex)(nil)
