@@ -97,14 +97,14 @@ Most endpoints support a `filters` query parameter to drill down into your data.
 This endpoint returns the number of current visitors on your site. A current visitor is defined as a visitor who triggered a pageview on your site
 in the last 5 minutes.
 
-```bash title="Try it yourself"
-curl 'https://cloud.vinceanalytics.com/api/v1/stats/realtime/visitors?site_id=$SITE_ID'
-  -H "Authorization: Bearer ${TOKEN}"
+```bash
++ curl -X GET 'http://localhost:8080/api/v1/stats/realtime/visitors?site_id=vinceanalytics.com'
+{
+  "visitors": "5"
+}
 ```
 
-```json 
-21
-```
+
 
 #### Parameters
 <hr/>
