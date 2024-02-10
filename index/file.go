@@ -211,7 +211,7 @@ func writeColumn(out io.Writer, column Column, startOffset uint64, w *buffers.By
 	if err != nil {
 		return nil, 0, err
 	}
-	n, err = w.Write(o)
+	n, err = out.Write(o)
 	if err != nil {
 		return nil, 0, err
 	}
