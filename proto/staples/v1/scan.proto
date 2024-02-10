@@ -62,6 +62,7 @@ message Metadata {
   repeated Column columns = 1;
   uint64 min = 2;
   uint64 max = 3;
+  string id = 4;
 
   message Column {
     string name = 1;

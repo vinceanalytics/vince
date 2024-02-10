@@ -126,9 +126,10 @@ func chuckFromRaw(raw []byte, chunk *v1.Metadata_Chunk) []byte {
 	return raw[chunk.Offset : chunk.Offset+chunk.Size]
 }
 
-func writeFull(w io.Writer, full Full) error {
+func writeFull(w io.Writer, full Full, id string) error {
 	b := new(bytes.Buffer)
 	meta := &v1.Metadata{
+		Id:  id,
 		Min: full.Min(),
 		Max: full.Max(),
 	}
