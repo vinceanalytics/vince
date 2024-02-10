@@ -46,9 +46,6 @@ func (f *base) IndexDocValues() bool { return false }
 
 func (f *DictionaryField) EachTerm(vt segment.VisitTerm) {
 	for i := 0; i < f.array.Len(); i++ {
-		if f.array.IsNull(i) {
-			continue
-		}
 		vt(f.term.newTerm(f, i))
 	}
 }
