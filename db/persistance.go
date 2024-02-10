@@ -74,10 +74,8 @@ func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
 			return nil
 		}
 		kb.Reset()
-		for _, p := range column.Path() {
-			kb.Write(slash)
-			kb.WriteString(p)
-		}
+		kb.Write(slash)
+		kb.WriteString(column.Name())
 		return s.SaveIndex(&key, base, kb.Bytes(), column)
 	})
 	lo, hi := Timestamps(r)

@@ -14,9 +14,10 @@ type Full interface {
 }
 
 type Column interface {
+	NumRows() uint32
+	Name() string
 	Empty() bool
 	Fst() []byte
-	Path() []string
 	Bitmaps(f func(int, *roaring.Bitmap) error) error
 }
 

@@ -89,7 +89,7 @@ func (idx *Index) Index(r arrow.Record) (index.Full, error) {
 			continue
 		}
 		x.Index(r.Column(i).(*array.Dictionary))
-		n, err := x.Build([]string{name})
+		n, err := x.Build(name)
 		if err != nil {
 			return nil, err
 		}

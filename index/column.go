@@ -14,25 +14,29 @@ import (
 )
 
 type FullColumn struct {
-	FST     []byte
-	path    []string
-	NumRows uint32
+	fst     []byte
+	name    string
+	numRows uint32
 	bitmaps []*roaring.Bitmap
-	fst     *vellum.FST
+	vellum  *vellum.FST
 }
 
 var _ Column = (*FullColumn)(nil)
 
 func (f *FullColumn) Empty() bool {
-	return len(f.FST) == 0
+	return len(f.fst) == 0
 }
 
 func (f *FullColumn) Fst() []byte {
-	return f.FST
+	return f.fst
 }
 
-func (f *FullColumn) Path() []string {
-	return f.path
+func (f *FullColumn) Name() string {
+	return f.name
+}
+
+func (f *FullColumn) NumRows() uint32 {
+	return f.numRows
 }
 
 func (f *FullColumn) Bitmaps(fn func(int, *roaring.Bitmap) error) error {
@@ -65,7 +69,7 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 
 		// any rows not in b bitmap
 		o := new(roaring.Bitmap)
-		for i := uint32(0); i < f.NumRows; i++ {
+		for i := uint32(0); i < f.numRows; i++ {
 			if !b.Contains(i) {
 				o.Add(i)
 			}
@@ -103,7 +107,7 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 			b = new(roaring.Bitmap)
 		}
 		o := new(roaring.Bitmap)
-		for i := uint32(0); i < f.NumRows; i++ {
+		for i := uint32(0); i < f.numRows; i++ {
 			if !b.Contains(i) {
 				o.Add(i)
 			}
@@ -115,21 +119,21 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 }
 
 func (f *FullColumn) Load() *vellum.FST {
-	if f.fst != nil {
-		return f.fst
+	if f.vellum != nil {
+		return f.vellum
 	}
-	fst, err := vellum.Load(f.FST)
+	fst, err := vellum.Load(f.fst)
 	if err != nil {
 		// fst is crucial for operations. Everything relies on this. It is fatal
 		// situation if we can't load this in memory
 		panic("failed loading fst index in memory " + err.Error())
 	}
-	f.fst = fst
+	f.vellum = fst
 	return fst
 }
 
 func (f *FullColumn) Size() (n uint64) {
-	n = uint64(len(f.FST))
+	n = uint64(len(f.fst))
 	for _, b := range f.bitmaps {
 		n += b.GetSerializedSizeInBytes()
 	}
@@ -214,7 +218,7 @@ func (c *ColumnImpl) Reset() {
 	c.build.Reset(&c.buffer)
 }
 
-func (c *ColumnImpl) Build(path []string) (*FullColumn, error) {
+func (c *ColumnImpl) Build(name string) (*FullColumn, error) {
 	if len(c.mapping) == 0 {
 		return &FullColumn{}, nil
 	}
@@ -238,9 +242,10 @@ func (c *ColumnImpl) Build(path []string) (*FullColumn, error) {
 		return nil, err
 	}
 	return &FullColumn{
-		path:    path,
-		FST:     bytes.Clone(c.buffer.Bytes()),
+		name:    name,
+		fst:     bytes.Clone(c.buffer.Bytes()),
 		bitmaps: slices.Clone(c.values),
-		NumRows: c.rows,
+
+		numRows: c.rows,
 	}, nil
 }

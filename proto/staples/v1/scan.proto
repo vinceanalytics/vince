@@ -57,3 +57,16 @@ message Filters {
     UtmTerm = 25;
   }
 }
+
+message Metadata {
+  repeated Column columns = 1;
+
+  message Column {
+    string name = 1;
+    uint32 num_rows = 2;
+    repeated uint32 bitmaps_offset = 3;
+    uint32 fst_offset = 4;
+    uint32 raw_size = 5;
+    uint64 offset = 6;
+  }
+}
