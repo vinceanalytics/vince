@@ -13,6 +13,7 @@ type Full interface {
 	Size() uint64
 	Min() uint64
 	Max() uint64
+	CanIndex() bool
 }
 
 type Column interface {

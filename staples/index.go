@@ -125,7 +125,11 @@ func NewFullIdx(m map[string]*index.FullColumn, min, max uint64) *FullIndex {
 	return &FullIndex{keys: keys, m: m, min: min, max: max, size: n}
 }
 
-func (idx FullIndex) Match(b *roaring.Bitmap, m []*filters.CompiledFilter) {
+func (idx *FullIndex) CanIndex() bool {
+	return true
+}
+
+func (idx *FullIndex) Match(b *roaring.Bitmap, m []*filters.CompiledFilter) {
 	for _, x := range m {
 		v, ok := idx.m[x.Column]
 		if !ok {
@@ -135,19 +139,19 @@ func (idx FullIndex) Match(b *roaring.Bitmap, m []*filters.CompiledFilter) {
 	}
 }
 
-func (idx FullIndex) Size() (n uint64) {
+func (idx *FullIndex) Size() (n uint64) {
 	return idx.size
 }
 
-func (idx FullIndex) Min() (n uint64) {
+func (idx *FullIndex) Min() (n uint64) {
 	return idx.min
 }
 
-func (idx FullIndex) Max() (n uint64) {
+func (idx *FullIndex) Max() (n uint64) {
 	return idx.max
 }
 
-func (idx FullIndex) Columns(f func(column index.Column) error) error {
+func (idx *FullIndex) Columns(f func(column index.Column) error) error {
 	for _, v := range idx.keys {
 		err := f(idx.m[v])
 		if err != nil {

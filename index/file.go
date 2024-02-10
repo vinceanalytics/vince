@@ -8,9 +8,11 @@ import (
 	"io"
 	"slices"
 	"sync"
+	"unsafe"
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/klauspost/compress/zstd"
+	"github.com/vinceanalytics/vince/filters"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/logger"
 	"google.golang.org/protobuf/proto"
@@ -25,8 +27,106 @@ type ReaderAtSeeker interface {
 	io.Seeker
 }
 
+type FileIndex struct {
+	dataSize uint64
+	r        ReaderAtSeeker
+	meta     *v1.Metadata
+	m        map[string]*FullColumn
+}
+
+var _ Full = (*FileIndex)(nil)
+
+var baseFileIdxSize = uint64(unsafe.Sizeof(FileIndex{}))
+
+func (f *FileIndex) Columns(_ func(column Column) error) error {
+	logger.Fail("FileIndex does not support Columns indexing")
+	return nil
+}
+
+func (f *FileIndex) Min() uint64 {
+	return f.meta.Min
+}
+
+func (f *FileIndex) CanIndex() bool {
+	return false
+}
+
+func (f *FileIndex) Max() uint64 {
+	return f.meta.Min
+}
+
+func (f *FileIndex) Size() (n uint64) {
+	n = baseFileIdxSize
+	n += uint64(proto.Size(f.meta))
+	n += uint64(len(f.m))
+	for k, v := range f.m {
+		n += uint64(len(k))
+		n += v.Size()
+	}
+	return
+}
+
+func (f *FileIndex) Match(b *roaring.Bitmap, m []*filters.CompiledFilter) {
+	for _, x := range m {
+		v, err := f.get(x.Column)
+		if err != nil {
+			logger.Fail(err.Error())
+		}
+		b.And(v.Match(x))
+	}
+}
+
+func (f *FileIndex) get(name string) (*FullColumn, error) {
+	if c, ok := f.m[name]; ok {
+		return c, nil
+	}
+	for _, c := range f.meta.GetColumns() {
+		if c.Name == name {
+			col, err := readColumn(f.r, c)
+			if err != nil {
+				return nil, err
+			}
+			f.m[name] = col
+			return col, nil
+		}
+	}
+	return nil, fmt.Errorf("Missing Index Column %v", name)
+}
+
+func readColumn(r ReaderAtSeeker, meta *v1.Metadata_Column) (*FullColumn, error) {
+	buf := get()
+	defer buf.Release()
+	data, err := readChunk(r, meta.Offset, buf)
+	if err != nil {
+		return nil, err
+	}
+	raw := get()
+	defer raw.Release()
+	rawData, err := ZSTDDecompress(raw.get(int(meta.RawSize)), data)
+	if err != nil {
+		return nil, err
+	}
+	o := &FullColumn{
+		name:    meta.Name,
+		numRows: meta.NumRows,
+		fst:     bytes.Clone(chuckFromRaw(rawData, meta.FstOffset)),
+	}
+	for _, bm := range meta.BitmapsOffset {
+		b := new(roaring.Bitmap)
+		err := b.UnmarshalBinary(chuckFromRaw(rawData, bm))
+		if err != nil {
+			return nil, err
+		}
+		o.bitmaps = append(o.bitmaps, b)
+	}
+	return o, nil
+}
+
+func chuckFromRaw(raw []byte, chunk *v1.Metadata_Chunk) []byte {
+	return raw[chunk.Offset : chunk.Offset+chunk.Size]
+}
+
 func writeFull(w io.Writer, full Full) error {
-	chunk := new(chunkWriter)
 	b := new(bytes.Buffer)
 	meta := &v1.Metadata{
 		Min: full.Min(),
@@ -35,7 +135,7 @@ func writeFull(w io.Writer, full Full) error {
 	var startOffset uint64
 	err := full.Columns(func(column Column) (err error) {
 		var col *v1.Metadata_Column
-		col, startOffset, err = writeColumn(w, column, startOffset, chunk, b)
+		col, startOffset, err = writeColumn(w, column, startOffset, b)
 		if err == nil {
 			meta.Columns = append(meta.Columns, col)
 		}
@@ -59,31 +159,40 @@ func writeFull(w io.Writer, full Full) error {
 	return err
 }
 
-func writeColumn(w io.Writer, column Column,
-	startOffset uint64,
-	chunk *chunkWriter,
-	b *bytes.Buffer,
-) (meta *v1.Metadata_Column, offset uint64, err error) {
-	chunk.reset(b)
+func writeColumn(w io.Writer, column Column, startOffset uint64, b *bytes.Buffer) (meta *v1.Metadata_Column, offset uint64, err error) {
 	meta = &v1.Metadata_Column{
 		Name:    column.Name(),
 		NumRows: column.NumRows(),
-		Offset:  startOffset,
+		Offset: &v1.Metadata_Chunk{
+			Offset: startOffset,
+		},
 	}
-	meta.FstOffset, err = chunk.write(column.Fst())
+	// fst is the first chunk
+	n, err := w.Write(column.Fst())
 	if err != nil {
 		return nil, 0, err
 	}
+	meta.FstOffset = &v1.Metadata_Chunk{
+		Offset: 0,
+		Size:   uint64(n),
+	}
+	offset += uint64(n)
+
 	column.Bitmaps(func(i int, b *roaring.Bitmap) error {
 		data, err := b.MarshalBinary()
 		if err != nil {
 			return err
 		}
-		offset, err := chunk.write(data)
+		n, err := w.Write(data)
 		if err != nil {
 			return err
 		}
-		meta.BitmapsOffset = append(meta.BitmapsOffset, offset)
+
+		meta.BitmapsOffset = append(meta.BitmapsOffset, &v1.Metadata_Chunk{
+			Offset: offset,
+			Size:   uint64(n),
+		})
+		offset += uint64(n)
 		return nil
 	})
 	if err != nil {
@@ -93,37 +202,29 @@ func writeColumn(w io.Writer, column Column,
 	meta.RawSize = uint32(b.Len())
 	cb := get()
 	defer cb.Release()
-	chunk.reset(w)
 	o, err := ZSTDCompress(cb.dst(b.Len()), b.Bytes(), ZSTDCompressionLevel)
 	if err != nil {
 		return nil, 0, err
 	}
-	_, err = chunk.write(o)
+	n, err = w.Write(o)
 	if err != nil {
 		return nil, 0, err
 	}
-	return meta, startOffset + uint64(chunk.offset), nil
+	meta.Offset.Size = uint64(n)
+	offset += uint64(n)
+	return meta, startOffset + offset, nil
 }
 
-type chunkWriter struct {
-	w       io.Writer
-	scratch [8]byte
-	offset  uint32
-}
-
-func (s *chunkWriter) reset(w io.Writer) {
-	s.w = w
-	s.offset = 0
-}
-
-func (s *chunkWriter) write(b []byte) (offset uint32, err error) {
-	_, err = s.w.Write(binary.BigEndian.AppendUint32(s.scratch[:4], uint32(len(b))))
+func readChunk(r ReaderAtSeeker, chunk *v1.Metadata_Chunk, b *compressBuf) ([]byte, error) {
+	o := b.get(int(chunk.Size))
+	n, err := r.ReadAt(o, int64(chunk.Offset))
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	offset = s.offset
-	_, err = s.w.Write(b)
-	return
+	if n != int(chunk.Size) {
+		return nil, fmt.Errorf("index: Too little data read want=%d got %d", chunk.Size, n)
+	}
+	return o, nil
 }
 
 func readMetadata(r ReaderAtSeeker) (*v1.Metadata, error) {
@@ -182,9 +283,13 @@ func (c *compressBuf) Release() {
 	compressPool.Put(c)
 }
 
-func (c *compressBuf) dst(src int) []byte {
-	c.b = slices.Grow(c.b, ZSTDCompressBound(src))
+func (c *compressBuf) get(n int) []byte {
+	c.b = slices.Grow(c.b, n)[:n]
 	return c.b
+}
+
+func (c *compressBuf) dst(src int) []byte {
+	return c.get(ZSTDCompressBound(src))
 }
 
 // ZSTDDecompress decompresses a block using ZSTD algorithm.

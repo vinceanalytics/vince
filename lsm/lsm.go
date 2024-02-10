@@ -36,14 +36,13 @@ type Part struct {
 
 func NewPart(r arrow.Record, idx index.Full) *Part {
 	r.Retain()
-	lo, hi := db.Timestamps(r)
 	return &Part{
 		ID:     ulid.Make(),
 		Record: r,
 		Index:  idx,
 		Size:   uint64(util.TotalRecordSize(r)) + idx.Size(),
-		Min:    lo,
-		Max:    hi,
+		Min:    int64(idx.Min()),
+		Max:    int64(idx.Max()),
 	}
 }
 
