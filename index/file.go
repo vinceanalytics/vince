@@ -113,13 +113,21 @@ func (f *FileIndex) get(name string) (*FullColumn, error) {
 func readColumn(r ReaderAtSeeker, meta *v1.Metadata_Column) (*FullColumn, error) {
 	buf := get()
 	defer buf.Release()
-	data := buf.get(int(meta.Size))
-	n, err := r.ReadAt(data, int64(meta.Offset))
+
+	compress := get()
+	defer compress.Release()
+
+	raw := buf.get(int(meta.Size))
+	n, err := r.ReadAt(raw, int64(meta.Offset))
 	if err != nil {
 		return nil, err
 	}
 	if n != int(meta.Size) {
 		return nil, fmt.Errorf("index: Too little data read want=%d got %d", meta.Size, n)
+	}
+	data, err := ZSTDDecompress(compress.get(int(meta.RawSize)), raw)
+	if err != nil {
+		return nil, err
 	}
 	o := &FullColumn{
 		name:    meta.Name,
@@ -149,6 +157,8 @@ func chuckFromRaw(raw []byte, chunk *v1.Metadata_Chunk) []byte {
 func WriteFull(w io.Writer, full Full, id string) error {
 	b := buffers.Bytes()
 	defer b.Release()
+	compress := get()
+	defer compress.Release()
 
 	meta := &v1.Metadata{
 		Id:  id,
@@ -161,7 +171,14 @@ func WriteFull(w io.Writer, full Full, id string) error {
 		if err != nil {
 			return err
 		}
-		n, err := w.Write(data)
+		out, err := ZSTDCompress(
+			compress.get(ZSTDCompressBound(len(data))),
+			data, ZSTDCompressionLevel,
+		)
+		if err != nil {
+			return err
+		}
+		n, err := w.Write(out)
 		if err != nil {
 			return err
 		}
@@ -171,6 +188,7 @@ func WriteFull(w io.Writer, full Full, id string) error {
 			FstOffset: uint32(offset),
 			Offset:    startOffset,
 			Size:      uint32(n),
+			RawSize:   uint32(len(data)),
 		})
 		startOffset += uint64(n)
 		return

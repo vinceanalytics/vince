@@ -8,7 +8,7 @@ import (
 )
 
 func TestReadIndexFile(t *testing.T) {
-	f, err := os.Open("testdata/01HPA7QZNP1E8DP8H1SKK253HQ")
+	f, err := os.Open("testdata/01HPA98Z0TVKPC4QC7HQBTF30Q")
 	if err != nil {
 		t.Fatal(err)
 	}

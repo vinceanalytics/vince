@@ -70,6 +70,7 @@ message Metadata {
     uint32 fst_offset = 4;
     uint64 offset = 5;
     uint32 size = 6;
+    uint32 raw_size = 7;
   }
 
   message Chunk {
