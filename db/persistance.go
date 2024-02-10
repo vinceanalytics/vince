@@ -2,7 +2,6 @@ package db
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -199,16 +198,6 @@ var persistBuffer = &sync.Pool{New: func() any { return new(bytes.Buffer) }}
 
 type KV struct {
 	db *badger.DB
-}
-
-type dbKey struct{}
-
-func With(ctx context.Context, kv Storage) context.Context {
-	return context.WithValue(ctx, dbKey{}, kv)
-}
-
-func Get(ctx context.Context) Storage {
-	return ctx.Value(dbKey{}).(Storage)
 }
 
 func NewKV(path string) (*KV, error) {

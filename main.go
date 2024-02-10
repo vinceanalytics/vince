@@ -192,7 +192,7 @@ func app() *cli.Command {
 			if err != nil {
 				return err
 			}
-			ctx = db.With(ctx, store)
+
 			log.Info("Setup session")
 			alloc := memory.NewGoAllocator()
 			log.Info("Loading primary index")
