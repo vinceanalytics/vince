@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"sync"
 	"unsafe"
 
@@ -112,25 +113,28 @@ func (f *FileIndex) get(name string) (*FullColumn, error) {
 func readColumn(r ReaderAtSeeker, meta *v1.Metadata_Column) (*FullColumn, error) {
 	buf := get()
 	defer buf.Release()
-	data, err := readChunk(r, meta.Offset, buf)
+	data := buf.get(int(meta.Size))
+	n, err := r.ReadAt(data, int64(meta.Offset))
 	if err != nil {
 		return nil, err
 	}
-	raw := get()
-	defer raw.Release()
-	rawData, err := ZSTDDecompress(raw.get(int(meta.RawSize)), data)
-	if err != nil {
-		return nil, err
+	if n != int(meta.Size) {
+		return nil, fmt.Errorf("index: Too little data read want=%d got %d", meta.Size, n)
 	}
 	o := &FullColumn{
 		name:    meta.Name,
 		numRows: meta.NumRows,
-		fst:     bytes.Clone(chuckFromRaw(rawData, meta.FstOffset)),
+		fst:     bytes.Clone(data[:meta.FstOffset]),
 	}
-	for _, bm := range meta.BitmapsOffset {
+	data = data[meta.FstOffset:]
+	rd := bytes.NewReader(data)
+	for {
 		b := new(roaring.Bitmap)
-		err := b.UnmarshalBinary(chuckFromRaw(rawData, bm))
+		_, err := b.ReadFrom(rd)
 		if err != nil {
+			if strings.Contains(err.Error(), "EOF") {
+				break
+			}
 			return nil, err
 		}
 		o.bitmaps = append(o.bitmaps, b)
@@ -153,13 +157,23 @@ func WriteFull(w io.Writer, full Full, id string) error {
 	}
 	var startOffset uint64
 	err := full.Columns(func(column Column) (err error) {
-		var col *v1.Metadata_Column
-		col, startOffset, err = writeColumn(w, column, startOffset, b)
-		if err == nil {
-			meta.Columns = append(meta.Columns, col)
+		data, offset, err := writeColumn(column, b)
+		if err != nil {
+			return err
 		}
-		b.Reset()
-		return err
+		n, err := w.Write(data)
+		if err != nil {
+			return err
+		}
+		meta.Columns = append(meta.Columns, &v1.Metadata_Column{
+			Name:      column.Name(),
+			NumRows:   column.NumRows(),
+			FstOffset: uint32(offset),
+			Offset:    startOffset,
+			Size:      uint32(n),
+		})
+		startOffset += uint64(n)
+		return
 	})
 	if err != nil {
 		return err
@@ -178,73 +192,22 @@ func WriteFull(w io.Writer, full Full, id string) error {
 	return err
 }
 
-func writeColumn(out io.Writer, column Column, startOffset uint64, w *buffers.BytesBuffer) (meta *v1.Metadata_Column, offset uint64, err error) {
-	meta = &v1.Metadata_Column{
-		Name:    column.Name(),
-		NumRows: column.NumRows(),
-		Offset: &v1.Metadata_Chunk{
-			Offset: startOffset,
-		},
-	}
+func writeColumn(column Column, w *buffers.BytesBuffer) (data []byte, offset int, err error) {
 	w.Reset()
 	// fst is the first chunk
-	n, err := w.Write(column.Fst())
+	offset, err = w.Write(column.Fst())
 	if err != nil {
 		return nil, 0, err
 	}
-	meta.FstOffset = &v1.Metadata_Chunk{
-		Offset: 0,
-		Size:   uint64(n),
-	}
-	offset += uint64(n)
-
 	column.Bitmaps(func(i int, b *roaring.Bitmap) error {
-		data, err := b.MarshalBinary()
-		if err != nil {
-			return err
-		}
-		n, err := w.Write(data)
-		if err != nil {
-			return err
-		}
-
-		meta.BitmapsOffset = append(meta.BitmapsOffset, &v1.Metadata_Chunk{
-			Offset: offset,
-			Size:   uint64(n),
-		})
-		offset += uint64(n)
-		return nil
+		_, err := b.WriteTo(w)
+		return err
 	})
 	if err != nil {
 		return nil, 0, err
 	}
-
-	meta.RawSize = uint32(w.Len())
-	cb := get()
-	defer cb.Release()
-	o, err := ZSTDCompress(cb.dst(w.Len()), w.Bytes(), ZSTDCompressionLevel)
-	if err != nil {
-		return nil, 0, err
-	}
-	n, err = out.Write(o)
-	if err != nil {
-		return nil, 0, err
-	}
-	meta.Offset.Size = uint64(n)
-	offset += uint64(n)
-	return meta, startOffset + offset, nil
-}
-
-func readChunk(r ReaderAtSeeker, chunk *v1.Metadata_Chunk, b *compressBuf) ([]byte, error) {
-	o := b.get(int(chunk.Size))
-	n, err := r.ReadAt(o, int64(chunk.Offset))
-	if err != nil {
-		return nil, err
-	}
-	if n != int(chunk.Size) {
-		return nil, fmt.Errorf("index: Too little data read want=%d got %d", chunk.Size, n)
-	}
-	return o, nil
+	data = w.Bytes()
+	return
 }
 
 func readMetadata(r ReaderAtSeeker) (*v1.Metadata, error) {

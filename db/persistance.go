@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -77,6 +78,7 @@ func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
 	if err != nil {
 		return nil, err
 	}
+	os.WriteFile("index/testdata/"+id, buf.Bytes(), 0600)
 	return &v1.Granule{
 		Min:  int64(idx.Min()),
 		Max:  int64(idx.Max()),

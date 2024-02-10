@@ -67,10 +67,9 @@ message Metadata {
   message Column {
     string name = 1;
     uint32 num_rows = 2;
-    repeated Chunk bitmaps_offset = 3;
-    Chunk fst_offset = 4;
-    uint32 raw_size = 5;
-    Chunk offset = 6;
+    uint32 fst_offset = 4;
+    uint64 offset = 5;
+    uint32 size = 6;
   }
 
   message Chunk {
