@@ -23,7 +23,7 @@ The total number of times your pages were loaded by your visitors.
 
 The number of people who visited your site. We are privacy-friendly so we don't use cookies and other persistent identifiers. If a person visits from multiple devices or on multiple days, they are counted as separate visitors. 
 
-## Views Per Visit (or Pages / Session)
+## Views Per Visit
 
 Views per visit (also known as Pages per session) shows the average number of pageviews per visit. Repeated views of a single page are included too.
 
@@ -31,6 +31,6 @@ Views per visit (also known as Pages per session) shows the average number of pa
 
 The amount of time visitors spend on your site. It only shows people who visit more than one page. For those who visit one page only we default to 0 seconds. Average visit duration is the sum of all session lengths divided by the number of sessions, which includes the 0 second visits (bounces).
 
-## Total Visits (or Sessions)
+## Total Visits
 
-A session (also known as a visit) is a set of actions that a user takes on your site. A visit is started when a visitor first lands on your page and ends when no action is taken on your site for 30 minutes.
+A session (also known as a `visit`) is a set of actions that a user takes on your site. A visit is started when a visitor first lands on your page and ends when no action is taken on your site for 30 minutes.
