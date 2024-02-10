@@ -1,1 +1,1 @@
-bash ./tools/curl/testdata/visitors.sh
+bash -x ./tools/curl/testdata/visitors.sh
