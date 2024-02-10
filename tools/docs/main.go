@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -198,10 +197,15 @@ func Build(w io.Writer, dir string) error {
 	}
 	var positions []int
 	seen := make(map[string]struct{})
-	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
 		}
+		path := filepath.Join(dir, entry.Name())
 		if filepath.Ext(path) != ".md" {
 			return nil
 		}
@@ -228,10 +232,6 @@ func Build(w io.Writer, dir string) error {
 		}
 		m.Menus = append(m.Menus, x)
 		m.Pages = append(m.Pages, template.HTML(b.String()))
-		return nil
-	})
-	if err != nil {
-		return err
 	}
 	x := &ms{indices: positions, m: &m}
 	sort.Sort(x)
