@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"os"
 	"slices"
 	"sync/atomic"
 	"time"
@@ -143,8 +142,6 @@ func (lsm *Tree[T]) Add(r arrow.Record) error {
 	lsm.size.Add(part.Size)
 	lsm.tree.Prepend(part)
 	lsm.log.Debug("Added new part", "size", units.BytesSize(float64(part.Size)))
-	data, _ := r.MarshalJSON()
-	os.WriteFile("segment/cold/testdata/sample.json", data, 0600)
 	return nil
 }
 

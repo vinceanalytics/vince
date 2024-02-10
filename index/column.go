@@ -165,11 +165,11 @@ type ColumnImpl struct {
 var columnPool = &sync.Pool{New: func() any { return newColIdx() }}
 
 func (c *ColumnImpl) Index(e *array.Dictionary) {
-	c.indexString(e, e.Dictionary().(*array.Binary))
+	c.indexString(e, e.Dictionary().(*array.String))
 	c.rows = uint32(e.Len())
 }
 
-func (c *ColumnImpl) indexString(d *array.Dictionary, a *array.Binary) {
+func (c *ColumnImpl) indexString(d *array.Dictionary, a *array.String) {
 	for i := 0; i < d.Len(); i++ {
 		if d.IsNull(i) {
 			continue
