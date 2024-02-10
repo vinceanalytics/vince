@@ -7,16 +7,15 @@ import (
 	"log/slog"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/ipc"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
+	"github.com/vinceanalytics/vince/buffers"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/index"
 )
@@ -58,41 +57,36 @@ func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
 	defer s.db.GC()
 
 	id := ulid.Make().String()
-	var key bytes.Buffer
-	key.WriteString(s.resource)
-	key.Write(slash)
-	key.WriteString(id)
-	base := bytes.Clone(key.Bytes())
-	size, err := s.SaveRecord(&key, base, r)
+	buf := buffers.Bytes()
+	defer buf.Release()
+
+	buf.WriteString(s.resource)
+	buf.Write(slash)
+	buf.WriteString(id)
+	base := bytes.Clone(buf.Bytes())
+	size, err := s.SaveRecord(buf, base, r)
 	if err != nil {
 		return nil, err
 	}
-	var kb bytes.Buffer
-	idx.Columns(func(column index.Column) error {
-		if column.Empty() {
-			// skip empty indexes.
-			return nil
-		}
-		kb.Reset()
-		kb.Write(slash)
-		kb.WriteString(column.Name())
-		return s.SaveIndex(&key, base, kb.Bytes(), column)
-	})
-	lo, hi := Timestamps(r)
+	buf.Reset()
+	err = index.WriteFull(buf, idx, id)
+	if err != nil {
+		return nil, err
+	}
+	err = s.db.Set(base, buf.Bytes(), s.ttl)
+	if err != nil {
+		return nil, err
+	}
 	return &v1.Granule{
-		Min:  lo,
-		Max:  hi,
+		Min:  int64(idx.Min()),
+		Max:  int64(idx.Max()),
 		Size: size + idx.Size(),
 		Id:   id,
 		Rows: uint64(r.NumRows()),
 	}, nil
 }
 
-func (s *Store) SaveRecord(
-	buf *bytes.Buffer,
-	base []byte,
-	r arrow.Record,
-) (n uint64, err error) {
+func (s *Store) SaveRecord(buf *buffers.BytesBuffer, base []byte, r arrow.Record) (n uint64, err error) {
 	schema := r.Schema()
 	var x uint64
 	for i := 0; i < int(r.NumCols()); i++ {
@@ -105,24 +99,17 @@ func (s *Store) SaveRecord(
 	return
 }
 
-func (s *Store) SaveColumn(
-	buf *bytes.Buffer,
-	base []byte,
-	key string,
-	field arrow.Field,
-	a arrow.Array,
-) (n uint64, err error) {
+func (s *Store) SaveColumn(buf *buffers.BytesBuffer, base []byte, key string, field arrow.Field, a arrow.Array) (n uint64, err error) {
 	r := array.NewRecord(
 		arrow.NewSchema([]arrow.Field{field}, nil),
 		[]arrow.Array{a},
 		int64(a.Len()),
 	)
 	defer r.Release()
-	b := persistBuffer.Get().(*bytes.Buffer)
+	b := buffers.Bytes()
 	defer func() {
 		n = uint64(b.Len())
-		b.Reset()
-		persistBuffer.Put(b)
+		b.Release()
 	}()
 	w := ipc.NewWriter(b,
 		ipc.WithSchema(r.Schema()),
@@ -141,58 +128,14 @@ func (s *Store) SaveColumn(
 	buf.Reset()
 	buf.Write(base)
 	buf.Write(slash)
-	buf.Write(recordBytes)
-	buf.Write(slash)
 	buf.WriteString(key)
 	err = s.db.Set(buf.Bytes(), b.Bytes(), s.ttl)
 	return
 }
 
-func (s *Store) SaveIndex(
-	buf *bytes.Buffer,
-	base []byte,
-	key []byte,
-	idx index.Column,
-) error {
-	buf.Reset()
-	buf.Write(base)
-	buf.Write(slash)
-	buf.Write(fstBytes)
-	buf.Write(key) // [resource/id/fst/key]
-	err := s.db.Set(buf.Bytes(), idx.Fst(), s.ttl)
-	if err != nil {
-		return err
-	}
-	buf.Reset()
-	buf.Write(base)
-	buf.Write(slash)
-	buf.Write(bitmapBytes)
-
-	buf.Write([]byte(key))
-	buf.Write(slash)
-
-	// [resource/id/bitmaps/key]
-	base = bytes.Clone(buf.Bytes())
-	return idx.Bitmaps(func(i int, b *roaring.Bitmap) error {
-		buf.Reset()
-		buf.Write(base)
-		fmt.Fprint(buf, i) // [resource/id/bitmaps/key/row]
-		data, err := b.MarshalBinary()
-		if err != nil {
-			return err
-		}
-		return s.db.Set(buf.Bytes(), data, s.ttl)
-	})
-}
-
 var (
-	slash       = []byte("/")
-	fstBytes    = []byte("fst")
-	bitmapBytes = []byte("bitmap")
-	recordBytes = []byte("record")
+	slash = []byte("/")
 )
-
-var persistBuffer = &sync.Pool{New: func() any { return new(bytes.Buffer) }}
 
 type KV struct {
 	db *badger.DB
