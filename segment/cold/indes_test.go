@@ -6,7 +6,7 @@ import (
 
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/memory"
-	"github.com/docker/go-units"
+	"github.com/stretchr/testify/require"
 	"github.com/vinceanalytics/vince/staples"
 )
 
@@ -24,8 +24,6 @@ func TestIndex(t *testing.T) {
 	defer r.Release()
 
 	seg, err := New(r)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Error(units.BytesSize(float64(seg.Size())))
+	require.NoError(t, err)
+	_ = seg
 }
