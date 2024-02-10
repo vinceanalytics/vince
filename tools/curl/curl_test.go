@@ -19,7 +19,7 @@ func TestVersion(t *testing.T) {
 	check(t, false, "version.sh", "/api/v1/version", http.MethodGet, nil, nil)
 }
 func TestVisitors(t *testing.T) {
-	check(t, true, "visitors.sh", "/api/v1/visitors"+siteId, http.MethodGet, nil, nil)
+	check(t, true, "visitors.sh", "/api/v1/stats/realtime/visitors"+siteId, http.MethodGet, nil, nil)
 }
 
 func check(t *testing.T, write bool, file string, path, method string, headers http.Header, body proto.Message) {
