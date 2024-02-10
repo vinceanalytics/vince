@@ -261,6 +261,7 @@ func app() *cli.Command {
 			}()
 			<-ctx.Done()
 			svr.Shutdown(context.Background())
+			sess.Close()
 			return err
 		},
 	}

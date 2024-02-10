@@ -250,7 +250,6 @@ func (lsm *Tree[T]) Start(ctx context.Context) {
 	tick := time.NewTicker(interval)
 	defer func() {
 		tick.Stop()
-		lsm.Compact(true)
 		lsm.log.Info("exiting compaction loop")
 	}()
 
@@ -303,6 +302,7 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 	lsm.size.Add(-oldSizes)
 	if len(persist) > 0 {
 		// force saving after compacting
+		lsm.log.Debug("Saving compacted record to permanent storage")
 		idx, err := lsm.index.Index(r)
 		if err != nil {
 			lsm.log.Error("Failed building index to persist", "err", err)
@@ -314,6 +314,7 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 			return
 		}
 		lsm.primary.Add(lsm.resource, granule)
+		lsm.log.Debug("Saved record to disc", "size", units.BytesSize(float64(granule.Size)))
 		return
 	}
 	if oldSizes >= lsm.opts.compactSize {

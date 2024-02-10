@@ -1,9 +1,7 @@
 package staples
 
 import (
-	"reflect"
 	"sort"
-	"sync"
 	"unsafe"
 
 	"github.com/RoaringBitmap/roaring"
@@ -12,91 +10,44 @@ import (
 	"github.com/vinceanalytics/vince/camel"
 	"github.com/vinceanalytics/vince/db"
 	"github.com/vinceanalytics/vince/filters"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/index"
 	"github.com/vinceanalytics/vince/logger"
 )
 
-type Index struct {
-	Browser        *index.ColumnImpl
-	BrowserVersion *index.ColumnImpl
-	City           *index.ColumnImpl
-	Country        *index.ColumnImpl
-	Domain         *index.ColumnImpl
-	EntryPage      *index.ColumnImpl
-	ExitPage       *index.ColumnImpl
-	Host           *index.ColumnImpl
-	Event          *index.ColumnImpl
-	Os             *index.ColumnImpl
-	OsVersion      *index.ColumnImpl
-	Path           *index.ColumnImpl
-	Referrer       *index.ColumnImpl
-	ReferrerSource *index.ColumnImpl
-	Region         *index.ColumnImpl
-	Screen         *index.ColumnImpl
-	UtmCampaign    *index.ColumnImpl
-	UtmContent     *index.ColumnImpl
-	UtmMedium      *index.ColumnImpl
-	UtmSource      *index.ColumnImpl
-	UtmTerm        *index.ColumnImpl
-	mapping        map[string]*index.ColumnImpl
-	mu             sync.Mutex
-}
+type Index struct{}
 
 func NewIndex() *Index {
-	idx := &Index{
-		Browser:        index.NewColIdx(),
-		BrowserVersion: index.NewColIdx(),
-		City:           index.NewColIdx(),
-		Country:        index.NewColIdx(),
-		Domain:         index.NewColIdx(),
-		EntryPage:      index.NewColIdx(),
-		ExitPage:       index.NewColIdx(),
-		Host:           index.NewColIdx(),
-		Event:          index.NewColIdx(),
-		Os:             index.NewColIdx(),
-		OsVersion:      index.NewColIdx(),
-		Path:           index.NewColIdx(),
-		Referrer:       index.NewColIdx(),
-		ReferrerSource: index.NewColIdx(),
-		Region:         index.NewColIdx(),
-		Screen:         index.NewColIdx(),
-		UtmCampaign:    index.NewColIdx(),
-		UtmContent:     index.NewColIdx(),
-		UtmMedium:      index.NewColIdx(),
-		UtmSource:      index.NewColIdx(),
-		UtmTerm:        index.NewColIdx(),
-		mapping:        make(map[string]*index.ColumnImpl),
-	}
-	r := reflect.ValueOf(idx).Elem()
-	typ := r.Type()
-	for i := 0; i < r.NumField(); i++ {
-		f := typ.Field(i)
-		if !f.IsExported() {
-			continue
-		}
-		idx.mapping[camel.Case(f.Name)] = r.Field(i).Interface().(*index.ColumnImpl)
-	}
-	return idx
+	return new(Index)
 }
 
 var _ index.Index = (*Index)(nil)
 
+var skip = map[string]bool{
+	camel.Case(v1.Filters_Timestamp.String()): true,
+	camel.Case(v1.Filters_ID.String()):        true,
+	camel.Case(v1.Filters_Session.String()):   true,
+	camel.Case(v1.Filters_Bounce.String()):    true,
+	camel.Case(v1.Filters_Duration.String()):  true,
+}
+
 func (idx *Index) Index(r arrow.Record) (index.Full, error) {
-	idx.mu.Lock()
-	defer idx.mu.Unlock()
+	cIdx := index.NewColIdx()
+	defer cIdx.Release()
+
 	o := make(map[string]*index.FullColumn)
 	for i := 0; i < int(r.NumCols()); i++ {
 		name := r.ColumnName(i)
-		x, ok := idx.mapping[name]
-		if !ok {
+		if skip[name] {
 			continue
 		}
-		x.Index(r.Column(i).(*array.Dictionary))
-		n, err := x.Build(name)
+		cIdx.Index(r.Column(i).(*array.Dictionary))
+		n, err := cIdx.Build(name)
 		if err != nil {
 			return nil, err
 		}
 		o[name] = n
+		cIdx.Reset()
 	}
 	lo, hi := db.Timestamps(r)
 	return NewFullIdx(o, uint64(lo), uint64(hi)), nil

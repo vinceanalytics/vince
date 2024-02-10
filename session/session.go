@@ -108,6 +108,10 @@ func (s *Session) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (a
 	return s.tree.Scan(ctx, start, end, fs)
 }
 
+func (s *Session) Close() {
+	s.tree.Compact(true)
+}
+
 func (s *Session) Flush() {
 	s.mu.Lock()
 	r := s.build.NewRecord()

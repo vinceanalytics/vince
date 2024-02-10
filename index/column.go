@@ -183,9 +183,12 @@ func (c *ColumnImpl) indexString(d *array.Dictionary, a *array.String) {
 		if !ok {
 			b = new(roaring.Bitmap)
 			c.mapping[name] = b
+			c.keys = append(c.keys, name)
+			c.values = append(c.values, b)
 		}
 		b.Add(uint32(i))
 	}
+	sort.Strings(c.keys)
 }
 
 func NewColIdx() *ColumnImpl {
@@ -221,15 +224,6 @@ func (c *ColumnImpl) Reset() {
 func (c *ColumnImpl) Build(name string) (*FullColumn, error) {
 	if len(c.mapping) == 0 {
 		return &FullColumn{}, nil
-	}
-	c.keys = slices.Grow(c.keys, len(c.mapping))
-	c.values = slices.Grow(c.values, len(c.mapping))
-	for k := range c.mapping {
-		c.keys = append(c.keys, k)
-	}
-	sort.Strings(c.keys)
-	for i := range c.keys {
-		c.values = append(c.values, c.mapping[c.keys[i]])
 	}
 	for i := range c.keys {
 		err := c.build.Insert([]byte(c.keys[i]), uint64(i))
