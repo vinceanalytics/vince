@@ -41,7 +41,13 @@ func (idx *Index) Index(r arrow.Record) (index.Full, error) {
 		if skip[name] {
 			continue
 		}
-		cIdx.Index(r.Column(i).(*array.Dictionary))
+		a := r.Column(i)
+		if a.NullN() == a.Len() {
+			// skip columns that only nulls. This happens for instance when geo ip is not
+			// configured or cases of utm* properties
+			continue
+		}
+		cIdx.Index(a.(*array.Dictionary))
 		n, err := cIdx.Build(name)
 		if err != nil {
 			return nil, err
