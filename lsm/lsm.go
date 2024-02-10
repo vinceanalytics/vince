@@ -279,7 +279,7 @@ func (lsm *Tree[T]) Compact() {
 
 	var oldSizes uint64
 	lsm.tree.Iterate(func(n *Node) bool {
-		if n.part == nil {
+		if n.part == nil || !n.part.CanIndex() {
 			return true
 		}
 		lsm.nodes = append(lsm.nodes, n)
