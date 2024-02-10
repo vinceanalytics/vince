@@ -12,6 +12,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/klauspost/compress/zstd"
+	"github.com/vinceanalytics/vince/buffers"
 	"github.com/vinceanalytics/vince/filters"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/logger"
@@ -127,7 +128,9 @@ func chuckFromRaw(raw []byte, chunk *v1.Metadata_Chunk) []byte {
 }
 
 func WriteFull(w io.Writer, full Full, id string) error {
-	b := new(bytes.Buffer)
+	b := buffers.Bytes()
+	defer b.Release()
+
 	meta := &v1.Metadata{
 		Id:  id,
 		Min: full.Min(),
@@ -160,7 +163,7 @@ func WriteFull(w io.Writer, full Full, id string) error {
 	return err
 }
 
-func writeColumn(w io.Writer, column Column, startOffset uint64, b *bytes.Buffer) (meta *v1.Metadata_Column, offset uint64, err error) {
+func writeColumn(out io.Writer, column Column, startOffset uint64, w *buffers.BytesBuffer) (meta *v1.Metadata_Column, offset uint64, err error) {
 	meta = &v1.Metadata_Column{
 		Name:    column.Name(),
 		NumRows: column.NumRows(),
@@ -168,6 +171,7 @@ func writeColumn(w io.Writer, column Column, startOffset uint64, b *bytes.Buffer
 			Offset: startOffset,
 		},
 	}
+	w.Reset()
 	// fst is the first chunk
 	n, err := w.Write(column.Fst())
 	if err != nil {
@@ -200,10 +204,10 @@ func writeColumn(w io.Writer, column Column, startOffset uint64, b *bytes.Buffer
 		return nil, 0, err
 	}
 
-	meta.RawSize = uint32(b.Len())
+	meta.RawSize = uint32(w.Len())
 	cb := get()
 	defer cb.Release()
-	o, err := ZSTDCompress(cb.dst(b.Len()), b.Bytes(), ZSTDCompressionLevel)
+	o, err := ZSTDCompress(cb.dst(w.Len()), w.Bytes(), ZSTDCompressionLevel)
 	if err != nil {
 		return nil, 0, err
 	}
