@@ -22,7 +22,7 @@ import (
 var arrowBytes []byte
 
 var name *array.Dictionary
-var nameData *array.Binary
+var nameData *array.String
 
 //go:embed refs.fst
 var fstBytes []byte
@@ -41,7 +41,7 @@ func init() {
 	rd.Next()
 	r := rd.Record()
 	name = r.Column(0).(*array.Dictionary)
-	nameData = name.Dictionary().(*array.Binary)
+	nameData = name.Dictionary().(*array.String)
 	fst, err = vellum.Load(fstBytes)
 	if err != nil {
 		logger.Fail(err.Error())
@@ -83,7 +83,7 @@ func Search(uri string) string {
 		_, val := it.Current()
 		r := nameData.Value(name.GetValueIndex(int(val)))
 		cache.Set(u.Host, r, int64(len(r)))
-		return string(r)
+		return r
 	}
 	return ""
 }
