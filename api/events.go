@@ -11,6 +11,9 @@ import (
 
 func ReceiveEvent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+	w.Header().Set("Access-Control-Allow-Methods", http.MethodPost)
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 	ctx := r.Context()
 	xg := guard.Get(ctx)
 	if !xg.Allow() {
