@@ -1,11 +1,15 @@
 package api
 
 import (
+	"compress/gzip"
 	"context"
 	"crypto/subtle"
+	"io"
 	"net/http"
 	"strings"
+	"sync"
 
+	"github.com/vinceanalytics/vince/buffers"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/guard"
 	"github.com/vinceanalytics/vince/logger"
@@ -16,6 +20,14 @@ import (
 	"github.com/vinceanalytics/vince/version"
 )
 
+const (
+	vary            = "Vary"
+	acceptEncoding  = "Accept-Encoding"
+	contentEncoding = "Content-Encoding"
+	contentType     = "Content-Type"
+	contentLength   = "Content-Length"
+)
+
 type API struct {
 	config *v1.Config
 	hand   http.Handler
@@ -23,12 +35,36 @@ type API struct {
 
 var trackerServer = http.FileServer(http.FS(tracker.JS))
 
+var gzipPool = &sync.Pool{New: func() any {
+	// To scale , we know the payload is JSON and the number of calls+data
+	// introduces large egress cost.
+	//
+	// Optimize for size
+	w, err := gzip.NewWriterLevel(nil, gzip.BestCompression)
+	if err != nil {
+		logger.Fail("Failed creating gzip writer", "err", err)
+	}
+	return w
+}}
+
+const minSizeToCompress = 1 << 10
+
+func getZip() *gzip.Writer {
+	return gzipPool.Get().(*gzip.Writer)
+}
+
+func putZip(w *gzip.Writer) {
+	w.Reset(io.Discard)
+	gzipPool.Put(w)
+}
+
 func New(ctx context.Context, o *v1.Config) (*API, error) {
 	a := &API{
 		config: o,
 	}
 	base := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		code := &responseCode{ResponseWriter: w}
+		w.Header().Add(vary, acceptEncoding)
+		code := &statsWriter{ResponseWriter: w, compress: acceptsGzip(r)}
 		defer func() {
 			logger.Get(r.Context()).Debug(r.URL.String(), "method", r.Method, "status", code.code)
 		}()
@@ -89,14 +125,37 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 	return a, nil
 }
 
-type responseCode struct {
+type statsWriter struct {
 	http.ResponseWriter
-	code int
+	raw        int
+	compressed int
+	compress   bool
+	code       int
 }
 
-func (r *responseCode) WriteHeader(code int) {
+func (r *statsWriter) Write(p []byte) (int, error) {
+	// All writes to response are a single call.
+	r.raw = len(p)
+	if !r.compress || len(p) <= minSizeToCompress {
+		return r.ResponseWriter.Write(p)
+	}
+	r.Header().Set(contentEncoding, "gzip")
+	r.Header().Del(contentLength)
+	if r.code != 0 {
+		r.ResponseWriter.WriteHeader(r.code)
+	}
+	b := buffers.Bytes()
+	defer b.Release()
+	g := getZip()
+	defer putZip(g)
+	g.Reset(b)
+	g.Write(p)
+	r.compressed = b.Len()
+	return r.ResponseWriter.Write(b.Bytes())
+}
+
+func (r *statsWriter) WriteHeader(code int) {
 	r.code = code
-	r.ResponseWriter.WriteHeader(code)
 }
 
 func parseBearer(auth string) (token string) {
