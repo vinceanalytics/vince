@@ -43,7 +43,7 @@ func (c *Compute) Metric(ctx context.Context, m v1.Metric) (float64, error) {
 	case v1.Metric_visitors:
 		return c.Visitors(ctx)
 	case v1.Metric_visits:
-		return c.Visit(), nil
+		return c.Visits(), nil
 	case v1.Metric_bounce_rate:
 		return c.BounceRate(), nil
 	case v1.Metric_visit_duration:
@@ -61,7 +61,7 @@ func (c *Compute) Events() float64 {
 }
 func (c *Compute) ViewsPerVisits() float64 {
 	views := c.PageView()
-	visits := c.Visit()
+	visits := c.Visits()
 	if visits != 0 {
 		return views / visits
 	}
@@ -70,7 +70,7 @@ func (c *Compute) ViewsPerVisits() float64 {
 
 func (c *Compute) VisitDuration() float64 {
 	duration := c.Duration()
-	visits := c.Visit()
+	visits := c.Visits()
 	if visits != 0 {
 		return duration / visits
 	}
@@ -79,7 +79,7 @@ func (c *Compute) VisitDuration() float64 {
 
 func (c *Compute) BounceRate() float64 {
 	bounce := c.Bounce()
-	visits := c.Visit()
+	visits := c.Visits()
 	if visits != 0 {
 		return bounce / visits
 	}
@@ -105,7 +105,7 @@ func (c *Compute) Visitors(ctx context.Context) (float64, error) {
 	return float64(a.Len()), nil
 }
 
-func (c *Compute) Visit() float64 {
+func (c *Compute) Visits() float64 {
 	if c.visit != nil {
 		return *c.visit
 	}
