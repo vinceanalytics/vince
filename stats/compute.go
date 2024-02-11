@@ -48,6 +48,8 @@ func (c *Compute) Metric(ctx context.Context, m v1.Metric) (float64, error) {
 		return c.BounceRate(), nil
 	case v1.Metric_visit_duration:
 		return c.VisitDuration(), nil
+	case v1.Metric_views_per_visit:
+		return c.ViewsPerVisits(), nil
 	case v1.Metric_events:
 		return c.Events(), nil
 	default:
