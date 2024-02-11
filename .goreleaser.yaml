@@ -127,7 +127,7 @@ brews:
     name: vince
     folder: Formula
     homepage: https://vinceanalytics.com
-    description: API first Cloud Native Web Analytics For Startups
+    description: API first high performance self hosted and cost effective privacy friendly web analytics  server for organizations of any size
     license: Apache 2.0
     ids:
       - vince

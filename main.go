@@ -45,7 +45,7 @@ func main() {
 func app() *cli.Command {
 	return &cli.Command{
 		Name:      "vince",
-		Usage:     "API first Cloud Native Web Analytics For Startups",
+		Usage:     "API first high performance self hosted and cost effective privacy friendly web analytics  server for organizations of any size",
 		Copyright: "@2024-present",
 		Version:   version.VERSION,
 		Authors: []any{
