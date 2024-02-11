@@ -43,6 +43,9 @@ var scriptData []byte
 var style template.CSS
 var script []template.JS
 
+var domain = os.Getenv("DOMAIN")
+var track = os.Getenv("TRACKER")
+
 var page = template.Must(template.New("main").Parse(data))
 var minifier *minify.M
 
@@ -61,6 +64,13 @@ func init() {
 		panic(err)
 	}
 	script = append(script, template.JS(o))
+
+	if v := os.Getenv("TRACKER"); v != "" {
+		track = v
+	}
+	if v := os.Getenv("DOMAIN"); v != "" {
+		domain = v
+	}
 }
 
 var serve = flag.Bool("s", false, "serves")
@@ -190,10 +200,12 @@ func Build(w io.Writer, dir string) error {
 	}
 	var b bytes.Buffer
 	m := Model{
-		CSS:  style,
-		JS:   script,
-		Logo: LOGO,
-		Icon: Icon,
+		Domain: domain,
+		Track:  track,
+		CSS:    style,
+		JS:     script,
+		Logo:   LOGO,
+		Icon:   Icon,
 	}
 	var positions []int
 	seen := make(map[string]struct{})
@@ -318,12 +330,14 @@ type Item struct {
 }
 
 type Model struct {
-	CSS   template.CSS
-	Logo  template.HTMLAttr
-	Icon  template.HTMLAttr
-	JS    []template.JS
-	Menus []Menu
-	Pages []template.HTML
+	Domain string
+	Track  string
+	CSS    template.CSS
+	Logo   template.HTMLAttr
+	Icon   template.HTMLAttr
+	JS     []template.JS
+	Menus  []Menu
+	Pages  []template.HTML
 }
 
 type Menu struct {

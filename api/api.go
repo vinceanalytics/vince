@@ -150,6 +150,7 @@ func (r *statsWriter) Write(p []byte) (int, error) {
 	defer putZip(g)
 	g.Reset(b)
 	g.Write(p)
+	g.Close()
 	r.compressed = b.Len()
 	return r.ResponseWriter.Write(b.Bytes())
 }

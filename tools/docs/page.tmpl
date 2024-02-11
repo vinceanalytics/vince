@@ -7,6 +7,9 @@
     <title>vince - API first Cloud Native Web Analytics For Startups</title>
     <link rel="icon" {{.Icon}}>
     <style>{{.CSS}}</style>
+    {{if .Domain}}
+    <script defer data-domain="{{.Domain}}" src="{{.Track}}"></script>
+    {{end}}
 </head>
 
 <body>
