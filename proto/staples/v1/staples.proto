@@ -57,7 +57,7 @@ message Granule {
 message Event {
   /// EventName
   string n = 1 [ (buf.validate.field).required = true ];
-  string url = 2 [
+  string u = 2 [
     (buf.validate.field).required = true,
     (buf.validate.field).string.uri = true
   ];
@@ -70,7 +70,7 @@ message Event {
   int32 w = 4;
   // Hash mode
   bool h = 5;
-  string ip = 6 [ (buf.validate.field).string.ip = true ];
+  string ip = 6;
   // user agent
   string ua = 7;
 

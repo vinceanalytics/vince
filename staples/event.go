@@ -121,11 +121,11 @@ func (s *Event) Update(e *Event) {
 
 func Parse(ctx context.Context, req *v1.Event) *Event {
 	log := logger.Get(ctx)
-	if req.Url == "" || req.N == "" || req.D == "" {
+	if req.U == "" || req.N == "" || req.D == "" {
 		log.Error("invalid request")
 		return nil
 	}
-	uri, err := url.Parse(req.Url)
+	uri, err := url.Parse(req.U)
 	if err != nil {
 		log.Error("failed parsing event url", "err", err)
 		return nil

@@ -107,12 +107,12 @@ func (s *Session) Send(name, path string) error {
 
 func (s *Session) send(name, path string, dump bool) error {
 	e := &v1.Event{
-		N:   name,
-		Url: s.Website + path,
-		D:   s.Domain,
-		Ua:  s.Ua,
-		Ip:  "127.0.0.1",
-		R:   s.Referrer,
+		N:  name,
+		U:  s.Website + path,
+		D:  s.Domain,
+		Ua: s.Ua,
+		Ip: "127.0.0.1",
+		R:  s.Referrer,
 	}
 	data, _ := protojson.Marshal(e)
 	req, err := http.NewRequest(http.MethodPost, s.Vince+apiPath, bytes.NewReader(data))

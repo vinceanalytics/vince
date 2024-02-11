@@ -4,7 +4,6 @@ import (
 	"net"
 	"net/http"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/guard"
 	"github.com/vinceanalytics/vince/request"
 	"github.com/vinceanalytics/vince/session"
@@ -18,8 +17,8 @@ func ReceiveEvent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTooManyRequests)
 		return
 	}
-	var ev v1.Event
-	if !request.Read(w, r, &ev) {
+	ev := request.ReadEvent(w, r)
+	if ev == nil {
 		return
 	}
 	if !xg.Accept(ev.D) {
@@ -29,7 +28,7 @@ func ReceiveEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	ev.Ip = remoteIP(r)
 	ev.Ua = r.UserAgent()
-	session.Get(ctx).Queue(ctx, &ev)
+	session.Get(ctx).Queue(ctx, ev)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
