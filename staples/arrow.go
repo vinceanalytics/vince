@@ -100,6 +100,10 @@ func NewRecordBuilder(mem memory.Allocator, as *arrow.Schema) (*array.RecordBuil
 
 func write(b array.Builder) func(reflect.Value) {
 	switch e := b.(type) {
+	case *array.BooleanBuilder:
+		return func(v reflect.Value) {
+			e.Append(v.Bool())
+		}
 	case *array.Int64Builder:
 		return func(v reflect.Value) {
 			if v.Kind() == reflect.Ptr {
@@ -177,6 +181,14 @@ func NewMerger(mem memory.Allocator, as *arrow.Schema) *Merger {
 
 func merge(b array.Builder) func(arrow.Array) {
 	switch e := b.(type) {
+	case *array.BooleanBuilder:
+		return func(v arrow.Array) {
+			a := v.(*array.Boolean)
+			e.Reserve(a.Len())
+			for i := 0; i < a.Len(); i++ {
+				e.UnsafeAppend(a.Value(i))
+			}
+		}
 	case *array.Int64Builder:
 		return func(v arrow.Array) {
 			a := v.(*array.Int64)
@@ -225,6 +237,14 @@ func NewTaker(mem memory.Allocator, as *arrow.Schema) (*array.RecordBuilder, fun
 
 func take(b array.Builder) func(arrow.Array, []uint32) {
 	switch e := b.(type) {
+	case *array.BooleanBuilder:
+		return func(v arrow.Array, rows []uint32) {
+			a := v.(*array.Boolean)
+			e.Reserve(len(rows))
+			for _, i := range rows {
+				e.UnsafeAppend(a.Value(int(i)))
+			}
+		}
 	case *array.Int64Builder:
 		return func(v arrow.Array, rows []uint32) {
 			a := v.(*array.Int64)

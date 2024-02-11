@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"context"
 	"net/http"
 	"slices"
 	"time"
@@ -10,7 +9,6 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/compute"
-	"github.com/apache/arrow/go/v15/arrow/math"
 	"github.com/vinceanalytics/vince/filters"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/logger"
@@ -47,7 +45,7 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 	}
 	slices.Sort(req.Metrics)
 	slices.Sort(req.Property)
-	metricsToProjection(filter, req.Metrics, req.Property...)
+	selectedColumns := metricsToProjection(filter, req.Metrics, req.Property...)
 	from, to := PeriodToRange(ctx, time.Now, period, r.URL.Query())
 	scannedRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filter)
 	if err != nil {
@@ -66,118 +64,39 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 	defer b.Release()
 	var result []*v1.BreakDown_Response_Result
 	// TODO: run this concurrently
+	xc := &Compute{
+		mapping: make(map[string]arrow.Array),
+	}
+	defer xc.Release()
+
 	for _, prop := range req.Property {
 		var groups []*v1.BreakDown_Response_Group
 		for key, bitmap := range hashProp(mapping[filters.Column(prop)]) {
 			b.AppendValues(bitmap.ToArray(), nil)
 			idx := b.NewUint32Array()
+
+			clear(xc.mapping)
+			xc.view = nil
+			xc.visit = nil
+
+			for _, name := range selectedColumns {
+				a, err := compute.TakeArray(ctx, mapping[name], idx)
+				if err != nil {
+					idx.Release()
+					logger.Get(ctx).Error("Failed taking array for breaking down", "column", name)
+					request.Internal(ctx, w)
+					return
+				}
+				xc.mapping[name] = a
+			}
+
 			var values []*v1.Value
-			var visits *float64
-			var view *float64
 			for _, metric := range req.Metrics {
-				var value float64
-				switch metric {
-				case v1.Metric_pageviews:
-					a := mapping[v1.Filters_Event.String()]
-					count := calcPageViews(a)
-					a.Release()
-					view = &count
-					value = count
-				case v1.Metric_visitors:
-					a, ok := take(ctx, metric, v1.Filters_ID, mapping, idx)
-					if !ok {
-						request.Internal(ctx, w)
-						return
-					}
-					u, err := compute.Unique(ctx, compute.NewDatumWithoutOwning(a))
-					if err != nil {
-						a.Release()
-						logger.Get(ctx).Error("Failed calculating visitors", "err", err)
-						request.Internal(ctx, w)
-						return
-					}
-					a.Release()
-					value = float64(u.Len())
-					u.Release()
-				case v1.Metric_visits:
-					a, ok := take(ctx, metric, v1.Filters_Session, mapping, idx)
-					if !ok {
-						request.Internal(ctx, w)
-						return
-					}
-					sum := float64(math.Int64.Sum(a.(*array.Int64)))
-					a.Release()
-					visits = &sum
-					value = sum
-				case v1.Metric_bounce_rate:
-					var vis float64
-					if visits != nil {
-						vis = *visits
-					} else {
-						a, ok := take(ctx, metric, v1.Filters_Session, mapping, idx)
-						if !ok {
-							request.Internal(ctx, w)
-							return
-						}
-						vis = float64(math.Int64.Sum(a.(*array.Int64)))
-						a.Release()
-					}
-					a, ok := take(ctx, metric, v1.Filters_Bounce, mapping, idx)
-					if !ok {
-						request.Internal(ctx, w)
-						return
-					}
-					sum := float64(math.Int64.Sum(a.(*array.Int64)))
-					a.Release()
-					if vis != 0 {
-						sum /= vis
-					}
-					value = sum
-				case v1.Metric_visit_duration:
-					a, ok := take(ctx, metric, v1.Filters_Duration, mapping, idx)
-					if !ok {
-						request.Internal(ctx, w)
-						return
-					}
-					sum := math.Float64.Sum(a.(*array.Float64))
-					a.Release()
-					count := float64(a.Len())
-					var avg float64
-					if count != 0 {
-						avg = sum / count
-					}
-					value = avg
-				case v1.Metric_views_per_visit:
-					var vis float64
-					if visits != nil {
-						vis = *visits
-					} else {
-						a, ok := take(ctx, metric, v1.Filters_Session, mapping, idx)
-						if !ok {
-							request.Internal(ctx, w)
-							return
-						}
-						vis = float64(math.Int64.Sum(a.(*array.Int64)))
-						a.Release()
-					}
-					var vw float64
-					if view != nil {
-						vw = *view
-					} else {
-						a, ok := take(ctx, metric, v1.Filters_Event, mapping, idx)
-						if !ok {
-							request.Internal(ctx, w)
-							return
-						}
-						vw = calcPageViews(a)
-						a.Release()
-					}
-					if vis != 0 {
-						vw /= vis
-					}
-					value = vw
-				case v1.Metric_events:
-					value = float64(idx.Len())
+				value, err := xc.Metric(ctx, metric)
+				if err != nil {
+					logger.Get(ctx).Error("Failed computing metric", "metric", metric)
+					request.Internal(ctx, w)
+					return
 				}
 				values = append(values, &v1.Value{
 					Metric: metric,
@@ -196,19 +115,6 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	request.Write(ctx, w, &v1.BreakDown_Response{Results: result})
-}
-
-func take(ctx context.Context, metric v1.Metric, f v1.Filters_Projection, mapping map[string]arrow.Array, idx *array.Uint32) (arrow.Array, bool) {
-	a, err := compute.TakeArray(ctx,
-		mapping[f.String()], idx,
-	)
-	if err != nil {
-		idx.Release()
-		logger.Get(ctx).Error("Failed taking array values",
-			"err", err, "metric", metric, "projection", f)
-		return nil, false
-	}
-	return a, true
 }
 
 func hashProp(a arrow.Array) map[string]*roaring.Bitmap {

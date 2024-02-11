@@ -31,7 +31,7 @@ type Event struct {
 	// NOTE: Bounce is calculated per session. We simply want to know if a user
 	// stayed and browsed the website.
 	Bounce   int64
-	Session  int64
+	Session  bool
 	Duration float64
 
 	Browser        string
@@ -103,7 +103,7 @@ func (e *Event) TS() int64 { return e.Timestamp }
 func (e *Event) Hit() {
 	e.EntryPage = e.Path
 	e.Bounce = 1
-	e.Session = 1
+	e.Session = true
 }
 
 func (s *Event) Update(e *Event) {
@@ -112,7 +112,7 @@ func (s *Event) Update(e *Event) {
 	} else {
 		s.Bounce, e.Bounce = 0, 0
 	}
-	e.Session = 0
+	e.Session = false
 	e.ExitPage = e.Path
 	// Track duration since last visit.
 	e.Duration = time.UnixMilli(e.Timestamp).Sub(time.UnixMilli(s.Timestamp)).Seconds()

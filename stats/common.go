@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/apache/arrow/go/v15/arrow/array"
+	"github.com/apache/arrow/go/v15/arrow/bitutil"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/logger"
 	"github.com/vinceanalytics/vince/timeutil"
@@ -206,4 +208,14 @@ func sep(f string) (key, value string, op v1.Filter_OP, ok bool) {
 		return
 	}
 	return
+}
+
+// We store sessions as boolean. True for new sessions and false otherwise.
+// Visits is the same as the number of set bits.
+func CalVisits(a *array.Boolean) int {
+	vals := a.Data().Buffers()[1]
+	if vals != nil {
+		return bitutil.CountSetBits(vals.Bytes(), 0, a.Len())
+	}
+	return 0
 }

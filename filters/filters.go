@@ -33,6 +33,10 @@ func Column(p v1.Property) string {
 	return camel.Case(propToProjection[p].String())
 }
 
+func ToColumn(p v1.Filters_Projection) string {
+	return camel.Case(p.String())
+}
+
 func Projection(p v1.Property) v1.Filters_Projection {
 	return propToProjection[p]
 }
