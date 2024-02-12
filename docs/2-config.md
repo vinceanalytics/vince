@@ -69,22 +69,28 @@ By default there is no limit.
 ## Granule Size
 Size in bytes for indexes+parts that when reached they are compacted and stored in disk. 
 
-By default `256MB` is used. You need to adjust this depending on expected traffick.
+By default `16MB` is used. You need to adjust this depending on your deployment resources.
 
-> Unless otherwise `256MB` is a very conservative balance. This option is for power users.
+> Unless otherwise `16MB` is a very conservative balance. This option is for power users.
 > You can have production deployments sticking with the defaults.
 
+When in memory index+`arrow.Record` reaches this size, we convert the arrow
+record to parquet file with compression enabled, then the resulting file is stored in durable key/value store with configured retention period.
+
+So, While `16MB` is in memory, what actually goes to disk is smaller than this value. We also compress the index  before storing it as well.
+
+
 *env*
-: `VINCE_GRANULE_SIZE` example `VINCE_GRANULE_SIZE=268435456`
+: `VINCE_GRANULE_SIZE` example `VINCE_GRANULE_SIZE=16777216`
 
 *flag*
-: `--granuleSize` example `--granuleSize=268435456`
+: `--granuleSize` example `--granuleSize=16777216`
 
 *file*
 : `granuleSize` 
 
 ```json
-{"granuleSize":"268435456"}
+{"granuleSize":"16777216"}
 ```
 
 ## Geo IP DB

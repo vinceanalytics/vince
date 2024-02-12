@@ -93,7 +93,7 @@ type Options struct {
 }
 
 const (
-	compactSize = 2 << 20
+	compactSize = 16 << 20
 )
 
 func DefaultLSMOptions() Options {
