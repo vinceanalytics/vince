@@ -102,6 +102,13 @@ func write(b array.Builder) func(reflect.Value) {
 	switch e := b.(type) {
 	case *array.BooleanBuilder:
 		return func(v reflect.Value) {
+			if v.Kind() == reflect.Ptr {
+				if v.IsNil() {
+					e.AppendNull()
+					return
+				}
+				v = v.Elem()
+			}
 			e.Append(v.Bool())
 		}
 	case *array.Int64Builder:
@@ -186,6 +193,10 @@ func merge(b array.Builder) func(arrow.Array) {
 			a := v.(*array.Boolean)
 			e.Reserve(a.Len())
 			for i := 0; i < a.Len(); i++ {
+				if a.IsNull(i) {
+					e.AppendNull()
+					continue
+				}
 				e.UnsafeAppend(a.Value(i))
 			}
 		}
@@ -242,6 +253,10 @@ func take(b array.Builder) func(arrow.Array, []uint32) {
 			a := v.(*array.Boolean)
 			e.Reserve(len(rows))
 			for _, i := range rows {
+				if a.IsNull(int(i)) {
+					e.AppendNull()
+					continue
+				}
 				e.UnsafeAppend(a.Value(int(i)))
 			}
 		}

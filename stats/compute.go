@@ -96,8 +96,7 @@ func (c *Compute) Duration() float64 {
 }
 
 func (c *Compute) Bounce() float64 {
-	value := math.Int64.Sum(c.mapping[columns.Bounce].(*array.Int64))
-	return float64(value)
+	return float64(CalcBounce(c.mapping[columns.Bounce].(*array.Boolean)))
 }
 
 func (c *Compute) Visitors(ctx context.Context) (float64, error) {

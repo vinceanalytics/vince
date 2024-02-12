@@ -30,7 +30,7 @@ type Event struct {
 	//
 	// NOTE: Bounce is calculated per session. We simply want to know if a user
 	// stayed and browsed the website.
-	Bounce   int64
+	Bounce   *bool
 	Session  bool
 	Duration float64
 
@@ -102,15 +102,15 @@ func (e *Event) TS() int64 { return e.Timestamp }
 
 func (e *Event) Hit() {
 	e.EntryPage = e.Path
-	e.Bounce = 1
+	e.Bounce = True
 	e.Session = true
 }
 
 func (s *Event) Update(e *Event) {
-	if s.Bounce == 1 {
-		s.Bounce, e.Bounce = -1, -1
+	if s.Bounce == True {
+		s.Bounce, e.Bounce = nil, nil
 	} else {
-		s.Bounce, e.Bounce = 0, 0
+		s.Bounce, e.Bounce = False, False
 	}
 	e.Session = false
 	e.ExitPage = e.Path
@@ -195,6 +195,14 @@ func Parse(ctx context.Context, req *v1.Event) *Event {
 	e.Screen = screenSize
 	e.Timestamp = req.Timestamp.AsTime().UnixMilli()
 	return e
+}
+
+var True = ptr(true)
+
+var False = ptr(false)
+
+func ptr[T any](a T) *T {
+	return &a
 }
 
 func sanitizeHost(s string) string {

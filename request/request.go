@@ -3,10 +3,8 @@ package request
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 
 	"github.com/bufbuild/protovalidate-go"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
@@ -32,28 +30,22 @@ func Get(ctx context.Context) *protovalidate.Validator {
 }
 
 func Read(w http.ResponseWriter, r *http.Request, o proto.Message) bool {
-	println("========= 0")
 	ctx := r.Context()
-	ds, _ := httputil.DumpRequest(r, true)
-	fmt.Println(string(ds))
 	if r.Header.Get("Content-Type") != "application/json" {
 		Error(ctx, w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return false
 	}
-	println("========= 1")
 	if r.ContentLength == 0 || r.ContentLength > maxBodySize {
 		logger.Get(ctx).Error("Invalid content length", "contentLength", r.ContentLength)
 		Error(ctx, w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return false
 	}
-	println("========= 2")
 	b, err := io.ReadAll(io.LimitReader(r.Body, r.ContentLength))
 	if err != nil {
 		logger.Get(ctx).Error("Failed reading request body", "err", err)
 		Error(ctx, w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return false
 	}
-	fmt.Println(">", string(b))
 	err = protojson.Unmarshal(b, o)
 	if err != nil {
 		logger.Get(ctx).Error("Failed decoding request body", "err", err)
