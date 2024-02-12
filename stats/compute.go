@@ -63,6 +63,7 @@ func (c *Compute) Metric(ctx context.Context, m v1.Metric) (float64, error) {
 func (c *Compute) Events() float64 {
 	return float64(c.mapping[columns.Event].Len())
 }
+
 func (c *Compute) ViewsPerVisits() float64 {
 	views := c.PageView()
 	visits := c.Visits()
@@ -121,25 +122,9 @@ func (c *Compute) PageView() float64 {
 	if c.view != nil {
 		return *c.view
 	}
-	view := calcPageViews(c.mapping[columns.Event])
+	view := float64(countSetBits(c.mapping[columns.View].(*array.Boolean)))
 	c.view = &view
 	return view
-}
-
-const viewStr = "pageview"
-
-func calcPageViews(a arrow.Array) (n float64) {
-	d := a.(*array.Dictionary)
-	x := d.Dictionary().(*array.String)
-	for i := 0; i < d.Len(); i++ {
-		if d.IsNull(i) {
-			continue
-		}
-		if x.Value(d.GetValueIndex(i)) == viewStr {
-			n++
-		}
-	}
-	return
 }
 
 func metricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) []string {
@@ -151,7 +136,7 @@ func metricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) []
 	for _, v := range me {
 		switch v {
 		case v1.Metric_pageviews:
-			m[v1.Filters_Event] = struct{}{}
+			m[v1.Filters_View] = struct{}{}
 		case v1.Metric_visitors:
 			m[v1.Filters_ID] = struct{}{}
 		case v1.Metric_visits:
@@ -160,10 +145,13 @@ func metricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) []
 			m[v1.Filters_Session] = struct{}{}
 			m[v1.Filters_Bounce] = struct{}{}
 		case v1.Metric_visit_duration:
+			m[v1.Filters_Session] = struct{}{}
 			m[v1.Filters_Duration] = struct{}{}
 		case v1.Metric_views_per_visit:
-			m[v1.Filters_Event] = struct{}{}
+			m[v1.Filters_View] = struct{}{}
 			m[v1.Filters_Duration] = struct{}{}
+		case v1.Metric_events:
+			m[v1.Filters_Event] = struct{}{}
 		}
 	}
 	cols := make([]string, 0, len(m))

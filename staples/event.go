@@ -32,6 +32,7 @@ type Event struct {
 	// stayed and browsed the website.
 	Bounce   *bool
 	Session  bool
+	View     bool
 	Duration float64
 
 	Browser        string
@@ -100,10 +101,16 @@ func (e *Event) Release() {
 
 func (e *Event) TS() int64 { return e.Timestamp }
 
+const pageView = "pageview"
+
 func (e *Event) Hit() {
 	e.EntryPage = e.Path
 	e.Bounce = True
 	e.Session = true
+	if e.Event == pageView {
+		e.Event = ""
+		e.View = true
+	}
 }
 
 func (s *Event) Update(e *Event) {

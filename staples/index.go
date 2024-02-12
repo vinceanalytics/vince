@@ -7,10 +7,9 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
-	"github.com/vinceanalytics/vince/camel"
+	"github.com/vinceanalytics/vince/columns"
 	"github.com/vinceanalytics/vince/db"
 	"github.com/vinceanalytics/vince/filters"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/index"
 	"github.com/vinceanalytics/vince/logger"
 )
@@ -24,11 +23,12 @@ func NewIndex() *Index {
 var _ index.Index = (*Index)(nil)
 
 var skip = map[string]bool{
-	camel.Case(v1.Filters_Timestamp.String()): true,
-	camel.Case(v1.Filters_ID.String()):        true,
-	camel.Case(v1.Filters_Session.String()):   true,
-	camel.Case(v1.Filters_Bounce.String()):    true,
-	camel.Case(v1.Filters_Duration.String()):  true,
+	columns.Timestamp: true,
+	columns.ID:        true,
+	columns.Session:   true,
+	columns.Bounce:    true,
+	columns.Duration:  true,
+	columns.View:      true,
 }
 
 func (idx *Index) Index(r arrow.Record) (index.Full, error) {

@@ -33,6 +33,7 @@ message Filters {
     Bounce = 2;
     Session = 3;
     Duration = 4;
+    View = 26;
 
     Browser = 5;
     BrowserVersion = 6;
