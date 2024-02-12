@@ -1,11 +1,13 @@
 package stats
 
 import (
+	"cmp"
 	"context"
 	"sort"
 
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
+	"github.com/apache/arrow/go/v15/arrow/bitutil"
 	"github.com/apache/arrow/go/v15/arrow/compute"
 	"github.com/apache/arrow/go/v15/arrow/math"
 	"github.com/vinceanalytics/vince/columns"
@@ -173,4 +175,31 @@ func metricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) []
 	}
 	sort.Strings(cols)
 	return cols
+}
+
+// We store sessions as boolean. True for new sessions and false otherwise.
+// Visits is the same as the number of set bits.
+func CalVisits(a *array.Boolean) int {
+	return countSetBits(a)
+}
+
+func countSetBits(a *array.Boolean) int {
+	vals := a.Data().Buffers()[1]
+	if vals != nil {
+		return bitutil.CountSetBits(vals.Bytes(), 0, a.Len())
+	}
+	return 0
+}
+
+func CalcBounce(a *array.Boolean) int {
+	nulls := a.NullN()
+	set := countSetBits(a)
+	switch cmp.Compare(set, nulls) {
+	case -1:
+		return 0
+	case 1:
+		return set - nulls
+	default:
+		return 0
+	}
 }
