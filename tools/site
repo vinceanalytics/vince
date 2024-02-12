@@ -1,3 +1,9 @@
+set -auo pipefail
+
 go build -o bin/docs ./tools/docs/
 
 ./bin/docs docs/ ../vinceanalytics.github.io/index.html
+cd ../vinceanalytics.github.io
+git commit -am "update docs"
+git push
+cd -
