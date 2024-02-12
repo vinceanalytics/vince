@@ -36,15 +36,7 @@ type API struct {
 var trackerServer = http.FileServer(http.FS(tracker.JS))
 
 var gzipPool = &sync.Pool{New: func() any {
-	// To scale , we know the payload is JSON and the number of calls+data
-	// introduces large egress cost.
-	//
-	// Optimize for size
-	w, err := gzip.NewWriterLevel(nil, gzip.BestCompression)
-	if err != nil {
-		logger.Fail("Failed creating gzip writer", "err", err)
-	}
-	return w
+	return gzip.NewWriter(nil)
 }}
 
 const minSizeToCompress = 1 << 10
