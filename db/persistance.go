@@ -10,9 +10,10 @@ import (
 	"time"
 
 	"github.com/apache/arrow/go/v15/arrow"
-	"github.com/apache/arrow/go/v15/arrow/array"
-	"github.com/apache/arrow/go/v15/arrow/ipc"
 	"github.com/apache/arrow/go/v15/arrow/memory"
+	"github.com/apache/arrow/go/v15/parquet"
+	"github.com/apache/arrow/go/v15/parquet/compress"
+	"github.com/apache/arrow/go/v15/parquet/pqarrow"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/buffers"
@@ -89,53 +90,48 @@ func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
 
 func (s *Store) SaveRecord(buf *buffers.BytesBuffer, base []byte, r arrow.Record) (n uint64, err error) {
 	schema := r.Schema()
-	var x uint64
-	for i := 0; i < int(r.NumCols()); i++ {
-		x, err = s.SaveColumn(buf, base, r.ColumnName(i), schema.Field(i), r.Column(i))
-		if err != nil {
-			return
-		}
-		n += x
-	}
-	return
-}
-
-func (s *Store) SaveColumn(buf *buffers.BytesBuffer, base []byte, key string, field arrow.Field, a arrow.Array) (n uint64, err error) {
-	r := array.NewRecord(
-		arrow.NewSchema([]arrow.Field{field}, nil),
-		[]arrow.Array{a},
-		int64(a.Len()),
-	)
-	defer r.Release()
 	b := buffers.Bytes()
-	defer func() {
-		n = uint64(b.Len())
-		b.Release()
-	}()
-	w := ipc.NewWriter(b,
-		ipc.WithSchema(r.Schema()),
-		ipc.WithAllocator(s.mem),
-		ipc.WithZstd(),
-		ipc.WithMinSpaceSavings(0.3), //at least 30% savings
-	)
+	defer b.Release()
+	props := []parquet.WriterProperty{
+		parquet.WithAllocator(s.mem),
+		parquet.WithBatchSize(r.NumRows()), // we save as a single row group
+		parquet.WithCompression(compress.Codecs.Zstd),
+	}
+	for i := 0; i < int(r.NumCols()); i++ {
+		// save dictionaries
+		path := r.ColumnName(i)
+		if r.Column(i).DataType().ID() == arrow.DICTIONARY {
+			props = append(props, parquet.WithDictionaryFor(path, true))
+		}
+	}
+	w, err := pqarrow.NewFileWriter(schema, b, parquet.NewWriterProperties(props...),
+		pqarrow.NewArrowWriterProperties(
+			pqarrow.WithAllocator(s.mem),
+			pqarrow.WithStoreSchema(),
+		))
+	if err != nil {
+		return 0, err
+	}
 	err = w.Write(r)
 	if err != nil {
-		return
+		return 0, err
 	}
 	err = w.Close()
 	if err != nil {
-		return
+		return 0, err
 	}
 	buf.Reset()
 	buf.Write(base)
 	buf.Write(slash)
-	buf.WriteString(key)
+	buf.Write(dataPath)
 	err = s.db.Set(buf.Bytes(), b.Bytes(), s.ttl)
+	n = uint64(b.Len())
 	return
 }
 
 var (
-	slash = []byte("/")
+	slash    = []byte("/")
+	dataPath = []byte("data")
 )
 
 type KV struct {
