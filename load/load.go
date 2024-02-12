@@ -45,6 +45,9 @@ func CMD() *cli.Command {
 			}
 			vm := goja.New()
 			vm.Set("createSession", program.NewSession)
+			o := vm.NewObject()
+			o.Set("log", fmt.Println)
+			vm.Set("console", o)
 			var data []byte
 			a := c.Args().First()
 			if a == "" {
