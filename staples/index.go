@@ -7,7 +7,6 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
-	"github.com/vinceanalytics/vince/columns"
 	"github.com/vinceanalytics/vince/db"
 	"github.com/vinceanalytics/vince/filters"
 	"github.com/vinceanalytics/vince/index"
@@ -22,32 +21,19 @@ func NewIndex() *Index {
 
 var _ index.Index = (*Index)(nil)
 
-var skip = map[string]bool{
-	columns.Timestamp: true,
-	columns.ID:        true,
-	columns.Session:   true,
-	columns.Bounce:    true,
-	columns.Duration:  true,
-	columns.View:      true,
-}
-
 func (idx *Index) Index(r arrow.Record) (index.Full, error) {
 	cIdx := index.NewColIdx()
 	defer cIdx.Release()
-
 	o := make(map[string]*index.FullColumn)
 	for i := 0; i < int(r.NumCols()); i++ {
-		name := r.ColumnName(i)
-		if skip[name] {
-			continue
-		}
 		a := r.Column(i)
-		if a.NullN() == a.Len() {
+		if a.DataType().ID() != arrow.DICTIONARY || a.NullN() == a.Len() {
 			// skip columns that only nulls. This happens for instance when geo ip is not
 			// configured or cases of utm* properties
 			continue
 		}
 		cIdx.Index(a.(*array.Dictionary))
+		name := r.ColumnName(i)
 		n, err := cIdx.Build(name)
 		if err != nil {
 			return nil, err
