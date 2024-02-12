@@ -98,10 +98,8 @@ func (s *Store) SaveRecord(buf *buffers.BytesBuffer, base []byte, r arrow.Record
 		parquet.WithCompression(compress.Codecs.Zstd),
 	}
 	for i := 0; i < int(r.NumCols()); i++ {
-		// save dictionaries
-		path := r.ColumnName(i)
 		if r.Column(i).DataType().ID() == arrow.DICTIONARY {
-			props = append(props, parquet.WithDictionaryFor(path, true))
+			props = append(props, parquet.WithDictionaryFor(r.ColumnName(i), true))
 		}
 	}
 	w, err := pqarrow.NewFileWriter(schema, b, parquet.NewWriterProperties(props...),
