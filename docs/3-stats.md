@@ -116,7 +116,7 @@ Domain of your site on `vince`.
 
 ### GET /api/v1/stats/aggregate
 
-This endpoint aggregates metrics over a certain time period. If you are familiar with the Plausible dashboard, this endpoint corresponds to the top row of stats that include `Unique Visitors` Pageviews, `Bounce rate` and `Visit duration`. You can retrieve any number and combination of these metrics in one request.
+This endpoint aggregates metrics over a certain time period.It include `Unique Visitors`` Pageviews`, `Bounce rate` and `Visit duration`. You can retrieve any number and combination of these metrics in one request.
 
 
 ```bash
@@ -148,7 +148,7 @@ curl 'https://cloud.vinceanalytics.com/api/v1/stats/aggregate?site_id=$SITE_ID&p
 
 **site_id** <span class="required">REQUIRED<span/>
 
-Domain of your site on Plausible.
+Domain of your site on `vince`.
 
 <hr / >
 
@@ -171,8 +171,7 @@ See [filtering](#filtering)
 
 ### GET /api/v1/stats/timeseries
 
-This endpoint provides timeseries data over a certain time period. If you are familiar with the Plausible dashboard, this endpoint corresponds to
-the main visitor graph.
+This endpoint provides timeseries data over a certain time period.
 
 
 ```bash title="Try it yourself"
@@ -187,7 +186,7 @@ TBD
 
 **site_id** <span class="required">REQUIRED<span/>
 
-Domain of your site on Plausible.
+Domain of your site on `vince`.
 
 <hr / >
 
@@ -237,7 +236,7 @@ TBD
 
 **site_id** <span class="required">REQUIRED<span/>
 
-Domain of your site on Plausible.
+Domain of your site on `vince`.
 
 <hr / >
 
