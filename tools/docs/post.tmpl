@@ -16,8 +16,9 @@
 
 <main>
         <div class="index">
-            <h1><a href="/blog">vince</a></h1>
-            <blockquote>API first high performance self hosted and cost effective privacy friendly web analytics  server for organizations of any size</blockquote>
+        <a href="/" class="blog-logo">
+            <img {{.Logo}} alt="" srcset="">
+        </a>
         </div>
 {{with .Post}}
 {{.Content}}
@@ -26,7 +27,7 @@
 <h2><a href="/blog/{{.URL}}">{{.Title}}</a> </h2>
 <ul>
 {{range .Posts}}
-    <li><a href="/blog/{{.URL}}">{{.Title}} - <i>{{.Date}}</i></a> </li>
+    <li><a href="/blog/{{.URL}}"><i>{{.Date}}</i> - {{.Title}}</a> </li>
 {{end}}
 </ul>
 {{end}}
@@ -34,7 +35,7 @@
 <h2><a href="/blog/{{.URL}}">{{.Title}}</a> </h2>
 <ul>
 {{range .Posts}}
-    <li><a href="/blog/{{.URL}}">{{.Title}} - <i>{{.Date}}</i></a> </li>
+    <li><a href="/blog/{{.URL}}"><i>{{.Date}}</i> - {{.Title}}</a> </li>
 {{end}}
 {{end}}
 </main>
