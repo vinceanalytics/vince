@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"html/template"
 	"log"
 	"os"
@@ -57,7 +58,11 @@ func writeBlogFile(path string, ctx Blog) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(path, "index.html"), b.Bytes(), 0600)
+	o, err := minifier.Bytes("text/html", b.Bytes())
+	if err != nil {
+		return fmt.Errorf("failed minifying documentation %v", err)
+	}
+	return os.WriteFile(filepath.Join(path, "index.html"), o, 0600)
 }
 
 func (s *Section) Write(base string) error {
