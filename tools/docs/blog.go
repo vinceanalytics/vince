@@ -301,6 +301,9 @@ func renderPost(text []byte) (o Post) {
 	})
 
 	ast.Walk(func(node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
+		if node.Type == blackfriday.Heading && node.HeadingData.Level == 6 {
+			return blackfriday.SkipChildren
+		}
 		return r.RenderNode(w, node, entering)
 	})
 	o.Content = template.HTML(w.String())
