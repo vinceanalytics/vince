@@ -35,6 +35,10 @@ func CMD() *cli.Command {
 				Usage: "URL to vince instance you want to generate load for",
 				Value: "http://localhost:8080",
 			},
+			&cli.IntFlag{
+				Name:  "limit",
+				Value: 10,
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			vince := c.String("vince")
@@ -45,6 +49,7 @@ func CMD() *cli.Command {
 			}
 			vm := goja.New()
 			vm.Set("createSession", program.NewSession)
+			vm.Set("limit", c.Int("limit"))
 			o := vm.NewObject()
 			o.Set("log", fmt.Println)
 			vm.Set("console", o)
