@@ -24,6 +24,20 @@ var postData string
 
 var post = template.Must(template.New("main").Parse(postData))
 
+type Blog struct {
+	Title  string
+	Domain string
+	Track  string
+	CSS    template.CSS
+	Logo   template.HTMLAttr
+	Icon   template.HTMLAttr
+	JS     []template.JS
+
+	Post     *Post
+	Sections Sections
+	Section  *Section
+}
+
 type Section struct {
 	URL       string
 	Title     string
@@ -37,6 +51,15 @@ func (s *Section) Update() {
 	}
 }
 
+func writeBlogFile(path string, ctx Blog) error {
+	b := new(bytes.Buffer)
+	err := post.Execute(b, ctx)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(path, "index.html"), b.Bytes(), 0600)
+}
+
 func (s *Section) Write(base string) error {
 	for _, p := range s.Posts {
 		err := os.MkdirAll(filepath.Join(base, p.URL), 0755)
@@ -48,7 +71,17 @@ func (s *Section) Write(base string) error {
 			return err
 		}
 	}
-	return nil
+	return writeBlogFile(filepath.Join(base, s.URL), Blog{
+		Title:   s.Title,
+		Section: s,
+
+		Domain: domain,
+		Track:  track,
+		CSS:    style,
+		JS:     script,
+		Logo:   LOGO,
+		Icon:   Icon,
+	})
 }
 
 func writeBlog(src, out string) error {
@@ -102,7 +135,17 @@ func (ls Sections) Write(base string) error {
 			return err
 		}
 	}
-	return nil
+	return writeBlogFile(base, Blog{
+		Title:    "vince- Blog",
+		Sections: ls,
+
+		Domain: domain,
+		Track:  track,
+		CSS:    style,
+		JS:     script,
+		Logo:   LOGO,
+		Icon:   Icon,
+	})
 }
 
 func (ls Sections) Len() int {
@@ -124,11 +167,25 @@ type Post struct {
 	Section   string
 	Title     string
 	URL       string
-	Content   string
+	Content   template.HTML
+}
+
+func (p *Post) Date() string {
+	return time.UnixMilli(p.Timestamp()).Format(time.DateOnly)
 }
 
 func (p *Post) Write(base string) error {
-	return os.WriteFile(filepath.Join(base, p.URL, "index.html"), []byte(p.Content), 0600)
+	return writeBlogFile(filepath.Join(base, p.URL), Blog{
+		Title: p.Title,
+		Post:  p,
+
+		Domain: domain,
+		Track:  track,
+		CSS:    style,
+		JS:     script,
+		Logo:   LOGO,
+		Icon:   Icon,
+	})
 }
 
 func (p *Post) Timestamp() int64 {
@@ -246,7 +303,7 @@ func renderPost(text []byte) (o Post) {
 	ast.Walk(func(node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
 		return r.RenderNode(w, node, entering)
 	})
-	o.Content = w.String()
+	o.Content = template.HTML(w.String())
 	return
 }
 

@@ -96,7 +96,7 @@ func main() {
 		}
 		defer os.RemoveAll(out)
 		println("serving from", out)
-		err = writeDocs(src, out)
+		err = build(src, out)
 		if err != nil {
 			fail(err)
 		}
