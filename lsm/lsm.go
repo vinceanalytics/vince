@@ -300,26 +300,7 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 		node = lsm.findNode(lsm.nodes[0])
 	}
 	lsm.size.Add(-oldSizes)
-	if len(persist) > 0 {
-		// force saving after compacting
-		lsm.log.Debug("Saving compacted record to permanent storage")
-		idx, err := lsm.index.Index(r)
-		if err != nil {
-			lsm.log.Error("Failed building index to persist", "err", err)
-			return
-		}
-		granule, err := lsm.store.Save(r, idx)
-		if err != nil {
-			lsm.log.Error("Failed saving record", "err", err)
-			return
-		}
-		lsm.primary.Add(lsm.resource, granule)
-		lsm.log.Debug("Saved record to disc", "size", units.BytesSize(float64(granule.Size)))
-		return
-	}
-	if oldSizes >= lsm.opts.compactSize {
-		// Store in permanent storage
-		lsm.log.Debug("Moving data to permanent storage")
+	if oldSizes >= lsm.opts.compactSize || len(persist) > 0 {
 		lsm.persist(r)
 		return
 	}
@@ -332,23 +313,19 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 }
 
 func (lsm *Tree[T]) persist(r arrow.Record) {
+	lsm.log.Debug("Saving compacted record to permanent storage")
 	idx, err := lsm.index.Index(r)
 	if err != nil {
-		lsm.log.Error("Failed building index for record", "err", err)
+		lsm.log.Error("Failed building index to persist", "err", err)
 		return
 	}
-	result, err := lsm.store.Save(r, idx)
+	granule, err := lsm.store.Save(r, idx)
 	if err != nil {
-		lsm.log.Error("Failed saving record to permanent storage", "err", err)
+		lsm.log.Error("Failed saving record", "err", err)
 		return
 	}
-	lsm.log.Info("Saved indexed record to permanent storage",
-		slog.String("id", result.Id),
-		slog.Uint64("after_merge_size", result.Size),
-		slog.Time("min_ts", time.Unix(0, int64(result.Min))),
-		slog.Time("max_ts", time.Unix(0, int64(result.Max))),
-	)
-	lsm.primary.Add(lsm.resource, result)
+	lsm.primary.Add(lsm.resource, granule)
+	lsm.log.Debug("Saved record to disc", "size", units.BytesSize(float64(granule.Size)))
 	return
 }
 
