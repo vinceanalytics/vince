@@ -14,13 +14,7 @@
 
 ## Why ?
 
-All existing solutions are hard to self host and license is `AGPL`. Also they emphasis more on visual and a lot of corners are cut in deriving the numbers.
-
-I need my web analytics analysis served raw and cold. So there is only storing and analysis nothing more. And the license is Apache 2.0 so self host as you please. 
-
-- There is no UI . Use http api to query for stats.
-- Extremely fast and the api is composable, you can integrate the results anywhere `http` works.
-
+All existing solutions are hard/impossible to self host and their license is `AGPL`. 
 
 ## Features
 
