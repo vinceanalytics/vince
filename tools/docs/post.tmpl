@@ -24,7 +24,7 @@
 {{.Content}}
 {{end}}
 {{range .Sections}}
-<h2><a href="/blog/{{.URL}}">{{.Title}}</a> </h2>
+<h2><a href="/blog/{{.URL}}" class="permalink">#</a>{{.Title}} </h2>
 <ul>
 {{range .Posts}}
     <li><a href="/blog/{{.URL}}"><i>{{.Date}}</i> - {{.Title}}</a> </li>
@@ -32,7 +32,7 @@
 </ul>
 {{end}}
 {{with .Section}}
-<h2><a href="/blog/{{.URL}}">{{.Title}}</a> </h2>
+<h2><a href="/blog/{{.URL}}" class="permalink">#</a>{{.Title}} </h2>
 <ul>
 {{range .Posts}}
     <li><a href="/blog/{{.URL}}"><i>{{.Date}}</i> - {{.Title}}</a> </li>
