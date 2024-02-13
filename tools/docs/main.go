@@ -146,7 +146,7 @@ func main() {
 				for {
 					select {
 					case <-reload:
-						err = writeDocs(src, out)
+						err = build(src, out)
 						if err != nil {
 							println(err.Error())
 						}
@@ -173,8 +173,17 @@ func main() {
 		}
 		return
 	}
-	err := writeDocs(src, out)
+	err := build(src, out)
 	if err != nil {
 		fail(err)
 	}
+}
+
+func build(src, dst string) error {
+	os.MkdirAll(dst, 0755)
+	err := writeDocs(src, dst)
+	if err != nil {
+		return err
+	}
+	return writeBlog(src, dst)
 }

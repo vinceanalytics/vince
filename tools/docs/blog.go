@@ -5,6 +5,10 @@ import (
 	_ "embed"
 	"html/template"
 	"log"
+	"os"
+	"path"
+	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -20,12 +24,97 @@ var postData string
 
 var post = template.Must(template.New("main").Parse(postData))
 
-type Blog struct{}
+type Section struct {
+	URL       string
+	Title     string
+	Posts     Posts
+	Timestamp int64
+}
 
-type BlogSection struct {
-	URL   string
-	Title string
-	Posts []*Post
+func (s *Section) Update() {
+	for i := range s.Posts {
+		s.Posts[i].URL = path.Join(s.URL, s.Posts[i].URL)
+	}
+}
+
+func (s *Section) Write(base string) error {
+	for _, p := range s.Posts {
+		err := os.MkdirAll(filepath.Join(base, p.URL), 0755)
+		if err != nil && !os.IsExist(err) {
+			return err
+		}
+		err = p.Write(base)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func writeBlog(src, out string) error {
+	src = filepath.Join(src, "blog")
+	out = filepath.Join(out, "blog")
+	os.MkdirAll(out, 0755)
+	dir, err := os.ReadDir(src)
+	if err != nil {
+		if os.IsNotExist(err) {
+			println("no blog directory skipping blog generation")
+			return nil
+		}
+		return err
+	}
+
+	var posts Posts
+	for _, e := range dir {
+		if e.IsDir() {
+			continue
+		}
+		if filepath.Ext(e.Name()) != ".md" {
+			continue
+		}
+		d, err := os.ReadFile(filepath.Join(src, e.Name()))
+		if err != nil {
+			return err
+		}
+		posts = append(posts, renderPost(d))
+	}
+	sections := posts.Sections()
+	return sections.Write(out)
+}
+
+type Sections []*Section
+
+func (ls Sections) Update() {
+	for _, s := range ls {
+		s.Update()
+	}
+}
+
+func (ls Sections) Write(base string) error {
+	ls.Update()
+	for _, s := range ls {
+		err := os.MkdirAll(filepath.Join(base, s.URL), 0755)
+		if err != nil && !os.IsExist(err) {
+			return err
+		}
+		err = s.Write(base)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (ls Sections) Len() int {
+	return len(ls)
+}
+
+func (ls Sections) Less(i, j int) bool {
+	return ls[i].Timestamp < ls[j].Timestamp
+}
+
+func (ls Sections) Swap(i, j int) {
+	ls[i], ls[j] = ls[j], ls[i]
 }
 
 type Post struct {
@@ -36,6 +125,60 @@ type Post struct {
 	Title     string
 	URL       string
 	Content   string
+}
+
+func (p *Post) Write(base string) error {
+	return os.WriteFile(filepath.Join(base, p.URL, "index.html"), []byte(p.Content), 0600)
+}
+
+func (p *Post) Timestamp() int64 {
+	if p.UpdatedAt.After(p.CreatedAt) {
+		return p.UpdatedAt.UnixMilli()
+	}
+	return p.CreatedAt.UnixMilli()
+}
+
+type Posts []Post
+
+func (ls Posts) Len() int {
+	return len(ls)
+}
+
+func (ls Posts) Less(i, j int) bool {
+	return ls[i].Timestamp() < ls[j].Timestamp()
+}
+
+func (ls Posts) Swap(i, j int) {
+	ls[i], ls[j] = ls[j], ls[i]
+}
+
+func (ls Posts) Timestamp() (o int64) {
+	for i, p := range ls {
+		if i == 0 {
+			o = p.Timestamp()
+			continue
+		}
+		o = max(o, p.Timestamp())
+	}
+	return
+}
+
+func (ls Posts) Sections() (o Sections) {
+	m := make(map[string]Posts)
+	for _, p := range ls {
+		m[p.Section] = append(m[p.Section], p)
+	}
+	for k, v := range m {
+		sort.Sort(v)
+		o = append(o, &Section{
+			Title:     k,
+			URL:       slug.Make(k),
+			Posts:     v,
+			Timestamp: v.Timestamp(),
+		})
+	}
+	sort.Sort(o)
+	return
 }
 
 const (
@@ -93,9 +236,8 @@ func renderPost(text []byte) (o Post) {
 				case author:
 					o.Author = value
 				case section:
-					o.Author = section
+					o.Section = value
 				}
-
 			}
 		}
 		return blackfriday.GoToNext
