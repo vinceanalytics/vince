@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	_ "embed"
 	"flag"
 	"fmt"
@@ -89,6 +88,7 @@ const LOGO = `src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNTAwIDUwMCI
 func main() {
 	flag.Parse()
 	src := flag.Arg(0)
+	out := flag.Arg(1)
 	if *serve {
 		out, err := os.MkdirTemp("", "docs")
 		if err != nil {
@@ -173,18 +173,8 @@ func main() {
 		}
 		return
 	}
-	var b bytes.Buffer
-
-	err := buildDocs(&b, flag.Arg(0))
+	err := writeDocs(src, out)
 	if err != nil {
-		log.Fatal(err)
-	}
-	o, err := minifier.Bytes("text/html", b.Bytes())
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = os.WriteFile(flag.Arg(1), o, 0600)
-	if err != nil {
-		log.Fatal(err)
+		fail(err)
 	}
 }

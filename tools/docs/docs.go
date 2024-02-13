@@ -23,7 +23,11 @@ func writeDocs(src, out string) error {
 	if err != nil {
 		return fmt.Errorf("failed building documentation %v", err)
 	}
-	return os.WriteFile(filepath.Join(out, "index.html"), b.Bytes(), 0600)
+	o, err := minifier.Bytes("text/html", b.Bytes())
+	if err != nil {
+		return fmt.Errorf("failed minifying documentation %v", err)
+	}
+	return os.WriteFile(filepath.Join(out, "index.html"), o, 0600)
 }
 
 func buildDocs(w io.Writer, dir string) error {
