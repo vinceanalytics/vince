@@ -4,7 +4,7 @@
     <br>
     <a href="https://vinceanalytics.com/">Website</a> |
     <a href="https://vinceanalytics.com/#getting-started">Getting started</a> |
-    <a href="https://vinceanalytics.com/#api">API</a>
+    <a href="https://vinceanalytics.com/#stats-api">API</a>
 </p>
 
 
