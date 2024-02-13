@@ -10,7 +10,7 @@ import (
 
 func TestHeaders(t *testing.T) {
 	var b bytes.Buffer
-	err := Build(&b, "testdata/")
+	err := buildDocs(&b, "testdata/")
 	require.NoError(t, err)
 	os.WriteFile("testdata/index.html", b.Bytes(), 0600)
 }
