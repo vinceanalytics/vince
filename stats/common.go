@@ -127,11 +127,11 @@ func ParsePeriod(ctx context.Context, query url.Values) *v1.TimePeriod {
 func parseDate(ctx context.Context, query url.Values, now func() time.Time) time.Time {
 	date := query.Get("date")
 	if date == "" {
-		return timeutil.BeginDay(now())
+		return timeutil.EndDay(now())
 	}
 	v, err := time.Parse(time.DateOnly, date)
 	if err != nil {
-		fall := timeutil.BeginDay(now())
+		fall := timeutil.EndDay(now())
 		logger.Get(ctx).Error("failed parsing date falling back to now",
 			"date", date, "now", fall.Format(time.DateOnly), "err", err)
 		return fall

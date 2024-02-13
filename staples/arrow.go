@@ -279,13 +279,13 @@ func take(b array.Builder) func(arrow.Array, []uint32) {
 	case *array.BinaryDictionaryBuilder:
 		return func(v arrow.Array, rows []uint32) {
 			a := v.(*array.Dictionary)
-			x := a.Dictionary().(*array.Binary)
+			x := a.Dictionary().(*array.String)
 			for _, i := range rows {
 				if a.IsNull(int(i)) {
 					e.AppendNull()
 					continue
 				}
-				e.Append(x.Value(a.GetValueIndex(int(i))))
+				e.AppendString(x.Value(a.GetValueIndex(int(i))))
 			}
 		}
 	default:

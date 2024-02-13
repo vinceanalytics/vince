@@ -91,7 +91,8 @@ message Value {
 }
 
 enum Metric {
-  visitors = 0;
+  unknown_metric = 0;
+  visitors = 1;
   visits = 2;
   pageviews = 3;
   views_per_visit = 4;

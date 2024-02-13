@@ -3,6 +3,7 @@ package curl
 import (
 	"bytes"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,6 +21,13 @@ func TestVersion(t *testing.T) {
 }
 func TestVisitors(t *testing.T) {
 	check(t, true, "visitors.sh", "/api/v1/stats/realtime/visitors"+siteId, http.MethodGet, nil, nil)
+}
+
+func TestAggregate(t *testing.T) {
+	q := make(url.Values)
+	q.Set("site_id", "vinceanalytics.com")
+	q.Set("metrics", "visitors,visits,pageviews,views_per_visit,bounce_rate,visit_duration,events")
+	check(t, true, "aggregate.sh", "/api/v1/stats/aggregate?"+q.Encode(), http.MethodGet, nil, nil)
 }
 
 func check(t *testing.T, write bool, file string, path, method string, headers http.Header, body proto.Message) {

@@ -22,6 +22,14 @@ type Compute struct {
 	visit   *float64
 }
 
+func NewCompute(r arrow.Record) *Compute {
+	m := make(map[string]arrow.Array)
+	for i := 0; i < int(r.NumCols()); i++ {
+		m[r.ColumnName(i)] = r.Column(i)
+	}
+	return &Compute{mapping: m}
+}
+
 func (c *Compute) Reset(r arrow.Record) {
 	clear(c.mapping)
 	for i := 0; i < int(r.NumCols()); i++ {

@@ -1,0 +1,5 @@
+
+set -euo pipefail
+
+bash -x ./tools/curl/testdata/aggregate.sh
+

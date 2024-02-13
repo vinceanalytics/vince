@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/apache/arrow/go/v15/arrow/compute"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/logger"
 	"github.com/vinceanalytics/vince/request"
@@ -40,12 +39,12 @@ func Realtime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer result.Release()
-	res, err := compute.Unique(ctx, compute.NewDatumWithoutOwning(result.Column(0)))
+	m := NewCompute(result)
+	visitors, err := m.Visitors(ctx)
 	if err != nil {
 		logger.Get(ctx).Error("Failed computing unique user id", "err", err)
 		request.Internal(ctx, w)
 		return
 	}
-	defer res.Release()
-	request.Write(ctx, w, &v1.Realtime_Response{Visitors: uint64(res.Len())})
+	request.Write(ctx, w, &v1.Realtime_Response{Visitors: uint64(visitors)})
 }
