@@ -4,6 +4,7 @@ go build -o bin/docs ./tools/docs/
 
 ./bin/docs docs/ ../vinceanalytics.github.io/
 cd ../vinceanalytics.github.io
-git commit -am "update docs"
+git add .
+git commit -m "update docs"
 git push
 cd -
