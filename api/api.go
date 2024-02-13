@@ -91,6 +91,10 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 				return
 			default:
 				if strings.HasPrefix(r.URL.Path, "/js/") {
+					w.Header().Set("x-content-type-options", "nosniff")
+					w.Header().Set("cross-origin-resource-policy", "cross-origin")
+					w.Header().Set("access-control-allow-origin", "*")
+					w.Header().Set("cache-control", "public, max-age=86400, must-revalidate")
 					trackerServer.ServeHTTP(w, r)
 					return
 				}
@@ -106,6 +110,10 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 			}
 		case http.MethodHead:
 			if strings.HasPrefix(r.URL.Path, "/js/") {
+				w.Header().Set("x-content-type-options", "nosniff")
+				w.Header().Set("cross-origin-resource-policy", "cross-origin")
+				w.Header().Set("access-control-allow-origin", "*")
+				w.Header().Set("cache-control", "public, max-age=86400, must-revalidate")
 				trackerServer.ServeHTTP(w, r)
 				return
 			}
