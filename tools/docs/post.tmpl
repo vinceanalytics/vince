@@ -21,6 +21,8 @@
         </a>
         </div>
 {{with .Post}}
+<h1>{{.Title}}</h1>
+<p class="author"><span>{{.Date}}</span> by <span><i>{{.Author}}</i></span>  </p>
 {{.Content}}
 {{end}}
 {{range .Sections}}

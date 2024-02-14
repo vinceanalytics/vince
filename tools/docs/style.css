@@ -255,6 +255,12 @@ figure+figcaption {
     box-sizing: border-box;
 }
 
+
+/* ---- blog -- */
+.author {
+    font-family: monospace;
+}
+
 /* ---------- Body ---------- */
 
 h1 {
