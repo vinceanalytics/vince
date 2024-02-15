@@ -2,13 +2,17 @@ import { ChevronDownIcon } from "@primer/octicons-react"
 import { PageLayout, Box, Heading, Button, Octicon, ActionMenu, ActionList, Text } from "@primer/react"
 import { useState } from "react"
 
+
 export const Dashboard = () => {
+    const [sites, setSites] = useState<string[]>(["vinceanalytics.com", "example.com"])
+    const [active, setActive] = useState<number>(0)
+
     return (
         <PageLayout>
             <PageLayout.Header>
                 <Box py={2} zIndex={10}>
                     <Box display={"flex"} width="100%" alignItems={"center"}>
-                        <SitesSelection active={0} sites={["vinceanalytics.com", "example.com"]} />
+                        <SitesSelection active={active} sites={sites} setActive={setActive} />
                     </Box>
                 </Box>
             </PageLayout.Header>
@@ -28,16 +32,16 @@ export const Dashboard = () => {
 type SiteSelectionProps = {
     active: number
     sites: string[]
+    setActive: (n: number) => void
 }
 
-const SitesSelection = (props: SiteSelectionProps) => {
-    const [active, setActive] = useState<number>(props.active)
+const SitesSelection = ({ active, sites, setActive }: SiteSelectionProps) => {
     return (
         <ActionMenu>
-            <ActionMenu.Button><Text sx={{ fontWeight: "bold" }}>{props.sites[active]}</Text></ActionMenu.Button>
+            <ActionMenu.Button><Text sx={{ fontWeight: "bold" }}>{sites[active]}</Text></ActionMenu.Button>
             <ActionMenu.Overlay>
                 <ActionList>
-                    {props.sites.map((value, idx) => {
+                    {sites.map((value, idx) => {
                         if (idx == active) {
                             return <div></div>
                         }
