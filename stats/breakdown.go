@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"context"
 	"net/http"
 	"slices"
 	"time"
@@ -20,10 +21,11 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	query := r.URL.Query()
 	req := v1.BreakDown_Request{
-		SiteId:  query.Get("site_id"),
-		Period:  ParsePeriod(ctx, query),
-		Metrics: ParseMetrics(ctx, query),
-		Filters: ParseFilters(ctx, query),
+		SiteId:   query.Get("site_id"),
+		Period:   ParsePeriod(ctx, query),
+		Metrics:  ParseMetrics(ctx, query),
+		Filters:  ParseFilters(ctx, query),
+		Property: ParseProperty(ctx, query),
 	}
 	if !request.Validate(ctx, w, &req) {
 		return
@@ -80,10 +82,9 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 			xc.visit = nil
 
 			for _, name := range selectedColumns {
-				a, err := compute.TakeArray(ctx, mapping[name], idx)
+				a, err := take(ctx, mapping[name], idx)
 				if err != nil {
-					idx.Release()
-					logger.Get(ctx).Error("Failed taking array for breaking down", "column", name)
+					logger.Get(ctx).Error("Failed taking array for breaking down", "column", name, "err", err)
 					request.Internal(ctx, w)
 					return
 				}
@@ -115,6 +116,27 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	request.Write(ctx, w, &v1.BreakDown_Response{Results: result})
+}
+
+func take(ctx context.Context, a arrow.Array, idx *array.Uint32) (arrow.Array, error) {
+	if a.DataType().ID() != arrow.DICTIONARY {
+		return compute.TakeArray(ctx, a, idx)
+	}
+	x := a.(*array.Dictionary)
+	xv := x.Dictionary().(*array.String)
+	o := array.NewDictionaryBuilder(
+		compute.GetAllocator(ctx),
+		a.DataType().(*arrow.DictionaryType),
+	).(*array.BinaryDictionaryBuilder)
+	defer o.Release()
+	for _, i := range idx.Uint32Values() {
+		if x.IsNull(int(i)) {
+			o.AppendNull()
+			continue
+		}
+		o.Append([]byte(xv.Value(x.GetValueIndex(int(i)))))
+	}
+	return o.NewArray(), nil
 }
 
 func hashProp(a arrow.Array) map[string]*roaring.Bitmap {

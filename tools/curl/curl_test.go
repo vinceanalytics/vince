@@ -6,9 +6,11 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -28,6 +30,21 @@ func TestAggregate(t *testing.T) {
 	q.Set("site_id", "vinceanalytics.com")
 	q.Set("metrics", "visitors,visits,pageviews,views_per_visit,bounce_rate,visit_duration,events")
 	check(t, true, "aggregate.sh", "/api/v1/stats/aggregate?"+q.Encode(), http.MethodGet, nil, nil)
+}
+func TestBreakdown(t *testing.T) {
+	q := make(url.Values)
+	q.Set("site_id", "vinceanalytics.com")
+	var ls []string
+	for i := v1.Property_event; i <= v1.Property_city; i++ {
+		ls = append(ls, i.String())
+	}
+	q.Set("property", strings.Join(ls, ","))
+	ls = ls[:0]
+	for i := v1.Metric_visitors; i <= v1.Metric_events; i++ {
+		ls = append(ls, i.String())
+	}
+	q.Set("metrics", strings.Join(ls, ","))
+	check(t, true, "breakdown.sh", "/api/v1/stats/breakdown?"+q.Encode(), http.MethodGet, nil, nil)
 }
 
 func check(t *testing.T, write bool, file string, path, method string, headers http.Header, body proto.Message) {

@@ -155,6 +155,19 @@ func ParseMetrics(ctx context.Context, query url.Values) (o []v1.Metric) {
 	return
 }
 
+func ParseProperty(ctx context.Context, query url.Values) (o []v1.Property) {
+	props := query.Get("property")
+	for _, m := range strings.Split(props, ",") {
+		v, ok := v1.Property_value[m]
+		if !ok {
+			logger.Get(ctx).Error("Skipping unexpected property name", "property", m)
+			continue
+		}
+		o = append(o, v1.Property(v))
+	}
+	return
+}
+
 func ParseInterval(ctx context.Context, query url.Values) v1.Interval {
 	i := query.Get("interval")
 	if i == "" {

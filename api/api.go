@@ -58,7 +58,7 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 		w.Header().Add(vary, acceptEncoding)
 		code := &statsWriter{ResponseWriter: w, compress: acceptsGzip(r)}
 		defer func() {
-			logger.Get(r.Context()).Debug(r.URL.String(), "method", r.Method, "status", code.code)
+			logger.Get(r.Context()).Debug(r.URL.Path, "method", r.Method, "status", code.code)
 		}()
 		w = code
 		if a.config.AuthToken != "" && r.URL.Path != "/api/event" {
@@ -88,6 +88,9 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 				return
 			case "/api/v1/stats/timeseries":
 				stats.TimeSeries(w, r)
+				return
+			case "/api/v1/stats/breakdown":
+				stats.BreakDown(w, r)
 				return
 			default:
 				if strings.HasPrefix(r.URL.Path, "/js/") {
