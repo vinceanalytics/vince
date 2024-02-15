@@ -23,11 +23,15 @@ export const Dashboard = () => {
     return (
         <PageLayout>
             <PageLayout.Header>
-                <Box py={2} zIndex={10}>
-                    <Box display={"flex"} width="100%" alignItems={"center"}>
-                        <SitesSelection active={active} sites={sites} setActive={setActive} />
-                        <Filter tokens={tokens} onAdd={onTokenAdd} onRemove={onTokenRemove} />
-                    </Box>
+                <Box py={2} sx={{
+                    display: "grid",
+                    alignItems: "center",
+                    gridTemplateColumns: "auto 1fr auto",
+                    gap: 1,
+                }}>
+                    <SitesSelection active={active} sites={sites} setActive={setActive} />
+                    <Filter tokens={tokens} onAdd={onTokenAdd} onRemove={onTokenRemove} />
+                    <DatePicker />
                 </Box>
             </PageLayout.Header>
             <PageLayout.Content>
@@ -174,6 +178,22 @@ const FilterItems = ({ onAdd }: FilterItemsProps) => {
             }} required>
             </TextInput>
             <Button variant="primary" sx={{ px: 5, mx: 2 }} onClick={submit} >Add</Button>
+        </Box>
+    )
+}
+
+
+const DatePicker = () => {
+    return (
+        <Box>
+            <ActionMenu>
+                <ActionMenu.Button><Text sx={{ fontWeight: "bold" }}>Today</Text></ActionMenu.Button>
+                <ActionMenu.Overlay side="outside-left">
+                    <ActionList>
+                        <ActionList.Item  ><Text sx={{ fontWeight: "bold" }}>Last 15 days</Text></ActionList.Item>
+                    </ActionList>
+                </ActionMenu.Overlay>
+            </ActionMenu>
         </Box>
     )
 }
