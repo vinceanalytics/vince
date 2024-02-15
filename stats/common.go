@@ -141,6 +141,9 @@ func parseDate(ctx context.Context, query url.Values, now func() time.Time) time
 
 func ParseMetrics(ctx context.Context, query url.Values) (o []v1.Metric) {
 	metrics := query.Get("metrics")
+	if metrics == "" {
+		return []v1.Metric{v1.Metric_visitors}
+	}
 	for _, m := range strings.Split(metrics, ",") {
 		v, ok := v1.Metric_value[m]
 		if !ok {
