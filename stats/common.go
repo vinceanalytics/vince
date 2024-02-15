@@ -157,6 +157,9 @@ func ParseMetrics(ctx context.Context, query url.Values) (o []v1.Metric) {
 
 func ParseInterval(ctx context.Context, query url.Values) v1.Interval {
 	i := query.Get("interval")
+	if i == "" {
+		return v1.Interval_date
+	}
 	v, ok := v1.Interval_value[i]
 	if !ok {
 		if i != "" {
