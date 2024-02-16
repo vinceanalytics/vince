@@ -2,7 +2,7 @@ import { ChevronDownIcon } from "@primer/octicons-react"
 import { PageLayout, Box, Heading, Button, Octicon, ActionMenu, ActionList, Text, TokenProps, TextInputWithTokens, Select, FormControl, TextInput } from "@primer/react"
 import { useCallback, useState } from "react"
 import { Dialog, DataTable } from '@primer/react/drafts'
-
+import { Footer } from "../components";
 
 
 export const Dashboard = () => {
@@ -42,6 +42,9 @@ export const Dashboard = () => {
                     <p>This will get Primer text styles.</p>
                 </Box>
             </PageLayout.Content>
+            <PageLayout.Footer>
+                <Footer />
+            </PageLayout.Footer>
         </PageLayout>
     )
 }
