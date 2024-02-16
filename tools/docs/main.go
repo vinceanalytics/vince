@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -96,12 +97,12 @@ func main() {
 		}
 		defer os.RemoveAll(out)
 		println("serving from", out)
+		script = append(script, template.JS(reloadData))
 		err = build(src, out)
 		if err != nil {
 			fail(err)
 		}
 		fsv := http.FileServerFS(os.DirFS(out))
-		script = append(script, template.JS(reloadData))
 		reload := make(chan struct{})
 		watcher, err := fsnotify.NewWatcher()
 		if err != nil {
@@ -129,6 +130,11 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		err = watcher.Add(filepath.Join(src, "blog/"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(watcher.WatchList())
 		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(r.URL.Path)
 			switch r.URL.Path {
