@@ -1,8 +1,8 @@
 import { ChevronDownIcon } from "@primer/octicons-react"
 import { PageLayout, Box, Heading, Button, Octicon, ActionMenu, ActionList, Text, TokenProps, TextInputWithTokens, Select, FormControl, TextInput } from "@primer/react"
 import { useCallback, useState } from "react"
-import { Dialog, DataTable } from '@primer/react/drafts'
-import { Footer } from "../components";
+import { Dialog } from '@primer/react/drafts'
+import { Footer, CurrentVisitors } from "../components";
 
 
 export const Dashboard = () => {
@@ -26,10 +26,12 @@ export const Dashboard = () => {
                 <Box py={2} sx={{
                     display: "grid",
                     alignItems: "center",
-                    gridTemplateColumns: "auto 1fr auto",
+                    gridTemplateColumns: "auto auto 1fr auto auto",
                     gap: 1,
                 }}>
                     <SitesSelection active={active} sites={sites} setActive={setActive} />
+                    <CurrentVisitors />
+                    <div></div>
                     <Filter tokens={tokens} onAdd={onTokenAdd} onRemove={onTokenRemove} />
                     <DatePicker />
                 </Box>

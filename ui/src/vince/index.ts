@@ -2,6 +2,10 @@ export interface Version {
     version: string
 }
 
+export interface Realtime {
+    visitors: number
+}
+
 
 export class Vince {
     base: string
@@ -17,5 +21,11 @@ export class Vince {
         const response = await fetch(this.base + "/api/v1/version")
         const data = await response.json()
         return data as Version
+    }
+
+    async realtime(): Promise<Realtime> {
+        const response = await fetch(this.base + "/api/v1/stats/realtime/visitors")
+        const data = await response.json()
+        return data as Realtime
     }
 }
