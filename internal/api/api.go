@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/rs/cors"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/internal/buffers"
 	"github.com/vinceanalytics/vince/internal/guard"
@@ -125,8 +126,8 @@ func New(ctx context.Context, o *v1.Config, tenants *tenant.Tenants) (*API, erro
 		}
 		request.Error(r.Context(), w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	})
-
-	a.hand = base
+	c := cors.AllowAll()
+	a.hand = c.Handler(base)
 	return a, nil
 }
 
