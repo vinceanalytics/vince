@@ -6,6 +6,14 @@ export interface Realtime {
     visitors: number
 }
 
+export interface Domains {
+    domains: Site[]
+}
+
+export interface Site {
+    name: string
+}
+
 
 export class Vince {
     base: string
@@ -27,5 +35,11 @@ export class Vince {
         const response = await fetch(this.base + "/api/v1/stats/realtime/visitors")
         const data = await response.json()
         return data as Realtime
+    }
+
+    async domains(): Promise<Domains> {
+        const response = await fetch(this.base + "/api/v1/domains")
+        const data = await response.json()
+        return data as Domains
     }
 }

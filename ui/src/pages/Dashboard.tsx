@@ -2,15 +2,13 @@ import { ChevronDownIcon } from "@primer/octicons-react"
 import { PageLayout, Box, Heading, Button, Octicon, ActionMenu, ActionList, Text, TokenProps, TextInputWithTokens, Select, FormControl, TextInput } from "@primer/react"
 import { useCallback, useState } from "react"
 import { Dialog } from '@primer/react/drafts'
-import { Footer, CurrentVisitors } from "../components";
+import { Footer, CurrentVisitors, SitesSelector } from "../components";
+import { useVince } from "../providers";
 
 
 export const Dashboard = () => {
-    const [sites, setSites] = useState<string[]>(["vinceanalytics.com", "example.com"])
-    const [active, setActive] = useState<number>(0)
-    const [tokens, setTokens] = useState<TokenProps[]>([
-        { id: 0, text: "path==/" },
-    ])
+    const { sites, active, selectSite } = useVince()
+    const [tokens, setTokens] = useState<TokenProps[]>([])
 
     const onTokenRemove = (tokenId: string | number) => {
         setTokens(tokens.filter(token => token.id !== tokenId))
@@ -29,7 +27,7 @@ export const Dashboard = () => {
                     gridTemplateColumns: "auto auto 1fr auto auto",
                     gap: 1,
                 }}>
-                    <SitesSelection active={active} sites={sites} setActive={setActive} />
+                    <SitesSelector selectSite={selectSite} active={active} sites={sites} />
                     <CurrentVisitors />
                     <div></div>
                     <Filter tokens={tokens} onAdd={onTokenAdd} onRemove={onTokenRemove} />
@@ -52,29 +50,7 @@ export const Dashboard = () => {
 }
 
 
-type SiteSelectionProps = {
-    active: number
-    sites: string[]
-    setActive: (n: number) => void
-}
 
-const SitesSelection = ({ active, sites, setActive }: SiteSelectionProps) => {
-    return (
-        <ActionMenu>
-            <ActionMenu.Button><Text sx={{ fontWeight: "bold" }}>{sites[active]}</Text></ActionMenu.Button>
-            <ActionMenu.Overlay>
-                <ActionList>
-                    {sites.map((value, idx) => {
-                        if (idx == active) {
-                            return undefined
-                        }
-                        return <ActionList.Item key={value} onClick={() => setActive(idx)}><Text sx={{ fontWeight: "bold" }}>{value}</Text></ActionList.Item>
-                    })}
-                </ActionList>
-            </ActionMenu.Overlay>
-        </ActionMenu>
-    )
-}
 
 
 type FilterProps = {
