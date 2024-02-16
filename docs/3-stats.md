@@ -236,12 +236,44 @@ Check out the [properties](#properties) section for a reference of all the prope
 This endpoint can be used to fetch data for `Top sources`, `Top pages`, `Top countries` and similar reports.
 
 
-```bash title="Try it yourself"
-curl 'https://cloud.vinceanalytics.com/api/v1/stats/breakdown?site_id=$SITE_ID&period=6mo&property=`source`&metrics=visitors,bounce_rate&limit=5' \
-  -H "Authorization: Bearer ${TOKEN}"
+```bash
++ curl -X GET 'http://localhost:8080/api/v1/stats/breakdown?metrics=visitors%2Cbounce_rate&property=browser&site_id=vinceanalytics.com'
+{
+  "results":  [
+    {
+      "property":  "browser",
+      "groups":  [
+        {
+          "key":  "Facebook",
+          "values":  [
+            {
+              "metric":  "visitors",
+              "value":  4
+            },
+            {
+              "metric":  "bounce_rate",
+              "value":  0.75
+            }
+          ]
+        },
+        {
+          "key":  "Instagram App",
+          "values":  [
+            {
+              "metric":  "visitors",
+              "value":  1
+            },
+            {
+              "metric":  "bounce_rate"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
-TBD 
 
 #### Parameters
 <hr / >
