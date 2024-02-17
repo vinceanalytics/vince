@@ -32,23 +32,23 @@ func call(i v1.Interval) func(ts int64) int64 {
 	switch i {
 	case v1.Interval_minute:
 		return func(ts int64) int64 {
-			return EndOfMinute(time.UnixMilli(ts)).UnixMilli()
+			return beginMinute(time.UnixMilli(ts)).UnixMilli()
 		}
 	case v1.Interval_hour:
 		return func(ts int64) int64 {
-			return EndOfHour(time.UnixMilli(ts)).UnixMilli()
+			return beginHour(time.UnixMilli(ts)).UnixMilli()
 		}
 	case v1.Interval_date:
 		return func(ts int64) int64 {
-			return EndDay(time.UnixMilli(ts)).UnixMilli()
+			return BeginDay(time.UnixMilli(ts)).UnixMilli()
 		}
 	case v1.Interval_week:
 		return func(ts int64) int64 {
-			return EndWeek(time.UnixMilli(ts)).UnixMilli()
+			return BeginWeek(time.UnixMilli(ts)).UnixMilli()
 		}
 	case v1.Interval_month:
 		return func(ts int64) int64 {
-			return EndDay(time.UnixMilli(ts)).UnixMilli()
+			return BeginMonth(time.UnixMilli(ts)).UnixMilli()
 		}
 	default:
 		logger.Fail("Unexpected interval", "interval", i.String())
