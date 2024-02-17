@@ -214,32 +214,21 @@ func (ls Posts) Swap(i, j int) {
 	ls[i], ls[j] = ls[j], ls[i]
 }
 
-func (ls Posts) Timestamp() (o int64) {
-	for i, p := range ls {
-		if i == 0 {
-			o = p.Timestamp()
-			continue
-		}
-		o = max(o, p.Timestamp())
-	}
-	return
-}
-
 func (ls Posts) Sections() (o Sections) {
 	m := make(map[string]Posts)
 	for _, p := range ls {
 		m[p.Section] = append(m[p.Section], p)
 	}
 	for k, v := range m {
-		sort.Sort(v)
+		sort.Sort(sort.Reverse(v))
 		o = append(o, &Section{
 			Title:     k,
 			URL:       slug.Make(k),
 			Posts:     v,
-			Timestamp: v.Timestamp(),
+			Timestamp: v[0].Timestamp(),
 		})
 	}
-	sort.Sort(o)
+	sort.Sort(sort.Reverse(o))
 	return
 }
 

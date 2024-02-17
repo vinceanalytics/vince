@@ -25,14 +25,16 @@
 <p class="author"><span>{{.Date}}</span> by <span><i>{{.Author}}</i></span>  </p>
 {{.Content}}
 {{end}}
-{{range .Sections}}
-<h2><a href="/blog/{{.URL}}" class="permalink">#</a>{{.Title}} </h2>
+{{with .Sections}}
 <ul>
+{{range .}}
 {{range .Posts}}
     <li><a href="/blog/{{.URL}}"><i>{{.Date}}</i> - {{.Title}}</a> </li>
 {{end}}
+{{end}}
 </ul>
 {{end}}
+
 {{with .Section}}
 <h2><a href="/blog/{{.URL}}" class="permalink">#</a>{{.Title}} </h2>
 <ul>
