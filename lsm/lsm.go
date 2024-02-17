@@ -67,8 +67,10 @@ func NewPart(r arrow.Record, idx index.Full) *RecordPart {
 	}
 }
 
+type RecordNode = Node[*RecordPart]
+
 type Tree[T any] struct {
-	tree   *Node
+	tree   *RecordNode
 	size   atomic.Uint64
 	index  index.Index
 	mem    memory.Allocator
@@ -83,7 +85,7 @@ type Tree[T any] struct {
 	mapping  map[string]int
 	schema   *arrow.Schema
 
-	nodes   []*Node
+	nodes   []*RecordNode
 	records []arrow.Record
 }
 
@@ -129,7 +131,7 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 		f(&o)
 	}
 	return &Tree[T]{
-		tree:     &Node{},
+		tree:     &RecordNode{},
 		index:    indexer,
 		mem:      mem,
 		merger:   m,
@@ -139,7 +141,7 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 		opts:     o,
 		mapping:  mapping,
 		schema:   schema,
-		nodes:    make([]*Node, 0, 64),
+		nodes:    make([]*RecordNode, 0, 64),
 		records:  make([]arrow.Record, 0, 64),
 		log: slog.Default().With(
 			slog.String("component", "lsm-tree"),
@@ -165,8 +167,8 @@ func (lsm *Tree[T]) Add(r arrow.Record) error {
 	return nil
 }
 
-func (lsm *Tree[T]) findNode(node *Node) (list *Node) {
-	lsm.tree.Iterate(func(n *Node) bool {
+func (lsm *Tree[T]) findNode(node *RecordNode) (list *RecordNode) {
+	lsm.tree.Iterate(func(n *RecordNode) bool {
 		if n.next.Load() == node {
 			list = n
 			return false
@@ -208,7 +210,7 @@ func (lsm *Tree[T]) Scan(
 	tr, tk := staples.NewTaker(lsm.mem, schema)
 	defer tr.Release()
 
-	lsm.tree.Iterate(func(n *Node) bool {
+	lsm.tree.Iterate(func(n *RecordNode) bool {
 		if n.part == nil {
 			return true
 		}
@@ -278,7 +280,7 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 	}()
 
 	var oldSizes uint64
-	lsm.tree.Iterate(func(n *Node) bool {
+	lsm.tree.Iterate(func(n *RecordNode) bool {
 		if n.part == nil || !n.part.CanIndex() {
 			return true
 		}
@@ -295,7 +297,7 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 	r := lsm.merger.Merge(lsm.records...)
 	defer r.Release()
 	node := lsm.findNode(lsm.nodes[0])
-	x := &Node{}
+	x := &RecordNode{}
 	for !node.next.CompareAndSwap(lsm.nodes[0], x) {
 		node = lsm.findNode(lsm.nodes[0])
 	}
@@ -329,12 +331,12 @@ func (lsm *Tree[T]) persist(r arrow.Record) {
 	return
 }
 
-type Node struct {
-	next atomic.Pointer[Node]
-	part *RecordPart
+type Node[T any] struct {
+	next atomic.Pointer[Node[T]]
+	part T
 }
 
-func (n *Node) Iterate(f func(*Node) bool) {
+func (n *Node[T]) Iterate(f func(*Node[T]) bool) {
 	if !(f(n)) {
 		return
 	}
@@ -350,11 +352,11 @@ func (n *Node) Iterate(f func(*Node) bool) {
 	}
 }
 
-func (n *Node) Prepend(part *RecordPart) *Node {
-	return n.prepend(&Node{part: part})
+func (n *Node[T]) Prepend(part T) *Node[T] {
+	return n.prepend(&Node[T]{part: part})
 }
 
-func (n *Node) prepend(node *Node) *Node {
+func (n *Node[T]) prepend(node *Node[T]) *Node[T] {
 	for {
 		next := n.next.Load()
 		node.next.Store(next)
