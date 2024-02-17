@@ -46,5 +46,5 @@ func Realtime(w http.ResponseWriter, r *http.Request) {
 		request.Internal(ctx, w)
 		return
 	}
-	request.Write(ctx, w, &v1.Realtime_Response{Visitors: uint64(visitors)})
+	request.Write(ctx, w, uint64(visitors))
 }

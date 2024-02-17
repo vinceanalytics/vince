@@ -97,8 +97,14 @@ func Validate(ctx context.Context, w http.ResponseWriter, o proto.Message) bool 
 	return true
 }
 
-func Write(ctx context.Context, w http.ResponseWriter, o proto.Message) {
-	data, err := m.Marshal(o)
+func Write(ctx context.Context, w http.ResponseWriter, o any) {
+	var data []byte
+	var err error
+	if a, ok := o.(proto.Message); ok {
+		data, err = m.Marshal(a)
+	} else {
+		data, err = json.Marshal(o)
+	}
 	if err != nil {
 		logger.Fail("Can't marshall proto messages", "err", err)
 	}
