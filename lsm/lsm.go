@@ -266,6 +266,14 @@ func (lsm *Tree[T]) Start(ctx context.Context) {
 
 }
 
+// Size returns the size in bytes of records+index in the lsm tree. This only
+// accounts for active data.
+//
+// Cold data is still scanned by lsm tree but no account is about about its size.
+func (lsm *Tree[T]) Size() uint64 {
+	return lsm.Size()
+}
+
 func (lsm *Tree[T]) Compact(persist ...bool) {
 	lsm.log.Debug("Start compaction")
 	start := time.Now()
