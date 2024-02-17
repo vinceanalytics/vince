@@ -103,7 +103,7 @@ func Write(ctx context.Context, w http.ResponseWriter, o any) {
 	if a, ok := o.(proto.Message); ok {
 		data, err = m.Marshal(a)
 	} else {
-		data, err = json.Marshal(o)
+		data, err = json.MarshalIndent(o, "", "  ")
 	}
 	if err != nil {
 		logger.Fail("Can't marshall proto messages", "err", err)

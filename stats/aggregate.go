@@ -46,7 +46,7 @@ func Aggregate(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < int(resultRecord.NumCols()); i++ {
 		mapping[resultRecord.ColumnName(i)] = resultRecord.Column(i)
 	}
-	var result []*v1.Value
+	result := make(map[string]AggregateValue)
 	xc := &Compute{mapping: mapping}
 	for _, metric := range metrics {
 		value, err := xc.Metric(ctx, metric)
@@ -55,11 +55,16 @@ func Aggregate(w http.ResponseWriter, r *http.Request) {
 			request.Internal(ctx, w)
 			return
 		}
-		result = append(result, &v1.Value{
-			Metric: metric,
-			Value:  value,
-		})
+		result[metric.String()] = AggregateValue{Value: value}
 	}
-	request.Write(ctx, w, &v1.Aggregate_Response{Results: result})
+	request.Write(ctx, w, &AggregateResponse{Results: result})
 	return
+}
+
+type AggregateResponse struct {
+	Results map[string]AggregateValue `json:"results"`
+}
+
+type AggregateValue struct {
+	Value float64 `json:"value"`
 }

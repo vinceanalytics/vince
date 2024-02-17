@@ -120,38 +120,32 @@ This endpoint aggregates metrics over a certain time period.It include `Unique V
 ```bash
 + curl -X GET 'http://localhost:8080/api/v1/stats/aggregate?metrics=visitors%2Cvisits%2Cpageviews%2Cviews_per_visit%2Cbounce_rate%2Cvisit_duration%2Cevents&site_id=vinceanalytics.com'
 {
-  "results":  [
-    {
-      "metric":  "visitors",
-      "value":  5
+  "results": {
+    "bounce_rate": {
+      "value": 0.8888888888888888
     },
-    {
-      "metric":  "visits",
-      "value":  5
+    "events": {
+      "value": 10
     },
-    {
-      "metric":  "pageviews",
-      "value":  10
+    "pageviews": {
+      "value": 10
     },
-    {
-      "metric":  "views_per_visit",
-      "value":  2
+    "views_per_visit": {
+      "value": 1.1111111111111112
     },
-    {
-      "metric":  "bounce_rate",
-      "value":  0.6
+    "visit_duration": {
+      "value": 0.0013333333333333333
     },
-    {
-      "metric":  "visit_duration",
-      "value":  0.0058
+    "visitors": {
+      "value": 8
     },
-    {
-      "metric":  "events",
-      "value":  10
+    "visits": {
+      "value": 9
     }
-  ]
+  }
 }
 ```
+
 
 #### Parameters
 <hr / >
