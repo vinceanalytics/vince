@@ -67,20 +67,6 @@ message BreakDown {
     repeated Metric metrics = 4;
     repeated Filter filters = 6;
   }
-
-  message Response {
-    repeated Result results = 1;
-
-    message Result {
-      Property property = 1;
-      repeated Group groups = 2;
-    }
-
-    message Group {
-      string key = 1;
-      repeated Value values = 2;
-    }
-  }
 }
 
 message Value {

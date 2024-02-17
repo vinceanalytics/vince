@@ -228,41 +228,22 @@ Check out the [properties](#properties) section for a reference of all the prope
 This endpoint can be used to fetch data for `Top sources`, `Top pages`, `Top countries` and similar reports.
 
 
+
 ```bash
 + curl -X GET 'http://localhost:8080/api/v1/stats/breakdown?metrics=visitors%2Cbounce_rate&property=browser&site_id=vinceanalytics.com'
 {
-  "results":  [
-    {
-      "property":  "browser",
-      "groups":  [
-        {
-          "key":  "Facebook",
-          "values":  [
-            {
-              "metric":  "visitors",
-              "value":  4
-            },
-            {
-              "metric":  "bounce_rate",
-              "value":  0.75
-            }
-          ]
-        },
-        {
-          "key":  "Instagram App",
-          "values":  [
-            {
-              "metric":  "visitors",
-              "value":  1
-            },
-            {
-              "metric":  "bounce_rate"
-            }
-          ]
-        }
-      ]
+  "results": {
+    "browser": {
+      "Chrome Mobile": {
+        "bounce_rate": 0.6666666666666666,
+        "visitors": 6
+      },
+      "Chrome Webview": {
+        "bounce_rate": 1,
+        "visitors": 1
+      }
     }
-  ]
+  }
 }
 ```
 

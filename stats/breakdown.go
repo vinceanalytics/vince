@@ -64,15 +64,15 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 	// build key mapping
 	b := array.NewUint32Builder(compute.GetAllocator(ctx))
 	defer b.Release()
-	var result []*v1.BreakDown_Response_Result
 	// TODO: run this concurrently
 	xc := &Compute{
 		mapping: make(map[string]arrow.Array),
 	}
 	defer xc.Release()
 
+	result := make(map[string]map[string]map[string]float64)
 	for _, prop := range req.Property {
-		var groups []*v1.BreakDown_Response_Group
+		keys := make(map[string]map[string]float64)
 		for key, bitmap := range hashProp(mapping[filters.Column(prop)]) {
 			b.AppendValues(bitmap.ToArray(), nil)
 			idx := b.NewUint32Array()
@@ -91,7 +91,7 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 				xc.mapping[name] = a
 			}
 
-			var values []*v1.Value
+			values := make(map[string]float64)
 			for _, metric := range req.Metrics {
 				value, err := xc.Metric(ctx, metric)
 				if err != nil {
@@ -99,23 +99,18 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 					request.Internal(ctx, w)
 					return
 				}
-				values = append(values, &v1.Value{
-					Metric: metric,
-					Value:  value,
-				})
+				values[metric.String()] = value
 			}
-			groups = append(groups, &v1.BreakDown_Response_Group{
-				Key:    key,
-				Values: values,
-			})
+			keys[key] = values
 			idx.Release()
 		}
-		result = append(result, &v1.BreakDown_Response_Result{
-			Property: prop,
-			Groups:   groups,
-		})
+		result[prop.String()] = keys
 	}
-	request.Write(ctx, w, &v1.BreakDown_Response{Results: result})
+	request.Write(ctx, w, &BreakDownResponse{Results: result})
+}
+
+type BreakDownResponse struct {
+	Results map[string]map[string]map[string]float64 `json:"results"`
 }
 
 func take(ctx context.Context, a arrow.Array, idx *array.Uint32) (arrow.Array, error) {
