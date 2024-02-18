@@ -1,13 +1,18 @@
 package primary
 
 import (
+	"cmp"
 	"errors"
 	"slices"
 	"sort"
 	"sync"
 
+	"github.com/RoaringBitmap/roaring/roaring64"
+	"github.com/cespare/xxhash/v2"
 	"github.com/vinceanalytics/vince/db"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/index"
+	"github.com/vinceanalytics/vince/logger"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -17,17 +22,17 @@ type PrimaryIndex struct {
 	mu       sync.RWMutex
 	resource string
 	base     *v1.PrimaryIndex
-	stamps   map[string][]int64
-	ids      map[string][]string
+	granules map[string][]*v1.Granule
+	sites    map[string][]*roaring64.Bitmap
 	db       db.Storage
 }
 
 func LoadPrimaryIndex(o *v1.PrimaryIndex, storage db.Storage) *PrimaryIndex {
 	p := &PrimaryIndex{
-		db:     storage,
-		base:   &v1.PrimaryIndex{Resources: make(map[string]*v1.PrimaryIndex_Resource)},
-		stamps: make(map[string][]int64),
-		ids:    make(map[string][]string),
+		db:       storage,
+		base:     &v1.PrimaryIndex{Resources: make(map[string]*v1.PrimaryIndex_Resource)},
+		granules: make(map[string][]*v1.Granule),
+		sites:    make(map[string][]*roaring64.Bitmap),
 	}
 	for r, x := range o.Resources {
 		gs := make([]*v1.Granule, 0, len(x.Granules))
@@ -37,14 +42,17 @@ func LoadPrimaryIndex(o *v1.PrimaryIndex, storage db.Storage) *PrimaryIndex {
 		sort.Slice(gs, func(i, j int) bool {
 			return gs[i].Min < gs[j].Min
 		})
-		ts := make([]int64, len(gs))
-		ids := make([]string, len(gs))
+		sites := make([]*roaring64.Bitmap, len(gs))
 		for i := range gs {
-			ts[i] = gs[i].Min
-			ids[i] = gs[i].Id
+			b := new(roaring64.Bitmap)
+			err := b.UnmarshalBinary(gs[i].Sites)
+			if err != nil {
+				logger.Fail("Failed to Unmarshal sites bitmap", "err", err)
+			}
+			sites[i] = b
 		}
-		p.stamps[r] = ts
-		p.ids[r] = ids
+		p.granules[r] = gs
+		p.sites[r] = sites
 	}
 	return p
 }
@@ -63,10 +71,10 @@ func NewPrimary(store db.Storage) (idx *PrimaryIndex, err error) {
 		return
 	}
 	return &PrimaryIndex{
-		db:     store,
-		base:   &v1.PrimaryIndex{Resources: make(map[string]*v1.PrimaryIndex_Resource)},
-		stamps: make(map[string][]int64),
-		ids:    make(map[string][]string),
+		db:       store,
+		base:     &v1.PrimaryIndex{Resources: make(map[string]*v1.PrimaryIndex_Resource)},
+		granules: make(map[string][]*v1.Granule),
+		sites:    make(map[string][]*roaring64.Bitmap),
 	}, nil
 }
 
@@ -81,32 +89,64 @@ func (p *PrimaryIndex) Add(resource string, granule *v1.Granule) {
 		p.base.Resources[resource] = r
 	}
 	r.Granules[granule.Id] = granule
-	p.stamps[resource] = append(p.stamps[resource], granule.Min)
-	p.ids[resource] = append(p.ids[resource], granule.Id)
+	p.granules[resource] = append(p.granules[resource], granule)
+	b := new(roaring64.Bitmap)
+	err := b.UnmarshalBinary(granule.Sites)
+	if err != nil {
+		logger.Fail("Failed to Unmarshal sites bitmap", "err", err)
+	}
+	p.sites[resource] = append(p.sites[resource], b)
 	data, _ := proto.Marshal(p.base)
 	p.mu.Unlock()
-	err := p.db.Set(Key, data, 0)
+	err = p.db.Set(Key, data, 0)
 	if err != nil {
 		panic("failed saving primary index " + err.Error())
 	}
 }
 
-func (p *PrimaryIndex) FindGranules(resource string, start, end int64) []string {
+func (p *PrimaryIndex) FindGranules(resource string, start, end int64, siteId string) (o []string) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	ts := p.stamps[resource]
-	if len(ts) == 0 {
+	gs := p.granules[resource]
+	if len(gs) == 0 {
 		return []string{}
 	}
-	ids := p.ids[resource]
 
-	from, _ := slices.BinarySearch(ts, start)
-	if from == len(ts) {
+	from, _ := slices.BinarySearchFunc(gs, start, func(g *v1.Granule, i int64) int {
+		return cmp.Compare(g.Min, gs[i].Min)
+	})
+	if from == len(gs) {
 		return []string{}
 	}
-	to, _ := slices.BinarySearch(ts, end)
-	if to == len(ts) {
-		return slices.Clone(ids[from:])
+	to, _ := slices.BinarySearchFunc(gs, end, func(g *v1.Granule, i int64) int {
+		return cmp.Compare(g.Min, gs[i].Min)
+	})
+
+	sites := p.sites[resource]
+	h := new(xxhash.Digest)
+	h.WriteString(siteId)
+	domain := h.Sum64()
+
+	if from == to {
+		g := gs[from]
+		if !index.Accept(g.Min, g.Max, start, end) {
+			return
+		}
+		if !sites[from].Contains(domain) {
+			return
+		}
+		return []string{g.Id}
 	}
-	return slices.Clone(ids[from:to])
+	o = make([]string, 0, to-from)
+	for i := from; i < to && i < len(gs); i++ {
+		g := gs[i]
+		if !index.Accept(g.Min, g.Max, start, end) {
+			continue
+		}
+		if !sites[i].Contains(domain) {
+			continue
+		}
+		o = append(o, g.Id)
+	}
+	return
 }
