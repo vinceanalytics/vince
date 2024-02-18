@@ -10,11 +10,14 @@
 
 ## What ?
 
-`vince` is a modern server for collecting and analyzing website analytics. `vince` focuses on modern web application development by emphasizing easy of use for both deployment, maintenance and integration with existing infrastructure.
+`vince` is a highly optimized ,privacy friendly modern server for collecting and analyzing website analytics.
 
 ## Why ?
 
-All existing solutions are hard/impossible to self host and their license is `AGPL`. 
+- You want to self host(own your data) painlessly
+- You want to save money (use very little resources) 
+- You only need to consume the API to access the stats
+- You manage different range of sites ( Scales very well from 1 to 100X sites)
 
 ## Features
 
