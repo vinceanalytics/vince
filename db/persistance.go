@@ -52,8 +52,12 @@ func NewStore(db Storage, mem memory.Allocator, resource string, ttl time.Durati
 	}
 }
 
-func (s *Store) LoadPart(ctx context.Context, id string) (*Part, error) {
-	return NewPart(ctx, s.db, s.resource, id)
+func (s *Store) LoadRecord(ctx context.Context, id string, numRows int64, columns []int) (arrow.Record, error) {
+	return NewRecord(ctx, s.db, s.resource, id, numRows, columns)
+}
+
+func (s *Store) LoadIndex(ctx context.Context, id string) (*index.FileIndex, error) {
+	return NewIndex(ctx, s.db, s.resource, id)
 }
 
 func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {

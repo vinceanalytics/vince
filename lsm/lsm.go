@@ -2,6 +2,7 @@ package lsm
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -15,6 +16,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/compute"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/apache/arrow/go/v15/arrow/util"
+	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/ristretto"
 	"github.com/docker/go-units"
 	"github.com/oklog/ulid/v2"
@@ -133,10 +135,14 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 		MaxCost:     int64(o.compactSize) * 2,
 		BufferItems: 64,
 		OnEvict: func(item *ristretto.Item) {
-			item.Value.(index.Part).Release()
+			if r, ok := item.Value.(arrow.Record); ok {
+				r.Release()
+			}
 		},
 		OnReject: func(item *ristretto.Item) {
-			item.Value.(index.Part).Release()
+			if r, ok := item.Value.(arrow.Record); ok {
+				r.Release()
+			}
 		},
 	})
 	if err != nil {
@@ -216,9 +222,11 @@ func (lsm *Tree[T]) Scan(ctx context.Context, start, end int64, fs *v1.Filters) 
 	schema := arrow.NewSchema(fields, nil)
 	tr, tk := staples.NewTaker(lsm.mem, schema)
 	defer tr.Release()
-	lsm.ScanCold(ctx, start, end, compiled, func(r arrow.Record, ts *roaring.Bitmap) {
+
+	lsm.ScanCold(ctx, start, end, compiled, project, func(r arrow.Record, ts *roaring.Bitmap) {
 		tk(r, project, ts.ToArray())
 	})
+
 	lsm.tree.Iterate(func(n *RecordNode) bool {
 		if n.part == nil {
 			return true
@@ -238,27 +246,68 @@ func (lsm *Tree[T]) Scan(ctx context.Context, start, end int64, fs *v1.Filters) 
 }
 
 func (lsm *Tree[T]) ScanCold(ctx context.Context, start, end int64,
-	compiled []*filters.CompiledFilter, fn func(r arrow.Record, ts *roaring.Bitmap)) {
+	compiled []*filters.CompiledFilter, columns []int, fn func(r arrow.Record, ts *roaring.Bitmap)) {
 	granules := lsm.primary.FindGranules(lsm.resource, start, end)
 	for _, granule := range granules {
-		part := lsm.loadPart(ctx, granule)
+		part := lsm.loadPart(ctx, granule, columns)
 		if part != nil {
 			lsm.processPart(part, start, end, compiled, fn)
 		}
 	}
 }
 
-func (lsm *Tree[T]) loadPart(ctx context.Context, id string) index.Part {
-	v, ok := lsm.cache.Get(id)
-	if !ok {
-		return v.(index.Part)
-	}
-	part, err := lsm.store.LoadPart(ctx, id)
-	if err != nil {
-		lsm.log.Error("Failed loading granule to memory", "id", id, "err", err)
+func (lsm *Tree[T]) loadPart(ctx context.Context, id string, columns []int) index.Part {
+	idx := lsm.loadIndex(ctx, id)
+	if idx == nil {
 		return nil
 	}
-	lsm.cache.Set(id, part, int64(part.Size()))
+	r := lsm.loadRecord(ctx, id, int64(idx.NumRows()), columns)
+	if r == nil {
+		return nil
+	}
+	return &db.Part{
+		FileIndex: idx,
+		Data:      r,
+	}
+}
+
+func (lsm *Tree[T]) loadIndex(ctx context.Context, id string) *index.FileIndex {
+	h := new(xxhash.Digest)
+	h.WriteString(id)
+	key := h.Sum64()
+	v, ok := lsm.cache.Get(key)
+	if !ok {
+		return v.(*index.FileIndex)
+	}
+	part, err := lsm.store.LoadIndex(ctx, id)
+	if err != nil {
+		lsm.log.Error("Failed loading granule index to memory", "id", id, "err", err)
+		return nil
+	}
+	lsm.cache.Set(key, part, int64(part.Size()))
+	return part
+}
+
+func (lsm *Tree[T]) loadRecord(ctx context.Context, id string, numRows int64, columns []int) arrow.Record {
+	h := new(xxhash.Digest)
+	h.WriteString(id)
+	var a [8]byte
+	binary.BigEndian.PutUint64(a[:], uint64(numRows))
+	h.Write(a[:])
+	for _, v := range columns {
+		h.Write(binary.BigEndian.AppendUint32(a[:], uint32(v))[:4])
+	}
+	key := h.Sum64()
+	v, ok := lsm.cache.Get(key)
+	if !ok {
+		return v.(arrow.Record)
+	}
+	part, err := lsm.store.LoadRecord(ctx, id, numRows, columns)
+	if err != nil {
+		lsm.log.Error("Failed loading granule index to memory", "id", id, "err", err)
+		return nil
+	}
+	lsm.cache.Set(key, part, util.TotalRecordSize(part))
 	return part
 }
 

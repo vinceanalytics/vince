@@ -15,14 +15,60 @@ import (
 )
 
 type Part struct {
-	id string
+	GranuleID string
 	*index.FileIndex
-	record arrow.Record
+	Data arrow.Record
 }
 
 var _ index.Part = (*Part)(nil)
 
-func NewPart(ctx context.Context, db Storage, resource, id string) (*Part, error) {
+func NewRecord(ctx context.Context, db Storage, resource, id string, numRows int64, columns []int) (arrow.Record, error) {
+	b := buffers.Bytes()
+	defer b.Release()
+	b.WriteString(resource)
+	b.Write(slash)
+	b.WriteString(id)
+	b.Write(slash)
+	b.Write(dataPath)
+	var r arrow.Record
+	err := db.Get(b.Bytes(), func(b []byte) error {
+		f, err := file.NewParquetReader(bytes.NewReader(b),
+			file.WithReadProps(parquet.NewReaderProperties(
+				compute.GetAllocator(ctx),
+			)),
+		)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		pr, err := pqarrow.NewFileReader(f, pqarrow.ArrowReadProperties{
+			BatchSize: numRows,
+			Parallel:  true,
+		},
+			compute.GetAllocator(ctx),
+		)
+		if err != nil {
+			return err
+		}
+		// There is only one row group
+		table, err := pr.ReadRowGroups(ctx, columns, []int{0})
+		if err != nil {
+			return err
+		}
+		if err != nil {
+			return err
+		}
+		defer table.Release()
+		r = tableToRecord(table)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func NewIndex(ctx context.Context, db Storage, resource, id string) (*index.FileIndex, error) {
 	b := buffers.Bytes()
 	defer b.Release()
 
@@ -38,46 +84,7 @@ func NewPart(ctx context.Context, db Storage, resource, id string) (*Part, error
 	if err != nil {
 		return nil, err
 	}
-	b.Write(slash)
-	b.Write(dataPath)
-	var r arrow.Record
-	err = db.Get(b.Bytes(), func(b []byte) error {
-		f, err := file.NewParquetReader(bytes.NewReader(b),
-			file.WithReadProps(parquet.NewReaderProperties(
-				compute.GetAllocator(ctx),
-			)),
-		)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-		pr, err := pqarrow.NewFileReader(f, pqarrow.ArrowReadProperties{
-			BatchSize: int64(fdx.NumRows()),
-			Parallel:  true,
-		},
-			compute.GetAllocator(ctx),
-		)
-		if err != nil {
-			return err
-		}
-		table, err := pr.ReadTable(ctx)
-		if err != nil {
-			return err
-		}
-		if err != nil {
-			return err
-		}
-		defer table.Release()
-		r = tableToRecord(table)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &Part{
-		FileIndex: fdx,
-		record:    r,
-	}, nil
+	return fdx, err
 }
 
 func tableToRecord(table arrow.Table) arrow.Record {
@@ -94,14 +101,14 @@ func tableToRecord(table arrow.Table) arrow.Record {
 	)
 }
 func (p *Part) ID() string {
-	return p.id
+	return p.GranuleID
 }
 
 func (p *Part) Record() arrow.Record {
-	return p.record
+	return p.Data
 }
 
 func (p *Part) Release() {
-	p.record.Release()
-	p.record = nil
+	p.Data.Release()
+	p.Data = nil
 }
