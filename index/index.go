@@ -7,6 +7,13 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 )
 
+type Part interface {
+	Full
+	ID() string
+	Record() arrow.Record
+	Release()
+}
+
 type Full interface {
 	Columns(f func(column Column) error) error
 	Match(b *roaring.Bitmap, m []*filters.CompiledFilter)
@@ -30,4 +37,5 @@ type Index interface {
 
 type Primary interface {
 	Add(resource string, granule *v1.Granule)
+	FindGranules(resource string, start int64, end int64) []string
 }

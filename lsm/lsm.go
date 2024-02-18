@@ -15,6 +15,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/compute"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/apache/arrow/go/v15/arrow/util"
+	"github.com/dgraph-io/ristretto"
 	"github.com/docker/go-units"
 	"github.com/oklog/ulid/v2"
 	"github.com/vinceanalytics/vince/camel"
@@ -22,6 +23,7 @@ import (
 	"github.com/vinceanalytics/vince/filters"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/index"
+	"github.com/vinceanalytics/vince/logger"
 	"github.com/vinceanalytics/vince/staples"
 )
 
@@ -32,7 +34,7 @@ type RecordPart struct {
 	size uint64
 }
 
-var _ Part = (*RecordPart)(nil)
+var _ index.Part = (*RecordPart)(nil)
 
 func (r *RecordPart) Record() arrow.Record {
 	return r.record
@@ -50,13 +52,6 @@ func (r *RecordPart) Release() {
 	r.Release()
 }
 
-type Part interface {
-	index.Full
-	ID() string
-	Record() arrow.Record
-	Release()
-}
-
 func NewPart(r arrow.Record, idx index.Full) *RecordPart {
 	r.Retain()
 	return &RecordPart{
@@ -67,7 +62,7 @@ func NewPart(r arrow.Record, idx index.Full) *RecordPart {
 	}
 }
 
-type RecordNode = Node[*RecordPart]
+type RecordNode = Node[index.Part]
 
 type Tree[T any] struct {
 	tree   *RecordNode
@@ -87,6 +82,8 @@ type Tree[T any] struct {
 
 	nodes   []*RecordNode
 	records []arrow.Record
+
+	cache *ristretto.Cache
 }
 
 type Options struct {
@@ -130,6 +127,21 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 	for _, f := range opts {
 		f(&o)
 	}
+
+	cache, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 1e7,
+		MaxCost:     int64(o.compactSize) * 2,
+		BufferItems: 64,
+		OnEvict: func(item *ristretto.Item) {
+			item.Value.(index.Part).Release()
+		},
+		OnReject: func(item *ristretto.Item) {
+			item.Value.(index.Part).Release()
+		},
+	})
+	if err != nil {
+		logger.Fail("Failed creating parts cache", "err", err)
+	}
 	return &Tree[T]{
 		tree:     &RecordNode{},
 		index:    indexer,
@@ -147,6 +159,7 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 			slog.String("component", "lsm-tree"),
 			slog.String("resource", resource),
 		),
+		cache: cache,
 	}
 }
 
@@ -178,13 +191,7 @@ func (lsm *Tree[T]) findNode(node *RecordNode) (list *RecordNode) {
 	return
 }
 
-type ScanCallback func(context.Context, arrow.Record) error
-
-func (lsm *Tree[T]) Scan(
-	ctx context.Context,
-	start, end int64,
-	fs *v1.Filters,
-) (arrow.Record, error) {
+func (lsm *Tree[T]) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
 	ctx = compute.WithAllocator(ctx, lsm.mem)
 	compiled, err := filters.CompileFilters(fs)
 	if err != nil {
@@ -209,22 +216,18 @@ func (lsm *Tree[T]) Scan(
 	schema := arrow.NewSchema(fields, nil)
 	tr, tk := staples.NewTaker(lsm.mem, schema)
 	defer tr.Release()
-
+	lsm.ScanCold(ctx, start, end, compiled, func(r arrow.Record, ts *roaring.Bitmap) {
+		tk(r, project, ts.ToArray())
+	})
 	lsm.tree.Iterate(func(n *RecordNode) bool {
 		if n.part == nil {
 			return true
 		}
 		if n.part.Min() <= uint64(end) {
 			if uint64(start) <= n.part.Max() {
-				r := n.part.record
-				r.Retain()
-				defer r.Release()
-				ts := ScanTimestamp(r, lsm.mapping[v1.Filters_Timestamp.String()], start, end)
-				n.part.Match(ts, compiled)
-				if ts.IsEmpty() {
-					return true
-				}
-				tk(r, project, ts.ToArray())
+				lsm.processPart(n.part, start, end, compiled, func(r arrow.Record, ts *roaring.Bitmap) {
+					tk(r, project, ts.ToArray())
+				})
 				return true
 			}
 			return true
@@ -232,6 +235,44 @@ func (lsm *Tree[T]) Scan(
 		return false
 	})
 	return tr.NewRecord(), nil
+}
+
+func (lsm *Tree[T]) ScanCold(ctx context.Context, start, end int64,
+	compiled []*filters.CompiledFilter, fn func(r arrow.Record, ts *roaring.Bitmap)) {
+	granules := lsm.primary.FindGranules(lsm.resource, start, end)
+	for _, granule := range granules {
+		part := lsm.loadPart(ctx, granule)
+		if part != nil {
+			lsm.processPart(part, start, end, compiled, fn)
+		}
+	}
+}
+
+func (lsm *Tree[T]) loadPart(ctx context.Context, id string) index.Part {
+	v, ok := lsm.cache.Get(id)
+	if !ok {
+		return v.(index.Part)
+	}
+	part, err := lsm.store.LoadPart(ctx, id)
+	if err != nil {
+		lsm.log.Error("Failed loading granule to memory", "id", id, "err", err)
+		return nil
+	}
+	lsm.cache.Set(id, part, int64(part.Size()))
+	return part
+}
+
+func (lsm *Tree[T]) processPart(part index.Part, start, end int64,
+	compiled []*filters.CompiledFilter, fn func(r arrow.Record, ts *roaring.Bitmap)) {
+	r := part.Record()
+	r.Retain()
+	defer r.Release()
+	ts := ScanTimestamp(r, lsm.mapping[v1.Filters_Timestamp.String()], start, end)
+	part.Match(ts, compiled)
+	if ts.IsEmpty() {
+		return
+	}
+	fn(r, ts)
 }
 
 func ScanTimestamp(r arrow.Record, timestampColumn int, start, end int64) *roaring.Bitmap {
@@ -279,7 +320,7 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 	start := time.Now()
 	defer func() {
 		for _, r := range lsm.nodes {
-			r.part.record.Release()
+			r.part.Release()
 		}
 		clear(lsm.nodes)
 		clear(lsm.records)
@@ -293,8 +334,8 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 			return true
 		}
 		lsm.nodes = append(lsm.nodes, n)
-		lsm.records = append(lsm.records, n.part.record)
-		oldSizes += n.part.size
+		lsm.records = append(lsm.records, n.part.Record())
+		oldSizes += n.part.Size()
 		return true
 	})
 	if oldSizes == 0 {

@@ -55,6 +55,10 @@ var _ Full = (*FileIndex)(nil)
 
 var baseFileIdxSize = uint64(unsafe.Sizeof(FileIndex{}))
 
+func (f *FileIndex) NumRows() int {
+	return int(f.meta.Columns[0].NumRows)
+}
+
 func (f *FileIndex) Columns(_ func(column Column) error) error {
 	logger.Fail("FileIndex does not support Columns indexing")
 	return nil

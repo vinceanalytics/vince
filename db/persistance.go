@@ -2,6 +2,7 @@ package db
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -49,6 +50,10 @@ func NewStore(db Storage, mem memory.Allocator, resource string, ttl time.Durati
 			slog.String("resource", resource),
 		),
 	}
+}
+
+func (s *Store) LoadPart(ctx context.Context, id string) (*Part, error) {
+	return NewPart(ctx, s.db, s.resource, id)
 }
 
 func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
