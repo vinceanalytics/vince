@@ -176,7 +176,7 @@ type Post struct {
 }
 
 func (p *Post) Date() string {
-	return time.UnixMilli(p.Timestamp()).Format(time.DateOnly)
+	return time.UnixMilli(p.Timestamp()).Format("January _2, 2006")
 }
 
 func (p *Post) Write(base string) error {
