@@ -51,7 +51,7 @@ func (r *RecordPart) ID() string {
 }
 
 func (r *RecordPart) Release() {
-	r.Release()
+	r.record.Release()
 }
 
 func NewPart(r arrow.Record, idx index.Full) *RecordPart {
