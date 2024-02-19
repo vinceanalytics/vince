@@ -177,13 +177,23 @@ See [filtering](#filtering)
 
 This endpoint provides timeseries data over a certain time period.
 
-
-```bash title="Try it yourself"
-curl 'https://cloud.vinceanalytics.com/api/v1/stats/timeseries?site_id=$SITE_ID&period=6mo'
-  -H "Authorization: Bearer ${TOKEN}"
+```bash
++ curl -X GET 'http://localhost:8080/api/v1/stats/timeseries?period=6mo&site_id=vinceanalytics.com'
+{
+  "results": [
+    {
+      "timestamp": "2024-02-19T00:00:00Z",
+      "values": [
+        {
+          "metric": "visitors",
+          "value": 8
+        }
+      ]
+    }
+  ]
+}
 ```
 
-TBD
 
 #### Parameters
 <hr / >

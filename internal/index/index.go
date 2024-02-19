@@ -37,7 +37,7 @@ type Index interface {
 
 type Primary interface {
 	Add(resource string, granule *v1.Granule)
-	FindGranules(resource string, start int64, end int64, siteId string) []string
+	FindGranules(resource string, start int64, end int64) []string
 }
 
 func Accept(min, max, start, end int64) bool {

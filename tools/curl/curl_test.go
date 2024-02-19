@@ -37,6 +37,13 @@ func TestBreakdown(t *testing.T) {
 	check(t, true, "breakdown.sh", "/api/v1/stats/breakdown?"+q.Encode(), http.MethodGet, nil, nil)
 }
 
+func TestTimeseries(t *testing.T) {
+	q := make(url.Values)
+	q.Set("site_id", "vinceanalytics.com")
+	q.Set("period", "6mo")
+	check(t, true, "timeseries.sh", "/api/v1/stats/timeseries?"+q.Encode(), http.MethodGet, nil, nil)
+}
+
 func check(t *testing.T, write bool, file string, path, method string, headers http.Header, body proto.Message) {
 	t.Helper()
 	file = filepath.Join("testdata/", file)

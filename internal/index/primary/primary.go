@@ -7,12 +7,9 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/cespare/xxhash/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/index"
-	"github.com/vinceanalytics/vince/internal/logger"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -23,7 +20,6 @@ type PrimaryIndex struct {
 	resource string
 	base     *v1.PrimaryIndex
 	granules map[string][]*v1.Granule
-	sites    map[string][]*roaring64.Bitmap
 	db       db.Storage
 }
 
@@ -32,7 +28,6 @@ func LoadPrimaryIndex(o *v1.PrimaryIndex, storage db.Storage) *PrimaryIndex {
 		db:       storage,
 		base:     &v1.PrimaryIndex{Resources: make(map[string]*v1.PrimaryIndex_Resource)},
 		granules: make(map[string][]*v1.Granule),
-		sites:    make(map[string][]*roaring64.Bitmap),
 	}
 	for r, x := range o.Resources {
 		gs := make([]*v1.Granule, 0, len(x.Granules))
@@ -42,17 +37,7 @@ func LoadPrimaryIndex(o *v1.PrimaryIndex, storage db.Storage) *PrimaryIndex {
 		sort.Slice(gs, func(i, j int) bool {
 			return gs[i].Min < gs[j].Min
 		})
-		sites := make([]*roaring64.Bitmap, len(gs))
-		for i := range gs {
-			b := new(roaring64.Bitmap)
-			err := b.UnmarshalBinary(gs[i].Sites)
-			if err != nil {
-				logger.Fail("Failed to Unmarshal sites bitmap", "err", err)
-			}
-			sites[i] = b
-		}
 		p.granules[r] = gs
-		p.sites[r] = sites
 	}
 	return p
 }
@@ -74,7 +59,6 @@ func NewPrimary(store db.Storage) (idx *PrimaryIndex, err error) {
 		db:       store,
 		base:     &v1.PrimaryIndex{Resources: make(map[string]*v1.PrimaryIndex_Resource)},
 		granules: make(map[string][]*v1.Granule),
-		sites:    make(map[string][]*roaring64.Bitmap),
 	}, nil
 }
 
@@ -90,21 +74,15 @@ func (p *PrimaryIndex) Add(resource string, granule *v1.Granule) {
 	}
 	r.Granules[granule.Id] = granule
 	p.granules[resource] = append(p.granules[resource], granule)
-	b := new(roaring64.Bitmap)
-	err := b.UnmarshalBinary(granule.Sites)
-	if err != nil {
-		logger.Fail("Failed to Unmarshal sites bitmap", "err", err)
-	}
-	p.sites[resource] = append(p.sites[resource], b)
 	data, _ := proto.Marshal(p.base)
 	p.mu.Unlock()
-	err = p.db.Set(Key, data, 0)
+	err := p.db.Set(Key, data, 0)
 	if err != nil {
 		panic("failed saving primary index " + err.Error())
 	}
 }
 
-func (p *PrimaryIndex) FindGranules(resource string, start, end int64, siteId string) (o []string) {
+func (p *PrimaryIndex) FindGranules(resource string, start, end int64) (o []string) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	gs := p.granules[resource]
@@ -113,26 +91,19 @@ func (p *PrimaryIndex) FindGranules(resource string, start, end int64, siteId st
 	}
 
 	from, _ := slices.BinarySearchFunc(gs, start, func(g *v1.Granule, i int64) int {
-		return cmp.Compare(g.Min, gs[i].Min)
+		return cmp.Compare(g.Min, i)
 	})
+
 	if from == len(gs) {
 		return []string{}
 	}
 	to, _ := slices.BinarySearchFunc(gs, end, func(g *v1.Granule, i int64) int {
-		return cmp.Compare(g.Min, gs[i].Min)
+		return cmp.Compare(g.Min, i)
 	})
-
-	sites := p.sites[resource]
-	h := new(xxhash.Digest)
-	h.WriteString(siteId)
-	domain := h.Sum64()
 
 	if from == to {
 		g := gs[from]
 		if !index.Accept(g.Min, g.Max, start, end) {
-			return
-		}
-		if !sites[from].Contains(domain) {
 			return
 		}
 		return []string{g.Id}
@@ -141,9 +112,6 @@ func (p *PrimaryIndex) FindGranules(resource string, start, end int64, siteId st
 	for i := from; i < to && i < len(gs); i++ {
 		g := gs[i]
 		if !index.Accept(g.Min, g.Max, start, end) {
-			continue
-		}
-		if !sites[i].Contains(domain) {
 			continue
 		}
 		o = append(o, g.Id)

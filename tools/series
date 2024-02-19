@@ -1,0 +1,1 @@
+bash -x ./tools/curl/testdata/timeseries.sh

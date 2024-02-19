@@ -104,8 +104,8 @@ func (s *Session) process(ctx context.Context, req *v1.Event) {
 	s.cache.SetWithTTL(e.ID, e, int64(e.Size()), DefaultSession)
 }
 
-func (s *Session) Scan(ctx context.Context, siteId string, start, end int64, fs *v1.Filters) (arrow.Record, error) {
-	return s.tree.Scan(ctx, siteId, start, end, fs)
+func (s *Session) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
+	return s.tree.Scan(ctx, start, end, fs)
 }
 
 func (s *Session) Close() {

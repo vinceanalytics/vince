@@ -197,7 +197,7 @@ func (lsm *Tree[T]) findNode(node *RecordNode) (list *RecordNode) {
 	return
 }
 
-func (lsm *Tree[T]) Scan(ctx context.Context, siteId string, start, end int64, fs *v1.Filters) (arrow.Record, error) {
+func (lsm *Tree[T]) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
 	ctx = compute.WithAllocator(ctx, lsm.mem)
 	compiled, err := filters.CompileFilters(fs)
 	if err != nil {
@@ -223,7 +223,7 @@ func (lsm *Tree[T]) Scan(ctx context.Context, siteId string, start, end int64, f
 	tr, tk := staples.NewTaker(lsm.mem, schema)
 	defer tr.Release()
 
-	lsm.ScanCold(ctx, siteId, start, end, compiled, project, func(r arrow.Record, ts *roaring.Bitmap) {
+	lsm.ScanCold(ctx, start, end, compiled, project, func(r arrow.Record, ts *roaring.Bitmap) {
 		tk(r, project, ts.ToArray())
 	})
 
@@ -240,9 +240,9 @@ func (lsm *Tree[T]) Scan(ctx context.Context, siteId string, start, end int64, f
 	return tr.NewRecord(), nil
 }
 
-func (lsm *Tree[T]) ScanCold(ctx context.Context, siteId string, start, end int64,
+func (lsm *Tree[T]) ScanCold(ctx context.Context, start, end int64,
 	compiled []*filters.CompiledFilter, columns []int, fn func(r arrow.Record, ts *roaring.Bitmap)) {
-	granules := lsm.primary.FindGranules(lsm.resource, start, end, siteId)
+	granules := lsm.primary.FindGranules(lsm.resource, start, end)
 	for _, granule := range granules {
 		part := lsm.loadPart(ctx, granule, columns)
 		if part != nil {
@@ -271,7 +271,7 @@ func (lsm *Tree[T]) loadIndex(ctx context.Context, id string) *index.FileIndex {
 	h.WriteString(id)
 	key := h.Sum64()
 	v, ok := lsm.cache.Get(key)
-	if !ok {
+	if ok {
 		return v.(*index.FileIndex)
 	}
 	part, err := lsm.store.LoadIndex(ctx, id)
@@ -294,7 +294,7 @@ func (lsm *Tree[T]) loadRecord(ctx context.Context, id string, numRows int64, co
 	}
 	key := h.Sum64()
 	v, ok := lsm.cache.Get(key)
-	if !ok {
+	if ok {
 		return v.(arrow.Record)
 	}
 	part, err := lsm.store.LoadRecord(ctx, id, numRows, columns)

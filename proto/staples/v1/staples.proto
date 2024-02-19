@@ -52,7 +52,6 @@ message Granule {
   int64 max = 3;
   uint64 size = 4;
   uint64 rows = 5;
-  bytes sites = 6;
 }
 
 message Event {

@@ -35,8 +35,7 @@ func Aggregate(w http.ResponseWriter, r *http.Request) {
 	slices.Sort(metrics)
 	metricsToProjection(filters, metrics)
 	from, to := PeriodToRange(ctx, time.Now, req.Period, r.URL.Query())
-	resultRecord, err := session.Get(ctx).Scan(ctx,
-		req.SiteId, from.UnixMilli(), to.UnixMilli(), filters)
+	resultRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
 		request.Internal(ctx, w)

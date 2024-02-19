@@ -10,21 +10,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/apache/arrow/go/v15/arrow"
-	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/apache/arrow/go/v15/parquet"
 	"github.com/apache/arrow/go/v15/parquet/compress"
 	"github.com/apache/arrow/go/v15/parquet/pqarrow"
-	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 	"github.com/vinceanalytics/vince/internal/buffers"
-	"github.com/vinceanalytics/vince/internal/columns"
 	"github.com/vinceanalytics/vince/internal/index"
-	"github.com/vinceanalytics/vince/internal/logger"
 )
 
 var ErrKeyNotFound = errors.New("db: key not found")
@@ -92,30 +87,13 @@ func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
 	if err != nil {
 		return nil, err
 	}
-	bm := new(roaring64.Bitmap)
-	for i := 0; i < int(r.NumCols()); i++ {
-		if r.ColumnName(i) == columns.Domain {
-			h := new(xxhash.Digest)
-			a := r.Column(i).(*array.Dictionary).Dictionary().(*array.String)
-			for n := 0; n < a.Len(); n++ {
-				h.WriteString(a.Value(i))
-				bm.Add(h.Sum64())
-				h.Reset()
-			}
-			break
-		}
-	}
-	sites, err := bm.MarshalBinary()
-	if err != nil {
-		logger.Fail("Failed marshalling sites bitmap", "err", err)
-	}
+
 	return &v1.Granule{
-		Min:   int64(idx.Min()),
-		Max:   int64(idx.Max()),
-		Size:  size + uint64(buf.Len()),
-		Id:    id,
-		Rows:  uint64(r.NumRows()),
-		Sites: sites,
+		Min:  int64(idx.Min()),
+		Max:  int64(idx.Max()),
+		Size: size + uint64(buf.Len()),
+		Id:   id,
+		Rows: uint64(r.NumRows()),
 	}, nil
 }
 

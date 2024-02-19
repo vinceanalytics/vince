@@ -13,7 +13,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/ipc"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/blevesearch/vellum"
-	"github.com/vinceanalytics/vince/staples"
+	"github.com/vinceanalytics/vince/internal/staples"
 	"gopkg.in/yaml.v2"
 )
 
