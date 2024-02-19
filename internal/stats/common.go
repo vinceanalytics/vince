@@ -219,7 +219,7 @@ func sep(f string) (key, value string, op v1.Filter_OP, ok bool) {
 		op = v1.Filter_re_equal
 		return
 	}
-	key, value, ok = strings.Cut(f, "~=")
+	key, value, ok = strings.Cut(f, "!~")
 	if ok {
 		op = v1.Filter_re_not_equal
 		return
