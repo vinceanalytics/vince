@@ -13,7 +13,7 @@ import (
 	"github.com/blevesearch/vellum"
 	"github.com/blevesearch/vellum/levenshtein"
 	"github.com/dgraph-io/ristretto"
-	"github.com/vinceanalytics/vince/logger"
+	"github.com/vinceanalytics/vince/internal/logger"
 )
 
 //go:generate go run gen/main.go device-detector/Tests/fixtures
