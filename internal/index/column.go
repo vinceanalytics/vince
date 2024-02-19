@@ -55,19 +55,9 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 	fst := f.Load()
 	switch m.Op {
 	case v1.Filter_equal:
-		r, ok, _ := fst.Get(m.Value)
-		if !ok {
-			return new(roaring.Bitmap)
-		}
-		return f.bitmaps[r].Clone()
+		return f.equalMatch(fst, m)
 	case v1.Filter_not_equal:
-		r, ok, _ := fst.Get(m.Value)
-		if !ok {
-			return new(roaring.Bitmap)
-		}
-		b := f.bitmaps[r]
-
-		// any rows not in b bitmap
+		b := f.equalMatch(fst, m)
 		o := new(roaring.Bitmap)
 		for i := uint32(0); i < f.numRows; i++ {
 			if !b.Contains(i) {
@@ -76,36 +66,9 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 		}
 		return o
 	case v1.Filter_re_equal:
-		var b *roaring.Bitmap
-		it, err := fst.Search(m.Re, nil, nil)
-		for err == nil {
-			_, r := it.Current()
-			if b == nil {
-				b = f.bitmaps[r].Clone()
-			} else {
-				b.And(f.bitmaps[r])
-			}
-			err = it.Next()
-		}
-		if b == nil {
-			b = new(roaring.Bitmap)
-		}
-		return b
+		return f.reMatch(fst, m)
 	case v1.Filter_re_not_equal:
-		var b *roaring.Bitmap
-		it, err := fst.Search(m.Re, nil, nil)
-		for err == nil {
-			_, r := it.Current()
-			if b == nil {
-				b = f.bitmaps[r].Clone()
-			} else {
-				b.And(f.bitmaps[r])
-			}
-			err = it.Next()
-		}
-		if b == nil {
-			b = new(roaring.Bitmap)
-		}
+		b := f.reMatch(fst, m)
 		o := new(roaring.Bitmap)
 		for i := uint32(0); i < f.numRows; i++ {
 			if !b.Contains(i) {
@@ -116,6 +79,32 @@ func (f *FullColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
 	default:
 		return new(roaring.Bitmap)
 	}
+}
+
+func (f *FullColumn) equalMatch(fst *vellum.FST, m *filters.CompiledFilter) *roaring.Bitmap {
+	r, ok, _ := fst.Get(m.Value)
+	if !ok {
+		return new(roaring.Bitmap)
+	}
+	return f.bitmaps[r].Clone()
+}
+
+func (f *FullColumn) reMatch(fst *vellum.FST, m *filters.CompiledFilter) *roaring.Bitmap {
+	var b *roaring.Bitmap
+	it, err := fst.Search(m.Re, nil, nil)
+	for err == nil {
+		_, r := it.Current()
+		if b == nil {
+			b = f.bitmaps[r].Clone()
+		} else {
+			b.And(f.bitmaps[r])
+		}
+		err = it.Next()
+	}
+	if b == nil {
+		b = new(roaring.Bitmap)
+	}
+	return b
 }
 
 func (f *FullColumn) Load() *vellum.FST {
