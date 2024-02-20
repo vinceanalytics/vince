@@ -25,7 +25,7 @@ func PeriodToRange(ctx context.Context, now func() time.Time, period *v1.TimePer
 		switch e.Base {
 		case v1.TimePeriod_day:
 			end = date
-			start = end
+			start = timeutil.BeginDay(end)
 		case v1.TimePeriod__7d:
 			end = date
 			start = end.AddDate(0, 0, -6)

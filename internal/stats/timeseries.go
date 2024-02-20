@@ -12,7 +12,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
 	"github.com/vinceanalytics/vince/internal/timeutil"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TimeSeries(w http.ResponseWriter, r *http.Request) {
@@ -57,15 +56,14 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 	}
 	tsKey := mapping[v1.Filters_Timestamp.String()]
 	ts := scanRecord.Column(tsKey).(*array.Int64).Int64Values()
-	var buckets []*v1.Timeseries_Bucket
+	var buckets []Bucket
 	xc := &Compute{mapping: make(map[string]arrow.Array)}
 	err = timeutil.TimeBuckets(req.Interval, ts, func(bucket int64, start, end int) error {
 		n := scanRecord.NewSlice(int64(start), int64(end))
 		defer n.Release()
-		buck := &v1.Timeseries_Bucket{
-			Timestamp: timestamppb.New(
-				time.UnixMilli(bucket),
-			),
+		buck := Bucket{
+			Timestamp: time.UnixMilli(bucket),
+			Values:    make(map[string]float64),
 		}
 		xc.Reset(n)
 		for _, x := range metrics {
@@ -73,12 +71,9 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				return err
 			}
-			buck.Values = append(buck.Values, &v1.Value{
-				Metric: x,
-				Value:  value,
-			})
-			buckets = append(buckets, buck)
+			buck.Values[x.String()] = value
 		}
+		buckets = append(buckets, buck)
 		return nil
 	})
 	if err != nil {
@@ -86,5 +81,14 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 		request.Internal(ctx, w)
 		return
 	}
-	request.Write(ctx, w, &v1.Timeseries_Response{Results: buckets})
+	request.Write(ctx, w, &Series{Results: buckets})
+}
+
+type Bucket struct {
+	Timestamp time.Time          `json:"timestamp"`
+	Values    map[string]float64 `json:"values"`
+}
+
+type Series struct {
+	Results []Bucket `json:"results"`
 }

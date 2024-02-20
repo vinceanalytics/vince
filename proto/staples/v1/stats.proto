@@ -39,13 +39,6 @@ message Timeseries {
     Interval interval = 4;
     repeated Filter filters = 5;
   }
-
-  message Response { repeated Bucket results = 1; }
-
-  message Bucket {
-    google.protobuf.Timestamp timestamp = 1;
-    repeated Value values = 2;
-  }
 }
 
 enum Interval {
@@ -67,11 +60,6 @@ message BreakDown {
     repeated Metric metrics = 4;
     repeated Filter filters = 6;
   }
-}
-
-message Value {
-  Metric metric = 1;
-  double value = 2;
 }
 
 enum Metric {

@@ -40,7 +40,8 @@ func TestBreakdown(t *testing.T) {
 func TestTimeseries(t *testing.T) {
 	q := make(url.Values)
 	q.Set("site_id", "vinceanalytics.com")
-	q.Set("period", "6mo")
+	q.Set("period", "day")
+	q.Set("interval", "minute")
 	check(t, true, "timeseries.sh", "/api/v1/stats/timeseries?"+q.Encode(), http.MethodGet, nil, nil)
 }
 
