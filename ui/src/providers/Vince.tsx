@@ -6,21 +6,32 @@ type Props = {}
 type ContextProps = {
     vince: Vince
     active: string,
+    interval: Interval,
     sites: Site[]
     selectSite: (site: string) => void,
+    setInterval: (i: Interval) => void,
+    setVince: (v: Vince) => void,
 }
+
+export enum Interval {
+    DATE = "date",
+    MINUTE = "minute",
+    HOUR = "hour",
+    WEEK = "week",
+    MONTH = "month"
+}
+
 
 const defaultValues = {
     vince: new Vince(),
+    interval: Interval.DATE,
     active: "(no domain)",
     sites: [],
     selectSite: () => { },
+    setInterval: () => { },
+    setVince: () => { },
 }
 
-interface Sites {
-    active: string,
-    domains: Site[]
-}
 
 export const VinceContext = createContext<ContextProps>(defaultValues);
 
@@ -28,24 +39,20 @@ export const VinceContext = createContext<ContextProps>(defaultValues);
 export const VinceProvider = ({ children }: PropsWithChildren<Props>) => {
     const [vince, setVince] = useState<Vince>(defaultValues.vince);
     const [sites, setSites] = useState<Site[]>(defaultValues.sites)
-    const [active, setSite] = useState<string>(defaultValues.active)
+    const [active, selectSite] = useState<string>(defaultValues.active)
+    const [interval, setInterval] = useState<Interval>(defaultValues.interval)
     useEffect(() => {
         vince.domains().then(({ domains }) => {
             if (domains && domains.length > 0) {
-                console.log(domains)
                 setSites(domains)
-                setSite(domains[0].name)
+                selectSite(domains[0].name)
             }
         }).catch(console.log)
-    }, [vince])
-
-    const selectSite = useCallback((active: string) => {
-        setSite(active)
-    }, [])
+    }, [vince, setSites, selectSite])
 
 
     return (
-        <VinceContext.Provider value={{ vince, sites, active, selectSite }}>
+        <VinceContext.Provider value={{ vince, sites, active, setVince, selectSite, interval, setInterval }}>
             {children}
         </VinceContext.Provider>
     )
