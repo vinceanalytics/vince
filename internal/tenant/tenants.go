@@ -1,6 +1,11 @@
 package tenant
 
-import v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+import (
+	"context"
+	"net/url"
+
+	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+)
 
 const Default = "staples"
 
@@ -60,6 +65,30 @@ func (t *Tenants) AllDomains() (o []*v1.Domain) {
 	return
 }
 
+func (t *Tenants) Load(ctx context.Context, q url.Values) context.Context {
+	v := q.Get("tenant_id")
+	if v == "" {
+		site := q.Get("site_id")
+		if site != "" {
+			s := t.Get(site)
+			if s != nil {
+				v = s.Id
+			}
+		}
+	}
+	return With(ctx, v)
+}
+
 func (t *Tenants) All() []*v1.Tenant {
 	return t.all
+}
+
+type tenantId struct{}
+
+func With(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, tenantId{}, id)
+}
+
+func Get(ctx context.Context) string {
+	return ctx.Value(tenantId{}).(string)
 }

@@ -58,6 +58,9 @@ func New(ctx context.Context, o *v1.Config, tenants *tenant.Tenants) (*API, erro
 		tenants: tenants,
 	}
 	base := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/v1/") {
+			r.WithContext(tenants.Load(ctx, r.URL.Query()))
+		}
 		w.Header().Add(vary, acceptEncoding)
 		code := &statsWriter{ResponseWriter: w, compress: acceptsGzip(r)}
 		defer func() {
