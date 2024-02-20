@@ -44,7 +44,7 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 	slices.Sort(metrics)
 	metricsToProjection(filters, metrics)
 	from, to := PeriodToRange(ctx, time.Now, req.Period, r.URL.Query())
-	scanRecord, err := session.Get(ctx).Scan(ctx, tenant.Default, from.UnixMilli(), to.UnixMilli(), filters)
+	scanRecord, err := session.Get(ctx).Scan(ctx, tenant.Get(ctx), from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
 		request.Internal(ctx, w)

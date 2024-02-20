@@ -10,7 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/tenant"
 )
 
-func ReceiveEvent(w http.ResponseWriter, r *http.Request) {
+func ReceiveEvent(tenants *tenant.Tenants, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
 	w.Header().Set("Access-Control-Allow-Methods", http.MethodPost)
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
@@ -24,14 +24,16 @@ func ReceiveEvent(w http.ResponseWriter, r *http.Request) {
 	if ev == nil {
 		return
 	}
-	if !xg.Accept(ev.D) {
+	owner := tenants.Get(ev.D)
+	if owner == nil || !xg.Accept(ev.D) {
 		w.Header().Set("x-vince-dropped", "1")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
+
 	ev.Ip = remoteIP(r)
 	ev.Ua = r.UserAgent()
-	session.Get(ctx).Queue(ctx, tenant.Default, ev)
+	session.Get(ctx).Queue(ctx, owner.Id, ev)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }

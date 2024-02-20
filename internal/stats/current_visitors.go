@@ -23,7 +23,7 @@ func Realtime(w http.ResponseWriter, r *http.Request) {
 	now := time.Now().UTC()
 	firstTime := now.Add(-5 * time.Minute)
 	result, err := session.Get(ctx).Scan(ctx,
-		tenant.Default,
+		tenant.Get(ctx),
 		firstTime.UnixMilli(),
 		now.UnixMilli(),
 		&v1.Filters{

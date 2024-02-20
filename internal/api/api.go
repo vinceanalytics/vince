@@ -59,7 +59,7 @@ func New(ctx context.Context, o *v1.Config, tenants *tenant.Tenants) (*API, erro
 	}
 	base := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api/v1/") {
-			r.WithContext(tenants.Load(ctx, r.URL.Query()))
+			r = r.WithContext(tenants.Load(r.Context(), r.URL.Query()))
 		}
 		w.Header().Add(vary, acceptEncoding)
 		code := &statsWriter{ResponseWriter: w, compress: acceptsGzip(r)}
@@ -110,7 +110,7 @@ func New(ctx context.Context, o *v1.Config, tenants *tenant.Tenants) (*API, erro
 				SendEvent(w, r)
 				return
 			case "/api/event":
-				ReceiveEvent(w, r)
+				ReceiveEvent(tenants, w, r)
 				return
 			}
 		case http.MethodHead:
@@ -191,6 +191,6 @@ func SendEvent(w http.ResponseWriter, r *http.Request) {
 		request.Write(ctx, w, &v1.SendEventResponse{Dropped: true})
 		return
 	}
-	session.Get(ctx).Queue(ctx, tenant.Default, &req)
+	session.Get(ctx).Queue(ctx, tenant.Get(ctx), &req)
 	request.Write(ctx, w, &v1.SendEventResponse{Dropped: false})
 }
