@@ -76,6 +76,9 @@ func (t *Tenants) Load(ctx context.Context, q url.Values) context.Context {
 			}
 		}
 	}
+	if v == "" {
+		v = Default
+	}
 	return With(ctx, v)
 }
 
