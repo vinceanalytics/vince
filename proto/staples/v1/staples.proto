@@ -15,7 +15,6 @@ message Config {
   int64 granule_size = 5 [ (buf.validate.field).required = true ];
   // Path to the geoiip database used to set web analytics country attribute.
   string geoip_db_path = 8;
-  repeated string domains = 9;
   // How long data will be persisted, Older data is automatically deleted.
   google.protobuf.Duration retention_period = 10
       [ (buf.validate.field).required = true ];
@@ -23,6 +22,12 @@ message Config {
   bool auto_tls = 11;
   Acme acme = 12;
   string auth_token = 13;
+  repeated Tenant tenants = 14;
+}
+
+message Tenant {
+  string id = 1 [ (buf.validate.field).required = true ];
+  repeated Domain domains = 2 [ (buf.validate.field).required = true ];
 }
 
 message Acme {

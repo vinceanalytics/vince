@@ -16,6 +16,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
 	"github.com/vinceanalytics/vince/internal/stats"
+	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/internal/tracker"
 	"github.com/vinceanalytics/vince/version"
 )
@@ -29,8 +30,9 @@ const (
 )
 
 type API struct {
-	config *v1.Config
-	hand   http.Handler
+	config  *v1.Config
+	tenants *tenant.Tenants
+	hand    http.Handler
 }
 
 var trackerServer = http.FileServer(http.FS(tracker.JS))
@@ -50,9 +52,10 @@ func putZip(w *gzip.Writer) {
 	gzipPool.Put(w)
 }
 
-func New(ctx context.Context, o *v1.Config) (*API, error) {
+func New(ctx context.Context, o *v1.Config, tenants *tenant.Tenants) (*API, error) {
 	a := &API{
-		config: o,
+		config:  o,
+		tenants: tenants,
 	}
 	base := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add(vary, acceptEncoding)
@@ -74,11 +77,7 @@ func New(ctx context.Context, o *v1.Config) (*API, error) {
 				request.Write(r.Context(), w, &v1.Version{Version: version.VERSION})
 				return
 			case "/api/v1/domains":
-				o := make([]*v1.Domain, 0, len(a.config.Domains))
-				for _, n := range a.config.Domains {
-					o = append(o, &v1.Domain{Name: n})
-				}
-				request.Write(r.Context(), w, &v1.GetDomainResponse{Domains: o})
+				request.Write(r.Context(), w, &v1.GetDomainResponse{Domains: tenants.Domains(tenant.Default)})
 				return
 			case "/api/v1/stats/realtime/visitors":
 				stats.Realtime(w, r)

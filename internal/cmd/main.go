@@ -27,6 +27,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
 	"github.com/vinceanalytics/vince/internal/staples"
+	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -135,10 +136,10 @@ func App() *cli.Command {
 				RateLimit:       c.Float("rateLimit"),
 				GranuleSize:     c.Int("granuleSize"),
 				GeoipDbPath:     c.String("geoipDbPath"),
-				Domains:         c.StringSlice("domains"),
 				RetentionPeriod: durationpb.New(c.Duration("retentionPeriod")),
 				AutoTls:         c.Bool("autoTls"),
 			}
+			base = tenant.Config(base, c.StringSlice("domains"))
 			if base.AutoTls {
 				base.Acme = &v1.Acme{
 					Email:  c.String("acmeEmail"),
@@ -180,10 +181,12 @@ func App() *cli.Command {
 					return err
 				}
 			}
+
 			store, err := db.NewKV(base.Data)
 			if err != nil {
 				return err
 			}
+			tenants := tenant.NewTenants(base)
 
 			log.Info("Setup session")
 			alloc := memory.NewGoAllocator()
@@ -209,7 +212,7 @@ func App() *cli.Command {
 			}
 			ctx = geo.With(ctx, gip)
 			log.Info("Setup guard", "rate-limit", base.RateLimit)
-			gd := guard.New(base)
+			gd := guard.New(base, tenants)
 			ctx = guard.With(ctx, gd)
 
 			log.Info("Setup api")
@@ -218,7 +221,7 @@ func App() *cli.Command {
 				return err
 			}
 			ctx = request.With(ctx, validate)
-			a, err := api.New(ctx, base)
+			a, err := api.New(ctx, base, tenants)
 			if err != nil {
 				return err
 			}

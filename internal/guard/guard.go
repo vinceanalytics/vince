@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/internal/tenant"
 	"golang.org/x/time/rate"
 )
 
@@ -29,13 +30,13 @@ type BasicGuard struct {
 	mu      sync.Mutex
 }
 
-func New(c *v1.Config) *BasicGuard {
+func New(o *v1.Config, tenants *tenant.Tenants) *BasicGuard {
 	b := &BasicGuard{
 		domains: make(map[string]struct{}),
-		rate:    rate.NewLimiter(rate.Limit(c.RateLimit), 0),
+		rate:    rate.NewLimiter(rate.Limit(o.RateLimit), 0),
 	}
-	for _, d := range c.Domains {
-		b.domains[d] = struct{}{}
+	for _, d := range tenants.AllDomains() {
+		b.domains[d.Name] = struct{}{}
 	}
 	return b
 }
