@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/compute"
@@ -85,7 +86,26 @@ type Tree[T any] struct {
 	nodes   []*RecordNode
 	records []arrow.Record
 
-	cache *ristretto.Cache
+	cache   *ristretto.Cache
+	Metrics *Metrics
+}
+
+type Metrics struct {
+	TreeSize           *metrics.Histogram
+	NodeSize           *metrics.Histogram
+	CompactionDuration *metrics.Histogram
+	CompactionCounter  *metrics.Counter
+	NodesPerCompaction *metrics.Histogram
+}
+
+func NewMetrics(resource string) *Metrics {
+	return &Metrics{
+		TreeSize:           metrics.NewHistogram(fmt.Sprintf("vnc_lsm_tree_size{resource=%q}", resource)),
+		NodeSize:           metrics.NewHistogram(fmt.Sprintf("vnc_lsm_node_size{resource=%q}", resource)),
+		CompactionDuration: metrics.NewHistogram(fmt.Sprintf("vnc_lsm_compaction_duration_seconds{resource=%q}", resource)),
+		CompactionCounter:  metrics.NewCounter(fmt.Sprintf("vnc_lsm_compaction{resource=%q}", resource)),
+		NodesPerCompaction: metrics.NewHistogram(fmt.Sprintf("vnc_lsm_nodes_per_compaction{resource=%q}", resource)),
+	}
 }
 
 type Options struct {
@@ -165,7 +185,8 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 			slog.String("component", "lsm-tree"),
 			slog.String("resource", resource),
 		),
-		cache: cache,
+		cache:   cache,
+		Metrics: NewMetrics(resource),
 	}
 }
 
@@ -183,6 +204,8 @@ func (lsm *Tree[T]) Add(r arrow.Record) error {
 	lsm.size.Add(part.size)
 	lsm.tree.Prepend(part)
 	lsm.log.Debug("Added new part", "size", units.BytesSize(float64(part.size)))
+	lsm.Metrics.NodeSize.Update(float64(part.size))
+	lsm.Metrics.TreeSize.Update(float64(lsm.Size()))
 	return nil
 }
 
@@ -356,13 +379,15 @@ func (lsm *Tree[T]) Start(ctx context.Context) {
 //
 // Cold data is still scanned by lsm tree but no account is about about its size.
 func (lsm *Tree[T]) Size() uint64 {
-	return lsm.Size()
+	return lsm.size.Load()
 }
 
 func (lsm *Tree[T]) Compact(persist ...bool) {
 	lsm.log.Debug("Start compaction")
+	var oldSizes uint64
 	start := time.Now()
 	defer func() {
+		nodes := len(lsm.nodes)
 		for _, r := range lsm.nodes {
 			r.part.Release()
 		}
@@ -370,9 +395,13 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 		clear(lsm.records)
 		lsm.nodes = lsm.nodes[:0]
 		lsm.records = lsm.records[:0]
+		if oldSizes != 0 {
+			lsm.Metrics.CompactionDuration.UpdateDuration(time.Now())
+			lsm.Metrics.CompactionCounter.Inc()
+			lsm.Metrics.NodesPerCompaction.Update(float64(nodes))
+		}
 	}()
 
-	var oldSizes uint64
 	lsm.tree.Iterate(func(n *RecordNode) bool {
 		if n.part == nil || !n.part.CanIndex() {
 			return true
