@@ -17,7 +17,7 @@
 - You want to self host(own your data) painlessly
 - You want to save money (use very little resources) 
 - You only need to consume the API to access the stats
-- You manage different range of sites ( Scales very well from 1 to 100X sites)
+- You manage large number of sites
 
 ## Features
 
