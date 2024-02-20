@@ -10,6 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
+	"github.com/vinceanalytics/vince/internal/tenant"
 )
 
 func Aggregate(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,7 @@ func Aggregate(w http.ResponseWriter, r *http.Request) {
 	slices.Sort(metrics)
 	metricsToProjection(filters, metrics)
 	from, to := PeriodToRange(ctx, time.Now, req.Period, r.URL.Query())
-	resultRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
+	resultRecord, err := session.Get(ctx).Scan(ctx, tenant.Default, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
 		request.Internal(ctx, w)

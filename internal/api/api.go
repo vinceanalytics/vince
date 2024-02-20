@@ -188,6 +188,6 @@ func SendEvent(w http.ResponseWriter, r *http.Request) {
 		request.Write(ctx, w, &v1.SendEventResponse{Dropped: true})
 		return
 	}
-	session.Get(ctx).Queue(ctx, &req)
+	session.Get(ctx).Queue(ctx, tenant.Default, &req)
 	request.Write(ctx, w, &v1.SendEventResponse{Dropped: false})
 }

@@ -196,7 +196,7 @@ func App() *cli.Command {
 				return err
 			}
 			idx := staples.NewIndex()
-			sess := session.New(alloc, "staples", store, idx, pidx,
+			sess := session.New(alloc, tenants, store, idx, pidx,
 				lsm.WithTTL(
 					base.RetentionPeriod.AsDuration(),
 				),

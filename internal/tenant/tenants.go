@@ -20,12 +20,14 @@ func Config(o *v1.Config, domains []string) *v1.Config {
 type Tenants struct {
 	domains map[string]*v1.Tenant
 	id      map[string]*v1.Tenant
+	all     []*v1.Tenant
 }
 
 func NewTenants(o *v1.Config) *Tenants {
 	t := &Tenants{
 		domains: make(map[string]*v1.Tenant),
 		id:      make(map[string]*v1.Tenant),
+		all:     o.Tenants,
 	}
 	for _, v := range o.Tenants {
 		t.id[v.Id] = v
@@ -56,4 +58,8 @@ func (t *Tenants) AllDomains() (o []*v1.Domain) {
 		o = append(o, v.Domains...)
 	}
 	return
+}
+
+func (t *Tenants) All() []*v1.Tenant {
+	return t.all
 }

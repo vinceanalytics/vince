@@ -15,6 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
+	"github.com/vinceanalytics/vince/internal/tenant"
 )
 
 func BreakDown(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +50,7 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 	slices.Sort(req.Property)
 	selectedColumns := metricsToProjection(filter, req.Metrics, req.Property...)
 	from, to := PeriodToRange(ctx, time.Now, period, r.URL.Query())
-	scannedRecord, err := session.Get(ctx).Scan(ctx, from.UnixMilli(), to.UnixMilli(), filter)
+	scannedRecord, err := session.Get(ctx).Scan(ctx, tenant.Default, from.UnixMilli(), to.UnixMilli(), filter)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
 		request.Internal(ctx, w)

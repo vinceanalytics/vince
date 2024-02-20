@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"sync"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/lsm"
 	"github.com/vinceanalytics/vince/internal/staples"
+	"github.com/vinceanalytics/vince/internal/tenant"
 )
 
 const (
@@ -23,19 +25,45 @@ const (
 	DefaultFlushInterval = time.Minute
 )
 
-type Session struct {
-	build  *staples.Arrow[staples.Event]
-	events chan *v1.Event
-	mu     sync.Mutex
-	cache  *ristretto.Cache
+var ErrResourceNotFound = errors.New("session: Resource not found")
 
-	tree *lsm.Tree[staples.Event]
-	log  *slog.Logger
+type Tenants struct {
+	cache    *ristretto.Cache
+	sessions map[string]*Session
 }
 
-func New(mem memory.Allocator, resource string, storage db.Storage,
+func (t *Tenants) Start(ctx context.Context) {
+	for _, s := range t.sessions {
+		s.Start(ctx)
+	}
+}
+
+func (t *Tenants) Queue(ctx context.Context, resource string, req *v1.Event) {
+	r, ok := t.sessions[resource]
+	if !ok {
+		return
+	}
+	r.Queue(ctx, req)
+}
+
+func (t *Tenants) Scan(ctx context.Context, resource string, start int64, end int64, fs *v1.Filters) (arrow.Record, error) {
+	r, ok := t.sessions[resource]
+	if !ok {
+		return nil, ErrResourceNotFound
+	}
+	return r.Scan(ctx, start, end, fs)
+}
+
+func (t *Tenants) Close() {
+	for _, s := range t.sessions {
+		s.Close()
+	}
+}
+
+func New(mem memory.Allocator, tenants *tenant.Tenants, storage db.Storage,
 	indexer index.Index,
-	primary index.Primary, opts ...lsm.Option) *Session {
+	primary index.Primary, opts ...lsm.Option) *Tenants {
+	o := &Tenants{sessions: map[string]*Session{}}
 	cache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1e7,
 		MaxCost:     100 << 20, // 100MiB
@@ -52,6 +80,28 @@ func New(mem memory.Allocator, resource string, storage db.Storage,
 	if err != nil {
 		logger.Fail("Failed initializing cache", "err", err)
 	}
+	for _, v := range tenants.All() {
+		o.sessions[v.Id] = newSession(
+			mem, v.Id, cache, storage, indexer, primary, opts...,
+		)
+	}
+	return o
+}
+
+type Session struct {
+	build  *staples.Arrow[staples.Event]
+	events chan *v1.Event
+	mu     sync.Mutex
+	cache  *ristretto.Cache
+
+	tree *lsm.Tree[staples.Event]
+	log  *slog.Logger
+}
+
+func newSession(mem memory.Allocator, resource string, cache *ristretto.Cache, storage db.Storage,
+	indexer index.Index,
+	primary index.Primary, opts ...lsm.Option) *Session {
+
 	return &Session{
 		build:  staples.NewArrow[staples.Event](mem),
 		cache:  cache,
@@ -154,10 +204,10 @@ func (s *Session) doFlush(ctx context.Context) {
 
 type sessionKey struct{}
 
-func With(ctx context.Context, s *Session) context.Context {
+func With(ctx context.Context, s *Tenants) context.Context {
 	return context.WithValue(ctx, sessionKey{}, s)
 }
 
-func Get(ctx context.Context) *Session {
-	return ctx.Value(sessionKey{}).(*Session)
+func Get(ctx context.Context) *Tenants {
+	return ctx.Value(sessionKey{}).(*Tenants)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
+	"github.com/vinceanalytics/vince/internal/tenant"
 )
 
 func Realtime(w http.ResponseWriter, r *http.Request) {
@@ -22,6 +23,7 @@ func Realtime(w http.ResponseWriter, r *http.Request) {
 	now := time.Now().UTC()
 	firstTime := now.Add(-5 * time.Minute)
 	result, err := session.Get(ctx).Scan(ctx,
+		tenant.Default,
 		firstTime.UnixMilli(),
 		now.UnixMilli(),
 		&v1.Filters{

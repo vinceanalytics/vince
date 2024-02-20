@@ -7,6 +7,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
+	"github.com/vinceanalytics/vince/internal/tenant"
 )
 
 func ReceiveEvent(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,7 @@ func ReceiveEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	ev.Ip = remoteIP(r)
 	ev.Ua = r.UserAgent()
-	session.Get(ctx).Queue(ctx, ev)
+	session.Get(ctx).Queue(ctx, tenant.Default, ev)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
