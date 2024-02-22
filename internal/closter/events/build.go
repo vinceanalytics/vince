@@ -46,7 +46,7 @@ func New(mem memory.Allocator) *Builder {
 			number: f.Number(),
 			arrow: arrow.Field{
 				Name:     string(f.Name()),
-				Nullable: f.HasOptionalKeyword(),
+				Nullable: f.HasOptionalKeyword() || f.Kind() == protoreflect.StringKind,
 				Type:     kinds[f.Kind()],
 			},
 		})
