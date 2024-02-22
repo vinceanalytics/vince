@@ -166,7 +166,7 @@ func metricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) []
 
 	for k := range m {
 		f.Projection = append(f.Projection, k)
-		cols = append(cols, filters.ToColumn(k))
+		cols = append(cols, k.String())
 	}
 	sort.Strings(cols)
 	return cols

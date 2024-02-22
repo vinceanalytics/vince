@@ -183,7 +183,11 @@ func ParseInterval(ctx context.Context, query url.Values) v1.Interval {
 }
 
 func ParseFilters(ctx context.Context, query url.Values) (o []*v1.Filter) {
-	for _, f := range strings.Split(query.Get("filters"), ",") {
+	fs := query.Get("filters")
+	if fs == "" {
+		return
+	}
+	for _, f := range strings.Split(fs, ",") {
 		key, value, op, ok := sep(f)
 		if !ok {
 			logger.Get(ctx).Error("Skipping unexpected filter ", "filter", f)

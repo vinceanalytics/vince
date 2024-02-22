@@ -5,14 +5,6 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
 )
 
-func Column(p v1.Property) string {
-	return p.String()
-}
-
-func ToColumn(p v1.Filters_Projection) string {
-	return p.String()
-}
-
 func Projection(p v1.Property) v1.Filters_Projection {
 	return v1.Filters_Projection(v1.Filters_Projection_value[p.String()])
 }
@@ -38,7 +30,7 @@ func CompileFilters(f *v1.Filters) ([]*CompiledFilter, error) {
 
 func compileFilter(f *v1.Filter) (*CompiledFilter, error) {
 	o := &CompiledFilter{
-		Column: Column(f.Property),
+		Column: f.Property.String(),
 		Op:     f.Op,
 	}
 	o.Value = []byte(f.Value)
