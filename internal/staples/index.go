@@ -7,7 +7,6 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
-	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/filters"
 	"github.com/vinceanalytics/vince/internal/index"
 	"github.com/vinceanalytics/vince/internal/logger"
@@ -41,8 +40,18 @@ func (idx *Index) Index(r arrow.Record) (index.Full, error) {
 		o[name] = n
 		cIdx.Reset()
 	}
-	lo, hi := db.Timestamps(r)
+	lo, hi := Timestamps(r)
 	return NewFullIdx(o, uint64(lo), uint64(hi)), nil
+}
+
+func Timestamps(r arrow.Record) (lo, hi int64) {
+	a := r.Column(0).(*array.Int64).Int64Values()
+	if len(a) > 0 {
+		// record is sorted by timestamp
+		lo = a[0]
+		hi = a[len(a)-1]
+	}
+	return
 }
 
 type FullIndex struct {
