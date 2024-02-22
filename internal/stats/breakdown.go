@@ -11,7 +11,6 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/compute"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
-	"github.com/vinceanalytics/vince/internal/filters"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
@@ -74,7 +73,7 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 	result := make(map[string]map[string]map[string]float64)
 	for _, prop := range req.Property {
 		keys := make(map[string]map[string]float64)
-		for key, bitmap := range hashProp(mapping[filters.Column(prop)]) {
+		for key, bitmap := range hashProp(mapping[prop.String()]) {
 			b.AppendValues(bitmap.ToArray(), nil)
 			idx := b.NewUint32Array()
 
