@@ -22,7 +22,8 @@ import (
 	"github.com/docker/go-units"
 	"github.com/oklog/ulid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
-	"github.com/vinceanalytics/vince/internal/camel"
+	"github.com/vinceanalytics/vince/internal/closter/events"
+	"github.com/vinceanalytics/vince/internal/columns"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/filters"
 	"github.com/vinceanalytics/vince/internal/index"
@@ -67,7 +68,7 @@ func NewPart(r arrow.Record, idx index.Full) *RecordPart {
 
 type RecordNode = Node[index.Part]
 
-type Tree[T any] struct {
+type Tree struct {
 	tree   *RecordNode
 	size   atomic.Uint64
 	index  index.Index
@@ -138,8 +139,11 @@ func WithTTL(ttl time.Duration) Option {
 	}
 }
 
-func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, indexer index.Index, primary index.Primary, opts ...Option) *Tree[T] {
-	schema := staples.Schema[T]()
+func NewTree(mem memory.Allocator, resource string, storage db.Storage, indexer index.Index, primary index.Primary, opts ...Option) *Tree {
+	eb := events.New(mem)
+	defer eb.Release()
+	schema := eb.NewRecord().Schema()
+
 	m := staples.NewMerger(mem, schema)
 	mapping := make(map[string]int)
 	for i, f := range schema.Fields() {
@@ -168,7 +172,7 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 	if err != nil {
 		logger.Fail("Failed creating parts cache", "err", err)
 	}
-	return &Tree[T]{
+	return &Tree{
 		tree:     &RecordNode{},
 		index:    indexer,
 		mem:      mem,
@@ -190,7 +194,7 @@ func NewTree[T any](mem memory.Allocator, resource string, storage db.Storage, i
 	}
 }
 
-func (lsm *Tree[T]) Add(r arrow.Record) error {
+func (lsm *Tree) Add(r arrow.Record) error {
 	if r.NumRows() == 0 {
 		return nil
 	}
@@ -209,7 +213,7 @@ func (lsm *Tree[T]) Add(r arrow.Record) error {
 	return nil
 }
 
-func (lsm *Tree[T]) findNode(node *RecordNode) (list *RecordNode) {
+func (lsm *Tree) findNode(node *RecordNode) (list *RecordNode) {
 	lsm.tree.Iterate(func(n *RecordNode) bool {
 		if n.next.Load() == node {
 			list = n
@@ -220,7 +224,7 @@ func (lsm *Tree[T]) findNode(node *RecordNode) (list *RecordNode) {
 	return
 }
 
-func (lsm *Tree[T]) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
+func (lsm *Tree) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
 	ctx = compute.WithAllocator(ctx, lsm.mem)
 	compiled, err := filters.CompileFilters(fs)
 	if err != nil {
@@ -232,7 +236,7 @@ func (lsm *Tree[T]) Scan(ctx context.Context, start, end int64, fs *v1.Filters) 
 	}
 	project := make([]int, 0, len(fs.Projection))
 	for _, name := range fs.Projection {
-		col, ok := lsm.mapping[camel.Case(name.String())]
+		col, ok := lsm.mapping[name.String()]
 		if !ok {
 			return nil, fmt.Errorf("column %s does not exist", name)
 		}
@@ -263,7 +267,7 @@ func (lsm *Tree[T]) Scan(ctx context.Context, start, end int64, fs *v1.Filters) 
 	return tr.NewRecord(), nil
 }
 
-func (lsm *Tree[T]) ScanCold(ctx context.Context, start, end int64,
+func (lsm *Tree) ScanCold(ctx context.Context, start, end int64,
 	compiled []*filters.CompiledFilter, columns []int, fn func(r arrow.Record, ts *roaring.Bitmap)) {
 	granules := lsm.primary.FindGranules(lsm.resource, start, end)
 	for _, granule := range granules {
@@ -274,7 +278,7 @@ func (lsm *Tree[T]) ScanCold(ctx context.Context, start, end int64,
 	}
 }
 
-func (lsm *Tree[T]) loadPart(ctx context.Context, id string, columns []int) index.Part {
+func (lsm *Tree) loadPart(ctx context.Context, id string, columns []int) index.Part {
 	idx := lsm.loadIndex(ctx, id)
 	if idx == nil {
 		return nil
@@ -289,7 +293,7 @@ func (lsm *Tree[T]) loadPart(ctx context.Context, id string, columns []int) inde
 	}
 }
 
-func (lsm *Tree[T]) loadIndex(ctx context.Context, id string) *index.FileIndex {
+func (lsm *Tree) loadIndex(ctx context.Context, id string) *index.FileIndex {
 	h := new(xxhash.Digest)
 	h.WriteString(id)
 	key := h.Sum64()
@@ -306,7 +310,7 @@ func (lsm *Tree[T]) loadIndex(ctx context.Context, id string) *index.FileIndex {
 	return part
 }
 
-func (lsm *Tree[T]) loadRecord(ctx context.Context, id string, numRows int64, columns []int) arrow.Record {
+func (lsm *Tree) loadRecord(ctx context.Context, id string, numRows int64, columns []int) arrow.Record {
 	h := new(xxhash.Digest)
 	h.WriteString(id)
 	var a [8]byte
@@ -329,12 +333,12 @@ func (lsm *Tree[T]) loadRecord(ctx context.Context, id string, numRows int64, co
 	return part
 }
 
-func (lsm *Tree[T]) processPart(part index.Part, start, end int64,
+func (lsm *Tree) processPart(part index.Part, start, end int64,
 	compiled []*filters.CompiledFilter, fn func(r arrow.Record, ts *roaring.Bitmap)) {
 	r := part.Record()
 	r.Retain()
 	defer r.Release()
-	ts := ScanTimestamp(r, lsm.mapping[v1.Filters_Timestamp.String()], start, end)
+	ts := ScanTimestamp(r, lsm.mapping[columns.Timestamp], start, end)
 	part.Match(ts, compiled)
 	if ts.IsEmpty() {
 		return
@@ -353,7 +357,7 @@ func ScanTimestamp(r arrow.Record, timestampColumn int, start, end int64) *roari
 	return b
 }
 
-func (lsm *Tree[T]) Start(ctx context.Context) {
+func (lsm *Tree) Start(ctx context.Context) {
 	interval := 10 * time.Minute
 	lsm.log.Info("Start compaction loop", "interval", interval.String(),
 		"compactSize", units.BytesSize(float64(lsm.opts.compactSize)))
@@ -378,11 +382,11 @@ func (lsm *Tree[T]) Start(ctx context.Context) {
 // accounts for active data.
 //
 // Cold data is still scanned by lsm tree but no account is about about its size.
-func (lsm *Tree[T]) Size() uint64 {
+func (lsm *Tree) Size() uint64 {
 	return lsm.size.Load()
 }
 
-func (lsm *Tree[T]) Compact(persist ...bool) {
+func (lsm *Tree) Compact(persist ...bool) {
 	lsm.log.Debug("Start compaction")
 	var oldSizes uint64
 	start := time.Now()
@@ -436,7 +440,7 @@ func (lsm *Tree[T]) Compact(persist ...bool) {
 	lsm.log.Debug("Completed compaction", "elapsed", time.Since(start).String())
 }
 
-func (lsm *Tree[T]) persist(r arrow.Record) {
+func (lsm *Tree) persist(r arrow.Record) {
 	lsm.log.Debug("Saving compacted record to permanent storage")
 	idx, err := lsm.index.Index(r)
 	if err != nil {

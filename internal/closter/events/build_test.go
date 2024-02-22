@@ -27,11 +27,3 @@ func TestBuild(t *testing.T) {
 	want, _ := os.ReadFile("testdata/record.json")
 	require.Equal(t, string(want), string(got))
 }
-
-var True = ptr(true)
-
-var False = ptr(false)
-
-func ptr[T any](a T) *T {
-	return &a
-}

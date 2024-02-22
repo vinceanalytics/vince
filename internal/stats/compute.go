@@ -137,29 +137,29 @@ func (c *Compute) PageView() float64 {
 
 func metricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) []string {
 	m := make(map[v1.Filters_Projection]struct{})
-	m[v1.Filters_Timestamp] = struct{}{}
+	m[v1.Filters_timestamp] = struct{}{}
 	for _, p := range props {
 		m[filters.Projection(p)] = struct{}{}
 	}
 	for _, v := range me {
 		switch v {
 		case v1.Metric_pageviews:
-			m[v1.Filters_View] = struct{}{}
+			m[v1.Filters_view] = struct{}{}
 		case v1.Metric_visitors:
-			m[v1.Filters_ID] = struct{}{}
+			m[v1.Filters_id] = struct{}{}
 		case v1.Metric_visits:
-			m[v1.Filters_Session] = struct{}{}
+			m[v1.Filters_session] = struct{}{}
 		case v1.Metric_bounce_rate:
-			m[v1.Filters_Session] = struct{}{}
-			m[v1.Filters_Bounce] = struct{}{}
+			m[v1.Filters_session] = struct{}{}
+			m[v1.Filters_bounce] = struct{}{}
 		case v1.Metric_visit_duration:
-			m[v1.Filters_Session] = struct{}{}
-			m[v1.Filters_Duration] = struct{}{}
+			m[v1.Filters_session] = struct{}{}
+			m[v1.Filters_duration] = struct{}{}
 		case v1.Metric_views_per_visit:
-			m[v1.Filters_View] = struct{}{}
-			m[v1.Filters_Duration] = struct{}{}
+			m[v1.Filters_view] = struct{}{}
+			m[v1.Filters_duration] = struct{}{}
 		case v1.Metric_events:
-			m[v1.Filters_Event] = struct{}{}
+			m[v1.Filters_event] = struct{}{}
 		}
 	}
 	cols := make([]string, 0, len(m))

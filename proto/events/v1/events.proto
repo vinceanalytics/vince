@@ -20,6 +20,7 @@ message Data {
   string entry_page = 9;
   string event = 7;
   string exit_page = 10;
+  string host = 27;
   string os = 21;
   string os_version = 22;
   string page = 8;

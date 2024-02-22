@@ -3,42 +3,18 @@ package filters
 import (
 	"github.com/blevesearch/vellum/regexp"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
-	"github.com/vinceanalytics/vince/internal/camel"
 )
 
-var propToProjection = map[v1.Property]v1.Filters_Projection{
-	v1.Property_event:           v1.Filters_Event,
-	v1.Property_page:            v1.Filters_Path,
-	v1.Property_entry_page:      v1.Filters_EntryPage,
-	v1.Property_exit_page:       v1.Filters_EntryPage,
-	v1.Property_source:          v1.Filters_ReferrerSource,
-	v1.Property_referrer:        v1.Filters_Referrer,
-	v1.Property_utm_source:      v1.Filters_UtmSource,
-	v1.Property_utm_medium:      v1.Filters_UtmMedium,
-	v1.Property_utm_campaign:    v1.Filters_UtmCampaign,
-	v1.Property_utm_content:     v1.Filters_UtmContent,
-	v1.Property_utm_term:        v1.Filters_UtmTerm,
-	v1.Property_device:          v1.Filters_Screen,
-	v1.Property_browser:         v1.Filters_Browser,
-	v1.Property_browser_version: v1.Filters_BrowserVersion,
-	v1.Property_os:              v1.Filters_Os,
-	v1.Property_os_version:      v1.Filters_OsVersion,
-	v1.Property_country:         v1.Filters_Country,
-	v1.Property_region:          v1.Filters_Region,
-	v1.Property_domain:          v1.Filters_Domain,
-	v1.Property_city:            v1.Filters_City,
-}
-
 func Column(p v1.Property) string {
-	return camel.Case(propToProjection[p].String())
+	return p.String()
 }
 
 func ToColumn(p v1.Filters_Projection) string {
-	return camel.Case(p.String())
+	return p.String()
 }
 
 func Projection(p v1.Property) v1.Filters_Projection {
-	return propToProjection[p]
+	return v1.Filters_Projection(v1.Filters_Projection_value[p.String()])
 }
 
 type CompiledFilter struct {

@@ -28,7 +28,7 @@ func Realtime(w http.ResponseWriter, r *http.Request) {
 		now.UnixMilli(),
 		&v1.Filters{
 			Projection: []v1.Filters_Projection{
-				v1.Filters_ID,
+				v1.Filters_id,
 			},
 			List: []*v1.Filter{
 				{Property: v1.Property_domain, Op: v1.Filter_equal, Value: req.SiteId},

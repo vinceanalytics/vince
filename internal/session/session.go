@@ -10,13 +10,15 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/dgraph-io/ristretto"
+	eventsv1 "github.com/vinceanalytics/vince/gen/go/events/v1"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/internal/closter/events"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/index"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/lsm"
-	"github.com/vinceanalytics/vince/internal/staples"
 	"github.com/vinceanalytics/vince/internal/tenant"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -69,11 +71,13 @@ func New(mem memory.Allocator, tenants *tenant.Tenants, storage db.Storage,
 		MaxCost:     100 << 20, // 100MiB
 		BufferItems: 64,
 		OnEvict: func(item *ristretto.Item) {
-			item.Value.(*staples.Event).Release()
+			e := item.Value.(*eventsv1.Data)
+			events.PutOne(e)
 			item.Value = nil
 		},
 		OnReject: func(item *ristretto.Item) {
-			item.Value.(*staples.Event).Release()
+			e := item.Value.(*eventsv1.Data)
+			events.PutOne(e)
 			item.Value = nil
 		},
 	})
@@ -89,13 +93,13 @@ func New(mem memory.Allocator, tenants *tenant.Tenants, storage db.Storage,
 }
 
 type Session struct {
-	build  *staples.Arrow[staples.Event]
+	list   *eventsv1.List
+	build  *events.Builder
 	events chan *v1.Event
 	mu     sync.Mutex
 	cache  *ristretto.Cache
-
-	tree *lsm.Tree[staples.Event]
-	log  *slog.Logger
+	tree   *lsm.Tree
+	log    *slog.Logger
 }
 
 func newSession(mem memory.Allocator, resource string, cache *ristretto.Cache, storage db.Storage,
@@ -103,10 +107,11 @@ func newSession(mem memory.Allocator, resource string, cache *ristretto.Cache, s
 	primary index.Primary, opts ...lsm.Option) *Session {
 
 	return &Session{
-		build:  staples.NewArrow[staples.Event](mem),
+		list:   events.List(),
+		build:  events.New(mem),
 		cache:  cache,
 		events: make(chan *v1.Event, 4<<10),
-		tree: lsm.NewTree[staples.Event](
+		tree: lsm.NewTree(
 			mem, resource, storage, indexer, primary, opts...,
 		),
 		log: slog.Default().With("component", "session"),
@@ -133,25 +138,25 @@ func (s *Session) doProcess(ctx context.Context) {
 }
 
 func (s *Session) process(ctx context.Context, req *v1.Event) {
-	e := staples.Parse(ctx, req)
+	e := events.Parse(ctx, req)
 	if e == nil {
 		return
 	}
-	e.Hit()
-	if o, ok := s.cache.Get(e.ID); ok {
-		cached := o.(*staples.Event)
-		defer e.Release()
+	events.Hit(e)
+	if o, ok := s.cache.Get(e.Id); ok {
+		cached := o.(*eventsv1.Data)
+		defer events.PutOne(e)
 		s.mu.Lock()
 		// cached can be accessed concurrently. Protect it together with build.
-		cached.Update(e)
-		s.build.Append(e)
+		events.Update(cached, e)
+		s.list.Items = append(s.list.Items, e)
 		s.mu.Unlock()
 		return
 	}
 	s.mu.Lock()
-	s.build.Append(e)
+	s.list.Items = append(s.list.Items, e)
 	s.mu.Unlock()
-	s.cache.SetWithTTL(e.ID, e, int64(e.Size()), DefaultSession)
+	s.cache.SetWithTTL(e.Id, e, int64(proto.Size(e)), DefaultSession)
 }
 
 func (s *Session) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
@@ -164,12 +169,15 @@ func (s *Session) Close() {
 
 func (s *Session) Flush() {
 	s.mu.Lock()
-	r := s.build.NewRecord()
+	ls := s.list
+	s.list = events.List()
 	s.mu.Unlock()
-	if r.NumRows() == 0 {
-		r.Release()
+	defer events.Put(ls)
+	if len(ls.Items) == 0 {
 		return
 	}
+	r := s.build.Write(ls)
+	defer r.Release()
 	s.log.Debug("Flushing sessions", "rows", r.NumRows())
 	err := s.tree.Add(r)
 	if err != nil {

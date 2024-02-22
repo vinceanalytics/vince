@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
@@ -36,6 +37,9 @@ func New(mem memory.Allocator) *Builder {
 			},
 		})
 	}
+	sort.Slice(fields, func(i, j int) bool {
+		return fields[i].number < fields[j].number
+	})
 	af := make([]arrow.Field, 0, len(fields))
 	for i := range fields {
 		af = append(af, fields[i].arrow)
@@ -56,15 +60,13 @@ func (b *Builder) Release() {
 	b.r.Release()
 }
 
-func (b *Builder) Write(list *v1.List) {
+func (b *Builder) Write(list *v1.List) arrow.Record {
 	ls := list.GetItems()
-	if len(ls) == 0 {
-		return
-	}
 	b.r.Reserve(len(ls))
 	for _, e := range ls {
 		b.writeData(e)
 	}
+	return b.NewRecord()
 }
 
 func (b *Builder) writeData(data *v1.Data) {

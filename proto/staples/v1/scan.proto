@@ -28,34 +28,35 @@ message Filters {
   repeated Projection projection = 2;
 
   enum Projection {
-    Timestamp = 0;
-    ID = 1;
-    Bounce = 2;
-    Session = 3;
-    Duration = 4;
-    View = 26;
+    unknown = 0;
+    timestamp = 1;
+    id = 2;
+    bounce = 3;
+    session = 4;
+    view = 5;
+    duration = 6;
 
-    Browser = 5;
-    BrowserVersion = 6;
-    City = 7;
-    Country = 8;
-    Domain = 9;
-    EntryPage = 10;
-    ExitPage = 11;
-    Host = 12;
-    Event = 13;
-    Os = 14;
-    OsVersion = 15;
-    Path = 16;
-    Referrer = 17;
-    ReferrerSource = 18;
-    Region = 19;
-    Screen = 20;
-    UtmCampaign = 21;
-    UtmContent = 22;
-    UtmMedium = 23;
-    UtmSource = 24;
-    UtmTerm = 25;
+    browser = 19;
+    browser_version = 20;
+    city = 26;
+    country = 23;
+    device = 18;
+    domain = 25;
+    entry_page = 9;
+    event = 7;
+    exit_page = 10;
+    host = 27;
+    os = 21;
+    os_version = 22;
+    page = 8;
+    referrer = 12;
+    region = 24;
+    source = 11;
+    utm_campaign = 15;
+    utm_content = 16;
+    utm_medium = 14;
+    utm_source = 13;
+    utm_term = 17;
   }
 }
 

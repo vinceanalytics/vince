@@ -8,6 +8,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	"github.com/vinceanalytics/vince/internal/columns"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
@@ -55,7 +56,7 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < int(scanRecord.NumCols()); i++ {
 		mapping[scanRecord.ColumnName(i)] = i
 	}
-	tsKey := mapping[v1.Filters_Timestamp.String()]
+	tsKey := mapping[columns.Timestamp]
 	ts := scanRecord.Column(tsKey).(*array.Int64).Int64Values()
 	var buckets []Bucket
 	xc := &Compute{mapping: make(map[string]arrow.Array)}
