@@ -11,6 +11,20 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
+var Mapping, Schema = mapping()
+
+func mapping() (map[string]int, *arrow.Schema) {
+	b := New(memory.NewGoAllocator())
+	defer b.Release()
+	r := b.NewRecord()
+	defer r.Release()
+	o := make(map[string]int)
+	for i := 0; i < int(r.NumCols()); i++ {
+		o[r.ColumnName(i)] = i
+	}
+	return o, r.Schema()
+}
+
 type Builder struct {
 	r      *array.RecordBuilder
 	fields map[protoreflect.FieldNumber]buildFunc
