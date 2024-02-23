@@ -145,7 +145,6 @@ func (s *Session) process(ctx context.Context, req *v1.Event) {
 	events.Hit(e)
 	if o, ok := s.cache.Get(e.Id); ok {
 		cached := o.(*eventsv1.Data)
-		defer events.PutOne(e)
 		s.mu.Lock()
 		// cached can be accessed concurrently. Protect it together with build.
 		events.Update(cached, e)
@@ -156,7 +155,7 @@ func (s *Session) process(ctx context.Context, req *v1.Event) {
 	s.mu.Lock()
 	s.list.Items = append(s.list.Items, e)
 	s.mu.Unlock()
-	s.cache.SetWithTTL(e.Id, e, int64(proto.Size(e)), DefaultSession)
+	s.cache.SetWithTTL(e.Id, events.Clone(e), int64(proto.Size(e)), DefaultSession)
 }
 
 func (s *Session) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
