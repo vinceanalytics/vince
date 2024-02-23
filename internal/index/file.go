@@ -13,7 +13,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/klauspost/compress/zstd"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/buffers"
 	"github.com/vinceanalytics/vince/internal/filters"
 	"github.com/vinceanalytics/vince/internal/logger"

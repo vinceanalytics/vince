@@ -18,7 +18,7 @@ import (
 	"github.com/apache/arrow/go/v15/parquet/pqarrow"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/oklog/ulid/v2"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/buffers"
 	"github.com/vinceanalytics/vince/internal/index"
 )

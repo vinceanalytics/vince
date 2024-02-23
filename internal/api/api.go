@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/buffers"
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/logger"

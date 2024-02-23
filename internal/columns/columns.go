@@ -1,7 +1,7 @@
 package columns
 
 import (
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
 var Event = v1.Filters_event.String()

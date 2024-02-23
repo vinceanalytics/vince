@@ -21,7 +21,7 @@ import (
 	"github.com/dgraph-io/ristretto"
 	"github.com/docker/go-units"
 	"github.com/oklog/ulid/v2"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/closter/events"
 	"github.com/vinceanalytics/vince/internal/columns"
 	"github.com/vinceanalytics/vince/internal/db"

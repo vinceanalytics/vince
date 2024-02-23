@@ -6,7 +6,7 @@ import (
 
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/stretchr/testify/require"
-	v1 "github.com/vinceanalytics/vince/gen/go/events/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
 func TestBuild(t *testing.T) {

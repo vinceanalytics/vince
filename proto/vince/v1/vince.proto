@@ -4,6 +4,41 @@ package v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
+message Command {
+  message Request {
+    oneof params {
+      Join join = 1;
+      Query.Request query = 2;
+    }
+  }
+}
+
+message Join {
+  string id = 1;
+  string address = 2;
+  bool voter = 3;
+}
+
+message Query {
+  message Request {
+    oneof params {
+      Realtime.Request realtime = 1;
+      Aggregate.Request aggregate = 2;
+      Timeseries.Request timeseries = 3;
+      BreakDown.Request breakdown = 4;
+    }
+  }
+
+  message Response {
+    oneof results {
+      Realtime.Response realtime = 1;
+      Aggregate.Response aggregate = 2;
+      Timeseries.Response timeseries = 3;
+      BreakDown.Response breakdown = 4;
+    }
+  }
+}
+
 message Realtime {
   message Request {
     string site_id = 1 [
@@ -25,6 +60,7 @@ message Aggregate {
     bool compare = 4;
     repeated Filter filters = 5;
   }
+  message Response {}
 }
 
 message Timeseries {
@@ -39,14 +75,7 @@ message Timeseries {
     Interval interval = 4;
     repeated Filter filters = 5;
   }
-}
-
-enum Interval {
-  date = 0;
-  minute = 1;
-  hour = 2;
-  week = 3;
-  month = 4;
+  message Response {}
 }
 
 message BreakDown {
@@ -60,6 +89,15 @@ message BreakDown {
     repeated Metric metrics = 4;
     repeated Filter filters = 6;
   }
+  message Response {}
+}
+
+enum Interval {
+  date = 0;
+  minute = 1;
+  hour = 2;
+  week = 3;
+  month = 4;
 }
 
 enum Metric {
@@ -117,6 +155,44 @@ enum Property {
   city = 20;
 }
 
+message Filters {
+  repeated Filter list = 1;
+  // columns returned
+  repeated Projection projection = 2;
+
+  enum Projection {
+    unknown = 0;
+    timestamp = 1;
+    id = 2;
+    bounce = 3;
+    session = 4;
+    view = 5;
+    duration = 6;
+
+    browser = 19;
+    browser_version = 20;
+    city = 26;
+    country = 23;
+    device = 18;
+    domain = 25;
+    entry_page = 9;
+    event = 7;
+    exit_page = 10;
+    host = 27;
+    os = 21;
+    os_version = 22;
+    page = 8;
+    referrer = 12;
+    region = 24;
+    source = 11;
+    utm_campaign = 15;
+    utm_content = 16;
+    utm_medium = 14;
+    utm_source = 13;
+    utm_term = 17;
+  }
+}
+
 message Filter {
   Property property = 1;
   OP op = 2;
@@ -128,4 +204,30 @@ message Filter {
     re_equal = 2;
     re_not_equal = 3;
   }
+}
+
+message Event {
+  /// EventName
+  string n = 1 [ (buf.validate.field).required = true ];
+  string u = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.uri = true
+  ];
+  // Domain
+  string d = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.hostname = true
+  ];
+  // Screen width
+  int32 w = 4;
+  // Hash mode
+  bool h = 5;
+  string ip = 6;
+  // user agent
+  string ua = 7;
+
+  // Referrer
+  string r = 8;
+
+  google.protobuf.Timestamp timestamp = 9;
 }

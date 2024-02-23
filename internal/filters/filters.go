@@ -2,7 +2,7 @@ package filters
 
 import (
 	"github.com/blevesearch/vellum/regexp"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
 func Projection(p v1.Property) v1.Filters_Projection {

@@ -7,7 +7,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/memory"
-	v1 "github.com/vinceanalytics/vince/gen/go/events/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 

@@ -15,7 +15,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/geo"

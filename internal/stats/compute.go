@@ -10,7 +10,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/bitutil"
 	"github.com/apache/arrow/go/v15/arrow/compute"
 	"github.com/apache/arrow/go/v15/arrow/math"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/columns"
 	"github.com/vinceanalytics/vince/internal/filters"
 	"github.com/vinceanalytics/vince/internal/logger"

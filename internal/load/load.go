@@ -15,7 +15,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/urfave/cli/v3"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/ref"
 	"github.com/vinceanalytics/vince/ua"
 	"google.golang.org/protobuf/encoding/protojson"

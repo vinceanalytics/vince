@@ -7,7 +7,7 @@ import (
 	"sort"
 	"sync"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/index"
 	"google.golang.org/protobuf/proto"

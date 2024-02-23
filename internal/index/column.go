@@ -9,7 +9,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/blevesearch/vellum"
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/filters"
 )
 

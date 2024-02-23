@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/cespare/xxhash/v2"
-	v1 "github.com/vinceanalytics/vince/gen/go/events/v1"
-	staplesv1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	staplesv1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/ref"

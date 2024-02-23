@@ -3,7 +3,7 @@ package events
 import (
 	"sync"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/events/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
 var onePool = &sync.Pool{New: func() any { return new(v1.Data) }}

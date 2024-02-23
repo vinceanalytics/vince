@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/staples/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/timeutil"
 	"google.golang.org/grpc/codes"

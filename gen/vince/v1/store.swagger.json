@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "events/v1/events.proto",
+    "title": "vince/v1/store.proto",
     "version": "version not set"
   },
   "consumes": [

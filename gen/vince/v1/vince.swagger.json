@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "staples/v1/stats.proto",
+    "title": "vince/v1/vince.proto",
     "version": "version not set"
   },
   "consumes": [
