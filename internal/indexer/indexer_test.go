@@ -7,10 +7,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/stretchr/testify/require"
 	"github.com/vinceanalytics/vince/internal/buffers"
 	"github.com/vinceanalytics/vince/internal/closter/events"
+	"github.com/vinceanalytics/vince/internal/columns"
+	"github.com/vinceanalytics/vince/internal/filters"
 	"github.com/vinceanalytics/vince/internal/index"
 )
 
@@ -21,9 +24,9 @@ func TestIndexer(t *testing.T) {
 	r := events.New(memory.DefaultAllocator).Write(ls)
 	defer r.Release()
 	idx := New()
-	full, err := idx.Index(r)
+	fidx, err := idx.Index(r)
 	require.NoError(t, err)
-
+	full := fidx.(*FullIndex)
 	t.Run("Sets min,max timestamp", func(t *testing.T) {
 		lo := time.UnixMilli(int64(full.Min())).UTC()
 		require.Truef(t, now.Equal(lo), "now=%v lo=%v", now, lo)
@@ -65,5 +68,32 @@ func TestIndexer(t *testing.T) {
 		data, err := os.ReadFile("testdata/" + id)
 		require.NoError(t, err)
 		require.True(t, bytes.Equal(b.Bytes(), data))
+	})
+	t.Run("Match", func(t *testing.T) {
+		type Case struct {
+			d string
+			f []*filters.CompiledFilter
+			w []uint32
+		}
+
+		cases := []Case{
+			{d: "Single column exact match", f: []*filters.CompiledFilter{
+				{Column: columns.Domain, Value: []byte("vinceanalytics.com")},
+			}, w: []uint32{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}},
+			{d: "Multi column exact match", f: []*filters.CompiledFilter{
+				{Column: columns.Domain, Value: []byte("vinceanalytics.com")},
+				{Column: "browser", Value: []byte("Chrome Webview")},
+			}, w: []uint32{5, 8}},
+		}
+		for _, v := range cases {
+			t.Run(v.d, func(t *testing.T) {
+				o := new(roaring.Bitmap)
+				for i := 0; i < int(full.rows); i++ {
+					o.Add(uint32(i))
+				}
+				full.Match(o, v.f)
+				require.Equal(t, v.w, o.ToArray())
+			})
+		}
 	})
 }

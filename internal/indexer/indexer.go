@@ -12,15 +12,15 @@ import (
 	"github.com/vinceanalytics/vince/internal/logger"
 )
 
-type Arrow struct{}
+type ArrowIndexer struct{}
 
-func New() *Arrow {
-	return new(Arrow)
+func New() *ArrowIndexer {
+	return new(ArrowIndexer)
 }
 
-var _ index.Index = (*Arrow)(nil)
+var _ index.Index = (*ArrowIndexer)(nil)
 
-func (idx *Arrow) Index(r arrow.Record) (index.Full, error) {
+func (idx *ArrowIndexer) Index(r arrow.Record) (index.Full, error) {
 	cIdx := index.NewColIdx()
 	defer cIdx.Release()
 	o := make(map[string]*index.FullColumn)
@@ -41,7 +41,7 @@ func (idx *Arrow) Index(r arrow.Record) (index.Full, error) {
 		cIdx.Reset()
 	}
 	lo, hi := Timestamps(r)
-	return NewFullIdx(o, uint64(lo), uint64(hi)), nil
+	return NewFullIdx(o, uint64(lo), uint64(hi), uint64(r.NumRows())), nil
 }
 
 func Timestamps(r arrow.Record) (lo, hi int64) {
@@ -55,16 +55,16 @@ func Timestamps(r arrow.Record) (lo, hi int64) {
 }
 
 type FullIndex struct {
-	m              map[string]*index.FullColumn
-	keys           []string
-	min, max, size uint64
+	m                    map[string]*index.FullColumn
+	keys                 []string
+	min, max, size, rows uint64
 }
 
 var _ index.Full = (*FullIndex)(nil)
 
 var baseIndexSize = uint64(unsafe.Sizeof(FullIndex{}))
 
-func NewFullIdx(m map[string]*index.FullColumn, min, max uint64) *FullIndex {
+func NewFullIdx(m map[string]*index.FullColumn, min, max, rows uint64) *FullIndex {
 	keys := make([]string, 0, len(m))
 	n := baseIndexSize
 	for k, v := range m {
@@ -74,7 +74,7 @@ func NewFullIdx(m map[string]*index.FullColumn, min, max uint64) *FullIndex {
 	}
 	n += uint64(len(keys) * 2)
 	sort.Strings(keys)
-	return &FullIndex{keys: keys, m: m, min: min, max: max, size: n}
+	return &FullIndex{keys: keys, m: m, min: min, max: max, size: n, rows: rows}
 }
 
 func (idx *FullIndex) CanIndex() bool {
