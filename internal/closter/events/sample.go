@@ -4,6 +4,8 @@ import (
 	_ "embed"
 	"time"
 
+	"github.com/apache/arrow/go/v15/arrow"
+	"github.com/apache/arrow/go/v15/arrow/memory"
 	v1 "github.com/vinceanalytics/vince/gen/go/events/v1"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -30,9 +32,16 @@ func WithStep(step time.Duration) SampleOption {
 	}
 }
 
+func SampleRecord(opts ...SampleOption) arrow.Record {
+	ls := Samples(opts...)
+	b := New(memory.DefaultAllocator)
+	defer b.Release()
+	return b.Write(ls)
+}
+
 func Samples(opts ...SampleOption) *v1.List {
 	o := &sampleOptions{
-		now:  time.Now,
+		now:  Now(),
 		step: time.Second,
 	}
 	for _, v := range opts {
@@ -45,4 +54,10 @@ func Samples(opts ...SampleOption) *v1.List {
 		e.Timestamp = now.Add(time.Duration(i) * o.step).UnixMilli()
 	}
 	return &ls
+}
+
+func Now() func() time.Time {
+	ts, _ := time.Parse(time.RFC822, time.RFC822)
+	ts = ts.UTC()
+	return func() time.Time { return ts }
 }

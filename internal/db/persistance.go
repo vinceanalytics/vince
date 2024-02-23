@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"path/filepath"
 	"strings"
@@ -98,32 +99,10 @@ func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
 }
 
 func (s *Store) SaveRecord(buf *buffers.BytesBuffer, base []byte, r arrow.Record) (n uint64, err error) {
-	schema := r.Schema()
 	b := buffers.Bytes()
 	defer b.Release()
-	props := []parquet.WriterProperty{
-		parquet.WithAllocator(s.mem),
-		parquet.WithBatchSize(r.NumRows()), // we save as a single row group
-		parquet.WithCompression(compress.Codecs.Zstd),
-	}
-	for i := 0; i < int(r.NumCols()); i++ {
-		if r.Column(i).DataType().ID() == arrow.DICTIONARY {
-			props = append(props, parquet.WithDictionaryFor(r.ColumnName(i), true))
-		}
-	}
-	w, err := pqarrow.NewFileWriter(schema, b, parquet.NewWriterProperties(props...),
-		pqarrow.NewArrowWriterProperties(
-			pqarrow.WithAllocator(s.mem),
-			pqarrow.WithStoreSchema(),
-		))
-	if err != nil {
-		return 0, err
-	}
-	err = w.Write(r)
-	if err != nil {
-		return 0, err
-	}
-	err = w.Close()
+
+	err = ArrowToParquet(b, s.mem, r)
 	if err != nil {
 		return 0, err
 	}
@@ -134,6 +113,40 @@ func (s *Store) SaveRecord(buf *buffers.BytesBuffer, base []byte, r arrow.Record
 	err = s.db.Set(buf.Bytes(), b.Bytes(), s.ttl)
 	n = uint64(b.Len())
 	return
+}
+
+// We use zstd SpeedBestCompression because we rarely touch cold data and when
+// touched, we heavily cache columns.
+//
+// We optimize for on disk size. It is better to try to fit granules in the lsm
+// tree for faster lookups.
+const compressionLevel = 11
+
+func ArrowToParquet(out io.Writer, mem memory.Allocator, r arrow.Record) error {
+	props := []parquet.WriterProperty{
+		parquet.WithAllocator(mem),
+		parquet.WithBatchSize(r.NumRows()), // we save as a single row group
+		parquet.WithCompression(compress.Codecs.Zstd),
+		parquet.WithCompressionLevel(compressionLevel),
+	}
+	for i := 0; i < int(r.NumCols()); i++ {
+		if r.Column(i).DataType().ID() == arrow.DICTIONARY {
+			props = append(props, parquet.WithDictionaryFor(r.ColumnName(i), true))
+		}
+	}
+	w, err := pqarrow.NewFileWriter(r.Schema(), out, parquet.NewWriterProperties(props...),
+		pqarrow.NewArrowWriterProperties(
+			pqarrow.WithAllocator(mem),
+			pqarrow.WithStoreSchema(),
+		))
+	if err != nil {
+		return err
+	}
+	err = w.Write(r)
+	if err != nil {
+		return err
+	}
+	return w.Close()
 }
 
 var (
