@@ -13,7 +13,7 @@ func TestBuild(t *testing.T) {
 	b := New(memory.NewGoAllocator())
 	defer b.Release()
 
-	b.Write(&v1.List{
+	r := b.Write(&v1.List{
 		Items: []*v1.Data{
 			{Bounce: nil},
 			{Bounce: True},
@@ -21,9 +21,12 @@ func TestBuild(t *testing.T) {
 			{Page: "/"},
 		},
 	})
-	r := b.NewRecord()
 	got, _ := r.MarshalJSON()
 	// os.WriteFile("testdata/record.json", got, 0600)
 	want, _ := os.ReadFile("testdata/record.json")
-	require.Equal(t, string(want), string(got))
+	require.JSONEq(t, string(want), string(got))
+	gotSchema := r.Schema().String()
+	// os.WriteFile("testdata/schema.txt", []byte(gotSchema), 0600)
+	wantSchema, _ := os.ReadFile("testdata/schema.txt")
+	require.Equal(t, string(wantSchema), gotSchema)
 }
