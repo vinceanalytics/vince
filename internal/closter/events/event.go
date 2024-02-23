@@ -14,6 +14,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/ref"
 	"github.com/vinceanalytics/vince/ua"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -162,4 +163,10 @@ func uniqueID(remoteIP, userAgent, domain, host string) (sum uint64) {
 	h.WriteString(host)
 	sum = h.Sum64()
 	return
+}
+
+func Clone(e *v1.Data) *v1.Data {
+	o := One()
+	proto.Merge(o, e)
+	return o
 }
