@@ -3,6 +3,7 @@ package v1;
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
+import "vince/v1/events.proto";
 
 message NodeMeta {
   string url = 1;
@@ -15,6 +16,7 @@ message Command {
     Join.Request join = 2;
     Query.Request query = 3;
     RemoveNode.Request remove_node = 4;
+    List data = 5;
   }
 }
 
