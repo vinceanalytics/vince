@@ -4,19 +4,48 @@ package v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
+message NodeMeta {
+  string url = 1;
+  uint64 commit_index = 2;
+}
+
 message Command {
-  message Request {
-    oneof params {
-      Join join = 1;
-      Query.Request query = 2;
-    }
+  Credentials credentials = 1;
+  oneof request {
+    Join.Request join = 2;
+    Query.Request query = 3;
+    RemoveNode.Request remove_node = 4;
   }
 }
 
+message CommandResponse {
+  oneof results {
+    Join.Response join = 1;
+    Query.Response query = 2;
+    RemoveNode.Response remove_node = 3;
+  }
+}
+
+message Credentials {
+  string username = 1;
+  string password = 2;
+}
+
+message RemoveNode {
+  message Request { string id = 1; }
+  message Response { string error = 1; }
+}
+
 message Join {
-  string id = 1;
-  string address = 2;
-  bool voter = 3;
+  message Request {
+    string id = 1;
+    string address = 2;
+    bool voter = 3;
+  }
+  message Response {
+    string leader = 1;
+    string error = 2;
+  }
 }
 
 message Query {
