@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/url"
+	"strings"
 	"sync"
 
 	"github.com/apache/arrow/go/v15/arrow/array"
@@ -62,19 +63,15 @@ func init() {
 
 // Search use fuzz search to find a matching referral string.
 func Search(uri string) string {
-	u, err := url.Parse(uri)
-	if err != nil {
-		log.Error("failed parsing url", slog.String("uri", uri), slog.String("err", err.Error()))
-		return ""
-	}
-	if v, ok := cache.Get(u.Host); ok {
+	host := clean(uri)
+	if v, ok := cache.Get(host); ok {
 		return v.(string)
 	}
 	lbMu.Lock()
-	dfa, err := lb.BuildDfa(u.Host, 2)
+	dfa, err := lb.BuildDfa(host, 2)
 	if err != nil {
 		lbMu.Unlock()
-		log.Error("failed building dfal", slog.String("host", u.Host), slog.String("err", err.Error()))
+		log.Error("failed building dfa", slog.String("host", host), slog.String("err", err.Error()))
 		return ""
 	}
 	lbMu.Unlock()
@@ -82,10 +79,22 @@ func Search(uri string) string {
 	for err == nil {
 		_, val := it.Current()
 		r := nameData.Value(name.GetValueIndex(int(val)))
-		cache.Set(u.Host, r, int64(len(r)))
+		cache.Set(host, r, int64(len(r)))
 		return r
 	}
 	return ""
+}
+
+func clean(r string) string {
+	if strings.HasPrefix(r, "http://") || strings.HasPrefix(r, "https://") {
+		u, err := url.Parse(r)
+		if err != nil {
+			log.Error("failed parsing url", slog.String("uri", r), slog.String("err", err.Error()))
+			return ""
+		}
+		return u.Host
+	}
+	return r
 }
 
 func Random(count int) (o []string) {
@@ -102,7 +111,7 @@ func Random(count int) (o []string) {
 		end--
 		key, _ := it.Current()
 		if n > from {
-			o = append(o, string(key))
+			o = append(o, "https://"+string(key))
 		}
 		err = it.Next()
 		n++
