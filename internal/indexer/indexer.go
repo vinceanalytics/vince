@@ -1,4 +1,4 @@
-package staples
+package indexer
 
 import (
 	"sort"
@@ -12,15 +12,15 @@ import (
 	"github.com/vinceanalytics/vince/internal/logger"
 )
 
-type Index struct{}
+type Arrow struct{}
 
-func NewIndex() *Index {
-	return new(Index)
+func New() *Arrow {
+	return new(Arrow)
 }
 
-var _ index.Index = (*Index)(nil)
+var _ index.Index = (*Arrow)(nil)
 
-func (idx *Index) Index(r arrow.Record) (index.Full, error) {
+func (idx *Arrow) Index(r arrow.Record) (index.Full, error) {
 	cIdx := index.NewColIdx()
 	defer cIdx.Release()
 	o := make(map[string]*index.FullColumn)

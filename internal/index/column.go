@@ -129,23 +129,6 @@ func (f *FullColumn) Size() (n uint64) {
 	return
 }
 
-type FullMapColumn map[string]*FullColumn
-
-func (m FullMapColumn) Size() (n uint64) {
-	for _, v := range m {
-		n += v.Size()
-	}
-	return
-}
-
-func (f FullMapColumn) Match(m *filters.CompiledFilter) *roaring.Bitmap {
-	c, ok := f[m.Column]
-	if !ok {
-		return new(roaring.Bitmap)
-	}
-	return c.Match(m)
-}
-
 type ColumnImpl struct {
 	mapping map[string]*roaring.Bitmap
 	rows    uint32

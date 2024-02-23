@@ -21,12 +21,12 @@ import (
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/index/primary"
+	"github.com/vinceanalytics/vince/internal/indexer"
 	"github.com/vinceanalytics/vince/internal/load"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/lsm"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
-	"github.com/vinceanalytics/vince/internal/staples"
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"golang.org/x/crypto/acme/autocert"
@@ -195,7 +195,7 @@ func App() *cli.Command {
 			if err != nil {
 				return err
 			}
-			idx := staples.NewIndex()
+			idx := indexer.New()
 			sess := session.New(alloc, tenants, store, idx, pidx,
 				lsm.WithTTL(
 					base.RetentionPeriod.AsDuration(),
