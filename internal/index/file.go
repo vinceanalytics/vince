@@ -89,7 +89,7 @@ func (f *FileIndex) Size() (n uint64) {
 
 func (f *FileIndex) Match(b *roaring.Bitmap, m []*filters.CompiledFilter) {
 	for _, x := range m {
-		v, err := f.get(x.Column)
+		v, err := f.Get(x.Column)
 		if err != nil {
 			logger.Fail(err.Error())
 		}
@@ -97,7 +97,7 @@ func (f *FileIndex) Match(b *roaring.Bitmap, m []*filters.CompiledFilter) {
 	}
 }
 
-func (f *FileIndex) get(name string) (*FullColumn, error) {
+func (f *FileIndex) Get(name string) (*FullColumn, error) {
 	if c, ok := f.m[name]; ok {
 		return c, nil
 	}

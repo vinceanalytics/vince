@@ -18,7 +18,7 @@ func TestReadIndexFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	col, err := m.get("path")
+	col, err := m.Get("path")
 	if err != nil {
 		t.Fatal(err)
 	}

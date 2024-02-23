@@ -23,6 +23,27 @@ type FullColumn struct {
 
 var _ Column = (*FullColumn)(nil)
 
+func (f *FullColumn) Equal(c Column) bool {
+	o, ok := c.(*FullColumn)
+	if !ok {
+		return ok
+	}
+	if f.name != c.Name() || f.numRows != c.NumRows() {
+		return false
+	}
+	if !bytes.Equal(f.fst, o.fst) {
+		return false
+	}
+	if len(f.bitmaps) != len(o.bitmaps) {
+		return false
+	}
+	for i := range f.bitmaps {
+		if !f.bitmaps[i].Equals(o.bitmaps[i]) {
+			return false
+		}
+	}
+	return true
+}
 func (f *FullColumn) Empty() bool {
 	return len(f.fst) == 0
 }
