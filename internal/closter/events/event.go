@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/cespare/xxhash/v2"
-	staplesv1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/logger"
@@ -47,7 +46,7 @@ var True = ptr(true)
 
 var False = ptr(false)
 
-func Parse(ctx context.Context, req *staplesv1.Event) *v1.Data {
+func Parse(ctx context.Context, req *v1.Event) *v1.Data {
 	log := logger.Get(ctx)
 	if req.U == "" || req.N == "" || req.D == "" {
 		log.Error("invalid request")
