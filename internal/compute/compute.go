@@ -48,6 +48,8 @@ func (c *Compute) Release() {
 		a.Release()
 	}
 	clear(c.Mapping)
+	c.view = nil
+	c.visit = nil
 }
 
 func (c *Compute) Metric(ctx context.Context, m v1.Metric) (float64, error) {

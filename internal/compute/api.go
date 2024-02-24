@@ -140,7 +140,6 @@ func Breakdown(ctx context.Context, scan db.Scanner, req *v1.BreakDown_Request) 
 			b.AppendValues(bitmap.ToArray(), nil)
 			idx := b.NewUint32Array()
 
-			xc.Reset(nil)
 			kv := &v1.BreakDown_KeyValues{
 				Key:   key,
 				Value: make(map[string]float64),
@@ -160,8 +159,10 @@ func Breakdown(ctx context.Context, scan db.Scanner, req *v1.BreakDown_Request) 
 				kv.Value[metric.String()] = value
 			}
 			rp.Values = append(rp.Values, kv)
+			xc.Release()
 		}
 		res.Results = append(res.Results, rp)
+
 	}
 	return res, nil
 }
