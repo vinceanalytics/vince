@@ -73,9 +73,8 @@ func Aggregate(ctx context.Context, scan db.Scanner, req *v1.Aggregate_Request) 
 			Value:    req.SiteId,
 		}),
 	}
-	metrics := slices.Clone(req.Metrics)
-	slices.Sort(metrics)
-	MetricsToProjection(filters, metrics)
+	slices.Sort(req.Metrics)
+	MetricsToProjection(filters, req.Metrics)
 	from, to := periodToRange(time.Now, req.Period, req.Date)
 	resultRecord, err := scan.Scan(ctx, req.TenantId, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
@@ -90,7 +89,7 @@ func Aggregate(ctx context.Context, scan db.Scanner, req *v1.Aggregate_Request) 
 		Results: make(map[string]float64),
 	}
 	xc := &Compute{Mapping: mapping}
-	for _, metric := range metrics {
+	for _, metric := range req.Metrics {
 		value, err := xc.Metric(ctx, metric)
 		if err != nil {
 			return nil, err
@@ -183,9 +182,8 @@ func Timeseries(ctx context.Context, scan db.Scanner, req *v1.Timeseries_Request
 			Value:    req.SiteId,
 		}),
 	}
-	metrics := slices.Clone(req.Metrics)
-	slices.Sort(metrics)
-	MetricsToProjection(filters, metrics)
+	slices.Sort(req.Metrics)
+	MetricsToProjection(filters, req.Metrics)
 	from, to := periodToRange(time.Now, req.Period, req.Date)
 	scanRecord, err := scan.Scan(ctx, req.TenantId, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
@@ -210,7 +208,7 @@ func Timeseries(ctx context.Context, scan db.Scanner, req *v1.Timeseries_Request
 			Values:    make(map[string]float64),
 		}
 		xc.Reset(n)
-		for _, x := range metrics {
+		for _, x := range req.Metrics {
 			value, err := xc.Metric(ctx, x)
 			if err != nil {
 				return err
