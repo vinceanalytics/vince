@@ -91,7 +91,12 @@ message Aggregate {
     bool compare = 4;
     repeated Filter filters = 5;
   }
-  message Response {}
+
+  message Response {
+    // Mappping of metric to metric value. We can't use enums as map keys that
+    // is why we use string here.
+    map<string, double> results = 1;
+  }
 }
 
 message Timeseries {
@@ -106,7 +111,13 @@ message Timeseries {
     Interval interval = 4;
     repeated Filter filters = 5;
   }
-  message Response {}
+
+  message Response { repeated Bucket results = 1; }
+
+  message Bucket {
+    google.protobuf.Timestamp timestamp = 1;
+    map<string, double> values = 2;
+  }
 }
 
 message BreakDown {
@@ -120,7 +131,17 @@ message BreakDown {
     repeated Metric metrics = 4;
     repeated Filter filters = 6;
   }
-  message Response {}
+
+  message Response { repeated Result results = 1; }
+
+  message Result {
+    Property property = 1;
+    repeated KeyValues values = 2;
+  }
+  message KeyValues {
+    string key = 1;
+    map<string, double> value = 2;
+  }
 }
 
 enum Interval {
