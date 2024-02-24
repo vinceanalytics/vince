@@ -1,10 +1,11 @@
-package stats
+package compute
 
 import (
 	"cmp"
 	"context"
 	"sort"
 
+	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/bitutil"
@@ -17,7 +18,7 @@ import (
 )
 
 type Compute struct {
-	mapping map[string]arrow.Array
+	Mapping map[string]arrow.Array
 	view    *float64
 	visit   *float64
 }
@@ -27,23 +28,26 @@ func NewCompute(r arrow.Record) *Compute {
 	for i := 0; i < int(r.NumCols()); i++ {
 		m[r.ColumnName(i)] = r.Column(i)
 	}
-	return &Compute{mapping: m}
+	return &Compute{Mapping: m}
 }
 
 func (c *Compute) Reset(r arrow.Record) {
-	clear(c.mapping)
-	for i := 0; i < int(r.NumCols()); i++ {
-		c.mapping[r.ColumnName(i)] = r.Column(i)
+	clear(c.Mapping)
+	if r != nil {
+		for i := 0; i < int(r.NumCols()); i++ {
+			c.Mapping[r.ColumnName(i)] = r.Column(i)
+		}
 	}
+
 	c.view = nil
 	c.visit = nil
 }
 
 func (c *Compute) Release() {
-	for _, a := range c.mapping {
+	for _, a := range c.Mapping {
 		a.Release()
 	}
-	clear(c.mapping)
+	clear(c.Mapping)
 }
 
 func (c *Compute) Metric(ctx context.Context, m v1.Metric) (float64, error) {
@@ -69,7 +73,7 @@ func (c *Compute) Metric(ctx context.Context, m v1.Metric) (float64, error) {
 }
 
 func (c *Compute) Events() float64 {
-	return float64(c.mapping[columns.Event].Len())
+	return float64(c.Mapping[columns.Event].Len())
 }
 
 func (c *Compute) ViewsPerVisits() float64 {
@@ -100,16 +104,16 @@ func (c *Compute) BounceRate() float64 {
 }
 
 func (c *Compute) Duration() float64 {
-	value := math.Float64.Sum(c.mapping[columns.Duration].(*array.Float64))
+	value := math.Float64.Sum(c.Mapping[columns.Duration].(*array.Float64))
 	return float64(value)
 }
 
 func (c *Compute) Bounce() float64 {
-	return float64(CalcBounce(c.mapping[columns.Bounce].(*array.Boolean)))
+	return float64(CalcBounce(c.Mapping[columns.Bounce].(*array.Boolean)))
 }
 
 func (c *Compute) Visitors(ctx context.Context) (float64, error) {
-	a, err := compute.UniqueArray(ctx, c.mapping[columns.ID])
+	a, err := compute.UniqueArray(ctx, c.Mapping[columns.ID])
 	if err != nil {
 		return 0, err
 	}
@@ -121,7 +125,7 @@ func (c *Compute) Visits() float64 {
 	if c.visit != nil {
 		return *c.visit
 	}
-	visit := float64(CalVisits(c.mapping[columns.Session].(*array.Boolean)))
+	visit := float64(CalVisits(c.Mapping[columns.Session].(*array.Boolean)))
 	c.visit = &visit
 	return visit
 }
@@ -130,12 +134,12 @@ func (c *Compute) PageView() float64 {
 	if c.view != nil {
 		return *c.view
 	}
-	view := float64(countSetBits(c.mapping[columns.View].(*array.Boolean)))
+	view := float64(countSetBits(c.Mapping[columns.View].(*array.Boolean)))
 	c.view = &view
 	return view
 }
 
-func metricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) []string {
+func MetricsToProjection(f *v1.Filters, me []v1.Metric, props ...v1.Property) []string {
 	m := make(map[v1.Filters_Projection]struct{})
 	m[v1.Filters_timestamp] = struct{}{}
 	for _, p := range props {
@@ -197,4 +201,44 @@ func CalcBounce(a *array.Boolean) int {
 	default:
 		return 0
 	}
+}
+
+func Take(ctx context.Context, a arrow.Array, idx *array.Uint32) (arrow.Array, error) {
+	if a.DataType().ID() != arrow.DICTIONARY {
+		return compute.TakeArray(ctx, a, idx)
+	}
+	x := a.(*array.Dictionary)
+	xv := x.Dictionary().(*array.String)
+	o := array.NewDictionaryBuilder(
+		compute.GetAllocator(ctx),
+		a.DataType().(*arrow.DictionaryType),
+	).(*array.BinaryDictionaryBuilder)
+	defer o.Release()
+	for _, i := range idx.Uint32Values() {
+		if x.IsNull(int(i)) {
+			o.AppendNull()
+			continue
+		}
+		o.Append([]byte(xv.Value(x.GetValueIndex(int(i)))))
+	}
+	return o.NewArray(), nil
+}
+
+func HashProp(a arrow.Array) map[string]*roaring.Bitmap {
+	o := make(map[string]*roaring.Bitmap)
+	d := a.(*array.Dictionary)
+	s := d.Dictionary().(*array.String)
+	for i := 0; i < a.Len(); i++ {
+		if d.IsNull(i) {
+			continue
+		}
+		x := s.Value(d.GetValueIndex(i))
+		b, ok := o[x]
+		if !ok {
+			b = new(roaring.Bitmap)
+			o[x] = b
+		}
+		b.Add(uint32(i))
+	}
+	return o
 }

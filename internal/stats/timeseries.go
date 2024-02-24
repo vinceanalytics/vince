@@ -9,6 +9,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/array"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/columns"
+	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
@@ -43,7 +44,7 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 	}
 	metrics := slices.Clone(req.Metrics)
 	slices.Sort(metrics)
-	metricsToProjection(filters, metrics)
+	compute.MetricsToProjection(filters, metrics)
 	from, to := PeriodToRange(ctx, time.Now, req.Period, r.URL.Query())
 	scanRecord, err := session.Get(ctx).Scan(ctx, tenant.Get(ctx), from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
@@ -59,7 +60,7 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 	tsKey := mapping[columns.Timestamp]
 	ts := scanRecord.Column(tsKey).(*array.Int64).Int64Values()
 	var buckets []Bucket
-	xc := &Compute{mapping: make(map[string]arrow.Array)}
+	xc := &compute.Compute{Mapping: make(map[string]arrow.Array)}
 	err = timeutil.TimeBuckets(req.Interval, ts, func(bucket int64, start, end int) error {
 		n := scanRecord.NewSlice(int64(start), int64(end))
 		defer n.Release()

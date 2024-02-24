@@ -1,4 +1,4 @@
-package stats
+package compute
 
 import (
 	"testing"

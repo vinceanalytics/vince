@@ -5,6 +5,7 @@ import (
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
@@ -41,7 +42,7 @@ func Realtime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer result.Release()
-	m := NewCompute(result)
+	m := compute.NewCompute(result)
 	visitors, err := m.Visitors(ctx)
 	if err != nil {
 		logger.Get(ctx).Error("Failed computing unique user id", "err", err)

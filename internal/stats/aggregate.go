@@ -7,6 +7,7 @@ import (
 
 	"github.com/apache/arrow/go/v15/arrow"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
@@ -34,7 +35,7 @@ func Aggregate(w http.ResponseWriter, r *http.Request) {
 	}
 	metrics := slices.Clone(req.Metrics)
 	slices.Sort(metrics)
-	metricsToProjection(filters, metrics)
+	compute.MetricsToProjection(filters, metrics)
 	from, to := PeriodToRange(ctx, time.Now, req.Period, r.URL.Query())
 	resultRecord, err := session.Get(ctx).Scan(ctx, tenant.Get(ctx), from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
@@ -48,7 +49,7 @@ func Aggregate(w http.ResponseWriter, r *http.Request) {
 		mapping[resultRecord.ColumnName(i)] = resultRecord.Column(i)
 	}
 	result := make(map[string]AggregateValue)
-	xc := &Compute{mapping: mapping}
+	xc := &compute.Compute{Mapping: mapping}
 	for _, metric := range metrics {
 		value, err := xc.Metric(ctx, metric)
 		if err != nil {
