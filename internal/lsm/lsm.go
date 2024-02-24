@@ -69,8 +69,7 @@ func NewPart(r arrow.Record, idx index.Full) *RecordPart {
 type RecordNode = Node[index.Part]
 
 type Tree struct {
-	tree   *RecordNode
-	size   atomic.Uint64
+	ps     *PartStore
 	index  index.Index
 	mem    memory.Allocator
 	merger *staples.Merger
@@ -164,7 +163,7 @@ func NewTree(mem memory.Allocator, resource string, storage db.Storage, indexer 
 		logger.Fail("Failed creating parts cache", "err", err)
 	}
 	return &Tree{
-		tree:     &RecordNode{},
+		ps:       NewPartStore(mem),
 		index:    indexer,
 		mem:      mem,
 		merger:   m,
@@ -194,23 +193,11 @@ func (lsm *Tree) Add(r arrow.Record) error {
 	}
 
 	part := NewPart(r, idx)
-	lsm.size.Add(part.size)
-	lsm.tree.Prepend(part)
+	lsm.ps.Add(part)
 	lsm.log.Debug("Added new part", "size", units.BytesSize(float64(part.size)))
 	lsm.Metrics.NodeSize.Update(float64(part.size))
 	lsm.Metrics.TreeSize.Update(float64(lsm.Size()))
 	return nil
-}
-
-func (lsm *Tree) findNode(node *RecordNode) (list *RecordNode) {
-	lsm.tree.Iterate(func(n *RecordNode) bool {
-		if n.next.Load() == node {
-			list = n
-			return false
-		}
-		return true
-	})
-	return
 }
 
 func (lsm *Tree) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
@@ -239,15 +226,9 @@ func (lsm *Tree) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (ar
 	lsm.ScanCold(ctx, start, end, compiled, project, func(r arrow.Record, ts *roaring.Bitmap) {
 		tk(r, project, ts.ToArray())
 	})
-
-	lsm.tree.Iterate(func(n *RecordNode) bool {
-		if n.part == nil {
-			return true
-		}
-		return index.AcceptWith(int64(n.part.Min()), int64(n.part.Max()), start, end, func() {
-			lsm.processPart(n.part, start, end, compiled, func(r arrow.Record, ts *roaring.Bitmap) {
-				tk(r, project, ts.ToArray())
-			})
+	lsm.ps.Scan(start, end, func(p index.Part) {
+		lsm.processPart(p, start, end, compiled, func(r arrow.Record, ts *roaring.Bitmap) {
+			tk(r, project, ts.ToArray())
 		})
 	})
 	return tr.NewRecord(), nil
@@ -369,61 +350,29 @@ func (lsm *Tree) Start(ctx context.Context) {
 //
 // Cold data is still scanned by lsm tree but no account is about about its size.
 func (lsm *Tree) Size() uint64 {
-	return lsm.size.Load()
+	return lsm.ps.Size()
 }
 
 func (lsm *Tree) Compact(persist ...bool) {
 	lsm.log.Debug("Start compaction")
-	var oldSizes uint64
 	start := time.Now()
-	defer func() {
-		nodes := len(lsm.nodes)
-		for _, r := range lsm.nodes {
-			r.part.Release()
-		}
-		clear(lsm.nodes)
-		clear(lsm.records)
-		lsm.nodes = lsm.nodes[:0]
-		lsm.records = lsm.records[:0]
-		if oldSizes != 0 {
-			lsm.Metrics.CompactionDuration.UpdateDuration(time.Now())
-			lsm.Metrics.CompactionCounter.Inc()
-			lsm.Metrics.NodesPerCompaction.Update(float64(nodes))
-		}
-	}()
-
-	lsm.tree.Iterate(func(n *RecordNode) bool {
-		if n.part == nil || !n.part.CanIndex() {
-			return true
-		}
-		lsm.nodes = append(lsm.nodes, n)
-		lsm.records = append(lsm.records, n.part.Record())
-		oldSizes += n.part.Size()
-		return true
-	})
-	if oldSizes == 0 {
+	r, stats := lsm.ps.Compact()
+	defer r.Release()
+	if r.NumRows() == 0 {
 		lsm.log.Debug("Skipping compaction, there is nothing in lsm tree")
 		return
 	}
-	lsm.log.Debug("Compacting", "nodes", len(lsm.nodes), "size", oldSizes)
-	r := lsm.merger.Merge(lsm.records...)
-	defer r.Release()
-	node := lsm.findNode(lsm.nodes[0])
-	x := &RecordNode{}
-	for !node.next.CompareAndSwap(lsm.nodes[0], x) {
-		node = lsm.findNode(lsm.nodes[0])
-	}
-	lsm.size.Add(-oldSizes)
-	if oldSizes >= lsm.opts.compactSize || len(persist) > 0 {
-		lsm.persist(r)
-		return
-	}
+
+	lsm.log.Debug("Compacted", "nodes", stats.CompactedNodesCount, "size", stats.OldSize)
 	err := lsm.Add(r)
 	if err != nil {
 		lsm.log.Error("Failed adding compacted record to lsm", "err", err)
 		return
 	}
-	lsm.log.Debug("Completed compaction", "elapsed", time.Since(start).String())
+	lsm.log.Debug("Completed compaction", "elapsed", stats.Elapsed.String())
+	lsm.Metrics.CompactionDuration.UpdateDuration(start)
+	lsm.Metrics.CompactionCounter.Inc()
+	lsm.Metrics.NodesPerCompaction.Update(float64(stats.CompactedNodesCount))
 }
 
 func (lsm *Tree) persist(r arrow.Record) {

@@ -170,6 +170,14 @@ func (m *Merger) Merge(records ...arrow.Record) arrow.Record {
 	return m.b.NewRecord()
 }
 
+func (m *Merger) Add(record arrow.Record) {
+	m.merge(record)
+}
+
+func (m *Merger) NewRecord() arrow.Record {
+	return m.b.NewRecord()
+}
+
 func NewMerger(mem memory.Allocator, as *arrow.Schema) *Merger {
 	b := array.NewRecordBuilder(mem, as)
 	fields := make([]func(arrow.Array), len(b.Fields()))
