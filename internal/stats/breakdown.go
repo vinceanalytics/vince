@@ -2,18 +2,12 @@ package stats
 
 import (
 	"net/http"
-	"slices"
-	"time"
 
-	"github.com/apache/arrow/go/v15/arrow"
-	"github.com/apache/arrow/go/v15/arrow/array"
-	"github.com/apache/arrow/go/v15/arrow/memory"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/request"
 	"github.com/vinceanalytics/vince/internal/session"
-	"github.com/vinceanalytics/vince/internal/tenant"
 )
 
 func BreakDown(w http.ResponseWriter, r *http.Request) {
@@ -26,86 +20,11 @@ func BreakDown(w http.ResponseWriter, r *http.Request) {
 		Filters:  ParseFilters(ctx, query),
 		Property: ParseProperty(ctx, query),
 	}
-	if !request.Validate(ctx, w, &req) {
-		return
-	}
-	period := req.Period
-	if period == nil {
-		period = &v1.TimePeriod{
-			Value: &v1.TimePeriod_Base_{
-				Base: v1.TimePeriod__30d,
-			},
-		}
-	}
-	filter := &v1.Filters{
-		List: append(req.Filters, &v1.Filter{
-			Property: v1.Property_domain,
-			Op:       v1.Filter_equal,
-			Value:    req.SiteId,
-		}),
-	}
-	slices.Sort(req.Metrics)
-	slices.Sort(req.Property)
-	selectedColumns := compute.MetricsToProjection(filter, req.Metrics, req.Property...)
-	from, to := PeriodToRange(ctx, time.Now, period, r.URL.Query())
-	scannedRecord, err := session.Get(ctx).Scan(ctx, tenant.Get(ctx), from.UnixMilli(), to.UnixMilli(), filter)
+	res, err := compute.Breakdown(ctx, session.Get(ctx), &req)
 	if err != nil {
 		logger.Get(ctx).Error("Failed scanning", "err", err)
 		request.Internal(ctx, w)
 		return
 	}
-	defer scannedRecord.Release()
-	mapping := map[string]arrow.Array{}
-	for i := 0; i < int(scannedRecord.NumCols()); i++ {
-		mapping[scannedRecord.ColumnName(i)] = scannedRecord.Column(i)
-	}
-	defer clear(mapping)
-	// build key mapping
-	b := array.NewUint32Builder(memory.DefaultAllocator)
-	defer b.Release()
-	// TODO: run this concurrently
-	xc := &compute.Compute{
-		Mapping: make(map[string]arrow.Array),
-	}
-	defer xc.Release()
-
-	result := make(map[string]map[string]map[string]float64)
-	for _, prop := range req.Property {
-		keys := make(map[string]map[string]float64)
-		for key, bitmap := range compute.HashProp(mapping[prop.String()]) {
-			b.AppendValues(bitmap.ToArray(), nil)
-			idx := b.NewUint32Array()
-
-			xc.Reset(nil)
-
-			for _, name := range selectedColumns {
-				a, err := compute.Take(ctx, mapping[name], idx)
-				if err != nil {
-					logger.Get(ctx).Error("Failed taking array for breaking down", "column", name, "err", err)
-					request.Internal(ctx, w)
-					return
-				}
-				xc.Mapping[name] = a
-			}
-
-			values := make(map[string]float64)
-			for _, metric := range req.Metrics {
-				value, err := xc.Metric(ctx, metric)
-				if err != nil {
-					logger.Get(ctx).Error("Failed computing metric", "metric", metric)
-					request.Internal(ctx, w)
-					return
-				}
-				values[metric.String()] = value
-			}
-			keys[key] = values
-			idx.Release()
-		}
-		result[prop.String()] = keys
-	}
-	request.Write(ctx, w, &BreakDownResponse{Results: result})
-}
-
-type BreakDownResponse struct {
-	Results map[string]map[string]map[string]float64 `json:"results"`
+	request.Write(ctx, w, res)
 }
