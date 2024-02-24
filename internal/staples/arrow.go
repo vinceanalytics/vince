@@ -8,6 +8,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/vinceanalytics/vince/internal/camel"
+	"github.com/vinceanalytics/vince/internal/closter/events"
 )
 
 type Arrow[T any] struct {
@@ -245,15 +246,21 @@ func merge(b array.Builder) func(arrow.Array) {
 	}
 }
 
-func NewTaker(mem memory.Allocator, as *arrow.Schema) (*array.RecordBuilder, func(arrow.Record, []int, []uint32)) {
-	b := array.NewRecordBuilder(mem, as)
-	fields := make([]func(arrow.Array, []uint32), len(b.Fields()))
-	for i := range fields {
-		fields[i] = take(b.Field(i))
+func NewTaker(mem memory.Allocator, projected []string) (*array.RecordBuilder, func(arrow.Record, []uint32)) {
+	cols := make([]int, len(projected))
+	fields := make([]arrow.Field, len(projected))
+	for i, v := range projected {
+		cols[i] = events.Mapping[v]
+		fields[i] = events.Schema.Field(events.Mapping[v])
 	}
-	return b, func(v arrow.Record, columns []int, rows []uint32) {
-		for idx, col := range columns {
-			fields[idx](v.Column(col), rows)
+	b := array.NewRecordBuilder(mem, arrow.NewSchema(fields, nil))
+	tf := make([]func(arrow.Array, []uint32), len(projected))
+	for i, f := range b.Fields() {
+		tf[i] = take(f)
+	}
+	return b, func(v arrow.Record, rows []uint32) {
+		for idx, col := range cols {
+			tf[idx](v.Column(col), rows)
 		}
 	}
 }

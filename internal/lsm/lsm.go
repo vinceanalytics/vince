@@ -210,28 +210,11 @@ func (lsm *Tree) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (ar
 	if len(fs.Projection) == 0 {
 		return nil, errors.New("missing projections")
 	}
-	project := make([]int, 0, len(fs.Projection))
+	project := make([]string, 0, len(fs.Projection))
 	for _, name := range fs.Projection {
-		col := events.Mapping[name.String()]
-		project = append(project, col)
+		project = append(project, name.String())
 	}
-	fields := make([]arrow.Field, len(project))
-	for i := range project {
-		fields[i] = events.Schema.Field(project[i])
-	}
-	schema := arrow.NewSchema(fields, nil)
-	tr, tk := staples.NewTaker(lsm.mem, schema)
-	defer tr.Release()
-
-	lsm.ScanCold(ctx, start, end, compiled, project, func(r arrow.Record, ts *roaring.Bitmap) {
-		tk(r, project, ts.ToArray())
-	})
-	lsm.ps.Scan(start, end, func(p index.Part) {
-		lsm.processPart(p, start, end, compiled, func(r arrow.Record, ts *roaring.Bitmap) {
-			tk(r, project, ts.ToArray())
-		})
-	})
-	return tr.NewRecord(), nil
+	return lsm.ps.Scan(start, end, compiled, project), nil
 }
 
 func (lsm *Tree) ScanCold(ctx context.Context, start, end int64,
