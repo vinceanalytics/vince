@@ -13,6 +13,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/columns"
 	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/defaults"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/timeutil"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -29,6 +30,7 @@ func init() {
 }
 
 func Realtime(ctx context.Context, scan db.Scanner, req *v1.Realtime_Request) (*v1.Realtime_Response, error) {
+	defaults.Set(req)
 	err := validate.Validate(req)
 	if err != nil {
 		return nil, err
@@ -61,6 +63,7 @@ func Realtime(ctx context.Context, scan db.Scanner, req *v1.Realtime_Request) (*
 }
 
 func Aggregate(ctx context.Context, scan db.Scanner, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error) {
+	defaults.Set(req)
 	err := validate.Validate(req)
 	if err != nil {
 		return nil, err
@@ -74,7 +77,7 @@ func Aggregate(ctx context.Context, scan db.Scanner, req *v1.Aggregate_Request) 
 	}
 	slices.Sort(req.Metrics)
 	MetricsToProjection(filters, req.Metrics)
-	from, to := periodToRange(time.Now, req.Period, req.Date)
+	from, to := periodToRange(req.Period, req.Date)
 	resultRecord, err := scan.Scan(ctx, req.TenantId, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		return nil, err
@@ -99,6 +102,7 @@ func Aggregate(ctx context.Context, scan db.Scanner, req *v1.Aggregate_Request) 
 }
 
 func Breakdown(ctx context.Context, scan db.Scanner, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error) {
+	defaults.Set(req)
 	err := validate.Validate(req)
 	if err != nil {
 		return nil, err
@@ -113,7 +117,7 @@ func Breakdown(ctx context.Context, scan db.Scanner, req *v1.BreakDown_Request) 
 	slices.Sort(req.Metrics)
 	slices.Sort(req.Property)
 	selectedColumns := MetricsToProjection(filter, req.Metrics, req.Property...)
-	from, to := periodToRange(time.Now, req.Period, req.Date)
+	from, to := periodToRange(req.Period, req.Date)
 	scannedRecord, err := scan.Scan(ctx, req.TenantId, from.UnixMilli(), to.UnixMilli(), filter)
 	if err != nil {
 		return nil, err
@@ -126,7 +130,6 @@ func Breakdown(ctx context.Context, scan db.Scanner, req *v1.BreakDown_Request) 
 	defer clear(mapping)
 	b := array.NewUint32Builder(compute.GetAllocator(ctx))
 	defer b.Release()
-	// TODO: run this concurrently
 	xc := &Compute{
 		Mapping: make(map[string]arrow.Array),
 	}
@@ -168,6 +171,7 @@ func Breakdown(ctx context.Context, scan db.Scanner, req *v1.BreakDown_Request) 
 }
 
 func Timeseries(ctx context.Context, scan db.Scanner, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error) {
+	defaults.Set(req)
 	err := validate.Validate(req)
 	if err != nil {
 		return nil, err
@@ -184,7 +188,7 @@ func Timeseries(ctx context.Context, scan db.Scanner, req *v1.Timeseries_Request
 	}
 	slices.Sort(req.Metrics)
 	MetricsToProjection(filters, req.Metrics)
-	from, to := periodToRange(time.Now, req.Period, req.Date)
+	from, to := periodToRange(req.Period, req.Date)
 	scanRecord, err := scan.Scan(ctx, req.TenantId, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		return nil, err
@@ -223,8 +227,8 @@ func Timeseries(ctx context.Context, scan db.Scanner, req *v1.Timeseries_Request
 	}
 	return &v1.Timeseries_Response{Results: buckets}, nil
 }
-func periodToRange(now nowFunc, period *v1.TimePeriod, tsDate *timestamppb.Timestamp) (start, end time.Time) {
-	date := parseDate(now, tsDate)
+func periodToRange(period *v1.TimePeriod, tsDate *timestamppb.Timestamp) (start, end time.Time) {
+	date := tsDate.AsTime()
 	switch e := period.Value.(type) {
 	case *v1.TimePeriod_Base_:
 		switch e.Base {

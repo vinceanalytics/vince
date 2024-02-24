@@ -85,7 +85,7 @@ message Aggregate {
     TimePeriod period = 3 [ (buf.validate.field).required = true ];
     repeated Metric metrics = 4 [ (buf.validate.field).required = true ];
     repeated Filter filters = 6;
-    google.protobuf.Timestamp date = 7;
+    google.protobuf.Timestamp date = 7 [ (buf.validate.field).required = true ];
   }
 
   message Response {
@@ -103,7 +103,7 @@ message Timeseries {
     repeated Metric metrics = 4 [ (buf.validate.field).required = true ];
     Interval interval = 5 [ (buf.validate.field).required = true ];
     repeated Filter filters = 6;
-    google.protobuf.Timestamp date = 7;
+    google.protobuf.Timestamp date = 7 [ (buf.validate.field).required = true ];
   }
 
   message Response { repeated Bucket results = 1; }
@@ -122,7 +122,7 @@ message BreakDown {
     TimePeriod period = 4 [ (buf.validate.field).required = true ];
     repeated Metric metrics = 5 [ (buf.validate.field).required = true ];
     repeated Filter filters = 6;
-    google.protobuf.Timestamp date = 7;
+    google.protobuf.Timestamp date = 7 [ (buf.validate.field).required = true ];
   }
 
   message Response { repeated Result results = 1; }
