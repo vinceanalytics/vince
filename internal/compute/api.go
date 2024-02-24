@@ -52,7 +52,6 @@ func Realtime(ctx context.Context, scan db.Scanner, req *v1.Realtime_Request) (*
 		return nil, err
 	}
 	defer result.Release()
-	defer result.Release()
 	m := NewCompute(result)
 	visitors, err := m.Visitors(ctx)
 	if err != nil {
