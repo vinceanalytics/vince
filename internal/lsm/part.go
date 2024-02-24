@@ -26,6 +26,10 @@ func NewPartStore(mem memory.Allocator) *PartStore {
 	}
 }
 
+func (p *PartStore) Release() {
+	p.merger.Release()
+}
+
 func (p *PartStore) Size() uint64 {
 	return p.size.Load()
 }

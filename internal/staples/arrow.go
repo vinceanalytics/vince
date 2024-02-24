@@ -178,6 +178,10 @@ func (m *Merger) NewRecord() arrow.Record {
 	return m.b.NewRecord()
 }
 
+func (m *Merger) Release() {
+	m.b.Release()
+}
+
 func NewMerger(mem memory.Allocator, as *arrow.Schema) *Merger {
 	b := array.NewRecordBuilder(mem, as)
 	fields := make([]func(arrow.Array), len(b.Fields()))
