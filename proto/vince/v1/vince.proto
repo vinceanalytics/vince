@@ -72,24 +72,20 @@ message Query {
 
 message Realtime {
   message Request {
-    string site_id = 1 [
-      (buf.validate.field).required = true,
-      (buf.validate.field).string.hostname = true
-    ];
+    string site_id = 1 [ (buf.validate.field).required = true ];
+    string tenant_id = 2 [ (buf.validate.field).required = true ];
   }
   message Response { uint64 visitors = 1; }
 }
 
 message Aggregate {
   message Request {
-    string site_id = 1 [
-      (buf.validate.field).required = true,
-      (buf.validate.field).string.hostname = true
-    ];
-    TimePeriod period = 2;
-    repeated Metric metrics = 3;
-    bool compare = 4;
-    repeated Filter filters = 5;
+    string site_id = 1 [ (buf.validate.field).required = true ];
+    string tenant_id = 2 [ (buf.validate.field).required = true ];
+    TimePeriod period = 3 [ (buf.validate.field).required = true ];
+    repeated Metric metrics = 4 [ (buf.validate.field).required = true ];
+    repeated Filter filters = 6;
+    google.protobuf.Timestamp date = 7;
   }
 
   message Response {
@@ -101,15 +97,13 @@ message Aggregate {
 
 message Timeseries {
   message Request {
-    string site_id = 1 [
-      (buf.validate.field).required = true,
-      (buf.validate.field).string.hostname = true
-    ];
-
-    TimePeriod period = 2;
-    repeated Metric metrics = 3;
-    Interval interval = 4;
-    repeated Filter filters = 5;
+    string site_id = 1 [ (buf.validate.field).required = true ];
+    string tenant_id = 2 [ (buf.validate.field).required = true ];
+    TimePeriod period = 3 [ (buf.validate.field).required = true ];
+    repeated Metric metrics = 4 [ (buf.validate.field).required = true ];
+    Interval interval = 5 [ (buf.validate.field).required = true ];
+    repeated Filter filters = 6;
+    google.protobuf.Timestamp date = 7;
   }
 
   message Response { repeated Bucket results = 1; }
@@ -122,14 +116,13 @@ message Timeseries {
 
 message BreakDown {
   message Request {
-    string site_id = 1 [
-      (buf.validate.field).required = true,
-      (buf.validate.field).string.hostname = true
-    ];
-    repeated Property property = 2 [ (buf.validate.field).required = true ];
-    TimePeriod period = 3;
-    repeated Metric metrics = 4;
+    string site_id = 1 [ (buf.validate.field).required = true ];
+    string tenant_id = 2 [ (buf.validate.field).required = true ];
+    repeated Property property = 3 [ (buf.validate.field).required = true ];
+    TimePeriod period = 4 [ (buf.validate.field).required = true ];
+    repeated Metric metrics = 5 [ (buf.validate.field).required = true ];
     repeated Filter filters = 6;
+    google.protobuf.Timestamp date = 7;
   }
 
   message Response { repeated Result results = 1; }
