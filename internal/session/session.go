@@ -12,7 +12,7 @@ import (
 	"github.com/dgraph-io/ristretto"
 	eventsv1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/closter/events"
+	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/index"
 	"github.com/vinceanalytics/vince/internal/logger"

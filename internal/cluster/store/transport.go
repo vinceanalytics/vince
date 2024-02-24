@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/raft"
-	"github.com/vinceanalytics/vince/internal/closter/store/gzip"
+	"github.com/vinceanalytics/vince/internal/cluster/store/gzip"
 )
 
 // Layer is the interface expected by the Store for network communication
