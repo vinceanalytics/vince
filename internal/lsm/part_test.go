@@ -37,6 +37,8 @@ func TestPartStore(t *testing.T) {
 		old := ps.Size()
 		r, stats := ps.Compact()
 		require.Equal(t, old, stats.OldSize)
+		wantNodes := 3
+		require.Equal(t, wantNodes, stats.CompactedNodesCount)
 		wantRows := first.NumRows() + second.NumRows() + third.NumRows()
 		require.Equal(t, wantRows, r.NumRows())
 		require.Zero(t, ps.Size())
