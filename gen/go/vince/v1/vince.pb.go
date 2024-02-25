@@ -1498,6 +1498,53 @@ func (x *Event) GetTimestamp() *timestamppb.Timestamp {
 	return nil
 }
 
+type Error struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Error string `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (x *Error) Reset() {
+	*x = Error{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_v1_vince_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Error) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Error) ProtoMessage() {}
+
+func (x *Error) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_v1_vince_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Error.ProtoReflect.Descriptor instead.
+func (*Error) Descriptor() ([]byte, []int) {
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *Error) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
 type RemoveNode_Request struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1509,7 +1556,7 @@ type RemoveNode_Request struct {
 func (x *RemoveNode_Request) Reset() {
 	*x = RemoveNode_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[18]
+		mi := &file_vince_v1_vince_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1522,7 +1569,7 @@ func (x *RemoveNode_Request) String() string {
 func (*RemoveNode_Request) ProtoMessage() {}
 
 func (x *RemoveNode_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[18]
+	mi := &file_vince_v1_vince_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1556,7 +1603,7 @@ type RemoveNode_Response struct {
 func (x *RemoveNode_Response) Reset() {
 	*x = RemoveNode_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[19]
+		mi := &file_vince_v1_vince_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1569,7 +1616,7 @@ func (x *RemoveNode_Response) String() string {
 func (*RemoveNode_Response) ProtoMessage() {}
 
 func (x *RemoveNode_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[19]
+	mi := &file_vince_v1_vince_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1603,7 +1650,7 @@ type Load_Request struct {
 func (x *Load_Request) Reset() {
 	*x = Load_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[20]
+		mi := &file_vince_v1_vince_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1616,7 +1663,7 @@ func (x *Load_Request) String() string {
 func (*Load_Request) ProtoMessage() {}
 
 func (x *Load_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[20]
+	mi := &file_vince_v1_vince_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1650,7 +1697,7 @@ type Load_Response struct {
 func (x *Load_Response) Reset() {
 	*x = Load_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[21]
+		mi := &file_vince_v1_vince_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1663,7 +1710,7 @@ func (x *Load_Response) String() string {
 func (*Load_Response) ProtoMessage() {}
 
 func (x *Load_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[21]
+	mi := &file_vince_v1_vince_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1698,7 +1745,7 @@ type Backup_Request struct {
 func (x *Backup_Request) Reset() {
 	*x = Backup_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[22]
+		mi := &file_vince_v1_vince_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1711,7 +1758,7 @@ func (x *Backup_Request) String() string {
 func (*Backup_Request) ProtoMessage() {}
 
 func (x *Backup_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[22]
+	mi := &file_vince_v1_vince_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1752,7 +1799,7 @@ type Backup_Response struct {
 func (x *Backup_Response) Reset() {
 	*x = Backup_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[23]
+		mi := &file_vince_v1_vince_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1765,7 +1812,7 @@ func (x *Backup_Response) String() string {
 func (*Backup_Response) ProtoMessage() {}
 
 func (x *Backup_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[23]
+	mi := &file_vince_v1_vince_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1801,7 +1848,7 @@ type KV_Request struct {
 func (x *KV_Request) Reset() {
 	*x = KV_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[24]
+		mi := &file_vince_v1_vince_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1814,7 +1861,7 @@ func (x *KV_Request) String() string {
 func (*KV_Request) ProtoMessage() {}
 
 func (x *KV_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[24]
+	mi := &file_vince_v1_vince_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1862,7 +1909,7 @@ type KV_Response struct {
 func (x *KV_Response) Reset() {
 	*x = KV_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[25]
+		mi := &file_vince_v1_vince_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1875,7 +1922,7 @@ func (x *KV_Response) String() string {
 func (*KV_Response) ProtoMessage() {}
 
 func (x *KV_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[25]
+	mi := &file_vince_v1_vince_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1911,7 +1958,7 @@ type Join_Request struct {
 func (x *Join_Request) Reset() {
 	*x = Join_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[26]
+		mi := &file_vince_v1_vince_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1924,7 +1971,7 @@ func (x *Join_Request) String() string {
 func (*Join_Request) ProtoMessage() {}
 
 func (x *Join_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[26]
+	mi := &file_vince_v1_vince_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1973,7 +2020,7 @@ type Join_Response struct {
 func (x *Join_Response) Reset() {
 	*x = Join_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[27]
+		mi := &file_vince_v1_vince_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1986,7 +2033,7 @@ func (x *Join_Response) String() string {
 func (*Join_Response) ProtoMessage() {}
 
 func (x *Join_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[27]
+	mi := &file_vince_v1_vince_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2033,7 +2080,7 @@ type Query_Request struct {
 func (x *Query_Request) Reset() {
 	*x = Query_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[28]
+		mi := &file_vince_v1_vince_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2046,7 +2093,7 @@ func (x *Query_Request) String() string {
 func (*Query_Request) ProtoMessage() {}
 
 func (x *Query_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[28]
+	mi := &file_vince_v1_vince_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2142,7 +2189,7 @@ type Query_Response struct {
 func (x *Query_Response) Reset() {
 	*x = Query_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[29]
+		mi := &file_vince_v1_vince_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2155,7 +2202,7 @@ func (x *Query_Response) String() string {
 func (*Query_Response) ProtoMessage() {}
 
 func (x *Query_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[29]
+	mi := &file_vince_v1_vince_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2246,7 +2293,7 @@ type Realtime_Request struct {
 func (x *Realtime_Request) Reset() {
 	*x = Realtime_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[30]
+		mi := &file_vince_v1_vince_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2259,7 +2306,7 @@ func (x *Realtime_Request) String() string {
 func (*Realtime_Request) ProtoMessage() {}
 
 func (x *Realtime_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[30]
+	mi := &file_vince_v1_vince_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2300,7 +2347,7 @@ type Realtime_Response struct {
 func (x *Realtime_Response) Reset() {
 	*x = Realtime_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[31]
+		mi := &file_vince_v1_vince_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2313,7 +2360,7 @@ func (x *Realtime_Response) String() string {
 func (*Realtime_Response) ProtoMessage() {}
 
 func (x *Realtime_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[31]
+	mi := &file_vince_v1_vince_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2352,7 +2399,7 @@ type Aggregate_Request struct {
 func (x *Aggregate_Request) Reset() {
 	*x = Aggregate_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[32]
+		mi := &file_vince_v1_vince_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2365,7 +2412,7 @@ func (x *Aggregate_Request) String() string {
 func (*Aggregate_Request) ProtoMessage() {}
 
 func (x *Aggregate_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[32]
+	mi := &file_vince_v1_vince_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2436,7 +2483,7 @@ type Aggregate_Response struct {
 func (x *Aggregate_Response) Reset() {
 	*x = Aggregate_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[33]
+		mi := &file_vince_v1_vince_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2449,7 +2496,7 @@ func (x *Aggregate_Response) String() string {
 func (*Aggregate_Response) ProtoMessage() {}
 
 func (x *Aggregate_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[33]
+	mi := &file_vince_v1_vince_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2489,7 +2536,7 @@ type Timeseries_Request struct {
 func (x *Timeseries_Request) Reset() {
 	*x = Timeseries_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[35]
+		mi := &file_vince_v1_vince_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2502,7 +2549,7 @@ func (x *Timeseries_Request) String() string {
 func (*Timeseries_Request) ProtoMessage() {}
 
 func (x *Timeseries_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[35]
+	mi := &file_vince_v1_vince_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2578,7 +2625,7 @@ type Timeseries_Response struct {
 func (x *Timeseries_Response) Reset() {
 	*x = Timeseries_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[36]
+		mi := &file_vince_v1_vince_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2591,7 +2638,7 @@ func (x *Timeseries_Response) String() string {
 func (*Timeseries_Response) ProtoMessage() {}
 
 func (x *Timeseries_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[36]
+	mi := &file_vince_v1_vince_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2626,7 +2673,7 @@ type Timeseries_Bucket struct {
 func (x *Timeseries_Bucket) Reset() {
 	*x = Timeseries_Bucket{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[37]
+		mi := &file_vince_v1_vince_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2639,7 +2686,7 @@ func (x *Timeseries_Bucket) String() string {
 func (*Timeseries_Bucket) ProtoMessage() {}
 
 func (x *Timeseries_Bucket) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[37]
+	mi := &file_vince_v1_vince_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2686,7 +2733,7 @@ type BreakDown_Request struct {
 func (x *BreakDown_Request) Reset() {
 	*x = BreakDown_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[39]
+		mi := &file_vince_v1_vince_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2699,7 +2746,7 @@ func (x *BreakDown_Request) String() string {
 func (*BreakDown_Request) ProtoMessage() {}
 
 func (x *BreakDown_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[39]
+	mi := &file_vince_v1_vince_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2775,7 +2822,7 @@ type BreakDown_Response struct {
 func (x *BreakDown_Response) Reset() {
 	*x = BreakDown_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[40]
+		mi := &file_vince_v1_vince_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2788,7 +2835,7 @@ func (x *BreakDown_Response) String() string {
 func (*BreakDown_Response) ProtoMessage() {}
 
 func (x *BreakDown_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[40]
+	mi := &file_vince_v1_vince_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2823,7 +2870,7 @@ type BreakDown_Result struct {
 func (x *BreakDown_Result) Reset() {
 	*x = BreakDown_Result{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[41]
+		mi := &file_vince_v1_vince_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2836,7 +2883,7 @@ func (x *BreakDown_Result) String() string {
 func (*BreakDown_Result) ProtoMessage() {}
 
 func (x *BreakDown_Result) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[41]
+	mi := &file_vince_v1_vince_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2878,7 +2925,7 @@ type BreakDown_KeyValues struct {
 func (x *BreakDown_KeyValues) Reset() {
 	*x = BreakDown_KeyValues{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[42]
+		mi := &file_vince_v1_vince_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2891,7 +2938,7 @@ func (x *BreakDown_KeyValues) String() string {
 func (*BreakDown_KeyValues) ProtoMessage() {}
 
 func (x *BreakDown_KeyValues) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[42]
+	mi := &file_vince_v1_vince_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2933,7 +2980,7 @@ type TimePeriod_Custom struct {
 func (x *TimePeriod_Custom) Reset() {
 	*x = TimePeriod_Custom{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_vince_proto_msgTypes[44]
+		mi := &file_vince_v1_vince_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2946,7 +2993,7 @@ func (x *TimePeriod_Custom) String() string {
 func (*TimePeriod_Custom) ProtoMessage() {}
 
 func (x *TimePeriod_Custom) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_vince_proto_msgTypes[44]
+	mi := &file_vince_v1_vince_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3273,45 +3320,47 @@ var file_vince_v1_vince_proto_rawDesc = []byte{
 	0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x09, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x74,
-	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2a, 0x3f, 0x0a, 0x08, 0x49, 0x6e, 0x74, 0x65,
-	0x72, 0x76, 0x61, 0x6c, 0x12, 0x08, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x65, 0x10, 0x00, 0x12, 0x0a,
-	0x0a, 0x06, 0x6d, 0x69, 0x6e, 0x75, 0x74, 0x65, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x68, 0x6f,
-	0x75, 0x72, 0x10, 0x02, 0x12, 0x08, 0x0a, 0x04, 0x77, 0x65, 0x65, 0x6b, 0x10, 0x03, 0x12, 0x09,
-	0x0a, 0x05, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x10, 0x04, 0x2a, 0x8b, 0x01, 0x0a, 0x06, 0x4d, 0x65,
-	0x74, 0x72, 0x69, 0x63, 0x12, 0x12, 0x0a, 0x0e, 0x75, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x5f,
-	0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x76, 0x69, 0x73, 0x69,
-	0x74, 0x6f, 0x72, 0x73, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x76, 0x69, 0x73, 0x69, 0x74, 0x73,
-	0x10, 0x02, 0x12, 0x0d, 0x0a, 0x09, 0x70, 0x61, 0x67, 0x65, 0x76, 0x69, 0x65, 0x77, 0x73, 0x10,
-	0x03, 0x12, 0x13, 0x0a, 0x0f, 0x76, 0x69, 0x65, 0x77, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x76,
-	0x69, 0x73, 0x69, 0x74, 0x10, 0x04, 0x12, 0x0f, 0x0a, 0x0b, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65,
-	0x5f, 0x72, 0x61, 0x74, 0x65, 0x10, 0x05, 0x12, 0x12, 0x0a, 0x0e, 0x76, 0x69, 0x73, 0x69, 0x74,
-	0x5f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x06, 0x12, 0x0a, 0x0a, 0x06, 0x65,
-	0x76, 0x65, 0x6e, 0x74, 0x73, 0x10, 0x07, 0x2a, 0x9e, 0x02, 0x0a, 0x08, 0x50, 0x72, 0x6f, 0x70,
-	0x65, 0x72, 0x74, 0x79, 0x12, 0x09, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x10, 0x00, 0x12,
-	0x08, 0x0a, 0x04, 0x70, 0x61, 0x67, 0x65, 0x10, 0x02, 0x12, 0x0e, 0x0a, 0x0a, 0x65, 0x6e, 0x74,
-	0x72, 0x79, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x65, 0x78, 0x69,
-	0x74, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x04, 0x12, 0x0a, 0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x10, 0x05, 0x12, 0x0c, 0x0a, 0x08, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72,
-	0x10, 0x06, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
-	0x10, 0x07, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x6d, 0x65, 0x64, 0x69, 0x75, 0x6d,
-	0x10, 0x08, 0x12, 0x10, 0x0a, 0x0c, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x61, 0x6d, 0x70, 0x61, 0x69,
-	0x67, 0x6e, 0x10, 0x09, 0x12, 0x0f, 0x0a, 0x0b, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x6f, 0x6e, 0x74,
-	0x65, 0x6e, 0x74, 0x10, 0x0a, 0x12, 0x0c, 0x0a, 0x08, 0x75, 0x74, 0x6d, 0x5f, 0x74, 0x65, 0x72,
-	0x6d, 0x10, 0x0b, 0x12, 0x0a, 0x0a, 0x06, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x10, 0x0c, 0x12,
-	0x0b, 0x0a, 0x07, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x10, 0x0d, 0x12, 0x13, 0x0a, 0x0f,
-	0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10,
-	0x0e, 0x12, 0x06, 0x0a, 0x02, 0x6f, 0x73, 0x10, 0x0f, 0x12, 0x0e, 0x0a, 0x0a, 0x6f, 0x73, 0x5f,
-	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x10, 0x12, 0x0b, 0x0a, 0x07, 0x63, 0x6f, 0x75,
-	0x6e, 0x74, 0x72, 0x79, 0x10, 0x11, 0x12, 0x0a, 0x0a, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e,
-	0x10, 0x12, 0x12, 0x0a, 0x0a, 0x06, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x10, 0x13, 0x12, 0x08,
-	0x0a, 0x04, 0x63, 0x69, 0x74, 0x79, 0x10, 0x14, 0x42, 0x6b, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e,
-	0x76, 0x31, 0x42, 0x0a, 0x56, 0x69, 0x6e, 0x63, 0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
-	0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e,
-	0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x74, 0x73, 0x75, 0x2f,
-	0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x76, 0x31, 0xa2,
-	0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02, 0x56, 0x31, 0xe2,
-	0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
-	0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x22, 0x1d, 0x0a, 0x05, 0x45, 0x72, 0x72, 0x6f,
+	0x72, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x2a, 0x3f, 0x0a, 0x08, 0x49, 0x6e, 0x74, 0x65, 0x72,
+	0x76, 0x61, 0x6c, 0x12, 0x08, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x65, 0x10, 0x00, 0x12, 0x0a, 0x0a,
+	0x06, 0x6d, 0x69, 0x6e, 0x75, 0x74, 0x65, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x68, 0x6f, 0x75,
+	0x72, 0x10, 0x02, 0x12, 0x08, 0x0a, 0x04, 0x77, 0x65, 0x65, 0x6b, 0x10, 0x03, 0x12, 0x09, 0x0a,
+	0x05, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x10, 0x04, 0x2a, 0x8b, 0x01, 0x0a, 0x06, 0x4d, 0x65, 0x74,
+	0x72, 0x69, 0x63, 0x12, 0x12, 0x0a, 0x0e, 0x75, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x5f, 0x6d,
+	0x65, 0x74, 0x72, 0x69, 0x63, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x76, 0x69, 0x73, 0x69, 0x74,
+	0x6f, 0x72, 0x73, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x76, 0x69, 0x73, 0x69, 0x74, 0x73, 0x10,
+	0x02, 0x12, 0x0d, 0x0a, 0x09, 0x70, 0x61, 0x67, 0x65, 0x76, 0x69, 0x65, 0x77, 0x73, 0x10, 0x03,
+	0x12, 0x13, 0x0a, 0x0f, 0x76, 0x69, 0x65, 0x77, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x76, 0x69,
+	0x73, 0x69, 0x74, 0x10, 0x04, 0x12, 0x0f, 0x0a, 0x0b, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x5f,
+	0x72, 0x61, 0x74, 0x65, 0x10, 0x05, 0x12, 0x12, 0x0a, 0x0e, 0x76, 0x69, 0x73, 0x69, 0x74, 0x5f,
+	0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x10, 0x06, 0x12, 0x0a, 0x0a, 0x06, 0x65, 0x76,
+	0x65, 0x6e, 0x74, 0x73, 0x10, 0x07, 0x2a, 0x9e, 0x02, 0x0a, 0x08, 0x50, 0x72, 0x6f, 0x70, 0x65,
+	0x72, 0x74, 0x79, 0x12, 0x09, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x10, 0x00, 0x12, 0x08,
+	0x0a, 0x04, 0x70, 0x61, 0x67, 0x65, 0x10, 0x02, 0x12, 0x0e, 0x0a, 0x0a, 0x65, 0x6e, 0x74, 0x72,
+	0x79, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x65, 0x78, 0x69, 0x74,
+	0x5f, 0x70, 0x61, 0x67, 0x65, 0x10, 0x04, 0x12, 0x0a, 0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63,
+	0x65, 0x10, 0x05, 0x12, 0x0c, 0x0a, 0x08, 0x72, 0x65, 0x66, 0x65, 0x72, 0x72, 0x65, 0x72, 0x10,
+	0x06, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x10,
+	0x07, 0x12, 0x0e, 0x0a, 0x0a, 0x75, 0x74, 0x6d, 0x5f, 0x6d, 0x65, 0x64, 0x69, 0x75, 0x6d, 0x10,
+	0x08, 0x12, 0x10, 0x0a, 0x0c, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x61, 0x6d, 0x70, 0x61, 0x69, 0x67,
+	0x6e, 0x10, 0x09, 0x12, 0x0f, 0x0a, 0x0b, 0x75, 0x74, 0x6d, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65,
+	0x6e, 0x74, 0x10, 0x0a, 0x12, 0x0c, 0x0a, 0x08, 0x75, 0x74, 0x6d, 0x5f, 0x74, 0x65, 0x72, 0x6d,
+	0x10, 0x0b, 0x12, 0x0a, 0x0a, 0x06, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x10, 0x0c, 0x12, 0x0b,
+	0x0a, 0x07, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x10, 0x0d, 0x12, 0x13, 0x0a, 0x0f, 0x62,
+	0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x0e,
+	0x12, 0x06, 0x0a, 0x02, 0x6f, 0x73, 0x10, 0x0f, 0x12, 0x0e, 0x0a, 0x0a, 0x6f, 0x73, 0x5f, 0x76,
+	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x10, 0x10, 0x12, 0x0b, 0x0a, 0x07, 0x63, 0x6f, 0x75, 0x6e,
+	0x74, 0x72, 0x79, 0x10, 0x11, 0x12, 0x0a, 0x0a, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e, 0x10,
+	0x12, 0x12, 0x0a, 0x0a, 0x06, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x10, 0x13, 0x12, 0x08, 0x0a,
+	0x04, 0x63, 0x69, 0x74, 0x79, 0x10, 0x14, 0x42, 0x6b, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e, 0x76,
+	0x31, 0x42, 0x0a, 0x56, 0x69, 0x6e, 0x63, 0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
+	0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63,
+	0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x74, 0x73, 0x75, 0x2f, 0x67,
+	0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x76, 0x31, 0xa2, 0x02,
+	0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02, 0x56, 0x31, 0xe2, 0x02,
+	0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
+	0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -3327,7 +3376,7 @@ func file_vince_v1_vince_proto_rawDescGZIP() []byte {
 }
 
 var file_vince_v1_vince_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_vince_v1_vince_proto_msgTypes = make([]protoimpl.MessageInfo, 45)
+var file_vince_v1_vince_proto_msgTypes = make([]protoimpl.MessageInfo, 46)
 var file_vince_v1_vince_proto_goTypes = []interface{}{
 	(Interval)(0),                 // 0: v1.Interval
 	(Metric)(0),                   // 1: v1.Metric
@@ -3353,85 +3402,86 @@ var file_vince_v1_vince_proto_goTypes = []interface{}{
 	(*Filters)(nil),               // 21: v1.Filters
 	(*Filter)(nil),                // 22: v1.Filter
 	(*Event)(nil),                 // 23: v1.Event
-	(*RemoveNode_Request)(nil),    // 24: v1.RemoveNode.Request
-	(*RemoveNode_Response)(nil),   // 25: v1.RemoveNode.Response
-	(*Load_Request)(nil),          // 26: v1.Load.Request
-	(*Load_Response)(nil),         // 27: v1.Load.Response
-	(*Backup_Request)(nil),        // 28: v1.Backup.Request
-	(*Backup_Response)(nil),       // 29: v1.Backup.Response
-	(*KV_Request)(nil),            // 30: v1.KV.Request
-	(*KV_Response)(nil),           // 31: v1.KV.Response
-	(*Join_Request)(nil),          // 32: v1.Join.Request
-	(*Join_Response)(nil),         // 33: v1.Join.Response
-	(*Query_Request)(nil),         // 34: v1.Query.Request
-	(*Query_Response)(nil),        // 35: v1.Query.Response
-	(*Realtime_Request)(nil),      // 36: v1.Realtime.Request
-	(*Realtime_Response)(nil),     // 37: v1.Realtime.Response
-	(*Aggregate_Request)(nil),     // 38: v1.Aggregate.Request
-	(*Aggregate_Response)(nil),    // 39: v1.Aggregate.Response
-	nil,                           // 40: v1.Aggregate.Response.ResultsEntry
-	(*Timeseries_Request)(nil),    // 41: v1.Timeseries.Request
-	(*Timeseries_Response)(nil),   // 42: v1.Timeseries.Response
-	(*Timeseries_Bucket)(nil),     // 43: v1.Timeseries.Bucket
-	nil,                           // 44: v1.Timeseries.Bucket.ValuesEntry
-	(*BreakDown_Request)(nil),     // 45: v1.BreakDown.Request
-	(*BreakDown_Response)(nil),    // 46: v1.BreakDown.Response
-	(*BreakDown_Result)(nil),      // 47: v1.BreakDown.Result
-	(*BreakDown_KeyValues)(nil),   // 48: v1.BreakDown.KeyValues
-	nil,                           // 49: v1.BreakDown.KeyValues.ValueEntry
-	(*TimePeriod_Custom)(nil),     // 50: v1.TimePeriod.Custom
-	(*List)(nil),                  // 51: v1.List
-	(*timestamppb.Timestamp)(nil), // 52: google.protobuf.Timestamp
+	(*Error)(nil),                 // 24: v1.Error
+	(*RemoveNode_Request)(nil),    // 25: v1.RemoveNode.Request
+	(*RemoveNode_Response)(nil),   // 26: v1.RemoveNode.Response
+	(*Load_Request)(nil),          // 27: v1.Load.Request
+	(*Load_Response)(nil),         // 28: v1.Load.Response
+	(*Backup_Request)(nil),        // 29: v1.Backup.Request
+	(*Backup_Response)(nil),       // 30: v1.Backup.Response
+	(*KV_Request)(nil),            // 31: v1.KV.Request
+	(*KV_Response)(nil),           // 32: v1.KV.Response
+	(*Join_Request)(nil),          // 33: v1.Join.Request
+	(*Join_Response)(nil),         // 34: v1.Join.Response
+	(*Query_Request)(nil),         // 35: v1.Query.Request
+	(*Query_Response)(nil),        // 36: v1.Query.Response
+	(*Realtime_Request)(nil),      // 37: v1.Realtime.Request
+	(*Realtime_Response)(nil),     // 38: v1.Realtime.Response
+	(*Aggregate_Request)(nil),     // 39: v1.Aggregate.Request
+	(*Aggregate_Response)(nil),    // 40: v1.Aggregate.Response
+	nil,                           // 41: v1.Aggregate.Response.ResultsEntry
+	(*Timeseries_Request)(nil),    // 42: v1.Timeseries.Request
+	(*Timeseries_Response)(nil),   // 43: v1.Timeseries.Response
+	(*Timeseries_Bucket)(nil),     // 44: v1.Timeseries.Bucket
+	nil,                           // 45: v1.Timeseries.Bucket.ValuesEntry
+	(*BreakDown_Request)(nil),     // 46: v1.BreakDown.Request
+	(*BreakDown_Response)(nil),    // 47: v1.BreakDown.Response
+	(*BreakDown_Result)(nil),      // 48: v1.BreakDown.Result
+	(*BreakDown_KeyValues)(nil),   // 49: v1.BreakDown.KeyValues
+	nil,                           // 50: v1.BreakDown.KeyValues.ValueEntry
+	(*TimePeriod_Custom)(nil),     // 51: v1.TimePeriod.Custom
+	(*List)(nil),                  // 52: v1.List
+	(*timestamppb.Timestamp)(nil), // 53: google.protobuf.Timestamp
 }
 var file_vince_v1_vince_proto_depIdxs = []int32{
 	9,  // 0: v1.Command.credentials:type_name -> v1.Credentials
-	32, // 1: v1.Command.join:type_name -> v1.Join.Request
-	34, // 2: v1.Command.query:type_name -> v1.Query.Request
-	24, // 3: v1.Command.remove_node:type_name -> v1.RemoveNode.Request
-	51, // 4: v1.Command.data:type_name -> v1.List
-	33, // 5: v1.CommandResponse.join:type_name -> v1.Join.Response
-	35, // 6: v1.CommandResponse.query:type_name -> v1.Query.Response
-	25, // 7: v1.CommandResponse.remove_node:type_name -> v1.RemoveNode.Response
+	33, // 1: v1.Command.join:type_name -> v1.Join.Request
+	35, // 2: v1.Command.query:type_name -> v1.Query.Request
+	25, // 3: v1.Command.remove_node:type_name -> v1.RemoveNode.Request
+	52, // 4: v1.Command.data:type_name -> v1.List
+	34, // 5: v1.CommandResponse.join:type_name -> v1.Join.Response
+	36, // 6: v1.CommandResponse.query:type_name -> v1.Query.Response
+	26, // 7: v1.CommandResponse.remove_node:type_name -> v1.RemoveNode.Response
 	3,  // 8: v1.TimePeriod.base:type_name -> v1.TimePeriod.Base
-	50, // 9: v1.TimePeriod.custom:type_name -> v1.TimePeriod.Custom
+	51, // 9: v1.TimePeriod.custom:type_name -> v1.TimePeriod.Custom
 	22, // 10: v1.Filters.list:type_name -> v1.Filter
 	4,  // 11: v1.Filters.projection:type_name -> v1.Filters.Projection
 	2,  // 12: v1.Filter.property:type_name -> v1.Property
 	5,  // 13: v1.Filter.op:type_name -> v1.Filter.OP
-	52, // 14: v1.Event.timestamp:type_name -> google.protobuf.Timestamp
-	52, // 15: v1.KV.Request.ttl:type_name -> google.protobuf.Timestamp
-	36, // 16: v1.Query.Request.realtime:type_name -> v1.Realtime.Request
-	38, // 17: v1.Query.Request.aggregate:type_name -> v1.Aggregate.Request
-	41, // 18: v1.Query.Request.timeseries:type_name -> v1.Timeseries.Request
-	45, // 19: v1.Query.Request.breakdown:type_name -> v1.BreakDown.Request
-	37, // 20: v1.Query.Response.realtime:type_name -> v1.Realtime.Response
-	39, // 21: v1.Query.Response.aggregate:type_name -> v1.Aggregate.Response
-	42, // 22: v1.Query.Response.timeseries:type_name -> v1.Timeseries.Response
-	46, // 23: v1.Query.Response.breakdown:type_name -> v1.BreakDown.Response
+	53, // 14: v1.Event.timestamp:type_name -> google.protobuf.Timestamp
+	53, // 15: v1.KV.Request.ttl:type_name -> google.protobuf.Timestamp
+	37, // 16: v1.Query.Request.realtime:type_name -> v1.Realtime.Request
+	39, // 17: v1.Query.Request.aggregate:type_name -> v1.Aggregate.Request
+	42, // 18: v1.Query.Request.timeseries:type_name -> v1.Timeseries.Request
+	46, // 19: v1.Query.Request.breakdown:type_name -> v1.BreakDown.Request
+	38, // 20: v1.Query.Response.realtime:type_name -> v1.Realtime.Response
+	40, // 21: v1.Query.Response.aggregate:type_name -> v1.Aggregate.Response
+	43, // 22: v1.Query.Response.timeseries:type_name -> v1.Timeseries.Response
+	47, // 23: v1.Query.Response.breakdown:type_name -> v1.BreakDown.Response
 	20, // 24: v1.Aggregate.Request.period:type_name -> v1.TimePeriod
 	1,  // 25: v1.Aggregate.Request.metrics:type_name -> v1.Metric
 	22, // 26: v1.Aggregate.Request.filters:type_name -> v1.Filter
-	52, // 27: v1.Aggregate.Request.date:type_name -> google.protobuf.Timestamp
-	40, // 28: v1.Aggregate.Response.results:type_name -> v1.Aggregate.Response.ResultsEntry
+	53, // 27: v1.Aggregate.Request.date:type_name -> google.protobuf.Timestamp
+	41, // 28: v1.Aggregate.Response.results:type_name -> v1.Aggregate.Response.ResultsEntry
 	20, // 29: v1.Timeseries.Request.period:type_name -> v1.TimePeriod
 	1,  // 30: v1.Timeseries.Request.metrics:type_name -> v1.Metric
 	0,  // 31: v1.Timeseries.Request.interval:type_name -> v1.Interval
 	22, // 32: v1.Timeseries.Request.filters:type_name -> v1.Filter
-	52, // 33: v1.Timeseries.Request.date:type_name -> google.protobuf.Timestamp
-	43, // 34: v1.Timeseries.Response.results:type_name -> v1.Timeseries.Bucket
-	52, // 35: v1.Timeseries.Bucket.timestamp:type_name -> google.protobuf.Timestamp
-	44, // 36: v1.Timeseries.Bucket.values:type_name -> v1.Timeseries.Bucket.ValuesEntry
+	53, // 33: v1.Timeseries.Request.date:type_name -> google.protobuf.Timestamp
+	44, // 34: v1.Timeseries.Response.results:type_name -> v1.Timeseries.Bucket
+	53, // 35: v1.Timeseries.Bucket.timestamp:type_name -> google.protobuf.Timestamp
+	45, // 36: v1.Timeseries.Bucket.values:type_name -> v1.Timeseries.Bucket.ValuesEntry
 	2,  // 37: v1.BreakDown.Request.property:type_name -> v1.Property
 	20, // 38: v1.BreakDown.Request.period:type_name -> v1.TimePeriod
 	1,  // 39: v1.BreakDown.Request.metrics:type_name -> v1.Metric
 	22, // 40: v1.BreakDown.Request.filters:type_name -> v1.Filter
-	52, // 41: v1.BreakDown.Request.date:type_name -> google.protobuf.Timestamp
-	47, // 42: v1.BreakDown.Response.results:type_name -> v1.BreakDown.Result
+	53, // 41: v1.BreakDown.Request.date:type_name -> google.protobuf.Timestamp
+	48, // 42: v1.BreakDown.Response.results:type_name -> v1.BreakDown.Result
 	2,  // 43: v1.BreakDown.Result.property:type_name -> v1.Property
-	48, // 44: v1.BreakDown.Result.values:type_name -> v1.BreakDown.KeyValues
-	49, // 45: v1.BreakDown.KeyValues.value:type_name -> v1.BreakDown.KeyValues.ValueEntry
-	52, // 46: v1.TimePeriod.Custom.start:type_name -> google.protobuf.Timestamp
-	52, // 47: v1.TimePeriod.Custom.end:type_name -> google.protobuf.Timestamp
+	49, // 44: v1.BreakDown.Result.values:type_name -> v1.BreakDown.KeyValues
+	50, // 45: v1.BreakDown.KeyValues.value:type_name -> v1.BreakDown.KeyValues.ValueEntry
+	53, // 46: v1.TimePeriod.Custom.start:type_name -> google.protobuf.Timestamp
+	53, // 47: v1.TimePeriod.Custom.end:type_name -> google.protobuf.Timestamp
 	48, // [48:48] is the sub-list for method output_type
 	48, // [48:48] is the sub-list for method input_type
 	48, // [48:48] is the sub-list for extension type_name
@@ -3663,7 +3713,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RemoveNode_Request); i {
+			switch v := v.(*Error); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3675,7 +3725,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RemoveNode_Response); i {
+			switch v := v.(*RemoveNode_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3687,7 +3737,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Load_Request); i {
+			switch v := v.(*RemoveNode_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3699,7 +3749,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Load_Response); i {
+			switch v := v.(*Load_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3711,7 +3761,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Backup_Request); i {
+			switch v := v.(*Load_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3723,7 +3773,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Backup_Response); i {
+			switch v := v.(*Backup_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3735,7 +3785,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*KV_Request); i {
+			switch v := v.(*Backup_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3747,7 +3797,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*KV_Response); i {
+			switch v := v.(*KV_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3759,7 +3809,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Join_Request); i {
+			switch v := v.(*KV_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3771,7 +3821,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Join_Response); i {
+			switch v := v.(*Join_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3783,7 +3833,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Query_Request); i {
+			switch v := v.(*Join_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3795,7 +3845,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Query_Response); i {
+			switch v := v.(*Query_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3807,7 +3857,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Realtime_Request); i {
+			switch v := v.(*Query_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3819,7 +3869,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Realtime_Response); i {
+			switch v := v.(*Realtime_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3831,7 +3881,7 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Aggregate_Request); i {
+			switch v := v.(*Realtime_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3843,6 +3893,18 @@ func file_vince_v1_vince_proto_init() {
 			}
 		}
 		file_vince_v1_vince_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Aggregate_Request); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_v1_vince_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Aggregate_Response); i {
 			case 0:
 				return &v.state
@@ -3854,7 +3916,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Timeseries_Request); i {
 			case 0:
 				return &v.state
@@ -3866,7 +3928,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Timeseries_Response); i {
 			case 0:
 				return &v.state
@@ -3878,7 +3940,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Timeseries_Bucket); i {
 			case 0:
 				return &v.state
@@ -3890,7 +3952,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*BreakDown_Request); i {
 			case 0:
 				return &v.state
@@ -3902,7 +3964,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*BreakDown_Response); i {
 			case 0:
 				return &v.state
@@ -3914,7 +3976,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*BreakDown_Result); i {
 			case 0:
 				return &v.state
@@ -3926,7 +3988,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*BreakDown_KeyValues); i {
 			case 0:
 				return &v.state
@@ -3938,7 +4000,7 @@ func file_vince_v1_vince_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_vince_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TimePeriod_Custom); i {
 			case 0:
 				return &v.state
@@ -3966,13 +4028,13 @@ func file_vince_v1_vince_proto_init() {
 		(*TimePeriod_Base_)(nil),
 		(*TimePeriod_Custom_)(nil),
 	}
-	file_vince_v1_vince_proto_msgTypes[28].OneofWrappers = []interface{}{
+	file_vince_v1_vince_proto_msgTypes[29].OneofWrappers = []interface{}{
 		(*Query_Request_Realtime)(nil),
 		(*Query_Request_Aggregate)(nil),
 		(*Query_Request_Timeseries)(nil),
 		(*Query_Request_Breakdown)(nil),
 	}
-	file_vince_v1_vince_proto_msgTypes[29].OneofWrappers = []interface{}{
+	file_vince_v1_vince_proto_msgTypes[30].OneofWrappers = []interface{}{
 		(*Query_Response_Realtime)(nil),
 		(*Query_Response_Aggregate)(nil),
 		(*Query_Response_Timeseries)(nil),
@@ -3984,7 +4046,7 @@ func file_vince_v1_vince_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_vince_v1_vince_proto_rawDesc,
 			NumEnums:      6,
-			NumMessages:   45,
+			NumMessages:   46,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

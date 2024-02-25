@@ -18,6 +18,8 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/rtls"
 	"github.com/vinceanalytics/vince/internal/cluster/store"
+	"github.com/vinceanalytics/vince/internal/defaults"
+	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -279,12 +281,264 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) handleRealtime(w http.ResponseWriter, r *http.Request, params QueryParams) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	if !s.CheckRequestPerm(r, v1.Credential_QUERY) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := r.Context()
+	req := &v1.Realtime_Request{
+		SiteId:   params.SiteID(),
+		TenantId: tenant.Get(ctx),
+	}
+	defaults.Set(req)
+	res, err := s.store.Realtime(ctx, req)
+	if err == nil {
+		s.write(w, res)
+		return
+	}
+	if !errors.Is(err, store.ErrNotLeader) {
+		s.jsonErr(w, err.Error())
+		return
+	}
+
+	if s.DoRedirect(w, r, params) {
+		return
+	}
+
+	addr, err := s.store.LeaderAddr(ctx)
+	if err != nil {
+		s.jsonErr(w, fmt.Sprintf("leader address: %s", err.Error()))
+		return
+	}
+	if addr == "" {
+		s.jsonErr(w, ErrLeaderNotFound.Error(), http.StatusServiceUnavailable)
+		return
+	}
+
+	username, password, ok := r.BasicAuth()
+	if !ok {
+		username = ""
+	}
+
+	w.Header().Add(ServedByHTTPHeader, addr)
+	res, err = s.cluster.Realtime(ctx, addr, makeCredentials(username, password),
+		req)
+	if err != nil {
+		if err.Error() == "unauthorized" {
+			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
+			return
+		}
+		s.jsonErr(w, fmt.Sprintf("node failed to process Query on remote node at %s: %s",
+			addr, err.Error()))
+		return
+	}
+	s.write(w, res)
+}
+
+func (s *Service) jsonErr(w http.ResponseWriter, msg string, code ...int) {
+	c := http.StatusInternalServerError
+	if len(code) > 0 {
+		c = code[0]
+	}
+	w.WriteHeader(c)
+	s.write(w, &v1.Error{Error: msg})
 }
 func (s *Service) handleAggregate(w http.ResponseWriter, r *http.Request, params QueryParams) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	if !s.CheckRequestPerm(r, v1.Credential_QUERY) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := r.Context()
+	query := r.URL.Query()
+	req := &v1.Aggregate_Request{
+		SiteId:  params.SiteID(),
+		Period:  ParsePeriod(ctx, query),
+		Metrics: ParseMetrics(ctx, query),
+		Filters: ParseFilters(ctx, query),
+	}
+	defaults.Set(req)
+	res, err := s.store.Aggregate(ctx, req)
+	if err == nil {
+		s.write(w, res)
+		return
+	}
+	if !errors.Is(err, store.ErrNotLeader) {
+		s.jsonErr(w, err.Error())
+		return
+	}
+
+	if s.DoRedirect(w, r, params) {
+		return
+	}
+
+	addr, err := s.store.LeaderAddr(ctx)
+	if err != nil {
+		s.jsonErr(w, fmt.Sprintf("leader address: %s", err.Error()))
+		return
+	}
+	if addr == "" {
+		s.jsonErr(w, ErrLeaderNotFound.Error(), http.StatusServiceUnavailable)
+		return
+	}
+
+	username, password, ok := r.BasicAuth()
+	if !ok {
+		username = ""
+	}
+
+	w.Header().Add(ServedByHTTPHeader, addr)
+	res, err = s.cluster.Aggregate(ctx, addr, makeCredentials(username, password),
+		req)
+	if err != nil {
+		if err.Error() == "unauthorized" {
+			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
+			return
+		}
+		s.jsonErr(w, fmt.Sprintf("node failed to process Query on remote node at %s: %s",
+			addr, err.Error()))
+		return
+	}
+	s.write(w, res)
 }
 func (s *Service) handleTimeseries(w http.ResponseWriter, r *http.Request, params QueryParams) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	if !s.CheckRequestPerm(r, v1.Credential_QUERY) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := r.Context()
+	query := r.URL.Query()
+	req := &v1.Timeseries_Request{
+		SiteId:   params.SiteID(),
+		Period:   ParsePeriod(ctx, query),
+		Metrics:  ParseMetrics(ctx, query),
+		Interval: ParseInterval(ctx, query),
+		Filters:  ParseFilters(ctx, query),
+	}
+	defaults.Set(req)
+	res, err := s.store.Timeseries(ctx, req)
+	if err == nil {
+		s.write(w, res)
+		return
+	}
+	if !errors.Is(err, store.ErrNotLeader) {
+		s.jsonErr(w, err.Error())
+		return
+	}
+
+	if s.DoRedirect(w, r, params) {
+		return
+	}
+
+	addr, err := s.store.LeaderAddr(ctx)
+	if err != nil {
+		s.jsonErr(w, fmt.Sprintf("leader address: %s", err.Error()))
+		return
+	}
+	if addr == "" {
+		s.jsonErr(w, ErrLeaderNotFound.Error(), http.StatusServiceUnavailable)
+		return
+	}
+
+	username, password, ok := r.BasicAuth()
+	if !ok {
+		username = ""
+	}
+
+	w.Header().Add(ServedByHTTPHeader, addr)
+	res, err = s.cluster.Timeseries(ctx, addr, makeCredentials(username, password),
+		req)
+	if err != nil {
+		if err.Error() == "unauthorized" {
+			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
+			return
+		}
+		s.jsonErr(w, fmt.Sprintf("node failed to process Query on remote node at %s: %s",
+			addr, err.Error()))
+		return
+	}
+	s.write(w, res)
 }
 func (s *Service) handleBreakdown(w http.ResponseWriter, r *http.Request, params QueryParams) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	if !s.CheckRequestPerm(r, v1.Credential_QUERY) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := r.Context()
+	query := r.URL.Query()
+	req := &v1.BreakDown_Request{
+		SiteId:   params.SiteID(),
+		Period:   ParsePeriod(ctx, query),
+		Metrics:  ParseMetrics(ctx, query),
+		Filters:  ParseFilters(ctx, query),
+		Property: ParseProperty(ctx, query),
+	}
+	defaults.Set(req)
+	res, err := s.store.Breakdown(ctx, req)
+	if err == nil {
+		s.write(w, res)
+		return
+	}
+	if !errors.Is(err, store.ErrNotLeader) {
+		s.jsonErr(w, err.Error())
+		return
+	}
+
+	if s.DoRedirect(w, r, params) {
+		return
+	}
+
+	addr, err := s.store.LeaderAddr(ctx)
+	if err != nil {
+		s.jsonErr(w, fmt.Sprintf("leader address: %s", err.Error()))
+		return
+	}
+	if addr == "" {
+		s.jsonErr(w, ErrLeaderNotFound.Error(), http.StatusServiceUnavailable)
+		return
+	}
+
+	username, password, ok := r.BasicAuth()
+	if !ok {
+		username = ""
+	}
+
+	w.Header().Add(ServedByHTTPHeader, addr)
+	res, err = s.cluster.Breakdown(ctx, addr, makeCredentials(username, password),
+		req)
+	if err != nil {
+		if err.Error() == "unauthorized" {
+			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
+			return
+		}
+		s.jsonErr(w, fmt.Sprintf("node failed to process Query on remote node at %s: %s",
+			addr, err.Error()))
+		return
+	}
+	s.write(w, res)
 }
 func (s *Service) handleApiEvent(w http.ResponseWriter, r *http.Request, params QueryParams) {
 }

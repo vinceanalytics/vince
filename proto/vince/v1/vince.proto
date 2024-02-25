@@ -298,3 +298,5 @@ message Event {
 
   google.protobuf.Timestamp timestamp = 9;
 }
+
+message Error { string error = 1; }
