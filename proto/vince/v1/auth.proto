@@ -17,5 +17,6 @@ message Credential {
     READY = 6;
     BACKUP = 7;
     LOAD = 8;
+    REMOVE = 9;
   }
 }

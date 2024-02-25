@@ -10,6 +10,7 @@ message Node {
   double time = 6;
   string time_s = 7;
   string error = 8;
+  bool leader = 9;
 
   message List { repeated Node items = 1; }
 }
