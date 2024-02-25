@@ -3,6 +3,7 @@ package v1;
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 import "vince/v1/events.proto";
 
 message NodeMeta {
@@ -35,6 +36,27 @@ message Credentials {
 
 message RemoveNode {
   message Request { string id = 1; }
+  message Response { string error = 1; }
+}
+
+message Load {
+  message Request { bytes data = 1; }
+  message Response { string error = 1; }
+}
+
+message Backup {
+  message Request {
+    bool leader = 1;
+    bool compress = 2;
+  }
+  message Response { string error = 1; }
+}
+message KV {
+  message Request {
+    bytes key = 1 [ (buf.validate.field).required = true ];
+    bytes value = 2 [ (buf.validate.field).required = true ];
+    google.protobuf.Timestamp ttl = 3 [ (buf.validate.field).required = true ];
+  }
   message Response { string error = 1; }
 }
 

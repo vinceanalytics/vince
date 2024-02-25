@@ -1,0 +1,29 @@
+syntax = "proto3";
+package v1;
+
+message Node {
+  string id = 1;
+  string api_addr = 2;
+  string addr = 3;
+  bool voter = 4;
+  bool reachable = 5;
+  double time = 6;
+  string time_s = 7;
+  string error = 8;
+
+  message List { repeated Node items = 1; }
+}
+
+message Server {
+  string id = 1;
+  string addr = 2;
+  Suffrage suffrage = 3;
+
+  enum Suffrage {
+    Voter = 0;
+    NotVoter = 1;
+    Staging = 2;
+  }
+
+  message List { repeated Server items = 1; }
+}
