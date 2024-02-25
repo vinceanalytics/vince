@@ -84,7 +84,7 @@ type Cluster interface {
 	KV(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.KV_Request) error
 	Load(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Load_Request, timeout time.Duration, retries int) error
 	Remove(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.RemoveNode_Request) error
-	Backup(ctx context.Context, br *v1.Backup_Request, nodeAddr string, cred *v1.Credential, dst io.Writer) error
+	Backup(ctx context.Context, br *v1.Backup_Request, nodeAddr string, cred *v1.Credential, timeout time.Duration, dst io.Writer) error
 
 	Realtime(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Realtime_Request) (*v1.Realtime_Response, error)
 	Aggregate(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error)
@@ -289,9 +289,65 @@ func (s *Service) handleApiEvent(w http.ResponseWriter, r *http.Request, params 
 }
 func (s *Service) handleEvent(w http.ResponseWriter, r *http.Request, params QueryParams) {
 }
-func (s *Service) handleBackup(w http.ResponseWriter, r *http.Request, params QueryParams) {}
 func (s *Service) handleNodes(w http.ResponseWriter, r *http.Request, params QueryParams)  {}
 func (s *Service) handleRemove(w http.ResponseWriter, r *http.Request, params QueryParams) {}
+func (s *Service) handleBackup(w http.ResponseWriter, r *http.Request, params QueryParams) {
+	if !s.CheckRequestPerm(r, v1.Credential_BACKUP) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	br := &v1.Backup_Request{
+		Leader:   !params.NoLeader(),
+		Compress: params.Compress(),
+	}
+	ctx := r.Context()
+	err := s.store.Backup(ctx, br, w)
+	if err == nil {
+		s.lastBackup = time.Now()
+		return
+	}
+	if !errors.Is(err, store.ErrNotLeader) {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if s.DoRedirect(w, r, params) {
+		return
+	}
+
+	addr, err := s.store.LeaderAddr(ctx)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("leader address: %s", err.Error()),
+			http.StatusInternalServerError)
+		return
+	}
+	if addr == "" {
+		http.Error(w, ErrLeaderNotFound.Error(), http.StatusServiceUnavailable)
+		return
+	}
+
+	username, password, ok := r.BasicAuth()
+	if !ok {
+		username = ""
+	}
+
+	w.Header().Add(ServedByHTTPHeader, addr)
+	backupErr := s.cluster.Backup(ctx, br, addr, makeCredentials(username, password),
+		params.Timeout(defaultTimeout), w)
+	if err != nil {
+		if backupErr.Error() == "unauthorized" {
+			http.Error(w, "remote backup not authorized", http.StatusUnauthorized)
+		} else {
+			http.Error(w, backupErr.Error(), http.StatusInternalServerError)
+		}
+		return
+
+	}
+}
 func (s *Service) handleLoad(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	if !s.CheckRequestPerm(r, v1.Credential_LOAD) {
 		w.WriteHeader(http.StatusUnauthorized)
