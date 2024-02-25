@@ -232,6 +232,8 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch {
+	case r.URL.Path == "/" || r.URL.Path == "":
+		http.Redirect(w, r, "/status", http.StatusFound)
 	case strings.HasPrefix(r.URL.Path, "/api/v1/stats/realtime/visitors"):
 		s.handleRealtime(w, r, params)
 	case strings.HasPrefix(r.URL.Path, "/api/v1/stats/aggregate"):
