@@ -289,9 +289,25 @@ func (s *Service) handleEvent(w http.ResponseWriter, r *http.Request, params Que
 }
 func (s *Service) handleBackup(w http.ResponseWriter, r *http.Request, params QueryParams) {}
 func (s *Service) handleLoad(w http.ResponseWriter, r *http.Request, params QueryParams)   {}
-func (s *Service) handleBoot(w http.ResponseWriter, r *http.Request, params QueryParams)   {}
 func (s *Service) handleNodes(w http.ResponseWriter, r *http.Request, params QueryParams)  {}
 func (s *Service) handleRemove(w http.ResponseWriter, r *http.Request, params QueryParams) {}
+func (s *Service) handleBoot(w http.ResponseWriter, r *http.Request, params QueryParams) {
+	if !s.CheckRequestPerm(r, v1.Credential_LOAD) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	s.log.Info("Starting booting process")
+	_, err := s.store.ReadFrom(r.Context(), r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
+	}
+}
 func (s *Service) handleStatus(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	if !s.CheckRequestPerm(r, v1.Credential_STATUS) {
