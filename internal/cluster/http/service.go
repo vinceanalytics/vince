@@ -9,12 +9,18 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
+	"runtime"
 	"strings"
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/rtls"
 	"github.com/vinceanalytics/vince/version"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -61,6 +67,8 @@ type Store interface {
 	// the Raft system. It then triggers a Raft snapshot, which will then make
 	// Raft aware of the new data.
 	ReadFrom(ctx context.Context, r io.Reader) (int64, error)
+
+	Status() (*v1.Status_Store, error)
 }
 
 // GetAddresser is the interface that wraps the GetNodeAPIAddr method.
@@ -81,6 +89,8 @@ type Cluster interface {
 	Aggregate(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error)
 	Timeseries(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error)
 	Breakdown(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error)
+
+	Status() (*v1.Status_Cluster, error)
 }
 
 // CredentialStore is the interface credential stores must support.
@@ -282,8 +292,114 @@ func (s *Service) handleLoad(w http.ResponseWriter, r *http.Request, params Quer
 func (s *Service) handleBoot(w http.ResponseWriter, r *http.Request, params QueryParams)   {}
 func (s *Service) handleNodes(w http.ResponseWriter, r *http.Request, params QueryParams)  {}
 func (s *Service) handleRemove(w http.ResponseWriter, r *http.Request, params QueryParams) {}
-func (s *Service) handleStatus(w http.ResponseWriter, r *http.Request, params QueryParams) {}
-func (s *Service) handleReady(w http.ResponseWriter, r *http.Request, params QueryParams)  {}
+func (s *Service) handleStatus(w http.ResponseWriter, r *http.Request, params QueryParams) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	if !s.CheckRequestPerm(r, v1.Credential_STATUS) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	storeStatus, err := s.store.Status()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("store stats: %s", err.Error()),
+			http.StatusInternalServerError)
+		return
+	}
+	clusterStatus, err := s.cluster.Status()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("store stats: %s", err.Error()),
+			http.StatusInternalServerError)
+		return
+	}
+	status := s.status()
+	status.Http.Cluster = clusterStatus
+	status.Store = storeStatus
+	s.write(w, status)
+}
+
+func (s *Service) write(w http.ResponseWriter, msg proto.Message) {
+	data, _ := protojson.Marshal(msg)
+	_, err := w.Write(data)
+	if err != nil {
+		s.log.Error("failed writing response data", "err", err)
+	}
+
+}
+
+func (s *Service) CheckRequestPerm(r *http.Request, perm v1.Credential_Permission) (b bool) {
+	// No auth store set, so no checking required.
+	if s.creds == nil {
+		return true
+	}
+	username, password, ok := r.BasicAuth()
+	if !ok {
+		username = ""
+	}
+
+	return s.creds.AA(username, password, perm)
+}
+
+func (s *Service) handleReady(w http.ResponseWriter, r *http.Request, params QueryParams) {}
+
+func (s *Service) status() *v1.Status {
+	return &v1.Status{
+		Os:      s.osStatus(),
+		Runtime: s.runtimeStatus(),
+		Http:    s.httpStatus(),
+		Node:    s.nodeStatus(),
+	}
+}
+
+func (s *Service) osStatus() *v1.Status_Os {
+	o := &v1.Status_Os{
+		Pid:      int32(os.Getpid()),
+		Ppid:     int32(os.Getppid()),
+		PageSize: int32(os.Getpagesize()),
+	}
+	o.Executable, _ = os.Executable()
+	o.Hostname, _ = os.Hostname()
+	return o
+}
+
+func (s *Service) httpStatus() *v1.Status_HTTP {
+	return &v1.Status_HTTP{
+		BindAddress: s.ln.Addr().String(),
+		EnabledAuth: s.creds != nil,
+		Tls:         s.tlsStatus(),
+	}
+}
+
+func (s *Service) nodeStatus() *v1.Status_Node {
+	now := time.Now()
+	return &v1.Status_Node{
+		StartTime:   timestamppb.New(s.start),
+		CurrentTime: timestamppb.New(now),
+		Uptime:      durationpb.New(now.Sub(s.start)),
+	}
+}
+
+func (s *Service) runtimeStatus() *v1.Status_Runtime {
+	return &v1.Status_Runtime{
+		Os:       runtime.GOOS,
+		Arch:     runtime.GOARCH,
+		MaxProcs: int32(runtime.GOMAXPROCS(0)),
+		NumCpu:   int32(runtime.NumCPU()),
+		Version:  runtime.Version(),
+	}
+}
+
+func (s *Service) tlsStatus() *v1.Status_TLS {
+	o := &v1.Status_TLS{
+		Enabled: s.tls != nil,
+	}
+	if s.tls != nil {
+		o.ClientAuth = s.tls.ClientAuth.String()
+		o.CertFile = s.CertFile
+		o.KeyFile = s.KeyFile
+		o.CaFile = s.CACertFile
+		o.NextProtos = s.tls.NextProtos
+	}
+	return o
+}
 
 // addBuildVersion adds the build version to the HTTP response.
 func (s *Service) addBuildVersion(w http.ResponseWriter) {

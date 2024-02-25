@@ -1,0 +1,52 @@
+syntax = "proto3";
+package v1;
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+message Status {
+  Os os = 1;
+  Runtime runtime = 2;
+  Store store = 3;
+  HTTP http = 4;
+  Node node = 5;
+
+  message Runtime {
+    string os = 1;
+    string arch = 2;
+    int32 max_procs = 3;
+    int32 num_cpu = 4;
+    string version = 5;
+  }
+
+  message Os {
+    int32 pid = 1;
+    int32 ppid = 2;
+    int32 page_size = 3;
+    string executable = 4;
+    string hostname = 5;
+  }
+
+  message HTTP {
+    string bind_address = 1;
+    bool enabled_auth = 2;
+    TLS tls = 3;
+    Cluster cluster = 4;
+  }
+  message Store {}
+  message Cluster {}
+
+  message TLS {
+    bool enabled = 1;
+    string client_auth = 2;
+    string cert_file = 3;
+    string key_file = 4;
+    string ca_file = 5;
+    repeated string next_protos = 6;
+  }
+
+  message Node {
+    google.protobuf.Timestamp start_time = 1;
+    google.protobuf.Timestamp current_time = 2;
+    google.protobuf.Duration uptime = 3;
+  }
+}
