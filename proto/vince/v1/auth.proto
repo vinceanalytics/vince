@@ -1,0 +1,21 @@
+syntax = "proto3";
+package v1;
+
+message Credential {
+  string username = 1;
+  string password = 2;
+  repeated Permission perms = 3;
+
+  message List { repeated Credential items = 1; }
+
+  enum Permission {
+    ALL = 0;
+    JOIN = 2;
+    JOIN_READ_ONLY = 3;
+    QUERY = 4;
+    STATUS = 5;
+    READY = 6;
+    BACKUP = 7;
+    LOAD = 8;
+  }
+}
