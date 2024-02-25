@@ -17,7 +17,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/session"
 	"github.com/vinceanalytics/vince/internal/stats"
 	"github.com/vinceanalytics/vince/internal/tenant"
-	"github.com/vinceanalytics/vince/internal/tracker"
 	"github.com/vinceanalytics/vince/version"
 )
 
@@ -34,8 +33,6 @@ type API struct {
 	tenants *tenant.Tenants
 	hand    http.Handler
 }
-
-var trackerServer = http.FileServer(http.FS(tracker.JS))
 
 var gzipPool = &sync.Pool{New: func() any {
 	return gzip.NewWriter(nil)
@@ -94,15 +91,6 @@ func New(ctx context.Context, o *v1.Config, tenants *tenant.Tenants) (*API, erro
 			case "/api/v1/stats/breakdown":
 				stats.BreakDown(w, r)
 				return
-			default:
-				if strings.HasPrefix(r.URL.Path, "/js/") {
-					w.Header().Set("x-content-type-options", "nosniff")
-					w.Header().Set("cross-origin-resource-policy", "cross-origin")
-					w.Header().Set("access-control-allow-origin", "*")
-					w.Header().Set("cache-control", "public, max-age=86400, must-revalidate")
-					trackerServer.ServeHTTP(w, r)
-					return
-				}
 			}
 		case http.MethodPost:
 			switch r.URL.Path {
@@ -111,15 +99,6 @@ func New(ctx context.Context, o *v1.Config, tenants *tenant.Tenants) (*API, erro
 				return
 			case "/api/event":
 				ReceiveEvent(tenants, w, r)
-				return
-			}
-		case http.MethodHead:
-			if strings.HasPrefix(r.URL.Path, "/js/") {
-				w.Header().Set("x-content-type-options", "nosniff")
-				w.Header().Set("cross-origin-resource-policy", "cross-origin")
-				w.Header().Set("access-control-allow-origin", "*")
-				w.Header().Set("cache-control", "public, max-age=86400, must-revalidate")
-				trackerServer.ServeHTTP(w, r)
 				return
 			}
 		}
