@@ -16,6 +16,7 @@ message Command {
       DataService.Request data = 5;
       Backup.Request backup = 6;
       NodeAPI.Request node_api = 7;
+      Load.Request load = 8;
     }
   }
   message Response {
@@ -26,6 +27,7 @@ message Command {
       DataService.Response data = 5;
       Backup.Response backup = 6;
       NodeAPI.Response node_api = 7;
+      Load.Response load = 8;
     }
   }
 }

@@ -126,13 +126,11 @@ func (c *Client) GetNodeAPIAddr(nodeAddr string, timeout time.Duration) (string,
 	return result.Url, nil
 }
 
-func (c *Client) Data(ctx context.Context, req *v1.Data, nodeAddr string, creds *v1.Credentials, timeout time.Duration, retries int) error {
+func (c *Client) Data(ctx context.Context, req *v1.DataService_Request, nodeAddr string, creds *v1.Credentials, timeout time.Duration, retries int) error {
 	r := v1.Command_Request{
 		Credentials: creds,
 		Request: &v1.Command_Request_Data{
-			Data: &v1.DataService_Request{
-				Data: req,
-			},
+			Data: req,
 		},
 	}
 	var w v1.Command_Response
@@ -141,6 +139,81 @@ func (c *Client) Data(ctx context.Context, req *v1.Data, nodeAddr string, creds 
 		return err
 	}
 	result := w.GetData()
+	if result.Error != "" {
+		return errors.New(result.Error)
+	}
+	return nil
+}
+func (c *Client) Join(ctx context.Context, req *v1.Join_Request, nodeAddr string, creds *v1.Credentials, timeout time.Duration, retries int) error {
+	r := v1.Command_Request{
+		Credentials: creds,
+		Request: &v1.Command_Request_Join{
+			Join: req,
+		},
+	}
+	var w v1.Command_Response
+	_, err := c.retry(&w, &r, nodeAddr, timeout, retries)
+	if err != nil {
+		return err
+	}
+	result := w.GetJoin()
+	if result.Error != "" {
+		return errors.New(result.Error)
+	}
+	return nil
+}
+
+func (c *Client) Backup(ctx context.Context, req *v1.Backup_Request, nodeAddr string, creds *v1.Credentials, timeout time.Duration, retries int) error {
+	r := v1.Command_Request{
+		Credentials: creds,
+		Request: &v1.Command_Request_Backup{
+			Backup: req,
+		},
+	}
+	var w v1.Command_Response
+	_, err := c.retry(&w, &r, nodeAddr, timeout, retries)
+	if err != nil {
+		return err
+	}
+	result := w.GetBackup()
+	if result.Error != "" {
+		return errors.New(result.Error)
+	}
+	return nil
+}
+
+func (c *Client) Load(ctx context.Context, req *v1.Load_Request, nodeAddr string, creds *v1.Credentials, timeout time.Duration, retries int) error {
+	r := v1.Command_Request{
+		Credentials: creds,
+		Request: &v1.Command_Request_Load{
+			Load: req,
+		},
+	}
+	var w v1.Command_Response
+	_, err := c.retry(&w, &r, nodeAddr, timeout, retries)
+	if err != nil {
+		return err
+	}
+	result := w.GetLoad()
+	if result.Error != "" {
+		return errors.New(result.Error)
+	}
+	return nil
+}
+
+func (c *Client) RemoveNode(ctx context.Context, req *v1.RemoveNode_Request, nodeAddr string, creds *v1.Credentials, timeout time.Duration, retries int) error {
+	r := v1.Command_Request{
+		Credentials: creds,
+		Request: &v1.Command_Request_RemoveNode{
+			RemoveNode: req,
+		},
+	}
+	var w v1.Command_Response
+	_, err := c.retry(&w, &r, nodeAddr, timeout, retries)
+	if err != nil {
+		return err
+	}
+	result := w.GetRemoveNode()
 	if result.Error != "" {
 		return errors.New(result.Error)
 	}
