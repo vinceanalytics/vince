@@ -33,7 +33,10 @@ message Status {
     Cluster cluster = 4;
   }
   message Store {}
-  message Cluster {}
+  message Cluster {
+    google.protobuf.Duration timeout = 1;
+    string local_node_address = 2;
+  }
 
   message TLS {
     bool enabled = 1;
