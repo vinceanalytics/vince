@@ -1,8 +1,6 @@
 syntax = "proto3";
 package v1;
 
-message List { repeated Data items = 1; }
-
 message Data {
   int64 timestamp = 1;
   int64 id = 2;
@@ -32,4 +30,6 @@ message Data {
   string utm_medium = 14;
   string utm_source = 13;
   string utm_term = 17;
+
+  message List { repeated Data items = 1; }
 }

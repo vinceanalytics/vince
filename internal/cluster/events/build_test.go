@@ -13,7 +13,7 @@ func TestBuild(t *testing.T) {
 	b := New(memory.NewGoAllocator())
 	defer b.Release()
 
-	r := b.Write(&v1.List{
+	r := b.Write(&v1.Data_List{
 		Items: []*v1.Data{
 			{Bounce: nil},
 			{Bounce: True},

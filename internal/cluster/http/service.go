@@ -17,6 +17,7 @@ import (
 
 	"github.com/bufbuild/protovalidate-go"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/cluster/rtls"
 	"github.com/vinceanalytics/vince/internal/cluster/store"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -46,7 +47,7 @@ type ResultsError interface {
 }
 
 type Database interface {
-	KV(ctx context.Context, req *v1.KV_Request) error
+	Data(ctx context.Context, req *v1.Data) error
 	Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error)
 	Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error)
 	Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error)
@@ -57,8 +58,6 @@ type Database interface {
 // Store is the interface the Raft-based database must implement.
 type Store interface {
 	Database
-
-	Queue(ctx context.Context, event *v1.Event)
 
 	Committed(ctx context.Context) (uint64, error)
 
@@ -94,7 +93,7 @@ type GetAddresser interface {
 type Cluster interface {
 	GetAddresser
 
-	KV(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.KV_Request) error
+	Data(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Data) error
 	Load(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Load_Request, timeout time.Duration, retries int) error
 	Remove(ctx context.Context, nodeAddr string, cred *v1.Credential, timeout time.Duration, req *v1.RemoveNode_Request) error
 	Backup(ctx context.Context, br *v1.Backup_Request, nodeAddr string, cred *v1.Credential, timeout time.Duration, dst io.Writer) error
@@ -600,7 +599,57 @@ func (s *Service) handleApiEvent(w http.ResponseWriter, r *http.Request, params 
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	s.store.Queue(r.Context(), &ev)
+	e := events.Parse(r.Context(), &ev)
+	if e == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer events.PutOne(e)
+	s.process(w, r, e)
+}
+
+func (s *Service) process(w http.ResponseWriter, r *http.Request, e *v1.Data) {
+	ctx := r.Context()
+	err := s.store.Data(ctx, e)
+	if err == nil {
+		w.WriteHeader(http.StatusAccepted)
+	}
+	if !errors.Is(err, store.ErrNotLeader) {
+		s.log.Error("failed to store event data", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	addr, err := s.store.LeaderAddr(ctx)
+	if err != nil {
+		s.log.Error("failed getting leader address", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if addr == "" {
+		s.log.Error(ErrLeaderNotFound.Error())
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	username, password, ok := r.BasicAuth()
+	if !ok {
+		username = ""
+	}
+
+	w.Header().Add(ServedByHTTPHeader, addr)
+	err = s.cluster.Data(ctx, addr, makeCredentials(username, password),
+		e)
+	if err != nil {
+		if err.Error() == "unauthorized" {
+			s.log.Error("remote query not authorized", "addr", addr)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		s.log.Error("node failed to process event on remote node", "addr", addr, "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
 }
 func (s *Service) handleEvent(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
@@ -633,8 +682,13 @@ func (s *Service) handleEvent(w http.ResponseWriter, r *http.Request, params Que
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	s.store.Queue(r.Context(), &ev)
-	w.WriteHeader(http.StatusAccepted)
+	e := events.Parse(r.Context(), &ev)
+	if e == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer events.PutOne(e)
+	s.process(w, r, e)
 }
 
 var remoteIPHeaders = []string{

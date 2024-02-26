@@ -74,7 +74,7 @@ func (b *Builder) Release() {
 	b.r.Release()
 }
 
-func (b *Builder) Write(list *v1.List) arrow.Record {
+func (b *Builder) Write(list *v1.Data_List) arrow.Record {
 	ls := list.GetItems()
 	sort.SliceStable(ls, func(i, j int) bool {
 		return ls[i].Timestamp < ls[j].Timestamp

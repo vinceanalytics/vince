@@ -39,7 +39,7 @@ func SampleRecord(opts ...SampleOption) arrow.Record {
 	return b.Write(ls)
 }
 
-func Samples(opts ...SampleOption) *v1.List {
+func Samples(opts ...SampleOption) *v1.Data_List {
 	o := &sampleOptions{
 		now:  Now(),
 		step: time.Second,
@@ -47,7 +47,7 @@ func Samples(opts ...SampleOption) *v1.List {
 	for _, v := range opts {
 		v(o)
 	}
-	var ls v1.List
+	var ls v1.Data_List
 	protojson.Unmarshal(sample, &ls)
 	now := o.now().UTC()
 	for i, e := range ls.GetItems() {

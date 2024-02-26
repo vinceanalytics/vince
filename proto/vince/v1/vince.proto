@@ -11,24 +11,6 @@ message NodeMeta {
   uint64 commit_index = 2;
 }
 
-message Command {
-  Credentials credentials = 1;
-  oneof request {
-    Join.Request join = 2;
-    Query.Request query = 3;
-    RemoveNode.Request remove_node = 4;
-    List data = 5;
-  }
-}
-
-message CommandResponse {
-  oneof results {
-    Join.Response join = 1;
-    Query.Response query = 2;
-    RemoveNode.Response remove_node = 3;
-  }
-}
-
 message Credentials {
   string username = 1;
   string password = 2;
@@ -48,14 +30,6 @@ message Backup {
   message Request {
     bool leader = 1;
     bool compress = 2;
-  }
-  message Response { string error = 1; }
-}
-message KV {
-  message Request {
-    bytes key = 1 [ (buf.validate.field).required = true ];
-    bytes value = 2 [ (buf.validate.field).required = true ];
-    google.protobuf.Timestamp ttl = 3 [ (buf.validate.field).required = true ];
   }
   message Response { string error = 1; }
 }

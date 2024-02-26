@@ -93,7 +93,7 @@ func New(mem memory.Allocator, tenants *tenant.Tenants, storage db.Storage,
 }
 
 type Session struct {
-	list   *eventsv1.List
+	list   *eventsv1.Data_List
 	build  *events.Builder
 	events chan *v1.Event
 	mu     sync.Mutex
