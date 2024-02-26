@@ -19,6 +19,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/cluster/rtls"
 	"github.com/vinceanalytics/vince/internal/cluster/store"
 	"github.com/vinceanalytics/vince/internal/defaults"
+	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -134,6 +135,8 @@ type Service struct {
 
 	store   Store
 	cluster Cluster
+	guard   guard.Guard
+	tenants tenant.Loader
 
 	AllowOrigin string // Value to set for Access-Control-Allow-Origin
 
@@ -155,11 +158,13 @@ type Service struct {
 
 // New returns an uninitialized HTTP service. If credentials is nil, then
 // the service performs no authentication and authorization checks.
-func New(addr string, store Store, cluster Cluster, credentials CredentialStore) *Service {
+func New(addr string, store Store, cluster Cluster, credentials CredentialStore, guard guard.Guard, tenants tenant.Loader) *Service {
 	return &Service{
 		addr:    addr,
 		store:   store,
 		cluster: cluster,
+		guard:   guard,
+		tenants: tenants,
 		start:   time.Now(),
 		creds:   credentials,
 		log:     slog.Default().With("component", "http-service"),
@@ -246,6 +251,26 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if strings.HasPrefix(r.URL.Path, "/api/v1/") {
+		if !s.guard.Allow() {
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		if !s.guard.Accept(params.SiteID()) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		// Make sure tenant is in the params
+		tenantId := params.TenantID()
+		if tenantId == "" {
+			tenantId = s.tenants.TenantBySiteID(r.Context(), params.SiteID())
+		}
+		if tenantId == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		params["tenant_id"] = tenantId
+	}
 	switch {
 	case r.URL.Path == "/" || r.URL.Path == "":
 		http.Redirect(w, r, "/status", http.StatusFound)
@@ -294,7 +319,7 @@ func (s *Service) handleRealtime(w http.ResponseWriter, r *http.Request, params 
 	ctx := r.Context()
 	req := &v1.Realtime_Request{
 		SiteId:   params.SiteID(),
-		TenantId: tenant.Get(ctx),
+		TenantId: params.TenantID(),
 	}
 	defaults.Set(req)
 	res, err := s.store.Realtime(ctx, req)
@@ -361,12 +386,12 @@ func (s *Service) handleAggregate(w http.ResponseWriter, r *http.Request, params
 		return
 	}
 	ctx := r.Context()
-	query := r.URL.Query()
 	req := &v1.Aggregate_Request{
-		SiteId:  params.SiteID(),
-		Period:  ParsePeriod(ctx, query),
-		Metrics: ParseMetrics(ctx, query),
-		Filters: ParseFilters(ctx, query),
+		SiteId:   params.SiteID(),
+		TenantId: params.TenantID(),
+		Period:   params.Period(ctx),
+		Metrics:  params.Metrics(ctx),
+		Filters:  params.Filters(ctx),
 	}
 	defaults.Set(req)
 	res, err := s.store.Aggregate(ctx, req)
@@ -424,13 +449,13 @@ func (s *Service) handleTimeseries(w http.ResponseWriter, r *http.Request, param
 		return
 	}
 	ctx := r.Context()
-	query := r.URL.Query()
 	req := &v1.Timeseries_Request{
 		SiteId:   params.SiteID(),
-		Period:   ParsePeriod(ctx, query),
-		Metrics:  ParseMetrics(ctx, query),
-		Interval: ParseInterval(ctx, query),
-		Filters:  ParseFilters(ctx, query),
+		TenantId: params.TenantID(),
+		Period:   params.Period(ctx),
+		Metrics:  params.Metrics(ctx),
+		Interval: params.Interval(ctx),
+		Filters:  params.Filters(ctx),
 	}
 	defaults.Set(req)
 	res, err := s.store.Timeseries(ctx, req)
@@ -488,13 +513,13 @@ func (s *Service) handleBreakdown(w http.ResponseWriter, r *http.Request, params
 		return
 	}
 	ctx := r.Context()
-	query := r.URL.Query()
 	req := &v1.BreakDown_Request{
 		SiteId:   params.SiteID(),
-		Period:   ParsePeriod(ctx, query),
-		Metrics:  ParseMetrics(ctx, query),
-		Filters:  ParseFilters(ctx, query),
-		Property: ParseProperty(ctx, query),
+		TenantId: params.TenantID(),
+		Period:   params.Period(ctx),
+		Metrics:  params.Metrics(ctx),
+		Filters:  params.Filters(ctx),
+		Property: params.Property(ctx),
 	}
 	defaults.Set(req)
 	res, err := s.store.Breakdown(ctx, req)

@@ -9,6 +9,10 @@ import (
 
 const Default = "staples"
 
+type Loader interface {
+	TenantBySiteID(ctx context.Context, siteId string) (tenantId string)
+}
+
 func Config(o *v1.Config, domains []string) *v1.Config {
 	t := &v1.Tenant{
 		Id: Default,

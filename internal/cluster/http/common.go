@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"net/url"
 	"strings"
 	"time"
 
@@ -18,8 +17,8 @@ import (
 // is returned back to the client.
 var InternalError = status.Error(codes.Internal, "Something went wrong")
 
-func PeriodToRange(ctx context.Context, now func() time.Time, period *v1.TimePeriod, query url.Values) (start, end time.Time) {
-	date := parseDate(ctx, query, now)
+func (p QueryParams) PeriodToRange(ctx context.Context, now func() time.Time, period *v1.TimePeriod) (start, end time.Time) {
+	date := p.parseDate(ctx, now)
 	switch e := period.Value.(type) {
 	case *v1.TimePeriod_Base_:
 		switch e.Base {
@@ -76,8 +75,8 @@ func ValidByPeriod(period *v1.TimePeriod, i v1.Interval) bool {
 	}
 }
 
-func ParsePeriod(ctx context.Context, query url.Values) *v1.TimePeriod {
-	value := query.Get("period")
+func (p QueryParams) Period(ctx context.Context) *v1.TimePeriod {
+	value := p["period"]
 	switch value {
 	case "12mo":
 		return &v1.TimePeriod{Value: &v1.TimePeriod_Base_{Base: v1.TimePeriod__12mo}}
@@ -92,7 +91,7 @@ func ParsePeriod(ctx context.Context, query url.Values) *v1.TimePeriod {
 	case "day":
 		return &v1.TimePeriod{Value: &v1.TimePeriod_Base_{Base: v1.TimePeriod_day}}
 	case "custom":
-		date := query.Get("date")
+		date := p["date"]
 		if date == "" {
 			logger.Get(ctx).Error("custom period specified with missing date")
 			return nil
@@ -124,8 +123,8 @@ func ParsePeriod(ctx context.Context, query url.Values) *v1.TimePeriod {
 	}
 }
 
-func parseDate(ctx context.Context, query url.Values, now func() time.Time) time.Time {
-	date := query.Get("date")
+func (p QueryParams) parseDate(ctx context.Context, now func() time.Time) time.Time {
+	date := p["date"]
 	if date == "" {
 		return timeutil.EndDay(now())
 	}
@@ -139,8 +138,8 @@ func parseDate(ctx context.Context, query url.Values, now func() time.Time) time
 	return v
 }
 
-func ParseMetrics(ctx context.Context, query url.Values) (o []v1.Metric) {
-	metrics := query.Get("metrics")
+func (p QueryParams) Metrics(ctx context.Context) (o []v1.Metric) {
+	metrics := p["metrics"]
 	if metrics == "" {
 		return []v1.Metric{v1.Metric_visitors}
 	}
@@ -155,8 +154,8 @@ func ParseMetrics(ctx context.Context, query url.Values) (o []v1.Metric) {
 	return
 }
 
-func ParseProperty(ctx context.Context, query url.Values) (o []v1.Property) {
-	props := query.Get("property")
+func (p QueryParams) Property(ctx context.Context) (o []v1.Property) {
+	props := p["property"]
 	for _, m := range strings.Split(props, ",") {
 		v, ok := v1.Property_value[m]
 		if !ok {
@@ -168,8 +167,8 @@ func ParseProperty(ctx context.Context, query url.Values) (o []v1.Property) {
 	return
 }
 
-func ParseInterval(ctx context.Context, query url.Values) v1.Interval {
-	i := query.Get("interval")
+func (p QueryParams) Interval(ctx context.Context) v1.Interval {
+	i := p["interval"]
 	if i == "" {
 		return v1.Interval_date
 	}
@@ -182,8 +181,8 @@ func ParseInterval(ctx context.Context, query url.Values) v1.Interval {
 	return v1.Interval(v)
 }
 
-func ParseFilters(ctx context.Context, query url.Values) (o []*v1.Filter) {
-	fs := query.Get("filters")
+func (p QueryParams) Filters(ctx context.Context) (o []*v1.Filter) {
+	fs := p["filters"]
 	if fs == "" {
 		return
 	}
