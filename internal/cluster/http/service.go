@@ -320,7 +320,7 @@ func (s *Service) handleRealtime(w http.ResponseWriter, r *http.Request, params 
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -389,7 +389,7 @@ func (s *Service) handleAggregate(w http.ResponseWriter, r *http.Request, params
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -452,7 +452,7 @@ func (s *Service) handleTimeseries(w http.ResponseWriter, r *http.Request, param
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -516,7 +516,7 @@ func (s *Service) handleBreakdown(w http.ResponseWriter, r *http.Request, params
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -726,7 +726,7 @@ func (s *Service) handleNodes(w http.ResponseWriter, r *http.Request, params Que
 		return
 	}
 
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -770,7 +770,7 @@ func (s *Service) handleRemove(w http.ResponseWriter, r *http.Request, params Qu
 		return
 	}
 
-	if r.Method != "DELETE" {
+	if r.Method != http.MethodDelete {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -834,7 +834,7 @@ func (s *Service) handleBackup(w http.ResponseWriter, r *http.Request, params Qu
 		return
 	}
 
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -891,7 +891,7 @@ func (s *Service) handleLoad(w http.ResponseWriter, r *http.Request, params Quer
 		return
 	}
 
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -953,7 +953,7 @@ func (s *Service) handleBoot(w http.ResponseWriter, r *http.Request, params Quer
 		return
 	}
 
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
