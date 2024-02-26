@@ -575,7 +575,7 @@ func (s *Service) handleBreakdown(w http.ResponseWriter, r *http.Request, params
 }
 func (s *Service) handleApiEvent(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	if !s.CheckRequestPerm(r, v1.Credential_EVENT) {
+	if !s.CheckRequestPerm(r, v1.Credential_DATA) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

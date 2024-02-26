@@ -18,6 +18,7 @@ message Credential {
     BACKUP = 7;
     LOAD = 8;
     REMOVE = 9;
-    EVENT = 10;
+    DATA = 10;
+    NODE_API = 11;
   }
 }
