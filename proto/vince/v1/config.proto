@@ -5,6 +5,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "buf/validate/validate.proto";
+import "vince/v1/auth.proto";
 
 message Version { string version = 1; }
 
@@ -23,6 +24,8 @@ message Config {
   Acme acme = 12;
   string auth_token = 13;
   repeated Tenant tenants = 14;
+
+  Credential.List credentials = 15;
 }
 
 message Tenant {

@@ -114,6 +114,11 @@ func App() *cli.Command {
 				Usage:   "Bearer token to authenticate api calls",
 				Sources: cli.EnvVars("VINCE_AUTH_TOKEN"),
 			},
+			&cli.StringFlag{
+				Name:    "credentials",
+				Usage:   "Path to credentials file",
+				Sources: cli.EnvVars("VINCE_CREDENTIALS"),
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			var level slog.Level
@@ -139,6 +144,7 @@ func App() *cli.Command {
 				RetentionPeriod: durationpb.New(c.Duration("retentionPeriod")),
 				AutoTls:         c.Bool("autoTls"),
 			}
+			log := slog.Default()
 			base = tenant.Config(base, c.StringSlice("domains"))
 			if base.AutoTls {
 				base.Acme = &v1.Acme{
@@ -158,6 +164,22 @@ func App() *cli.Command {
 					proto.Merge(base, &n)
 				}
 			}
+			if cp := c.String("credentials"); cp != "" {
+				d, err := os.ReadFile(cp)
+				if err != nil {
+					logger.Fail("failed loading credentials file", "err", err)
+				}
+				var ls v1.Credential_List
+				err = protojson.Unmarshal(d, &ls)
+				if err != nil {
+					logger.Fail("failed decoding credentials file", "err", err)
+				}
+				if base.Credentials == nil {
+					base.Credentials = &ls
+				} else {
+					proto.Merge(base.Credentials, &ls)
+				}
+			}
 			valid, err := protovalidate.New()
 			if err != nil {
 				return err
@@ -167,7 +189,6 @@ func App() *cli.Command {
 				return err
 			}
 
-			log := slog.Default()
 			log.Info("Setup storage")
 
 			_, err = os.Stat(base.Data)

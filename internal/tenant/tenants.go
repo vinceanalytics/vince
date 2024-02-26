@@ -14,6 +14,9 @@ type Loader interface {
 }
 
 func Config(o *v1.Config, domains []string) *v1.Config {
+	if len(domains) == 0 {
+		return o
+	}
 	t := &v1.Tenant{
 		Id: Default,
 	}
@@ -23,6 +26,16 @@ func Config(o *v1.Config, domains []string) *v1.Config {
 		})
 	}
 	o.Tenants = append(o.Tenants, t)
+	if o.Credentials == nil {
+		o.Credentials = &v1.Credential_List{}
+	}
+	// The tenant we configure is the super user. We assign all permissions to
+	// them.
+	o.Credentials.Items = append(o.Credentials.Items, &v1.Credential{
+		Username: t.Id,
+		Password: o.AuthToken,
+		Perms:    []v1.Credential_Permission{v1.Credential_ALL},
+	})
 	return o
 }
 
