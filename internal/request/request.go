@@ -29,6 +29,10 @@ func Get(ctx context.Context) *protovalidate.Validator {
 	return ctx.Value(validatorKey{}).(*protovalidate.Validator)
 }
 
+func ValidateMsg() {
+
+}
+
 func Read(w http.ResponseWriter, r *http.Request, o proto.Message) bool {
 	ctx := r.Context()
 	if r.Header.Get("Content-Type") != "application/json" {
