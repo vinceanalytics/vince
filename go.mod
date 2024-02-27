@@ -4,30 +4,24 @@ go 1.22.0
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.32.0-20231115204500-e097f827e652.1
-	github.com/Depado/bfchroma/v2 v2.0.0
 	github.com/RoaringBitmap/roaring v1.9.0
 	github.com/VictoriaMetrics/metrics v1.32.0
-	github.com/alecthomas/chroma/v2 v2.2.0
 	github.com/apache/arrow/go/v15 v15.0.0
 	github.com/blevesearch/vellum v1.0.10
 	github.com/bufbuild/protovalidate-go v0.5.0
 	github.com/cespare/xxhash/v2 v2.2.0
-	github.com/chanced/powerset v0.0.1
 	github.com/dgraph-io/badger/v4 v4.2.0
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/docker/go-units v0.5.0
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
-	github.com/fsnotify/fsnotify v1.7.0
-	github.com/gorilla/websocket v1.5.1
-	github.com/gosimple/slug v1.13.1
 	github.com/hashicorp/raft v1.6.1
 	github.com/klauspost/compress v1.16.7
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/oschwald/maxminddb-golang v1.12.0
-	github.com/russross/blackfriday/v2 v2.1.0
+	github.com/rqlite/raft-boltdb/v2 v2.0.0-20230523104317-c08e70f4de48
 	github.com/stretchr/testify v1.8.4
-	github.com/tdewolff/minify/v2 v2.20.16
 	github.com/urfave/cli/v3 v3.0.0-alpha8
+	go.etcd.io/bbolt v1.3.9
 	golang.org/x/crypto v0.18.0
 	golang.org/x/time v0.5.0
 	google.golang.org/grpc v1.61.0
@@ -57,9 +51,9 @@ require (
 	github.com/google/cel-go v0.18.2 // indirect
 	github.com/google/flatbuffers v23.5.26+incompatible // indirect
 	github.com/google/pprof v0.0.0-20230207041349-798e818bf904 // indirect
-	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/go-hclog v1.6.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
+	github.com/hashicorp/go-msgpack v0.5.5 // indirect
 	github.com/hashicorp/go-msgpack/v2 v2.1.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.0 // indirect
 	github.com/klauspost/asmfmt v1.3.2 // indirect
@@ -74,7 +68,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
-	github.com/tdewolff/parse/v2 v2.7.11 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
 	github.com/valyala/histogram v1.2.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
