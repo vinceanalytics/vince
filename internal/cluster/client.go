@@ -16,14 +16,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-const (
-	initialPoolSize   = 4
-	maxPoolCapacity   = 64
-	defaultMaxRetries = 8
-
-	protoBufferLengthSize = 8
-)
-
 // CreateRaftDialer creates a dialer for connecting to other nodes' Raft service. If the cert and
 // key arguments are not set, then the returned dialer will not use TLS.
 func CreateRaftDialer(cert, key, caCert, serverName string, Insecure bool) (*tcp.Dialer, error) {
@@ -56,6 +48,7 @@ func CredentialsFor(credStr *auth.CredentialsStore, username string) *v1.Credent
 
 // Client allows communicating with a remote node.
 type Client struct {
+	dialOpts      []grpc.DialOption
 	insecure      bool
 	localNodeAddr string
 	mu            sync.RWMutex
@@ -73,9 +66,11 @@ type Klient struct {
 // and removing nodes are not retried, to make it clear to the operator
 // that the operation failed. In addition, higher-level code will
 // usually retry these operations.
-func NewClient() *Client {
+func NewClient(insecure bool, opts ...grpc.DialOption) *Client {
 	return &Client{
-		clients: make(map[string]*Klient),
+		insecure: insecure,
+		dialOpts: opts,
+		clients:  make(map[string]*Klient),
 	}
 }
 
@@ -114,7 +109,7 @@ func (c *Client) node(addr string) (v1.InternalCLusterClient, error) {
 	}
 	c.mu.RUnlock()
 
-	conn, err := grpc.Dial(addr)
+	conn, err := grpc.Dial(addr, c.dialOpts...)
 	if err != nil {
 		return nil, err
 	}
