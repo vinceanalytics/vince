@@ -56,6 +56,8 @@ type Database interface {
 	Load(ctx context.Context, req *v1.Load_Request) error
 }
 
+var _ Database = (*store.Store)(nil)
+
 // Store is the interface the Raft-based database must implement.
 type Store interface {
 	Database

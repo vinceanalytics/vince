@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"os"
@@ -14,6 +15,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/log"
 	"github.com/vinceanalytics/vince/internal/cluster/snapshots"
+	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/index/primary"
 	"github.com/vinceanalytics/vince/internal/indexer"
@@ -268,6 +270,38 @@ func (s *Store) Open() error {
 	}
 	return nil
 }
+
+func (s *Store) Data(ctx context.Context, req *v1.Data) error { return nil }
+
+func (s *Store) Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error) {
+	if s.raft.State() != raft.Leader {
+		return nil, ErrNotLeader
+	}
+	return compute.Realtime(ctx, s.session, req)
+}
+
+func (s *Store) Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error) {
+	if s.raft.State() != raft.Leader {
+		return nil, ErrNotLeader
+	}
+	return compute.Aggregate(ctx, s.session, req)
+}
+
+func (s *Store) Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error) {
+	if s.raft.State() != raft.Leader {
+		return nil, ErrNotLeader
+	}
+	return compute.Timeseries(ctx, s.session, req)
+}
+
+func (s *Store) Breakdown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error) {
+	if s.raft.State() != raft.Leader {
+		return nil, ErrNotLeader
+	}
+	return compute.Breakdown(ctx, s.session, req)
+}
+
+func (s *Store) Load(ctx context.Context, req *v1.Load_Request) error { return nil }
 
 // pathExists returns true if the given path exists.
 func pathExists(p string) bool {
