@@ -93,17 +93,16 @@ type GetAddresser interface {
 type Cluster interface {
 	GetAddresser
 
-	Data(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Data) error
-	Load(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Load_Request, timeout time.Duration, retries int) error
-	Remove(ctx context.Context, nodeAddr string, cred *v1.Credential, timeout time.Duration, req *v1.RemoveNode_Request) error
-	Backup(ctx context.Context, br *v1.Backup_Request, nodeAddr string, cred *v1.Credential, timeout time.Duration, dst io.Writer) error
+	SendData(ctx context.Context, req *v1.Data, nodeAddr string, cred *v1.Credentials) error
+	Load(ctx context.Context, req *v1.Load_Request, nodeAddr string, cred *v1.Credentials) error
+	RemoveNode(ctx context.Context, req *v1.RemoveNode_Request, nodeAddr string, cred *v1.Credentials) error
+	Backup(ctx context.Context, dst io.Writer, br *v1.Backup_Request, nodeAddr string, cred *v1.Credentials) error
 
-	Realtime(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Realtime_Request) (*v1.Realtime_Response, error)
-	Aggregate(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error)
-	Timeseries(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error)
-	Breakdown(ctx context.Context, nodeAddr string, cred *v1.Credential, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error)
-
-	Status() (*v1.Status_Cluster, error)
+	Realtime(ctx context.Context, req *v1.Realtime_Request, nodeAddr string, cred *v1.Credentials) (*v1.Realtime_Response, error)
+	Aggregate(ctx context.Context, req *v1.Aggregate_Request, nodeAddr string, cred *v1.Credentials) (*v1.Aggregate_Response, error)
+	Timeseries(ctx context.Context, req *v1.Timeseries_Request, nodeAddr string, cred *v1.Credentials) (*v1.Timeseries_Response, error)
+	Breakdown(ctx context.Context, req *v1.BreakDown_Request, nodeAddr string, cred *v1.Credentials) (*v1.BreakDown_Response, error)
+	Status() *v1.Status_Cluster
 }
 
 // CredentialStore is the interface credential stores must support.
@@ -360,8 +359,7 @@ func (s *Service) handleRealtime(w http.ResponseWriter, r *http.Request, params 
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	res, err = s.cluster.Realtime(ctx, addr, makeCredentials(username, password),
-		req)
+	res, err = s.cluster.Realtime(ctx, req, addr, makeCredentials(username, password))
 	if err != nil {
 		if err.Error() == "unauthorized" {
 			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
@@ -432,8 +430,7 @@ func (s *Service) handleAggregate(w http.ResponseWriter, r *http.Request, params
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	res, err = s.cluster.Aggregate(ctx, addr, makeCredentials(username, password),
-		req)
+	res, err = s.cluster.Aggregate(ctx, req, addr, makeCredentials(username, password))
 	if err != nil {
 		if err.Error() == "unauthorized" {
 			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
@@ -496,8 +493,7 @@ func (s *Service) handleTimeseries(w http.ResponseWriter, r *http.Request, param
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	res, err = s.cluster.Timeseries(ctx, addr, makeCredentials(username, password),
-		req)
+	res, err = s.cluster.Timeseries(ctx, req, addr, makeCredentials(username, password))
 	if err != nil {
 		if err.Error() == "unauthorized" {
 			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
@@ -560,8 +556,7 @@ func (s *Service) handleBreakdown(w http.ResponseWriter, r *http.Request, params
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	res, err = s.cluster.Breakdown(ctx, addr, makeCredentials(username, password),
-		req)
+	res, err = s.cluster.Breakdown(ctx, req, addr, makeCredentials(username, password))
 	if err != nil {
 		if err.Error() == "unauthorized" {
 			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
@@ -637,8 +632,7 @@ func (s *Service) process(w http.ResponseWriter, r *http.Request, e *v1.Data) {
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	err = s.cluster.Data(ctx, addr, makeCredentials(username, password),
-		e)
+	err = s.cluster.SendData(ctx, e, addr, makeCredentials(username, password))
 	if err != nil {
 		if err.Error() == "unauthorized" {
 			s.log.Error("remote query not authorized", "addr", addr)
@@ -816,8 +810,7 @@ func (s *Service) handleRemove(w http.ResponseWriter, r *http.Request, params Qu
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	removeErr := s.cluster.Remove(ctx, addr, makeCredentials(username, password),
-		params.Timeout(defaultTimeout), rn)
+	removeErr := s.cluster.RemoveNode(ctx, rn, addr, makeCredentials(username, password))
 	if err != nil {
 		if removeErr.Error() == "unauthorized" {
 			http.Error(w, "remote backup not authorized", http.StatusUnauthorized)
@@ -873,8 +866,7 @@ func (s *Service) handleBackup(w http.ResponseWriter, r *http.Request, params Qu
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	backupErr := s.cluster.Backup(ctx, br, addr, makeCredentials(username, password),
-		params.Timeout(defaultTimeout), w)
+	backupErr := s.cluster.Backup(ctx, w, br, addr, makeCredentials(username, password))
 	if err != nil {
 		if backupErr.Error() == "unauthorized" {
 			http.Error(w, "remote backup not authorized", http.StatusUnauthorized)
@@ -931,8 +923,7 @@ func (s *Service) handleLoad(w http.ResponseWriter, r *http.Request, params Quer
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	loadErr := s.cluster.Load(ctx, addr, makeCredentials(username, password), lr,
-		params.Timeout(defaultTimeout), params.Retries(0))
+	loadErr := s.cluster.Load(ctx, lr, addr, makeCredentials(username, password))
 	if loadErr != nil {
 		if loadErr.Error() == "unauthorized" {
 			http.Error(w, "remote load not authorized", http.StatusUnauthorized)
@@ -976,14 +967,7 @@ func (s *Service) handleStatus(w http.ResponseWriter, r *http.Request, params Qu
 			http.StatusInternalServerError)
 		return
 	}
-	clusterStatus, err := s.cluster.Status()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("store stats: %s", err.Error()),
-			http.StatusInternalServerError)
-		return
-	}
 	status := s.status()
-	status.Http.Cluster = clusterStatus
 	status.Store = storeStatus
 	s.write(w, status)
 }
@@ -1083,6 +1067,7 @@ func (s *Service) httpStatus() *v1.Status_HTTP {
 		BindAddress: s.ln.Addr().String(),
 		EnabledAuth: s.creds != nil,
 		Tls:         s.tlsStatus(),
+		Cluster:     s.cluster.Status(),
 	}
 }
 
@@ -1139,8 +1124,8 @@ func (s *Service) addAllowHeaders(w http.ResponseWriter) {
 	}
 }
 
-func makeCredentials(username, password string) *v1.Credential {
-	return &v1.Credential{
+func makeCredentials(username, password string) *v1.Credentials {
+	return &v1.Credentials{
 		Username: username,
 		Password: password,
 	}

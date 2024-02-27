@@ -11,7 +11,7 @@ import "vince/v1/events.proto";
 service InternalCLuster {
   rpc Join(Join.Request) returns (Join.Response);
   rpc Load(Load.Request) returns (google.protobuf.Empty);
-  rpc Backup(Backup.Request) returns (google.protobuf.Empty);
+  rpc Backup(Backup.Request) returns (stream Backup.Response);
   rpc RemoveNode(RemoveNode.Request) returns (google.protobuf.Empty);
   rpc Notify(Notify.Request) returns (google.protobuf.Empty);
   rpc NodeAPI(google.protobuf.Empty) returns (NodeMeta);
@@ -53,6 +53,7 @@ message Backup {
     bool leader = 1;
     bool compress = 2;
   }
+  message Response { bytes data = 1; }
 }
 
 message Join {

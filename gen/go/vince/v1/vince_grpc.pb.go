@@ -39,7 +39,7 @@ const (
 type InternalCLusterClient interface {
 	Join(ctx context.Context, in *Join_Request, opts ...grpc.CallOption) (*Join_Response, error)
 	Load(ctx context.Context, in *Load_Request, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Backup(ctx context.Context, in *Backup_Request, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Backup(ctx context.Context, in *Backup_Request, opts ...grpc.CallOption) (InternalCLuster_BackupClient, error)
 	RemoveNode(ctx context.Context, in *RemoveNode_Request, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Notify(ctx context.Context, in *Notify_Request, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	NodeAPI(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*NodeMeta, error)
@@ -76,13 +76,36 @@ func (c *internalCLusterClient) Load(ctx context.Context, in *Load_Request, opts
 	return out, nil
 }
 
-func (c *internalCLusterClient) Backup(ctx context.Context, in *Backup_Request, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, InternalCLuster_Backup_FullMethodName, in, out, opts...)
+func (c *internalCLusterClient) Backup(ctx context.Context, in *Backup_Request, opts ...grpc.CallOption) (InternalCLuster_BackupClient, error) {
+	stream, err := c.cc.NewStream(ctx, &InternalCLuster_ServiceDesc.Streams[0], InternalCLuster_Backup_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &internalCLusterBackupClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type InternalCLuster_BackupClient interface {
+	Recv() (*Backup_Response, error)
+	grpc.ClientStream
+}
+
+type internalCLusterBackupClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalCLusterBackupClient) Recv() (*Backup_Response, error) {
+	m := new(Backup_Response)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *internalCLusterClient) RemoveNode(ctx context.Context, in *RemoveNode_Request, opts ...grpc.CallOption) (*emptypb.Empty, error) {
@@ -163,7 +186,7 @@ func (c *internalCLusterClient) BreakDown(ctx context.Context, in *BreakDown_Req
 type InternalCLusterServer interface {
 	Join(context.Context, *Join_Request) (*Join_Response, error)
 	Load(context.Context, *Load_Request) (*emptypb.Empty, error)
-	Backup(context.Context, *Backup_Request) (*emptypb.Empty, error)
+	Backup(*Backup_Request, InternalCLuster_BackupServer) error
 	RemoveNode(context.Context, *RemoveNode_Request) (*emptypb.Empty, error)
 	Notify(context.Context, *Notify_Request) (*emptypb.Empty, error)
 	NodeAPI(context.Context, *emptypb.Empty) (*NodeMeta, error)
@@ -185,8 +208,8 @@ func (UnimplementedInternalCLusterServer) Join(context.Context, *Join_Request) (
 func (UnimplementedInternalCLusterServer) Load(context.Context, *Load_Request) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Load not implemented")
 }
-func (UnimplementedInternalCLusterServer) Backup(context.Context, *Backup_Request) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Backup not implemented")
+func (UnimplementedInternalCLusterServer) Backup(*Backup_Request, InternalCLuster_BackupServer) error {
+	return status.Errorf(codes.Unimplemented, "method Backup not implemented")
 }
 func (UnimplementedInternalCLusterServer) RemoveNode(context.Context, *RemoveNode_Request) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveNode not implemented")
@@ -261,22 +284,25 @@ func _InternalCLuster_Load_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InternalCLuster_Backup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Backup_Request)
-	if err := dec(in); err != nil {
-		return nil, err
+func _InternalCLuster_Backup_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Backup_Request)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(InternalCLusterServer).Backup(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: InternalCLuster_Backup_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InternalCLusterServer).Backup(ctx, req.(*Backup_Request))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(InternalCLusterServer).Backup(m, &internalCLusterBackupServer{stream})
+}
+
+type InternalCLuster_BackupServer interface {
+	Send(*Backup_Response) error
+	grpc.ServerStream
+}
+
+type internalCLusterBackupServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalCLusterBackupServer) Send(m *Backup_Response) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _InternalCLuster_RemoveNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -439,10 +465,6 @@ var InternalCLuster_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _InternalCLuster_Load_Handler,
 		},
 		{
-			MethodName: "Backup",
-			Handler:    _InternalCLuster_Backup_Handler,
-		},
-		{
 			MethodName: "RemoveNode",
 			Handler:    _InternalCLuster_RemoveNode_Handler,
 		},
@@ -475,6 +497,12 @@ var InternalCLuster_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _InternalCLuster_BreakDown_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Backup",
+			Handler:       _InternalCLuster_Backup_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "vince/v1/vince.proto",
 }
