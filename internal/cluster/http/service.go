@@ -1040,7 +1040,57 @@ func (s *Service) CheckRequestPerm(r *http.Request, perm v1.Credential_Permissio
 	return s.creds.AA(username, password, perm)
 }
 
-func (s *Service) handleReady(w http.ResponseWriter, r *http.Request, params QueryParams) {}
+func (s *Service) handleReady(w http.ResponseWriter, r *http.Request, params QueryParams) {
+	if !s.CheckRequestPerm(r, v1.Credential_READY) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	if params.NoLeader() {
+		// Simply handling the HTTP request is enough.
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("[+]node ok"))
+		return
+	}
+	ctx := r.Context()
+	lAddr, err := s.store.LeaderAddr(ctx)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("leader address: %s", err.Error()),
+			http.StatusInternalServerError)
+		return
+	}
+	if lAddr == "" {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte("[+]node ok\n[+]leader does not exist"))
+		return
+	}
+	_, err = s.cluster.GetNodeAPIAddr(ctx, lAddr)
+	if err != nil {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte(fmt.Sprintf("[+]node ok\n[+]leader not contactable: %s", err.Error())))
+		return
+	}
+	if !s.store.Ready(ctx) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte("[+]node ok\n[+]leader ok\n[+]store not ready"))
+		return
+	}
+	okMsg := "[+]node ok\n[+]leader ok\n[+]store ok"
+	if params.Sync() {
+		if _, err := s.store.Committed(ctx); err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte(fmt.Sprintf("[+]node ok\n[+]leader ok\n[+]store ok\n[+]sync %s", err.Error())))
+			return
+		}
+		okMsg += "\n[+]sync ok"
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(okMsg))
+
+}
 
 func (s *Service) status() *v1.Status {
 	return &v1.Status{
