@@ -24,6 +24,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -361,7 +362,7 @@ func (s *Service) handleRealtime(w http.ResponseWriter, r *http.Request, params 
 	w.Header().Add(ServedByHTTPHeader, addr)
 	res, err = s.cluster.Realtime(ctx, req, addr, makeCredentials(username, password))
 	if err != nil {
-		if err.Error() == "unauthorized" {
+		if IsNotAuthorized(err) {
 			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
 			return
 		}
@@ -432,7 +433,7 @@ func (s *Service) handleAggregate(w http.ResponseWriter, r *http.Request, params
 	w.Header().Add(ServedByHTTPHeader, addr)
 	res, err = s.cluster.Aggregate(ctx, req, addr, makeCredentials(username, password))
 	if err != nil {
-		if err.Error() == "unauthorized" {
+		if IsNotAuthorized(err) {
 			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
 			return
 		}
@@ -495,7 +496,7 @@ func (s *Service) handleTimeseries(w http.ResponseWriter, r *http.Request, param
 	w.Header().Add(ServedByHTTPHeader, addr)
 	res, err = s.cluster.Timeseries(ctx, req, addr, makeCredentials(username, password))
 	if err != nil {
-		if err.Error() == "unauthorized" {
+		if IsNotAuthorized(err) {
 			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
 			return
 		}
@@ -558,7 +559,7 @@ func (s *Service) handleBreakdown(w http.ResponseWriter, r *http.Request, params
 	w.Header().Add(ServedByHTTPHeader, addr)
 	res, err = s.cluster.Breakdown(ctx, req, addr, makeCredentials(username, password))
 	if err != nil {
-		if err.Error() == "unauthorized" {
+		if IsNotAuthorized(err) {
 			s.jsonErr(w, "remote query not authorized", http.StatusUnauthorized)
 			return
 		}
@@ -634,8 +635,8 @@ func (s *Service) process(w http.ResponseWriter, r *http.Request, e *v1.Data) {
 	w.Header().Add(ServedByHTTPHeader, addr)
 	err = s.cluster.SendData(ctx, e, addr, makeCredentials(username, password))
 	if err != nil {
-		if err.Error() == "unauthorized" {
-			s.log.Error("remote query not authorized", "addr", addr)
+		if IsNotAuthorized(err) {
+			s.log.Error("remote event not authorized", "addr", addr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -810,12 +811,12 @@ func (s *Service) handleRemove(w http.ResponseWriter, r *http.Request, params Qu
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	removeErr := s.cluster.RemoveNode(ctx, rn, addr, makeCredentials(username, password))
+	err = s.cluster.RemoveNode(ctx, rn, addr, makeCredentials(username, password))
 	if err != nil {
-		if removeErr.Error() == "unauthorized" {
-			http.Error(w, "remote backup not authorized", http.StatusUnauthorized)
+		if IsNotAuthorized(err) {
+			http.Error(w, "remote node removal not authorized", http.StatusUnauthorized)
 		} else {
-			http.Error(w, removeErr.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
 
@@ -866,15 +867,14 @@ func (s *Service) handleBackup(w http.ResponseWriter, r *http.Request, params Qu
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	backupErr := s.cluster.Backup(ctx, w, br, addr, makeCredentials(username, password))
+	err = s.cluster.Backup(ctx, w, br, addr, makeCredentials(username, password))
 	if err != nil {
-		if backupErr.Error() == "unauthorized" {
+		if IsNotAuthorized(err) {
 			http.Error(w, "remote backup not authorized", http.StatusUnauthorized)
 		} else {
-			http.Error(w, backupErr.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
-
 	}
 }
 func (s *Service) handleLoad(w http.ResponseWriter, r *http.Request, params QueryParams) {
@@ -923,12 +923,12 @@ func (s *Service) handleLoad(w http.ResponseWriter, r *http.Request, params Quer
 	}
 
 	w.Header().Add(ServedByHTTPHeader, addr)
-	loadErr := s.cluster.Load(ctx, lr, addr, makeCredentials(username, password))
-	if loadErr != nil {
-		if loadErr.Error() == "unauthorized" {
+	err = s.cluster.Load(ctx, lr, addr, makeCredentials(username, password))
+	if err != nil {
+		if IsNotAuthorized(err) {
 			http.Error(w, "remote load not authorized", http.StatusUnauthorized)
 		} else {
-			http.Error(w, loadErr.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
 	}
@@ -1129,4 +1129,8 @@ func makeCredentials(username, password string) *v1.Credentials {
 		Username: username,
 		Password: password,
 	}
+}
+
+func IsNotAuthorized(err error) bool {
+	return strings.Contains(err.Error(), codes.Unauthenticated.String())
 }
