@@ -4,32 +4,23 @@ package v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
 import "vince/v1/events.proto";
 
-message Command {
-  message Request {
-    Credentials credentials = 1;
-    oneof request {
-      Join.Request join = 2;
-      Query.Request query = 3;
-      RemoveNode.Request remove_node = 4;
-      DataService.Request data = 5;
-      Backup.Request backup = 6;
-      NodeAPI.Request node_api = 7;
-      Load.Request load = 8;
-    }
-  }
-  message Response {
-    oneof response {
-      Join.Response join = 2;
-      Query.Response query = 3;
-      RemoveNode.Response remove_node = 4;
-      DataService.Response data = 5;
-      Backup.Response backup = 6;
-      NodeAPI.Response node_api = 7;
-      Load.Response load = 8;
-    }
-  }
+// Defines internal node communication service.
+service InternalCLuster {
+  rpc Join(Join.Request) returns (Join.Response);
+  rpc Load(Load.Request) returns (google.protobuf.Empty);
+  rpc Backup(Backup.Request) returns (google.protobuf.Empty);
+  rpc RemoveNode(RemoveNode.Request) returns (google.protobuf.Empty);
+  rpc Notify(Notify.Request) returns (google.protobuf.Empty);
+  rpc NodeAPI(google.protobuf.Empty) returns (NodeMeta);
+
+  rpc SendData(Data) returns (google.protobuf.Empty);
+  rpc Realtime(Realtime.Request) returns (Realtime.Response);
+  rpc Aggregate(Aggregate.Request) returns (Aggregate.Response);
+  rpc Timeseries(Timeseries.Request) returns (Timeseries.Response);
+  rpc BreakDown(BreakDown.Request) returns (BreakDown.Response);
 }
 
 message NodeMeta {
@@ -42,27 +33,19 @@ message Credentials {
   string password = 2;
 }
 
-message DataService {
-  message Request { Data data = 1; }
-  message Response { string error = 1; }
-}
-
-message NodeAPI {
-  message Request {}
-  message Response {
-    string error = 1;
-    string url = 2;
+message Notify {
+  message Request {
+    string id = 1;
+    string address = 2;
   }
 }
 
 message RemoveNode {
   message Request { string id = 1; }
-  message Response { string error = 1; }
 }
 
 message Load {
   message Request { bytes data = 1; }
-  message Response { string error = 1; }
 }
 
 message Backup {
@@ -70,7 +53,6 @@ message Backup {
     bool leader = 1;
     bool compress = 2;
   }
-  message Response { string error = 1; }
 }
 
 message Join {
@@ -79,32 +61,7 @@ message Join {
     string address = 2;
     bool voter = 3;
   }
-  message Response {
-    string leader = 1;
-    string error = 2;
-  }
-}
-
-message Query {
-  message Request {
-    oneof params {
-      Realtime.Request realtime = 1;
-      Aggregate.Request aggregate = 2;
-      Timeseries.Request timeseries = 3;
-      BreakDown.Request breakdown = 4;
-    }
-    string error = 5;
-  }
-
-  message Response {
-    oneof results {
-      Realtime.Response realtime = 1;
-      Aggregate.Response aggregate = 2;
-      Timeseries.Response timeseries = 3;
-      BreakDown.Response breakdown = 4;
-    }
-    string error = 5;
-  }
+  message Response { string leader = 1; }
 }
 
 message Realtime {

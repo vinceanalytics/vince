@@ -2,16 +2,13 @@ package cluster
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
-	"io"
 	"log/slog"
 	"net"
 	"sync"
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	pb "google.golang.org/protobuf/proto"
 )
 
 const (
@@ -88,13 +85,6 @@ func New(ln net.Listener, db Database, m Manager, credentialStore CredentialStor
 	}
 }
 
-// Open opens the Service.
-func (s *Service) Open() error {
-	go s.serve()
-	s.logger.Info("service listening", "addr", s.addr)
-	return nil
-}
-
 // Close closes the service.
 func (s *Service) Close() error {
 	s.ln.Close()
@@ -140,113 +130,9 @@ func (s *Service) GetNodeAPIURL() string {
 	return fmt.Sprintf("%s://%s", scheme, s.apiAddr)
 }
 
-func (s *Service) serve() error {
-	for {
-		conn, err := s.ln.Accept()
-		if err != nil {
-			return err
-		}
-
-		go s.handleConn(conn)
-	}
-}
-
-func (s *Service) checkCommandPerm(c *v1.Command_Request, perm v1.Credential_Permission) bool {
+func (s *Service) checkCommandPerm(c *v1.Credentials, perm v1.Credential_Permission) bool {
 	if s.credentialStore == nil {
 		return true
 	}
-
-	username := ""
-	password := ""
-	if c.Credentials != nil {
-		username = c.Credentials.GetUsername()
-		password = c.Credentials.GetPassword()
-	}
-	return s.credentialStore.AA(username, password, perm)
-}
-
-const unauthorized = "unauthorized"
-
-func (s *Service) handleConn(conn net.Conn) {
-	defer conn.Close()
-	ctx := context.Background()
-	b := make([]byte, protoBufferLengthSize)
-	for {
-		_, err := io.ReadFull(conn, b)
-		if err != nil {
-			return
-		}
-		sz := binary.LittleEndian.Uint64(b[0:])
-
-		p := make([]byte, sz)
-		_, err = io.ReadFull(conn, p)
-		if err != nil {
-			return
-		}
-
-		c := &v1.Command_Request{}
-		err = pb.Unmarshal(p, c)
-		if err != nil {
-			conn.Close()
-		}
-		marshalAndWrite(conn, s.handle(ctx, c))
-	}
-}
-
-func (s *Service) handle(ctx context.Context, req *v1.Command_Request) *v1.Command_Response {
-	switch e := req.Request.(type) {
-	case *v1.Command_Request_Join:
-		if !s.checkCommandPerm(req, v1.Credential_JOIN) {
-			return &v1.Command_Response{Response: &v1.Command_Response_Join{
-				Join: &v1.Join_Response{Error: unauthorized},
-			}}
-		}
-		_ = e
-	case *v1.Command_Request_NodeApi:
-		if !s.checkCommandPerm(req, v1.Credential_NODE_API) {
-			return &v1.Command_Response{Response: &v1.Command_Response_NodeApi{
-				NodeApi: &v1.NodeAPI_Response{Error: unauthorized},
-			}}
-		}
-	case *v1.Command_Request_Load:
-		if !s.checkCommandPerm(req, v1.Credential_LOAD) {
-			return &v1.Command_Response{Response: &v1.Command_Response_Load{
-				Load: &v1.Load_Response{Error: unauthorized},
-			}}
-		}
-	case *v1.Command_Request_Backup:
-		if !s.checkCommandPerm(req, v1.Credential_BACKUP) {
-			return &v1.Command_Response{Response: &v1.Command_Response_Backup{
-				Backup: &v1.Backup_Response{Error: unauthorized},
-			}}
-		}
-	case *v1.Command_Request_Data:
-		if !s.checkCommandPerm(req, v1.Credential_DATA) {
-			return &v1.Command_Response{Response: &v1.Command_Response_Data{
-				Data: &v1.DataService_Response{Error: unauthorized},
-			}}
-		}
-	case *v1.Command_Request_Query:
-		if !s.checkCommandPerm(req, v1.Credential_QUERY) {
-			return &v1.Command_Response{Response: &v1.Command_Response_Query{
-				Query: &v1.Query_Response{Error: unauthorized},
-			}}
-		}
-	}
-	return nil
-}
-
-func marshalAndWrite(conn net.Conn, m pb.Message) {
-	p, err := pb.Marshal(m)
-	if err != nil {
-		conn.Close()
-	}
-	writeBytesWithLength(conn, p)
-}
-
-func writeBytesWithLength(conn net.Conn, p []byte) {
-	b := make([]byte, protoBufferLengthSize)
-	binary.LittleEndian.PutUint64(b[0:], uint64(len(p)))
-	conn.Write(b)
-	conn.Write(p)
+	return s.credentialStore.AA(c.GetUsername(), c.GetPassword(), perm)
 }
