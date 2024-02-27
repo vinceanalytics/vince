@@ -133,7 +133,7 @@ func (c *Client) SendData(ctx context.Context, req *v1.Data, nodeAddr string, cr
 		return err
 	}
 	_, err = remote.SendData(ctx, req, c.callOpts(creds)...)
-	return nil
+	return err
 }
 
 func (c *Client) callOpts(cred *v1.Credentials) (o []grpc.CallOption) {
@@ -169,7 +169,7 @@ func (c *Client) Join(ctx context.Context, req *v1.Join_Request, nodeAddr string
 		return err
 	}
 	_, err = remote.Join(ctx, req, c.callOpts(creds)...)
-	return nil
+	return err
 }
 
 func (c *Client) Backup(ctx context.Context, w io.Writer, req *v1.Backup_Request, nodeAddr string, creds *v1.Credentials) error {
