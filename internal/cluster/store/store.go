@@ -12,6 +12,8 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/hashicorp/raft"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/cluster/log"
+	"github.com/vinceanalytics/vince/internal/cluster/snapshots"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/index/primary"
 	"github.com/vinceanalytics/vince/internal/indexer"
@@ -148,7 +150,8 @@ type Store struct {
 
 	raftLog       raft.LogStore    // Persistent log store.
 	raftStable    raft.StableStore // Persistent k-v store.
-	snapshotStore SnapshotStore    // Snapshot store.
+	snapshotStore *snapshots.Store // Snapshot store.
+	boltStore     *log.Log
 
 	// Raft changes observer
 	leaderObserversMu sync.RWMutex
@@ -250,5 +253,26 @@ func (s *Store) Open() error {
 	nt := raft.NewNetworkTransport(NewTransport(s.ly), connectionPoolCount, connectionTimeout, nil)
 	s.raftTn = NewNodeTransport(nt)
 
+	s.snapshotStore, err = snapshots.New(s.snapshotDir, 2)
+	if err != nil {
+		return err
+	}
+	s.boltStore, err = log.New(filepath.Join(s.raftDir, raftDBPath), false)
+	if err != nil {
+		return err
+	}
+	s.raftStable = s.boltStore
+	s.raftLog, err = raft.NewLogCache(raftLogCacheSize, s.boltStore)
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+// pathExists returns true if the given path exists.
+func pathExists(p string) bool {
+	if _, err := os.Lstat(p); err != nil && os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
