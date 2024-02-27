@@ -155,7 +155,7 @@ var (
 )
 
 type KV struct {
-	db *badger.DB
+	DB *badger.DB
 }
 
 func NewKV(path string) (*KV, error) {
@@ -168,17 +168,17 @@ func NewKV(path string) (*KV, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &KV{db: db}, nil
+	return &KV{DB: db}, nil
 }
 
 var _ Storage = (*KV)(nil)
 
 func (kv *KV) GC() error {
-	return kv.db.RunValueLogGC(0.5)
+	return kv.DB.RunValueLogGC(0.5)
 }
 
 func (kv *KV) Close() error {
-	return kv.db.Close()
+	return kv.DB.Close()
 }
 
 func (kv *KV) Set(key, value []byte, ttl time.Duration) error {
@@ -187,13 +187,13 @@ func (kv *KV) Set(key, value []byte, ttl time.Duration) error {
 	if ttl > 0 {
 		e = e.WithTTL(ttl)
 	}
-	return kv.db.Update(func(txn *badger.Txn) error {
+	return kv.DB.Update(func(txn *badger.Txn) error {
 		return txn.SetEntry(e)
 	})
 }
 
 func (kv *KV) Get(key []byte, value func([]byte) error) error {
-	return kv.db.View(func(txn *badger.Txn) error {
+	return kv.DB.View(func(txn *badger.Txn) error {
 		it, err := txn.Get(key)
 		if err != nil {
 			if errors.Is(err, badger.ErrKeyNotFound) {

@@ -26,6 +26,7 @@ message Config {
   repeated Tenant tenants = 14;
 
   Credential.List credentials = 15;
+  string node_id = 16;
 }
 
 message Tenant {

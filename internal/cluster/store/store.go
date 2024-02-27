@@ -2,7 +2,22 @@ package store
 
 import (
 	"errors"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"sync"
+	"sync/atomic"
 	"time"
+
+	"github.com/apache/arrow/go/v15/arrow/memory"
+	"github.com/hashicorp/raft"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/index/primary"
+	"github.com/vinceanalytics/vince/internal/indexer"
+	"github.com/vinceanalytics/vince/internal/lsm"
+	"github.com/vinceanalytics/vince/internal/session"
+	"github.com/vinceanalytics/vince/internal/tenant"
 )
 
 var (
@@ -54,6 +69,7 @@ var (
 
 const (
 	snapshotsDirName           = "snapshots"
+	dbName                     = "vince"
 	restoreScratchPattern      = "rqlite-restore-*"
 	bootScatchPattern          = "rqlite-boot-*"
 	backupScatchPattern        = "rqlite-backup-*"
@@ -74,3 +90,165 @@ const (
 	trailingScale              = 1.25
 	observerChanLen            = 50
 )
+
+type SnapshotStore interface {
+	raft.SnapshotStore
+
+	// FullNeeded returns true if a full snapshot is needed.
+	FullNeeded() (bool, error)
+
+	// SetFullNeeded explicitly sets that a full snapshot is needed.
+	SetFullNeeded() error
+}
+
+// ClusterState defines the possible Raft states the current node can be in
+type ClusterState int
+
+// Represents the Raft cluster states
+const (
+	Leader ClusterState = iota
+	Follower
+	Candidate
+	Shutdown
+	Unknown
+)
+
+type Store struct {
+	open          AtomicBool
+	raftDir       string
+	snapshotDir   string
+	peersPath     string
+	peersInfoPath string
+	dbPath        string
+
+	restorePath   string
+	restoreDoneCh chan struct{}
+
+	raft   *raft.Raft // The consensus mechanism.
+	ly     Layer
+	raftTn *NodeTransport
+
+	// Channels that must be closed for the Store to be considered ready.
+	readyChans             []<-chan struct{}
+	numClosedReadyChannels int
+	readyChansMu           sync.Mutex
+
+	// Channels for WAL-size triggered snapshotting
+	snapshotWClose chan struct{}
+	snapshotWDone  chan struct{}
+
+	// Latest log entry index actually reflected by the FSM. Due to Raft code
+	// this value is not updated after a Snapshot-restore.
+	fsmIdx        atomic.Uint64
+	fsmUpdateTime *AtomicTime // This is node-local time.
+
+	// appendedAtTimeis the Leader's clock time when that Leader appended the log entry.
+	// The Leader that actually appended the log entry is not necessarily the current Leader.
+	appendedAtTime AtomicTime
+
+	raftLog       raft.LogStore    // Persistent log store.
+	raftStable    raft.StableStore // Persistent k-v store.
+	snapshotStore SnapshotStore    // Snapshot store.
+
+	// Raft changes observer
+	leaderObserversMu sync.RWMutex
+	leaderObservers   []chan<- struct{}
+	observerClose     chan struct{}
+	observerDone      chan struct{}
+	observerChan      chan raft.Observation
+	observer          *raft.Observer
+
+	firstIdxOnOpen       uint64    // First index on log when Store opens.
+	lastIdxOnOpen        uint64    // Last index on log when Store opens.
+	lastCommandIdxOnOpen uint64    // Last command index before applied index when Store opens.
+	lastAppliedIdxOnOpen uint64    // Last applied index on log when Store opens.
+	firstLogAppliedT     time.Time // Time first log is applied
+	appliedOnOpen        uint64    // Number of logs applied at open.
+	openT                time.Time // Timestamp when Store opens.
+
+	logger         *slog.Logger
+	logIncremental bool
+
+	notifyMu        sync.Mutex
+	BootstrapExpect int
+	bootstrapped    bool
+	notifyingNodes  map[string]*v1.Server
+
+	ShutdownOnRemove         bool
+	SnapshotThreshold        uint64
+	SnapshotThresholdWALSize uint64
+	SnapshotInterval         time.Duration
+	LeaderLeaseTimeout       time.Duration
+	HeartbeatTimeout         time.Duration
+	ElectionTimeout          time.Duration
+	ApplyTimeout             time.Duration
+	RaftLogLevel             string
+	NoFreeListSync           bool
+	AutoVacInterval          time.Duration
+
+	session *session.Tenants
+	db      *db.KV
+	config  *v1.Config
+}
+
+func NewStore(base *v1.Config, ly Layer) (*Store, error) {
+	store, err := db.NewKV(base.Data)
+	if err != nil {
+		return nil, err
+	}
+	tenants := tenant.NewTenants(base)
+	alloc := memory.NewGoAllocator()
+	pidx, err := primary.NewPrimary(store)
+	if err != nil {
+		return nil, err
+	}
+	idx := indexer.New()
+	sess := session.New(alloc, tenants, store, idx, pidx,
+		lsm.WithTTL(
+			base.RetentionPeriod.AsDuration(),
+		),
+		lsm.WithCompactSize(
+			uint64(base.GranuleSize),
+		),
+	)
+	return &Store{
+		ly:              ly,
+		raftDir:         base.Data,
+		snapshotDir:     filepath.Join(base.Data, snapshotsDirName),
+		peersPath:       filepath.Join(base.Data, peersPath),
+		peersInfoPath:   filepath.Join(base.Data, peersInfoPath),
+		dbPath:          filepath.Join(base.Data, dbName),
+		restoreDoneCh:   make(chan struct{}),
+		leaderObservers: make([]chan<- struct{}, 0),
+		logger:          slog.Default().With("component", "store"),
+		notifyingNodes:  make(map[string]*v1.Server),
+		ApplyTimeout:    applyTimeout,
+		session:         sess,
+		db:              store,
+	}, nil
+}
+
+func (s *Store) Open() error {
+	if s.open.Is() {
+		return ErrOpen
+	}
+	s.openT = time.Now()
+	s.logger.Info("Opening store", "nodeId", s.config.NodeId, "listening", s.ly.Addr().String())
+
+	_, err := os.Stat(s.config.Data)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = os.MkdirAll(s.config.Data, 0755)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	// Create Raft-compatible network layer.
+	nt := raft.NewNetworkTransport(NewTransport(s.ly), connectionPoolCount, connectionTimeout, nil)
+	s.raftTn = NewNodeTransport(nt)
+
+	return nil
+}
