@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net"
 	"os"
@@ -272,6 +273,21 @@ func (s *Store) Open() error {
 	config := raft.DefaultConfig()
 	config.LocalID = raft.ServerID(s.config.NodeId)
 
+	// Request to recover node?
+	if pathExists(s.peersPath) {
+		s.logger.Info("attempting node recovery ", "peerPath", s.peersPath)
+		config, err := raft.ReadConfigJSON(s.peersPath)
+		if err != nil {
+			return fmt.Errorf("failed to read peers file: %s", err.Error())
+		}
+		if err = RecoverNode(s.raftDir, s.raftLog, s.boltStore, s.snapshotStore, s.raftTn, config); err != nil {
+			return fmt.Errorf("failed to recover node: %s", err.Error())
+		}
+		if err := os.Rename(s.peersPath, s.peersInfoPath); err != nil {
+			return fmt.Errorf("failed to move %s after recovery: %s", s.peersPath, err.Error())
+		}
+		s.logger.Info("node recovered successfully", "peerPath", s.peersPath)
+	}
 	return nil
 }
 
