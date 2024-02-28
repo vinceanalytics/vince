@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/hashicorp/raft"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/cluster/log"
 	"github.com/vinceanalytics/vince/internal/cluster/snapshots"
 	"github.com/vinceanalytics/vince/internal/compute"
@@ -24,6 +26,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/lsm"
 	"github.com/vinceanalytics/vince/internal/session"
 	"github.com/vinceanalytics/vince/internal/tenant"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -193,7 +196,7 @@ type Store struct {
 	NoFreeListSync           bool
 	AutoVacInterval          time.Duration
 
-	session *session.Tenants
+	session *session.Session
 	db      *db.KV
 	config  *v1.Config
 }
@@ -303,6 +306,13 @@ func (s *Store) Open() error {
 	if err != nil {
 		return fmt.Errorf("failed to create on-disk database: %s", err)
 	}
+
+	// Instantiate the Raft system.
+	ra, err := raft.NewRaft(config, NewFSM(s), s.raftLog, s.raftStable, s.snapshotStore, s.raftTn)
+	if err != nil {
+		return fmt.Errorf("creating the raft system failed: %s", err)
+	}
+	s.raft = ra
 	return nil
 }
 
@@ -337,6 +347,27 @@ func (s *Store) Breakdown(ctx context.Context, req *v1.BreakDown_Request) (*v1.B
 }
 
 func (s *Store) Load(ctx context.Context, req *v1.Load_Request) error { return nil }
+
+func (s *Store) fsmApply(l *raft.Log) interface{} {
+	if s.firstLogAppliedT.IsZero() {
+		s.firstLogAppliedT = time.Now()
+		s.logger.Info("first log applied since node start, log", "index", l.Index)
+	}
+	e := events.One()
+	err := proto.Unmarshal(l.Data, e)
+	if err != nil {
+		return err
+	}
+	s.session.Append(e)
+	return nil
+}
+
+func (s *Store) fsmSnapshot() (raft.FSMSnapshot, error) {
+	return snapshots.NewBadger(s.db.DB), nil
+}
+func (s *Store) fsmRestore(w io.ReadCloser) error {
+	return snapshots.NewBadger(s.db.DB).Restore(w)
+}
 
 // setLogInfo records some key indexes about the log.
 func (s *Store) setLogInfo() error {

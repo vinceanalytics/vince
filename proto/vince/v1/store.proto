@@ -38,4 +38,5 @@ message Granule {
   int64 max = 3;
   uint64 size = 4;
   uint64 rows = 5;
+  string tenant = 6;
 }

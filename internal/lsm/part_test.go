@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/indexer"
+	"github.com/vinceanalytics/vince/internal/tenant"
 )
 
 func TestPartStore(t *testing.T) {
@@ -35,12 +36,15 @@ func TestPartStore(t *testing.T) {
 	})
 	t.Run("Compact", func(t *testing.T) {
 		old := ps.Size()
-		r, stats := ps.Compact()
+		stats := ps.Compact(func(tenant string, r arrow.Record) {
+			defer r.Release()
+			wantRows := first.NumRows() + second.NumRows() + third.NumRows()
+			require.Equal(t, wantRows, r.NumRows())
+		})
 		require.Equal(t, old, stats.OldSize)
 		wantNodes := 3
 		require.Equal(t, wantNodes, stats.CompactedNodesCount)
-		wantRows := first.NumRows() + second.NumRows() + third.NumRows()
-		require.Equal(t, wantRows, r.NumRows())
+
 		require.Zero(t, ps.Size())
 	})
 }
@@ -51,7 +55,7 @@ func mustPart(t *testing.T, r arrow.Record) *RecordPart {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return NewPart(r, idx)
+	return NewPart(tenant.Default, r, idx)
 }
 func nowFunc(now time.Time) func() time.Time {
 	return func() time.Time { return now }

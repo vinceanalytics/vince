@@ -21,7 +21,6 @@ type PartStore struct {
 	size   atomic.Uint64
 	tree   *RecordNode
 	merger *staples.Merger
-	nodes  []*RecordNode
 }
 
 func NewPartStore(mem memory.Allocator) *PartStore {
@@ -45,13 +44,16 @@ func (p *PartStore) Add(r *RecordPart) {
 	p.tree.Prepend(r)
 }
 
-func (p *PartStore) Scan(start, end int64,
+func (p *PartStore) Scan(tenant string, start, end int64,
 	compiled []*filters.CompiledFilter,
 	projected []string) arrow.Record {
 	b, take := staples.NewTaker(p.mem, projected)
 	defer b.Release()
 	p.tree.Iterate(func(n *RecordNode) bool {
 		if n.part == nil {
+			return true
+		}
+		if n.part.Tenant() != tenant {
 			return true
 		}
 		return index.AcceptWith(
@@ -92,38 +94,53 @@ type CompactStats struct {
 	Elapsed             time.Duration
 }
 
-func (p *PartStore) Compact() (r arrow.Record, stats CompactStats) {
+func (p *PartStore) Compact(f func(tenant string, r arrow.Record)) (stats CompactStats) {
+	ns := make(map[string][]*RecordNode)
 	start := time.Now()
 	defer func() {
-		for _, r := range p.nodes {
-			r.part.Release()
-			r.part = nil
+		for _, nodes := range ns {
+			for _, r := range nodes {
+				r.part.Release()
+				r.part = nil
+			}
+			stats.CompactedNodesCount += len(nodes)
+			clear(nodes)
 		}
-		clear(p.nodes)
-		stats.CompactedNodesCount = len(p.nodes)
-		p.nodes = p.nodes[:0]
 		stats.Elapsed = time.Since(start)
 	}()
+	var first *RecordNode
 	p.tree.Iterate(func(n *RecordNode) bool {
 		if n.part == nil {
 			return true
 		}
-		p.merger.Add(n.part.Record())
-		stats.OldSize += n.part.Size()
-		p.nodes = append(p.nodes, n)
+		if first == nil {
+			first = n
+		}
+		ns[n.part.Tenant()] = append(ns[n.part.Tenant()], n)
 		return true
 	})
-	if stats.OldSize == 0 {
-		r = p.merger.NewRecord()
+	if len(ns) == 0 {
 		return
 	}
-	node := p.findNode(p.nodes[0])
+	for tenant, n := range ns {
+		stats = CompactStats{
+			CompactedNodesCount: len(n),
+		}
+		start := time.Now()
+		for _, v := range n {
+			stats.OldSize += v.part.Size()
+			p.merger.Merge(v.part.Record())
+		}
+		stats.Elapsed = time.Since(start)
+		r := p.merger.NewRecord()
+		f(tenant, r)
+	}
+	node := p.findNode(first)
 	x := &RecordNode{}
-	for !node.next.CompareAndSwap(p.nodes[0], x) {
-		node = p.findNode(p.nodes[0])
+	for !node.next.CompareAndSwap(first, x) {
+		node = p.findNode(first)
 	}
 	p.size.Add(-stats.OldSize)
-	r = p.merger.NewRecord()
 	return
 }
 

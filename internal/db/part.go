@@ -15,6 +15,7 @@ import (
 )
 
 type Part struct {
+	TenantID  string
 	GranuleID string
 	*index.FileIndex
 	Data arrow.Record
@@ -102,6 +103,9 @@ func tableToRecord(table arrow.Table) arrow.Record {
 }
 func (p *Part) ID() string {
 	return p.GranuleID
+}
+func (p *Part) Tenant() string {
+	return p.TenantID
 }
 
 func (p *Part) Record() arrow.Record {

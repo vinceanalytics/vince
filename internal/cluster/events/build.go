@@ -3,6 +3,7 @@ package events
 import (
 	"fmt"
 	"sort"
+	"sync"
 
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
@@ -23,6 +24,36 @@ func mapping() (map[string]int, *arrow.Schema) {
 		o[r.ColumnName(i)] = i
 	}
 	return o, r.Schema()
+}
+
+type Multi struct {
+	mu     sync.Mutex
+	mem    memory.Allocator
+	builds map[string]*Builder
+}
+
+func NewMulti(mem memory.Allocator) *Multi {
+	return &Multi{builds: make(map[string]*Builder)}
+}
+
+func (m *Multi) Append(e *v1.Data) {
+	m.mu.Lock()
+	b, ok := m.builds[e.TenantId]
+	if !ok {
+		b = New(m.mem)
+		m.builds[e.TenantId] = b
+	}
+	b.WriteData(e)
+	PutOne(e)
+	m.mu.Unlock()
+}
+
+func (m *Multi) All(f func(tenantId string, r arrow.Record)) {
+	m.mu.Lock()
+	for k, v := range m.builds {
+		f(k, v.NewRecord())
+	}
+	m.mu.Unlock()
 }
 
 type Builder struct {

@@ -12,21 +12,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/api"
-	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/geo"
-	"github.com/vinceanalytics/vince/internal/guard"
-	"github.com/vinceanalytics/vince/internal/index/primary"
-	"github.com/vinceanalytics/vince/internal/indexer"
 	"github.com/vinceanalytics/vince/internal/load"
 	"github.com/vinceanalytics/vince/internal/logger"
-	"github.com/vinceanalytics/vince/internal/lsm"
-	"github.com/vinceanalytics/vince/internal/request"
-	"github.com/vinceanalytics/vince/internal/session"
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"golang.org/x/crypto/acme/autocert"
@@ -191,68 +181,13 @@ func App() *cli.Command {
 
 			log.Info("Setup storage")
 
-			_, err = os.Stat(base.Data)
-			if err != nil {
-				if os.IsNotExist(err) {
-					err = os.MkdirAll(base.Data, 0755)
-					if err != nil {
-						return err
-					}
-				} else {
-					return err
-				}
-			}
-
-			store, err := db.NewKV(base.Data)
-			if err != nil {
-				return err
-			}
-			tenants := tenant.NewTenants(base)
-
-			log.Info("Setup session")
-			alloc := memory.NewGoAllocator()
-			log.Info("Loading primary index")
-			pidx, err := primary.NewPrimary(store)
-			if err != nil {
-				return err
-			}
-			idx := indexer.New()
-			sess := session.New(alloc, tenants, store, idx, pidx,
-				lsm.WithTTL(
-					base.RetentionPeriod.AsDuration(),
-				),
-				lsm.WithCompactSize(
-					uint64(base.GranuleSize),
-				),
-			)
-			ctx = session.With(ctx, sess)
-			log.Info("Setup geo ip")
-			gip := geo.Open(base.GeoipDbPath)
-			if base.GeoipDbPath == "" {
-				log.Warn("Skipping geo ip, missing database path")
-			}
-			ctx = geo.With(ctx, gip)
-			log.Info("Setup guard", "rate-limit", base.RateLimit)
-			gd := guard.New(base, tenants)
-			ctx = guard.With(ctx, gd)
-
-			log.Info("Setup api")
-			validate, err := protovalidate.New()
-			if err != nil {
-				return err
-			}
-			ctx = request.With(ctx, validate)
-			a, err := api.New(ctx, base, tenants)
-			if err != nil {
-				return err
-			}
 			ctx = logger.With(ctx, log)
 			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 			defer cancel()
 
 			svr := &http.Server{
 				Addr:        base.Listen,
-				Handler:     a,
+				Handler:     http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
 				BaseContext: func(l net.Listener) context.Context { return ctx },
 			}
 			if base.AutoTls {
@@ -264,8 +199,6 @@ func App() *cli.Command {
 				}
 				svr.TLSConfig = m.TLSConfig()
 			}
-			// start services
-			sess.Start(ctx)
 			go func() {
 				defer cancel()
 				log.Info("starting server", "addr", base.Listen)
@@ -277,7 +210,6 @@ func App() *cli.Command {
 			}()
 			<-ctx.Done()
 			svr.Shutdown(context.Background())
-			sess.Close()
 			return err
 		},
 	}

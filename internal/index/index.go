@@ -9,6 +9,7 @@ import (
 
 type Part interface {
 	Full
+	Tenant() string
 	ID() string
 	Record() arrow.Record
 	Release()
@@ -37,7 +38,7 @@ type Index interface {
 
 type Primary interface {
 	Add(resource string, granule *v1.Granule) error
-	FindGranules(resource string, start int64, end int64) []string
+	FindGranules(tenant string, start int64, end int64) []string
 }
 
 func Accept(min, max, start, end int64) bool {
