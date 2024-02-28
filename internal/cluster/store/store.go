@@ -288,6 +288,21 @@ func (s *Store) Open() error {
 		}
 		s.logger.Info("node recovered successfully", "peerPath", s.peersPath)
 	}
+
+	// Get some info about the log, before any more entries are committed.
+	if err := s.setLogInfo(); err != nil {
+		return fmt.Errorf("set log info: %s", err)
+	}
+	s.logger.Info("Setup log info",
+		"firstIdxOnOpen", s.firstIdxOnOpen,
+		"lastIdxOnOpen", s.lastIdxOnOpen,
+		"lastAppliedIdxOnOpen", s.lastAppliedIdxOnOpen,
+		"lastCommandIdxOnOpen", s.lastCommandIdxOnOpen,
+	)
+	s.db, err = db.NewKV(s.dbPath)
+	if err != nil {
+		return fmt.Errorf("failed to create on-disk database: %s", err)
+	}
 	return nil
 }
 
@@ -322,6 +337,37 @@ func (s *Store) Breakdown(ctx context.Context, req *v1.BreakDown_Request) (*v1.B
 }
 
 func (s *Store) Load(ctx context.Context, req *v1.Load_Request) error { return nil }
+
+// setLogInfo records some key indexes about the log.
+func (s *Store) setLogInfo() error {
+	var err error
+	s.firstIdxOnOpen, err = s.boltStore.FirstIndex()
+	if err != nil {
+		return fmt.Errorf("failed to get last index: %s", err)
+	}
+	s.lastAppliedIdxOnOpen, err = s.boltStore.GetAppliedIndex()
+	if err != nil {
+		return fmt.Errorf("failed to get last applied index: %s", err)
+	}
+	s.lastIdxOnOpen, err = s.boltStore.LastIndex()
+	if err != nil {
+		return fmt.Errorf("failed to get last index: %s", err)
+	}
+	s.lastCommandIdxOnOpen, err = s.boltStore.LastCommandIndex(s.firstIdxOnOpen, s.lastAppliedIdxOnOpen)
+	if err != nil {
+		return fmt.Errorf("failed to get last command index: %s", err)
+	}
+	return nil
+}
+
+// remove removes the node, with the given ID, from the cluster.
+func (s *Store) remove(id string) error {
+	f := s.raft.RemoveServer(raft.ServerID(id), 0, 0)
+	if f.Error() != nil && f.Error() == raft.ErrNotLeader {
+		return ErrNotLeader
+	}
+	return f.Error()
+}
 
 // pathExists returns true if the given path exists.
 func pathExists(p string) bool {
