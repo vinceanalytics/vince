@@ -106,12 +106,15 @@ func (s *Session) Close() {
 }
 
 func (s *Session) Flush() {
+	var wg sync.WaitGroup
 	s.build.All(func(tenantId string, r arrow.Record) {
+		wg.Add(1)
 		// to avoid blocking ingestion add r in separate goroutine
-		go s.append(tenantId, r)
+		go s.append(&wg, tenantId, r)
 	})
+	wg.Wait()
 }
-func (s *Session) append(tenantId string, r arrow.Record) {
+func (s *Session) append(wg *sync.WaitGroup, tenantId string, r arrow.Record) {
 	defer r.Release()
 	err := s.tree.Add(tenantId, r)
 	if err != nil {
