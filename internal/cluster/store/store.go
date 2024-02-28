@@ -316,7 +316,64 @@ func (s *Store) Open() error {
 	return nil
 }
 
-func (s *Store) Data(ctx context.Context, req *v1.Data) error { return nil }
+func (s *Store) Data(ctx context.Context, req *v1.Data) error {
+	if !s.open.Is() {
+		return ErrNotOpen
+	}
+	if s.raft.State() != raft.Leader {
+		return ErrNotLeader
+	}
+	if !s.Ready() {
+		return ErrNotReady
+	}
+	b, err := proto.Marshal(req)
+	if err != nil {
+		return err
+	}
+	af := s.raft.Apply(b, s.ApplyTimeout)
+	if af.Error() != nil {
+		if af.Error() == raft.ErrNotLeader {
+			return ErrNotLeader
+		}
+		return af.Error()
+	}
+	r := af.Response()
+	if r != nil {
+		return r.(error)
+	}
+	return nil
+}
+
+// Ready returns true if the store is ready to serve requests. Ready is
+// defined as having no open channels registered via RegisterReadyChannel
+// and having a Leader.
+func (s *Store) Ready() bool {
+	l := s.LeaderAddr()
+	if l == "" {
+		return false
+	}
+
+	return func() bool {
+		s.readyChansMu.Lock()
+		defer s.readyChansMu.Unlock()
+		if s.numClosedReadyChannels != len(s.readyChans) {
+			return false
+		}
+		s.readyChans = nil
+		s.numClosedReadyChannels = 0
+		return true
+	}()
+}
+
+// LeaderAddr returns the address of the current leader. Returns a
+// blank string if there is no leader or if the Store is not open.
+func (s *Store) LeaderAddr() string {
+	if !s.open.Is() {
+		return ""
+	}
+	addr, _ := s.raft.LeaderWithID()
+	return string(addr)
+}
 
 func (s *Store) Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error) {
 	if s.raft.State() != raft.Leader {
