@@ -40,65 +40,11 @@
 - **Privacy friendly**: No cookies and fully compliant with GDPR, CCPA and PECR.
 
 
-### Getting current visitors
-
-
-```bash
-+ curl -X GET 'http://localhost:8080/api/v1/stats/realtime/visitors?site_id=vinceanalytics.com'
-6
-```
-
-### Getting aggregate metrics
-
-
-```bash
-+ curl -X GET 'http://localhost:8080/api/v1/stats/aggregate?metrics=visitors%2Cvisits%2Cpageviews%2Cviews_per_visit%2Cbounce_rate%2Cvisit_duration%2Cevents&site_id=vinceanalytics.com'
-{
-  "results": {
-    "bounce_rate": {
-      "value": 0.8888888888888888
-    },
-    "events": {
-      "value": 10
-    },
-    "pageviews": {
-      "value": 10
-    },
-    "views_per_visit": {
-      "value": 1.1111111111111112
-    },
-    "visit_duration": {
-      "value": 0.0013333333333333333
-    },
-    "visitors": {
-      "value": 8
-    },
-    "visits": {
-      "value": 9
-    }
-  }
-}
-```
-
-
-### Breaking down stats by property
-
-```bash
-+ curl -X GET 'http://localhost:8080/api/v1/stats/breakdown?metrics=visitors%2Cbounce_rate&property=browser&site_id=vinceanalytics.com'
-{
-  "results": {
-    "browser": {
-      "Chrome Mobile": {
-        "bounce_rate": 0.6666666666666666,
-        "visitors": 6
-      },
-      "Chrome Webview": {
-        "bounce_rate": 1,
-        "visitors": 1
-      }
-    }
-  }
-}
-```
-
 Check out the [getting started](https://vinceanalytics.com/#getting-started) instructions if you want to give `vince` a try.
+
+
+# Credits
+
+- [rqlite](https://github.com/rqlite/rqlite)  distributed part is modified components taken from this project LICENSE is included in `internal/cluster`. I decided to use gRPC for internode communication.
+- [frostdb](https://github.com/polarsignals/frostdb) lsm tree for in memory storage was adopted from here
+- [plausible](https://github.com/plausible/analytics) the api was taken from here.
