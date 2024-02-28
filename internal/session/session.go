@@ -77,6 +77,11 @@ func newSession(mem memory.Allocator, cache *ristretto.Cache, storage db.Storage
 	}
 }
 
+func (s *Session) Persist() {
+	s.Flush()
+	s.tree.Compact(true)
+}
+
 func (s *Session) Append(e *v1.Data) {
 	events.Hit(e)
 	if o, ok := s.cache.Get(e.Id); ok {

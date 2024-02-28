@@ -420,8 +420,10 @@ func (s *Store) fsmApply(l *raft.Log) interface{} {
 }
 
 func (s *Store) fsmSnapshot() (raft.FSMSnapshot, error) {
+	s.session.Persist()
 	return snapshots.NewBadger(s.db.DB), nil
 }
+
 func (s *Store) fsmRestore(w io.ReadCloser) error {
 	return snapshots.NewBadger(s.db.DB).Restore(w)
 }
