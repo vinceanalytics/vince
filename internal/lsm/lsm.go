@@ -167,7 +167,7 @@ func NewTree(mem memory.Allocator, resource string, storage db.Storage, indexer 
 		index:    indexer,
 		mem:      mem,
 		merger:   m,
-		store:    db.NewStore(storage, mem, resource, o.ttl),
+		store:    db.NewStore(storage, mem, o.ttl),
 		primary:  primary,
 		resource: resource,
 		opts:     o,
@@ -251,7 +251,7 @@ func (lsm *Tree) loadIndex(ctx context.Context, id string) *index.FileIndex {
 	if ok {
 		return v.(*index.FileIndex)
 	}
-	part, err := lsm.store.LoadIndex(ctx, id)
+	part, err := lsm.store.LoadIndex(ctx, lsm.resource, id)
 	if err != nil {
 		lsm.log.Error("Failed loading granule index to memory", "id", id, "err", err)
 		return nil
@@ -274,7 +274,7 @@ func (lsm *Tree) loadRecord(ctx context.Context, id string, numRows int64, colum
 	if ok {
 		return v.(arrow.Record)
 	}
-	part, err := lsm.store.LoadRecord(ctx, id, numRows, columns)
+	part, err := lsm.store.LoadRecord(ctx, lsm.resource, id, numRows, columns)
 	if err != nil {
 		lsm.log.Error("Failed loading granule index to memory", "id", id, "err", err)
 		return nil
@@ -365,7 +365,7 @@ func (lsm *Tree) persist(r arrow.Record) {
 		lsm.log.Error("Failed building index to persist", "err", err)
 		return
 	}
-	granule, err := lsm.store.Save(r, idx)
+	granule, err := lsm.store.Save(lsm.resource, r, idx)
 	if err != nil {
 		lsm.log.Error("Failed saving record", "err", err)
 		return

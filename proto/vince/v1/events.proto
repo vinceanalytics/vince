@@ -30,6 +30,7 @@ message Data {
   string utm_medium = 14;
   string utm_source = 13;
   string utm_term = 17;
+  string tenant_id = 28;
 
   message List { repeated Data items = 1; }
 }

@@ -33,35 +33,32 @@ type Storage interface {
 }
 
 type Store struct {
-	db       Storage
-	mem      memory.Allocator
-	ttl      time.Duration
-	resource string
-	log      *slog.Logger
+	db  Storage
+	mem memory.Allocator
+	ttl time.Duration
+	log *slog.Logger
 }
 
-func NewStore(db Storage, mem memory.Allocator, resource string, ttl time.Duration) *Store {
+func NewStore(db Storage, mem memory.Allocator, ttl time.Duration) *Store {
 	return &Store{
-		db:       db,
-		ttl:      ttl,
-		resource: resource,
-		mem:      mem,
+		db:  db,
+		ttl: ttl,
+		mem: mem,
 		log: slog.Default().With(
 			slog.String("component", "lsm-store"),
-			slog.String("resource", resource),
 		),
 	}
 }
 
-func (s *Store) LoadRecord(ctx context.Context, id string, numRows int64, columns []int) (arrow.Record, error) {
-	return NewRecord(ctx, s.db, s.resource, id, numRows, columns)
+func (s *Store) LoadRecord(ctx context.Context, resource, id string, numRows int64, columns []int) (arrow.Record, error) {
+	return NewRecord(ctx, s.db, resource, id, numRows, columns)
 }
 
-func (s *Store) LoadIndex(ctx context.Context, id string) (*index.FileIndex, error) {
-	return NewIndex(ctx, s.db, s.resource, id)
+func (s *Store) LoadIndex(ctx context.Context, resource, id string) (*index.FileIndex, error) {
+	return NewIndex(ctx, s.db, resource, id)
 }
 
-func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
+func (s *Store) Save(resource string, r arrow.Record, idx index.Full) (*v1.Granule, error) {
 
 	// We don't call this frequently. So make sure we run GC when we are done. This
 	// removes the need for periodic GC calls.
@@ -71,7 +68,7 @@ func (s *Store) Save(r arrow.Record, idx index.Full) (*v1.Granule, error) {
 	buf := buffers.Bytes()
 	defer buf.Release()
 
-	buf.WriteString(s.resource)
+	buf.WriteString(resource)
 	buf.Write(slash)
 	buf.WriteString(id)
 	base := bytes.Clone(buf.Bytes())
@@ -158,13 +155,17 @@ type KV struct {
 	DB *badger.DB
 }
 
-func NewKV(path string) (*KV, error) {
-	db, err := badger.Open(badger.DefaultOptions(filepath.Join(path, "db")).
+func OpenBadger(path string) (*badger.DB, error) {
+	return badger.Open(badger.DefaultOptions(filepath.Join(path, "db")).
 		WithLogger(&badgerLogger{
 			log: slog.Default().With(
 				slog.String("component", "key-value-store"),
 			),
 		}))
+}
+
+func NewKV(path string) (*KV, error) {
+	db, err := OpenBadger(path)
 	if err != nil {
 		return nil, err
 	}

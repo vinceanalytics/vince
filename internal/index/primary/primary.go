@@ -62,7 +62,15 @@ func NewPrimary(store db.Storage) (idx *PrimaryIndex, err error) {
 	}, nil
 }
 
-func (p *PrimaryIndex) Add(resource string, granule *v1.Granule) {
+func Empty(store db.Storage) *PrimaryIndex {
+	return &PrimaryIndex{
+		db:       store,
+		base:     &v1.PrimaryIndex{Resources: make(map[string]*v1.PrimaryIndex_Resource)},
+		granules: make(map[string][]*v1.Granule),
+	}
+}
+
+func (p *PrimaryIndex) Add(resource string, granule *v1.Granule) error {
 	p.mu.Lock()
 	r, ok := p.base.Resources[resource]
 	if !ok {
@@ -76,10 +84,7 @@ func (p *PrimaryIndex) Add(resource string, granule *v1.Granule) {
 	p.granules[resource] = append(p.granules[resource], granule)
 	data, _ := proto.Marshal(p.base)
 	p.mu.Unlock()
-	err := p.db.Set(Key, data, 0)
-	if err != nil {
-		panic("failed saving primary index " + err.Error())
-	}
+	return p.db.Set(Key, data, 0)
 }
 
 func (p *PrimaryIndex) FindGranules(resource string, start, end int64) (o []string) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"net"
 	"os"
 	"path/filepath"
 	"sync"
@@ -268,6 +269,9 @@ func (s *Store) Open() error {
 	if err != nil {
 		return err
 	}
+	config := raft.DefaultConfig()
+	config.LocalID = raft.ServerID(s.config.NodeId)
+
 	return nil
 }
 
@@ -309,4 +313,67 @@ func pathExists(p string) bool {
 		return false
 	}
 	return true
+}
+
+// pathExistsWithData returns true if the given path exists and has data.
+func pathExistsWithData(p string) bool {
+	if !pathExists(p) {
+		return false
+	}
+	if size, err := fileSize(p); err != nil || size == 0 {
+		return false
+	}
+	return true
+}
+
+func dirExists(path string) bool {
+	stat, err := os.Stat(path)
+	return err == nil && stat.IsDir()
+}
+
+func fileSize(path string) (int64, error) {
+	stat, err := os.Stat(path)
+	if err != nil {
+		return 0, err
+	}
+	return stat.Size(), nil
+}
+
+// fileSizeExists returns the size of the given file, or 0 if the file does not
+// exist. Any other error is returned.
+func fileSizeExists(path string) (int64, error) {
+	if !pathExists(path) {
+		return 0, nil
+	}
+	return fileSize(path)
+}
+
+// dirSize returns the total size of all files in the given directory
+func dirSize(path string) (int64, error) {
+	var size int64
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			// If the file doesn't exist, we can ignore it. Snapshot files might
+			// disappear during walking.
+			if os.IsNotExist(err) {
+				return nil
+			}
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return err
+	})
+	return size, err
+}
+
+func resolvableAddress(addr string) (string, error) {
+	h, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		// Just try the given address directly.
+		h = addr
+	}
+	_, err = net.LookupHost(h)
+	return h, err
 }

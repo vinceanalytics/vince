@@ -36,7 +36,7 @@ type Index interface {
 }
 
 type Primary interface {
-	Add(resource string, granule *v1.Granule)
+	Add(resource string, granule *v1.Granule) error
 	FindGranules(resource string, start int64, end int64) []string
 }
 

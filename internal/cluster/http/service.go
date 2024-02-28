@@ -608,6 +608,12 @@ func (s *Service) handleApiEvent(w http.ResponseWriter, r *http.Request, params 
 
 func (s *Service) process(w http.ResponseWriter, r *http.Request, e *v1.Data) {
 	ctx := r.Context()
+	tenantId := s.tenants.TenantBySiteID(ctx, e.Domain)
+	if tenantId == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	e.TenantId = tenantId
 	err := s.store.Data(ctx, e)
 	if err == nil {
 		w.WriteHeader(http.StatusAccepted)

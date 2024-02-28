@@ -73,6 +73,9 @@ func (b *Builder) NewRecord() arrow.Record {
 func (b *Builder) Release() {
 	b.r.Release()
 }
+func (b *Builder) Len() int {
+	return b.r.Field(0).Len()
+}
 
 func (b *Builder) Write(list *v1.Data_List) arrow.Record {
 	ls := list.GetItems()
@@ -81,12 +84,12 @@ func (b *Builder) Write(list *v1.Data_List) arrow.Record {
 	})
 	b.r.Reserve(len(ls))
 	for _, e := range ls {
-		b.writeData(e)
+		b.WriteData(e)
 	}
 	return b.NewRecord()
 }
 
-func (b *Builder) writeData(data *v1.Data) {
+func (b *Builder) WriteData(data *v1.Data) {
 	fs := data.ProtoReflect()
 	fds := fs.Descriptor().Fields()
 	for i := 0; i < fds.Len(); i++ {
