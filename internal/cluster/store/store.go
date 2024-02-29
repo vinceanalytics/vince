@@ -172,9 +172,6 @@ type Store struct {
 	peersInfoPath string
 	dbPath        string
 
-	restorePath   string
-	restoreDoneCh chan struct{}
-
 	raft   *raft.Raft // The consensus mechanism.
 	ly     Layer
 	raftTn *NodeTransport
@@ -258,6 +255,7 @@ func NewStore(base *v1.Config, ly Layer) (*Store, error) {
 			uint64(base.GranuleSize),
 		),
 	)
+
 	return &Store{
 		ly:             ly,
 		raftDir:        base.Data,
@@ -265,7 +263,6 @@ func NewStore(base *v1.Config, ly Layer) (*Store, error) {
 		peersPath:      filepath.Join(base.Data, peersPath),
 		peersInfoPath:  filepath.Join(base.Data, peersInfoPath),
 		dbPath:         filepath.Join(base.Data, dbName),
-		restoreDoneCh:  make(chan struct{}),
 		logger:         slog.Default().With("component", "store"),
 		notifyingNodes: make(map[string]*v1.Server),
 		ApplyTimeout:   applyTimeout,
@@ -274,7 +271,7 @@ func NewStore(base *v1.Config, ly Layer) (*Store, error) {
 	}, nil
 }
 
-func (s *Store) Open() error {
+func (s *Store) Open(ctx context.Context) error {
 	if s.open.Is() {
 		return ErrOpen
 	}
@@ -349,6 +346,7 @@ func (s *Store) Open() error {
 		return fmt.Errorf("creating the raft system failed: %s", err)
 	}
 	s.raft = ra
+	s.session.Start(ctx)
 	return nil
 }
 
