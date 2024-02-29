@@ -9,6 +9,9 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
+	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -77,6 +80,8 @@ var (
 )
 
 const (
+	defaultTimeout = 30 * time.Second
+
 	snapshotsDirName           = "snapshots"
 	dbName                     = "vince"
 	restoreScratchPattern      = "rqlite-restore-*"
@@ -122,6 +127,43 @@ const (
 	Unknown
 )
 
+type Database interface {
+	Data(ctx context.Context, req *v1.Data) error
+	Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error)
+	Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error)
+	Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error)
+	Breakdown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error)
+	Load(ctx context.Context, req *v1.Load_Request) error
+}
+
+// Storage is the interface the Raft-based database must implement.
+type Storage interface {
+	Database
+
+	Committed(ctx context.Context) (uint64, error)
+
+	// Remove removes the node from the cluster.
+	Remove(ctx context.Context, rn *v1.RemoveNode_Request) error
+
+	// LeaderAddr returns the Raft address of the leader of the cluster.
+	LeaderAddr(ctx context.Context) (string, error)
+
+	// Ready returns whether the Store is ready to service requests.
+	Ready(ctx context.Context) bool
+
+	// Nodes returns the slice of store.Servers in the cluster
+	Nodes(ctx context.Context) (*v1.Server_List, error)
+
+	// Backup writes backup of the node state to dst
+	Backup(ctx context.Context, br *v1.Backup_Request, dst io.Writer) error
+
+	// ReadFrom reads and loads a SQLite database into the node, initially bypassing
+	// the Raft system. It then triggers a Raft snapshot, which will then make
+	// Raft aware of the new data.
+	ReadFrom(ctx context.Context, r io.Reader) (int64, error)
+
+	Status() (*v1.Status_Store, error)
+}
 type Store struct {
 	open          AtomicBool
 	raftDir       string
@@ -145,6 +187,7 @@ type Store struct {
 	// Channels for WAL-size triggered snapshotting
 	snapshotWClose chan struct{}
 	snapshotWDone  chan struct{}
+	snapshotCAS    CheckAndSet
 
 	// Latest log entry index actually reflected by the FSM. Due to Raft code
 	// this value is not updated after a Snapshot-restore.
@@ -200,6 +243,8 @@ type Store struct {
 	db      *db.KV
 	config  *v1.Config
 }
+
+var _ Storage = (*Store)(nil)
 
 func NewStore(base *v1.Config, ly Layer) (*Store, error) {
 	store, err := db.NewKV(base.Data)
@@ -316,6 +361,95 @@ func (s *Store) Open() error {
 	return nil
 }
 
+func (s *Store) Status() (*v1.Status_Store, error) {
+	return &v1.Status_Store{}, nil
+}
+
+// ReadFrom reads data from r, and loads it into the database, bypassing Raft consensus.
+// Once the data is loaded, a snapshot is triggered, which then results in a system as
+// if the data had been loaded through Raft consensus.
+func (s *Store) ReadFrom(ctx context.Context, r io.Reader) (int64, error) {
+	// Check the constraints.
+	if s.raft.State() != raft.Leader {
+		return 0, ErrNotLeader
+	}
+	nodes, err := s.Nodes(ctx)
+	if err != nil {
+		return 0, err
+	}
+	if len(nodes.Items) != 1 {
+		return 0, ErrNotSingleNode
+	}
+
+	err = s.db.DB.Load(r, runtime.NumCPU())
+	if err != nil {
+		return 0, err
+	}
+
+	// Raft won't snapshot unless there is at least one unsnappshotted log entry,
+	// so prep that now before we do anything destructive.
+	n, err := s.sendData(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := s.Snapshot(1); err != nil {
+		return 0, err
+	}
+	return int64(n), nil
+}
+
+func (s *Store) Backup(ctx context.Context, br *v1.Backup_Request, dst io.Writer) error {
+	if !s.open.Is() {
+		return ErrNotOpen
+	}
+	if br.Leader && s.raft.State() != raft.Leader {
+		return ErrNotLeader
+	}
+	// Snapshot to ensure the main SQLite file has all the latest data.
+	if err := s.Snapshot(0); err != nil {
+		if err != raft.ErrNothingNewToSnapshot &&
+			!strings.Contains(err.Error(), "wait until the configuration entry at") {
+			return fmt.Errorf("pre-backup snapshot failed: %s", err.Error())
+		}
+	}
+	if err := s.snapshotCAS.Begin(); err != nil {
+		return err
+	}
+	defer s.snapshotCAS.End()
+	_, err := s.db.DB.Backup(dst, 0)
+	return err
+}
+
+// Snapshot performs a snapshot, leaving n trailing logs behind. If n
+// is greater than zero, that many logs are left in the log after
+// snapshotting. If n is zero, then the number set at Store creation is used.
+// Finally, once this function returns, the trailing log configuration value
+// is reset to the value set at Store creation.
+func (s *Store) Snapshot(n uint64) (retError error) {
+
+	if n > 0 {
+		cfg := s.raft.ReloadableConfig()
+		defer func() {
+			if err := s.raft.ReloadConfig(cfg); err != nil {
+				s.logger.Error("failed to reload Raft config", "err", err)
+			}
+		}()
+		cfg.TrailingLogs = n
+		if err := s.raft.ReloadConfig(cfg); err != nil {
+			return fmt.Errorf("failed to reload Raft config: %s", err.Error())
+		}
+	}
+	if err := s.raft.Snapshot().Error(); err != nil {
+		if strings.Contains(err.Error(), ErrLoadInProgress.Error()) {
+			return ErrLoadInProgress
+		}
+		return err
+	}
+
+	return nil
+}
+
 func (s *Store) Data(ctx context.Context, req *v1.Data) error {
 	if !s.open.Is() {
 		return ErrNotOpen
@@ -323,32 +457,42 @@ func (s *Store) Data(ctx context.Context, req *v1.Data) error {
 	if s.raft.State() != raft.Leader {
 		return ErrNotLeader
 	}
-	if !s.Ready() {
+	if !s.Ready(ctx) {
 		return ErrNotReady
 	}
-	b, err := proto.Marshal(req)
-	if err != nil {
-		return err
+	_, err := s.sendData(ctx, req)
+	return err
+}
+
+func (s *Store) sendData(ctx context.Context, req *v1.Data) (uint64, error) {
+	var b []byte
+	var err error
+	if req != nil {
+		b, err = proto.Marshal(req)
+		if err != nil {
+			return 0, err
+		}
 	}
+
 	af := s.raft.Apply(b, s.ApplyTimeout)
 	if af.Error() != nil {
 		if af.Error() == raft.ErrNotLeader {
-			return ErrNotLeader
+			return 0, ErrNotLeader
 		}
-		return af.Error()
+		return 0, af.Error()
 	}
 	r := af.Response()
 	if r != nil {
-		return r.(error)
+		return 0, r.(error)
 	}
-	return nil
+	return af.Index(), nil
 }
 
 // Ready returns true if the store is ready to serve requests. Ready is
 // defined as having no open channels registered via RegisterReadyChannel
 // and having a Leader.
-func (s *Store) Ready() bool {
-	l := s.LeaderAddr()
+func (s *Store) Ready(ctx context.Context) bool {
+	l, _ := s.LeaderAddr(ctx)
 	if l == "" {
 		return false
 	}
@@ -365,14 +509,248 @@ func (s *Store) Ready() bool {
 	}()
 }
 
-// LeaderAddr returns the address of the current leader. Returns a
-// blank string if there is no leader or if the Store is not open.
-func (s *Store) LeaderAddr() string {
+// Committed blocks until the local commit index is greater than or
+// equal to the Leader index, as checked when the function is called.
+// It returns the committed index. If the Leader index is 0, then the
+// system waits until the commit index is at least 1.
+func (s *Store) Committed(ctx context.Context) (uint64, error) {
+	lci, err := s.LeaderCommitIndex()
+	if err != nil {
+		return lci, err
+	}
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	defer cancel()
+	return lci, s.WaitForCommitIndex(ctx, max(1, lci))
+}
+
+// LeaderCommitIndex returns the Raft leader commit index, as indicated
+// by the latest AppendEntries RPC. If this node is the Leader then the
+// commit index is returned directly from the Raft object.
+func (s *Store) LeaderCommitIndex() (uint64, error) {
+	if s.raft.State() == raft.Leader {
+		return s.raft.CommitIndex(), nil
+	}
+	return s.raftTn.LeaderCommitIndex(), nil
+}
+
+// Nodes returns the slice of nodes in the cluster, sorted by ID ascending.
+func (s *Store) Nodes(ctx context.Context) (*v1.Server_List, error) {
+	if !s.open.Is() {
+		return nil, ErrNotOpen
+	}
+
+	f := s.raft.GetConfiguration()
+	if f.Error() != nil {
+		return nil, f.Error()
+	}
+
+	rs := f.Configuration().Servers
+	servers := make([]*v1.Server, len(rs))
+	for i := range rs {
+		servers[i] = &v1.Server{
+			Id:       string(rs[i].ID),
+			Addr:     string(rs[i].Address),
+			Suffrage: v1.Server_Suffrage(v1.Server_Suffrage_value[rs[i].Suffrage.String()]),
+		}
+	}
+	sort.Slice(servers, func(i, j int) bool {
+		return servers[i].Id < servers[j].Id
+	})
+	return &v1.Server_List{Items: servers}, nil
+}
+
+// Close closes the store. If wait is true, waits for a graceful shutdown.
+func (s *Store) Close(wait bool) (retErr error) {
+	defer func() {
+		if retErr == nil {
+			s.logger.Info("store closed ", "nodeId", s.config.NodeId, "listen_address", s.ly.Addr().String())
+			s.open.Unset()
+		}
+	}()
+	if !s.open.Is() {
+		// Protect against closing already-closed resource, such as channels.
+		return nil
+	}
+
+	close(s.observerClose)
+	<-s.observerDone
+
+	close(s.snapshotWClose)
+	<-s.snapshotWDone
+
+	f := s.raft.Shutdown()
+	if wait {
+		if f.Error() != nil {
+			return f.Error()
+		}
+	}
+	if err := s.raftTn.Close(); err != nil {
+		return err
+	}
+
+	s.session.Close()
+
+	// Only shutdown Bolt and SQLite when Raft is done.
+	if err := s.db.Close(); err != nil {
+		return err
+	}
+	if err := s.boltStore.Close(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// WaitForAppliedFSM waits until the currently applied logs (at the time this
+// function is called) are actually reflected by the FSM, or the timeout expires.
+func (s *Store) WaitForAppliedFSM(timeout time.Duration) (uint64, error) {
+	if timeout == 0 {
+		return 0, nil
+	}
+	return s.WaitForFSMIndex(s.raft.AppliedIndex(), timeout)
+}
+
+// WaitForApplied waits for all Raft log entries to be applied to the
+// underlying database.
+func (s *Store) WaitForAllApplied(timeout time.Duration) error {
+	if timeout == 0 {
+		return nil
+	}
+	return s.WaitForAppliedIndex(s.raft.LastIndex(), timeout)
+}
+
+// WaitForAppliedIndex blocks until a given log index has been applied,
+// or the timeout expires.
+func (s *Store) WaitForAppliedIndex(idx uint64, timeout time.Duration) error {
+	tck := time.NewTicker(appliedWaitDelay)
+	defer tck.Stop()
+	tmr := time.NewTimer(timeout)
+	defer tmr.Stop()
+
+	for {
+		select {
+		case <-tck.C:
+			if s.raft.AppliedIndex() >= idx {
+				return nil
+			}
+		case <-tmr.C:
+			return fmt.Errorf("timeout expired")
+		}
+	}
+}
+
+// WaitForFSMIndex blocks until a given log index has been applied to our
+// state machine or the timeout expires.
+func (s *Store) WaitForFSMIndex(idx uint64, timeout time.Duration) (uint64, error) {
+	tck := time.NewTicker(appliedWaitDelay)
+	defer tck.Stop()
+	tmr := time.NewTimer(timeout)
+	defer tmr.Stop()
+	for {
+		select {
+		case <-tck.C:
+			if fsmIdx := s.fsmIdx.Load(); fsmIdx >= idx {
+				return fsmIdx, nil
+			}
+		case <-tmr.C:
+			return 0, fmt.Errorf("timeout expired")
+		}
+	}
+}
+
+// WaitForCommitIndex blocks until the local Raft commit index is equal to
+// or greater the given index, or the timeout expires.
+func (s *Store) WaitForCommitIndex(ctx context.Context, idx uint64) error {
+	tck := time.NewTicker(commitEquivalenceDelay)
+	defer tck.Stop()
+	checkFn := func() bool {
+		return s.raft.CommitIndex() >= idx
+	}
+
+	// Try the fast path.
+	if checkFn() {
+		return nil
+	}
+	for {
+		select {
+		case <-tck.C:
+			if checkFn() {
+				return nil
+			}
+		case <-ctx.Done():
+			return fmt.Errorf("timeout expired")
+		}
+	}
+}
+
+// IsLeader is used to determine if the current node is cluster leader
+func (s *Store) IsLeader() bool {
+	return s.raft.State() == raft.Leader
+}
+
+// HasLeader returns true if the cluster has a leader, false otherwise.
+func (s *Store) HasLeader() bool {
+	return s.raft.Leader() != ""
+}
+
+// IsVoter returns true if the current node is a voter in the cluster. If there
+// is no reference to the current node in the current cluster configuration then
+// false will also be returned.
+func (s *Store) IsVoter() (bool, error) {
+	cfg := s.raft.GetConfiguration()
+	if err := cfg.Error(); err != nil {
+		return false, err
+	}
+	for _, srv := range cfg.Configuration().Servers {
+		if srv.ID == raft.ServerID(s.config.NodeId) {
+			return srv.Suffrage == raft.Voter, nil
+		}
+	}
+	return false, nil
+}
+
+// State returns the current node's Raft state
+func (s *Store) State() ClusterState {
+	state := s.raft.State()
+	switch state {
+	case raft.Leader:
+		return Leader
+	case raft.Candidate:
+		return Candidate
+	case raft.Follower:
+		return Follower
+	case raft.Shutdown:
+		return Shutdown
+	default:
+		return Unknown
+	}
+}
+
+// Path returns the path to the store's storage directory.
+func (s *Store) Path() string {
+	return s.raftDir
+}
+
+// Addr returns the address of the store.
+func (s *Store) Addr() string {
 	if !s.open.Is() {
 		return ""
 	}
+	return string(s.raftTn.LocalAddr())
+}
+
+// ID returns the Raft ID of the store.
+func (s *Store) ID() string {
+	return s.config.NodeId
+}
+
+// LeaderAddr returns the address of the current leader. Returns a
+// blank string if there is no leader or if the Store is not open.
+func (s *Store) LeaderAddr(_ context.Context) (string, error) {
+	if !s.open.Is() {
+		return "", nil
+	}
 	addr, _ := s.raft.LeaderWithID()
-	return string(addr)
+	return string(addr), nil
 }
 
 func (s *Store) Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error) {
@@ -409,6 +787,9 @@ func (s *Store) fsmApply(l *raft.Log) interface{} {
 	if s.firstLogAppliedT.IsZero() {
 		s.firstLogAppliedT = time.Now()
 		s.logger.Info("first log applied since node start, log", "index", l.Index)
+	}
+	if len(l.Data) == 0 {
+		return nil
 	}
 	e := events.One()
 	err := proto.Unmarshal(l.Data, e)
@@ -447,6 +828,20 @@ func (s *Store) setLogInfo() error {
 	if err != nil {
 		return fmt.Errorf("failed to get last command index: %s", err)
 	}
+	return nil
+}
+
+// Remove removes a node from the store.
+func (s *Store) Remove(ctx context.Context, rn *v1.RemoveNode_Request) error {
+	if !s.open.Is() {
+		return ErrNotOpen
+	}
+	id := rn.Id
+	s.logger.Info("received request to remove node ", "nodeId", id)
+	if err := s.remove(id); err != nil {
+		return err
+	}
+	s.logger.Info("node removed successfully", "nodeId", id)
 	return nil
 }
 

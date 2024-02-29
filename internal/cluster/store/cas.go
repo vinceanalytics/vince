@@ -1,51 +1,31 @@
 package store
 
 import (
+	"errors"
 	"sync/atomic"
-	"time"
 )
 
-type Atomic[T any] struct {
-	atomic.Value
+var (
+	// ErrCASConflict is returned when a CAS operation fails.
+	ErrCASConflict = errors.New("CAS conflict")
+)
+
+// CheckAndSet is a simple concurrency control mechanism that allows
+// only one goroutine to execute a critical section at a time.
+type CheckAndSet struct {
+	state atomic.Int32
 }
 
-func (a *Atomic[T]) Store(t T) {
-	a.Value.Store(t)
-}
-
-func (a *Atomic[T]) Load() T {
-	v := a.Value.Load()
-	if v != nil {
-		var t T
-		return t
+// Begin attempts to enter the critical section. If another goroutine
+// is already in the critical section, Begin returns an error.
+func (c *CheckAndSet) Begin() error {
+	if c.state.CompareAndSwap(0, 1) {
+		return nil
 	}
-	return v.(T)
+	return ErrCASConflict
 }
 
-type AtomicTime struct {
-	Atomic[time.Time]
-}
-
-func (a *AtomicTime) Add(t time.Duration) {
-	a.Store(a.Load().Add(t))
-}
-
-func (a *AtomicTime) Sub(t *AtomicTime) time.Duration {
-	return a.Load().Sub(t.Load())
-}
-
-type AtomicBool struct {
-	Atomic[bool]
-}
-
-func (a *AtomicBool) Set() {
-	a.Store(true)
-}
-
-func (a *AtomicBool) Unset() {
-	a.Store(false)
-}
-
-func (a *AtomicBool) Is() bool {
-	return a.Load()
+// End exits the critical section.
+func (c *CheckAndSet) End() {
+	c.state.Store(0)
 }

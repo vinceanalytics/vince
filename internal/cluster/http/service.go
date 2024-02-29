@@ -47,46 +47,6 @@ type ResultsError interface {
 	IsAuthorized() bool
 }
 
-type Database interface {
-	Data(ctx context.Context, req *v1.Data) error
-	Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realtime_Response, error)
-	Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Aggregate_Response, error)
-	Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.Timeseries_Response, error)
-	Breakdown(ctx context.Context, req *v1.BreakDown_Request) (*v1.BreakDown_Response, error)
-	Load(ctx context.Context, req *v1.Load_Request) error
-}
-
-var _ Database = (*store.Store)(nil)
-
-// Store is the interface the Raft-based database must implement.
-type Store interface {
-	Database
-
-	Committed(ctx context.Context) (uint64, error)
-
-	// Remove removes the node from the cluster.
-	Remove(ctx context.Context, rn *v1.RemoveNode_Request) error
-
-	// LeaderAddr returns the Raft address of the leader of the cluster.
-	LeaderAddr(ctx context.Context) (string, error)
-
-	// Ready returns whether the Store is ready to service requests.
-	Ready(ctx context.Context) bool
-
-	// Nodes returns the slice of store.Servers in the cluster
-	Nodes(ctx context.Context) (*v1.Server_List, error)
-
-	// Backup writes backup of the node state to dst
-	Backup(ctx context.Context, br *v1.Backup_Request, dst io.Writer) error
-
-	// ReadFrom reads and loads a SQLite database into the node, initially bypassing
-	// the Raft system. It then triggers a Raft snapshot, which will then make
-	// Raft aware of the new data.
-	ReadFrom(ctx context.Context, r io.Reader) (int64, error)
-
-	Status() (*v1.Status_Store, error)
-}
-
 // GetAddresser is the interface that wraps the GetNodeAPIAddr method.
 // GetNodeAPIAddr returns the HTTP API URL for the node at the given Raft address.
 type GetAddresser interface {
@@ -143,7 +103,7 @@ type Service struct {
 	addr string
 	ln   net.Listener
 
-	store   Store
+	store   store.Storage
 	cluster Cluster
 	guard   guard.Guard
 	tenants tenant.Loader
@@ -168,7 +128,7 @@ type Service struct {
 
 // New returns an uninitialized HTTP service. If credentials is nil, then
 // the service performs no authentication and authorization checks.
-func New(addr string, store Store, cluster Cluster, credentials CredentialStore, guard guard.Guard, tenants tenant.Loader) *Service {
+func New(addr string, store store.Storage, cluster Cluster, credentials CredentialStore, guard guard.Guard, tenants tenant.Loader) *Service {
 	return &Service{
 		addr:    addr,
 		store:   store,
