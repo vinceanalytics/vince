@@ -142,6 +142,8 @@ type Storage interface {
 
 	Committed(ctx context.Context) (uint64, error)
 
+	CommitIndex(ctx context.Context) (uint64, error)
+
 	// Remove removes the node from the cluster.
 	Remove(ctx context.Context, rn *v1.RemoveNode_Request) error
 
@@ -162,8 +164,12 @@ type Storage interface {
 	// Raft aware of the new data.
 	ReadFrom(ctx context.Context, r io.Reader) (int64, error)
 
+	Join(ctx context.Context, jr *v1.Join_Request) error
+	Notify(ctx context.Context, nr *v1.Notify_Request) error
+
 	Status() (*v1.Status_Store, error)
 }
+
 type Store struct {
 	open          AtomicBool
 	raftDir       string
@@ -527,6 +533,11 @@ func (s *Store) Committed(ctx context.Context) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	defer cancel()
 	return lci, s.WaitForCommitIndex(ctx, max(1, lci))
+}
+
+// CommitIndex returns the Raft commit index.
+func (s *Store) CommitIndex(ctx context.Context) (uint64, error) {
+	return s.raft.CommitIndex(), nil
 }
 
 // LeaderCommitIndex returns the Raft leader commit index, as indicated
