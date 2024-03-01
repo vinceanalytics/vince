@@ -2,4 +2,4 @@ set -euo pipefail
 
 go build -o bin/vince
 
-VINCE_LOG_LEVEL=DEBUG VINCE_DOMAINS=vinceanalytics.com ./bin/vince
+VINCE_LOG_LEVEL=DEBUG VINCE_DOMAINS=vinceanalytics.com ./bin/vince --nodeId=1
