@@ -7,13 +7,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/raft"
-	"github.com/pkg/errors"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"google.golang.org/grpc"
-)
-
-var (
-	errCloseErr = errors.New("error closing connections")
 )
 
 type Manager struct {
