@@ -10,7 +10,7 @@
 
 ## What ?
 
-`vince` is a highly optimized ,privacy friendly modern server for collecting and analyzing website analytics.
+`vince` is a lightweight , API only, distributed ,  highly optimized and privacy friendly modern server for collecting and analyzing website analytics. 
 
 ## Why ?
 
@@ -41,6 +41,13 @@
 
 - **Privacy friendly**: No cookies and fully compliant with GDPR, CCPA and PECR.
 
+- **GET /api/v1/stats/realtime/visitors**: find  who is currently visiting your site
+
+- **GET /api/v1/stats/aggregate**: Aggregate by `bounce_rate`, `events` , `pageviews`,`views_per_visit`,`visit_duration` and `visits` over a period of time.
+
+- **GET /api/v1/stats/timeseries** : Get time series data for reporting breaking down by `bounce_rate`, `events` , `pageviews`,`views_per_visit`,`visit_duration` and `visits`
+
+- **GET /api/v1/stats/breakdown**: Gain deeper insight by breaking down metrics my properties. We support multiple properties in a single query. e.g breakdown by `source`, `browser` etc.
 
 Check out the [getting started](https://vinceanalytics.com/#getting-started) instructions if you want to give `vince` a try.
 
