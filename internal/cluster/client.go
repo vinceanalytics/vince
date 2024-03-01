@@ -11,7 +11,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/cluster/http"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // CredentialsFor returns a Credentials instance for the given username, or nil if
@@ -79,7 +78,7 @@ func (c *Client) GetNodeAPIAddr(ctx context.Context, nodeAddr string) (string, e
 	if err != nil {
 		return "", err
 	}
-	meta, err := remote.NodeAPI(ctx, &emptypb.Empty{})
+	meta, err := remote.NodeAPI(ctx, &v1.NodeAPIRequest{})
 	if err != nil {
 		return "", err
 	}
