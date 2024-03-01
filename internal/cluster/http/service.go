@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -18,7 +17,6 @@ import (
 	"github.com/bufbuild/protovalidate-go"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/events"
-	"github.com/vinceanalytics/vince/internal/cluster/rtls"
 	"github.com/vinceanalytics/vince/internal/cluster/store"
 	"github.com/vinceanalytics/vince/internal/defaults"
 	"github.com/vinceanalytics/vince/internal/guard"
@@ -99,38 +97,22 @@ const (
 )
 
 type Service struct {
-	svr  http.Server
-	addr string
-	ln   net.Listener
-
-	store   store.Storage
-	cluster Cluster
-	guard   guard.Guard
-	tenants tenant.Loader
-
+	bindAddress string
+	store       store.Storage
+	cluster     Cluster
+	guard       guard.Guard
+	tenants     tenant.Loader
 	AllowOrigin string // Value to set for Access-Control-Allow-Origin
-
-	start      time.Time
-	lastBackup time.Time
-
-	CACertFile   string // Path to x509 CA certificate used to verify certificates.
-	CertFile     string // Path to server's own x509 certificate.
-	KeyFile      string // Path to server's own x509 private key.
-	ClientVerify bool   // Whether client certificates should verified.
-	tls          *tls.Config
-
-	creds CredentialStore
-
-	close chan struct{}
-
-	log *slog.Logger
+	start       time.Time
+	lastBackup  time.Time
+	creds       CredentialStore
+	log         *slog.Logger
 }
 
 // New returns an uninitialized HTTP service. If credentials is nil, then
 // the service performs no authentication and authorization checks.
-func New(addr string, store store.Storage, cluster Cluster, credentials CredentialStore, guard guard.Guard, tenants tenant.Loader) *Service {
+func New(store store.Storage, cluster Cluster, credentials CredentialStore, guard guard.Guard, tenants tenant.Loader) *Service {
 	return &Service{
-		addr:    addr,
 		store:   store,
 		cluster: cluster,
 		guard:   guard,
@@ -139,72 +121,6 @@ func New(addr string, store store.Storage, cluster Cluster, credentials Credenti
 		creds:   credentials,
 		log:     slog.Default().With("component", "http-service"),
 	}
-}
-
-// Start starts the service.
-func (s *Service) Start(ctx context.Context) error {
-	s.svr = http.Server{
-		Handler:     s,
-		BaseContext: func(l net.Listener) context.Context { return ctx },
-	}
-
-	var ln net.Listener
-	var err error
-	if s.CertFile == "" || s.KeyFile == "" {
-		ln, err = net.Listen("tcp", s.addr)
-		if err != nil {
-			return err
-		}
-	} else {
-		mTLSState := rtls.MTLSStateDisabled
-		if s.ClientVerify {
-			mTLSState = rtls.MTLSStateEnabled
-		}
-		s.tls, err = rtls.CreateServerConfig(s.CertFile, s.KeyFile, s.CACertFile, mTLSState)
-		if err != nil {
-			return err
-		}
-		ln, err = tls.Listen("tcp", s.addr, s.tls)
-		if err != nil {
-			return err
-		}
-		var b strings.Builder
-		b.WriteString(fmt.Sprintf("secure HTTPS server enabled with cert %s, key %s", s.CertFile, s.KeyFile))
-		if s.CACertFile != "" {
-			b.WriteString(fmt.Sprintf(", CA cert %s", s.CACertFile))
-		}
-		if s.ClientVerify {
-			b.WriteString(", mutual TLS enabled")
-		} else {
-			b.WriteString(", mutual TLS disabled")
-		}
-		// print the message
-		s.log.Info(b.String())
-	}
-	s.ln = ln
-
-	s.close = make(chan struct{})
-
-	go func() {
-		err := s.svr.Serve(s.ln)
-		if err != nil {
-			s.log.Error("Stopped http service", "addr", s.ln.Addr(), "err", err)
-		}
-	}()
-	s.log.Info("Started service", "addr", s.ln.Addr())
-	return nil
-}
-
-// Close closes the service.
-func (s *Service) Close() {
-	s.log.Info("closing HTTP service", "addr", s.ln.Addr())
-	s.svr.Shutdown(context.Background())
-	s.ln.Close()
-}
-
-// HTTPS returns whether this service is using HTTPS.
-func (s *Service) HTTPS() bool {
-	return s.CertFile != "" && s.KeyFile != ""
 }
 
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -1082,9 +998,7 @@ func (s *Service) osStatus() *v1.Status_Os {
 
 func (s *Service) httpStatus() *v1.Status_HTTP {
 	return &v1.Status_HTTP{
-		BindAddress: s.ln.Addr().String(),
 		EnabledAuth: s.creds != nil,
-		Tls:         s.tlsStatus(),
 		Cluster:     s.cluster.Status(),
 	}
 }
@@ -1106,20 +1020,6 @@ func (s *Service) runtimeStatus() *v1.Status_Runtime {
 		NumCpu:   int32(runtime.NumCPU()),
 		Version:  runtime.Version(),
 	}
-}
-
-func (s *Service) tlsStatus() *v1.Status_TLS {
-	o := &v1.Status_TLS{
-		Enabled: s.tls != nil,
-	}
-	if s.tls != nil {
-		o.ClientAuth = s.tls.ClientAuth.String()
-		o.CertFile = s.CertFile
-		o.KeyFile = s.KeyFile
-		o.CaFile = s.CACertFile
-		o.NextProtos = s.tls.NextProtos
-	}
-	return o
 }
 
 // addBuildVersion adds the build version to the HTTP response.

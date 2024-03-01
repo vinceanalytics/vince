@@ -2,7 +2,6 @@ package tenant
 
 import (
 	"context"
-	"net/url"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
@@ -67,6 +66,11 @@ func (t *Tenants) Get(domain string) *v1.Tenant {
 func (t *Tenants) GetByID(id string) *v1.Tenant {
 	return t.id[id]
 }
+
+func (t *Tenants) TenantBySiteID(ctx context.Context, siteId string) (tenantId string) {
+	return t.domains[siteId].GetId()
+}
+
 func (t *Tenants) Domains(id string) []*v1.Domain {
 	n, ok := t.id[id]
 	if ok {
@@ -82,33 +86,6 @@ func (t *Tenants) AllDomains() (o []*v1.Domain) {
 	return
 }
 
-func (t *Tenants) Load(ctx context.Context, q url.Values) context.Context {
-	v := q.Get("tenant_id")
-	if v == "" {
-		site := q.Get("site_id")
-		if site != "" {
-			s := t.Get(site)
-			if s != nil {
-				v = s.Id
-			}
-		}
-	}
-	if v == "" {
-		v = Default
-	}
-	return With(ctx, v)
-}
-
 func (t *Tenants) All() []*v1.Tenant {
 	return t.all
-}
-
-type tenantId struct{}
-
-func With(ctx context.Context, id string) context.Context {
-	return context.WithValue(ctx, tenantId{}, id)
-}
-
-func Get(ctx context.Context) string {
-	return ctx.Value(tenantId{}).(string)
 }

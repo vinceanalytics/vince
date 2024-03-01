@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"io"
-	"sync"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/auth"
+	"github.com/vinceanalytics/vince/internal/cluster/connections"
 	"github.com/vinceanalytics/vince/internal/cluster/http"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -31,11 +31,8 @@ func CredentialsFor(credStr *auth.CredentialsStore, username string) *v1.Credent
 
 // Client allows communicating with a remote node.
 type Client struct {
-	dialOpts      []grpc.DialOption
-	insecure      bool
-	localNodeAddr string
-	mu            sync.RWMutex
-	clients       map[string]*Klient
+	insecure bool
+	conns    *connections.Manager
 }
 
 var _ http.Cluster = (*Client)(nil)
@@ -51,25 +48,10 @@ type Klient struct {
 // and removing nodes are not retried, to make it clear to the operator
 // that the operation failed. In addition, higher-level code will
 // usually retry these operations.
-func NewClient(insecure bool, opts ...grpc.DialOption) *Client {
+func NewClient(mgr *connections.Manager) *Client {
 	return &Client{
-		insecure: insecure,
-		dialOpts: opts,
-		clients:  make(map[string]*Klient),
+		conns: mgr,
 	}
-}
-
-// SetLocal informs the client instance of the node address for the node
-// using this client. Along with the Service instance it allows this
-// client to serve requests for this node locally without the network hop.
-func (c *Client) SetLocal(nodeAddr string, serv v1.InternalCLusterClient) error {
-	c.mu.Lock()
-	c.clients[nodeAddr] = &Klient{
-		InternalCLusterClient: serv,
-	}
-	c.localNodeAddr = nodeAddr
-	c.mu.Unlock()
-	return nil
 }
 
 // GetNodeAPIAddr retrieves the API Address for the node at nodeAddr
@@ -86,26 +68,7 @@ func (c *Client) GetNodeAPIAddr(ctx context.Context, nodeAddr string) (string, e
 }
 
 func (c *Client) node(addr string) (v1.InternalCLusterClient, error) {
-	c.mu.RLock()
-	x, ok := c.clients[addr]
-	if ok {
-		c.mu.RUnlock()
-		return x, nil
-	}
-	c.mu.RUnlock()
-
-	conn, err := grpc.Dial(addr, c.dialOpts...)
-	if err != nil {
-		return nil, err
-	}
-	k := &Klient{
-		ClientConn:            conn,
-		InternalCLusterClient: v1.NewInternalCLusterClient(conn),
-	}
-	c.mu.Lock()
-	c.clients[addr] = k
-	return k, nil
-
+	return c.conns.ByAddress(addr)
 }
 
 func (c *Client) SendData(ctx context.Context, req *v1.Data, nodeAddr string, creds *v1.Credentials) error {
@@ -238,11 +201,8 @@ func (c *Client) Breakdown(ctx context.Context, req *v1.BreakDown_Request, nodeA
 
 // Stats returns stats on the Client instance
 func (c *Client) Status() *v1.Status_Cluster {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
 	o := &v1.Status_Cluster{
-		LocalNodeAddress: c.localNodeAddr,
+		LocalNodeAddress: c.conns.LocalAddress(),
 	}
 	return o
 }

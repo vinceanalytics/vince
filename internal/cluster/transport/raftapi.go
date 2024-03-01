@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/hashicorp/raft"
@@ -11,28 +12,45 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+type CommitIndex interface {
+	CommandCommitIndex() uint64
+	LeaderCommitIndex() uint64
+}
+
 // These are calls from the Raft engine that we need to send out over gRPC.
 
 type raftAPI struct {
-	manager *Manager
+	manager      *Manager
+	commandIndex atomic.Uint64
+	leaderIndex  atomic.Uint64
+}
+
+var _ CommitIndex = (*raftAPI)(nil)
+
+func (r *raftAPI) CommandCommitIndex() uint64 {
+	return r.commandIndex.Load()
+}
+
+func (r *raftAPI) LeaderCommitIndex() uint64 {
+	return r.leaderIndex.Load()
 }
 
 // Consumer returns a channel that can be used to consume and respond to RPC requests.
-func (r raftAPI) Consumer() <-chan raft.RPC {
+func (r *raftAPI) Consumer() <-chan raft.RPC {
 	return r.manager.rpcChan
 }
 
 // LocalAddr is used to return our local address to distinguish from our peers.
-func (r raftAPI) LocalAddr() raft.ServerAddress {
+func (r *raftAPI) LocalAddr() raft.ServerAddress {
 	return raft.ServerAddress(r.manager.LocalAddress())
 }
 
-func (r raftAPI) getPeer(id raft.ServerID, target raft.ServerAddress) (v1.RaftTransportClient, error) {
+func (r *raftAPI) getPeer(id raft.ServerID, target raft.ServerAddress) (v1.RaftTransportClient, error) {
 	return r.manager.Get(string(id), string(target))
 }
 
 // AppendEntries sends the appropriate RPC to the target node.
-func (r raftAPI) AppendEntries(id raft.ServerID, target raft.ServerAddress, args *raft.AppendEntriesRequest, resp *raft.AppendEntriesResponse) error {
+func (r *raftAPI) AppendEntries(id raft.ServerID, target raft.ServerAddress, args *raft.AppendEntriesRequest, resp *raft.AppendEntriesResponse) error {
 	c, err := r.getPeer(id, target)
 	if err != nil {
 		return err
@@ -43,6 +61,13 @@ func (r raftAPI) AppendEntries(id raft.ServerID, target raft.ServerAddress, args
 		ctx, cancel = context.WithTimeout(ctx, r.manager.heartbeatTimeout)
 		defer cancel()
 	}
+
+	for _, e := range args.Entries {
+		if e.Type == raft.LogCommand {
+			r.commandIndex.Store(e.Index)
+		}
+	}
+	r.leaderIndex.Store(args.LeaderCommitIndex)
 	ret, err := c.AppendEntries(ctx, encodeAppendEntriesRequest(args))
 	if err != nil {
 		return err
@@ -52,7 +77,7 @@ func (r raftAPI) AppendEntries(id raft.ServerID, target raft.ServerAddress, args
 }
 
 // RequestVote sends the appropriate RPC to the target node.
-func (r raftAPI) RequestVote(id raft.ServerID, target raft.ServerAddress, args *raft.RequestVoteRequest, resp *raft.RequestVoteResponse) error {
+func (r *raftAPI) RequestVote(id raft.ServerID, target raft.ServerAddress, args *raft.RequestVoteRequest, resp *raft.RequestVoteResponse) error {
 	c, err := r.getPeer(id, target)
 	if err != nil {
 		return err
@@ -66,7 +91,7 @@ func (r raftAPI) RequestVote(id raft.ServerID, target raft.ServerAddress, args *
 }
 
 // TimeoutNow is used to start a leadership transfer to the target node.
-func (r raftAPI) TimeoutNow(id raft.ServerID, target raft.ServerAddress, args *raft.TimeoutNowRequest, resp *raft.TimeoutNowResponse) error {
+func (r *raftAPI) TimeoutNow(id raft.ServerID, target raft.ServerAddress, args *raft.TimeoutNowRequest, resp *raft.TimeoutNowResponse) error {
 	c, err := r.getPeer(id, target)
 	if err != nil {
 		return err
@@ -81,7 +106,7 @@ func (r raftAPI) TimeoutNow(id raft.ServerID, target raft.ServerAddress, args *r
 
 // InstallSnapshot is used to push a snapshot down to a follower. The data is read from
 // the ReadCloser and streamed to the client.
-func (r raftAPI) InstallSnapshot(id raft.ServerID, target raft.ServerAddress, req *raft.InstallSnapshotRequest, resp *raft.InstallSnapshotResponse, data io.Reader) error {
+func (r *raftAPI) InstallSnapshot(id raft.ServerID, target raft.ServerAddress, req *raft.InstallSnapshotRequest, resp *raft.InstallSnapshotResponse, data io.Reader) error {
 	c, err := r.getPeer(id, target)
 	if err != nil {
 		return err
@@ -118,7 +143,7 @@ func (r raftAPI) InstallSnapshot(id raft.ServerID, target raft.ServerAddress, re
 
 // AppendEntriesPipeline returns an interface that can be used to pipeline
 // AppendEntries requests.
-func (r raftAPI) AppendEntriesPipeline(id raft.ServerID, target raft.ServerAddress) (raft.AppendPipeline, error) {
+func (r *raftAPI) AppendEntriesPipeline(id raft.ServerID, target raft.ServerAddress) (raft.AppendPipeline, error) {
 	c, err := r.getPeer(id, target)
 	if err != nil {
 		return nil, err

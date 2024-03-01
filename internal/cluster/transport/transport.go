@@ -37,7 +37,7 @@ func (m *Manager) Register(s grpc.ServiceRegistrar) {
 
 // Transport returns a raft.Transport that communicates over gRPC.
 func (m *Manager) Transport() raft.Transport {
-	return raftAPI{m}
+	return &raftAPI{manager: m}
 }
 
 func (m *Manager) Close() (err error) {

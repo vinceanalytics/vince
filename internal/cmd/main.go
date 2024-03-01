@@ -16,11 +16,19 @@ import (
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/cluster"
+	"github.com/vinceanalytics/vince/internal/cluster/auth"
+	"github.com/vinceanalytics/vince/internal/cluster/connections"
+	httpd "github.com/vinceanalytics/vince/internal/cluster/http"
+	"github.com/vinceanalytics/vince/internal/cluster/store"
+	"github.com/vinceanalytics/vince/internal/cluster/transport"
+	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/load"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"golang.org/x/crypto/acme/autocert"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -118,6 +126,7 @@ func App() *cli.Command {
 			&cli.StringFlag{
 				Name:    "nodeAdv",
 				Usage:   "Advertised address for inter-node-communication",
+				Value:   "localhost:4002",
 				Sources: cli.EnvVars("VINCE_NODE_ADVERTISE"),
 			},
 			&cli.StringFlag{
@@ -229,14 +238,57 @@ func App() *cli.Command {
 			if err != nil {
 				return err
 			}
+			_, err = os.Stat(base.Data)
+			if err != nil {
+				if os.IsNotExist(err) {
+					err = os.MkdirAll(base.Data, 0755)
+					if err != nil {
+						return err
+					}
+				} else {
+					return err
+				}
+			}
 
 			ctx = logger.With(ctx, log)
 			ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 			defer cancel()
 
+			// We use same listener for raft and cluster connections
+			nodesConn, err := net.Listen("tcp", base.Node.Advertise)
+			if err != nil {
+				return fmt.Errorf("failed opening raft listener:%v", err)
+			}
+			gSvr := grpc.NewServer()
+			connMgr := connections.New(base.Node.Advertise)
+			defer connMgr.Close()
+			transit := transport.New(connMgr)
+			defer transit.Close()
+			transit.Register(gSvr)
+			tenants := tenant.NewTenants(base)
+			xguard := guard.New(base, tenants)
+
+			creds := auth.NewCredentialsStore()
+			if base.Credentials != nil {
+				creds.Load(base.Credentials)
+			}
+			db, err := store.NewStore(base, transit.Transport(), connMgr, tenants)
+			if err != nil {
+				return err
+			}
+			err = db.Open(ctx)
+			if err != nil {
+				return err
+			}
+			defer db.Close()
+
+			cluSvc := cluster.New(db)
+			v1.RegisterInternalCLusterServer(gSvr, cluSvc)
+			cluCLient := cluster.NewClient(connMgr)
+			httpSvc := httpd.New(db, cluCLient, creds, xguard, tenants)
 			svr := &http.Server{
 				Addr:        base.Listen,
-				Handler:     http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
+				Handler:     httpSvc,
 				BaseContext: func(l net.Listener) context.Context { return ctx },
 			}
 			if base.AutoTls {
@@ -250,6 +302,14 @@ func App() *cli.Command {
 			}
 			go func() {
 				defer cancel()
+				log.Info("Starting grpc server", "addr", nodesConn.Addr().String())
+				err := gSvr.Serve(nodesConn)
+				if err != nil {
+					log.Error("exited grpc server", "err", err)
+				}
+			}()
+			go func() {
+				defer cancel()
 				log.Info("starting server", "addr", base.Listen)
 				if base.AutoTls {
 					err = svr.ListenAndServeTLS("", "")
@@ -259,6 +319,8 @@ func App() *cli.Command {
 			}()
 			<-ctx.Done()
 			svr.Shutdown(context.Background())
+			gSvr.GracefulStop()
+			nodesConn.Close()
 			return err
 		},
 	}

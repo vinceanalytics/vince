@@ -10,6 +10,7 @@ import (
 type Manager struct {
 	localAddr   string
 	dialOptions []grpc.DialOption
+	mapping     sync.Map
 	conns       sync.Map
 }
 
@@ -22,6 +23,14 @@ func New(localAddr string, opts ...grpc.DialOption) *Manager {
 
 func (m *Manager) LocalAddress() string {
 	return m.localAddr
+}
+
+func (m *Manager) ByAddress(target string) (*Conn, error) {
+	a, ok := m.mapping.Load(target)
+	if ok {
+		return m.Get(a.(string), target)
+	}
+	return m.Get(target, target)
 }
 
 func (m *Manager) Get(peer, target string) (*Conn, error) {
@@ -39,6 +48,7 @@ func (m *Manager) Get(peer, target string) (*Conn, error) {
 		InternalCLusterClient: v1.NewInternalCLusterClient(x),
 	}
 	m.conns.Store(peer, conn)
+	m.mapping.Store(target, peer)
 	return conn, nil
 }
 
@@ -48,6 +58,7 @@ func (m *Manager) Close() (err error) {
 		if e != nil {
 			err = e
 		}
+		m.conns.Delete(key)
 		return true
 	})
 	return

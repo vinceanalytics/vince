@@ -27,9 +27,7 @@ message Status {
   }
 
   message HTTP {
-    string bind_address = 1;
     bool enabled_auth = 2;
-    TLS tls = 3;
     Cluster cluster = 4;
   }
   message Store {}

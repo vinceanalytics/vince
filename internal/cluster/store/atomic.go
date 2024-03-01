@@ -33,19 +33,3 @@ func (a *AtomicTime) Add(t time.Duration) {
 func (a *AtomicTime) Sub(t *AtomicTime) time.Duration {
 	return a.Load().Sub(t.Load())
 }
-
-type AtomicBool struct {
-	Atomic[bool]
-}
-
-func (a *AtomicBool) Set() {
-	a.Store(true)
-}
-
-func (a *AtomicBool) Unset() {
-	a.Store(false)
-}
-
-func (a *AtomicBool) Is() bool {
-	return a.Load()
-}

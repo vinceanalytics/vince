@@ -92,11 +92,11 @@ type Tree struct {
 }
 
 var (
-	treeSize           = metrics.NewHistogram("vnc_lsm_tree_size{")
-	nodeSize           = metrics.NewHistogram("vnc_lsm_node_size{")
-	compactionDuration = metrics.NewHistogram("vnc_lsm_compaction_duration_seconds{")
-	compactionCounter  = metrics.NewCounter("vnc_lsm_compaction{")
-	nodesPerCompaction = metrics.NewHistogram("vnc_lsm_nodes_per_compaction{")
+	treeSize           = metrics.NewHistogram("vnc_lsm_tree_size")
+	nodeSize           = metrics.NewHistogram("vnc_lsm_node_size")
+	compactionDuration = metrics.NewHistogram("vnc_lsm_compaction_duration_seconds")
+	compactionCounter  = metrics.NewCounter("vnc_lsm_compaction")
+	nodesPerCompaction = metrics.NewHistogram("vnc_lsm_nodes_per_compaction")
 )
 
 type Options struct {

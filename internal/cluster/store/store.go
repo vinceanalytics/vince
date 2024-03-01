@@ -19,9 +19,11 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/hashicorp/raft"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/cluster/connections"
 	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/cluster/log"
 	"github.com/vinceanalytics/vince/internal/cluster/snapshots"
+	"github.com/vinceanalytics/vince/internal/cluster/transport"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/index/primary"
@@ -80,8 +82,7 @@ var (
 )
 
 const (
-	defaultTimeout = 30 * time.Second
-
+	defaultTimeout             = 30 * time.Second
 	snapshotsDirName           = "snapshots"
 	dbName                     = "vince"
 	restoreScratchPattern      = "rqlite-restore-*"
@@ -171,16 +172,16 @@ type Storage interface {
 }
 
 type Store struct {
-	open          AtomicBool
+	open          bool
 	raftDir       string
 	snapshotDir   string
 	peersPath     string
 	peersInfoPath string
 	dbPath        string
 
-	raft   *raft.Raft // The consensus mechanism.
-	ly     Layer
-	raftTn *NodeTransport
+	raft    *raft.Raft // The consensus mechanism.
+	transit raft.Transport
+	conns   *connections.Manager
 
 	// Channels that must be closed for the Store to be considered ready.
 	readyChans             []<-chan struct{}
@@ -188,18 +189,11 @@ type Store struct {
 	readyChansMu           sync.Mutex
 
 	// Channels for WAL-size triggered snapshotting
-	snapshotWClose chan struct{}
-	snapshotWDone  chan struct{}
-	snapshotCAS    CheckAndSet
+	snapshotCAS CheckAndSet
 
 	// Latest log entry index actually reflected by the FSM. Due to Raft code
 	// this value is not updated after a Snapshot-restore.
-	fsmIdx        atomic.Uint64
-	fsmUpdateTime *AtomicTime // This is node-local time.
-
-	// appendedAtTimeis the Leader's clock time when that Leader appended the log entry.
-	// The Leader that actually appended the log entry is not necessarily the current Leader.
-	appendedAtTime AtomicTime
+	fsmIdx atomic.Uint64
 
 	raftLog       raft.LogStore    // Persistent log store.
 	raftStable    raft.StableStore // Persistent k-v store.
@@ -211,11 +205,9 @@ type Store struct {
 	lastCommandIdxOnOpen uint64    // Last command index before applied index when Store opens.
 	lastAppliedIdxOnOpen uint64    // Last applied index on log when Store opens.
 	firstLogAppliedT     time.Time // Time first log is applied
-	appliedOnOpen        uint64    // Number of logs applied at open.
 	openT                time.Time // Timestamp when Store opens.
 
-	logger         *slog.Logger
-	logIncremental bool
+	logger *slog.Logger
 
 	numIgnoredJoins int
 	notifyMu        sync.Mutex
@@ -242,12 +234,12 @@ type Store struct {
 
 var _ Storage = (*Store)(nil)
 
-func NewStore(base *v1.Config, ly Layer) (*Store, error) {
-	store, err := db.NewKV(base.Data)
+func NewStore(base *v1.Config, transit raft.Transport, mgr *connections.Manager, tenants *tenant.Tenants) (*Store, error) {
+	dbPath := filepath.Join(base.Data, dbName)
+	store, err := db.NewKV(dbPath)
 	if err != nil {
 		return nil, err
 	}
-	tenants := tenant.NewTenants(base)
 	alloc := memory.NewGoAllocator()
 	pidx, err := primary.NewPrimary(store)
 	if err != nil {
@@ -264,12 +256,14 @@ func NewStore(base *v1.Config, ly Layer) (*Store, error) {
 	)
 
 	return &Store{
-		ly:             ly,
+		config:         base,
+		transit:        transit,
+		conns:          mgr,
 		raftDir:        base.Data,
 		snapshotDir:    filepath.Join(base.Data, snapshotsDirName),
 		peersPath:      filepath.Join(base.Data, peersPath),
 		peersInfoPath:  filepath.Join(base.Data, peersInfoPath),
-		dbPath:         filepath.Join(base.Data, dbName),
+		dbPath:         dbPath,
 		logger:         slog.Default().With("component", "store"),
 		notifyingNodes: make(map[string]*v1.Server),
 		ApplyTimeout:   applyTimeout,
@@ -279,27 +273,13 @@ func NewStore(base *v1.Config, ly Layer) (*Store, error) {
 }
 
 func (s *Store) Open(ctx context.Context) error {
-	if s.open.Is() {
+	if s.open {
 		return ErrOpen
 	}
 	s.openT = time.Now()
-	s.logger.Info("Opening store", "nodeId", s.config.Node.Id, "listening", s.ly.Addr().String())
+	s.logger.Info("Opening store", "nodeId", s.config.Node.Id, "listening", s.conns.LocalAddress())
 
-	_, err := os.Stat(s.config.Data)
-	if err != nil {
-		if os.IsNotExist(err) {
-			err = os.MkdirAll(s.config.Data, 0755)
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-	// Create Raft-compatible network layer.
-	nt := raft.NewNetworkTransport(NewTransport(s.ly), connectionPoolCount, connectionTimeout, nil)
-	s.raftTn = NewNodeTransport(nt)
-
+	var err error
 	s.snapshotStore, err = snapshots.New(s.snapshotDir, 2)
 	if err != nil {
 		return err
@@ -323,7 +303,7 @@ func (s *Store) Open(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("failed to read peers file: %s", err.Error())
 		}
-		if err = RecoverNode(s.raftDir, s.raftLog, s.boltStore, s.snapshotStore, s.raftTn, config); err != nil {
+		if err = RecoverNode(s.raftDir, s.raftLog, s.boltStore, s.snapshotStore, s.transit, config); err != nil {
 			return fmt.Errorf("failed to recover node: %s", err.Error())
 		}
 		if err := os.Rename(s.peersPath, s.peersInfoPath); err != nil {
@@ -342,18 +322,15 @@ func (s *Store) Open(ctx context.Context) error {
 		"lastAppliedIdxOnOpen", s.lastAppliedIdxOnOpen,
 		"lastCommandIdxOnOpen", s.lastCommandIdxOnOpen,
 	)
-	s.db, err = db.NewKV(s.dbPath)
-	if err != nil {
-		return fmt.Errorf("failed to create on-disk database: %s", err)
-	}
 
 	// Instantiate the Raft system.
-	ra, err := raft.NewRaft(config, NewFSM(s), s.raftLog, s.raftStable, s.snapshotStore, s.raftTn)
+	ra, err := raft.NewRaft(config, NewFSM(s), s.raftLog, s.raftStable, s.snapshotStore, s.transit)
 	if err != nil {
 		return fmt.Errorf("creating the raft system failed: %s", err)
 	}
 	s.raft = ra
 	s.session.Start(ctx)
+	s.open = true
 	return nil
 }
 
@@ -412,7 +389,7 @@ func (s *Store) ReadFrom(ctx context.Context, r io.Reader) (int64, error) {
 }
 
 func (s *Store) Backup(ctx context.Context, br *v1.Backup_Request, dst io.Writer) error {
-	if !s.open.Is() {
+	if !s.open {
 		return ErrNotOpen
 	}
 	if br.Leader && s.raft.State() != raft.Leader {
@@ -463,7 +440,7 @@ func (s *Store) Snapshot(n uint64) (retError error) {
 }
 
 func (s *Store) Data(ctx context.Context, req *v1.Data) error {
-	if !s.open.Is() {
+	if !s.open {
 		return ErrNotOpen
 	}
 	if s.raft.State() != raft.Leader {
@@ -547,12 +524,12 @@ func (s *Store) LeaderCommitIndex() (uint64, error) {
 	if s.raft.State() == raft.Leader {
 		return s.raft.CommitIndex(), nil
 	}
-	return s.raftTn.LeaderCommitIndex(), nil
+	return s.transit.(transport.CommitIndex).LeaderCommitIndex(), nil
 }
 
 // Nodes returns the slice of nodes in the cluster, sorted by ID ascending.
 func (s *Store) Nodes(ctx context.Context) (*v1.Server_List, error) {
-	if !s.open.Is() {
+	if !s.open {
 		return nil, ErrNotOpen
 	}
 
@@ -577,31 +554,22 @@ func (s *Store) Nodes(ctx context.Context) (*v1.Server_List, error) {
 }
 
 // Close closes the store. If wait is true, waits for a graceful shutdown.
-func (s *Store) Close(wait bool) (retErr error) {
+func (s *Store) Close() (retErr error) {
 	defer func() {
 		if retErr == nil {
-			s.logger.Info("store closed ", "nodeId", s.config.Node.Id, "listen_address", s.ly.Addr().String())
-			s.open.Unset()
+			s.logger.Info("store closed ", "nodeId", s.config.Node.Id, "listen_address", s.conns.LocalAddress())
+			s.open = false
 		}
 	}()
-	if !s.open.Is() {
+	if !s.open {
 		// Protect against closing already-closed resource, such as channels.
 		return nil
 	}
 
-	close(s.snapshotWClose)
-	<-s.snapshotWDone
-
 	f := s.raft.Shutdown()
-	if wait {
-		if f.Error() != nil {
-			return f.Error()
-		}
-	}
-	if err := s.raftTn.Close(); err != nil {
+	if err := f.Error(); err != nil {
 		return err
 	}
-
 	s.session.Close()
 
 	// Only shutdown Bolt and SQLite when Raft is done.
@@ -746,10 +714,10 @@ func (s *Store) Path() string {
 
 // Addr returns the address of the store.
 func (s *Store) Addr() string {
-	if !s.open.Is() {
+	if !s.open {
 		return ""
 	}
-	return string(s.raftTn.LocalAddr())
+	return s.conns.LocalAddress()
 }
 
 // ID returns the Raft ID of the store.
@@ -760,7 +728,7 @@ func (s *Store) ID() string {
 // LeaderAddr returns the address of the current leader. Returns a
 // blank string if there is no leader or if the Store is not open.
 func (s *Store) LeaderAddr(_ context.Context) (string, error) {
-	if !s.open.Is() {
+	if !s.open {
 		return "", nil
 	}
 	addr, _ := s.raft.LeaderWithID()
@@ -815,6 +783,10 @@ func (s *Store) fsmApply(l *raft.Log) interface{} {
 }
 
 func (s *Store) fsmSnapshot() (raft.FSMSnapshot, error) {
+	if err := s.snapshotCAS.Begin(); err != nil {
+		return nil, err
+	}
+	defer s.snapshotCAS.End()
 	s.session.Persist()
 	return snapshots.NewBadger(s.db.DB), nil
 }
@@ -871,7 +843,7 @@ func (s *Store) setLogInfo() error {
 //
 // Notifying is idempotent. A node may repeatedly notify the Store without issue.
 func (s *Store) Notify(ctx context.Context, nr *v1.Notify_Request) error {
-	if !s.open.Is() {
+	if !s.open {
 		return ErrNotOpen
 	}
 
@@ -934,7 +906,7 @@ func (s *Store) Notify(ctx context.Context, nr *v1.Notify_Request) error {
 // Join joins a node, identified by id and located at addr, to this store.
 // The node must be ready to respond to Raft communications at that address.
 func (s *Store) Join(ctx context.Context, jr *v1.Join_Request) error {
-	if !s.open.Is() {
+	if !s.open {
 		return ErrNotOpen
 	}
 
@@ -998,7 +970,7 @@ func (s *Store) Join(ctx context.Context, jr *v1.Join_Request) error {
 
 // Remove removes a node from the store.
 func (s *Store) Remove(ctx context.Context, rn *v1.RemoveNode_Request) error {
-	if !s.open.Is() {
+	if !s.open {
 		return ErrNotOpen
 	}
 	id := rn.Id
