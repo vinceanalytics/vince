@@ -33,9 +33,11 @@
 
 - **Works with any language and tooling**: No need for special sdk, a simple `http` `api` is exposed. Anything that can speak `http` can work with `vince`
 
-- **10X more data storage** : We use columnar storage with extensive compression schemes. Don't worry about running out of disk. Store and query large volume of data.
+- **10X more data storage** : We use columnar storage with extensive compression schemes. Don't worry about running out of disk. Store and query large volume of data. In fact we are able to persist data forever efficiently.
 
 - **Unlimited sites**: There is no limit on how many sites you can manage.
+
+-  **Light weight script**: < 1Kb script. Zero overhead on your website
 
 - **Privacy friendly**: No cookies and fully compliant with GDPR, CCPA and PECR.
 
@@ -45,6 +47,6 @@ Check out the [getting started](https://vinceanalytics.com/#getting-started) ins
 
 # Credits
 
-- [rqlite](https://github.com/rqlite/rqlite)  distributed part is modified components taken from this project LICENSE is included in `internal/cluster`. I decided to use gRPC for internode communication.
-- [frostdb](https://github.com/polarsignals/frostdb) lsm tree for in memory storage was adopted from here
-- [plausible](https://github.com/plausible/analytics) the api was taken from here.
+- [rqlite](https://github.com/rqlite/rqlite)  for raft
+- [frostdb](https://github.com/polarsignals/frostdb)  for in memory lsm tree
+- [plausible](https://github.com/plausible/analytics) for the API
