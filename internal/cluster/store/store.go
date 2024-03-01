@@ -283,7 +283,7 @@ func (s *Store) Open(ctx context.Context) error {
 		return ErrOpen
 	}
 	s.openT = time.Now()
-	s.logger.Info("Opening store", "nodeId", s.config.NodeId, "listening", s.ly.Addr().String())
+	s.logger.Info("Opening store", "nodeId", s.config.Node.Id, "listening", s.ly.Addr().String())
 
 	_, err := os.Stat(s.config.Data)
 	if err != nil {
@@ -314,7 +314,7 @@ func (s *Store) Open(ctx context.Context) error {
 		return err
 	}
 	config := raft.DefaultConfig()
-	config.LocalID = raft.ServerID(s.config.NodeId)
+	config.LocalID = raft.ServerID(s.config.Node.Id)
 
 	// Request to recover node?
 	if pathExists(s.peersPath) {
@@ -580,7 +580,7 @@ func (s *Store) Nodes(ctx context.Context) (*v1.Server_List, error) {
 func (s *Store) Close(wait bool) (retErr error) {
 	defer func() {
 		if retErr == nil {
-			s.logger.Info("store closed ", "nodeId", s.config.NodeId, "listen_address", s.ly.Addr().String())
+			s.logger.Info("store closed ", "nodeId", s.config.Node.Id, "listen_address", s.ly.Addr().String())
 			s.open.Unset()
 		}
 	}()
@@ -715,7 +715,7 @@ func (s *Store) IsVoter() (bool, error) {
 		return false, err
 	}
 	for _, srv := range cfg.Configuration().Servers {
-		if srv.ID == raft.ServerID(s.config.NodeId) {
+		if srv.ID == raft.ServerID(s.config.Node.Id) {
 			return srv.Suffrage == raft.Voter, nil
 		}
 	}
@@ -754,7 +754,7 @@ func (s *Store) Addr() string {
 
 // ID returns the Raft ID of the store.
 func (s *Store) ID() string {
-	return s.config.NodeId
+	return s.config.Node.Id
 }
 
 // LeaderAddr returns the address of the current leader. Returns a
@@ -820,7 +820,7 @@ func (s *Store) fsmSnapshot() (raft.FSMSnapshot, error) {
 }
 
 func (s *Store) fsmRestore(w io.ReadCloser) error {
-	s.logger.Info("initiating node restore", "nodeId", s.config.NodeId)
+	s.logger.Info("initiating node restore", "nodeId", s.config.Node.Id)
 	startT := time.Now()
 
 	err := snapshots.NewBadger(s.db.DB).Restore(w)

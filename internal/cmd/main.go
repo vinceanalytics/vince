@@ -110,6 +110,41 @@ func App() *cli.Command {
 				Usage:   "Path to credentials file",
 				Sources: cli.EnvVars("VINCE_CREDENTIALS"),
 			},
+			&cli.StringFlag{
+				Name:    "nodeId",
+				Usage:   "Raft id of the node",
+				Sources: cli.EnvVars("VINCE_NODE_ID"),
+			},
+			&cli.StringFlag{
+				Name:    "nodeCa",
+				Usage:   "Path to ca certificate for this node",
+				Sources: cli.EnvVars("VINCE_NODE_CA"),
+			},
+			&cli.StringFlag{
+				Name:    "nodeCert",
+				Usage:   "Path to X509 certificate for this node",
+				Sources: cli.EnvVars("VINCE_NODE_CERT"),
+			},
+			&cli.StringFlag{
+				Name:    "nodeKey",
+				Usage:   "Path to X509 key for this node",
+				Sources: cli.EnvVars("VINCE_NODE_KEY"),
+			},
+			&cli.BoolFlag{
+				Name:    "nodeVerify",
+				Usage:   "Verify X509  certs",
+				Sources: cli.EnvVars("VINCE_NODE_VERIFY"),
+			},
+			&cli.BoolFlag{
+				Name:    "nodeVerifyCLient",
+				Usage:   "Enables mutual TLS on node-to-node communications",
+				Sources: cli.EnvVars("VINCE_NODE_VERIFY_CLIENT"),
+			},
+			&cli.BoolFlag{
+				Name:    "nodeVerifyServerName",
+				Usage:   "Verifies nodes host names",
+				Sources: cli.EnvVars("VINCE_NODE_VERIFY_SERVER_NAME"),
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			var level slog.Level
@@ -134,6 +169,15 @@ func App() *cli.Command {
 				GeoipDbPath:     c.String("geoipDbPath"),
 				RetentionPeriod: durationpb.New(c.Duration("retentionPeriod")),
 				AutoTls:         c.Bool("autoTls"),
+				Node: &v1.RaftNode{
+					Id:               c.String("nodeId"),
+					Ca:               c.String("nodeCa"),
+					Cert:             c.String("nodeCert"),
+					Key:              c.String("nodeKey"),
+					Verify:           c.Bool("nodeVerify"),
+					VerifyClient:     c.Bool("nodeVerifyCLient"),
+					VerifyServerName: c.Bool("nodeVerifyServerName"),
+				},
 			}
 			log := slog.Default()
 			base = tenant.Config(base, c.StringSlice("domains"))
