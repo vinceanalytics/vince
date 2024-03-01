@@ -14,7 +14,7 @@ service InternalCLuster {
   rpc Backup(Backup.Request) returns (stream Backup.Response);
   rpc RemoveNode(RemoveNode.Request) returns (google.protobuf.Empty);
   rpc Notify(Notify.Request) returns (google.protobuf.Empty);
-  rpc NodeAPI(google.protobuf.Empty) returns (NodeMeta);
+  rpc NodeAPI(NodeAPIRequest) returns (NodeMeta);
 
   rpc SendData(Data) returns (google.protobuf.Empty);
   rpc Realtime(Realtime.Request) returns (Realtime.Response);
@@ -39,6 +39,8 @@ message Notify {
     string address = 2;
   }
 }
+
+message NodeAPIRequest {}
 
 message RemoveNode {
   message Request { string id = 1; }

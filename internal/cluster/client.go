@@ -2,35 +2,17 @@ package cluster
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
-	"fmt"
 	"io"
 	"sync"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/auth"
 	"github.com/vinceanalytics/vince/internal/cluster/http"
-	"github.com/vinceanalytics/vince/internal/cluster/rtls"
-	"github.com/vinceanalytics/vince/internal/cluster/tcp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-// CreateRaftDialer creates a dialer for connecting to other nodes' Raft service. If the cert and
-// key arguments are not set, then the returned dialer will not use TLS.
-func CreateRaftDialer(cert, key, caCert, serverName string, Insecure bool) (*tcp.Dialer, error) {
-	var dialerTLSConfig *tls.Config
-	var err error
-	if cert != "" || key != "" {
-		dialerTLSConfig, err = rtls.CreateClientConfig(cert, key, caCert, serverName, Insecure)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create TLS config for Raft dialer: %s", err.Error())
-		}
-	}
-	return tcp.NewDialer(MuxRaftHeader, dialerTLSConfig), nil
-}
 
 // CredentialsFor returns a Credentials instance for the given username, or nil if
 // the given CredentialsStore is nil, or the username is not found.
@@ -154,8 +136,8 @@ var _ credentials.PerRPCCredentials = (*callCredential)(nil)
 
 func (c *callCredential) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
 	return map[string]string{
-		"username": c.creds.GetUsername(),
-		"password": c.creds.GetPassword(),
+		"vince_username": c.creds.GetUsername(),
+		"vince_password": c.creds.GetPassword(),
 	}, nil
 }
 

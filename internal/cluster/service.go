@@ -6,25 +6,9 @@ import (
 	"log/slog"
 	"net"
 	"sync"
-	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
-
-const (
-	// MuxRaftHeader is the byte used to indicate internode Raft communications.
-	MuxRaftHeader = 1
-
-	// MuxClusterHeader is the byte used to request internode cluster state information.
-	MuxClusterHeader = 2 // Cluster state communications
-)
-
-// Dialer is the interface dialers must implement.
-type Dialer interface {
-	// Dial is used to create a connection to a service listening
-	// on an address.
-	Dial(address string, timeout time.Duration) (net.Conn, error)
-}
 
 type Database interface {
 	Data(ctx context.Context, req *v1.Data) error
@@ -38,10 +22,10 @@ type Database interface {
 // Manager is the interface node-management systems must implement
 type Manager interface {
 	// LeaderAddr returns the Raft address of the leader of the cluster.
-	LeaderAddr() (string, error)
+	LeaderAddr(ctx context.Context) (string, error)
 
 	// CommitIndex returns the Raft commit index of the cluster.
-	CommitIndex() (uint64, error)
+	CommitIndex(ctx context.Context) (uint64, error)
 
 	// Remove removes the node, given by id, from the cluster
 	Remove(context.Context, *v1.RemoveNode_Request) error
@@ -73,6 +57,8 @@ type Service struct {
 	logger *slog.Logger
 }
 
+var _ v1.InternalCLusterServer = (*Service)(nil)
+
 // New returns a new instance of the cluster service
 func New(ln net.Listener, db Database, m Manager, credentialStore CredentialStore) *Service {
 	return &Service{
@@ -83,6 +69,10 @@ func New(ln net.Listener, db Database, m Manager, credentialStore CredentialStor
 		logger:          slog.Default().With("component", "cluster"),
 		credentialStore: credentialStore,
 	}
+}
+
+func (s *Service) Join(ctx context.Context, req *v1.Join_Request) (*v1.Join_Response, error) {
+
 }
 
 // Close closes the service.

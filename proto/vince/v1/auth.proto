@@ -20,5 +20,6 @@ message Credential {
     REMOVE = 9;
     DATA = 10;
     NODE_API = 11;
+    NOTIFY = 12;
   }
 }

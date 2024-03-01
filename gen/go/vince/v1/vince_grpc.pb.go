@@ -42,7 +42,7 @@ type InternalCLusterClient interface {
 	Backup(ctx context.Context, in *Backup_Request, opts ...grpc.CallOption) (InternalCLuster_BackupClient, error)
 	RemoveNode(ctx context.Context, in *RemoveNode_Request, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Notify(ctx context.Context, in *Notify_Request, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	NodeAPI(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*NodeMeta, error)
+	NodeAPI(ctx context.Context, in *NodeAPIRequest, opts ...grpc.CallOption) (*NodeMeta, error)
 	SendData(ctx context.Context, in *Data, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Realtime(ctx context.Context, in *Realtime_Request, opts ...grpc.CallOption) (*Realtime_Response, error)
 	Aggregate(ctx context.Context, in *Aggregate_Request, opts ...grpc.CallOption) (*Aggregate_Response, error)
@@ -126,7 +126,7 @@ func (c *internalCLusterClient) Notify(ctx context.Context, in *Notify_Request, 
 	return out, nil
 }
 
-func (c *internalCLusterClient) NodeAPI(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*NodeMeta, error) {
+func (c *internalCLusterClient) NodeAPI(ctx context.Context, in *NodeAPIRequest, opts ...grpc.CallOption) (*NodeMeta, error) {
 	out := new(NodeMeta)
 	err := c.cc.Invoke(ctx, InternalCLuster_NodeAPI_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -189,7 +189,7 @@ type InternalCLusterServer interface {
 	Backup(*Backup_Request, InternalCLuster_BackupServer) error
 	RemoveNode(context.Context, *RemoveNode_Request) (*emptypb.Empty, error)
 	Notify(context.Context, *Notify_Request) (*emptypb.Empty, error)
-	NodeAPI(context.Context, *emptypb.Empty) (*NodeMeta, error)
+	NodeAPI(context.Context, *NodeAPIRequest) (*NodeMeta, error)
 	SendData(context.Context, *Data) (*emptypb.Empty, error)
 	Realtime(context.Context, *Realtime_Request) (*Realtime_Response, error)
 	Aggregate(context.Context, *Aggregate_Request) (*Aggregate_Response, error)
@@ -217,7 +217,7 @@ func (UnimplementedInternalCLusterServer) RemoveNode(context.Context, *RemoveNod
 func (UnimplementedInternalCLusterServer) Notify(context.Context, *Notify_Request) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Notify not implemented")
 }
-func (UnimplementedInternalCLusterServer) NodeAPI(context.Context, *emptypb.Empty) (*NodeMeta, error) {
+func (UnimplementedInternalCLusterServer) NodeAPI(context.Context, *NodeAPIRequest) (*NodeMeta, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NodeAPI not implemented")
 }
 func (UnimplementedInternalCLusterServer) SendData(context.Context, *Data) (*emptypb.Empty, error) {
@@ -342,7 +342,7 @@ func _InternalCLuster_Notify_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _InternalCLuster_NodeAPI_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(NodeAPIRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -354,7 +354,7 @@ func _InternalCLuster_NodeAPI_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: InternalCLuster_NodeAPI_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InternalCLusterServer).NodeAPI(ctx, req.(*emptypb.Empty))
+		return srv.(InternalCLusterServer).NodeAPI(ctx, req.(*NodeAPIRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
