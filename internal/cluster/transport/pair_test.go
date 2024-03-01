@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/raft"
+	"github.com/vinceanalytics/vince/internal/cluster/connections"
 	"go.uber.org/goleak"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
@@ -21,12 +22,12 @@ func makeTestPair(ctx context.Context, t *testing.T) (raft.Transport, raft.Trans
 	t2Listen := bufconn.Listen(1024)
 	shutdownSig := make(chan struct{})
 
-	t1 := New(raft.ServerAddress("t1"), []grpc.DialOption{grpc.WithInsecure(), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+	t1 := New(connections.New("t1", grpc.WithInsecure(), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return t2Listen.Dial()
-	})})
-	t2 := New(raft.ServerAddress("t2"), []grpc.DialOption{grpc.WithInsecure(), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+	})))
+	t2 := New(connections.New("t2", grpc.WithInsecure(), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return t1Listen.Dial()
-	})})
+	})))
 
 	s1 := grpc.NewServer()
 	t1.Register(s1)

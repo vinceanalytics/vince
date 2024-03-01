@@ -2,31 +2,27 @@
 package transport
 
 import (
-	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/hashicorp/raft"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/cluster/connections"
 	"google.golang.org/grpc"
 )
 
 type Manager struct {
-	localAddress raft.ServerAddress
-	dialOptions  []grpc.DialOption
-
+	*connections.Manager
 	rpcChan          chan raft.RPC
 	heartbeatFunc    atomic.Value
 	heartbeatTimeout time.Duration
-	connections      sync.Map
 }
 
 // New creates both components of raft-grpc-transport: a gRPC service and a Raft Transport.
-func New(localAddress raft.ServerAddress, dialOptions []grpc.DialOption, options ...Option) *Manager {
+func New(conns *connections.Manager, options ...Option) *Manager {
 	m := &Manager{
-		localAddress: localAddress,
-		dialOptions:  dialOptions,
-		rpcChan:      make(chan raft.RPC),
+		Manager: conns,
+		rpcChan: make(chan raft.RPC),
 	}
 	for _, opt := range options {
 		opt(m)
@@ -45,12 +41,6 @@ func (m *Manager) Transport() raft.Transport {
 }
 
 func (m *Manager) Close() (err error) {
-	m.connections.Range(func(key, value any) bool {
-		e := value.(*conn).Close()
-		if e != nil {
-			err = e
-		}
-		return true
-	})
+	m.Manager.Close()
 	return
 }

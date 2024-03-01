@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/raft"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -18,11 +17,6 @@ type raftAPI struct {
 	manager *Manager
 }
 
-type conn struct {
-	*grpc.ClientConn
-	v1.RaftTransportClient
-}
-
 // Consumer returns a channel that can be used to consume and respond to RPC requests.
 func (r raftAPI) Consumer() <-chan raft.RPC {
 	return r.manager.rpcChan
@@ -30,24 +24,11 @@ func (r raftAPI) Consumer() <-chan raft.RPC {
 
 // LocalAddr is used to return our local address to distinguish from our peers.
 func (r raftAPI) LocalAddr() raft.ServerAddress {
-	return r.manager.localAddress
+	return raft.ServerAddress(r.manager.LocalAddress())
 }
 
 func (r raftAPI) getPeer(id raft.ServerID, target raft.ServerAddress) (v1.RaftTransportClient, error) {
-	c, ok := r.manager.connections.Load(id)
-	if ok {
-		return c.(*conn), nil
-	}
-	x, err := grpc.Dial(string(target), r.manager.dialOptions...)
-	if err != nil {
-		return nil, err
-	}
-	xc := &conn{
-		ClientConn:          x,
-		RaftTransportClient: v1.NewRaftTransportClient(x),
-	}
-	r.manager.connections.Store(id, x)
-	return xc, nil
+	return r.manager.Get(string(id), string(target))
 }
 
 // AppendEntries sends the appropriate RPC to the target node.
