@@ -351,6 +351,22 @@ func (s *Store) Open(ctx context.Context) error {
 	return nil
 }
 
+// Bootstrap executes a cluster bootstrap on this node, using the given
+// Servers as the configuration.
+func (s *Store) Bootstrap(ctx context.Context, ls *v1.Server_List) error {
+	raftServers := make([]raft.Server, len(ls.Items))
+	for i := range ls.Items {
+		raftServers[i] = raft.Server{
+			ID:      raft.ServerID(ls.Items[i].Id),
+			Address: raft.ServerAddress(ls.Items[i].Addr),
+		}
+	}
+	s.raft.BootstrapCluster(raft.Configuration{
+		Servers: raftServers,
+	})
+	return nil
+}
+
 func (s *Store) Status() (*v1.Status_Store, error) {
 	return &v1.Status_Store{}, nil
 }
