@@ -116,6 +116,11 @@ func App() *cli.Command {
 				Sources: cli.EnvVars("VINCE_NODE_ID"),
 			},
 			&cli.StringFlag{
+				Name:    "nodeAdv",
+				Usage:   "Advertised address for inter-node-communication",
+				Sources: cli.EnvVars("VINCE_NODE_ADVERTISE"),
+			},
+			&cli.StringFlag{
 				Name:    "nodeCa",
 				Usage:   "Path to ca certificate for this node",
 				Sources: cli.EnvVars("VINCE_NODE_CA"),
@@ -171,6 +176,7 @@ func App() *cli.Command {
 				AutoTls:         c.Bool("autoTls"),
 				Node: &v1.RaftNode{
 					Id:               c.String("nodeId"),
+					Advertise:        c.String("nodeAdv"),
 					Ca:               c.String("nodeCa"),
 					Cert:             c.String("nodeCert"),
 					Key:              c.String("nodeKey"),

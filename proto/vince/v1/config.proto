@@ -11,7 +11,10 @@ message Version { string version = 1; }
 
 message Config {
   string data = 1 [ (buf.validate.field).required = true ];
-  string listen = 2 [ (buf.validate.field).required = true ];
+  string listen = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.host_and_port = true
+  ];
   double rate_limit = 3 [ (buf.validate.field).required = true ];
   int64 granule_size = 5 [ (buf.validate.field).required = true ];
   // Path to the geoiip database used to set web analytics country attribute.
@@ -53,6 +56,10 @@ message RaftNode {
   bool verify = 5;
   bool verify_client = 6;
   bool verify_server_name = 7;
+  string advertise = 8 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.host_and_port = true
+  ];
 }
 
 message Domain { string name = 1 [ (buf.validate.field).required = true ]; }
