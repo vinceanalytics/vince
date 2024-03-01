@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/bufbuild/protovalidate-go"
@@ -179,10 +180,8 @@ func App() *cli.Command {
 				return err
 			}
 
-			log.Info("Setup storage")
-
 			ctx = logger.With(ctx, log)
-			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+			ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 			defer cancel()
 
 			svr := &http.Server{
