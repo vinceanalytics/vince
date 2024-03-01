@@ -52,6 +52,13 @@
 Check out the [getting started](https://vinceanalytics.com/#getting-started) instructions if you want to give `vince` a try.
 
 
+# NOTE
+
+I am the author Geofrey Ernest. If you are looking for a senior Go engineer, I am available for hire. I am open for fulltime or part time arrangements.
+
+Please reach out to me via gernest at vinceanalytics.com
+
+
 # Credits
 
 - [rqlite](https://github.com/rqlite/rqlite)  for raft
