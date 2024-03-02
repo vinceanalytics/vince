@@ -498,6 +498,7 @@ func (s *Service) process(w http.ResponseWriter, r *http.Request, e *v1.Data) {
 	err := s.store.Data(ctx, e)
 	if err == nil {
 		w.WriteHeader(http.StatusAccepted)
+		return
 	}
 	if !errors.Is(err, store.ErrNotLeader) {
 		s.log.Error("failed to store event data", "err", err)

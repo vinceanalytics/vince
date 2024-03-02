@@ -141,7 +141,7 @@ func (s *Session) send(name, path string, dump bool) error {
 		return err
 	}
 	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
+	if res.StatusCode != http.StatusAccepted {
 		data, _ = io.ReadAll(res.Body)
 		return errors.New(string(data))
 	}

@@ -236,6 +236,7 @@ var _ Storage = (*Store)(nil)
 
 func NewStore(base *v1.Config, transit raft.Transport, mgr *connections.Manager, tenants *tenant.Tenants) (*Store, error) {
 	dbPath := filepath.Join(base.Data, dbName)
+	os.RemoveAll(dbPath) // rely on raft to keep this up to date
 	store, err := db.NewKV(dbPath)
 	if err != nil {
 		return nil, err
