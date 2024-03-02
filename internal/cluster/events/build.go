@@ -33,7 +33,7 @@ type Multi struct {
 }
 
 func NewMulti(mem memory.Allocator) *Multi {
-	return &Multi{builds: make(map[string]*Builder)}
+	return &Multi{mem: mem, builds: make(map[string]*Builder)}
 }
 
 func (m *Multi) Append(e *v1.Data) {
