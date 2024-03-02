@@ -20,6 +20,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/cluster/auth"
 	"github.com/vinceanalytics/vince/internal/cluster/connections"
 	httpd "github.com/vinceanalytics/vince/internal/cluster/http"
+	"github.com/vinceanalytics/vince/internal/cluster/rtls"
 	"github.com/vinceanalytics/vince/internal/cluster/store"
 	"github.com/vinceanalytics/vince/internal/cluster/transport"
 	"github.com/vinceanalytics/vince/internal/guard"
@@ -29,6 +30,7 @@ import (
 	"github.com/vinceanalytics/vince/version"
 	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -259,12 +261,10 @@ func App() *cli.Command {
 			if err != nil {
 				return fmt.Errorf("failed opening raft listener:%v", err)
 			}
-			gSvr := grpc.NewServer()
 			connMgr := connections.New(base.Node.Advertise)
 			defer connMgr.Close()
 			transit := transport.New(connMgr)
 			defer transit.Close()
-			transit.Register(gSvr)
 			tenants := tenant.NewTenants(base)
 			xguard := guard.New(base, tenants)
 
@@ -272,6 +272,7 @@ func App() *cli.Command {
 			if base.Credentials != nil {
 				creds.Load(base.Credentials)
 			}
+
 			db, err := store.NewStore(base, transit.Transport(), connMgr, tenants)
 			if err != nil {
 				return err
@@ -283,6 +284,8 @@ func App() *cli.Command {
 			defer db.Close()
 
 			cluSvc := cluster.New(db)
+			gSvr := grpc.NewServer(serverOptions(base.Node, creds)...)
+			transit.Register(gSvr)
 			v1.RegisterInternalCLusterServer(gSvr, cluSvc)
 			cluCLient := cluster.NewClient(connMgr)
 			httpSvc := httpd.New(db, cluCLient, creds, xguard, tenants)
@@ -324,4 +327,25 @@ func App() *cli.Command {
 			return err
 		},
 	}
+}
+
+func serverOptions(node *v1.RaftNode, creds cluster.CredentialStore) (o []grpc.ServerOption) {
+	a := &cluster.Interceptor{CredentialStore: creds}
+	o = []grpc.ServerOption{
+		grpc.UnaryInterceptor(a.Unary),
+		grpc.StreamInterceptor(a.Stream),
+	}
+	if node.Cert == "" || node.Key == "" {
+		return nil
+	}
+	mTLSState := rtls.MTLSStateDisabled
+	if node.VerifyClient {
+		mTLSState = rtls.MTLSStateEnabled
+	}
+	tlsConfig, err := rtls.CreateServerConfig(node.Cert, node.Key, node.Ca, mTLSState)
+	if err != nil {
+		logger.Fail("Failed creating tls config for gRPC server", "err", err)
+	}
+	o = append(o, grpc.Creds(credentials.NewTLS(tlsConfig)))
+	return
 }

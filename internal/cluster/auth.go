@@ -2,7 +2,6 @@ package cluster
 
 import (
 	"context"
-	"log/slog"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"google.golang.org/grpc"
@@ -11,14 +10,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type credentialKey struct{}
-
-type credentialInterceptor struct {
+type Interceptor struct {
 	CredentialStore
-	log *slog.Logger
 }
 
-func (c *credentialInterceptor) Unary(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+func (c *Interceptor) Unary(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	// authentication (token verification)
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -35,7 +31,7 @@ func (c *credentialInterceptor) Unary(ctx context.Context, req any, info *grpc.U
 	return handler(ctx, req)
 }
 
-func (c *credentialInterceptor) Stream(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+func (c *Interceptor) Stream(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	md, ok := metadata.FromIncomingContext(ss.Context())
 	if !ok {
 		return status.Errorf(codes.InvalidArgument, "missing metadata")
