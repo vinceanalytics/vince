@@ -16,6 +16,7 @@ import (
 	"github.com/dop251/goja"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/cluster/auth"
 	"github.com/vinceanalytics/vince/internal/ref"
 	"github.com/vinceanalytics/vince/ua"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -122,12 +123,15 @@ func (s *Session) send(name, path string, dump bool) error {
 		Ip: "127.0.0.1",
 		R:  s.Referrer,
 	}
+	q := make(url.Values)
+	q.Add("site_id", s.Domain)
 	data, _ := protojson.Marshal(e)
-	req, err := http.NewRequest(http.MethodPost, s.Vince+apiPath, bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, s.Vince+apiPath+"?"+q.Encode(), bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", auth.CreateBasicAuth("staples", ""))
 	if dump {
 		b, _ := httputil.DumpRequestOut(req, true)
 		fmt.Println(string(b))

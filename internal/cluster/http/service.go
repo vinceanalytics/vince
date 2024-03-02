@@ -19,6 +19,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/cluster/store"
 	"github.com/vinceanalytics/vince/internal/defaults"
+	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
@@ -106,13 +107,16 @@ type Service struct {
 	start       time.Time
 	lastBackup  time.Time
 	creds       CredentialStore
+	geo         *geo.Geo
 	log         *slog.Logger
 }
 
 // New returns an uninitialized HTTP service. If credentials is nil, then
 // the service performs no authentication and authorization checks.
-func New(store store.Storage, cluster Cluster, credentials CredentialStore, guard guard.Guard, tenants tenant.Loader) *Service {
+func New(store store.Storage, cluster Cluster, credentials CredentialStore, guard guard.Guard,
+	tenants tenant.Loader, geo *geo.Geo) *Service {
 	return &Service{
+		geo:     geo,
 		store:   store,
 		cluster: cluster,
 		guard:   guard,
@@ -453,6 +457,7 @@ func (s *Service) handleApiEvent(w http.ResponseWriter, r *http.Request, params 
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -473,7 +478,7 @@ func (s *Service) handleApiEvent(w http.ResponseWriter, r *http.Request, params 
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	e := events.Parse(r.Context(), &ev)
+	e := events.Parse(s.log, s.geo, &ev)
 	if e == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -561,7 +566,7 @@ func (s *Service) handleEvent(w http.ResponseWriter, r *http.Request, params Que
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	e := events.Parse(r.Context(), &ev)
+	e := events.Parse(s.log, s.geo, &ev)
 	if e == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

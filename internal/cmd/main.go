@@ -23,6 +23,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/cluster/rtls"
 	"github.com/vinceanalytics/vince/internal/cluster/store"
 	"github.com/vinceanalytics/vince/internal/cluster/transport"
+	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/load"
 	"github.com/vinceanalytics/vince/internal/logger"
@@ -288,7 +289,18 @@ func App() *cli.Command {
 			transit.Register(gSvr)
 			v1.RegisterInternalCLusterServer(gSvr, cluSvc)
 			cluCLient := cluster.NewClient(connMgr)
-			httpSvc := httpd.New(db, cluCLient, creds, xguard, tenants)
+			xg := geo.Open(base.GeoipDbPath)
+			httpSvc := httpd.New(db, cluCLient, creds, xguard, tenants, xg)
+
+			nodes, err := db.Nodes(ctx)
+			if err != nil {
+				return err
+			}
+			err = createCluster(ctx, log, base.Node, len(nodes.GetItems()) > 0,
+				cluCLient, db, httpSvc, creds)
+			if err != nil {
+				return fmt.Errorf("failed creating cluster %v", err)
+			}
 			svr := &http.Server{
 				Addr:        base.Listen,
 				Handler:     httpSvc,
@@ -348,4 +360,23 @@ func serverOptions(node *v1.RaftNode, creds cluster.CredentialStore) (o []grpc.S
 	}
 	o = append(o, grpc.Creds(credentials.NewTLS(tlsConfig)))
 	return
+}
+
+func createCluster(ctx context.Context, log *slog.Logger, node *v1.RaftNode, hasPeers bool, client *cluster.Client, str *store.Store, httpServ *httpd.Service, credStr *auth.CredentialsStore) error {
+	if len(node.Joins) == 0 && !hasPeers {
+		if node.NonVoter {
+			return fmt.Errorf("cannot create a new non-voting node without joining it to an existing cluster")
+		}
+		// Brand new node, told to bootstrap itself. So do it.
+		log.Info("bootstraping single new node")
+		if err := str.Bootstrap(ctx, &v1.Server_List{
+			Items: []*v1.Server{
+				{Id: node.Id, Addr: node.Advertise, Suffrage: v1.Server_Voter},
+			},
+		}); err != nil {
+			return fmt.Errorf("failed to bootstrap single new node: %s", err.Error())
+		}
+		return nil
+	}
+	return nil
 }

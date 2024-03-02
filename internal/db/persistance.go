@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -156,7 +155,7 @@ type KV struct {
 }
 
 func OpenBadger(path string) (*badger.DB, error) {
-	return badger.Open(badger.DefaultOptions(filepath.Join(path, "db")).
+	return badger.Open(badger.DefaultOptions(path).
 		WithLogger(&badgerLogger{
 			log: slog.Default().With(
 				slog.String("component", "key-value-store"),

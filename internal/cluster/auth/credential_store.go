@@ -3,6 +3,7 @@
 package auth
 
 import (
+	"encoding/base64"
 	"os"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -18,6 +19,11 @@ const (
 // BasicAuther is the interface an object must support to return basic auth information.
 type BasicAuther interface {
 	BasicAuth() (string, string, bool)
+}
+
+func CreateBasicAuth(username, password string) (value string) {
+	a := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+	return "Basic " + a
 }
 
 // CredentialsStore stores authentication and authorization information for all users.

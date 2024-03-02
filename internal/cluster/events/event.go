@@ -1,7 +1,7 @@
 package events
 
 import (
-	"context"
+	"log/slog"
 	"net"
 	"net/url"
 	"strings"
@@ -10,7 +10,6 @@ import (
 	"github.com/cespare/xxhash/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/geo"
-	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/ref"
 	"github.com/vinceanalytics/vince/ua"
 	"google.golang.org/protobuf/proto"
@@ -46,8 +45,7 @@ var True = ptr(true)
 
 var False = ptr(false)
 
-func Parse(ctx context.Context, req *v1.Event) *v1.Data {
-	log := logger.Get(ctx)
+func Parse(log *slog.Logger, g *geo.Geo, req *v1.Event) *v1.Data {
 	if req.U == "" || req.N == "" || req.D == "" {
 		log.Error("invalid request")
 		return nil
@@ -82,7 +80,7 @@ func Parse(ctx context.Context, req *v1.Event) *v1.Data {
 	var city geo.Info
 	if req.Ip != "" {
 		ip := net.ParseIP(req.Ip)
-		city = geo.Get(ctx).Get(ip)
+		city = g.Get(ip)
 	}
 	var screenSize string
 	switch {
