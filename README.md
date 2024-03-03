@@ -43,10 +43,3 @@
 - **GET /api/v1/stats/breakdown**: Gain deeper insight by breaking down metrics my properties. We support multiple properties in a single query. e.g breakdown by `source`, `browser` etc.
 
 Check out the [getting started](https://vinceanalytics.com/#getting-started) instructions if you want to give `vince` a try.
-
-
-# Credits
-
-- [rqlite](https://github.com/rqlite/rqlite)  for raft
-- [frostdb](https://github.com/polarsignals/frostdb)  for in memory lsm tree
-- [plausible](https://github.com/plausible/analytics) for the API
