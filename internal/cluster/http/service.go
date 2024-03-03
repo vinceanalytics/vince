@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/bufbuild/protovalidate-go"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/cluster/store"
@@ -98,7 +99,6 @@ const (
 )
 
 type Service struct {
-	bindAddress string
 	store       store.Storage
 	cluster     Cluster
 	guard       guard.Guard
@@ -109,6 +109,7 @@ type Service struct {
 	creds       CredentialStore
 	geo         *geo.Geo
 	log         *slog.Logger
+	metrics     http.Handler
 }
 
 // New returns an uninitialized HTTP service. If credentials is nil, then
@@ -123,6 +124,7 @@ func New(store store.Storage, cluster Cluster, credentials CredentialStore, guar
 		tenants: tenants,
 		start:   time.Now(),
 		creds:   credentials,
+		metrics: promhttp.Handler(),
 		log:     slog.Default().With("component", "http-service"),
 	}
 }
@@ -190,6 +192,8 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.handleStatus(w, r, params)
 	case strings.HasPrefix(r.URL.Path, "/readyz"):
 		s.handleReady(w, r, params)
+	case r.URL.Path == "/metrics":
+		s.metrics.ServeHTTP(w, r)
 	default:
 		w.WriteHeader(http.StatusNotFound)
 	}

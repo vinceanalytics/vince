@@ -7,13 +7,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/VictoriaMetrics/metrics"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/apache/arrow/go/v15/arrow/util"
 	"github.com/dgraph-io/ristretto"
 	"github.com/docker/go-units"
 	"github.com/oklog/ulid/v2"
+	"github.com/prometheus/client_golang/prometheus"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/filters"
@@ -75,12 +75,46 @@ type Tree struct {
 }
 
 var (
-	treeSize           = metrics.NewHistogram("vnc_lsm_tree_size")
-	nodeSize           = metrics.NewHistogram("vnc_lsm_node_size")
-	compactionDuration = metrics.NewHistogram("vnc_lsm_compaction_duration_seconds")
-	compactionCounter  = metrics.NewCounter("vnc_lsm_compaction")
-	nodesPerCompaction = metrics.NewHistogram("vnc_lsm_nodes_per_compaction")
+	treeSize = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "vince",
+		Subsystem: "lsm",
+		Name:      "tree_size",
+	})
+	nodeSize = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "vince",
+		Subsystem: "lsm",
+		Name:      "node_size",
+	})
+	compactionDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "vince",
+		Subsystem: "lsm",
+		Name:      "compaction_duration",
+	})
+	compactionCounter = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "vince",
+			Subsystem: "lsm",
+			Name:      "num_compaction",
+		},
+	)
+	nodesPerCompaction = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: "vince",
+			Subsystem: "lsm",
+			Name:      "nodes_per_compaction",
+		},
+	)
 )
+
+func init() {
+	prometheus.MustRegister(
+		treeSize,
+		nodeSize,
+		compactionDuration,
+		compactionCounter,
+		nodesPerCompaction,
+	)
+}
 
 type Options struct {
 	compactSize uint64
@@ -167,8 +201,8 @@ func (lsm *Tree) Add(r arrow.Record) error {
 	lsm.log.Debug("Added new part",
 		"rows", r.NumRows(),
 		"size", units.BytesSize(float64(part.size)))
-	nodeSize.Update(float64(part.Size()))
-	treeSize.Update(float64(lsm.Size()))
+	nodeSize.Observe(float64(part.Size()))
+	treeSize.Observe(float64(lsm.Size()))
 	return nil
 }
 
@@ -249,9 +283,9 @@ func (lsm *Tree) Compact(onCompact CompactCallback) {
 
 	})
 	lsm.log.Debug("Completed compaction", "elapsed", stats.Elapsed.String())
-	compactionDuration.UpdateDuration(start)
+	compactionDuration.Observe(time.Since(start).Seconds())
 	compactionCounter.Inc()
-	nodesPerCompaction.Update(float64(stats.CompactedNodesCount))
+	nodesPerCompaction.Observe(float64(stats.CompactedNodesCount))
 }
 
 type Node[T any] struct {
