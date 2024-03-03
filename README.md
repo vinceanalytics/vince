@@ -8,7 +8,7 @@
 </p>
 
 
-## vice
+## vince
 
 `vince` is a High Performance , API only , distributed, in-memory alternative to Google Analytics
 
