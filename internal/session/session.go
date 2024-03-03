@@ -10,6 +10,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/dgraph-io/ristretto"
+	"github.com/prometheus/client_golang/prometheus"
 	eventsv1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/events"
@@ -25,6 +26,23 @@ const (
 	// To make sure we always have fresh data for current visitors
 	DefaultFlushInterval = time.Minute
 )
+
+var (
+	eventsCount = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "vince",
+		Subsystem: "session",
+		Name:      "events_total",
+	})
+	sessionCount = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "vince",
+		Subsystem: "session",
+		Name:      "sessions_total",
+	})
+)
+
+func init() {
+	prometheus.MustRegister(eventsCount, sessionCount)
+}
 
 var ErrResourceNotFound = errors.New("session: Resource not found")
 
@@ -84,6 +102,7 @@ func (s *Session) Persist(onCompact lsm.CompactCallback) {
 }
 
 func (s *Session) Append(e *v1.Data) {
+	eventsCount.Inc()
 	events.Hit(e)
 	if o, ok := s.cache.Get(e.Id); ok {
 		cached := o.(*eventsv1.Data)
@@ -96,6 +115,7 @@ func (s *Session) Append(e *v1.Data) {
 	}
 	s.build.WriteData(e)
 	s.cache.SetWithTTL(e.Id, events.Clone(e), int64(proto.Size(e)), DefaultSession)
+	sessionCount.Inc()
 }
 
 func (s *Session) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
