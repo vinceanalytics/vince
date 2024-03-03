@@ -94,6 +94,20 @@ type CompactStats struct {
 	Elapsed             time.Duration
 }
 
+func (p *PartStore) Reset() {
+	next := p.tree.next.Load()
+	p.tree.next.Store(nil)
+	if next != nil {
+		// release all existing parts
+		next.Iterate(func(n *RecordNode) bool {
+			if n.part != nil {
+				n.part.Release()
+			}
+			return true
+		})
+	}
+
+}
 func (p *PartStore) Compact(f func(tenant string, r arrow.Record)) (stats CompactStats) {
 	ns := make(map[string][]*RecordNode)
 	start := time.Now()

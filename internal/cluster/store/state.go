@@ -2,26 +2,14 @@ package store
 
 import (
 	"fmt"
-	"log/slog"
 	"net"
-	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 
-	"github.com/apache/arrow/go/v15/arrow/memory"
-	"github.com/apache/arrow/go/v15/arrow/util"
-	"github.com/docker/go-units"
 	"github.com/hashicorp/raft"
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/cluster/log"
 	"github.com/vinceanalytics/vince/internal/cluster/snapshots"
-	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/index/primary"
-	"github.com/vinceanalytics/vince/internal/indexer"
-	"google.golang.org/protobuf/proto"
 )
 
 // IsStaleRead returns whether a read is stale.
@@ -100,134 +88,6 @@ func HasData(dir string) (bool, error) {
 	return h, nil
 }
 
-// RecoverNode is used to manually force a new configuration, in the event that
-// quorum cannot be restored. This borrows heavily from RecoverCluster functionality
-// of the Hashicorp Raft library, but has been customized for rqlite use.
-func RecoverNode(dataDir string, logs raft.LogStore, stable *log.Log,
-	snaps raft.SnapshotStore, tn raft.Transport, conf raft.Configuration) error {
-	logger := slog.Default().With("component", "recovery")
-
-	// Sanity check the Raft peer configuration.
-	if err := checkRaftConfiguration(conf); err != nil {
-		return err
-	}
-
-	// Get a path to a temporary file to use for a temporary database.
-	tmpDBPath := filepath.Join(dataDir, "recovery")
-	defer os.RemoveAll(tmpDBPath)
-
-	// Attempt to restore any latest snapshot.
-	var (
-		snapshotIndex uint64
-		snapshotTerm  uint64
-	)
-
-	foundSnaps, err := snaps.List()
-	if err != nil {
-		return fmt.Errorf("failed to list snapshots: %s", err)
-	}
-	logger.Info("recovery detected", "snapshots", len(foundSnaps))
-	if len(foundSnaps) > 0 {
-		if err := func() error {
-			snapID := foundSnaps[0].ID
-			_, rc, err := snaps.Open(snapID)
-			if err != nil {
-				return fmt.Errorf("failed to open snapshot %s: %s", snapID, err)
-			}
-			defer rc.Close()
-			bdb, err := db.OpenBadger(tmpDBPath)
-			if err != nil {
-				return fmt.Errorf("failed to copy snapshot %s to temporary database: %s", snapID, err)
-			}
-			err = bdb.Load(rc, runtime.NumCPU())
-			if err != nil {
-				return fmt.Errorf("failed to load snapshot %s to temporary database: %s", snapID, err)
-			}
-			bdb.Close()
-			snapshotIndex = foundSnaps[0].Index
-			snapshotTerm = foundSnaps[0].Term
-			return nil
-		}(); err != nil {
-			return err
-		}
-	}
-
-	// Now, open the database so we can replay any outstanding Raft log entries.
-	rdb, err := db.NewKV(tmpDBPath)
-	if err != nil {
-		return fmt.Errorf("failed to open temporary database: %s", err)
-	}
-	defer rdb.Close()
-
-	// The snapshot information is the best known end point for the data
-	// until we play back the Raft log entries.
-	lastIndex := snapshotIndex
-	lastTerm := snapshotTerm
-
-	// Apply any Raft log entries past the snapshot.
-	lastLogIndex, err := logs.LastIndex()
-	if err != nil {
-		return fmt.Errorf("failed to find last log: %v", err)
-	}
-	logger.Info("Applying raft log", "lastIndex", lastIndex, "lastLogIndex", lastLogIndex)
-	reco := newRecovery(logger, rdb)
-	var eve v1.Data
-	for index := snapshotIndex + 1; index <= lastLogIndex; index++ {
-		var entry raft.Log
-		if err = logs.GetLog(index, &entry); err != nil {
-			return fmt.Errorf("failed to get log at index %d: %v", index, err)
-		}
-		if entry.Type == raft.LogCommand {
-			err = proto.Unmarshal(entry.Data, &eve)
-			if err != nil {
-				return fmt.Errorf("failed to decode raft command %v", err)
-			}
-			err = reco.write(&eve)
-			if err != nil {
-				return err
-			}
-		}
-		lastIndex = entry.Index
-		lastTerm = entry.Term
-	}
-	err = reco.flush()
-	if err != nil {
-		return err
-	}
-	tmpDBFD, err := db.OpenBadger(tmpDBPath)
-	if err != nil {
-		return fmt.Errorf("failed to open temporary database file: %s", err)
-	}
-	fsmSnapshot := snapshots.NewBadger(tmpDBFD) // tmpDBPath contains full state now.
-	sink, err := snaps.Create(1, lastIndex, lastTerm, conf, 1, tn)
-	if err != nil {
-		return fmt.Errorf("failed to create snapshot: %v", err)
-	}
-	if err = fsmSnapshot.Persist(sink); err != nil {
-		return fmt.Errorf("failed to persist snapshot: %v", err)
-	}
-	if err = sink.Close(); err != nil {
-		return fmt.Errorf("failed to finalize snapshot: %v", err)
-	}
-	logger.Info("recovery snapshot created successfully", "db", tmpDBPath)
-
-	// Compact the log so that we don't get bad interference from any
-	// configuration change log entries that might be there.
-	firstLogIndex, err := logs.FirstIndex()
-	if err != nil {
-		return fmt.Errorf("failed to get first log index: %v", err)
-	}
-	if err := logs.DeleteRange(firstLogIndex, lastLogIndex); err != nil {
-		return fmt.Errorf("log compaction failed: %v", err)
-	}
-
-	// Erase record of previous updating of Applied Index too.
-	if err := stable.SetAppliedIndex(0); err != nil {
-		return fmt.Errorf("failed to zero applied index: %v", err)
-	}
-	return nil
-}
-
 // checkRaftConfiguration tests a cluster membership configuration for common
 // errors.
 func checkRaftConfiguration(configuration raft.Configuration) error {
@@ -264,89 +124,4 @@ func checkRaftConfiguration(configuration raft.Configuration) error {
 		return fmt.Errorf("need at least one voter in configuration: %v", configuration)
 	}
 	return nil
-}
-
-const (
-	maxRows = 4 << 20
-)
-
-type recoveryInstance struct {
-	mem     memory.Allocator
-	build   map[string]*events.Builder
-	store   *db.Store
-	primary *primary.PrimaryIndex
-	index   indexer.ArrowIndexer
-	log     *slog.Logger
-}
-
-func newRecovery(log *slog.Logger, store db.Storage) *recoveryInstance {
-	mem := memory.NewGoAllocator()
-	return &recoveryInstance{
-		mem:     mem,
-		build:   make(map[string]*events.Builder),
-		store:   db.NewStore(store, mem, 0),
-		primary: primary.Empty(store),
-		log:     log,
-	}
-}
-
-func (r *recoveryInstance) write(e *v1.Data) error {
-	b, ok := r.build[e.TenantId]
-	if !ok {
-		b = events.New(r.mem)
-		r.build[e.TenantId] = b
-	}
-	b.WriteData(e)
-	if b.Len() >= maxRows {
-		err := r.save(e.TenantId, b)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (r *recoveryInstance) Release() {
-	for _, b := range r.build {
-		b.Release()
-	}
-}
-
-func (r *recoveryInstance) flush() error {
-	for tenant, b := range r.build {
-		err := r.save(tenant, b)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (r *recoveryInstance) save(tenant string, b *events.Builder) error {
-	a := b.NewRecord()
-	defer a.Release()
-	r.log.Info("Building index",
-		"tenant", tenant,
-		"rows", b.Len())
-	full, err := r.index.Index(a)
-	if err != nil {
-		return err
-	}
-	r.log.Info("Saving record and index",
-		"tenant", tenant,
-		"record_size", units.BytesSize(float64(util.TotalRecordSize(a))),
-		"index_size", units.BytesSize(float64(full.Size())),
-	)
-	g, err := r.store.Save(tenant, a, full)
-	if err != nil {
-		return err
-	}
-	r.log.Info("Saved record and index",
-		"tenant", tenant,
-		"total_size", units.BytesSize(float64(g.Size)),
-		"block_id", g.Id,
-	)
-	r.log.Info("Updating primary index",
-		"tenant", tenant)
-	return r.primary.Add(tenant, g)
 }

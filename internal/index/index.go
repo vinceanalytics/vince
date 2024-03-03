@@ -3,7 +3,6 @@ package index
 import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/apache/arrow/go/v15/arrow"
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/filters"
 )
 
@@ -34,11 +33,6 @@ type Column interface {
 
 type Index interface {
 	Index(arrow.Record) (Full, error)
-}
-
-type Primary interface {
-	Add(resource string, granule *v1.Granule) error
-	FindGranules(tenant string, start int64, end int64) []string
 }
 
 func Accept(min, max, start, end int64) bool {

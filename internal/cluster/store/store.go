@@ -9,7 +9,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -25,8 +24,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/cluster/snapshots"
 	"github.com/vinceanalytics/vince/internal/cluster/transport"
 	"github.com/vinceanalytics/vince/internal/compute"
-	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/index/primary"
 	"github.com/vinceanalytics/vince/internal/indexer"
 	"github.com/vinceanalytics/vince/internal/lsm"
 	"github.com/vinceanalytics/vince/internal/session"
@@ -85,10 +82,12 @@ const (
 	defaultTimeout             = 30 * time.Second
 	snapshotsDirName           = "snapshots"
 	dbName                     = "vince"
-	restoreScratchPattern      = "rqlite-restore-*"
-	bootScatchPattern          = "rqlite-boot-*"
-	backupScatchPattern        = "rqlite-backup-*"
-	vacuumScatchPattern        = "rqlite-vacuum-*"
+	restoreScratchPattern      = "vince-restore-*"
+	loadScratchPattern         = "vince-load-*"
+	snapshotScratchPattern     = "vince-snapshot-*"
+	bootScatchPattern          = "vince-boot-*"
+	backupScatchPattern        = "vince-backup-*"
+	vacuumScatchPattern        = "vince-vacuum-*"
 	raftDBPath                 = "raftdb" // Changing this will break backwards compatibility.
 	peersPath                  = "raft/peers.json"
 	peersInfoPath              = "raft/peers.info"
@@ -172,6 +171,7 @@ type Storage interface {
 }
 
 type Store struct {
+	mem           memory.Allocator
 	open          bool
 	raftDir       string
 	snapshotDir   string
@@ -228,7 +228,6 @@ type Store struct {
 	AutoVacInterval          time.Duration
 
 	session *session.Session
-	db      *db.KV
 	config  *v1.Config
 }
 
@@ -237,17 +236,9 @@ var _ Storage = (*Store)(nil)
 func NewStore(base *v1.Config, transit raft.Transport, mgr *connections.Manager, tenants *tenant.Tenants) (*Store, error) {
 	dbPath := filepath.Join(base.Data, dbName)
 	os.RemoveAll(dbPath) // rely on raft to keep this up to date
-	store, err := db.NewKV(dbPath)
-	if err != nil {
-		return nil, err
-	}
 	alloc := memory.NewGoAllocator()
-	pidx, err := primary.NewPrimary(store)
-	if err != nil {
-		return nil, err
-	}
 	idx := indexer.New()
-	sess := session.New(alloc, tenants, store, idx, pidx,
+	sess := session.New(alloc, tenants, idx,
 		lsm.WithTTL(
 			base.RetentionPeriod.AsDuration(),
 		),
@@ -269,7 +260,6 @@ func NewStore(base *v1.Config, transit raft.Transport, mgr *connections.Manager,
 		notifyingNodes: make(map[string]*v1.Server),
 		ApplyTimeout:   applyTimeout,
 		session:        sess,
-		db:             store,
 	}, nil
 }
 
@@ -296,22 +286,6 @@ func (s *Store) Open(ctx context.Context) error {
 	}
 	config := raft.DefaultConfig()
 	config.LocalID = raft.ServerID(s.config.Node.Id)
-
-	// Request to recover node?
-	if pathExists(s.peersPath) {
-		s.logger.Info("attempting node recovery ", "peerPath", s.peersPath)
-		config, err := raft.ReadConfigJSON(s.peersPath)
-		if err != nil {
-			return fmt.Errorf("failed to read peers file: %s", err.Error())
-		}
-		if err = RecoverNode(s.raftDir, s.raftLog, s.boltStore, s.snapshotStore, s.transit, config); err != nil {
-			return fmt.Errorf("failed to recover node: %s", err.Error())
-		}
-		if err := os.Rename(s.peersPath, s.peersInfoPath); err != nil {
-			return fmt.Errorf("failed to move %s after recovery: %s", s.peersPath, err.Error())
-		}
-		s.logger.Info("node recovered successfully", "peerPath", s.peersPath)
-	}
 
 	// Get some info about the log, before any more entries are committed.
 	if err := s.setLogInfo(); err != nil {
@@ -370,12 +344,23 @@ func (s *Store) ReadFrom(ctx context.Context, r io.Reader) (int64, error) {
 	if len(nodes.Items) != 1 {
 		return 0, ErrNotSingleNode
 	}
-
-	err = s.db.DB.Load(r, runtime.NumCPU())
+	f, err := os.CreateTemp(s.raftDir, loadScratchPattern)
 	if err != nil {
 		return 0, err
 	}
-
+	defer func() {
+		f.Close()
+		os.Remove(f.Name())
+	}()
+	_, err = f.ReadFrom(r)
+	if err != nil {
+		return 0, err
+	}
+	rs := snapshots.ArrowRestore{Mem: s.mem, File: f}
+	err = s.session.Restore(&rs)
+	if err != nil {
+		return 0, err
+	}
 	// Raft won't snapshot unless there is at least one unsnappshotted log entry,
 	// so prep that now before we do anything destructive.
 	n, err := s.sendData(ctx, nil)
@@ -407,8 +392,19 @@ func (s *Store) Backup(ctx context.Context, br *v1.Backup_Request, dst io.Writer
 		return err
 	}
 	defer s.snapshotCAS.End()
-	_, err := s.db.DB.Backup(dst, 0)
-	return err
+	f, err := os.CreateTemp(s.raftDir, backupScatchPattern)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		f.Close()
+		os.Remove(f.Name())
+	}()
+	sn := snapshots.Arrow{
+		Mem:  s.mem,
+		File: f,
+	}
+	return sn.Backup(dst)
 }
 
 // Snapshot performs a snapshot, leaving n trailing logs behind. If n
@@ -573,10 +569,6 @@ func (s *Store) Close() (retErr error) {
 	}
 	s.session.Close()
 
-	// Only shutdown Bolt and SQLite when Raft is done.
-	if err := s.db.Close(); err != nil {
-		return err
-	}
 	if err := s.boltStore.Close(); err != nil {
 		return err
 	}
@@ -788,15 +780,38 @@ func (s *Store) fsmSnapshot() (raft.FSMSnapshot, error) {
 		return nil, err
 	}
 	defer s.snapshotCAS.End()
-	s.session.Persist()
-	return snapshots.NewBadger(s.db.DB), nil
+	f, err := os.CreateTemp(s.raftDir, snapshotScratchPattern)
+	if err != nil {
+		return nil, err
+	}
+	return &snapshots.Arrow{
+		File: f,
+		Mem:  s.mem,
+		Tree: s.session,
+	}, nil
 }
 
 func (s *Store) fsmRestore(w io.ReadCloser) error {
 	s.logger.Info("initiating node restore", "nodeId", s.config.Node.Id)
 	startT := time.Now()
 
-	err := snapshots.NewBadger(s.db.DB).Restore(w)
+	f, err := os.CreateTemp(s.raftDir, restoreScratchPattern)
+	if err != nil {
+		return fmt.Errorf("failed creating temporary restore file %v", err)
+	}
+	defer func() {
+		f.Close()
+		os.Remove(f.Name())
+	}()
+	_, err = f.ReadFrom(w)
+	if err != nil {
+		return fmt.Errorf("failed copying temporary restore file %v", err)
+	}
+	rs := snapshots.ArrowRestore{
+		Mem:  s.mem,
+		File: f,
+	}
+	err = s.session.Restore(&rs)
 	if err != nil {
 		return err
 	}

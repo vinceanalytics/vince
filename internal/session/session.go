@@ -13,7 +13,6 @@ import (
 	eventsv1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/events"
-	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/index"
 	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/lsm"
@@ -29,9 +28,8 @@ const (
 
 var ErrResourceNotFound = errors.New("session: Resource not found")
 
-func New(mem memory.Allocator, tenants *tenant.Tenants, storage db.Storage,
-	indexer index.Index,
-	primary index.Primary, opts ...lsm.Option) *Session {
+func New(mem memory.Allocator, tenants *tenant.Tenants,
+	indexer index.Index, opts ...lsm.Option) *Session {
 	cache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1e7,
 		MaxCost:     100 << 20, // 100MiB
@@ -51,7 +49,7 @@ func New(mem memory.Allocator, tenants *tenant.Tenants, storage db.Storage,
 		logger.Fail("Failed initializing cache", "err", err)
 	}
 	return newSession(
-		mem, cache, storage, indexer, primary, opts...,
+		mem, cache, indexer, opts...,
 	)
 }
 
@@ -63,23 +61,26 @@ type Session struct {
 	log   *slog.Logger
 }
 
-func newSession(mem memory.Allocator, cache *ristretto.Cache, storage db.Storage,
-	indexer index.Index,
-	primary index.Primary, opts ...lsm.Option) *Session {
+func newSession(mem memory.Allocator, cache *ristretto.Cache,
+	indexer index.Index, opts ...lsm.Option) *Session {
 
 	return &Session{
 		build: events.NewMulti(mem),
 		cache: cache,
 		tree: lsm.NewTree(
-			mem, storage, indexer, primary, opts...,
+			mem, indexer, opts...,
 		),
 		log: slog.Default().With("component", "session"),
 	}
 }
 
-func (s *Session) Persist() {
+func (s *Session) Restore(source lsm.RecordSource) error {
+	return s.tree.Restore(source)
+}
+
+func (s *Session) Persist(onCompact lsm.CompactCallback) {
 	s.Flush()
-	s.tree.Compact(true)
+	s.tree.Compact(onCompact)
 }
 
 func (s *Session) Append(e *v1.Data) {
@@ -102,7 +103,7 @@ func (s *Session) Scan(ctx context.Context, tenantId string, start, end int64, f
 }
 
 func (s *Session) Close() {
-	s.tree.Compact(true)
+	s.tree.Compact(nil)
 }
 
 func (s *Session) Flush() {

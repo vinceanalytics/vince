@@ -2,27 +2,20 @@ package lsm
 
 import (
 	"context"
-	"encoding/binary"
 	"errors"
 	"log/slog"
-	"slices"
 	"sync/atomic"
 	"time"
 
-	"github.com/RoaringBitmap/roaring"
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/apache/arrow/go/v15/arrow"
-	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/apache/arrow/go/v15/arrow/util"
-	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/ristretto"
 	"github.com/docker/go-units"
 	"github.com/oklog/ulid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/cluster/events"
-	"github.com/vinceanalytics/vince/internal/columns"
-	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/filters"
 	"github.com/vinceanalytics/vince/internal/index"
 	"github.com/vinceanalytics/vince/internal/logger"
@@ -77,12 +70,9 @@ type Tree struct {
 	index  index.Index
 	mem    memory.Allocator
 	merger *staples.Merger
-	store  *db.Store
 
 	opts Options
 	log  *slog.Logger
-
-	primary index.Primary
 
 	nodes   []*RecordNode
 	records []arrow.Record
@@ -128,7 +118,7 @@ func WithTTL(ttl time.Duration) Option {
 	}
 }
 
-func NewTree(mem memory.Allocator, storage db.Storage, indexer index.Index, primary index.Primary, opts ...Option) *Tree {
+func NewTree(mem memory.Allocator, indexer index.Index, opts ...Option) *Tree {
 	m := staples.NewMerger(mem, events.Schema)
 	o := DefaultLSMOptions()
 	for _, f := range opts {
@@ -158,8 +148,6 @@ func NewTree(mem memory.Allocator, storage db.Storage, indexer index.Index, prim
 		index:   indexer,
 		mem:     mem,
 		merger:  m,
-		store:   db.NewStore(storage, mem, o.ttl),
-		primary: primary,
 		opts:    o,
 		nodes:   make([]*RecordNode, 0, 64),
 		records: make([]arrow.Record, 0, 64),
@@ -206,96 +194,6 @@ func (lsm *Tree) Scan(ctx context.Context, tenantId string, start, end int64, fs
 	return lsm.ps.Scan(tenantId, start, end, compiled, project), nil
 }
 
-func (lsm *Tree) ScanCold(ctx context.Context, tenant string, start, end int64,
-	compiled []*filters.CompiledFilter, columns []int, fn func(r arrow.Record, ts *roaring.Bitmap)) {
-	granules := lsm.primary.FindGranules(tenant, start, end)
-	for _, granule := range granules {
-		part := lsm.loadPart(ctx, tenant, granule, columns)
-		if part != nil {
-			lsm.processPart(part, start, end, compiled, fn)
-		}
-	}
-}
-
-func (lsm *Tree) loadPart(ctx context.Context, tenant, id string, columns []int) index.Part {
-	idx := lsm.loadIndex(ctx, tenant, id)
-	if idx == nil {
-		return nil
-	}
-	r := lsm.loadRecord(ctx, tenant, id, int64(idx.NumRows()), columns)
-	if r == nil {
-		return nil
-	}
-	return &db.Part{
-		FileIndex: idx,
-		Data:      r,
-	}
-}
-
-func (lsm *Tree) loadIndex(ctx context.Context, tenant, id string) *index.FileIndex {
-	h := new(xxhash.Digest)
-	h.WriteString(id)
-	key := h.Sum64()
-	v, ok := lsm.cache.Get(key)
-	if ok {
-		return v.(*index.FileIndex)
-	}
-	part, err := lsm.store.LoadIndex(ctx, tenant, id)
-	if err != nil {
-		lsm.log.Error("Failed loading granule index to memory", "id", id, "err", err)
-		return nil
-	}
-	lsm.cache.Set(key, part, int64(part.Size()))
-	return part
-}
-
-func (lsm *Tree) loadRecord(ctx context.Context, tenant, id string, numRows int64, columns []int) arrow.Record {
-	h := new(xxhash.Digest)
-	h.WriteString(id)
-	var a [8]byte
-	binary.BigEndian.PutUint64(a[:], uint64(numRows))
-	h.Write(a[:])
-	for _, v := range columns {
-		h.Write(binary.BigEndian.AppendUint32(a[:], uint32(v))[:4])
-	}
-	key := h.Sum64()
-	v, ok := lsm.cache.Get(key)
-	if ok {
-		return v.(arrow.Record)
-	}
-	part, err := lsm.store.LoadRecord(ctx, tenant, id, numRows, columns)
-	if err != nil {
-		lsm.log.Error("Failed loading granule index to memory", "id", id, "err", err)
-		return nil
-	}
-	lsm.cache.Set(key, part, util.TotalRecordSize(part))
-	return part
-}
-
-func (lsm *Tree) processPart(part index.Part, start, end int64,
-	compiled []*filters.CompiledFilter, fn func(r arrow.Record, ts *roaring.Bitmap)) {
-	r := part.Record()
-	r.Retain()
-	defer r.Release()
-	ts := ScanTimestamp(r, events.Mapping[columns.Timestamp], start, end)
-	part.Match(ts, compiled)
-	if ts.IsEmpty() {
-		return
-	}
-	fn(r, ts)
-}
-
-func ScanTimestamp(r arrow.Record, timestampColumn int, start, end int64) *roaring.Bitmap {
-	b := new(roaring.Bitmap)
-	ls := r.Column(timestampColumn).(*array.Int64).Int64Values()
-	from, _ := slices.BinarySearch(ls, start)
-	to, _ := slices.BinarySearch(ls, end)
-	for i := from; i < to; i++ {
-		b.Add(uint32(i))
-	}
-	return b
-}
-
 func (lsm *Tree) Start(ctx context.Context) {
 	interval := 10 * time.Minute
 	lsm.log.Info("Start compaction loop", "interval", interval.String(),
@@ -311,7 +209,7 @@ func (lsm *Tree) Start(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-tick.C:
-			lsm.Compact()
+			lsm.Compact(nil)
 		}
 	}
 
@@ -325,50 +223,47 @@ func (lsm *Tree) Size() uint64 {
 	return lsm.ps.Size()
 }
 
-func (lsm *Tree) Compact(persist ...bool) {
+type RecordSource interface {
+	Record(f func(arrow.Record) error) error
+}
+
+func (lsm *Tree) Restore(source RecordSource) error {
+	lsm.ps.Reset()
+	return source.Record(func(r arrow.Record) error {
+		tenant, ok := r.Schema().Metadata().GetValue("tenant_id")
+		if !ok {
+			return errors.New("restoring records that are missing tenant_id")
+		}
+		lsm.Add(tenant, r)
+		return nil
+	})
+}
+
+type CompactCallback func(tenant string, r arrow.Record) bool
+
+func (lsm *Tree) Compact(onCompact CompactCallback) {
 	lsm.log.Debug("Start compaction")
 	start := time.Now()
-	var save bool
-	if len(persist) > 0 {
-		save = persist[0]
-	}
 	stats := lsm.ps.Compact(func(tenant string, r arrow.Record) {
 		defer r.Release()
 		if r.NumRows() == 0 {
 			lsm.log.Debug("Skipping compaction, there is nothing in lsm tree", "tenant", tenant)
 			return
 		}
-		if save {
-			lsm.persist(tenant, r)
-		} else {
-			err := lsm.Add(tenant, r)
-			if err != nil {
-				lsm.log.Error("Failed adding compacted record to lsm", "tenant", tenant, "err", err)
-				return
-			}
+		if onCompact != nil && !onCompact(tenant, r) {
+			return
 		}
+		err := lsm.Add(tenant, r)
+		if err != nil {
+			lsm.log.Error("Failed adding compacted record to lsm", "tenant", tenant, "err", err)
+			return
+		}
+
 	})
 	lsm.log.Debug("Completed compaction", "elapsed", stats.Elapsed.String())
 	compactionDuration.UpdateDuration(start)
 	compactionCounter.Inc()
 	nodesPerCompaction.Update(float64(stats.CompactedNodesCount))
-}
-
-func (lsm *Tree) persist(tenant string, r arrow.Record) {
-	lsm.log.Debug("Saving compacted record to permanent storage", "tenant", tenant)
-	idx, err := lsm.index.Index(r)
-	if err != nil {
-		lsm.log.Error("Failed building index to persist", "tenant", tenant, "err", err)
-		return
-	}
-	granule, err := lsm.store.Save(tenant, r, idx)
-	if err != nil {
-		lsm.log.Error("Failed saving record", "tenant", tenant, "err", err)
-		return
-	}
-	lsm.primary.Add(tenant, granule)
-	lsm.log.Debug("Saved record to disc", "tenant", tenant, "size", units.BytesSize(float64(granule.Size)))
-	return
 }
 
 type Node[T any] struct {
