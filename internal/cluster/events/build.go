@@ -40,7 +40,9 @@ func (m *Multi) Append(e *v1.Data) {
 	m.mu.Lock()
 	b, ok := m.builds[e.TenantId]
 	if !ok {
-		b = New(m.mem)
+		b = New(m.mem, map[string]string{
+			"tenant_id": e.TenantId,
+		})
 		m.builds[e.TenantId] = b
 	}
 	b.WriteData(e)
@@ -66,7 +68,7 @@ type field struct {
 	arrow  arrow.Field
 }
 
-func New(mem memory.Allocator) *Builder {
+func New(mem memory.Allocator, metadata ...map[string]string) *Builder {
 	dt := &v1.Data{}
 	fs := dt.ProtoReflect()
 	fds := fs.Descriptor().Fields()
@@ -89,7 +91,12 @@ func New(mem memory.Allocator) *Builder {
 	for i := range fields {
 		af = append(af, fields[i].arrow)
 	}
-	r := array.NewRecordBuilder(mem, arrow.NewSchema(af, nil))
+	var meta *arrow.Metadata
+	if len(metadata) > 0 {
+		m := arrow.MetadataFrom(metadata[0])
+		meta = &m
+	}
+	r := array.NewRecordBuilder(mem, arrow.NewSchema(af, meta))
 	fm := make(map[protoreflect.FieldNumber]buildFunc)
 	for i, f := range r.Fields() {
 		fm[fields[i].number] = newBuild(f)
