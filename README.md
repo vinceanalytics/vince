@@ -10,8 +10,7 @@
 
 ## vice
 
-`vince`  is a API only  fast, distributed, in-memory web analytics server.
-
+`vince` is a High Performance , API only , distributed, in-memory alternative to Google Analytics
 
 ## Features
 
