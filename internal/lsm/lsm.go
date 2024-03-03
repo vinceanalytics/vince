@@ -13,7 +13,6 @@ import (
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/apache/arrow/go/v15/arrow/array"
-	"github.com/apache/arrow/go/v15/arrow/compute"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/apache/arrow/go/v15/arrow/util"
 	"github.com/cespare/xxhash/v2"
@@ -183,14 +182,15 @@ func (lsm *Tree) Add(tenantId string, r arrow.Record) error {
 
 	part := NewPart(tenantId, r, idx)
 	lsm.ps.Add(part)
-	lsm.log.Debug("Added new part", "tenant", tenantId, "size", units.BytesSize(float64(part.size)))
+	lsm.log.Debug("Added new part",
+		"rows", r.NumRows(),
+		"tenant", tenantId, "size", units.BytesSize(float64(part.size)))
 	nodeSize.Update(float64(part.Size()))
 	treeSize.Update(float64(lsm.Size()))
 	return nil
 }
 
 func (lsm *Tree) Scan(ctx context.Context, tenantId string, start, end int64, fs *v1.Filters) (arrow.Record, error) {
-	ctx = compute.WithAllocator(ctx, lsm.mem)
 	compiled, err := filters.CompileFilters(fs)
 	if err != nil {
 		lsm.log.Error("failed compiling scan filters", "err", err)
