@@ -15,13 +15,15 @@
 
 ## Features
 
+- **Distributed** : Scales horizontally using `raft`.
+
 - **Extremely fast** relative to competitors. Uses apache `arrow` for fast vectorized in memory computation. It is designed from grounds up, and highly optimized for web analytics use case.
 
 - **Zero Dependency**: Ships a single binary with everything in it. No runtime dependency.
 
 - **High events ingestion rate** : Non blocking ingestion, you can deploy for very popular sites without worrying.
 
-- **Fast query api** : Instant results for active and historical data.
+- **Fast query api** : We use in memory `Apache Arrow` for fast vectorized  query compute.
 
 - **Easy to operate**: One line commandline flags with env variables is all you need.
 
