@@ -115,6 +115,7 @@ func (s *Session) Flush() {
 	wg.Wait()
 }
 func (s *Session) append(wg *sync.WaitGroup, tenantId string, r arrow.Record) {
+	defer wg.Done()
 	defer r.Release()
 	err := s.tree.Add(tenantId, r)
 	if err != nil {
