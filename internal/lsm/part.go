@@ -132,7 +132,9 @@ func (p *PartStore) Compact(f func(tenant string, r arrow.Record)) (stats Compac
 			p.merger.Merge(v.part.Record())
 		}
 		stats.Elapsed = time.Since(start)
-		r := p.merger.NewRecord()
+		r := p.merger.NewRecord(arrow.MetadataFrom(map[string]string{
+			"tenant_id": tenant,
+		}))
 		f(tenant, r)
 	}
 	node := p.findNode(first)

@@ -164,19 +164,20 @@ type Merger struct {
 	merge func(arrow.Record)
 }
 
-func (m *Merger) Merge(records ...arrow.Record) arrow.Record {
-	for _, record := range records {
-		m.merge(record)
-	}
-	return m.b.NewRecord()
+func (m *Merger) Merge(record arrow.Record) {
+	m.merge(record)
 }
 
 func (m *Merger) Add(record arrow.Record) {
 	m.merge(record)
 }
 
-func (m *Merger) NewRecord() arrow.Record {
-	return m.b.NewRecord()
+func (m *Merger) NewRecord(meta arrow.Metadata) arrow.Record {
+	r := m.b.NewRecord()
+	defer r.Release()
+	return array.NewRecord(arrow.NewSchema(
+		r.Schema().Fields(), &meta,
+	), r.Columns(), r.NumRows())
 }
 
 func (m *Merger) Release() {
