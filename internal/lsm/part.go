@@ -21,6 +21,7 @@ type PartStore struct {
 	size   atomic.Uint64
 	tree   *RecordNode
 	merger *staples.Merger
+	nodes  []*RecordNode
 }
 
 func NewPartStore(mem memory.Allocator) *PartStore {
@@ -44,16 +45,13 @@ func (p *PartStore) Add(r *RecordPart) {
 	p.tree.Prepend(r)
 }
 
-func (p *PartStore) Scan(tenant string, start, end int64,
+func (p *PartStore) Scan(start, end int64,
 	compiled []*filters.CompiledFilter,
 	projected []string) arrow.Record {
 	b, take := staples.NewTaker(p.mem, projected)
 	defer b.Release()
 	p.tree.Iterate(func(n *RecordNode) bool {
 		if n.part == nil {
-			return true
-		}
-		if n.part.Tenant() != tenant {
 			return true
 		}
 		return index.AcceptWith(
@@ -108,49 +106,37 @@ func (p *PartStore) Reset() {
 	}
 
 }
-func (p *PartStore) Compact(f func(tenant string, r arrow.Record)) (stats CompactStats) {
-	ns := make(map[string][]*RecordNode)
+func (p *PartStore) Compact(f func(r arrow.Record)) (stats CompactStats) {
+
 	start := time.Now()
 	defer func() {
-		for _, nodes := range ns {
-			for _, r := range nodes {
-				r.part.Release()
-				r.part = nil
-			}
-			stats.CompactedNodesCount += len(nodes)
-			clear(nodes)
+		for _, r := range p.nodes {
+			r.part.Release()
+			r.part = nil
 		}
+		stats.CompactedNodesCount = len(p.nodes)
+
+		clear(p.nodes)
+		p.nodes = p.nodes[:0]
+
 		stats.Elapsed = time.Since(start)
 	}()
-	var first *RecordNode
 	p.tree.Iterate(func(n *RecordNode) bool {
 		if n.part == nil {
 			return true
 		}
-		if first == nil {
-			first = n
-		}
-		ns[n.part.Tenant()] = append(ns[n.part.Tenant()], n)
+		stats.OldSize += n.part.Size()
+		p.merger.Merge(n.part.Record())
+		p.nodes = append(p.nodes, n)
 		return true
 	})
-	if len(ns) == 0 {
+	if len(p.nodes) == 0 {
 		return
 	}
-	for tenant, n := range ns {
-		stats = CompactStats{
-			CompactedNodesCount: len(n),
-		}
-		start := time.Now()
-		for _, v := range n {
-			stats.OldSize += v.part.Size()
-			p.merger.Merge(v.part.Record())
-		}
-		stats.Elapsed = time.Since(start)
-		r := p.merger.NewRecord(arrow.MetadataFrom(map[string]string{
-			"tenant_id": tenant,
-		}))
-		f(tenant, r)
-	}
+
+	r := p.merger.NewRecord(arrow.Metadata{})
+	f(r)
+	first := p.nodes[0]
 	node := p.findNode(first)
 	x := &RecordNode{}
 	for !node.next.CompareAndSwap(first, x) {

@@ -38,7 +38,6 @@ func Realtime(ctx context.Context, scan db.Scanner, req *v1.Realtime_Request) (*
 	now := time.Now().UTC()
 	firstTime := now.Add(-5 * time.Minute)
 	result, err := scan.Scan(ctx,
-		req.TenantId,
 		firstTime.UnixMilli(),
 		now.UnixMilli(),
 		&v1.Filters{
@@ -47,6 +46,7 @@ func Realtime(ctx context.Context, scan db.Scanner, req *v1.Realtime_Request) (*
 			},
 			List: []*v1.Filter{
 				{Property: v1.Property_domain, Op: v1.Filter_equal, Value: req.SiteId},
+				{Property: v1.Property_tenant_id, Op: v1.Filter_equal, Value: req.TenantId},
 			},
 		},
 	)
@@ -69,16 +69,17 @@ func Aggregate(ctx context.Context, scan db.Scanner, req *v1.Aggregate_Request) 
 		return nil, err
 	}
 	filters := &v1.Filters{
-		List: append(req.Filters, &v1.Filter{
-			Property: v1.Property_domain,
-			Op:       v1.Filter_equal,
-			Value:    req.SiteId,
-		}),
+		List: append(req.Filters,
+			&v1.Filter{
+				Property: v1.Property_domain,
+				Op:       v1.Filter_equal,
+				Value:    req.SiteId,
+			}),
 	}
 	slices.Sort(req.Metrics)
 	MetricsToProjection(filters, req.Metrics)
 	from, to := periodToRange(req.Period, req.Date)
-	resultRecord, err := scan.Scan(ctx, req.TenantId, from.UnixMilli(), to.UnixMilli(), filters)
+	resultRecord, err := scan.Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		return nil, err
 	}
@@ -112,13 +113,17 @@ func Breakdown(ctx context.Context, scan db.Scanner, req *v1.BreakDown_Request) 
 			Property: v1.Property_domain,
 			Op:       v1.Filter_equal,
 			Value:    req.SiteId,
+		}, &v1.Filter{
+			Property: v1.Property_tenant_id,
+			Op:       v1.Filter_equal,
+			Value:    req.TenantId,
 		}),
 	}
 	slices.Sort(req.Metrics)
 	slices.Sort(req.Property)
 	selectedColumns := MetricsToProjection(filter, req.Metrics, req.Property...)
 	from, to := periodToRange(req.Period, req.Date)
-	scannedRecord, err := scan.Scan(ctx, req.TenantId, from.UnixMilli(), to.UnixMilli(), filter)
+	scannedRecord, err := scan.Scan(ctx, from.UnixMilli(), to.UnixMilli(), filter)
 	if err != nil {
 		return nil, err
 	}
@@ -184,12 +189,16 @@ func Timeseries(ctx context.Context, scan db.Scanner, req *v1.Timeseries_Request
 			Property: v1.Property_domain,
 			Op:       v1.Filter_equal,
 			Value:    req.SiteId,
+		}, &v1.Filter{
+			Property: v1.Property_tenant_id,
+			Op:       v1.Filter_equal,
+			Value:    req.TenantId,
 		}),
 	}
 	slices.Sort(req.Metrics)
 	MetricsToProjection(filters, req.Metrics)
 	from, to := periodToRange(req.Period, req.Date)
-	scanRecord, err := scan.Scan(ctx, req.TenantId, from.UnixMilli(), to.UnixMilli(), filters)
+	scanRecord, err := scan.Scan(ctx, from.UnixMilli(), to.UnixMilli(), filters)
 	if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,6 @@ import (
 )
 
 type RecordPart struct {
-	tenant string
 	id     string
 	record arrow.Record
 	index.Full
@@ -48,19 +47,14 @@ func (r *RecordPart) Release() {
 	r.record.Release()
 }
 
-func NewPart(tenantId string, r arrow.Record, idx index.Full) *RecordPart {
+func NewPart(r arrow.Record, idx index.Full) *RecordPart {
 	r.Retain()
 	return &RecordPart{
-		tenant: tenantId,
 		id:     ulid.Make().String(),
 		record: r,
 		Full:   idx,
 		size:   uint64(util.TotalRecordSize(r)) + idx.Size(),
 	}
-}
-
-func (r *RecordPart) Tenant() string {
-	return r.tenant
 }
 
 type RecordNode = Node[index.Part]
@@ -158,7 +152,7 @@ func NewTree(mem memory.Allocator, indexer index.Index, opts ...Option) *Tree {
 	}
 }
 
-func (lsm *Tree) Add(tenantId string, r arrow.Record) error {
+func (lsm *Tree) Add(r arrow.Record) error {
 	if r.NumRows() == 0 {
 		return nil
 	}
@@ -168,17 +162,17 @@ func (lsm *Tree) Add(tenantId string, r arrow.Record) error {
 		return err
 	}
 
-	part := NewPart(tenantId, r, idx)
+	part := NewPart(r, idx)
 	lsm.ps.Add(part)
 	lsm.log.Debug("Added new part",
 		"rows", r.NumRows(),
-		"tenant", tenantId, "size", units.BytesSize(float64(part.size)))
+		"size", units.BytesSize(float64(part.size)))
 	nodeSize.Update(float64(part.Size()))
 	treeSize.Update(float64(lsm.Size()))
 	return nil
 }
 
-func (lsm *Tree) Scan(ctx context.Context, tenantId string, start, end int64, fs *v1.Filters) (arrow.Record, error) {
+func (lsm *Tree) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
 	compiled, err := filters.CompileFilters(fs)
 	if err != nil {
 		lsm.log.Error("failed compiling scan filters", "err", err)
@@ -191,7 +185,7 @@ func (lsm *Tree) Scan(ctx context.Context, tenantId string, start, end int64, fs
 	for _, name := range fs.Projection {
 		project = append(project, name.String())
 	}
-	return lsm.ps.Scan(tenantId, start, end, compiled, project), nil
+	return lsm.ps.Scan(start, end, compiled, project), nil
 }
 
 func (lsm *Tree) Start(ctx context.Context) {
@@ -229,33 +223,27 @@ type RecordSource interface {
 
 func (lsm *Tree) Restore(source RecordSource) error {
 	lsm.ps.Reset()
-	return source.Record(func(r arrow.Record) error {
-		tenant, ok := r.Schema().Metadata().GetValue("tenant_id")
-		if !ok {
-			return errors.New("restoring records that are missing tenant_id")
-		}
-		lsm.Add(tenant, r)
-		return nil
-	})
+	return source.Record(lsm.Add)
 }
 
-type CompactCallback func(tenant string, r arrow.Record) bool
+type CompactCallback func(r arrow.Record) bool
 
 func (lsm *Tree) Compact(onCompact CompactCallback) {
 	lsm.log.Debug("Start compaction")
 	start := time.Now()
-	stats := lsm.ps.Compact(func(tenant string, r arrow.Record) {
+	stats := lsm.ps.Compact(func(r arrow.Record) {
 		defer r.Release()
 		if r.NumRows() == 0 {
-			lsm.log.Debug("Skipping compaction, there is nothing in lsm tree", "tenant", tenant)
+			lsm.log.Debug("Skipping compaction, there is nothing in lsm tree")
 			return
 		}
-		if onCompact != nil && !onCompact(tenant, r) {
+		if onCompact != nil && !onCompact(r) {
 			return
 		}
-		err := lsm.Add(tenant, r)
+		err := lsm.Add(r)
 		if err != nil {
-			lsm.log.Error("Failed adding compacted record to lsm", "tenant", tenant, "err", err)
+			lsm.log.Error("Failed adding compacted record to lsm", "tenant",
+				"err", err)
 			return
 		}
 

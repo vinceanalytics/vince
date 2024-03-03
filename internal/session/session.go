@@ -54,7 +54,7 @@ func New(mem memory.Allocator, tenants *tenant.Tenants,
 }
 
 type Session struct {
-	build *events.Multi
+	build *events.Builder
 	mu    sync.Mutex
 	cache *ristretto.Cache
 	tree  *lsm.Tree
@@ -65,7 +65,7 @@ func newSession(mem memory.Allocator, cache *ristretto.Cache,
 	indexer index.Index, opts ...lsm.Option) *Session {
 
 	return &Session{
-		build: events.NewMulti(mem),
+		build: events.New(mem),
 		cache: cache,
 		tree: lsm.NewTree(
 			mem, indexer, opts...,
@@ -91,15 +91,15 @@ func (s *Session) Append(e *v1.Data) {
 		// cached can be accessed concurrently. Protect it together with build.
 		events.Update(cached, e)
 		s.mu.Unlock()
-		s.build.Append(e)
+		s.build.WriteData(e)
 		return
 	}
-	s.build.Append(e)
+	s.build.WriteData(e)
 	s.cache.SetWithTTL(e.Id, events.Clone(e), int64(proto.Size(e)), DefaultSession)
 }
 
-func (s *Session) Scan(ctx context.Context, tenantId string, start, end int64, fs *v1.Filters) (arrow.Record, error) {
-	return s.tree.Scan(ctx, tenantId, start, end, fs)
+func (s *Session) Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error) {
+	return s.tree.Scan(ctx, start, end, fs)
 }
 
 func (s *Session) Close() {
@@ -107,20 +107,11 @@ func (s *Session) Close() {
 }
 
 func (s *Session) Flush() {
-	var wg sync.WaitGroup
-	s.build.All(func(tenantId string, r arrow.Record) {
-		wg.Add(1)
-		// to avoid blocking ingestion add r in separate goroutine
-		go s.append(&wg, tenantId, r)
-	})
-	wg.Wait()
-}
-func (s *Session) append(wg *sync.WaitGroup, tenantId string, r arrow.Record) {
-	defer wg.Done()
+	r := s.build.NewRecord()
 	defer r.Release()
-	err := s.tree.Add(tenantId, r)
+	err := s.tree.Add(r)
 	if err != nil {
-		logger.Fail("Failed adding record to lsm", "tenant", tenantId, "err", err)
+		logger.Fail("Failed adding record to lsm", "err", err)
 	}
 }
 

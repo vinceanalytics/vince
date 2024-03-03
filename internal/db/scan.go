@@ -8,5 +8,5 @@ import (
 )
 
 type Scanner interface {
-	Scan(ctx context.Context, tenantId string, start, end int64, fs *v1.Filters) (arrow.Record, error)
+	Scan(ctx context.Context, start, end int64, fs *v1.Filters) (arrow.Record, error)
 }

@@ -8,7 +8,6 @@ import (
 
 type Part interface {
 	Full
-	Tenant() string
 	ID() string
 	Record() arrow.Record
 	Release()

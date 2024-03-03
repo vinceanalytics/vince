@@ -176,25 +176,27 @@ message TimePeriod {
 
 enum Property {
   event = 0;
-  page = 2;
-  entry_page = 3;
-  exit_page = 4;
-  source = 5;
-  referrer = 6;
-  utm_source = 7;
-  utm_medium = 8;
-  utm_campaign = 9;
-  utm_content = 10;
-  utm_term = 11;
-  device = 12;
-  browser = 13;
-  browser_version = 14;
-  os = 15;
-  os_version = 16;
-  country = 17;
-  region = 18;
-  domain = 19;
-  city = 20;
+  browser = 7;
+  browser_version = 8;
+  city = 9;
+  country = 10;
+  device = 11;
+  domain = 12;
+  entry_page = 13;
+  exit_page = 15;
+  host = 16;
+  os = 17;
+  os_version = 18;
+  page = 19;
+  referrer = 20;
+  region = 21;
+  source = 22;
+  tenant_id = 23;
+  utm_campaign = 24;
+  utm_content = 25;
+  utm_medium = 26;
+  utm_source = 27;
+  utm_term = 28;
 }
 
 message Filters {
@@ -211,27 +213,28 @@ message Filters {
     view = 5;
     duration = 6;
 
-    browser = 19;
-    browser_version = 20;
-    city = 26;
-    country = 23;
-    device = 18;
-    domain = 25;
-    entry_page = 9;
-    event = 7;
-    exit_page = 10;
-    host = 27;
-    os = 21;
-    os_version = 22;
-    page = 8;
-    referrer = 12;
-    region = 24;
-    source = 11;
-    utm_campaign = 15;
-    utm_content = 16;
-    utm_medium = 14;
-    utm_source = 13;
-    utm_term = 17;
+    browser = 7;
+    browser_version = 8;
+    city = 9;
+    country = 10;
+    device = 11;
+    domain = 12;
+    entry_page = 13;
+    event = 14;
+    exit_page = 15;
+    host = 16;
+    os = 17;
+    os_version = 18;
+    page = 19;
+    referrer = 20;
+    region = 21;
+    source = 22;
+    tenant_id = 23;
+    utm_campaign = 24;
+    utm_content = 25;
+    utm_medium = 26;
+    utm_source = 27;
+    utm_term = 28;
   }
 }
 

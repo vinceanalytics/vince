@@ -35,7 +35,7 @@ func (a *Arrow) Backup(sink io.Writer) (err error) {
 	if werr != nil {
 		return werr
 	}
-	a.Tree.Persist(func(tenant string, r arrow.Record) bool {
+	a.Tree.Persist(func(r arrow.Record) bool {
 		if err != nil {
 			return false
 		}
