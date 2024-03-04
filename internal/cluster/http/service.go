@@ -867,7 +867,7 @@ func (s *Service) handleStatus(w http.ResponseWriter, r *http.Request, params Qu
 }
 
 func (s *Service) write(w http.ResponseWriter, msg proto.Message) {
-	data, _ := protojson.Marshal(msg)
+	data, _ := protojson.MarshalOptions{Multiline: true}.Marshal(msg)
 	_, err := w.Write(data)
 	if err != nil {
 		s.log.Error("failed writing response data", "err", err)
