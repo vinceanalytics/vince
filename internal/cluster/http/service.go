@@ -78,12 +78,12 @@ const (
 	defaultTimeout = 30 * time.Second
 
 	// VersionHTTPHeader is the HTTP header key for the version.
-	VersionHTTPHeader = "X-RQLITE-VERSION"
+	VersionHTTPHeader = "X-VINCE-VERSION"
 
 	// ServedByHTTPHeader is the HTTP header used to report which
 	// node (by node Raft address) actually served the request if
 	// it wasn't served by this node.
-	ServedByHTTPHeader = "X-RQLITE-SERVED-BY"
+	ServedByHTTPHeader = "X-VINCE-SERVED-BY"
 
 	// AllowOriginHeader is the HTTP header for allowing CORS compliant access from certain origins
 	AllowOriginHeader = "Access-Control-Allow-Origin"
@@ -931,7 +931,6 @@ func (s *Service) CheckRequestPerm(params QueryParams, perm v1.Credential_Permis
 		username = params.TenantID()
 		password = params.BearerToken()
 	}
-
 	return s.creds.AA(username, password, perm)
 }
 
