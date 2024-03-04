@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
@@ -16,7 +15,6 @@ import (
 	"github.com/dop251/goja"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/cluster/auth"
 	"github.com/vinceanalytics/vince/internal/ref"
 	"github.com/vinceanalytics/vince/ua"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -40,6 +38,12 @@ func CMD() *cli.Command {
 				Name:  "limit",
 				Value: 10,
 			},
+			&cli.StringFlag{
+				Name:     "authToken",
+				Usage:    "Bearer token to authenticate api calls",
+				Required: true,
+				Sources:  cli.EnvVars("VINCE_AUTH_TOKEN"),
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			vince := c.String("vince")
@@ -47,6 +51,7 @@ func CMD() *cli.Command {
 				Agents:   Agents(),
 				Referrer: Referrer(),
 				Vince:    vince,
+				Auth:     c.String("authToken"),
 			}
 			vm := goja.New()
 			vm.Set("createSession", program.NewSession)
@@ -81,6 +86,7 @@ type Program struct {
 	Referrer []string
 	Agents   []string
 	Vince    string
+	Auth     string
 }
 
 func (p *Program) NewSession(website string) (*Session, error) {
@@ -90,6 +96,7 @@ func (p *Program) NewSession(website string) (*Session, error) {
 	}
 	domain, _, _ := strings.Cut(u.Host, ":")
 	return &Session{
+		Auth:     p.Auth,
 		Ua:       p.Agents[rand.Intn(len(p.Agents))],
 		Referrer: p.Referrer[rand.Intn(len(p.Referrer))],
 		Domain:   domain,
@@ -99,6 +106,7 @@ func (p *Program) NewSession(website string) (*Session, error) {
 }
 
 type Session struct {
+	Auth     string
 	Ua       string
 	Referrer string
 	Domain   string
@@ -131,7 +139,7 @@ func (s *Session) send(name, path string, dump bool) error {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", auth.CreateBasicAuth("staples", ""))
+	req.Header.Set("Authorization", "Bearer "+s.Auth)
 	if dump {
 		b, _ := httputil.DumpRequestOut(req, true)
 		fmt.Println(string(b))
@@ -142,8 +150,7 @@ func (s *Session) send(name, path string, dump bool) error {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusAccepted {
-		data, _ = io.ReadAll(res.Body)
-		return errors.New(string(data))
+		return errors.New(res.Status)
 	}
 	return nil
 }
