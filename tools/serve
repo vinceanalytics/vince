@@ -1,3 +1,0 @@
-go build -o bin/docs ./tools/docs/
-
-DOMAIN=vinceanalytics.com TRACKER="http://localhost:8080/js/vince.local.js" ./bin/docs -s docs/ 
