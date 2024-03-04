@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/vinceanalytics/vince/internal/cluster/auth"
 )
 
 // QueryParams represents the query parameters passed in an HTTP request.
@@ -52,7 +54,29 @@ func NewQueryParams(r *http.Request) (QueryParams, error) {
 			return nil, fmt.Errorf("query parameter not set")
 		}
 	}
+	if username, password, ok := r.BasicAuth(); ok {
+		qp["username"] = username
+		qp["password"] = password
+	}
+	if token, ok := auth.Bearer(r.Header.Get("Authorization")); ok {
+		qp["token"] = token
+	}
 	return qp, nil
+}
+
+func (qp QueryParams) IsBearer() bool {
+	_, ok := qp["token"]
+	return ok
+}
+
+func (qp QueryParams) BearerToken() string {
+	return qp["token"]
+}
+
+func (qp QueryParams) Basic() (username, password string, ok bool) {
+	username, ok = qp["username"]
+	password = qp["password"]
+	return
 }
 
 func (qp QueryParams) SiteID() string {

@@ -202,7 +202,7 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Service) handleRealtime(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	if !s.CheckRequestPerm(r, v1.Credential_QUERY) {
+	if !s.CheckRequestPerm(params, v1.Credential_QUERY) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -270,7 +270,7 @@ func (s *Service) jsonErr(w http.ResponseWriter, msg string, code ...int) {
 func (s *Service) handleAggregate(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	if !s.CheckRequestPerm(r, v1.Credential_QUERY) {
+	if !s.CheckRequestPerm(params, v1.Credential_QUERY) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -332,7 +332,7 @@ func (s *Service) handleAggregate(w http.ResponseWriter, r *http.Request, params
 func (s *Service) handleTimeseries(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	if !s.CheckRequestPerm(r, v1.Credential_QUERY) {
+	if !s.CheckRequestPerm(params, v1.Credential_QUERY) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -395,7 +395,7 @@ func (s *Service) handleTimeseries(w http.ResponseWriter, r *http.Request, param
 func (s *Service) handleBreakdown(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	if !s.CheckRequestPerm(r, v1.Credential_QUERY) {
+	if !s.CheckRequestPerm(params, v1.Credential_QUERY) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -457,7 +457,7 @@ func (s *Service) handleBreakdown(w http.ResponseWriter, r *http.Request, params
 }
 func (s *Service) handleApiEvent(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	if !s.CheckRequestPerm(r, v1.Credential_DATA) {
+	if !s.CheckRequestPerm(params, v1.Credential_DATA) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -610,7 +610,7 @@ func remoteIP(r *http.Request) string {
 func (s *Service) handleNodes(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	if !s.CheckRequestPerm(r, v1.Credential_STATUS) {
+	if !s.CheckRequestPerm(params, v1.Credential_STATUS) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -654,7 +654,7 @@ func (s *Service) handleNodes(w http.ResponseWriter, r *http.Request, params Que
 	s.write(w, nodes)
 }
 func (s *Service) handleRemove(w http.ResponseWriter, r *http.Request, params QueryParams) {
-	if !s.CheckRequestPerm(r, v1.Credential_REMOVE) {
+	if !s.CheckRequestPerm(params, v1.Credential_REMOVE) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -717,7 +717,7 @@ func (s *Service) handleRemove(w http.ResponseWriter, r *http.Request, params Qu
 	}
 }
 func (s *Service) handleBackup(w http.ResponseWriter, r *http.Request, params QueryParams) {
-	if !s.CheckRequestPerm(r, v1.Credential_BACKUP) {
+	if !s.CheckRequestPerm(params, v1.Credential_BACKUP) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -772,7 +772,7 @@ func (s *Service) handleBackup(w http.ResponseWriter, r *http.Request, params Qu
 	}
 }
 func (s *Service) handleLoad(w http.ResponseWriter, r *http.Request, params QueryParams) {
-	if !s.CheckRequestPerm(r, v1.Credential_LOAD) {
+	if !s.CheckRequestPerm(params, v1.Credential_LOAD) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -833,7 +833,7 @@ func (s *Service) doCtx(ctx context.Context) (context.Context, context.CancelFun
 }
 
 func (s *Service) handleBoot(w http.ResponseWriter, r *http.Request, params QueryParams) {
-	if !s.CheckRequestPerm(r, v1.Credential_LOAD) {
+	if !s.CheckRequestPerm(params, v1.Credential_LOAD) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -851,7 +851,7 @@ func (s *Service) handleBoot(w http.ResponseWriter, r *http.Request, params Quer
 }
 func (s *Service) handleStatus(w http.ResponseWriter, r *http.Request, params QueryParams) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	if !s.CheckRequestPerm(r, v1.Credential_STATUS) {
+	if !s.CheckRequestPerm(params, v1.Credential_STATUS) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -921,21 +921,22 @@ func (s *Service) LeaderAPIAddr(ctx context.Context) string {
 	return apiAddr
 }
 
-func (s *Service) CheckRequestPerm(r *http.Request, perm v1.Credential_Permission) (b bool) {
+func (s *Service) CheckRequestPerm(params QueryParams, perm v1.Credential_Permission) (b bool) {
 	// No auth store set, so no checking required.
 	if s.creds == nil {
 		return true
 	}
-	username, password, ok := r.BasicAuth()
+	username, password, ok := params.Basic()
 	if !ok {
-		username = ""
+		username = params.TenantID()
+		password = params.BearerToken()
 	}
 
 	return s.creds.AA(username, password, perm)
 }
 
 func (s *Service) handleReady(w http.ResponseWriter, r *http.Request, params QueryParams) {
-	if !s.CheckRequestPerm(r, v1.Credential_READY) {
+	if !s.CheckRequestPerm(params, v1.Credential_READY) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

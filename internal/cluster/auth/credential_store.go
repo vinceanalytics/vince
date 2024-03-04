@@ -5,6 +5,7 @@ package auth
 import (
 	"encoding/base64"
 	"os"
+	"strings"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -24,6 +25,13 @@ type BasicAuther interface {
 func CreateBasicAuth(username, password string) (value string) {
 	a := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
 	return "Basic " + a
+}
+
+func Bearer(header string) (string, bool) {
+	if header == "" {
+		return "", false
+	}
+	return strings.CutPrefix(header, "Bearer ")
 }
 
 // CredentialsStore stores authentication and authorization information for all users.
