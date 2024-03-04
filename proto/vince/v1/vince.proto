@@ -98,7 +98,7 @@ message Timeseries {
     string tenant_id = 2 [ (buf.validate.field).required = true ];
     TimePeriod period = 3 [ (buf.validate.field).required = true ];
     repeated Metric metrics = 4 [ (buf.validate.field).required = true ];
-    Interval interval = 5 [ (buf.validate.field).required = true ];
+    Interval interval = 5;
     repeated Filter filters = 6;
     google.protobuf.Timestamp date = 7 [ (buf.validate.field).required = true ];
   }
