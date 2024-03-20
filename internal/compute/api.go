@@ -35,7 +35,7 @@ func Realtime(ctx context.Context, scan db.Scanner, req *v1.Realtime_Request) (*
 	if err != nil {
 		return nil, err
 	}
-	now := time.Now().UTC()
+	now := time.Now()
 	firstTime := now.Add(-5 * time.Minute)
 	result, err := scan.Scan(ctx,
 		firstTime.UnixMilli(),

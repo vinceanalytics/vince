@@ -3,7 +3,7 @@ package timeutil
 import "time"
 
 func Today() time.Time {
-	return BeginDay(time.Now().UTC())
+	return BeginDay(time.Now())
 }
 
 func beginMinute(ts time.Time) time.Time {
@@ -12,17 +12,17 @@ func beginMinute(ts time.Time) time.Time {
 
 func beginHour(ts time.Time) time.Time {
 	y, m, d := ts.Date()
-	return time.Date(y, m, d, ts.Hour(), 0, 0, 0, time.UTC)
+	return time.Date(y, m, d, ts.Hour(), 0, 0, 0, ts.Location())
 }
 
 func BeginDay(ts time.Time) time.Time {
 	yy, mm, dd := ts.Date()
-	return time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC)
+	return time.Date(yy, mm, dd, 0, 0, 0, 0, ts.Location())
 }
 
 func Day(ts time.Time, dd int) time.Time {
 	yy, mm, _ := ts.Date()
-	return time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC)
+	return time.Date(yy, mm, dd, 0, 0, 0, 0, ts.Location())
 }
 
 func BeginWeek(ts time.Time) time.Time {
@@ -32,7 +32,7 @@ func BeginWeek(ts time.Time) time.Time {
 
 func BeginMonth(ts time.Time) time.Time {
 	yy, mm, _ := ts.Date()
-	return time.Date(yy, mm, 1, 0, 0, 0, 0, time.UTC)
+	return time.Date(yy, mm, 1, 0, 0, 0, 0, ts.Location())
 }
 
 func EndOfHour(ts time.Time) time.Time {
@@ -45,7 +45,7 @@ func EndOfMinute(ts time.Time) time.Time {
 
 func EndDay(ts time.Time) time.Time {
 	yy, mm, dd := ts.Date()
-	return time.Date(yy, mm, dd, 23, 59, 59, int(time.Second-time.Nanosecond), time.UTC)
+	return time.Date(yy, mm, dd, 23, 59, 59, int(time.Second-time.Nanosecond), ts.Location())
 }
 
 func EndWeek(ts time.Time) time.Time {
@@ -58,7 +58,7 @@ func EndMonth(ts time.Time) time.Time {
 
 func BeginYear(ts time.Time) time.Time {
 	yy, _, _ := ts.Date()
-	return time.Date(yy, time.January, 1, 0, 0, 0, 0, time.UTC)
+	return time.Date(yy, time.January, 1, 0, 0, 0, 0, ts.Location())
 }
 
 func EndYear(ts time.Time) time.Time {
