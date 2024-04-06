@@ -993,8 +993,9 @@ func (s *Service) handleVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"version": "` + version.VERSION + `"}`))
+	s.write(w, &v1.Version{
+		Version: version.VERSION,
+	})
 }
 
 func (s *Service) status() *v1.Status {
