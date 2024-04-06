@@ -194,6 +194,8 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.handleReady(w, r, params)
 	case r.URL.Path == "/metrics":
 		s.metrics.ServeHTTP(w, r)
+	case r.URL.Path == "/version":
+		s.handleVersion(w, r)
 	default:
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -983,6 +985,16 @@ func (s *Service) handleReady(w http.ResponseWriter, r *http.Request, params Que
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(okMsg))
 
+}
+
+func (s *Service) handleVersion(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"version": "` + version.VERSION + `"}`))
 }
 
 func (s *Service) status() *v1.Status {
