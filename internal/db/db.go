@@ -1,0 +1,347 @@
+package db
+
+import (
+	"bytes"
+	"cmp"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"slices"
+	"sync"
+	"time"
+
+	"github.com/apache/arrow/go/v15/arrow"
+	"github.com/dgraph-io/badger/v4"
+	"github.com/gernest/rbf"
+	"github.com/gernest/rbf/quantum"
+	"github.com/gernest/roaring"
+	"github.com/gernest/roaring/shardwidth"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/logger"
+)
+
+var (
+	trKeys    = []byte("/tr/keys/")
+	trIDs     = []byte("/tr/ids/")
+	seqPrefix = []byte("/seq/")
+)
+
+type DB struct {
+	db  *badger.DB
+	idx *rbf.DB
+	seq *Seq
+}
+
+type Seq struct {
+	db  *badger.DB
+	mu  sync.RWMutex
+	seq map[string]*badger.Sequence
+}
+
+func (s *Seq) Release() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	o := make([]error, 0, len(s.seq))
+	for _, x := range s.seq {
+		o = append(o, x.Release())
+	}
+	return errors.Join(o...)
+}
+
+func (s *Seq) NextRowID() (uint64, error) {
+	q, err := s.get("row_id")
+	if err != nil {
+		return 0, err
+	}
+	return q.Next()
+}
+
+func (s *Seq) next(prop string) (uint64, error) {
+	q, err := s.get(prop)
+	if err != nil {
+		return 0, err
+	}
+	return q.Next()
+}
+
+func (s *Seq) get(prop string) (*badger.Sequence, error) {
+	s.mu.RLock()
+	q, ok := s.seq[prop]
+	s.mu.RUnlock()
+	if ok {
+		return q, nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	q, err := s.db.GetSequence(append(seqPrefix, []byte(prop)...), 4<<10)
+	if err != nil {
+		return nil, err
+	}
+	s.seq[prop] = q
+	return q, nil
+}
+
+type Tx struct {
+	db    *badger.Txn
+	idx   *rbf.Tx
+	store *DB
+}
+
+func (db *DB) View(f func(tx *Tx) error) error {
+	return db.tx(false, f)
+}
+
+func (db *DB) Update(f func(tx *Tx) error) error {
+	return db.tx(true, f)
+}
+
+func (db *DB) Append(events []*v1.Data) error {
+	return db.Update(func(tx *Tx) error {
+		return tx.add(events)
+	})
+}
+
+func (db *DB) tx(update bool, f func(tx *Tx) error) error {
+	txn := db.db.NewTransaction(update)
+	tx, err := db.idx.Begin(update)
+	if err != nil {
+		txn.Discard()
+		return err
+	}
+	err = f(&Tx{db: txn, idx: tx})
+	if err != nil {
+		txn.Discard()
+		tx.Rollback()
+		return err
+	}
+	return errors.Join(tx.Commit(), txn.Commit())
+}
+
+func (tx *Tx) add(events []*v1.Data) error {
+	if len(events) == 0 {
+		return nil
+	}
+	rows, err := tx.store.seq.get("rows_id")
+	if err != nil {
+		return err
+	}
+	m := map[string]*roaring.Bitmap{}
+
+	get := func(k string) *roaring.Bitmap {
+		b, ok := m[k]
+		if !ok {
+			b = roaring.NewBitmap()
+			m[k] = b
+		}
+		return b
+	}
+	shards := map[string][]uint64{}
+
+	err = Views(events, func(ts time.Time, events []*v1.Data) error {
+		clear(m)
+		var currShard uint64
+		view := quantum.ViewByTimeUnit("", ts, 'D')
+		for i, e := range events {
+			id, err := rows.Next()
+			if err != nil {
+				return err
+			}
+			shard := id / shardwidth.ShardWidth
+			if currShard != shard {
+				currShard = shard
+				if i != 0 {
+					// save all  fields
+					err := tx.save(view, shard, m)
+					if err != nil {
+						return err
+					}
+					clear(m)
+				}
+				shards[view] = append(shards[view], shard)
+			}
+
+			xid, err := tx.uid(uint64(e.Id))
+			if err != nil {
+				return err
+			}
+			bsi(get("uid"), id, xid)
+			if e.Bounce == nil {
+				boolean(get("bounce"), id, false)
+			} else {
+				if *e.Bounce {
+					boolean(get("bounce"), id, true)
+				}
+			}
+			if e.Duration != 0 {
+				// convert to milliseconds
+				ms := time.Duration(e.Duration * float64(time.Second)).Milliseconds()
+				bsi(get("duration"), id, uint64(ms))
+			}
+			if e.Session {
+				boolean(get("session"), id, true)
+			}
+			if e.View {
+				boolean(get("view"), id, true)
+			}
+			tx.property(v1.Property_event, id, get, e.Event)
+			tx.property(v1.Property_browser, id, get, e.Browser)
+			tx.property(v1.Property_browser_version, id, get, e.BrowserVersion)
+			tx.property(v1.Property_city, id, get, e.City)
+			tx.property(v1.Property_country, id, get, e.Country)
+			tx.property(v1.Property_device, id, get, e.Device)
+			tx.property(v1.Property_domain, id, get, e.Domain)
+			tx.property(v1.Property_entry_page, id, get, e.EntryPage)
+			tx.property(v1.Property_exit_page, id, get, e.ExitPage)
+			tx.property(v1.Property_host, id, get, e.Host)
+			tx.property(v1.Property_os, id, get, e.Os)
+			tx.property(v1.Property_os_version, id, get, e.OsVersion)
+			tx.property(v1.Property_page, id, get, e.Page)
+			tx.property(v1.Property_referrer, id, get, e.Referrer)
+			tx.property(v1.Property_region, id, get, e.Region)
+			tx.property(v1.Property_source, id, get, e.Source)
+			tx.property(v1.Property_tenant_id, id, get, e.TenantId)
+			tx.property(v1.Property_utm_campaign, id, get, e.UtmCampaign)
+			tx.property(v1.Property_utm_content, id, get, e.UtmContent)
+			tx.property(v1.Property_utm_medium, id, get, e.UtmMedium)
+			tx.property(v1.Property_utm_source, id, get, e.UtmSource)
+			tx.property(v1.Property_utm_term, id, get, e.UtmTerm)
+		}
+		return tx.save(view, currShard, m)
+	})
+
+	if err != nil {
+		return err
+	}
+	// update view shard info
+	for k, v := range shards {
+		err := tx.saveViewInfo(k, v)
+		if err != nil {
+			return fmt.Errorf("saving view info for %s %w", k, err)
+		}
+	}
+	return nil
+}
+
+func (tx *Tx) saveViewInfo(view string, shards []uint64) error {
+	it, err := tx.db.Get([]byte(view))
+	if err != nil {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
+			return err
+		}
+		return tx.db.Set([]byte(view), arrow.Uint64Traits.CastToBytes(shards))
+	}
+	it.Value(func(val []byte) error {
+		a := arrow.Uint64Traits.CastFromBytes(val)
+		shards = append(shards, a...)
+		slices.Sort(shards)
+		return nil
+	})
+	return tx.db.Set([]byte(view), arrow.Uint64Traits.CastToBytes(shards))
+}
+
+func (tx *Tx) save(view string, _ uint64, m map[string]*roaring.Bitmap) error {
+	b := new(bytes.Buffer)
+	for k, v := range m {
+		b.Reset()
+		fmt.Fprintf(b, "~%s;%s<", k, view)
+		_, err := tx.idx.AddRoaring(b.String(), v)
+		if err != nil {
+			return fmt.Errorf("saving index for key %s %w", b.String(), err)
+		}
+	}
+	return nil
+}
+
+func (tx *Tx) property(prop v1.Property, id uint64, get func(string) *roaring.Bitmap, v string) {
+	if v == "" {
+		return
+	}
+	seq, err := tx.Upsert(prop, v)
+	if err != nil {
+		logger.Fail("translating key", "err", err)
+	}
+	mutex(get(prop.String()), id, seq)
+}
+
+func (tx *Tx) uid(v uint64) (uint64, error) {
+	var b [8]byte
+	binary.BigEndian.PutUint64(b[:], v)
+	return tx.upsert("uid", b[:])
+}
+
+func Views(events []*v1.Data, f func(ts time.Time, events []*v1.Data) error) error {
+	if len(events) == 0 {
+		return nil
+	}
+	slices.SortFunc(events, less)
+	var i, j int
+	ts := dateMS(events[0].Timestamp)
+	valid := ts.UnixMilli()
+	for ; j < len(events); j++ {
+		if events[j].Timestamp < valid {
+			continue
+		}
+		next := dateMS(events[j].Timestamp)
+		switch ts.Compare(next) {
+		case -1, 0:
+		default:
+			err := f(ts, events[i:j])
+			if err != nil {
+				return err
+			}
+			i = j
+			ts = next
+		}
+	}
+	return f(ts, events[i:])
+}
+
+func dateMS(ts int64) time.Time {
+	return date(time.UnixMilli(ts))
+}
+
+func date(ts time.Time) time.Time {
+	y, m, d := ts.Date()
+	return time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
+}
+
+func less(a, b *v1.Data) int {
+	return cmp.Compare(a.Timestamp, b.Timestamp)
+}
+
+func (tx *Tx) Upsert(prop v1.Property, key string) (uint64, error) {
+	return tx.upsert(prop.String(), []byte(key))
+}
+
+func (tx *Tx) upsert(prop string, key []byte) (uint64, error) {
+	hashKey := append(trKeys, []byte(prop)...)
+	hashKey = append(hashKey, key...)
+	if it, err := tx.db.Get(hashKey); err == nil {
+		var id uint64
+		err = it.Value(func(val []byte) error {
+			id = binary.BigEndian.Uint64(val)
+			return nil
+		})
+		if err != nil {
+			return 0, err
+		}
+		return id, nil
+	}
+	next, err := tx.store.seq.next(prop)
+	if err != nil {
+		return 0, err
+	}
+	var id [8]byte
+	binary.BigEndian.PutUint64(id[:], next)
+	idKey := append(trIDs, []byte(prop)...)
+	idKey = append(idKey, id[:]...)
+	err = tx.db.Set(idKey, []byte(key))
+	if err != nil {
+		return 0, err
+	}
+	err = tx.db.Set(hashKey, id[:])
+	if err != nil {
+		return 0, err
+	}
+	return next, nil
+}
