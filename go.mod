@@ -14,7 +14,8 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/gernest/rbf v0.22.5
-	github.com/gernest/roaring v0.22.2
+	github.com/gernest/roaring v0.22.3
+	github.com/gernest/rows v1.22.9
 	github.com/google/go-cmp v0.6.0
 	github.com/google/gofuzz v1.2.0
 	github.com/hashicorp/raft v1.6.1

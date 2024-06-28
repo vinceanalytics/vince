@@ -1,7 +1,6 @@
 package db
 
 import (
-	"bytes"
 	"cmp"
 	"encoding/binary"
 	"errors"
@@ -240,13 +239,11 @@ func (tx *Tx) saveViewInfo(view string, shards []uint64) error {
 }
 
 func (tx *Tx) save(view string, _ uint64, m map[string]*roaring.Bitmap) error {
-	b := new(bytes.Buffer)
+	b := new(ViewFmt)
 	for k, v := range m {
-		b.Reset()
-		fmt.Fprintf(b, "~%s;%s<", k, view)
-		_, err := tx.idx.AddRoaring(b.String(), v)
+		_, err := tx.idx.AddRoaring(b.Format(view, k), v)
 		if err != nil {
-			return fmt.Errorf("saving index for key %s %w", b.String(), err)
+			return fmt.Errorf("saving index for key %s %w", b.Format(view, k), err)
 		}
 	}
 	return nil
