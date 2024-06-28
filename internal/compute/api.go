@@ -236,6 +236,7 @@ func Timeseries(ctx context.Context, scan db.Scanner, req *v1.Timeseries_Request
 	}
 	return &v1.Timeseries_Response{Results: buckets}, nil
 }
+
 func periodToRange(period *v1.TimePeriod, tsDate *timestamppb.Timestamp) (start, end time.Time) {
 	date := tsDate.AsTime()
 	switch e := period.Value.(type) {

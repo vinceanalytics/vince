@@ -292,6 +292,29 @@ func rangeNEQ(tx *rbf.Tx, view string, shard uint64, predicate uint64) (*rows.Ro
 	return b, nil
 }
 
+func extractBSI(tx *rbf.Tx, view string, shard uint64, exists *rows.Row, f func(column uint64, value uint64) error) error {
+	data := make(map[uint64]uint64)
+	mergeBits(exists, 0, data)
+
+	for i := uint64(0); i < 64; i++ {
+		bits, err := rowShard(tx, view, shard, bsiOffsetBit+uint64(i))
+		if err != nil {
+			return err
+		}
+		bits = bits.Intersect(exists)
+		mergeBits(bits, 1<<i, data)
+	}
+	for columnID, val := range data {
+		// Convert to two's complement and add base back to value.
+		val = uint64((2*(int64(val)>>63) + 1) * int64(val&^(1<<63)))
+		err := f(columnID, val)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func transpose(tx *rbf.Tx, o *roaring64.Bitmap, view string, shard uint64, columns *rows.Row) error {
 	exists, err := rowShard(tx, view, shard, bsiExistsBit)
 	if err != nil {
