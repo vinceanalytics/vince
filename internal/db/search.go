@@ -24,9 +24,9 @@ const layout = "20060102"
 func (db *DB) Search(start, end time.Time, query Query) error {
 	var views []string
 	if date(start).Equal(date(end)) {
-		views = []string{quantum.ViewByTimeUnit("std", start, 'D')}
+		views = []string{quantum.ViewByTimeUnit("", start, 'D')}
 	} else {
-		views = quantum.ViewsByTimeRange("std", start, end, "D")
+		views = quantum.ViewsByTimeRange("", start, end, "D")
 	}
 	return db.View(func(tx *Tx) error {
 		for _, view := range views {
