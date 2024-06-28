@@ -224,6 +224,7 @@ func (tx *Tx) add(events []*v1.Data) error {
 			if err != nil {
 				return err
 			}
+			bsi(get("ts"), id, uint64(e.Timestamp))
 			bsi(get("uid"), id, xid)
 			if e.Bounce == nil {
 				boolean(get("bounce"), id, false)
@@ -374,6 +375,23 @@ func less(a, b *v1.Data) int {
 
 func (tx *Tx) Upsert(prop v1.Property, key string) (uint64, error) {
 	return tx.upsert(prop.String(), []byte(key))
+}
+
+func (tx *Tx) find(prop string, key []byte) (uint64, bool) {
+	hashKey := append(trKeys, []byte(prop)...)
+	hashKey = append(hashKey, key...)
+	if it, err := tx.Txn.Get(hashKey); err == nil {
+		var id uint64
+		err = it.Value(func(val []byte) error {
+			id = binary.BigEndian.Uint64(val)
+			return nil
+		})
+		if err != nil {
+			return 0, false
+		}
+		return id, true
+	}
+	return 0, false
 }
 
 func (tx *Tx) upsert(prop string, key []byte) (uint64, error) {

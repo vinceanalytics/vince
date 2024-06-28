@@ -3,12 +3,15 @@ package db
 import (
 	"errors"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/rbf"
 	"github.com/gernest/rbf/quantum"
+	"github.com/gernest/rows"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
 type Query interface {
@@ -16,18 +19,21 @@ type Query interface {
 }
 
 type View interface {
-	Apply(tx *Tx) error
+	Apply(tx *Tx, columns *rows.Row) error
 }
 
 const layout = "20060102"
 
-func (db *DB) Search(start, end time.Time, query Query) error {
+func (db *DB) Search(start, end time.Time, filters []*v1.Filter, query Query) error {
 	var views []string
 	if date(start).Equal(date(end)) {
 		views = []string{quantum.ViewByTimeUnit("", start, 'D')}
 	} else {
 		views = quantum.ViewsByTimeRange("", start, end, "D")
 	}
+	tsFIlter := filterTime(start, end)
+	fs := filterProperties(filters)
+
 	return db.View(func(tx *Tx) error {
 		for _, view := range views {
 			it, err := tx.Txn.Get([]byte(view))
@@ -55,7 +61,26 @@ func (db *DB) Search(start, end time.Time, query Query) error {
 					tx.View = view
 					tx.Shard = shard
 					tx.Tx = itx
-					return qv.Apply(tx)
+
+					f, err := tsFIlter(tx)
+					if err != nil {
+						return err
+					}
+					if f.IsEmpty() {
+						return nil
+					}
+					ps, err := fs(tx)
+					if err != nil {
+						return err
+					}
+					if ps.IsEmpty() {
+						return nil
+					}
+					f = f.Intersect(ps)
+					if f.IsEmpty() {
+						return nil
+					}
+					return qv.Apply(tx, f)
 				})
 				if err != nil {
 					return err
@@ -65,4 +90,73 @@ func (db *DB) Search(start, end time.Time, query Query) error {
 		return nil
 	})
 
+}
+
+func filterTime(start, end time.Time) func(tx *Tx) (*rows.Row, error) {
+	from := uint64(start.UTC().UnixMilli())
+	to := uint64(end.UTC().UnixMilli())
+	b := new(ViewFmt)
+	return func(tx *Tx) (*rows.Row, error) {
+		view := b.Format(tx.View, "ts")
+		return rangeBetween(tx.Tx, view, tx.Shard, from, to)
+	}
+}
+
+type Filter func(tx *Tx) (*rows.Row, error)
+
+func noop(_ *Tx) (*rows.Row, error) {
+	return rows.NewRow(), nil
+}
+
+func filterProperties(fs []*v1.Filter) Filter {
+	if len(fs) == 0 {
+		return noop
+	}
+	ls := make([]Filter, len(fs))
+	for i := range fs {
+		ls[i] = filterProperty(fs[i])
+	}
+	return func(tx *Tx) (*rows.Row, error) {
+		r := rows.NewRow()
+		for i := range ls {
+			x, err := ls[i](tx)
+			if err != nil {
+				return nil, err
+			}
+			if i == 0 {
+				r = x
+			} else {
+				r = r.Intersect(x)
+			}
+			if r.IsEmpty() {
+				return r, nil
+			}
+		}
+		return r, nil
+	}
+}
+
+func filterProperty(f *v1.Filter) Filter {
+	switch f.Op {
+	case v1.Filter_equal, v1.Filter_not_equal:
+		var id uint64
+		var seen bool
+		var once sync.Once
+		var b ViewFmt
+		return func(tx *Tx) (*rows.Row, error) {
+			once.Do(func() {
+				id, seen = tx.find(f.Property.String(), []byte(f.Value))
+			})
+			if !seen {
+				return rows.NewRow(), nil
+			}
+			view := b.Format(tx.View, f.Property.String())
+			if f.Op == v1.Filter_equal {
+				return rangeEQ(tx.Tx, view, tx.Shard, id)
+			}
+			return rangeNEQ(tx.Tx, view, tx.Shard, id)
+		}
+	default:
+		return noop
+	}
 }
