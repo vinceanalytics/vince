@@ -158,6 +158,7 @@ func (a *aggregate) Reset() {
 	a.visitors.Clear()
 	a.visits.Clear()
 	a.views.Clear()
+	a.events.Clear()
 	a.bounceTrue.Clear()
 	a.bounceFalse.Clear()
 	a.duration.ClearValues(a.duration.GetExistenceBitmap())
