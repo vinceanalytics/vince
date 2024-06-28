@@ -25,13 +25,11 @@ func (db *DB) Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Agg
 	a := newAggregate()
 	query := &aggregateQuery{a: a.View(m)}
 	from, to := periodToRange(req.Period, req.Date)
-	err = db.Search(from, to, []*v1.Filter{
-		{
-			Property: v1.Property_domain,
-			Op:       v1.Filter_equal,
-			Value:    req.SiteId,
-		},
-	}, query)
+	err = db.Search(from, to, append(req.Filters, &v1.Filter{
+		Property: v1.Property_domain,
+		Op:       v1.Filter_equal,
+		Value:    req.SiteId,
+	}), query)
 	if err != nil {
 		return nil, err
 	}

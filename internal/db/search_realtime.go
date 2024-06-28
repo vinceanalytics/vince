@@ -33,7 +33,6 @@ func (db *DB) Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realt
 	result := new(realtimeQuery)
 	err = db.Search(firstTime, now, []*v1.Filter{
 		{Property: v1.Property_domain, Op: v1.Filter_equal, Value: req.SiteId},
-		{Property: v1.Property_tenant_id, Op: v1.Filter_equal, Value: req.TenantId},
 	}, result)
 	if err != nil {
 		return nil, err
