@@ -13,7 +13,7 @@ require (
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/docker/go-units v0.5.0
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
-	github.com/gernest/rbf v0.22.5
+	github.com/gernest/rbf v0.22.6
 	github.com/gernest/roaring v0.22.3
 	github.com/gernest/rows v1.22.9
 	github.com/google/go-cmp v0.6.0
