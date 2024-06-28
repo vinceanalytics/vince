@@ -74,6 +74,8 @@ type aggregate struct {
 	bounceFalse roaring64.Bitmap
 	events      roaring64.Bitmap
 	duration    roaring64.BSI
+
+	cache applyList
 }
 
 func newAggregate() *aggregate {
@@ -104,6 +106,9 @@ func (a *aggregate) Result(m v1.Metric) float64 {
 }
 
 func (a *aggregate) View(m []v1.Metric) applyList {
+	if len(a.cache) > 0 {
+		return a.cache
+	}
 	o := make(map[string]struct{})
 	for i := range m {
 		switch m[i] {
@@ -142,6 +147,7 @@ func (a *aggregate) View(m []v1.Metric) applyList {
 			ls = append(ls, a.applyEvents)
 		}
 	}
+	a.cache = ls
 	return ls
 }
 
