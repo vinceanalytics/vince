@@ -153,19 +153,22 @@ func (s *Seq) get(prop string) (*badger.Sequence, error) {
 }
 
 type Tx struct {
-	db    *badger.Txn
-	store *DB
+	Txn   *badger.Txn
+	Shard uint64
+	View  string
+	Tx    *rbf.Tx
+	DB    *DB
 }
 
 func (db *DB) View(f func(tx *Tx) error) error {
 	return db.db.View(func(txn *badger.Txn) error {
-		return f(&Tx{db: txn, store: db})
+		return f(&Tx{Txn: txn, DB: db})
 	})
 }
 
 func (db *DB) Update(f func(tx *Tx) error) error {
 	return db.db.Update(func(txn *badger.Txn) error {
-		return f(&Tx{db: txn, store: db})
+		return f(&Tx{Txn: txn, DB: db})
 	})
 }
 
@@ -179,7 +182,7 @@ func (tx *Tx) add(events []*v1.Data) error {
 	if len(events) == 0 {
 		return nil
 	}
-	rows, err := tx.store.seq.get("rows_id")
+	rows, err := tx.DB.seq.get("rows_id")
 	if err != nil {
 		return err
 	}
@@ -280,12 +283,12 @@ func (tx *Tx) add(events []*v1.Data) error {
 }
 
 func (tx *Tx) saveViewInfo(view string, shards []uint64) error {
-	it, err := tx.db.Get([]byte(view))
+	it, err := tx.Txn.Get([]byte(view))
 	if err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return err
 		}
-		return tx.db.Set([]byte(view), arrow.Uint64Traits.CastToBytes(shards))
+		return tx.Txn.Set([]byte(view), arrow.Uint64Traits.CastToBytes(shards))
 	}
 	it.Value(func(val []byte) error {
 		a := arrow.Uint64Traits.CastFromBytes(val)
@@ -293,14 +296,14 @@ func (tx *Tx) saveViewInfo(view string, shards []uint64) error {
 		slices.Sort(shards)
 		return nil
 	})
-	return tx.db.Set([]byte(view), arrow.Uint64Traits.CastToBytes(shards))
+	return tx.Txn.Set([]byte(view), arrow.Uint64Traits.CastToBytes(shards))
 }
 
 func (tx *Tx) save(view string, shard uint64, m map[string]*roaring.Bitmap) error {
 	if len(m) == 0 {
 		return nil
 	}
-	return tx.store.UpdateShard(shard, func(tx *rbf.Tx) error {
+	return tx.DB.UpdateShard(shard, func(tx *rbf.Tx) error {
 		b := new(ViewFmt)
 		for k, v := range m {
 			_, err := tx.AddRoaring(b.Format(view, k), v)
@@ -376,7 +379,7 @@ func (tx *Tx) Upsert(prop v1.Property, key string) (uint64, error) {
 func (tx *Tx) upsert(prop string, key []byte) (uint64, error) {
 	hashKey := append(trKeys, []byte(prop)...)
 	hashKey = append(hashKey, key...)
-	if it, err := tx.db.Get(hashKey); err == nil {
+	if it, err := tx.Txn.Get(hashKey); err == nil {
 		var id uint64
 		err = it.Value(func(val []byte) error {
 			id = binary.BigEndian.Uint64(val)
@@ -387,7 +390,7 @@ func (tx *Tx) upsert(prop string, key []byte) (uint64, error) {
 		}
 		return id, nil
 	}
-	next, err := tx.store.seq.next(prop)
+	next, err := tx.DB.seq.next(prop)
 	if err != nil {
 		return 0, err
 	}
@@ -395,11 +398,11 @@ func (tx *Tx) upsert(prop string, key []byte) (uint64, error) {
 	binary.BigEndian.PutUint64(id[:], next)
 	idKey := append(trIDs, []byte(prop)...)
 	idKey = append(idKey, id[:]...)
-	err = tx.db.Set(idKey, []byte(key))
+	err = tx.Txn.Set(idKey, []byte(key))
 	if err != nil {
 		return 0, err
 	}
-	err = tx.db.Set(hashKey, id[:])
+	err = tx.Txn.Set(hashKey, id[:])
 	if err != nil {
 		return 0, err
 	}
