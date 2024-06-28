@@ -395,6 +395,22 @@ func (tx *Tx) find(prop string, key []byte) (uint64, bool) {
 	return 0, false
 }
 
+func (tx *Tx) Tr(prop string, id uint64) (key string) {
+	hashKey := append(trKeys, []byte(prop)...)
+	var b [8]byte
+	binary.BigEndian.PutUint64(b[:], id)
+	hashKey = append(hashKey, b[:]...)
+	it, err := tx.Txn.Get(hashKey)
+	if err != nil {
+		logger.Fail("BUG: missing translation key", "prop", prop, "id", id)
+	}
+	it.Value(func(val []byte) error {
+		key = string(val)
+		return nil
+	})
+	return
+}
+
 func (tx *Tx) upsert(prop string, key []byte) (uint64, error) {
 	hashKey := append(trKeys, []byte(prop)...)
 	hashKey = append(hashKey, key...)
