@@ -19,6 +19,10 @@ type Query interface {
 	View(ts time.Time) View
 }
 
+type Final interface {
+	Final(tx *Tx) error
+}
+
 type View interface {
 	Apply(tx *Tx, columns *rows.Row) error
 }
@@ -83,6 +87,9 @@ func (db *DB) Search(start, end time.Time, filters []*v1.Filter, query Query) er
 					return err
 				}
 			}
+		}
+		if f, ok := query.(Final); ok {
+			return f.Final(tx)
 		}
 		return nil
 	})
