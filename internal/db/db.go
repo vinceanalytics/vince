@@ -14,6 +14,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/rbf"
+	"github.com/gernest/rbf/dsl"
 	"github.com/gernest/rbf/quantum"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
@@ -224,25 +225,25 @@ func (tx *Tx) add(events []*v1.Data) error {
 			if err != nil {
 				return err
 			}
-			bsi(get("ts"), id, uint64(e.Timestamp))
-			bsi(get("uid"), id, xid)
+			dsl.AddBSI(get("ts"), id, uint64(e.Timestamp))
+			dsl.AddBSI(get("uid"), id, xid)
 			if e.Bounce == nil {
-				boolean(get("bounce"), id, false)
+				dsl.AddBoolean(get("bounce"), id, false)
 			} else {
 				if *e.Bounce {
-					boolean(get("bounce"), id, true)
+					dsl.AddBoolean(get("bounce"), id, true)
 				}
 			}
 			if e.Duration != 0 {
 				// convert to milliseconds
 				ms := time.Duration(e.Duration * float64(time.Second)).Milliseconds()
-				bsi(get("duration"), id, uint64(ms))
+				dsl.AddBSI(get("duration"), id, uint64(ms))
 			}
 			if e.Session {
-				boolean(get("session"), id, true)
+				dsl.AddBoolean(get("session"), id, true)
 			}
 			if e.View {
-				boolean(get("view"), id, true)
+				dsl.AddBoolean(get("view"), id, true)
 			}
 			tx.property(v1.Property_event, id, get, e.Event)
 			tx.property(v1.Property_browser, id, get, e.Browser)
@@ -324,7 +325,7 @@ func (tx *Tx) property(prop v1.Property, id uint64, get func(string) *roaring.Bi
 	if err != nil {
 		logger.Fail("translating key", "err", err)
 	}
-	mutex(get(prop.String()), id, seq)
+	dsl.AddBSI(get(prop.String()), id, seq)
 }
 
 func (tx *Tx) uid(v uint64) (uint64, error) {

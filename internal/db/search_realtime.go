@@ -6,6 +6,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/bufbuild/protovalidate-go"
+	"github.com/gernest/rbf/dsl"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -51,7 +52,11 @@ func (r *realtimeQuery) View(_ time.Time) View {
 
 func (r *realtimeQuery) Apply(tx *Tx, columns *rows.Row) error {
 	view := r.fmt.Format(tx.View, "uid")
-	return transpose(tx.Tx, &r.Bitmap, view, tx.Shard, columns)
+	add := func(_, value uint64) error {
+		r.Add(value)
+		return nil
+	}
+	return dsl.ExtractValuesBSI(tx.Tx, view, tx.Shard, columns, add)
 }
 
 func (r *realtimeQuery) Visitors() uint64 {

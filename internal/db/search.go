@@ -9,6 +9,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/rbf"
+	"github.com/gernest/rbf/dsl"
 	"github.com/gernest/rbf/quantum"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -69,18 +70,14 @@ func (db *DB) Search(start, end time.Time, filters []*v1.Filter, query Query) er
 					if f.IsEmpty() {
 						return nil
 					}
-					ps, err := fs(tx)
+					ps, err := fs(tx, f)
 					if err != nil {
 						return err
 					}
 					if ps.IsEmpty() {
 						return nil
 					}
-					f = f.Intersect(ps)
-					if f.IsEmpty() {
-						return nil
-					}
-					return qv.Apply(tx, f)
+					return qv.Apply(tx, ps)
 				})
 				if err != nil {
 					return err
@@ -98,13 +95,15 @@ func filterTime(start, end time.Time) func(tx *Tx) (*rows.Row, error) {
 	b := new(ViewFmt)
 	return func(tx *Tx) (*rows.Row, error) {
 		view := b.Format(tx.View, "ts")
-		return rangeBetween(tx.Tx, view, tx.Shard, from, to)
+		return dsl.CompareValueBSI(tx.Tx, view, tx.Shard,
+			dsl.RANGE,
+			from, to, nil)
 	}
 }
 
-type Filter func(tx *Tx) (*rows.Row, error)
+type Filter func(tx *Tx, columns *rows.Row) (*rows.Row, error)
 
-func noop(_ *Tx) (*rows.Row, error) {
+func noop(_ *Tx, _ *rows.Row) (*rows.Row, error) {
 	return rows.NewRow(), nil
 }
 
@@ -116,10 +115,10 @@ func filterProperties(fs []*v1.Filter) Filter {
 	for i := range fs {
 		ls[i] = filterProperty(fs[i])
 	}
-	return func(tx *Tx) (*rows.Row, error) {
+	return func(tx *Tx, filter *rows.Row) (*rows.Row, error) {
 		r := rows.NewRow()
 		for i := range ls {
-			x, err := ls[i](tx)
+			x, err := ls[i](tx, filter)
 			if err != nil {
 				return nil, err
 			}
@@ -143,7 +142,7 @@ func filterProperty(f *v1.Filter) Filter {
 		var seen bool
 		var once sync.Once
 		var b ViewFmt
-		return func(tx *Tx) (*rows.Row, error) {
+		return func(tx *Tx, filter *rows.Row) (*rows.Row, error) {
 			once.Do(func() {
 				id, seen = tx.find(f.Property.String(), []byte(f.Value))
 			})
@@ -151,10 +150,14 @@ func filterProperty(f *v1.Filter) Filter {
 				return rows.NewRow(), nil
 			}
 			view := b.Format(tx.View, f.Property.String())
-			if f.Op == v1.Filter_equal {
-				return rangeEQ(tx.Tx, view, tx.Shard, id)
+			switch f.Op {
+			case v1.Filter_equal:
+				return dsl.CompareValueBSI(tx.Tx, view, tx.Shard, dsl.EQ, id, 0, filter)
+			case v1.Filter_not_equal:
+				return dsl.CompareValueBSI(tx.Tx, view, tx.Shard, dsl.NEQ, id, 0, filter)
+			default:
+				return rows.NewRow(), nil
 			}
-			return rangeNEQ(tx.Tx, view, tx.Shard, id)
 		}
 	default:
 		return noop
