@@ -5,7 +5,9 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"slices"
+	"strconv"
 	"sync"
 	"time"
 
@@ -26,9 +28,79 @@ var (
 )
 
 type DB struct {
-	db  *badger.DB
-	idx *rbf.DB
+	db   *badger.DB
+	path string
+
 	seq *Seq
+
+	shardsMu sync.RWMutex
+	shards   map[uint64]*rbf.DB
+}
+
+func (db *DB) Close() error {
+	var lastErr error
+	if err := db.db.Close(); err != nil {
+		lastErr = err
+	}
+	if err := db.seq.Release(); err != nil {
+		lastErr = err
+	}
+	db.shardsMu.Lock()
+	defer db.shardsMu.Unlock()
+	for _, idx := range db.shards {
+		err := idx.Close()
+		if err != nil {
+			lastErr = err
+		}
+	}
+	return lastErr
+}
+func (db *DB) UpdateShard(shard uint64, f func(tx *rbf.Tx) error) error {
+	return db.txShard(true, shard, f)
+}
+
+func (db *DB) ViewShard(shard uint64, f func(tx *rbf.Tx) error) error {
+	return db.txShard(false, shard, f)
+}
+
+func (db *DB) txShard(update bool, shard uint64, f func(tx *rbf.Tx) error) error {
+	idx, err := db.shard(shard)
+	if err != nil {
+		return err
+	}
+	tx, err := idx.Begin(update)
+	if err != nil {
+		return err
+	}
+	err = f(tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	if !update {
+		tx.Rollback()
+		return nil
+	}
+	return tx.Commit()
+}
+
+func (db *DB) shard(shard uint64) (*rbf.DB, error) {
+	db.shardsMu.RLock()
+	idx, ok := db.shards[shard]
+	db.shardsMu.RUnlock()
+	if ok {
+		return idx, nil
+	}
+	db.shardsMu.Lock()
+	defer db.shardsMu.Unlock()
+
+	idx = rbf.NewDB(filepath.Join(db.path, "index", strconv.FormatUint(shard, 10)), nil)
+	err := idx.Open()
+	if err != nil {
+		return nil, err
+	}
+	db.shards[shard] = idx
+	return idx, nil
 }
 
 type Seq struct {
@@ -82,38 +154,25 @@ func (s *Seq) get(prop string) (*badger.Sequence, error) {
 
 type Tx struct {
 	db    *badger.Txn
-	idx   *rbf.Tx
 	store *DB
 }
 
 func (db *DB) View(f func(tx *Tx) error) error {
-	return db.tx(false, f)
+	return db.db.View(func(txn *badger.Txn) error {
+		return f(&Tx{db: txn, store: db})
+	})
 }
 
 func (db *DB) Update(f func(tx *Tx) error) error {
-	return db.tx(true, f)
+	return db.db.Update(func(txn *badger.Txn) error {
+		return f(&Tx{db: txn, store: db})
+	})
 }
 
 func (db *DB) Append(events []*v1.Data) error {
 	return db.Update(func(tx *Tx) error {
 		return tx.add(events)
 	})
-}
-
-func (db *DB) tx(update bool, f func(tx *Tx) error) error {
-	txn := db.db.NewTransaction(update)
-	tx, err := db.idx.Begin(update)
-	if err != nil {
-		txn.Discard()
-		return err
-	}
-	err = f(&Tx{db: txn, idx: tx})
-	if err != nil {
-		txn.Discard()
-		tx.Rollback()
-		return err
-	}
-	return errors.Join(tx.Commit(), txn.Commit())
 }
 
 func (tx *Tx) add(events []*v1.Data) error {
@@ -149,7 +208,6 @@ func (tx *Tx) add(events []*v1.Data) error {
 			if currShard != shard {
 				currShard = shard
 				if i != 0 {
-					// save all  fields
 					err := tx.save(view, shard, m)
 					if err != nil {
 						return err
@@ -238,15 +296,20 @@ func (tx *Tx) saveViewInfo(view string, shards []uint64) error {
 	return tx.db.Set([]byte(view), arrow.Uint64Traits.CastToBytes(shards))
 }
 
-func (tx *Tx) save(view string, _ uint64, m map[string]*roaring.Bitmap) error {
-	b := new(ViewFmt)
-	for k, v := range m {
-		_, err := tx.idx.AddRoaring(b.Format(view, k), v)
-		if err != nil {
-			return fmt.Errorf("saving index for key %s %w", b.Format(view, k), err)
-		}
+func (tx *Tx) save(view string, shard uint64, m map[string]*roaring.Bitmap) error {
+	if len(m) == 0 {
+		return nil
 	}
-	return nil
+	return tx.store.UpdateShard(shard, func(tx *rbf.Tx) error {
+		b := new(ViewFmt)
+		for k, v := range m {
+			_, err := tx.AddRoaring(b.Format(view, k), v)
+			if err != nil {
+				return fmt.Errorf("saving index for key %s %w", b.Format(view, k), err)
+			}
+		}
+		return nil
+	})
 }
 
 func (tx *Tx) property(prop v1.Property, id uint64, get func(string) *roaring.Bitmap, v string) {
