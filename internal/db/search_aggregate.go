@@ -23,8 +23,8 @@ func (db *DB) Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Agg
 		return nil, err
 	}
 	m := dupe(req.Metrics)
-	a := newAggregate()
-	query := &aggregateQuery{a: a.View(m)}
+	a := newAggregate(m)
+	query := &aggregateQuery{a: a.cache}
 	from, to := periodToRange(req.Period, req.Date)
 	err = db.Search(from, to, append(req.Filters, &v1.Filter{
 		Property: v1.Property_domain,
@@ -74,12 +74,21 @@ type aggregate struct {
 	bounceFalse roaring64.Bitmap
 	events      roaring64.Bitmap
 	duration    roaring64.BSI
-
-	cache applyList
+	cache       applyList
 }
 
-func newAggregate() *aggregate {
-	return &aggregate{duration: *roaring64.NewDefaultBSI()}
+func (a *aggregate) or(b *aggregate) {
+	a.visitors.Or(&b.visitors)
+}
+
+func newAggregate(metrics []v1.Metric) *aggregate {
+	a := &aggregate{duration: *roaring64.NewDefaultBSI()}
+	a.newApplyList(metrics)
+	return a
+}
+
+func (a *aggregate) Apply(tx *Tx, columns *rows.Row) error {
+	return a.cache.Apply(tx, columns)
 }
 
 func (a *aggregate) Result(m v1.Metric) float64 {
@@ -105,7 +114,7 @@ func (a *aggregate) Result(m v1.Metric) float64 {
 	}
 }
 
-func (a *aggregate) View(m []v1.Metric) applyList {
+func (a *aggregate) newApplyList(m []v1.Metric) applyList {
 	if len(a.cache) > 0 {
 		return a.cache
 	}

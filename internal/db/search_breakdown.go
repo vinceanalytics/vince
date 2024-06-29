@@ -124,8 +124,7 @@ func (b *breakdownQuery) get(prop v1.Property, id uint64) *aggregate {
 	}
 	a, ok := m[id]
 	if !ok {
-		a = newAggregate()
-		a.View(b.metrics)
+		a = newAggregate(b.metrics)
 		m[id] = a
 	}
 	return a
