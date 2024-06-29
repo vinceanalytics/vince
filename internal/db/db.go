@@ -38,6 +38,21 @@ type DB struct {
 	shards   map[uint64]*rbf.DB
 }
 
+func New(path string) (*DB, error) {
+	base := filepath.Join("v1alpha1")
+	dbPth := filepath.Join(base)
+	db, err := badger.Open(badger.DefaultOptions(dbPth).WithLogger(nil))
+	if err != nil {
+		return nil, err
+	}
+	sq, err := NewSeq(db)
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	return &DB{db: db, seq: sq, shards: make(map[uint64]*rbf.DB)}, nil
+}
+
 func (db *DB) Close() error {
 	var lastErr error
 	if err := db.db.Close(); err != nil {
@@ -56,6 +71,7 @@ func (db *DB) Close() error {
 	}
 	return lastErr
 }
+
 func (db *DB) UpdateShard(shard uint64, f func(tx *rbf.Tx) error) error {
 	return db.txShard(true, shard, f)
 }
@@ -105,19 +121,42 @@ func (db *DB) shard(shard uint64) (*rbf.DB, error) {
 }
 
 type Seq struct {
-	db  *badger.DB
-	mu  sync.RWMutex
-	seq map[string]*badger.Sequence
+	m sync.Map
 }
 
-func (s *Seq) Release() error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	o := make([]error, 0, len(s.seq))
-	for _, x := range s.seq {
-		o = append(o, x.Release())
+func NewSeq(db *badger.DB) (*Seq, error) {
+	seq := &Seq{}
+
+	// all properties
+	for i := v1.Property_event; i <= v1.Property_utm_term; i++ {
+		q, err := db.GetSequence(append(seqPrefix, []byte(i.String())...), 4<<10)
+		if err != nil {
+			seq.Release()
+			return nil, err
+		}
+		seq.m.Store(i.String(), q)
 	}
-	return errors.Join(o...)
+	{
+		// row ids
+		q, err := db.GetSequence(append(seqPrefix, []byte("row_id")...), 4<<10)
+		if err != nil {
+			seq.Release()
+			return nil, err
+		}
+		seq.m.Store("row_id", q)
+	}
+	return seq, nil
+}
+
+func (s *Seq) Release() (err error) {
+	s.m.Range(func(key, value any) bool {
+		x := value.(*badger.Sequence).Release()
+		if x != nil {
+			err = x
+		}
+		return true
+	})
+	return
 }
 
 func (s *Seq) NextRowID() (uint64, error) {
@@ -137,20 +176,11 @@ func (s *Seq) next(prop string) (uint64, error) {
 }
 
 func (s *Seq) get(prop string) (*badger.Sequence, error) {
-	s.mu.RLock()
-	q, ok := s.seq[prop]
-	s.mu.RUnlock()
-	if ok {
-		return q, nil
+	q, ok := s.m.Load(prop)
+	if !ok {
+		return nil, fmt.Errorf("sequence %s not found", prop)
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	q, err := s.db.GetSequence(append(seqPrefix, []byte(prop)...), 4<<10)
-	if err != nil {
-		return nil, err
-	}
-	s.seq[prop] = q
-	return q, nil
+	return q.(*badger.Sequence), nil
 }
 
 type Tx struct {
