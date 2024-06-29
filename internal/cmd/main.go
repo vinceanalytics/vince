@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"crypto/sha512"
+	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"math"
@@ -22,6 +24,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/load"
 	"github.com/vinceanalytics/vince/internal/logger"
+	"github.com/vinceanalytics/vince/internal/migrate"
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"golang.org/x/crypto/acme/autocert"
@@ -256,6 +259,8 @@ func App() *cli.Command {
 			}
 			defer db.Close()
 
+			tryMigration(base.Data, db)
+
 			tenants := tenant.NewTenants(base)
 			guard := guard.New(base, tenants)
 			geo := geo.Open(base.GeoipDbPath)
@@ -293,4 +298,53 @@ func App() *cli.Command {
 			return err
 		},
 	}
+}
+
+func tryMigration(path string, db *db.DB) {
+	file := filepath.Join(path, "raftdb")
+	f, err := os.Open(file)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	// Create checksum
+	h := sha512.New512_224()
+	f.WriteTo(h)
+	f.Close()
+	sum := hex.EncodeToString(h.Sum(nil))
+	fmt.Println("=> detected deprecated database checksum:", sum)
+	sumPath := filepath.Join(path, sum)
+	_, err = os.Stat(sumPath)
+	if err == nil {
+		fmt.Println(" Skipping migration, database was already migrated to v1alpha1")
+		return
+	}
+	size := 4 << 10
+	var saved uint64
+	buf := make([]*v1.Data, 0, size)
+	err = migrate.Migrate(file, func(data *v1.Data) error {
+		if len(buf) == size {
+			err := db.Append(buf)
+			if err != nil {
+				return err
+			}
+			saved += uint64(size)
+			fmt.Println("> saved", saved)
+			buf = buf[:0]
+		}
+		buf = append(buf, data)
+		return nil
+	})
+	if err != nil {
+		logger.Fail("applying migrations", "err", err)
+	}
+	if len(buf) > 0 {
+		err := db.Append(buf)
+		if err != nil {
+			logger.Fail("applying migrations", "err", err)
+		}
+		fmt.Println("> saved", saved+uint64(len(buf)))
+	}
+	fmt.Println("migrated to  v1alpha1")
+	os.WriteFile(sumPath, []byte{}, 0600)
 }
