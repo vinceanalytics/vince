@@ -39,8 +39,21 @@ type API struct {
 	buffer  []*v1.Data
 }
 
+func New(db *db.DB, geo *geo.Geo, guard guard.Guard, tenants tenant.Loader) *API {
+	return &API{
+		db:      db,
+		geo:     geo,
+		log:     slog.Default().With("component", "api"),
+		guard:   guard,
+		tenants: tenants,
+		events:  make(chan *v1.Data, 4<<10),
+		buffer:  make([]*v1.Data, 0, 8<<10),
+	}
+}
+
 func (a *API) Start(ctx context.Context) {
 	ts := time.NewTicker(time.Minute)
+	a.log.Info("Starting events processing loop")
 	defer ts.Stop()
 	for {
 		select {
@@ -49,10 +62,14 @@ func (a *API) Start(ctx context.Context) {
 		case e := <-a.events:
 			a.buffer = append(a.buffer, e)
 		case <-ts.C:
+			if len(a.buffer) == 0 {
+				continue
+			}
 			err := a.db.Append(a.buffer)
 			if err != nil {
 				a.log.Error("appending events", "err", err)
 			}
+			a.log.Debug("append events", "count", len(a.buffer))
 			a.buffer = a.buffer[:0]
 		}
 	}

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"sync"
 	"time"
 
@@ -39,8 +38,8 @@ type DB struct {
 }
 
 func New(path string) (*DB, error) {
-	base := filepath.Join("v1alpha1")
-	dbPth := filepath.Join(base)
+	base := filepath.Join(path, "v1alpha1")
+	dbPth := filepath.Join(base, "db")
 	db, err := badger.Open(badger.DefaultOptions(dbPth).WithLogger(nil))
 	if err != nil {
 		return nil, err
@@ -50,7 +49,7 @@ func New(path string) (*DB, error) {
 		db.Close()
 		return nil, err
 	}
-	return &DB{db: db, seq: sq, shards: make(map[uint64]*rbf.DB)}, nil
+	return &DB{path: base, db: db, seq: sq, shards: make(map[uint64]*rbf.DB)}, nil
 }
 
 func (db *DB) Close() error {
@@ -110,8 +109,7 @@ func (db *DB) shard(shard uint64) (*rbf.DB, error) {
 	}
 	db.shardsMu.Lock()
 	defer db.shardsMu.Unlock()
-
-	idx = rbf.NewDB(filepath.Join(db.path, "index", strconv.FormatUint(shard, 10)), nil)
+	idx = rbf.NewDB(filepath.Join(db.path, "index", fmt.Sprintf("%06d", shard)), nil)
 	err := idx.Open()
 	if err != nil {
 		return nil, err
@@ -136,14 +134,15 @@ func NewSeq(db *badger.DB) (*Seq, error) {
 		}
 		seq.m.Store(i.String(), q)
 	}
-	{
-		// row ids
-		q, err := db.GetSequence(append(seqPrefix, []byte("row_id")...), 4<<10)
+	others := []string{"rows_id", "uid"}
+
+	for _, name := range others {
+		q, err := db.GetSequence(append(seqPrefix, []byte(name)...), 4<<10)
 		if err != nil {
 			seq.Release()
 			return nil, err
 		}
-		seq.m.Store("row_id", q)
+		seq.m.Store(name, q)
 	}
 	return seq, nil
 }

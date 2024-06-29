@@ -16,13 +16,8 @@ import (
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/cluster"
-	"github.com/vinceanalytics/vince/internal/cluster/auth"
-	"github.com/vinceanalytics/vince/internal/cluster/connections"
-	httpd "github.com/vinceanalytics/vince/internal/cluster/http"
-	"github.com/vinceanalytics/vince/internal/cluster/rtls"
-	"github.com/vinceanalytics/vince/internal/cluster/store"
-	"github.com/vinceanalytics/vince/internal/cluster/transport"
+	"github.com/vinceanalytics/vince/internal/api"
+	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/load"
@@ -30,8 +25,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"golang.org/x/crypto/acme/autocert"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -257,54 +250,23 @@ func App() *cli.Command {
 			ctx = logger.With(ctx, log)
 			ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 			defer cancel()
-
-			// We use same listener for raft and cluster connections
-			nodesConn, err := net.Listen("tcp", base.Node.Advertise)
-			if err != nil {
-				return fmt.Errorf("failed opening raft listener:%v", err)
-			}
-			connMgr := connections.New(base.Node.Advertise)
-			defer connMgr.Close()
-			transit := transport.New(connMgr)
-			defer transit.Close()
-			tenants := tenant.NewTenants(base)
-			xguard := guard.New(base, tenants)
-
-			creds := auth.NewCredentialsStore()
-			if base.Credentials != nil {
-				creds.Load(base.Credentials)
-			}
-
-			db, err := store.NewStore(base, transit.Transport(), connMgr, tenants)
-			if err != nil {
-				return err
-			}
-			err = db.Open(ctx)
+			db, err := db.New(base.Data)
 			if err != nil {
 				return err
 			}
 			defer db.Close()
 
-			cluSvc := cluster.New(db)
-			gSvr := grpc.NewServer(serverOptions(base.Node, creds)...)
-			transit.Register(gSvr)
-			v1.RegisterInternalCLusterServer(gSvr, cluSvc)
-			cluCLient := cluster.NewClient(connMgr)
-			xg := geo.Open(base.GeoipDbPath)
-			httpSvc := httpd.New(db, cluCLient, creds, xguard, tenants, xg)
+			tenants := tenant.NewTenants(base)
+			guard := guard.New(base, tenants)
+			geo := geo.Open(base.GeoipDbPath)
+			defer geo.Close()
 
-			nodes, err := db.Nodes(ctx)
-			if err != nil {
-				return err
-			}
-			err = createCluster(ctx, log, base.Node, len(nodes.GetItems()) > 0,
-				cluCLient, db, httpSvc, creds)
-			if err != nil {
-				return fmt.Errorf("failed creating cluster %v", err)
-			}
+			xapi := api.New(db, geo, guard, tenants)
+			go xapi.Start(ctx)
+
 			svr := &http.Server{
 				Addr:        base.Listen,
-				Handler:     httpSvc,
+				Handler:     xapi,
 				BaseContext: func(l net.Listener) context.Context { return ctx },
 			}
 			if base.AutoTls {
@@ -316,14 +278,7 @@ func App() *cli.Command {
 				}
 				svr.TLSConfig = m.TLSConfig()
 			}
-			go func() {
-				defer cancel()
-				log.Info("Starting grpc server", "addr", nodesConn.Addr().String())
-				err := gSvr.Serve(nodesConn)
-				if err != nil {
-					log.Error("exited grpc server", "err", err)
-				}
-			}()
+
 			go func() {
 				defer cancel()
 				log.Info("starting server", "addr", base.Listen)
@@ -335,49 +290,7 @@ func App() *cli.Command {
 			}()
 			<-ctx.Done()
 			svr.Shutdown(context.Background())
-			gSvr.GracefulStop()
-			nodesConn.Close()
 			return err
 		},
 	}
-}
-
-func serverOptions(node *v1.RaftNode, creds cluster.CredentialStore) (o []grpc.ServerOption) {
-	a := &cluster.Interceptor{CredentialStore: creds}
-	o = []grpc.ServerOption{
-		grpc.UnaryInterceptor(a.Unary),
-		grpc.StreamInterceptor(a.Stream),
-	}
-	if node.Cert == "" || node.Key == "" {
-		return nil
-	}
-	mTLSState := rtls.MTLSStateDisabled
-	if node.VerifyClient {
-		mTLSState = rtls.MTLSStateEnabled
-	}
-	tlsConfig, err := rtls.CreateServerConfig(node.Cert, node.Key, node.Ca, mTLSState)
-	if err != nil {
-		logger.Fail("Failed creating tls config for gRPC server", "err", err)
-	}
-	o = append(o, grpc.Creds(credentials.NewTLS(tlsConfig)))
-	return
-}
-
-func createCluster(ctx context.Context, log *slog.Logger, node *v1.RaftNode, hasPeers bool, client *cluster.Client, str *store.Store, httpServ *httpd.Service, credStr *auth.CredentialsStore) error {
-	if len(node.Joins) == 0 && !hasPeers {
-		if node.NonVoter {
-			return fmt.Errorf("cannot create a new non-voting node without joining it to an existing cluster")
-		}
-		// Brand new node, told to bootstrap itself. So do it.
-		log.Info("bootstraping single new node")
-		if err := str.Bootstrap(ctx, &v1.Server_List{
-			Items: []*v1.Server{
-				{Id: node.Id, Addr: node.Advertise, Suffrage: v1.Server_Voter},
-			},
-		}); err != nil {
-			return fmt.Errorf("failed to bootstrap single new node: %s", err.Error())
-		}
-		return nil
-	}
-	return nil
 }
