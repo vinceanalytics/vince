@@ -174,6 +174,9 @@ func (db *DB) Update(f func(tx *Tx) error) error {
 }
 
 func (db *DB) Append(events []*v1.Data) error {
+	if len(events) == 0 {
+		return nil
+	}
 	return db.Update(func(tx *Tx) error {
 		return tx.add(events)
 	})
