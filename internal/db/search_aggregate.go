@@ -243,7 +243,7 @@ func (a *aggregate) applyEvents(tx *Tx, columns *rows.Row) error {
 }
 
 func (a *aggregate) applyVisitors(tx *Tx, columns *rows.Row) error {
-	view := new(ViewFmt).Format(tx.View, "uid")
+	view := new(ViewFmt).Format(tx.View, "id")
 	add := func(_, value uint64) error {
 		a.visitors.Add(value)
 		return nil
@@ -270,7 +270,7 @@ func (a *aggregate) applyVisits(tx *Tx, columns *rows.Row) error {
 }
 
 func (a *aggregate) applyViews(tx *Tx, columns *rows.Row) error {
-	return a.true(&a.visits, "views", tx, columns)
+	return a.true(&a.visits, "view", tx, columns)
 }
 
 func (a *aggregate) applyBounce(tx *Tx, columns *rows.Row) error {

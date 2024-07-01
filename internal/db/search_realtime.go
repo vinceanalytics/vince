@@ -52,7 +52,7 @@ func (r *realtimeQuery) View(_ time.Time) View {
 }
 
 func (r *realtimeQuery) Apply(tx *Tx, columns *rows.Row) error {
-	view := r.fmt.Format(tx.View, "uid")
+	view := r.fmt.Format(tx.View, "id")
 	add := func(_, value uint64) error {
 		r.Add(value)
 		return nil
