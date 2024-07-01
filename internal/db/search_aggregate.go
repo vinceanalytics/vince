@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/rbf/dsl"
+	"github.com/gernest/rbf"
+	"github.com/gernest/rbf/dsl/boolean"
+	"github.com/gernest/rbf/dsl/bsi"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -239,13 +241,16 @@ func (a *aggregate) applyEvents(tx *Tx, columns *rows.Row) error {
 		return nil
 	})
 }
+
 func (a *aggregate) applyVisitors(tx *Tx, columns *rows.Row) error {
 	view := new(ViewFmt).Format(tx.View, "uid")
 	add := func(_, value uint64) error {
 		a.visitors.Add(value)
 		return nil
 	}
-	return dsl.ExtractValuesBSI(tx.Tx, view, tx.Shard, columns, add)
+	return tx.Cursor(view, func(c *rbf.Cursor) error {
+		return bsi.Extract(c, tx.Shard, columns, add)
+	})
 }
 
 func (a *aggregate) applyDuration(tx *Tx, columns *rows.Row) error {
@@ -254,7 +259,10 @@ func (a *aggregate) applyDuration(tx *Tx, columns *rows.Row) error {
 		a.duration.SetValue(column, int64(value))
 		return nil
 	}
-	return dsl.ExtractValuesBSI(tx.Tx, view, tx.Shard, columns, add)
+	return tx.Cursor(view, func(c *rbf.Cursor) error {
+		return bsi.Extract(c, tx.Shard, columns, add)
+
+	})
 }
 
 func (a *aggregate) applyVisits(tx *Tx, columns *rows.Row) error {
@@ -284,11 +292,10 @@ func (a *aggregate) boolean(o *roaring64.Bitmap, field string, cond bool, tx *Tx
 	view := new(ViewFmt).Format(tx.View, field)
 	var r *rows.Row
 	var err error
-	if cond {
-		r, err = dsl.True(tx.Tx, view, tx.Shard, columns)
-	} else {
-		r, err = dsl.False(tx.Tx, view, tx.Shard, columns)
-	}
+	err = tx.Cursor(view, func(c *rbf.Cursor) error {
+		r, err = boolean.Extract(c, cond, tx.Shard, columns)
+		return err
+	})
 	if err != nil {
 		return err
 	}

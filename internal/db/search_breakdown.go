@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/rbf/dsl"
+	"github.com/gernest/rbf"
+	"github.com/gernest/rbf/dsl/bsi"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -89,29 +90,36 @@ func (b *breakdownQuery) Apply(tx *Tx, columns *rows.Row) error {
 		view := f.Format(tx.View, prop.String())
 		// find all unique properties
 		o.Clear()
-		err := dsl.ExtractValuesBSI(tx.Tx, view, tx.Shard, columns, add)
+		err := tx.Cursor(view, func(c *rbf.Cursor) error {
+			err := bsi.Extract(c, tx.Shard, columns, add)
+			if err != nil {
+				return err
+			}
+			if o.IsEmpty() {
+				return nil
+			}
+			it := o.Iterator()
+			for it.HasNext() {
+				id := it.Next()
+
+				// Find all columns for this id
+				r, err := bsi.Compare(c, tx.Shard, bsi.EQ, int64(id), 0, columns)
+				if err != nil {
+					return err
+				}
+
+				// Compute aggregates for columns belonging to id
+				err = b.get(prop, id).cache.Apply(tx, r)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 		if err != nil {
 			return err
 		}
-		if o.IsEmpty() {
-			continue
-		}
-		it := o.Iterator()
-		for it.HasNext() {
-			id := it.Next()
 
-			// Find all columns for this id
-			r, err := dsl.CompareValueBSI(tx.Tx, view, tx.Shard, dsl.EQ, id, 0, columns)
-			if err != nil {
-				return err
-			}
-
-			// Compute aggregates for columns belonging to id
-			err = b.get(prop, id).cache.Apply(tx, r)
-			if err != nil {
-				return err
-			}
-		}
 	}
 	return nil
 }

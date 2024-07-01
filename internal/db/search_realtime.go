@@ -6,7 +6,8 @@ import (
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/bufbuild/protovalidate-go"
-	"github.com/gernest/rbf/dsl"
+	"github.com/gernest/rbf"
+	"github.com/gernest/rbf/dsl/bsi"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -56,7 +57,9 @@ func (r *realtimeQuery) Apply(tx *Tx, columns *rows.Row) error {
 		r.Add(value)
 		return nil
 	}
-	return dsl.ExtractValuesBSI(tx.Tx, view, tx.Shard, columns, add)
+	return tx.Cursor(view, func(c *rbf.Cursor) error {
+		return bsi.Extract(c, tx.Shard, columns, add)
+	})
 }
 
 func (r *realtimeQuery) Visitors() uint64 {

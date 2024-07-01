@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/bufbuild/protovalidate-go"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -52,27 +51,8 @@ func New(db *db.DB, geo *geo.Geo, guard guard.Guard, tenants tenant.Loader) *API
 }
 
 func (a *API) Start(ctx context.Context) {
-	ts := time.NewTicker(time.Minute)
 	a.log.Info("Starting events processing loop")
-	defer ts.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case e := <-a.events:
-			a.buffer = append(a.buffer, e)
-		case <-ts.C:
-			if len(a.buffer) == 0 {
-				continue
-			}
-			err := a.db.Append(a.buffer)
-			if err != nil {
-				a.log.Error("appending events", "err", err)
-			}
-			a.log.Debug("append events", "count", len(a.buffer))
-			a.buffer = a.buffer[:0]
-		}
-	}
+	a.db.Process(ctx, a.events)
 }
 
 func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {

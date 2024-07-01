@@ -9,7 +9,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gernest/rbf"
-	"github.com/gernest/rbf/dsl"
+	"github.com/gernest/rbf/dsl/bsi"
 	"github.com/gernest/rbf/quantum"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -97,13 +97,18 @@ func (db *DB) Search(start, end time.Time, filters []*v1.Filter, query Query) er
 }
 
 func filterTime(start, end time.Time) func(tx *Tx) (*rows.Row, error) {
-	from := uint64(start.UTC().UnixMilli())
-	to := uint64(end.UTC().UnixMilli())
+	from := start.UTC().UnixMilli()
+	to := end.UTC().UnixMilli()
 	b := new(ViewFmt)
 	return func(tx *Tx) (*rows.Row, error) {
-		view := b.Format(tx.View, "ts")
-		return dsl.CompareValueBSI(tx.Tx, view, tx.Shard,
-			dsl.RANGE,
+		view := b.Format(tx.View, "timestamp")
+		c, err := tx.Tx.Cursor(view)
+		if err != nil {
+			return nil, err
+		}
+		defer c.Close()
+		return bsi.Compare(c, tx.Shard,
+			bsi.RANGE,
 			from, to, nil)
 	}
 }
@@ -157,11 +162,17 @@ func filterProperty(f *v1.Filter) Filter {
 				return rows.NewRow(), nil
 			}
 			view := b.Format(tx.View, f.Property.String())
+			c, err := tx.Tx.Cursor(view)
+			if err != nil {
+				return nil, err
+			}
+			defer c.Close()
+
 			switch f.Op {
 			case v1.Filter_equal:
-				return dsl.CompareValueBSI(tx.Tx, view, tx.Shard, dsl.EQ, id, 0, filter)
+				return bsi.Compare(c, tx.Shard, bsi.EQ, int64(id), 0, filter)
 			case v1.Filter_not_equal:
-				return dsl.CompareValueBSI(tx.Tx, view, tx.Shard, dsl.NEQ, id, 0, filter)
+				return bsi.Compare(c, tx.Shard, bsi.NEQ, int64(id), 0, filter)
 			default:
 				return rows.NewRow(), nil
 			}
