@@ -18,8 +18,10 @@ import (
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	v2 "github.com/vinceanalytics/vince/gen/go/vince/v2"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/events"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/load"
@@ -321,11 +323,11 @@ func tryMigration(path string, db *db.DB) {
 		return
 	}
 	size := 4 << 10
-	buf := make([]*v1.Data, 0, size)
+	buf := make([]*v2.Data, 0, size)
 	var count uint64
 	err = migrate.Migrate(file, func(data *v1.Data) error {
 		count++
-		buf = append(buf, data)
+		buf = append(buf, events.Convert(data))
 		if len(buf) != size {
 			return nil
 		}

@@ -3,7 +3,7 @@ package v2;
 
 message Data {
   int64 timestamp = 1;
-  int64 id = 2;
+  bytes id = 2;
   optional bool bounce = 3;
   bool session = 4;
   bool view = 5;

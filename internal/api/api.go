@@ -12,6 +12,7 @@ import (
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/dgraph-io/ristretto"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	v2 "github.com/vinceanalytics/vince/gen/go/vince/v2"
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/events"
 	"github.com/vinceanalytics/vince/internal/geo"
@@ -37,8 +38,8 @@ type API struct {
 	log     *slog.Logger
 	guard   guard.Guard
 	tenants tenant.Loader
-	events  chan *v1.Data
-	buffer  []*v1.Data
+	events  chan *v2.Data
+	buffer  []*v2.Data
 
 	cache *ristretto.Cache
 }
@@ -59,8 +60,8 @@ func New(db *db.DB, geo *geo.Geo, guard guard.Guard, tenants tenant.Loader) *API
 		log:     slog.Default().With("component", "api"),
 		guard:   guard,
 		tenants: tenants,
-		events:  make(chan *v1.Data, 4<<10),
-		buffer:  make([]*v1.Data, 0, 8<<10),
+		events:  make(chan *v2.Data, 4<<10),
+		buffer:  make([]*v2.Data, 0, 8<<10),
 		cache:   cache,
 	}
 }
@@ -342,16 +343,16 @@ func (a *API) write(w http.ResponseWriter, msg proto.Message) {
 
 const DefaultSession = 30 * time.Minute
 
-func (a *API) append(e *v1.Data) {
+func (a *API) append(e *v2.Data) {
 	events.Hit(e)
 	if o, ok := a.cache.Get(e.Id); ok {
-		cached := o.(*v1.Data)
+		cached := o.(*v2.Data)
 		events.Update(cached, e)
 		a.buffer = append(a.buffer, e)
 		return
 	}
 	clone := proto.Clone(e)
-	a.buffer = append(a.buffer, clone.(*v1.Data))
+	a.buffer = append(a.buffer, clone.(*v2.Data))
 	for range 5 {
 		if a.cache.SetWithTTL(e.Id, e, int64(proto.Size(e)), DefaultSession) {
 			return

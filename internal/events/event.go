@@ -1,14 +1,16 @@
 package events
 
 import (
+	"crypto/sha512"
+	"encoding/binary"
 	"log/slog"
 	"net"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/cespare/xxhash/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	v2 "github.com/vinceanalytics/vince/gen/go/vince/v2"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/ref"
 	"github.com/vinceanalytics/vince/ua"
@@ -17,7 +19,40 @@ import (
 
 const pageView = "pageview"
 
-func Hit(e *v1.Data) {
+func Convert(a *v1.Data) *v2.Data {
+	o := new(v2.Data)
+	o.Timestamp = a.Timestamp
+	var b [8]byte
+	binary.BigEndian.PutUint64(b[:], uint64(a.Id))
+	h := sha512.Sum512_224(b[:])
+	o.Id = h[:]
+	o.Bounce = a.Bounce
+	o.Session = a.Session
+	o.View = a.View
+	o.Duration = time.Duration(a.Duration * float64(time.Second)).Milliseconds()
+
+	o.Page = a.Page
+	o.Host = a.Host
+	o.Domain = a.Domain
+	o.UtmMedium = a.UtmMedium
+	o.UtmSource = a.UtmSource
+	o.UtmCampaign = a.UtmCampaign
+	o.UtmContent = a.UtmContent
+	o.UtmTerm = a.UtmTerm
+	o.Os = a.Os
+	o.OsVersion = a.OsVersion
+	o.Browser = a.Browser
+	o.BrowserVersion = a.BrowserVersion
+	o.Source = a.Source
+	o.Referrer = a.Referrer
+	o.Country = a.Country
+	o.Region = a.Region
+	o.City = a.City
+	o.Device = a.Device
+	return o
+}
+
+func Hit(e *v2.Data) {
 	e.EntryPage = e.Page
 	e.Bounce = True
 	e.Session = true
@@ -27,7 +62,7 @@ func Hit(e *v1.Data) {
 	}
 }
 
-func Update(fromSession *v1.Data, event *v1.Data) {
+func Update(fromSession *v2.Data, event *v2.Data) {
 	if fromSession.Bounce == True {
 		fromSession.Bounce, event.Bounce = nil, nil
 	} else {
@@ -36,7 +71,7 @@ func Update(fromSession *v1.Data, event *v1.Data) {
 	event.Session = false
 	event.ExitPage = event.Page
 	// Track duration since last visit.
-	event.Duration = time.UnixMilli(event.Timestamp).Sub(time.UnixMilli(fromSession.Timestamp)).Seconds()
+	event.Duration = time.UnixMilli(event.Timestamp).Sub(time.UnixMilli(fromSession.Timestamp)).Milliseconds()
 	fromSession.Timestamp = event.Timestamp
 }
 
@@ -44,7 +79,7 @@ var True = ptr(true)
 
 var False = ptr(false)
 
-func Parse(log *slog.Logger, g *geo.Geo, req *v1.Event) *v1.Data {
+func Parse(log *slog.Logger, g *geo.Geo, req *v1.Event) *v2.Data {
 	if req.U == "" || req.N == "" || req.D == "" {
 		log.Error("invalid request")
 		return nil
@@ -96,8 +131,8 @@ func Parse(log *slog.Logger, g *geo.Geo, req *v1.Event) *v1.Data {
 		req.Timestamp = timestamppb.Now()
 	}
 	userID := uniqueID(req.Ip, req.Ua, domain, host)
-	e := new(v1.Data)
-	e.Id = int64(userID)
+	e := new(v2.Data)
+	e.Id = userID
 	e.Event = req.N
 	e.Page = path
 	e.Host = host
@@ -151,12 +186,11 @@ func refSource(q url.Values, u string) (xref, source string, err error) {
 	return
 }
 
-func uniqueID(remoteIP, userAgent, domain, host string) (sum uint64) {
-	var h xxhash.Digest
-	h.WriteString(remoteIP)
-	h.WriteString(userAgent)
-	h.WriteString(domain)
-	h.WriteString(host)
-	sum = h.Sum64()
-	return
+func uniqueID(remoteIP, userAgent, domain, host string) []byte {
+	h := sha512.New512_224()
+	h.Write([]byte(remoteIP))
+	h.Write([]byte(userAgent))
+	h.Write([]byte(domain))
+	h.Write([]byte(host))
+	return h.Sum(nil)
 }
