@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/rbf"
 	"github.com/gernest/rbf/dsl/bsi"
+	"github.com/gernest/rbf/dsl/mutex"
+	"github.com/gernest/rbf/dsl/tr"
+	"github.com/gernest/rbf/dsl/tx"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -20,17 +22,43 @@ func (db *DB) Breakdown(ctx context.Context, req *v1.BreakDown_Request) (*v1.Bre
 	if err != nil {
 		return nil, err
 	}
-	query := newBreakdown(req.Property, req.Metrics)
+	a := newBreakdown(req.Property, req.Metrics)
 	from, to := periodToRange(req.Period, req.Date)
-	err = db.Search(from, to, append(req.Filters, &v1.Filter{
-		Property: v1.Property_domain,
-		Op:       v1.Filter_equal,
-		Value:    req.SiteId,
-	}), query)
+	props := append(req.Filters,
+		&v1.Filter{Property: v1.Property_domain, Op: v1.Filter_equal, Value: req.SiteId},
+	)
+	ts := bsi.Filter("timestamp", bsi.RANGE, from.UnixMilli(), to.UnixMilli())
+	fs := filterProperties(props...)
+	r, err := db.db.Reader()
 	if err != nil {
 		return nil, err
 	}
-	return &v1.BreakDown_Response{Results: query.result}, nil
+	defer r.Release()
+	for _, shard := range r.Range(from, to) {
+		err := r.View(shard, func(txn *tx.Tx) error {
+			f, err := ts.Apply(txn, nil)
+			if err != nil {
+				return err
+			}
+			if f.IsEmpty() {
+				return nil
+			}
+			r, err := fs.Apply(txn, f)
+			if err != nil {
+				return err
+			}
+			if r.IsEmpty() {
+				return nil
+			}
+			return a.Apply(txn, r)
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	a.Final(r.Tr())
+
+	return &v1.BreakDown_Response{Results: a.result}, nil
 }
 
 type breakdownQuery struct {
@@ -40,7 +68,7 @@ type breakdownQuery struct {
 	result     []*v1.BreakDown_Result
 }
 
-func (b *breakdownQuery) Final(tx *Tx) error {
+func (b *breakdownQuery) Final(tr *tr.Read) {
 	b.result = make([]*v1.BreakDown_Result, 0, len(b.props))
 	for _, prop := range b.properties {
 		r := &v1.BreakDown_Result{Property: prop}
@@ -48,7 +76,7 @@ func (b *breakdownQuery) Final(tx *Tx) error {
 		r.Values = make([]*v1.BreakDown_KeyValues, 0, len(p))
 		for k, v := range p {
 			x := &v1.BreakDown_KeyValues{
-				Key:   tx.Tr(prop.String(), k),
+				Key:   string(tr.Key(prop.String(), k)),
 				Value: map[string]float64{},
 			}
 			for i := range b.metrics {
@@ -61,7 +89,6 @@ func (b *breakdownQuery) Final(tx *Tx) error {
 		})
 		b.result = append(b.result, r)
 	}
-	return nil
 }
 
 var _ Query = (*breakdownQuery)(nil)
@@ -78,48 +105,32 @@ func (b *breakdownQuery) View(_ time.Time) View {
 	return b
 }
 
-func (b *breakdownQuery) Apply(tx *Tx, columns *rows.Row) error {
-	f := new(ViewFmt)
+func (b *breakdownQuery) Apply(tx *tx.Tx, columns *rows.Row) error {
 	o := roaring64.New()
-	add := func(_, value uint64) error {
-		o.Add(value)
-		return nil
-	}
-
 	for _, prop := range b.properties {
-		view := f.Format(tx.View, prop.String())
-		// find all unique properties
 		o.Clear()
-		err := tx.Cursor(view, func(c *rbf.Cursor) error {
-			err := bsi.Extract(c, tx.Shard, columns, add)
-			if err != nil {
-				return err
-			}
-			if o.IsEmpty() {
-				return nil
-			}
-			it := o.Iterator()
-			for it.HasNext() {
-				id := it.Next()
-
-				// Find all columns for this id
-				r, err := bsi.Compare(c, tx.Shard, bsi.EQ, int64(id), 0, columns)
-				if err != nil {
-					return err
-				}
-
-				// Compute aggregates for columns belonging to id
-				err = b.get(prop, id).cache.Apply(tx, r)
-				if err != nil {
-					return err
-				}
-			}
-			return nil
-		})
+		err := mutex.Distinct(tx, prop.String(), o, columns)
 		if err != nil {
 			return err
 		}
+		if o.IsEmpty() {
+			continue
+		}
 
+		it := o.Iterator()
+
+		for it.HasNext() {
+			id := it.Next()
+			r, err := mutex.Filter(prop.String(), id).Apply(tx, columns)
+			if err != nil {
+				return err
+			}
+			// Compute aggregates for columns belonging to id
+			err = b.get(prop, id).cache.Apply(tx, r)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }

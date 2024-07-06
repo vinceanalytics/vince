@@ -3,14 +3,14 @@ package db
 import (
 	"cmp"
 	"context"
-	"errors"
 	"slices"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/rbf"
 	"github.com/gernest/rbf/dsl/boolean"
 	"github.com/gernest/rbf/dsl/bsi"
+	"github.com/gernest/rbf/dsl/mutex"
+	"github.com/gernest/rbf/dsl/tx"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -26,15 +26,39 @@ func (db *DB) Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Agg
 	}
 	m := dupe(req.Metrics)
 	a := newAggregate(m)
-	query := &aggregateQuery{a: a.cache}
 	from, to := periodToRange(req.Period, req.Date)
-	err = db.Search(from, to, append(req.Filters, &v1.Filter{
-		Property: v1.Property_domain,
-		Op:       v1.Filter_equal,
-		Value:    req.SiteId,
-	}), query)
+	props := append(req.Filters,
+		&v1.Filter{Property: v1.Property_domain, Op: v1.Filter_equal, Value: req.SiteId},
+	)
+	ts := bsi.Filter("timestamp", bsi.RANGE, from.UnixMilli(), to.UnixMilli())
+	fs := filterProperties(props...)
+
+	r, err := db.db.Reader()
 	if err != nil {
 		return nil, err
+	}
+	defer r.Release()
+	for _, shard := range r.Range(from, to) {
+		err := r.View(shard, func(txn *tx.Tx) error {
+			f, err := ts.Apply(txn, nil)
+			if err != nil {
+				return err
+			}
+			if f.IsEmpty() {
+				return nil
+			}
+			r, err := fs.Apply(txn, f)
+			if err != nil {
+				return err
+			}
+			if r.IsEmpty() {
+				return nil
+			}
+			return a.Apply(txn, r)
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 	res := &v1.Aggregate_Response{
 		Results: make(map[string]float64),
@@ -70,12 +94,12 @@ func (a *aggregateQuery) View(_ time.Time) View {
 
 type aggregate struct {
 	visitors    roaring64.Bitmap
-	visits      roaring64.Bitmap
-	views       roaring64.Bitmap
-	bounceTrue  roaring64.Bitmap
-	bounceFalse roaring64.Bitmap
-	events      roaring64.Bitmap
-	duration    roaring64.BSI
+	visits      int64
+	views       int64
+	bounceTrue  int64
+	bounceFalse int64
+	events      int64
+	duration    int64
 	cache       applyList
 }
 
@@ -84,12 +108,12 @@ func (a *aggregate) or(b *aggregate) {
 }
 
 func newAggregate(metrics []v1.Metric) *aggregate {
-	a := &aggregate{duration: *roaring64.NewDefaultBSI()}
+	a := &aggregate{}
 	a.newApplyList(metrics)
 	return a
 }
 
-func (a *aggregate) Apply(tx *Tx, columns *rows.Row) error {
+func (a *aggregate) Apply(tx *tx.Tx, columns *rows.Row) error {
 	return a.cache.Apply(tx, columns)
 }
 
@@ -162,11 +186,11 @@ func (a *aggregate) newApplyList(m []v1.Metric) applyList {
 	return ls
 }
 
-type applyList []func(*Tx, *rows.Row) error
+type applyList []func(*tx.Tx, *rows.Row) error
 
 var _ View = (*applyList)(nil)
 
-func (ls applyList) Apply(tx *Tx, columns *rows.Row) error {
+func (ls applyList) Apply(tx *tx.Tx, columns *rows.Row) error {
 	for i := range ls {
 		err := ls[i](tx, columns)
 		if err != nil {
@@ -178,12 +202,12 @@ func (ls applyList) Apply(tx *Tx, columns *rows.Row) error {
 
 func (a *aggregate) Reset() {
 	a.visitors.Clear()
-	a.visits.Clear()
-	a.views.Clear()
-	a.events.Clear()
-	a.bounceTrue.Clear()
-	a.bounceFalse.Clear()
-	a.duration.ClearValues(a.duration.GetExistenceBitmap())
+	a.visits = 0
+	a.views = 0
+	a.events = 0
+	a.bounceTrue = 0
+	a.bounceFalse = 0
+	a.duration = 0
 }
 
 func (a *aggregate) BounceRate() float64 {
@@ -205,7 +229,7 @@ func (a *aggregate) ViewsPerVisit() float64 {
 }
 
 func (a *aggregate) Events() uint64 {
-	return a.events.GetCardinality()
+	return a.Events()
 }
 
 func (a *aggregate) Visitors() uint64 {
@@ -213,96 +237,66 @@ func (a *aggregate) Visitors() uint64 {
 }
 
 func (a *aggregate) Visits() uint64 {
-	return a.visits.GetCardinality()
+	return uint64(a.visits)
 }
 
 func (a *aggregate) Views() uint64 {
-	return a.views.GetCardinality()
+	return uint64(a.views)
 }
 
 func (a *aggregate) Bounce() uint64 {
-	yes := a.bounceTrue.GetCardinality()
-	no := a.bounceFalse.GetCardinality()
-	if no < yes {
-		return yes - no
+	if a.bounceTrue < a.bounceFalse {
+		return uint64(a.bounceTrue - a.bounceFalse)
 	}
 	return 0
 }
 
 func (a *aggregate) Duration() uint64 {
-	b := a.duration.GetExistenceBitmap()
-	sum, _ := a.duration.Sum(b)
-	return uint64(sum)
+	return uint64(a.duration)
 }
 
-func (a *aggregate) applyEvents(tx *Tx, columns *rows.Row) error {
-	return columns.RangeColumns(func(u uint64) error {
-		a.events.Add(u)
-		return nil
-	})
+func (a *aggregate) applyEvents(tx *tx.Tx, columns *rows.Row) error {
+	a.events += int64(columns.Count())
+	return nil
 }
 
-func (a *aggregate) applyVisitors(tx *Tx, columns *rows.Row) error {
-	view := new(ViewFmt).Format(tx.View, "id")
-	add := func(_, value uint64) error {
-		a.visitors.Add(value)
-		return nil
-	}
-	return tx.Cursor(view, func(c *rbf.Cursor) error {
-		return bsi.Extract(c, tx.Shard, columns, add)
-	})
+func (a *aggregate) applyVisitors(tx *tx.Tx, columns *rows.Row) error {
+	return mutex.Distinct(tx, "id", &a.visitors, columns)
 }
 
-func (a *aggregate) applyDuration(tx *Tx, columns *rows.Row) error {
-	view := new(ViewFmt).Format(tx.View, "duration")
-	add := func(column, value uint64) error {
-		a.duration.SetValue(column, int64(value))
-		return nil
-	}
-	return tx.Cursor(view, func(c *rbf.Cursor) error {
-		return bsi.Extract(c, tx.Shard, columns, add)
-
-	})
-}
-
-func (a *aggregate) applyVisits(tx *Tx, columns *rows.Row) error {
-	return a.true(&a.visits, "session", tx, columns)
-}
-
-func (a *aggregate) applyViews(tx *Tx, columns *rows.Row) error {
-	return a.true(&a.visits, "view", tx, columns)
-}
-
-func (a *aggregate) applyBounce(tx *Tx, columns *rows.Row) error {
-	return errors.Join(
-		a.true(&a.bounceTrue, "bounce", tx, columns),
-		a.false(&a.bounceFalse, "bounce", tx, columns),
-	)
-}
-
-func (a *aggregate) true(o *roaring64.Bitmap, field string, tx *Tx, columns *rows.Row) error {
-	return a.boolean(o, field, true, tx, columns)
-}
-
-func (a *aggregate) false(o *roaring64.Bitmap, field string, tx *Tx, columns *rows.Row) error {
-	return a.boolean(o, field, false, tx, columns)
-}
-
-func (a *aggregate) boolean(o *roaring64.Bitmap, field string, cond bool, tx *Tx, columns *rows.Row) error {
-	view := new(ViewFmt).Format(tx.View, field)
-	var r *rows.Row
-	var err error
-	err = tx.Cursor(view, func(c *rbf.Cursor) error {
-		r, err = boolean.Extract(c, cond, tx.Shard, columns)
-		return err
-	})
+func (a *aggregate) applyDuration(tx *tx.Tx, columns *rows.Row) error {
+	_, sum, err := bsi.SumCount(tx, "duration", nil, columns)
 	if err != nil {
 		return err
 	}
-	return r.RangeColumns(func(u uint64) error {
-		o.Add(u)
-		return nil
-	})
+	a.duration += sum
+	return nil
+}
+
+func (a *aggregate) applyVisits(tx *tx.Tx, columns *rows.Row) error {
+	count, err := boolean.Count(tx, "session", true, columns)
+	a.visits += count
+	return err
+}
+
+func (a *aggregate) applyViews(tx *tx.Tx, columns *rows.Row) error {
+	count, err := boolean.Count(tx, "view", true, columns)
+	a.visits += count
+	return err
+}
+
+func (a *aggregate) applyBounce(tx *tx.Tx, columns *rows.Row) error {
+	count, err := boolean.Count(tx, "bounce", true, columns)
+	if err != nil {
+		return err
+	}
+	a.bounceTrue += count
+	count, err = boolean.Count(tx, "bounce", true, columns)
+	if err != nil {
+		return err
+	}
+	a.bounceFalse += count
+	return nil
 }
 
 func periodToRange(period *v1.TimePeriod, tsDate *timestamppb.Timestamp) (start, end time.Time) {
