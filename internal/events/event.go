@@ -12,7 +12,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/ref"
 	"github.com/vinceanalytics/vince/ua"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -97,7 +96,7 @@ func Parse(log *slog.Logger, g *geo.Geo, req *v1.Event) *v1.Data {
 		req.Timestamp = timestamppb.Now()
 	}
 	userID := uniqueID(req.Ip, req.Ua, domain, host)
-	e := One()
+	e := new(v1.Data)
 	e.Id = int64(userID)
 	e.Event = req.N
 	e.Page = path
@@ -160,10 +159,4 @@ func uniqueID(remoteIP, userAgent, domain, host string) (sum uint64) {
 	h.WriteString(host)
 	sum = h.Sum64()
 	return
-}
-
-func Clone(e *v1.Data) *v1.Data {
-	o := One()
-	proto.Merge(o, e)
-	return o
 }

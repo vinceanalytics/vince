@@ -8,7 +8,6 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/vinceanalytics/vince/internal/camel"
-	"github.com/vinceanalytics/vince/internal/events"
 )
 
 type Arrow[T any] struct {
@@ -240,72 +239,6 @@ func merge(b array.Builder) func(arrow.Array) {
 					continue
 				}
 				e.AppendString(x.Value(a.GetValueIndex(i)))
-			}
-		}
-	default:
-		panic(fmt.Sprintf("%T is not supported builder", e))
-	}
-}
-
-func NewTaker(mem memory.Allocator, projected []string) (*array.RecordBuilder, func(arrow.Record, []uint32)) {
-	cols := make([]int, len(projected))
-	fields := make([]arrow.Field, len(projected))
-	for i, v := range projected {
-		cols[i] = events.Mapping[v]
-		fields[i] = events.Schema.Field(events.Mapping[v])
-	}
-	b := array.NewRecordBuilder(mem, arrow.NewSchema(fields, nil))
-	tf := make([]func(arrow.Array, []uint32), len(projected))
-	for i, f := range b.Fields() {
-		tf[i] = take(f)
-	}
-	return b, func(v arrow.Record, rows []uint32) {
-		for idx, col := range cols {
-			tf[idx](v.Column(col), rows)
-		}
-	}
-}
-
-func take(b array.Builder) func(arrow.Array, []uint32) {
-	switch e := b.(type) {
-	case *array.BooleanBuilder:
-		return func(v arrow.Array, rows []uint32) {
-			a := v.(*array.Boolean)
-			e.Reserve(len(rows))
-			for _, i := range rows {
-				if a.IsNull(int(i)) {
-					e.AppendNull()
-					continue
-				}
-				e.UnsafeAppend(a.Value(int(i)))
-			}
-		}
-	case *array.Int64Builder:
-		return func(v arrow.Array, rows []uint32) {
-			a := v.(*array.Int64)
-			e.Reserve(len(rows))
-			for _, i := range rows {
-				e.UnsafeAppend(a.Value(int(i)))
-			}
-		}
-	case *array.Float64Builder:
-		return func(v arrow.Array, rows []uint32) {
-			a := v.(*array.Float64)
-			e.Reserve(len(rows))
-			for _, i := range rows {
-				e.UnsafeAppend(a.Value(int(i)))
-			}
-		}
-	case *array.BinaryDictionaryBuilder:
-		return func(v arrow.Array, rows []uint32) {
-			a := v.(*array.Dictionary)
-			x := a.Dictionary().(*array.String)
-			for _, i := range rows {
-				if a.IsNull(int(i)) {
-					e.AppendNull()
-					continue
-				}
-				e.AppendString(x.Value(a.GetValueIndex(int(i))))
 			}
 		}
 	default:

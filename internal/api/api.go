@@ -150,7 +150,6 @@ func (a *API) handleApiEvent(w http.ResponseWriter, r *http.Request, _ Params) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	defer events.PutOne(e)
 	tenantId := a.tenants.TenantBySiteID(r.Context(), e.Domain)
 	if tenantId == "" {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -198,7 +197,6 @@ func (a *API) handleEvent(w http.ResponseWriter, r *http.Request, _ Params) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	defer events.PutOne(e)
 	tenantId := a.tenants.TenantBySiteID(ctx, e.Domain)
 	if tenantId == "" {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -356,7 +354,7 @@ func (a *API) append(e *v1.Data) {
 	clone := proto.Clone(e)
 	a.buffer = append(a.buffer, clone.(*v1.Data))
 	for range 5 {
-		if a.cache.SetWithTTL(e.Id, events.Clone(e), int64(proto.Size(e)), DefaultSession) {
+		if a.cache.SetWithTTL(e.Id, e, int64(proto.Size(e)), DefaultSession) {
 			return
 		}
 	}
