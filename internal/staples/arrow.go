@@ -8,7 +8,7 @@ import (
 	"github.com/apache/arrow/go/v15/arrow/array"
 	"github.com/apache/arrow/go/v15/arrow/memory"
 	"github.com/vinceanalytics/vince/internal/camel"
-	"github.com/vinceanalytics/vince/internal/cluster/events"
+	"github.com/vinceanalytics/vince/internal/events"
 )
 
 type Arrow[T any] struct {

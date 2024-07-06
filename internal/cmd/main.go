@@ -268,6 +268,7 @@ func App() *cli.Command {
 
 			xapi := api.New(db, geo, guard, tenants)
 			go xapi.Start(ctx)
+			defer xapi.Release()
 
 			svr := &http.Server{
 				Addr:        base.Listen,

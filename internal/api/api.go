@@ -10,9 +10,10 @@ import (
 	"time"
 
 	"github.com/bufbuild/protovalidate-go"
+	"github.com/dgraph-io/ristretto"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/cluster/events"
 	"github.com/vinceanalytics/vince/internal/db"
+	"github.com/vinceanalytics/vince/internal/events"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/logger"
@@ -38,9 +39,20 @@ type API struct {
 	tenants tenant.Loader
 	events  chan *v1.Data
 	buffer  []*v1.Data
+
+	cache *ristretto.Cache
 }
 
 func New(db *db.DB, geo *geo.Geo, guard guard.Guard, tenants tenant.Loader) *API {
+	cache, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 1e7,
+		MaxCost:     100 << 20, // 100MiB
+		BufferItems: 64,
+	})
+	if err != nil {
+		logger.Fail("setup events cache", "err", err)
+	}
+
 	return &API{
 		db:      db,
 		geo:     geo,
@@ -49,7 +61,12 @@ func New(db *db.DB, geo *geo.Geo, guard guard.Guard, tenants tenant.Loader) *API
 		tenants: tenants,
 		events:  make(chan *v1.Data, 4<<10),
 		buffer:  make([]*v1.Data, 0, 8<<10),
+		cache:   cache,
 	}
+}
+
+func (a *API) Release() {
+	a.cache.Close()
 }
 
 func (a *API) Start(ctx context.Context) {
@@ -61,7 +78,7 @@ func (a *API) Start(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case e := <-a.events:
-			a.buffer = append(a.buffer, e)
+			a.append(e)
 		case <-ts.C:
 			err := a.db.Append(a.buffer)
 			if err != nil {
@@ -322,5 +339,25 @@ func (a *API) write(w http.ResponseWriter, msg proto.Message) {
 	_, err := w.Write(data)
 	if err != nil {
 		slog.Error("failed writing response data", "err", err)
+	}
+}
+
+const DefaultSession = 30 * time.Minute
+
+func (a *API) append(e *v1.Data) {
+	events.Hit(e)
+	if o, ok := a.cache.Get(e.Id); ok {
+		cached := o.(*v1.Data)
+		events.Update(cached, e)
+		clone := proto.Clone(e)
+		a.buffer = append(a.buffer, clone.(*v1.Data))
+		return
+	}
+	clone := proto.Clone(e)
+	a.buffer = append(a.buffer, clone.(*v1.Data))
+	for range 5 {
+		if a.cache.SetWithTTL(e.Id, events.Clone(e), int64(proto.Size(e)), DefaultSession) {
+			return
+		}
 	}
 }
