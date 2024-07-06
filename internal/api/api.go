@@ -347,8 +347,7 @@ func (a *API) append(e *v1.Data) {
 	if o, ok := a.cache.Get(e.Id); ok {
 		cached := o.(*v1.Data)
 		events.Update(cached, e)
-		clone := proto.Clone(e)
-		a.buffer = append(a.buffer, clone.(*v1.Data))
+		a.buffer = append(a.buffer, e)
 		return
 	}
 	clone := proto.Clone(e)
