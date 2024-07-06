@@ -3,8 +3,10 @@ package db
 import (
 	"context"
 	"slices"
+	"strings"
 	"time"
 
+	"github.com/gernest/rbf/dsl"
 	"github.com/gernest/rbf/dsl/bsi"
 	"github.com/gernest/rbf/dsl/tx"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -55,7 +57,7 @@ func (db *DB) Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.T
 			return nil, err
 		}
 	}
-	return &v1.Timeseries_Response{Results: a.Result(req.Interval)}, nil
+	return &v1.Timeseries_Response{Results: a.Result()}, nil
 }
 
 func unit(i v1.Interval) rune {
@@ -71,13 +73,28 @@ func unit(i v1.Interval) rune {
 	}
 }
 
+func unitLayout(unit rune) string {
+	switch unit {
+	case 'Y':
+		return "2006"
+	case 'M':
+		return "200601"
+	case 'D':
+		return "20060102"
+	case 'H':
+		return "2006010215"
+	default:
+		return "20060102"
+	}
+}
+
 type timeseriesQuery struct {
 	series  map[time.Time]*aggregate
 	metrics []v1.Metric
 }
 
 func (t *timeseriesQuery) View(view string, unit rune) View {
-	ts, _ := time.Parse(layout, view)
+	ts, _ := time.Parse(unitLayout(unit), strings.TrimPrefix(dsl.StandardView+"_", view))
 	a, ok := t.series[ts]
 	if !ok {
 		a = newAggregate(t.metrics)
@@ -86,28 +103,25 @@ func (t *timeseriesQuery) View(view string, unit rune) View {
 	return a
 }
 
-func (t *timeseriesQuery) Result(interval v1.Interval) []*v1.Timeseries_Bucket {
-	switch interval {
-	default:
-		keys := make([]time.Time, 0, len(t.series))
-		o := make([]*v1.Timeseries_Bucket, 0, len(t.series))
-		for k := range t.series {
-			keys = append(keys, k)
-		}
-		slices.SortFunc(keys, func(a, b time.Time) int {
-			return a.Compare(b)
-		})
-		for i := range keys {
-			x := &v1.Timeseries_Bucket{
-				Timestamp: timestamppb.New(keys[i]),
-				Values:    make(map[string]float64),
-			}
-			a := t.series[keys[i]]
-			for _, m := range t.metrics {
-				x.Values[m.String()] = a.Result(m)
-			}
-			o = append(o, x)
-		}
-		return o
+func (t *timeseriesQuery) Result() []*v1.Timeseries_Bucket {
+	keys := make([]time.Time, 0, len(t.series))
+	o := make([]*v1.Timeseries_Bucket, 0, len(t.series))
+	for k := range t.series {
+		keys = append(keys, k)
 	}
+	slices.SortFunc(keys, func(a, b time.Time) int {
+		return a.Compare(b)
+	})
+	for i := range keys {
+		x := &v1.Timeseries_Bucket{
+			Timestamp: timestamppb.New(keys[i]),
+			Values:    make(map[string]float64),
+		}
+		a := t.series[keys[i]]
+		for _, m := range t.metrics {
+			x.Values[m.String()] = a.Result(m)
+		}
+		o = append(o, x)
+	}
+	return o
 }
