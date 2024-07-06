@@ -10,23 +10,15 @@ require (
 	github.com/bufbuild/protovalidate-go v0.5.0
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/dgraph-io/ristretto v0.1.1
-	github.com/docker/go-units v0.5.0
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/gernest/rbf v0.22.6
 	github.com/gernest/rows v1.22.9
-	github.com/google/go-cmp v0.6.0
-	github.com/google/gofuzz v1.2.0
 	github.com/hashicorp/go-msgpack v0.5.5
 	github.com/hashicorp/raft v1.6.1
-	github.com/klauspost/compress v1.16.7
-	github.com/oklog/ulid/v2 v2.1.0
 	github.com/oschwald/maxminddb-golang v1.12.0
-	github.com/prometheus/client_golang v1.19.0
-	github.com/rqlite/raft-boltdb/v2 v2.0.0-20230523104317-c08e70f4de48
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v3 v3.0.0-alpha8
 	go.etcd.io/bbolt v1.3.10
-	go.uber.org/goleak v1.3.0
 	golang.org/x/crypto v0.23.0
 	golang.org/x/time v0.5.0
 	google.golang.org/grpc v1.65.0
@@ -35,11 +27,9 @@ require (
 )
 
 require (
-	github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/benbjohnson/immutable v0.4.3 // indirect
-	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.12.0 // indirect
 	github.com/blevesearch/mmap-go v1.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -57,7 +47,9 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/go-msgpack/v2 v2.1.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.0 // indirect
+	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/molecula/apophenia v0.0.0-20190827192002-68b7a14a478b // indirect
@@ -65,9 +57,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_model v0.5.0 // indirect
-	github.com/prometheus/common v0.48.0 // indirect
-	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
