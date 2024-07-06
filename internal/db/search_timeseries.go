@@ -32,7 +32,8 @@ func (db *DB) Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.T
 		return nil, err
 	}
 	defer r.Release()
-	for _, shard := range r.Range(from, to) {
+	unit := unit(req.Interval)
+	for _, shard := range r.RangeUnit(from, to, unit) {
 		err := r.View(shard, func(txn *tx.Tx) error {
 			f, err := ts.Apply(txn, nil)
 			if err != nil {
@@ -48,7 +49,7 @@ func (db *DB) Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.T
 			if r.IsEmpty() {
 				return nil
 			}
-			return a.View(txn.View).Apply(txn, r)
+			return a.View(txn.View, unit).Apply(txn, r)
 		})
 		if err != nil {
 			return nil, err
@@ -57,12 +58,25 @@ func (db *DB) Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.T
 	return &v1.Timeseries_Response{Results: a.Result(req.Interval)}, nil
 }
 
+func unit(i v1.Interval) rune {
+	switch i {
+	case v1.Interval_date:
+		return 'D'
+	case v1.Interval_hour:
+		return 'H'
+	case v1.Interval_month:
+		return 'M'
+	default:
+		return 'D'
+	}
+}
+
 type timeseriesQuery struct {
 	series  map[time.Time]*aggregate
 	metrics []v1.Metric
 }
 
-func (t *timeseriesQuery) View(view string) View {
+func (t *timeseriesQuery) View(view string, unit rune) View {
 	ts, _ := time.Parse(layout, view)
 	a, ok := t.series[ts]
 	if !ok {
