@@ -1,0 +1,29 @@
+schema:
+  fields: 27
+    - timestamp: type=int64
+    - id: type=int64
+    - bounce: type=bool, nullable
+    - session: type=bool
+    - view: type=bool
+    - duration: type=float64
+    - event: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - page: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - entry_page: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - exit_page: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - source: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - referrer: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utm_source: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utm_medium: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utm_campaign: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utm_content: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - utm_term: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - device: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - browser: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - browser_version: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - os: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - os_version: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - country: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - region: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - domain: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - city: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
+    - host: type=dictionary<values=utf8, indices=uint32, ordered=false>, nullable
