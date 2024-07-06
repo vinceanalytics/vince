@@ -21,7 +21,7 @@ func (db *DB) Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.T
 		return nil, err
 	}
 	m := dupe(req.Metrics)
-	a := &timeseriesQuery{metrics: m}
+	a := &timeseriesQuery{metrics: m, series: make(map[time.Time]*aggregate)}
 	from, to := periodToRange(req.Period, req.Date)
 	props := append(req.Filters,
 		&v1.Filter{Property: v1.Property_domain, Op: v1.Filter_equal, Value: req.SiteId},
@@ -93,7 +93,7 @@ type timeseriesQuery struct {
 	metrics []v1.Metric
 }
 
-func (t *timeseriesQuery) View(view string, unit rune) View {
+func (t *timeseriesQuery) View(view string, unit rune) *aggregate {
 	ts, _ := time.Parse(unitLayout(unit), strings.TrimPrefix(dsl.StandardView+"_", view))
 	a, ok := t.series[ts]
 	if !ok {

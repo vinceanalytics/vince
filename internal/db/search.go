@@ -1,28 +1,10 @@
 package db
 
 import (
-	"time"
-
 	"github.com/gernest/rbf/dsl/mutex"
 	"github.com/gernest/rbf/dsl/query"
-	"github.com/gernest/rbf/dsl/tx"
-	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
-
-type Query interface {
-	View(ts time.Time) View
-}
-
-type Final interface {
-	Final(tx *tx.Tx) error
-}
-
-type View interface {
-	Apply(tx *tx.Tx, columns *rows.Row) error
-}
-
-const layout = "20060102"
 
 func filterProperties(fs ...*v1.Filter) query.Filter {
 	if len(fs) == 0 {

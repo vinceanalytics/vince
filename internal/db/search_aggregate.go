@@ -82,16 +82,6 @@ func dupe[T cmp.Ordered](a []T) []T {
 	return o
 }
 
-type aggregateQuery struct {
-	a applyList
-}
-
-var _ Query = (*aggregateQuery)(nil)
-
-func (a *aggregateQuery) View(_ time.Time) View {
-	return a.a
-}
-
 type aggregate struct {
 	visitors    roaring64.Bitmap
 	visits      int64
@@ -101,10 +91,6 @@ type aggregate struct {
 	events      int64
 	duration    int64
 	cache       applyList
-}
-
-func (a *aggregate) or(b *aggregate) {
-	a.visitors.Or(&b.visitors)
 }
 
 func newAggregate(metrics []v1.Metric) *aggregate {
@@ -188,8 +174,6 @@ func (a *aggregate) newApplyList(m []v1.Metric) applyList {
 
 type applyList []func(*tx.Tx, *rows.Row) error
 
-var _ View = (*applyList)(nil)
-
 func (ls applyList) Apply(tx *tx.Tx, columns *rows.Row) error {
 	for i := range ls {
 		err := ls[i](tx, columns)
@@ -229,7 +213,7 @@ func (a *aggregate) ViewsPerVisit() float64 {
 }
 
 func (a *aggregate) Events() uint64 {
-	return a.Events()
+	return uint64(a.events)
 }
 
 func (a *aggregate) Visitors() uint64 {
@@ -333,15 +317,6 @@ func periodToRange(period *v1.TimePeriod, tsDate *timestamppb.Timestamp) (start,
 		start = e.Custom.Start.AsTime()
 	}
 	return
-}
-
-type nowFunc func() time.Time
-
-func parseDate(now nowFunc, ts *timestamppb.Timestamp) time.Time {
-	if ts != nil {
-		return ts.AsTime()
-	}
-	return timeutil.EndDay(now())
 }
 
 func ValidByPeriod(period *v1.TimePeriod, i v1.Interval) bool {

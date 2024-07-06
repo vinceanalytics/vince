@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"context"
 	"slices"
-	"time"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/gernest/rbf/dsl/bsi"
@@ -91,18 +90,12 @@ func (b *breakdownQuery) Final(tr *tr.Read) {
 	}
 }
 
-var _ Query = (*breakdownQuery)(nil)
-
 func newBreakdown(props []v1.Property, m []v1.Metric) *breakdownQuery {
 	return &breakdownQuery{
 		props:      make(map[v1.Property]map[uint64]*aggregate),
 		metrics:    dupe(m),
 		properties: dupe(props),
 	}
-}
-
-func (b *breakdownQuery) View(_ time.Time) View {
-	return b
 }
 
 func (b *breakdownQuery) Apply(tx *tx.Tx, columns *rows.Row) error {
