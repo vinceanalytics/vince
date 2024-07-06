@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/bufbuild/protovalidate-go"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -14,6 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/db"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/guard"
+	"github.com/vinceanalytics/vince/internal/logger"
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -52,7 +54,22 @@ func New(db *db.DB, geo *geo.Geo, guard guard.Guard, tenants tenant.Loader) *API
 
 func (a *API) Start(ctx context.Context) {
 	a.log.Info("Starting events processing loop")
-	a.db.Process(ctx, a.events)
+	ts := time.NewTicker(time.Minute)
+	defer ts.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case e := <-a.events:
+			a.buffer = append(a.buffer, e)
+		case <-ts.C:
+			err := a.db.Append(a.buffer)
+			if err != nil {
+				logger.Fail("appending events", "err", err)
+			}
+			a.buffer = a.buffer[:0]
+		}
+	}
 }
 
 func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {

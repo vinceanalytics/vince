@@ -319,17 +319,27 @@ func tryMigration(path string, db *db.DB) {
 		fmt.Println(" Skipping migration, database was already migrated to v1alpha1")
 		return
 	}
-	buf := make(chan *v1.Data)
-	ctx, cancel := context.WithCancel(context.Background())
-	go db.Process(ctx, buf)
+	size := 4 << 10
+	buf := make([]*v1.Data, 0, size)
+	var count uint64
 	err = migrate.Migrate(file, func(data *v1.Data) error {
-		buf <- data
-		return nil
+		count++
+		buf = append(buf, data)
+		if len(buf) != size {
+			return nil
+		}
+		defer func() {
+			buf = buf[:0]
+		}()
+		return db.Append(buf)
 	})
 	if err != nil {
 		logger.Fail("applying migrations", "err", err)
 	}
-	cancel()
-	fmt.Println("migrated to  v1alpha1")
+	err = db.Append(buf)
+	if err != nil {
+		logger.Fail("applying migrations", "err", err)
+	}
+	fmt.Printf("migrated %d events to  v1alpha1\n", count)
 	os.WriteFile(sumPath, []byte{}, 0600)
 }
