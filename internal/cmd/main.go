@@ -185,16 +185,6 @@ func App() *cli.Command {
 				RetentionPeriod: durationpb.New(c.Duration("retentionPeriod")),
 				AutoTls:         c.Bool("autoTls"),
 				AuthToken:       c.String("authToken"),
-				Node: &v1.RaftNode{
-					Id:               c.String("nodeId"),
-					Advertise:        c.String("nodeAdv"),
-					Ca:               c.String("nodeCa"),
-					Cert:             c.String("nodeCert"),
-					Key:              c.String("nodeKey"),
-					Verify:           c.Bool("nodeVerify"),
-					VerifyClient:     c.Bool("nodeVerifyCLient"),
-					VerifyServerName: c.Bool("nodeVerifyServerName"),
-				},
 			}
 			log := slog.Default()
 			base = tenant.Config(base, c.StringSlice("domains"))

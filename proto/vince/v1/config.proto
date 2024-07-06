@@ -29,7 +29,6 @@ message Config {
   repeated Tenant tenants = 14;
 
   Credential.List credentials = 15;
-  RaftNode node = 16 [ (buf.validate.field).required = true ];
 }
 
 message Tenant {
@@ -46,19 +45,6 @@ message Acme {
     (buf.validate.field).required = true,
     (buf.validate.field).string.hostname = true
   ];
-}
-
-message RaftNode {
-  string id = 1 [ (buf.validate.field).required = true ];
-  string ca = 2;
-  string cert = 3;
-  string key = 4;
-  bool verify = 5;
-  bool verify_client = 6;
-  bool verify_server_name = 7;
-  string advertise = 8 [ (buf.validate.field).string.host_and_port = true ];
-  repeated string joins = 9;
-  bool non_voter = 10;
 }
 
 message Domain { string name = 1 [ (buf.validate.field).required = true ]; }
