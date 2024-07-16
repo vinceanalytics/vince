@@ -10,7 +10,7 @@ require (
 	github.com/bufbuild/protovalidate-go v0.5.0
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
-	github.com/gernest/rbf v0.22.6
+	github.com/gernest/rbf v0.22.20
 	github.com/gernest/rows v1.22.9
 	github.com/hashicorp/go-msgpack v0.5.5
 	github.com/hashicorp/raft v1.6.1
@@ -73,5 +73,3 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/gernest/rbf => ../fusion/rbf/
