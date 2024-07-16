@@ -6,11 +6,6 @@ import (
 	"slices"
 	"time"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/rbf/dsl/boolean"
-	"github.com/gernest/rbf/dsl/bsi"
-	"github.com/gernest/rbf/dsl/mutex"
-	"github.com/gernest/rbf/dsl/tx"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -27,38 +22,35 @@ func (db *DB) Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Agg
 	m := dupe(req.Metrics)
 	a := newAggregate(m)
 	from, to := periodToRange(req.Period, req.Date)
-	props := append(req.Filters,
-		&v1.Filter{Property: v1.Property_domain, Op: v1.Filter_equal, Value: req.SiteId},
-	)
-	ts := bsi.Filter("timestamp", bsi.RANGE, from.UnixMilli(), to.UnixMilli())
-	fs := filterProperties(props...)
 
-	r, err := db.db.Reader()
-	if err != nil {
-		return nil, err
-	}
-	defer r.Release()
-	for _, shard := range r.Range(from, to) {
-		err := r.View(shard, func(txn *tx.Tx) error {
-			f, err := ts.Apply(txn, nil)
-			if err != nil {
-				return err
-			}
-			if f.IsEmpty() {
-				return nil
-			}
-			r, err := fs.Apply(txn, f)
+	err = db.view(func(tx *view) error {
+		it := db.shards.Iterator()
+
+		for it.HasNext() {
+			shard := it.Next()
+			r, err := tx.domain(shard, req.SiteId)
 			if err != nil {
 				return err
 			}
 			if r.IsEmpty() {
-				return nil
+				continue
 			}
-			return a.Apply(txn, r)
-		})
-		if err != nil {
-			return nil, err
+			r, err = tx.time(shard, from, to, r)
+			if err != nil {
+				return err
+			}
+			if r.IsEmpty() {
+				continue
+			}
+			err = a.Apply(tx, shard, r)
+			if err != nil {
+				return err
+			}
 		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 	res := &v1.Aggregate_Response{
 		Results: make(map[string]float64),
@@ -83,7 +75,7 @@ func dupe[T cmp.Ordered](a []T) []T {
 }
 
 type aggregate struct {
-	visitors    roaring64.Bitmap
+	visitors    int64
 	visits      int64
 	views       int64
 	bounceTrue  int64
@@ -99,8 +91,8 @@ func newAggregate(metrics []v1.Metric) *aggregate {
 	return a
 }
 
-func (a *aggregate) Apply(tx *tx.Tx, columns *rows.Row) error {
-	return a.cache.Apply(tx, columns)
+func (a *aggregate) Apply(tx *view, shard uint64, columns *rows.Row) error {
+	return a.cache.Apply(tx, shard, columns)
 }
 
 func (a *aggregate) Result(m v1.Metric) float64 {
@@ -172,11 +164,11 @@ func (a *aggregate) newApplyList(m []v1.Metric) applyList {
 	return ls
 }
 
-type applyList []func(*tx.Tx, *rows.Row) error
+type applyList []func(*view, uint64, *rows.Row) error
 
-func (ls applyList) Apply(tx *tx.Tx, columns *rows.Row) error {
+func (ls applyList) Apply(tx *view, shard uint64, columns *rows.Row) error {
 	for i := range ls {
-		err := ls[i](tx, columns)
+		err := ls[i](tx, shard, columns)
 		if err != nil {
 			return err
 		}
@@ -185,7 +177,7 @@ func (ls applyList) Apply(tx *tx.Tx, columns *rows.Row) error {
 }
 
 func (a *aggregate) Reset() {
-	a.visitors.Clear()
+	a.visitors = 0
 	a.visits = 0
 	a.views = 0
 	a.events = 0
@@ -217,7 +209,7 @@ func (a *aggregate) Events() uint64 {
 }
 
 func (a *aggregate) Visitors() uint64 {
-	return a.visitors.GetCardinality()
+	return a.Visitors()
 }
 
 func (a *aggregate) Visits() uint64 {
@@ -239,17 +231,26 @@ func (a *aggregate) Duration() uint64 {
 	return uint64(a.duration)
 }
 
-func (a *aggregate) applyEvents(tx *tx.Tx, columns *rows.Row) error {
+func (a *aggregate) applyEvents(_ *view, _ uint64, columns *rows.Row) error {
 	a.events += int64(columns.Count())
 	return nil
 }
 
-func (a *aggregate) applyVisitors(tx *tx.Tx, columns *rows.Row) error {
-	return mutex.Distinct(tx, "id", &a.visitors, columns)
+func (a *aggregate) applyVisitors(tx *view, _ uint64, columns *rows.Row) error {
+	vs, err := uniqueUID(tx, columns)
+	if err != nil {
+		return err
+	}
+	a.visitors += int64(vs)
+	return nil
 }
 
-func (a *aggregate) applyDuration(tx *tx.Tx, columns *rows.Row) error {
-	_, sum, err := bsi.SumCount(tx, "duration", nil, columns)
+func (a *aggregate) applyDuration(tx *view, _ uint64, columns *rows.Row) error {
+	c, err := tx.get("duration")
+	if err != nil {
+		return err
+	}
+	_, sum, err := sumCount(c, columns)
 	if err != nil {
 		return err
 	}
@@ -257,25 +258,25 @@ func (a *aggregate) applyDuration(tx *tx.Tx, columns *rows.Row) error {
 	return nil
 }
 
-func (a *aggregate) applyVisits(tx *tx.Tx, columns *rows.Row) error {
-	count, err := boolean.Count(tx, "session", true, columns)
+func (a *aggregate) applyVisits(tx *view, shard uint64, columns *rows.Row) error {
+	count, err := tx.boolCount("session", shard, true, columns)
 	a.visits += count
 	return err
 }
 
-func (a *aggregate) applyViews(tx *tx.Tx, columns *rows.Row) error {
-	count, err := boolean.Count(tx, "view", true, columns)
+func (a *aggregate) applyViews(tx *view, shard uint64, columns *rows.Row) error {
+	count, err := tx.boolCount("view", shard, true, columns)
 	a.visits += count
 	return err
 }
 
-func (a *aggregate) applyBounce(tx *tx.Tx, columns *rows.Row) error {
-	count, err := boolean.Count(tx, "bounce", true, columns)
+func (a *aggregate) applyBounce(tx *view, shard uint64, columns *rows.Row) error {
+	count, err := tx.boolCount("bounce", shard, true, columns)
 	if err != nil {
 		return err
 	}
 	a.bounceTrue += count
-	count, err = boolean.Count(tx, "bounce", true, columns)
+	count, err = tx.boolCount("bounce", shard, true, columns)
 	if err != nil {
 		return err
 	}

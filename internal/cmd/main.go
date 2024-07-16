@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"crypto/sha512"
-	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"math"
@@ -18,15 +16,12 @@ import (
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	v2 "github.com/vinceanalytics/vince/gen/go/vince/v2"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/db"
-	"github.com/vinceanalytics/vince/internal/events"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/load"
 	"github.com/vinceanalytics/vince/internal/logger"
-	"github.com/vinceanalytics/vince/internal/migrate"
 	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"golang.org/x/crypto/acme/autocert"
@@ -251,8 +246,6 @@ func App() *cli.Command {
 			}
 			defer db.Close()
 
-			tryMigration(base.Data, db)
-
 			tenants := tenant.NewTenants(base)
 			guard := guard.New(base, tenants)
 			geo := geo.Open(base.GeoipDbPath)
@@ -291,48 +284,4 @@ func App() *cli.Command {
 			return err
 		},
 	}
-}
-
-func tryMigration(path string, db *db.DB) {
-	file := filepath.Join(path, "raftdb")
-	f, err := os.Open(file)
-	if err != nil {
-		return
-	}
-	defer f.Close()
-	// Create checksum
-	h := sha512.New512_224()
-	f.WriteTo(h)
-	f.Close()
-	sum := hex.EncodeToString(h.Sum(nil))
-	fmt.Println("=> detected deprecated database checksum:", sum)
-	sumPath := filepath.Join(path, sum)
-	_, err = os.Stat(sumPath)
-	if err == nil {
-		fmt.Println(" Skipping migration, database was already migrated to v1alpha1")
-		return
-	}
-	size := 4 << 10
-	buf := make([]*v2.Data, 0, size)
-	var count uint64
-	err = migrate.Migrate(file, func(data *v1.Data) error {
-		count++
-		buf = append(buf, events.Convert(data))
-		if len(buf) != size {
-			return nil
-		}
-		defer func() {
-			buf = buf[:0]
-		}()
-		return db.Append(buf)
-	})
-	if err != nil {
-		logger.Fail("applying migrations", "err", err)
-	}
-	err = db.Append(buf)
-	if err != nil {
-		logger.Fail("applying migrations", "err", err)
-	}
-	fmt.Printf("migrated %d events to  v1alpha1\n", count)
-	os.WriteFile(sumPath, []byte{}, 0600)
 }

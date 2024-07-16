@@ -6,10 +6,7 @@ import (
 	"slices"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/rbf/dsl/bsi"
-	"github.com/gernest/rbf/dsl/mutex"
-	"github.com/gernest/rbf/dsl/tr"
-	"github.com/gernest/rbf/dsl/tx"
+	"github.com/gernest/roaring"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -23,39 +20,35 @@ func (db *DB) Breakdown(ctx context.Context, req *v1.BreakDown_Request) (*v1.Bre
 	}
 	a := newBreakdown(req.Property, req.Metrics)
 	from, to := periodToRange(req.Period, req.Date)
-	props := append(req.Filters,
-		&v1.Filter{Property: v1.Property_domain, Op: v1.Filter_equal, Value: req.SiteId},
-	)
-	ts := bsi.Filter("timestamp", bsi.RANGE, from.UnixMilli(), to.UnixMilli())
-	fs := filterProperties(props...)
-	r, err := db.db.Reader()
-	if err != nil {
-		return nil, err
-	}
-	defer r.Release()
-	for _, shard := range r.Range(from, to) {
-		err := r.View(shard, func(txn *tx.Tx) error {
-			f, err := ts.Apply(txn, nil)
-			if err != nil {
-				return err
-			}
-			if f.IsEmpty() {
-				return nil
-			}
-			r, err := fs.Apply(txn, f)
+	err = db.view(func(tx *view) error {
+		shards := db.shards.Iterator()
+		for shards.HasNext() {
+			shard := shards.Next()
+			r, err := tx.domain(shard, req.SiteId)
 			if err != nil {
 				return err
 			}
 			if r.IsEmpty() {
-				return nil
+				continue
 			}
-			return a.Apply(txn, r)
-		})
-		if err != nil {
-			return nil, err
+			r, err = tx.time(shard, from, to, r)
+			if err != nil {
+				return err
+			}
+			if r.IsEmpty() {
+				continue
+			}
+			err = a.Apply(tx, shard, r)
+			if err != nil {
+				return err
+			}
 		}
+		a.Final(tx)
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
-	a.Final(r.Tr())
 
 	return &v1.BreakDown_Response{Results: a.result}, nil
 }
@@ -67,7 +60,7 @@ type breakdownQuery struct {
 	result     []*v1.BreakDown_Result
 }
 
-func (b *breakdownQuery) Final(tr *tr.Read) {
+func (b *breakdownQuery) Final(tx *view) {
 	b.result = make([]*v1.BreakDown_Result, 0, len(b.props))
 	for _, prop := range b.properties {
 		r := &v1.BreakDown_Result{Property: prop}
@@ -75,7 +68,7 @@ func (b *breakdownQuery) Final(tr *tr.Read) {
 		r.Values = make([]*v1.BreakDown_KeyValues, 0, len(p))
 		for k, v := range p {
 			x := &v1.BreakDown_KeyValues{
-				Key:   string(tr.Key(prop.String(), k)),
+				Key:   string(tx.key(prop.String(), k)),
 				Value: map[string]float64{},
 			}
 			for i := range b.metrics {
@@ -98,11 +91,33 @@ func newBreakdown(props []v1.Property, m []v1.Metric) *breakdownQuery {
 	}
 }
 
-func (b *breakdownQuery) Apply(tx *tx.Tx, columns *rows.Row) error {
+func (b *breakdownQuery) Apply(tx *view, shard uint64, filters *rows.Row) error {
 	o := roaring64.New()
+	var filterBitmap *roaring.Bitmap
+	if filters != nil && len(filters.Segments) > 0 {
+		filterBitmap = filters.Segments[0].Data()
+	}
+	// We can't grab the containers "for each row" from the set-type field,
+	// because we don't know how many rows there are, and some of them
+	// might be empty, so really, we're going to iterate through the
+	// containers, and then intersect them with the filter if present.
+	var filter []*roaring.Container
+	if filterBitmap != nil {
+		filter = make([]*roaring.Container, 1<<shardVsContainerExponent)
+		filterIterator, _ := filterBitmap.Containers.Iterator(0)
+		// So let's get these all with a nice convenient 0 offset...
+		for filterIterator.Next() {
+			k, c := filterIterator.Value()
+			if c.N() == 0 {
+				continue
+			}
+			filter[k%(1<<shardVsContainerExponent)] = c
+		}
+	}
+
 	for _, prop := range b.properties {
 		o.Clear()
-		err := mutex.Distinct(tx, prop.String(), o, columns)
+		err := tx.distinct(prop.String(), o, filter, filterBitmap != nil)
 		if err != nil {
 			return err
 		}
@@ -114,12 +129,12 @@ func (b *breakdownQuery) Apply(tx *tx.Tx, columns *rows.Row) error {
 
 		for it.HasNext() {
 			id := it.Next()
-			r, err := mutex.Filter(prop.String(), id).Apply(tx, columns)
+			r, err := tx.row(prop.String(), shard, id, filters)
 			if err != nil {
 				return err
 			}
 			// Compute aggregates for columns belonging to id
-			err = b.get(prop, id).cache.Apply(tx, r)
+			err = b.get(prop, id).cache.Apply(tx, shard, r)
 			if err != nil {
 				return err
 			}

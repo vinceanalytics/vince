@@ -39,7 +39,6 @@ type API struct {
 	guard   guard.Guard
 	tenants tenant.Loader
 	events  chan *v2.Data
-	buffer  []*v2.Data
 
 	cache *ristretto.Cache
 }
@@ -61,7 +60,6 @@ func New(db *db.DB, geo *geo.Geo, guard guard.Guard, tenants tenant.Loader) *API
 		guard:   guard,
 		tenants: tenants,
 		events:  make(chan *v2.Data, 4<<10),
-		buffer:  make([]*v2.Data, 0, 8<<10),
 		cache:   cache,
 	}
 }
@@ -81,11 +79,10 @@ func (a *API) Start(ctx context.Context) {
 		case e := <-a.events:
 			a.append(e)
 		case <-ts.C:
-			err := a.db.Append(a.buffer)
+			err := a.db.Save()
 			if err != nil {
-				logger.Fail("appending events", "err", err)
+				logger.Fail("saving events", "err", err)
 			}
-			a.buffer = a.buffer[:0]
 		}
 	}
 }
@@ -348,11 +345,10 @@ func (a *API) append(e *v2.Data) {
 	if o, ok := a.cache.Get(e.Id); ok {
 		cached := o.(*v2.Data)
 		events.Update(cached, e)
-		a.buffer = append(a.buffer, e)
+		a.db.Append(e)
 		return
 	}
-	clone := proto.Clone(e)
-	a.buffer = append(a.buffer, clone.(*v2.Data))
+	a.db.Append(e)
 	for range 5 {
 		if a.cache.SetWithTTL(e.Id, e, int64(proto.Size(e)), DefaultSession) {
 			return

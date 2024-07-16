@@ -4,12 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/bufbuild/protovalidate-go"
-	"github.com/gernest/rbf/dsl/bsi"
-	"github.com/gernest/rbf/dsl/mutex"
-	"github.com/gernest/rbf/dsl/query"
-	"github.com/gernest/rbf/dsl/tx"
+	"github.com/gernest/rbf"
+	"github.com/gernest/roaring"
+	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
 	"github.com/vinceanalytics/vince/internal/logger"
@@ -34,31 +32,54 @@ func (db *DB) Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realt
 	now := time.Now()
 	firstTime := now.Add(-5 * time.Minute)
 
-	r, err := db.db.Reader()
+	// for realtime we only care are bout latest values which will belong to the
+	// largest shard.
+	shard := db.shards.Maximum()
+
+	var count uint64
+	err = db.view(func(tx *view) error {
+		r, err := tx.domain(shard, req.SiteId)
+		if err != nil {
+			return err
+		}
+		if r.IsEmpty() {
+			return nil
+		}
+		r, err = tx.time(shard, firstTime, now, r)
+		if err != nil {
+			return err
+		}
+		if r.IsEmpty() {
+			return nil
+		}
+		count, err = uniqueUID(tx, r)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
-	defer r.Release()
-	o := roaring64.New()
-	fs := append(query.And{
-		bsi.Filter("timestamp", bsi.RANGE, firstTime.UnixMilli(), now.UnixMilli()),
-	}, filterProperties(
-		&v1.Filter{Property: v1.Property_domain, Op: v1.Filter_equal, Value: req.SiteId},
-	))
-	for _, shard := range r.Range(now, now) {
-		err = r.View(shard, func(txn *tx.Tx) error {
-			r, err := fs.Apply(txn, nil)
-			if err != nil {
-				return err
-			}
-			if r.IsEmpty() {
-				return nil
-			}
-			return mutex.Distinct(txn, "id", o, r)
-		})
-		if err != nil {
-			return nil, err
-		}
+	return &v1.Realtime_Response{Visitors: count}, nil
+}
+
+func uniqueUID(txn *view, filters *rows.Row) (uint64, error) {
+	c, err := txn.get("uid")
+	if err != nil {
+		return 0, err
 	}
-	return &v1.Realtime_Response{Visitors: o.GetCardinality()}, nil
+	count, _, err := sumCount(c, filters)
+	return uint64(count), err
+}
+func sumCount(c *rbf.Cursor, filters *rows.Row) (int32, int64, error) {
+	var filterData *roaring.Bitmap
+	if filters != nil && len(filters.Segments) > 0 {
+		filterData = filters.Segments[0].Data()
+	}
+	bsi := roaring.NewBitmapBSICountFilter(filterData)
+	err := c.ApplyFilter(0, bsi)
+	if err != nil {
+		return 0, 0, err
+	}
+	// Sum is undefined
+	count, sum := bsi.Total()
+	return count, sum, nil
 }
