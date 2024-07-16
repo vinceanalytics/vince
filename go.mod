@@ -8,9 +8,11 @@ require (
 	github.com/apache/arrow/go/v15 v15.0.0
 	github.com/blevesearch/vellum v1.0.10
 	github.com/bufbuild/protovalidate-go v0.5.0
+	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/gernest/rbf v0.22.20
+	github.com/gernest/roaring v0.22.3
 	github.com/gernest/rows v1.22.9
 	github.com/hashicorp/go-msgpack v0.5.5
 	github.com/hashicorp/raft v1.6.1
@@ -31,12 +33,10 @@ require (
 	github.com/benbjohnson/immutable v0.4.3 // indirect
 	github.com/bits-and-blooms/bitset v1.12.0 // indirect
 	github.com/blevesearch/mmap-go v1.0.4 // indirect
-	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/color v1.15.0 // indirect
-	github.com/gernest/roaring v0.22.3 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/glog v1.2.1 // indirect
