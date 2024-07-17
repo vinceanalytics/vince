@@ -120,13 +120,17 @@ func (db *DB) Save() error {
 
 			bsi.Add(get(m, "timestamp"), id, b.ts[i])
 			bsi.Add(get(m, "date"), id, date(b.ts[i]))
-			bsi.Add(get(m, "uid"), id, b.uid[i])
+			ux, err := tr.Tr("uid", b.uid[i])
+			if err != nil {
+				return err
+			}
+			mutex.Add(get(m, "uid"), id, ux)
 			boolean.Add(get(m, "bounce"), id, b.bounce[i])
 			boolean.Add(get(m, "session"), id, b.session[i])
 			boolean.Add(get(m, "view"), id, b.view[i])
 			bsi.Add(get(m, "duration"), id, b.duration[i])
 			for k, v := range b.attr[i] {
-				x, err := tr.Tr(k, v)
+				x, err := tr.Tr(k, []byte(v))
 				if err != nil {
 					return err
 				}
@@ -192,13 +196,6 @@ func bucket(tx *bbolt.Tx, key []byte) (*bbolt.Bucket, error) {
 	return tx.CreateBucket(key)
 }
 
-func bbucket(tx *bbolt.Bucket, key []byte) (*bbolt.Bucket, error) {
-	if b := tx.Bucket(key); b != nil {
-		return b, nil
-	}
-	return tx.CreateBucket(key)
-}
-
 type translate struct {
 	tx      *bbolt.Tx
 	buckets map[string]*bbolt.Bucket
@@ -216,11 +213,11 @@ func newTr(tx *bbolt.Tx) *translate {
 
 var sep = []byte("=")
 
-func (tr *translate) Tr(key, value string) (v uint64, err error) {
+func (tr *translate) Tr(key string, value []byte) (v uint64, err error) {
 	tr.h.Reset()
 	tr.h.WriteString(key)
 	tr.h.Write(sep)
-	tr.h.WriteString(value)
+	tr.h.Write(value)
 	hash := tr.h.Sum64()
 	if v, ok := tr.seen[hash]; ok {
 		return v, nil
@@ -327,6 +324,47 @@ func (tx *view) boolCount(field string, shard uint64, isTrue bool, columns *rows
 const (
 	shardVsContainerExponent = shardwidth.Exponent - 16
 )
+
+func (tx *view) uidCount(filters *rows.Row) (uint64, error) {
+	c, err := tx.get("uid")
+	if err != nil {
+		return 0, err
+	}
+
+	filter := make([]*roaring.Container, 1<<shardVsContainerExponent)
+	filterIterator, _ := filters.Segments[0].Data().Containers.Iterator(0)
+	// So let's get these all with a nice convenient 0 offset...
+	for filterIterator.Next() {
+		k, c := filterIterator.Value()
+		if c.N() == 0 {
+			continue
+		}
+		filter[k%(1<<shardVsContainerExponent)] = c
+	}
+
+	fragData := c.Iterator()
+
+	prevRow := ^uint64(0)
+	seenThisRow := false
+	result := uint64(0)
+	for fragData.Next() {
+		k, c := fragData.Value()
+		row := k >> shardVsContainerExponent
+		if row == prevRow {
+			if seenThisRow {
+				continue
+			}
+		} else {
+			seenThisRow = false
+			prevRow = row
+		}
+		if roaring.IntersectionAny(c, filter[k%(1<<shardVsContainerExponent)]) {
+			result++
+			seenThisRow = true
+		}
+	}
+	return result, nil
+}
 
 func (tx *view) distinct(field string, filter []*roaring.Container) (map[uint64][]uint64, error) {
 	c, err := tx.get(field)

@@ -68,28 +68,16 @@ func newBreakdown(props []v1.Property, m []v1.Metric) *breakdownQuery {
 }
 
 func (b *breakdownQuery) Apply(tx *view, shard uint64, filters *rows.Row) error {
-	var filterBitmap *roaring.Bitmap
-	if filters != nil && len(filters.Segments) > 0 {
-		filterBitmap = filters.Segments[0].Data()
-	}
-	// We can't grab the containers "for each row" from the set-type field,
-	// because we don't know how many rows there are, and some of them
-	// might be empty, so really, we're going to iterate through the
-	// containers, and then intersect them with the filter if present.
-	var filter []*roaring.Container
-	if filterBitmap != nil {
-		filter = make([]*roaring.Container, 1<<shardVsContainerExponent)
-		filterIterator, _ := filterBitmap.Containers.Iterator(0)
-		// So let's get these all with a nice convenient 0 offset...
-		for filterIterator.Next() {
-			k, c := filterIterator.Value()
-			if c.N() == 0 {
-				continue
-			}
-			filter[k%(1<<shardVsContainerExponent)] = c
+	filter := make([]*roaring.Container, 1<<shardVsContainerExponent)
+	filterIterator, _ := filters.Segments[0].Data().Containers.Iterator(0)
+	// So let's get these all with a nice convenient 0 offset...
+	for filterIterator.Next() {
+		k, c := filterIterator.Value()
+		if c.N() == 0 {
+			continue
 		}
+		filter[k%(1<<shardVsContainerExponent)] = c
 	}
-
 	for _, prop := range b.properties {
 		rs, err := tx.distinct(prop.String(), filter)
 		if err != nil {

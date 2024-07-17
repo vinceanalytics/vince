@@ -3,20 +3,18 @@ package db
 import (
 	"maps"
 
-	"github.com/cespare/xxhash/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	v2 "github.com/vinceanalytics/vince/gen/go/vince/v2"
 )
 
 type Batch struct {
 	ts       []int64
-	uid      []int64
+	uid      [][]byte
 	bounce   []bool
 	session  []bool
 	view     []bool
 	duration []int64
 	attr     []map[string]string
-	hash     xxhash.Digest
 	labels   map[string]string
 }
 
@@ -39,9 +37,7 @@ func (b *Batch) Reset() {
 
 func (b *Batch) Append(e *v2.Data) {
 	b.ts = append(b.ts, e.Timestamp)
-	b.hash.Reset()
-	b.hash.Write(e.Id)
-	b.uid = append(b.uid, int64(b.hash.Sum64()))
+	b.uid = append(b.uid, e.Id)
 	b.bounce = append(b.bounce, e.GetBounce())
 	b.session = append(b.session, e.GetSession())
 	b.view = append(b.view, e.GetView())

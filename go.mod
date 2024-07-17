@@ -4,11 +4,9 @@ go 1.22.2
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.32.0-20231115204500-e097f827e652.1
-	github.com/RoaringBitmap/roaring v1.9.4
 	github.com/apache/arrow/go/v15 v15.0.0
 	github.com/blevesearch/vellum v1.0.10
 	github.com/bufbuild/protovalidate-go v0.5.0
-	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/gernest/rbf v0.22.20
@@ -28,11 +26,13 @@ require (
 )
 
 require (
+	github.com/RoaringBitmap/roaring v1.9.4 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/benbjohnson/immutable v0.4.3 // indirect
 	github.com/bits-and-blooms/bitset v1.12.0 // indirect
 	github.com/blevesearch/mmap-go v1.0.4 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect

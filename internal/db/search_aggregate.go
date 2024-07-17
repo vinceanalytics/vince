@@ -6,6 +6,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/gernest/roaring"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/defaults"
@@ -185,7 +186,7 @@ func (a *aggregate) Events() uint64 {
 }
 
 func (a *aggregate) Visitors() uint64 {
-	return a.Visitors()
+	return uint64(a.visitors)
 }
 
 func (a *aggregate) Visits() uint64 {
@@ -213,7 +214,7 @@ func (a *aggregate) applyEvents(_ *view, _ uint64, columns *rows.Row) error {
 }
 
 func (a *aggregate) applyVisitors(tx *view, _ uint64, columns *rows.Row) error {
-	vs, err := uniqueUID(tx, columns)
+	vs, err := tx.uidCount(columns)
 	if err != nil {
 		return err
 	}
@@ -226,10 +227,12 @@ func (a *aggregate) applyDuration(tx *view, _ uint64, columns *rows.Row) error {
 	if err != nil {
 		return err
 	}
-	_, sum, err := sumCount(c, columns)
+	filter := roaring.NewBitmapBSICountFilter(columns.Segments[0].Data())
+	err = c.ApplyFilter(0, filter)
 	if err != nil {
 		return err
 	}
+	_, sum := filter.Total()
 	a.duration += sum
 	return nil
 }
