@@ -11,7 +11,7 @@ import (
 	"slices"
 
 	"github.com/gernest/rbf"
-	v2 "github.com/vinceanalytics/vince/gen/go/vince/v2"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"go.etcd.io/bbolt"
 	"google.golang.org/protobuf/proto"
 )
@@ -20,7 +20,7 @@ type DB struct {
 	db     *bbolt.DB
 	idx    *rbf.DB
 	batch  *Batch
-	ranges *v2.Shards
+	ranges *v1.Shards
 }
 
 func New(path string) (*DB, error) {
@@ -35,7 +35,7 @@ func New(path string) (*DB, error) {
 		db.Close()
 		return nil, err
 	}
-	ranges := &v2.Shards{}
+	ranges := &v1.Shards{}
 	if data, err := os.ReadFile(filepath.Join(db.Path, "SHARDS")); err == nil {
 		err := proto.Unmarshal(data, ranges)
 		if err != nil {
@@ -51,7 +51,7 @@ func (db *DB) Close() error {
 	return errors.Join(db.db.Close(), db.idx.Close())
 }
 
-func (db *DB) Append(data *v2.Data) {
+func (db *DB) Append(data *v1.Data) {
 	db.batch.Append(data)
 }
 

@@ -3,11 +3,11 @@ package v1;
 
 message Data {
   int64 timestamp = 1;
-  int64 id = 2;
+  bytes id = 2;
   optional bool bounce = 3;
   bool session = 4;
   bool view = 5;
-  double duration = 6;
+  int64 duration = 6;
 
   string browser = 19;
   string browser_version = 20;
@@ -33,4 +33,9 @@ message Data {
   string tenant_id = 28;
 
   message List { repeated Data items = 1; }
+}
+
+message Shards {
+  repeated int64 min = 1;
+  repeated int64 max = 2;
 }

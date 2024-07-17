@@ -25,34 +25,34 @@ type Data struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Timestamp      int64   `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Id             int64   `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
-	Bounce         *bool   `protobuf:"varint,3,opt,name=bounce,proto3,oneof" json:"bounce,omitempty"`
-	Session        bool    `protobuf:"varint,4,opt,name=session,proto3" json:"session,omitempty"`
-	View           bool    `protobuf:"varint,5,opt,name=view,proto3" json:"view,omitempty"`
-	Duration       float64 `protobuf:"fixed64,6,opt,name=duration,proto3" json:"duration,omitempty"`
-	Browser        string  `protobuf:"bytes,19,opt,name=browser,proto3" json:"browser,omitempty"`
-	BrowserVersion string  `protobuf:"bytes,20,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
-	City           string  `protobuf:"bytes,26,opt,name=city,proto3" json:"city,omitempty"`
-	Country        string  `protobuf:"bytes,23,opt,name=country,proto3" json:"country,omitempty"`
-	Device         string  `protobuf:"bytes,18,opt,name=device,proto3" json:"device,omitempty"`
-	Domain         string  `protobuf:"bytes,25,opt,name=domain,proto3" json:"domain,omitempty"`
-	EntryPage      string  `protobuf:"bytes,9,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
-	Event          string  `protobuf:"bytes,7,opt,name=event,proto3" json:"event,omitempty"`
-	ExitPage       string  `protobuf:"bytes,10,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
-	Host           string  `protobuf:"bytes,27,opt,name=host,proto3" json:"host,omitempty"`
-	Os             string  `protobuf:"bytes,21,opt,name=os,proto3" json:"os,omitempty"`
-	OsVersion      string  `protobuf:"bytes,22,opt,name=os_version,json=osVersion,proto3" json:"os_version,omitempty"`
-	Page           string  `protobuf:"bytes,8,opt,name=page,proto3" json:"page,omitempty"`
-	Referrer       string  `protobuf:"bytes,12,opt,name=referrer,proto3" json:"referrer,omitempty"`
-	Region         string  `protobuf:"bytes,24,opt,name=region,proto3" json:"region,omitempty"`
-	Source         string  `protobuf:"bytes,11,opt,name=source,proto3" json:"source,omitempty"`
-	UtmCampaign    string  `protobuf:"bytes,15,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
-	UtmContent     string  `protobuf:"bytes,16,opt,name=utm_content,json=utmContent,proto3" json:"utm_content,omitempty"`
-	UtmMedium      string  `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
-	UtmSource      string  `protobuf:"bytes,13,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
-	UtmTerm        string  `protobuf:"bytes,17,opt,name=utm_term,json=utmTerm,proto3" json:"utm_term,omitempty"`
-	TenantId       string  `protobuf:"bytes,28,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Timestamp      int64  `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Id             []byte `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Bounce         *bool  `protobuf:"varint,3,opt,name=bounce,proto3,oneof" json:"bounce,omitempty"`
+	Session        bool   `protobuf:"varint,4,opt,name=session,proto3" json:"session,omitempty"`
+	View           bool   `protobuf:"varint,5,opt,name=view,proto3" json:"view,omitempty"`
+	Duration       int64  `protobuf:"varint,6,opt,name=duration,proto3" json:"duration,omitempty"`
+	Browser        string `protobuf:"bytes,19,opt,name=browser,proto3" json:"browser,omitempty"`
+	BrowserVersion string `protobuf:"bytes,20,opt,name=browser_version,json=browserVersion,proto3" json:"browser_version,omitempty"`
+	City           string `protobuf:"bytes,26,opt,name=city,proto3" json:"city,omitempty"`
+	Country        string `protobuf:"bytes,23,opt,name=country,proto3" json:"country,omitempty"`
+	Device         string `protobuf:"bytes,18,opt,name=device,proto3" json:"device,omitempty"`
+	Domain         string `protobuf:"bytes,25,opt,name=domain,proto3" json:"domain,omitempty"`
+	EntryPage      string `protobuf:"bytes,9,opt,name=entry_page,json=entryPage,proto3" json:"entry_page,omitempty"`
+	Event          string `protobuf:"bytes,7,opt,name=event,proto3" json:"event,omitempty"`
+	ExitPage       string `protobuf:"bytes,10,opt,name=exit_page,json=exitPage,proto3" json:"exit_page,omitempty"`
+	Host           string `protobuf:"bytes,27,opt,name=host,proto3" json:"host,omitempty"`
+	Os             string `protobuf:"bytes,21,opt,name=os,proto3" json:"os,omitempty"`
+	OsVersion      string `protobuf:"bytes,22,opt,name=os_version,json=osVersion,proto3" json:"os_version,omitempty"`
+	Page           string `protobuf:"bytes,8,opt,name=page,proto3" json:"page,omitempty"`
+	Referrer       string `protobuf:"bytes,12,opt,name=referrer,proto3" json:"referrer,omitempty"`
+	Region         string `protobuf:"bytes,24,opt,name=region,proto3" json:"region,omitempty"`
+	Source         string `protobuf:"bytes,11,opt,name=source,proto3" json:"source,omitempty"`
+	UtmCampaign    string `protobuf:"bytes,15,opt,name=utm_campaign,json=utmCampaign,proto3" json:"utm_campaign,omitempty"`
+	UtmContent     string `protobuf:"bytes,16,opt,name=utm_content,json=utmContent,proto3" json:"utm_content,omitempty"`
+	UtmMedium      string `protobuf:"bytes,14,opt,name=utm_medium,json=utmMedium,proto3" json:"utm_medium,omitempty"`
+	UtmSource      string `protobuf:"bytes,13,opt,name=utm_source,json=utmSource,proto3" json:"utm_source,omitempty"`
+	UtmTerm        string `protobuf:"bytes,17,opt,name=utm_term,json=utmTerm,proto3" json:"utm_term,omitempty"`
+	TenantId       string `protobuf:"bytes,28,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
 }
 
 func (x *Data) Reset() {
@@ -94,11 +94,11 @@ func (x *Data) GetTimestamp() int64 {
 	return 0
 }
 
-func (x *Data) GetId() int64 {
+func (x *Data) GetId() []byte {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return nil
 }
 
 func (x *Data) GetBounce() bool {
@@ -122,7 +122,7 @@ func (x *Data) GetView() bool {
 	return false
 }
 
-func (x *Data) GetDuration() float64 {
+func (x *Data) GetDuration() int64 {
 	if x != nil {
 		return x.Duration
 	}
@@ -283,6 +283,61 @@ func (x *Data) GetTenantId() string {
 	return ""
 }
 
+type Shards struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Min []int64 `protobuf:"varint,1,rep,packed,name=min,proto3" json:"min,omitempty"`
+	Max []int64 `protobuf:"varint,2,rep,packed,name=max,proto3" json:"max,omitempty"`
+}
+
+func (x *Shards) Reset() {
+	*x = Shards{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_vince_v1_events_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Shards) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Shards) ProtoMessage() {}
+
+func (x *Shards) ProtoReflect() protoreflect.Message {
+	mi := &file_vince_v1_events_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Shards.ProtoReflect.Descriptor instead.
+func (*Shards) Descriptor() ([]byte, []int) {
+	return file_vince_v1_events_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Shards) GetMin() []int64 {
+	if x != nil {
+		return x.Min
+	}
+	return nil
+}
+
+func (x *Shards) GetMax() []int64 {
+	if x != nil {
+		return x.Max
+	}
+	return nil
+}
+
 type Data_List struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -294,7 +349,7 @@ type Data_List struct {
 func (x *Data_List) Reset() {
 	*x = Data_List{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_events_proto_msgTypes[1]
+		mi := &file_vince_v1_events_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -307,7 +362,7 @@ func (x *Data_List) String() string {
 func (*Data_List) ProtoMessage() {}
 
 func (x *Data_List) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_events_proto_msgTypes[1]
+	mi := &file_vince_v1_events_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -337,13 +392,13 @@ var file_vince_v1_events_proto_rawDesc = []byte{
 	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x02, 0x76, 0x31, 0x22, 0x9e, 0x06, 0x0a, 0x04,
 	0x44, 0x61, 0x74, 0x61, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
 	0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
-	0x6d, 0x70, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02,
+	0x6d, 0x70, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x02,
 	0x69, 0x64, 0x12, 0x1b, 0x0a, 0x06, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01,
 	0x28, 0x08, 0x48, 0x00, 0x52, 0x06, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x88, 0x01, 0x01, 0x12,
 	0x18, 0x0a, 0x07, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08,
 	0x52, 0x07, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x76, 0x69, 0x65,
 	0x77, 0x18, 0x05, 0x20, 0x01, 0x28, 0x08, 0x52, 0x04, 0x76, 0x69, 0x65, 0x77, 0x12, 0x1a, 0x0a,
-	0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x01, 0x52,
+	0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x03, 0x52,
 	0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x62, 0x72, 0x6f,
 	0x77, 0x73, 0x65, 0x72, 0x18, 0x13, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x72, 0x6f, 0x77,
 	0x73, 0x65, 0x72, 0x12, 0x27, 0x0a, 0x0f, 0x62, 0x72, 0x6f, 0x77, 0x73, 0x65, 0x72, 0x5f, 0x76,
@@ -384,15 +439,17 @@ var file_vince_v1_events_proto_rawDesc = []byte{
 	0x08, 0x74, 0x65, 0x6e, 0x61, 0x6e, 0x74, 0x49, 0x64, 0x1a, 0x26, 0x0a, 0x04, 0x4c, 0x69, 0x73,
 	0x74, 0x12, 0x1e, 0x0a, 0x05, 0x69, 0x74, 0x65, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
 	0x32, 0x08, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x52, 0x05, 0x69, 0x74, 0x65, 0x6d,
-	0x73, 0x42, 0x09, 0x0a, 0x07, 0x5f, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x0a, 0x06,
-	0x63, 0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x0b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x50, 0x72,
-	0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73,
-	0x2f, 0x74, 0x73, 0x75, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63,
-	0x65, 0x2f, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca,
-	0x02, 0x02, 0x56, 0x31, 0xe2, 0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74,
-	0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x73, 0x42, 0x09, 0x0a, 0x07, 0x5f, 0x62, 0x6f, 0x75, 0x6e, 0x63, 0x65, 0x22, 0x2c, 0x0a, 0x06,
+	0x53, 0x68, 0x61, 0x72, 0x64, 0x73, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x69, 0x6e, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x03, 0x52, 0x03, 0x6d, 0x69, 0x6e, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x61, 0x78, 0x18,
+	0x02, 0x20, 0x03, 0x28, 0x03, 0x52, 0x03, 0x6d, 0x61, 0x78, 0x42, 0x6c, 0x0a, 0x06, 0x63, 0x6f,
+	0x6d, 0x2e, 0x76, 0x31, 0x42, 0x0b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x50, 0x72, 0x6f, 0x74,
+	0x6f, 0x50, 0x01, 0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x76, 0x69, 0x6e, 0x63, 0x65, 0x61, 0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x74,
+	0x73, 0x75, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f,
+	0x76, 0x31, 0xa2, 0x02, 0x03, 0x56, 0x58, 0x58, 0xaa, 0x02, 0x02, 0x56, 0x31, 0xca, 0x02, 0x02,
+	0x56, 0x31, 0xe2, 0x02, 0x0e, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
+	0x61, 0x74, 0x61, 0xea, 0x02, 0x02, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -407,10 +464,11 @@ func file_vince_v1_events_proto_rawDescGZIP() []byte {
 	return file_vince_v1_events_proto_rawDescData
 }
 
-var file_vince_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_vince_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_vince_v1_events_proto_goTypes = []interface{}{
 	(*Data)(nil),      // 0: v1.Data
-	(*Data_List)(nil), // 1: v1.Data.List
+	(*Shards)(nil),    // 1: v1.Shards
+	(*Data_List)(nil), // 2: v1.Data.List
 }
 var file_vince_v1_events_proto_depIdxs = []int32{
 	0, // 0: v1.Data.List.items:type_name -> v1.Data
@@ -440,6 +498,18 @@ func file_vince_v1_events_proto_init() {
 			}
 		}
 		file_vince_v1_events_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Shards); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_vince_v1_events_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Data_List); i {
 			case 0:
 				return &v.state
@@ -459,7 +529,7 @@ func file_vince_v1_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_vince_v1_events_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -4,7 +4,6 @@ import (
 	"maps"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	v2 "github.com/vinceanalytics/vince/gen/go/vince/v2"
 )
 
 type Batch struct {
@@ -35,7 +34,7 @@ func (b *Batch) Reset() {
 	clear(b.labels)
 }
 
-func (b *Batch) Append(e *v2.Data) {
+func (b *Batch) Append(e *v1.Data) {
 	b.ts = append(b.ts, e.Timestamp)
 	b.uid = append(b.uid, e.Id)
 	b.bounce = append(b.bounce, e.GetBounce())
