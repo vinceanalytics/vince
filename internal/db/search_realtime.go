@@ -30,13 +30,12 @@ func (db *DB) Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realt
 	now := time.Now()
 	firstTime := now.Add(-5 * time.Minute)
 
-	var count uint64
+	count := make(map[uint64]struct{})
 	err = db.view(firstTime, now, req.SiteId, func(tx *view, r *rows.Row) error {
-		count, err = tx.uidCount(r)
-		return err
+		return tx.uidCount(r, count)
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &v1.Realtime_Response{Visitors: count}, nil
+	return &v1.Realtime_Response{Visitors: uint64(len(count))}, nil
 }

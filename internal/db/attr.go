@@ -325,10 +325,13 @@ const (
 	shardVsContainerExponent = shardwidth.Exponent - 16
 )
 
-func (tx *view) uidCount(filters *rows.Row) (uint64, error) {
+// we need to track the unique id across shards. This is why we pass result, it
+// is easier and faster to use a map instead of a bitmap because we don't
+// perform any operations only counting.
+func (tx *view) uidCount(filters *rows.Row, result map[uint64]struct{}) error {
 	c, err := tx.get("uid")
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	filter := make([]*roaring.Container, 1<<shardVsContainerExponent)
@@ -346,7 +349,6 @@ func (tx *view) uidCount(filters *rows.Row) (uint64, error) {
 
 	prevRow := ^uint64(0)
 	seenThisRow := false
-	result := uint64(0)
 	for fragData.Next() {
 		k, c := fragData.Value()
 		row := k >> shardVsContainerExponent
@@ -359,11 +361,11 @@ func (tx *view) uidCount(filters *rows.Row) (uint64, error) {
 			prevRow = row
 		}
 		if roaring.IntersectionAny(c, filter[k%(1<<shardVsContainerExponent)]) {
-			result++
+			result[row] = struct{}{}
 			seenThisRow = true
 		}
 	}
-	return result, nil
+	return nil
 }
 
 func (tx *view) distinct(field string, filter []*roaring.Container) (map[uint64][]uint64, error) {

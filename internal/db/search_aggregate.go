@@ -52,7 +52,7 @@ func dupe[T cmp.Ordered](a []T) []T {
 }
 
 type aggregate struct {
-	visitors    int64
+	visitors    map[uint64]struct{}
 	visits      int64
 	views       int64
 	bounceTrue  int64
@@ -63,7 +63,9 @@ type aggregate struct {
 }
 
 func newAggregate(metrics []v1.Metric) *aggregate {
-	a := &aggregate{}
+	a := &aggregate{
+		visitors: make(map[uint64]struct{}),
+	}
 	a.newApplyList(metrics)
 	return a
 }
@@ -154,7 +156,7 @@ func (ls applyList) Apply(tx *view, shard uint64, columns *rows.Row) error {
 }
 
 func (a *aggregate) Reset() {
-	a.visitors = 0
+	clear(a.visitors)
 	a.visits = 0
 	a.views = 0
 	a.events = 0
@@ -186,7 +188,7 @@ func (a *aggregate) Events() uint64 {
 }
 
 func (a *aggregate) Visitors() uint64 {
-	return uint64(a.visitors)
+	return uint64(len(a.visitors))
 }
 
 func (a *aggregate) Visits() uint64 {
@@ -214,12 +216,7 @@ func (a *aggregate) applyEvents(_ *view, _ uint64, columns *rows.Row) error {
 }
 
 func (a *aggregate) applyVisitors(tx *view, _ uint64, columns *rows.Row) error {
-	vs, err := tx.uidCount(columns)
-	if err != nil {
-		return err
-	}
-	a.visitors += int64(vs)
-	return nil
+	return tx.uidCount(columns, a.visitors)
 }
 
 func (a *aggregate) applyDuration(tx *view, _ uint64, columns *rows.Row) error {
