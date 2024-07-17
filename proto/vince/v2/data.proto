@@ -32,3 +32,8 @@ message Data {
   string utm_term = 17;
   string tenant_id = 28;
 }
+
+message Shards {
+  repeated int64 min = 1;
+  repeated int64 max = 2;
+}

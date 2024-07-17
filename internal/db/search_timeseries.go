@@ -20,30 +20,8 @@ func (db *DB) Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.T
 	m := dupe(req.Metrics)
 	a := &timeseriesQuery{metrics: m, series: make(map[uint64]*aggregate)}
 	from, to := periodToRange(req.Period, req.Date)
-	err = db.view(func(tx *view) error {
-		shards := db.shards.Iterator()
-		for shards.HasNext() {
-			shard := shards.Next()
-			r, err := tx.domain(shard, req.SiteId)
-			if err != nil {
-				return err
-			}
-			if r.IsEmpty() {
-				continue
-			}
-			r, err = tx.time(shard, from, to, r)
-			if err != nil {
-				return err
-			}
-			if r.IsEmpty() {
-				continue
-			}
-			err = a.Apply(tx, shard, r)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
+	err = db.view(from, to, req.SiteId, func(tx *view, r *rows.Row) error {
+		return a.Apply(tx, tx.shard, r)
 	})
 	if err != nil {
 		return nil, err

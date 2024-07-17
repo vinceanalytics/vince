@@ -22,32 +22,8 @@ func (db *DB) Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Agg
 	m := dupe(req.Metrics)
 	a := newAggregate(m)
 	from, to := periodToRange(req.Period, req.Date)
-
-	err = db.view(func(tx *view) error {
-		it := db.shards.Iterator()
-
-		for it.HasNext() {
-			shard := it.Next()
-			r, err := tx.domain(shard, req.SiteId)
-			if err != nil {
-				return err
-			}
-			if r.IsEmpty() {
-				continue
-			}
-			r, err = tx.time(shard, from, to, r)
-			if err != nil {
-				return err
-			}
-			if r.IsEmpty() {
-				continue
-			}
-			err = a.Apply(tx, shard, r)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
+	err = db.view(from, to, req.SiteId, func(tx *view, r *rows.Row) error {
+		return a.Apply(tx, tx.shard, r)
 	})
 	if err != nil {
 		return nil, err

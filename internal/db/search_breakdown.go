@@ -20,36 +20,12 @@ func (db *DB) Breakdown(ctx context.Context, req *v1.BreakDown_Request) (*v1.Bre
 	}
 	a := newBreakdown(req.Property, req.Metrics)
 	from, to := periodToRange(req.Period, req.Date)
-	err = db.view(func(tx *view) error {
-		shards := db.shards.Iterator()
-		for shards.HasNext() {
-			shard := shards.Next()
-			r, err := tx.domain(shard, req.SiteId)
-			if err != nil {
-				return err
-			}
-			if r.IsEmpty() {
-				continue
-			}
-			r, err = tx.time(shard, from, to, r)
-			if err != nil {
-				return err
-			}
-			if r.IsEmpty() {
-				continue
-			}
-			err = a.Apply(tx, shard, r)
-			if err != nil {
-				return err
-			}
-		}
-		a.Final(tx)
-		return nil
-	})
+	err = db.view(from, to, req.TenantId, func(tx *view, r *rows.Row) error {
+		return a.Apply(tx, tx.shard, r)
+	}, a.Final)
 	if err != nil {
 		return nil, err
 	}
-
 	return &v1.BreakDown_Response{Results: a.result}, nil
 }
 
@@ -60,7 +36,7 @@ type breakdownQuery struct {
 	result     []*v1.BreakDown_Result
 }
 
-func (b *breakdownQuery) Final(tx *view) {
+func (b *breakdownQuery) Final(tx *view) error {
 	b.result = make([]*v1.BreakDown_Result, 0, len(b.props))
 	for _, prop := range b.properties {
 		r := &v1.BreakDown_Result{Property: prop}
@@ -81,6 +57,7 @@ func (b *breakdownQuery) Final(tx *view) {
 		})
 		b.result = append(b.result, r)
 	}
+	return nil
 }
 
 func newBreakdown(props []v1.Property, m []v1.Metric) *breakdownQuery {

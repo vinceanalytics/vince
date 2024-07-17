@@ -3,6 +3,7 @@ package db
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"hash/maphash"
 	"os"
 	"path/filepath"
@@ -19,6 +20,7 @@ import (
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"go.etcd.io/bbolt"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -27,7 +29,7 @@ var (
 	trID      = []byte("\x00ti")
 )
 
-func (db *DB) view(f func(tx *view) error) error {
+func (db *DB) view(from, to time.Time, domain string, f func(tx *view, r *rows.Row) error, final ...func(*view) error) error {
 	tx, err := db.idx.Begin(false)
 	if err != nil {
 		return err
@@ -43,7 +45,42 @@ func (db *DB) view(f func(tx *view) error) error {
 		tx: tx, txn: txn, m: make(map[string]*rbf.Cursor),
 	}
 	defer vx.Release()
-	return f(vx)
+
+	start := from.UnixMilli()
+	end := to.UnixMilli()
+	for shard := range db.ranges.Min {
+		if db.ranges.Min[shard] > end {
+			break
+		}
+		if db.ranges.Max[shard] < start {
+			break
+		}
+		vx.shard = uint64(shard)
+
+		// read time range
+		r, err := vx.time(start, end, nil)
+		if err != nil {
+			return fmt.Errorf("reading timestamp%w", err)
+		}
+		if r.IsEmpty() {
+			continue
+		}
+		r, err = vx.domain(domain, r)
+		if err != nil {
+			return fmt.Errorf("reading domain%w", err)
+		}
+		if r.IsEmpty() {
+			continue
+		}
+		err = f(vx, r)
+		if err != nil {
+			return err
+		}
+	}
+	if len(final) > 0 {
+		return final[0](vx)
+	}
+	return nil
 }
 
 func (db *DB) Save() error {
@@ -55,16 +92,33 @@ func (db *DB) Save() error {
 			return err
 		}
 
-		m := map[string]*roaring.Bitmap{}
+		shards := map[uint64]map[string]*roaring.Bitmap{}
 
 		tr := newTr(tx)
 		var id uint64
+		currentShard := ^uint64(0)
+		var m map[string]*roaring.Bitmap
+		mx := make(map[uint64]*minMax)
 		for i := range b.ts {
 			id, err = idx.NextSequence()
 			if err != nil {
 				return err
 			}
+			shard := id / rbf.ShardWidth
+			if shard != currentShard {
+				if i != 0 {
+					// Update last shard max timestamp
+					mx[shard-1].max = b.ts[i-1]
+				}
+				mx[shard] = &minMax{min: b.ts[i], max: b.ts[i]}
+				m = make(map[string]*roaring.Bitmap)
+				shards[shard] = m
+				currentShard = shard
+			} else {
+				m = shards[shard]
+			}
 			mutex.Add(get(m, "_id"), id, id)
+
 			bsi.Add(get(m, "timestamp"), id, b.ts[i])
 			bsi.Add(get(m, "date"), id, date(b.ts[i]))
 			bsi.Add(get(m, "uid"), id, b.uid[i])
@@ -80,33 +134,42 @@ func (db *DB) Save() error {
 				mutex.Add(get(m, k), id, x)
 			}
 		}
-		shard := id / shardwidth.ShardWidth
 
 		txn, err := db.idx.Begin(true)
 		if err != nil {
 			return err
 		}
-		for k, v := range m {
-			_, err := txn.AddRoaring(k, v)
-			if err != nil {
-				txn.Rollback()
-				return err
+
+		maxShard := uint64(0)
+		for shard, m := range shards {
+			maxShard = max(maxShard, shard)
+			for k, v := range m {
+				_, err := txn.AddRoaring(fmt.Sprintf("%s:%d", k, shard), v)
+				if err != nil {
+					txn.Rollback()
+					return err
+				}
 			}
 		}
+
 		err = txn.Commit()
 		if err != nil {
 			return err
 		}
-		if db.shards.Contains(shard) {
-			return nil
+
+		// Build a new shards mapping
+		for k, v := range mx {
+			db.updateShard(k+1, v)
 		}
 
 		// update SHARDS field
-		db.shards.Add(shard)
-		db.shards.RunOptimize()
-		data, _ := db.shards.MarshalBinary()
+		data, _ := proto.Marshal(db.ranges)
 		return os.WriteFile(filepath.Join(db.idx.Path, "SHARDS"), data, 0600)
 	})
+}
+
+type minMax struct {
+	min, max int64
 }
 
 func date(ts int64) int64 {
@@ -225,16 +288,20 @@ func find(tx *bbolt.Tx, key, value string) (uint64, bool) {
 	return 0, false
 }
 
-func (tx *view) time(shard uint64, start, end time.Time, r *rows.Row) (*rows.Row, error) {
+func (tx *view) time(start, end int64, r *rows.Row) (*rows.Row, error) {
 	ts, err := tx.get("timestamp")
 	if err != nil {
 		return nil, err
 	}
-	return bsi.Compare(ts, shard, bsi.RANGE, start.UnixMilli(), end.UnixMilli(), r)
+	return bsi.Compare(ts, tx.shard, bsi.RANGE, start, end, r)
 }
 
-func (tx *view) domain(shard uint64, name string) (*rows.Row, error) {
-	return eq(tx, shard, v1.Property_domain.String(), name)
+func (tx *view) domain(name string, f *rows.Row) (*rows.Row, error) {
+	r, err := eq(tx, tx.shard, v1.Property_domain.String(), name)
+	if err != nil {
+		return nil, err
+	}
+	return r.Intersect(f), nil
 }
 
 func (tx *view) boolCount(field string, shard uint64, isTrue bool, columns *rows.Row) (count int64, err error) {

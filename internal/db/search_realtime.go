@@ -32,26 +32,8 @@ func (db *DB) Realtime(ctx context.Context, req *v1.Realtime_Request) (*v1.Realt
 	now := time.Now()
 	firstTime := now.Add(-5 * time.Minute)
 
-	// for realtime we only care are bout latest values which will belong to the
-	// largest shard.
-	shard := db.shards.Maximum()
-
 	var count uint64
-	err = db.view(func(tx *view) error {
-		r, err := tx.domain(shard, req.SiteId)
-		if err != nil {
-			return err
-		}
-		if r.IsEmpty() {
-			return nil
-		}
-		r, err = tx.time(shard, firstTime, now, r)
-		if err != nil {
-			return err
-		}
-		if r.IsEmpty() {
-			return nil
-		}
+	err = db.view(firstTime, now, req.SiteId, func(tx *view, r *rows.Row) error {
 		count, err = uniqueUID(tx, r)
 		return err
 	})

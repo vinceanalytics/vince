@@ -2,20 +2,22 @@ package db
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/gernest/rbf"
 	v2 "github.com/vinceanalytics/vince/gen/go/vince/v2"
 	"go.etcd.io/bbolt"
+	"google.golang.org/protobuf/proto"
 )
 
 type DB struct {
 	db     *bbolt.DB
 	idx    *rbf.DB
 	batch  *Batch
-	shards *roaring64.Bitmap
+	ranges *v2.Shards
 }
 
 func New(path string) (*DB, error) {
@@ -30,20 +32,20 @@ func New(path string) (*DB, error) {
 		db.Close()
 		return nil, err
 	}
-	shards := roaring64.New()
+	ranges := &v2.Shards{}
 	if data, err := os.ReadFile(filepath.Join(db.Path, "SHARDS")); err == nil {
-		err = shards.UnmarshalBinary(data)
+		err := proto.Unmarshal(data, ranges)
 		if err != nil {
 			db.Close()
 			tr.Close()
 			return nil, err
 		}
 	}
-	return &DB{db: tr, idx: db, batch: newBatch(), shards: shards}, nil
+	return &DB{db: tr, idx: db, batch: newBatch(), ranges: ranges}, nil
 }
 
 func (db *DB) Close() error {
-	return errors.Join(db.Close(), db.idx.Close())
+	return errors.Join(db.db.Close(), db.idx.Close())
 }
 
 func (db *DB) Append(data *v2.Data) {
@@ -51,9 +53,10 @@ func (db *DB) Append(data *v2.Data) {
 }
 
 type view struct {
-	tx  *rbf.Tx
-	txn *bbolt.Tx
-	m   map[string]*rbf.Cursor
+	tx    *rbf.Tx
+	txn   *bbolt.Tx
+	shard uint64
+	m     map[string]*rbf.Cursor
 }
 
 func (c *view) Release() {
@@ -67,6 +70,7 @@ func (c *view) find(key, value string) (uint64, bool) {
 }
 
 func (c *view) get(name string) (*rbf.Cursor, error) {
+	name = fmt.Sprintf("%s:%d", name, c.shard)
 	if v, ok := c.m[name]; ok {
 		return v, nil
 	}
@@ -76,4 +80,17 @@ func (c *view) get(name string) (*rbf.Cursor, error) {
 	}
 	c.m[name] = v
 	return v, nil
+}
+
+func (db *DB) updateShard(shard uint64, ts *minMax) {
+	if len(db.ranges.Min) < int(shard) {
+		db.ranges.Min = slices.Grow(db.ranges.Min, int(shard))[:shard]
+		db.ranges.Max = slices.Grow(db.ranges.Max, int(shard))[:shard]
+	}
+	if db.ranges.Min[shard] == 0 {
+		db.ranges.Min[shard] = ts.min
+	} else {
+		db.ranges.Min[shard] = min(db.ranges.Min[shard], ts.min)
+	}
+	db.ranges.Max[shard] = max(db.ranges.Max[shard], ts.max)
 }
