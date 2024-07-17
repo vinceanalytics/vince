@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/gernest/rbf"
 	"github.com/gernest/rbf/dsl/boolean"
 	"github.com/gernest/rbf/dsl/bsi"
@@ -329,15 +328,16 @@ const (
 	shardVsContainerExponent = shardwidth.Exponent - 16
 )
 
-func (tx *view) distinct(field string, o *roaring64.Bitmap, filter []*roaring.Container, isFilter bool) error {
+func (tx *view) distinct(field string, filter []*roaring.Container) (map[uint64][]uint64, error) {
 	c, err := tx.get(field)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	fragData := c.Iterator()
 
 	prevRow := ^uint64(0)
 	seenThisRow := false
+	result := map[uint64][]uint64{}
 	for fragData.Next() {
 		k, c := fragData.Value()
 		row := k >> shardVsContainerExponent
@@ -349,30 +349,17 @@ func (tx *view) distinct(field string, o *roaring64.Bitmap, filter []*roaring.Co
 			seenThisRow = false
 			prevRow = row
 		}
-		if isFilter {
-			if roaring.IntersectionAny(c, filter[k%(1<<shardVsContainerExponent)]) {
-				o.Add(row)
-				seenThisRow = true
-			}
-		} else if c.N() != 0 {
-			o.Add(row)
+		if roaring.IntersectionAny(c, filter[k%(1<<shardVsContainerExponent)]) {
+			nc := roaring.Intersect(c, filter[k%(1<<shardVsContainerExponent)])
+			rs := make([]uint64, 0, nc.N())
+			roaring.ContainerCallback(nc, func(u uint16) {
+				rs = append(rs, uint64(u))
+			})
+			result[row] = rs
 			seenThisRow = true
 		}
 	}
-	return nil
-}
-
-func (tx *view) row(field string, shard uint64, id uint64, f *rows.Row) (*rows.Row, error) {
-	c, err := tx.get(field)
-	if err != nil {
-		return nil, err
-	}
-	r, err := cursor.Row(c, shard, id)
-	if err != nil {
-		return nil, err
-	}
-	return r.Intersect(f), nil
-
+	return result, nil
 }
 
 func (tx *view) key(field string, id uint64) []byte {

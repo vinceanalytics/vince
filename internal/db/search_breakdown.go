@@ -5,7 +5,6 @@ import (
 	"context"
 	"slices"
 
-	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/gernest/roaring"
 	"github.com/gernest/rows"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -69,7 +68,6 @@ func newBreakdown(props []v1.Property, m []v1.Metric) *breakdownQuery {
 }
 
 func (b *breakdownQuery) Apply(tx *view, shard uint64, filters *rows.Row) error {
-	o := roaring64.New()
 	var filterBitmap *roaring.Bitmap
 	if filters != nil && len(filters.Segments) > 0 {
 		filterBitmap = filters.Segments[0].Data()
@@ -93,25 +91,16 @@ func (b *breakdownQuery) Apply(tx *view, shard uint64, filters *rows.Row) error 
 	}
 
 	for _, prop := range b.properties {
-		o.Clear()
-		err := tx.distinct(prop.String(), o, filter, filterBitmap != nil)
+		rs, err := tx.distinct(prop.String(), filter)
 		if err != nil {
 			return err
 		}
-		if o.IsEmpty() {
+		if len(rs) == 0 {
 			continue
 		}
-
-		it := o.Iterator()
-
-		for it.HasNext() {
-			id := it.Next()
-			r, err := tx.row(prop.String(), shard, id, filters)
-			if err != nil {
-				return err
-			}
+		for id, r := range rs {
 			// Compute aggregates for columns belonging to id
-			err = b.get(prop, id).cache.Apply(tx, shard, r)
+			err = b.get(prop, id).cache.Apply(tx, shard, rows.NewRow(r...))
 			if err != nil {
 				return err
 			}
