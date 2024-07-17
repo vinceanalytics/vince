@@ -1,10 +1,13 @@
 package db
 
 import (
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 
 	"github.com/gernest/rbf"
@@ -67,6 +70,25 @@ func (c *view) Release() {
 
 func (c *view) find(key, value string) (uint64, bool) {
 	return find(c.txn, key, value)
+}
+
+func (tx *view) findRe(key, value string) (o []uint64) {
+	r, err := regexp.Compile(value)
+	if err != nil {
+		return
+	}
+	b := tx.txn.Bucket([]byte(key))
+	if b == nil {
+		return []uint64{}
+	}
+	// only traverse the trKey space
+	xc := b.Cursor()
+	for k, v := xc.Seek(trKey); bytes.HasPrefix(k, trKey); k, v = xc.Next() {
+		if r.Match(bytes.TrimPrefix(k, trID)) {
+			o = append(o, binary.BigEndian.Uint64(v))
+		}
+	}
+	return
 }
 
 func (c *view) get(name string) (*rbf.Cursor, error) {

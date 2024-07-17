@@ -21,6 +21,13 @@ func (db *DB) Timeseries(ctx context.Context, req *v1.Timeseries_Request) (*v1.T
 	a := &timeseriesQuery{metrics: m, series: make(map[uint64]*aggregate)}
 	from, to := periodToRange(req.Period, req.Date)
 	err = db.view(from, to, req.SiteId, func(tx *view, r *rows.Row) error {
+		r, err := tx.filters(req.Filters, r)
+		if err != nil {
+			return err
+		}
+		if r.IsEmpty() {
+			return nil
+		}
 		return a.Apply(tx, tx.shard, r)
 	})
 	if err != nil {

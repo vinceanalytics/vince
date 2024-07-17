@@ -20,6 +20,13 @@ func (db *DB) Breakdown(ctx context.Context, req *v1.BreakDown_Request) (*v1.Bre
 	a := newBreakdown(req.Property, req.Metrics)
 	from, to := periodToRange(req.Period, req.Date)
 	err = db.view(from, to, req.TenantId, func(tx *view, r *rows.Row) error {
+		r, err := tx.filters(req.Filters, r)
+		if err != nil {
+			return err
+		}
+		if r.IsEmpty() {
+			return nil
+		}
 		return a.Apply(tx, tx.shard, r)
 	}, a.Final)
 	if err != nil {

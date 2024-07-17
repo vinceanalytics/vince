@@ -116,8 +116,8 @@ func (db *DB) Save() error {
 			} else {
 				m = shards[shard]
 			}
-			mutex.Add(get(m, "_id"), id, id)
 
+			get(m, "_id").DirectAdd(id % shardwidth.ShardWidth)
 			bsi.Add(get(m, "timestamp"), id, b.ts[i])
 			bsi.Add(get(m, "date"), id, date(b.ts[i]))
 			ux, err := tr.Tr("uid", b.uid[i])

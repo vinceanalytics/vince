@@ -24,6 +24,13 @@ func (db *DB) Aggregate(ctx context.Context, req *v1.Aggregate_Request) (*v1.Agg
 	a := newAggregate(m)
 	from, to := periodToRange(req.Period, req.Date)
 	err = db.view(from, to, req.SiteId, func(tx *view, r *rows.Row) error {
+		r, err := tx.filters(req.Filters, r)
+		if err != nil {
+			return err
+		}
+		if r.IsEmpty() {
+			return nil
+		}
 		return a.Apply(tx, tx.shard, r)
 	})
 	if err != nil {
