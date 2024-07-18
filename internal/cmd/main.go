@@ -11,7 +11,6 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
-	"time"
 
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/urfave/cli/v3"
@@ -22,7 +21,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/load"
 	"github.com/vinceanalytics/vince/internal/logger"
-	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -80,12 +78,6 @@ func App() *cli.Command {
 				Usage:   "Path to configuration file",
 				Sources: cli.EnvVars("VINCE_CONFIG"),
 			},
-			&cli.DurationFlag{
-				Name:    "retentionPeriod",
-				Usage:   "How long data will be persisted",
-				Value:   30 * 24 * time.Hour,
-				Sources: cli.EnvVars("VINCE_RETENTION_PERIOD"),
-			},
 			&cli.StringFlag{
 				Name:    "logLevel",
 				Value:   "INFO",
@@ -109,52 +101,6 @@ func App() *cli.Command {
 				Usage:   "Bearer token to authenticate api calls",
 				Sources: cli.EnvVars("VINCE_AUTH_TOKEN"),
 			},
-			&cli.StringFlag{
-				Name:    "credentials",
-				Usage:   "Path to credentials file",
-				Sources: cli.EnvVars("VINCE_CREDENTIALS"),
-			},
-			&cli.StringFlag{
-				Name:    "nodeId",
-				Usage:   "Raft id of the node",
-				Sources: cli.EnvVars("VINCE_NODE_ID"),
-			},
-			&cli.StringFlag{
-				Name:    "nodeAdv",
-				Usage:   "Advertised address for inter-node-communication",
-				Value:   "localhost:4002",
-				Sources: cli.EnvVars("VINCE_NODE_ADVERTISE"),
-			},
-			&cli.StringFlag{
-				Name:    "nodeCa",
-				Usage:   "Path to ca certificate for this node",
-				Sources: cli.EnvVars("VINCE_NODE_CA"),
-			},
-			&cli.StringFlag{
-				Name:    "nodeCert",
-				Usage:   "Path to X509 certificate for this node",
-				Sources: cli.EnvVars("VINCE_NODE_CERT"),
-			},
-			&cli.StringFlag{
-				Name:    "nodeKey",
-				Usage:   "Path to X509 key for this node",
-				Sources: cli.EnvVars("VINCE_NODE_KEY"),
-			},
-			&cli.BoolFlag{
-				Name:    "nodeVerify",
-				Usage:   "Verify X509  certs",
-				Sources: cli.EnvVars("VINCE_NODE_VERIFY"),
-			},
-			&cli.BoolFlag{
-				Name:    "nodeVerifyCLient",
-				Usage:   "Enables mutual TLS on node-to-node communications",
-				Sources: cli.EnvVars("VINCE_NODE_VERIFY_CLIENT"),
-			},
-			&cli.BoolFlag{
-				Name:    "nodeVerifyServerName",
-				Usage:   "Verifies nodes host names",
-				Sources: cli.EnvVars("VINCE_NODE_VERIFY_SERVER_NAME"),
-			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			var level slog.Level
@@ -175,14 +121,12 @@ func App() *cli.Command {
 				Data:            c.String("data"),
 				Listen:          c.String("listen"),
 				RateLimit:       c.Float("rateLimit"),
-				GranuleSize:     c.Int("granuleSize"),
 				GeoipDbPath:     c.String("geoipDbPath"),
 				RetentionPeriod: durationpb.New(c.Duration("retentionPeriod")),
 				AutoTls:         c.Bool("autoTls"),
 				AuthToken:       c.String("authToken"),
 			}
 			log := slog.Default()
-			base = tenant.Config(base, c.StringSlice("domains"))
 			if base.AutoTls {
 				base.Acme = &v1.Acme{
 					Email:  c.String("acmeEmail"),
@@ -199,22 +143,6 @@ func App() *cli.Command {
 						return fmt.Errorf("invalid configuration file %v", err)
 					}
 					proto.Merge(base, &n)
-				}
-			}
-			if cp := c.String("credentials"); cp != "" {
-				d, err := os.ReadFile(cp)
-				if err != nil {
-					logger.Fail("failed loading credentials file", "err", err)
-				}
-				var ls v1.Credential_List
-				err = protojson.Unmarshal(d, &ls)
-				if err != nil {
-					logger.Fail("failed decoding credentials file", "err", err)
-				}
-				if base.Credentials == nil {
-					base.Credentials = &ls
-				} else {
-					proto.Merge(base.Credentials, &ls)
 				}
 			}
 			valid, err := protovalidate.New()
@@ -246,8 +174,7 @@ func App() *cli.Command {
 			}
 			defer db.Close()
 
-			tenants := tenant.NewTenants(base)
-			guard := guard.New(base, tenants)
+			guard := guard.New(base.RateLimit, c.StringSlice("domains"))
 			geo := geo.Open(base.GeoipDbPath)
 			defer geo.Close()
 

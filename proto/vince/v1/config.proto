@@ -5,7 +5,6 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "buf/validate/validate.proto";
-import "vince/v1/auth.proto";
 
 message Version { string version = 1; }
 
@@ -16,7 +15,6 @@ message Config {
     (buf.validate.field).string.host_and_port = true
   ];
   double rate_limit = 3 [ (buf.validate.field).required = true ];
-  int64 granule_size = 5 [ (buf.validate.field).required = true ];
   // Path to the geoiip database used to set web analytics country attribute.
   string geoip_db_path = 8;
   // How long data will be persisted, Older data is automatically deleted.
@@ -26,14 +24,6 @@ message Config {
   bool auto_tls = 11;
   Acme acme = 12;
   string auth_token = 13;
-  repeated Tenant tenants = 14;
-
-  Credential.List credentials = 15;
-}
-
-message Tenant {
-  string id = 1 [ (buf.validate.field).required = true ];
-  repeated Domain domains = 2 [ (buf.validate.field).required = true ];
 }
 
 message Acme {
