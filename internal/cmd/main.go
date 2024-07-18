@@ -251,7 +251,7 @@ func App() *cli.Command {
 			geo := geo.Open(base.GeoipDbPath)
 			defer geo.Close()
 
-			xapi := api.New(db, geo, guard, tenants)
+			xapi := api.New(db, geo, guard)
 			go xapi.Start(ctx)
 			defer xapi.Release()
 

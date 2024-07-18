@@ -17,7 +17,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/guard"
 	"github.com/vinceanalytics/vince/internal/logger"
-	"github.com/vinceanalytics/vince/internal/tenant"
 	"github.com/vinceanalytics/vince/version"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -32,17 +31,16 @@ func init() {
 }
 
 type API struct {
-	db      *db.DB
-	geo     *geo.Geo
-	log     *slog.Logger
-	guard   guard.Guard
-	tenants tenant.Loader
-	events  chan *v1.Data
+	db     *db.DB
+	geo    *geo.Geo
+	log    *slog.Logger
+	guard  guard.Guard
+	events chan *v1.Data
 
 	cache *ristretto.Cache
 }
 
-func New(db *db.DB, geo *geo.Geo, guard guard.Guard, tenants tenant.Loader) *API {
+func New(db *db.DB, geo *geo.Geo, guard guard.Guard) *API {
 	cache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 1e7,
 		MaxCost:     100 << 20, // 100MiB
@@ -53,13 +51,12 @@ func New(db *db.DB, geo *geo.Geo, guard guard.Guard, tenants tenant.Loader) *API
 	}
 
 	return &API{
-		db:      db,
-		geo:     geo,
-		log:     slog.Default().With("component", "api"),
-		guard:   guard,
-		tenants: tenants,
-		events:  make(chan *v1.Data, 4<<10),
-		cache:   cache,
+		db:     db,
+		geo:    geo,
+		log:    slog.Default().With("component", "api"),
+		guard:  guard,
+		events: make(chan *v1.Data, 4<<10),
+		cache:  cache,
 	}
 }
 
@@ -147,12 +144,6 @@ func (a *API) handleApiEvent(w http.ResponseWriter, r *http.Request, _ Params) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	tenantId := a.tenants.TenantBySiteID(r.Context(), e.Domain)
-	if tenantId == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	e.TenantId = tenantId
 	a.events <- e
 	w.WriteHeader(http.StatusAccepted)
 }
@@ -165,7 +156,6 @@ func (a *API) handleEvent(w http.ResponseWriter, r *http.Request, _ Params) {
 		w.WriteHeader(http.StatusTooManyRequests)
 		return
 	}
-	ctx := r.Context()
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -194,12 +184,6 @@ func (a *API) handleEvent(w http.ResponseWriter, r *http.Request, _ Params) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	tenantId := a.tenants.TenantBySiteID(ctx, e.Domain)
-	if tenantId == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	e.TenantId = tenantId
 	a.events <- e
 	w.WriteHeader(http.StatusAccepted)
 }
@@ -239,8 +223,7 @@ func (a *API) handleRealtime(w http.ResponseWriter, r *http.Request, params Para
 	}
 	ctx := r.Context()
 	req := &v1.Realtime_Request{
-		SiteId:   params.SiteID(),
-		TenantId: params.TenantID(),
+		SiteId: params.SiteID(),
 	}
 	res, err := a.db.Realtime(ctx, req)
 	if err != nil {
@@ -259,11 +242,10 @@ func (a *API) handleAggregate(w http.ResponseWriter, r *http.Request, params Par
 	}
 	ctx := r.Context()
 	req := &v1.Aggregate_Request{
-		SiteId:   params.SiteID(),
-		TenantId: params.TenantID(),
-		Period:   params.Period(ctx),
-		Metrics:  params.Metrics(ctx),
-		Filters:  params.Filters(ctx),
+		SiteId:  params.SiteID(),
+		Period:  params.Period(ctx),
+		Metrics: params.Metrics(ctx),
+		Filters: params.Filters(ctx),
 	}
 	res, err := a.db.Aggregate(ctx, req)
 	if err != nil {
@@ -283,7 +265,6 @@ func (a *API) handleTimeseries(w http.ResponseWriter, r *http.Request, params Pa
 	ctx := r.Context()
 	req := &v1.Timeseries_Request{
 		SiteId:   params.SiteID(),
-		TenantId: params.TenantID(),
 		Period:   params.Period(ctx),
 		Metrics:  params.Metrics(ctx),
 		Interval: params.Interval(ctx),
@@ -306,7 +287,6 @@ func (a *API) handleBreakdown(w http.ResponseWriter, r *http.Request, params Par
 	ctx := r.Context()
 	req := &v1.BreakDown_Request{
 		SiteId:   params.SiteID(),
-		TenantId: params.TenantID(),
 		Period:   params.Period(ctx),
 		Metrics:  params.Metrics(ctx),
 		Filters:  params.Filters(ctx),

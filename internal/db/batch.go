@@ -57,7 +57,6 @@ func (b *Batch) Append(e *v1.Data) {
 	b.prop(v1.Property_utm_medium, e.UtmMedium)
 	b.prop(v1.Property_utm_source, e.UtmSource)
 	b.prop(v1.Property_utm_term, e.UtmTerm)
-	b.prop(v1.Property_tenant_id, e.TenantId)
 }
 
 func (b *Batch) prop(k v1.Property, v string) {

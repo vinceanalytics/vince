@@ -62,10 +62,6 @@ func (qp Params) SiteID() string {
 	return qp["site_id"]
 }
 
-func (qp Params) TenantID() string {
-	return qp["tenant_id"]
-}
-
 // Avoid leaking internal errors to client. The actual error is logged and this
 // is returned back to the client.
 var InternalError = status.Error(codes.Internal, "Something went wrong")

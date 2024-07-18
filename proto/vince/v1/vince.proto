@@ -70,7 +70,6 @@ message Join {
 message Realtime {
   message Request {
     string site_id = 1 [ (buf.validate.field).required = true ];
-    string tenant_id = 2 [ (buf.validate.field).required = true ];
   }
   message Response { uint64 visitors = 1; }
 }
@@ -78,7 +77,6 @@ message Realtime {
 message Aggregate {
   message Request {
     string site_id = 1 [ (buf.validate.field).required = true ];
-    string tenant_id = 2 [ (buf.validate.field).required = true ];
     TimePeriod period = 3 [ (buf.validate.field).required = true ];
     repeated Metric metrics = 4 [ (buf.validate.field).required = true ];
     repeated Filter filters = 6;
@@ -191,7 +189,6 @@ enum Property {
   referrer = 20;
   region = 21;
   source = 22;
-  tenant_id = 23;
   utm_campaign = 24;
   utm_content = 25;
   utm_medium = 26;
@@ -229,7 +226,6 @@ message Filters {
     referrer = 20;
     region = 21;
     source = 22;
-    tenant_id = 23;
     utm_campaign = 24;
     utm_content = 25;
     utm_medium = 26;
