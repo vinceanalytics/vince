@@ -413,18 +413,10 @@ func (tx *view) key(field string, id uint64) []byte {
 }
 
 func (tx *view) unique(field string, shard uint64,
-	columns *rows.Row) (o map[uint64][]uint64, err error) {
+	exists *rows.Row) (o map[uint64][]uint64, err error) {
 	c, err := tx.get(field)
 	if err != nil {
 		return nil, err
-	}
-	exists, err := cursor.Row(c, shard, 0)
-	if err != nil {
-		return nil, err
-	}
-	exists = exists.Intersect(columns)
-	if exists.IsEmpty() {
-		return nil, nil
 	}
 	m := make(map[uint64]uint64)
 	mergeBits(m, exists.Columns(), 0)
