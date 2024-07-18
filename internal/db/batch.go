@@ -1,8 +1,6 @@
 package db
 
 import (
-	"maps"
-
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
@@ -14,13 +12,10 @@ type Batch struct {
 	view     []bool
 	duration []int64
 	attr     []map[string]string
-	labels   map[string]string
 }
 
 func newBatch() *Batch {
-	return &Batch{
-		labels: make(map[string]string),
-	}
+	return &Batch{}
 }
 
 func (b *Batch) Reset() {
@@ -31,7 +26,6 @@ func (b *Batch) Reset() {
 	b.view = b.view[:0]
 	b.duration = b.duration[:0]
 	b.attr = b.attr[:0]
-	clear(b.labels)
 }
 
 func (b *Batch) Append(e *v1.Data) {
@@ -41,8 +35,7 @@ func (b *Batch) Append(e *v1.Data) {
 	b.session = append(b.session, e.GetSession())
 	b.view = append(b.view, e.GetView())
 	b.duration = append(b.duration, e.Duration)
-
-	clear(b.labels)
+	b.attr = append(b.attr, make(map[string]string))
 	b.prop(v1.Property_browser, e.Browser)
 	b.prop(v1.Property_browser_version, e.BrowserVersion)
 	b.prop(v1.Property_city, e.City)
@@ -65,11 +58,11 @@ func (b *Batch) Append(e *v1.Data) {
 	b.prop(v1.Property_utm_source, e.UtmSource)
 	b.prop(v1.Property_utm_term, e.UtmTerm)
 	b.prop(v1.Property_tenant_id, e.TenantId)
-	b.attr = append(b.attr, maps.Clone(b.labels))
 }
 
 func (b *Batch) prop(k v1.Property, v string) {
 	if v != "" {
-		b.labels[k.String()] = v
+		m := b.attr[len(b.attr)-1]
+		m[k.String()] = v
 	}
 }
