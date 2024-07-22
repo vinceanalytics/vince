@@ -70,12 +70,46 @@ func (s *Schema[T]) Schema() *arrow.Schema {
 	return s.msg.schema
 }
 
-func (s *Schema[T]) Unmarshal(r arrow.Record, rows []uint64) []T {
-	return unmarshal[T](s.msg.root, r, rows)
-}
+// One decodes value at row from r into a field with name. Useful for reading
+// nested list/struct messages.
+//
+// FOr scalar values it is much faster  to read directly from the array.
+func (s *Schema[T]) One(msg T, name string, r arrow.Array, row int) {
+	proto.Reset(msg)
+	if r.IsNull(row) {
+		return
+	}
+	nx, ok := s.msg.root.hash[name]
+	if !ok {
+		return
+	}
+	fs := nx.desc.(protoreflect.FieldDescriptor)
 
-func (s *Schema[T]) One(o T, r arrow.Record, row int, skip map[string]struct{}) {
-	one[T](o, s.msg.root, r, row, skip)
+	switch {
+	case fs.IsList():
+
+		ls := r.(*array.List)
+		start, end := ls.ValueOffsets(row)
+		val := ls.ListValues()
+		lv := msg.ProtoReflect().NewField(fs)
+		list := lv.List()
+		for k := start; k < end; k++ {
+			list.Append(
+				nx.encode(
+					list.NewElement(),
+					val,
+					int(k),
+				),
+			)
+		}
+		msg.ProtoReflect().Set(fs, lv)
+	case fs.IsMap():
+		panic("MAP not supported")
+	default:
+		lv := msg.ProtoReflect().NewField(fs)
+		nx.encode(lv, r, row)
+		msg.ProtoReflect().Set(fs, lv)
+	}
 }
 
 func (s *Schema[T]) Release() {
@@ -95,104 +129,6 @@ type node struct {
 	children []*node
 	encode   encodeFn
 	hash     map[string]*node
-}
-
-func unmarshal[T proto.Message](n *node, r arrow.Record, rows []uint64) []T {
-	if rows == nil {
-		return []T{}
-	}
-	o := make([]T, len(rows))
-	var a T
-	ref := a.ProtoReflect()
-	for idx := range rows {
-		row := int(rows[idx])
-		msg := ref.New()
-		for i := 0; i < int(r.NumCols()); i++ {
-			name := r.ColumnName(i)
-			nx, ok := n.hash[name]
-			if !ok {
-				panic(fmt.Sprintf("arrow3: field %s not found in node %v", name, n.field.Name))
-			}
-			if r.Column(i).IsNull(row) {
-				continue
-			}
-			fs := nx.desc.(protoreflect.FieldDescriptor)
-			switch {
-			case fs.IsList():
-				ls := r.Column(i).(*array.List)
-				start, end := ls.ValueOffsets(row)
-				val := ls.ListValues()
-				if start != end {
-					lv := msg.NewField(fs)
-					list := lv.List()
-					for k := start; k < end; k++ {
-						list.Append(
-							nx.encode(
-								list.NewElement(),
-								val,
-								int(k),
-							),
-						)
-					}
-					msg.Set(fs, lv)
-				}
-			case fs.IsMap():
-				panic("MAP not supported")
-			default:
-				msg.Set(fs,
-					nx.encode(msg.NewField(fs), r.Column(i), row),
-				)
-			}
-		}
-		o[idx] = msg.Interface().(T)
-	}
-	return o
-
-}
-
-func one[T proto.Message](a T, n *node, r arrow.Record, row int, skip map[string]struct{}) {
-	msg := a.ProtoReflect()
-
-	for i := 0; i < int(r.NumCols()); i++ {
-		name := r.ColumnName(i)
-		if _, ok := skip[name]; ok {
-			continue
-		}
-		nx, ok := n.hash[name]
-		if !ok {
-			panic(fmt.Sprintf("arrow3: field %s not found in node %v", name, n.field.Name))
-		}
-		if r.Column(i).IsNull(row) {
-			continue
-		}
-		fs := nx.desc.(protoreflect.FieldDescriptor)
-		switch {
-		case fs.IsList():
-			ls := r.Column(i).(*array.List)
-			start, end := ls.ValueOffsets(row)
-			val := ls.ListValues()
-			if start != end {
-				lv := msg.NewField(fs)
-				list := lv.List()
-				for k := start; k < end; k++ {
-					list.Append(
-						nx.encode(
-							list.NewElement(),
-							val,
-							int(k),
-						),
-					)
-				}
-				msg.Set(fs, lv)
-			}
-		case fs.IsMap():
-			panic("MAP not supported")
-		default:
-			msg.Set(fs,
-				nx.encode(msg.NewField(fs), r.Column(i), row),
-			)
-		}
-	}
 }
 
 func build(msg protoreflect.Message) *message {
