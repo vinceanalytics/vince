@@ -1,0 +1,18 @@
+schema:
+  fields: 8
+    - profile_id: type=binary, nullable
+            metadata: ["PARQUET:field_id": "1", "path": "profile_id"]
+    - start_time_unix_nano: type=uint64
+                      metadata: ["PARQUET:field_id": "2", "path": "start_time_unix_nano"]
+    - end_time_unix_nano: type=uint64
+                    metadata: ["PARQUET:field_id": "3", "path": "end_time_unix_nano"]
+    - attributes: type=list<item: struct<key: utf8, value: binary>, nullable>, nullable
+            metadata: ["PARQUET:field_id": "4", "path": "attributes"]
+    - dropped_attributes_count: type=uint32
+                          metadata: ["PARQUET:field_id": "5", "path": "dropped_attributes_count"]
+    - original_payload_format: type=utf8
+                         metadata: ["PARQUET:field_id": "6", "path": "original_payload_format"]
+    - original_payload: type=binary, nullable
+                  metadata: ["PARQUET:field_id": "7", "path": "original_payload"]
+    - profile: type=struct<sample_type: list<item: struct<type: int64, unit: int64, aggregation_temporality: int32>, nullable>, sample: list<item: struct<location_index: list<item: uint64, nullable>, locations_start_index: uint64, locations_length: uint64, stacktrace_id_index: uint32, value: list<item: int64, nullable>, label: list<item: struct<key: int64, str: int64, num: int64, num_unit: int64>, nullable>, attributes: list<item: uint64, nullable>, link: uint64, timestamps_unix_nano: list<item: uint64, nullable>>, nullable>, mapping: list<item: struct<id: uint64, memory_start: uint64, memory_limit: uint64, file_offset: uint64, filename: int64, build_id: int64, build_id_kind: int32, attributes: list<item: uint64, nullable>, has_functions: bool, has_filenames: bool, has_line_numbers: bool, has_inline_frames: bool>, nullable>, location: list<item: struct<id: uint64, mapping_index: uint64, address: uint64, line: list<item: struct<function_index: uint64, line: int64, column: int64>, nullable>, is_folded: bool, type_index: uint32, attributes: list<item: uint64, nullable>>, nullable>, location_indices: list<item: int64, nullable>, function: list<item: struct<id: uint64, name: int64, system_name: int64, filename: int64, start_line: int64>, nullable>, attribute_table: list<item: struct<key: utf8, value: binary>, nullable>, attribute_units: list<item: struct<attribute_key: int64, unit: int64>, nullable>, link_table: list<item: struct<trace_id: binary, span_id: binary>, nullable>, string_table: list<item: utf8, nullable>, drop_frames: int64, keep_frames: int64, time_nanos: int64, duration_nanos: int64, period_type: struct<type: int64, unit: int64, aggregation_temporality: int32>, period: int64, comment: list<item: int64, nullable>, default_sample_type: int64>, nullable
+         metadata: ["PARQUET:field_id": "8", "path": "profile"]

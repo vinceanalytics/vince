@@ -1,0 +1,20 @@
+schema:
+  fields: 9
+    - name: type=utf8
+      metadata: ["PARQUET:field_id": "1", "path": "name"]
+    - description: type=utf8
+             metadata: ["PARQUET:field_id": "2", "path": "description"]
+    - unit: type=utf8
+      metadata: ["PARQUET:field_id": "3", "path": "unit"]
+    - gauge: type=struct<data_points: list<item: struct<attributes: list<item: struct<key: utf8, value: binary>, nullable>, start_time_unix_nano: uint64, time_unix_nano: uint64, as_double: float64, as_int: int64, exemplars: list<item: struct<filtered_attributes: list<item: struct<key: utf8, value: binary>, nullable>, time_unix_nano: uint64, as_double: float64, as_int: int64, span_id: binary, trace_id: binary>, nullable>, flags: uint32>, nullable>>, nullable
+       metadata: ["PARQUET:field_id": "5", "path": "gauge"]
+    - sum: type=struct<data_points: list<item: struct<attributes: list<item: struct<key: utf8, value: binary>, nullable>, start_time_unix_nano: uint64, time_unix_nano: uint64, as_double: float64, as_int: int64, exemplars: list<item: struct<filtered_attributes: list<item: struct<key: utf8, value: binary>, nullable>, time_unix_nano: uint64, as_double: float64, as_int: int64, span_id: binary, trace_id: binary>, nullable>, flags: uint32>, nullable>, aggregation_temporality: int32, is_monotonic: bool>, nullable
+     metadata: ["PARQUET:field_id": "7", "path": "sum"]
+    - histogram: type=struct<data_points: list<item: struct<attributes: list<item: struct<key: utf8, value: binary>, nullable>, start_time_unix_nano: uint64, time_unix_nano: uint64, count: uint64, sum: float64, bucket_counts: list<item: uint64, nullable>, explicit_bounds: list<item: float64, nullable>, exemplars: list<item: struct<filtered_attributes: list<item: struct<key: utf8, value: binary>, nullable>, time_unix_nano: uint64, as_double: float64, as_int: int64, span_id: binary, trace_id: binary>, nullable>, flags: uint32, min: float64, max: float64>, nullable>, aggregation_temporality: int32>, nullable
+           metadata: ["PARQUET:field_id": "9", "path": "histogram"]
+    - exponential_histogram: type=struct<data_points: list<item: struct<attributes: list<item: struct<key: utf8, value: binary>, nullable>, start_time_unix_nano: uint64, time_unix_nano: uint64, count: uint64, sum: float64, scale: int32, zero_count: uint64, positive: struct<offset: int32, bucket_counts: list<item: uint64, nullable>>, negative: struct<offset: int32, bucket_counts: list<item: uint64, nullable>>, flags: uint32, exemplars: list<item: struct<filtered_attributes: list<item: struct<key: utf8, value: binary>, nullable>, time_unix_nano: uint64, as_double: float64, as_int: int64, span_id: binary, trace_id: binary>, nullable>, min: float64, max: float64, zero_threshold: float64>, nullable>, aggregation_temporality: int32>, nullable
+                       metadata: ["PARQUET:field_id": "10", "path": "exponential_histogram"]
+    - summary: type=struct<data_points: list<item: struct<attributes: list<item: struct<key: utf8, value: binary>, nullable>, start_time_unix_nano: uint64, time_unix_nano: uint64, count: uint64, sum: float64, quantile_values: list<item: struct<quantile: float64, value: float64>, nullable>, flags: uint32>, nullable>>, nullable
+         metadata: ["PARQUET:field_id": "11", "path": "summary"]
+    - metadata: type=list<item: struct<key: utf8, value: binary>, nullable>, nullable
+          metadata: ["PARQUET:field_id": "12", "path": "metadata"]
