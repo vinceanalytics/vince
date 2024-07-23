@@ -5,11 +5,13 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
+	"regexp"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/apache/arrow/go/v18/arrow"
 	"github.com/apache/arrow/go/v18/arrow/array"
 	"github.com/apache/arrow/go/v18/arrow/ipc"
+	"github.com/cespare/xxhash/v2"
 	"github.com/cockroachdb/pebble"
 )
 
@@ -19,6 +21,7 @@ var (
 	dataPrefix      = []byte{shardPrefix, 0x0}
 	bsiPrefix       = []byte{shardPrefix, 0x1}
 	trKeyPrefix     = []byte{shardPrefix, 0x2}
+	sep             = []byte{'='}
 )
 
 func WriteRecord(b *pebble.Batch, shard uint64, r arrow.Record) error {
@@ -60,8 +63,32 @@ func WriteRecord(b *pebble.Batch, shard uint64, r arrow.Record) error {
 	return nil
 }
 
-func WriteBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error {
+func ReadArray(db *pebble.DB, shard uint64, name string) (arrow.Array, error) {
+	key := make([]byte, 1<<10)
+	copy(key, dataPrefix)
+	binary.BigEndian.PutUint64(key[2:], shard)
+	key = append(key[:10], []byte(name)...)
 
+	value, done, err := db.Get(key)
+	if err != nil {
+		return nil, err
+	}
+	defer done.Close()
+
+	r, err := ipc.NewReader(bytes.NewReader(value), ipc.WithDelayReadSchema(true))
+	if err != nil {
+		return nil, err
+	}
+	defer r.Release()
+	r.Next()
+	record := r.Record()
+	// we only have single field records
+	a := record.Column(0)
+	a.Retain() // avoid this bing released
+	return a, nil
+}
+
+func WriteBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error {
 	key := make([]byte, 1<<10)
 	copy(key, bsiPrefix)
 	binary.BigEndian.PutUint64(key[2:], shard)
@@ -71,7 +98,7 @@ func WriteBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error 
 	for name, v := range m {
 		key = append(key[:10], []byte(name)...)
 		buf.Reset()
-
+		v.RunOptimize()
 		_, err := v.WriteTo(&buf)
 		if err != nil {
 			return fmt.Errorf("writing bsi %d:%s%w", shard, name, err)
@@ -83,6 +110,25 @@ func WriteBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error 
 		}
 	}
 	return nil
+}
+
+func ReadBSI(db *pebble.DB, shard uint64, name string) (*roaring64.BSI, error) {
+	key := make([]byte, 1<<10)
+	copy(key, bsiPrefix)
+	binary.BigEndian.PutUint64(key[2:], shard)
+	key = append(key[:10], []byte(name)...)
+
+	value, done, err := db.Get(key)
+	if err != nil {
+		return nil, err
+	}
+	defer done.Close()
+	r := roaring64.NewDefaultBSI()
+	_, err = r.ReadFrom(bytes.NewReader(value))
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
 }
 
 func WriteString(b *pebble.Batch, shard uint64, m map[uint64]string) error {
@@ -98,6 +144,59 @@ func WriteString(b *pebble.Batch, shard uint64, m map[uint64]string) error {
 		}
 	}
 	return nil
+}
+
+func Search(db *pebble.DB, shard uint64, k, v string) (uint64, bool) {
+	var b bytes.Buffer
+	b.Write(trKeyPrefix)
+	var x [8]byte
+	binary.BigEndian.PutUint64(x[:], shard)
+	b.Write(x[:])
+	b.WriteString(k)
+	b.WriteByte('=')
+	b.WriteString(v)
+	full := b.Bytes()
+	_, done, err := db.Get(full)
+	if err != nil {
+		return 0, false
+	}
+	done.Close()
+
+	return xxhash.Sum64(full[10:]), true
+}
+
+func SearchRegex(db *pebble.DB, shard uint64, k, v string) ([]uint64, error) {
+	var b bytes.Buffer
+	b.Write(trKeyPrefix)
+	var x [8]byte
+	binary.BigEndian.PutUint64(x[:], shard)
+	b.Write(x[:])
+	b.WriteString(k)
+	b.WriteByte('=')
+
+	re, err := regexp.Compile(v)
+	if err != nil {
+		return nil, err
+	}
+	prefix := b.Bytes()
+
+	it, err := db.NewIter(nil)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]uint64, 0, 4)
+	h := new(xxhash.Digest)
+	for it.SeekGE(prefix); bytes.HasPrefix(it.Key(), prefix); it.Next() {
+		full := it.Key()
+		str := full[10:]
+		_, value, _ := bytes.Cut(str, sep)
+		if re.Match(value) {
+			h.Reset()
+			h.Write(str)
+			result = append(result, h.Sum64())
+		}
+	}
+	return result, nil
 }
 
 func WriteTimeRange(b *pebble.Batch, shard uint64, min, max uint64) error {
