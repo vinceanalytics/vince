@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/apache/arrow/go/v18/arrow"
@@ -113,6 +114,32 @@ func WriteTimeRange(b *pebble.Batch, shard uint64, min, max uint64) error {
 	err = b.Set(key, []byte{}, nil)
 	if err != nil {
 		return fmt.Errorf("write time range  %d:%d%w", shard, max, err)
+	}
+	return nil
+}
+
+func ReadTimeRange(db *pebble.DB, start, end uint64, b *roaring64.Bitmap) error {
+	key := make([]byte, 1+8+8)
+	key[0] = timeRangePrefix
+	binary.BigEndian.PutUint64(key[1:], start)
+	binary.BigEndian.PutUint64(key[1+8:], 0)
+
+	from := bytes.Clone(key)
+	binary.BigEndian.PutUint64(key[1:], end)
+	binary.BigEndian.PutUint64(key[1+8:], math.MaxUint64)
+
+	it, err := db.NewIter(&pebble.IterOptions{
+		LowerBound: from,
+		UpperBound: key,
+	})
+	if err != nil {
+		return err
+	}
+	defer it.Close()
+	for it.First(); it.Valid(); it.Next() {
+		b.Add(
+			binary.BigEndian.Uint64(it.Key()[1+8:]),
+		)
 	}
 	return nil
 }
