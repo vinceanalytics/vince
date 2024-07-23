@@ -42,7 +42,7 @@ type Batch[T proto.Message] struct {
 	m       map[string]*roaring64.BSI
 }
 
-func NewBatch[T proto.Message](db *pebble.DB) (*Batch[T], error) {
+func newBatch[T proto.Message](db *pebble.DB) (*Batch[T], error) {
 	schema, err := newSchema[T](memory.DefaultAllocator)
 	if err != nil {
 		return nil, err
@@ -208,7 +208,10 @@ func ReadArray(db *pebble.DB, shard uint64, name string) (arrow.Array, error) {
 		return nil, err
 	}
 	defer done.Close()
+	return arrayFrom(value)
+}
 
+func arrayFrom(value []byte) (arrow.Array, error) {
 	r, err := ipc.NewReader(bytes.NewReader(value), ipc.WithDelayReadSchema(true))
 	if err != nil {
 		return nil, err
@@ -259,6 +262,15 @@ func ReadBSI(db *pebble.DB, shard uint64, name string) (*roaring64.BSI, error) {
 	defer done.Close()
 	r := roaring64.NewDefaultBSI()
 	_, err = r.ReadFrom(bytes.NewReader(value))
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func bsiFrom(value []byte) (*roaring64.BSI, error) {
+	r := roaring64.NewDefaultBSI()
+	_, err := r.ReadFrom(bytes.NewReader(value))
 	if err != nil {
 		return nil, err
 	}
