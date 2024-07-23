@@ -11,19 +11,153 @@ import (
 	"github.com/apache/arrow/go/v18/arrow"
 	"github.com/apache/arrow/go/v18/arrow/array"
 	"github.com/apache/arrow/go/v18/arrow/ipc"
+	"github.com/apache/arrow/go/v18/arrow/memory"
 	"github.com/cespare/xxhash/v2"
 	"github.com/cockroachdb/pebble"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
 	shardPrefix     = byte(0x0)
 	timeRangePrefix = byte(0x1)
+	seqKey          = []byte{0x2}
 	dataPrefix      = []byte{shardPrefix, 0x0}
 	bsiPrefix       = []byte{shardPrefix, 0x1}
 	trKeyPrefix     = []byte{shardPrefix, 0x2}
 	sep             = []byte{'='}
 )
 
+const (
+	shardWidth = 1048576
+)
+
+type Batch[T proto.Message] struct {
+	seq     uint64
+	shard   uint64
+	db      *pebble.DB
+	schema  *Schema[T]
+	strings map[uint64]string
+	hash    xxhash.Digest
+	b       bytes.Buffer
+	m       map[string]*roaring64.BSI
+}
+
+func NewBatch[T proto.Message](db *pebble.DB) (*Batch[T], error) {
+	schema, err := New[T](memory.DefaultAllocator)
+	if err != nil {
+		return nil, err
+	}
+	return &Batch[T]{
+		seq:     ReadSeq(db),
+		shard:   zero,
+		db:      db,
+		schema:  schema,
+		strings: map[uint64]string{},
+		m:       make(map[string]*roaring64.BSI),
+	}, nil
+}
+
+const zero = ^uint64(0)
+
+func (i *Batch[T]) Write(value T, f func(idx Index)) error {
+	i.seq++
+	shard := i.seq / shardWidth
+	if shard != i.shard {
+		if i.shard != zero {
+			err := i.emit()
+			if err != nil {
+				return err
+			}
+		}
+		i.shard = shard
+	}
+	i.schema.Append(value)
+	f(i)
+	return nil
+}
+
+func (i *Batch[T]) Release() error {
+	defer func() {
+		i.schema.Release()
+		i.db = nil
+	}()
+	return i.emit()
+}
+
+func (i *Batch[T]) emit() error {
+	defer func() {
+		clear(i.strings)
+		clear(i.m)
+	}()
+	r := i.schema.NewRecord()
+	defer r.Release()
+
+	b := i.db.NewBatch()
+
+	err := WriteRecord(b, i.shard, r)
+	if err != nil {
+		return err
+	}
+
+	err = WriteBSI(b, i.shard, i.m)
+	if err != nil {
+		return err
+	}
+
+	err = WriteString(b, i.shard, i.strings)
+	if err != nil {
+		return err
+	}
+
+	return i.db.Apply(b, nil)
+}
+
+type Index interface {
+	Int64(field string, value int64)
+	String(field string, value string)
+}
+
+func (i *Batch[T]) Int64(field string, value int64) {
+	i.get(field).SetValue(i.seq, value)
+}
+
+func (i *Batch[T]) String(field string, value string) {
+	i.b.Reset()
+	i.b.WriteString(field)
+	i.b.Write(sep)
+	i.b.WriteString(value)
+
+	i.hash.Reset()
+	i.hash.Write(i.b.Bytes())
+	sum := i.hash.Sum64()
+	i.strings[sum] = i.b.String()
+	i.get(field).SetValue(i.seq, int64(sum))
+}
+
+func (i *Batch[T]) get(name string) *roaring64.BSI {
+	b, ok := i.m[name]
+	if !ok {
+		b = roaring64.NewDefaultBSI()
+		i.m[name] = b
+	}
+	return b
+}
+
+func WriteSeq(db *pebble.DB, seq uint64) error {
+	var b [8]byte
+	binary.BigEndian.PutUint64(b[:], seq)
+	return db.Set(seqKey, b[:], nil)
+}
+
+func ReadSeq(db *pebble.DB) uint64 {
+	value, done, err := db.Get(seqKey)
+	if err != nil {
+		return 0
+	}
+	seq := binary.BigEndian.Uint64(value)
+	done.Close()
+	return seq
+}
 func WriteRecord(b *pebble.Batch, shard uint64, r arrow.Record) error {
 	var buf bytes.Buffer
 	key := make([]byte, 1<<10)
