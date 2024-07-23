@@ -1,4 +1,4 @@
-module github.com/gernest/Len64
+module github.com/gernest/len64
 
 go 1.22.5
 

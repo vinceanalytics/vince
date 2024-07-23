@@ -1,4 +1,4 @@
-package Len64
+package len64
 
 import (
 	"bytes"
@@ -79,7 +79,15 @@ func (i *Batch[T]) Write(value T, f func(idx Index)) error {
 func (i *Batch[T]) Release() error {
 	defer func() {
 		i.schema.Release()
+		WriteSeq(i.db, i.seq)
 		i.db = nil
+	}()
+	return i.emit()
+}
+
+func (i *Batch[T]) Flush() error {
+	defer func() {
+		i.shard = zero
 	}()
 	return i.emit()
 }

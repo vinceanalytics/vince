@@ -1,4 +1,4 @@
-package Len64
+package len64
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"github.com/apache/arrow/go/v18/arrow/ipc"
 	"github.com/apache/arrow/go/v18/arrow/memory"
 	"github.com/cockroachdb/pebble"
+	"github.com/cockroachdb/pebble/vfs"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -17,17 +18,25 @@ type Store[T proto.Message] struct {
 	db *pebble.DB
 }
 
-func New[T proto.Message](path string) (*Store[T], error) {
-	db, err := pebble.Open(path, &pebble.Options{
+func New[T proto.Message](path string, mem bool) (*Store[T], error) {
+	o := &pebble.Options{
 		Merger: &pebble.Merger{
 			Name:  "Lent64",
 			Merge: merge,
 		},
-	})
+	}
+	if mem {
+		o.FS = vfs.NewMem()
+	}
+	db, err := pebble.Open(path, o)
 	if err != nil {
 		return nil, err
 	}
 	return &Store[T]{db: db}, nil
+}
+
+func (db *Store[T]) Batch() (*Batch[T], error) {
+	return newBatch[T](db.db)
 }
 
 func merge(key, value []byte) (pebble.ValueMerger, error) {

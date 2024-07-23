@@ -1,4 +1,4 @@
-package Len64
+package len64
 
 import (
 	"errors"
