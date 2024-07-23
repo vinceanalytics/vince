@@ -53,55 +53,11 @@ func (s *Schema[T]) Schema() *arrow.Schema {
 	return s.msg.schema
 }
 
-// One decodes value at row from r into a field with name. Useful for reading
-// nested list/struct messages.
-//
-// FOr scalar values it is much faster  to read directly from the array.
-func (s *Schema[T]) One(msg T, name string, r arrow.Array, row int) {
-	proto.Reset(msg)
-	if r.IsNull(row) {
-		return
-	}
-	nx, ok := s.msg.root.hash[name]
-	if !ok {
-		return
-	}
-	fs := nx.desc.(protoreflect.FieldDescriptor)
-
-	switch {
-	case fs.IsList():
-
-		ls := r.(*array.List)
-		start, end := ls.ValueOffsets(row)
-		val := ls.ListValues()
-		lv := msg.ProtoReflect().NewField(fs)
-		list := lv.List()
-		for k := start; k < end; k++ {
-			list.Append(
-				nx.encode(
-					list.NewElement(),
-					val,
-					int(k),
-				),
-			)
-		}
-		msg.ProtoReflect().Set(fs, lv)
-	case fs.IsMap():
-		panic("MAP not supported")
-	default:
-		lv := msg.ProtoReflect().NewField(fs)
-		nx.encode(lv, r, row)
-		msg.ProtoReflect().Set(fs, lv)
-	}
-}
-
 func (s *Schema[T]) Release() {
 	s.msg.builder.Release()
 }
 
 type valueFn func(protoreflect.Value, bool) error
-
-type encodeFn func(value protoreflect.Value, a arrow.Array, row int) protoreflect.Value
 
 type node struct {
 	parent   *node
@@ -110,7 +66,6 @@ type node struct {
 	write    valueFn
 	desc     protoreflect.Descriptor
 	children []*node
-	encode   encodeFn
 	hash     map[string]*node
 }
 
@@ -192,9 +147,6 @@ func (n *node) baseType(field protoreflect.FieldDescriptor) (t arrow.DataType) {
 				return nil
 			}
 		}
-		n.encode = func(value protoreflect.Value, a arrow.Array, i int) protoreflect.Value {
-			return protoreflect.ValueOfBool(a.(*array.Boolean).Value(i))
-		}
 	case protoreflect.Uint64Kind:
 		n.setup = func(b array.Builder) valueFn {
 			a := b.(*array.Uint64Builder)
@@ -204,57 +156,47 @@ func (n *node) baseType(field protoreflect.FieldDescriptor) (t arrow.DataType) {
 			}
 		}
 		t = arrow.PrimitiveTypes.Uint64
-		n.encode = func(value protoreflect.Value, a arrow.Array, i int) protoreflect.Value {
-			return protoreflect.ValueOfUint64(a.(*array.Uint64).Value(i))
-		}
 	}
-	if field.IsList() {
-		if t != nil {
-			setup := n.setup
-			n.setup = func(b array.Builder) valueFn {
-				ls := b.(*array.ListBuilder)
-				vb := setup(ls.ValueBuilder())
-				return func(v protoreflect.Value, set bool) error {
-					if !v.IsValid() {
-						ls.AppendNull()
-						return nil
-					}
-					ls.Append(true)
-					list := v.List()
-					for i := 0; i < list.Len(); i++ {
-						err := vb(list.Get(i), true)
-						if err != nil {
-							return err
-						}
-					}
-					return nil
-				}
-			}
-			t = arrow.ListOf(t)
-		}
-	}
-	if t != nil && field.ContainingOneof() != nil {
-		// Handle oneof for base types
-		setup := n.setup
-		n.setup = func(b array.Builder) valueFn {
-			do := setup(b)
-			return func(v protoreflect.Value, set bool) error {
-				if !set {
-					b.AppendNull()
-					return nil
-				}
-				return do(v, set)
-			}
-		}
 
+	if field.IsList() {
+		panic("LIST not supported")
 	}
+
 	if field.IsMap() {
-		panic("MAP not supported")
+		// we only support map[string]string
+		t = arrow.MapOf(
+			&arrow.DictionaryType{
+				IndexType: arrow.PrimitiveTypes.Uint32,
+				ValueType: arrow.BinaryTypes.String,
+			},
+			&arrow.DictionaryType{
+				IndexType: arrow.PrimitiveTypes.Uint32,
+				ValueType: arrow.BinaryTypes.String,
+			},
+		)
+		n.setup = func(b array.Builder) valueFn {
+			a := b.(*array.MapBuilder)
+			key := a.KeyBuilder().(*array.BinaryDictionaryBuilder)
+			value := a.ItemBuilder().(*array.BinaryDictionaryBuilder)
+			return func(v protoreflect.Value, b bool) error {
+				if !v.IsValid() {
+					a.Append(false)
+					return nil
+				}
+				m := v.Map()
+				a.Append(true)
+				m.Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
+					key.AppendString(mk.String())
+					value.AppendString(v.String())
+					return true
+				})
+				return nil
+			}
+		}
 	}
 	return
 }
 
 func nullable(f protoreflect.FieldDescriptor) bool {
-	return f.HasOptionalKeyword() || f.ContainingOneof() != nil ||
-		f.Kind() == protoreflect.BytesKind
+	return f.HasOptionalKeyword() || f.IsMap()
 }

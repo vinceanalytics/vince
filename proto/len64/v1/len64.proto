@@ -9,4 +9,5 @@ message Model {
   bool session = 4;
   bool view = 5;
   uint64 duration = 6;
+  map<string, string> metadata = 7;
 }

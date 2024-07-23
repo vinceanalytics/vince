@@ -15,7 +15,7 @@ const (
 
 type DB struct {
 	store *Store[*v1.Model]
-	tasks chan *task
+	tasks chan *v1.Model
 }
 
 func (db *DB) Start(ctx context.Context) error {
@@ -34,12 +34,12 @@ func (db *DB) startBatch(b *Batch[*v1.Model], ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case e := <-db.tasks:
-			err := b.Write(e.model, func(idx Index) {
-				for k, v := range e.meta {
+			err := b.Write(e, func(idx Index) {
+				for k, v := range e.Metadata {
 					idx.String(k, v)
 				}
-				idx.Int64(timestampField, int64(e.model.Timestamp))
-				idx.Int64(dateField, date(e.model.Timestamp))
+				idx.Int64(timestampField, int64(e.Timestamp))
+				idx.Int64(dateField, date(e.Timestamp))
 			})
 			if err != nil {
 				slog.Error("writing model", "err", err)
