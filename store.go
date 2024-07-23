@@ -39,6 +39,14 @@ func (db *Store[T]) Batch() (*Batch[T], error) {
 	return newBatch[T](db.db)
 }
 
+func (db *Store[T]) Compact() error {
+	return db.db.Compact([]byte{shardPrefix}, seqKey, true)
+}
+
+func (db *Store[T]) Close() error {
+	return db.db.Close()
+}
+
 func merge(key, value []byte) (pebble.ValueMerger, error) {
 	if bytes.HasPrefix(key, dataPrefix) {
 		return newData(key, value)
