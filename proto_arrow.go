@@ -32,7 +32,7 @@ type Schema[T proto.Message] struct {
 	msg *message
 }
 
-func New[T proto.Message](mem memory.Allocator) (schema *Schema[T], err error) {
+func newSchema[T proto.Message](mem memory.Allocator) (schema *Schema[T], err error) {
 	defer func() {
 		e := recover()
 		if e != nil {

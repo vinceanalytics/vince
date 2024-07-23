@@ -43,7 +43,7 @@ type Batch[T proto.Message] struct {
 }
 
 func NewBatch[T proto.Message](db *pebble.DB) (*Batch[T], error) {
-	schema, err := New[T](memory.DefaultAllocator)
+	schema, err := newSchema[T](memory.DefaultAllocator)
 	if err != nil {
 		return nil, err
 	}
