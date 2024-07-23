@@ -5,11 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	v1 "github.com/gernest/len64/gen/go/len64/v1"
 	"github.com/stretchr/testify/require"
-	v13 "go.opentelemetry.io/proto/otlp/logs/v1"
-	v12 "go.opentelemetry.io/proto/otlp/metrics/v1"
-	v1experimental "go.opentelemetry.io/proto/otlp/profiles/v1experimental"
-	v14 "go.opentelemetry.io/proto/otlp/trace/v1"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -19,10 +16,7 @@ func TestSchema(t *testing.T) {
 		name string
 		msg  proto.Message
 	}{
-		{"metric", &v12.Metric{}},
-		{"logs", &v13.LogRecord{}},
-		{"trace", &v14.Span{}},
-		{"profile", &v1experimental.ProfileContainer{}},
+		{"model", &v1.Model{}},
 	}
 
 	for _, e := range samples {

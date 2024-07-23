@@ -1,0 +1,8 @@
+schema:
+  fields: 6
+    - timestamp: type=uint64
+    - id: type=uint64
+    - bounce: type=bool, nullable
+    - session: type=bool
+    - view: type=bool
+    - duration: type=uint64
