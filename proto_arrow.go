@@ -57,146 +57,89 @@ func (s *Schema[T]) Release() {
 	s.msg.builder.Release()
 }
 
-type valueFn func(protoreflect.Value, bool) error
+type valueFn func(protoreflect.Value) error
 
 type node struct {
-	parent   *node
-	field    arrow.Field
-	setup    func(array.Builder) valueFn
-	write    valueFn
-	desc     protoreflect.Descriptor
-	children []*node
-	hash     map[string]*node
+	field arrow.Field
+	setup func(array.Builder) valueFn
+	write valueFn
 }
 
 func build(msg protoreflect.Message) *message {
-	root := &node{desc: msg.Descriptor(),
-		field: arrow.Field{},
-		hash:  make(map[string]*node),
-	}
 	fields := msg.Descriptor().Fields()
-	root.children = make([]*node, fields.Len())
+	nodes := make([]*node, fields.Len())
 	a := make([]arrow.Field, fields.Len())
 	for i := 0; i < fields.Len(); i++ {
-		x := createNode(root, fields.Get(i))
-		root.children[i] = x
-		root.hash[x.field.Name] = x
-		a[i] = root.children[i].field
+		nodes[i] = newNode(fields.Get(i))
+		a[i] = nodes[i].field
 	}
 	as := arrow.NewSchema(a, nil)
 	return &message{
-		root:   root,
+		fields: nodes,
 		schema: as,
 	}
 }
 
 type message struct {
-	root    *node
+	fields  []*node
 	schema  *arrow.Schema
 	builder *array.RecordBuilder
 }
 
 func (m *message) build(mem memory.Allocator) {
 	b := array.NewRecordBuilder(mem, m.schema)
-	for i, ch := range m.root.children {
+	for i, ch := range m.fields {
 		ch.build(b.Field(i))
 	}
 	m.builder = b
 }
 
 func (m *message) append(msg protoreflect.Message) {
-	m.root.WriteMessage(msg)
+	fields := msg.Descriptor().Fields()
+	for i := 0; i < fields.Len(); i++ {
+		m.fields[i].write(msg.Get(fields.Get(i)))
+	}
 }
 
 func (m *message) NewRecord() arrow.Record {
 	return m.builder.NewRecord()
-}
-func createNode(parent *node, field protoreflect.FieldDescriptor) *node {
-	n := &node{parent: parent, desc: field, field: arrow.Field{
-		Name:     string(field.Name()),
-		Nullable: nullable(field),
-	}, hash: make(map[string]*node)}
-	n.field.Type = n.baseType(field)
-
-	if n.field.Type != nil {
-		return n
-	}
-	panic(fmt.Sprintf("%v is not supported ", field.Name()))
 }
 
 func (n *node) build(a array.Builder) {
 	n.write = n.setup(a)
 }
 
-func (n *node) WriteMessage(msg protoreflect.Message) {
-	f := msg.Descriptor().Fields()
-	for i := 0; i < f.Len(); i++ {
-		n.children[i].write(msg.Get(f.Get(i)), msg.Has(f.Get(i)))
-	}
-}
-
-func (n *node) baseType(field protoreflect.FieldDescriptor) (t arrow.DataType) {
+func newNode(field protoreflect.FieldDescriptor) *node {
 	switch field.Kind() {
 	case protoreflect.BoolKind:
-		t = arrow.FixedWidthTypes.Boolean
-
-		n.setup = func(b array.Builder) valueFn {
-			a := b.(*array.BooleanBuilder)
-			return func(v protoreflect.Value, set bool) error {
-				a.Append(v.Bool())
-				return nil
-			}
-		}
-	case protoreflect.Uint64Kind:
-		n.setup = func(b array.Builder) valueFn {
-			a := b.(*array.Uint64Builder)
-			return func(v protoreflect.Value, set bool) error {
-				a.Append(v.Uint())
-				return nil
-			}
-		}
-		t = arrow.PrimitiveTypes.Uint64
-	}
-
-	if field.IsList() {
-		panic("LIST not supported")
-	}
-
-	if field.IsMap() {
-		// we only support map[string]string
-		t = arrow.MapOf(
-			&arrow.DictionaryType{
-				IndexType: arrow.PrimitiveTypes.Uint32,
-				ValueType: arrow.BinaryTypes.String,
+		return &node{
+			field: arrow.Field{
+				Name: string(field.Name()),
+				Type: arrow.FixedWidthTypes.Boolean,
 			},
-			&arrow.DictionaryType{
-				IndexType: arrow.PrimitiveTypes.Uint32,
-				ValueType: arrow.BinaryTypes.String,
-			},
-		)
-		n.setup = func(b array.Builder) valueFn {
-			a := b.(*array.MapBuilder)
-			key := a.KeyBuilder().(*array.BinaryDictionaryBuilder)
-			value := a.ItemBuilder().(*array.BinaryDictionaryBuilder)
-			return func(v protoreflect.Value, b bool) error {
-				if !v.IsValid() {
-					a.Append(false)
+			setup: func(b array.Builder) valueFn {
+				a := b.(*array.BooleanBuilder)
+				return func(v protoreflect.Value) error {
+					a.Append(v.Bool())
 					return nil
 				}
-				m := v.Map()
-				a.Append(true)
-				m.Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
-					key.AppendString(mk.String())
-					value.AppendString(v.String())
-					return true
-				})
-				return nil
-			}
+			},
 		}
+	case protoreflect.Uint64Kind:
+		return &node{
+			field: arrow.Field{
+				Name: string(field.Name()),
+				Type: arrow.PrimitiveTypes.Uint64,
+			},
+			setup: func(b array.Builder) valueFn {
+				a := b.(*array.Uint64Builder)
+				return func(v protoreflect.Value) error {
+					a.Append(v.Uint())
+					return nil
+				}
+			},
+		}
+	default:
+		panic(fmt.Sprintf("%v is not supported", field.Kind()))
 	}
-	return
-}
-
-func nullable(f protoreflect.FieldDescriptor) bool {
-	return f.HasOptionalKeyword() || f.IsMap()
 }

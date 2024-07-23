@@ -24,6 +24,7 @@ var (
 	dataPrefix      = []byte{shardPrefix, 0x0}
 	bsiPrefix       = []byte{shardPrefix, 0x1}
 	trKeyPrefix     = []byte{shardPrefix, 0x2}
+	trIDPrefix      = []byte{shardPrefix, 0x3}
 	sep             = []byte{'='}
 )
 
@@ -291,11 +292,21 @@ func WriteString(b *pebble.Batch, shard uint64, m map[uint64]string) error {
 	copy(key, trKeyPrefix)
 	binary.BigEndian.PutUint64(key[2:], shard)
 
-	for _, v := range m {
+	value := make([]byte, 2+8+8)
+	copy(value, trIDPrefix)
+	binary.BigEndian.PutUint64(value[2:], shard)
+
+	for id, v := range m {
 		key = append(key[:10], []byte(v)...)
 		err := b.Set(key, []byte{}, nil)
 		if err != nil {
 			return fmt.Errorf("write string key %d:%s%w", shard, v, err)
+		}
+
+		binary.BigEndian.PutUint64(value[2+8:], id)
+		err = b.Set(value, []byte(v), nil)
+		if err != nil {
+			return fmt.Errorf("write string id %d:%s%w", shard, v, err)
 		}
 	}
 	return nil
@@ -316,7 +327,6 @@ func Search(db *pebble.DB, shard uint64, k, v string) (uint64, bool) {
 		return 0, false
 	}
 	done.Close()
-
 	return xxhash.Sum64(full[10:]), true
 }
 

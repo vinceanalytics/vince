@@ -1,9 +1,8 @@
 schema:
-  fields: 7
+  fields: 6
     - timestamp: type=uint64
     - id: type=uint64
-    - bounce: type=bool, nullable
+    - bounce: type=bool
     - session: type=bool
     - view: type=bool
     - duration: type=uint64
-    - metadata: type=map<dictionary<values=utf8, indices=uint32, ordered=false>, dictionary<values=utf8, indices=uint32, ordered=false>, items_nullable>, nullable
