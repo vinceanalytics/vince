@@ -1,0 +1,9 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/gernest/len64/gen/go
+plugins:
+  - plugin: go
+    out: gen/go
+    opt: paths=source_relative

@@ -1,0 +1,9 @@
+version: v1
+deps:
+  - buf.build/opentelemetry/opentelemetry
+breaking:
+  use:
+    - WIRE
+lint:
+  use:
+    - DEFAULT

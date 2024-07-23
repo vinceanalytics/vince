@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package v1;
+
+message Model {
+  int64 timestamp = 1;
+  uint64 id = 2;
+  optional bool bounce = 3;
+  bool session = 4;
+  bool view = 5;
+  int64 duration = 6;
+}
