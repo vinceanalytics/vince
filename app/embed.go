@@ -2,7 +2,10 @@ package app
 
 import (
 	"embed"
+	"io/fs"
 )
 
 //go:embed public
-var Public embed.FS
+var public embed.FS
+
+var Public, _ = fs.Sub(public, "public")
