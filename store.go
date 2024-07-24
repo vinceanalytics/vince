@@ -2,13 +2,16 @@ package len64
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"time"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/apache/arrow/go/v18/arrow"
 	"github.com/apache/arrow/go/v18/arrow/array"
 	"github.com/apache/arrow/go/v18/arrow/ipc"
 	"github.com/apache/arrow/go/v18/arrow/memory"
+	"github.com/cespare/xxhash/v2"
 	"github.com/cockroachdb/pebble"
 	"github.com/cockroachdb/pebble/vfs"
 	"google.golang.org/protobuf/proto"
@@ -45,6 +48,51 @@ func (db *Store[T]) Compact() error {
 
 func (db *Store[T]) Close() error {
 	return db.db.Close()
+}
+
+func (db *Store[T]) View(start, end time.Time, domain string, f func(db *pebble.Snapshot, shard uint64, foundSet *roaring64.Bitmap) error) error {
+	snap := db.db.NewSnapshot()
+	defer snap.Close()
+	shards := roaring64.New()
+	from := start.UnixMilli()
+	to := end.UnixMilli()
+	err := ReadTimeRange(snap, uint64(from), uint64(to), shards)
+	if err != nil {
+		return err
+	}
+
+	hash := xxhash.New()
+	hash.WriteString("domain")
+	hash.Write(sep)
+	hash.WriteString(domain)
+
+	sum := hash.Sum64()
+
+	it := shards.Iterator()
+	for it.HasNext() {
+		shard := it.Next()
+		site, err := ReadBSI(snap, shard, "domain")
+		if err != nil {
+			return fmt.Errorf("reading domain bsi%w", err)
+		}
+		match := site.CompareValue(parallel(), roaring64.EQ, int64(sum), 0, nil)
+		if match.IsEmpty() {
+			continue
+		}
+		ts, err := ReadBSI(snap, shard, timestampField)
+		if err != nil {
+			return fmt.Errorf("reading timestamp field%w", err)
+		}
+		match = ts.CompareValue(parallel(), roaring64.RANGE, from, to, match)
+		if match.IsEmpty() {
+			continue
+		}
+		err = f(snap, shard, match)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func merge(key, value []byte) (pebble.ValueMerger, error) {

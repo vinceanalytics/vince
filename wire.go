@@ -277,7 +277,7 @@ func WriteBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error 
 	return nil
 }
 
-func ReadBSI(db *pebble.DB, shard uint64, name string) (*roaring64.BSI, error) {
+func ReadBSI(db *pebble.Snapshot, shard uint64, name string) (*roaring64.BSI, error) {
 	key := make([]byte, 1<<10)
 	copy(key, bsiPrefix)
 	binary.BigEndian.PutUint64(key[2:], shard)
@@ -403,7 +403,7 @@ func WriteTimeRange(b *pebble.Batch, shard uint64, min, max uint64) error {
 	return nil
 }
 
-func ReadTimeRange(db *pebble.DB, start, end uint64, b *roaring64.Bitmap) error {
+func ReadTimeRange(db *pebble.Snapshot, start, end uint64, b *roaring64.Bitmap) error {
 	key := make([]byte, 1+8+8)
 	key[0] = timeRangePrefix
 	binary.BigEndian.PutUint64(key[1:], start)
