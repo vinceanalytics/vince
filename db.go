@@ -12,6 +12,7 @@ import (
 const (
 	timestampField = "_timestamp"
 	dateField      = "_date"
+	userIDField    = "_uid"
 )
 
 type DB struct {
@@ -44,6 +45,7 @@ func (db *DB) startBatch(b *Batch[*v1.Model], ctx context.Context) {
 				})
 				idx.Int64(timestampField, int64(e.Timestamp))
 				idx.Int64(dateField, date(e.Timestamp))
+				idx.Int64(userIDField, int64(e.Id))
 			})
 			if err != nil {
 				slog.Error("writing model", "err", err)
