@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-func (db *Store[T]) CurrentVisitor(domain string, duration time.Duration) (uint64, error) {
+func (db *Store) CurrentVisitor(domain string, duration time.Duration) (uint64, error) {
 	if duration == 0 {
 		duration = 5 * time.Minute
 	}

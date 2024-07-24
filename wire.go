@@ -8,13 +8,8 @@ import (
 	"regexp"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
-	"github.com/apache/arrow/go/v18/arrow"
-	"github.com/apache/arrow/go/v18/arrow/array"
-	"github.com/apache/arrow/go/v18/arrow/ipc"
-	"github.com/apache/arrow/go/v18/arrow/memory"
 	"github.com/cespare/xxhash/v2"
 	"github.com/cockroachdb/pebble"
-	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -22,7 +17,6 @@ var (
 	timeRangePrefix = byte(0x1)
 	trPrefix        = byte(0x2)
 	seqKey          = []byte{0x3}
-	dataPrefix      = []byte{shardPrefix, 0x0}
 	bsiPrefix       = []byte{shardPrefix, 0x1}
 	trKeyPrefix     = []byte{trPrefix, 0x2}
 	trIDPrefix      = []byte{trPrefix, 0x3}
@@ -33,11 +27,10 @@ const (
 	shardWidth = 1048576
 )
 
-type Batch[T proto.Message] struct {
+type Batch struct {
 	seq      uint64
 	shard    uint64
 	db       *pebble.DB
-	schema   *Schema[T]
 	strings  map[uint64]string
 	hash     xxhash.Digest
 	b        bytes.Buffer
@@ -45,16 +38,11 @@ type Batch[T proto.Message] struct {
 	min, max uint64
 }
 
-func newBatch[T proto.Message](db *pebble.DB) (*Batch[T], error) {
-	schema, err := newSchema[T](memory.DefaultAllocator)
-	if err != nil {
-		return nil, err
-	}
-	return &Batch[T]{
+func newBatch(db *pebble.DB) (*Batch, error) {
+	return &Batch{
 		seq:     ReadSeq(db),
 		shard:   zero,
 		db:      db,
-		schema:  schema,
 		strings: map[uint64]string{},
 		m:       make(map[string]*roaring64.BSI),
 	}, nil
@@ -62,7 +50,7 @@ func newBatch[T proto.Message](db *pebble.DB) (*Batch[T], error) {
 
 const zero = ^uint64(0)
 
-func (i *Batch[T]) Write(value T, ts uint64, f func(idx Index)) error {
+func (i *Batch) Write(ts uint64, f func(idx Index)) error {
 	i.seq++
 	shard := i.seq / shardWidth
 	if shard != i.shard {
@@ -74,7 +62,6 @@ func (i *Batch[T]) Write(value T, ts uint64, f func(idx Index)) error {
 		}
 		i.shard = shard
 	}
-	i.schema.Append(value)
 	f(i)
 	if i.min == 0 {
 		i.min = ts
@@ -85,38 +72,30 @@ func (i *Batch[T]) Write(value T, ts uint64, f func(idx Index)) error {
 	return nil
 }
 
-func (i *Batch[T]) Release() error {
+func (i *Batch) Release() error {
 	defer func() {
-		i.schema.Release()
 		WriteSeq(i.db, i.seq)
 		i.db = nil
 	}()
 	return i.emit()
 }
 
-func (i *Batch[T]) Flush() error {
+func (i *Batch) Flush() error {
 	defer func() {
 		i.shard = zero
 	}()
 	return i.emit()
 }
 
-func (i *Batch[T]) emit() error {
+func (i *Batch) emit() error {
 	defer func() {
 		clear(i.strings)
 		clear(i.m)
 	}()
-	r := i.schema.NewRecord()
-	defer r.Release()
 
 	b := i.db.NewBatch()
 
-	err := WriteRecord(b, i.shard, r)
-	if err != nil {
-		return err
-	}
-
-	err = WriteBSI(b, i.shard, i.m)
+	err := WriteBSI(b, i.shard, i.m)
 	if err != nil {
 		return err
 	}
@@ -140,11 +119,11 @@ type Index interface {
 	Bool(field string, value bool)
 }
 
-func (i *Batch[T]) Int64(field string, value int64) {
+func (i *Batch) Int64(field string, value int64) {
 	i.get(field).SetValue(i.seq, value)
 }
 
-func (i *Batch[T]) Bool(field string, value bool) {
+func (i *Batch) Bool(field string, value bool) {
 	n := int64(0)
 	if value {
 		n = 1
@@ -152,7 +131,7 @@ func (i *Batch[T]) Bool(field string, value bool) {
 	i.get(field).SetValue(i.seq, n)
 }
 
-func (i *Batch[T]) String(field string, value string) {
+func (i *Batch) String(field string, value string) {
 	i.b.Reset()
 	i.b.WriteString(field)
 	i.b.Write(sep)
@@ -165,7 +144,7 @@ func (i *Batch[T]) String(field string, value string) {
 	i.get(field).SetValue(i.seq, int64(sum))
 }
 
-func (i *Batch[T]) get(name string) *roaring64.BSI {
+func (i *Batch) get(name string) *roaring64.BSI {
 	b, ok := i.m[name]
 	if !ok {
 		b = roaring64.NewDefaultBSI()
@@ -188,76 +167,6 @@ func ReadSeq(db *pebble.DB) uint64 {
 	seq := binary.BigEndian.Uint64(value)
 	done.Close()
 	return seq
-}
-
-func WriteRecord(b *pebble.Batch, shard uint64, r arrow.Record) error {
-	if r.NumRows() == 0 {
-		return nil
-	}
-	var buf bytes.Buffer
-	key := make([]byte, 1<<10)
-	copy(key, dataPrefix)
-	binary.BigEndian.PutUint64(key[2:], shard)
-
-	for i := 0; i < int(r.NumCols()); i++ {
-		column := r.Column(i)
-		name := r.ColumnName(i)
-		buf.Reset()
-
-		w := ipc.NewWriter(&buf)
-		err := w.Write(array.NewRecord(
-			arrow.NewSchema(
-				[]arrow.Field{
-					{Name: name, Type: column.DataType()},
-				},
-				nil,
-			),
-			[]arrow.Array{column},
-			int64(column.Len()),
-		))
-		if err != nil {
-			return fmt.Errorf("writing column %d:%s%w", shard, name, err)
-		}
-		err = w.Close()
-		if err != nil {
-			return fmt.Errorf("close writing column %d:%s%w", shard, name, err)
-		}
-		key = append(key[:10], []byte(name)...)
-
-		err = b.Merge(key, buf.Bytes(), nil)
-		if err != nil {
-			return fmt.Errorf("merge writing column %d:%s%w", shard, name, err)
-		}
-	}
-	return nil
-}
-
-func ReadArray(db *pebble.DB, shard uint64, name string) (arrow.Array, error) {
-	key := make([]byte, 1<<10)
-	copy(key, dataPrefix)
-	binary.BigEndian.PutUint64(key[2:], shard)
-	key = append(key[:10], []byte(name)...)
-
-	value, done, err := db.Get(key)
-	if err != nil {
-		return nil, err
-	}
-	defer done.Close()
-	return arrayFrom(value)
-}
-
-func arrayFrom(value []byte) (arrow.Array, error) {
-	r, err := ipc.NewReader(bytes.NewReader(value), ipc.WithDelayReadSchema(true))
-	if err != nil {
-		return nil, err
-	}
-	defer r.Release()
-	r.Next()
-	record := r.Record()
-	// we only have single field records
-	a := record.Column(0)
-	a.Retain() // avoid this bing released
-	return a, nil
 }
 
 func WriteBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error {

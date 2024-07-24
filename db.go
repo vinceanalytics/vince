@@ -10,7 +10,7 @@ import (
 )
 
 type DB struct {
-	store *Store[*v1.Model]
+	store *Store
 	tasks chan *v1.Model
 }
 
@@ -23,14 +23,14 @@ func (db *DB) Start(ctx context.Context) error {
 	return nil
 }
 
-func (db *DB) startBatch(b *Batch[*v1.Model], ctx context.Context) {
+func (db *DB) startBatch(b *Batch, ctx context.Context) {
 	ts := time.NewTicker(time.Minute)
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case e := <-db.tasks:
-			err := b.Write(e, e.Timestamp, func(idx Index) {
+			err := b.Write(e.Timestamp, func(idx Index) {
 				e.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 					if fd.Kind() == protoreflect.StringKind {
 						idx.String(string(fd.Name()), v.String())
