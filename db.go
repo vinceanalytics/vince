@@ -6,6 +6,7 @@ import (
 	"time"
 
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 
 type DB struct {
 	store *Store[*v1.Model]
-	tasks chan *task
+	tasks chan *v1.Model
 }
 
 func (db *DB) Start(ctx context.Context) error {
@@ -34,12 +35,15 @@ func (db *DB) startBatch(b *Batch[*v1.Model], ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case e := <-db.tasks:
-			err := b.Write(e.model, e.model.Timestamp, func(idx Index) {
-				for k, v := range e.meta {
-					idx.String(k, v)
-				}
-				idx.Int64(timestampField, int64(e.model.Timestamp))
-				idx.Int64(dateField, date(e.model.Timestamp))
+			err := b.Write(e, e.Timestamp, func(idx Index) {
+				e.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+					if fd.Kind() == protoreflect.StringKind {
+						idx.String(string(fd.Name()), v.String())
+					}
+					return true
+				})
+				idx.Int64(timestampField, int64(e.Timestamp))
+				idx.Int64(dateField, date(e.Timestamp))
 			})
 			if err != nil {
 				slog.Error("writing model", "err", err)
@@ -53,16 +57,11 @@ func (db *DB) startBatch(b *Batch[*v1.Model], ctx context.Context) {
 	}
 }
 
-func (db *DB) Save(model *v1.Model, metadata map[string]string) {
-	db.tasks <- &task{model: model, meta: metadata}
+func (db *DB) Save(model *v1.Model) {
+	db.tasks <- model
 }
 
 func date(ts uint64) int64 {
 	yy, mm, dd := time.UnixMilli(int64(ts)).Date()
 	return time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC).UnixMilli()
-}
-
-type task struct {
-	model *v1.Model
-	meta  map[string]string
 }

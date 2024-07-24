@@ -139,6 +139,22 @@ func newNode(field protoreflect.FieldDescriptor) *node {
 				}
 			},
 		}
+	case protoreflect.StringKind:
+		return &node{
+			field: arrow.Field{
+				Name: string(field.Name()),
+				Type: &arrow.DictionaryType{
+					IndexType: arrow.PrimitiveTypes.Uint32,
+					ValueType: arrow.BinaryTypes.String,
+				},
+			},
+			setup: func(b array.Builder) valueFn {
+				a := b.(*array.BinaryDictionaryBuilder)
+				return func(v protoreflect.Value) error {
+					return a.AppendString(v.String())
+				}
+			},
+		}
 	default:
 		panic(fmt.Sprintf("%v is not supported", field.Kind()))
 	}
