@@ -43,7 +43,7 @@ func (db *Store[T]) Batch() (*Batch[T], error) {
 }
 
 func (db *Store[T]) Compact() error {
-	return db.db.Compact([]byte{shardPrefix}, seqKey, true)
+	return db.db.Compact([]byte{shardPrefix}, []byte{0x4}, true)
 }
 
 func (db *Store[T]) Close() error {

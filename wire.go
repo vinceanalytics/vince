@@ -20,11 +20,12 @@ import (
 var (
 	shardPrefix     = byte(0x0)
 	timeRangePrefix = byte(0x1)
-	seqKey          = []byte{0x2}
+	trPrefix        = byte(0x2)
+	seqKey          = []byte{0x3}
 	dataPrefix      = []byte{shardPrefix, 0x0}
 	bsiPrefix       = []byte{shardPrefix, 0x1}
-	trKeyPrefix     = []byte{shardPrefix, 0x2}
-	trIDPrefix      = []byte{shardPrefix, 0x3}
+	trKeyPrefix     = []byte{trPrefix, 0x2}
+	trIDPrefix      = []byte{trPrefix, 0x3}
 	sep             = []byte{'='}
 )
 
@@ -320,20 +321,18 @@ func WriteString(b *pebble.Batch, shard uint64, m map[uint64]string) error {
 	}
 	key := make([]byte, 1<<10)
 	copy(key, trKeyPrefix)
-	binary.BigEndian.PutUint64(key[2:], shard)
 
-	value := make([]byte, 2+8+8)
+	value := make([]byte, 2+8)
 	copy(value, trIDPrefix)
-	binary.BigEndian.PutUint64(value[2:], shard)
 
 	for id, v := range m {
-		key = append(key[:10], []byte(v)...)
+		key = append(key[:2], []byte(v)...)
 		err := b.Set(key, []byte{}, nil)
 		if err != nil {
 			return fmt.Errorf("write string key %d:%s%w", shard, v, err)
 		}
 
-		binary.BigEndian.PutUint64(value[2+8:], id)
+		binary.BigEndian.PutUint64(value[2:], id)
 		err = b.Set(value, []byte(v), nil)
 		if err != nil {
 			return fmt.Errorf("write string id %d:%s%w", shard, v, err)
