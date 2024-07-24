@@ -50,7 +50,31 @@ func (db *Store[T]) Close() error {
 	return db.db.Close()
 }
 
-func (db *Store[T]) View(start, end time.Time, domain string, f func(db *pebble.Snapshot, shard uint64, foundSet *roaring64.Bitmap) error) error {
+// To avoid reading same bsi multiple times we cache them per shard.
+type View struct {
+	bsi   map[string]*roaring64.BSI
+	snap  *pebble.Snapshot
+	shard uint64
+}
+
+func (v *View) Reset(shard uint64) {
+	clear(v.bsi)
+	v.shard = shard
+}
+
+func (v *View) Get(name string) (*roaring64.BSI, error) {
+	if b, ok := v.bsi[name]; ok {
+		return b, nil
+	}
+	b, err := ReadBSI(v.snap, v.shard, name)
+	if err != nil {
+		return nil, err
+	}
+	v.bsi[name] = b
+	return b, nil
+}
+
+func (db *Store[T]) View(start, end time.Time, domain string, f func(db *View, shard uint64, foundSet *roaring64.Bitmap) error) error {
 	snap := db.db.NewSnapshot()
 	defer snap.Close()
 	shards := roaring64.New()
@@ -69,9 +93,14 @@ func (db *Store[T]) View(start, end time.Time, domain string, f func(db *pebble.
 	sum := hash.Sum64()
 
 	it := shards.Iterator()
+	view := &View{
+		bsi:  make(map[string]*roaring64.BSI),
+		snap: snap,
+	}
 	for it.HasNext() {
 		shard := it.Next()
-		site, err := ReadBSI(snap, shard, "domain")
+		view.Reset(shard)
+		site, err := view.Get(domain)
 		if err != nil {
 			return fmt.Errorf("reading domain bsi%w", err)
 		}
@@ -79,7 +108,7 @@ func (db *Store[T]) View(start, end time.Time, domain string, f func(db *pebble.
 		if match.IsEmpty() {
 			continue
 		}
-		ts, err := ReadBSI(snap, shard, timestampField)
+		ts, err := view.Get("timestamp")
 		if err != nil {
 			return fmt.Errorf("reading timestamp field%w", err)
 		}
@@ -87,7 +116,7 @@ func (db *Store[T]) View(start, end time.Time, domain string, f func(db *pebble.
 		if match.IsEmpty() {
 			continue
 		}
-		err = f(snap, shard, match)
+		err = f(view, shard, match)
 		if err != nil {
 			return err
 		}

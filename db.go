@@ -9,12 +9,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-const (
-	timestampField = "_timestamp"
-	dateField      = "_date"
-	userIDField    = "_uid"
-)
-
 type DB struct {
 	store *Store[*v1.Model]
 	tasks chan *v1.Model
@@ -43,9 +37,12 @@ func (db *DB) startBatch(b *Batch[*v1.Model], ctx context.Context) {
 					}
 					return true
 				})
-				idx.Int64(timestampField, int64(e.Timestamp))
-				idx.Int64(dateField, date(e.Timestamp))
-				idx.Int64(userIDField, int64(e.Id))
+				idx.Int64("timestamp", int64(e.Timestamp))
+				idx.Int64("date", date(e.Timestamp))
+				idx.Int64("uid", int64(e.Id))
+				idx.Bool("bounce", e.Bounce)
+				idx.Bool("session", e.Session)
+				idx.Int64("duration", int64(e.Duration))
 			})
 			if err != nil {
 				slog.Error("writing model", "err", err)

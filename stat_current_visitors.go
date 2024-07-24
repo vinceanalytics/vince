@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
-	"github.com/cockroachdb/pebble"
 )
 
 func (db *Store[T]) CurrentVisitor(domain string, duration time.Duration) (uint64, error) {
@@ -17,8 +16,8 @@ func (db *Store[T]) CurrentVisitor(domain string, duration time.Duration) (uint6
 		Add(-duration).
 		Truncate(time.Second)
 	var count uint64
-	err := db.View(start, end, domain, func(db *pebble.Snapshot, shard uint64, match *roaring64.Bitmap) error {
-		id, err := ReadBSI(db, shard, userIDField)
+	err := db.View(start, end, domain, func(db *View, shard uint64, match *roaring64.Bitmap) error {
+		id, err := db.Get("uid")
 		if err != nil {
 			return fmt.Errorf("reading id bsi%w", err)
 		}

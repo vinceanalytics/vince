@@ -136,10 +136,19 @@ func (i *Batch[T]) emit() error {
 type Index interface {
 	Int64(field string, value int64)
 	String(field string, value string)
+	Bool(field string, value bool)
 }
 
 func (i *Batch[T]) Int64(field string, value int64) {
 	i.get(field).SetValue(i.seq, value)
+}
+
+func (i *Batch[T]) Bool(field string, value bool) {
+	n := int64(0)
+	if value {
+		n = 1
+	}
+	i.get(field).SetValue(i.seq, n)
 }
 
 func (i *Batch[T]) String(field string, value string) {
