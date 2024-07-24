@@ -3,12 +3,12 @@ package len64
 import (
 	"bytes"
 	"fmt"
+	"hash/crc32"
 	"io"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/VictoriaMetrics/fastcache"
-	"github.com/cespare/xxhash/v2"
 	"github.com/cockroachdb/pebble"
 	"github.com/cockroachdb/pebble/vfs"
 )
@@ -126,12 +126,12 @@ func (db *Store) view(start, end time.Time, domain string, f func(db *View, foun
 		return err
 	}
 
-	hash := xxhash.New()
-	hash.WriteString("domain")
+	hash := crc32.NewIEEE()
+	hash.Write([]byte("domain"))
 	hash.Write(sep)
-	hash.WriteString(domain)
+	hash.Write([]byte(domain))
 
-	sum := hash.Sum64()
+	sum := hash.Sum32()
 
 	it := shards.Iterator()
 	view := &View{

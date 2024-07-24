@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"hash"
+	"hash/crc32"
 	"math"
 	"regexp"
 
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/VictoriaMetrics/fastcache"
-	"github.com/cespare/xxhash/v2"
 	"github.com/cockroachdb/pebble"
 )
 
@@ -32,8 +34,8 @@ type Batch struct {
 	seq      uint64
 	shard    uint64
 	store    *Store
-	strings  map[uint64]string
-	hash     xxhash.Digest
+	strings  map[uint32]string
+	hash     hash.Hash32
 	b        bytes.Buffer
 	m        map[string]*roaring64.BSI
 	min, max uint64
@@ -44,8 +46,9 @@ func newBatch(db *Store) (*Batch, error) {
 		seq:     ReadSeq(db.db),
 		shard:   zero,
 		store:   db,
-		strings: map[uint64]string{},
+		strings: map[uint32]string{},
 		m:       make(map[string]*roaring64.BSI),
+		hash:    crc32.NewIEEE(),
 	}, nil
 }
 
@@ -140,7 +143,7 @@ func (i *Batch) String(field string, value string) {
 
 	i.hash.Reset()
 	i.hash.Write(i.b.Bytes())
-	sum := i.hash.Sum64()
+	sum := i.hash.Sum32()
 	i.strings[sum] = i.b.String()
 	i.get(field).SetValue(i.seq, int64(sum))
 }
@@ -225,18 +228,18 @@ func bsiFrom(value []byte) (*roaring64.BSI, error) {
 	return r, nil
 }
 
-func WriteString(b *pebble.Batch, cache *fastcache.Cache, m map[uint64]string) error {
+func WriteString(b *pebble.Batch, cache *fastcache.Cache, m map[uint32]string) error {
 	if len(m) == 0 {
 		return nil
 	}
 	key := make([]byte, 1<<10)
 	copy(key, trKeyPrefix)
 
-	value := make([]byte, 2+8)
+	value := make([]byte, 2+4)
 	copy(value, trIDPrefix)
 
 	for id, v := range m {
-		binary.BigEndian.PutUint64(value[2:], id)
+		binary.BigEndian.PutUint32(value[2:], id)
 		if cache.Has(value[2:]) {
 			continue
 		}
@@ -256,25 +259,7 @@ func WriteString(b *pebble.Batch, cache *fastcache.Cache, m map[uint64]string) e
 	return nil
 }
 
-func Search(db *pebble.DB, shard uint64, k, v string) (uint64, bool) {
-	var b bytes.Buffer
-	b.Write(trKeyPrefix)
-	var x [8]byte
-	binary.BigEndian.PutUint64(x[:], shard)
-	b.Write(x[:])
-	b.WriteString(k)
-	b.WriteByte('=')
-	b.WriteString(v)
-	full := b.Bytes()
-	_, done, err := db.Get(full)
-	if err != nil {
-		return 0, false
-	}
-	done.Close()
-	return xxhash.Sum64(full[10:]), true
-}
-
-func SearchRegex(db *pebble.Snapshot, shard uint64, k, v string) ([]uint64, error) {
+func SearchRegex(db *pebble.Snapshot, shard uint64, k, v string) (*roaring.Bitmap, error) {
 	var b bytes.Buffer
 	b.Write(trKeyPrefix)
 	var x [8]byte
@@ -293,8 +278,8 @@ func SearchRegex(db *pebble.Snapshot, shard uint64, k, v string) ([]uint64, erro
 	if err != nil {
 		return nil, err
 	}
-	result := make([]uint64, 0, 4)
-	h := new(xxhash.Digest)
+	h := crc32.NewIEEE()
+	r := roaring.New()
 	for it.SeekGE(prefix); bytes.HasPrefix(it.Key(), prefix); it.Next() {
 		full := it.Key()
 		str := full[10:]
@@ -302,10 +287,10 @@ func SearchRegex(db *pebble.Snapshot, shard uint64, k, v string) ([]uint64, erro
 		if re.Match(value) {
 			h.Reset()
 			h.Write(str)
-			result = append(result, h.Sum64())
+			r.Add(h.Sum32())
 		}
 	}
-	return result, nil
+	return r, nil
 }
 
 func WriteTimeRange(b *pebble.Batch, shard uint64, min, max uint64) error {

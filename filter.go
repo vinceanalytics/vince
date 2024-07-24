@@ -1,8 +1,9 @@
 package len64
 
 import (
+	"hash/crc32"
+
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
-	"github.com/cespare/xxhash/v2"
 )
 
 type Filter interface {
@@ -37,11 +38,11 @@ func (s *Text) Apply(db *View, foundSet *roaring64.Bitmap) (*roaring64.Bitmap, e
 	}
 	switch s.OP {
 	case EQ, NEQ:
-		h := xxhash.New()
-		h.WriteString(s.Field)
+		h := crc32.NewIEEE()
+		h.Write([]byte(s.Field))
 		h.Write(sep)
-		h.WriteString(s.Value)
-		value := h.Sum64()
+		h.Write([]byte(s.Value))
+		value := h.Sum32()
 		r := b.CompareValue(parallel(), roaring64.EQ, int64(value), 0, foundSet)
 		if s.OP == NEQ {
 			return roaring64.AndNot(r, foundSet), nil
@@ -53,8 +54,11 @@ func (s *Text) Apply(db *View, foundSet *roaring64.Bitmap) (*roaring64.Bitmap, e
 			return nil, err
 		}
 		r := roaring64.New()
-		for i := range values {
-			o := b.CompareValue(parallel(), roaring64.EQ, int64(values[i]), 0, foundSet)
+		it := values.Iterator()
+
+		for it.HasNext() {
+			m := int64(it.Next())
+			o := b.CompareValue(parallel(), roaring64.EQ, m, 0, foundSet)
 			r.Or(o)
 		}
 		if s.OP == NRE {
