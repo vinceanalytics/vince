@@ -360,7 +360,7 @@ func Search(db *pebble.DB, shard uint64, k, v string) (uint64, bool) {
 	return xxhash.Sum64(full[10:]), true
 }
 
-func SearchRegex(db *pebble.DB, shard uint64, k, v string) ([]uint64, error) {
+func SearchRegex(db *pebble.Snapshot, shard uint64, k, v string) ([]uint64, error) {
 	var b bytes.Buffer
 	b.Write(trKeyPrefix)
 	var x [8]byte

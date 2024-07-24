@@ -74,7 +74,47 @@ func (v *View) Get(name string) (*roaring64.BSI, error) {
 	return b, nil
 }
 
-func (db *Store[T]) View(start, end time.Time, domain string, f func(db *View, shard uint64, foundSet *roaring64.Bitmap) error) error {
+func (db *Store[T]) Select(
+	start, end time.Time, domain string,
+	filter Filter,
+	project []string,
+) (Projection, error) {
+	match := map[string][]*roaring64.BSI{}
+	err := db.view(start, end, domain, func(db *View, foundSet *roaring64.Bitmap) error {
+		f, err := filter.Apply(db, foundSet)
+		if err != nil {
+			return err
+		}
+		if f.IsEmpty() {
+			return nil
+		}
+		for i := range project {
+			b, err := db.Get(project[i])
+			if err != nil {
+				return err
+			}
+			newBSI := b.NewBSIRetainSet(f)
+			match[project[i]] = append(match[project[i]], newBSI)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	o := make(Projection)
+	for k, v := range match {
+		if len(v) == 1 {
+			// fast path to avoid extra work
+			o[k] = v[0]
+			continue
+		}
+		v[0].ParOr(parallel(), v[1:]...)
+		o[k] = v[0]
+	}
+	return o, nil
+}
+
+func (db *Store[T]) view(start, end time.Time, domain string, f func(db *View, foundSet *roaring64.Bitmap) error) error {
 	snap := db.db.NewSnapshot()
 	defer snap.Close()
 	shards := roaring64.New()
@@ -116,7 +156,7 @@ func (db *Store[T]) View(start, end time.Time, domain string, f func(db *View, s
 		if match.IsEmpty() {
 			continue
 		}
-		err = f(view, shard, match)
+		err = f(view, match)
 		if err != nil {
 			return err
 		}
