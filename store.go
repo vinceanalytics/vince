@@ -7,13 +7,15 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
+	"github.com/VictoriaMetrics/fastcache"
 	"github.com/cespare/xxhash/v2"
 	"github.com/cockroachdb/pebble"
 	"github.com/cockroachdb/pebble/vfs"
 )
 
 type Store struct {
-	db *pebble.DB
+	db    *pebble.DB
+	cache *fastcache.Cache
 }
 
 func New(path string, mem bool) (*Store, error) {
@@ -30,11 +32,14 @@ func New(path string, mem bool) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Store{db: db}, nil
+	return &Store{db: db,
+		// We expect to spend a lot of time doing translation Keep enough data in the cache
+		cache: fastcache.New(256 << 20),
+	}, nil
 }
 
 func (db *Store) Batch() (*Batch, error) {
-	return newBatch(db.db)
+	return newBatch(db)
 }
 
 func (db *Store) Compact() error {
@@ -42,6 +47,7 @@ func (db *Store) Compact() error {
 }
 
 func (db *Store) Close() error {
+	db.cache.Reset()
 	return db.db.Close()
 }
 

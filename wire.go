@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
+	"github.com/VictoriaMetrics/fastcache"
 	"github.com/cespare/xxhash/v2"
 	"github.com/cockroachdb/pebble"
 )
@@ -30,7 +31,7 @@ const (
 type Batch struct {
 	seq      uint64
 	shard    uint64
-	db       *pebble.DB
+	store    *Store
 	strings  map[uint64]string
 	hash     xxhash.Digest
 	b        bytes.Buffer
@@ -38,11 +39,11 @@ type Batch struct {
 	min, max uint64
 }
 
-func newBatch(db *pebble.DB) (*Batch, error) {
+func newBatch(db *Store) (*Batch, error) {
 	return &Batch{
-		seq:     ReadSeq(db),
+		seq:     ReadSeq(db.db),
 		shard:   zero,
-		db:      db,
+		store:   db,
 		strings: map[uint64]string{},
 		m:       make(map[string]*roaring64.BSI),
 	}, nil
@@ -74,8 +75,8 @@ func (i *Batch) Write(ts uint64, f func(idx Index)) error {
 
 func (i *Batch) Release() error {
 	defer func() {
-		WriteSeq(i.db, i.seq)
-		i.db = nil
+		WriteSeq(i.store.db, i.seq)
+		i.store = nil
 	}()
 	return i.emit()
 }
@@ -93,7 +94,7 @@ func (i *Batch) emit() error {
 		clear(i.m)
 	}()
 
-	b := i.db.NewBatch()
+	b := i.store.db.NewBatch()
 
 	err := WriteBSI(b, i.shard, i.m)
 	if err != nil {
@@ -105,12 +106,12 @@ func (i *Batch) emit() error {
 		return err
 	}
 
-	err = WriteString(b, i.shard, i.strings)
+	err = WriteString(b, i.store.cache, i.strings)
 	if err != nil {
 		return err
 	}
 
-	return i.db.Apply(b, nil)
+	return i.store.db.Apply(b, nil)
 }
 
 type Index interface {
@@ -224,7 +225,7 @@ func bsiFrom(value []byte) (*roaring64.BSI, error) {
 	return r, nil
 }
 
-func WriteString(b *pebble.Batch, shard uint64, m map[uint64]string) error {
+func WriteString(b *pebble.Batch, cache *fastcache.Cache, m map[uint64]string) error {
 	if len(m) == 0 {
 		return nil
 	}
@@ -235,17 +236,22 @@ func WriteString(b *pebble.Batch, shard uint64, m map[uint64]string) error {
 	copy(value, trIDPrefix)
 
 	for id, v := range m {
+		binary.BigEndian.PutUint64(value[2:], id)
+		if cache.Has(value[2:]) {
+			continue
+		}
+
 		key = append(key[:2], []byte(v)...)
 		err := b.Set(key, []byte{}, nil)
 		if err != nil {
-			return fmt.Errorf("write string key %d:%s%w", shard, v, err)
+			return fmt.Errorf("write string key %s%w", v, err)
 		}
 
-		binary.BigEndian.PutUint64(value[2:], id)
 		err = b.Set(value, []byte(v), nil)
 		if err != nil {
-			return fmt.Errorf("write string id %d:%s%w", shard, v, err)
+			return fmt.Errorf("write string id %s%w", v, err)
 		}
+		cache.Set(value[2:], []byte(v))
 	}
 	return nil
 }
