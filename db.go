@@ -34,7 +34,7 @@ func (db *DB) startBatch(b *Batch[*v1.Model], ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case e := <-db.tasks:
-			err := b.Write(e.model, func(idx Index) {
+			err := b.Write(e.model, e.model.Timestamp, func(idx Index) {
 				for k, v := range e.meta {
 					idx.String(k, v)
 				}

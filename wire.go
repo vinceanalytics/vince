@@ -33,14 +33,15 @@ const (
 )
 
 type Batch[T proto.Message] struct {
-	seq     uint64
-	shard   uint64
-	db      *pebble.DB
-	schema  *Schema[T]
-	strings map[uint64]string
-	hash    xxhash.Digest
-	b       bytes.Buffer
-	m       map[string]*roaring64.BSI
+	seq      uint64
+	shard    uint64
+	db       *pebble.DB
+	schema   *Schema[T]
+	strings  map[uint64]string
+	hash     xxhash.Digest
+	b        bytes.Buffer
+	m        map[string]*roaring64.BSI
+	min, max uint64
 }
 
 func newBatch[T proto.Message](db *pebble.DB) (*Batch[T], error) {
@@ -60,7 +61,7 @@ func newBatch[T proto.Message](db *pebble.DB) (*Batch[T], error) {
 
 const zero = ^uint64(0)
 
-func (i *Batch[T]) Write(value T, f func(idx Index)) error {
+func (i *Batch[T]) Write(value T, ts uint64, f func(idx Index)) error {
 	i.seq++
 	shard := i.seq / shardWidth
 	if shard != i.shard {
@@ -74,6 +75,12 @@ func (i *Batch[T]) Write(value T, f func(idx Index)) error {
 	}
 	i.schema.Append(value)
 	f(i)
+	if i.min == 0 {
+		i.min = ts
+	} else {
+		i.min = min(i.min, ts)
+	}
+	i.max = max(i.max, ts)
 	return nil
 }
 
@@ -109,6 +116,11 @@ func (i *Batch[T]) emit() error {
 	}
 
 	err = WriteBSI(b, i.shard, i.m)
+	if err != nil {
+		return err
+	}
+
+	err = WriteTimeRange(b, i.shard, i.min, i.max)
 	if err != nil {
 		return err
 	}
@@ -169,6 +181,9 @@ func ReadSeq(db *pebble.DB) uint64 {
 }
 
 func WriteRecord(b *pebble.Batch, shard uint64, r arrow.Record) error {
+	if r.NumRows() == 0 {
+		return nil
+	}
 	var buf bytes.Buffer
 	key := make([]byte, 1<<10)
 	copy(key, dataPrefix)
@@ -236,6 +251,9 @@ func arrayFrom(value []byte) (arrow.Array, error) {
 }
 
 func WriteBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error {
+	if len(m) == 0 {
+		return nil
+	}
 	key := make([]byte, 1<<10)
 	copy(key, bsiPrefix)
 	binary.BigEndian.PutUint64(key[2:], shard)
@@ -288,6 +306,9 @@ func bsiFrom(value []byte) (*roaring64.BSI, error) {
 }
 
 func WriteString(b *pebble.Batch, shard uint64, m map[uint64]string) error {
+	if len(m) == 0 {
+		return nil
+	}
 	key := make([]byte, 1<<10)
 	copy(key, trKeyPrefix)
 	binary.BigEndian.PutUint64(key[2:], shard)
