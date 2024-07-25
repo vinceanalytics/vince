@@ -5,15 +5,18 @@ go 1.22.5
 require (
 	github.com/RoaringBitmap/roaring/v2 v2.3.1
 	github.com/VictoriaMetrics/fastcache v1.12.2
+	github.com/blevesearch/vellum v1.0.10
 	github.com/cockroachdb/pebble v1.1.1
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/protobuf v1.34.2
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.12.0 // indirect
+	github.com/blevesearch/mmap-go v1.0.4 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cockroachdb/errors v1.11.3 // indirect
 	github.com/cockroachdb/fifo v0.0.0-20240606204812-0bbfbd93a7ce // indirect
