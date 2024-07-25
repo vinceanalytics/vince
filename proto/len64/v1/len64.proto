@@ -32,3 +32,11 @@ message Model {
   string utm_source = 13;
   string utm_term = 17;
 }
+
+message Agent {
+  bool bot = 1;
+  string browser = 2;
+  string browser_version = 3;
+  string os = 4;
+  string os_version = 5;
+}

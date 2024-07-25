@@ -12,6 +12,8 @@ import (
 	"github.com/VictoriaMetrics/fastcache"
 	"github.com/blevesearch/vellum"
 	"github.com/blevesearch/vellum/levenshtein"
+	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 //go:embed data
@@ -97,15 +99,10 @@ func init() {
 	})
 }
 
-type Agent struct {
-	Bot                     bool
-	Browser, BrowserVersion string
-	Os, OsVersion           string
-}
-
-func Get(agent string) (a Agent, err error) {
+func Get(agent string) (a *v1.Agent, err error) {
 	if d := cache.Get(nil, []byte(agent)); d != nil {
-		err = json.Unmarshal(d, &a)
+		a = &v1.Agent{}
+		err = proto.Unmarshal(d, a)
 		return
 	}
 	var fa *levenshtein.DFA
@@ -116,14 +113,14 @@ func Get(agent string) (a Agent, err error) {
 	it, err := fst.Search(fa, nil, nil)
 	for err == nil {
 		_, val := it.Current()
-		a = Agent{
+		a = &v1.Agent{
 			Bot:            isBot(val),
 			Browser:        str(browser, browser_translate, val),
 			BrowserVersion: str(browser_version, browser_version_translate, val),
 			Os:             str(os, os_translate, val),
 			OsVersion:      str(os_version, os_version_translate, val),
 		}
-		b, _ := json.Marshal(a)
+		b, _ := proto.Marshal(a)
 		cache.Set([]byte(agent), b)
 		return
 	}
