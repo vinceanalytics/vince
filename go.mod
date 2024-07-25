@@ -7,7 +7,7 @@ require (
 	github.com/VictoriaMetrics/fastcache v1.12.2
 	github.com/blevesearch/vellum v1.0.10
 	github.com/cockroachdb/pebble v1.1.1
-	github.com/oschwald/maxminddb-golang v1.13.1
+	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 v2.4.0
@@ -35,6 +35,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
+	github.com/oschwald/maxminddb-golang v1.13.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.0 // indirect

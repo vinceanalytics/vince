@@ -1,32 +1,29 @@
 package geo
 
 import (
+	"bytes"
+	"compress/gzip"
+	_ "embed"
+	"io"
 	"net"
+	"sync"
 
-	"github.com/oschwald/maxminddb-golang"
+	"github.com/oschwald/geoip2-golang"
 )
 
-type Geo struct {
-	db *maxminddb.Reader
-}
+//go:embed country.gz
+var country []byte
 
-func Open(path string) (*Geo, error) {
-	if path == "" {
-		return nil, nil
-	}
-	db, err := maxminddb.Open(path)
+var (
+	mmdb *geoip2.Reader
+	once sync.Once
+)
+
+func Get(ip net.IP) (Info, error) {
+	x, err := get().City(ip)
 	if err != nil {
-		return nil, err
+		return Info{}, err
 	}
-	return &Geo{db: db}, nil
-}
-
-func (g *Geo) Get(ip net.IP) Info {
-	if g == nil {
-		return Info{}
-	}
-	var x City
-	g.db.Lookup(ip, &x)
 	var region string
 	if len(x.Subdivisions) > 0 {
 		region = x.Subdivisions[0].Names["en"]
@@ -35,30 +32,30 @@ func (g *Geo) Get(ip net.IP) Info {
 		City:    x.City.Names["en"],
 		Country: x.Country.Names["en"],
 		Region:  region,
-	}
-}
-
-func (g *Geo) Close() error {
-	if g == nil {
-		return nil
-	}
-	return g.db.Close()
-}
-
-type City struct {
-	City struct {
-		Names map[string]string `maxminddb:"names"`
-	} `maxminddb:"city"`
-	Subdivisions []struct {
-		Names map[string]string `maxminddb:"names"`
-	} `maxminddb:"subdivisions"`
-	Country struct {
-		Names map[string]string `maxminddb:"names"`
-	} `maxminddb:"country"`
+	}, nil
 }
 
 type Info struct {
 	City    string
 	Country string
 	Region  string
+}
+
+func get() *geoip2.Reader {
+	once.Do(func() {
+		var err error
+		r, err := gzip.NewReader(bytes.NewReader(country))
+		if err != nil {
+			panic("failed to read embedded mmdb data file gzip data expected " + err.Error())
+		}
+		b, err := io.ReadAll(r)
+		if err != nil {
+			panic(err.Error())
+		}
+		mmdb, err = geoip2.FromBytes(b)
+		if err != nil {
+			panic(err.Error())
+		}
+	})
+	return mmdb
 }
