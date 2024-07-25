@@ -7,6 +7,7 @@ require (
 	github.com/VictoriaMetrics/fastcache v1.12.2
 	github.com/blevesearch/vellum v1.0.10
 	github.com/cockroachdb/pebble v1.1.1
+	github.com/oschwald/maxminddb-golang v1.13.1
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 v2.4.0
