@@ -1,0 +1,72 @@
+{{define "_header"}}
+<nav class="relative z-20 py-8">
+    <div class="container print:max-w-full">
+        <nav class="relative flex items-center justify-between sm:h-10 md:justify-center">
+            <div class="flex items-center flex-1 md:absolute md:inset-y-0 md:left-0">
+                <div class="absolute inset-y-0 right-0 flex items-center justify-end">
+                    {{if .current_user}}
+                    <ul class="flex items-center w-full sm:w-auto">
+                        <li>
+                            <div x-data="dropdown" x-on:keydown.escape.prevent.stop="close($refs.button)"
+                                x-on:focusin.window="! $refs.panel.contains($event.target) && close()">
+                                <button x-ref="button" x-on:click="toggle()" type="button"
+                                    class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                                    <button
+                                        class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                                        <span class="font-medium truncate dark:text-gray-100 hidden md:block">
+                                            {{.current_user.name}}
+                                        </span>
+                                    </button>
+                                </button>
+                                <div x-ref="panel" x-show="open" x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-95" x-on:click.outside="close($refs.button)"
+                                    style="display: none;"
+                                    class="absolute right-0 z-10 mt-2 w-60 origin-top-right divide-y divide-gray-100 dark:divide-gray-400 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+
+                                    <div class="px-3.5 py-3" role="none">
+                                        <p class="block text-sm text-gray-500 dark:text-gray-400" role="none">
+                                            Signed in as
+                                        </p>
+                                        <p class="truncate font-medium text-gray-900 dark:text-gray-100" role="none">
+                                            {{.current_user.email}}
+                                        </p>
+                                    </div>
+                                    <div class="py-1.5" role="none">
+                                        <a href="/logout"
+                                            class="inline-flex items-center gap-x-0.5 w-full inline-flex text-gray-700 dark:text-gray-300 px-3.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
+                                            target="_blank" rel="noopener noreferrer">
+                                            Log Out
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    {{else}}
+                    <ul class="flex" x-show="!document.cookie.includes('logged_in=true')">
+                        <li>
+                            <div class="inline-flex">
+                                <a href="/login"
+                                    class="font-medium text-gray-500 dark:text-gray-200 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition duration-150 ease-in-out">
+                                    Login
+                                </a>
+                            </div>
+                            <div class="inline-flex ml-6 rounded shadow">
+                                <a href="/register"
+                                    class="inline-flex items-center justify-center px-5 py-2 text-base font-medium text-white bg-indigo-600 border border-transparent leading-6 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring transition duration-150 ease-in-out">
+                                    Sign up
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                    {{end}}
+                </div>
+            </div>
+        </nav>
+    </div>
+</nav>
+{{end}}
