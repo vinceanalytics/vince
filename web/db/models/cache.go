@@ -1,12 +1,13 @@
 package models
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"time"
 
+	"github.com/gernest/len64/web/db/schema"
 	"golang.org/x/time/rate"
+	"gorm.io/gorm"
 )
 
 type CachedSite struct {
@@ -24,9 +25,8 @@ func CacheRateLimit(c *CachedSite) (rate.Limit, int) {
 	return rate.Limit(c.IngestRateLimit.Float64), 10
 }
 
-func QuerySitesToCache(ctx context.Context, fn func(*CachedSite)) (uint64, error) {
-	db := Get(ctx)
-	rows, err := db.Model(&Site{}).Select("sites.id, sites.domain,sites.stats_start_date, sites.ingest_rate_limit,site_memberships.user_id").
+func QuerySitesToCache(db *gorm.DB, fn func(*CachedSite)) (uint64, error) {
+	rows, err := db.Model(&schema.Site{}).Select("sites.id, sites.domain,sites.stats_start_date, sites.ingest_rate_limit,site_memberships.user_id").
 		Joins("left join  site_memberships on sites.id = site_memberships.site_id and site_memberships.role = 'owner' ").
 		Rows()
 	if err != nil {
