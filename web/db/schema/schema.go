@@ -22,17 +22,6 @@ type SiteMembership struct {
 	Role   string `gorm:"not null;default:'owner';check:role in ('owner', 'admin', 'viewer')"`
 }
 
-type APIKey struct {
-	Model
-	UserID                uint64 `gorm:"not null"`
-	Name                  string `gorm:"not null"`
-	Scopes                string `gorm:"not null;default:stats:read:*"`
-	HourlyAPIRequestLimit uint   `gorm:"not null;default:1000"`
-	KeyPrefix             string
-	KeyHash               string
-	UsedAt                time.Time
-}
-
 type SharedLink struct {
 	Model
 	Name         string `gorm:"uniqueIndex;not null"`
@@ -64,12 +53,10 @@ type Model struct {
 
 type User struct {
 	Model
-	Name          string
-	Email         string `gorm:"uniqueIndex"`
-	PasswordHash  string
-	Sites         []*Site `gorm:"many2many:site_memberships;"`
-	APIKeys       []*APIKey
-	LastSeen      time.Time
-	EmailVerified bool `gorm:"not null;default:false"`
-	Invitations   []*Invitation
+	Name         string
+	Email        string `gorm:"uniqueIndex"`
+	PasswordHash string
+	Sites        []*Site `gorm:"many2many:site_memberships;"`
+	LastSeen     time.Time
+	Invitations  []*Invitation
 }
