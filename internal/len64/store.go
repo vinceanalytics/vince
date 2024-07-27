@@ -18,7 +18,7 @@ type Store struct {
 	cache *fastcache.Cache
 }
 
-func New(path string, mem bool) (*Store, error) {
+func newStore(path string, mem bool) (*Store, error) {
 	o := &pebble.Options{
 		Merger: &pebble.Merger{
 			Name:  "Lent64",

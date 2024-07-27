@@ -14,6 +14,19 @@ type DB struct {
 	tasks chan *v1.Model
 }
 
+func Open(path string) (*DB, error) {
+	db, err := newStore(path, false)
+	if err != nil {
+		return nil, err
+	}
+	return &DB{store: db, tasks: make(chan *v1.Model, 1<<10)}, nil
+}
+
+func (db *DB) Close() error {
+	close(db.tasks)
+	return db.store.Close()
+}
+
 func (db *DB) Start(ctx context.Context) error {
 	b, err := db.store.Batch()
 	if err != nil {
