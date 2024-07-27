@@ -12,5 +12,11 @@ var (
 	layouts = template.Must(template.ParseFS(
 		templateData, "templates/layout/*",
 	))
-	home = template.Must(layouts.Lookup("focus").ParseFS(templateData, "templates/page/index.html"))
+	home     = template.Must(look("focus").ParseFS(templateData, "templates/page/index.html"))
+	login    = template.Must(look("focus").ParseFS(templateData, "templates/auth/login.html"))
+	register = template.Must(look("focus").ParseFS(templateData, "templates/auth/register.html"))
 )
+
+func look(name string) *template.Template {
+	return template.Must(layouts.Lookup(name).Clone())
+}

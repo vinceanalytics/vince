@@ -13,6 +13,9 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/public/", http.FileServerFS(app.Public))
 	mux.HandleFunc("/", web.Home)
+	mux.HandleFunc("GET /login", web.LoginForm)
+	mux.HandleFunc("GET /register", web.RegisterForm)
+
 	svr := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,

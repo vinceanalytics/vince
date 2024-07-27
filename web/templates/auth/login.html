@@ -1,3 +1,4 @@
+{{define "main"}}
 <form action="/login" method="post"
     class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 shadow-md rounded px-8 py-6 mt-8">
     <h1 class="text-xl font-black dark:text-gray-100">
@@ -14,14 +15,14 @@
     <div class="text-red-500 text-xs italic mt-4">{{.error}}</div>
     {{end}}
     <div class="my-4 mt-8">
-        <label for="email" class="block text-gray-700 dark:text-gray-300  text-sm font-bold mb-2">email</label>
+        <label for="email" class="block text-gray-700 dark:text-gray-300  text-sm font-bold mb-2">Email</label>
         <input type="email" name="email" autocomplete="username"
             class="bg-gray-100 dark:bg-gray-900 outline-none appearance-none border border-transparent rounded w-full p-2 text-gray-700 dark:text-gray-300 leading-normal appearance-none focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-gray-300 dark:focus:border-gray-500"
             placeholder="user@example.com">
     </div>
     <div class="my-4">
-        <label for="password" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">password</label>
-        <input type="password" name="password" id="current_password"
+        <label for="password" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Password</label>
+        <input type="password" name="password" autocomplete="current-password"
             class="transition bg-gray-100 dark:bg-gray-900 outline-none appearance-none border border-transparent rounded w-full p-2 text-gray-700 dark:text-gray-300 leading-normal appearance-none focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-gray-300 dark:focus:border-gray-500">
     </div>
     <input type="submit" value="Login →" class="button mt-4 w-full">
@@ -30,3 +31,4 @@
         instead.
     </p>
 </form>
+{{end}}

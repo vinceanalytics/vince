@@ -1,3 +1,4 @@
+{{define "main"}}
 <div class="w-full max-w-3xl mt-4 mx-auto flex">
     <form action="/register" method="post"
         class="w-full max-w-md mx-auto bg-white shadow-md rounded px-8 py-6 mb-4 mt-8" id="register-form">
@@ -8,7 +9,7 @@
                 class="transition bg-gray-100 appearance-none border border-transparent rounded w-full p-2 text-gray-700 leading-normal appearance-none focus:outline-none focus:bg-white focus:border-gray-300">
         </div>
         <div class="my-4">
-            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">email</label>
+            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
             <p class="text-gray-600 text-xs mt-1 mb-2">No spam, guaranteed.</p>
             <input type="email" name="email" id="email" placeholder="example@email.com"
                 class="transition bg-gray-100 appearance-none border border-transparent rounded w-full p-2 text-gray-700 leading-normal appearance-none focus:outline-none focus:bg-white focus:border-gray-300">
@@ -19,3 +20,4 @@
         </p>
     </form>
 </div>
+{{end}}
