@@ -47,6 +47,15 @@ func (db *DB) startBatch(b *Batch, ctx context.Context) {
 				e.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 					if fd.Kind() == protoreflect.StringKind {
 						idx.String(string(fd.Name()), v.String())
+						return true
+					}
+					if fd.IsMap() {
+						prefix := string(fd.Name()) + "."
+						v.Map().Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
+							idx.String(prefix+mk.String(), v.String())
+							return true
+						})
+						idx.String(string(fd.Name()), v.String())
 					}
 					return true
 				})

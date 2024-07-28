@@ -10,27 +10,28 @@ message Model {
   bool view = 5;
   uint64 duration = 6;
 
-  string browser = 19;
-  string browser_version = 20;
-  string city = 26;
-  string country = 23;
-  string device = 18;
-  string domain = 25;
-  string entry_page = 9;
-  string event = 7;
-  string exit_page = 10;
-  string host = 27;
-  string os = 21;
-  string os_version = 22;
-  string page = 8;
-  string referrer = 12;
-  string region = 24;
-  string source = 11;
-  string utm_campaign = 15;
-  string utm_content = 16;
-  string utm_medium = 14;
-  string utm_source = 13;
-  string utm_term = 17;
+  string browser = 7;
+  string browser_version = 8;
+  string city = 9;
+  string country = 10;
+  string device = 11;
+  string domain = 12;
+  string entry_page = 13;
+  string event = 14;
+  string exit_page = 15;
+  string host = 16;
+  string os = 17;
+  string os_version = 18;
+  string page = 19;
+  string referrer = 20;
+  string region = 21;
+  string source = 22;
+  string utm_campaign = 23;
+  string utm_content = 24;
+  string utm_medium = 25;
+  string utm_source = 26;
+  string utm_term = 37;
+  map<string, string> props = 28;
 }
 
 message Agent {
