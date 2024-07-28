@@ -92,40 +92,63 @@ func (s *SessionContext) VerifyCaptchaSolution(r *http.Request) bool {
 
 func (c *Config) Wrap(f func(db *Config, w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		clone := c.load(r)
-		if clone.session.Data.CurrentUserID != 0 {
-			usr := new(schema.User)
-			err := usr.ByID(clone.db, int64(clone.session.Data.CurrentUserID))
-			if err != nil {
-				clone.session = SessionContext{}
-				clone.SaveSession(w)
-			} else {
-				clone.session.user = usr
-			}
+		f(c.clone(r), w, r)
+	}
+}
+
+func (c *Config) Load(w http.ResponseWriter, r *http.Request) {
+	c.load(r)
+	if c.session.Data.CurrentUserID != 0 {
+		usr := new(schema.User)
+		err := usr.ByID(c.db, int64(c.session.Data.CurrentUserID))
+		if err != nil {
+			c.session = SessionContext{}
+			c.SaveSession(w)
+		} else {
+			c.session.user = usr
 		}
-		f(c.load(r), w, r)
+	}
+}
+
+func (c *Config) Flash(w http.ResponseWriter) {
+	if c.session.Data.Flash != nil {
+		flash := c.session.Data.Flash
+		c.session.Data.Flash = nil
+		// we update session without flash
+		c.SaveSession(w)
+		// bring them back so they can be available in templates
+		c.session.Data.Flash = flash
+	}
+}
+
+func (c *Config) SessionTimeout(w http.ResponseWriter) {
+	now := time.Now().UTC()
+	switch {
+	case c.session.Data.CurrentUserID != 0 && !c.session.Data.TimeoutAt.IsZero() && now.After(c.session.Data.TimeoutAt):
+		c.session.Data = Data{}
+		c.SaveSession(w)
+	case c.session.Data.CurrentUserID != 0:
+		c.session.Data.TimeoutAt = now.Add(24 * 7 * 2 * time.Hour)
+		c.SaveSession(w)
 	}
 }
 
 func (c *Config) Context(base map[string]any) {
 	c.session.Context(base)
-
 }
 
-func (c *Config) load(r *http.Request) *Config {
-	clone := c.clone()
-	clone.logger = c.logger.With(slog.String("path", r.URL.Path), "method", r.Method)
-	err := clone.session.Load(r)
+func (c *Config) load(r *http.Request) {
+	err := c.session.Load(r)
 	if err != nil {
-		clone.logger.Error("loading session", "err", err)
+		c.logger.Error("loading session", "err", err)
 	}
-	return clone
 }
 
-func (c *Config) clone() *Config {
+func (c *Config) clone(r *http.Request) *Config {
 	return &Config{
-		db: c.db,
-		ts: c.ts,
+		db:     c.db,
+		ts:     c.ts,
+		logger: c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
 	}
 }
 

@@ -1,7 +1,11 @@
 package web
 
-import "net/http"
+import (
+	"net/http"
 
-func LoginForm(w http.ResponseWriter, r *http.Request) {
+	"github.com/gernest/len64/web/db"
+)
+
+func LoginForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	login.Execute(w, map[string]any{})
 }

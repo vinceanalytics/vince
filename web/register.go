@@ -1,7 +1,11 @@
 package web
 
-import "net/http"
+import (
+	"net/http"
 
-func RegisterForm(w http.ResponseWriter, r *http.Request) {
+	"github.com/gernest/len64/web/db"
+)
+
+func RegisterForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	register.Execute(w, map[string]any{})
 }

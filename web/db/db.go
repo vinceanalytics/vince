@@ -35,7 +35,7 @@ func Open(path string) (*Config, error) {
 		conn.Close()
 		return nil, err
 	}
-	return &Config{db: db, ts: series}, nil
+	return &Config{db: db, ts: series, logger: slog.Default()}, nil
 }
 
 func (db *Config) Get() *gorm.DB {
