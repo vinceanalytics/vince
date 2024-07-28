@@ -2,12 +2,12 @@ package db
 
 import (
 	"fmt"
+	"hash/crc32"
 	"net"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/cespare/xxhash/v2"
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
 	"github.com/gernest/len64/geo"
 	"github.com/gernest/len64/ref"
@@ -122,10 +122,10 @@ func refSource(q url.Values, u string) (xref, source string, err error) {
 }
 
 func uniqueID(remoteIP, userAgent, domain, host string) uint64 {
-	h := xxhash.New()
+	h := crc32.NewIEEE()
 	h.Write([]byte(remoteIP))
 	h.Write([]byte(userAgent))
 	h.Write([]byte(domain))
 	h.Write([]byte(host))
-	return h.Sum64()
+	return uint64(h.Sum32())
 }
