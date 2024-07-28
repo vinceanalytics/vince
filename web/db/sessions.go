@@ -80,14 +80,14 @@ func (s *SessionContext) FailFlash(m string) *SessionContext {
 	return s
 }
 
-func (s *SessionContext) VerifyCaptchaSolution(r *http.Request) bool {
+func (c *Config) VerifyCaptchaSolution(r *http.Request) bool {
 	r.ParseForm()
 	digits := r.Form.Get("_captcha")
 	digits = strings.TrimSpace(digits)
 	if digits == "" {
 		return false
 	}
-	return subtle.ConstantTimeCompare([]byte(digits), []byte(s.Data.Captcha)) == 1
+	return subtle.ConstantTimeCompare([]byte(digits), []byte(c.session.Data.Captcha)) == 1
 }
 
 func (c *Config) Wrap(f func(db *Config, w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
@@ -180,6 +180,12 @@ func getSession(value string) ([]byte, error) {
 	return io.ReadAll(r)
 }
 
+func (c *Config) SaveSuccessRegister(w http.ResponseWriter, uid uint64) {
+	c.session.Data.CurrentUserID = uid
+	c.session.Data.LoggedIn = true
+	c.SaveSession(w)
+}
+
 func (c *Config) SaveSession(w http.ResponseWriter) {
 	err := c.session.save(w)
 	if err != nil {
@@ -257,9 +263,9 @@ func (s *SessionContext) saveCsrf(w http.ResponseWriter) error {
 	return s.save(w)
 }
 
-func (s *SessionContext) IsValidCsrf(r *http.Request) bool {
+func (c *Config) IsValidCsrf(r *http.Request) bool {
 	value := r.Form.Get("_csrf")
-	return subtle.ConstantTimeCompare([]byte(value), []byte(s.Data.Csrf)) == 1
+	return subtle.ConstantTimeCompare([]byte(value), []byte(c.session.Data.Csrf)) == 1
 }
 
 func formatCaptchaSolution(sol []byte) string {

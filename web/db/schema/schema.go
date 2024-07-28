@@ -265,12 +265,12 @@ func (u *User) ByID(db *gorm.DB, uid int64) error {
 	return db.First(u, uid).Error
 }
 
-func (u *User) NewUser(r *http.Request) (validation map[string]string, err error) {
+func (u *User) NewUser(r *http.Request) (validation map[string]any, err error) {
 	u.Name = r.Form.Get("name")
 	u.Email = r.Form.Get("email")
 	password := r.Form.Get("password")
 	passwordConfirm := r.Form.Get("password_confirmation")
-	validation = make(map[string]string)
+	validation = make(map[string]any)
 	validate("name", u.Name, "required", validation, func(s string) bool {
 		return s != ""
 	})
@@ -304,6 +304,10 @@ func (u *User) NewUser(r *http.Request) (validation map[string]string, err error
 	}
 	u.PasswordHash = string(b)
 	return
+}
+
+func (u *User) Save(db *gorm.DB) error {
+	return db.Save(u).Error
 }
 
 func (u *User) ByEmail(db *gorm.DB, email string) error {
@@ -365,11 +369,11 @@ const emailRegexString = "^(?:(?:(?:(?:[a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^
 
 var emailRRe = regexp.MustCompile(emailRegexString)
 
-func validate(field, value, reason string, m map[string]string, f func(string) bool) {
+func validate(field, value, reason string, m map[string]any, f func(string) bool) {
 	if f(value) {
 		return
 	}
-	m[field] = reason
+	m["validation."+field] = reason
 }
 
 func Exists(g *gorm.DB, where func(db *gorm.DB) *gorm.DB) bool {

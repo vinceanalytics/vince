@@ -35,10 +35,16 @@ func main() {
 		plug.BrowserHome().Then(web.Home),
 	))
 	mux.HandleFunc("GET /login", db.Wrap(
-		plug.BrowserForm().Then(web.LoginForm),
+		plug.BrowserFormGet().Then(web.LoginForm),
+	))
+	mux.HandleFunc("POST /login", db.Wrap(
+		plug.BrowserFormPost().Then(web.Login),
 	))
 	mux.HandleFunc("GET /register", db.Wrap(
-		plug.BrowserForm().Then(web.RegisterForm),
+		plug.BrowserFormGet().Then(web.RegisterForm),
+	))
+	mux.HandleFunc("POST /register", db.Wrap(
+		plug.BrowserFormPost().Then(web.Register),
 	))
 
 	svr := &http.Server{

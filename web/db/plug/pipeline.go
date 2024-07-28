@@ -20,7 +20,7 @@ func (p Pipeline) Then(h Handler) func(db *db.Config, w http.ResponseWriter, r *
 	return h
 }
 
-func BrowserForm() Pipeline {
+func BrowserFormGet() Pipeline {
 	return Pipeline{
 		FetchSession,
 		FetchFlash,
@@ -28,6 +28,16 @@ func BrowserForm() Pipeline {
 		SessionTimeout,
 		CSRF,
 		Captcha,
+		FetchFlash,
+	}
+}
+
+func BrowserFormPost() Pipeline {
+	return Pipeline{
+		FetchSession,
+		SecureHeaders,
+		SessionTimeout,
+		VerifyCSRF,
 	}
 }
 
@@ -95,6 +105,16 @@ func Captcha(h Handler) Handler {
 func CSRF(h Handler) Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		db.SaveCsrf(w)
+		h(db, w, r)
+	}
+}
+
+func VerifyCSRF(h Handler) Handler {
+	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
+		if !db.IsValidCsrf(r) {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
 		h(db, w, r)
 	}
 }
