@@ -20,6 +20,20 @@ type Re struct {
 	build *levenshtein.LevenshteinAutomatonBuilder
 }
 
+var base = must()
+
+func Search(uri string) (string, error) {
+	return base.Search(uri)
+}
+
+func must() *Re {
+	re, err := New()
+	if err != nil {
+		panic(err)
+	}
+	return re
+}
+
 func New() (*Re, error) {
 	fst, err := vellum.Load(data)
 	if err != nil {

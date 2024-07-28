@@ -43,7 +43,7 @@ func (db *DB) startBatch(b *Batch, ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case e := <-db.tasks:
-			err := b.Write(e.Timestamp, func(idx Index) {
+			err := b.Write(uint64(e.Timestamp), func(idx Index) {
 				e.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 					if fd.Kind() == protoreflect.StringKind {
 						idx.String(string(fd.Name()), v.String())
@@ -62,7 +62,7 @@ func (db *DB) startBatch(b *Batch, ctx context.Context) {
 				idx.Int64("timestamp", int64(e.Timestamp))
 				idx.Int64("date", date(e.Timestamp))
 				idx.Int64("uid", int64(e.Id))
-				idx.Bool("bounce", e.Bounce)
+				idx.Bool("bounce", e.GetBounce())
 				idx.Bool("session", e.Session)
 				idx.Int64("duration", int64(e.Duration))
 			})
@@ -82,7 +82,7 @@ func (db *DB) Save(model *v1.Model) {
 	db.tasks <- model
 }
 
-func date(ts uint64) int64 {
-	yy, mm, dd := time.UnixMilli(int64(ts)).Date()
+func date(ts int64) int64 {
+	yy, mm, dd := time.UnixMilli(ts).Date()
 	return time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC).UnixMilli()
 }

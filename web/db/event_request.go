@@ -72,12 +72,14 @@ func (rq *Request) validate() error {
 	if len(rq.eventName) > 120 {
 		return errors.New("event name too long")
 	}
+	if rq.uri.Scheme == "data" {
+		return errors.New("data scheme not supported")
+	}
 	return nil
 }
 
 func (rq *Request) parsePathname() {
 	if rq.uri == nil {
-		rq.pathname = "/"
 		return
 	}
 	path := rq.uri.Path
