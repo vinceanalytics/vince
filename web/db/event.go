@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"net"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -43,7 +44,14 @@ var True = ptr(true)
 
 var False = ptr(false)
 
-func Parse(req *Request) (*v1.Model, error) {
+func Parse(r *http.Request) (*v1.Model, error) {
+	req := newRequest()
+	defer req.Release()
+
+	err := req.Parse(r)
+	if err != nil {
+		return nil, err
+	}
 	host := req.hostname
 	query := req.uri.Query()
 
