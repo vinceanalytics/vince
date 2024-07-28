@@ -6,10 +6,13 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"time"
 
+	v1 "github.com/gernest/len64/gen/go/len64/v1"
 	"github.com/gernest/len64/internal/len64"
 	"github.com/gernest/len64/web/db/schema"
 	"github.com/glebarez/sqlite"
+	"github.com/hashicorp/golang-lru/v2/expirable"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -19,6 +22,11 @@ type Config struct {
 	ts      *len64.DB
 	session SessionContext
 	logger  *slog.Logger
+	cache   *expirable.LRU[uint64, *v1.Model]
+
+	// we rely on cache for session processing. We need to guarantee only a single
+	// writer on the cache, a buffered channel help with this.
+	models chan *v1.Model
 }
 
 func Open(path string) (*Config, error) {
@@ -35,7 +43,18 @@ func Open(path string) (*Config, error) {
 		conn.Close()
 		return nil, err
 	}
-	return &Config{db: db, ts: series, logger: slog.Default()}, nil
+	cache := expirable.NewLRU[uint64, *v1.Model](
+		16<<10,
+		nil, // todo: pool models
+		30*time.Minute,
+	)
+	return &Config{
+		db:     db,
+		ts:     series,
+		logger: slog.Default(),
+		cache:  cache,
+		models: make(chan *v1.Model, 4<<10),
+	}, nil
 }
 
 func (db *Config) Get() *gorm.DB {
@@ -43,10 +62,20 @@ func (db *Config) Get() *gorm.DB {
 }
 
 func (db *Config) Start(ctx context.Context) error {
+	go db.processEvents()
 	return db.ts.Start(ctx)
 }
 
+func (db *Config) processEvents() {
+	db.logger.Info("start event processing loop")
+	for m := range db.models {
+		db.append(m)
+	}
+	db.logger.Info("stopped events processing loop")
+}
+
 func (db *Config) Close() error {
+	close(db.models)
 	x, _ := db.db.DB()
 	return errors.Join(x.Close(), db.ts.Close())
 }

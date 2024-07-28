@@ -17,7 +17,16 @@ import (
 
 const pageView = "pageview"
 
-func Hit(e *v1.Model) {
+func (db *Config) ProcessEvent(r *http.Request) error {
+	m, err := parse(r)
+	if err != nil {
+		return err
+	}
+	db.append(m)
+	return nil
+}
+
+func hit(e *v1.Model) {
 	e.EntryPage = e.Page
 	e.Bounce = True
 	e.Session = true
@@ -27,7 +36,7 @@ func Hit(e *v1.Model) {
 	}
 }
 
-func Update(fromSession *v1.Model, event *v1.Model) {
+func update(fromSession *v1.Model, event *v1.Model) {
 	if fromSession.Bounce == True {
 		fromSession.Bounce, event.Bounce = nil, nil
 	} else {
@@ -44,7 +53,7 @@ var True = ptr(true)
 
 var False = ptr(false)
 
-func Parse(r *http.Request) (*v1.Model, error) {
+func parse(r *http.Request) (*v1.Model, error) {
 	req := newRequest()
 	defer req.Release()
 
