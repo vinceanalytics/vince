@@ -133,8 +133,9 @@ func (c *Config) SessionTimeout(w http.ResponseWriter) {
 	}
 }
 
-func (c *Config) Context(base map[string]any) {
+func (c *Config) Context(base map[string]any) map[string]any {
 	c.session.Context(base)
+	return base
 }
 
 func (c *Config) load(r *http.Request) {

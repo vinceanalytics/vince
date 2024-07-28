@@ -1,6 +1,8 @@
 {{define "main"}}
 <form action="/login" method="post"
     class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 shadow-md rounded px-8 py-6 mt-8">
+    {{with .csrf}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
+
     <h1 class="text-xl font-black dark:text-gray-100">
         {{if .login_title}}
         {{.login_title}}

@@ -72,8 +72,3 @@ func open(path string) (*gorm.DB, error) {
 	}
 	return db, nil
 }
-
-func CloseDB(db *gorm.DB) error {
-	x, _ := db.DB()
-	return x.Close()
-}

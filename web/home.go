@@ -1,8 +1,11 @@
 package web
 
-import "net/http"
+import (
+	"net/http"
 
-func Home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-type", "text/html")
+	"github.com/gernest/len64/web/db"
+)
+
+func Home(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	home.Execute(w, map[string]any{})
 }

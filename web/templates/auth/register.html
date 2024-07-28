@@ -2,6 +2,8 @@
 <div class="w-full max-w-3xl mt-4 mx-auto flex">
     <form action="/register" method="post"
         class="w-full max-w-md mx-auto bg-white shadow-md rounded px-8 py-6 mb-4 mt-8" id="register-form">
+        {{with .csrf}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
+
         <h2 class="text-xl font-black">Enter your details</h2>
         <div class="my-4">
             <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
@@ -9,12 +11,49 @@
                 class="transition bg-gray-100 appearance-none border border-transparent rounded w-full p-2 text-gray-700 leading-normal appearance-none focus:outline-none focus:bg-white focus:border-gray-300">
         </div>
         <div class="my-4">
-            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-            <p class="text-gray-600 text-xs mt-1 mb-2">No spam, guaranteed.</p>
-            <input type="email" name="email" id="email" placeholder="example@email.com"
-                class="transition bg-gray-100 appearance-none border border-transparent rounded w-full p-2 text-gray-700 leading-normal appearance-none focus:outline-none focus:bg-white focus:border-gray-300">
+            <div class="flex justify-between">
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <p class="text-xs text-gray-500 mt-1">No spam, guaranteed.</p>
+            </div>
+            <div class="mt-1">
+                <input type="email" name="email" id="email" placeholder="example@email.com"
+                    class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md dark:text-gray-300">
+            </div>
         </div>
-        <input type="submit" value="Register →" class="button mt-4 w-full">
+        <div class="mt-4">
+            <div class="flex justify-between">
+                <label for="password"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                <p class="text-xs text-gray-500 mt-1">Min 6 characters</p>
+            </div>
+            <div class="mt-1">
+                <input type="password" name="password" id="password" minlength="6"
+                    class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md dark:text-gray-300">
+            </div>
+        </div>
+        <div class="my-4">
+            <label for="password_confirmation"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password Confirmation</label>
+
+            <div class="mt-1">
+                <input type="password" name="password_confirmation" id="password_confirmation" minlength="6"
+                    class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md dark:text-gray-300">
+            </div>
+        </div>
+        <div class="mt-4">
+            <div class="flex justify-between">
+                <label for="captcha" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Captcha</label>
+                <p class="text-xs text-gray-500 mt-1">Type captcha seen below</p>
+            </div>
+            <div class="h-captcha">
+                <img {{.captcha}} />
+            </div>
+            <div class="mt-1">
+                <input type="number" name="_captcha" id="captcha"
+                    class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md dark:text-gray-300">
+            </div>
+        </div>
+        <input type="submit" value="Create Account →" class="button mt-4 w-full">
         <p class="text-center text-gray-600 text-xs mt-4">
             Already have an account? <a href="/login" class="underline text-gray-800">Login</a> instead
         </p>

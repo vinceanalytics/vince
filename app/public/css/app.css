@@ -3966,6 +3966,14 @@ iframe[hidden] {
     top: auto;
   }
 
+  .md\:order-1 {
+    order: 1;
+  }
+
+  .md\:order-3 {
+    order: 3;
+  }
+
   .md\:mx-auto {
     margin-left: auto;
     margin-right: auto;
@@ -3977,6 +3985,10 @@ iframe[hidden] {
 
   .md\:mr-2 {
     margin-right: 0.5rem;
+  }
+
+  .md\:mt-1 {
+    margin-top: 0.25rem;
   }
 
   .md\:block {
@@ -3993,6 +4005,10 @@ iframe[hidden] {
 
   .md\:h-5 {
     height: 1.25rem;
+  }
+
+  .md\:w-1\/2 {
+    width: 50%;
   }
 
   .md\:w-4 {

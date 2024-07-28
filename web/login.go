@@ -7,5 +7,5 @@ import (
 )
 
 func LoginForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	login.Execute(w, map[string]any{})
+	login.Execute(w, db.Context(make(map[string]any)))
 }

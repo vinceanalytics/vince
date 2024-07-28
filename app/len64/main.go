@@ -31,7 +31,9 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/public/", plug.Track(http.FileServerFS(app.Public)))
-	mux.HandleFunc("/", web.Home)
+	mux.HandleFunc("/", db.Wrap(
+		plug.BrowserForm().Then(web.Home),
+	))
 	mux.HandleFunc("GET /login", db.Wrap(
 		plug.BrowserForm().Then(web.LoginForm),
 	))
@@ -49,5 +51,6 @@ func main() {
 		svr.ListenAndServe()
 	}()
 	<-ctx.Done()
+	svr.Close()
 	slog.Info("Shutting down")
 }
