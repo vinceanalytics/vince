@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -14,8 +15,10 @@ import (
 )
 
 type Config struct {
-	db *gorm.DB
-	ts *len64.DB
+	db      *gorm.DB
+	ts      *len64.DB
+	session SessionContext
+	logger  *slog.Logger
 }
 
 func Open(path string) (*Config, error) {

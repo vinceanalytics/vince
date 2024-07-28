@@ -3,11 +3,14 @@ module github.com/gernest/len64
 go 1.22.5
 
 require (
+	filippo.io/age v1.2.0
 	github.com/RoaringBitmap/roaring/v2 v2.3.1
 	github.com/VictoriaMetrics/fastcache v1.12.2
 	github.com/blevesearch/vellum v1.0.10
 	github.com/cockroachdb/pebble v1.1.1
+	github.com/dchest/captcha v1.0.0
 	github.com/glebarez/sqlite v1.11.0
+	github.com/lestrrat-go/dataurl v0.0.0-20220721131304-b60017625013
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/stretchr/testify v1.9.0
@@ -43,6 +46,7 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
@@ -54,7 +58,7 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
+	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
