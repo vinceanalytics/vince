@@ -32,7 +32,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/public/", plug.Track(http.FileServerFS(app.Public)))
 	mux.HandleFunc("/", db.Wrap(
-		plug.BrowserForm().Then(web.Home),
+		plug.BrowserHome().Then(web.Home),
 	))
 	mux.HandleFunc("GET /login", db.Wrap(
 		plug.BrowserForm().Then(web.LoginForm),
