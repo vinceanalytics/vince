@@ -86,6 +86,7 @@ func Parse(req *Request) (*v1.Model, error) {
 	e.Country = city.Country
 	e.Region = city.Region
 	e.City = city.City
+	e.Device = agent.Device
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil
 }

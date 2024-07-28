@@ -27,11 +27,13 @@ var (
 	browser_version = roaring64.NewDefaultBSI()
 	os              = roaring64.NewDefaultBSI()
 	os_version      = roaring64.NewDefaultBSI()
+	device          = roaring64.NewDefaultBSI()
 
 	browser_translate         []string
 	browser_version_translate []string
 	os_translate              []string
 	os_version_translate      []string
+	device_translate          []string
 
 	fst *vellum.FST
 	dfa *levenshtein.LevenshteinAutomatonBuilder
@@ -82,6 +84,7 @@ func init() {
 	translate("browser_version", browser_version, &browser_version_translate)
 	translate("os", os, &os_translate)
 	translate("os_version", os_version, &os_version_translate)
+	translate("device", device, &device_translate)
 
 	get("fst", func(b io.Reader) {
 		all, err := io.ReadAll(b)
@@ -119,6 +122,7 @@ func Get(agent string) (a *v1.Agent, err error) {
 			BrowserVersion: str(browser_version, browser_version_translate, val),
 			Os:             str(os, os_translate, val),
 			OsVersion:      str(os_version, os_version_translate, val),
+			Device:         deviceMapping[str(device, device_translate, val)],
 		}
 		b, _ := proto.Marshal(a)
 		cache.Set([]byte(agent), b)
@@ -138,4 +142,18 @@ func str(b *roaring64.BSI, tr []string, id uint64) string {
 		return ""
 	}
 	return tr[v]
+}
+
+var deviceMapping = map[string]string{
+	"smartphone":            "Mobile",
+	"feature phone":         "Mobile",
+	"portable media player": "Mobile",
+	"phablet":               "Mobile",
+	"wearable":              "Mobile",
+	"camera":                "Mobile",
+	"car browser":           "Tablet",
+	"tablet":                "Tablet",
+	"tv":                    "Desktop",
+	"console":               "Desktop",
+	"desktop":               "Desktop",
 }

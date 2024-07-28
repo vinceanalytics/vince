@@ -36,6 +36,9 @@ func (f *Fixture) Setup(m *Bitmaps) {
 		m.get("browser").add(f.Client.Name)
 		m.get("browser_version").add(f.Client.Version)
 	}
+	if f.Device != nil {
+		m.get("device").add(f.Device.Type)
+	}
 }
 
 func (f *Fixture) Set(m *Bitmaps, id uint64) {

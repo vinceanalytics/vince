@@ -40,4 +40,5 @@ message Agent {
   string browser_version = 3;
   string os = 4;
   string os_version = 5;
+  string device = 6;
 }
