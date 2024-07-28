@@ -4,11 +4,14 @@
         class="w-full max-w-md mx-auto bg-white shadow-md rounded px-8 py-6 mb-4 mt-8" id="register-form">
         {{with .csrf}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
 
-        <h2 class="text-xl font-black">Enter your details</h2>
+        <h2 class="text-xl font-black">Register your Len64 Analytics account</h2>
         <div class="my-4">
-            <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
-            <input type="text" name="name" id="name" placeholder="John Doe"
-                class="transition bg-gray-100 appearance-none border border-transparent rounded w-full p-2 text-gray-700 leading-normal appearance-none focus:outline-none focus:bg-white focus:border-gray-300">
+            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+            <div class="mt-1">
+                <input type="text" name="name" autocomplete="username" id="name" placeholder="John Doe"
+                    class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md dark:text-gray-300">
+            </div>
+            {{with .validation_name}}<div class="mt-2 text-sm text-red-600">{{.}}</div>{{end}}
         </div>
         <div class="my-4">
             <div class="flex justify-between">
@@ -16,9 +19,10 @@
                 <p class="text-xs text-gray-500 mt-1">No spam, guaranteed.</p>
             </div>
             <div class="mt-1">
-                <input type="email" name="email" id="email" placeholder="example@email.com"
+                <input type="email" name="email" id="email" autocomplete="email" placeholder="example@email.com"
                     class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md dark:text-gray-300">
             </div>
+            {{with .validation_email}}<div class="mt-2 text-sm text-red-600">{{.}}</div>{{end}}
         </div>
         <div class="mt-4">
             <div class="flex justify-between">
@@ -27,18 +31,21 @@
                 <p class="text-xs text-gray-500 mt-1">Min 6 characters</p>
             </div>
             <div class="mt-1">
-                <input type="password" name="password" id="password" minlength="6"
+                <input type="password" name="password" autocomplete="new-password" id="password" minlength="6"
                     class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md dark:text-gray-300">
             </div>
+            {{with .validation_password}}<div class="mt-2 text-sm text-red-600">{{.}}</div>{{end}}
         </div>
         <div class="my-4">
             <label for="password_confirmation"
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password Confirmation</label>
 
             <div class="mt-1">
-                <input type="password" name="password_confirmation" id="password_confirmation" minlength="6"
+                <input type="password" name="password_confirmation" autocomplete="new-password"
+                    id="password_confirmation" minlength="6"
                     class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md dark:text-gray-300">
             </div>
+            {{with .validation_password_confirmation}}<div class="mt-2 text-sm text-red-600">{{.}}</div>{{end}}
         </div>
         <div class="mt-4">
             <div class="flex justify-between">
@@ -52,6 +59,7 @@
                 <input type="number" name="_captcha" id="captcha"
                     class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md dark:text-gray-300">
             </div>
+            {{with .validation_captcha}}<div class="mt-2 text-sm text-red-600">{{.}}</div>{{end}}
         </div>
         <input type="submit" value="Create Account →" class="button mt-4 w-full">
         <p class="text-center text-gray-600 text-xs mt-4">

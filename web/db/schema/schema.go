@@ -373,7 +373,7 @@ func validate(field, value, reason string, m map[string]any, f func(string) bool
 	if f(value) {
 		return
 	}
-	m["validation."+field] = reason
+	m["validation_"+field] = reason
 }
 
 func Exists(g *gorm.DB, where func(db *gorm.DB) *gorm.DB) bool {
