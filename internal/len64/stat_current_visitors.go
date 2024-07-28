@@ -16,5 +16,5 @@ func (db *Store) CurrentVisitor(domain string, duration time.Duration) (uint64, 
 	if err != nil {
 		return 0, err
 	}
-	return match.Visitors()
+	return match.Visitors(), nil
 }

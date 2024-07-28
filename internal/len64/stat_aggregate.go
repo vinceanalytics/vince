@@ -4,21 +4,21 @@ import "github.com/RoaringBitmap/roaring/v2/roaring64"
 
 type Projection map[string]*roaring64.BSI
 
-func (p Projection) Visitors() (uint64, error) {
+func (p Projection) Visitors() uint64 {
 	uniq := p["uid"].Transpose()
-	return uniq.GetCardinality(), nil
+	return uniq.GetCardinality()
 }
 
-func (p Projection) Visits() (uint64, error) {
+func (p Projection) Visits() uint64 {
 	b := p["session"]
 	sum, _ := b.Sum(b.GetExistenceBitmap())
-	return uint64(sum), nil
+	return uint64(sum)
 }
 
-func (p Projection) Bounce() (uint64, error) {
+func (p Projection) Bounce() uint64 {
 	b := p["bounce"]
 	sum, _ := b.Sum(b.GetExistenceBitmap())
-	return uint64(sum), nil
+	return uint64(sum)
 }
 
 type Group struct {
