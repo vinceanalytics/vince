@@ -43,7 +43,7 @@ type Batch struct {
 
 func newBatch(db *Store) (*Batch, error) {
 	return &Batch{
-		seq:     ReadSeq(db.db),
+		seq:     readSeq(db.db),
 		shard:   zero,
 		store:   db,
 		strings: map[uint32]string{},
@@ -78,7 +78,7 @@ func (i *Batch) Write(ts uint64, f func(idx Index)) error {
 
 func (i *Batch) Release() error {
 	defer func() {
-		WriteSeq(i.store.db, i.seq)
+		writeSeq(i.store.db, i.seq)
 		i.store = nil
 	}()
 	return i.emit()
@@ -99,7 +99,7 @@ func (i *Batch) emit() error {
 
 	b := i.store.db.NewBatch()
 
-	err := WriteBSI(b, i.shard, i.m)
+	err := writeBSI(b, i.shard, i.m)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (i *Batch) emit() error {
 		return err
 	}
 
-	err = WriteString(b, i.store.cache, i.strings)
+	err = writeString(b, i.store.cache, i.strings)
 	if err != nil {
 		return err
 	}
@@ -157,13 +157,13 @@ func (i *Batch) get(name string) *roaring64.BSI {
 	return b
 }
 
-func WriteSeq(db *pebble.DB, seq uint64) error {
+func writeSeq(db *pebble.DB, seq uint64) error {
 	var b [8]byte
 	binary.BigEndian.PutUint64(b[:], seq)
 	return db.Set(seqKey, b[:], nil)
 }
 
-func ReadSeq(db *pebble.DB) uint64 {
+func readSeq(db *pebble.DB) uint64 {
 	value, done, err := db.Get(seqKey)
 	if err != nil {
 		return 0
@@ -173,7 +173,7 @@ func ReadSeq(db *pebble.DB) uint64 {
 	return seq
 }
 
-func WriteBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error {
+func writeBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error {
 	if len(m) == 0 {
 		return nil
 	}
@@ -200,7 +200,7 @@ func WriteBSI(b *pebble.Batch, shard uint64, m map[string]*roaring64.BSI) error 
 	return nil
 }
 
-func ReadBSI(db *pebble.Snapshot, shard uint64, name string) (*roaring64.BSI, error) {
+func readBSI(db *pebble.Snapshot, shard uint64, name string) (*roaring64.BSI, error) {
 	key := make([]byte, 1<<10)
 	copy(key, bsiPrefix)
 	binary.BigEndian.PutUint64(key[2:], shard)
@@ -228,7 +228,7 @@ func bsiFrom(value []byte) (*roaring64.BSI, error) {
 	return r, nil
 }
 
-func WriteString(b *pebble.Batch, cache *fastcache.Cache, m map[uint32]string) error {
+func writeString(b *pebble.Batch, cache *fastcache.Cache, m map[uint32]string) error {
 	if len(m) == 0 {
 		return nil
 	}

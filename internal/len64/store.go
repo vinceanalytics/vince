@@ -67,7 +67,7 @@ func (v *View) Get(name string) (*roaring64.BSI, error) {
 	if b, ok := v.bsi[name]; ok {
 		return b, nil
 	}
-	b, err := ReadBSI(v.snap, v.shard, name)
+	b, err := readBSI(v.snap, v.shard, name)
 	if err != nil {
 		return nil, err
 	}
