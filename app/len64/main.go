@@ -46,6 +46,7 @@ func main() {
 	mux.HandleFunc("POST /register", db.Wrap(
 		plug.BrowserFormPost().Then(web.Register),
 	))
+	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
 	svr := &http.Server{
 		Addr:    ":8080",
