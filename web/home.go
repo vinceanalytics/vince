@@ -8,7 +8,11 @@ import (
 )
 
 func Home(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	home.Execute(w, map[string]any{})
+	if r.URL.Path == "/" {
+		home.Execute(w, map[string]any{})
+		return
+	}
+	e404.Execute(w, db.Context(make(map[string]any)))
 }
 
 func Json(w http.ResponseWriter, data any, code int) {
