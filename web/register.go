@@ -17,6 +17,7 @@ func Register(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	m, err := usr.NewUser(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 	validCaptcha := db.VerifyCaptchaSolution(r)
@@ -45,5 +46,5 @@ func Register(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/new", http.StatusFound)
+	http.Redirect(w, r, "/sites/new", http.StatusFound)
 }

@@ -186,7 +186,28 @@ func (c *Config) Authorize(w http.ResponseWriter, r *http.Request) bool {
 		c.SaveSession(w)
 		return false
 	}
-	return *True
+	return true
+}
+
+func (c *Config) Logout(w http.ResponseWriter) bool {
+	if c.session.user != nil {
+		c.session.Data.LoggedIn = true
+		c.SaveSession(w)
+		return false
+	}
+	return true
+}
+
+func (c *Config) Login(w http.ResponseWriter, uid uint64) string {
+	c.session.Data.CurrentUserID = uid
+	c.session.Data.LoggedIn = true
+	dest := c.session.Data.LoginDest
+	c.session.Data.LoginDest = ""
+	c.SaveSession(w)
+	if dest == "" {
+		return "/sites"
+	}
+	return dest
 }
 
 func (c *Config) SaveSuccessRegister(w http.ResponseWriter, uid uint64) {

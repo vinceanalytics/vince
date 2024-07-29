@@ -31,27 +31,51 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/public/", plug.Track(http.FileServerFS(app.Public)))
+
 	mux.HandleFunc("/", db.Wrap(
-		plug.BrowserHome().Then(web.Home),
+		plug.Browser().Then(web.Home),
 	))
+
 	mux.HandleFunc("GET /login", db.Wrap(
-		plug.BrowserFormGet().Then(web.LoginForm),
+		plug.Browser().
+			With(plug.CSRF).
+			Then(web.LoginForm),
 	))
+
 	mux.HandleFunc("POST /login", db.Wrap(
-		plug.BrowserFormPost().Then(web.Login),
+		plug.Browser().
+			With(plug.VerifyCSRF).
+			With(plug.RequireLogout).
+			Then(web.Login),
 	))
+
 	mux.HandleFunc("GET /register", db.Wrap(
-		plug.BrowserFormGet().Then(web.RegisterForm),
+		plug.Browser().
+			With(plug.CSRF).
+			With(plug.Captcha).
+			Then(web.RegisterForm),
 	))
+
 	mux.HandleFunc("POST /register", db.Wrap(
-		plug.BrowserFormPost().Then(web.Register),
+		plug.Browser().
+			With(plug.VerifyCSRF).
+			Then(web.Register),
 	))
+
 	mux.HandleFunc("GET /sites/new", db.Wrap(
-		plug.BrowserFormAuthGet().Then(web.CreateSiteForm),
+		plug.Browser().
+			With(plug.CSRF).
+			With(plug.RequireAccount).
+			Then(web.CreateSiteForm),
 	))
+
 	mux.HandleFunc("POST /sites", db.Wrap(
-		plug.BrowserFormAuthPost().Then(web.CreateSite),
+		plug.Browser().
+			With(plug.CSRF).
+			With(plug.RequireAccount).
+			Then(web.CreateSite),
 	))
+
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
 	svr := &http.Server{

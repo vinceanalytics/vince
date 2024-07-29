@@ -13,6 +13,10 @@ type Middleware func(h Handler) Handler
 
 type Pipeline []Middleware
 
+func (p Pipeline) With(m ...Middleware) Pipeline {
+	return append(p, m...)
+}
+
 func (p Pipeline) Then(h Handler) func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	for i := range p {
 		h = p[len(p)-1-i](h)
@@ -20,41 +24,25 @@ func (p Pipeline) Then(h Handler) func(db *db.Config, w http.ResponseWriter, r *
 	return h
 }
 
-func BrowserFormGet() Pipeline {
+func Browser() Pipeline {
 	return Pipeline{
 		FetchSession,
 		FetchFlash,
 		SecureHeaders,
 		SessionTimeout,
+		FetchFlash,
+	}
+}
+
+func ProtectForm() Pipeline {
+	return Pipeline{
 		CSRF,
-		Captcha,
-		FetchFlash,
 	}
 }
 
-func BrowserFormAuthGet() Pipeline {
-	return append(BrowserFormGet(), RequireAccount)
-}
-
-func BrowserFormPost() Pipeline {
+func Protect() Pipeline {
 	return Pipeline{
-		FetchSession,
-		SecureHeaders,
-		SessionTimeout,
 		VerifyCSRF,
-	}
-}
-
-func BrowserFormAuthPost() Pipeline {
-	return append(BrowserFormPost(), RequireAccount)
-}
-
-func BrowserHome() Pipeline {
-	return Pipeline{
-		FetchSession,
-		FetchFlash,
-		SecureHeaders,
-		SessionTimeout,
 	}
 }
 
@@ -131,6 +119,16 @@ func RequireAccount(h Handler) Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		if !db.Authorize(w, r) {
 			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+		h(db, w, r)
+	}
+}
+
+func RequireLogout(h Handler) Handler {
+	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
+		if !db.Logout(w) {
+			http.Redirect(w, r, "/sites", http.StatusFound)
 			return
 		}
 		h(db, w, r)

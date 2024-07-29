@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gernest/len64/web/db"
+	"github.com/gernest/len64/web/db/schema"
 )
 
 func LoginForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
@@ -11,4 +12,31 @@ func LoginForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+	u := new(schema.User)
+	err := u.ByEmail(db.Get(), email)
+	if err != nil {
+		db.SaveCsrf(w)
+		db.SaveCaptcha(w)
+		valid := map[string]any{
+			"error": "Wrong email or password. Please try again.",
+		}
+		login.Execute(w, db.Context(valid))
+		db.Logger().Error("login", "err", err)
+		return
+	}
+
+	if !u.PasswordMatch(password) {
+		db.SaveCsrf(w)
+		db.SaveCaptcha(w)
+		valid := map[string]any{
+			"error": "Wrong email or password. Please try again.",
+		}
+		login.Execute(w, db.Context(valid))
+		return
+	}
+
+	http.Redirect(w, r, db.Login(w, u.ID), http.StatusFound)
 }

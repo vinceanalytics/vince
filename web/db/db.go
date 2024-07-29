@@ -54,6 +54,10 @@ func (db *Config) Get() *gorm.DB {
 	return db.db
 }
 
+func (db *Config) Logger() *slog.Logger {
+	return db.logger
+}
+
 func (db *Config) Start(ctx context.Context) error {
 	go db.processEvents()
 	return db.ts.Start(ctx)
