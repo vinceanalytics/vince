@@ -13,6 +13,8 @@ import (
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/VictoriaMetrics/fastcache"
 	"github.com/cockroachdb/pebble"
+	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 var (
@@ -23,7 +25,6 @@ var (
 	bsiPrefix       = []byte{shardPrefix, 0x1}
 	trKeyPrefix     = []byte{trPrefix, 0x2}
 	trIDPrefix      = []byte{trPrefix, 0x3}
-	sep             = []byte{'='}
 )
 
 const (
@@ -54,7 +55,38 @@ func newBatch(db *Store) (*Batch, error) {
 
 const zero = ^uint64(0)
 
-func (i *Batch) Write(ts uint64, f func(idx Index)) error {
+func (b *Batch) Write(e *v1.Model) error {
+	return b.write(uint64(e.Timestamp), func(idx Index) {
+		e.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+			if fd.Kind() == protoreflect.StringKind {
+				idx.String(string(fd.Name()), v.String())
+				return true
+			}
+			if fd.IsMap() {
+				prefix := string(fd.Name()) + "."
+				v.Map().Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
+					idx.String(prefix+mk.String(), v.String())
+					return true
+				})
+				idx.String(string(fd.Name()), v.String())
+			}
+			return true
+		})
+		idx.Int64("timestamp", int64(e.Timestamp))
+		idx.Int64("date", date(e.Timestamp))
+		idx.Int64("uid", int64(e.Id))
+		if e.Bounce != nil {
+			idx.Bool("bounce", e.GetBounce())
+		} else {
+			// null bounce means we clear bounce status
+			idx.Int64("bounce", -1)
+		}
+		idx.Bool("session", e.Session)
+		idx.Int64("duration", int64(e.Duration))
+	})
+}
+
+func (i *Batch) write(ts uint64, f func(idx Index)) error {
 	i.seq++
 	shard := i.seq / shardWidth
 	if shard != i.shard {
@@ -104,7 +136,7 @@ func (i *Batch) emit() error {
 		return err
 	}
 
-	err = WriteTimeRange(b, i.shard, i.min, i.max)
+	err = writeTimeRange(b, i.shard, i.min, i.max)
 	if err != nil {
 		return err
 	}
@@ -137,13 +169,19 @@ func (i *Batch) Bool(field string, value bool) {
 
 func (i *Batch) String(field string, value string) {
 	i.b.Reset()
-	i.b.WriteString(field)
+	i.b.WriteString(value)
 	i.b.Write(sep)
 	i.b.WriteString(value)
 
+	// We only hash the value, field will identify the bsi and the hash will be
+	// unique per field but also globally. Saves storage by avoiding duplicate
+	// values across fields.
+	//
+	// Fields with similar values will share same hash
 	i.hash.Reset()
-	i.hash.Write(i.b.Bytes())
+	i.hash.Write([]byte(value))
 	sum := i.hash.Sum32()
+
 	i.strings[sum] = i.b.String()
 	i.get(field).SetValue(i.seq, int64(sum))
 }
@@ -259,7 +297,9 @@ func writeString(b *pebble.Batch, cache *fastcache.Cache, m map[uint32]string) e
 	return nil
 }
 
-func SearchRegex(db *pebble.Snapshot, shard uint64, k, v string) (*roaring.Bitmap, error) {
+var sep = []byte("=")
+
+func searchRegex(db *pebble.Snapshot, shard uint64, k, v string) (*roaring.Bitmap, error) {
 	var b bytes.Buffer
 	b.Write(trKeyPrefix)
 	var x [8]byte
@@ -293,7 +333,7 @@ func SearchRegex(db *pebble.Snapshot, shard uint64, k, v string) (*roaring.Bitma
 	return r, nil
 }
 
-func WriteTimeRange(b *pebble.Batch, shard uint64, min, max uint64) error {
+func writeTimeRange(b *pebble.Batch, shard uint64, min, max uint64) error {
 	key := make([]byte, 1+8+8)
 	key[0] = timeRangePrefix
 	binary.BigEndian.PutUint64(key[1:], min)
@@ -311,7 +351,7 @@ func WriteTimeRange(b *pebble.Batch, shard uint64, min, max uint64) error {
 	return nil
 }
 
-func ReadTimeRange(db *pebble.Snapshot, start, end uint64, b *roaring64.Bitmap) error {
+func readTimeRange(db *pebble.Snapshot, start, end uint64, b *roaring64.Bitmap) error {
 	key := make([]byte, 1+8+8)
 	key[0] = timeRangePrefix
 	binary.BigEndian.PutUint64(key[1:], start)

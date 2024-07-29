@@ -6,7 +6,6 @@ import (
 	"time"
 
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 type DB struct {
@@ -43,34 +42,7 @@ func (db *DB) startBatch(b *Batch, ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case e := <-db.tasks:
-			err := b.Write(uint64(e.Timestamp), func(idx Index) {
-				e.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
-					if fd.Kind() == protoreflect.StringKind {
-						idx.String(string(fd.Name()), v.String())
-						return true
-					}
-					if fd.IsMap() {
-						prefix := string(fd.Name()) + "."
-						v.Map().Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
-							idx.String(prefix+mk.String(), v.String())
-							return true
-						})
-						idx.String(string(fd.Name()), v.String())
-					}
-					return true
-				})
-				idx.Int64("timestamp", int64(e.Timestamp))
-				idx.Int64("date", date(e.Timestamp))
-				idx.Int64("uid", int64(e.Id))
-				if e.Bounce != nil {
-					idx.Bool("bounce", e.GetBounce())
-				} else {
-					// null bounce means we clear bounce status
-					idx.Int64("bounce", -1)
-				}
-				idx.Bool("session", e.Session)
-				idx.Int64("duration", int64(e.Duration))
-			})
+			err := b.Write(e)
 			if err != nil {
 				slog.Error("writing model", "err", err)
 			}

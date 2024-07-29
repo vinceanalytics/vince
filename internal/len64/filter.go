@@ -39,8 +39,6 @@ func (s *Text) Apply(db *View, foundSet *roaring64.Bitmap) (*roaring64.Bitmap, e
 	switch s.OP {
 	case EQ, NEQ:
 		h := crc32.NewIEEE()
-		h.Write([]byte(s.Field))
-		h.Write(sep)
 		h.Write([]byte(s.Value))
 		value := h.Sum32()
 		r := b.CompareValue(parallel(), roaring64.EQ, int64(value), 0, foundSet)
@@ -49,7 +47,7 @@ func (s *Text) Apply(db *View, foundSet *roaring64.Bitmap) (*roaring64.Bitmap, e
 		}
 		return r, nil
 	case RE, NRE:
-		values, err := SearchRegex(db.snap, db.shard, s.Field, s.Value)
+		values, err := searchRegex(db.snap, db.shard, s.Field, s.Value)
 		if err != nil {
 			return nil, err
 		}

@@ -121,14 +121,12 @@ func (db *Store) view(start, end time.Time, domain string, f func(db *View, foun
 	shards := roaring64.New()
 	from := start.UnixMilli()
 	to := end.UnixMilli()
-	err := ReadTimeRange(snap, uint64(from), uint64(to), shards)
+	err := readTimeRange(snap, uint64(from), uint64(to), shards)
 	if err != nil {
 		return err
 	}
 
 	hash := crc32.NewIEEE()
-	hash.Write([]byte("domain"))
-	hash.Write(sep)
 	hash.Write([]byte(domain))
 
 	sum := hash.Sum32()
