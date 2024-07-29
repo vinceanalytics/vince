@@ -1,6 +1,8 @@
 package len64
 
-import "github.com/RoaringBitmap/roaring/v2/roaring64"
+import (
+	"github.com/RoaringBitmap/roaring/v2/roaring64"
+)
 
 type Projection map[string]*roaring64.BSI
 
@@ -18,6 +20,9 @@ func (p Projection) Visits() uint64 {
 func (p Projection) Bounce() uint64 {
 	b := p["bounce"]
 	sum, _ := b.Sum(b.GetExistenceBitmap())
+	if sum < 0 {
+		return 0
+	}
 	return uint64(sum)
 }
 

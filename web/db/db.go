@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"time"
 
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
 	"github.com/gernest/len64/internal/len64"
@@ -21,7 +20,7 @@ type Config struct {
 	ts      *len64.DB
 	session SessionContext
 	logger  *slog.Logger
-	cache   *LRU
+	cache   *cache
 
 	// we rely on cache for session processing. We need to guarantee only a single
 	// writer on the cache, a buffered channel help with this.
@@ -46,7 +45,7 @@ func Open(path string) (*Config, error) {
 		db:     db,
 		ts:     series,
 		logger: slog.Default(),
-		cache:  newCache(16<<10, 10*time.Minute),
+		cache:  newCache(16 << 10),
 		models: make(chan *v1.Model, 4<<10),
 	}, nil
 }

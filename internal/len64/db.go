@@ -62,7 +62,12 @@ func (db *DB) startBatch(b *Batch, ctx context.Context) {
 				idx.Int64("timestamp", int64(e.Timestamp))
 				idx.Int64("date", date(e.Timestamp))
 				idx.Int64("uid", int64(e.Id))
-				idx.Bool("bounce", e.GetBounce())
+				if e.Bounce != nil {
+					idx.Bool("bounce", e.GetBounce())
+				} else {
+					// null bounce means we clear bounce status
+					idx.Int64("bounce", -1)
+				}
 				idx.Bool("session", e.Session)
 				idx.Int64("duration", int64(e.Duration))
 			})
