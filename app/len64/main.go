@@ -46,6 +46,12 @@ func main() {
 	mux.HandleFunc("POST /register", db.Wrap(
 		plug.BrowserFormPost().Then(web.Register),
 	))
+	mux.HandleFunc("GET /sites/new", db.Wrap(
+		plug.BrowserFormAuthGet().Then(web.CreateSiteForm),
+	))
+	mux.HandleFunc("POST /sites", db.Wrap(
+		plug.BrowserFormAuthPost().Then(web.CreateSite),
+	))
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
 	svr := &http.Server{

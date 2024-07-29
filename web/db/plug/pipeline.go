@@ -32,6 +32,10 @@ func BrowserFormGet() Pipeline {
 	}
 }
 
+func BrowserFormAuthGet() Pipeline {
+	return append(BrowserFormGet(), RequireAccount)
+}
+
 func BrowserFormPost() Pipeline {
 	return Pipeline{
 		FetchSession,
@@ -39,6 +43,10 @@ func BrowserFormPost() Pipeline {
 		SessionTimeout,
 		VerifyCSRF,
 	}
+}
+
+func BrowserFormAuthPost() Pipeline {
+	return append(BrowserFormPost(), RequireAccount)
 }
 
 func BrowserHome() Pipeline {
@@ -113,6 +121,16 @@ func VerifyCSRF(h Handler) Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		if !db.IsValidCsrf(r) {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		h(db, w, r)
+	}
+}
+
+func RequireAccount(h Handler) Handler {
+	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
+		if !db.Authorize(w, r) {
+			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 		h(db, w, r)

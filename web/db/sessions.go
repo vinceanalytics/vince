@@ -180,6 +180,15 @@ func getSession(value string) ([]byte, error) {
 	return io.ReadAll(r)
 }
 
+func (c *Config) Authorize(w http.ResponseWriter, r *http.Request) bool {
+	if c.session.user == nil {
+		c.session.Data.LoginDest = r.URL.Path
+		c.SaveSession(w)
+		return false
+	}
+	return *True
+}
+
 func (c *Config) SaveSuccessRegister(w http.ResponseWriter, uid uint64) {
 	c.session.Data.CurrentUserID = uid
 	c.session.Data.LoggedIn = true
