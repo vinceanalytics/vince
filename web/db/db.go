@@ -12,7 +12,6 @@ import (
 	"github.com/gernest/len64/internal/len64"
 	"github.com/gernest/len64/web/db/schema"
 	"github.com/glebarez/sqlite"
-	"github.com/hashicorp/golang-lru/v2/expirable"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -22,7 +21,7 @@ type Config struct {
 	ts      *len64.DB
 	session SessionContext
 	logger  *slog.Logger
-	cache   *expirable.LRU[uint64, *v1.Model]
+	cache   *LRU
 
 	// we rely on cache for session processing. We need to guarantee only a single
 	// writer on the cache, a buffered channel help with this.
@@ -43,16 +42,11 @@ func Open(path string) (*Config, error) {
 		conn.Close()
 		return nil, err
 	}
-	cache := expirable.NewLRU[uint64, *v1.Model](
-		16<<10,
-		nil, // todo: pool models
-		30*time.Minute,
-	)
 	return &Config{
 		db:     db,
 		ts:     series,
 		logger: slog.Default(),
-		cache:  cache,
+		cache:  newCache(16<<10, 10*time.Minute),
 		models: make(chan *v1.Model, 4<<10),
 	}, nil
 }
