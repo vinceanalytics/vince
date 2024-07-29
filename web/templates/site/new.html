@@ -1,0 +1,23 @@
+<div class="w-full max-w-3xl mt-4 mx-auto flex">
+    <form action="/sites" method="post"
+        class="max-w-lg w-full mx-auto bg-white dark:bg-gray-800 shadow-lg rounded px-8 pt-6 pb-8 mb-4 mt-8">
+        {{with .csrf}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
+        <h2 class="text-xl font-black dark:text-gray-100 mb-4">Your website details</h2>
+        <div class="my-6">
+            <label for="domain" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Domain</label>
+            <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">
+                Just the naked domain or subdomain without 'www'
+            </p>
+            <div class="mt-2 flex rounded-md shadow-sm">
+                <span
+                    class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-500 bg-gray-50 dark:bg-gray-850 text-gray-500 dark:text-gray-400 sm:text-sm">
+                    https://
+                </span>
+                <input type="text" name="domain" id="domain" placeholder="example.com"
+                    class="focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 flex-1 block w-full px-3 py-2 rounded-none rounded-r-md sm:text-sm border-gray-300 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-300">
+            </div>
+            {{with .validation_domain}}<div class="mt-2 text-sm text-red-600">{{.}}</div>{{end}}
+        </div>
+        <input type="submit" value="Add site →" class="button mt-4 w-full">
+    </form>
+</div>
