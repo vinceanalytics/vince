@@ -9,8 +9,8 @@ require (
 	github.com/blevesearch/vellum v1.0.10
 	github.com/cockroachdb/pebble v1.1.1
 	github.com/dchest/captcha v1.0.0
+	github.com/gernest/vice v0.0.2
 	github.com/glebarez/sqlite v1.11.0
-	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/lestrrat-go/dataurl v0.0.0-20220721131304-b60017625013
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/oschwald/geoip2-golang v1.11.0
