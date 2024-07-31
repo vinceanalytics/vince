@@ -50,7 +50,7 @@
                     <div class="ml-4 flex-shrink-0 flex">
                         <button
                             class="inline-flex text-gray-400 focus:outline-none focus:text-gray-500 dark:focus:text-gray-200 transition ease-in-out duration-150"
-                            onclick="clearSuccessFlash">
+                            id="flash-success-button">
                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                 fill="currentColor">
                                 <path fill-rule="evenodd"
@@ -63,6 +63,11 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById("flash-success-button").addEventListener("click", () => {
+            document.getElementById("flash-success").remove()
+        })
+    </script>
     {{end}}
     {{with .error}}
     <div id="flash-error"
@@ -82,7 +87,7 @@
                     <div class="ml-4 flex-shrink-0 flex">
                         <button
                             class="inline-flex text-gray-400 focus:outline-none focus:text-gray-500 dark:focus:text-gray-200 transition ease-in-out duration-150"
-                            onclick="clearErrorFlash">
+                            id="flash-error-button">
                             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                 fill="currentColor">
                                 <path fill-rule="evenodd"
@@ -95,15 +100,13 @@
             </div>
         </div>
     </div>
-    {{end}}
     <script>
-        function clearSuccessFlash() {
-            document.getElementById("flash-success").remove()
-        }
-        function clearErrorFlash() {
+        document.getElementById("flash-error-button").addEventListener("click", () => {
             document.getElementById("flash-error").remove()
-        }
+        })
     </script>
+    {{end}}
+
 </div>
 {{end}}
 {{end}}

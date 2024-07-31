@@ -1800,6 +1800,10 @@ span.flatpickr-weekday{
   pointer-events: none;
 }
 
+.pointer-events-auto {
+  pointer-events: auto;
+}
+
 .visible {
   visibility: visible;
 }
@@ -1812,6 +1816,10 @@ span.flatpickr-weekday{
   position: static;
 }
 
+.fixed {
+  position: fixed;
+}
+
 .absolute {
   position: absolute;
 }
@@ -1822,6 +1830,10 @@ span.flatpickr-weekday{
 
 .sticky {
   position: sticky;
+}
+
+.inset-0 {
+  inset: 0px;
 }
 
 .inset-y-0 {
@@ -1989,6 +2001,10 @@ span.flatpickr-weekday{
 
 .ml-3 {
   margin-left: 0.75rem;
+}
+
+.ml-4 {
+  margin-left: 1rem;
 }
 
 .ml-6 {
@@ -2254,6 +2270,10 @@ span.flatpickr-weekday{
   max-width: 1280px;
 }
 
+.max-w-sm {
+  max-width: 24rem;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -2350,6 +2370,10 @@ span.flatpickr-weekday{
 
 .flex-col {
   flex-direction: column;
+}
+
+.flex-col-reverse {
+  flex-direction: column-reverse;
 }
 
 .flex-wrap {
@@ -2475,6 +2499,10 @@ span.flatpickr-weekday{
 
 .rounded-full {
   border-radius: 9999px;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
 }
 
 .rounded-md {
@@ -2795,6 +2823,14 @@ span.flatpickr-weekday{
   padding-right: 2rem;
 }
 
+.pt-0 {
+  padding-top: 0px;
+}
+
+.pt-0\.5 {
+  padding-top: 0.125rem;
+}
+
 .pt-3 {
   padding-top: 0.75rem;
 }
@@ -2956,6 +2992,11 @@ span.flatpickr-weekday{
 .text-gray-900 {
   --tw-text-opacity: 1;
   color: rgb(15 23 42 / var(--tw-text-opacity));
+}
+
+.text-green-400 {
+  --tw-text-opacity: 1;
+  color: rgb(74 222 128 / var(--tw-text-opacity));
 }
 
 .text-green-500 {
@@ -3656,6 +3697,11 @@ iframe[hidden] {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
+.focus\:text-gray-500:focus {
+  --tw-text-opacity: 1;
+  color: rgb(100 116 139 / var(--tw-text-opacity));
+}
+
 .focus\:text-gray-900:focus {
   --tw-text-opacity: 1;
   color: rgb(15 23 42 / var(--tw-text-opacity));
@@ -3923,6 +3969,11 @@ iframe[hidden] {
   color: rgb(241 245 249 / var(--tw-text-opacity));
 }
 
+:is(.dark .dark\:focus\:text-gray-200:focus) {
+  --tw-text-opacity: 1;
+  color: rgb(226 232 240 / var(--tw-text-opacity));
+}
+
 :is(.dark .dark\:focus\:ring-offset-gray-900:focus) {
   --tw-ring-offset-color: #0f172a;
 }
@@ -3984,6 +4035,18 @@ iframe[hidden] {
 
   .sm\:w-auto {
     width: auto;
+  }
+
+  .sm\:items-end {
+    align-items: flex-end;
+  }
+
+  .sm\:justify-end {
+    justify-content: flex-end;
+  }
+
+  .sm\:p-6 {
+    padding: 1.5rem;
   }
 
   .sm\:px-2 {
