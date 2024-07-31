@@ -39,7 +39,7 @@ func limit() float64 {
 	return float64(100) / (24 * time.Hour).Seconds()
 }
 
-func (c *Cache) Contains(domain string) (ok bool) {
+func (c *Cache) Allow(domain string) (ok bool) {
 	h := crc32.NewIEEE()
 	h.Write([]byte(domain))
 	id := h.Sum32()

@@ -70,7 +70,7 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 		return nil, err
 	}
 	domain := req.domains[0]
-	if !db.domains.Contains(domain) {
+	if !db.domains.Allow(domain) {
 		return nil, ErrDrop
 	}
 
