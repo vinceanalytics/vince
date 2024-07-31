@@ -25,6 +25,8 @@ type User struct {
 	v1.User
 }
 
+// by pre fixing with / ensures we never crash with timeseries namespace. We
+// will have to figure out compaction scheme for this namespace though.
 var (
 	uid = []byte("/uid/")
 	ue  = []byte("/uem/")
