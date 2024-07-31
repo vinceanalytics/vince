@@ -201,6 +201,10 @@ func (c *Config) Logout(w http.ResponseWriter) bool {
 	return true
 }
 
+func (c *Config) CurrentUser() *schema.User {
+	return c.session.user
+}
+
 func (c *Config) Login(w http.ResponseWriter, uid uint64) string {
 	c.session.Data.CurrentUserID = uid
 	c.session.Data.LoggedIn = true

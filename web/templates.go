@@ -16,6 +16,7 @@ var (
 	login      = template.Must(look("focus").ParseFS(templateData, "templates/auth/login.html"))
 	register   = template.Must(look("focus").ParseFS(templateData, "templates/auth/register.html"))
 	createSite = template.Must(look("focus").ParseFS(templateData, "templates/site/new.html"))
+	sitesIndex = template.Must(look("app").ParseFS(templateData, "templates/site/index.html"))
 
 	e404 = template.Must(look("focus").ParseFS(templateData, "templates/error/404.html"))
 	e500 = template.Must(look("focus").ParseFS(templateData, "templates/error/500.html"))

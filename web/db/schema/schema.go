@@ -37,15 +37,15 @@ func (s *Site) SafeDomain() string {
 	return url.PathEscape(s.Domain)
 }
 
-func (s *Site) PreloadSite(db *gorm.DB, preload ...string) error {
+func (s *Site) Preload(db *gorm.DB, pre ...string) error {
+	return preload(db, s, pre...)
+}
+
+func preload(db *gorm.DB, model any, preload ...string) error {
 	for _, p := range preload {
 		db = db.Preload(p)
 	}
-	err := db.First(s).Error
-	if err != nil {
-		return fmt.Errorf("preload site%w", err)
-	}
-	return nil
+	return db.First(model).Error
 }
 
 func (s *Site) SiteFor(db *gorm.DB, uid uint64, domain string, roles ...string) error {
@@ -63,6 +63,11 @@ func (s *Site) SiteFor(db *gorm.DB, uid uint64, domain string, roles ...string) 
 func (s *Site) ByDomain(db *gorm.DB, domain string) error {
 	return db.Model(&Site{}).
 		Where("domain = ?", domain).First(&s).Error
+}
+
+func (s *Site) ByID(db *gorm.DB, id uint64) error {
+	return db.Model(&Site{}).
+		Where("id = ?", id).First(&s).Error
 }
 
 func (s *Site) ChangeSiteVisibility(db *gorm.DB, public bool) error {
@@ -237,6 +242,10 @@ type User struct {
 	Sites        []*Site `gorm:"many2many:site_memberships;"`
 	LastSeen     time.Time
 	Invitations  []*Invitation
+}
+
+func (u *User) Preload(db *gorm.DB, pre ...string) error {
+	return preload(db, u, pre...)
 }
 
 func (u *User) SetPassword(db *gorm.DB, pwd string) (string, error) {
