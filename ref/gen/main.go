@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"slices"
 	"sort"
 
@@ -124,4 +125,39 @@ func main() {
 		log.Fatal(err)
 	}
 	os.WriteFile("refs.fst", o.Bytes(), 0600)
+
+	os.Mkdir("favicon", 0755)
+	seen := map[uint64]struct{}{}
+	for _, d := range all {
+		if _, ok := seen[d.Index]; ok {
+			continue
+		}
+		data := get(string(d.Name))
+		if len(data) == 0 {
+			continue
+		}
+		seen[d.Index] = struct{}{}
+		os.WriteFile(filepath.Join("favicon", ls[d.Index]), data, 0600)
+	}
+}
+
+var klient = &http.Client{}
+
+func get(domain string) []byte {
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain), nil)
+	res, err := klient.Do(req)
+	if err != nil {
+		fmt.Println(">", domain)
+		return []byte{}
+	}
+	defer res.Body.Close()
+	if res.StatusCode == http.StatusOK {
+		var b bytes.Buffer
+		io.Copy(&b, res.Body)
+		if !bytes.Contains(b.Bytes(), []byte{137, 80, 78, 71, 13, 10, 26, 10}) {
+			return b.Bytes()
+		}
+	}
+	fmt.Println(">", domain)
+	return []byte{}
 }

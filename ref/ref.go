@@ -1,8 +1,9 @@
 package ref
 
 import (
-	_ "embed"
+	"embed"
 	"fmt"
+	"io/fs"
 	"net/url"
 	"strings"
 
@@ -10,6 +11,11 @@ import (
 	"github.com/blevesearch/vellum"
 	"github.com/blevesearch/vellum/levenshtein"
 )
+
+//go:embed favicon
+var faviconData embed.FS
+
+var Favicon, _ = fs.Sub(faviconData, "favicon")
 
 //go:embed refs.fst
 var data []byte

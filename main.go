@@ -32,6 +32,9 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/public/", plug.Track(http.FileServerFS(app.Public)))
 
+	mux.HandleFunc("/favicon/sources/placeholder", web.Placeholder)
+	mux.HandleFunc("/favicon/sources/{source...}", web.Favicon)
+
 	mux.HandleFunc("/", db.Wrap(
 		plug.Browser().Then(web.Home),
 	))
