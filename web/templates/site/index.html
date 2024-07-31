@@ -1,0 +1,112 @@
+<div class="container pt-6">
+    <div class="mt-6 pb-5 border-b border-gray-200 dark:border-gray-500 flex items-center justify-between">
+        <h2
+            class="text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:text-3xl sm:leading-9 sm:truncate flex-shrink-0">
+            My sites
+        </h2>
+        <a href="/sites/new" class="button my-2 sm:my-0 w-auto">+ Add a website</a>
+    </div>
+    <ul class="my-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {{range .invitations}}
+        <li class="col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow p-4 group-hover:shadow-lg cursor-pointer">
+            <div class="w-full flex items-center justify-between space-x-4">
+                <img src="/favicon/sources/{{.site.domain}}"
+                    onerror="this.onerror=null; this.src='/favicon/sources/placeholder';"
+                    class="w-4 h-4 flex-shrink-0 mt-px">
+                <div class="flex-1 truncate -mt-px">
+                    <h3 class="text-gray-900 font-medium text-lg truncate dark:text-gray-100">{{.site.domain}}</h3>
+                </div>
+                <span
+                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                    Pending invitation
+                </span>
+            </div>
+            <div class="pl-8 mt-2 flex items-center justify-between">
+                <span class="text-gray-600 dark:text-gray-400 text-sm truncate">
+                    <span class="text-gray-800 dark:text-gray-200">
+                        <b>{{.visitors}} </b> visitors in last 24h
+                    </span>
+                </span>
+            </div>
+
+            <div
+                class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
+                        <button
+                            class="bg-white dark:bg-gray-800 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <div class="sm:flex sm:items-start">
+                            <div
+                                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100"
+                                    id="modal-title">
+                                    Invitation for <span>{{.site.domain}}</span>
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500 dark:text-gray-200">
+                                        You've been invited to the {{.site.domain}} analytics dashboard as {{.role}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-850 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <form action="/sites/invitations/{{.id}}/accept" method="post">
+                                {{with .csrf}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
+                                <input type="submit" value="Accept &amp; Continue"
+                                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
+                            </form>
+                            <form action="/sites/invitations/{{.id}}/reject" method="post">
+                                {{with .csrf}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
+                                <input type="submit" value="Reject"
+                                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-500 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-850 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </li>
+        {{end}}
+        {{with .sites}}
+        <div class="relative">
+            <a href="/{{.domain}}">
+                <li
+                    class="col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow p-4 group-hover:shadow-lg cursor-pointer">
+                    <div class="w-full flex items-center justify-between space-x-4">
+                        <img src="/favicon/sources/{{.domain}}" class="w-4 h-4 flex-shrink-0 mt-px">
+                        <div class="flex-1 -mt-px w-full">
+                            <h3 class="text-gray-900 font-medium text-lg truncate dark:text-gray-100"
+                                style="width: calc(100% - 4rem)">
+                                {{.domain}}
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="pl-8 mt-2 flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-400 text-sm truncate">
+                            <span class="text-gray-800 dark:text-gray-200">
+                                <b>{{.visitors}}</b> visitors in last 24h
+                            </span>
+                        </span>
+                    </div>
+                </li>
+            </a>
+        </div>
+        {{else}}
+        <p class="dark:text-gray-100">You don't have any sites yet</p>
+        {{end}}
+    </ul>
+</div>
