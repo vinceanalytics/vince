@@ -7,6 +7,7 @@ message Site {
   string domain = 2;
   bool public = 3;
   repeated Goal goals = 4;
+  ROLE role = 5;
 }
 
 message Goal {
@@ -22,7 +23,6 @@ message User {
   bytes password = 4;
   repeated Site sites = 5;
   repeated Invitation invitations = 6;
-  repeated Membership memberships = 7;
 }
 
 enum ROLE {
@@ -35,11 +35,4 @@ message Invitation {
   bytes id = 1;
   ROLE role = 2;
   Site site = 3;
-}
-
-message Membership {
-  bytes id = 1;
-  bytes uid = 2;
-  bytes sid = 3;
-  ROLE role = 4;
 }

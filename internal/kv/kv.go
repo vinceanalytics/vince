@@ -45,6 +45,9 @@ func (u *User) Keys() [][]byte {
 		append(ue, []byte(u.Email)...),
 	}
 	for _, s := range u.Sites {
+		if s.Role != v1.ROLE_OWNER {
+			continue
+		}
 		base = append(base, append(sid, s.Id...))
 		base = append(base, append(sdm, []byte(s.Domain)...))
 	}
@@ -186,12 +189,12 @@ func (u *User) CreateSite(db KeyValue, domain string, public bool) (id uuid.UUID
 	return
 }
 
-func (u *User) Role(sid []byte) (role v1.ROLE, ok bool) {
-	for _, m := range u.Memberships {
-		if bytes.Equal(m.Sid, sid) {
+func (u *User) Role(sid uuid.UUID) (role v1.ROLE, ok bool) {
+	for _, m := range u.Sites {
+		if bytes.Equal(m.Id, sid[:]) {
 			role = m.Role
 			ok = true
-			return
+			break
 		}
 	}
 	return
