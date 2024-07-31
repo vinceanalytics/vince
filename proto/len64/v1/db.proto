@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package v1;
+
+message Site {
+  bytes id = 1;
+  string domain = 2;
+  bool public = 3;
+  repeated Goal goals = 4;
+}
+
+message Goal {
+  bytes id = 1;
+  string event_name = 2;
+  string page_path = 3;
+}
+
+message User {
+  bytes id = 1;
+  string name = 2;
+  string email = 3;
+  bytes password = 4;
+  repeated Site sites = 5;
+  repeated Invitation invitation = 6;
+  repeated Membership membership = 7;
+}
+
+enum ROLE {
+  OWNER = 0;
+  ADMIN = 1;
+  VIEWER = 2;
+}
+
+message Invitation {
+  bytes id = 1;
+  ROLE role = 2;
+  Site site = 3;
+}
+
+message Membership {
+  bytes id = 1;
+  bytes uid = 2;
+  bytes sid = 3;
+  ROLE role = 4;
+}
