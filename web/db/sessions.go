@@ -17,7 +17,8 @@ import (
 
 	"filippo.io/age"
 	"github.com/dchest/captcha"
-	"github.com/gernest/len64/web/db/schema"
+	"github.com/gernest/len64/internal/kv"
+	"github.com/google/uuid"
 	"github.com/lestrrat-go/dataurl"
 )
 
@@ -38,7 +39,7 @@ const cookie = "_len64"
 type SessionContext struct {
 	Data    Data
 	captcha string
-	user    *schema.User
+	user    *kv.User
 }
 
 func (s *SessionContext) Context(base map[string]any) {
@@ -58,7 +59,7 @@ func (s *SessionContext) Context(base map[string]any) {
 
 type Data struct {
 	TimeoutAt     time.Time `json:",omitempty"`
-	CurrentUserID uint64    `json:",omitempty"`
+	CurrentUserID string    `json:",omitempty"`
 	LastSeen      time.Time `json:",omitempty"`
 	LoggedIn      bool      `json:",omitempty"`
 	Captcha       string    `json:",omitempty"`
@@ -101,9 +102,10 @@ func (c *Config) Wrap(f func(db *Config, w http.ResponseWriter, r *http.Request)
 
 func (c *Config) Load(w http.ResponseWriter, r *http.Request) {
 	c.load(r)
-	if c.session.Data.CurrentUserID != 0 {
-		usr := new(schema.User)
-		err := usr.ByID(c.db, int64(c.session.Data.CurrentUserID))
+	if c.session.Data.CurrentUserID != "" {
+		uid := uuid.MustParse(c.session.Data.CurrentUserID)
+		usr := new(kv.User)
+		err := usr.ByID(uid, c.db)
 		if err != nil {
 			c.session = SessionContext{}
 			c.SaveSession(w)
@@ -127,10 +129,10 @@ func (c *Config) Flash(w http.ResponseWriter) {
 func (c *Config) SessionTimeout(w http.ResponseWriter) {
 	now := time.Now().UTC()
 	switch {
-	case c.session.Data.CurrentUserID != 0 && !c.session.Data.TimeoutAt.IsZero() && now.After(c.session.Data.TimeoutAt):
+	case c.session.Data.CurrentUserID != "" && !c.session.Data.TimeoutAt.IsZero() && now.After(c.session.Data.TimeoutAt):
 		c.session.Data = Data{}
 		c.SaveSession(w)
-	case c.session.Data.CurrentUserID != 0:
+	case c.session.Data.CurrentUserID != "":
 		c.session.Data.TimeoutAt = now.Add(24 * 7 * 2 * time.Hour)
 		c.SaveSession(w)
 	}
@@ -201,12 +203,12 @@ func (c *Config) Logout(w http.ResponseWriter) bool {
 	return true
 }
 
-func (c *Config) CurrentUser() *schema.User {
+func (c *Config) CurrentUser() *kv.User {
 	return c.session.user
 }
 
-func (c *Config) Login(w http.ResponseWriter, uid uint64) string {
-	c.session.Data.CurrentUserID = uid
+func (c *Config) Login(w http.ResponseWriter, uid uuid.UUID) string {
+	c.session.Data.CurrentUserID = uid.String()
 	c.session.Data.LoggedIn = true
 	dest := c.session.Data.LoginDest
 	c.session.Data.LoginDest = ""
@@ -217,8 +219,8 @@ func (c *Config) Login(w http.ResponseWriter, uid uint64) string {
 	return dest
 }
 
-func (c *Config) SaveSuccessRegister(w http.ResponseWriter, uid uint64) {
-	c.session.Data.CurrentUserID = uid
+func (c *Config) SaveSuccessRegister(w http.ResponseWriter, uid uuid.UUID) {
+	c.session.Data.CurrentUserID = uid.String()
 	c.session.Data.LoggedIn = true
 	c.SaveSession(w)
 }

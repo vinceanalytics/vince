@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/cockroachdb/pebble"
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
 )
 
@@ -19,6 +20,10 @@ func Open(path string) (*DB, error) {
 		return nil, err
 	}
 	return &DB{store: db, tasks: make(chan *v1.Model, 1<<10)}, nil
+}
+
+func (db *DB) KV() *pebble.DB {
+	return db.store.db
 }
 
 func (db *DB) Close() error {

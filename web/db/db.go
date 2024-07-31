@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"errors"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -10,15 +9,12 @@ import (
 	"path/filepath"
 
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	"github.com/gernest/len64/internal/kv"
 	"github.com/gernest/len64/internal/len64"
-	"github.com/gernest/len64/web/db/schema"
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type Config struct {
-	db      *gorm.DB
+	db      *kv.Pebble
 	ts      *len64.DB
 	session SessionContext
 	logger  *slog.Logger
@@ -32,19 +28,12 @@ type Config struct {
 func Open(path string) (*Config, error) {
 	ts := filepath.Join(path, "ts")
 	os.MkdirAll(ts, 0755)
-	ops := filepath.Join(path, "ops.db")
-	db, err := open(ops)
-	if err != nil {
-		return nil, err
-	}
 	series, err := len64.Open(ts)
 	if err != nil {
-		conn, _ := db.DB()
-		conn.Close()
 		return nil, err
 	}
 	return &Config{
-		db:     db,
+		db:     kv.New(series.KV()),
 		ts:     series,
 		logger: slog.Default(),
 		cache:  newCache(16 << 10),
@@ -52,7 +41,7 @@ func Open(path string) (*Config, error) {
 	}, nil
 }
 
-func (db *Config) Get() *gorm.DB {
+func (db *Config) Get() *kv.Pebble {
 	return db.db
 }
 
@@ -74,31 +63,7 @@ func (db *Config) processEvents() {
 }
 
 func (db *Config) Close() error {
-	close(db.models)
-	x, _ := db.db.DB()
-	return errors.Join(x.Close(), db.ts.Close())
-}
-
-func open(path string) (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{})
-	if err != nil {
-		return nil, err
-	}
-	db.Logger = db.Logger.LogMode(logger.Silent)
-	db.SetupJoinTable(&schema.User{}, "Sites", &schema.SiteMembership{})
-	db.SetupJoinTable(&schema.Site{}, "Users", &schema.SiteMembership{})
-	err = db.AutoMigrate(
-		&schema.Goal{},
-		&schema.Invitation{},
-		&schema.SharedLink{},
-		&schema.SiteMembership{},
-		&schema.Site{},
-		&schema.User{},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	return db.ts.Close()
 }
 
 func (db *Config) HTML(w http.ResponseWriter, t *template.Template, data map[string]any) {

@@ -3,8 +3,8 @@ package web
 import (
 	"net/http"
 
+	"github.com/gernest/len64/internal/kv"
 	"github.com/gernest/len64/web/db"
-	"github.com/gernest/len64/web/db/schema"
 )
 
 func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
@@ -17,20 +17,17 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	usr := db.CurrentUser()
-	usr.Preload(db.Get(), "Sites", "Invitations")
 
 	invites := make([]map[string]any, 0, len(usr.Invitations))
 	sites := make([]map[string]any, 0, len(usr.Invitations))
 	for _, i := range usr.Invitations {
 		m := map[string]any{
-			"id":   i.ID,
+			"id":   kv.FormatID(i.Id),
 			"role": i.Role,
 		}
-		site := new(schema.Site)
-		site.ByID(db.Get(), i.SiteID)
 		m["site"] = map[string]any{
-			"id":     site.ID,
-			"domain": site.Domain,
+			"id":     kv.FormatID(i.Site.Id),
+			"domain": i.Site.Domain,
 		}
 		m["visitors"] = 0
 		invites = append(invites, m)
@@ -38,7 +35,7 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 	for _, s := range usr.Sites {
 		sites = append(sites, map[string]any{
-			"id":       s.ID,
+			"id":       kv.FormatID(s.Id),
 			"domain":   s.Domain,
 			"visitors": 0,
 		})

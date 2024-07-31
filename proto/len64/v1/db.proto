@@ -21,8 +21,8 @@ message User {
   string email = 3;
   bytes password = 4;
   repeated Site sites = 5;
-  repeated Invitation invitation = 6;
-  repeated Membership membership = 7;
+  repeated Invitation invitations = 6;
+  repeated Membership memberships = 7;
 }
 
 enum ROLE {

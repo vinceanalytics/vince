@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gernest/len64/internal/kv"
 	"github.com/gernest/len64/web/db"
-	"github.com/gernest/len64/web/db/schema"
 )
 
 func RegisterForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
@@ -13,11 +13,11 @@ func RegisterForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	usr := new(schema.User)
+	usr := new(kv.User)
 	m, err := usr.NewUser(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-
+		e500.Execute(w, db.Context(make(map[string]any)))
+		db.Logger().Error("creating new user", "err", err)
 		return
 	}
 	validCaptcha := db.VerifyCaptchaSolution(r)

@@ -33,6 +33,11 @@ var (
 	iid = []byte("/iid/")
 )
 
+func (u *User) ID() (o uuid.UUID) {
+	copy(o[:], u.Id)
+	return
+}
+
 // Keys returns all key space with the user data.
 func (u *User) Keys() [][]byte {
 	base := [][]byte{
@@ -47,7 +52,7 @@ func (u *User) Keys() [][]byte {
 		base = append(base, append(sid, s.Id...))
 		base = append(base, append(sid, []byte(s.Domain)...))
 	}
-	for _, s := range u.Invitation {
+	for _, s := range u.Invitations {
 		base = append(base, append(iid, s.Id...))
 	}
 	return base
@@ -67,9 +72,9 @@ func (u *User) Save(db KeyValue) error {
 	return nil
 }
 
-func (u *User) ByID(id []byte, db KeyValue) error {
+func (u *User) ByID(id uuid.UUID, db KeyValue) error {
 	return u.get(
-		append(uid, id...), db,
+		append(uid, id[:]...), db,
 	)
 }
 
@@ -182,7 +187,7 @@ func (u *User) CreateSite(db KeyValue, domain string, public bool) (id uuid.UUID
 }
 
 func (u *User) Role(sid []byte) (role v1.ROLE, ok bool) {
-	for _, m := range u.Membership {
+	for _, m := range u.Memberships {
 		if bytes.Equal(m.Sid, sid) {
 			role = m.Role
 			ok = true
@@ -219,4 +224,10 @@ func validate(field, value, reason string, m map[string]any, f func(string) bool
 
 func id() uuid.UUID {
 	return uuid.Must(uuid.NewV7())
+}
+
+func FormatID(id []byte) string {
+	var u uuid.UUID
+	copy(u[:], id)
+	return u.String()
 }

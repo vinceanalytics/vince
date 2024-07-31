@@ -3,8 +3,8 @@ package web
 import (
 	"net/http"
 
+	"github.com/gernest/len64/internal/kv"
 	"github.com/gernest/len64/web/db"
-	"github.com/gernest/len64/web/db/schema"
 )
 
 func LoginForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
@@ -15,8 +15,8 @@ func Login(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
-	u := new(schema.User)
-	err := u.ByEmail(db.Get(), email)
+	u := new(kv.User)
+	err := u.ByEmail(email, db.Get())
 	if err != nil {
 		db.SaveCsrf(w)
 		db.SaveCaptcha(w)
@@ -38,5 +38,5 @@ func Login(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, db.Login(w, u.ID), http.StatusFound)
+	http.Redirect(w, r, db.Login(w, u.ID()), http.StatusFound)
 }
