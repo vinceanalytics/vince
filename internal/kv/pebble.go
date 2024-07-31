@@ -29,16 +29,27 @@ func (db *Pebble) Get(key []byte, value func([]byte) error) error {
 	return value(v)
 }
 
-func (db *Pebble) Prefix(key []byte, value func([]byte) error) error {
+func (db *Pebble) Iter(low, upper []byte, value func([]byte) error) error {
 	it, err := db.db.NewIter(&pebble.IterOptions{
-		LowerBound: key,
+		LowerBound: low,
+		UpperBound: upper,
 	})
 	if err != nil {
 		return err
 	}
 	defer it.Close()
-	for it.First(); bytes.HasPrefix(it.Key(), key); it.Next() {
-		err := value(bytes.TrimPrefix(it.Key(), key))
+	n := len(low)
+	if len(upper) > 0 {
+		n = len(upper)
+	}
+	trim := func(k []byte) []byte {
+		if len(k) < n {
+			return []byte{}
+		}
+		return k[n:]
+	}
+	for it.First(); bytes.HasPrefix(it.Key(), low); it.Next() {
+		err := value(trim(it.Key()))
 		if err != nil {
 			return err
 		}
