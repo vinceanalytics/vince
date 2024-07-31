@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"hash/crc32"
 	"net"
@@ -18,8 +19,11 @@ import (
 const pageView = "pageview"
 
 func (db *Config) ProcessEvent(r *http.Request) error {
-	m, err := parse(r)
+	m, err := db.parse(r)
 	if err != nil {
+		if errors.Is(err, ErrDrop) {
+			return nil
+		}
 		return err
 	}
 	db.append(m)
@@ -49,11 +53,15 @@ func update(fromSession *v1.Model, event *v1.Model) {
 	fromSession.Timestamp = event.Timestamp
 }
 
-var True = ptr(true)
+var (
+	True = ptr(true)
 
-var False = ptr(false)
+	False = ptr(false)
 
-func parse(r *http.Request) (*v1.Model, error) {
+	ErrDrop = errors.New("dop")
+)
+
+func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	req := newRequest()
 	defer req.Release()
 
@@ -61,6 +69,11 @@ func parse(r *http.Request) (*v1.Model, error) {
 	if err != nil {
 		return nil, err
 	}
+	domain := req.domains[0]
+	if !db.domains.Contains(domain) {
+		return nil, ErrDrop
+	}
+
 	host := req.hostname
 	query := req.uri.Query()
 
@@ -69,7 +82,6 @@ func parse(r *http.Request) (*v1.Model, error) {
 		return nil, fmt.Errorf("arsing referer%w", err)
 	}
 	path := req.pathname
-	domain := req.domains[0]
 	agent, err := ua.Get(req.userAgent)
 	if err != nil {
 		return nil, err

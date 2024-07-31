@@ -9,11 +9,13 @@ import (
 	"path/filepath"
 
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	"github.com/gernest/len64/internal/domains"
 	"github.com/gernest/len64/internal/kv"
 	"github.com/gernest/len64/internal/len64"
 )
 
 type Config struct {
+	domains *domains.Cache
 	db      *kv.Pebble
 	ts      *len64.DB
 	session SessionContext
@@ -32,12 +34,19 @@ func Open(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	kv := kv.New(series.KV())
+	doms, err := domains.New(kv)
+	if err != nil {
+		series.Close()
+		return nil, err
+	}
 	return &Config{
-		db:     kv.New(series.KV()),
-		ts:     series,
-		logger: slog.Default(),
-		cache:  newCache(16 << 10),
-		models: make(chan *v1.Model, 4<<10),
+		domains: doms,
+		db:      kv,
+		ts:      series,
+		logger:  slog.Default(),
+		cache:   newCache(16 << 10),
+		models:  make(chan *v1.Model, 4<<10),
 	}, nil
 }
 

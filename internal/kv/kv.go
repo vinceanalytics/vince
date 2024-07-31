@@ -19,6 +19,7 @@ var (
 type KeyValue interface {
 	Set(key, value []byte) error
 	Get(key []byte, value func(val []byte) error) error
+	Prefix(key []byte, value func(val []byte) error) error
 }
 
 type User struct {
@@ -34,6 +35,14 @@ var (
 	sdm = []byte("/sdm/")
 	iid = []byte("/iid/")
 )
+
+// Domains iterate over all registered domains
+func Domains(db KeyValue, f func(domain string)) error {
+	return db.Prefix(sdm, func(val []byte) error {
+		f(string(val))
+		return nil
+	})
+}
 
 func (u *User) ID() (o uuid.UUID) {
 	copy(o[:], u.Id)
