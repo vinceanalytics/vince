@@ -9,10 +9,10 @@ import (
 
 func Home(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
-		home.Execute(w, map[string]any{})
+		db.HTML(w, home, nil)
 		return
 	}
-	e404.Execute(w, db.Context(make(map[string]any)))
+	db.HTML(w, e404, nil)
 }
 
 func Json(w http.ResponseWriter, data any, code int) {

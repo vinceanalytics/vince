@@ -51,6 +51,9 @@ func (s *SessionContext) Context(base map[string]any) {
 	if s.Data.Csrf != "" {
 		base["csrf"] = template.HTML(s.Data.Csrf)
 	}
+	if f := s.Data.Flash; f != nil {
+		base["flash"] = f
+	}
 }
 
 type Data struct {
@@ -61,22 +64,22 @@ type Data struct {
 	Captcha       string    `json:",omitempty"`
 	Csrf          string    `json:",omitempty"`
 	LoginDest     string    `json:",omitempty"`
-	Flash         *Flash    `json:",omitempty"`
+	Flash         Flash     `json:",omitempty"`
 }
 
 func (s *SessionContext) SuccessFlash(m string) *SessionContext {
 	if s.Data.Flash == nil {
-		s.Data.Flash = &Flash{}
+		s.Data.Flash = make(Flash)
 	}
-	s.Data.Flash.Success = append(s.Data.Flash.Success, m)
+	s.Data.Flash.Success(m)
 	return s
 }
 
 func (s *SessionContext) FailFlash(m string) *SessionContext {
 	if s.Data.Flash == nil {
-		s.Data.Flash = &Flash{}
+		s.Data.Flash = make(Flash)
 	}
-	s.Data.Flash.Error = append(s.Data.Flash.Error, m)
+	s.Data.Flash.Error(m)
 	return s
 }
 

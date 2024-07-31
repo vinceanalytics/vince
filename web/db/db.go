@@ -3,7 +3,9 @@ package db
 import (
 	"context"
 	"errors"
+	"html/template"
 	"log/slog"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -97,4 +99,14 @@ func open(path string) (*gorm.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func (db *Config) HTML(w http.ResponseWriter, t *template.Template, data map[string]any) {
+	if data == nil {
+		data = make(map[string]any)
+	}
+	err := t.Execute(w, db.Context(data))
+	if err != nil {
+		db.logger.Error("rendering template", "err", err)
+	}
 }

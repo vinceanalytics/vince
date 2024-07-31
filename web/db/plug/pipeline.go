@@ -34,18 +34,6 @@ func Browser() Pipeline {
 	}
 }
 
-func ProtectForm() Pipeline {
-	return Pipeline{
-		CSRF,
-	}
-}
-
-func Protect() Pipeline {
-	return Pipeline{
-		VerifyCSRF,
-	}
-}
-
 func FetchSession(h Handler) Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		db.Load(w, r)
