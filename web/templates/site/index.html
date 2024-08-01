@@ -1,3 +1,4 @@
+{{define "main"}}
 <div class="container pt-6">
     <div class="mt-6 pb-5 border-b border-gray-200 dark:border-gray-500 flex items-center justify-between">
         <h2
@@ -81,7 +82,7 @@
             </div>
         </li>
         {{end}}
-        {{with .sites}}
+        {{range .sites}}
         <div class="relative">
             <a href="/{{.domain}}">
                 <li
@@ -110,3 +111,4 @@
         {{end}}
     </ul>
 </div>
+{{end}}
