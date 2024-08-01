@@ -25,7 +25,8 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		}))
 		return
 	}
-	_, err := usr.CreateSite(db.Get(), domain, r.Form.Get("public") == "true")
+	// All sites are private by default
+	_, err := usr.CreateSite(db.Get(), domain, false)
 	if err != nil {
 		db.HTMLCode(http.StatusInternalServerError, w, e500, nil)
 		db.Logger().Error("creating site", "err", err)
