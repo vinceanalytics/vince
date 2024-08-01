@@ -19,6 +19,7 @@
                                 <span class="font-medium truncate dark:text-gray-100 hidden md:block">
                                     {{.current_user.name}}
                                 </span>
+                                <img src="/avatar/24/{{.current_user.id}}" class="w-7 rounded-full">
                             </button>
                             <div x-ref="panel" x-show="open" x-transition:enter="transition ease-out duration-100"
                                 x-transition:enter-start="opacity-0 scale-95"

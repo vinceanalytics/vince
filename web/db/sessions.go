@@ -46,6 +46,7 @@ func (s *SessionContext) Context(base map[string]any) {
 	if u := s.user; u != nil {
 		base["current_user"] = map[string]any{
 			"name":  u.Name,
+			"id":    kv.FormatID(u.Id),
 			"email": u.Email,
 		}
 	}

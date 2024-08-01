@@ -85,6 +85,12 @@ func main() {
 			Then(web.Sites),
 	))
 
+	mux.HandleFunc("GET /avatar/{size}/{uid...}", db.Wrap(
+		plug.Browser().
+			With(plug.RequireAccount).
+			Then(web.Avatar),
+	))
+
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
 	svr := &http.Server{
