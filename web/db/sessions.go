@@ -43,9 +43,13 @@ type SessionContext struct {
 }
 
 func (s *SessionContext) Context(base map[string]any) {
-	if s.user != nil {
-		base["current_user"] = s.user
+	if u := s.user; u != nil {
+		base["current_user"] = map[string]any{
+			"name":  u.Name,
+			"email": u.Email,
+		}
 	}
+
 	if s.captcha != "" {
 		base["captcha"] = template.HTMLAttr(fmt.Sprintf("src=%q", s.captcha))
 	}
