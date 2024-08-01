@@ -3,68 +3,51 @@
     <div class="container print:max-w-full">
         <nav class="relative flex items-center justify-between sm:h-10 md:justify-center">
             <div class="flex items-center flex-1 md:absolute md:inset-y-0 md:left-0">
-                <div class="absolute inset-y-0 right-0 flex items-center justify-end">
-                    {{if .current_user}}
-                    <ul class="flex items-center w-full sm:w-auto">
-                        <li>
-                            <div x-data="dropdown" x-on:keydown.escape.prevent.stop="close($refs.button)"
-                                x-on:focusin.window="! $refs.panel.contains($event.target) && close()">
-                                <button x-ref="button" x-on:click="toggle()" type="button"
-                                    class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-                                    <button
-                                        class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-                                        <span class="font-medium truncate dark:text-gray-100 hidden md:block">
-                                            {{.current_user.name}}
-                                        </span>
-                                    </button>
-                                </button>
-                                <div x-ref="panel" x-show="open" x-transition:enter="transition ease-out duration-100"
-                                    x-transition:enter-start="opacity-0 scale-95"
-                                    x-transition:enter-end="opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-75"
-                                    x-transition:leave-start="opacity-100 scale-100"
-                                    x-transition:leave-end="opacity-0 scale-95" x-on:click.outside="close($refs.button)"
-                                    style="display: none;"
-                                    class="absolute right-0 z-10 mt-2 w-60 origin-top-right divide-y divide-gray-100 dark:divide-gray-400 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-
-                                    <div class="px-3.5 py-3" role="none">
-                                        <p class="block text-sm text-gray-500 dark:text-gray-400" role="none">
-                                            Signed in as
-                                        </p>
-                                        <p class="truncate font-medium text-gray-900 dark:text-gray-100" role="none">
-                                            {{.current_user.email}}
-                                        </p>
-                                    </div>
-                                    <div class="py-1.5" role="none">
-                                        <a href="/logout"
-                                            class="inline-flex items-center gap-x-0.5 w-full inline-flex text-gray-700 dark:text-gray-300 px-3.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
-                                            target="_blank" rel="noopener noreferrer">
-                                            Log Out
-                                        </a>
-                                    </div>
+                <a href="/">
+                    <img class="w-44 -mt-2 inline"
+                        src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNTAwIDUwMCIgd2lkdGg9IjUwMCIgaGVpZ2h0PSI1MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6Yng9Imh0dHBzOi8vYm94eS1zdmcuY29tIj4KICA8cGF0aCBkPSJNIDE2NC4yMDYgMjQ5Ljc5MyBtIC00MS45NDMgMCBhIDQxLjk0MyA0MS45NDMgMCAxIDAgODMuODg2IDAgYSA0MS45NDMgNDEuOTQzIDAgMSAwIC04My44ODYgMCBaIE0gMTY0LjIwNiAyNDkuNzkzIG0gLTI1LjE2NiAwIGEgMjUuMTY2IDI1LjE2NiAwIDAgMSA1MC4zMzIgMCBhIDI1LjE2NiAyNS4xNjYgMCAwIDEgLTUwLjMzMiAwIFoiICB0cmFuc2Zvcm09Im1hdHJpeCgwLjI1NjIzNCwgMC45NjY2MTUsIC0wLjk2NjYxNSwgMC4yNTYyMzQsIDI1MS44NzEwNjMsIDE3MS45NjA4NjEpIiBieDpzaGFwZT0icmluZyAxNjQuMjA2IDI0OS43OTMgMjUuMTY2IDI1LjE2NiA0MS45NDMgNDEuOTQzIDFAZGQ3ODBlYzciLz4KICA8cGF0aCBkPSJNIDE5OS4xMTggMjI3LjY2NCBtIC0xMDEuMzg2IDAgYSAxMDEuMzg2IDEwMS4zODYgMCAxIDAgMjAyLjc3MiAwIGEgMTAxLjM4NiAxMDEuMzg2IDAgMSAwIC0yMDIuNzcyIDAgWiBNIDE5OS4xMTggMjI3LjY2NCBtIC02MC44MzEgMCBhIDYwLjgzMSA2MC44MzEgMCAwIDEgMTIxLjY2MiAwIGEgNjAuODMxIDYwLjgzMSAwIDAgMSAtMTIxLjY2MiAwIFoiICB0cmFuc2Zvcm09Im1hdHJpeCgwLjkzNjQ5LCAwLjM1MDY5NSwgLTAuMzUwNjk1LCAwLjkzNjQ5LCA0MS4yMzc0MzQsIDUxLjIwMDEyNykiIGJ4OnNoYXBlPSJyaW5nIDE5OS4xMTggMjI3LjY2NCA2MC44MzEgNjAuODMxIDEwMS4zODYgMTAxLjM4NiAxQGRiZDI0ZjEyIi8+CiAgPHBhdGggZD0iTSAyMzguNDIxIDE4Mi40NjUgbSAtOTcuNDU4IDAgYSA5Ny40NTggOTcuNDU4IDAgMSAwIDE5NC45MTYgMCBhIDk3LjQ1OCA5Ny40NTggMCAxIDAgLTE5NC45MTYgMCBaIE0gMjM4LjQyMSAxODIuNDY1IG0gLTU4LjQ3MyAwIGEgNTguNDczIDU4LjQ3MyAwIDAgMSAxMTYuOTQ2IDAgYSA1OC40NzMgNTguNDczIDAgMCAxIC0xMTYuOTQ2IDAgWiIgIHRyYW5zZm9ybT0ibWF0cml4KDAuNzczNjA0LCAwLjYzMzY3LCAtMC42MzM2NywgMC43NzM2MDQsIDE4Ni40MTk0NjQsIC04MS40Nzk2ODMpIiBieDpzaGFwZT0icmluZyAyMzguNDIxIDE4Mi40NjUgNTguNDczIDU4LjQ3MyA5Ny40NTggOTcuNDU4IDFAM2ZkMjA3YzkiLz4KICA8cGF0aCBkPSJNIDI3Mi45NjQgMTk5LjAzMSBtIC0xMDAuMzgxIDAgYSAxMDAuMzgxIDEwMC4zODEgMCAxIDAgMjAwLjc2MiAwIGEgMTAwLjM4MSAxMDAuMzgxIDAgMSAwIC0yMDAuNzYyIDAgWiBNIDI3Mi45NjQgMTk5LjAzMSBtIC02MC4yMyAwIGEgNjAuMjMgNjAuMjMgMCAwIDEgMTIwLjQ2IDAgYSA2MC4yMyA2MC4yMyAwIDAgMSAtMTIwLjQ2IDAgWiIgIHRyYW5zZm9ybT0ibWF0cml4KC0wLjk5MzU3OSwgMC4xMTMxNDQsIC0wLjExMzE0NCwgLTAuOTkzNTc5LCA2NDMuMzM2MzY1LCA0MjIuODc4ODQ1KSIgYng6c2hhcGU9InJpbmcgMjcyLjk2NCAxOTkuMDMxIDYwLjIzIDYwLjIzIDEwMC4zODEgMTAwLjM4MSAxQDU2N2I5YzJjIi8+Cjwvc3ZnPg==" />
+                </a>
+            </div>
+            <div class="absolute inset-y-0 right-0 flex items-center justify-end">
+                {{if .current_user}}
+                <ul class="flex items-center w-full sm:w-auto">
+                    <li class="w-full sm:w-auto">
+                        <div x-data="dropdown" x-on:keydown.escape.prevent.stop="close($refs.button)"
+                            x-on:focusin.window="! $refs.panel.contains($event.target) && close()">
+                            <button x-ref="button" x-on:click="toggle()" type="button"
+                                class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <span class="font-medium truncate dark:text-gray-100 hidden md:block">
+                                    {{.current_user.name}}
+                                </span>
+                            </button>
+                            <div x-ref="panel" x-show="open" x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95" x-on:click.outside="close($refs.button)"
+                                style="display: none;"
+                                class="absolute right-0 z-10 mt-2 w-60 origin-top-right divide-y divide-gray-100 dark:divide-gray-400 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <div class="px-3.5 py-3" role="none">
+                                    <p class="block text-sm text-gray-500 dark:text-gray-400" role="none">
+                                        Signed in as
+                                    </p>
+                                    <p class="truncate font-medium text-gray-900 dark:text-gray-100" role="none">
+                                        {{.current_user.email}}
+                                    </p>
+                                </div>
+                                <div class="py-1.5" role="none">
+                                    <a href="/logout"
+                                        class="w-full inline-flex text-gray-700 dark:text-gray-300 px-3.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100">
+                                        Log Out
+                                    </a>
                                 </div>
                             </div>
-                        </li>
-                    </ul>
-                    {{else}}
-                    <ul class="flex" x-show="!document.cookie.includes('logged_in=true')">
-                        <li>
-                            <div class="inline-flex">
-                                <a href="/login"
-                                    class="font-medium text-gray-500 dark:text-gray-200 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition duration-150 ease-in-out">
-                                    Login
-                                </a>
-                            </div>
-                            <div class="inline-flex ml-6 rounded shadow">
-                                <a href="/register"
-                                    class="inline-flex items-center justify-center px-5 py-2 text-base font-medium text-white bg-indigo-600 border border-transparent leading-6 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring transition duration-150 ease-in-out">
-                                    Sign up
-                                </a>
-                            </div>
-                        </li>
-                    </ul>
-                    {{end}}
-                </div>
+                        </div>
+                    </li>
+                </ul>
+                {{else}}
+                {{end}}
             </div>
         </nav>
     </div>
