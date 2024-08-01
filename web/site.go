@@ -7,6 +7,7 @@ import (
 
 	"github.com/gernest/len64/internal/kv"
 	"github.com/gernest/len64/web/db"
+	"github.com/gernest/len64/web/db/plug"
 )
 
 func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
@@ -69,4 +70,55 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		ctx["sites"] = sites
 	}
 	db.HTML(w, sitesIndex, ctx)
+}
+
+func RequireSiteAccess(allowed ...string) plug.Middleware {
+	if allowed == nil {
+		allowed = []string{
+			"public", "viewer", "admin", "super_admin", "owner",
+		}
+	}
+	a := make(map[string]struct{}, len(allowed))
+	for i := range allowed {
+		a[allowed[i]] = struct{}{}
+	}
+	return func(h plug.Handler) plug.Handler {
+		return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
+			domain := r.PathValue("domain")
+
+			if usr := db.CurrentUser(); usr != nil && usr.Site(domain) != nil {
+				// Fast path the current user has some role with the asked domain
+				site := usr.Site(domain)
+				_, ok := a[site.Role.String()]
+				if !ok {
+					db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+					return
+				}
+				db.SetSite(site)
+				h(db, w, r)
+				return
+			}
+			usr := new(kv.User)
+			usr.ByDomain(domain, db.Get())
+			site := usr.Site(domain)
+			if site == nil {
+				db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+				return
+			}
+			role := ""
+			switch {
+			case db.CurrentUser() != nil && db.CurrentUser().SuperUser:
+				role = "super_admin"
+			case site.Public:
+				role = "public"
+			}
+			_, accept := a[role]
+			if accept {
+				db.SetSite(site)
+				h(db, w, r)
+				return
+			}
+			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+		}
+	}
 }

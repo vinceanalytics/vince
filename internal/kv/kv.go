@@ -1,7 +1,6 @@
 package kv
 
 import (
-	"bytes"
 	"errors"
 	"net/http"
 	"regexp"
@@ -57,7 +56,7 @@ func (u *User) Keys() [][]byte {
 		append(ue, []byte(u.Email)...),
 	}
 	for _, s := range u.Sites {
-		if s.Role != v1.ROLE_OWNER {
+		if s.Role != v1.ROLE_owner {
 			continue
 		}
 		base = append(base, append(sid, s.Id...))
@@ -201,12 +200,10 @@ func (u *User) CreateSite(db KeyValue, domain string, public bool) (id uuid.UUID
 	return
 }
 
-func (u *User) Role(sid uuid.UUID) (role v1.ROLE, ok bool) {
+func (u *User) Site(domain string) (site *v1.Site) {
 	for _, m := range u.Sites {
-		if bytes.Equal(m.Id, sid[:]) {
-			role = m.Role
-			ok = true
-			break
+		if m.Domain == domain {
+			return m
 		}
 	}
 	return

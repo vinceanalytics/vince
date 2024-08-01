@@ -23,12 +23,13 @@ message User {
   bytes password = 4;
   repeated Site sites = 5;
   repeated Invitation invitations = 6;
+  bool super_user = 7;
 }
 
 enum ROLE {
-  OWNER = 0;
-  ADMIN = 1;
-  VIEWER = 2;
+  owner = 0;
+  admin = 1;
+  viewer = 2;
 }
 
 message Invitation {

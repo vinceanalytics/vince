@@ -17,6 +17,7 @@ import (
 
 	"filippo.io/age"
 	"github.com/dchest/captcha"
+	v1 "github.com/gernest/len64/gen/go/len64/v1"
 	"github.com/gernest/len64/internal/kv"
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/dataurl"
@@ -40,6 +41,7 @@ type SessionContext struct {
 	Data    Data
 	captcha string
 	user    *kv.User
+	site    *v1.Site
 }
 
 func (s *SessionContext) Context(base map[string]any) {
@@ -49,6 +51,27 @@ func (s *SessionContext) Context(base map[string]any) {
 			"id":    kv.FormatID(u.Id),
 			"email": u.Email,
 		}
+	}
+	if s := s.site; s != nil {
+		site := map[string]any{
+			"domain": s.Domain,
+			"id":     kv.FormatID(s.Id),
+			"public": s.Public,
+			"role":   s.Role.String(),
+		}
+		if len(s.Goals) > 0 {
+			goals := make([]map[string]any, len(s.Goals))
+			for i := range s.Goals {
+				g := s.Goals[i]
+				goals[i] = map[string]any{
+					"id":    kv.FormatID(g.Id),
+					"event": g.EventName,
+					"path":  g.PagePath,
+				}
+			}
+			site["goals"] = goals
+		}
+		base["site"] = site
 	}
 
 	if s.captcha != "" {
@@ -211,6 +234,14 @@ func (c *Config) Logout(w http.ResponseWriter) bool {
 
 func (c *Config) CurrentUser() *kv.User {
 	return c.session.user
+}
+
+func (c *Config) SetSite(site *v1.Site) {
+	c.session.site = site
+}
+
+func (c *Config) CurrentSite() *v1.Site {
+	return c.session.site
 }
 
 func (c *Config) Login(w http.ResponseWriter, uid uuid.UUID) string {
