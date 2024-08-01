@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
+	"strings"
 
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
 	"github.com/google/uuid"
@@ -244,4 +245,43 @@ func FormatID(id []byte) string {
 	var u uuid.UUID
 	copy(u[:], id)
 	return u.String()
+}
+
+var domainRe = regexp.MustCompile(`(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`)
+
+func ValidateSiteDomain(db KeyValue, domain string) (good, bad string) {
+	good = CleanupDOmain(domain)
+	if good == "" {
+		bad = "is required"
+		return
+	}
+	if !domainRe.MatchString(good) {
+		bad = "only letters, numbers, slashes and period allowed"
+		return
+	}
+	if strings.ContainsAny(domain, reservedChars) {
+		bad = "must not contain URI reserved characters " + reservedChars
+		return
+	}
+	var exists bool
+	db.Get(append(sdm, []byte(domain)...), func(val []byte) error {
+		exists = true
+		return nil
+	})
+	if exists {
+		bad = " already exists"
+	}
+	return
+}
+
+const reservedChars = `:?#[]@!$&'()*+,;=`
+
+func CleanupDOmain(domain string) string {
+	domain = strings.TrimSpace(domain)
+	domain = strings.TrimPrefix(domain, "http://")
+	domain = strings.TrimPrefix(domain, "https://")
+	domain = strings.TrimPrefix(domain, "www.")
+	domain = strings.TrimSuffix(domain, "/")
+	domain = strings.ToLower(domain)
+	return domain
 }

@@ -76,9 +76,14 @@ func (db *Config) Close() error {
 }
 
 func (db *Config) HTML(w http.ResponseWriter, t *template.Template, data map[string]any) {
+	db.HTMLCode(http.StatusOK, w, t, data)
+}
+
+func (db *Config) HTMLCode(code int, w http.ResponseWriter, t *template.Template, data map[string]any) {
 	if data == nil {
 		data = make(map[string]any)
 	}
+	w.WriteHeader(code)
 	err := t.Execute(w, db.Context(data))
 	if err != nil {
 		db.logger.Error("rendering template", "err", err)

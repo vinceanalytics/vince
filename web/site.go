@@ -1,7 +1,9 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/gernest/len64/internal/kv"
 	"github.com/gernest/len64/web/db"
@@ -12,7 +14,25 @@ func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	createSite.Execute(w, db.Context(make(map[string]any)))
+	r.ParseForm()
+	usr := db.CurrentUser()
+	domain := r.Form.Get("domain")
+	domain, bad := kv.ValidateSiteDomain(db.Get(), domain)
+	if bad != "" {
+		db.SaveCsrf(w)
+		createSite.Execute(w, db.Context(map[string]any{
+			"validation_domain": bad,
+		}))
+		return
+	}
+	_, err := usr.CreateSite(db.Get(), domain, r.Form.Get("public") == "true")
+	if err != nil {
+		db.HTMLCode(http.StatusInternalServerError, w, e500, nil)
+		db.Logger().Error("creating site", "err", err)
+		return
+	}
+	to := fmt.Sprintf("/%s/snippet", url.PathEscape(domain))
+	http.Redirect(w, r, to, http.StatusFound)
 }
 
 func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
