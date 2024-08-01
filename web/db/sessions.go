@@ -113,6 +113,7 @@ func (c *Config) Load(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			c.session = SessionContext{}
 			c.SaveSession(w)
+			c.logger.Error("current user", "id", c.session.Data.CurrentUserID, "err", err)
 		} else {
 			c.session.user = usr
 		}
