@@ -35,7 +35,7 @@ func main() {
 	mux.HandleFunc("/favicon/sources/placeholder", web.Placeholder)
 	mux.HandleFunc("/favicon/sources/{source...}", web.Favicon)
 
-	mux.HandleFunc("/", db.Wrap(
+	mux.HandleFunc("/{$}", db.Wrap(
 		plug.Browser().Then(web.Home),
 	))
 
@@ -77,6 +77,12 @@ func main() {
 			With(plug.CSRF).
 			With(plug.RequireAccount).
 			Then(web.CreateSite),
+	))
+
+	mux.HandleFunc("GET /sites", db.Wrap(
+		plug.Browser().
+			With(plug.RequireAccount).
+			Then(web.Sites),
 	))
 
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
