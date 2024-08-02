@@ -85,6 +85,47 @@ func main() {
 			Then(web.Sites),
 	))
 
+	sites := plug.Browser().
+		With(plug.RequireAccount).
+		With(web.RequireSiteAccess("owner", "admin", "super_admin"))
+
+	mux.HandleFunc("POST /sites/{domain}/make-public", db.Wrap(
+		sites.
+			Then(web.Unimplemented),
+	))
+
+	mux.HandleFunc("POST /sites/{domain}/make-private", db.Wrap(
+		sites.
+			With(plug.VerifyCSRF).
+			Then(web.Unimplemented),
+	))
+
+	mux.HandleFunc("POST /sites/{domain}/make-private", db.Wrap(
+		sites.
+			With(plug.VerifyCSRF).
+			Then(web.Unimplemented),
+	))
+
+	mux.HandleFunc("GET /{domain}/snippet", db.Wrap(
+		sites.
+			Then(web.Unimplemented),
+	))
+
+	mux.HandleFunc("GET /{domain}/snippet", db.Wrap(
+		sites.
+			Then(web.Unimplemented),
+	))
+
+	mux.HandleFunc("GET /{domain}/settings", db.Wrap(
+		sites.
+			Then(web.Unimplemented),
+	))
+
+	mux.HandleFunc("GET /{domain...}", db.Wrap(
+		sites.
+			Then(web.Unimplemented),
+	))
+
 	mux.HandleFunc("GET /avatar/{size}/{uid...}", db.Wrap(
 		plug.Browser().
 			With(plug.RequireAccount).

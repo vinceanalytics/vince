@@ -72,6 +72,9 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, sitesIndex, ctx)
 }
 
+func Unimplemented(db *db.Config, w http.ResponseWriter, r *http.Request) {
+}
+
 func RequireSiteAccess(allowed ...string) plug.Middleware {
 	if allowed == nil {
 		allowed = []string{
