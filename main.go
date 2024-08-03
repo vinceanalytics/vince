@@ -9,6 +9,8 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/gernest/len64/internal/location"
+	"github.com/gernest/len64/ua"
 	"github.com/gernest/len64/web"
 	"github.com/gernest/len64/web/db"
 	"github.com/gernest/len64/web/db/plug"
@@ -237,6 +239,11 @@ func main() {
 
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
+	go func() {
+		// we load location and ua data async.
+		location.GetCity(0)
+		ua.Warm()
+	}()
 	svr := &http.Server{
 		Addr:    ":8080",
 		Handler: plug.Static(mux),

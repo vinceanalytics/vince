@@ -1,13 +1,55 @@
 package location
 
 import (
+	"bytes"
+	"compress/gzip"
 	_ "embed"
+	"io"
 	"slices"
 	"strings"
+	"sync"
+
+	"github.com/RoaringBitmap/roaring/v2/roaring64"
+	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 //go:embed city.protobuf.gz
 var cityData []byte
+
+var (
+	_geo_name []string
+	city      = roaring64.NewDefaultBSI()
+	cityCode  = roaring64.NewDefaultBSI()
+)
+var once sync.Once
+
+type City struct {
+	Name string `json:"name"`
+	Flag string `json:"country_flag"`
+}
+
+func GetCity(code uint32) *City {
+	once.Do(func() {
+		r, _ := gzip.NewReader(bytes.NewReader(cityData))
+		all, _ := io.ReadAll(r)
+		var l v1.Location
+		proto.Unmarshal(all, &l)
+		_geo_name = l.Names
+		city.ReadFrom(bytes.NewReader(l.City))
+		cityCode.ReadFrom(bytes.NewReader(l.CityCode))
+		l.Reset()
+	})
+	v, ok := city.GetValue(uint64(code))
+	if !ok {
+		return &City{Name: "N/A"}
+	}
+	idx, _ := cityCode.GetValue(uint64(v))
+	return &City{
+		Name: _geo_name[v],
+		Flag: _iso_1_flag[idx],
+	}
+}
 
 type Country struct {
 	Code string `json:"code"`

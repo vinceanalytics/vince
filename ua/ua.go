@@ -34,6 +34,10 @@ func get(id uint64) *v1.Agent {
 	}
 }
 
+func Warm() {
+	_ = get(0)
+}
+
 func Get(agent string) (a *v1.Agent, err error) {
 	if d := cache.Get(nil, []byte(agent)); d != nil {
 		a = &v1.Agent{}
