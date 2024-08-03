@@ -1,6 +1,8 @@
 package oracle
 
 import (
+	"slices"
+
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/gernest/len64/internal/rbf"
 	"github.com/gernest/len64/internal/rbf/cursor"
@@ -42,12 +44,19 @@ func (o *Oracle) Breakdown(start, end int64, domain string, filter Filter, metri
 	a := &Breakdown{
 		Results: make([]map[string]any, 0, len(values)),
 	}
-	for k, v := range values {
+
+	ls := make([]string, 0, len(values))
+	for k := range values {
+		ls = append(ls, k)
+	}
+	slices.Sort(ls)
+
+	for i := range ls {
 		x := map[string]any{
-			property: k,
+			property: ls[i],
 		}
 		for _, met := range metrics {
-			x[met] = m.Compute(met, v)
+			x[met] = m.Compute(met, values[ls[i]])
 		}
 		a.Results = append(a.Results, x)
 	}

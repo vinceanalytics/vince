@@ -53,7 +53,7 @@ func (w *write) event(e *v1.Model) {
 			return true
 		})
 		idx.Int64("timestamp", int64(e.Timestamp))
-		idx.Int64("date", date(e.Timestamp))
+		idx.String("date", date(e.Timestamp))
 		idx.Int64("uid", int64(e.Id))
 		if e.Bounce != nil {
 			idx.Bool("bounce", e.GetBounce())
@@ -62,12 +62,13 @@ func (w *write) event(e *v1.Model) {
 			idx.Int64("bounce", -1)
 		}
 		idx.Bool("session", e.Session)
+		idx.Bool("view", e.View)
 		idx.Int64("duration", int64(e.Duration))
 		return nil
 	})
 }
 
-func date(ts int64) int64 {
+func date(ts int64) string {
 	yy, mm, dd := time.UnixMilli(ts).Date()
-	return time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC).UnixMilli()
+	return time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC).Format(time.DateOnly)
 }
