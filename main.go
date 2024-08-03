@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/gernest/len64/app"
 	"github.com/gernest/len64/web"
 	"github.com/gernest/len64/web/db"
 	"github.com/gernest/len64/web/db/plug"
@@ -28,7 +27,6 @@ func main() {
 	db.Start(ctx)
 
 	mux := http.NewServeMux()
-	mux.Handle("/public/", plug.Track(http.FileServerFS(app.Public)))
 
 	mux.HandleFunc("/favicon/sources/placeholder", web.Placeholder)
 	mux.HandleFunc("/favicon/sources/{source...}", web.Favicon)
@@ -87,30 +85,148 @@ func main() {
 		With(plug.RequireAccount).
 		With(web.RequireSiteAccess("owner", "admin", "super_admin"))
 
-	mux.HandleFunc("POST /sites/{domain}/make-public", db.Wrap(
+	mux.HandleFunc("POST /{domain}/make-public", db.Wrap(
 		sites.
 			Then(web.Unimplemented),
 	))
 
-	mux.HandleFunc("POST /sites/{domain}/make-private", db.Wrap(
+	mux.HandleFunc("POST /{domain}/make-private", db.Wrap(
 		sites.
 			With(plug.VerifyCSRF).
 			Then(web.Unimplemented),
 	))
 
-	mux.HandleFunc("GET /site/{domain}/snippet", db.Wrap(
+	mux.HandleFunc("GET /{domain}/snippet", db.Wrap(
 		sites.
 			Then(web.Unimplemented),
 	))
 
-	mux.HandleFunc("GET /site/{domain}/settings", db.Wrap(
+	mux.HandleFunc("GET /{domain}/settings", db.Wrap(
 		sites.
 			Then(web.Unimplemented),
 	))
 
-	mux.HandleFunc("GET /site/{domain...}", db.Wrap(
-		sites.
-			Then(web.Unimplemented),
+	stats := plug.InternalStats().
+		With(web.RequireSiteAccess())
+
+	mux.HandleFunc("GET /api/stats/{domain}/current-visitors", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/main-graph", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/top-stats", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/sources", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/utm_mediums", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/utm_sources", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/utm_campaigns", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/utm_contents", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/utm_terms", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/referrers/{referrer}", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/pages", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/entry-pages", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/exit-pages", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/countries", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/regions", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/cities", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/browsers", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/browser-versions", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/operating-systems", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/operating-system-versions", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/screen-sizes", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/conversions", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/custom-prop-values/{prop_key}", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
+	))
+
+	mux.HandleFunc("GET /api/stats/{domain}/suggestions/{filter_name}", db.Wrap(
+		stats.
+			Then(web.UnimplementedStat),
 	))
 
 	mux.HandleFunc("GET /avatar/{size}/{uid...}", db.Wrap(
@@ -123,7 +239,7 @@ func main() {
 
 	svr := &http.Server{
 		Addr:    ":8080",
-		Handler: mux,
+		Handler: plug.Static(mux),
 	}
 	slog.Info("starting server", "addr", svr.Addr)
 	go func() {
