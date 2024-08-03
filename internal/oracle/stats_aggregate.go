@@ -31,7 +31,7 @@ func (o *Oracle) Aggregate(start, end int64, domain string, filter Filter, metri
 		Results: make(map[string]Value),
 	}
 	for _, k := range metrics {
-		a.Results[k] = Value{Value: m.Compute(k)}
+		a.Results[k] = Value{Value: m.Compute(k, nil)}
 	}
 	return a, nil
 }
@@ -56,35 +56,35 @@ func newAggregate() *aggregate {
 	}
 }
 
-func (a *aggregate) Compute(metric string) float64 {
+func (a *aggregate) Compute(metric string, foundSet *roaring64.Bitmap) float64 {
 	switch metric {
 	case "visitors":
-		return float64(a.Visitors())
+		return float64(a.Visitors(foundSet))
 	case "visits":
-		return float64(a.Visits())
+		return float64(a.Visits(foundSet))
 	case "pageviews":
-		return float64(a.View())
+		return float64(a.View(foundSet))
 	case "events":
-		return float64(a.Events())
+		return float64(a.Events(foundSet))
 	case "views_per_visit":
-		views := float64(a.View())
-		visits := float64(a.Visits())
+		views := float64(a.View(foundSet))
+		visits := float64(a.Visits(foundSet))
 		r := float64(0)
 		if visits != 0 {
 			r = views / visits
 		}
 		return r
 	case "bounce_rate":
-		bounce := float64(a.Bounce())
-		visits := float64(a.Visits())
+		bounce := float64(a.Bounce(foundSet))
+		visits := float64(a.Visits(foundSet))
 		r := float64(0)
 		if visits != 0 {
 			r = bounce / visits
 		}
 		return r
 	case "visit_duration":
-		duration := a.Duration()
-		visits := float64(a.Visits())
+		duration := a.Duration(foundSet)
+		visits := float64(a.Visits(foundSet))
 		r := float64(0)
 		if visits != 0 && duration != 0 {
 			d := time.Duration(duration) * time.Millisecond
@@ -95,34 +95,52 @@ func (a *aggregate) Compute(metric string) float64 {
 		return 0
 	}
 }
-func (a *aggregate) Visitors() uint64 {
-	return a.uid.Transpose().GetCardinality()
+func (a *aggregate) Visitors(foundSet *roaring64.Bitmap) uint64 {
+	if foundSet == nil {
+		foundSet = a.uid.GetExistenceBitmap()
+	}
+	return a.uid.IntersectAndTranspose(0, foundSet).GetCardinality()
 }
 
-func (a *aggregate) Visits() uint64 {
-	sum, _ := a.session.Sum(a.session.GetExistenceBitmap())
+func (a *aggregate) Visits(foundSet *roaring64.Bitmap) uint64 {
+	if foundSet == nil {
+		foundSet = a.session.GetExistenceBitmap()
+	}
+	sum, _ := a.session.Sum(foundSet)
 	return uint64(sum)
 }
 
-func (a *aggregate) View() uint64 {
-	sum, _ := a.view.Sum(a.view.GetExistenceBitmap())
+func (a *aggregate) View(foundSet *roaring64.Bitmap) uint64 {
+	if foundSet == nil {
+		foundSet = a.view.GetExistenceBitmap()
+	}
+	sum, _ := a.view.Sum(foundSet)
 	return uint64(sum)
 }
 
-func (a *aggregate) Duration() uint64 {
-	sum, _ := a.duration.Sum(a.duration.GetExistenceBitmap())
+func (a *aggregate) Duration(foundSet *roaring64.Bitmap) uint64 {
+	if foundSet == nil {
+		foundSet = a.duration.GetExistenceBitmap()
+	}
+	sum, _ := a.duration.Sum(foundSet)
 	return uint64(sum)
 }
 
-func (a *aggregate) Bounce() uint64 {
-	sum, _ := a.bounce.Sum(a.bounce.GetExistenceBitmap())
+func (a *aggregate) Bounce(foundSet *roaring64.Bitmap) uint64 {
+	if foundSet == nil {
+		foundSet = a.bounce.GetExistenceBitmap()
+	}
+	sum, _ := a.bounce.Sum(foundSet)
 	if sum < 0 {
 		return 0
 	}
 	return uint64(sum)
 }
 
-func (a *aggregate) Events() uint64 {
+func (a *aggregate) Events(foundSet *roaring64.Bitmap) uint64 {
+	if foundSet != nil {
+		return foundSet.GetCardinality()
+	}
 	return a.id.GetCardinality()
 }
 
