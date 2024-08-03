@@ -112,9 +112,10 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	e.BrowserVersion = agent.BrowserVersion
 	e.Source = src
 	e.Referrer = ref
-	e.Country = city.Country
-	e.Region = city.Region
-	e.City = city.City
+	e.Country = city.CountryCode
+	e.Subdivision1Code = city.SubDivision1Code
+	e.Subdivision2Code = city.SubDivision2Code
+	e.City = city.CityGeonameID
 	e.Device = agent.Device
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil

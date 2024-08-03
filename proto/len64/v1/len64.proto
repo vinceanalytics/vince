@@ -9,10 +9,10 @@ message Model {
   bool session = 4;
   bool view = 5;
   int64 duration = 6;
+  uint32 city = 9;
 
   string browser = 7;
   string browser_version = 8;
-  string city = 9;
   string country = 10;
   string device = 11;
   string domain = 12;
@@ -24,7 +24,6 @@ message Model {
   string os_version = 18;
   string page = 19;
   string referrer = 20;
-  string region = 21;
   string source = 22;
   string utm_campaign = 23;
   string utm_content = 24;
@@ -32,6 +31,8 @@ message Model {
   string utm_source = 26;
   string utm_term = 37;
   map<string, string> props = 28;
+  string subdivision1_code = 29;
+  string subdivision2_code = 30;
 }
 
 message Agent {

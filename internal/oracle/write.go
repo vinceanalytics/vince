@@ -105,7 +105,6 @@ func (w *write) Bool(field string, value bool) {
 		return
 	}
 	w.Int64(field, 0)
-	return
 }
 
 func (w *write) Int64(field string, svalue int64) {

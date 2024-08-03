@@ -64,6 +64,9 @@ func (w *write) event(e *v1.Model) {
 		idx.Bool("session", e.Session)
 		idx.Bool("view", e.View)
 		idx.Int64("duration", int64(e.Duration))
+		if e.City != 0 {
+			idx.Int64("city_geoname_id", int64(e.City))
+		}
 		return nil
 	})
 }

@@ -24,21 +24,25 @@ func Get(ip net.IP) (Info, error) {
 	if err != nil {
 		return Info{}, err
 	}
-	var region string
-	if len(x.Subdivisions) > 0 {
-		region = x.Subdivisions[0].Names["en"]
+	o := Info{
+		CountryCode:   x.Country.IsoCode,
+		CityGeonameID: uint32(x.City.GeoNameID),
 	}
-	return Info{
-		City:    x.City.Names["en"],
-		Country: x.Country.Names["en"],
-		Region:  region,
-	}, nil
+
+	if o.CountryCode != "" && len(x.Subdivisions) > 0 {
+		o.SubDivision1Code = o.CountryCode + "-" + x.Subdivisions[0].IsoCode
+	}
+	if o.CountryCode != "" && len(x.Subdivisions) > 1 {
+		o.SubDivision2Code = o.CountryCode + "-" + x.Subdivisions[1].IsoCode
+	}
+	return o, nil
 }
 
 type Info struct {
-	City    string
-	Country string
-	Region  string
+	CountryCode      string
+	SubDivision1Code string
+	SubDivision2Code string
+	CityGeonameID    uint32
 }
 
 func get() *geoip2.Reader {
