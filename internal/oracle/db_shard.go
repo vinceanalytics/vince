@@ -56,7 +56,8 @@ func newDBShard(path string) (*dbShard, error) {
 }
 
 func (d *dbShard) Select(from, to int64, domain string,
-	fn func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64) error) error {
+	filter Filter,
+	fn func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, match *rows.Row) error) error {
 	return d.viewDB(from, to, func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64) error {
 		// 0: find domain
 		domainField := newReadField(tx, []byte(domain))
@@ -88,8 +89,15 @@ func (d *dbShard) Select(from, to int64, domain string,
 		if f.IsEmpty() {
 			return nil
 		}
+		match, err := filter.Apply(rTx, tx, shard, f)
+		if err != nil {
+			return err
+		}
+		if match.IsEmpty() {
+			return nil
+		}
 		// f is the correct rows we want to read
-		return fn(rTx, tx, shard)
+		return fn(rTx, tx, shard, match)
 	})
 }
 

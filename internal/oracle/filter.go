@@ -42,9 +42,10 @@ func NewAnd(fs ...Filter) Filter {
 		return r, nil
 	})
 }
+
 func Noop() Filter {
 	return filterFunc(func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, f *rows.Row) (*rows.Row, error) {
-		return rows.NewRow(), nil
+		return f, nil
 	})
 }
 
