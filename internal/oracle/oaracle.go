@@ -4,6 +4,7 @@ import (
 	"context"
 
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 type Oracle struct {
@@ -26,4 +27,9 @@ func (o *Oracle) Close() error {
 
 func (o *Oracle) Start(ctx context.Context) {
 	go o.db.process(ctx, o.events)
+}
+
+func (o *Oracle) Save(e *v1.Model) {
+	clone := proto.Clone(e)
+	o.events <- clone.(*v1.Model)
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/gernest/len64/internal/kv"
+	"go.etcd.io/bbolt"
 	"golang.org/x/time/rate"
 )
 
@@ -16,17 +17,19 @@ type Cache struct {
 	mu sync.RWMutex
 }
 
-func New(db kv.KeyValue) (*Cache, error) {
+func New(db *bbolt.DB) (*Cache, error) {
 	c := &Cache{r: make(map[uint32]*rate.Limiter)}
 	h := crc32.NewIEEE()
 	limit := limit()
-	return c, kv.Domains(db, func(domain string) {
-		h.Reset()
-		h.Write([]byte(domain))
-		id := h.Sum32()
-		c.b.Add(id)
-		// We are strict with quota, zero burst given!
-		c.r[id] = rate.NewLimiter(rate.Limit(limit), 0)
+	return c, db.View(func(tx *bbolt.Tx) error {
+		return kv.Domains(tx, func(domain string) {
+			h.Reset()
+			h.Write([]byte(domain))
+			id := h.Sum32()
+			c.b.Add(id)
+			// We are strict with quota, zero burst given!
+			c.r[id] = rate.NewLimiter(rate.Limit(limit), 0)
+		})
 	})
 }
 

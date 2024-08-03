@@ -12,12 +12,14 @@ require (
 	github.com/dchest/captcha v1.0.0
 	github.com/felixge/fgprof v0.9.4
 	github.com/gernest/roaring v0.22.3
+	github.com/gernest/rows v1.22.9
 	github.com/gernest/vice v0.0.2
 	github.com/google/uuid v1.6.0
 	github.com/lestrrat-go/dataurl v0.0.0-20220721131304-b60017625013
 	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
+	go.etcd.io/bbolt v1.3.10
 	golang.org/x/crypto v0.25.0
 	golang.org/x/sync v0.7.0
 	golang.org/x/time v0.3.0
@@ -37,7 +39,6 @@ require (
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gernest/rows v1.22.9 // indirect
 	github.com/getsentry/sentry-go v0.27.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -58,7 +59,6 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	go.etcd.io/bbolt v1.3.10 // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect

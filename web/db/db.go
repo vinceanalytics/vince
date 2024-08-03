@@ -5,19 +5,18 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
-	"os"
 	"path/filepath"
 
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
 	"github.com/gernest/len64/internal/domains"
-	"github.com/gernest/len64/internal/kv"
-	"github.com/gernest/len64/internal/len64"
+	"github.com/gernest/len64/internal/oracle"
+	"go.etcd.io/bbolt"
 )
 
 type Config struct {
 	domains *domains.Cache
-	db      *kv.Pebble
-	ts      *len64.DB
+	db      *bbolt.DB
+	ts      *oracle.Oracle
 	session SessionContext
 	logger  *slog.Logger
 	cache   *cache
@@ -25,42 +24,48 @@ type Config struct {
 	// we rely on cache for session processing. We need to guarantee only a single
 	// writer on the cache, a buffered channel help with this.
 	models chan *v1.Model
+
+	tx *bbolt.Tx
 }
 
 func Open(path string) (*Config, error) {
 	ts := filepath.Join(path, "ts")
-	os.MkdirAll(ts, 0755)
-	series, err := len64.Open(ts)
+	ops, err := bbolt.Open(filepath.Join(path, "main.db"), 0600, nil)
 	if err != nil {
 		return nil, err
 	}
-	kv := kv.New(series.KV())
-	doms, err := domains.New(kv)
+	db, err := oracle.New(ts)
 	if err != nil {
-		series.Close()
+		ops.Close()
+		return nil, err
+	}
+	doms, err := domains.New(ops)
+	if err != nil {
+		ops.Close()
+		db.Close()
 		return nil, err
 	}
 	return &Config{
 		domains: doms,
-		db:      kv,
-		ts:      series,
+		db:      ops,
+		ts:      db,
 		logger:  slog.Default(),
 		cache:   newCache(16 << 10),
 		models:  make(chan *v1.Model, 4<<10),
 	}, nil
 }
 
-func (db *Config) Get() *kv.Pebble {
-	return db.db
+func (db *Config) Get() *bbolt.Tx {
+	return db.tx
 }
 
 func (db *Config) Logger() *slog.Logger {
 	return db.logger
 }
 
-func (db *Config) Start(ctx context.Context) error {
+func (db *Config) Start(ctx context.Context) {
 	go db.processEvents()
-	return db.ts.Start(ctx)
+	db.ts.Start(ctx)
 }
 
 func (db *Config) processEvents() {

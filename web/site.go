@@ -102,7 +102,7 @@ func RequireSiteAccess(allowed ...string) plug.Middleware {
 				return
 			}
 			usr := new(kv.User)
-			usr.ByDomain(domain, db.Get())
+			usr.ByDomain(db.Get(), domain)
 			site := usr.Site(domain)
 			if site == nil {
 				db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})

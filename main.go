@@ -25,10 +25,8 @@ func main() {
 	defer db.Close()
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
-	err = db.Start(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
+	db.Start(ctx)
+
 	mux := http.NewServeMux()
 	mux.Handle("/public/", plug.Track(http.FileServerFS(app.Public)))
 

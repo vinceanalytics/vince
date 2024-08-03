@@ -16,7 +16,7 @@ func Login(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
 	u := new(kv.User)
-	err := u.ByEmail(email, db.Get())
+	err := u.ByEmail(db.Get(), email)
 	if err != nil {
 		db.SaveCsrf(w)
 		db.SaveCaptcha(w)

@@ -18,9 +18,11 @@ import (
 	"filippo.io/age"
 	"github.com/dchest/captcha"
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	"github.com/gernest/len64/internal/assert"
 	"github.com/gernest/len64/internal/kv"
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/dataurl"
+	"go.etcd.io/bbolt"
 )
 
 var secret *age.X25519Identity
@@ -124,7 +126,10 @@ func (c *Config) VerifyCaptchaSolution(r *http.Request) bool {
 
 func (c *Config) Wrap(f func(db *Config, w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		f(c.clone(r), w, r)
+		tx, err := c.db.Begin(*False)
+		assert.Assert(err == nil, "creating read tx", "err", err)
+		defer tx.Rollback()
+		f(c.clone(r, tx), w, r)
 	}
 }
 
@@ -133,7 +138,7 @@ func (c *Config) Load(w http.ResponseWriter, r *http.Request) {
 	if c.session.Data.CurrentUserID != "" {
 		uid := uuid.MustParse(c.session.Data.CurrentUserID)
 		usr := new(kv.User)
-		err := usr.ByID(uid, c.db)
+		err := usr.ByID(c.tx, uid)
 		if err != nil {
 			c.session = SessionContext{}
 			c.SaveSession(w)
@@ -179,11 +184,13 @@ func (c *Config) load(r *http.Request) {
 	}
 }
 
-func (c *Config) clone(r *http.Request) *Config {
+func (c *Config) clone(r *http.Request, tx *bbolt.Tx) *Config {
 	return &Config{
-		db:     c.db,
-		ts:     c.ts,
-		logger: c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
+		ts:      c.ts,
+		tx:      tx,
+		domains: c.domains,
+		cache:   c.cache,
+		logger:  c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
 	}
 }
 
