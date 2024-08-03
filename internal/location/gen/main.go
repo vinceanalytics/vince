@@ -4,19 +4,27 @@ import (
 	"archive/zip"
 	"bufio"
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"go/format"
 	"log"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
+
+	"github.com/RoaringBitmap/roaring/v2/roaring64"
+	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 func main() {
 	iso01()
 	iso02()
 	writeIso()
+	geoname()
+	writeGeoname()
 }
 
 func writeIso() {
@@ -71,6 +79,7 @@ type Country struct {
 var (
 	_iso_1 []*Country
 	_iso_2 []*Region
+	code   = map[string]int{}
 )
 
 type Region struct {
@@ -116,6 +125,51 @@ func iso01() {
 	slices.SortFunc(_iso_1, func(a, b *Country) int {
 		return strings.Compare(a.A, b.A)
 	})
+	for i := range _iso_1 {
+		code[_iso_1[i].A] = i
+	}
+}
+
+var (
+	_geo_name []string
+	city      = roaring64.NewDefaultBSI()
+	cityCode  = roaring64.NewDefaultBSI()
+)
+
+func writeGeoname() {
+	loc := &v1.Location{
+		Names: _geo_name,
+	}
+	b := new(bytes.Buffer)
+	cityCode.RunOptimize()
+	b.Reset()
+	_, err := cityCode.WriteTo(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+	loc.CityCode = bytes.Clone(b.Bytes())
+
+	city.RunOptimize()
+	b.Reset()
+	_, err = city.WriteTo(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+	loc.City = b.Bytes()
+
+	data, _ := proto.Marshal(loc)
+	err = os.WriteFile("city.protobuf.gz", compress(data), 0600)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func compress(data []byte) []byte {
+	b := new(bytes.Buffer)
+	w := gzip.NewWriter(b)
+	w.Write(data)
+	w.Close()
+	return b.Bytes()
 }
 
 func geoname() {
@@ -140,9 +194,19 @@ func geoname() {
 		name := raw[1]
 		class := raw[6]
 		countryCode := raw[8]
-		if class == "A" {
-			fmt.Println(id, name, countryCode)
-			fmt.Println()
+		if class == "P" {
+			c, ok := code[countryCode]
+			if ok {
+				iv, err := strconv.Atoi(id)
+				if err != nil {
+					log.Fatal("parsing id", id, err)
+				}
+				column := uint64(iv)
+				idx := len(_geo_name)
+				_geo_name = append(_geo_name, name)
+				city.SetValue(column, int64(idx))
+				cityCode.SetValue(uint64(idx), int64(c))
+			}
 		}
 		return true
 	})

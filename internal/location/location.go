@@ -1,9 +1,13 @@
 package location
 
 import (
+	_ "embed"
 	"slices"
 	"strings"
 )
+
+//go:embed city.protobuf.gz
+var cityData []byte
 
 type Country struct {
 	Code string `json:"code"`
