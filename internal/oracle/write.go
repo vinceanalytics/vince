@@ -1,6 +1,7 @@
 package oracle
 
 import (
+	"fmt"
 	"math/bits"
 
 	"github.com/gernest/roaring"
@@ -31,7 +32,28 @@ type Writer interface {
 
 type Columns interface {
 	String(field string, value string) error
-	Int64(field string, value int64) error
+	Int64(field string, value int64)
+	Bool(field string, value bool)
+}
+
+func (d *dbShard) Write() (*write, error) {
+	tx, err := d.db.Begin(true)
+	if err != nil {
+		return nil, err
+	}
+	s, err := tx.CreateBucketIfNotExists(seq)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	w := &write{
+		tx:     tx,
+		seq:    s,
+		data:   make(map[string]*roaring.Bitmap),
+		fields: make(map[string]*field),
+		db:     d,
+	}
+	return w, nil
 }
 
 type write struct {
@@ -42,6 +64,14 @@ type write struct {
 	id       uint64
 	shard    uint64
 	min, max int64
+	db       *dbShard
+}
+
+func (w *write) Close() error {
+	defer func() {
+		w.tx.Commit()
+	}()
+	return w.flush()
 }
 
 func (w *write) Write(ts int64, f func(columns Columns) error) error {
@@ -64,10 +94,21 @@ func (w *write) Write(ts int64, f func(columns Columns) error) error {
 	w.id = id
 	w.min = min(w.min, ts)
 	w.max = max(w.max, ts)
+	// set existence column
+	w.get(ID).DirectAdd(w.id % shardwidth.ShardWidth)
 	return f(w)
 }
 
-func (w *write) Int64(field string, svalue int64) error {
+func (w *write) Bool(field string, value bool) {
+	if value {
+		w.Int64(field, 1)
+		return
+	}
+	w.Int64(field, 0)
+	return
+}
+
+func (w *write) Int64(field string, svalue int64) {
 	m := w.get(field)
 	id := w.id
 	fragmentColumn := id % shardwidth.ShardWidth
@@ -88,7 +129,6 @@ func (w *write) Int64(field string, svalue int64) error {
 		}
 		row++
 	}
-	return nil
 }
 
 func (w *write) String(field string, value string) error {
@@ -128,5 +168,31 @@ func (w *write) get(name string) *roaring.Bitmap {
 }
 
 func (w *write) flush() error {
-	return nil
+	defer func() {
+		clear(w.data)
+		w.min = 0
+		w.max = 0
+	}()
+	db, err := w.db.open(w.shard)
+	if err != nil {
+		return fmt.Errorf("open shard db %w", err)
+	}
+	tx, err := db.db.Begin(true)
+	if err != nil {
+		return err
+	}
+	for k, d := range w.data {
+		_, err := tx.AddRoaring(k, d)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("adding data %w", err)
+		}
+	}
+	lo, hi := db.min.Load(), db.max.Load()
+	if lo == 0 {
+		lo = w.min
+	}
+	db.min.Store(min(lo, w.min))
+	db.max.Store(max(hi, w.max))
+	return tx.Commit()
 }
