@@ -2,9 +2,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"html/template"
 	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	v1 "github.com/gernest/len64/gen/go/len64/v1"
@@ -30,6 +32,7 @@ type Config struct {
 
 func Open(path string) (*Config, error) {
 	ts := filepath.Join(path, "ts")
+	os.MkdirAll(ts, 0755)
 	ops, err := bbolt.Open(filepath.Join(path, "main.db"), 0600, nil)
 	if err != nil {
 		return nil, err
@@ -77,7 +80,10 @@ func (db *Config) processEvents() {
 }
 
 func (db *Config) Close() error {
-	return db.ts.Close()
+	return errors.Join(
+		db.db.Close(),
+		db.ts.Close(),
+	)
 }
 
 func (db *Config) HTML(w http.ResponseWriter, t *template.Template, data map[string]any) {

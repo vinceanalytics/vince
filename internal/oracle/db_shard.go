@@ -33,6 +33,9 @@ func newDBShard(path string) (*dbShard, error) {
 	o := &dbShard{shards: make(map[uint64]*db), path: path}
 	if len(dirs) > 0 {
 		for i := range dirs {
+			if dirs[i].Name() == "TRANSLATE" {
+				continue
+			}
 			shard, err := strconv.ParseUint(dirs[i].Name(), 10, 64)
 			if err != nil {
 				return nil, err

@@ -98,28 +98,17 @@ func main() {
 			Then(web.Unimplemented),
 	))
 
-	mux.HandleFunc("POST /sites/{domain}/make-private", db.Wrap(
-		sites.
-			With(plug.VerifyCSRF).
-			Then(web.Unimplemented),
-	))
-
-	mux.HandleFunc("GET /{domain}/snippet", db.Wrap(
+	mux.HandleFunc("GET /site/{domain}/snippet", db.Wrap(
 		sites.
 			Then(web.Unimplemented),
 	))
 
-	mux.HandleFunc("GET /{domain}/snippet", db.Wrap(
+	mux.HandleFunc("GET /site/{domain}/settings", db.Wrap(
 		sites.
 			Then(web.Unimplemented),
 	))
 
-	mux.HandleFunc("GET /{domain}/settings", db.Wrap(
-		sites.
-			Then(web.Unimplemented),
-	))
-
-	mux.HandleFunc("GET /{domain...}", db.Wrap(
+	mux.HandleFunc("GET /site/{domain...}", db.Wrap(
 		sites.
 			Then(web.Unimplemented),
 	))
