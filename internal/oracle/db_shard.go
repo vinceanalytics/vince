@@ -79,7 +79,7 @@ func (d *dbShard) Select(from, to int64, domain string,
 
 		// 01: reduce domain rows with timestamp
 		err = cursor.Tx(rTx, "timestamp", func(c *rbf.Cursor) error {
-			f, err = Compare(c, shard, RANGE, from, to, f)
+			f, err = compare(c, shard, orange, from, to, f)
 			return err
 		})
 		if err != nil {

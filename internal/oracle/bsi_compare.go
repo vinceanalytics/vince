@@ -8,54 +8,54 @@ import (
 	"github.com/gernest/rows"
 )
 
-// Operation identifier
-type Operation int
+// ops identifier
+type ops int
 
 const (
-	// LT less than
-	LT Operation = 1 + iota
-	// LE less than or equal
-	LE
-	// EQ equal
-	EQ
-	NEQ
-	// GE greater than or equal
-	GE
-	// GT greater than
-	GT
-	// RANGE range
-	RANGE
+	// lt less than
+	lt ops = 1 + iota
+	// le less than or equal
+	le
+	// eq equal
+	eq
+	neq
+	// ge greater than or equal
+	ge
+	// gt greater than
+	gt
+	// orange range
+	orange
 )
 
-// Compare compares value.
+// compare compares value.
 // Values should be in the range of the BSI (max, min).  If the value is outside the range, the result
 // might erroneous.  The operation parameter indicates the type of comparison to be made.
 // For all operations with the exception of RANGE, the value to be compared is specified by valueOrStart.
 // For the RANGE parameter the comparison criteria is >= valueOrStart and <= end.
 //
 // Returns column ID's satisfying the operation.
-func Compare(
+func compare(
 	c *rbf.Cursor,
-	shard uint64, op Operation,
+	shard uint64, op ops,
 	valueOrStart int64, end int64,
 	columns *rows.Row) (*rows.Row, error) {
 	var r *rows.Row
 	var err error
 	bitDepth := uint64(64)
 	switch op {
-	case LT:
+	case lt:
 		r, err = rangeLT(c, shard, bitDepth, valueOrStart, false)
-	case LE:
+	case le:
 		r, err = rangeLT(c, shard, bitDepth, valueOrStart, true)
-	case GT:
+	case gt:
 		r, err = rangeGT(c, shard, bitDepth, valueOrStart, false)
-	case GE:
+	case ge:
 		r, err = rangeGT(c, shard, bitDepth, valueOrStart, true)
-	case EQ:
+	case eq:
 		r, err = rangeEQ(c, shard, bitDepth, valueOrStart)
-	case NEQ:
+	case neq:
 		r, err = rangeNEQ(c, shard, bitDepth, valueOrStart)
-	case RANGE:
+	case orange:
 		r, err = rangeBetween(c, shard, bitDepth, valueOrStart, end)
 	default:
 		return rows.NewRow(), nil
