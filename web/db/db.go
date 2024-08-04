@@ -10,9 +10,9 @@ import (
 	"os"
 	"path/filepath"
 
-	v1 "github.com/gernest/len64/gen/go/len64/v1"
-	"github.com/gernest/len64/internal/domains"
-	"github.com/gernest/len64/internal/oracle"
+	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	"github.com/vinceanalytics/vince/internal/domains"
+	"github.com/vinceanalytics/vince/internal/oracle"
 	"go.etcd.io/bbolt"
 )
 

@@ -3,10 +3,10 @@ package web
 import (
 	"net/http"
 
-	"github.com/gernest/len64/internal/location"
-	"github.com/gernest/len64/internal/oracle"
-	"github.com/gernest/len64/web/db"
-	"github.com/gernest/len64/web/query"
+	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/internal/oracle"
+	"github.com/vinceanalytics/vince/web/db"
+	"github.com/vinceanalytics/vince/web/query"
 )
 
 func UnimplementedStat(db *db.Config, w http.ResponseWriter, r *http.Request) {

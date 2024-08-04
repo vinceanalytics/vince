@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gernest/len64/app"
-	"github.com/gernest/len64/web/db"
+	"github.com/vinceanalytics/vince/app"
+	"github.com/vinceanalytics/vince/web/db"
 )
 
 type Handler func(db *db.Config, w http.ResponseWriter, r *http.Request)

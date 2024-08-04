@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
-	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
 	"google.golang.org/protobuf/proto"
 )
 

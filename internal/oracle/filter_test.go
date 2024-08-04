@@ -3,11 +3,11 @@ package oracle
 import (
 	"testing"
 
-	"github.com/gernest/len64/internal/rbf"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
 	"github.com/stretchr/testify/require"
+	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
 func TestFilter(t *testing.T) {

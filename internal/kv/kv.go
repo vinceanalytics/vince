@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"strings"
 
-	v1 "github.com/gernest/len64/gen/go/len64/v1"
-	"github.com/gernest/len64/internal/assert"
 	"github.com/google/uuid"
+	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	"github.com/vinceanalytics/vince/internal/assert"
 	"go.etcd.io/bbolt"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"

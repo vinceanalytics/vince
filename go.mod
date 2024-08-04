@@ -1,4 +1,4 @@
-module github.com/gernest/len64
+module github.com/vinceanalytics/vince
 
 go 1.22.5
 

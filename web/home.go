@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gernest/len64/web/db"
+	"github.com/vinceanalytics/vince/web/db"
 )
 
 func Home(db *db.Config, w http.ResponseWriter, r *http.Request) {

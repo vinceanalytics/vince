@@ -3,8 +3,8 @@ package web
 import (
 	"net/http"
 
-	"github.com/gernest/len64/internal/kv"
-	"github.com/gernest/len64/web/db"
+	"github.com/vinceanalytics/vince/internal/kv"
+	"github.com/vinceanalytics/vince/web/db"
 )
 
 func LoginForm(db *db.Config, w http.ResponseWriter, r *http.Request) {

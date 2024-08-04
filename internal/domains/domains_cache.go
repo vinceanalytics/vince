@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
-	"github.com/gernest/len64/internal/kv"
+	"github.com/vinceanalytics/vince/internal/kv"
 	"go.etcd.io/bbolt"
 	"golang.org/x/time/rate"
 )

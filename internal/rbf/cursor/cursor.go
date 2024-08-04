@@ -3,10 +3,10 @@ package cursor
 import (
 	"errors"
 
-	"github.com/gernest/len64/internal/rbf"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
 func Tx(tx *rbf.Tx, name string, f func(c *rbf.Cursor) error) error {

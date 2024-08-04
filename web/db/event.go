@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/gernest/len64/gen/go/len64/v1"
-	"github.com/gernest/len64/geo"
-	"github.com/gernest/len64/ref"
-	"github.com/gernest/len64/ua"
+	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	"github.com/vinceanalytics/vince/geo"
+	"github.com/vinceanalytics/vince/ref"
+	"github.com/vinceanalytics/vince/ua"
 )
 
 const pageView = "pageview"

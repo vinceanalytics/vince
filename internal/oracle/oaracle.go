@@ -3,7 +3,7 @@ package oracle
 import (
 	"context"
 
-	v1 "github.com/gernest/len64/gen/go/len64/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
 	"google.golang.org/protobuf/proto"
 )
 

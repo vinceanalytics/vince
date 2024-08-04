@@ -1,10 +1,10 @@
 package oracle
 
 import (
-	"github.com/gernest/len64/internal/rbf"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
 const (

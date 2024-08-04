@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	rbfcfg "github.com/gernest/len64/internal/rbf/cfg"
 	"github.com/gernest/roaring"
+	rbfcfg "github.com/vinceanalytics/vince/internal/rbf/cfg"
 )
 
 // util_test adds reusable utilities for testing.

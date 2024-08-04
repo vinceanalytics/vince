@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"github.com/gernest/len64/internal/oracle"
+	"github.com/vinceanalytics/vince/internal/oracle"
 )
 
 type Query struct {

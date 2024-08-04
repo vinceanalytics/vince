@@ -2,7 +2,7 @@ version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: github.com/gernest/len64/gen/go
+    default: github.com/vinceanalytics/vince/gen/go
 plugins:
   - plugin: go
     out: gen/go

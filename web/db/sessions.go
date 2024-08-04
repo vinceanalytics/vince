@@ -17,10 +17,10 @@ import (
 
 	"filippo.io/age"
 	"github.com/dchest/captcha"
-	v1 "github.com/gernest/len64/gen/go/len64/v1"
-	"github.com/gernest/len64/internal/kv"
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/dataurl"
+	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	"github.com/vinceanalytics/vince/internal/kv"
 )
 
 var secret *age.X25519Identity

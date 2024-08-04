@@ -1,9 +1,9 @@
 package oracle
 
 import (
-	"github.com/gernest/len64/internal/rbf"
-	"github.com/gernest/len64/internal/rbf/cursor"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf/cursor"
 )
 
 func extractBSI(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(column uint64, value int64) error) error {

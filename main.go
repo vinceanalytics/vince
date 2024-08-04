@@ -9,11 +9,11 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/gernest/len64/internal/location"
-	"github.com/gernest/len64/ua"
-	"github.com/gernest/len64/web"
-	"github.com/gernest/len64/web/db"
-	"github.com/gernest/len64/web/db/plug"
+	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/ua"
+	"github.com/vinceanalytics/vince/web"
+	"github.com/vinceanalytics/vince/web/db"
+	"github.com/vinceanalytics/vince/web/db/plug"
 )
 
 func main() {

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/gernest/len64/internal/kv"
-	"github.com/gernest/len64/web/db"
-	"github.com/gernest/len64/web/db/plug"
+	"github.com/vinceanalytics/vince/internal/kv"
+	"github.com/vinceanalytics/vince/web/db"
+	"github.com/vinceanalytics/vince/web/db/plug"
 )
 
 func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {

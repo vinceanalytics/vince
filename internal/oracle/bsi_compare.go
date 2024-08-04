@@ -3,9 +3,9 @@ package oracle
 import (
 	"math/bits"
 
-	"github.com/gernest/len64/internal/rbf"
-	"github.com/gernest/len64/internal/rbf/cursor"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf/cursor"
 )
 
 // ops identifier

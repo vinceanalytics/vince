@@ -11,10 +11,10 @@ import (
 	"sync"
 
 	"github.com/benbjohnson/immutable"
-	txkey "github.com/gernest/len64/internal/rbf/short_txkey"
-	"github.com/gernest/len64/internal/rbf/vprint"
 	"github.com/gernest/roaring"
 	"github.com/pkg/errors"
+	txkey "github.com/vinceanalytics/vince/internal/rbf/short_txkey"
+	"github.com/vinceanalytics/vince/internal/rbf/vprint"
 )
 
 var _ = txkey.ToString

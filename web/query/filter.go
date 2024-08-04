@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gernest/len64/internal/oracle"
+	"github.com/vinceanalytics/vince/internal/oracle"
 )
 
 type Filter struct {

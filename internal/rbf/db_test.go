@@ -18,8 +18,8 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/felixge/fgprof"
-	"github.com/gernest/len64/internal/rbf"
-	rbfcfg "github.com/gernest/len64/internal/rbf/cfg"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	rbfcfg "github.com/vinceanalytics/vince/internal/rbf/cfg"
 	"golang.org/x/sync/errgroup"
 )
 

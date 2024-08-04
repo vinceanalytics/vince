@@ -2,12 +2,12 @@ package ua
 
 import (
 	"github.com/VictoriaMetrics/fastcache"
-	v1 "github.com/gernest/len64/gen/go/len64/v1"
 	"github.com/gernest/vice"
 	"github.com/gernest/vice/pkg/bot"
 	"github.com/gernest/vice/pkg/browser"
 	"github.com/gernest/vice/pkg/device"
 	"github.com/gernest/vice/pkg/os"
+	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
 	"google.golang.org/protobuf/proto"
 )
 
