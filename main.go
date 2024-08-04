@@ -178,42 +178,42 @@ func main() {
 
 	mux.HandleFunc("GET /api/stats/{domain}/countries", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.Countries),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/regions", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.Regions),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/cities", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.Cities),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/browsers", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.Browsers),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/browser-versions", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.BrowserVersions),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/operating-systems", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.Os),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/operating-system-versions", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.OsVersion),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/screen-sizes", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.ScreenSize),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/conversions", db.Wrap(

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"html/template"
 	"log/slog"
@@ -66,6 +67,10 @@ func (db *Config) Logger() *slog.Logger {
 	return db.logger
 }
 
+func (db *Config) Oracle() *oracle.Oracle {
+	return db.ts
+}
+
 func (db *Config) Start(ctx context.Context) {
 	go db.processEvents()
 	db.ts.Start(ctx)
@@ -96,6 +101,18 @@ func (db *Config) HTMLCode(code int, w http.ResponseWriter, t *template.Template
 	}
 	w.WriteHeader(code)
 	err := t.Execute(w, db.Context(data))
+	if err != nil {
+		db.logger.Error("rendering template", "err", err)
+	}
+}
+
+func (db *Config) JSON(w http.ResponseWriter, data any) {
+	db.JSONCode(http.StatusOK, w, data)
+}
+
+func (db *Config) JSONCode(code int, w http.ResponseWriter, data any) {
+	w.WriteHeader(code)
+	err := json.NewEncoder(w).Encode(data)
 	if err != nil {
 		db.logger.Error("rendering template", "err", err)
 	}
