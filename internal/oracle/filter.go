@@ -20,6 +20,9 @@ func (fn filterFunc) Apply(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, f *rows.Row)
 }
 
 func NewAnd(fs ...Filter) Filter {
+	if len(fs) == 0 {
+		return Noop()
+	}
 	return filterFunc(func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, f *rows.Row) (*rows.Row, error) {
 		r := rows.NewRow()
 		for i := range fs {
@@ -49,6 +52,12 @@ func Noop() Filter {
 	})
 }
 
+func Reject() Filter {
+	return filterFunc(func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, f *rows.Row) (*rows.Row, error) {
+		return rows.NewRow(), nil
+	})
+}
+
 func NewEq(name, value string) Filter {
 	return filterFunc(func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, f *rows.Row) (r *rows.Row, err error) {
 		fd := newReadField(tx, []byte(name))
@@ -65,6 +74,20 @@ func NewEq(name, value string) Filter {
 			return nil, err
 		}
 		return r.Intersect(f), nil
+	})
+}
+
+func NewEqInt(name string, value int64) Filter {
+	return filterFunc(func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, f *rows.Row) (*rows.Row, error) {
+		err := cursor.Tx(rTx, name, func(c *rbf.Cursor) error {
+			var err error
+			f, err = compare(c, shard, eq, value, 0, f)
+			return err
+		})
+		if err != nil {
+			return nil, err
+		}
+		return f, nil
 	})
 }
 
