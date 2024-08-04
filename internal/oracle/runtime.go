@@ -38,34 +38,43 @@ func (db *dbShard) process(ctx context.Context, events chan *v1.Model) {
 func (w *write) event(e *v1.Model) {
 	w.Write(e.Timestamp, func(idx Columns) error {
 		e.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
-			if fd.Kind() == protoreflect.StringKind {
-				idx.String(string(fd.Name()), v.String())
-				return true
-			}
-			if fd.IsMap() {
-				prefix := string(fd.Name()) + "."
-				v.Map().Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
-					idx.String(prefix+mk.String(), v.String())
-					return true
-				})
-				idx.String(string(fd.Name()), v.String())
+			name := string(fd.Name())
+			switch fd.Kind() {
+			case protoreflect.StringKind:
+				idx.String(name, v.String())
+			case protoreflect.BoolKind:
+				idx.Int64(name, 1)
+			case protoreflect.Int64Kind:
+				if name == "timestamp" {
+					ts := v.Int()
+					idx.Int64(name, ts)
+					idx.String("date", date(ts))
+				} else {
+					idx.Int64(name, v.Int())
+				}
+
+			case protoreflect.Uint64Kind, protoreflect.Uint32Kind:
+				idx.Int64(name, int64(v.Uint()))
+			default:
+				if fd.IsMap() {
+					prefix := name + "."
+					v.Map().Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
+						idx.String(prefix+mk.String(), v.String())
+						return true
+					})
+				}
 			}
 			return true
 		})
-		idx.Int64("timestamp", int64(e.Timestamp))
-		idx.String("date", date(e.Timestamp))
-		idx.Int64("uid", int64(e.Id))
-		if e.Bounce != nil {
-			idx.Bool("bounce", e.GetBounce())
-		} else {
-			// null bounce means we clear bounce status
+
+		// For bounce, session, view and duration fields we only perform sum on the
+		// bsi. To save space we don't bother storing zero values.
+		//
+		// null bounce act as a clear signal , we set it to -1 so that when
+		// we a user stay on the site and navigated to a different page during
+		// a live session the result will be 0..
+		if e.Bounce == nil {
 			idx.Int64("bounce", -1)
-		}
-		idx.Bool("session", e.Session)
-		idx.Bool("view", e.View)
-		idx.Int64("duration", int64(e.Duration))
-		if e.City != 0 {
-			idx.Int64("city_geoname_id", int64(e.City))
 		}
 		return nil
 	})

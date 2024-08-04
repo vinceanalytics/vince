@@ -32,7 +32,6 @@ type Writer interface {
 type Columns interface {
 	String(field string, value string) error
 	Int64(field string, value int64)
-	Bool(field string, value bool)
 }
 
 func (d *dbShard) Write() (*write, error) {
@@ -96,14 +95,6 @@ func (w *write) Write(ts int64, f func(columns Columns) error) error {
 	// set existence column
 	w.get(ID).DirectAdd(w.id % shardwidth.ShardWidth)
 	return f(w)
-}
-
-func (w *write) Bool(field string, value bool) {
-	if value {
-		w.Int64(field, 1)
-		return
-	}
-	w.Int64(field, 0)
 }
 
 func (w *write) Int64(field string, svalue int64) {
