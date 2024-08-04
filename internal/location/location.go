@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
-	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"google.golang.org/protobuf/proto"
 )
 

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/assert"
 	"go.etcd.io/bbolt"
 	"golang.org/x/crypto/bcrypt"

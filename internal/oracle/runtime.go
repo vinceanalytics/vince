@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/assert"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )

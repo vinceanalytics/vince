@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/oracle"
 	"go.etcd.io/bbolt"

@@ -19,7 +19,7 @@ import (
 	"github.com/dchest/captcha"
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/dataurl"
-	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/kv"
 )
 

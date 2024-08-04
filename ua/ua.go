@@ -7,7 +7,7 @@ import (
 	"github.com/gernest/vice/pkg/browser"
 	"github.com/gernest/vice/pkg/device"
 	"github.com/gernest/vice/pkg/os"
-	v1 "github.com/vinceanalytics/vince/gen/go/len64/v1"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"google.golang.org/protobuf/proto"
 )
 
