@@ -2,7 +2,6 @@ package oracle
 
 import (
 	"fmt"
-	"math/bits"
 
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
@@ -108,26 +107,7 @@ func (w *write) Bool(field string, value bool) {
 }
 
 func (w *write) Int64(field string, svalue int64) {
-	m := w.get(field)
-	id := w.id
-	fragmentColumn := id % shardwidth.ShardWidth
-	m.DirectAdd(fragmentColumn)
-	negative := svalue < 0
-	var value uint64
-	if negative {
-		m.Add(shardwidth.ShardWidth + fragmentColumn) // set sign bit
-		value = uint64(svalue * -1)
-	} else {
-		value = uint64(svalue)
-	}
-	lz := bits.LeadingZeros64(value)
-	row := uint64(2)
-	for mask := uint64(0x1); mask <= 1<<(64-lz) && mask != 0; mask = mask << 1 {
-		if value&mask > 0 {
-			m.DirectAdd(row*shardwidth.ShardWidth + fragmentColumn)
-		}
-		row++
-	}
+	setValue(w.get(field), w.id, svalue)
 }
 
 func (w *write) String(field string, value string) error {
