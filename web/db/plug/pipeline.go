@@ -61,7 +61,7 @@ var file = http.FileServerFS(app.Public)
 func Static(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/public/") {
-			if strings.HasPrefix(r.URL.Path, "/public/js/len64") {
+			if strings.HasPrefix(r.URL.Path, "/public/js/vince") {
 				w.Header().Set("x-content-type-options", "nosniff")
 				w.Header().Set("cross-origin-resource-policy", "cross-origin")
 				w.Header().Set("access-control-allow-origin", "*")
