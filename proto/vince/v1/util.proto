@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package v1;
+
+message Location {
+  repeated string names = 1;
+  bytes city = 2;
+  bytes city_code = 3;
+}

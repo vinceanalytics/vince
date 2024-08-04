@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package v1;
+
+message Model {
+  int64 timestamp = 1;
+  uint64 id = 2;
+  optional bool bounce = 3;
+  bool session = 4;
+  bool view = 5;
+  int64 duration = 6;
+  uint32 city = 9;
+
+  string browser = 7;
+  string browser_version = 8;
+  string country = 10;
+  string device = 11;
+  string domain = 12;
+  string entry_page = 13;
+  string event = 14;
+  string exit_page = 15;
+  string host = 16;
+  string os = 17;
+  string os_version = 18;
+  string page = 19;
+  string referrer = 20;
+  string source = 22;
+  string utm_campaign = 23;
+  string utm_content = 24;
+  string utm_medium = 25;
+  string utm_source = 26;
+  string utm_term = 37;
+  map<string, string> props = 28;
+  string subdivision1_code = 29;
+  string subdivision2_code = 30;
+}
+
+message Agent {
+  bool bot = 1;
+  string browser = 2;
+  string browser_version = 3;
+  string os = 4;
+  string os_version = 5;
+  string device = 6;
+}

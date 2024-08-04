@@ -1,0 +1,335 @@
+@import "tailwindcss/base";
+@import "flatpickr/dist/flatpickr.min.css";
+@import "./modal.css";
+@import "./loader.css";
+@import "./tooltip.css";
+@import "./flatpickr.css";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+[x-cloak] { display: none; }
+
+@media print {
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
+.button {
+  @apply inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md leading-5 transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+}
+
+.button[disabled] {
+  @apply bg-gray-400 dark:bg-gray-600;
+}
+
+.button-outline {
+  @apply text-indigo-600 bg-transparent border border-indigo-600;
+}
+
+.button-outline:hover {
+  @apply text-white;
+}
+
+.button-sm {
+  @apply px-4 py-2 text-sm;
+}
+
+.button-md {
+  @apply px-4 py-2;
+}
+
+html {
+  @apply text-gray-800;
+}
+
+body {
+	-webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width:100vw;  /* Prevents content from jumping when scrollbar is added/removed due to vertical overflow */
+  overflow-x: hidden;
+}
+
+blockquote {
+  @apply px-4 py-2 my-4 border-l-4 border-gray-500;
+}
+
+@screen xl {
+  .container {
+    max-width: 70rem;
+  }
+}
+
+.pricing-table {
+  height: 920px;
+}
+
+@screen md {
+  .pricing-table {
+    height: auto;
+  }
+}
+
+
+.light-text {
+  color: #F0F4F8;
+}
+
+.transition {
+  transition: all .1s ease-in;
+}
+
+.pulsating-circle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+}
+
+.pulsating-circle::before {
+  content: '';
+  position: relative;
+  display: block;
+  width: 300%;
+  height: 300%;
+  box-sizing: border-box;
+  margin-left: -100%;
+  margin-top: -100%;
+  border-radius: 45px;
+  background-color: #9ae6b4;
+  animation: pulse-ring 3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  @apply bg-green-500;
+}
+
+.pulsating-circle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  border-radius: 15px;
+  animation: pulse-dot 3s cubic-bezier(0.455, 0.03, 0.515, 0.955) -.4s infinite;
+  @apply bg-green-500;
+}
+
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(.33);
+  }
+
+  50% {
+    transform: scale(1);
+  }
+
+  40%, 100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-dot {
+  0% {
+    transform: scale(.8);
+  }
+
+  25% {
+    transform: scale(1);
+  }
+
+  50%, 100% {
+    transform: scale(.8);
+  }
+}
+
+.just-text h1, .just-text h2, .just-text h3 {
+  margin-top: 1em;
+  margin-bottom: .5em;
+}
+
+.just-text p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.dropdown-content::before {
+    top: -16px;
+    right: 8px;
+    left: auto;
+    border: 8px solid transparent;
+    border-bottom-color: rgba(27,31,35,0.15);
+}
+
+.dropdown-content::before, .dropdown-content::after {
+    position: absolute;
+    display: inline-block;
+    content: "";
+  }
+
+.dropdown-content::after {
+    top: -14px;
+    right: 9px;
+    left: auto;
+    border: 7px solid transparent;
+    border-bottom-color: #fff;
+}
+
+.feather {
+  height: 1em;
+  width: 1em;
+  overflow: visible;
+  display: inline;
+}
+
+.feather-sm {
+  height: 1em;
+  width: 1em;
+  overflow: visible;
+  display: inline;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+  background-color: #f1f5f8;
+}
+
+.dark .table-striped tbody tr:nth-child(odd) {
+  background-color: rgb(37, 47, 63);
+}
+
+.dark .table-striped tbody tr:nth-child(even) {
+  background-color: rgb(26, 32, 44);
+}
+
+.stats-item {
+  min-height: 436px;
+}
+
+@screen md {
+  .stats-item {
+    margin-left: 6px;
+    margin-right: 6px;
+    width: calc(50% - 6px);
+    position: relative;
+    min-height: initial;
+    height: 27.25rem;
+  }
+
+  .stats-item-header {
+    height: inherit;
+  }
+}
+
+.stats-item:first-child {
+  margin-left: 0;
+}
+
+.stats-item:last-child {
+  margin-right: 0;
+}
+
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 100ms ease-in;
+}
+
+.flatpickr-calendar.static.open {
+  right: 2px;
+  top: 12px;
+}
+
+.datamaps-subunit {
+  cursor: pointer;
+}
+
+/* Only because the map handler doesn't expose an easier way to change the shadow color */
+.dark .hoverinfo {
+  box-shadow: 1px 1px 5px rgb(26, 32, 44);
+}
+
+.fullwidth-shadow::before {
+  @apply absolute top-0 w-screen h-full bg-gray-50 dark:bg-gray-850;
+
+  box-shadow: 0 4px 2px -2px rgba(0, 0, 0, 0.06);
+  content: "";
+  z-index: -1;
+  left: calc(-1 * calc(50vw - 50%));
+  background-color: inherit;
+}
+
+.dark .fullwidth-shadow::before {
+  box-shadow: 0 4px 2px -2px rgba(200, 200, 200, 0.1);
+}
+
+iframe[hidden] {
+  display: none;
+}
+
+.pagination-link[disabled] {
+  @apply cursor-default bg-gray-100 dark:bg-gray-300 pointer-events-none;
+}
+
+@media (max-width: 768px) {
+  .flatpickr-wrapper {
+    position: absolute !important;
+    right: 0 !important;
+    left: 0 !important;
+  }
+}
+
+#chartjs-tooltip {
+  background-color: rgba(25, 30, 56);
+  position: absolute;
+  font-size: 14px;
+  font-style: normal;
+  padding: 10px 12px;
+  pointer-events: none;
+  border-radius: 5px;
+  z-index: 100;
+}
+
+.active-prop-heading {
+  /* Properties related to text-decoration are all here in one place. TailwindCSS does support underline but that's about it. */
+  text-decoration-line: underline;
+  text-decoration-color: #4338CA; /* tailwind's indigo-700 */
+  text-decoration-thickness: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .active-prop-heading {
+    text-decoration-color: #6366F1; /* tailwind's indigo-500 */
+  }
+
+}
+
+/* This class is used for styling embedded dashboards. Do not remove. */
+/* stylelint-disable */
+.date-option-group { }
+
+
+.popper-tooltip {
+  background-color: rgba(25, 30, 56);
+}
+
+.tooltip-arrow,
+.tooltip-arrow::before {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+}
+
+.tooltip-arrow {
+  visibility: hidden;
+}
+
+.tooltip-arrow::before {
+  visibility: visible;
+  content: '';
+  transform: rotate(45deg) translateY(1px);
+}
