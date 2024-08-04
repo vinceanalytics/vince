@@ -1,1 +1,0 @@
-curl -X 'GET' 'http://localhost:8080/api/v1/stats/aggregate?metrics=visitors%2Cvisits%2Cpageviews%2Cviews_per_visit%2Cbounce_rate%2Cvisit_duration%2Cevents&site_id=vinceanalytics.com'

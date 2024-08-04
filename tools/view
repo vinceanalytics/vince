@@ -1,3 +1,0 @@
-export VINCE_AUTH_TOKEN=xxxx
-
-./bin/vince load internal/load/testdata/page_view.js 

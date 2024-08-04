@@ -1,1 +1,0 @@
-curl -X 'GET' 'http://localhost:8080/api/v1/stats/breakdown?metrics=visitors%2Cbounce_rate&property=browser&site_id=vinceanalytics.com'

@@ -1,3 +1,0 @@
-[submodule "ua/device-detector"]
-	path = ua/device-detector
-	url = https://github.com/matomo-org/device-detector.git
