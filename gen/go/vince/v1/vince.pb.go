@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.30.0
 // 	protoc        (unknown)
-// source: vince/v1/len64.proto
+// source: vince/v1/vince.proto
 
 package v1
 
@@ -59,7 +59,7 @@ type Model struct {
 func (x *Model) Reset() {
 	*x = Model{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_len64_proto_msgTypes[0]
+		mi := &file_vince_v1_vince_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72,7 +72,7 @@ func (x *Model) String() string {
 func (*Model) ProtoMessage() {}
 
 func (x *Model) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_len64_proto_msgTypes[0]
+	mi := &file_vince_v1_vince_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -85,7 +85,7 @@ func (x *Model) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Model.ProtoReflect.Descriptor instead.
 func (*Model) Descriptor() ([]byte, []int) {
-	return file_vince_v1_len64_proto_rawDescGZIP(), []int{0}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Model) GetTimestamp() int64 {
@@ -307,7 +307,7 @@ type Agent struct {
 func (x *Agent) Reset() {
 	*x = Agent{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_vince_v1_len64_proto_msgTypes[1]
+		mi := &file_vince_v1_vince_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -320,7 +320,7 @@ func (x *Agent) String() string {
 func (*Agent) ProtoMessage() {}
 
 func (x *Agent) ProtoReflect() protoreflect.Message {
-	mi := &file_vince_v1_len64_proto_msgTypes[1]
+	mi := &file_vince_v1_vince_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -333,7 +333,7 @@ func (x *Agent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Agent.ProtoReflect.Descriptor instead.
 func (*Agent) Descriptor() ([]byte, []int) {
-	return file_vince_v1_len64_proto_rawDescGZIP(), []int{1}
+	return file_vince_v1_vince_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Agent) GetBot() bool {
@@ -378,10 +378,10 @@ func (x *Agent) GetDevice() string {
 	return ""
 }
 
-var File_vince_v1_len64_proto protoreflect.FileDescriptor
+var File_vince_v1_vince_proto protoreflect.FileDescriptor
 
-var file_vince_v1_len64_proto_rawDesc = []byte{
-	0x0a, 0x14, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x6c, 0x65, 0x6e, 0x36, 0x34,
+var file_vince_v1_vince_proto_rawDesc = []byte{
+	0x0a, 0x14, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x02, 0x76, 0x31, 0x22, 0x82, 0x07, 0x0a, 0x05, 0x4d,
 	0x6f, 0x64, 0x65, 0x6c, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
 	0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
@@ -450,7 +450,7 @@ var file_vince_v1_len64_proto_rawDesc = []byte{
 	0x28, 0x09, 0x52, 0x09, 0x6f, 0x73, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a,
 	0x06, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x64,
 	0x65, 0x76, 0x69, 0x63, 0x65, 0x42, 0x6d, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x2e, 0x76, 0x31, 0x42,
-	0x0a, 0x4c, 0x65, 0x6e, 0x36, 0x34, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2f, 0x67,
+	0x0a, 0x56, 0x69, 0x6e, 0x63, 0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2f, 0x67,
 	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x61,
 	0x6e, 0x61, 0x6c, 0x79, 0x74, 0x69, 0x63, 0x73, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x67,
 	0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x76, 0x69, 0x6e, 0x63, 0x65, 0x2f, 0x76, 0x31, 0xa2, 0x02,
@@ -460,24 +460,24 @@ var file_vince_v1_len64_proto_rawDesc = []byte{
 }
 
 var (
-	file_vince_v1_len64_proto_rawDescOnce sync.Once
-	file_vince_v1_len64_proto_rawDescData = file_vince_v1_len64_proto_rawDesc
+	file_vince_v1_vince_proto_rawDescOnce sync.Once
+	file_vince_v1_vince_proto_rawDescData = file_vince_v1_vince_proto_rawDesc
 )
 
-func file_vince_v1_len64_proto_rawDescGZIP() []byte {
-	file_vince_v1_len64_proto_rawDescOnce.Do(func() {
-		file_vince_v1_len64_proto_rawDescData = protoimpl.X.CompressGZIP(file_vince_v1_len64_proto_rawDescData)
+func file_vince_v1_vince_proto_rawDescGZIP() []byte {
+	file_vince_v1_vince_proto_rawDescOnce.Do(func() {
+		file_vince_v1_vince_proto_rawDescData = protoimpl.X.CompressGZIP(file_vince_v1_vince_proto_rawDescData)
 	})
-	return file_vince_v1_len64_proto_rawDescData
+	return file_vince_v1_vince_proto_rawDescData
 }
 
-var file_vince_v1_len64_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_vince_v1_len64_proto_goTypes = []interface{}{
+var file_vince_v1_vince_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_vince_v1_vince_proto_goTypes = []interface{}{
 	(*Model)(nil), // 0: v1.Model
 	(*Agent)(nil), // 1: v1.Agent
 	nil,           // 2: v1.Model.PropsEntry
 }
-var file_vince_v1_len64_proto_depIdxs = []int32{
+var file_vince_v1_vince_proto_depIdxs = []int32{
 	2, // 0: v1.Model.props:type_name -> v1.Model.PropsEntry
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
@@ -486,13 +486,13 @@ var file_vince_v1_len64_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_vince_v1_len64_proto_init() }
-func file_vince_v1_len64_proto_init() {
-	if File_vince_v1_len64_proto != nil {
+func init() { file_vince_v1_vince_proto_init() }
+func file_vince_v1_vince_proto_init() {
+	if File_vince_v1_vince_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_vince_v1_len64_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Model); i {
 			case 0:
 				return &v.state
@@ -504,7 +504,7 @@ func file_vince_v1_len64_proto_init() {
 				return nil
 			}
 		}
-		file_vince_v1_len64_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_vince_v1_vince_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Agent); i {
 			case 0:
 				return &v.state
@@ -517,23 +517,23 @@ func file_vince_v1_len64_proto_init() {
 			}
 		}
 	}
-	file_vince_v1_len64_proto_msgTypes[0].OneofWrappers = []interface{}{}
+	file_vince_v1_vince_proto_msgTypes[0].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_vince_v1_len64_proto_rawDesc,
+			RawDescriptor: file_vince_v1_vince_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_vince_v1_len64_proto_goTypes,
-		DependencyIndexes: file_vince_v1_len64_proto_depIdxs,
-		MessageInfos:      file_vince_v1_len64_proto_msgTypes,
+		GoTypes:           file_vince_v1_vince_proto_goTypes,
+		DependencyIndexes: file_vince_v1_vince_proto_depIdxs,
+		MessageInfos:      file_vince_v1_vince_proto_msgTypes,
 	}.Build()
-	File_vince_v1_len64_proto = out.File
-	file_vince_v1_len64_proto_rawDesc = nil
-	file_vince_v1_len64_proto_goTypes = nil
-	file_vince_v1_len64_proto_depIdxs = nil
+	File_vince_v1_vince_proto = out.File
+	file_vince_v1_vince_proto_rawDesc = nil
+	file_vince_v1_vince_proto_goTypes = nil
+	file_vince_v1_vince_proto_depIdxs = nil
 }
