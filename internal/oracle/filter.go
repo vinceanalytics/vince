@@ -2,9 +2,11 @@ package oracle
 
 import (
 	"regexp"
+	"slices"
 
 	"github.com/gernest/len64/internal/rbf"
 	"github.com/gernest/len64/internal/rbf/cursor"
+	"github.com/gernest/roaring"
 	"github.com/gernest/rows"
 	"go.etcd.io/bbolt"
 )
@@ -124,15 +126,14 @@ func NewRe(name, value string) Filter {
 		}
 		if len(match) > 0 {
 			err = cursor.Tx(rTx, name, func(c *rbf.Cursor) error {
-				o := make([]*rows.Row, len(match))
-				for i := range match {
-					x, err := cursor.Row(c, shard, match[i])
-					if err != nil {
-						return err
-					}
-					o[i] = x
+				slices.Sort(match)
+				fs := roaring.NewBitmapRowsUnion(match)
+				err := c.ApplyFilter(0, fs)
+				if err != nil {
+					return err
 				}
-				r = o[0].Union(o[1:]...).Intersect(f)
+				o := rows.NewRowFromBitmap(fs.Results(shard))
+				r = o.Intersect(f)
 				return nil
 			})
 		}
@@ -154,15 +155,14 @@ func NewNre(name, value string) Filter {
 		}
 		if len(match) > 0 {
 			err = cursor.Tx(rTx, name, func(c *rbf.Cursor) error {
-				o := make([]*rows.Row, len(match))
-				for i := range match {
-					x, err := cursor.Row(c, shard, match[i])
-					if err != nil {
-						return err
-					}
-					o[i] = x
+				slices.Sort(match)
+				fs := roaring.NewBitmapRowsUnion(match)
+				err := c.ApplyFilter(0, fs)
+				if err != nil {
+					return err
 				}
-				r = o[0].Union(o[1:]...).Difference(f)
+				o := rows.NewRowFromBitmap(fs.Results(shard))
+				r = o.Intersect(f)
 				return nil
 			})
 		}
