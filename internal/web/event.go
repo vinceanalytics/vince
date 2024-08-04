@@ -3,7 +3,7 @@ package web
 import (
 	"net/http"
 
-	"github.com/vinceanalytics/vince/web/db"
+	"github.com/vinceanalytics/vince/internal/web/db"
 )
 
 func Event(db *db.Config, w http.ResponseWriter, r *http.Request) {

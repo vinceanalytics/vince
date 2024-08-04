@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/vinceanalytics/vince/internal/kv"
-	"github.com/vinceanalytics/vince/web/db"
+	"github.com/vinceanalytics/vince/internal/web/db"
 )
 
 func RegisterForm(db *db.Config, w http.ResponseWriter, r *http.Request) {

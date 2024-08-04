@@ -6,8 +6,8 @@ import (
 	"net/url"
 
 	"github.com/vinceanalytics/vince/internal/kv"
-	"github.com/vinceanalytics/vince/web/db"
-	"github.com/vinceanalytics/vince/web/db/plug"
+	"github.com/vinceanalytics/vince/internal/web/db"
+	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
 
 func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {

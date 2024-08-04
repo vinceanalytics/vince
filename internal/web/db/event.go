@@ -11,9 +11,9 @@ import (
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/geo"
-	"github.com/vinceanalytics/vince/ref"
-	"github.com/vinceanalytics/vince/ua"
+	"github.com/vinceanalytics/vince/internal/geo"
+	"github.com/vinceanalytics/vince/internal/ref"
+	"github.com/vinceanalytics/vince/internal/ua"
 )
 
 const pageView = "pageview"

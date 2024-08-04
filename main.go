@@ -10,10 +10,10 @@ import (
 	"os/signal"
 
 	"github.com/vinceanalytics/vince/internal/location"
-	"github.com/vinceanalytics/vince/ua"
-	"github.com/vinceanalytics/vince/web"
-	"github.com/vinceanalytics/vince/web/db"
-	"github.com/vinceanalytics/vince/web/db/plug"
+	"github.com/vinceanalytics/vince/internal/ua"
+	"github.com/vinceanalytics/vince/internal/web"
+	"github.com/vinceanalytics/vince/internal/web/db"
+	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
 
 func main() {

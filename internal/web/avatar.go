@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/identicon"
-	"github.com/vinceanalytics/vince/web/db"
+	"github.com/vinceanalytics/vince/internal/web/db"
 )
 
 func Avatar(db *db.Config, w http.ResponseWriter, r *http.Request) {

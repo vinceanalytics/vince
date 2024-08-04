@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/vinceanalytics/vince/ref"
+	"github.com/vinceanalytics/vince/internal/ref"
 )
 
 //go:embed placeholder_favicon.ico

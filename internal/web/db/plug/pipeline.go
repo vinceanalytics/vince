@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/vinceanalytics/vince/app"
-	"github.com/vinceanalytics/vince/web/db"
+	"github.com/vinceanalytics/vince/internal/web/db"
 )
 
 type Handler func(db *db.Config, w http.ResponseWriter, r *http.Request)
