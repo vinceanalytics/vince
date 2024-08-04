@@ -1,6 +1,7 @@
 package kv
 
 import (
+	"bytes"
 	"errors"
 	"net/http"
 	"regexp"
@@ -29,18 +30,19 @@ var (
 	ue  = []byte("/uem/")
 	sid = []byte("/sid/")
 	sdm = []byte("/sdm/")
-	iid = []byte("/iid/")
 )
 
 // Domains iterate over all registered domains
-func Domains(tx *bbolt.Tx, f func(domain string)) error {
-	if b := tx.Bucket(sdm); b != nil {
-		return b.ForEach(func(k, v []byte) error {
-			f(string(k))
-			return nil
-		})
-	}
-	return nil
+func Domains(db *bbolt.DB, f func(domain string)) error {
+	return db.View(func(tx *bbolt.Tx) error {
+		if b := tx.Bucket(sdm); b != nil {
+			return b.ForEach(func(k, v []byte) error {
+				f(string(k))
+				return nil
+			})
+		}
+		return nil
+	})
 }
 
 func (u *User) ID() (o uuid.UUID) {
@@ -50,13 +52,15 @@ func (u *User) ID() (o uuid.UUID) {
 
 func (u *User) save(tx *bbolt.Tx, data []byte) {
 	with(tx, uid).Put(u.Id, data)
-	with(tx, ue).Put(u.Id, data)
+
+	// all other keys are just references to this user
+	with(tx, ue).Put([]byte(u.Email), u.Id)
 	for _, s := range u.Sites {
 		if s.Role != v1.ROLE_owner {
 			continue
 		}
-		with(tx, sid).Put(s.Id, data)
-		with(tx, sdm).Put([]byte(s.Domain), data)
+		with(tx, sid).Put(s.Id, u.Id)
+		with(tx, sdm).Put([]byte(s.Domain), u.Id)
 	}
 }
 
@@ -79,32 +83,34 @@ func with(tx *bbolt.Tx, buckets ...[]byte) *bbolt.Bucket {
 	return b
 }
 
-func (u *User) Save(tx *bbolt.Tx) error {
+func (u *User) Save(db *bbolt.DB) error {
 	data, err := proto.Marshal(u)
 	if err != nil {
 		return err
 	}
-	u.save(tx, data)
-	return nil
+	return db.Update(func(tx *bbolt.Tx) error {
+		u.save(tx, data)
+		return nil
+	})
 }
 
-func (u *User) ByID(tx *bbolt.Tx, id uuid.UUID) error {
-	return u.get(tx, uid, uid)
+func (u *User) ByID(db *bbolt.DB, id uuid.UUID) error {
+	return u.get(db, uid, uid)
 }
 
-func (u *User) ByEmail(tx *bbolt.Tx, email string) error {
-	return u.get(tx, ue, []byte(email))
+func (u *User) ByEmail(db *bbolt.DB, email string) error {
+	return u.get(db, ue, []byte(email))
 }
 
-func (u *User) BySite(tx *bbolt.Tx, siteId []byte) error {
-	return u.get(tx, sdm, siteId)
+func (u *User) BySite(db *bbolt.DB, siteId []byte) error {
+	return u.get(db, sdm, siteId)
 }
 
-func (u *User) ByDomain(tx *bbolt.Tx, domain string) error {
-	return u.get(tx, sdm, []byte(domain))
+func (u *User) ByDomain(db *bbolt.DB, domain string) error {
+	return u.get(db, sdm, []byte(domain))
 }
 
-func (u *User) CreateGoal(tx *bbolt.Tx, domain, event, path string) error {
+func (u *User) CreateGoal(db *bbolt.DB, domain, event, path string) error {
 	for _, s := range u.Sites {
 		if s.Domain == domain {
 			for _, g := range s.Goals {
@@ -118,7 +124,7 @@ func (u *User) CreateGoal(tx *bbolt.Tx, domain, event, path string) error {
 				EventName: event,
 				PagePath:  path,
 			})
-			return u.Save(tx)
+			return u.Save(db)
 		}
 	}
 	return nil
@@ -171,7 +177,7 @@ func (u *User) PasswordMatch(pwd string) bool {
 	return bcrypt.CompareHashAndPassword(u.Password, []byte(pwd)) == nil
 }
 
-func (u *User) CreateSite(tx *bbolt.Tx, domain string, public bool) (id uuid.UUID, err error) {
+func (u *User) CreateSite(db *bbolt.DB, domain string, public bool) (id uuid.UUID, err error) {
 	for _, s := range u.Sites {
 		if s.Domain == domain {
 			copy(id[:], s.Id)
@@ -184,7 +190,7 @@ func (u *User) CreateSite(tx *bbolt.Tx, domain string, public bool) (id uuid.UUI
 		Domain: domain,
 		Public: public,
 	})
-	err = u.Save(tx)
+	err = u.Save(db)
 	return
 }
 
@@ -197,22 +203,34 @@ func (u *User) Site(domain string) (site *v1.Site) {
 	return
 }
 
-func (u *User) SiteOwner(tx *bbolt.Tx, siteId []byte) error {
-	return u.BySite(tx, siteId)
+func (u *User) SiteOwner(db *bbolt.DB, siteId []byte) error {
+	return u.BySite(db, siteId)
 }
 
 func (u *User) OwnedSites() int {
 	return len(u.Sites)
 }
 
-func (u *User) get(tx *bbolt.Tx, bucket, key []byte) error {
-	b := tx.Bucket(bucket)
-	if b != nil {
-		if data := b.Get(key); data != nil {
-			return proto.Unmarshal(data, u)
+func (u *User) get(db *bbolt.DB, bucket, key []byte) error {
+	return db.View(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(bucket)
+		if b != nil {
+			if data := b.Get(key); data != nil {
+				if !bytes.Equal(bucket, uid) {
+					// all other buckets only points to the user. Fetch actual user data
+					if ub := tx.Bucket(uid); ub != nil {
+						data = ub.Get(data)
+						if data == nil {
+							return ErrNotFound
+						}
+					}
+				}
+				return proto.Unmarshal(data, u)
+			}
 		}
-	}
-	return ErrNotFound
+		return ErrNotFound
+	})
+
 }
 
 const emailRegexString = "^(?:(?:(?:(?:[a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+(?:\\.([a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+)*)|(?:(?:\\x22)(?:(?:(?:(?:\\x20|\\x09)*(?:\\x0d\\x0a))?(?:\\x20|\\x09)+)?(?:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]|\\x21|[\\x23-\\x5b]|[\\x5d-\\x7e]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(?:(?:[\\x01-\\x09\\x0b\\x0c\\x0d-\\x7f]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}]))))*(?:(?:(?:\\x20|\\x09)*(?:\\x0d\\x0a))?(\\x20|\\x09)+)?(?:\\x22))))@(?:(?:(?:[a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(?:(?:[a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])(?:[a-zA-Z]|\\d|-|\\.|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*(?:[a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.)+(?:(?:[a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(?:(?:[a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])(?:[a-zA-Z]|\\d|-|\\.|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*(?:[a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.?$"
@@ -238,7 +256,7 @@ func FormatID(id []byte) string {
 
 var domainRe = regexp.MustCompile(`(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`)
 
-func ValidateSiteDomain(tx *bbolt.Tx, domain string) (good, bad string) {
+func ValidateSiteDomain(db *bbolt.DB, domain string) (good, bad string) {
 	good = CleanupDOmain(domain)
 	if good == "" {
 		bad = "is required"
@@ -252,9 +270,12 @@ func ValidateSiteDomain(tx *bbolt.Tx, domain string) (good, bad string) {
 		bad = "must not contain URI reserved characters " + reservedChars
 		return
 	}
-	if b := tx.Bucket(sdm); b != nil && (b.Get([]byte(domain))) != nil {
-		bad = " already exists"
-	}
+	db.View(func(tx *bbolt.Tx) error {
+		if b := tx.Bucket(sdm); b != nil && (b.Get([]byte(domain))) != nil {
+			bad = " already exists"
+		}
+		return nil
+	})
 	return
 }
 

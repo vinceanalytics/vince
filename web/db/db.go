@@ -27,8 +27,6 @@ type Config struct {
 	// we rely on cache for session processing. We need to guarantee only a single
 	// writer on the cache, a buffered channel help with this.
 	models chan *v1.Model
-
-	tx *bbolt.Tx
 }
 
 func Open(path string) (*Config, error) {
@@ -59,8 +57,8 @@ func Open(path string) (*Config, error) {
 	}, nil
 }
 
-func (db *Config) Get() *bbolt.Tx {
-	return db.tx
+func (db *Config) Get() *bbolt.DB {
+	return db.db
 }
 
 func (db *Config) Logger() *slog.Logger {
