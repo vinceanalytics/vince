@@ -71,8 +71,9 @@ func (w *write) event(e *v1.Model) {
 		// bsi. To save space we don't bother storing zero values.
 		//
 		// null bounce act as a clear signal , we set it to -1 so that when
-		// we a user stay on the site and navigated to a different page during
-		// a live session the result will be 0..
+		// a user stay on the site and navigated to a different page during
+		// a live session the result will be 0 [first page sets 1, next page sets -1
+		// and subsequent pages within the same session will be 0].
 		if e.Bounce == nil {
 			idx.Int64("bounce", -1)
 		}
