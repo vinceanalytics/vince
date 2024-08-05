@@ -2,6 +2,7 @@ package oracle
 
 import (
 	"cmp"
+	"math"
 	"slices"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
@@ -62,6 +63,61 @@ func (o *Oracle) Breakdown(start, end int64, domain string, filter Filter, metri
 		}
 		a.Results = append(a.Results, x)
 	}
+	for _, met := range metrics {
+		if met == "visitors" {
+			sortMap(a.Results, "visitors")
+			break
+		}
+	}
+	return a, nil
+}
+
+func (o *Oracle) BreakdownExitPages(start, end int64, domain string, filter Filter) (*Breakdown, error) {
+	m := newAggregate()
+	values := make(map[string]*roaring64.Bitmap)
+	err := o.db.Select(start, end, domain, filter, func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, match *rows.Row) error {
+		err := cursor.Tx(rTx, "exit_page", func(c *rbf.Cursor) error {
+			f := newReadField(tx, []byte("exit_page"))
+			return extractMutex(c, match, func(row uint64, columns *roaring.Container) {
+				value := string(f.read(row))
+				b, ok := values[value]
+				if !ok {
+					b = roaring64.New()
+					values[value] = b
+				}
+				roaring.ContainerCallback(columns, func(u uint16) {
+					b.Add(uint64(u))
+				})
+			})
+		})
+		if err != nil {
+			return err
+		}
+		return m.read(rTx, shard, match, "visitors", "visits", "pageviews")
+	})
+	if err != nil {
+		return nil, err
+	}
+	a := &Breakdown{
+		Results: make([]map[string]any, 0, len(values)),
+	}
+
+	totalPageView := float64(m.View(nil))
+	for k, b := range values {
+		visits := float64(m.Visits(b))
+		visitors := float64(m.Visitors(b))
+		exitRate := float64(0)
+		if totalPageView != 0 {
+			exitRate = math.Floor(visits / totalPageView * 100)
+		}
+		a.Results = append(a.Results, map[string]any{
+			"name":      k,
+			"visits":    visits,
+			"visitors":  visitors,
+			"exit_rate": exitRate,
+		})
+	}
+	sortMap(a.Results, "visitors")
 	return a, nil
 }
 

@@ -128,52 +128,52 @@ func main() {
 
 	mux.HandleFunc("GET /api/stats/{domain}/sources", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.Sources),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/utm_mediums", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.UtmMediums),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/utm_sources", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.UtmSources),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/utm_campaigns", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.UtmCampaigns),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/utm_contents", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.UtmContents),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/utm_terms", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.UtmTerms),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/referrers/{referrer}", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.Referrer),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/pages", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.Pages),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/entry-pages", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.EntryPages),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/exit-pages", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.ExitPages),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/countries", db.Wrap(
