@@ -4,7 +4,7 @@ const plugin = require('tailwindcss/plugin')
 module.exports = {
   content: [
     "./js/**/*.js",
-    "./../web/templates/**/*.html",
+    "./../internal/web/templates/**/*.html",
   ],
   safelist: [
     // PlausibleWeb.StatsView.stats_container_class/1 uses this class

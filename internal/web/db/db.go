@@ -98,6 +98,7 @@ func (db *Config) HTMLCode(code int, w http.ResponseWriter, t *template.Template
 	if data == nil {
 		data = make(map[string]any)
 	}
+	w.Header().Set("content-type", "text/html")
 	w.WriteHeader(code)
 	err := t.Execute(w, db.Context(data))
 	if err != nil {
@@ -110,6 +111,7 @@ func (db *Config) JSON(w http.ResponseWriter, data any) {
 }
 
 func (db *Config) JSONCode(code int, w http.ResponseWriter, data any) {
+	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(code)
 	err := json.NewEncoder(w).Encode(data)
 	if err != nil {

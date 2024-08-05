@@ -256,8 +256,10 @@ func main() {
 		ua.Warm()
 	}()
 	svr := &http.Server{
-		Addr:    ":8080",
-		Handler: plug.Static(mux),
+		Addr: ":8080",
+		Handler: plug.Compress(
+			plug.Static(mux),
+		),
 	}
 	slog.Info("starting server", "addr", svr.Addr)
 	go func() {
