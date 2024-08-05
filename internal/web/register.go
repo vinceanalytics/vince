@@ -9,14 +9,14 @@ import (
 )
 
 func RegisterForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	register.Execute(w, db.Context(make(map[string]any)))
+	db.HTML(w, register, nil)
 }
 
 func Register(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	usr := new(kv.User)
 	m, err := usr.NewUser(r)
 	if err != nil {
-		e500.Execute(w, db.Context(make(map[string]any)))
+		db.HTMLCode(http.StatusInternalServerError, w, e500, nil)
 		db.Logger().Error("creating new user", "err", err)
 		return
 	}
@@ -30,7 +30,7 @@ func Register(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		if !validCaptcha {
 			m["validation.captcha"] = "invalid captcha"
 		}
-		register.Execute(w, db.Context(m))
+		db.HTML(w, register, m)
 		return
 	}
 	err = usr.Save(db.Get())
@@ -38,12 +38,12 @@ func Register(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			db.SaveCsrf(w)
 			db.SaveCaptcha(w)
-			register.Execute(w, db.Context(map[string]any{
+			db.HTML(w, register, map[string]any{
 				"validation.email": "email already exists",
-			}))
+			})
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		db.HTMLCode(http.StatusInternalServerError, w, e500, nil)
 		return
 	}
 	http.Redirect(w, r, "/sites/new", http.StatusFound)

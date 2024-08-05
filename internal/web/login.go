@@ -8,7 +8,7 @@ import (
 )
 
 func LoginForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	login.Execute(w, db.Context(make(map[string]any)))
+	db.HTML(w, login, nil)
 }
 
 func Login(db *db.Config, w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,7 @@ func Login(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		valid := map[string]any{
 			"error": "Wrong email or password. Please try again.",
 		}
-		login.Execute(w, db.Context(valid))
+		db.HTML(w, login, valid)
 		db.Logger().Error("login", "err", err)
 		return
 	}
@@ -34,7 +34,7 @@ func Login(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		valid := map[string]any{
 			"error": "Wrong email or password. Please try again.",
 		}
-		login.Execute(w, db.Context(valid))
+		db.HTML(w, login, valid)
 		return
 	}
 
