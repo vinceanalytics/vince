@@ -35,7 +35,7 @@ func init() {
 
 const MaxAge = 60 * 60 * 24 * 365 * 5
 
-const cookie = "_len64"
+const cookie = "_vince"
 
 type SessionContext struct {
 	Data    Data
