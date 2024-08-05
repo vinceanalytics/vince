@@ -80,3 +80,61 @@ func setValue(m *roaring.Bitmap, id uint64, svalue int64) {
 		row++
 	}
 }
+
+func MinMax(c *rbf.Cursor, shard uint64) (int64, int64, error) {
+	consider, err := cursor.Row(c, shard, bsiExistsBit)
+	if err != nil {
+		return 0, 0, err
+	}
+	min, _, err := minUnsigned(c, consider, shard, 64)
+	if err != nil {
+		return 0, 0, err
+	}
+	max, _, err := maxUnsigned(c, consider, shard, 64)
+	if err != nil {
+		return 0, 0, err
+	}
+	return int64(min), int64(max), nil
+
+}
+
+func maxUnsigned(c *rbf.Cursor, filter *rows.Row, shard uint64, bitDepth uint64) (max uint64, count uint64, err error) {
+	count = filter.Count()
+	for i := int(bitDepth - 1); i >= 0; i-- {
+		row, err := cursor.Row(c, shard, uint64(bsiOffsetBit+i))
+		if err != nil {
+			return max, count, err
+		}
+		row = row.Intersect(filter)
+
+		count = row.Count()
+		if count > 0 {
+			max += (1 << uint(i))
+			filter = row
+		} else if i == 0 {
+			count = filter.Count()
+		}
+	}
+	return max, count, nil
+}
+
+func minUnsigned(c *rbf.Cursor, filter *rows.Row, shard uint64, bitDepth uint64) (min uint64, count uint64, err error) {
+	count = filter.Count()
+	for i := int(bitDepth - 1); i >= 0; i-- {
+		row, err := cursor.Row(c, shard, uint64(bsiOffsetBit+i))
+		if err != nil {
+			return min, count, err
+		}
+		row = filter.Difference(row)
+		count = row.Count()
+		if count > 0 {
+			filter = row
+		} else {
+			min += (1 << uint(i))
+			if i == 0 {
+				count = filter.Count()
+			}
+		}
+	}
+	return min, count, nil
+}

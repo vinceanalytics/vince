@@ -9,6 +9,16 @@ import (
 	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
+func MinRowID(c *rbf.Cursor) (uint64, bool, error) {
+	min, ok, err := c.Min()
+	return min / shardwidth.ShardWidth, ok, err
+}
+
+func MaxRowID(c *rbf.Cursor) (uint64, error) {
+	max, err := c.Max()
+	return max / shardwidth.ShardWidth, err
+}
+
 func Tx(tx *rbf.Tx, name string, f func(c *rbf.Cursor) error) error {
 	c, err := tx.Cursor(name)
 	if err != nil {

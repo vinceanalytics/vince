@@ -1,11 +1,12 @@
 package oracle
 
 import (
-	"encoding/json"
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -16,22 +17,18 @@ import (
 	"go.etcd.io/bbolt"
 )
 
-type timeRange struct {
-	From int64 `json:"from"`
-	To   int64 `json:"to"`
-}
-
 type dbShard struct {
 	mu     sync.RWMutex
-	shards map[uint64]*db
+	shards []*db
 	path   string
 	db     *bbolt.DB
 }
 
 func newDBShard(path string) (*dbShard, error) {
 	dirs, _ := os.ReadDir(path)
-	o := &dbShard{shards: make(map[uint64]*db), path: path}
+	o := &dbShard{shards: make([]*db, 0, 16), path: path}
 	if len(dirs) > 0 {
+		var shards []uint64
 		for i := range dirs {
 			if dirs[i].Name() == "TRANSLATE" {
 				continue
@@ -40,7 +37,12 @@ func newDBShard(path string) (*dbShard, error) {
 			if err != nil {
 				return nil, err
 			}
-			_, err = o.open(shard)
+			shards = append(shards, shard)
+		}
+		slices.Sort(shards)
+		o.shards = make([]*db, 0, len(shards))
+		for i := range shards {
+			_, err := o.open(shards[i])
 			if err != nil {
 				o.Close()
 				return nil, err
@@ -112,19 +114,18 @@ func (d *dbShard) viewDB(min, max int64, f func(rTx *rbf.Tx, tx *bbolt.Tx, shard
 		return err
 	}
 	defer tx.Rollback()
-	for shard, s := range d.shards {
-		start, end := s.min.Load(), s.max.Load()
-		if max < start {
+	for _, s := range d.shards {
+		if max < s.min.Load() {
 			continue
 		}
-		if min >= end {
+		if min >= s.max.Load() {
 			continue
 		}
 		rtx, err := s.db.Begin(false)
 		if err != nil {
 			return err
 		}
-		err = f(rtx, tx, shard)
+		err = f(rtx, tx, s.shard)
 		rtx.Rollback()
 		if err != nil {
 			return err
@@ -132,6 +133,7 @@ func (d *dbShard) viewDB(min, max int64, f func(rTx *rbf.Tx, tx *bbolt.Tx, shard
 	}
 	return nil
 }
+
 func (d *dbShard) Close() error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -146,11 +148,14 @@ func (d *dbShard) Close() error {
 
 func (d *dbShard) open(shard uint64) (*db, error) {
 	d.mu.RLock()
-	o, ok := d.shards[shard]
-	d.mu.RUnlock()
+	i, ok := slices.BinarySearchFunc(d.shards, &db{shard: shard}, compareDB)
 	if ok {
+		o := d.shards[i]
+		d.mu.RUnlock()
 		return o, nil
 	}
+	d.mu.RUnlock()
+
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	path := filepath.Join(d.path, formatShard(shard))
@@ -159,31 +164,43 @@ func (d *dbShard) open(shard uint64) (*db, error) {
 	if err != nil {
 		return nil, err
 	}
-	o = &db{
-		db: x,
+	o := &db{
+		shard: shard,
+		db:    x,
 	}
-	r, _ := os.ReadFile(filepath.Join(path, "time_range.json"))
-	if len(r) > 0 {
-		ts := timeRange{}
-		json.Unmarshal(r, &ts)
-		o.min.Store(ts.From)
-		o.max.Store(ts.To)
+
+	tx, err := x.Begin(false)
+	if err != nil {
+		o.Close()
+		return nil, err
 	}
-	d.shards[shard] = o
+	defer tx.Rollback()
+	err = cursor.Tx(tx, "timestamp", func(c *rbf.Cursor) error {
+		min, max, err := MinMax(c, shard)
+		o.min.Store(min)
+		o.max.Store(max)
+		return err
+	})
+	if err != nil {
+		o.Close()
+		return nil, err
+	}
+	d.shards = slices.Insert(d.shards, i, o)
 	return o, nil
 }
 
 type db struct {
 	min, max atomic.Int64
+	shard    uint64
 	db       *rbf.DB
 }
 
+func compareDB(a, b *db) int {
+	return cmp.Compare(a.shard, b.shard)
+}
+
 func (d *db) Close() error {
-	data, _ := json.Marshal(timeRange{From: d.min.Load(), To: d.max.Load()})
-	return errors.Join(
-		os.WriteFile(filepath.Join(d.db.Path, "time_range.json"), data, 0600),
-		d.db.Close(),
-	)
+	return d.db.Close()
 }
 
 func formatShard(shard uint64) string {
