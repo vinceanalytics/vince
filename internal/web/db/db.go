@@ -12,6 +12,7 @@ import (
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
+	"github.com/vinceanalytics/vince/internal/lru"
 	"github.com/vinceanalytics/vince/internal/oracle"
 	"go.etcd.io/bbolt"
 )
@@ -22,7 +23,7 @@ type Config struct {
 	ts      *oracle.Oracle
 	session SessionContext
 	logger  *slog.Logger
-	cache   *cache
+	cache   *lru.LRU[*v1.Model]
 
 	// we rely on cache for session processing. We need to guarantee only a single
 	// writer on the cache, a buffered channel help with this.
@@ -52,7 +53,7 @@ func Open(path string) (*Config, error) {
 		db:      ops,
 		ts:      db,
 		logger:  slog.Default(),
-		cache:   newCache(16 << 10),
+		cache:   lru.New[*v1.Model](16 << 10),
 		models:  make(chan *v1.Model, 4<<10),
 	}, nil
 }
