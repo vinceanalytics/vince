@@ -13,6 +13,12 @@ func newBitmaps() *bitmaps {
 	return &bitmaps{m: make(map[string]*roaring.Bitmap)}
 }
 
+func (b *bitmaps) Reset() {
+	for _, m := range b.m {
+		m.Containers.Reset()
+	}
+}
+
 func (b *bitmaps) Counter(name string, id uint64, g *Counter) {
 	btx.BSI(b.get(name), id, g.v.Load())
 }

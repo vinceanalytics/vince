@@ -46,6 +46,8 @@ type set struct {
 	gauge   map[string]*Gauge
 	counter map[string]*Counter
 	cb      map[string]func()
+
+	m *bitmaps
 }
 
 func newSet() *set {
@@ -54,6 +56,7 @@ func newSet() *set {
 		gauge:   make(map[string]*Gauge),
 		counter: make(map[string]*Counter),
 		cb:      map[string]func(){},
+		m:       newBitmaps(),
 	}
 }
 
@@ -106,7 +109,9 @@ func (s *set) Apply(db *rbf.DB, shard uint64, change func(uint64) *rbf.DB) error
 	if ns != shard {
 		db = change(ns)
 	}
-	b := newBitmaps()
+	b := s.m
+	defer b.Reset()
+
 	for n, v := range s.hist {
 		b.Histogram(n, ts, v)
 	}
