@@ -5,6 +5,7 @@ import (
 
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
+	"github.com/vinceanalytics/vince/internal/btx"
 	"go.etcd.io/bbolt"
 )
 
@@ -98,7 +99,7 @@ func (w *write) Write(ts int64, f func(columns Columns) error) error {
 }
 
 func (w *write) Int64(field string, svalue int64) {
-	setValue(w.get(field), w.id, svalue)
+	btx.BSI(w.get(field), w.id, svalue)
 }
 
 func (w *write) String(field string, value string) error {
@@ -110,7 +111,7 @@ func (w *write) String(field string, value string) error {
 	if err != nil {
 		return err
 	}
-	m.DirectAdd(v*shardwidth.ShardWidth + (w.id % shardwidth.ShardWidth))
+	btx.Mutex(m, w.id, v)
 	return nil
 }
 

@@ -8,8 +8,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 
+	"github.com/vinceanalytics/vince/internal/assert"
 	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/internal/sys"
 	"github.com/vinceanalytics/vince/internal/ua"
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/db"
@@ -24,9 +27,17 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	sys, err := sys.New(filepath.Join(*dataPath, "sys"))
+	assert.Assert(err == nil, "opening sys storage", "err", err)
+
+	defer sys.Close()
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
+
 	db.Start(ctx)
+	sys.Start(ctx)
 
 	mux := http.NewServeMux()
 

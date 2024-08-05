@@ -111,6 +111,17 @@ func (h *Histogram) UpdateDuration(startTime time.Time) {
 	h.Update(d)
 }
 
+func (h *Histogram) Marshal(f func(bucket int, count uint64)) (total uint64, sum float64) {
+	h.VisitNonZeroBuckets(func(bucket int, count uint64) {
+		total += count
+		f(bucket, count)
+	})
+	h.mu.Lock()
+	sum = h.sum
+	h.mu.Unlock()
+	return
+}
+
 var startBucket = math.Pow10(e10Min)
 
 func bucket(idx int) (start, end float64) {

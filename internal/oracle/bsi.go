@@ -1,10 +1,6 @@
 package oracle
 
 import (
-	"math/bits"
-
-	"github.com/gernest/roaring"
-	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/cursor"
@@ -58,27 +54,6 @@ func mergeBits(bits *rows.Row, mask uint64, out map[uint64]uint64) {
 func depth(c *rbf.Cursor) (uint64, error) {
 	m, err := c.Max()
 	return m / rbf.ShardWidth, err
-}
-
-func setValue(m *roaring.Bitmap, id uint64, svalue int64) {
-	fragmentColumn := id % shardwidth.ShardWidth
-	m.DirectAdd(fragmentColumn)
-	negative := svalue < 0
-	var value uint64
-	if negative {
-		m.Add(shardwidth.ShardWidth + fragmentColumn) // set sign bit
-		value = uint64(svalue * -1)
-	} else {
-		value = uint64(svalue)
-	}
-	lz := bits.LeadingZeros64(value)
-	row := uint64(2)
-	for mask := uint64(0x1); mask <= 1<<(64-lz) && mask != 0; mask = mask << 1 {
-		if value&mask > 0 {
-			m.DirectAdd(row*shardwidth.ShardWidth + fragmentColumn)
-		}
-		row++
-	}
 }
 
 func MinMax(c *rbf.Cursor, shard uint64) (int64, int64, error) {

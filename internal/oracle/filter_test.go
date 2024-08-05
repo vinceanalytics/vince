@@ -7,6 +7,7 @@ import (
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
 	"github.com/stretchr/testify/require"
+	"github.com/vinceanalytics/vince/internal/btx"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/cursor"
 )
@@ -51,7 +52,7 @@ func TestMinMax_ts(t *testing.T) {
 
 	b := roaring.NewBitmap()
 	for id := range uint64(10) {
-		setValue(b, id, int64(id)*10)
+		btx.BSI(b, id, int64(id)*10)
 	}
 	tx.AddRoaring("test", b)
 
