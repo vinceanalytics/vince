@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,10 +18,18 @@ import (
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
+	"golang.org/x/crypto/acme/autocert"
+)
+
+var (
+	listenAddress = flag.String("listen", ":8080", "tcp address to bind the server")
+	dataPath      = flag.String("data", ".data", "Path to where database data is stored")
+	acme          = flag.Bool("acme", false, "Enables auto tls. When used make sure -acme.email and -acme.domain are set")
+	acmeEmail     = flag.String("acme.email", "", "Email address to use with lets enctrypt")
+	acmeDomain    = flag.String("acme.domain", "", "Domain name to use with lets encrypt")
 )
 
 func main() {
-	dataPath := flag.String("data", ".data", "Path to where database data is stored")
 	flag.Parse()
 	db, err := db.Open(*dataPath)
 	if err != nil {
@@ -256,15 +265,31 @@ func main() {
 		ua.Warm()
 	}()
 	svr := &http.Server{
-		Addr: ":8080",
+		Addr:        *listenAddress,
+		BaseContext: func(l net.Listener) context.Context { return ctx },
 		Handler: plug.Compress(
 			plug.Static(mux),
 		),
 	}
+	if *acme {
+		slog.Info("Auto tls enabled, configuring tls", "email", *acmeEmail, "domain", *acmeDomain)
+		m := &autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(*acmeDomain),
+			Email:      *acmeEmail,
+			Cache:      autocert.DirCache(filepath.Join(*dataPath, "certs")),
+		}
+		svr.TLSConfig = m.TLSConfig()
+	}
+
 	slog.Info("starting server", "addr", svr.Addr)
 	go func() {
 		defer cancel()
-		svr.ListenAndServe()
+		if *acme {
+			svr.ListenAndServeTLS("", "")
+		} else {
+			svr.ListenAndServe()
+		}
 	}()
 	<-ctx.Done()
 	svr.Close()
