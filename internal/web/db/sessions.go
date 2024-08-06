@@ -11,6 +11,8 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -23,14 +25,20 @@ import (
 	"github.com/vinceanalytics/vince/internal/kv"
 )
 
-var secret *age.X25519Identity
-
-func init() {
-	var err error
-	secret, err = age.GenerateX25519Identity()
+func newSession(path string) (*age.X25519Identity, error) {
+	file := filepath.Join(path, "session")
+	data, err := os.ReadFile(file)
 	if err != nil {
-		panic("generating secret identity " + err.Error())
+		if os.IsNotExist(err) {
+			secret, err := age.GenerateX25519Identity()
+			if err != nil {
+				return nil, err
+			}
+			return secret, os.WriteFile(file, []byte(secret.String()), 0600)
+		}
+		return nil, err
 	}
+	return age.ParseX25519Identity(string(data))
 }
 
 const MaxAge = 60 * 60 * 24 * 365 * 5
@@ -42,6 +50,7 @@ type SessionContext struct {
 	captcha string
 	user    *kv.User
 	site    *v1.Site
+	secret  *age.X25519Identity
 }
 
 func (s *SessionContext) Context(base map[string]any) {
@@ -185,6 +194,7 @@ func (c *Config) clone(r *http.Request) *Config {
 		db:      c.db,
 		domains: c.domains,
 		cache:   c.cache,
+		session: SessionContext{secret: c.session.secret},
 		logger:  c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
 	}
 }
@@ -194,14 +204,14 @@ func (s *SessionContext) Load(r *http.Request) error {
 	if err != nil {
 		return nil
 	}
-	g, err := getSession(cookie.Value)
+	g, err := s.getSession(cookie.Value)
 	if err != nil {
 		return err
 	}
 	return json.Unmarshal(g, &s.Data)
 }
 
-func getSession(value string) ([]byte, error) {
+func (s *SessionContext) getSession(value string) ([]byte, error) {
 	if value == "" {
 		return nil, nil
 	}
@@ -209,7 +219,7 @@ func getSession(value string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	r, err := age.Decrypt(bytes.NewReader(base), secret)
+	r, err := age.Decrypt(bytes.NewReader(base), s.secret)
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +283,7 @@ func (c *Config) SaveSession(w http.ResponseWriter) {
 
 func (s *SessionContext) save(w http.ResponseWriter) error {
 	b, _ := json.Marshal(s.Data)
-	value, err := create(b)
+	value, err := s.create(b)
 	if err != nil {
 		return err
 	}
@@ -287,9 +297,9 @@ func (s *SessionContext) save(w http.ResponseWriter) error {
 	return nil
 }
 
-func create(b []byte) (string, error) {
+func (s *SessionContext) create(b []byte) (string, error) {
 	var buf bytes.Buffer
-	w, err := age.Encrypt(&buf, secret.Recipient())
+	w, err := age.Encrypt(&buf, s.secret.Recipient())
 	if err != nil {
 		return "", err
 	}

@@ -48,6 +48,14 @@ func Open(path string) (*Config, error) {
 		db.Close()
 		return nil, err
 	}
+
+	// setup session
+	secret, err := newSession(path)
+	if err != nil {
+		ops.Close()
+		db.Close()
+		return nil, err
+	}
 	return &Config{
 		domains: doms,
 		db:      ops,
@@ -55,6 +63,9 @@ func Open(path string) (*Config, error) {
 		logger:  slog.Default(),
 		cache:   lru.New[*v1.Model](16 << 10),
 		models:  make(chan *v1.Model, 4<<10),
+		session: SessionContext{
+			secret: secret,
+		},
 	}, nil
 }
 
