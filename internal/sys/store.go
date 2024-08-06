@@ -86,7 +86,7 @@ func (s *Store) open(shard uint64) *rbf.DB {
 		assert.Assert(err == nil, "closing system db", "err", err)
 	}
 	s.shard = shard
-	s.db = rbf.NewDB(filepath.Join(s.path, fmt.Sprintf("%06d", shard)), nil)
+	s.db = rbf.NewDB(filepath.Join(s.path, fmt.Sprintf("%08d", shard)), nil)
 	err := s.db.Open()
 	assert.Assert(err == nil, "opening system db", "err", err)
 	return s.db

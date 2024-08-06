@@ -204,5 +204,5 @@ func (d *db) Close() error {
 }
 
 func formatShard(shard uint64) string {
-	return fmt.Sprintf("%06d", shard)
+	return fmt.Sprintf("%08d", shard)
 }
