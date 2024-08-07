@@ -66,19 +66,6 @@ func (s *SessionContext) Context(base map[string]any) {
 			"domain": s.Domain,
 			"id":     kv.FormatID(s.Id),
 			"public": s.Public,
-			"role":   s.Role.String(),
-		}
-		if len(s.Goals) > 0 {
-			goals := make([]map[string]any, len(s.Goals))
-			for i := range s.Goals {
-				g := s.Goals[i]
-				goals[i] = map[string]any{
-					"id":    kv.FormatID(g.Id),
-					"event": g.EventName,
-					"path":  g.PagePath,
-				}
-			}
-			site["goals"] = goals
 		}
 		base["site"] = site
 	}

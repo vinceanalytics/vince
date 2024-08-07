@@ -105,7 +105,7 @@ func main() {
 
 	sites := plug.Browser().
 		With(plug.RequireAccount).
-		With(web.RequireSiteAccess("owner", "admin", "super_admin"))
+		With(web.RequireSiteAccess)
 
 	mux.HandleFunc("POST /{domain}/make-public", db.Wrap(
 		sites.
@@ -129,7 +129,7 @@ func main() {
 	))
 
 	stats := plug.InternalStats().
-		With(web.RequireSiteAccess())
+		With(web.RequireSiteAccess)
 
 	mux.HandleFunc("GET /api/stats/{domain}/current-visitors", db.Wrap(
 		stats.

@@ -40,20 +40,7 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	usr := db.CurrentUser()
 
-	invites := make([]map[string]any, 0, len(usr.Invitations))
-	sites := make([]map[string]any, 0, len(usr.Invitations))
-	for _, i := range usr.Invitations {
-		m := map[string]any{
-			"id":   kv.FormatID(i.Id),
-			"role": i.Role,
-		}
-		m["site"] = map[string]any{
-			"id":     kv.FormatID(i.Site.Id),
-			"domain": i.Site.Domain,
-		}
-		m["visitors"] = 0
-		invites = append(invites, m)
-	}
+	sites := make([]map[string]any, 0, len(usr.Sites))
 
 	for _, s := range usr.Sites {
 		sites = append(sites, map[string]any{
@@ -63,9 +50,7 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	ctx := make(map[string]any)
-	if len(invites) > 0 {
-		ctx["invitations"] = invites
-	}
+
 	if len(sites) > 0 {
 		ctx["sites"] = sites
 	}
@@ -75,53 +60,24 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Unimplemented(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
-func RequireSiteAccess(allowed ...string) plug.Middleware {
-	if allowed == nil {
-		allowed = []string{
-			"public", "viewer", "admin", "super_admin", "owner",
-		}
-	}
-	a := make(map[string]struct{}, len(allowed))
-	for i := range allowed {
-		a[allowed[i]] = struct{}{}
-	}
-	return func(h plug.Handler) plug.Handler {
-		return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
-			domain := r.PathValue("domain")
-
-			if usr := db.CurrentUser(); usr != nil && usr.Site(domain) != nil {
-				// Fast path the current user has some role with the asked domain
-				site := usr.Site(domain)
-				_, ok := a[site.Role.String()]
-				if !ok {
-					db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
-					return
-				}
-				db.SetSite(site)
-				h(db, w, r)
-				return
-			}
-			usr := new(kv.User)
-			usr.ByDomain(db.Get(), domain)
+func RequireSiteAccess(h plug.Handler) plug.Handler {
+	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
+		domain := r.PathValue("domain")
+		if usr := db.CurrentUser(); usr != nil && usr.Site(domain) != nil {
+			// Fast path the current user has some role with the asked domain
 			site := usr.Site(domain)
-			if site == nil {
-				db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
-				return
-			}
-			role := ""
-			switch {
-			case db.CurrentUser() != nil && db.CurrentUser().SuperUser:
-				role = "super_admin"
-			case site.Public:
-				role = "public"
-			}
-			_, accept := a[role]
-			if accept {
-				db.SetSite(site)
-				h(db, w, r)
-				return
-			}
-			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+			db.SetSite(site)
+			h(db, w, r)
+			return
 		}
+		usr := new(kv.User)
+		usr.ByDomain(db.Get(), domain)
+		site := usr.Site(domain)
+		if !site.Public {
+			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+			return
+		}
+		db.SetSite(site)
+		h(db, w, r)
 	}
 }

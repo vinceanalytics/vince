@@ -56,9 +56,6 @@ func (u *User) save(tx *bbolt.Tx, data []byte) {
 	// all other keys are just references to this user
 	with(tx, ue).Put([]byte(u.Email), u.Id)
 	for _, s := range u.Sites {
-		if s.Role != v1.ROLE_owner {
-			continue
-		}
 		with(tx, sid).Put(s.Id, u.Id)
 		with(tx, sdm).Put([]byte(s.Domain), u.Id)
 	}
@@ -108,26 +105,6 @@ func (u *User) BySite(db *bbolt.DB, siteId []byte) error {
 
 func (u *User) ByDomain(db *bbolt.DB, domain string) error {
 	return u.get(db, sdm, []byte(domain))
-}
-
-func (u *User) CreateGoal(db *bbolt.DB, domain, event, path string) error {
-	for _, s := range u.Sites {
-		if s.Domain == domain {
-			for _, g := range s.Goals {
-				if g.EventName == event && g.PagePath == path {
-					return nil
-				}
-			}
-			id := id()
-			s.Goals = append(s.Goals, &v1.Goal{
-				Id:        id[:],
-				EventName: event,
-				PagePath:  path,
-			})
-			return u.Save(db)
-		}
-	}
-	return nil
 }
 
 func (u *User) NewUser(r *http.Request) (validation map[string]any, err error) {
