@@ -3,6 +3,7 @@ package oracle
 import (
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/btx"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/cursor"
 	"go.etcd.io/bbolt"
@@ -19,7 +20,7 @@ func (o *Oracle) CurrentVisitors(start, end int64, domain string, filter Filter)
 
 	err := o.db.Select(start, end, domain, Noop(), func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, match *rows.Row) error {
 		return cursor.Tx(rTx, "uid", func(c *rbf.Cursor) error {
-			return extractBSI(c, shard, match, func(column uint64, value int64) error {
+			return btx.ExtractBSI(c, shard, match, func(column uint64, value int64) error {
 				bsi.SetValue(column, value)
 				return nil
 			})

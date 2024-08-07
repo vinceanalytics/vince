@@ -6,6 +6,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/btx"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/cursor"
 	"go.etcd.io/bbolt"
@@ -151,7 +152,7 @@ func (a *aggregate) read(rTx *rbf.Tx, shard uint64, match *rows.Row, metrics ...
 			a.id.AddMany(match.Columns())
 		default:
 			err := cursor.Tx(rTx, m, func(c *rbf.Cursor) error {
-				return extractBSI(c, shard, match, func(column uint64, value int64) error {
+				return btx.ExtractBSI(c, shard, match, func(column uint64, value int64) error {
 					a.uid.SetValue(column, value)
 					return nil
 				})

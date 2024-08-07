@@ -37,16 +37,16 @@ func main() {
 	}
 	defer db.Close()
 
-	sys, err := sys.New(filepath.Join(*dataPath, "sys"))
+	system, err := sys.New(filepath.Join(*dataPath, "sys"))
 	assert.Assert(err == nil, "opening sys storage", "err", err)
 
-	defer sys.Close()
+	defer system.Close()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
 	db.Start(ctx)
-	sys.Start(ctx)
+	system.Start(ctx)
 
 	mux := http.NewServeMux()
 
@@ -267,8 +267,10 @@ func main() {
 	svr := &http.Server{
 		Addr:        *listenAddress,
 		BaseContext: func(l net.Listener) context.Context { return ctx },
-		Handler: plug.Compress(
-			plug.Static(mux),
+		Handler: sys.HTTP(
+			plug.Compress(
+				plug.Static(mux),
+			),
 		),
 	}
 	if *acme {

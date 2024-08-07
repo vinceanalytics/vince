@@ -8,6 +8,7 @@ import (
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/gernest/roaring"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/btx"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/cursor"
@@ -126,7 +127,7 @@ func (o *Oracle) BreakdownCity(start, end int64, domain string, filter Filter) (
 	values := make(map[uint32]*roaring64.Bitmap)
 	err := o.db.Select(start, end, domain, filter, func(rTx *rbf.Tx, tx *bbolt.Tx, shard uint64, match *rows.Row) error {
 		err := cursor.Tx(rTx, "city", func(c *rbf.Cursor) error {
-			return extractBSI(c, shard, match, func(column uint64, value int64) error {
+			return btx.ExtractBSI(c, shard, match, func(column uint64, value int64) error {
 				code := uint32(value)
 				b, ok := values[code]
 				if !ok {
