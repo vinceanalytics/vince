@@ -122,6 +122,7 @@ func (u *User) BootStrap(db *bbolt.DB) error {
 		return err
 	}
 	u.Password = b
+	u.SuperUser = true
 	return u.Save(db)
 }
 
