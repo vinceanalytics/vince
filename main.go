@@ -257,6 +257,13 @@ func main() {
 			Then(web.Avatar),
 	))
 
+	mux.HandleFunc("/system/", db.Wrap(
+		plug.Browser().
+			With(plug.RequireAccount).
+			With(web.RequireSuper).
+			Then(web.System(system)),
+	))
+
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
 	go func() {

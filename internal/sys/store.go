@@ -251,3 +251,21 @@ func (s *Store) Read() (*chartBSI, error) {
 	}
 	return o, nil
 }
+
+func (s *Store) view(fn func(tx *rbf.Tx, shard uint64, f *rows.Row) error) error {
+	s.mu.RLock()
+	shard := s.shard
+	db := s.db
+	s.mu.RUnlock()
+	tx, err := db.Begin(false)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	ex, err := tx.RoaringBitmap("_id")
+	if err != nil {
+		return err
+	}
+	f := rows.NewRowFromBitmap(ex)
+	return fn(tx, shard, f)
+}
