@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 
 	"github.com/vinceanalytics/vince/internal/assert"
+	"github.com/vinceanalytics/vince/internal/kv"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/sys"
 	"github.com/vinceanalytics/vince/internal/ua"
@@ -27,6 +28,10 @@ var (
 	acme          = flag.Bool("acme", false, "Enables auto tls. When used make sure -acme.email and -acme.domain are set")
 	acmeEmail     = flag.String("acme.email", "", "Email address to use with lets enctrypt")
 	acmeDomain    = flag.String("acme.domain", "", "Domain name to use with lets encrypt")
+	bootStrap     = flag.Bool("admin.bootstrap", false, "Creates admin account on startup")
+	adminName     = flag.String("admin.name", "", "User name for admin account")
+	adminEmail    = flag.String("admin.email", "", "Email address for admin account")
+	adminPassword = flag.String("admin.password", "", "Password for admin account")
 )
 
 func main() {
@@ -36,6 +41,17 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+	if *bootStrap {
+		slog.Info("bootstrap admin account")
+		u := new(kv.User)
+		u.Email = *adminEmail
+		u.Name = *adminName
+		u.Password = []byte(*adminPassword)
+		err := u.BootStrap(db.Get())
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	system, err := sys.New(filepath.Join(*dataPath, "sys"))
 	assert.Assert(err == nil, "opening sys storage", "err", err)

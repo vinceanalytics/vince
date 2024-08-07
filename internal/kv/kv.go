@@ -107,6 +107,24 @@ func (u *User) ByDomain(db *bbolt.DB, domain string) error {
 	return u.get(db, sdm, []byte(domain))
 }
 
+func (u *User) BootStrap(db *bbolt.DB) error {
+	err := u.ByEmail(db, u.Email)
+	if err != nil {
+		return err
+	}
+	if len(u.Id) > 0 {
+		return nil
+	}
+	uid := id()
+	u.Id = uid[:]
+	b, err := bcrypt.GenerateFromPassword(u.Password, bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	u.Password = b
+	return u.Save(db)
+}
+
 func (u *User) NewUser(r *http.Request) (validation map[string]any, err error) {
 	uid := id()
 	u.Id = uid[:]
