@@ -92,7 +92,7 @@ func (u *User) Save(db *bbolt.DB) error {
 }
 
 func (u *User) ByID(db *bbolt.DB, id uuid.UUID) error {
-	return u.get(db, uid, uid)
+	return u.get(db, uid, id[:])
 }
 
 func (u *User) ByEmail(db *bbolt.DB, email string) error {
@@ -108,11 +108,14 @@ func (u *User) ByDomain(db *bbolt.DB, domain string) error {
 }
 
 func (u *User) BootStrap(db *bbolt.DB) error {
-	err := u.ByEmail(db, u.Email)
+	tmp := new(User)
+	err := tmp.ByEmail(db, u.Email)
 	if err != nil {
-		return err
+		if !errors.Is(err, ErrNotFound) {
+			return err
+		}
 	}
-	if len(u.Id) > 0 {
+	if len(tmp.Id) > 0 {
 		return nil
 	}
 	uid := id()

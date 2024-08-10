@@ -21,7 +21,7 @@ type Config struct {
 	domains *domains.Cache
 	db      *bbolt.DB
 	ts      *oracle.Oracle
-	session SessionContext
+	session *SessionContext
 	logger  *slog.Logger
 	cache   *lru.LRU[*v1.Model]
 
@@ -63,7 +63,7 @@ func Open(path string) (*Config, error) {
 		logger:  slog.Default(),
 		cache:   lru.New[*v1.Model](16 << 10),
 		models:  make(chan *v1.Model, 4<<10),
-		session: SessionContext{
+		session: &SessionContext{
 			secret: secret,
 		},
 	}, nil

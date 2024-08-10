@@ -53,6 +53,9 @@ type SessionContext struct {
 	secret  *age.X25519Identity
 }
 
+func (s *SessionContext) clone() *SessionContext {
+	return &SessionContext{secret: s.secret}
+}
 func (s *SessionContext) Context(base map[string]any) {
 	if u := s.user; u != nil {
 		base["current_user"] = map[string]any{
@@ -131,9 +134,9 @@ func (c *Config) Load(w http.ResponseWriter, r *http.Request) {
 		usr := new(kv.User)
 		err := usr.ByID(c.Get(), uid)
 		if err != nil {
-			c.session = SessionContext{}
+			c.session = c.session.clone()
 			c.SaveSession(w)
-			c.logger.Error("current user", "id", c.session.Data.CurrentUserID, "err", err)
+			c.logger.Error("current user", "id", uid, "err", err)
 		} else {
 			c.session.user = usr
 		}
@@ -181,7 +184,7 @@ func (c *Config) clone(r *http.Request) *Config {
 		db:      c.db,
 		domains: c.domains,
 		cache:   c.cache,
-		session: SessionContext{secret: c.session.secret},
+		session: c.session.clone(),
 		logger:  c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
 	}
 }

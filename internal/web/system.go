@@ -18,28 +18,35 @@ func RequireSuper(h plug.Handler) plug.Handler {
 	}
 }
 
-func System(sys *sys.Store) plug.Handler {
+func SystemHeap(sys *sys.Store) plug.Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/system/heap":
-			err := sys.Heap(w, r)
-			if err != nil {
-				db.Logger().Error("serving heap graph", "err", err)
-			}
-		case "/system/requests":
-			err := sys.Request(w, r)
-			if err != nil {
-				db.Logger().Error("serving requests graph", "err", err)
-			}
-		case "/system/duration":
-			err := sys.Duration(w, r)
-			if err != nil {
-				db.Logger().Error("serving durations graph", "err", err)
-			}
-		case "/system":
-			db.HTML(w, system, nil)
-		default:
-			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+		err := sys.Heap(w, r)
+		if err != nil {
+			db.Logger().Error("serving heap graph", "err", err)
 		}
+	}
+}
+
+func SystemRequests(sys *sys.Store) plug.Handler {
+	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
+		err := sys.Request(w, r)
+		if err != nil {
+			db.Logger().Error("serving requests graph", "err", err)
+		}
+	}
+}
+
+func SystemDuration(sys *sys.Store) plug.Handler {
+	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
+		err := sys.Duration(w, r)
+		if err != nil {
+			db.Logger().Error("serving durations graph", "err", err)
+		}
+	}
+}
+
+func SystemStats(sys *sys.Store) plug.Handler {
+	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
+		db.HTML(w, system, nil)
 	}
 }

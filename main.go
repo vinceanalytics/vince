@@ -272,12 +272,28 @@ func main() {
 			With(plug.RequireAccount).
 			Then(web.Avatar),
 	))
+	super := plug.Browser().
+		With(plug.RequireAccount).
+		With(web.RequireSuper)
 
-	mux.HandleFunc("/system/", db.Wrap(
-		plug.Browser().
-			With(plug.RequireAccount).
-			With(web.RequireSuper).
-			Then(web.System(system)),
+	mux.HandleFunc("/system/heap", db.Wrap(
+		super.
+			Then(web.SystemHeap(system)),
+	))
+
+	mux.HandleFunc("/system/requests", db.Wrap(
+		super.
+			Then(web.SystemRequests(system)),
+	))
+
+	mux.HandleFunc("/system/duration", db.Wrap(
+		super.
+			Then(web.SystemDuration(system)),
+	))
+
+	mux.HandleFunc("/system/stats", db.Wrap(
+		super.
+			Then(web.SystemStats(system)),
 	))
 
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
