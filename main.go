@@ -64,7 +64,7 @@ func main() {
 	defer cancel()
 
 	db.Start(ctx)
-	system.Start(ctx)
+	system.Start(ctx, *sysInterval)
 
 	mux := http.NewServeMux()
 

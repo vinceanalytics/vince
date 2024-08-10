@@ -23,15 +23,14 @@ func New(path string) (*Store, error) {
 	return &Store{}, nil
 }
 
-func (s *Store) Start(ctx context.Context) {
-	go s.start(ctx)
+func (s *Store) Start(ctx context.Context, interval time.Duration) {
+	go s.start(ctx, interval)
 }
 
-func (s *Store) start(ctx context.Context) {
-	slog.Info("starting system metrics collection loop")
-	ts := time.NewTicker(time.Second)
+func (s *Store) start(ctx context.Context, interval time.Duration) {
+	slog.Info("starting system metrics collection loop", "interval", interval)
+	ts := time.NewTicker(interval)
 	defer ts.Stop()
-
 	for {
 		select {
 		case <-ctx.Done():
