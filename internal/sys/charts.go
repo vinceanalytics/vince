@@ -50,6 +50,9 @@ func (db *Store) Heap(w http.ResponseWriter, r *http.Request) error {
 		series.YValues = append(series.YValues, float64(data))
 	}
 	graph := chart.Chart{
+		XAxis: chart.XAxis{
+			ValueFormatter: chart.TimeMinuteValueFormatter,
+		},
 		YAxis: chart.YAxis{
 			ValueFormatter: formatSize,
 		},
@@ -68,7 +71,9 @@ func (db *Store) Request(w http.ResponseWriter, r *http.Request) error {
 
 	b := &db.requests
 	graph := chart.Chart{
-		YAxis:  chart.YAxis{},
+		XAxis: chart.XAxis{
+			ValueFormatter: chart.TimeMinuteValueFormatter,
+		},
 		Series: []chart.Series{rate(b, "request_per_second")},
 	}
 	w.Header().Set("Content-Type", "image/png")
@@ -84,7 +89,9 @@ func (db *Store) Duration(w http.ResponseWriter, r *http.Request) error {
 	b2 := &db.h2
 
 	graph := chart.Chart{
-		YAxis: chart.YAxis{},
+		XAxis: chart.XAxis{
+			ValueFormatter: chart.TimeMinuteValueFormatter,
+		},
 		Series: []chart.Series{
 			rate(b0, "<= 0.5s"),
 			rate(b1, "<= 1s"),

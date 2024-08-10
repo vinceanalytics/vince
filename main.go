@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"time"
 
 	"github.com/vinceanalytics/vince/internal/assert"
 	"github.com/vinceanalytics/vince/internal/kv"
@@ -32,6 +33,7 @@ var (
 	adminName     = flag.String("admin.name", "", "User name for admin account")
 	adminEmail    = flag.String("admin.email", "", "Email address for admin account")
 	adminPassword = flag.String("admin.password", "", "Password for admin account")
+	sysInterval   = flag.Duration("sys.interval", 15*time.Minute, "Interval for collecting system stats")
 )
 
 func main() {
