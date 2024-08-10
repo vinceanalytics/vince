@@ -1,52 +1,19 @@
 package sys
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
-	"github.com/gernest/rows"
-	"github.com/vinceanalytics/vince/internal/btx"
-	"github.com/vinceanalytics/vince/internal/rbf"
-	"github.com/vinceanalytics/vince/internal/rbf/cursor"
 	chart "github.com/wcharczuk/go-chart/v2"
 )
 
-type chartBSI struct {
-	ts         *roaring64.Bitmap
-	ram        *roaring64.BSI
-	histograms [3]*roaring64.BSI
-	requests   *roaring64.BSI
-}
-
-func newChartBSI() *chartBSI {
-	o := &chartBSI{
-		ts:       roaring64.New(),
-		ram:      roaring64.NewDefaultBSI(),
-		requests: roaring64.NewDefaultBSI(),
-	}
-	o.histograms[0] = roaring64.NewDefaultBSI()
-	o.histograms[1] = roaring64.NewDefaultBSI()
-	o.histograms[2] = roaring64.NewDefaultBSI()
-	return o
-}
-
 func (db *Store) Heap(w http.ResponseWriter, r *http.Request) error {
-	b := roaring64.NewDefaultBSI()
-	err := db.view(func(tx *rbf.Tx, shard uint64, f *rows.Row) error {
-		return cursor.Tx(tx, "heap", func(c *rbf.Cursor) error {
-			return btx.ExtractBSI(c, shard, f, func(column uint64, value int64) error {
-				b.SetValue(column, value)
-				return nil
-			})
-		})
-	})
-	if err != nil {
-		http.Error(w, "something went wrong", http.StatusInternalServerError)
-		return err
-	}
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	b := &db.heap
 	ex := b.GetExistenceBitmap()
 	series := chart.TimeSeries{
 		Name:    "heap",
@@ -75,20 +42,10 @@ func (db *Store) Heap(w http.ResponseWriter, r *http.Request) error {
 
 // Renders rate of requests per second.
 func (db *Store) Request(w http.ResponseWriter, r *http.Request) error {
-	b := roaring64.NewDefaultBSI()
-	err := db.view(func(tx *rbf.Tx, shard uint64, f *rows.Row) error {
-		return cursor.Tx(tx, "count", func(c *rbf.Cursor) error {
-			return btx.ExtractBSI(c, shard, f, func(column uint64, value int64) error {
-				b.SetValue(column, value)
-				return nil
-			})
-		})
-	})
-	if err != nil {
-		http.Error(w, "something went wrong", http.StatusInternalServerError)
-		return err
-	}
+	db.mu.RLock()
+	defer db.mu.RUnlock()
 
+	b := &db.requests
 	graph := chart.Chart{
 		YAxis: chart.YAxis{
 			ValueFormatter: formatSize,
@@ -100,35 +57,12 @@ func (db *Store) Request(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (db *Store) Duration(w http.ResponseWriter, r *http.Request) error {
-	b0 := roaring64.NewDefaultBSI()
-	b1 := roaring64.NewDefaultBSI()
-	b2 := roaring64.NewDefaultBSI()
-	err := db.view(func(tx *rbf.Tx, shard uint64, f *rows.Row) error {
-		return errors.Join(
-			cursor.Tx(tx, "b0", func(c *rbf.Cursor) error {
-				return btx.ExtractBSI(c, shard, f, func(column uint64, value int64) error {
-					b0.SetValue(column, value)
-					return nil
-				})
-			}),
-			cursor.Tx(tx, "b1", func(c *rbf.Cursor) error {
-				return btx.ExtractBSI(c, shard, f, func(column uint64, value int64) error {
-					b1.SetValue(column, value)
-					return nil
-				})
-			}),
-			cursor.Tx(tx, "b2", func(c *rbf.Cursor) error {
-				return btx.ExtractBSI(c, shard, f, func(column uint64, value int64) error {
-					b1.SetValue(column, value)
-					return nil
-				})
-			}),
-		)
-	})
-	if err != nil {
-		http.Error(w, "something went wrong", http.StatusInternalServerError)
-		return err
-	}
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	b0 := &db.h0
+	b1 := &db.h0
+	b2 := &db.h0
 
 	graph := chart.Chart{
 		YAxis: chart.YAxis{
@@ -151,25 +85,29 @@ func rate(b *roaring64.BSI, name string) (series chart.TimeSeries) {
 	ex := b.GetExistenceBitmap()
 	series = chart.TimeSeries{
 		Name:    name,
-		XValues: make([]time.Time, 0, ex.GetCardinality()),
-		YValues: make([]float64, 0, ex.GetCardinality()),
+		XValues: make([]time.Time, ex.GetCardinality()),
+		YValues: make([]float64, ex.GetCardinality()),
 	}
 	if ex.IsEmpty() {
 		return
 	}
-	it := ex.Iterator()
-	tEnd := ex.ReverseIterator().Next()
+	times := ex.ToArray()
+	tEnd := times[len(times)-1]
 	vEnd, _ := b.GetValue(tEnd)
-	tsEnd := time.UnixMilli(int64(tEnd)).UTC()
-	for it.HasNext() {
-		column := it.Next()
-		ts := time.UnixMilli(int64(column)).UTC()
-		data, _ := b.GetValue(column)
-		dv := vEnd - data
-		dt := tsEnd.Sub(ts)
-		series.XValues = append(series.XValues, ts)
-		series.YValues = append(series.YValues, float64(dv)/dt.Seconds())
+	for i := len(times) - 1; i >= 0; i-- {
+		if i == 0 {
+			// Assume the value didn't change
+			series.XValues[i] = time.UnixMilli(int64(times[i]))
+			continue
+		}
+		prevTs := times[i-1]
+		prevValue, _ := b.GetValue(prevTs)
+		dv := vEnd - prevValue
+		dt := float64(tEnd-prevTs) / 1e3
+		series.YValues[i] = float64(dv) / dt
 	}
+	fmt.Println(series.YValues)
+
 	return
 }
 
