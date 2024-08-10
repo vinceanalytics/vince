@@ -28,6 +28,8 @@ type Config struct {
 	// we rely on cache for session processing. We need to guarantee only a single
 	// writer on the cache, a buffered channel help with this.
 	models chan *v1.Model
+
+	disableRegistration bool
 }
 
 func Open(path string) (*Config, error) {
@@ -67,6 +69,10 @@ func Open(path string) (*Config, error) {
 			secret: secret,
 		},
 	}, nil
+}
+
+func (db *Config) DisableRegistration(disable bool) {
+	db.disableRegistration = disable
 }
 
 func (db *Config) Get() *bbolt.DB {

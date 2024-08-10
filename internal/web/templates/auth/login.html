@@ -25,9 +25,11 @@
             class="transition bg-gray-100 dark:bg-gray-900 outline-none appearance-none border border-transparent rounded w-full p-2 text-gray-700 dark:text-gray-300 leading-normal appearance-none focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-gray-300 dark:focus:border-gray-500">
     </div>
     <input type="submit" value="Login →" class="button mt-4 w-full">
+    {{if .register}}
     <p class="text-center text-gray-500 text-xs mt-4">
         Don't have an account? <a href="/register" class="text-gray-800 dark:text-gray-50 underline">Register</a>
         instead.
     </p>
+    {{end}}
 </form>
 {{end}}

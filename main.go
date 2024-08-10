@@ -23,16 +23,17 @@ import (
 )
 
 var (
-	listenAddress = flag.String("listen", ":8080", "tcp address to bind the server")
-	dataPath      = flag.String("data", ".data", "Path to where database data is stored")
-	acme          = flag.Bool("acme", false, "Enables auto tls. When used make sure -acme.email and -acme.domain are set")
-	acmeEmail     = flag.String("acme.email", "", "Email address to use with lets enctrypt")
-	acmeDomain    = flag.String("acme.domain", "", "Domain name to use with lets encrypt")
-	bootStrap     = flag.Bool("admin.bootstrap", false, "Creates admin account on startup")
-	adminName     = flag.String("admin.name", "", "User name for admin account")
-	adminEmail    = flag.String("admin.email", "", "Email address for admin account")
-	adminPassword = flag.String("admin.password", "", "Password for admin account")
-	sysInterval   = flag.Duration("sys.interval", 15*time.Minute, "Interval for collecting system stats")
+	listenAddress       = flag.String("listen", ":8080", "tcp address to bind the server")
+	dataPath            = flag.String("data", ".data", "Path to where database data is stored")
+	acme                = flag.Bool("acme", false, "Enables auto tls. When used make sure -acme.email and -acme.domain are set")
+	acmeEmail           = flag.String("acme.email", "", "Email address to use with lets enctrypt")
+	acmeDomain          = flag.String("acme.domain", "", "Domain name to use with lets encrypt")
+	bootStrap           = flag.Bool("admin.bootstrap", false, "Creates admin account on startup")
+	adminName           = flag.String("admin.name", "", "User name for admin account")
+	adminEmail          = flag.String("admin.email", "", "Email address for admin account")
+	disableRegistration = flag.Bool("admin.only", false, "Disables registration")
+	adminPassword       = flag.String("admin.password", "", "Password for admin account")
+	sysInterval         = flag.Duration("sys.interval", 15*time.Minute, "Interval for collecting system stats")
 )
 
 func main() {
@@ -53,6 +54,8 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+
+	db.DisableRegistration(*disableRegistration)
 
 	system := sys.New()
 
@@ -84,18 +87,20 @@ func main() {
 			Then(web.Login),
 	))
 
-	mux.HandleFunc("GET /register", db.Wrap(
-		plug.Browser().
-			With(plug.CSRF).
-			With(plug.Captcha).
-			Then(web.RegisterForm),
-	))
+	if !*disableRegistration {
+		mux.HandleFunc("GET /register", db.Wrap(
+			plug.Browser().
+				With(plug.CSRF).
+				With(plug.Captcha).
+				Then(web.RegisterForm),
+		))
 
-	mux.HandleFunc("POST /register", db.Wrap(
-		plug.Browser().
-			With(plug.VerifyCSRF).
-			Then(web.Register),
-	))
+		mux.HandleFunc("POST /register", db.Wrap(
+			plug.Browser().
+				With(plug.VerifyCSRF).
+				Then(web.Register),
+		))
+	}
 
 	mux.HandleFunc("GET /sites/new", db.Wrap(
 		plug.Browser().

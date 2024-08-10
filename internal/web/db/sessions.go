@@ -168,6 +168,10 @@ func (c *Config) SessionTimeout(w http.ResponseWriter) {
 }
 
 func (c *Config) Context(base map[string]any) map[string]any {
+	if base == nil {
+		base = make(map[string]any)
+	}
+	base["register"] = !c.disableRegistration
 	c.session.Context(base)
 	return base
 }
@@ -181,12 +185,13 @@ func (c *Config) load(r *http.Request) {
 
 func (c *Config) clone(r *http.Request) *Config {
 	return &Config{
-		ts:      c.ts,
-		db:      c.db,
-		domains: c.domains,
-		cache:   c.cache,
-		session: c.session.clone(),
-		logger:  c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
+		ts:                  c.ts,
+		db:                  c.db,
+		domains:             c.domains,
+		cache:               c.cache,
+		session:             c.session.clone(),
+		disableRegistration: c.disableRegistration,
+		logger:              c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
 	}
 }
 

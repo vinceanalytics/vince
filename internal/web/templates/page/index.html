@@ -23,6 +23,7 @@
             </a>
         </li>
         <li class="w-full md:mt-1 md:w-1/2 md:order-3">
+            {{if .register}}
             <a href="/register" class="flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -34,6 +35,8 @@
                 </svg>
                 <span class="ml-2 font-semibold underline text-indigo-700 dark:text-indigo-400">Register</span>
             </a>
+            {{end}}
+
         </li>
     </ul>
 </div>
