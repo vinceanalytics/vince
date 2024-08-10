@@ -105,6 +105,7 @@ func rate(b *roaring64.BSI, name string) (series chart.TimeSeries) {
 		dv := vEnd - prevValue
 		dt := float64(tEnd-prevTs) / 1e3
 		series.YValues[i] = float64(dv) / dt
+		series.XValues[i] = time.UnixMilli(int64(times[i]))
 	}
 	return
 }
