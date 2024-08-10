@@ -19,8 +19,8 @@ type Store struct {
 	h2       roaring64.BSI
 }
 
-func New(path string) (*Store, error) {
-	return &Store{}, nil
+func New() *Store {
+	return &Store{}
 }
 
 func (s *Store) Start(ctx context.Context, interval time.Duration) {
@@ -39,10 +39,6 @@ func (s *Store) start(ctx context.Context, interval time.Duration) {
 			s.Apply(now)
 		}
 	}
-}
-
-func (s *Store) Close() error {
-	return nil
 }
 
 func (s *Store) Apply(now time.Time) {

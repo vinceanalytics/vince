@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/vinceanalytics/vince/internal/assert"
 	"github.com/vinceanalytics/vince/internal/kv"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/sys"
@@ -55,10 +54,7 @@ func main() {
 		}
 	}
 
-	system, err := sys.New(filepath.Join(*dataPath, "sys"))
-	assert.Assert(err == nil, "opening sys storage", "err", err)
-
-	defer system.Close()
+	system := sys.New()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
