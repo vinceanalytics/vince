@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/sys"
@@ -47,6 +48,16 @@ func SystemDuration(sys *sys.Store) plug.Handler {
 
 func SystemStats(sys *sys.Store) plug.Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
-		db.HTML(w, system, nil)
+		size := float64(sys.Size()) / (1 << 10)
+		db.HTML(w, system, map[string]any{
+			"size": fmt.Sprintf("%.3f", size),
+		})
+	}
+}
+
+func SystemRest(sys *sys.Store) plug.Handler {
+	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
+		sys.Reset()
+		http.Redirect(w, r, "/system/stats", http.StatusFound)
 	}
 }

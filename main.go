@@ -291,6 +291,11 @@ func main() {
 			Then(web.SystemDuration(system)),
 	))
 
+	mux.HandleFunc("/system/reset", db.Wrap(
+		super.
+			Then(web.SystemRest(system)),
+	))
+
 	mux.HandleFunc("/system/stats", db.Wrap(
 		super.
 			Then(web.SystemStats(system)),

@@ -9,6 +9,27 @@ import (
 	chart "github.com/wcharczuk/go-chart/v2"
 )
 
+func (db *Store) Size() (n int) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+	n += db.heap.GetSizeInBytes()
+	n += db.requests.GetSizeInBytes()
+	n += db.h0.GetSizeInBytes()
+	n += db.h1.GetSizeInBytes()
+	n += db.h2.GetSizeInBytes()
+	return
+}
+
+func (db *Store) Reset() {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+	db.heap = roaring64.BSI{}
+	db.requests = roaring64.BSI{}
+	db.h0 = roaring64.BSI{}
+	db.h1 = roaring64.BSI{}
+	db.h2 = roaring64.BSI{}
+}
+
 func (db *Store) Heap(w http.ResponseWriter, r *http.Request) error {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
@@ -47,9 +68,7 @@ func (db *Store) Request(w http.ResponseWriter, r *http.Request) error {
 
 	b := &db.requests
 	graph := chart.Chart{
-		YAxis: chart.YAxis{
-			ValueFormatter: formatSize,
-		},
+		YAxis:  chart.YAxis{},
 		Series: []chart.Series{rate(b, "request_per_second")},
 	}
 	w.Header().Set("Content-Type", "image/png")
@@ -65,9 +84,7 @@ func (db *Store) Duration(w http.ResponseWriter, r *http.Request) error {
 	b2 := &db.h2
 
 	graph := chart.Chart{
-		YAxis: chart.YAxis{
-			ValueFormatter: formatSize,
-		},
+		YAxis: chart.YAxis{},
 		Series: []chart.Series{
 			rate(b0, "<= 0.5s"),
 			rate(b1, "<= 1s"),

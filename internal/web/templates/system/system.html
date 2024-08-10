@@ -1,4 +1,16 @@
 {{define "main"}}
+<div class="container">
+    <div class="relative flex items-center justify-between sm:h-10 md:justify-center">
+        <div>
+            <span class="text-xl">Size</span> <span class="px-3">{{.size}}KB</span>
+        </div>
+        <div>
+            <a href="/system/reset"
+                class="inline-flex items-center justify-center px-5 py-2 border border-transparent text-base leading-6 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">Reset</a>
+        </div>
+    </div>
+
+</div>
 <div class="w-full max-w-md mx-auto bg-white  py-6 mt-8 px-4">
     <h1 class="text-xl mb-2 px-3"> Memory</h1>
     <img src="/system/heap">
