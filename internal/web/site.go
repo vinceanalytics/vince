@@ -11,7 +11,7 @@ import (
 )
 
 func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	createSite.Execute(w, db.Context(make(map[string]any)))
+	db.HTML(w, createSite, nil)
 }
 
 func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
