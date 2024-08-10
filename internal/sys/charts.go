@@ -61,8 +61,8 @@ func (db *Store) Duration(w http.ResponseWriter, r *http.Request) error {
 	defer db.mu.RUnlock()
 
 	b0 := &db.h0
-	b1 := &db.h0
-	b2 := &db.h0
+	b1 := &db.h1
+	b2 := &db.h2
 
 	graph := chart.Chart{
 		YAxis: chart.YAxis{
@@ -94,7 +94,7 @@ func rate(b *roaring64.BSI, name string) (series chart.TimeSeries) {
 	times := ex.ToArray()
 	tEnd := times[len(times)-1]
 	vEnd, _ := b.GetValue(tEnd)
-	for i := len(times) - 1; i >= 0; i-- {
+	for i := range times {
 		if i == 0 {
 			// Assume the value didn't change
 			series.XValues[i] = time.UnixMilli(int64(times[i]))
@@ -106,8 +106,6 @@ func rate(b *roaring64.BSI, name string) (series chart.TimeSeries) {
 		dt := float64(tEnd-prevTs) / 1e3
 		series.YValues[i] = float64(dv) / dt
 	}
-	fmt.Println(series.YValues)
-
 	return
 }
 
