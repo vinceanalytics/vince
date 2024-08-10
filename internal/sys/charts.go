@@ -12,6 +12,10 @@ import (
 func (db *Store) Size() (n int) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
+
+	return db.unsafeSize()
+}
+func (db *Store) unsafeSize() (n int) {
 	n += db.heap.GetSizeInBytes()
 	n += db.requests.GetSizeInBytes()
 	n += db.h0.GetSizeInBytes()
@@ -23,6 +27,10 @@ func (db *Store) Size() (n int) {
 func (db *Store) Reset() {
 	db.mu.Lock()
 	defer db.mu.Unlock()
+	db.unsafeReset()
+}
+
+func (db *Store) unsafeReset() {
 	db.heap = roaring64.BSI{}
 	db.requests = roaring64.BSI{}
 	db.h0 = roaring64.BSI{}

@@ -10,6 +10,12 @@ import (
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 )
 
+// Maximum size of the system bitmaps kept in memory. We don't want to keep a
+// lot of data around that will hinder other operations.
+//
+// When this threshold is  met we reset the stats
+const maxSize = 16 << 20
+
 type Store struct {
 	mu       sync.RWMutex
 	heap     roaring64.BSI
@@ -44,6 +50,10 @@ func (s *Store) start(ctx context.Context, interval time.Duration) {
 func (s *Store) Apply(now time.Time) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	if s.unsafeSize() >= maxSize {
+		s.unsafeReset()
+	}
 
 	ts := uint64(now.UnixMilli())
 	var mem runtime.MemStats
