@@ -37,6 +37,14 @@
                                         {{.current_user.email}}
                                     </p>
                                 </div>
+                                {{if .current_user.admin}}
+                                <div class="py-1.5" role="none">
+                                    <a href="/system/stats"
+                                        class="w-full inline-flex text-gray-700 dark:text-gray-300 px-3.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100">
+                                        System
+                                    </a>
+                                </div>
+                                {{end}}
                                 <div class="py-1.5" role="none">
                                     <a href="/logout"
                                         class="w-full inline-flex text-gray-700 dark:text-gray-300 px-3.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100">

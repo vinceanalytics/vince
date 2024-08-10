@@ -154,6 +154,9 @@ func rate(b *roaring64.BSI, name string) (series chart.TimeSeries) {
 		XValues: make([]time.Time, 0, ex.GetCardinality()),
 		YValues: make([]float64, 0, ex.GetCardinality()),
 	}
+	if ex.IsEmpty() {
+		return
+	}
 	it := ex.Iterator()
 	tEnd := ex.ReverseIterator().Next()
 	vEnd, _ := b.GetValue(tEnd)

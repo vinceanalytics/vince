@@ -62,6 +62,7 @@ func (s *SessionContext) Context(base map[string]any) {
 			"name":  u.Name,
 			"id":    kv.FormatID(u.Id),
 			"email": u.Email,
+			"admin": u.SuperUser,
 		}
 	}
 	if s := s.site; s != nil {
