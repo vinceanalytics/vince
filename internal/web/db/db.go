@@ -89,7 +89,6 @@ func (db *Config) Oracle() *oracle.Oracle {
 
 func (db *Config) Start(ctx context.Context) {
 	go db.processEvents()
-	db.ts.Start(ctx)
 }
 
 func (db *Config) processEvents() {

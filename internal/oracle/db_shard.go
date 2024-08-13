@@ -195,6 +195,18 @@ type db struct {
 	db       *rbf.DB
 }
 
+func (d *db) updateTS(ts int64) {
+	lo, hi := d.min.Load(), d.max.Load()
+	if lo == 0 {
+		lo = ts
+	} else {
+		lo = min(lo, ts)
+	}
+	hi = max(hi, ts)
+	d.min.Store(lo)
+	d.max.Store(hi)
+}
+
 func compareDB(a, b *db) int {
 	return cmp.Compare(a.shard, b.shard)
 }

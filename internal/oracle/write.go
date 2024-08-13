@@ -1,12 +1,13 @@
 package oracle
 
 import (
-	"fmt"
-
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/assert"
 	"github.com/vinceanalytics/vince/internal/btx"
 	"go.etcd.io/bbolt"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 var (
@@ -26,144 +27,104 @@ const (
 	bsiOffsetBit = 2
 )
 
-type Writer interface {
-	Write(ts int64, f func(columns Columns) error) error
-}
-
-type Columns interface {
-	String(field string, value string) error
-	Int64(field string, value int64)
-}
-
-func (d *dbShard) Write() (*write, error) {
-	tx, err := d.db.Begin(true)
-	if err != nil {
-		return nil, err
-	}
-	s, err := tx.CreateBucketIfNotExists(seq)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-	w := &write{
-		tx:     tx,
-		seq:    s,
-		data:   make(map[string]*roaring.Bitmap),
-		fields: make(map[string]*field),
-		db:     d,
-	}
-	return w, nil
-}
-
-type write struct {
-	seq      *bbolt.Bucket
-	data     map[string]*roaring.Bitmap
-	fields   map[string]*field
-	tx       *bbolt.Tx
-	id       uint64
-	shard    uint64
-	min, max int64
-	db       *dbShard
-}
-
-func (w *write) Close() error {
-	defer func() {
-		w.tx.Commit()
-	}()
-	return w.flush()
-}
-
-func (w *write) Write(ts int64, f func(columns Columns) error) error {
-	id, err := w.seq.NextSequence()
-	if err != nil {
-		return err
-	}
-	shard := id / shardwidth.ShardWidth
-	if shard != w.shard {
-		if w.shard != shard {
-			err := w.flush()
-			if err != nil {
-				return err
-			}
+func (d *dbShard) Write(e *v1.Model) error {
+	return d.db.Update(func(tx *bbolt.Tx) error {
+		s, err := tx.CreateBucketIfNotExists(seq)
+		if err != nil {
+			return err
 		}
-		w.shard = shard
-		w.min = ts
-		w.max = ts
-	}
-	w.id = id
-	w.min = min(w.min, ts)
-	w.max = max(w.max, ts)
-	// set existence column
-	w.get(ID).DirectAdd(w.id % shardwidth.ShardWidth)
-	return f(w)
+		id, err := s.NextSequence()
+		if err != nil {
+			return err
+		}
+		shard := id / shardwidth.ShardWidth
+		b := make(bitmaps)
+		b.get(ID).DirectAdd(id % shardwidth.ShardWidth)
+
+		wInt := func(name string, v int64) {
+			btx.BSI(b.get(name), id, v)
+		}
+		wString := func(name string, v string) {
+			f, err := newWriteField(tx, []byte(name))
+			assert.Assert(err == nil, "create new write field", "field", name, "err", err)
+			key, err := f.translate([]byte(v))
+			assert.Assert(err == nil, "translate value", "field", name, "value", v, "err", err)
+			btx.Mutex(b.get(name), id, key)
+		}
+		e.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+			name := string(fd.Name())
+			switch fd.Kind() {
+			case protoreflect.StringKind:
+				wString(name, v.String())
+			case protoreflect.BoolKind:
+				wInt(name, 1)
+			case protoreflect.Int64Kind:
+				if name == "timestamp" {
+					ts := v.Int()
+					wInt(name, ts)
+					wString("date", date(ts))
+				} else {
+					wInt(name, v.Int())
+				}
+
+			case protoreflect.Uint64Kind, protoreflect.Uint32Kind:
+				wInt(name, int64(v.Uint()))
+			default:
+				if fd.IsMap() {
+					prefix := name + "."
+					v.Map().Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
+						wString(prefix+mk.String(), v.String())
+						return true
+					})
+				}
+			}
+			return true
+		})
+		// For bounce, session, view and duration fields we only perform sum on the
+		// bsi. To save space we don't bother storing zero values.
+		//
+		// null bounce act as a clear signal , we set it to -1 so that when
+		// a user stay on the site and navigated to a different page during
+		// a live session the result will be 0 [first page sets 1, next page sets -1
+		// and subsequent pages within the same session will be 0].
+		if e.Bounce == nil {
+			wInt("bounce", -1)
+		}
+		return d.saveBitmaps(shard, e.Timestamp, b)
+	})
 }
 
-func (w *write) Int64(field string, svalue int64) {
-	btx.BSI(w.get(field), w.id, svalue)
-}
-
-func (w *write) String(field string, value string) error {
-	m, f, err := w.getString(field)
+func (d *dbShard) saveBitmaps(shard uint64, ts int64, b bitmaps) error {
+	db, err := d.open(shard)
 	if err != nil {
 		return err
-	}
-	v, err := f.translate([]byte(value))
-	if err != nil {
-		return err
-	}
-	btx.Mutex(m, w.id, v)
-	return nil
-}
-
-func (w *write) getString(name string) (*roaring.Bitmap, *field, error) {
-	if b, ok := w.data["name"]; ok {
-		return b, w.fields[name], nil
-	}
-	b := roaring.NewBitmap()
-	f, err := newWriteField(w.tx, []byte(name))
-	if err != nil {
-		return nil, nil, err
-	}
-	w.data[name] = b
-	w.fields[name] = f
-	return b, f, nil
-}
-
-func (w *write) get(name string) *roaring.Bitmap {
-	b, ok := w.data[name]
-	if !ok {
-		b = roaring.NewBitmap()
-		w.data[name] = b
-	}
-	return b
-}
-
-func (w *write) flush() error {
-	defer func() {
-		clear(w.data)
-		w.min = 0
-		w.max = 0
-	}()
-	db, err := w.db.open(w.shard)
-	if err != nil {
-		return fmt.Errorf("open shard db %w", err)
 	}
 	tx, err := db.db.Begin(true)
 	if err != nil {
 		return err
 	}
-	for k, d := range w.data {
-		_, err := tx.AddRoaring(k, d)
+	for k, v := range b {
+		_, err = tx.AddRoaring(k, v)
 		if err != nil {
 			tx.Rollback()
-			return fmt.Errorf("adding data %w", err)
+			return err
 		}
 	}
-	lo, hi := db.min.Load(), db.max.Load()
-	if lo == 0 {
-		lo = w.min
+	err = tx.Commit()
+	if err != nil {
+		return err
 	}
-	db.min.Store(min(lo, w.min))
-	db.max.Store(max(hi, w.max))
-	return tx.Commit()
+	db.updateTS(ts)
+	return nil
+}
+
+type bitmaps map[string]*roaring.Bitmap
+
+func (b bitmaps) get(name string) *roaring.Bitmap {
+	o, ok := b[name]
+	if !ok {
+		o = roaring.NewBitmap()
+		b[name] = o
+	}
+	return o
 }

@@ -1,10 +1,7 @@
 package oracle
 
 import (
-	"context"
-
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"google.golang.org/protobuf/proto"
 )
 
 type Oracle struct {
@@ -25,11 +22,6 @@ func (o *Oracle) Close() error {
 	return o.db.Close()
 }
 
-func (o *Oracle) Start(ctx context.Context) {
-	go o.db.process(ctx, o.events)
-}
-
 func (o *Oracle) Save(e *v1.Model) {
-	clone := proto.Clone(e)
-	o.events <- clone.(*v1.Model)
+	o.db.Write(e)
 }
