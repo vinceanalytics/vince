@@ -2,7 +2,9 @@ package ro2
 
 import (
 	"bytes"
+	"encoding/binary"
 	"errors"
+	"log/slog"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/ro"
@@ -22,12 +24,52 @@ func (tx *Tx) release() {
 }
 
 func (tx *Tx) Add(date, shard, field uint64, keys []uint32, values []string, r *roaring64.Bitmap) error {
+	err := tx.saveTranslations(keys, values)
+	if err != nil {
+		return err
+	}
 	return r.Save(&txWrite{
 		date:  date,
 		shard: shard,
 		field: field,
 		tx:    tx,
 	})
+}
+
+func (tx *Tx) saveTranslations(keys []uint32, values []string) error {
+	buf := make([]byte, 2+4)
+	buf[0] = byte(TRANSLATE)
+	for i := range keys {
+		buf = buf[:6]
+		binary.BigEndian.PutUint32(buf[2:], keys[i])
+		_, err := tx.tx.Get(buf)
+		if err == nil {
+			continue
+		}
+		err = tx.tx.Set(bytes.Clone(buf), []byte(values[i]))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (tx *Tx) Find(key uint32) (o string) {
+	var buf [6]byte
+	buf[0] = byte(TRANSLATE)
+	binary.BigEndian.PutUint32(buf[2:], key)
+	it, err := tx.tx.Get(buf[:])
+	if err != nil {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
+			slog.Error("reading translation key", "key", err, "err", err)
+		}
+		return
+	}
+	it.Value(func(val []byte) error {
+		o = string(val)
+		return nil
+	})
+	return
 }
 
 type txWrite struct {

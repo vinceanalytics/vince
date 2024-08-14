@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	dateOffset      = 0
-	kindOffset      = dateOffset + 8
-	fieldOffset     = kindOffset + 2
+	kindOffset      = 0
+	dateOffset      = kindOffset + 2
+	fieldOffset     = dateOffset + 8
 	shardOffset     = fieldOffset + 8
 	keyOffset       = shardOffset + 8
 	containerOffset = keyOffset + 4
