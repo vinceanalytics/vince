@@ -69,27 +69,9 @@ func (d *dbShard) Write(e *v1.Model) error {
 
 			case protoreflect.Uint64Kind, protoreflect.Uint32Kind:
 				wInt(name, int64(v.Uint()))
-			default:
-				if fd.IsMap() {
-					prefix := name + "."
-					v.Map().Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
-						wString(prefix+mk.String(), v.String())
-						return true
-					})
-				}
 			}
 			return true
 		})
-		// For bounce, session, view and duration fields we only perform sum on the
-		// bsi. To save space we don't bother storing zero values.
-		//
-		// null bounce act as a clear signal , we set it to -1 so that when
-		// a user stay on the site and navigated to a different page during
-		// a live session the result will be 0 [first page sets 1, next page sets -1
-		// and subsequent pages within the same session will be 0].
-		if e.Bounce == nil {
-			wInt("bounce", -1)
-		}
 		return d.saveBitmaps(shard, e.Timestamp, b)
 	})
 }

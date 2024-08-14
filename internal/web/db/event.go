@@ -32,21 +32,21 @@ func (db *Config) ProcessEvent(r *http.Request) error {
 
 func hit(e *v1.Model) {
 	e.EntryPage = e.Page
-	e.Bounce = True
-	e.Session = true
+	e.Bounce = 1
+	e.Session = 1
 	if e.Event == pageView {
 		e.Event = ""
-		e.View = true
+		e.View = 1
 	}
 }
 
 func update(fromSession *v1.Model, event *v1.Model) {
-	if fromSession.Bounce == True {
-		fromSession.Bounce, event.Bounce = nil, nil
+	if fromSession.Bounce == 1 {
+		fromSession.Bounce, event.Bounce = -1, -1
 	} else {
-		fromSession.Bounce, event.Bounce = False, False
+		fromSession.Bounce, event.Bounce = 0, 0
 	}
-	event.Session = false
+	event.Session = 0
 	event.ExitPage = event.Page
 	// Track duration since last visit.
 	event.Duration = time.UnixMilli(event.Timestamp).Sub(time.UnixMilli(fromSession.Timestamp)).Milliseconds()
@@ -96,7 +96,7 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	}
 	userID := uniqueID(req.remoteIp, req.userAgent, domain, host)
 	e := new(v1.Model)
-	e.Id = userID
+	e.Id = int64(userID)
 	e.Event = req.eventName
 	e.Page = path
 	e.Host = host
@@ -115,7 +115,7 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	e.Country = city.CountryCode
 	e.Subdivision1Code = city.SubDivision1Code
 	e.Subdivision2Code = city.SubDivision2Code
-	e.City = city.CityGeonameID
+	e.City = int64(city.CityGeonameID)
 	e.Device = agent.Device
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil
