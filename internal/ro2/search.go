@@ -2,6 +2,7 @@ package ro2
 
 import (
 	"hash/crc32"
+	"slices"
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/ro"
@@ -10,13 +11,47 @@ import (
 
 // all fields
 const (
-	domainField uint64 = 13
+	domainField    uint64 = 13
+	timestampField        = 1
+	idField               = 2
+	bounceField           = 3
+	sessionField          = 4
+	viewField             = 5
+	durationField         = 7
+	cityField             = 8
+	eventsField           = 31
 )
 
-func (o *Proto[T]) Select(start, end int64,
+// We know fields before hand
+type Data [32]*roaring64.BSI
+
+func (d *Data) get(i uint32) *roaring64.BSI {
+	if d[i] == nil {
+		d[i] = roaring64.NewDefaultBSI()
+	}
+	return d[i]
+}
+
+type Match struct {
+	Dates []uint64
+	Data  []Data
+}
+
+func (m *Match) Reset(dates []uint64) {
+	m.Dates = slices.Grow(m.Dates, len(dates))[:len(dates)]
+	copy(m.Dates, dates)
+	m.Data = slices.Grow(m.Data, len(dates))[:len(dates)]
+	for i := range m.Data {
+		clear(m.Data[i][:])
+	}
+}
+
+func (o *Proto[T]) Select(
+	match *Match,
+	start, end int64,
 	domain string,
 	filter Filter,
-	f func(tx *Tx, date, shard uint64, match *roaring64.Bitmap) error) error {
+	f func(tx *Tx, date, shard uint64, match *roaring64.Bitmap, data *Data) error) error {
 
 	dates := ro.DateRange(
 		time.UnixMilli(start).UTC(),
@@ -25,6 +60,8 @@ func (o *Proto[T]) Select(start, end int64,
 	if len(dates) == 0 {
 		return nil
 	}
+
+	match.Reset(dates)
 
 	if filter == nil {
 		filter = noop{}
@@ -37,12 +74,12 @@ func (o *Proto[T]) Select(start, end int64,
 	domainID := uint64(hash.Sum32())
 
 	return o.View(func(tx *Tx) error {
-		// processing is done per shard per day
 		for i := range shards {
 			shard := shards[i]
 
 			for j := range dates {
 				date := dates[j]
+				data := &match.Data[j]
 
 				b := tx.Row(date, shard, domainField, domainID)
 				if b.IsEmpty() {
@@ -53,7 +90,7 @@ func (o *Proto[T]) Select(start, end int64,
 				if b.IsEmpty() {
 					continue
 				}
-				err := f(tx, date, shard, b)
+				err := f(tx, date, shard, b, data)
 				if err != nil {
 					return err
 				}
