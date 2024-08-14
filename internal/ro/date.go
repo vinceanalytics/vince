@@ -15,6 +15,10 @@ func DateRange(from, to time.Time) []uint64 {
 	return o
 }
 
+func Today() time.Time {
+	return toDate(time.Now())
+}
+
 func toDate(ts time.Time) time.Time {
 	yy, mm, dd := ts.Date()
 	return time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC)
