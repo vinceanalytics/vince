@@ -7,14 +7,17 @@ require (
 	github.com/RoaringBitmap/roaring/v2 v2.3.1
 	github.com/VictoriaMetrics/fastcache v1.12.2
 	github.com/benbjohnson/immutable v0.4.3
+	github.com/bits-and-blooms/bitset v1.12.0
 	github.com/blevesearch/vellum v1.0.10
 	github.com/dchest/captcha v1.0.0
+	github.com/dgraph-io/badger/v4 v4.2.0
 	github.com/felixge/fgprof v0.9.4
 	github.com/gernest/roaring v0.22.3
 	github.com/gernest/rows v1.22.9
 	github.com/gernest/vice v0.0.2
 	github.com/google/uuid v1.6.0
 	github.com/lestrrat-go/dataurl v0.0.0-20220721131304-b60017625013
+	github.com/mschoch/smat v0.2.0
 	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
@@ -28,21 +31,28 @@ require (
 )
 
 require (
-	github.com/bits-and-blooms/bitset v1.12.0 // indirect
 	github.com/blend/go-sdk v1.20240719.1 // indirect
 	github.com/blevesearch/mmap-go v1.0.4 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgraph-io/ristretto v0.1.1 // indirect
+	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+	github.com/golang/glog v1.0.0 // indirect
+	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/flatbuffers v1.12.1 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20240227163752-401108e1b7e7 // indirect
+	github.com/klauspost/compress v1.12.3 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/molecula/apophenia v0.0.0-20190827192002-68b7a14a478b // indirect
-	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/oschwald/maxminddb-golang v1.13.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	go.opencensus.io v0.22.5 // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/image v0.11.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
