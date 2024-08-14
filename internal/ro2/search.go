@@ -47,11 +47,10 @@ func (m *Match) Reset(dates []uint64) {
 }
 
 func (o *Proto[T]) Select(
-	match *Match,
 	start, end int64,
 	domain string,
 	filter Filter,
-	f func(tx *Tx, date, shard uint64, match *roaring64.Bitmap, data *Data) error) error {
+	f func(tx *Tx, shard uint64, match *roaring64.Bitmap) error) error {
 
 	dates := ro.DateRange(
 		time.UnixMilli(start).UTC(),
@@ -60,8 +59,6 @@ func (o *Proto[T]) Select(
 	if len(dates) == 0 {
 		return nil
 	}
-
-	match.Reset(dates)
 
 	if filter == nil {
 		filter = noop{}
@@ -77,23 +74,26 @@ func (o *Proto[T]) Select(
 		for i := range shards {
 			shard := shards[i]
 
-			for j := range dates {
-				date := dates[j]
-				data := &match.Data[j]
+			b := tx.Row(shard, domainField, domainID)
+			if b.IsEmpty() {
+				continue
+			}
 
-				b := tx.Row(date, shard, domainField, domainID)
-				if b.IsEmpty() {
-					continue
-				}
+			filter.apply(tx, shard, b)
+			if b.IsEmpty() {
+				continue
+			}
 
-				filter.apply(tx, date, shard, b)
-				if b.IsEmpty() {
-					continue
-				}
-				err := f(tx, date, shard, b, data)
-				if err != nil {
-					return err
-				}
+			// select timestamp
+			ts := tx.Cmp(timestampField, shard, 64, roaring64.RANGE, start, end)
+			b.And(ts)
+			if b.IsEmpty() {
+				continue
+			}
+
+			err := f(tx, shard, b)
+			if err != nil {
+				return err
 			}
 		}
 		return nil
@@ -111,23 +111,23 @@ func (o *Proto[T]) shards() []uint64 {
 }
 
 type Filter interface {
-	apply(tx *Tx, date, shard uint64, match *roaring64.Bitmap)
+	apply(tx *Tx, shard uint64, match *roaring64.Bitmap)
 }
 
 type List []Filter
 
-func (ls List) apply(tx *Tx, date, shard uint64, match *roaring64.Bitmap) {
+func (ls List) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 	for i := range ls {
 		if match.IsEmpty() {
 			return
 		}
-		ls[i].apply(tx, date, shard, match)
+		ls[i].apply(tx, shard, match)
 	}
 }
 
 type noop struct{}
 
-func (noop) apply(tx *Tx, date, shard uint64, match *roaring64.Bitmap) {}
+func (noop) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {}
 
 type Eq struct {
 	field uint64
@@ -143,8 +143,8 @@ func newEq(field uint64, value string) *Eq {
 	}
 }
 
-func (e *Eq) apply(tx *Tx, date, shard uint64, match *roaring64.Bitmap) {
+func (e *Eq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 	match.And(
-		tx.Row(date, shard, e.field, e.value),
+		tx.Row(shard, e.field, e.value),
 	)
 }

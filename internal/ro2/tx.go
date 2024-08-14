@@ -23,13 +23,12 @@ func (tx *Tx) release() {
 	tx.keys.Release()
 }
 
-func (tx *Tx) Add(date, shard, field uint64, keys []uint32, values []string, r *roaring64.Bitmap) error {
+func (tx *Tx) Add(shard, field uint64, keys []uint32, values []string, r *roaring64.Bitmap) error {
 	err := tx.saveTranslations(keys, values)
 	if err != nil {
 		return err
 	}
 	return r.Save(&txWrite{
-		date:  date,
 		shard: shard,
 		field: field,
 		tx:    tx,
@@ -73,15 +72,14 @@ func (tx *Tx) Find(key uint32) (o string) {
 }
 
 type txWrite struct {
-	date, shard, field uint64
-	tx                 *Tx
+	shard, field uint64
+	tx           *Tx
 }
 
 var _ roaring64.Context = (*txWrite)(nil)
 
 func (t *txWrite) Value(key uint32, cKey uint16, value func(uint8, []byte) error) error {
 	xk := t.tx.keys.Get().
-		SetDate(t.date).
 		SetShard(t.shard).
 		SetField(t.field).
 		SetKey(key).
@@ -100,7 +98,6 @@ func (t *txWrite) Value(key uint32, cKey uint16, value func(uint8, []byte) error
 
 func (t *txWrite) Write(key uint32, cKey uint16, typ uint8, value []byte) error {
 	xk := t.tx.keys.Get().
-		SetDate(t.date).
 		SetKind(ROAR).
 		SetShard(t.shard).
 		SetField(t.field).
@@ -112,7 +109,7 @@ func (t *txWrite) Write(key uint32, cKey uint16, typ uint8, value []byte) error 
 // we explicitly accept bit depth because city is a uint32 and we stole bounce
 // as -1,0,1 meaning we can control how much we iterate for valid bits.
 func (tx *Tx) ExtractBSI(date, shard, field uint64, bitDepth uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
-	exists := tx.Row(date, shard, field, 0)
+	exists := tx.Row(shard, field, 0)
 	exists.And(match)
 	if exists.IsEmpty() {
 		return
@@ -120,11 +117,11 @@ func (tx *Tx) ExtractBSI(date, shard, field uint64, bitDepth uint64, match *roar
 	data := make(map[uint64]uint64)
 	mergeBits(exists, 0, data)
 
-	sign := tx.Row(date, shard, field, 1)
+	sign := tx.Row(shard, field, 1)
 	mergeBits(sign, 1<<63, data)
 
 	for i := uint64(0); i < bitDepth; i++ {
-		bits := tx.Row(date, shard, field, 2+uint64(i))
+		bits := tx.Row(shard, field, 2+uint64(i))
 		if bits.IsEmpty() {
 			continue
 		}
@@ -147,7 +144,7 @@ func mergeBits(bits *roaring64.Bitmap, mask uint64, out map[uint64]uint64) {
 	}
 }
 
-func (tx *Tx) ExtractMutex(date, shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c *roaring.Container)) {
+func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c *roaring.Container)) {
 	filter := make([]*roaring.Container, 1<<ro.ShardVsContainerExponent)
 	match.Each(func(key uint32, cKey uint16, value *roaring.Container) error {
 		if value.IsEmpty() {
@@ -159,7 +156,6 @@ func (tx *Tx) ExtractMutex(date, shard, field uint64, match *roaring64.Bitmap, f
 	})
 	opts := badger.IteratorOptions{
 		Prefix: tx.keys.Get().
-			SetDate(date).
 			SetShard(shard).
 			SetField(field).
 			FieldPrefix(),
@@ -194,8 +190,8 @@ func (tx *Tx) ExtractMutex(date, shard, field uint64, match *roaring64.Bitmap, f
 	}
 }
 
-func (tx *Tx) Row(date, shard, field uint64, rowID uint64) *roaring64.Bitmap {
-	from, to := tx.keyRange(date, shard, field, rowID)
+func (tx *Tx) Row(shard, field uint64, rowID uint64) *roaring64.Bitmap {
+	from, to := tx.keyRange(shard, field, rowID)
 	opts := badger.IteratorOptions{
 		Prefix: from.KeyPrefix(),
 	}
@@ -216,12 +212,12 @@ func (tx *Tx) Row(date, shard, field uint64, rowID uint64) *roaring64.Bitmap {
 	return roaring64.NewFromMap(b)
 }
 
-func (tx *Tx) keyRange(date, shard, field uint64, rowID uint64) (from, to *Key) {
+func (tx *Tx) keyRange(shard, field uint64, rowID uint64) (from, to *Key) {
 	b := roaring64.New()
 	b.Add(rowID * ro.ShardWidth)
 	b.Add((rowID + 1) * ro.ShardWidth)
 	b.Each(func(key uint32, cKey uint16, value *roaring.Container) error {
-		k := tx.keys.Get().SetDate(date).SetShard(shard).
+		k := tx.keys.Get().SetShard(shard).
 			SetField(field).SetKey(key).SetContainer(cKey)
 		if from == nil {
 			from = k

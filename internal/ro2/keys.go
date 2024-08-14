@@ -4,13 +4,11 @@ import (
 	"encoding/binary"
 	"fmt"
 	"sync"
-	"time"
 )
 
 const (
 	kindOffset      = 0
-	dateOffset      = kindOffset + 2
-	fieldOffset     = dateOffset + 8
+	fieldOffset     = kindOffset + 2
 	shardOffset     = fieldOffset + 8
 	keyOffset       = shardOffset + 8
 	containerOffset = keyOffset + 4
@@ -25,15 +23,6 @@ const (
 )
 
 type Key [keySize]byte
-
-func (k *Key) Date() uint64 {
-	return binary.BigEndian.Uint64(k[dateOffset:])
-}
-
-func (k *Key) SetDate(v uint64) *Key {
-	binary.BigEndian.PutUint64(k[dateOffset:], v)
-	return k
-}
 
 func (k *Key) Field() uint64 {
 	return binary.BigEndian.Uint64(k[fieldOffset:])
@@ -93,8 +82,7 @@ func (k *Key) SetContainer(v uint16) *Key {
 }
 
 func (k *Key) String() string {
-	return fmt.Sprintf("%s/%d/%d/%d/%d",
-		time.UnixMilli(int64(k.Date())).Format(time.DateOnly),
+	return fmt.Sprintf("%d/%d/%d/%d",
 		k.Shard(), k.Field(), k.Key(), k.Container())
 }
 

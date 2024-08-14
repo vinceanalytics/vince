@@ -27,14 +27,14 @@ func TestTxAdd(t *testing.T) {
 		o.Add(ro.MutexPosition(s[i].id, s[i].value))
 	}
 	err = db.Update(func(tx *Tx) error {
-		return tx.Add(0, 0, 0, nil, nil, o)
+		return tx.Add(0, 0, nil, nil, o)
 	})
 	require.NoError(t, err)
 	var result *roaring64.Bitmap
 	match := map[uint64][]uint16{}
 	db.View(func(tx *Tx) error {
-		result = tx.Row(0, 0, 0, 12)
-		tx.ExtractMutex(0, 0, 0, result, func(row uint64, c *roaring.Container) {
+		result = tx.Row(0, 0, 12)
+		tx.ExtractMutex(0, 0, result, func(row uint64, c *roaring.Container) {
 			c.Each(func(u uint16) bool {
 				match[row] = append(match[row], u)
 				return true
@@ -70,7 +70,7 @@ func TestTxAdd_bsi(t *testing.T) {
 		return nil
 	})
 	err = db.Update(func(tx *Tx) error {
-		return tx.Add(0, 0, 0, nil, nil, o)
+		return tx.Add(0, 0, nil, nil, o)
 	})
 	require.NoError(t, err)
 

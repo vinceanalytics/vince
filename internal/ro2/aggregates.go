@@ -44,7 +44,7 @@ func (d *Data) ReadFields(tx *Tx, date, shard uint64,
 			continue
 		}
 		// string fields
-		tx.ExtractMutex(date, shard, uint64(f), match, func(row uint64, c *roaring.Container) {
+		tx.ExtractMutex(shard, uint64(f), match, func(row uint64, c *roaring.Container) {
 			c.Each(func(u uint16) bool {
 				b.SetValue(uint64(u), int64(row))
 				return true

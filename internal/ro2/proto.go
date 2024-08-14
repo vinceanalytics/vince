@@ -4,7 +4,6 @@ import (
 	"hash/crc32"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
@@ -56,7 +55,6 @@ func (o *Proto[T]) Add(msg T) error {
 		id := o.seq.Load()
 		shard := id / ro.ShardWidth
 		re := msg.ProtoReflect()
-		ts := toDate(re.Get(o.ts).Int())
 		b := o.get()
 		defer b.release()
 		hash := crc32.NewIEEE()
@@ -76,14 +74,9 @@ func (o *Proto[T]) Add(msg T) error {
 			return true
 		})
 		return b.each(func(field uint64, keys []uint32, values []string, bm *roaring64.Bitmap) error {
-			return tx.Add(ts, shard, field, keys, values, bm)
+			return tx.Add(shard, field, keys, values, bm)
 		})
 	})
-}
-
-func toDate(ts int64) uint64 {
-	yy, mm, dd := time.UnixMilli(ts).UTC().Date()
-	return uint64(time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC).UnixMilli())
 }
 
 func (o *Proto[T]) get() *bitmaps {

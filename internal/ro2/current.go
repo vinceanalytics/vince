@@ -17,7 +17,7 @@ func (o *Proto[T]) Today(domain string) (visitors uint64, err error) {
 	err = o.View(func(tx *Tx) error {
 		for i := range shards {
 			shard := shards[i]
-			b := tx.Row(date, shard, domainField, domainID)
+			b := tx.Row(shard, domainField, domainID)
 			if b.IsEmpty() {
 				continue
 			}
