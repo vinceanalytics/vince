@@ -71,6 +71,10 @@ func (o *Proto[T]) Select(
 	domainID := uint64(hash.Sum32())
 
 	return o.View(func(tx *Tx) error {
+
+		// We iterate on shards in reverse. We are always interested in latest data. This way we can have early exit when the caller is done but we have more shards left.
+		slices.Reverse(shards)
+
 		for i := range shards {
 			shard := shards[i]
 
