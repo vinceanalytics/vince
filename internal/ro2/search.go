@@ -13,14 +13,21 @@ const (
 	domainField uint64 = 13
 )
 
-func (o *Proto[T]) Select(start, end int64, domain string,
+func (o *Proto[T]) Select(start, end int64,
+	domain string,
+	filter Filter,
 	f func(tx *Tx, date, shard uint64, match *roaring64.Bitmap) error) error {
+
 	dates := ro.DateRange(
 		time.UnixMilli(start).UTC(),
 		time.UnixMilli(end).UTC(),
 	)
 	if len(dates) == 0 {
 		return nil
+	}
+
+	if filter == nil {
+		filter = noop{}
 	}
 
 	shards := o.shards()
@@ -42,7 +49,10 @@ func (o *Proto[T]) Select(start, end int64, domain string,
 					continue
 				}
 
-				// found a match
+				filter.apply(tx, date, shard, b)
+				if b.IsEmpty() {
+					continue
+				}
 				err := f(tx, date, shard, b)
 				if err != nil {
 					return err
@@ -61,4 +71,43 @@ func (o *Proto[T]) shards() []uint64 {
 		n = append(n, i)
 	}
 	return n
+}
+
+type Filter interface {
+	apply(tx *Tx, date, shard uint64, match *roaring64.Bitmap)
+}
+
+type List []Filter
+
+func (ls List) apply(tx *Tx, date, shard uint64, match *roaring64.Bitmap) {
+	for i := range ls {
+		if match.IsEmpty() {
+			return
+		}
+		ls[i].apply(tx, date, shard, match)
+	}
+}
+
+type noop struct{}
+
+func (noop) apply(tx *Tx, date, shard uint64, match *roaring64.Bitmap) {}
+
+type Eq struct {
+	field uint64
+	value uint64
+}
+
+func newEq(field uint64, value string) *Eq {
+	hash := crc32.NewIEEE()
+	hash.Write([]byte(value))
+	return &Eq{
+		field: field,
+		value: uint64(hash.Sum32()),
+	}
+}
+
+func (e *Eq) apply(tx *Tx, date, shard uint64, match *roaring64.Bitmap) {
+	match.And(
+		tx.Row(date, shard, e.field, e.value),
+	)
 }
