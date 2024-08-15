@@ -13,8 +13,9 @@ const (
 	bsiOffsetBit = 2
 )
 
-func (tx *Tx) Cmp(field, shard, bitDepth uint64, op roaring64.Operation,
+func (tx *Tx) Cmp(field, shard uint64, op roaring64.Operation,
 	start, end int64) *roaring64.Bitmap {
+	bitDepth := uint64(bits.Len64(uint64(max(start, end))))
 	switch op {
 	case roaring64.LT:
 		return tx.rangeLT(field, shard, bitDepth, start, false)
@@ -112,23 +113,18 @@ func (tx *Tx) rangeBetween(field, shard, bitDepth uint64, predicateMin, predicat
 	case predicateMin >= 0:
 		// Handle positive-only values.
 		r := tx.Row(shard, field, bsiSignBit)
-		r.AndNot(b)
-		return tx.rangeBetweenUnsigned(field, shard, r, bitDepth, upredicateMin, upredicateMax)
+		return tx.rangeBetweenUnsigned(field, shard, roaring64.AndNot(b, r), bitDepth, upredicateMin, upredicateMax)
 	case predicateMax < 0:
 		// Handle negative-only values. Swap unsigned min/max predicates.
 		r := tx.Row(shard, field, bsiSignBit)
-		r.And(b)
-		return tx.rangeBetweenUnsigned(field, shard, r, bitDepth, upredicateMax, upredicateMin)
+		b.And(r)
+		return tx.rangeBetweenUnsigned(field, shard, b, bitDepth, upredicateMax, upredicateMin)
 	default:
 		// If predicate crosses positive/negative boundary then handle separately and union.
 		r0 := tx.Row(shard, field, bsiSignBit)
-		r1 := r0.Clone()
-		r0.AndNot(b)
-		pos := tx.rangeLTUnsigned(field, shard, r0, bitDepth, upredicateMax, true)
-		r1.And(b)
-		neg := tx.rangeLTUnsigned(field, shard, r1, bitDepth, upredicateMin, true)
-		pos.Or(neg)
-		return pos
+		pos := tx.rangeLTUnsigned(field, shard, roaring64.AndNot(b, r0), bitDepth, upredicateMax, true)
+		neg := tx.rangeLTUnsigned(field, shard, roaring64.And(b, r0), bitDepth, upredicateMin, true)
+		return roaring64.Or(pos, neg)
 	}
 }
 
@@ -149,9 +145,9 @@ func (tx *Tx) rangeBetweenUnsigned(field, shard uint64, filter *roaring64.Bitmap
 		row := tx.Row(shard, field, uint64(bsiOffsetBit+i))
 		switch (predicateMin >> uint(i)) & 1 {
 		case 1:
-			remaining.And(row)
+			remaining = roaring64.And(remaining, row)
 		case 0:
-			remaining.Or(row)
+			remaining = roaring64.AndNot(remaining, row)
 		}
 	}
 
@@ -176,8 +172,7 @@ prep:
 		matches := roaring64.New()
 		for i := uint64(0); i < bitDepth; i++ {
 			row := tx.Row(shard, field, uint64(bsiOffsetBit+i))
-			row.And(filter)
-			matches.Or(row)
+			matches = roaring64.Or(matches, roaring64.And(filter, row))
 		}
 		return matches
 	case !allowEquality && uint64(bits.Len64(predicate)) > bitDepth:
@@ -196,12 +191,13 @@ prep:
 	for i := int(bitDepth - 1); i >= 0 && predicate < ^uint64(0) && !remaining.IsEmpty(); i-- {
 		row := tx.Row(shard, field, uint64(bsiOffsetBit+i))
 		row.And(remaining)
+		ones := roaring64.And(remaining, row)
 		switch (predicate >> uint(i)) & 1 {
 		case 1:
 			// Discard everything with a zero bit here.
-			remaining = row
+			remaining = ones
 		case 0:
-			matched.Or(row)
+			matched = roaring64.Or(matched, ones)
 			predicate |= 1 << uint(i)
 		}
 	}
@@ -220,8 +216,7 @@ func (tx *Tx) rangeLTUnsigned(field, shard uint64, filter *roaring64.Bitmap, bit
 		matches := roaring64.New()
 		for i := uint64(0); i < bitDepth; i++ {
 			row := tx.Row(shard, field, uint64(bsiOffsetBit+i))
-			row.AndNot(filter)
-			matches.Or(row)
+			matches = roaring64.Or(matches, roaring64.AndNot(filter, row))
 		}
 		return matches
 	case allowEquality:
@@ -233,10 +228,10 @@ func (tx *Tx) rangeLTUnsigned(field, shard uint64, filter *roaring64.Bitmap, bit
 	remaining := filter
 	for i := int(bitDepth - 1); i >= 0 && predicate > 0 && !remaining.IsEmpty(); i-- {
 		row := tx.Row(shard, field, uint64(bsiOffsetBit+i))
-		row.AndNot(remaining)
+		zeroes := roaring64.AndNot(remaining, row)
 		switch (predicate >> uint(i)) & 1 {
 		case 1:
-			matched.Or(row)
+			matched = roaring64.Or(matched, zeroes)
 			predicate &^= 1 << uint(i)
 		case 0:
 			// Discard everything with a one bit here.
@@ -257,6 +252,7 @@ func (tx *Tx) rangeNEQ(field, shard, bitDepth uint64, predicate int64) *roaring6
 	b.AndNot(eq)
 	return b
 }
+
 func (tx *Tx) rangeEQ(field, shard, bitDepth uint64, predicate int64) *roaring64.Bitmap {
 	// Start with set of columns with values set.
 	b := tx.Row(shard, field, bsiExistsBit)

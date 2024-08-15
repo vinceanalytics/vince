@@ -91,7 +91,7 @@ func (o *Proto[T]) Select(
 			}
 
 			// select timestamp
-			ts := tx.Cmp(timestampField, shard, 64, roaring64.RANGE, start, end)
+			ts := tx.Cmp(timestampField, shard, roaring64.RANGE, start, end)
 			b.And(ts)
 			if b.IsEmpty() {
 				continue

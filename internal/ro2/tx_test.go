@@ -86,3 +86,36 @@ func TestTxAdd_bsi(t *testing.T) {
 	}, match)
 	require.Equal(t, o.Maximum(), maxKey)
 }
+
+func TestTxCmp_range(t *testing.T) {
+	db, err := New(t.TempDir())
+	require.NoError(t, err)
+	defer db.Close()
+	s := []struct {
+		id    uint64
+		value int64
+	}{
+		{0, 12},
+		{1, 13},
+		{2, 14},
+		{20, 15},
+		{22, 16},
+		{23, 17},
+	}
+	o := roaring64.New()
+	for i := range s {
+		ro.BSI(o, s[i].id, s[i].value)
+	}
+	err = db.Update(func(tx *Tx) error {
+		return tx.Add(0, 0, nil, nil, o)
+	})
+	require.NoError(t, err)
+
+	var match []uint64
+	db.View(func(tx *Tx) error {
+		b := tx.Cmp(0, 0, roaring64.RANGE, 14, 16)
+		match = b.ToArray()
+		return nil
+	})
+	require.Equal(t, []uint64{2, 20}, match)
+}
