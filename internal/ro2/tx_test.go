@@ -78,7 +78,7 @@ func TestTxAdd_bsi(t *testing.T) {
 	db.View(func(tx *Tx) error {
 		result := roaring64.New()
 		result.AddMany([]uint64{1, 20})
-		tx.ExtractBSI(0, 0, 0, 64, result, func(row uint64, v int64) {
+		tx.ExtractBSI(0, 0, 64, result, func(row uint64, v int64) {
 			match[row] = v
 		})
 		return nil

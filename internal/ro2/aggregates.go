@@ -20,10 +20,10 @@ var bitDepth = map[uint32]uint64{
 
 func (d *Data) Read(tx *Tx, date, shard uint64,
 	match *roaring64.Bitmap, metrics ...string) {
-	d.ReadFields(tx, date, shard, match, metricsToProject(metrics)...)
+	d.ReadFields(tx, shard, match, metricsToProject(metrics)...)
 }
 
-func (d *Data) ReadFields(tx *Tx, date, shard uint64,
+func (d *Data) ReadFields(tx *Tx, shard uint64,
 	match *roaring64.Bitmap, fields ...uint32) {
 	for i := range fields {
 		f := fields[i]
@@ -38,7 +38,7 @@ func (d *Data) ReadFields(tx *Tx, date, shard uint64,
 			continue
 		}
 		if f <= cityField {
-			tx.ExtractBSI(date, shard, uint64(f), bitDepth[f], match, func(row uint64, c int64) {
+			tx.ExtractBSI(shard, uint64(f), bitDepth[f], match, func(row uint64, c int64) {
 				b.SetValue(row, c)
 			})
 			continue
