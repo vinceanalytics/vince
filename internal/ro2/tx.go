@@ -108,7 +108,7 @@ func (t *txWrite) Write(key uint32, cKey uint16, typ uint8, value []byte) error 
 
 // we explicitly accept bit depth because city is a uint32 and we stole bounce
 // as -1,0,1 meaning we can control how much we iterate for valid bits.
-func (tx *Tx) ExtractBSI(date, shard, field uint64, bitDepth uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
+func (tx *Tx) ExtractBSI(shard, field uint64, bitDepth uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
 	exists := tx.Row(shard, field, 0)
 	exists.And(match)
 	if exists.IsEmpty() {
