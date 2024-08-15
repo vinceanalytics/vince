@@ -42,15 +42,6 @@ type Context interface {
 	Write(cKey uint16, typ uint8, value []byte) error
 }
 
-func (r *Bitmap) AppendBitmap(key uint16, bits uint32, a []uint64) {
-	r.highlowcontainer.appendContainer(
-		key, &bitmapContainer{
-			cardinality: int(bits),
-			bitmap:      a,
-		}, false,
-	)
-}
-
 func (r *Bitmap) Each(f func(cKey uint16, v *Container) error) error {
 	for i, c := range r.highlowcontainer.containers {
 		err := f(r.highlowcontainer.keys[i], &Container{c})
