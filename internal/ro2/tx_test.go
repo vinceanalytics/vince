@@ -10,7 +10,7 @@ import (
 )
 
 func TestTxAdd(t *testing.T) {
-	db, err := New(t.TempDir())
+	db, err := newDB(t.TempDir())
 	require.NoError(t, err)
 	defer db.Close()
 	s := []struct {
@@ -48,7 +48,7 @@ func TestTxAdd(t *testing.T) {
 }
 
 func TestTxAdd_bsi(t *testing.T) {
-	db, err := New(t.TempDir())
+	db, err := newDB(t.TempDir())
 	require.NoError(t, err)
 	defer db.Close()
 	s := []struct {
@@ -88,7 +88,7 @@ func TestTxAdd_bsi(t *testing.T) {
 }
 
 func TestTxCmp_range(t *testing.T) {
-	db, err := New(t.TempDir())
+	db, err := newDB(t.TempDir())
 	require.NoError(t, err)
 	defer db.Close()
 	s := []struct {

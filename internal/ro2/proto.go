@@ -5,6 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 	"google.golang.org/protobuf/proto"
@@ -20,7 +21,13 @@ type Proto[T proto.Message] struct {
 	names  map[string]uint32
 }
 
-func Open[T proto.Message](path string) (*Proto[T], error) {
+type Store = Proto[*v1.Model]
+
+func Open(path string) (*Store, error) {
+	return open[*v1.Model](path)
+}
+
+func open[T proto.Message](path string) (*Proto[T], error) {
 	var a T
 	f := a.ProtoReflect().Descriptor().Fields()
 	fields := map[uint32]string{}
@@ -37,7 +44,7 @@ func Open[T proto.Message](path string) (*Proto[T], error) {
 	}
 	ts := f.ByName(protoreflect.Name("timestamp"))
 	assert(ts != nil, "timestamp field is required")
-	db, err := New(path)
+	db, err := newDB(path)
 	if err != nil {
 		return nil, err
 	}
