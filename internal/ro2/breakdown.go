@@ -2,6 +2,7 @@ package ro2
 
 import (
 	"cmp"
+	"math"
 	"slices"
 
 	"github.com/vinceanalytics/vince/internal/location"
@@ -10,11 +11,55 @@ import (
 )
 
 const (
-	visitors = "visitors"
+	visitors  = "visitors"
+	visits    = "visits"
+	pageviews = "pageviews"
 )
 
 type Result struct {
 	Results []map[string]any `json:"results"`
+}
+
+func (o *Proto[T]) BreakdownExitPages(start, end int64, domain string, filter Filter) (*Result, error) {
+	var m Data
+	values := make(map[string]*roaring64.Bitmap)
+	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
+		tx.ExtractMutex(shard, entry_pageField, match, func(row uint64, c *roaring.Container) {
+			value := tx.Find(uint32(row))
+			b, ok := values[value]
+			if !ok {
+				b = roaring64.New()
+				values[value] = b
+			}
+			c.Each(func(u uint16) bool {
+				b.Add(uint64(u))
+				return false
+			})
+		})
+		m.Read(tx, shard, match, visitors, visits, pageviews)
+		return nil
+	})
+	a := &Result{
+		Results: make([]map[string]any, 0, len(values)),
+	}
+
+	totalPageView := float64(m.View(nil))
+	for k, b := range values {
+		visits := float64(m.Visits(b))
+		visitors := float64(m.Visitors(b))
+		exitRate := float64(0)
+		if totalPageView != 0 {
+			exitRate = math.Floor(visits / totalPageView * 100)
+		}
+		a.Results = append(a.Results, map[string]any{
+			"name":      k,
+			"visits":    visits,
+			"visitors":  visitors,
+			"exit_rate": exitRate,
+		})
+	}
+	sortMap(a.Results, "visitors")
+	return a, nil
 }
 
 func (o *Proto[T]) BreakdownCity(start, end int64, domain string, filter Filter) (*Result, error) {

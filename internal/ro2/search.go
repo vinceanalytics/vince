@@ -11,15 +11,35 @@ import (
 
 // all fields
 const (
-	domainField    uint64 = 13
-	timestampField        = 1
-	idField               = 2
-	bounceField           = 3
-	sessionField          = 4
-	viewField             = 5
-	durationField         = 7
-	cityField             = 8
-	eventsField           = 31
+	timestampField         = 1
+	idField                = 2
+	bounceField            = 3
+	sessionField           = 4
+	viewField              = 5
+	durationField          = 7
+	cityField              = 8
+	browserField           = 9
+	browser_versionField   = 10
+	countryField           = 11
+	deviceField            = 12
+	domainField            = 13
+	entry_pageField        = 14
+	eventField             = 15
+	exit_pageField         = 16
+	hostField              = 17
+	osField                = 18
+	os_versionField        = 19
+	pageField              = 20
+	referrerField          = 21
+	sourceField            = 22
+	utm_campaignField      = 23
+	utm_contentField       = 24
+	utm_mediumField        = 25
+	utm_sourceField        = 26
+	utm_termField          = 27
+	subdivision1_codeField = 28
+	subdivision2_codeField = 29
+	eventsField            = 31
 )
 
 // We know fields before hand
