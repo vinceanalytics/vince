@@ -18,8 +18,11 @@ const (
 type Kind byte
 
 const (
-	ROAR      Kind = 0
-	TRANSLATE Kind = 1
+	ROAR Kind = iota
+	TRANSLATE
+	USER_ID
+	User_EMAIL
+	SITE_DOMAIN
 )
 
 type Key [keySize]byte
