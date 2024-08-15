@@ -59,7 +59,7 @@ func (o *Proto[T]) BreakdownExitPages(start, end int64, domain string, filter Fi
 	var m Data
 	values := make(map[string]*roaring64.Bitmap)
 	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
-		tx.ExtractMutex(shard, entry_pageField, match, func(row uint64, c *roaring.Container) {
+		tx.ExtractMutex(shard, Entry_pageField, match, func(row uint64, c *roaring.Container) {
 			value := tx.Find(uint32(row))
 			b, ok := values[value]
 			if !ok {

@@ -48,7 +48,7 @@ const cookie = "_vince"
 type SessionContext struct {
 	Data    Data
 	captcha string
-	user    *kv.User
+	user    *v1.User
 	site    *v1.Site
 	secret  *age.X25519Identity
 }
@@ -132,12 +132,10 @@ func (c *Config) Load(w http.ResponseWriter, r *http.Request) {
 	c.load(r)
 	if c.session.Data.CurrentUserID != "" {
 		uid := uuid.MustParse(c.session.Data.CurrentUserID)
-		usr := new(kv.User)
-		err := usr.ByID(c.Get(), uid)
-		if err != nil {
+		usr := c.db.UserByID(uid)
+		if usr == nil {
 			c.session = c.session.clone()
 			c.SaveSession(w)
-			c.logger.Error("current user", "id", uid, "err", err)
 		} else {
 			c.session.user = usr
 		}
@@ -185,7 +183,6 @@ func (c *Config) load(r *http.Request) {
 
 func (c *Config) clone(r *http.Request) *Config {
 	return &Config{
-		ts:                  c.ts,
 		db:                  c.db,
 		domains:             c.domains,
 		cache:               c.cache,
@@ -240,7 +237,7 @@ func (c *Config) Logout(w http.ResponseWriter) bool {
 	return true
 }
 
-func (c *Config) CurrentUser() *kv.User {
+func (c *Config) CurrentUser() *v1.User {
 	return c.session.user
 }
 

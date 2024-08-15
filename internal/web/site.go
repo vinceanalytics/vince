@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"github.com/vinceanalytics/vince/internal/kv"
+	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
@@ -18,7 +19,7 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	usr := db.CurrentUser()
 	domain := r.Form.Get("domain")
-	domain, bad := kv.ValidateSiteDomain(db.Get(), domain)
+	domain, bad := db.Get().ValidateSiteDomain(domain)
 	if bad != "" {
 		db.SaveCsrf(w)
 		createSite.Execute(w, db.Context(map[string]any{
@@ -26,8 +27,7 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		}))
 		return
 	}
-	// All sites are private by default
-	_, err := usr.CreateSite(db.Get(), domain, false)
+	_, err := db.Get().CreateSite(usr, domain, false)
 	if err != nil {
 		db.HTMLCode(http.StatusInternalServerError, w, e500, nil)
 		db.Logger().Error("creating site", "err", err)
@@ -63,16 +63,15 @@ func Unimplemented(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func RequireSiteAccess(h plug.Handler) plug.Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		domain := r.PathValue("domain")
-		if usr := db.CurrentUser(); usr != nil && usr.Site(domain) != nil {
+		if usr := db.CurrentUser(); usr != nil && ro2.Site(usr, domain) != nil {
 			// Fast path the current user has some role with the asked domain
-			site := usr.Site(domain)
+			site := ro2.Site(usr, domain)
 			db.SetSite(site)
 			h(db, w, r)
 			return
 		}
-		usr := new(kv.User)
-		usr.ByDomain(db.Get(), domain)
-		site := usr.Site(domain)
+		usr := db.Get().UserByDomain(domain)
+		site := ro2.Site(usr, domain)
 		if !site.Public {
 			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
 			return

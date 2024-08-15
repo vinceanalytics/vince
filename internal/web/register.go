@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vinceanalytics/vince/internal/kv"
+	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/web/db"
 )
 
@@ -13,8 +13,7 @@ func RegisterForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	usr := new(kv.User)
-	m, err := usr.NewUser(r)
+	usr, m, err := ro2.NewUser(r)
 	if err != nil {
 		db.HTMLCode(http.StatusInternalServerError, w, e500, nil)
 		db.Logger().Error("creating new user", "err", err)
@@ -33,7 +32,7 @@ func Register(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		db.HTML(w, register, m)
 		return
 	}
-	err = usr.Save(db.Get())
+	err = db.Get().SaveUser(usr)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			db.SaveCsrf(w)

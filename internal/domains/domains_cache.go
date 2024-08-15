@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
-	"github.com/vinceanalytics/vince/internal/kv"
-	"go.etcd.io/bbolt"
 	"golang.org/x/time/rate"
 )
 
@@ -17,18 +15,20 @@ type Cache struct {
 	mu sync.RWMutex
 }
 
-func New(db *bbolt.DB) (*Cache, error) {
-	c := &Cache{r: make(map[uint32]*rate.Limiter)}
+func New() *Cache {
+	return &Cache{r: make(map[uint32]*rate.Limiter)}
+}
+
+func (c *Cache) Load() func(b []byte) {
 	h := crc32.NewIEEE()
 	limit := limit()
-	return c, kv.Domains(db, func(domain string) {
+	return func(b []byte) {
 		h.Reset()
-		h.Write([]byte(domain))
+		h.Write(b)
 		id := h.Sum32()
 		c.b.Add(id)
-		// We are strict with quota, zero burst given!
 		c.r[id] = rate.NewLimiter(rate.Limit(limit), 0)
-	})
+	}
 }
 
 // We limit up to 100 hits per site per day to ensure smooth operation but with

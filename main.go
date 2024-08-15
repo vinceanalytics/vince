@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/vinceanalytics/vince/internal/kv"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/sys"
 	"github.com/vinceanalytics/vince/internal/ua"
@@ -45,11 +45,11 @@ func main() {
 	defer db.Close()
 	if *bootStrap {
 		slog.Info("bootstrap admin account")
-		u := new(kv.User)
+		u := new(v1.User)
 		u.Email = *adminEmail
 		u.Name = *adminName
 		u.Password = []byte(*adminPassword)
-		err := u.BootStrap(db.Get())
+		err := db.Get().BootStrap(u)
 		if err != nil {
 			log.Fatal(err)
 		}

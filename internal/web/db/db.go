@@ -13,14 +13,12 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/lru"
-	"github.com/vinceanalytics/vince/internal/oracle"
-	"go.etcd.io/bbolt"
+	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
 type Config struct {
 	domains *domains.Cache
-	db      *bbolt.DB
-	ts      *oracle.Oracle
+	db      *ro2.Store
 	session *SessionContext
 	logger  *slog.Logger
 	cache   *lru.LRU[*v1.Model]
@@ -33,35 +31,24 @@ type Config struct {
 }
 
 func Open(path string) (*Config, error) {
-	ts := filepath.Join(path, "ts")
+	ts := filepath.Join(path, "db")
 	os.MkdirAll(ts, 0755)
-	ops, err := bbolt.Open(filepath.Join(path, "main.db"), 0600, nil)
+	ops, err := ro2.Open(ts)
 	if err != nil {
 		return nil, err
 	}
-	db, err := oracle.New(ts)
-	if err != nil {
-		ops.Close()
-		return nil, err
-	}
-	doms, err := domains.New(ops)
-	if err != nil {
-		ops.Close()
-		db.Close()
-		return nil, err
-	}
+	doms := domains.New()
+	ops.Domains(doms.Load())
 
 	// setup session
 	secret, err := newSession(path)
 	if err != nil {
 		ops.Close()
-		db.Close()
 		return nil, err
 	}
 	return &Config{
 		domains: doms,
 		db:      ops,
-		ts:      db,
 		logger:  slog.Default(),
 		cache:   lru.New[*v1.Model](16 << 10),
 		models:  make(chan *v1.Model, 4<<10),
@@ -75,16 +62,12 @@ func (db *Config) DisableRegistration(disable bool) {
 	db.disableRegistration = disable
 }
 
-func (db *Config) Get() *bbolt.DB {
+func (db *Config) Get() *ro2.Store {
 	return db.db
 }
 
 func (db *Config) Logger() *slog.Logger {
 	return db.logger
-}
-
-func (db *Config) Oracle() *oracle.Oracle {
-	return db.ts
 }
 
 func (db *Config) Start(ctx context.Context) {
@@ -102,7 +85,6 @@ func (db *Config) processEvents() {
 func (db *Config) Close() error {
 	return errors.Join(
 		db.db.Close(),
-		db.ts.Close(),
 	)
 }
 

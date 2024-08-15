@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/vinceanalytics/vince/internal/location"
-	"github.com/vinceanalytics/vince/internal/oracle"
+	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -19,11 +19,13 @@ func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Oracle().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(), metrics, "source")
+	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
+		// params.Filter(),
+		nil,
+		metrics, ro2.SourceField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -40,11 +42,13 @@ func UtmMediums(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Oracle().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(), metrics, "utm_medium")
+	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
+		// params.Filter(),
+		nil,
+		metrics, ro2.Utm_mediumField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -61,11 +65,13 @@ func UtmCampaigns(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Oracle().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(), metrics, "utm_campaign")
+	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
+		// params.Filter(),
+		nil,
+		metrics, ro2.Utm_campaignField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -82,11 +88,13 @@ func UtmContents(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Oracle().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(), metrics, "utm_content")
+	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
+		// params.Filter(),
+		nil,
+		metrics, ro2.Utm_contentField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -103,11 +111,13 @@ func UtmTerms(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Oracle().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(), metrics, "utm_term")
+	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
+		// params.Filter(),
+		nil,
+		metrics, ro2.Utm_termField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -124,11 +134,13 @@ func UtmSources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Oracle().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(), metrics, "utm_source")
+	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
+		// params.Filter(),
+		nil,
+		metrics, ro2.Utm_sourceField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -147,12 +159,15 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Oracle().Breakdown(params.Start(), params.End(), site.Domain,
-		oracle.NewAnd(params.Filter(),
-			oracle.NewEq("referrer", referrer)), metrics, "page")
+	_ = referrer
+	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
+		// oracle.NewAnd(params.Filter(),
+		// 	oracle.NewEq("referrer", referrer)),
+		nil,
+		metrics, ro2.PageField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -169,10 +184,13 @@ func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "pageviews", "bounce_rate")
 	}
-	o, err := db.Oracle().Breakdown(params.Start(), params.End(), site.Domain, params.Filter(), metrics, "page")
+	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
+		// params.Filter(),
+		nil,
+		metrics, ro2.PageField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -185,17 +203,18 @@ func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().Breakdown(
+	o, err := db.Get().Breakdown(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
+		// params.Filter(),
+		nil,
 		[]string{"visitors", "visits", "visit_duration"},
-		"entry_page",
+		ro2.Entry_pageField,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -208,15 +227,16 @@ func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func ExitPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().BreakdownExitPages(
+	o, err := db.Get().BreakdownExitPages(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
+		// params.Filter(),
+		nil,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	db.JSON(w, o)
 }
@@ -224,17 +244,18 @@ func ExitPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().Breakdown(
+	o, err := db.Get().Breakdown(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
+		// params.Filter(),
+		nil,
 		[]string{"visitors"},
-		"country",
+		ro2.CountryField,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -250,21 +271,23 @@ func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().Breakdown(
+	o, err := db.Get().Breakdown(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
+		// params.Filter(),
+		nil,
 		[]string{"visitors"},
-		"region",
+		ro2.Subdivision1_codeField,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
-		code := m["region"].(string)
+		code := m["subdivision1_codeField"].(string)
+		delete(m, "subdivision1_codeField")
 		reg := location.GetRegion(code)
 		m["code"] = code
 		m["name"] = reg.Name
@@ -276,15 +299,16 @@ func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().BreakdownCity(
+	o, err := db.Get().BreakdownCity(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
+		// params.Filter(),
+		nil,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	db.JSON(w, o)
 }
@@ -292,16 +316,17 @@ func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().BreakdownVisitorsWithPercentage(
+	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
-		"browser",
+		// params.Filter(),
+		nil,
+		ro2.BrowserField,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -314,16 +339,17 @@ func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().BreakdownVisitorsWithPercentage(
+	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
-		"browser_version",
+		// params.Filter(),
+		nil,
+		ro2.Browser_versionField,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -336,16 +362,17 @@ func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().BreakdownVisitorsWithPercentage(
+	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
-		"os",
+		// params.Filter(),
+		nil,
+		ro2.OsField,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -358,16 +385,17 @@ func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().BreakdownVisitorsWithPercentage(
+	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
-		"os_version",
+		// params.Filter(),
+		nil,
+		ro2.Os_versionField,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -380,16 +408,17 @@ func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func ScreenSize(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Oracle().BreakdownVisitorsWithPercentage(
+	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),
 		site.Domain,
-		params.Filter(),
-		"device",
+		// params.Filter(),
+		nil,
+		ro2.DeviceField,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &oracle.Breakdown{}
+		o = &ro2.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]

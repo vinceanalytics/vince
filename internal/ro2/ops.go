@@ -291,3 +291,8 @@ func CleanupDOmain(domain string) string {
 	domain = strings.ToLower(domain)
 	return domain
 }
+
+func ID(id []byte) (o uuid.UUID) {
+	copy(o[:], id)
+	return
+}
