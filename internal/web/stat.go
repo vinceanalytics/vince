@@ -20,8 +20,7 @@ func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
 	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		metrics, ro2.SourceField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -43,8 +42,7 @@ func UtmMediums(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
 	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		metrics, ro2.Utm_mediumField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -66,8 +64,7 @@ func UtmCampaigns(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
 	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		metrics, ro2.Utm_campaignField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -89,8 +86,7 @@ func UtmContents(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
 	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		metrics, ro2.Utm_contentField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -112,8 +108,7 @@ func UtmTerms(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
 	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		metrics, ro2.Utm_termField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -135,8 +130,7 @@ func UtmSources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
 	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		metrics, ro2.Utm_sourceField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -161,9 +155,8 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	_ = referrer
 	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		// oracle.NewAnd(params.Filter(),
-		// 	oracle.NewEq("referrer", referrer)),
-		nil,
+		append(ro2.List{params.Filter()},
+			ro2.NewEq(ro2.ReferrerField, referrer)),
 		metrics, ro2.PageField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -185,8 +178,7 @@ func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		metrics = append(metrics, "pageviews", "bounce_rate")
 	}
 	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		metrics, ro2.PageField)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -207,8 +199,7 @@ func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		[]string{"visitors", "visits", "visit_duration"},
 		ro2.Entry_pageField,
 	)
@@ -231,8 +222,7 @@ func ExitPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -248,8 +238,7 @@ func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		[]string{"visitors"},
 		ro2.CountryField,
 	)
@@ -275,8 +264,7 @@ func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		[]string{"visitors"},
 		ro2.Subdivision1_codeField,
 	)
@@ -303,8 +291,7 @@ func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -320,8 +307,7 @@ func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		ro2.BrowserField,
 	)
 	if err != nil {
@@ -343,8 +329,7 @@ func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		ro2.Browser_versionField,
 	)
 	if err != nil {
@@ -366,8 +351,7 @@ func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		ro2.OsField,
 	)
 	if err != nil {
@@ -389,8 +373,7 @@ func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		ro2.Os_versionField,
 	)
 	if err != nil {
@@ -412,8 +395,7 @@ func ScreenSize(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		params.Start(),
 		params.End(),
 		site.Domain,
-		// params.Filter(),
-		nil,
+		params.Filter(),
 		ro2.DeviceField,
 	)
 	if err != nil {
