@@ -13,20 +13,24 @@ import (
 
 type Proto[T proto.Message] struct {
 	*DB
-	seq  atomic.Uint64
-	ts   protoreflect.FieldDescriptor
-	pool *sync.Pool
+	seq    atomic.Uint64
+	ts     protoreflect.FieldDescriptor
+	pool   *sync.Pool
+	fields map[uint32]string
 }
 
 func Open[T proto.Message](path string) (*Proto[T], error) {
 	var a T
 	f := a.ProtoReflect().Descriptor().Fields()
+	fields := map[uint32]string{}
 	for i := 0; i < f.Len(); i++ {
-		k := f.Get(i).Kind()
+		fd := f.Get(i)
+		k := fd.Kind()
 		assert(
 			k == protoreflect.StringKind || k == protoreflect.Int64Kind,
 			"unsupported field", "kind", k,
 		)
+		fields[uint32(fd.Number())] = string(fd.Name())
 	}
 	ts := f.ByName(protoreflect.Name("timestamp"))
 	assert(ts != nil, "timestamp field is required")
@@ -34,7 +38,7 @@ func Open[T proto.Message](path string) (*Proto[T], error) {
 	if err != nil {
 		return nil, err
 	}
-	o := &Proto[T]{DB: db, ts: ts, pool: &sync.Pool{}}
+	o := &Proto[T]{DB: db, ts: ts, fields: fields, pool: &sync.Pool{}}
 	o.pool.New = func() any {
 		b := &bitmaps{
 			pool:   o.pool,

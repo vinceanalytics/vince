@@ -8,7 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
-func (d *Data) Read(tx *Tx, date, shard uint64,
+func (d *Data) Read(tx *Tx, shard uint64,
 	match *roaring64.Bitmap, metrics ...string) {
 	d.ReadFields(tx, shard, match, metricsToProject(metrics)...)
 }
