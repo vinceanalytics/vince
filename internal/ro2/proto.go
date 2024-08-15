@@ -17,12 +17,14 @@ type Proto[T proto.Message] struct {
 	ts     protoreflect.FieldDescriptor
 	pool   *sync.Pool
 	fields map[uint32]string
+	names  map[string]uint32
 }
 
 func Open[T proto.Message](path string) (*Proto[T], error) {
 	var a T
 	f := a.ProtoReflect().Descriptor().Fields()
 	fields := map[uint32]string{}
+	names := map[string]uint32{}
 	for i := 0; i < f.Len(); i++ {
 		fd := f.Get(i)
 		k := fd.Kind()
@@ -31,6 +33,7 @@ func Open[T proto.Message](path string) (*Proto[T], error) {
 			"unsupported field", "kind", k,
 		)
 		fields[uint32(fd.Number())] = string(fd.Name())
+		names[string(fd.Name())] = uint32(fd.Number())
 	}
 	ts := f.ByName(protoreflect.Name("timestamp"))
 	assert(ts != nil, "timestamp field is required")
@@ -38,7 +41,7 @@ func Open[T proto.Message](path string) (*Proto[T], error) {
 	if err != nil {
 		return nil, err
 	}
-	o := &Proto[T]{DB: db, ts: ts, fields: fields, pool: &sync.Pool{}}
+	o := &Proto[T]{DB: db, ts: ts, fields: fields, names: names, pool: &sync.Pool{}}
 	o.pool.New = func() any {
 		b := &bitmaps{
 			pool:   o.pool,
@@ -52,6 +55,18 @@ func Open[T proto.Message](path string) (*Proto[T], error) {
 		return b
 	}
 	return o, nil
+}
+
+func (o *Proto[T]) Name(number uint32) string {
+	v, ok := o.fields[number]
+	assert(ok, "unsupported field number", "number", number)
+	return v
+}
+
+func (o *Proto[T]) Number(name string) uint32 {
+	v, ok := o.names[name]
+	assert(ok, "unsupported field name", "name", name)
+	return v
 }
 
 func (o *Proto[T]) Add(msg T) error {

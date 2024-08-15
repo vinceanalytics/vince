@@ -42,7 +42,7 @@ func (o *Proto[T]) Breakdown(start, end int64, domain string, filter Filter, met
 	a := &Result{
 		Results: make([]map[string]any, 0, len(values)),
 	}
-	property := o.fields[field]
+	property := o.Name(field)
 	for k, v := range values {
 		x := map[string]any{
 			property: k,
@@ -161,7 +161,7 @@ func (o *Proto[T]) BreakdownVisitorsWithPercentage(start, end int64, domain stri
 	}
 
 	total := m.Compute(visitors, nil)
-	property := o.fields[field]
+	property := o.Name(field)
 	for prop, b := range values {
 		vs := m.Compute(visitors, b)
 		p := float64(0)
