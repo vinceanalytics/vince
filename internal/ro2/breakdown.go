@@ -20,6 +20,41 @@ type Result struct {
 	Results []map[string]any `json:"results"`
 }
 
+func (o *Proto[T]) Breakdown(start, end int64, domain string, filter Filter, metrics []string, field uint32) (*Result, error) {
+	var m Data
+	values := make(map[string]*roaring64.Bitmap)
+	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
+		tx.ExtractMutex(shard, uint64(field), match, func(row uint64, c *roaring.Container) {
+			value := tx.Find(uint32(row))
+			b, ok := values[value]
+			if !ok {
+				b = roaring64.New()
+				values[value] = b
+			}
+			c.Each(func(u uint16) bool {
+				b.Add(uint64(u))
+				return true
+			})
+		})
+		m.Read(tx, shard, match, metrics...)
+		return nil
+	})
+	a := &Result{
+		Results: make([]map[string]any, 0, len(values)),
+	}
+	property := o.fields[field]
+	for k, v := range values {
+		x := map[string]any{
+			property: k,
+		}
+		for i := range metrics {
+			x[metrics[i]] = m.Compute(metrics[i], v)
+		}
+		a.Results = append(a.Results, x)
+	}
+	return a, nil
+}
+
 func (o *Proto[T]) BreakdownExitPages(start, end int64, domain string, filter Filter) (*Result, error) {
 	var m Data
 	values := make(map[string]*roaring64.Bitmap)
