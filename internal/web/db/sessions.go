@@ -22,7 +22,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/dataurl"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/kv"
+	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
 func newSession(path string) (*age.X25519Identity, error) {
@@ -60,7 +60,7 @@ func (s *SessionContext) Context(base map[string]any) {
 	if u := s.user; u != nil {
 		base["current_user"] = map[string]any{
 			"name":  u.Name,
-			"id":    kv.FormatID(u.Id),
+			"id":    ro2.FormatID(u.Id),
 			"email": u.Email,
 			"admin": u.SuperUser,
 		}
@@ -68,7 +68,7 @@ func (s *SessionContext) Context(base map[string]any) {
 	if s := s.site; s != nil {
 		site := map[string]any{
 			"domain": s.Domain,
-			"id":     kv.FormatID(s.Id),
+			"id":     ro2.FormatID(s.Id),
 			"public": s.Public,
 		}
 		base["site"] = site

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/vinceanalytics/vince/internal/kv"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
@@ -44,7 +43,7 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 	for _, s := range usr.Sites {
 		sites = append(sites, map[string]any{
-			"id":       kv.FormatID(s.Id),
+			"id":       ro2.FormatID(s.Id),
 			"domain":   s.Domain,
 			"visitors": 0,
 		})
