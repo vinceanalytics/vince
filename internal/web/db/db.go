@@ -72,6 +72,7 @@ func (db *Config) Logger() *slog.Logger {
 
 func (db *Config) Start(ctx context.Context) {
 	go db.processEvents()
+	go db.db.Start(ctx)
 }
 
 func (db *Config) processEvents() {
