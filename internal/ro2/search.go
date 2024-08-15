@@ -155,12 +155,16 @@ type noop struct{}
 
 func (noop) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {}
 
+type Reject struct{}
+
+func (Reject) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) { match.Clear() }
+
 type Eq struct {
 	field uint64
 	value uint64
 }
 
-func newEq(field uint64, value string) *Eq {
+func NewEq(field uint64, value string) *Eq {
 	hash := crc32.NewIEEE()
 	hash.Write([]byte(value))
 	return &Eq{
@@ -172,5 +176,16 @@ func newEq(field uint64, value string) *Eq {
 func (e *Eq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 	match.And(
 		tx.Row(shard, e.field, e.value),
+	)
+}
+
+type EqInt struct {
+	Field uint64
+	Value int64
+}
+
+func (e *EqInt) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
+	match.And(
+		tx.Cmp(e.Field, shard, roaring64.EQ, e.Value, 0),
 	)
 }

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vinceanalytics/vince/internal/oracle"
+	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
 type Filter struct {
@@ -47,21 +47,20 @@ func (c *Filter) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *Filter) To() oracle.Filter {
+func (c *Filter) To(db *ro2.Store) ro2.Filter {
 	if len(c.Value) == 0 {
-		return oracle.Reject()
+		return ro2.Reject{}
 	}
 	if strings.HasPrefix(c.Key, "event:props:") {
-		key := strings.TrimPrefix(c.Key, "event:props:")
-		return build(c.Op, "props."+key, c.Value)
+		return ro2.Reject{}
 	}
 	if strings.HasPrefix(c.Key, "event:") {
 		key := strings.TrimPrefix(c.Key, "event:")
 		switch key {
 		case "name", "page", "hostname":
-			return build(c.Op, key, c.Value)
+			return build(db, c.Op, key, c.Value)
 		default:
-			return oracle.Reject()
+			return ro2.Reject{}
 		}
 	}
 	if strings.HasPrefix(c.Key, "visit:") {
@@ -86,35 +85,38 @@ func (c *Filter) To() oracle.Filter {
 			"exit_page",
 			"entry_page_hostname",
 			"exit_page_hostname":
-			return build(c.Op, key, c.Value)
+			return build(db, c.Op, key, c.Value)
 		case "city":
 			code, err := strconv.Atoi(c.Value[0])
 			if err != nil {
-				return oracle.Reject()
+				return ro2.Reject{}
 			}
-			return oracle.NewEqInt(key, int64(code))
+			return &ro2.EqInt{
+				Field: uint64(db.Number(key)),
+				Value: int64(code),
+			}
 		default:
-			return oracle.Reject()
+			return ro2.Reject{}
 		}
 	}
-	return oracle.Reject()
+	return ro2.Reject{}
 }
 
-func build(op string, field string, value []string) oracle.Filter {
+func build(db *ro2.Store, op string, field string, value []string) ro2.Filter {
 	switch op {
 	case "is":
-		return oracle.NewEq(field, value[0])
-	case "is_not":
-		return oracle.NewNeq(field, value[0])
-	case "matches":
-		return oracle.NewRe(field, value[0])
-	case "does_not_match":
-		return oracle.NewNre(field, value[0])
-	case "contains":
-		return oracle.NewRe(field, strings.Join(value, "|"))
-	case "does_not_contain":
-		return oracle.NewNre(field, strings.Join(value, "|"))
+		return ro2.NewEq(uint64(db.Number(field)), value[0])
+	// case "is_not":
+	// 	return oracle.NewNeq(field, value[0])
+	// case "matches":
+	// 	return oracle.NewRe(field, value[0])
+	// case "does_not_match":
+	// 	return oracle.NewNre(field, value[0])
+	// case "contains":
+	// 	return oracle.NewRe(field, strings.Join(value, "|"))
+	// case "does_not_contain":
+	// 	return oracle.NewNre(field, strings.Join(value, "|"))
 	default:
-		return oracle.Reject()
+		return ro2.Reject{}
 	}
 }

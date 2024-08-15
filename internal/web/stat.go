@@ -14,7 +14,7 @@ func UnimplementedStat(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
@@ -37,7 +37,7 @@ func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmMediums(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
@@ -60,7 +60,7 @@ func UtmMediums(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmCampaigns(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
@@ -83,7 +83,7 @@ func UtmCampaigns(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmContents(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
@@ -106,7 +106,7 @@ func UtmContents(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmTerms(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
@@ -129,7 +129,7 @@ func UtmTerms(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmSources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
@@ -152,7 +152,7 @@ func UtmSources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	referrer := r.PathValue("referrer")
 
 	metrics := []string{"visitors"}
@@ -179,7 +179,7 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "pageviews", "bounce_rate")
@@ -202,7 +202,7 @@ func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().Breakdown(
 		params.Start(),
 		params.End(),
@@ -226,7 +226,7 @@ func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func ExitPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().BreakdownExitPages(
 		params.Start(),
 		params.End(),
@@ -243,7 +243,7 @@ func ExitPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().Breakdown(
 		params.Start(),
 		params.End(),
@@ -270,7 +270,7 @@ func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().Breakdown(
 		params.Start(),
 		params.End(),
@@ -298,7 +298,7 @@ func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().BreakdownCity(
 		params.Start(),
 		params.End(),
@@ -315,7 +315,7 @@ func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),
@@ -338,7 +338,7 @@ func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),
@@ -361,7 +361,7 @@ func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),
@@ -384,7 +384,7 @@ func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),
@@ -407,7 +407,7 @@ func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func ScreenSize(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(r.URL.Query())
+	params := query.New(db.Get(), r.URL.Query())
 	o, err := db.Get().BreakdownVisitorsWithPercentage(
 		params.Start(),
 		params.End(),

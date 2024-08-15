@@ -4,29 +4,29 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"github.com/vinceanalytics/vince/internal/oracle"
+	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
 type Query struct {
 	period Date
-	filter oracle.Filter
+	filter ro2.Filter
 }
 
-func New(u url.Values) *Query {
+func New(db *ro2.Store, u url.Values) *Query {
 	var fs []Filter
 	json.Unmarshal([]byte(u.Get("filters")), &fs)
 	period := period(u.Get("period"), u.Get("date"))
-	ls := make([]oracle.Filter, len(fs))
+	ls := make(ro2.List, len(fs))
 	for i := range fs {
-		ls[i] = fs[i].To()
+		ls[i] = fs[i].To(db)
 	}
 	return &Query{
 		period: period,
-		filter: oracle.NewAnd(ls...),
+		filter: ls,
 	}
 }
 
-func (q *Query) Start() int64          { return q.period.Start.UnixMilli() }
-func (q *Query) End() int64            { return q.period.End.UnixMilli() }
-func (q *Query) Filter() oracle.Filter { return q.filter }
-func (q *Query) Metrics() []string     { return []string{} }
+func (q *Query) Start() int64       { return q.period.Start.UnixMilli() }
+func (q *Query) End() int64         { return q.period.End.UnixMilli() }
+func (q *Query) Filter() ro2.Filter { return q.filter }
+func (q *Query) Metrics() []string  { return []string{} }
