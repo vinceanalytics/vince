@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"log/slog"
+	"math"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/ro"
@@ -21,6 +22,40 @@ type Tx struct {
 
 func (tx *Tx) release() {
 	tx.keys.Release()
+}
+
+func (tx *Tx) Depth(shard, field uint64) uint64 {
+	mx, ok := tx.max(shard, field)
+	if !ok {
+		return 0
+	}
+	return mx / ro.ShardWidth
+}
+
+func (tx *Tx) max(shard, field uint64) (uint64, bool) {
+	prefix := tx.keys.Get().
+		SetShard(shard).
+		SetField(field).
+		SetKey(math.MaxUint32).KeyPrefix()
+	// seek to the last possible key
+	it := tx.tx.NewIterator(badger.IteratorOptions{
+		Reverse: true,
+	})
+	defer it.Close()
+	it.Seek(prefix)
+	if !it.Valid() {
+		return 0, false
+	}
+	item := it.Item()
+	key := ReadKey(item.Key())
+	var mx uint16
+	item.Value(func(val []byte) error {
+		var c roaring.Container
+		c.From(item.UserMeta(), val)
+		mx = c.Max()
+		return nil
+	})
+	return (uint64(key) << 16) | uint64(mx), true
 }
 
 func (tx *Tx) Add(shard, field uint64, keys []uint32, values []string, r *roaring64.Bitmap) error {
@@ -106,9 +141,7 @@ func (t *txWrite) Write(key uint32, cKey uint16, typ uint8, value []byte) error 
 	return t.tx.tx.SetEntry(badger.NewEntry(xk[:], value).WithMeta(typ))
 }
 
-// we explicitly accept bit depth because city is a uint32 and we stole bounce
-// as -1,0,1 meaning we can control how much we iterate for valid bits.
-func (tx *Tx) ExtractBSI(shard, field uint64, bitDepth uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
+func (tx *Tx) ExtractBSI(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
 	exists := tx.Row(shard, field, 0)
 	exists.And(match)
 	if exists.IsEmpty() {
@@ -119,6 +152,8 @@ func (tx *Tx) ExtractBSI(shard, field uint64, bitDepth uint64, match *roaring64.
 
 	sign := tx.Row(shard, field, 1)
 	mergeBits(sign, 1<<63, data)
+
+	bitDepth := tx.Depth(shard, field)
 
 	for i := uint64(0); i < bitDepth; i++ {
 		bits := tx.Row(shard, field, 2+uint64(i))

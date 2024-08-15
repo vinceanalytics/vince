@@ -8,16 +8,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
-var bitDepth = map[uint32]uint64{
-	timestampField: 64,
-	idField:        64,
-	bounceField:    1,
-	sessionField:   1,
-	viewField:      1,
-	durationField:  64,
-	cityField:      32,
-}
-
 func (d *Data) Read(tx *Tx, date, shard uint64,
 	match *roaring64.Bitmap, metrics ...string) {
 	d.ReadFields(tx, shard, match, metricsToProject(metrics)...)
@@ -38,7 +28,7 @@ func (d *Data) ReadFields(tx *Tx, shard uint64,
 			continue
 		}
 		if f <= cityField {
-			tx.ExtractBSI(shard, uint64(f), bitDepth[f], match, func(row uint64, c int64) {
+			tx.ExtractBSI(shard, uint64(f), match, func(row uint64, c int64) {
 				b.SetValue(row, c)
 			})
 			continue

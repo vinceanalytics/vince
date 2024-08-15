@@ -15,7 +15,7 @@ func (o *Proto[T]) CurrentVisitors(domain string) (visitors uint64, err error) {
 	err = o.Select(
 		start.UnixMilli(), end.UnixMilli(), domain, nil,
 		func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
-			tx.ExtractBSI(shard, idField, 64, match, func(row uint64, c int64) {
+			tx.ExtractBSI(shard, idField, match, func(row uint64, c int64) {
 				r.Add(uint64(c))
 			})
 			// Only process a single shard. It doesn't matter if this query span more

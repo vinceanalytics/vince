@@ -1,7 +1,6 @@
 package ro2
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -65,26 +64,25 @@ func TestTxAdd_bsi(t *testing.T) {
 	for i := range s {
 		ro.BSI(o, s[i].id, s[i].value)
 	}
-	o.Each(func(key uint32, cKey uint16, value *roaring.Container) error {
-		fmt.Println(key, cKey, value)
-		return nil
-	})
 	err = db.Update(func(tx *Tx) error {
 		return tx.Add(0, 0, nil, nil, o)
 	})
 	require.NoError(t, err)
 
 	match := map[uint64]int64{}
+	var maxKey uint64
 	db.View(func(tx *Tx) error {
 		result := roaring64.New()
 		result.AddMany([]uint64{1, 20})
-		tx.ExtractBSI(0, 0, 64, result, func(row uint64, v int64) {
+		tx.ExtractBSI(0, 0, result, func(row uint64, v int64) {
 			match[row] = v
 		})
+		maxKey, _ = tx.max(0, 0)
 		return nil
 	})
 	require.Equal(t, map[uint64]int64{
 		1:  18,
 		20: -18,
 	}, match)
+	require.Equal(t, o.Maximum(), maxKey)
 }
