@@ -35,7 +35,11 @@ func (db *DB) Close() error {
 }
 
 func (db *DB) Update(f func(tx *Tx) error) error {
-	tx := &Tx{}
+	tx := &Tx{
+		keys: Keys{
+			keys: make([]*Key, 0, 32),
+		},
+	}
 	defer tx.release()
 	return db.db.Update(func(txn *badger.Txn) error {
 		tx.tx = txn
@@ -44,7 +48,11 @@ func (db *DB) Update(f func(tx *Tx) error) error {
 }
 
 func (db *DB) View(f func(tx *Tx) error) error {
-	tx := &Tx{}
+	tx := &Tx{
+		keys: Keys{
+			keys: make([]*Key, 0, 32),
+		},
+	}
 	defer tx.release()
 	return db.db.View(func(txn *badger.Txn) error {
 		tx.tx = txn
