@@ -161,7 +161,7 @@ func Site(u *v1.User, domain string) (site *v1.Site) {
 	return
 }
 
-func (db *DB) CreateSharedLink(domain string, name, password string) (share *v1.Share) {
+func (db *DB) FindOrCreateCreateSharedLink(domain string, name, password string) (share *v1.Share) {
 	u := db.UserByDomain(domain)
 
 	site := Site(u, domain)
