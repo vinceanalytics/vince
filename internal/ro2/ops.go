@@ -2,10 +2,12 @@ package ro2
 
 import (
 	"bytes"
+	"cmp"
 	"errors"
 	"log/slog"
 	"net/http"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/dgraph-io/badger/v4"
@@ -204,6 +206,9 @@ func NewUser(r *http.Request) (u *v1.User, validation map[string]any, err error)
 }
 
 func (db *DB) SaveUser(u *v1.User) error {
+
+	slices.SortFunc(u.Sites, compareSite)
+
 	data, err := proto.Marshal(u)
 	if err != nil {
 		return err
@@ -295,4 +300,8 @@ func CleanupDOmain(domain string) string {
 func ID(id []byte) (o uuid.UUID) {
 	copy(o[:], id)
 	return
+}
+
+func compareSite(a, b *v1.Site) int {
+	return cmp.Compare(a.Domain, b.Domain)
 }
