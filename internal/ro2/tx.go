@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"math"
+	"sync"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/ro"
@@ -20,8 +21,18 @@ type Tx struct {
 	keys Keys
 }
 
-func (tx *Tx) release() {
+var txPool = &sync.Pool{New: func() any {
+	return &Tx{
+		keys: Keys{
+			keys: make([]*Key, 0, 32),
+		},
+	}
+}}
+
+func (tx *Tx) Release() {
+	tx.tx = nil
 	tx.keys.Release()
+	txPool.Put(tx)
 }
 
 func (tx *Tx) Depth(shard, field uint64) uint64 {
