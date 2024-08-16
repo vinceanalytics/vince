@@ -7,7 +7,13 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/dgraph-io/badger/v4/options"
 	"github.com/dustin/go-humanize"
+)
+
+const (
+	pageSize = 8192
+	x        = 8 << 10
 )
 
 var (
@@ -19,7 +25,10 @@ type DB struct {
 }
 
 func newDB(path string) (*DB, error) {
-	db, err := badger.Open(badger.DefaultOptions(path).WithLogger(nil))
+	db, err := badger.Open(badger.
+		DefaultOptions(path).
+		WithCompression(options.ZSTD).
+		WithLogger(nil))
 	if err != nil {
 		return nil, err
 	}
