@@ -56,6 +56,10 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, sitesIndex, ctx)
 }
 
+func AddSnippet(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	db.HTML(w, addSnippet, nil)
+}
+
 func Unimplemented(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 

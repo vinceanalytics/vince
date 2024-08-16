@@ -2,8 +2,10 @@ package web
 
 import (
 	"embed"
+	"flag"
 	"fmt"
 	"html/template"
+	"net/url"
 )
 
 //go:embed templates
@@ -19,9 +21,14 @@ var (
 	register   = template.Must(look("focus").ParseFS(templateData, "templates/auth/register.html"))
 	createSite = template.Must(look("focus").ParseFS(templateData, "templates/site/new.html"))
 	sitesIndex = template.Must(look("app").ParseFS(templateData, "templates/site/index.html"))
+	addSnippet = template.Must(look("focus").ParseFS(templateData, "templates/site/snippet.html"))
 
 	e404 = template.Must(look("focus").ParseFS(templateData, "templates/error/404.html"))
 	e500 = template.Must(look("focus").ParseFS(templateData, "templates/error/500.html"))
+)
+
+var (
+	vinceURL = flag.String("url", "", "canonical url resolving to vince instance")
 )
 
 func look(name string) *template.Template {
@@ -30,8 +37,19 @@ func look(name string) *template.Template {
 
 func funcMap() template.FuncMap {
 	return template.FuncMap{
-		"map": mapStruct,
+		"map":            mapStruct,
+		"render_snippet": renderSnippet,
+		"path_escape":    pathEscape,
 	}
+}
+
+func pathEscape(value string) string {
+	return url.PathEscape(value)
+}
+
+func renderSnippet(domain string) string {
+	tracker := fmt.Sprintf("%s/assets/js/vince.js", *vinceURL)
+	return fmt.Sprintf(`<script defer data-domain=%q src=%q></script>`, domain, tracker)
 }
 
 func mapStruct(values ...any) (o map[string]any) {

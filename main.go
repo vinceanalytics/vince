@@ -144,7 +144,7 @@ func main() {
 
 	mux.HandleFunc("GET /{domain}/snippet", db.Wrap(
 		sites.
-			Then(web.Unimplemented),
+			Then(web.AddSnippet),
 	))
 
 	mux.HandleFunc("GET /{domain}/settings", db.Wrap(
