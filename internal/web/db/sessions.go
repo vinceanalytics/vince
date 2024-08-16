@@ -228,13 +228,18 @@ func (c *Config) Authorize(w http.ResponseWriter, r *http.Request) bool {
 	return true
 }
 
-func (c *Config) Logout(w http.ResponseWriter) bool {
+func (c *Config) IsLoggedOut(w http.ResponseWriter) bool {
 	if c.session.user != nil {
 		c.session.Data.LoggedIn = true
 		c.SaveSession(w)
 		return false
 	}
 	return true
+}
+
+func (c *Config) Logout(w http.ResponseWriter) {
+	c.session.Data = Data{}
+	c.SaveSession(w)
 }
 
 func (c *Config) CurrentUser() *v1.User {

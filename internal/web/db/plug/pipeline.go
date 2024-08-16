@@ -129,7 +129,7 @@ func RequireAccount(h Handler) Handler {
 
 func RequireLogout(h Handler) Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
-		if !db.Logout(w) {
+		if !db.IsLoggedOut(w) {
 			http.Redirect(w, r, "/sites", http.StatusFound)
 			return
 		}

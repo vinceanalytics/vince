@@ -38,3 +38,8 @@ func Login(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, db.Login(w, ro2.ID(u.Id)), http.StatusFound)
 }
+
+func Logout(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	db.Logout(w)
+	http.Redirect(w, r, "/", http.StatusFound)
+}

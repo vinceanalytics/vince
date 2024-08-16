@@ -87,6 +87,11 @@ func main() {
 			Then(web.Login),
 	))
 
+	mux.HandleFunc("GET /logout", db.Wrap(
+		plug.Browser().
+			Then(web.Logout),
+	))
+
 	if !*disableRegistration {
 		mux.HandleFunc("GET /register", db.Wrap(
 			plug.Browser().
