@@ -12,6 +12,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/google/uuid"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
@@ -153,11 +154,34 @@ func (db *DB) CreateSite(u *v1.User, domain string, public bool) (uid uuid.UUID,
 }
 
 func Site(u *v1.User, domain string) (site *v1.Site) {
-	for _, m := range u.Sites {
-		if m.Domain == domain {
-			return m
+	i, ok := slices.BinarySearchFunc(u.Sites, &v1.Site{Domain: domain}, compareSite)
+	if ok {
+		site = u.Sites[i]
+	}
+	return
+}
+
+func (db *DB) CreateSharedLink(domain string, name, password string) (share *v1.Share) {
+	u := db.UserByDomain(domain)
+
+	site := Site(u, domain)
+
+	for _, s := range site.Shares {
+		if s.Name == name {
+			share = s
+			return
 		}
 	}
+	id := gonanoid.Must(16)
+	share = &v1.Share{Id: id, Name: name}
+	if password != "" {
+		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		assert(err == nil, "generating shared password", "err", err)
+		share.Password = b
+	}
+	site.Shares = append(site.Shares, share)
+	err := db.SaveUser(u)
+	assert(err == nil, "saving user after adding shared link", "err", err)
 	return
 }
 
@@ -309,5 +333,5 @@ func compareSite(a, b *v1.Site) int {
 }
 
 func compareShare(a, b *v1.Share) int {
-	return bytes.Compare(a.Id, b.Id)
+	return cmp.Compare(a.Id, b.Id)
 }
