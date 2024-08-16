@@ -206,7 +206,9 @@ func NewUser(r *http.Request) (u *v1.User, validation map[string]any, err error)
 }
 
 func (db *DB) SaveUser(u *v1.User) error {
-
+	for i := range u.Sites {
+		slices.SortFunc(u.Sites[i].Shares, compareShare)
+	}
 	slices.SortFunc(u.Sites, compareSite)
 
 	data, err := proto.Marshal(u)
@@ -304,4 +306,8 @@ func ID(id []byte) (o uuid.UUID) {
 
 func compareSite(a, b *v1.Site) int {
 	return cmp.Compare(a.Domain, b.Domain)
+}
+
+func compareShare(a, b *v1.Share) int {
+	return bytes.Compare(a.Id, b.Id)
 }
