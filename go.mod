@@ -1,6 +1,6 @@
 module github.com/vinceanalytics/vince
 
-go 1.22.5
+go 1.23
 
 require (
 	filippo.io/age v1.2.0
