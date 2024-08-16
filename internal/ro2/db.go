@@ -11,11 +11,6 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-const (
-	pageSize = 8192
-	x        = 8 << 10
-)
-
 var (
 	gc = flag.Duration("db.gc", time.Minute, "Interval for running GC checks on value log")
 )
