@@ -71,7 +71,7 @@ func (tx *Tx) max(shard, field uint64) (uint64, bool) {
 
 func (tx *Tx) Add(shard, field uint64, keys []uint32, values []string, r *roaring64.Bitmap) error {
 	if len(keys) > 0 {
-		err := tx.saveTranslations(keys, values)
+		err := tx.saveTranslations(shard, field, keys, values)
 		if err != nil {
 			return err
 		}
@@ -83,13 +83,55 @@ func (tx *Tx) Add(shard, field uint64, keys []uint32, values []string, r *roarin
 	})
 }
 
-func (tx *Tx) saveTranslations(keys []uint32, values []string) error {
+func (tx *Tx) searchTranslation(shard, field uint64, f func(val []byte)) {
+	prefix := make([]byte, 2+8+8)
+	prefix[0] = byte(TRANSLATE)
+	prefix[1] = 1
+
+	binary.BigEndian.PutUint64(prefix[2:], field)
+	binary.BigEndian.PutUint64(prefix[2+8:], shard)
+
+	it := tx.tx.NewIterator(badger.IteratorOptions{
+		Prefix: prefix,
+	})
+	defer it.Close()
+	for it.Rewind(); it.Valid(); it.Next() {
+		f(it.Item().Key()[18:])
+	}
+}
+
+func (tx *Tx) saveTranslations(shard, field uint64, keys []uint32, values []string) error {
 	buf := make([]byte, 2+4)
 	buf[0] = byte(TRANSLATE)
+
+	prefix := make([]byte, 2+8+8)
+	prefix[0] = byte(TRANSLATE)
+	prefix[1] = 1 // useful in testing to differentiate prefix and full translation
+
+	binary.BigEndian.PutUint64(prefix[2:], field)
+	binary.BigEndian.PutUint64(prefix[2+8:], shard)
+
+	// we need to support regular expression search which works per field/shard
+	// basis. To achieve this we store two variations of values
+	//
+	// [key(uint32)] => [value(string)]
+	// [field(uint64):shard(uint64):value(string)] =[value(nil)]
+	//
+	// The second variation has a nil body because we don't care much about it we
+	// can safely derive it from the value component of the key prefix by crc32
+	// hashing the value.
 	for i := range keys {
-		buf = buf[:6]
+		prefix = append(prefix[:18], []byte(values[i])...)
+		_, err := tx.tx.Get(prefix)
+		if err == nil {
+			continue
+		}
+		err = tx.tx.Set(bytes.Clone(prefix), []byte{})
+		if err != nil {
+			return err
+		}
 		binary.BigEndian.PutUint32(buf[2:], keys[i])
-		_, err := tx.tx.Get(buf)
+		_, err = tx.tx.Get(buf)
 		if err == nil {
 			continue
 		}
