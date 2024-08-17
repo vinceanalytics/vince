@@ -2,6 +2,8 @@ package ro2
 
 import (
 	"hash/crc32"
+	"log/slog"
+	"regexp"
 	"slices"
 	"time"
 
@@ -158,6 +160,36 @@ func (noop) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {}
 type Reject struct{}
 
 func (Reject) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) { match.Clear() }
+
+type Regex struct {
+	field uint64
+	value *regexp.Regexp
+}
+
+func NewRegex(field uint64, value string) Filter {
+	r, err := regexp.Compile(value)
+	if err != nil {
+		slog.Error("invalid regex filter", "field", field, "value", value)
+		return Reject{}
+	}
+	return &Regex{
+		field: field,
+		value: r,
+	}
+}
+
+func (e *Regex) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
+	hash := crc32.NewIEEE()
+	tx.searchTranslation(shard, e.field, func(val []byte) {
+		if e.value.Match(val) {
+			hash.Reset()
+			hash.Write(val)
+			match.And(
+				tx.Row(shard, e.field, uint64(hash.Sum32())),
+			)
+		}
+	})
+}
 
 type Eq struct {
 	field uint64
