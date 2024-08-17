@@ -166,7 +166,7 @@ type Regex struct {
 	value *regexp.Regexp
 }
 
-func NewRegex(field uint64, value string) Filter {
+func NewRe(field uint64, value string) Filter {
 	r, err := regexp.Compile(value)
 	if err != nil {
 		slog.Error("invalid regex filter", "field", field, "value", value)
