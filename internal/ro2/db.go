@@ -32,6 +32,7 @@ func newDB(path string) (*DB, error) {
 
 func (db *DB) Start(ctx context.Context) {
 	go db.runVlogGC(ctx)
+	go db.runSystem(ctx)
 }
 
 func (db *DB) Close() error {

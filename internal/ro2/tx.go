@@ -70,9 +70,11 @@ func (tx *Tx) max(shard, field uint64) (uint64, bool) {
 }
 
 func (tx *Tx) Add(shard, field uint64, keys []uint32, values []string, r *roaring64.Bitmap) error {
-	err := tx.saveTranslations(keys, values)
-	if err != nil {
-		return err
+	if len(keys) > 0 {
+		err := tx.saveTranslations(keys, values)
+		if err != nil {
+			return err
+		}
 	}
 	return r.Save(&txWrite{
 		shard: shard,

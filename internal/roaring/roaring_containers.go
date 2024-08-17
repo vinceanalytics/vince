@@ -10,6 +10,10 @@ type Container struct {
 	container
 }
 
+func (c *Container) Type() uint8 {
+	return uint8(c.container.containerType())
+}
+
 func (c *Container) Max() uint16 {
 	return c.container.maximum()
 }

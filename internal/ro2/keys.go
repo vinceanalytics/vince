@@ -23,6 +23,7 @@ const (
 	USER_ID
 	User_EMAIL
 	SITE_DOMAIN
+	SYSTEM
 )
 
 type Key [keySize]byte
