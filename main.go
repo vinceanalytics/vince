@@ -10,11 +10,9 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/location"
-	"github.com/vinceanalytics/vince/internal/sys"
 	"github.com/vinceanalytics/vince/internal/ua"
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/db"
@@ -33,7 +31,6 @@ var (
 	adminEmail          = flag.String("admin.email", "", "Email address for admin account")
 	disableRegistration = flag.Bool("admin.only", false, "Disables registration")
 	adminPassword       = flag.String("admin.password", "", "Password for admin account")
-	sysInterval         = flag.Duration("sys.interval", 15*time.Minute, "Interval for collecting system stats")
 )
 
 func main() {
@@ -57,13 +54,10 @@ func main() {
 
 	db.DisableRegistration(*disableRegistration)
 
-	system := sys.New()
-
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
 	db.Start(ctx)
-	system.Start(ctx, *sysInterval)
 
 	mux := http.NewServeMux()
 
@@ -286,27 +280,22 @@ func main() {
 
 	mux.HandleFunc("/system/heap", db.Wrap(
 		super.
-			Then(web.SystemHeap(system)),
+			Then(web.SystemHeap),
 	))
 
 	mux.HandleFunc("/system/requests", db.Wrap(
 		super.
-			Then(web.SystemRequests(system)),
+			Then(web.SystemRequests),
 	))
 
-	mux.HandleFunc("/system/duration", db.Wrap(
+	mux.HandleFunc("/system/data", db.Wrap(
 		super.
-			Then(web.SystemDuration(system)),
-	))
-
-	mux.HandleFunc("/system/reset", db.Wrap(
-		super.
-			Then(web.SystemRest(system)),
+			Then(web.SystemData),
 	))
 
 	mux.HandleFunc("/system/stats", db.Wrap(
 		super.
-			Then(web.SystemStats(system)),
+			Then(web.SystemStats),
 	))
 
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
@@ -319,10 +308,8 @@ func main() {
 	svr := &http.Server{
 		Addr:        *listenAddress,
 		BaseContext: func(l net.Listener) context.Context { return ctx },
-		Handler: sys.HTTP(
-			plug.Compress(
-				plug.Static(mux),
-			),
+		Handler: plug.Compress(
+			plug.Static(mux),
 		),
 	}
 	if *acme {
