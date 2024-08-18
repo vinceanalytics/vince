@@ -198,7 +198,9 @@ func (t *txWrite) Write(key uint32, cKey uint16, typ uint8, value []byte) error 
 
 func (tx *Tx) ExtractBSI(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
 	exists := tx.Row(shard, field, 0)
-	exists.And(match)
+	if match != nil {
+		exists.And(match)
+	}
 	if exists.IsEmpty() {
 		return
 	}
