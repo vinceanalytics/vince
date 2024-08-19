@@ -1,6 +1,7 @@
 package ro2
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -23,5 +24,11 @@ func TestStore_sequence(t *testing.T) {
 	db, err = Open(dir)
 	require.NoError(t, err)
 	defer db.Close()
+	db.View(func(tx *Tx) error {
+		tx.ExtractBSI(0, timestampField, nil, func(row uint64, c int64) {
+			fmt.Println(row, c)
+		})
+		return nil
+	})
 	require.Equal(t, uint64(1), db.seq.Load())
 }

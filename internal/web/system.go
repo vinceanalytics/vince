@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -89,6 +90,11 @@ func SystemData(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func SystemMetrics(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(db.Get().Sys())
+}
+
 func SystemRequests(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	b := db.Get().Requests()
 	graph := chart.Chart{
@@ -105,7 +111,9 @@ func SystemRequests(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func SystemStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	db.HTML(w, system, map[string]any{})
+	db.HTML(w, system, map[string]any{
+		"system": true,
+	})
 }
 
 func rate(b *roaring64.BSI, name string) (series chart.TimeSeries) {

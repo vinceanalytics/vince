@@ -59,24 +59,37 @@ func (r *Bitmap) Each(f func(cKey uint16, v *Container) error) error {
 	return nil
 }
 
+type toBm interface {
+	toBitmapContainer() *bitmapContainer
+}
+
+func toBitmap(c container) *bitmapContainer {
+	switch e := c.(type) {
+	case *arrayContainer:
+		return e.toBitmapContainer()
+	case *runContainer16:
+		return e.toBitmapContainer()
+	case *bitmapContainer:
+		return e
+	default:
+		return nil
+	}
+}
 func (r *Bitmap) Save(ctx Context) error {
 	var buf bytes.Buffer
 	for i, c := range r.highlowcontainer.containers {
 		k := r.highlowcontainer.keys[i]
-		err := ctx.Value(k, func(u uint8, b []byte) error {
-			c = containerFromWire(u, b).or(c)
+		b := toBitmap(c)
+		err := ctx.Value(k, func(u uint8, data []byte) error {
+			b = b.orBitmap(toBitmap(containerFromWire(u, data))).(*bitmapContainer)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 		buf.Reset()
-		c = c.toEfficientContainer()
-		_, err = c.writeTo(&buf)
-		if err != nil {
-			return err
-		}
-		err = ctx.Write(k, uint8(c.containerType()), bytes.Clone(buf.Bytes()))
+		buf.Write(uint64SliceAsByteSlice(b.bitmap))
+		err = ctx.Write(k, uint8(bitmapContype), bytes.Clone(buf.Bytes()))
 		if err != nil {
 			return err
 		}
@@ -97,6 +110,7 @@ func (r *Bitmap) FromWire(cKey uint16, typ uint8, data []byte) {
 }
 
 func containerFromWire(typ uint8, b []byte) container {
+	b = bytes.Clone(b)
 	switch contype(typ) {
 	case arrayContype:
 		return &arrayContainer{

@@ -41,6 +41,10 @@ func (k *Key) Shard() uint64 {
 	return binary.BigEndian.Uint64(k[shardOffset:])
 }
 
+func (k *Key) ShardPrefix() []byte {
+	return k[:keyOffset]
+}
+
 func (k *Key) SetShard(v uint64) *Key {
 	binary.BigEndian.PutUint64(k[shardOffset:], v)
 	return k

@@ -46,23 +46,19 @@ func (o *DB) latestID(field uint64) (id uint64) {
 		key := tx.keys.Get()
 		key.SetField(field).SetShard(math.MaxUint64)
 		it := tx.tx.NewIterator(badger.IteratorOptions{
-			Prefix:  key.KeyPrefix(),
 			Reverse: true,
 		})
-
-		it.Rewind()
-		if !it.Valid() {
-			it.Close()
-			return nil
+		defer it.Close()
+		it.Seek(key.ShardPrefix())
+		if it.Valid() {
+			shard := binary.BigEndian.Uint64(it.Item().Key()[shardOffset:])
+			exists := tx.Row(shard, timestampField, 0)
+			if !exists.IsEmpty() {
+				id = exists.Maximum()
+				return nil
+			}
 		}
-		shard := binary.BigEndian.Uint64(it.Item().Key()[shardOffset:])
-		it.Close()
 
-		// load existence bitmap for this shard
-		exists := tx.Row(shard, timestampField, 0)
-		if !exists.IsEmpty() {
-			id = exists.Maximum()
-		}
 		return nil
 	})
 	return
