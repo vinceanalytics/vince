@@ -2,7 +2,6 @@ package roaring
 
 import (
 	"bytes"
-	"encoding/binary"
 	"fmt"
 )
 
@@ -62,7 +61,6 @@ func (r *Bitmap) Each(f func(cKey uint16, v *Container) error) error {
 
 func (r *Bitmap) Save(ctx Context) error {
 	var buf bytes.Buffer
-	var card [4]byte
 	for i, c := range r.highlowcontainer.containers {
 		k := r.highlowcontainer.keys[i]
 		err := ctx.Value(k, func(u uint8, b []byte) error {
@@ -74,11 +72,6 @@ func (r *Bitmap) Save(ctx Context) error {
 		}
 		buf.Reset()
 		c = c.toEfficientContainer()
-		if c.containerType() == bitmapContype {
-			// prefix the cardinality
-			binary.BigEndian.PutUint32(card[:], uint32(c.(*bitmapContainer).cardinality))
-			buf.Write(card[:])
-		}
 		_, err = c.writeTo(&buf)
 		if err != nil {
 			return err
@@ -114,10 +107,11 @@ func containerFromWire(typ uint8, b []byte) container {
 			iv: byteSliceAsInterval16Slice(b),
 		}
 	case bitmapContype:
-		return &bitmapContainer{
-			cardinality: int(binary.BigEndian.Uint32(b[:4])),
-			bitmap:      byteSliceAsUint64Slice(b[4:]),
+		o := &bitmapContainer{
+			bitmap: byteSliceAsUint64Slice(b),
 		}
+		o.computeCardinality()
+		return o
 	default:
 		panic(fmt.Sprintf("unknown container type %d", typ))
 	}
