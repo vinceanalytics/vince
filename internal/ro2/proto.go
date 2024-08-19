@@ -1,14 +1,10 @@
 package ro2
 
 import (
-	"encoding/binary"
-	"fmt"
 	"hash/crc32"
-	"math"
 	"sync"
 	"sync/atomic"
 
-	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
@@ -65,37 +61,8 @@ func open[T proto.Message](path string) (*Proto[T], error) {
 		}
 		return b
 	}
-	o.updateSeq()
+	o.seq.Store(o.latestID(timestampField))
 	return o, nil
-}
-
-// When loading sets seq to the last known id. Ensures records are always
-// sequential.
-func (o *Proto[T]) updateSeq() {
-	o.View(func(tx *Tx) error {
-		key := tx.keys.Get()
-		// find the latest shard
-		key.SetField(timestampField).SetShard(math.MaxUint64)
-		it := tx.tx.NewIterator(badger.IteratorOptions{
-			Prefix:  key.KeyPrefix(),
-			Reverse: true,
-		})
-
-		it.Rewind()
-		var shard uint64
-		if it.Valid() {
-			// The cursor is at the last observed shard
-			shard = binary.BigEndian.Uint64(it.Item().Key()[shardOffset:])
-		}
-		it.Close()
-		// load existence bitmap for this shard
-		exists := tx.Row(shard, timestampField, 0)
-		if !exists.IsEmpty() {
-			o.seq.Store(exists.Maximum())
-		}
-		fmt.Println(o.seq.Load())
-		return nil
-	})
 }
 
 func (o *Proto[T]) Name(number uint32) string {

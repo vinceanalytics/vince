@@ -22,6 +22,7 @@ const (
 	dbSizeKey uint64 = iota + (1 << 10)
 	requestsKey
 	heapKey
+	sysTs
 )
 
 var (
@@ -45,12 +46,18 @@ func (db *DB) Heap() *roaring64.BSI {
 }
 
 func (db *DB) sys(field uint64) *roaring64.BSI {
-	shard := sysShard(time.Now())
+	shard := db.sysSeq.Load() / ro.ShardWidth
 	o := roaring64.NewDefaultBSI()
 	err := db.View(func(tx *Tx) error {
-		tx.ExtractBSI(shard, field, nil, func(row uint64, c int64) {
-			o.SetValue(row, c)
-		})
+		ts := readSysField(tx, shard, sysTs)
+		t := readSysField(tx, shard, field)
+		e := ts.GetExistenceBitmap().Iterator()
+		for e.HasNext() {
+			id := e.Next()
+			stamp, _ := ts.GetValue(id)
+			value, _ := t.GetValue(id)
+			o.SetValue(uint64(stamp), value)
+		}
 		return nil
 	})
 	if err != nil {
@@ -81,22 +88,36 @@ func (db *DB) runSystem(ctx context.Context) {
 }
 
 func (db *DB) collectSys(now time.Time) error {
-	shard := sysShard(now)
+	id := db.sysSeq.Add(1)
+	shard := id / ro.ShardWidth
 	d, r, h := db.sysStats()
 	database := roaring64.New()
 	requests := roaring64.New()
 	heap := roaring64.New()
-	ts := uint64(now.UnixMilli())
-	ro.BSI(database, ts, d)
-	ro.BSI(requests, ts, r)
-	ro.BSI(heap, ts, h)
+	ts := roaring64.New()
+	ro.BSI(database, id, d)
+	ro.BSI(requests, id, r)
+	ro.BSI(heap, id, h)
+	ro.BSI(ts, id, now.UTC().UnixMilli())
+
 	return db.Update(func(tx *Tx) error {
 		return errors.Join(
 			tx.Add(shard, dbSizeKey, nil, nil, database),
 			tx.Add(shard, requestsKey, nil, nil, requests),
 			tx.Add(shard, heapKey, nil, nil, heap),
+			tx.Add(shard, sysTs, nil, nil, ts),
 		)
 	})
+}
+
+func readSysField(tx *Tx, shard, field uint64) *roaring64.BSI {
+	o := roaring64.NewDefaultBSI()
+	for i := uint64(0); i <= shard; i++ {
+		tx.ExtractBSI(i, field, nil, func(row uint64, c int64) {
+			o.SetValue(row, c)
+		})
+	}
+	return o
 }
 
 func (db *DB) sysStats() (dbSize, requests, heap int64) {

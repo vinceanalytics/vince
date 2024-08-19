@@ -2,8 +2,11 @@ package ro2
 
 import (
 	"context"
+	"encoding/binary"
 	"flag"
 	"log/slog"
+	"math"
+	"sync/atomic"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
@@ -16,7 +19,8 @@ var (
 )
 
 type DB struct {
-	db *badger.DB
+	db     *badger.DB
+	sysSeq atomic.Uint64
 }
 
 func newDB(path string) (*DB, error) {
@@ -27,7 +31,9 @@ func newDB(path string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &DB{db: db}, nil
+	o := &DB{db: db}
+	o.sysSeq.Store(o.latestID(dbSizeKey))
+	return o, nil
 }
 
 func (db *DB) Start(ctx context.Context) {
@@ -35,6 +41,32 @@ func (db *DB) Start(ctx context.Context) {
 	go db.runSystem(ctx)
 }
 
+func (o *DB) latestID(field uint64) (id uint64) {
+	o.View(func(tx *Tx) error {
+		key := tx.keys.Get()
+		key.SetField(field).SetShard(math.MaxUint64)
+		it := tx.tx.NewIterator(badger.IteratorOptions{
+			Prefix:  key.KeyPrefix(),
+			Reverse: true,
+		})
+
+		it.Rewind()
+		if !it.Valid() {
+			it.Close()
+			return nil
+		}
+		shard := binary.BigEndian.Uint64(it.Item().Key()[shardOffset:])
+		it.Close()
+
+		// load existence bitmap for this shard
+		exists := tx.Row(shard, timestampField, 0)
+		if !exists.IsEmpty() {
+			id = exists.Maximum()
+		}
+		return nil
+	})
+	return
+}
 func (db *DB) Close() error {
 	return db.db.Close()
 }
