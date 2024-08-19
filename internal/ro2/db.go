@@ -60,7 +60,7 @@ func (db *DB) View(f func(tx *Tx) error) error {
 }
 
 func (db *DB) runVlogGC(ctx context.Context) {
-	slog.Info("starting gc check loop")
+	slog.Info("starting gc check loop", "interval", gc.String())
 	ticker := time.NewTicker(*gc)
 	defer ticker.Stop()
 
