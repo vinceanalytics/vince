@@ -107,16 +107,14 @@ func build(db *ro2.Store, op string, field string, value []string) ro2.Filter {
 	switch op {
 	case "is":
 		return ro2.NewEq(f, value[0])
-	// case "is_not":
-	// 	return oracle.NewNeq(field, value[0])
+	case "is_not":
+		return ro2.NewNeq(f, value[0])
 	case "matches":
 		return ro2.NewRe(f, value[0])
-	// case "does_not_match":
-	// 	return oracle.NewNre(field, value[0])
+	case "does_not_match", "does_not_contain":
+		return ro2.NewNre(f, value[0])
 	case "contains":
 		return ro2.NewRe(f, strings.Join(value, "|"))
-	// case "does_not_contain":
-	// 	return oracle.NewNre(field, strings.Join(value, "|"))
 	default:
 		return ro2.Reject{}
 	}

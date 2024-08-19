@@ -180,15 +180,50 @@ func NewRe(field uint64, value string) Filter {
 
 func (e *Regex) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 	hash := crc32.NewIEEE()
+	union := roaring64.New()
 	tx.searchTranslation(shard, e.field, func(val []byte) {
 		if e.value.Match(val) {
 			hash.Reset()
 			hash.Write(val)
-			match.And(
+			union.Or(
 				tx.Row(shard, e.field, uint64(hash.Sum32())),
 			)
 		}
 	})
+	match.And(union)
+}
+
+type Nre struct {
+	field uint64
+	value *regexp.Regexp
+}
+
+func NewNre(field uint64, value string) Filter {
+	r, err := regexp.Compile(value)
+	if err != nil {
+		slog.Error("invalid regex filter", "field", field, "value", value)
+		return Reject{}
+	}
+	return &Regex{
+		field: field,
+		value: r,
+	}
+}
+
+func (e *Nre) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
+	hash := crc32.NewIEEE()
+	union := roaring64.New()
+	tx.searchTranslation(shard, e.field, func(val []byte) {
+		if e.value.Match(val) {
+			hash.Reset()
+			hash.Write(val)
+			union.Or(
+				tx.Row(shard, e.field, uint64(hash.Sum32())),
+			)
+		}
+	})
+	exists := tx.Row(shard, timestampField, 0)
+	match.And(roaring64.AndNot(exists, union))
 }
 
 type Eq struct {
@@ -208,6 +243,29 @@ func NewEq(field uint64, value string) *Eq {
 func (e *Eq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 	match.And(
 		tx.Row(shard, e.field, e.value),
+	)
+}
+
+type Neq struct {
+	field uint64
+	value uint64
+}
+
+func NewNeq(field uint64, value string) *Eq {
+	hash := crc32.NewIEEE()
+	hash.Write([]byte(value))
+	return &Eq{
+		field: field,
+		value: uint64(hash.Sum32()),
+	}
+}
+
+func (e *Neq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
+	// we know timestamp is always set and the it is bsi. In the current shard it
+	// is the best fiend to look for existence bitmap.
+	exists := tx.Row(shard, timestampField, 0)
+	match.And(
+		roaring64.AndNot(exists, tx.Row(shard, e.field, e.value)),
 	)
 }
 
