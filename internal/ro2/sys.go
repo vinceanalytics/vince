@@ -34,7 +34,7 @@ func Hit() {
 }
 
 func (db *DB) Size() *roaring64.BSI {
-	return db.sys(heapKey)
+	return db.sys(dbSizeKey)
 }
 
 func (db *DB) Requests() *roaring64.BSI {
@@ -128,10 +128,4 @@ func (db *DB) sysStats() (dbSize, requests, heap int64) {
 	runtime.ReadMemStats(&m)
 	heap = int64(m.HeapAlloc)
 	return
-}
-
-func sysShard(ts time.Time) uint64 {
-	yy, mm, dd := ts.Date()
-	secs := time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC).Unix()
-	return uint64(secs) / ro.ShardWidth
 }

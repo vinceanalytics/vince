@@ -1,7 +1,6 @@
 package web
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -88,11 +87,6 @@ func SystemData(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		db.Logger().Error("serving heap graph", "err", err)
 	}
-}
-
-func SystemMetrics(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(db.Get().Sys())
 }
 
 func SystemRequests(db *db.Config, w http.ResponseWriter, r *http.Request) {

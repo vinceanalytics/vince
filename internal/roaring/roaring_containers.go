@@ -75,21 +75,58 @@ func toBitmap(c container) *bitmapContainer {
 		return nil
 	}
 }
+
 func (r *Bitmap) Save(ctx Context) error {
+	// NOTE: we are not expecting r.RunOptimized being called. So only array and
+	// bitmap containers are at play.
+	//
+	// RunOptimize should be run for older shards which no longer accept updates.
+	// So we leave shrinking the database further to possibly an external tool
+	// that will just iterate on old shards/containers and convert them to run
+	// containers to optimize storage for historical data.
+	//
+	// Run containers are not ideal for our case because they are not fast like
+	// array and bitmap and the storage benefits don't matter because data is
+	// always compressed. Only use case is for historical data, which we leave to
+	// an external tool.
 	var buf bytes.Buffer
 	for i, c := range r.highlowcontainer.containers {
 		k := r.highlowcontainer.keys[i]
-		b := toBitmap(c)
+		kind := c.containerType()
+		buf.Reset()
 		err := ctx.Value(k, func(u uint8, data []byte) error {
-			b = b.orBitmap(toBitmap(containerFromWire(u, data))).(*bitmapContainer)
-			return nil
+			n := containerFromWire(u, data)
+			c.iterate(func(x uint16) bool {
+				n = n.iaddReturnMinimized(x)
+				return true
+			})
+			kind = n.containerType()
+			// data may be invalidated by the underlying key value store. We serialize
+			// while we still have lease to it.
+			//
+			// There is no empty containers. So we are guaranteeing buf.Len() > 0. This
+			// is essential later to avoid serializing again a wrong container.
+			_, err := n.writeTo(&buf)
+			return err
 		})
 		if err != nil {
 			return err
 		}
-		buf.Reset()
-		buf.Write(uint64SliceAsByteSlice(b.bitmap))
-		err = ctx.Write(k, uint8(bitmapContype), bytes.Clone(buf.Bytes()))
+		if buf.Len() == 0 {
+			// This container is seen for the first time. No need to optimize for storage
+			// because we are in a hot loop, eventually the container will get optimized
+			// when we are doing updates.
+			//
+			// For the rare case we don't update the container again, compression
+			// will fix the storage and for most cases this will always be an array
+			// container.
+			_, err = c.writeTo(&buf)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = ctx.Write(k, uint8(kind), bytes.Clone(buf.Bytes()))
 		if err != nil {
 			return err
 		}
