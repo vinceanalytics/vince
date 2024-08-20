@@ -89,14 +89,25 @@ func (r *Bitmap) Save(ctx Context) error {
 	// array and bitmap and the storage benefits don't matter because data is
 	// always compressed. Only use case is for historical data, which we leave to
 	// an external tool.
+	//
+	// However, we still transform bitmap containers to run containers when they
+	// are full. The above note is for containers which receive less updates
 	var buf bytes.Buffer
 	for i, c := range r.highlowcontainer.containers {
 		k := r.highlowcontainer.keys[i]
 		kind := c.containerType()
 		buf.Reset()
+		var skip bool
 		err := ctx.Value(k, func(u uint8, data []byte) error {
 			n := containerFromWire(u, data)
-			c.iterate(func(x uint16) bool {
+			// Incoming containers are smaller. We can avoid generating unneeded writes
+			// by checking if we need to update.
+			diff := c.andNot(n)
+			if diff.isEmpty() {
+				skip = true
+				return nil
+			}
+			diff.iterate(func(x uint16) bool {
 				n = n.iaddReturnMinimized(x)
 				return true
 			})
@@ -111,6 +122,9 @@ func (r *Bitmap) Save(ctx Context) error {
 		})
 		if err != nil {
 			return err
+		}
+		if skip {
+			continue
 		}
 		if buf.Len() == 0 {
 			// This container is seen for the first time. No need to optimize for storage
