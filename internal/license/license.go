@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/pkg/errors"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -57,6 +58,10 @@ func Verify(key []byte) (*v1.License, error) {
 	})
 	if set != ls.ProtoReflect().Descriptor().Fields().Len() {
 		return nil, errors.New("invalid license data")
+	}
+	// validate expiration
+	if time.Now().UTC().After(time.UnixMilli(int64(ls.Expiry)).UTC()) {
+		return nil, errors.New("expired license key")
 	}
 	return &ls, nil
 }

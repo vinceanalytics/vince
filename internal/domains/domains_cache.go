@@ -1,71 +1,41 @@
 package domains
 
 import (
-	"hash/crc32"
 	"sync"
-	"time"
 
-	"github.com/RoaringBitmap/roaring/v2"
-	"golang.org/x/time/rate"
+	"github.com/vinceanalytics/vince/internal/features"
 )
 
 type Cache struct {
-	b  roaring.Bitmap
-	r  map[uint32]*rate.Limiter
-	mu sync.RWMutex
+	domains map[string]struct{}
+	mu      sync.RWMutex
 }
 
 func New() *Cache {
-	return &Cache{r: make(map[uint32]*rate.Limiter)}
+	return &Cache{domains: make(map[string]struct{})}
 }
 
 func (c *Cache) Load() func(b []byte) {
-	h := crc32.NewIEEE()
-	limit := limit()
 	return func(b []byte) {
-		h.Reset()
-		h.Write(b)
-		id := h.Sum32()
-		c.b.Add(id)
-		c.r[id] = rate.NewLimiter(rate.Limit(limit), 0)
+		c.domains[string(b)] = struct{}{}
 	}
 }
 
-// We limit up to 100 hits per site per day to ensure smooth operation but with
-// enough traffic to stress test deployments.
-//
-// We don't care if it is bots or legit traffic, so long it is coming from a
-// registered site we count it as a hit.
-func limit() float64 {
-	return float64(100) / (24 * time.Hour).Seconds()
-}
-
-func (c *Cache) Allow(domain string) (ok bool) {
-	h := crc32.NewIEEE()
-	h.Write([]byte(domain))
-	id := h.Sum32()
+func (c *Cache) Allow(domain string) bool {
 	c.mu.RLock()
-	ok = c.b.Contains(id) && c.r[id].Allow()
+	_, ok := c.domains[domain]
 	c.mu.RUnlock()
-	return
+	return ok && features.Allow()
 }
 
 func (c *Cache) Add(domain string) {
-	h := crc32.NewIEEE()
-	h.Write([]byte(domain))
-	id := h.Sum32()
 	c.mu.Lock()
-	c.b.Add(id)
-	c.r[id] = rate.NewLimiter(rate.Limit(limit()), 0)
+	c.domains[domain] = struct{}{}
 	c.mu.Unlock()
 }
 
 func (c *Cache) Remove(domain string) {
-	h := crc32.NewIEEE()
-	h.Write([]byte(domain))
-	id := h.Sum32()
 	c.mu.Lock()
-	c.b.Remove(id)
-	delete(c.r, id)
+	delete(c.domains, domain)
 	c.mu.Unlock()
 }

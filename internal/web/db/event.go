@@ -21,9 +21,6 @@ const pageView = "pageview"
 func (db *Config) ProcessEvent(r *http.Request) error {
 	m, err := db.parse(r)
 	if err != nil {
-		if errors.Is(err, ErrDrop) {
-			return nil
-		}
 		return err
 	}
 	db.append(m)
