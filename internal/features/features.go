@@ -20,7 +20,6 @@ package features
 import (
 	"flag"
 	"log/slog"
-	"math"
 	"os"
 	"sync/atomic"
 	"time"
@@ -35,6 +34,7 @@ var (
 	views   atomic.Uint64
 	expires atomic.Uint64
 	expired atomic.Bool
+	trial   atomic.Bool
 )
 
 var (
@@ -50,7 +50,8 @@ func init() {
 	users.Store(1)
 	sites.Store(1)
 	views.Store(600)
-	expires.Store(math.MaxUint64)
+	trial.Store(true)
+	expires.Store(uint64(time.Now().UTC().Add(24 * 30 * time.Hour).UnixMilli()))
 	if key := *licenseKey; key != "" {
 		data, err := os.ReadFile(key)
 		if err != nil {
@@ -66,6 +67,7 @@ func init() {
 		users.Store(ls.Users)
 		views.Store(ls.Views)
 		expires.Store(ls.Expiry)
+		trial.Store(false)
 	}
 
 	limits := float64(views.Load()) / (24 * 30 * time.Hour).Seconds()
@@ -96,5 +98,8 @@ func Context(m map[string]any) map[string]any {
 	}
 	m["can_register"] = RegistrationEnabled()
 	m["can_create_site"] = CreateSiteEnabled()
+	m["license_expired"] = expired.Load()
+	m["trial"] = trial.Load()
+	m["exceed_quota"] = limit.Tokens() <= 0
 	return m
 }
