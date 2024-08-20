@@ -2,7 +2,6 @@ package ro2
 
 import (
 	"encoding/binary"
-	"hash/crc32"
 	"log/slog"
 	"regexp"
 	"slices"
@@ -88,11 +87,7 @@ func (o *Proto[T]) Select(
 	}
 
 	shards := o.shards()
-
-	hash := crc32.NewIEEE()
-	hash.Write([]byte(domain))
-	domainID := uint64(hash.Sum32())
-
+	dom := NewEq(domainField, domain)
 	return o.View(func(tx *Tx) error {
 
 		// We iterate on shards in reverse. We are always interested in latest data.
@@ -103,7 +98,7 @@ func (o *Proto[T]) Select(
 		for i := range shards {
 			shard := shards[i]
 
-			b := tx.Row(shard, domainField, domainID)
+			b := dom.match(tx, shard)
 			if b.IsEmpty() {
 				continue
 			}
