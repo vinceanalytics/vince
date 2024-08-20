@@ -102,10 +102,10 @@ func (db *DB) collectSys(now time.Time) error {
 
 	return db.Update(func(tx *Tx) error {
 		return errors.Join(
-			tx.Add(shard, dbSizeKey, nil, nil, database),
-			tx.Add(shard, requestsKey, nil, nil, requests),
-			tx.Add(shard, heapKey, nil, nil, heap),
-			tx.Add(shard, sysTs, nil, nil, ts),
+			tx.Add(shard, dbSizeKey, database),
+			tx.Add(shard, requestsKey, requests),
+			tx.Add(shard, heapKey, heap),
+			tx.Add(shard, sysTs, ts),
 		)
 	})
 }

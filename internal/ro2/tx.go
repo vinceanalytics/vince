@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"log/slog"
 	"math"
 	"sync"
 
@@ -69,13 +68,7 @@ func (tx *Tx) max(shard, field uint64) (uint64, bool) {
 	return (uint64(key) << 16) | uint64(mx), true
 }
 
-func (tx *Tx) Add(shard, field uint64, keys []uint32, values []string, r *roaring64.Bitmap) error {
-	if len(keys) > 0 {
-		err := tx.saveTranslations(shard, field, keys, values)
-		if err != nil {
-			return err
-		}
-	}
+func (tx *Tx) Add(shard, field uint64, r *roaring64.Bitmap) error {
 	return r.Save(&txWrite{
 		shard: shard,
 		field: field,
@@ -83,10 +76,9 @@ func (tx *Tx) Add(shard, field uint64, keys []uint32, values []string, r *roarin
 	})
 }
 
-func (tx *Tx) searchTranslation(shard, field uint64, f func(val []byte)) {
+func (tx *Tx) searchTranslation(shard, field uint64, f func(key, val []byte)) {
 	prefix := make([]byte, 2+8+8)
-	prefix[0] = byte(TRANSLATE)
-	prefix[1] = 1
+	prefix[0] = byte(TRANSLATE_KEY)
 
 	binary.BigEndian.PutUint64(prefix[2:], field)
 	binary.BigEndian.PutUint64(prefix[2+8:], shard)
@@ -96,69 +88,12 @@ func (tx *Tx) searchTranslation(shard, field uint64, f func(val []byte)) {
 	})
 	defer it.Close()
 	for it.Rewind(); it.Valid(); it.Next() {
-		f(it.Item().Key()[18:])
+		k := it.Item().Key()[18:]
+		it.Item().Value(func(val []byte) error {
+			f(k, val)
+			return nil
+		})
 	}
-}
-
-func (tx *Tx) saveTranslations(shard, field uint64, keys []uint32, values []string) error {
-	buf := make([]byte, 2+4)
-	buf[0] = byte(TRANSLATE)
-
-	prefix := make([]byte, 2+8+8)
-	prefix[0] = byte(TRANSLATE)
-	prefix[1] = 1 // useful in testing to differentiate prefix and full translation
-
-	binary.BigEndian.PutUint64(prefix[2:], field)
-	binary.BigEndian.PutUint64(prefix[2+8:], shard)
-
-	// we need to support regular expression search which works per field/shard
-	// basis. To achieve this we store two variations of values
-	//
-	// [key(uint32)] => [value(string)]
-	// [field(uint64):shard(uint64):value(string)] =[value(nil)]
-	//
-	// The second variation has a nil body because we don't care much about it we
-	// can safely derive it from the value component of the key prefix by crc32
-	// hashing the value.
-	for i := range keys {
-		prefix = append(prefix[:18], []byte(values[i])...)
-		_, err := tx.tx.Get(prefix)
-		if err == nil {
-			continue
-		}
-		err = tx.tx.Set(bytes.Clone(prefix), []byte{})
-		if err != nil {
-			return err
-		}
-		binary.BigEndian.PutUint32(buf[2:], keys[i])
-		_, err = tx.tx.Get(buf)
-		if err == nil {
-			continue
-		}
-		err = tx.tx.Set(bytes.Clone(buf), []byte(values[i]))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (tx *Tx) Find(key uint32) (o string) {
-	var buf [6]byte
-	buf[0] = byte(TRANSLATE)
-	binary.BigEndian.PutUint32(buf[2:], key)
-	it, err := tx.tx.Get(buf[:])
-	if err != nil {
-		if !errors.Is(err, badger.ErrKeyNotFound) {
-			slog.Error("reading translation key", "key", err, "err", err)
-		}
-		return
-	}
-	it.Value(func(val []byte) error {
-		o = string(val)
-		return nil
-	})
-	return
 }
 
 type txWrite struct {

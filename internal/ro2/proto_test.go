@@ -1,7 +1,7 @@
 package ro2
 
 import (
-	"fmt"
+	"encoding/binary"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -16,6 +16,7 @@ func TestStore_sequence(t *testing.T) {
 	require.Equal(t, uint64(0), db.seq.Load())
 	db.Buffer(&v1.Model{
 		Timestamp: 1,
+		Country:   "TZ",
 	})
 	err = db.Flush()
 	require.NoError(t, err)
@@ -25,11 +26,19 @@ func TestStore_sequence(t *testing.T) {
 	db, err = Open(dir)
 	require.NoError(t, err)
 	defer db.Close()
+	var country string
+	var tr string
+	var id uint64
 	db.View(func(tx *Tx) error {
-		tx.ExtractBSI(0, timestampField, nil, func(row uint64, c int64) {
-			fmt.Println(row, c)
+		tx.searchTranslation(0, CountryField, func(key, val []byte) {
+			country = string(key)
+			id = binary.BigEndian.Uint64(val)
 		})
+		tr = tx.Find(CountryField, 1)
 		return nil
 	})
 	require.Equal(t, uint64(1), db.seq.Load())
+	require.Equal(t, "TZ", country)
+	require.Equal(t, "TZ", tr)
+	require.Equal(t, uint64(1), id)
 }

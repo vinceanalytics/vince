@@ -1,10 +1,8 @@
 package ro2
 
 import (
-	"slices"
 	"testing"
 
-	"github.com/dgraph-io/badger/v4"
 	"github.com/stretchr/testify/require"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring"
@@ -28,7 +26,7 @@ func TestTxAdd(t *testing.T) {
 		o.Add(ro.MutexPosition(s[i].id, s[i].value))
 	}
 	err = db.Update(func(tx *Tx) error {
-		return tx.Add(0, 0, nil, nil, o)
+		return tx.Add(0, 0, o)
 	})
 	require.NoError(t, err)
 	var result *roaring64.Bitmap
@@ -67,7 +65,7 @@ func TestTxAdd_bsi(t *testing.T) {
 		ro.BSI(o, s[i].id, s[i].value)
 	}
 	err = db.Update(func(tx *Tx) error {
-		return tx.Add(0, 0, nil, nil, o)
+		return tx.Add(0, 0, o)
 	})
 	require.NoError(t, err)
 
@@ -109,7 +107,7 @@ func TestTxCmp_range(t *testing.T) {
 		ro.BSI(o, s[i].id, s[i].value)
 	}
 	err = db.Update(func(tx *Tx) error {
-		return tx.Add(0, 0, nil, nil, o)
+		return tx.Add(0, 0, o)
 	})
 	require.NoError(t, err)
 
@@ -120,86 +118,4 @@ func TestTxCmp_range(t *testing.T) {
 		return nil
 	})
 	require.Equal(t, []uint64{2, 20}, match)
-}
-
-func TestTranslations(t *testing.T) {
-	db, err := newDB(t.TempDir())
-	require.NoError(t, err)
-	defer db.Close()
-	type T struct {
-		shard, field uint64
-		keys         []uint32
-		values       []string
-	}
-	sample := []T{
-		{0, 0, []uint32{1, 2, 3}, []string{"hello", "world", "jane"}},
-		{0, 1, []uint32{1, 2, 3}, []string{"hello", "world", "jane"}}, // same field different shards
-		{1, 0, []uint32{1, 2, 3}, []string{"hello", "world", "jane"}}, // different field same values
-		{1, 1, []uint32{1, 2, 4}, []string{"hello", "world", "John"}}, // similar values
-	}
-	err = db.Update(func(tx *Tx) error {
-		for _, s := range sample {
-			err := tx.saveTranslations(s.shard, s.field, s.keys, s.values)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	require.NoError(t, err)
-
-	t.Run("values are only stored once", func(t *testing.T) {
-		var all []string
-		db.db.View(func(txn *badger.Txn) error {
-			it := txn.NewIterator(badger.IteratorOptions{
-				Prefix: []byte{byte(TRANSLATE), 0},
-			})
-			defer it.Close()
-			for it.Rewind(); it.Valid(); it.Next() {
-				it.Item().Value(func(val []byte) error {
-					all = append(all, string(val))
-					return nil
-				})
-			}
-			return nil
-		})
-		slices.Sort(all)
-		require.Equal(t, []string{"John", "hello", "jane", "world"}, all)
-	})
-
-	t.Run("search", func(t *testing.T) {
-		var got []T
-		var want []T
-		db.View(func(tx *Tx) error {
-			for _, s := range sample {
-				w := T{
-					shard:  s.shard,
-					field:  s.field,
-					values: slices.Clone(s.values),
-				}
-				slices.Sort(w.values)
-				g := T{
-					shard: s.shard,
-					field: s.field,
-				}
-				tx.searchTranslation(s.shard, s.field, func(val []byte) {
-					g.values = append(g.values, string(val))
-				})
-				slices.Sort(g.values)
-				want = append(want, w)
-				got = append(got, g)
-			}
-			return nil
-		})
-		require.Equal(t, want, got)
-	})
-
-	t.Run("find", func(t *testing.T) {
-		var got string
-		db.View(func(tx *Tx) error {
-			got = tx.Find(1)
-			return nil
-		})
-		require.Equal(t, "hello", got)
-	})
 }

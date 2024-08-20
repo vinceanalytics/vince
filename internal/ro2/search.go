@@ -1,6 +1,7 @@
 package ro2
 
 import (
+	"encoding/binary"
 	"hash/crc32"
 	"log/slog"
 	"regexp"
@@ -179,23 +180,23 @@ func NewRe(field uint64, value string) Filter {
 }
 
 func (e *Regex) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	hash := crc32.NewIEEE()
+	match.And(e.match(tx, shard))
+}
+
+func (e *Regex) match(tx *Tx, shard uint64) *roaring64.Bitmap {
 	union := roaring64.New()
-	tx.searchTranslation(shard, e.field, func(val []byte) {
-		if e.value.Match(val) {
-			hash.Reset()
-			hash.Write(val)
+	tx.searchTranslation(shard, e.field, func(key, val []byte) {
+		if e.value.Match(key) {
 			union.Or(
-				tx.Row(shard, e.field, uint64(hash.Sum32())),
+				tx.Row(shard, e.field, binary.BigEndian.Uint64(val)),
 			)
 		}
 	})
-	match.And(union)
+	return union
 }
 
 type Nre struct {
-	field uint64
-	value *regexp.Regexp
+	eq *Regex
 }
 
 func NewNre(field uint64, value string) Filter {
@@ -204,59 +205,60 @@ func NewNre(field uint64, value string) Filter {
 		slog.Error("invalid regex filter", "field", field, "value", value)
 		return Reject{}
 	}
-	return &Regex{
-		field: field,
-		value: r,
+	return &Nre{
+		eq: &Regex{
+			field: field,
+			value: r,
+		},
 	}
 }
 
 func (e *Nre) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	hash := crc32.NewIEEE()
-	union := roaring64.New()
-	tx.searchTranslation(shard, e.field, func(val []byte) {
-		if e.value.Match(val) {
-			hash.Reset()
-			hash.Write(val)
-			union.Or(
-				tx.Row(shard, e.field, uint64(hash.Sum32())),
-			)
-		}
-	})
 	exists := tx.Row(shard, timestampField, 0)
-	match.And(roaring64.AndNot(exists, union))
+	match.And(roaring64.AndNot(exists, e.eq.match(tx, shard)))
 }
 
 type Eq struct {
 	field uint64
-	value uint64
+	value string
+	id    uint64
+	ok    *bool
 }
 
 func NewEq(field uint64, value string) *Eq {
-	hash := crc32.NewIEEE()
-	hash.Write([]byte(value))
 	return &Eq{
 		field: field,
-		value: uint64(hash.Sum32()),
+		value: value,
 	}
 }
 
 func (e *Eq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	match.And(
-		tx.Row(shard, e.field, e.value),
-	)
+	match.And(e.match(tx, shard))
+}
+
+func (e *Eq) match(tx *Tx, shard uint64) *roaring64.Bitmap {
+	if e.ok != nil {
+		if !*e.ok {
+			return roaring64.New()
+		}
+		return tx.Row(shard, e.field, e.id)
+	}
+	v, ok := tx.ID(e.field, e.value)
+	e.id = v
+	e.ok = &ok
+	if !ok {
+		return roaring64.New()
+	}
+	return tx.Row(shard, e.field, e.id)
 }
 
 type Neq struct {
-	field uint64
-	value uint64
+	eq Eq
 }
 
-func NewNeq(field uint64, value string) *Eq {
-	hash := crc32.NewIEEE()
-	hash.Write([]byte(value))
-	return &Eq{
-		field: field,
-		value: uint64(hash.Sum32()),
+func NewNeq(field uint64, value string) *Neq {
+	return &Neq{
+		eq: *NewEq(field, value),
 	}
 }
 
@@ -265,7 +267,7 @@ func (e *Neq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 	// is the best fiend to look for existence bitmap.
 	exists := tx.Row(shard, timestampField, 0)
 	match.And(
-		roaring64.AndNot(exists, tx.Row(shard, e.field, e.value)),
+		roaring64.AndNot(exists, e.eq.match(tx, shard)),
 	)
 }
 
