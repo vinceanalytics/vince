@@ -52,8 +52,6 @@ func main() {
 		}
 	}
 
-	db.DisableRegistration(*disableRegistration)
-
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
@@ -86,20 +84,18 @@ func main() {
 			Then(web.Logout),
 	))
 
-	if !*disableRegistration {
-		mux.HandleFunc("GET /register", db.Wrap(
-			plug.Browser().
-				With(plug.CSRF).
-				With(plug.Captcha).
-				Then(web.RegisterForm),
-		))
+	mux.HandleFunc("GET /register", db.Wrap(
+		plug.Browser().
+			With(plug.CSRF).
+			With(plug.Captcha).
+			Then(web.RegisterForm),
+	))
 
-		mux.HandleFunc("POST /register", db.Wrap(
-			plug.Browser().
-				With(plug.VerifyCSRF).
-				Then(web.Register),
-		))
-	}
+	mux.HandleFunc("POST /register", db.Wrap(
+		plug.Browser().
+			With(plug.VerifyCSRF).
+			Then(web.Register),
+	))
 
 	mux.HandleFunc("GET /sites/new", db.Wrap(
 		plug.Browser().

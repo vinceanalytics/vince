@@ -22,6 +22,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/dataurl"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/features"
 	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
@@ -169,9 +170,8 @@ func (c *Config) Context(base map[string]any) map[string]any {
 	if base == nil {
 		base = make(map[string]any)
 	}
-	base["register"] = !c.disableRegistration
 	c.session.Context(base)
-	return base
+	return features.Context(base)
 }
 
 func (c *Config) load(r *http.Request) {
@@ -183,12 +183,11 @@ func (c *Config) load(r *http.Request) {
 
 func (c *Config) clone(r *http.Request) *Config {
 	return &Config{
-		db:                  c.db,
-		domains:             c.domains,
-		cache:               c.cache,
-		session:             c.session.clone(),
-		disableRegistration: c.disableRegistration,
-		logger:              c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
+		db:      c.db,
+		domains: c.domains,
+		cache:   c.cache,
+		session: c.session.clone(),
+		logger:  c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
 	}
 }
 

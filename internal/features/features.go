@@ -38,7 +38,8 @@ var (
 )
 
 var (
-	licenseKey = flag.String("license", "", "path to a license key")
+	licenseKey         = flag.String("license", "", "path to a license key")
+	enableRegistration = flag.Bool("enable-registration", false, "allows registering new users")
 )
 
 var (
@@ -76,4 +77,24 @@ func init() {
 func Allow() bool {
 	return !expired.Load() &&
 		limit.Allow()
+}
+
+func CreateSiteEnabled() bool {
+	return !expired.Load() &&
+		sites.Load() > 0
+}
+
+func RegistrationEnabled() bool {
+	return *enableRegistration &&
+		!expired.Load() &&
+		users.Load() > 0
+}
+
+func Context(m map[string]any) map[string]any {
+	if m == nil {
+		m = make(map[string]any)
+	}
+	m["can_register"] = RegistrationEnabled()
+	m["can_create_site"] = CreateSiteEnabled()
+	return m
 }
