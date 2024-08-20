@@ -14,9 +14,10 @@ func TestStore_sequence(t *testing.T) {
 	require.NoError(t, err)
 	// zero sequence at the beginning
 	require.Equal(t, uint64(0), db.seq.Load())
-	err = db.Add(&v1.Model{
+	db.Buffer(&v1.Model{
 		Timestamp: 1,
 	})
+	err = db.Flush()
 	require.NoError(t, err)
 	require.Equal(t, uint64(1), db.seq.Load())
 	db.Close()

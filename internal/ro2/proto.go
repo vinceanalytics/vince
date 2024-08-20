@@ -1,6 +1,7 @@
 package ro2
 
 import (
+	"hash"
 	"hash/crc32"
 	"sync"
 	"sync/atomic"
@@ -19,6 +20,8 @@ type Proto[T proto.Message] struct {
 	pool   *sync.Pool
 	fields map[uint32]string
 	names  map[string]uint32
+
+	batch Batch
 }
 
 type Store = Proto[*v1.Model]
@@ -48,16 +51,24 @@ func open[T proto.Message](path string) (*Proto[T], error) {
 	if err != nil {
 		return nil, err
 	}
-	o := &Proto[T]{DB: db, ts: ts, fields: fields, names: names, pool: &sync.Pool{}}
+	o := &Proto[T]{
+		DB:     db,
+		ts:     ts,
+		fields: fields,
+		names:  names,
+		batch: Batch{
+			hash: crc32.NewIEEE(),
+		},
+		pool: &sync.Pool{}}
 	o.pool.New = func() any {
-		b := &bitmaps{
-			pool:   o.pool,
-			b:      make([]*roaring64.Bitmap, f.Len()),
-			keys:   make([][]uint32, f.Len()),
-			values: make([][]string, f.Len()),
+		b := &Bitmaps{
+			pool:    o.pool,
+			Roaring: make([]*roaring64.Bitmap, f.Len()),
+			Keys:    make([][]uint32, f.Len()),
+			Values:  make([][]string, f.Len()),
 		}
-		for i := range b.b {
-			b.b[i] = roaring64.New()
+		for i := range b.Roaring {
+			b.Roaring[i] = roaring64.New()
 		}
 		return b
 	}
@@ -77,14 +88,74 @@ func (o *Proto[T]) Number(name string) uint32 {
 	return v
 }
 
-func (o *Proto[T]) Add(msg T) error {
+func (o *Proto[T]) Flush() error {
+	if o.batch.IsEmpty() {
+		return nil
+	}
+	defer o.batch.Reset()
+
 	return o.Update(func(tx *Tx) error {
+		b := &o.batch
+		for i := range b.shards {
+			shard := b.shards[i]
+			err := b.bitmaps[i].each(func(field uint64, keys []uint32, values []string, bm *roaring64.Bitmap) error {
+				return tx.Add(shard, field, keys, values, bm)
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+func (o *Proto[T]) Buffer(msg T) {
+	id := o.seq.Add(1)
+	shard := id / ro.ShardWidth
+	re := msg.ProtoReflect()
+	if len(o.batch.shards) == 0 || o.batch.shards[len(o.batch.shards)-1] != shard {
+		// new batch
+		o.batch.shards = append(o.batch.shards, shard)
+		o.batch.bitmaps = append(o.batch.bitmaps, o.get())
+	}
+	b := o.batch.bitmaps[len(o.batch.bitmaps)-1]
+	hash := crc32.NewIEEE()
+	re.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+		if fd.Kind() == protoreflect.StringKind {
+			hash.Reset()
+			k := v.String()
+			hash.Write([]byte(k))
+			sum := hash.Sum32()
+			b.get(fd).Add(
+				ro.MutexPosition(id, uint64(sum)),
+			)
+			b.setKeys(fd, sum, k)
+			return true
+		}
+		ro.BSI(b.get(fd), id, v.Int())
+		return true
+	})
+
+}
+
+func (o *Proto[T]) Batch(msgs []T) *Batch {
+	s := &Batch{}
+	curr := ^uint64(0)
+	b := o.get()
+	hash := crc32.NewIEEE()
+	for i := range msgs {
 		id := o.seq.Add(1)
 		shard := id / ro.ShardWidth
+		if shard != curr {
+			if i != 0 {
+				s.shards = append(s.shards, curr)
+				s.bitmaps = append(s.bitmaps, b)
+				b = o.get()
+			}
+			curr = shard
+		}
+		msg := msgs[i]
 		re := msg.ProtoReflect()
-		b := o.get()
-		defer b.release()
-		hash := crc32.NewIEEE()
 		re.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 			if fd.Kind() == protoreflect.StringKind {
 				hash.Reset()
@@ -100,39 +171,61 @@ func (o *Proto[T]) Add(msg T) error {
 			ro.BSI(b.get(fd), id, v.Int())
 			return true
 		})
-		return b.each(func(field uint64, keys []uint32, values []string, bm *roaring64.Bitmap) error {
-			return tx.Add(shard, field, keys, values, bm)
-		})
-	})
+
+	}
+	return s
 }
 
-func (o *Proto[T]) get() *bitmaps {
-	return o.pool.Get().(*bitmaps)
+func (o *Proto[T]) get() *Bitmaps {
+	return o.pool.Get().(*Bitmaps)
 }
 
-type bitmaps struct {
-	b      []*roaring64.Bitmap
-	keys   [][]uint32
-	values [][]string
+type Batch struct {
+	shards  []uint64
+	bitmaps []*Bitmaps
+	hash    hash.Hash32
+}
+
+func (s *Batch) IsEmpty() bool {
+	return len(s.shards) == 0
+}
+
+func (s *Batch) Reset() {
+	for i := range s.bitmaps {
+		s.bitmaps[i].release()
+	}
+	clear(s.bitmaps)
+	s.bitmaps = s.bitmaps[:0]
+	s.shards = s.shards[:0]
+}
+
+// Bitmaps index of all fields
+type Bitmaps struct {
+	// 2d transformed data to bitmaps
+	Roaring []*roaring64.Bitmap
+	// crc32 hash of the values for string keys.
+	Keys [][]uint32
+	// String keys
+	Values [][]string
 	pool   *sync.Pool
 }
 
-func (b *bitmaps) get(f protoreflect.FieldDescriptor) *roaring64.Bitmap {
-	return b.b[f.Number()-1]
+func (b *Bitmaps) get(f protoreflect.FieldDescriptor) *roaring64.Bitmap {
+	return b.Roaring[f.Number()-1]
 }
 
-func (b *bitmaps) setKeys(f protoreflect.FieldDescriptor, key uint32, value string) {
+func (b *Bitmaps) setKeys(f protoreflect.FieldDescriptor, key uint32, value string) {
 	idx := f.Number() - 1
-	b.keys[idx] = append(b.keys[idx], key)
-	b.values[idx] = append(b.values[idx], value)
+	b.Keys[idx] = append(b.Keys[idx], key)
+	b.Values[idx] = append(b.Values[idx], value)
 }
 
-func (b *bitmaps) each(f func(field uint64, keys []uint32, values []string, bm *roaring64.Bitmap) error) error {
-	for i := range b.b {
-		if b.b[i].IsEmpty() {
+func (b *Bitmaps) each(f func(field uint64, keys []uint32, values []string, bm *roaring64.Bitmap) error) error {
+	for i := range b.Roaring {
+		if b.Roaring[i].IsEmpty() {
 			continue
 		}
-		err := f(uint64(i+1), b.keys[i], b.values[i], b.b[i])
+		err := f(uint64(i+1), b.Keys[i], b.Values[i], b.Roaring[i])
 		if err != nil {
 			return err
 		}
@@ -140,11 +233,11 @@ func (b *bitmaps) each(f func(field uint64, keys []uint32, values []string, bm *
 	return nil
 }
 
-func (b *bitmaps) release() {
-	for i := range b.b {
-		b.b[i].Clear()
-		b.keys[i] = b.keys[i][:0]
-		b.values[i] = b.values[i][:0]
+func (b *Bitmaps) release() {
+	for i := range b.Roaring {
+		b.Roaring[i].Clear()
+		b.Keys[i] = b.Keys[i][:0]
+		b.Values[i] = b.Values[i][:0]
 	}
 	b.pool.Put(b)
 }

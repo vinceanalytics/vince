@@ -4,16 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"flag"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/lru"
 	"github.com/vinceanalytics/vince/internal/ro2"
+)
+
+var (
+	buffer = flag.Duration("db.buffer", time.Minute, "Duration events are buffered before saving to disc")
 )
 
 type Config struct {
@@ -71,16 +77,28 @@ func (db *Config) Logger() *slog.Logger {
 }
 
 func (db *Config) Start(ctx context.Context) {
-	go db.processEvents()
+	go db.processEvents(ctx)
 	go db.db.Start(ctx)
 }
 
-func (db *Config) processEvents() {
-	db.logger.Info("start event processing loop")
-	for m := range db.models {
-		db.append(m)
+func (db *Config) processEvents(ctx context.Context) {
+	db.logger.Info("start event processing loop", "buffer", buffer.String())
+	tick := time.NewTicker(*buffer)
+	defer tick.Stop()
+	defer db.logger.Info("stopped events processing loop")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case m := <-db.models:
+			db.append(m)
+		case <-tick.C:
+			err := db.db.Flush()
+			if err != nil {
+				slog.Error("flushing buffered events", "err", err)
+			}
+		}
 	}
-	db.logger.Info("stopped events processing loop")
 }
 
 func (db *Config) Close() error {
