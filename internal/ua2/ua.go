@@ -17,6 +17,9 @@ func Parse(s string) (a Agent) {
 			a.Browser = ua.client.name
 			a.BrowserVersion = ua.client.version
 		}
+		if ua.device != nil {
+			a.Device = ua.device.device
+		}
 	}
 	return
 }
@@ -88,69 +91,67 @@ func parseDeviceUA(s string) *deviceResult {
 	{
 		// find cameras
 		if deviceCameraAllRe.MatchString(s) {
-			return parseDeviceBase(s, deviceCameraAll)
+			return parseDeviceBase("Mobile", s, deviceCameraAll)
 		}
 	}
 	{
 		// find car browsers
 		if deviceCarAllRe.MatchString(s) {
-			return parseDeviceBase(s, deviceCarAll)
+			return parseDeviceBase("Tablet", s, deviceCarAll)
 		}
 	}
 	{
 		// find consoles
 		if deviceConsoleAllRe.MatchString(s) {
-			return parseDeviceBase(s, deviceConsoleAll)
+			return parseDeviceBase("Desktop", s, deviceConsoleAll)
 		}
 	}
 	{
 		// find mobiles
 		if deviceMobileAllRe.MatchString(s) {
-			return parseDeviceBase(s, deviceMobileAll)
+			return parseDeviceBase("Mobile", s, deviceMobileAll)
 		}
 	}
 	{
 		// find notebooks
 		if deviceNotebookAllRe.MatchString(s) {
-			return parseDeviceBase(s, deviceNotebookAll)
+			return parseDeviceBase("Tablet", s, deviceNotebookAll)
 		}
 	}
 	{
 		// find portable media player
 		if devicePortableMediaPlayerAllRe.MatchString(s) {
-			return parseDeviceBase(s, devicePortableMediaPlayerAll)
+			return parseDeviceBase("Mobile", s, devicePortableMediaPlayerAll)
 		}
 	}
 	{
 		// find shell tv
 		if deviceIsShellTV().MatchString(s) {
-			return parseDeviceBase(s, deviceShellAll)
+			return parseDeviceBase("Desktop", s, deviceShellAll)
 		}
 	}
 	{
 		// find tv
 		if deviceIsTVRe().MatchString(s) {
-			return parseDeviceBase(s, deviceTVAll)
+			return parseDeviceBase("Desktop", s, deviceTVAll)
 		}
 	}
 	return nil
 }
 
-func parseDeviceBase(s string, ls []*deviceRe) *deviceResult {
+func parseDeviceBase(kind, s string, ls []*deviceRe) *deviceResult {
 	for _, e := range ls {
 		if e.re.MatchString(s) {
 			d := &deviceResult{
 				model:   e.model,
 				company: e.company,
-				device:  e.device,
+				device:  kind,
 			}
 			if len(e.models) > 0 {
 				for _, m := range e.models {
 					if m.re.MatchString(s) {
 						d.model = m.model
-						if strings.Contains(d.model, "$1") {
-							d.model = strings.Replace(d.model, "$1", m.re.FirstSubmatch(s), -1)
-						}
+						d.model = strings.Replace(d.model, "$1", m.re.FirstSubmatch(s), -1)
 					}
 				}
 			}
@@ -304,6 +305,7 @@ type Agent struct {
 	OsVersion      string
 	Browser        string
 	BrowserVersion string
+	Device         string
 }
 
 func containsLetter(ua string) bool {
