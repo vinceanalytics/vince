@@ -5,10 +5,12 @@ import (
 	"strings"
 
 	re2 "github.com/dlclark/regexp2"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
-func Parse(s string) (a Agent) {
+func Parse(s string) (a *v1.Agent) {
 	if ua := parseUA(s); ua != nil {
+		a = &v1.Agent{}
 		a.Bot = ua.bot != nil
 		if ua.os != nil {
 			a.Os = ua.os.name
@@ -299,15 +301,6 @@ type deviceInfo struct {
 	client *clientResult
 	os     *osResult
 	bot    *botResult
-}
-
-type Agent struct {
-	Bot            bool
-	Os             string
-	OsVersion      string
-	Browser        string
-	BrowserVersion string
-	Device         string
 }
 
 func containsLetter(ua string) bool {

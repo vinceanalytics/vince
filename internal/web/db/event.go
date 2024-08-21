@@ -79,10 +79,7 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 		return nil, fmt.Errorf("arsing referer%w", err)
 	}
 	path := req.pathname
-	agent, err := ua.Get(req.userAgent)
-	if err != nil {
-		return nil, err
-	}
+	agent := ua.Get(req.userAgent)
 	var city geo.Info
 	if req.remoteIp != "" {
 		ip := net.ParseIP(req.remoteIp)
@@ -103,17 +100,17 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	e.UtmCampaign = query.Get("utm_campaign")
 	e.UtmContent = query.Get("utm_content")
 	e.UtmTerm = query.Get("utm_term")
-	e.Os = agent.Os
-	e.OsVersion = agent.OsVersion
-	e.Browser = agent.Browser
-	e.BrowserVersion = agent.BrowserVersion
+	e.Os = agent.GetOs()
+	e.OsVersion = agent.GetOsVersion()
+	e.Browser = agent.GetBrowser()
+	e.BrowserVersion = agent.GetBrowserVersion()
 	e.Source = src
 	e.Referrer = ref
 	e.Country = city.CountryCode
 	e.Subdivision1Code = city.SubDivision1Code
 	e.Subdivision2Code = city.SubDivision2Code
 	e.City = int64(city.CityGeonameID)
-	e.Device = agent.Device
+	e.Device = agent.GetDevice()
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil
 }
