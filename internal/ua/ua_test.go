@@ -7,7 +7,6 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	a, err := Get("monitoring360bot/1.1")
-	require.NoError(t, err)
+	a := Get("monitoring360bot/1.1")
 	require.True(t, a.Bot)
 }
