@@ -1,6 +1,6 @@
 module github.com/vinceanalytics/vince
 
-go 1.23
+go 1.22.5
 
 require (
 	filippo.io/age v1.2.0
@@ -10,6 +10,7 @@ require (
 	github.com/blevesearch/vellum v1.0.10
 	github.com/dchest/captcha v1.0.0
 	github.com/dgraph-io/badger/v4 v4.2.0
+	github.com/dlclark/regexp2 v1.11.4
 	github.com/dustin/go-humanize v1.0.0
 	github.com/gernest/vice v0.0.2
 	github.com/google/uuid v1.6.0
