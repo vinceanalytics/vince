@@ -9,6 +9,7 @@ import (
 
 func Parse(s string) (a Agent) {
 	if ua := parseUA(s); ua != nil {
+		a.Bot = ua.bot != nil
 		if ua.os != nil {
 			a.Os = ua.os.name
 			a.OsVersion = ua.os.version
@@ -301,6 +302,7 @@ type deviceInfo struct {
 }
 
 type Agent struct {
+	Bot            bool
 	Os             string
 	OsVersion      string
 	Browser        string

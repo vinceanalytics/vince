@@ -13,7 +13,6 @@ import (
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/location"
-	"github.com/vinceanalytics/vince/internal/ua"
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
@@ -299,7 +298,6 @@ func main() {
 	go func() {
 		// we load location and ua data async.
 		location.GetCity(0)
-		ua.Warm()
 	}()
 	svr := &http.Server{
 		Addr:        *listenAddress,
