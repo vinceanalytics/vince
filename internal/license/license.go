@@ -3,6 +3,7 @@ package license
 import (
 	"bytes"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"io"
 	"time"
@@ -11,7 +12,6 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -47,7 +47,7 @@ func Verify(key []byte) (*v1.License, error) {
 		return nil, errors.New("invalid signature while trying to verify license file")
 	}
 	var ls v1.License
-	err = proto.Unmarshal(buf, &ls)
+	err = json.Unmarshal(buf, &ls)
 	if err != nil {
 		return nil, fmt.Errorf("decoding license file data%w", err)
 	}

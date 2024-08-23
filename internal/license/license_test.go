@@ -9,12 +9,13 @@ import (
 func TestValidMessage(t *testing.T) {
 	msg := `-----BEGIN LICENSE KEY-----
 
-xA0DAAgT7XgNsLV7NPIBy+ViAAAAAAAIkE4QChgDIPqpp6eLMyoQdGVzdEBleGFt
-cOJsZS5j4W9tAMKiBAATCAAQBQJmwR54CRDteA2wtXs08gAAMYYCCQHrHH+2nN6Q
-IBPeQu6l1leabWD4hZImnHR3dwMWnyQmwsyrX35a4q1Yko80o3ucTRpTMCvwL+Uo
-abG5jqHJZZC0/AIJAbgeWCLV+1w7VhT25MfloaDI16ERnK4RcgJrmStZE+XUjqoa
-9icD8rkVem3BnaUEPphX43scxe4zYVLUhy/ny4cr
-=Qnfu
+xA0DAAgTTlEgdN2He/kBy+ZiAAAAAAB7InZpZXdzIjoxMDAwMCwic2l0ZXMiOjEw
+LCJ1c2VycyI6MywiZXhwaXJ5IjoxNzU1ODg5NTk3MjI35CwiZW1haWwiOiJ0ZXN0
+QGXjeGFtcGxlLmPib20ifQDCoQQAEwgAEAUCZsjdvQkQTlEgdN2He/kAAKh0AgkB
+BdxQbTB0TcI0Kw8+5nbQhFqryBtfw4RcZpcl1tcwSIpJl4LqyPJWyg9FLP8mkFeJ
+oq1kGKEd2sv/kN+7TQHrXYgCB1hMXOMaTPzhuI0xSeQwlvesl6nPFE4/IYXjQVsI
+VUWBwvJXfkQk94f2jaTTSpArc1h2L3GKQQogfS3lwrS5en9u
+=htPY
 -----END LICENSE KEY-----`
 
 	ls, err := Verify([]byte(msg))
