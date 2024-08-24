@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"log/slog"
 	"net"
@@ -13,6 +14,7 @@ import (
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/internal/version"
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
@@ -20,20 +22,23 @@ import (
 )
 
 var (
-	listenAddress       = flag.String("listen", ":8080", "tcp address to bind the server")
-	dataPath            = flag.String("data", ".data", "Path to where database data is stored")
-	acme                = flag.Bool("acme", false, "Enables auto tls. When used make sure -acme.email and -acme.domain are set")
-	acmeEmail           = flag.String("acme.email", "", "Email address to use with lets enctrypt")
-	acmeDomain          = flag.String("acme.domain", "", "Domain name to use with lets encrypt")
-	bootStrap           = flag.Bool("admin.bootstrap", false, "Creates admin account on startup")
-	adminName           = flag.String("admin.name", "", "User name for admin account")
-	adminEmail          = flag.String("admin.email", "", "Email address for admin account")
-	disableRegistration = flag.Bool("admin.only", false, "Disables registration")
-	adminPassword       = flag.String("admin.password", "", "Password for admin account")
+	listenAddress = flag.String("listen", ":8080", "tcp address to bind the server")
+	dataPath      = flag.String("data", ".data", "Path to where database data is stored")
+	acme          = flag.Bool("acme", false, "Enables auto tls. When used make sure -acme.email and -acme.domain are set")
+	acmeEmail     = flag.String("acme.email", "", "Email address to use with lets enctrypt")
+	acmeDomain    = flag.String("acme.domain", "", "Domain name to use with lets encrypt")
+	bootStrap     = flag.Bool("admin.bootstrap", false, "Creates admin account on startup")
+	adminName     = flag.String("admin.name", "", "User name for admin account")
+	adminEmail    = flag.String("admin.email", "", "Email address for admin account")
+	adminPassword = flag.String("admin.password", "", "Password for admin account")
 )
 
 func main() {
 	flag.Parse()
+	if flag.Arg(0) == "version" {
+		fmt.Println(version.VERSION)
+		return
+	}
 	db, err := db.Open(*dataPath)
 	if err != nil {
 		log.Fatal(err)
