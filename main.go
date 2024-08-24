@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/features"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/version"
 	"github.com/vinceanalytics/vince/internal/web"
@@ -39,6 +40,7 @@ func main() {
 		fmt.Println(version.VERSION)
 		return
 	}
+	features.Setup(*dataPath)
 	db, err := db.Open(*dataPath)
 	if err != nil {
 		log.Fatal(err)
@@ -54,6 +56,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
+	err = features.Validate(db.Get())
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)

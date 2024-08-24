@@ -9,3 +9,5 @@ major:
 	go run ./internal/version/bump/main.go major
 minor:
 	go run ./internal/version/bump/main.go minor 
+patch:
+	go run ./internal/version/bump/main.go patch

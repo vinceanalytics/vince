@@ -19,12 +19,17 @@ package features
 
 import (
 	"flag"
+	"fmt"
 	"log/slog"
+	"math"
 	"os"
+	"path/filepath"
 	"sync/atomic"
 	"time"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/license"
+	"github.com/vinceanalytics/vince/internal/version"
 	"golang.org/x/time/rate"
 )
 
@@ -32,46 +37,59 @@ var (
 	users   atomic.Uint64
 	sites   atomic.Uint64
 	views   atomic.Uint64
-	expires atomic.Uint64
 	expired atomic.Bool
 	trial   atomic.Bool
+	email   atomic.Value
 )
 
 var (
-	licenseKey         = flag.String("license", "", "path to a license key")
-	enableRegistration = flag.Bool("enable-registration", false, "allows registering new users")
+	licenseKey = flag.String("license", "", "path to a license key")
 )
 
 var (
-	limit rate.Limiter
+	limit *rate.Limiter
 )
 
-func init() {
+func Setup(dataPath string) {
 	users.Store(1)
 	sites.Store(1)
 	views.Store(600)
 	trial.Store(true)
-	expires.Store(uint64(time.Now().UTC().Add(24 * 30 * time.Hour).UnixMilli()))
+	var data []byte
 	if key := *licenseKey; key != "" {
-		data, err := os.ReadFile(key)
+		// try reading  license key
+		var err error
+		data, err = os.ReadFile(key)
 		if err != nil {
 			slog.Error("failed reading license key file", "path", key, "err", err)
 			os.Exit(1)
 		}
+	} else {
+		// A usermight have applied a license on the UI try reading it from our data path
+		data, _ = os.ReadFile(filepath.Join(dataPath, "LICENSE"))
+	}
+	limits := rate.Limit(float64(600) / (24 * 30 * time.Hour).Seconds())
+
+	if len(data) > 0 {
 		ls, err := license.Verify(data)
 		if err != nil {
-			slog.Error("failed validating license key file", "path", key, "err", err)
+			slog.Error("failed validating license key file", "err", err)
 			os.Exit(1)
 		}
-		sites.Store(ls.Sites)
-		users.Store(ls.Users)
-		views.Store(ls.Views)
-		expires.Store(ls.Expiry)
-		trial.Store(false)
+		ts := time.UnixMilli(int64(ls.Expiry)).UTC()
+		if ts.Before(version.Build()) {
+			sites.Store(math.MaxUint64)
+			users.Store(math.MaxUint64)
+			views.Store(math.MaxUint64)
+			trial.Store(false)
+			expired.Store(false)
+			email.Store(ls.Email)
+			limits = rate.Inf
+		} else {
+			expired.Store(true)
+		}
 	}
-
-	limits := float64(views.Load()) / (24 * 30 * time.Hour).Seconds()
-	limit = *rate.NewLimiter(rate.Limit(limits), 0)
+	limit = rate.NewLimiter(rate.Limit(limits), 0)
 }
 
 // Allow accepts an event request. This applies to events sent for valid
@@ -87,9 +105,8 @@ func CreateSiteEnabled() bool {
 }
 
 func RegistrationEnabled() bool {
-	return *enableRegistration &&
-		!expired.Load() &&
-		users.Load() > 0
+	// For now only work for a single user.
+	return false
 }
 
 func Context(m map[string]any) map[string]any {
@@ -99,8 +116,24 @@ func Context(m map[string]any) map[string]any {
 	m["can_register"] = RegistrationEnabled()
 	m["can_create_site"] = CreateSiteEnabled()
 	m["license_expired"] = expired.Load()
+	m["license_expired"] = true
 	m["trial"] = trial.Load()
 	m["limit_exceeded"] = limit.Tokens() <= 0
 	m["quota"] = views.Load()
 	return m
+}
+
+type ByEmail interface {
+	UserByEmail(email string) (u *v1.User)
+}
+
+func Validate(db ByEmail) error {
+	if trial.Load() {
+		return nil
+	}
+	u := db.UserByEmail(email.Load().(string))
+	if u == nil {
+		return fmt.Errorf("no matching lincensed user")
+	}
+	return nil
 }

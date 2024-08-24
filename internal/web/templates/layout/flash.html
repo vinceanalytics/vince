@@ -148,5 +148,23 @@
     </div>
 </aside>
 {{end}}
+{{if .license_expired}}
+<aside class="container">
+    <div class="mt-1">
+        <div class="rounded-md p-4 relative bg-red-100">
+            <div class="flex">
+                <div class="w-full">
+                    <h3 class="text-red-800">Notice</h3>
+                    <div class="text-red-700">
+                        <p>
+                            Your license has expired <a href="https://vinceanalytics.com/#pricing" class="whitespace-nowrap font-semibold" target="_blank">Renew now <span aria-hidden="true"> &rarr;</span></a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+{{end}}
 {{end}}
 {{end}}

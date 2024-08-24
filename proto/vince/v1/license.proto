@@ -3,9 +3,6 @@ syntax = "proto3";
 package v1;
 
 message License {
-  uint64 views = 1;
-  uint64 sites = 2;
-  uint64 users = 3;
   uint64 expiry = 4;
   string email = 5;
 }
