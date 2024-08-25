@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/url"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -21,8 +20,4 @@ func TestFilter(t *testing.T) {
 		{Op: "is", Key: "visit:utm_source", Value: []string{"Twitter"}},
 	}
 	require.Equal(t, want, a)
-}
-
-func TestParseDate(t *testing.T) {
-	t.Error(time.Parse(time.RFC3339, "2021-01-01"))
 }
