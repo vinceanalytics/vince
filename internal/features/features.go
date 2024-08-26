@@ -116,7 +116,6 @@ func Context(m map[string]any) map[string]any {
 	m["can_register"] = RegistrationEnabled()
 	m["can_create_site"] = CreateSiteEnabled()
 	m["license_expired"] = expired.Load()
-	m["license_expired"] = true
 	m["trial"] = trial.Load()
 	m["limit_exceeded"] = limit.Tokens() <= 0
 	m["quota"] = views.Load()
