@@ -6,7 +6,6 @@ import (
 	"flag"
 	"log/slog"
 	"math"
-	"sync/atomic"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
@@ -19,8 +18,7 @@ var (
 )
 
 type DB struct {
-	db     *badger.DB
-	sysSeq atomic.Uint64
+	db *badger.DB
 }
 
 func newDB(path string) (*DB, error) {
@@ -32,13 +30,11 @@ func newDB(path string) (*DB, error) {
 		return nil, err
 	}
 	o := &DB{db: db}
-	o.sysSeq.Store(o.latestID(dbSizeKey))
 	return o, nil
 }
 
 func (db *DB) Start(ctx context.Context) {
 	go db.runVlogGC(ctx)
-	go db.runSystem(ctx)
 }
 
 func (o *DB) latestID(field uint64) (id uint64) {

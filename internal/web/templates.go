@@ -16,10 +16,8 @@ var (
 	layouts = template.Must(template.ParseFS(
 		templateData, "templates/layout/*",
 	)).Funcs(funcMap())
-	system     = template.Must(look("app").ParseFS(templateData, "templates/system/system.html"))
 	home       = template.Must(look("focus").ParseFS(templateData, "templates/page/index.html"))
 	login      = template.Must(look("focus").ParseFS(templateData, "templates/auth/login.html"))
-	register   = template.Must(look("focus").ParseFS(templateData, "templates/auth/register.html"))
 	createSite = template.Must(look("focus").ParseFS(templateData, "templates/site/new.html"))
 	sitesIndex = template.Must(look("app").ParseFS(templateData, "templates/site/index.html"))
 	addSnippet = template.Must(look("focus").ParseFS(templateData, "templates/site/snippet.html"))

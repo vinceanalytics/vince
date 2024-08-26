@@ -237,29 +237,6 @@ func run() {
 			With(plug.RequireAccount).
 			Then(web.Avatar),
 	))
-	super := plug.Browser().
-		With(plug.RequireAccount).
-		With(web.RequireSuper)
-
-	mux.HandleFunc("/system/heap", db.Wrap(
-		super.
-			Then(web.SystemHeap),
-	))
-
-	mux.HandleFunc("/system/requests", db.Wrap(
-		super.
-			Then(web.SystemRequests),
-	))
-
-	mux.HandleFunc("/system/data", db.Wrap(
-		super.
-			Then(web.SystemData),
-	))
-
-	mux.HandleFunc("/system/stats", db.Wrap(
-		super.
-			Then(web.SystemStats),
-	))
 
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
