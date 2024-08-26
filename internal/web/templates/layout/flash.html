@@ -130,7 +130,7 @@
     </div>
 </aside>
 {{end}}
-{{if .limit_exceeded}}
+{{if .trial}}
 <aside class="container">
     <div class="mt-1">
         <div class="rounded-md p-4 relative bg-red-100">
@@ -139,7 +139,7 @@
                     <h3 class="text-red-800">Notice</h3>
                     <div class="text-red-700">
                         <p>
-                            {{.current_user.name}} is limited to {{.quota}} page views per month. To increase the limit,  <a href="https://vinceanalytics.com/#pricing" class="whitespace-nowrap font-semibold" target="_blank">Upgrade now <span aria-hidden="true"> &rarr;</span></a>
+                            {{.current_user.name}} is limited to {{.quota}} page views. To remove the limit,  <a href="https://vinceanalytics.com/#pricing" class="whitespace-nowrap font-semibold" target="_blank">Upgrade now <span aria-hidden="true"> &rarr;</span></a>
                         </p>
                     </div>
                 </div>

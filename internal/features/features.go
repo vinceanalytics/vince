@@ -30,13 +30,12 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/license"
 	"github.com/vinceanalytics/vince/internal/version"
-	"golang.org/x/time/rate"
 )
 
 var (
 	users   atomic.Uint64
 	sites   atomic.Uint64
-	views   atomic.Uint64
+	views   atomic.Int64
 	expired atomic.Bool
 	trial   atomic.Bool
 	email   atomic.Value
@@ -44,10 +43,6 @@ var (
 
 var (
 	licenseKey = flag.String("license", "", "path to a license key")
-)
-
-var (
-	limit *rate.Limiter
 )
 
 func Setup(dataPath string) {
@@ -68,7 +63,6 @@ func Setup(dataPath string) {
 		// A usermight have applied a license on the UI try reading it from our data path
 		data, _ = os.ReadFile(filepath.Join(dataPath, "LICENSE"))
 	}
-	limits := rate.Limit(float64(600) / (24 * 30 * time.Hour).Seconds())
 
 	if len(data) > 0 {
 		ls, err := license.Verify(data)
@@ -80,23 +74,23 @@ func Setup(dataPath string) {
 		if ts.Before(version.Build()) {
 			sites.Store(math.MaxUint64)
 			users.Store(math.MaxUint64)
-			views.Store(math.MaxUint64)
+			views.Store(math.MaxInt64)
 			trial.Store(false)
 			expired.Store(false)
 			email.Store(ls.Email)
-			limits = rate.Inf
 		} else {
 			expired.Store(true)
 		}
 	}
-	limit = rate.NewLimiter(rate.Limit(limits), 0)
 }
 
 // Allow accepts an event request. This applies to events sent for valid
 // registered sites and is measured across all sites.
 func Allow() bool {
 	return !expired.Load() &&
-		limit.Allow()
+		trial.Load() &&
+		views.Load() > 0 && // for correct quota notice on trial
+		views.Add(-1) > 0
 }
 
 func CreateSiteEnabled() bool {
@@ -117,7 +111,6 @@ func Context(m map[string]any) map[string]any {
 	m["can_create_site"] = CreateSiteEnabled()
 	m["license_expired"] = expired.Load()
 	m["trial"] = trial.Load()
-	m["limit_exceeded"] = limit.Tokens() <= 0
 	m["quota"] = views.Load()
 	return m
 }

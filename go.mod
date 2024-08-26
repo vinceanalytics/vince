@@ -22,7 +22,6 @@ require (
 	github.com/wcharczuk/go-chart/v2 v2.1.1
 	golang.org/x/crypto v0.26.0
 	golang.org/x/mod v0.17.0
-	golang.org/x/time v0.3.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 v2.4.0
 )
