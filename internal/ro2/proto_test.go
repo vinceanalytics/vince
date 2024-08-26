@@ -1,8 +1,8 @@
 package ro2
 
 import (
-	"encoding/binary"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -14,11 +14,10 @@ func TestStore_sequence(t *testing.T) {
 	require.NoError(t, err)
 	// zero sequence at the beginning
 	require.Equal(t, uint64(0), db.seq.Load())
-	db.Buffer(&v1.Model{
+	err = db.One(&v1.Model{
 		Timestamp: 1,
 		Country:   "TZ",
 	})
-	err = db.Flush()
 	require.NoError(t, err)
 	require.Equal(t, uint64(1), db.seq.Load())
 	db.Close()
@@ -30,9 +29,9 @@ func TestStore_sequence(t *testing.T) {
 	var tr string
 	var id uint64
 	db.View(func(tx *Tx) error {
-		tx.searchTranslation(0, CountryField, func(key, val []byte) {
+		tx.Search(CountryField, nil, func(key []byte, val uint64) {
 			country = string(key)
-			id = binary.BigEndian.Uint64(val)
+			id = val
 		})
 		tr = tx.Find(CountryField, 1)
 		return nil
@@ -41,4 +40,21 @@ func TestStore_sequence(t *testing.T) {
 	require.Equal(t, "TZ", country)
 	require.Equal(t, "TZ", tr)
 	require.Equal(t, uint64(1), id)
+}
+
+func BenchmarkAddOne(t *testing.B) {
+	dir := t.TempDir()
+	db, err := Open(dir)
+	require.NoError(t, err)
+	// zero sequence at the beginning
+	require.Equal(t, uint64(0), db.seq.Load())
+	m := &v1.Model{
+		Timestamp: time.Now().UnixMilli(),
+		Country:   "TZ",
+	}
+	t.ResetTimer()
+	t.ReportAllocs()
+	for range t.N {
+		db.One(m)
+	}
 }

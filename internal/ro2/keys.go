@@ -18,8 +18,9 @@ const (
 type Kind byte
 
 const (
-	ROAR Kind = iota
+	ROAR byte = iota
 	TRANSLATE_KEY
+	TRANSLATE_SEQ
 	TRANSLATE_ID
 	USER_ID
 	User_EMAIL

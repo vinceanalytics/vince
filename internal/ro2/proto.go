@@ -145,6 +145,31 @@ func (o *Proto[T]) apply() error {
 	})
 }
 
+func (o *Proto[T]) One(msg T) error {
+	return o.Update(func(tx *Tx) error {
+		o.tr.init(tx)
+		re := msg.ProtoReflect()
+		b := roaring64.New()
+		var err error
+		id := o.seq.Add(1)
+		shard := id / ro.ShardWidth
+
+		re.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+			b.Clear()
+			if fd.Kind() == protoreflect.StringKind {
+				b.Add(
+					ro.MutexPosition(id, tx.Tr(shard, uint64(fd.Number()), v.String())),
+				)
+			} else {
+				ro.BSI(b, id, v.Int())
+			}
+			err = tx.Add(shard, uint64(fd.Number()), b)
+			return err == nil
+		})
+		return err
+	})
+}
+
 func (o *Proto[T]) get() *Bitmaps {
 	return o.pool.Get().(*Bitmaps)
 }

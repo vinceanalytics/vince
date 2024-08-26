@@ -123,7 +123,7 @@ func (t *txWrite) Value(key uint32, cKey uint16, value func(uint8, []byte) error
 
 func (t *txWrite) Write(key uint32, cKey uint16, typ uint8, value []byte) error {
 	xk := t.tx.keys.Get().
-		SetKind(ROAR).
+		SetKind(Kind(ROAR)).
 		SetShard(t.shard).
 		SetField(t.field).
 		SetKey(key).
