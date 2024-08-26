@@ -69,6 +69,7 @@ func (s *SessionContext) Context(base map[string]any) {
 		site := map[string]any{
 			"domain": s.Domain,
 			"public": s.Public,
+			"locked": s.Locked,
 		}
 		base["site"] = site
 	}

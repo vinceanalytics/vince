@@ -18,6 +18,7 @@ message Site {
   string domain = 2;
   bool public = 3;
   repeated Share shares = 4;
+  bool locked = 5;
 }
 
 message Share {

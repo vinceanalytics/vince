@@ -20,31 +20,23 @@ package features
 import (
 	"fmt"
 	"log/slog"
-	"math"
 	"os"
 	"path/filepath"
 	"sync/atomic"
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/license"
 	"github.com/vinceanalytics/vince/internal/version"
 )
 
 var (
-	users   atomic.Uint64
-	sites   atomic.Uint64
-	views   atomic.Int64
 	expired atomic.Bool
 	trial   atomic.Bool
 	email   atomic.Value
 )
 
 func Setup(dataPath string) {
-	users.Store(1)
-	sites.Store(1)
-	views.Store(600)
 	trial.Store(true)
 	var data []byte
 	if key := config.C.License; key != "" {
@@ -68,9 +60,6 @@ func Setup(dataPath string) {
 		}
 		ts := time.UnixMilli(int64(ls.Expiry)).UTC()
 		if ts.Before(version.Build()) {
-			sites.Store(math.MaxUint64)
-			users.Store(math.MaxUint64)
-			views.Store(math.MaxInt64)
 			trial.Store(false)
 			expired.Store(false)
 			email.Store(ls.Email)
@@ -80,39 +69,13 @@ func Setup(dataPath string) {
 	}
 }
 
-// Allow accepts an event request. This applies to events sent for valid
-// registered sites and is measured across all sites.
-func Allow() bool {
-	return !expired.Load() &&
-		trial.Load() &&
-		views.Load() > 0 && // for correct quota notice on trial
-		views.Add(-1) > 0
-}
-
-func CreateSiteEnabled() bool {
-	return !expired.Load() &&
-		sites.Load() > 0
-}
-
-func RegistrationEnabled() bool {
-	// For now only work for a single user.
-	return false
-}
-
 func Context(m map[string]any) map[string]any {
 	if m == nil {
 		m = make(map[string]any)
 	}
-	m["can_register"] = RegistrationEnabled()
-	m["can_create_site"] = CreateSiteEnabled()
 	m["license_expired"] = expired.Load()
 	m["trial"] = trial.Load()
-	m["quota"] = views.Load()
 	return m
-}
-
-type ByEmail interface {
-	UserByEmail(email string) (u *v1.User)
 }
 
 func Validate() error {

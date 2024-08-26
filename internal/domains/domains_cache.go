@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/features"
 )
 
 type Cache struct {
@@ -18,6 +17,9 @@ func New() *Cache {
 
 func (c *Cache) Load() func(b *v1.Site) {
 	return func(b *v1.Site) {
+		if b.Locked {
+			return
+		}
 		c.domains[b.Domain] = struct{}{}
 	}
 }
@@ -26,7 +28,7 @@ func (c *Cache) Allow(domain string) bool {
 	c.mu.RLock()
 	_, ok := c.domains[domain]
 	c.mu.RUnlock()
-	return ok && features.Allow()
+	return ok
 }
 
 func (c *Cache) Add(domain string) {

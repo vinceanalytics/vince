@@ -40,6 +40,8 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.Get().Domains(func(s *v1.Site) {
 		sites = append(sites, map[string]any{
 			"domain":   s.Domain,
+			"public":   s.Public,
+			"locked":   s.Locked,
 			"visitors": 0,
 		})
 	})
