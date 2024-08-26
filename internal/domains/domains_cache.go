@@ -3,6 +3,7 @@ package domains
 import (
 	"sync"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/features"
 )
 
@@ -15,9 +16,9 @@ func New() *Cache {
 	return &Cache{domains: make(map[string]struct{})}
 }
 
-func (c *Cache) Load() func(b []byte) {
-	return func(b []byte) {
-		c.domains[string(b)] = struct{}{}
+func (c *Cache) Load() func(b *v1.Site) {
+	return func(b *v1.Site) {
+		c.domains[b.Domain] = struct{}{}
 	}
 }
 

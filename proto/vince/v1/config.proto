@@ -2,6 +2,17 @@ syntax = "proto3";
 
 package v1;
 
+message Config {
+  string listen = 1;
+  string data_path = 2;
+  bool acme = 3;
+  string acme_email = 4;
+  string acme_domain = 5;
+  User admin = 6;
+  string license = 7;
+  string url = 8;
+}
+
 message Site {
   bytes id = 1;
   string domain = 2;
@@ -16,10 +27,7 @@ message Share {
 }
 
 message User {
-  bytes id = 1;
   string name = 2;
   string email = 3;
-  bytes password = 4;
-  repeated Site sites = 5;
-  bool super_user = 8;
+  string password = 4;
 }

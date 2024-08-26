@@ -22,8 +22,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/dataurl"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/features"
-	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
 func newSession(path string) (*age.X25519Identity, error) {
@@ -61,15 +61,13 @@ func (s *SessionContext) Context(base map[string]any) {
 	if u := s.user; u != nil {
 		base["current_user"] = map[string]any{
 			"name":  u.Name,
-			"id":    ro2.FormatID(u.Id),
 			"email": u.Email,
-			"admin": u.SuperUser,
+			"admin": true,
 		}
 	}
 	if s := s.site; s != nil {
 		site := map[string]any{
 			"domain": s.Domain,
-			"id":     ro2.FormatID(s.Id),
 			"public": s.Public,
 		}
 		base["site"] = site
@@ -132,13 +130,11 @@ func (c *Config) Wrap(f func(db *Config, w http.ResponseWriter, r *http.Request)
 func (c *Config) Load(w http.ResponseWriter, r *http.Request) {
 	c.load(r)
 	if c.session.Data.CurrentUserID != "" {
-		uid := uuid.MustParse(c.session.Data.CurrentUserID)
-		usr := c.db.UserByID(uid)
-		if usr == nil {
+		if config.C.Admin.Email != c.session.Data.CurrentUserID {
 			c.session = c.session.clone()
 			c.SaveSession(w)
 		} else {
-			c.session.user = usr
+			c.session.user = config.C.Admin
 		}
 	}
 }
@@ -253,8 +249,8 @@ func (c *Config) CurrentSite() *v1.Site {
 	return c.session.site
 }
 
-func (c *Config) Login(w http.ResponseWriter, uid uuid.UUID) string {
-	c.session.Data.CurrentUserID = uid.String()
+func (c *Config) Login(w http.ResponseWriter) string {
+	c.session.Data.CurrentUserID = config.C.Admin.Email
 	c.session.Data.LoggedIn = true
 	dest := c.session.Data.LoginDest
 	c.session.Data.LoginDest = ""

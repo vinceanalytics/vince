@@ -13,7 +13,7 @@ import (
 
 func RequireSuper(h plug.Handler) plug.Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
-		if usr := db.CurrentUser(); usr != nil && usr.SuperUser {
+		if db.CurrentUser() != nil {
 			h(db, w, r)
 			return
 		}

@@ -1,6 +1,7 @@
 dev:
-	go run main.go -admin.bootstrap -admin.name=acme -admin.email=acme@user.test \
-	-admin.password=1234
+	go build -o bin/vince
+	./bin/vince  --adminName=acme --adminEmail=acme@user.test \
+	--adminPassword=1234
 
 css:
 	cd assets && npm run css && cd -

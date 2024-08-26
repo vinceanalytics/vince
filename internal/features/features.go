@@ -18,7 +18,6 @@
 package features
 
 import (
-	"flag"
 	"fmt"
 	"log/slog"
 	"math"
@@ -28,6 +27,7 @@ import (
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/license"
 	"github.com/vinceanalytics/vince/internal/version"
 )
@@ -41,17 +41,13 @@ var (
 	email   atomic.Value
 )
 
-var (
-	licenseKey = flag.String("license", "", "path to a license key")
-)
-
 func Setup(dataPath string) {
 	users.Store(1)
 	sites.Store(1)
 	views.Store(600)
 	trial.Store(true)
 	var data []byte
-	if key := *licenseKey; key != "" {
+	if key := config.C.License; key != "" {
 		// try reading  license key
 		var err error
 		data, err = os.ReadFile(key)
@@ -119,12 +115,11 @@ type ByEmail interface {
 	UserByEmail(email string) (u *v1.User)
 }
 
-func Validate(db ByEmail) error {
+func Validate() error {
 	if trial.Load() {
 		return nil
 	}
-	u := db.UserByEmail(email.Load().(string))
-	if u == nil {
+	if config.C.Admin.Email != email.Load().(string) {
 		return fmt.Errorf("no matching lincensed user")
 	}
 	return nil

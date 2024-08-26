@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/vinceanalytics/vince/internal/ro2"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
@@ -16,7 +16,6 @@ func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	usr := db.CurrentUser()
 	domain := r.Form.Get("domain")
 	domain, bad := db.Get().ValidateSiteDomain(domain)
 	if bad != "" {
@@ -26,7 +25,7 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		}))
 		return
 	}
-	_, err := db.Get().CreateSite(usr, domain, false)
+	err := db.Get().CreateSite(domain, false)
 	if err != nil {
 		db.HTMLCode(http.StatusInternalServerError, w, e500, nil)
 		db.Logger().Error("creating site", "err", err)
@@ -37,17 +36,13 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	usr := db.CurrentUser()
-
-	sites := make([]map[string]any, 0, len(usr.Sites))
-
-	for _, s := range usr.Sites {
+	sites := make([]map[string]any, 0, 16)
+	db.Get().Domains(func(s *v1.Site) {
 		sites = append(sites, map[string]any{
-			"id":       ro2.FormatID(s.Id),
 			"domain":   s.Domain,
 			"visitors": 0,
 		})
-	}
+	})
 	ctx := make(map[string]any)
 
 	if len(sites) > 0 {
@@ -66,15 +61,16 @@ func Unimplemented(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func RequireSiteAccess(h plug.Handler) plug.Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		domain := r.PathValue("domain")
-		if usr := db.CurrentUser(); usr != nil && ro2.Site(usr, domain) != nil {
-			// Fast path the current user has some role with the asked domain
-			site := ro2.Site(usr, domain)
+		site := db.Get().Site(domain)
+		if site == nil {
+			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+			return
+		}
+		if db.CurrentUser() != nil {
 			db.SetSite(site)
 			h(db, w, r)
 			return
 		}
-		usr := db.Get().UserByDomain(domain)
-		site := ro2.Site(usr, domain)
 		if !site.Public {
 			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
 			return

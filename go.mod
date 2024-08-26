@@ -19,6 +19,7 @@ require (
 	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
+	github.com/urfave/cli/v3 v3.0.0-alpha9
 	github.com/wcharczuk/go-chart/v2 v2.1.1
 	golang.org/x/crypto v0.26.0
 	golang.org/x/mod v0.17.0
@@ -45,6 +46,7 @@ require (
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/oschwald/maxminddb-golang v1.13.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.22.5 // indirect
 	golang.org/x/image v0.11.0 // indirect
 	golang.org/x/net v0.21.0 // indirect

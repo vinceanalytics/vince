@@ -2,10 +2,11 @@ package web
 
 import (
 	"embed"
-	"flag"
 	"fmt"
 	"html/template"
 	"net/url"
+
+	"github.com/vinceanalytics/vince/internal/config"
 )
 
 //go:embed templates
@@ -27,10 +28,6 @@ var (
 	e500 = template.Must(look("focus").ParseFS(templateData, "templates/error/500.html"))
 )
 
-var (
-	vinceURL = flag.String("url", "", "canonical url resolving to vince instance")
-)
-
 func look(name string) *template.Template {
 	return template.Must(layouts.Lookup(name).Clone())
 }
@@ -48,7 +45,7 @@ func pathEscape(value string) string {
 }
 
 func renderSnippet(domain string) string {
-	tracker := fmt.Sprintf("%s/assets/js/vince.js", *vinceURL)
+	tracker := fmt.Sprintf("%s/assets/js/vince.js", config.C.Url)
 	return fmt.Sprintf(`<script defer data-domain=%q src=%q></script>`, domain, tracker)
 }
 
