@@ -16,11 +16,13 @@ var (
 	layouts = template.Must(template.ParseFS(
 		templateData, "templates/layout/*",
 	)).Funcs(funcMap())
-	home       = template.Must(look("focus").ParseFS(templateData, "templates/page/index.html"))
-	login      = template.Must(look("focus").ParseFS(templateData, "templates/auth/login.html"))
-	createSite = template.Must(look("focus").ParseFS(templateData, "templates/site/new.html"))
-	sitesIndex = template.Must(look("app").ParseFS(templateData, "templates/site/index.html"))
-	addSnippet = template.Must(look("focus").ParseFS(templateData, "templates/site/snippet.html"))
+	home        = template.Must(look("focus").ParseFS(templateData, "templates/page/index.html"))
+	login       = template.Must(look("focus").ParseFS(templateData, "templates/auth/login.html"))
+	statsLocked = template.Must(look("focus").ParseFS(templateData, "templates/stats/site_locked.html"))
+	stats       = template.Must(look("focus").ParseFS(templateData, "templates/stats/stats.html"))
+	createSite  = template.Must(look("focus").ParseFS(templateData, "templates/site/new.html"))
+	sitesIndex  = template.Must(look("app").ParseFS(templateData, "templates/site/index.html"))
+	addSnippet  = template.Must(look("focus").ParseFS(templateData, "templates/site/snippet.html"))
 
 	e404 = template.Must(look("focus").ParseFS(templateData, "templates/error/404.html"))
 	e500 = template.Must(look("focus").ParseFS(templateData, "templates/error/500.html"))

@@ -232,6 +232,12 @@ func run() {
 			Then(web.UnimplementedStat),
 	))
 
+	mux.HandleFunc("GET /{domain}/dashboard", db.Wrap(
+		plug.Browser().
+			With(web.RequireSiteAccess).
+			Then(web.Stats),
+	))
+
 	mux.HandleFunc("GET /avatar/{size}/{uid...}", db.Wrap(
 		plug.Browser().
 			With(plug.RequireAccount).
