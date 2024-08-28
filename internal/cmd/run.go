@@ -106,7 +106,13 @@ func run() {
 
 	mux.HandleFunc("GET /{domain}/settings", db.Wrap(
 		sites.
-			Then(web.Unimplemented),
+			With(plug.CSRF).
+			Then(web.Settings),
+	))
+
+	mux.HandleFunc("/{domain}/delete", db.Wrap(
+		sites.
+			Then(web.Delete),
 	))
 
 	stats := plug.InternalStats().

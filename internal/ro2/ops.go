@@ -83,6 +83,15 @@ func (db *DB) CreateSite(domain string, public bool) (err error) {
 	})
 }
 
+func (db *DB) Delete(domain string) (err error) {
+	return db.db.Update(func(txn *badger.Txn) error {
+		key := make([]byte, len(domain)+2)
+		key[0] = byte(SITE_DOMAIN)
+		copy(key[2:], []byte(domain))
+		return txn.Delete(key)
+	})
+}
+
 func (db *DB) FindOrCreateCreateSharedLink(domain string, name, password string) (share *v1.Share) {
 
 	site := db.Site(domain)

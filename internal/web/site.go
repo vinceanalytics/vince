@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 
@@ -9,6 +10,18 @@ import (
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
+
+func Settings(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	db.HTML(w, settings, nil)
+}
+
+func Delete(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	err := db.Get().Delete(db.CurrentSite().Domain)
+	if err != nil {
+		slog.Error("deleting site", "domain", db.CurrentSite().Domain, "err", "err")
+	}
+	http.Redirect(w, r, "/sites", http.StatusFound)
+}
 
 func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, createSite, nil)
