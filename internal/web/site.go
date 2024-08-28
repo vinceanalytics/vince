@@ -23,6 +23,26 @@ func Delete(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/sites", http.StatusFound)
 }
 
+func MakePublic(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	site := db.CurrentSite()
+	site.Public = true
+	err := db.Get().Save(site)
+	if err != nil {
+		slog.Error("makeing site  public", "domain", db.CurrentSite().Domain, "err", "err")
+	}
+	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
+}
+
+func MakePrivate(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	site := db.CurrentSite()
+	site.Public = false
+	err := db.Get().Save(site)
+	if err != nil {
+		slog.Error("makeing site  private", "domain", db.CurrentSite().Domain, "err", "err")
+	}
+	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
+}
+
 func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, createSite, nil)
 }

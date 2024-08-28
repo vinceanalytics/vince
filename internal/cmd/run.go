@@ -88,15 +88,14 @@ func run() {
 		With(plug.RequireAccount).
 		With(web.RequireSiteAccess)
 
-	mux.HandleFunc("POST /{domain}/make-public", db.Wrap(
+	mux.HandleFunc("/{domain}/make-public", db.Wrap(
 		sites.
-			Then(web.Unimplemented),
+			Then(web.MakePublic),
 	))
 
-	mux.HandleFunc("POST /{domain}/make-private", db.Wrap(
+	mux.HandleFunc("/{domain}/make-private", db.Wrap(
 		sites.
-			With(plug.VerifyCSRF).
-			Then(web.Unimplemented),
+			Then(web.MakePrivate),
 	))
 
 	mux.HandleFunc("GET /{domain}/snippet", db.Wrap(
