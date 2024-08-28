@@ -1,0 +1,25 @@
+{{define "main"}}
+<form action="/{{.site.domain|path_escape}}/shared-links" method="post"
+    class="max-w-md w-full mx-auto bg-white dark:bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4 mt-8">
+    {{with .csrf}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
+    <h2 class="text-xl font-black dark:text-gray-100">New shared link</h2>
+    <div class="my-4">
+        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+        <div class="mt-1">
+            <input type="text" required name="name" autocomplete="off"
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-900 dark:border-gray-500 dark:text-gray-300 dark:focus:bg-gray-800 dark:focus:border-gray-500">
+        </div>
+    </div>
+    <div class="my-4">
+        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Password
+            (optional)</label>
+        <input type="password" name="password" id="password" autocomplete="new-password"
+            class="hadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-900 dark:border-gray-500 dark:text-gray-300 dark:focus:bg-gray-800 dark:focus:border-gray-500">
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-200">
+            Password protection is optional. Please make sure you save it in a secure place. Once the link is created,
+            we cannot reveal the password.
+        </p>
+    </div>
+    <input type="submit" value="Create shared link" class="button mt-4 w-full">
+</form>
+{{end}}

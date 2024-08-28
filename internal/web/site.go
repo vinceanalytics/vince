@@ -11,6 +11,23 @@ import (
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
 
+func SharedLinksForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	db.HTML(w, shared, nil)
+}
+
+func CreateSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	name := r.Form.Get("name")
+	password := r.Form.Get("password")
+	site := db.CurrentSite()
+	site.Public = true
+	err := db.Get().FindOrCreateCreateSharedLink(site.Domain, name, password)
+	if err != nil {
+		slog.Error("makeing site  public", "domain", db.CurrentSite().Domain, "err", "err")
+	}
+	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
+}
+
 func Settings(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, settings, nil)
 }

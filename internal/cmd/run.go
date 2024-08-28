@@ -88,6 +88,18 @@ func run() {
 		With(plug.RequireAccount).
 		With(web.RequireSiteAccess)
 
+	mux.HandleFunc("GET /{domain}/shared-links", db.Wrap(
+		sites.
+			With(plug.CSRF).
+			Then(web.SharedLinksForm),
+	))
+
+	mux.HandleFunc("POST /{domain}/shared-links", db.Wrap(
+		sites.
+			With(plug.VerifyCSRF).
+			Then(web.CreateSharedLink),
+	))
+
 	mux.HandleFunc("/{domain}/make-public", db.Wrap(
 		sites.
 			Then(web.MakePublic),

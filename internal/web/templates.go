@@ -21,6 +21,7 @@ var (
 	statsLocked = template.Must(look("focus").ParseFS(templateData, "templates/stats/site_locked.html"))
 	stats       = template.Must(look("focus").ParseFS(templateData, "templates/stats/stats.html"))
 	createSite  = template.Must(look("focus").ParseFS(templateData, "templates/site/new.html"))
+	shared      = template.Must(look("focus").ParseFS(templateData, "templates/site/new_shared_link.html"))
 	sitesIndex  = template.Must(look("app").ParseFS(templateData, "templates/site/index.html"))
 	settings    = template.Must(look("app").ParseFS(templateData, "templates/site/settings.html"))
 	addSnippet  = template.Must(look("focus").ParseFS(templateData, "templates/site/snippet.html"))
