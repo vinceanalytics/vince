@@ -11,6 +11,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -70,6 +71,22 @@ func (s *SessionContext) Context(base map[string]any) {
 			"domain": s.Domain,
 			"public": s.Public,
 			"locked": s.Locked,
+		}
+		share := make([]map[string]any, 0, len(s.Shares))
+		u := config.C.Url
+		p := u + fmt.Sprintf("/share/%s?auth=", url.PathEscape(s.Domain))
+
+		for _, r := range s.Shares {
+			m := map[string]any{
+				"slug":     r.Id,
+				"name":     r.Name,
+				"dest":     p + r.Id,
+				"password": len(r.Password) > 0,
+			}
+			share = append(share, m)
+		}
+		if len(share) > 0 {
+			site["share"] = share
 		}
 		base["site"] = site
 	}
