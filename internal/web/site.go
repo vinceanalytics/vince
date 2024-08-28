@@ -11,8 +11,25 @@ import (
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
 
+func EditSharedLinksForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	db.HTML(w, edit, map[string]any{"slug": slug})
+}
+
 func SharedLinksForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, shared, nil)
+}
+
+func EditSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	name := r.Form.Get("name")
+	site := db.CurrentSite()
+	slug := r.PathValue("slug")
+	err := db.Get().EditSharedLink(site, slug, name)
+	if err != nil {
+		slog.Error("updating shared link", "slug", slug, "domain", db.CurrentSite().Domain, "err", "err")
+	}
+	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
 }
 
 func CreateSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {

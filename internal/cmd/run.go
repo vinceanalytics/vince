@@ -94,6 +94,18 @@ func run() {
 			Then(web.SharedLinksForm),
 	))
 
+	mux.HandleFunc("GET /shared-links/{domain}/edit/{slug}", db.Wrap(
+		sites.
+			With(plug.CSRF).
+			Then(web.EditSharedLinksForm),
+	))
+
+	mux.HandleFunc("POST /shared-links/{domain}/edit/{slug}", db.Wrap(
+		sites.
+			With(plug.VerifyCSRF).
+			Then(web.EditSharedLink),
+	))
+
 	mux.HandleFunc("POST /{domain}/shared-links", db.Wrap(
 		sites.
 			With(plug.VerifyCSRF).

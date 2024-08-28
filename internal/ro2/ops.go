@@ -92,6 +92,15 @@ func (db *DB) Delete(domain string) (err error) {
 	})
 }
 
+func (db *DB) EditSharedLink(site *v1.Site, slug, name string) error {
+	i, ok := slices.BinarySearchFunc(site.Shares, &v1.Share{Id: slug}, compareShare)
+	if !ok {
+		return nil
+	}
+	site.Shares[i].Name = name
+	return db.Save(site)
+}
+
 func (db *DB) FindOrCreateCreateSharedLink(domain string, name, password string) (share *v1.Share) {
 
 	site := db.Site(domain)
