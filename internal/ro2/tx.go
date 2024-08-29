@@ -218,7 +218,7 @@ func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(
 }
 
 func (tx *Tx) Row(shard, field uint64, rowID uint64) *roaring64.Bitmap {
-	from, to := tx.keyRange(shard, field, rowID)
+	o, from, to := tx.keyRange(shard, field, rowID)
 	opts := badger.IteratorOptions{
 		Prefix: from.KeyPrefix(),
 	}
@@ -236,11 +236,12 @@ func (tx *Tx) Row(shard, field uint64, rowID uint64) *roaring64.Bitmap {
 			return nil
 		})
 	}
-	return roaring64.NewFromMap(b)
+	o.Reset(b)
+	return o
 }
 
-func (tx *Tx) keyRange(shard, field uint64, rowID uint64) (from, to *Key) {
-	b := roaring64.New()
+func (tx *Tx) keyRange(shard, field uint64, rowID uint64) (b *roaring64.Bitmap, from, to *Key) {
+	b = roaring64.New()
 	b.Add(rowID * ro.ShardWidth)
 	b.Add((rowID + 1) * ro.ShardWidth)
 	b.Each(func(key uint32, cKey uint16, value *roaring.Container) error {

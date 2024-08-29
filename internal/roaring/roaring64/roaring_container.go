@@ -17,6 +17,11 @@ func NewFromMap(m *roaring.Bitmap) *Bitmap {
 	}
 }
 
+func (b *Bitmap) Reset(m *roaring.Bitmap) {
+	b.highlowcontainer.clear()
+	b.highlowcontainer.appendContainer(0, m, false)
+}
+
 type Context interface {
 	Value(key uint32, cKey uint16, value func(uint8, []byte) error) error
 	Write(key uint32, cKey uint16, typ uint8, value []byte) error

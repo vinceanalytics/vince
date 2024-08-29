@@ -119,3 +119,35 @@ func TestTxCmp_range(t *testing.T) {
 	})
 	require.Equal(t, []uint64{2, 20}, match)
 }
+
+func BenchmarkRow(b *testing.B) {
+	db, err := newDB(b.TempDir())
+	require.NoError(b, err)
+	defer db.Close()
+	s := []struct {
+		id    uint64
+		value int64
+	}{
+		{0, 12},
+		{1, 18},
+		{2, 12},
+		{20, -18},
+	}
+	o := roaring64.New()
+	for i := range s {
+		ro.BSI(o, s[i].id, s[i].value)
+	}
+	err = db.Update(func(tx *Tx) error {
+		return tx.Add(0, 0, o)
+	})
+	require.NoError(b, err)
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for range b.N {
+		db.View(func(tx *Tx) error {
+			tx.Row(0, 0, 0)
+			return nil
+		})
+	}
+}
