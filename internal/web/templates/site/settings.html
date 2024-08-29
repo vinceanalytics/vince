@@ -20,7 +20,7 @@
             </header>
             {{if .site.public}}
             <a href="/{{.site.domain|path_escape}}/make-private"
-                class=" bg-indigo-600 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring">
+                class=" bg-rose-600 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring">
                 <span
                     class="inline-block w-5 h-5 bg-white rounded-full shadow translate-x-5 dark:bg-gray-800 transform transition ease-in-out duration-200">
                 </span>
@@ -70,7 +70,7 @@
                                 class="w-full p-2 text-gray-700 bg-gray-100 border-none rounded rounded-r-none outline-none appearance-none transition dark:bg-gray-900 dark:text-gray-300 focus:outline-none focus:border-gray-300 dark:focus:border-gray-500" />
                             <button onclick="var input=document.getElementById('{{$share.slug}}'); input.focus();
                                 input.select(); document.execCommand('copy');" href="javascript:void(0)"
-                                class="px-4 py-2 inline-flex items-center text-indigo-800 bg-gray-200 border-r border-gray-300 rounded-none dark:bg-gray-850 dark:text-indigo-500 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-825">
+                                class="px-4 py-2 inline-flex items-center text-rose-800 bg-gray-200 border-r border-gray-300 rounded-none dark:bg-gray-850 dark:text-rose-500 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-825">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
@@ -81,7 +81,7 @@
                                 <span class="ml-1">Copy</span>
                             </button>
                             <a href="/shared-links/{{$domain|path_escape}}/edit/{{$share.slug}}"
-                                class="px-4 py-2 inline-flex items-center text-indigo-800 bg-gray-200 border-r border-gray-300 rounded-none dark:bg-gray-850 dark:text-indigo-500 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-825">
+                                class="px-4 py-2 inline-flex items-center text-rose-800 bg-gray-200 border-r border-gray-300 rounded-none dark:bg-gray-850 dark:text-rose-500 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-825">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path
@@ -94,7 +94,7 @@
                                 </svg>
                             </a>
                             <a href="/shared-links/{{$domain|path_escape}}/delete/{{$share.slug}}"
-                                class="px-4 py-2 inline-flex items-center text-indigo-800 bg-gray-200 border-r border-gray-300 rounded-none dark:bg-gray-850 dark:text-indigo-500 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-825">
+                                class="px-4 py-2 inline-flex items-center text-rose-800 bg-gray-200 border-r border-gray-300 rounded-none dark:bg-gray-850 dark:text-rose-500 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-825">
                                 <svg
                                 class="w-4 h-4"
                                 fill="none"
