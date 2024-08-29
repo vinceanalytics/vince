@@ -17,15 +17,15 @@
 }
 
 .button {
-  @apply inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md leading-5 transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+  @apply inline-flex justify-center px-4 py-2 text-sm font-medium text-black bg-rose-300 border border-transparent rounded-md leading-5 transition hover:bg-rose-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500;
 }
 
 .button[disabled] {
-  @apply bg-gray-400 dark:bg-gray-600;
+  @apply bg-gray-400 text-white;
 }
 
 .button-outline {
-  @apply text-indigo-600 bg-transparent border border-indigo-600;
+  @apply text-rose-600 bg-transparent border border-rose-600;
 }
 
 .button-outline:hover {
