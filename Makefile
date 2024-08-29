@@ -12,3 +12,9 @@ minor:
 	go run ./internal/version/bump/main.go minor 
 patch:
 	go run ./internal/version/bump/main.go patch
+
+view : bin/views
+	./bin/views
+
+bin/views: tools/views/main.go
+	go build -o bin/views ./tools/views

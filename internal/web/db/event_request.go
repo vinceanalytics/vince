@@ -151,7 +151,7 @@ func (rq *Request) parseReferrer(m map[string]any) {
 
 func (rq *Request) parseParams(m map[string]any) {
 	n, ok := m["n"]
-	if ok {
+	if !ok {
 		n, ok = m["name"]
 	}
 	_ = ok
@@ -183,7 +183,7 @@ func (rq *Request) parseUri(m map[string]any) error {
 }
 
 var remoteIPHeaders = []string{
-	"x-plausible-ip", "cf-connecting-ip", "b-forwarded-for",
+	"x-vince-ip", "cf-connecting-ip", "b-forwarded-for",
 	"X-Real-IP", "X-Forwarded-For", "X-Client-IP",
 }
 

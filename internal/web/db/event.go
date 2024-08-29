@@ -76,7 +76,7 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 
 	ref, src, err := refSource(query, req.referrer)
 	if err != nil {
-		return nil, fmt.Errorf("arsing referer%w", err)
+		return nil, fmt.Errorf("parsing referer %w", err)
 	}
 	path := req.pathname
 	agent := ua.Get(req.userAgent)
@@ -124,6 +124,9 @@ func sanitizeHost(s string) string {
 }
 
 func refSource(q url.Values, u string) (xref, source string, err error) {
+	if !strings.HasPrefix(u, "http") {
+		u = "https://" + u
+	}
 	r, err := url.Parse(u)
 	if err != nil {
 		return "", "", err
