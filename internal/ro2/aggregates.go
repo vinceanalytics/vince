@@ -4,6 +4,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
@@ -14,20 +15,12 @@ func (d *Data) Read(tx *Tx, shard uint64,
 }
 
 func (d *Data) ReadFields(tx *Tx, shard uint64,
-	match *roaring64.Bitmap, fields ...uint32) {
+	match *roaring64.Bitmap, fields ...alicia.Field) {
 	for i := range fields {
 		f := fields[i]
 		b := d.get(f)
 
-		if f == 31 {
-			// special handling of events
-			it := match.Iterator()
-			for it.HasNext() {
-				b.SetValue(it.Next(), 1)
-			}
-			continue
-		}
-		if f <= cityField {
+		if f <= alicia.CITY {
 			tx.ExtractBSI(shard, uint64(f), match, func(row uint64, c int64) {
 				b.SetValue(row, c)
 			})
@@ -51,8 +44,6 @@ func (a *Data) Compute(metric string, foundSet *roaring64.Bitmap) float64 {
 		return float64(a.Visits(foundSet))
 	case "pageviews":
 		return float64(a.View(foundSet))
-	case "events":
-		return float64(a.Events(foundSet))
 	case "views_per_visit":
 		views := float64(a.View(foundSet))
 		visits := float64(a.Visits(foundSet))
@@ -84,7 +75,7 @@ func (a *Data) Compute(metric string, foundSet *roaring64.Bitmap) float64 {
 }
 
 func (a *Data) Visitors(foundSet *roaring64.Bitmap) uint64 {
-	b := a.get(idField)
+	b := a.get(alicia.ID)
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}
@@ -92,7 +83,7 @@ func (a *Data) Visitors(foundSet *roaring64.Bitmap) uint64 {
 }
 
 func (a *Data) Visits(foundSet *roaring64.Bitmap) uint64 {
-	b := a.get(sessionField)
+	b := a.get(alicia.SESSION)
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}
@@ -101,7 +92,7 @@ func (a *Data) Visits(foundSet *roaring64.Bitmap) uint64 {
 }
 
 func (a *Data) View(foundSet *roaring64.Bitmap) uint64 {
-	b := a.get(viewField)
+	b := a.get(alicia.VIEW)
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}
@@ -110,7 +101,7 @@ func (a *Data) View(foundSet *roaring64.Bitmap) uint64 {
 }
 
 func (a *Data) Duration(foundSet *roaring64.Bitmap) uint64 {
-	b := a.get(durationField)
+	b := a.get(alicia.DURATION)
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}
@@ -119,7 +110,7 @@ func (a *Data) Duration(foundSet *roaring64.Bitmap) uint64 {
 }
 
 func (a *Data) Bounce(foundSet *roaring64.Bitmap) uint64 {
-	b := a.get(bounceField)
+	b := a.get(alicia.BOUNCE)
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}
@@ -130,38 +121,30 @@ func (a *Data) Bounce(foundSet *roaring64.Bitmap) uint64 {
 	return uint64(sum)
 }
 
-func (a *Data) Events(foundSet *roaring64.Bitmap) uint64 {
-	o := a.get(eventsField).GetExistenceBitmap()
-	if foundSet != nil {
-		o.Add(fieldOffset)
-	}
-	return o.GetCardinality()
-}
-
-func metricsToProject(mets []string) []uint32 {
-	m := map[uint32]struct{}{}
+func metricsToProject(mets []string) []alicia.Field {
+	m := map[alicia.Field]struct{}{}
 	for _, v := range mets {
 		switch v {
 		case "visitors":
-			m[idField] = struct{}{}
+			m[alicia.ID] = struct{}{}
 		case "visits":
-			m[sessionField] = struct{}{}
+			m[alicia.SESSION] = struct{}{}
 		case "pageviews":
-			m[viewField] = struct{}{}
+			m[alicia.VIEW] = struct{}{}
 		case "views_per_visit":
-			m[viewField] = struct{}{}
-			m[sessionField] = struct{}{}
+			m[alicia.VIEW] = struct{}{}
+			m[alicia.SESSION] = struct{}{}
 		case "bounce_rate":
-			m[viewField] = struct{}{}
-			m[sessionField] = struct{}{}
+			m[alicia.BOUNCE] = struct{}{}
+			m[alicia.SESSION] = struct{}{}
 		case "visit_duration":
-			m[durationField] = struct{}{}
-			m[sessionField] = struct{}{}
+			m[alicia.DURATION] = struct{}{}
+			m[alicia.SESSION] = struct{}{}
 		case "events":
-			m[sessionField] = struct{}{}
+			m[alicia.SESSION] = struct{}{}
 		}
 	}
-	o := make([]uint32, 0, len(m))
+	o := make([]alicia.Field, 0, len(m))
 	for k := range m {
 		o = append(o, k)
 	}

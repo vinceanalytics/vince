@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/alicia"
 )
 
 func TestStore_sequence(t *testing.T) {
@@ -29,11 +30,11 @@ func TestStore_sequence(t *testing.T) {
 	var tr string
 	var id uint64
 	db.View(func(tx *Tx) error {
-		tx.Search(CountryField, nil, func(key []byte, val uint64) {
+		tx.Search(uint64(alicia.COUNTRY), nil, func(key []byte, val uint64) {
 			country = string(key)
 			id = val
 		})
-		tr = tx.Find(CountryField, 1)
+		tr = tx.Find(uint64(alicia.COUNTRY), 1)
 		return nil
 	})
 	require.Equal(t, uint64(1), db.seq.Load())

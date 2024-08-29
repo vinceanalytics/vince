@@ -5,6 +5,7 @@ import (
 	"math"
 	"slices"
 
+	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
@@ -20,7 +21,7 @@ type Result struct {
 	Results []map[string]any `json:"results"`
 }
 
-func (o *Proto[T]) Breakdown(start, end int64, domain string, filter Filter, metrics []string, field uint32) (*Result, error) {
+func (o *Proto[T]) Breakdown(start, end int64, domain string, filter Filter, metrics []string, field alicia.Field) (*Result, error) {
 	var m Data
 	values := make(map[string]*roaring64.Bitmap)
 	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
@@ -42,7 +43,7 @@ func (o *Proto[T]) Breakdown(start, end int64, domain string, filter Filter, met
 	a := &Result{
 		Results: make([]map[string]any, 0, len(values)),
 	}
-	property := o.Name(field)
+	property := o.Name(uint32(field))
 	for k, v := range values {
 		x := map[string]any{
 			property: k,
@@ -59,8 +60,8 @@ func (o *Proto[T]) BreakdownExitPages(start, end int64, domain string, filter Fi
 	var m Data
 	values := make(map[string]*roaring64.Bitmap)
 	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
-		tx.ExtractMutex(shard, Entry_pageField, match, func(row uint64, c *roaring.Container) {
-			value := tx.Find(exit_pageField, row)
+		tx.ExtractMutex(shard, uint64(alicia.EXIT_PAGE), match, func(row uint64, c *roaring.Container) {
+			value := tx.Find(uint64(alicia.EXIT_PAGE), row)
 			b, ok := values[value]
 			if !ok {
 				b = roaring64.New()
@@ -101,7 +102,7 @@ func (o *Proto[T]) BreakdownCity(start, end int64, domain string, filter Filter)
 	values := make(map[uint32]*roaring64.Bitmap)
 	var m Data
 	err := o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
-		tx.ExtractBSI(shard, cityField, match, func(row uint64, c int64) {
+		tx.ExtractBSI(shard, uint64(alicia.CITY), match, func(row uint64, c int64) {
 			code := uint32(c)
 			b, ok := values[code]
 			if !ok {
@@ -133,7 +134,7 @@ func (o *Proto[T]) BreakdownCity(start, end int64, domain string, filter Filter)
 	return a, nil
 }
 
-func (o *Proto[T]) BreakdownVisitorsWithPercentage(start, end int64, domain string, filter Filter, field uint32) (*Result, error) {
+func (o *Proto[T]) BreakdownVisitorsWithPercentage(start, end int64, domain string, filter Filter, field alicia.Field) (*Result, error) {
 	values := make(map[string]*roaring64.Bitmap)
 	var m Data
 
@@ -161,7 +162,7 @@ func (o *Proto[T]) BreakdownVisitorsWithPercentage(start, end int64, domain stri
 	}
 
 	total := m.Compute(visitors, nil)
-	property := o.Name(field)
+	property := o.Name(uint32(field))
 	for prop, b := range values {
 		vs := m.Compute(visitors, b)
 		p := float64(0)

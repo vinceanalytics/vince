@@ -2,7 +2,6 @@ package ro2
 
 import (
 	"context"
-	"encoding/binary"
 	"flag"
 	"log/slog"
 	"math"
@@ -11,6 +10,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/dustin/go-humanize"
+	"github.com/vinceanalytics/vince/internal/alicia"
 )
 
 var (
@@ -39,16 +39,17 @@ func (db *DB) Start(ctx context.Context) {
 
 func (o *DB) latestID(field uint64) (id uint64) {
 	o.View(func(tx *Tx) error {
-		key := tx.keys.Get()
-		key.SetField(field).SetShard(math.MaxUint64)
+		key := tx.get().NS(alicia.CONTAINER).Field(field).Shard(
+			uint64(math.MaxUint32),
+		)
 		it := tx.tx.NewIterator(badger.IteratorOptions{
 			Reverse: true,
 		})
 		defer it.Close()
 		it.Seek(key.ShardPrefix())
 		if it.Valid() {
-			shard := binary.BigEndian.Uint64(it.Item().Key()[shardOffset:])
-			exists := tx.Row(shard, timestampField, 0)
+			shard := alicia.Shard(it.Item().Key())
+			exists := tx.Row(uint64(shard), uint64(alicia.TIMESTAMP), 0)
 			if !exists.IsEmpty() {
 				id = exists.Maximum()
 				return nil

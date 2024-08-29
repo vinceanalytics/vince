@@ -5,49 +5,21 @@ import (
 	"log/slog"
 	"regexp"
 	"slices"
+	"strings"
+	"sync"
 	"time"
+	"unicode/utf8"
 
+	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
-// all fields
-const (
-	timestampField         = 1
-	idField                = 2
-	bounceField            = 3
-	sessionField           = 4
-	viewField              = 5
-	durationField          = 7
-	cityField              = 8
-	BrowserField           = 9
-	Browser_versionField   = 10
-	CountryField           = 11
-	DeviceField            = 12
-	domainField            = 13
-	Entry_pageField        = 14
-	eventField             = 15
-	exit_pageField         = 16
-	hostField              = 17
-	OsField                = 18
-	Os_versionField        = 19
-	PageField              = 20
-	ReferrerField          = 21
-	SourceField            = 22
-	Utm_campaignField      = 23
-	Utm_contentField       = 24
-	Utm_mediumField        = 25
-	Utm_sourceField        = 26
-	Utm_termField          = 27
-	Subdivision1_codeField = 28
-	subdivision2_codeField = 29
-	eventsField            = 31
-)
-
 // We know fields before hand
-type Data [32]*roaring64.BSI
+type Data [alicia.SUB2_CODE]*roaring64.BSI
 
-func (d *Data) get(i uint32) *roaring64.BSI {
+func (d *Data) get(i alicia.Field) *roaring64.BSI {
+	i--
 	if d[i] == nil {
 		d[i] = roaring64.NewDefaultBSI()
 	}
@@ -87,7 +59,7 @@ func (o *Proto[T]) Select(
 	}
 
 	shards := o.shards()
-	dom := NewEq(domainField, domain)
+	dom := NewEq(uint64(alicia.DOMAIN), domain)
 	return o.View(func(tx *Tx) error {
 
 		// We iterate on shards in reverse. We are always interested in latest data.
@@ -109,7 +81,7 @@ func (o *Proto[T]) Select(
 			}
 
 			// select timestamp
-			ts := tx.Cmp(timestampField, shard, roaring64.RANGE, start, end)
+			ts := tx.Cmp(uint64(alicia.TIMESTAMP), shard, roaring64.RANGE, start, end)
 			b.And(ts)
 			if b.IsEmpty() {
 				continue
@@ -160,10 +132,12 @@ func (Reject) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) { match.Clear
 type Regex struct {
 	field uint64
 	value *regexp.Regexp
+	valid roaring64.Bitmap
+	once  sync.Once
 }
 
 func NewRe(field uint64, value string) Filter {
-	r, err := regexp.Compile(value)
+	r, err := regexp.Compile(cleanRe(value))
 	if err != nil {
 		slog.Error("invalid regex filter", "field", field, "value", value)
 		return Reject{}
@@ -179,14 +153,36 @@ func (e *Regex) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 }
 
 func (e *Regex) match(tx *Tx, shard uint64) *roaring64.Bitmap {
-	union := roaring64.New()
-	tx.searchTranslation(shard, e.field, func(key, val []byte) {
-		if e.value.Match(key) {
-			union.Or(
-				tx.Row(shard, e.field, binary.BigEndian.Uint64(val)),
-			)
+	e.once.Do(func() {
+		source := e.value.String()
+		prefix, exact := searchPrefix([]byte(source))
+		if exact {
+			// fast path. We only perform a single Get call
+			key := tx.get().TranslateKey(e.field, prefix)
+			it, err := tx.tx.Get(key)
+			if err == nil {
+				it.Value(func(val []byte) error {
+					e.valid.Add(binary.BigEndian.Uint64(val))
+					return nil
+				})
+			}
+		} else {
+			tx.Search(e.field, prefix, func(b []byte, u uint64) {
+				e.valid.Add(u)
+			})
 		}
 	})
+	if e.valid.IsEmpty() {
+		return &e.valid
+	}
+	union := roaring64.New()
+
+	it := e.valid.Iterator()
+	for it.HasNext() {
+		union.Or(
+			tx.Row(shard, e.field, it.Next()),
+		)
+	}
 	return union
 }
 
@@ -195,7 +191,7 @@ type Nre struct {
 }
 
 func NewNre(field uint64, value string) Filter {
-	r, err := regexp.Compile(value)
+	r, err := regexp.Compile(cleanRe(value))
 	if err != nil {
 		slog.Error("invalid regex filter", "field", field, "value", value)
 		return Reject{}
@@ -209,7 +205,7 @@ func NewNre(field uint64, value string) Filter {
 }
 
 func (e *Nre) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	exists := tx.Row(shard, timestampField, 0)
+	exists := tx.Row(shard, uint64(alicia.TIMESTAMP), 0)
 	match.And(roaring64.AndNot(exists, e.eq.match(tx, shard)))
 }
 
@@ -217,7 +213,7 @@ type Eq struct {
 	field uint64
 	value string
 	id    uint64
-	ok    *bool
+	once  sync.Once
 }
 
 func NewEq(field uint64, value string) *Eq {
@@ -232,35 +228,36 @@ func (e *Eq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 }
 
 func (e *Eq) match(tx *Tx, shard uint64) *roaring64.Bitmap {
-	if e.ok != nil {
-		if !*e.ok {
-			return roaring64.New()
+	e.once.Do(func() {
+		key := tx.get().TranslateKey(e.field, []byte(e.value))
+		it, err := tx.tx.Get(key)
+		if err == nil {
+			it.Value(func(val []byte) error {
+				e.id = binary.BigEndian.Uint64(val)
+				return nil
+			})
 		}
-		return tx.Row(shard, e.field, e.id)
-	}
-	v, ok := tx.ID(e.field, e.value)
-	e.id = v
-	e.ok = &ok
-	if !ok {
+	})
+	if e.id == 0 {
 		return roaring64.New()
 	}
 	return tx.Row(shard, e.field, e.id)
 }
 
 type Neq struct {
-	eq Eq
+	eq *Eq
 }
 
 func NewNeq(field uint64, value string) *Neq {
 	return &Neq{
-		eq: *NewEq(field, value),
+		eq: NewEq(field, value),
 	}
 }
 
 func (e *Neq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	// we know timestamp is always set and the it is bsi. In the current shard it
-	// is the best fiend to look for existence bitmap.
-	exists := tx.Row(shard, timestampField, 0)
+	// we know timestamp is always set, use its existence bitmap to weed of
+	//negated match for the current shard.
+	exists := tx.Row(shard, uint64(alicia.TIMESTAMP), 0)
 	match.And(
 		roaring64.AndNot(exists, e.eq.match(tx, shard)),
 	)
@@ -275,4 +272,33 @@ func (e *EqInt) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 	match.And(
 		tx.Cmp(e.Field, shard, roaring64.EQ, e.Value, 0),
 	)
+}
+
+func cleanRe(re string) string {
+	re = strings.TrimPrefix(re, "~")
+	re = strings.TrimSuffix(re, "$")
+	return re
+}
+
+func searchPrefix(source []byte) (prefix []byte, exact bool) {
+	for i := range source {
+		if special(source[i]) {
+			return source[:i], false
+		}
+	}
+	return source, true
+}
+
+// Bitmap used by func special to check whether a character needs to be escaped.
+var specialBytes [16]byte
+
+// special reports whether byte b needs to be escaped by QuoteMeta.
+func special(b byte) bool {
+	return b < utf8.RuneSelf && specialBytes[b%16]&(1<<(b/16)) != 0
+}
+
+func init() {
+	for _, b := range []byte(`\.+*?()|[]{}^$`) {
+		specialBytes[b%16] |= 1 << (b / 16)
+	}
 }

@@ -8,30 +8,30 @@ message Model {
   int64 bounce = 3;
   int64 session = 4;
   int64 view = 5;
-  int64 duration = 7;
-  int64 city = 8;
+  int64 duration = 6;
+  int64 city = 7;
 
-  string browser = 9;
-  string browser_version = 10;
-  string country = 11;
-  string device = 12;
-  string domain = 13;
-  string entry_page = 14;
-  string event = 15;
-  string exit_page = 16;
-  string host = 17;
-  string os = 18;
-  string os_version = 19;
-  string page = 20;
-  string referrer = 21;
-  string source = 22;
-  string utm_campaign = 23;
-  string utm_content = 24;
-  string utm_medium = 25;
-  string utm_source = 26;
-  string utm_term = 27;
-  string subdivision1_code = 28;
-  string subdivision2_code = 29;
+  string browser = 8;
+  string browser_version = 9;
+  string country = 10;
+  string device = 11;
+  string domain = 12;
+  string entry_page = 13;
+  string event = 14;
+  string exit_page = 15;
+  string host = 16;
+  string os = 17;
+  string os_version = 18;
+  string page = 19;
+  string referrer = 20;
+  string source = 21;
+  string utm_campaign = 22;
+  string utm_content = 23;
+  string utm_medium = 24;
+  string utm_source = 25;
+  string utm_term = 26;
+  string subdivision1_code = 27;
+  string subdivision2_code = 28;
 }
 
 message Agent {

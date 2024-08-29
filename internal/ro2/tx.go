@@ -2,12 +2,12 @@ package ro2
 
 import (
 	"bytes"
-	"encoding/binary"
 	"errors"
 	"math"
 	"sync"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
@@ -16,21 +16,28 @@ import (
 //go:generate protoc  --go_out=. --go_opt=paths=source_relative pages.proto
 
 type Tx struct {
-	tx   *badger.Txn
-	keys Keys
+	tx *badger.Txn
+	// we need to retain keys untill the tranaction is commited
+	keys []*alicia.Key
 }
 
 var txPool = &sync.Pool{New: func() any {
-	return &Tx{
-		keys: Keys{
-			keys: make([]*Key, 0, 32),
-		},
-	}
+	return &Tx{}
 }}
+
+func (tx *Tx) get() *alicia.Key {
+	k := alicia.Get()
+	tx.keys = append(tx.keys, k)
+	return k
+}
 
 func (tx *Tx) Release() {
 	tx.tx = nil
-	tx.keys.Release()
+	for i := range tx.keys {
+		tx.keys[i].Release()
+	}
+	clear(tx.keys)
+	tx.keys = tx.keys[:0]
 	txPool.Put(tx)
 }
 
@@ -43,10 +50,11 @@ func (tx *Tx) Depth(shard, field uint64) uint64 {
 }
 
 func (tx *Tx) max(shard, field uint64) (uint64, bool) {
-	prefix := tx.keys.Get().
-		SetShard(shard).
-		SetField(field).
-		SetKey(math.MaxUint32).KeyPrefix()
+	prefix := tx.get().
+		NS(alicia.CONTAINER).
+		Shard(shard).
+		Field(field).
+		Key(math.MaxUint32).KeyPrefix()
 	// seek to the last possible key
 	it := tx.tx.NewIterator(badger.IteratorOptions{
 		Reverse: true,
@@ -57,7 +65,7 @@ func (tx *Tx) max(shard, field uint64) (uint64, bool) {
 		return 0, false
 	}
 	item := it.Item()
-	key := ReadKey(item.Key())
+	key := alicia.Container(item.Key())
 	var mx uint16
 	item.Value(func(val []byte) error {
 		var c roaring.Container
@@ -76,26 +84,6 @@ func (tx *Tx) Add(shard, field uint64, r *roaring64.Bitmap) error {
 	})
 }
 
-func (tx *Tx) searchTranslation(shard, field uint64, f func(key, val []byte)) {
-	prefix := make([]byte, 2+8+8)
-	prefix[0] = byte(TRANSLATE_KEY)
-
-	binary.BigEndian.PutUint64(prefix[2:], field)
-	binary.BigEndian.PutUint64(prefix[2+8:], shard)
-
-	it := tx.tx.NewIterator(badger.IteratorOptions{
-		Prefix: prefix,
-	})
-	defer it.Close()
-	for it.Rewind(); it.Valid(); it.Next() {
-		k := it.Item().Key()[18:]
-		it.Item().Value(func(val []byte) error {
-			f(k, val)
-			return nil
-		})
-	}
-}
-
 type txWrite struct {
 	shard, field uint64
 	tx           *Tx
@@ -104,12 +92,13 @@ type txWrite struct {
 var _ roaring64.Context = (*txWrite)(nil)
 
 func (t *txWrite) Value(key uint32, cKey uint16, value func(uint8, []byte) error) error {
-	xk := t.tx.keys.Get().
-		SetShard(t.shard).
-		SetField(t.field).
-		SetKey(key).
-		SetContainer(cKey)
-	it, err := t.tx.tx.Get(xk[:])
+	xk := t.tx.get().
+		NS(alicia.CONTAINER).
+		Shard(t.shard).
+		Field(t.field).
+		Key(key).
+		Container(cKey)
+	it, err := t.tx.tx.Get(xk.Bytes())
 	if err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return err
@@ -122,13 +111,13 @@ func (t *txWrite) Value(key uint32, cKey uint16, value func(uint8, []byte) error
 }
 
 func (t *txWrite) Write(key uint32, cKey uint16, typ uint8, value []byte) error {
-	xk := t.tx.keys.Get().
-		SetKind(Kind(ROAR)).
-		SetShard(t.shard).
-		SetField(t.field).
-		SetKey(key).
-		SetContainer(cKey)
-	return t.tx.tx.SetEntry(badger.NewEntry(xk[:], value).WithMeta(typ))
+	xk := t.tx.get().
+		NS(alicia.CONTAINER).
+		Shard(t.shard).
+		Field(t.field).
+		Key(key).
+		Container(cKey).Bytes()
+	return t.tx.tx.SetEntry(badger.NewEntry(xk, value).WithMeta(typ))
 }
 
 func (tx *Tx) ExtractBSI(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
@@ -182,9 +171,10 @@ func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(
 		return nil
 	})
 	opts := badger.IteratorOptions{
-		Prefix: tx.keys.Get().
-			SetShard(shard).
-			SetField(field).
+		Prefix: tx.get().
+			NS(alicia.CONTAINER).
+			Shard(shard).
+			Field(field).
 			FieldPrefix(),
 	}
 	itr := tx.tx.NewIterator(opts)
@@ -194,7 +184,7 @@ func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(
 	var ac roaring.Container
 	for itr.Seek(nil); itr.Valid(); itr.Next() {
 		item := itr.Item()
-		k := ReadKey(item.Key())
+		k := alicia.Container(item.Key())
 		row := uint64(k) >> ro.ShardVsContainerExponent
 		if row == prevRow {
 			if seenThisRow {
@@ -240,13 +230,13 @@ func (tx *Tx) Row(shard, field uint64, rowID uint64) *roaring64.Bitmap {
 	return o
 }
 
-func (tx *Tx) keyRange(shard, field uint64, rowID uint64) (b *roaring64.Bitmap, from, to *Key) {
+func (tx *Tx) keyRange(shard, field uint64, rowID uint64) (b *roaring64.Bitmap, from, to *alicia.Key) {
 	b = roaring64.New()
 	b.Add(rowID * ro.ShardWidth)
 	b.Add((rowID + 1) * ro.ShardWidth)
 	b.Each(func(key uint32, cKey uint16, value *roaring.Container) error {
-		k := tx.keys.Get().SetShard(shard).
-			SetField(field).SetKey(key).SetContainer(cKey)
+		k := tx.get().NS(alicia.CONTAINER).Shard(shard).
+			Field(field).Key(key).Container(cKey)
 		if from == nil {
 			from = k
 			return nil

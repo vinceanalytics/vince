@@ -4,6 +4,7 @@ import (
 	"sync/atomic"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 	"google.golang.org/protobuf/proto"
@@ -51,7 +52,7 @@ func open[T proto.Message](path string) (*Proto[T], error) {
 		fields: fields,
 		names:  names,
 	}
-	o.seq.Store(o.latestID(timestampField))
+	o.seq.Store(o.latestID(uint64(alicia.TIMESTAMP)))
 	return o, nil
 }
 

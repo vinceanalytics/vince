@@ -19,11 +19,10 @@ import (
 )
 
 func (db *DB) Domains(f func(*v1.Site)) {
-	err := db.db.View(func(txn *badger.Txn) error {
-		var prefix [2]byte
-		prefix[0] = byte(SITE_DOMAIN)
-		it := txn.NewIterator(badger.IteratorOptions{
-			Prefix: prefix[:],
+	err := db.View(func(tx *Tx) error {
+
+		it := tx.tx.NewIterator(badger.IteratorOptions{
+			Prefix: tx.get().Site(""),
 		})
 		defer it.Close()
 
@@ -43,11 +42,8 @@ func (db *DB) Domains(f func(*v1.Site)) {
 }
 
 func (db *DB) Site(domain string) (u *v1.Site) {
-	err := db.db.View(func(txn *badger.Txn) error {
-		key := make([]byte, len(domain)+2)
-		key[0] = byte(SITE_DOMAIN)
-		copy(key[2:], []byte(domain))
-		it, err := txn.Get(key[:])
+	err := db.View(func(tx *Tx) error {
+		it, err := tx.tx.Get(tx.get().Site(domain))
 		if err != nil {
 			return err
 		}
@@ -84,11 +80,10 @@ func (db *DB) CreateSite(domain string, public bool) (err error) {
 }
 
 func (db *DB) Delete(domain string) (err error) {
-	return db.db.Update(func(txn *badger.Txn) error {
-		key := make([]byte, len(domain)+2)
-		key[0] = byte(SITE_DOMAIN)
-		copy(key[2:], []byte(domain))
-		return txn.Delete(key)
+	return db.Update(func(tx *Tx) error {
+		return tx.tx.Delete(
+			tx.get().Site(domain),
+		)
 	})
 }
 
@@ -133,16 +128,12 @@ func (db *DB) FindOrCreateCreateSharedLink(domain string, name, password string)
 
 func (db *DB) Save(u *v1.Site) error {
 	slices.SortFunc(u.Shares, compareShare)
-
 	data, err := proto.Marshal(u)
 	if err != nil {
 		return err
 	}
-	return db.db.Update(func(txn *badger.Txn) error {
-		em := make([]byte, len(u.Domain)+2)
-		em[0] = byte(SITE_DOMAIN)
-		copy(em[2:], []byte(u.Domain))
-		err = txn.Set(em, data)
+	return db.Update(func(tx *Tx) error {
+		err = tx.tx.Set(tx.get().Site(u.Domain), data)
 		if err != nil {
 			return err
 		}
