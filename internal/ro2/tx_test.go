@@ -129,9 +129,11 @@ func BenchmarkRow(b *testing.B) {
 		value int64
 	}{
 		{0, 12},
-		{1, 18},
-		{2, 12},
-		{20, -18},
+		{1, 13},
+		{2, 14},
+		{20, 15},
+		{22, 16},
+		{23, 17},
 	}
 	o := roaring64.New()
 	for i := range s {
@@ -146,7 +148,7 @@ func BenchmarkRow(b *testing.B) {
 
 	for range b.N {
 		db.View(func(tx *Tx) error {
-			tx.Row(0, 0, 0)
+			tx.Cmp(0, 0, roaring64.RANGE, 14, 16)
 			return nil
 		})
 	}
