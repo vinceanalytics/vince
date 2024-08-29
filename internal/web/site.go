@@ -20,6 +20,16 @@ func SharedLinksForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, shared, nil)
 }
 
+func DeleteSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	site := db.CurrentSite()
+	slug := r.PathValue("slug")
+	err := db.Get().DeleteSharedLink(site, slug)
+	if err != nil {
+		slog.Error("deleting shared link", "slug", slug, "domain", db.CurrentSite().Domain, "err", "err")
+	}
+	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
+}
+
 func EditSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	name := r.Form.Get("name")

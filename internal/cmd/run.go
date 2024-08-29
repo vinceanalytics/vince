@@ -106,6 +106,11 @@ func run() {
 			Then(web.EditSharedLink),
 	))
 
+	mux.HandleFunc("/shared-links/{domain}/delete/{slug}", db.Wrap(
+		sites.
+			Then(web.DeleteSharedLink),
+	))
+
 	mux.HandleFunc("POST /{domain}/shared-links", db.Wrap(
 		sites.
 			With(plug.VerifyCSRF).

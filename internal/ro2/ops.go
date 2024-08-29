@@ -101,6 +101,13 @@ func (db *DB) EditSharedLink(site *v1.Site, slug, name string) error {
 	return db.Save(site)
 }
 
+func (db *DB) DeleteSharedLink(site *v1.Site, slug string) error {
+	site.Shares = slices.DeleteFunc(site.Shares, func(s *v1.Share) bool {
+		return s.Id == slug
+	})
+	return db.Save(site)
+}
+
 func (db *DB) FindOrCreateCreateSharedLink(domain string, name, password string) (share *v1.Share) {
 
 	site := db.Site(domain)
