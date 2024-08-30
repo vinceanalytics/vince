@@ -137,6 +137,6 @@ func (k *Key) Site(domain string) []byte {
 }
 
 func (k *Key) System() []byte {
-	k.NS(SITE)
+	k.NS(SYSTEM)
 	return k[:fieldOffset]
 }

@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
@@ -60,10 +61,12 @@ func Settings(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func Delete(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	err := db.Get().Delete(db.CurrentSite().Domain)
+	domain := db.CurrentSite().Domain
+	err := db.Get().Delete(domain)
 	if err != nil {
-		slog.Error("deleting site", "domain", db.CurrentSite().Domain, "err", "err")
+		slog.Error("deleting site", "domain", domain, "err", "err")
 	}
+	domains.Remove(domain)
 	http.Redirect(w, r, "/sites", http.StatusFound)
 }
 
@@ -108,6 +111,7 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		db.Logger().Error("creating site", "err", err)
 		return
 	}
+	domains.Add(domain)
 	to := fmt.Sprintf("/%s/snippet", url.PathEscape(domain))
 	http.Redirect(w, r, to, http.StatusFound)
 }

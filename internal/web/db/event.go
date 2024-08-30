@@ -11,6 +11,7 @@ import (
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/ref"
 	"github.com/vinceanalytics/vince/internal/ua"
@@ -67,7 +68,7 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 		return nil, err
 	}
 	domain := req.domains[0]
-	if !db.domains.Allow(domain) {
+	if !domains.Allow(domain) {
 		return nil, ErrDrop
 	}
 

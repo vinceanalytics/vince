@@ -32,3 +32,9 @@ message User {
   string email = 3;
   string password = 4;
 }
+
+
+message System{
+  uint64 expiry = 1;
+  string email = 2;
+}

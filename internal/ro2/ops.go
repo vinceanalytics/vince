@@ -20,15 +20,13 @@ import (
 
 func (db *DB) Domains(f func(*v1.Site)) {
 	err := db.View(func(tx *Tx) error {
-
 		it := tx.tx.NewIterator(badger.IteratorOptions{
 			Prefix: tx.get().Site(""),
 		})
 		defer it.Close()
-
+		var s v1.Site
 		for it.Rewind(); it.Valid(); it.Next() {
 			it.Item().Value(func(val []byte) error {
-				var s v1.Site
 				proto.Unmarshal(val, &s)
 				f(&s)
 				return nil

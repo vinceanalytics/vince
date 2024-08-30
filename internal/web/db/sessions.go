@@ -198,7 +198,6 @@ func (c *Config) load(r *http.Request) {
 func (c *Config) clone(r *http.Request) *Config {
 	return &Config{
 		db:      c.db,
-		domains: c.domains,
 		cache:   c.cache,
 		session: c.session.clone(),
 		logger:  c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),

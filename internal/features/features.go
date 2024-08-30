@@ -18,72 +18,52 @@
 package features
 
 import (
-	"fmt"
-	"log/slog"
-	"os"
-	"path/filepath"
 	"sync/atomic"
 	"time"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/license"
 	"github.com/vinceanalytics/vince/internal/version"
 )
 
 var (
-	expired atomic.Bool
-	trial   atomic.Bool
-	email   atomic.Value
+	Expires atomic.Uint64
+	valid   atomic.Bool
+	Email   atomic.Value
 )
 
-func Setup(dataPath string) {
-	trial.Store(true)
-	var data []byte
-	if key := config.C.License; key != "" {
-		// try reading  license key
-		var err error
-		data, err = os.ReadFile(key)
-		if err != nil {
-			slog.Error("failed reading license key file", "path", key, "err", err)
-			os.Exit(1)
-		}
-	} else {
-		// A usermight have applied a license on the UI try reading it from our data path
-		data, _ = os.ReadFile(filepath.Join(dataPath, "LICENSE"))
-	}
+func Apply(ls *v1.License) {
+	Expires.Store(ls.Expiry)
+	Email.Store(ls.Email)
+}
 
-	if len(data) > 0 {
-		ls, err := license.Verify(data)
-		if err != nil {
-			slog.Error("failed validating license key file", "err", err)
-			os.Exit(1)
-		}
-		ts := time.UnixMilli(int64(ls.Expiry)).UTC()
-		if ts.Before(version.Build()) {
-			trial.Store(false)
-			expired.Store(false)
-			email.Store(ls.Email)
-		} else {
-			expired.Store(true)
-		}
+func Validate() (ok bool) {
+	ok = validate()
+	valid.Store(ok)
+	return
+}
+
+func validate() bool {
+	best := time.UnixMilli(int64(Expires.Load())).UTC()
+	if best.Before(time.Now().UTC()) {
+		return false
 	}
+	build := version.Build()
+	if best.Before(build) {
+		// valid license but wrong build
+		return false
+	}
+	if config.C.Admin.Email != Email.Load().(string) {
+		// valid licnese wrong user
+		return false
+	}
+	return true
 }
 
 func Context(m map[string]any) map[string]any {
 	if m == nil {
 		m = make(map[string]any)
 	}
-	m["license_expired"] = expired.Load()
-	m["trial"] = trial.Load()
+	m["valid_license"] = valid.Load()
 	return m
-}
-
-func Validate() error {
-	if trial.Load() {
-		return nil
-	}
-	if config.C.Admin.Email != email.Load().(string) {
-		return fmt.Errorf("no matching lincensed user")
-	}
-	return nil
 }

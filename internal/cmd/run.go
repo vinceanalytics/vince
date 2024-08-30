@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/features"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/db"
@@ -20,17 +19,11 @@ import (
 )
 
 func run() {
-	features.Setup(config.C.DataPath)
 	db, err := db.Open(config.C.DataPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
-
-	err = features.Validate()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()

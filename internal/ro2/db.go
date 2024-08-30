@@ -35,6 +35,7 @@ func newDB(path string) (*DB, error) {
 
 func (db *DB) Start(ctx context.Context) {
 	go db.runVlogGC(ctx)
+	go db.checkLicense(ctx)
 }
 
 func (o *DB) latestID(field uint64) (id uint64) {
@@ -55,7 +56,6 @@ func (o *DB) latestID(field uint64) (id uint64) {
 				return nil
 			}
 		}
-
 		return nil
 	})
 	return

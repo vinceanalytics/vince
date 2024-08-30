@@ -11,13 +11,11 @@ import (
 	"path/filepath"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/lru"
 	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
 type Config struct {
-	domains *domains.Cache
 	db      *ro2.Store
 	session *SessionContext
 	logger  *slog.Logger
@@ -35,8 +33,6 @@ func Open(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	doms := domains.New()
-	ops.Domains(doms.Load())
 
 	// setup session
 	secret, err := newSession(path)
@@ -45,11 +41,10 @@ func Open(path string) (*Config, error) {
 		return nil, err
 	}
 	return &Config{
-		domains: doms,
-		db:      ops,
-		logger:  slog.Default(),
-		cache:   lru.New[*v1.Model](16 << 10),
-		models:  make(chan *v1.Model, 4<<10),
+		db:     ops,
+		logger: slog.Default(),
+		cache:  lru.New[*v1.Model](16 << 10),
+		models: make(chan *v1.Model, 4<<10),
 		session: &SessionContext{
 			secret: secret,
 		},

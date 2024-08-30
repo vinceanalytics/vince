@@ -147,7 +147,6 @@ func get(domain string) []byte {
 	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain), nil)
 	res, err := klient.Do(req)
 	if err != nil {
-		fmt.Println(">", domain)
 		return []byte{}
 	}
 	defer res.Body.Close()
