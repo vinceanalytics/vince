@@ -3,7 +3,6 @@ package ro2
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"log/slog"
 	"os"
 
@@ -73,7 +72,6 @@ func (tx *Tx) Find(field, id uint64) (o string) {
 	key := tx.get().TranslateID(field, id)
 	it, err := tx.tx.Get(key)
 	if err != nil {
-		fmt.Println("============")
 		if !errors.Is(err, badger.ErrKeyNotFound) {
 			slog.Error("reading translation key", "key", err, "err", err)
 		}
