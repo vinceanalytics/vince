@@ -135,3 +135,8 @@ func (k *Key) Site(domain string) []byte {
 	k.NS(SITE)
 	return append(k[:fieldOffset], []byte(domain)...)
 }
+
+func (k *Key) System() []byte {
+	k.NS(SITE)
+	return k[:fieldOffset]
+}
