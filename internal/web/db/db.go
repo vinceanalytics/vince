@@ -20,10 +20,6 @@ type Config struct {
 	session *SessionContext
 	logger  *slog.Logger
 	cache   *lru.LRU[*v1.Model]
-
-	// we rely on cache for session processing. We need to guarantee only a single
-	// writer on the cache, a buffered channel help with this.
-	models chan *v1.Model
 }
 
 func Open(path string) (*Config, error) {
@@ -44,7 +40,6 @@ func Open(path string) (*Config, error) {
 		db:     ops,
 		logger: slog.Default(),
 		cache:  lru.New[*v1.Model](16 << 10),
-		models: make(chan *v1.Model, 4<<10),
 		session: &SessionContext{
 			secret: secret,
 		},
@@ -60,24 +55,7 @@ func (db *Config) Logger() *slog.Logger {
 }
 
 func (db *Config) Start(ctx context.Context) {
-	go db.processEvents(ctx)
 	go db.db.Start(ctx)
-}
-
-func (db *Config) processEvents(ctx context.Context) {
-	db.logger.Info("start event processing loop")
-	defer db.logger.Info("stopped events processing loop")
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case m := <-db.models:
-			err := db.append(m)
-			if err != nil {
-				slog.Error("saving events", "err", err)
-			}
-		}
-	}
 }
 
 func (db *Config) Close() error {

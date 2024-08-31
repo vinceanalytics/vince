@@ -24,8 +24,7 @@ func (db *Config) ProcessEvent(r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	db.append(m)
-	return nil
+	return db.append(m)
 }
 
 func hit(e *v1.Model) {
