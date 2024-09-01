@@ -76,7 +76,7 @@ func Cli() *cli.Command {
 			},
 			&cli.StringFlag{
 				Name:        "url",
-				Value:       "",
+				Value:       "http://localhost:8080",
 				Usage:       "url resolving to this vince instance",
 				Sources:     cli.EnvVars("VINCE_URL"),
 				Destination: &config.C.Url,

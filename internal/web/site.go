@@ -1,10 +1,13 @@
 package web
 
 import (
+	"cmp"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"net/url"
+	"slices"
+	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
@@ -50,8 +53,8 @@ func CreateSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	site.Public = true
 	err := db.Get().FindOrCreateCreateSharedLink(site.Domain, name, password)
-	if err != nil {
-		slog.Error("makeing site  public", "domain", db.CurrentSite().Domain, "err", "err")
+	if err == nil {
+		db.Logger().Error("failed creating shared link", "domain", db.CurrentSite().Domain)
 	}
 	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
 }
@@ -75,7 +78,7 @@ func MakePublic(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site.Public = true
 	err := db.Get().Save(site)
 	if err != nil {
-		slog.Error("makeing site  public", "domain", db.CurrentSite().Domain, "err", "err")
+		db.Logger().Error("making site  public", "domain", db.CurrentSite().Domain, "err", err)
 	}
 	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
 }
@@ -85,7 +88,7 @@ func MakePrivate(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site.Public = false
 	err := db.Get().Save(site)
 	if err != nil {
-		slog.Error("makeing site  private", "domain", db.CurrentSite().Domain, "err", "err")
+		db.Logger().Error("making site  private", "domain", db.CurrentSite().Domain, "err", err)
 	}
 	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
 }
@@ -155,9 +158,37 @@ func RequireSiteAccess(h plug.Handler) plug.Handler {
 			return
 		}
 		if !site.Public {
+			auth := r.URL.Query().Get("auth")
+			if auth != "" {
+				i, ok := slices.BinarySearchFunc(site.Shares, &v1.Share{Id: auth}, func(a, b *v1.Share) int {
+					return cmp.Compare(a.Id, b.Id)
+				})
+				if !ok {
+					db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+					return
+				}
+				share := site.Shares[i]
+
+				if share.Password != nil {
+					// verify shared link
+					name := "shared-link-" + auth
+					expires := db.LoadSharedLinkSession(r, name)
+					if expires.Before(time.Now().UTC()) {
+						dest := fmt.Sprintf("/v1/share/%s/authenticate/%s",
+							url.PathEscape(site.Domain), auth)
+						http.Redirect(w, r, dest, http.StatusFound)
+						return
+					}
+					db.SetSite(site)
+					h(db, w, r)
+					return
+				}
+			}
+
 			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
 			return
 		}
+
 		db.SetSite(site)
 		h(db, w, r)
 	}

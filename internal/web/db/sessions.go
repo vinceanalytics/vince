@@ -74,7 +74,7 @@ func (s *SessionContext) Context(base map[string]any) {
 		}
 		share := make([]map[string]any, 0, len(s.Shares))
 		u := config.C.Url
-		p := u + fmt.Sprintf("/share/%s?auth=", url.PathEscape(s.Domain))
+		p := u + fmt.Sprintf("/v1/share/%s?auth=", url.PathEscape(s.Domain))
 
 		for _, r := range s.Shares {
 			m := map[string]any{
@@ -205,15 +205,19 @@ func (c *Config) clone(r *http.Request) *Config {
 }
 
 func (s *SessionContext) Load(r *http.Request) error {
-	cookie, err := r.Cookie(cookie)
-	if err != nil {
-		return nil
-	}
-	g, err := s.getSession(cookie.Value)
+	g, err := s.LoadBase(r, cookie)
 	if err != nil {
 		return err
 	}
 	return json.Unmarshal(g, &s.Data)
+}
+
+func (s *SessionContext) LoadBase(r *http.Request, name string) ([]byte, error) {
+	cookie, err := r.Cookie(name)
+	if err != nil {
+		return nil, nil
+	}
+	return s.getSession(cookie.Value)
 }
 
 func (s *SessionContext) getSession(value string) ([]byte, error) {
@@ -302,6 +306,39 @@ func (s *SessionContext) save(w http.ResponseWriter) error {
 		Name:    cookie,
 		Value:   value,
 		Expires: time.Now().UTC().Add(time.Duration(MaxAge) * time.Second),
+	}
+	http.SetCookie(w, cookie)
+	return nil
+}
+
+func (db *Config) SaveSharedLinkSession(w http.ResponseWriter, name string) {
+	err := db.session.SaveSharedLink(w, name)
+	if err != nil {
+		db.logger.Error("saving shared link session", "err", err)
+	}
+}
+
+func (db *Config) LoadSharedLinkSession(r *http.Request, name string) time.Time {
+	data, err := db.session.LoadBase(r, name)
+	if err != nil {
+		db.logger.Error("reading shared link session", "err", err)
+		return time.Time{}
+	}
+	ts, _ := strconv.ParseInt(string(data), 10, 64)
+	return time.UnixMilli(ts).UTC()
+}
+
+func (s *SessionContext) SaveSharedLink(w http.ResponseWriter, name string) error {
+	vs := strconv.FormatInt(time.Now().Add(24*time.Hour).UTC().UnixMilli(), 10)
+	value, err := s.create([]byte(vs))
+	if err != nil {
+		return err
+	}
+	cookie := &http.Cookie{
+		Path:    "/",
+		Name:    name,
+		Value:   value,
+		Expires: time.Now().UTC().Add(time.Duration(60*60*24) * time.Second),
 	}
 	http.SetCookie(w, cookie)
 	return nil

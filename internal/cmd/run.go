@@ -81,6 +81,24 @@ func run() {
 		With(plug.RequireAccount).
 		With(web.RequireSiteAccess)
 
+	mux.HandleFunc("GET /v1/share/{domain}", db.Wrap(
+		plug.Browser().
+			With(web.RequireSiteAccess).
+			Then(web.Share),
+	))
+
+	mux.HandleFunc("GET /v1/share/{domain}/authenticate/{slug}", db.Wrap(
+		plug.Browser().
+			With(plug.CSRF).
+			Then(web.ShareAuthForm),
+	))
+
+	mux.HandleFunc("POST /v1/share/{domain}/authenticate/{slug}", db.Wrap(
+		plug.Browser().
+			With(plug.CSRF).
+			Then(web.ShareAuth),
+	))
+
 	mux.HandleFunc("GET /{domain}/shared-links", db.Wrap(
 		sites.
 			With(plug.CSRF).
