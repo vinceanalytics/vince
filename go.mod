@@ -4,7 +4,6 @@ go 1.23
 
 require (
 	filippo.io/age v1.2.0
-	github.com/RoaringBitmap/roaring/v2 v2.3.1
 	github.com/VictoriaMetrics/fastcache v1.12.2
 	github.com/bits-and-blooms/bitset v1.12.0
 	github.com/blevesearch/vellum v1.0.10
