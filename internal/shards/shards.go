@@ -24,6 +24,7 @@ func New() *Shards {
 func (s *Shards) Set(shards []uint32, ts []int64) {
 	if len(shards) == 0 {
 		s.active.Store(^uint64(0))
+		return
 	}
 	s.mu.Lock()
 	s.shards = shards
