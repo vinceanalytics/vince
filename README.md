@@ -7,4 +7,4 @@
 
 ## vince
 
-*under active deleopment: we are pivoting away from distribute,in-memory model*
+*under active deleopment: we are pivoting away from distributed, in-memory model*
