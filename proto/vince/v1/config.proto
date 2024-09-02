@@ -33,8 +33,12 @@ message User {
   string password = 4;
 }
 
-
-message System{
+message System {
   uint64 expiry = 1;
   string email = 2;
+}
+
+message Shards {
+  repeated uint32 shards = 1;
+  repeated uint64 ts = 2;
 }

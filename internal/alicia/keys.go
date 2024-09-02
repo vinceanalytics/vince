@@ -21,6 +21,7 @@ const (
 	TRANSLATE_ID
 	SITE
 	SYSTEM
+	SHARDS
 )
 
 type Field byte
@@ -138,5 +139,10 @@ func (k *Key) Site(domain string) []byte {
 
 func (k *Key) System() []byte {
 	k.NS(SYSTEM)
+	return k[:fieldOffset]
+}
+
+func (k *Key) Shards() []byte {
+	k.NS(SHARDS)
 	return k[:fieldOffset]
 }
