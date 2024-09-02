@@ -9,7 +9,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
-func (o *Proto[T]) CurrentVisitors(domain string) (visitors uint64, err error) {
+func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 	end := time.Now().UTC()
 	start := end.Add(5 * time.Minute)
 	r := roaring64.New()

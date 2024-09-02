@@ -40,7 +40,7 @@ func (m *Match) Reset(dates []uint64) {
 	}
 }
 
-func (o *Proto[T]) Select(
+func (o *Store) Select(
 	start, end int64,
 	domain string,
 	filter Filter,
@@ -58,7 +58,8 @@ func (o *Proto[T]) Select(
 		filter = noop{}
 	}
 
-	shards := o.shards()
+	shards := o.shards.Select(start, end)
+
 	dom := NewEq(uint64(alicia.DOMAIN), domain)
 	return o.View(func(tx *Tx) error {
 
@@ -94,16 +95,6 @@ func (o *Proto[T]) Select(
 		}
 		return nil
 	})
-}
-
-// compute possible shards based on current id
-func (o *Proto[T]) shards() []uint64 {
-	shard := o.seq.Load() / ro.ShardWidth
-	n := make([]uint64, 0, shard+1)
-	for i := uint64(0); i <= shard; i++ {
-		n = append(n, i)
-	}
-	return n
 }
 
 type Filter interface {

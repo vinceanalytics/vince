@@ -21,7 +21,7 @@ type Result struct {
 	Results []map[string]any `json:"results"`
 }
 
-func (o *Proto[T]) Breakdown(start, end int64, domain string, filter Filter, metrics []string, field alicia.Field) (*Result, error) {
+func (o *Store) Breakdown(start, end int64, domain string, filter Filter, metrics []string, field alicia.Field) (*Result, error) {
 	var m Data
 	values := make(map[string]*roaring64.Bitmap)
 	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
@@ -56,7 +56,7 @@ func (o *Proto[T]) Breakdown(start, end int64, domain string, filter Filter, met
 	return a, nil
 }
 
-func (o *Proto[T]) BreakdownExitPages(start, end int64, domain string, filter Filter) (*Result, error) {
+func (o *Store) BreakdownExitPages(start, end int64, domain string, filter Filter) (*Result, error) {
 	var m Data
 	values := make(map[string]*roaring64.Bitmap)
 	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
@@ -98,7 +98,7 @@ func (o *Proto[T]) BreakdownExitPages(start, end int64, domain string, filter Fi
 	return a, nil
 }
 
-func (o *Proto[T]) BreakdownCity(start, end int64, domain string, filter Filter) (*Result, error) {
+func (o *Store) BreakdownCity(start, end int64, domain string, filter Filter) (*Result, error) {
 	values := make(map[uint32]*roaring64.Bitmap)
 	var m Data
 	err := o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
@@ -134,7 +134,7 @@ func (o *Proto[T]) BreakdownCity(start, end int64, domain string, filter Filter)
 	return a, nil
 }
 
-func (o *Proto[T]) BreakdownVisitorsWithPercentage(start, end int64, domain string, filter Filter, field alicia.Field) (*Result, error) {
+func (o *Store) BreakdownVisitorsWithPercentage(start, end int64, domain string, filter Filter, field alicia.Field) (*Result, error) {
 	values := make(map[string]*roaring64.Bitmap)
 	var m Data
 

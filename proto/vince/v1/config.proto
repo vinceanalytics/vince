@@ -40,5 +40,5 @@ message System {
 
 message Shards {
   repeated uint32 shards = 1;
-  repeated uint64 ts = 2;
+  repeated int64 ts = 2;
 }

@@ -1,81 +1,109 @@
 package ro2
 
 import (
+	"math"
 	"sync/atomic"
 
+	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
+	"github.com/vinceanalytics/vince/internal/shards"
+	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-type Proto[T proto.Message] struct {
+type Store struct {
 	*DB
 	seq    atomic.Uint64
-	ts     protoreflect.FieldDescriptor
-	fields map[uint32]string
-	names  map[string]uint32
+	shards shards.Shards
 }
-
-type Store = Proto[*v1.Model]
 
 func Open(path string) (*Store, error) {
-	return open[*v1.Model](path)
+	return open(path)
 }
 
-func open[T proto.Message](path string) (*Proto[T], error) {
-	var a T
-	f := a.ProtoReflect().Descriptor().Fields()
-	fields := map[uint32]string{}
-	names := map[string]uint32{}
-	for i := 0; i < f.Len(); i++ {
-		fd := f.Get(i)
-		k := fd.Kind()
-		assert(
-			k == protoreflect.StringKind || k == protoreflect.Int64Kind,
-			"unsupported field", "kind", k,
-		)
-		fields[uint32(fd.Number())] = string(fd.Name())
-		names[string(fd.Name())] = uint32(fd.Number())
-	}
-	ts := f.ByName(protoreflect.Name("timestamp"))
-	assert(ts != nil, "timestamp field is required")
+func open(path string) (*Store, error) {
 	db, err := newDB(path)
 	if err != nil {
 		return nil, err
 	}
-	o := &Proto[T]{
-		DB:     db,
-		ts:     ts,
-		fields: fields,
-		names:  names,
+	o := &Store{
+		DB: db,
 	}
-	o.seq.Store(o.latestID(uint64(alicia.TIMESTAMP)))
+	err = o.View(func(tx *Tx) error {
+		// try loading shards / ts mapping
+		if it, err := tx.tx.Get(tx.get().Shards()); err == nil {
+			var vs v1.Shards
+			it.Value(func(val []byte) error {
+				return proto.Unmarshal(val, &vs)
+			})
+			o.shards.Set(vs.Shards, vs.Ts)
+		}
+
+		// load last sequence from timestamp existence field
+		key := tx.get().
+			NS(alicia.CONTAINER).
+			Field(uint64(alicia.TIMESTAMP)).
+			Shard(uint64(math.MaxUint32))
+
+		it := tx.tx.NewIterator(badger.IteratorOptions{
+			Reverse: true,
+		})
+		defer it.Close()
+		it.Seek(key.ShardPrefix())
+		if it.Valid() {
+			shard := alicia.Shard(it.Item().Key())
+			exists := tx.Row(uint64(shard), uint64(alicia.TIMESTAMP), 0)
+			if !exists.IsEmpty() {
+				o.seq.Store(exists.Maximum())
+				return nil
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
 	return o, nil
 }
 
-func (o *Proto[T]) Name(number uint32) string {
-	v, ok := o.fields[number]
-	assert(ok, "unsupported field number", "number", number)
-	return v
+var (
+	fields  = new(v1.Model).ProtoReflect().Descriptor().Fields()
+	tsField = fields.ByNumber(protowire.Number(alicia.TIMESTAMP))
+)
+
+func (o *Store) Name(number uint32) string {
+	f := fields.ByNumber(protowire.Number(number))
+	return string(f.Name())
 }
 
-func (o *Proto[T]) Number(name string) uint32 {
-	v, ok := o.names[name]
-	assert(ok, "unsupported field name", "name", name)
-	return v
+func (o *Store) Number(name string) uint32 {
+	f := fields.ByName(protoreflect.Name(name))
+	return uint32(f.Number())
 }
 
-func (o *Proto[T]) One(msg T) error {
+func (o *Store) One(msg *v1.Model) error {
 	return o.Update(func(tx *Tx) error {
 		re := msg.ProtoReflect()
 		b := roaring64.New()
 		var err error
 		id := o.seq.Add(1)
 		shard := id / ro.ShardWidth
-
+		ts := re.Get(tsField)
+		if o.shards.Add(shard, ts.Int()) {
+			// change  in shards. Persist shard/ts state
+			vs := &v1.Shards{}
+			vs.Shards, vs.Ts = o.shards.Load()
+			data, _ := proto.Marshal(vs)
+			err := tx.tx.Set(tx.get().Shards(), data)
+			if err != nil {
+				return err
+			}
+		}
 		re.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 			b.Clear()
 			if fd.Kind() == protoreflect.StringKind {
