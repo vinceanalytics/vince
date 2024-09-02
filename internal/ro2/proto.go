@@ -1,10 +1,8 @@
 package ro2
 
 import (
-	"math"
 	"sync/atomic"
 
-	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/ro"
@@ -34,33 +32,26 @@ func open(path string) (*Store, error) {
 		DB: db,
 	}
 	err = o.View(func(tx *Tx) error {
+		var vs v1.Shards
 		// try loading shards / ts mapping
 		if it, err := tx.tx.Get(tx.get().Shards()); err == nil {
-			var vs v1.Shards
 			it.Value(func(val []byte) error {
 				return proto.Unmarshal(val, &vs)
 			})
 			o.shards.Set(vs.Shards, vs.Ts)
 		}
+		if len(vs.Shards) == 0 {
+			return nil
+		}
 
-		// load last sequence from timestamp existence field
-		key := tx.get().
-			NS(alicia.CONTAINER).
-			Field(uint64(alicia.TIMESTAMP)).
-			Shard(uint64(math.MaxUint32))
-
-		it := tx.tx.NewIterator(badger.IteratorOptions{
-			Reverse: true,
-		})
-		defer it.Close()
-		it.Seek(key.ShardPrefix())
-		if it.Valid() {
-			shard := alicia.Shard(it.Item().Key())
-			exists := tx.Row(uint64(shard), uint64(alicia.TIMESTAMP), 0)
-			if !exists.IsEmpty() {
-				o.seq.Store(exists.Maximum())
-				return nil
-			}
+		// we choose the last shard to look for the last saved sequence ID. We
+		// already know that timestamp field is required for all events, since
+		// bsi fields store existence bitmap as row 0, we can safely derive tha
+		// last sequence ID as highest existence bit set.
+		shard := vs.Shards[len(vs.Shards)-1]
+		exists := tx.Row(uint64(shard), uint64(alicia.TIMESTAMP), 0)
+		if !exists.IsEmpty() {
+			o.seq.Store(exists.Maximum())
 		}
 		return nil
 	})
