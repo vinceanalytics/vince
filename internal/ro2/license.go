@@ -51,8 +51,7 @@ func (db *DB) checkLicense(ctx context.Context) {
 				features.Email.Store(ls.Email)
 
 			} else {
-				// Set expiry as 3 days from now
-				features.Expires.Store(uint64(time.Now().UTC().Add(3 * 24 * time.Hour).UnixMilli()))
+				features.Expires.Store(uint64(time.Now().UTC().Add(30 * 24 * time.Hour).UnixMilli()))
 				features.Email.Store(config.C.Admin.Email)
 			}
 			ds, _ := proto.Marshal(&v1.License{
