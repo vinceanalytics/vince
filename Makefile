@@ -1,7 +1,7 @@
 dev:
 	go build -o bin/vince
 	./bin/vince  --adminName=acme --adminEmail=acme@user.test \
-	--adminPassword=1234
+	--adminPassword=1234 --domains=vinceanalytics.com
 
 css:
 	cd assets && npm run css && cd -
