@@ -81,6 +81,12 @@ func Cli() *cli.Command {
 				Sources:     cli.EnvVars("VINCE_URL"),
 				Destination: &config.C.Url,
 			},
+			&cli.StringSliceFlag{
+				Name:        "domains",
+				Usage:       "list of domains to create on startup",
+				Sources:     cli.EnvVars("VINCE_DOMAINS"),
+				Destination: &config.C.Domains,
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			run()

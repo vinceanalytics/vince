@@ -85,6 +85,27 @@ func (db *DB) checkLicense(ctx context.Context) {
 	last := features.Validate()
 	if last {
 		domains.Load(db.Domains)
+		if len(config.C.Domains) > 0 {
+			err = db.Update(func(tx *Tx) error {
+				for _, n := range config.C.Domains {
+					k := tx.get().Site(n)
+					if _, err := tx.tx.Get(k); errors.Is(err, badger.ErrKeyNotFound) {
+						data, _ := proto.Marshal(&v1.Site{
+							Domain: n,
+						})
+						err := tx.tx.Set(k, data)
+						if err != nil {
+							return err
+						}
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				slog.Error("failed setup domains", "err", err)
+				os.Exit(1)
+			}
+		}
 	}
 	slog.Info("starting license check loop")
 	for {
