@@ -9,42 +9,46 @@ func period(str, date string) Date {
 	base := dateParse(date)
 	last := base.Start
 	switch str {
+	case "realtime":
+		end := time.Now().UTC()
+		return Date{Start: end.Add(-15 * time.Minute), End: end, Interval: Minute}
 	case "day":
+		base.Interval = Hour
 		return base
 	case "7d":
 		first := last.AddDate(0, 0, -6)
-		return Date{Start: first, End: last}
+		return Date{Start: first, End: last, Interval: Day}
 	case "30d":
 		first := last.AddDate(0, 0, -30)
-		return Date{Start: first, End: last}
+		return Date{Start: first, End: last, Interval: Day}
 	case "month":
 		last = endOfMonth(last)
 		first := beginOfMonth(last)
-		return Date{Start: first, End: last}
+		return Date{Start: first, End: last, Interval: Day}
 	case "6mo":
 		last = endOfMonth(last)
 		first := beginOfMonth(last.AddDate(0, -5, 0))
-		return Date{Start: first, End: last}
+		return Date{Start: first, End: last, Interval: Month}
 	case "12mo":
 		last = endOfMonth(last)
 		first := beginOfMonth(last.AddDate(0, -11, 0))
-		return Date{Start: first, End: last}
+		return Date{Start: first, End: last, Interval: Month}
 	case "year":
 		last = endOfYear(last)
 		first := beginOfYear(last)
-		return Date{Start: first, End: last}
+		return Date{Start: first, End: last, Interval: Month}
 	case "all":
-		return Date{End: last}
+		return Date{End: last, Interval: Day}
 	default:
+		base.Interval = Day
 		return base
 	}
 }
 
 type Date struct {
 	Start, End time.Time
+	Interval   Interval
 }
-
-const layout = "2006-01-02"
 
 func dateParse(date string) Date {
 	if date == "" {
@@ -52,10 +56,10 @@ func dateParse(date string) Date {
 		return Date{Start: now, End: now}
 	}
 	a, b, ok := strings.Cut(date, ",")
-	start, _ := time.Parse(layout, a)
+	start, _ := time.Parse(time.DateOnly, a)
 
 	if ok {
-		end, _ := time.Parse(layout, b)
+		end, _ := time.Parse(time.DateOnly, b)
 		return Date{Start: start, End: end}
 	}
 	return Date{Start: start, End: start}

@@ -16,6 +16,14 @@ func New(db *ro2.Store, u url.Values) *Query {
 	var fs []Filter
 	json.Unmarshal([]byte(u.Get("filters")), &fs)
 	period := period(u.Get("period"), u.Get("date"))
+	if i := u.Get("interval"); i != "" {
+		if i == "week" {
+			period.Interval = Week
+		}
+		if i == "month" {
+			period.Interval = Month
+		}
+	}
 	ls := make(ro2.List, len(fs))
 	for i := range fs {
 		ls[i] = fs[i].To(db)
