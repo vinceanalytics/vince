@@ -20,7 +20,7 @@ var (
 	login         = template.Must(look("focus").ParseFS(templateData, "templates/auth/login.html"))
 	statsLocked   = template.Must(look("focus").ParseFS(templateData, "templates/stats/site_locked.html"))
 	sharePassword = template.Must(look("focus").ParseFS(templateData, "templates/stats/shared_link_password.html"))
-	stats         = template.Must(look("focus").ParseFS(templateData, "templates/stats/stats.html"))
+	stats         = template.Must(look("app").ParseFS(templateData, "templates/stats/stats.html"))
 	createSite    = template.Must(look("focus").ParseFS(templateData, "templates/site/new.html"))
 	shared        = template.Must(look("focus").ParseFS(templateData, "templates/site/new_shared_link.html"))
 	edit          = template.Must(look("focus").ParseFS(templateData, "templates/site/edit_shared_link.html"))
