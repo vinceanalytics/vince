@@ -8,6 +8,9 @@ import (
 
 func TestShards(t *testing.T) {
 	sx := New()
+
+	require.Equal(t, []uint64{}, sx.Select(1, 2))
+
 	sx.Set(
 		[]uint32{1, 2, 3, 4, 5, 6},
 		[]int64{0, 2, 4, 6, 8, 10},

@@ -56,6 +56,9 @@ func (s *Shards) Load() (shards []uint32, ts []int64) {
 func (s *Shards) Select(start, end int64) (shards []uint64) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+	if len(s.shards) == 0 {
+		return []uint64{}
+	}
 	from, exactFrom := slices.BinarySearch(s.minTs, start)
 	if !exactFrom {
 		// adjust the index by going back one element. This ensures we are in the
