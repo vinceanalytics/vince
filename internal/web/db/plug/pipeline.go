@@ -37,7 +37,6 @@ func Browser() Pipeline {
 
 func InternalStats() Pipeline {
 	return Pipeline{
-		AcceptJSON,
 		FetchSession,
 	}
 }

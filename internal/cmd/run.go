@@ -162,117 +162,117 @@ func run() {
 			Then(web.UnimplementedStat),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/main-graph", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/main-graph/", db.Wrap(
 		stats.
 			Then(web.UnimplementedStat),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/top-stats", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/top-stats/", db.Wrap(
 		stats.
 			Then(web.UnimplementedStat),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/sources", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/sources/", db.Wrap(
 		stats.
 			Then(web.Sources),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/utm_mediums", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/utm_mediums/", db.Wrap(
 		stats.
 			Then(web.UtmMediums),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/utm_sources", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/utm_sources/", db.Wrap(
 		stats.
 			Then(web.UtmSources),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/utm_campaigns", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/utm_campaigns/", db.Wrap(
 		stats.
 			Then(web.UtmCampaigns),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/utm_contents", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/utm_contents/", db.Wrap(
 		stats.
 			Then(web.UtmContents),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/utm_terms", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/utm_terms/", db.Wrap(
 		stats.
 			Then(web.UtmTerms),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/referrers/{referrer}", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/referrers/{referrer}/", db.Wrap(
 		stats.
 			Then(web.Referrer),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/pages", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/pages/", db.Wrap(
 		stats.
 			Then(web.Pages),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/entry-pages", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/entry-pages/", db.Wrap(
 		stats.
 			Then(web.EntryPages),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/exit-pages", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/exit-pages/", db.Wrap(
 		stats.
 			Then(web.ExitPages),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/countries", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/countries/", db.Wrap(
 		stats.
 			Then(web.Countries),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/regions", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/regions/", db.Wrap(
 		stats.
 			Then(web.Regions),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/cities", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/cities/", db.Wrap(
 		stats.
 			Then(web.Cities),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/browsers", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/browsers/", db.Wrap(
 		stats.
 			Then(web.Browsers),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/browser-versions", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/browser-versions/", db.Wrap(
 		stats.
 			Then(web.BrowserVersions),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/operating-systems", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/operating-systems/", db.Wrap(
 		stats.
 			Then(web.Os),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/operating-system-versions", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/operating-system-versions/", db.Wrap(
 		stats.
 			Then(web.OsVersion),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/screen-sizes", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/screen-sizes/", db.Wrap(
 		stats.
 			Then(web.ScreenSize),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/conversions", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/conversions/", db.Wrap(
 		stats.
 			Then(web.UnimplementedStat),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/custom-prop-values/{prop_key}", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/custom-prop-values/{prop_key}/", db.Wrap(
 		stats.
 			Then(web.UnimplementedStat),
 	))
 
-	mux.HandleFunc("GET /api/stats/{domain}/suggestions/{filter_name}", db.Wrap(
+	mux.HandleFunc("GET /api/stats/{domain}/suggestions/{filter_name}/", db.Wrap(
 		stats.
 			Then(web.UnimplementedStat),
 	))
