@@ -1,0 +1,1 @@
+go test -benchmem -run=^$ -bench ^BenchmarkRange$ -memprofile memprofile.out -cpuprofile profile.out github.com/vinceanalytics/vince/internal/ro2
