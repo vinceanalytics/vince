@@ -123,12 +123,22 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	sites := make([]map[string]any, 0, 16)
 	db.Get().Domains(func(s *v1.Site) {
 		sites = append(sites, map[string]any{
-			"domain":   s.Domain,
-			"public":   s.Public,
-			"locked":   s.Locked,
-			"visitors": 0,
+			"domain": s.Domain,
+			"public": s.Public,
+			"locked": s.Locked,
 		})
 	})
+
+	for i := range sites {
+		// compute visitors
+		dom := sites[i]["domain"].(string)
+		vs, err := db.Get().Visitors(dom)
+		if err != nil {
+			db.Logger().Error("computing visitors", "domain", dom, "err", err)
+		}
+		sites[i]["visitors"] = vs
+	}
+
 	ctx := make(map[string]any)
 
 	if len(sites) > 0 {

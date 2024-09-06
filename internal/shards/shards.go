@@ -53,6 +53,19 @@ func (s *Shards) Load() (shards []uint32, ts []int64) {
 	return
 }
 
+func (s *Shards) All() (shards []uint64) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if len(s.shards) == 0 {
+		return []uint64{}
+	}
+	shards = make([]uint64, len(s.shards))
+	for i := range s.shards {
+		shards[i] = uint64(s.shards[i])
+	}
+	return
+}
+
 func (s *Shards) Select(start, end int64) (shards []uint64) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

@@ -95,6 +95,7 @@ func (o *Store) Select(
 		}
 		return nil
 	})
+
 }
 
 type Filter interface {

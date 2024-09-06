@@ -30,3 +30,25 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 	visitors = r.GetCardinality()
 	return
 }
+
+func (o *Store) Visitors(domain string) (visitors uint64, err error) {
+	r := roaring64.New()
+	dom := NewEq(uint64(alicia.DOMAIN), domain)
+	shards := o.shards.All()
+	err = o.View(func(tx *Tx) error {
+		for i := range shards {
+			shard := shards[i]
+			b := dom.match(tx, shard)
+			if b.IsEmpty() {
+				continue
+			}
+			tx.ExtractBSI(shard, uint64(alicia.ID), b, func(row uint64, c int64) {
+				// we don't care about row we just neeed to find unique users
+				r.Add(uint64(c))
+			})
+		}
+		return nil
+	})
+	visitors = r.GetCardinality()
+	return
+}
