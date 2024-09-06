@@ -58,49 +58,6 @@ type SessionContext struct {
 func (s *SessionContext) clone() *SessionContext {
 	return &SessionContext{secret: s.secret}
 }
-func (s *SessionContext) Context(base map[string]any) {
-	if u := s.user; u != nil {
-		base["current_user"] = map[string]any{
-			"name":  u.Name,
-			"email": u.Email,
-			"admin": true,
-		}
-	}
-	if s := s.site; s != nil {
-		site := map[string]any{
-			"domain": s.Domain,
-			"public": s.Public,
-			"locked": s.Locked,
-		}
-		share := make([]map[string]any, 0, len(s.Shares))
-		u := config.C.Url
-		p := u + fmt.Sprintf("/v1/share/%s?auth=", url.PathEscape(s.Domain))
-
-		for _, r := range s.Shares {
-			m := map[string]any{
-				"slug":     r.Id,
-				"name":     r.Name,
-				"dest":     p + r.Id,
-				"password": len(r.Password) > 0,
-			}
-			share = append(share, m)
-		}
-		if len(share) > 0 {
-			site["share"] = share
-		}
-		base["site"] = site
-	}
-
-	if s.captcha != "" {
-		base["captcha"] = template.HTMLAttr(fmt.Sprintf("src=%q", s.captcha))
-	}
-	if s.Data.Csrf != "" {
-		base["csrf"] = template.HTML(s.Data.Csrf)
-	}
-	if f := s.Data.Flash; f != nil {
-		base["flash"] = f
-	}
-}
 
 type Data struct {
 	TimeoutAt     time.Time `json:",omitempty"`
@@ -184,7 +141,48 @@ func (c *Config) Context(base map[string]any) map[string]any {
 	if base == nil {
 		base = make(map[string]any)
 	}
-	c.session.Context(base)
+	s := c.session
+	if u := s.user; u != nil {
+		base["current_user"] = map[string]any{
+			"name":  u.Name,
+			"email": u.Email,
+			"admin": true,
+		}
+	}
+	if s := s.site; s != nil {
+		site := map[string]any{
+			"domain": s.Domain,
+			"public": s.Public,
+			"locked": s.Locked,
+		}
+		share := make([]map[string]any, 0, len(s.Shares))
+		u := config.C.Url
+		p := u + fmt.Sprintf("/v1/share/%s?auth=", url.PathEscape(s.Domain))
+
+		for _, r := range s.Shares {
+			m := map[string]any{
+				"slug":     r.Id,
+				"name":     r.Name,
+				"dest":     p + r.Id,
+				"password": len(r.Password) > 0,
+			}
+			share = append(share, m)
+		}
+		if len(share) > 0 {
+			site["share"] = share
+		}
+		base["site"] = site
+	}
+
+	if s.captcha != "" {
+		base["captcha"] = template.HTMLAttr(fmt.Sprintf("src=%q", s.captcha))
+	}
+	if s.Data.Csrf != "" {
+		base["csrf"] = template.HTML(s.Data.Csrf)
+	}
+	if f := s.Data.Flash; f != nil {
+		base["flash"] = f
+	}
 	return features.Context(base)
 }
 

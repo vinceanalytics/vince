@@ -159,7 +159,7 @@ func run() {
 
 	mux.HandleFunc("GET /api/stats/{domain}/current-visitors", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.CurrentVisitors),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/main-graph/", db.Wrap(

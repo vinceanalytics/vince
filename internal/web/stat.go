@@ -13,6 +13,15 @@ import (
 func UnimplementedStat(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
+func CurrentVisitors(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	site := db.CurrentSite()
+	visitors, err := db.Get().CurrentVisitors(site.Domain)
+	if err != nil {
+		db.Logger().Error("computing current visitors", "err", err)
+	}
+	db.JSON(w, visitors)
+}
+
 func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(db.Get(), r.URL.Query())
