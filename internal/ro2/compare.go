@@ -132,12 +132,11 @@ func (tx *Tx) rangeBetweenUnsigned(field, shard uint64, filter *roaring64.Bitmap
 	switch {
 	case predicateMax > (1<<64)-1:
 		// The upper bound cannot be violated.
-		return tx.rangeGTUnsigned(field, shard, filter, 64, predicateMin, true)
+		return tx.rangeGTUnsigned(field, shard, filter, bitDepth, predicateMin, true)
 	case predicateMin == 0:
 		// The lower bound cannot be violated.
-		return tx.rangeLTUnsigned(field, shard, filter, 64, predicateMax, true)
+		return tx.rangeLTUnsigned(field, shard, filter, bitDepth, predicateMax, true)
 	}
-
 	// Compare any upper bits which are equal.
 	diffLen := bits.Len64(predicateMax ^ predicateMin)
 	remaining := filter
@@ -190,7 +189,6 @@ prep:
 	predicate |= (^uint64(0)) << bitDepth
 	for i := int(bitDepth - 1); i >= 0 && predicate < ^uint64(0) && !remaining.IsEmpty(); i-- {
 		row := tx.Row(shard, field, uint64(bsiOffsetBit+i))
-		row.And(remaining)
 		ones := roaring64.And(remaining, row)
 		switch (predicate >> uint(i)) & 1 {
 		case 1:
@@ -235,7 +233,7 @@ func (tx *Tx) rangeLTUnsigned(field, shard uint64, filter *roaring64.Bitmap, bit
 			predicate &^= 1 << uint(i)
 		case 0:
 			// Discard everything with a one bit here.
-			remaining = row
+			remaining = zeroes
 		}
 	}
 
