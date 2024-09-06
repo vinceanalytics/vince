@@ -16,7 +16,7 @@ import (
 type Store struct {
 	*DB
 	seq    atomic.Uint64
-	shards shards.Shards
+	shards *shards.Shards
 }
 
 func Open(path string) (*Store, error) {
@@ -29,7 +29,8 @@ func open(path string) (*Store, error) {
 		return nil, err
 	}
 	o := &Store{
-		DB: db,
+		DB:     db,
+		shards: shards.New(),
 	}
 	err = o.View(func(tx *Tx) error {
 		var vs v1.Shards
@@ -40,6 +41,7 @@ func open(path string) (*Store, error) {
 			})
 			o.shards.Set(vs.Shards, vs.Ts)
 		}
+
 		if len(vs.Shards) == 0 {
 			return nil
 		}

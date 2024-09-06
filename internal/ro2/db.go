@@ -41,21 +41,23 @@ func (db *DB) Close() error {
 }
 
 func (db *DB) Update(f func(tx *Tx) error) error {
-	tx := txPool.Get().(*Tx)
+	tx := newTx(nil)
 	defer tx.Release()
 
 	return db.db.Update(func(txn *badger.Txn) error {
+		defer tx.Close()
+
 		tx.tx = txn
 		return f(tx)
 	})
 }
 
 func (db *DB) View(f func(tx *Tx) error) error {
-	tx := txPool.Get().(*Tx)
-	defer tx.Release()
-
 	return db.db.View(func(txn *badger.Txn) error {
-		tx.tx = txn
+
+		tx := newTx(txn)
+		defer tx.Release()
+
 		return f(tx)
 	})
 }

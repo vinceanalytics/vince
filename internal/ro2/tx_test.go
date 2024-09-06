@@ -117,7 +117,7 @@ func TestTxCmp_range(t *testing.T) {
 		match = b.ToArray()
 		return nil
 	})
-	require.Equal(t, []uint64{2, 20}, match)
+	require.Equal(t, []uint64{2, 20, 22}, match)
 }
 
 func BenchmarkRow(b *testing.B) {

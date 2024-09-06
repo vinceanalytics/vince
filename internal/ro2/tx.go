@@ -17,6 +17,7 @@ import (
 
 type Tx struct {
 	tx *badger.Txn
+	it *badger.Iterator
 	// we need to retain keys untill the tranaction is commited
 	keys []*alicia.Key
 }
@@ -25,13 +26,34 @@ var txPool = &sync.Pool{New: func() any {
 	return &Tx{}
 }}
 
+func newTx(txn *badger.Txn) *Tx {
+	tx := txPool.Get().(*Tx)
+	tx.tx = txn
+	return tx
+}
+
 func (tx *Tx) get() *alicia.Key {
 	k := alicia.Get()
 	tx.keys = append(tx.keys, k)
 	return k
 }
 
+func (tx *Tx) Iter() *badger.Iterator {
+	if tx.it == nil {
+		tx.it = tx.tx.NewIterator(badger.IteratorOptions{})
+	}
+	return tx.it
+}
+
+func (tx *Tx) Close() {
+	if tx.it != nil {
+		tx.it.Close()
+	}
+	tx.it = nil
+}
+
 func (tx *Tx) Release() {
+	tx.Close()
 	tx.tx = nil
 	for i := range tx.keys {
 		tx.keys[i].Release()
@@ -59,6 +81,7 @@ func (tx *Tx) max(shard, field uint64) (uint64, bool) {
 	it := tx.tx.NewIterator(badger.IteratorOptions{
 		Reverse: true,
 	})
+
 	defer it.Close()
 	it.Seek(prefix)
 	if !it.Valid() {
@@ -170,19 +193,17 @@ func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(
 		filter[idx] = value
 		return nil
 	})
-	opts := badger.IteratorOptions{
-		Prefix: tx.get().
-			NS(alicia.CONTAINER).
-			Shard(shard).
-			Field(field).
-			FieldPrefix(),
-	}
-	itr := tx.tx.NewIterator(opts)
-	defer itr.Close()
+
+	prefix := tx.get().
+		NS(alicia.CONTAINER).
+		Shard(shard).
+		Field(field).
+		FieldPrefix()
+	itr := tx.Iter()
 	prevRow := ^uint64(0)
 	seenThisRow := false
 	var ac roaring.Container
-	for itr.Seek(nil); itr.Valid(); itr.Next() {
+	for itr.Seek(prefix); itr.ValidForPrefix(prefix); itr.Next() {
 		item := itr.Item()
 		k := alicia.Container(item.Key())
 		row := uint64(k) >> ro.ShardVsContainerExponent
@@ -209,13 +230,10 @@ func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(
 
 func (tx *Tx) Row(shard, field uint64, rowID uint64) *roaring64.Bitmap {
 	o, from, to := tx.keyRange(shard, field, rowID)
-	opts := badger.IteratorOptions{
-		Prefix: from.KeyPrefix(),
-	}
-	itr := tx.tx.NewIterator(opts)
-	defer itr.Close()
+	prefix := from.KeyPrefix()
+	itr := tx.Iter()
 	valid := func() bool {
-		return itr.Valid() &&
+		return itr.ValidForPrefix(prefix) &&
 			bytes.Compare(itr.Item().Key(), to[:]) == -1
 	}
 	b := roaring.New()

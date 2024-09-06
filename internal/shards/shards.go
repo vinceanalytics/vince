@@ -10,34 +10,34 @@ import (
 type Shards struct {
 	shards []uint32
 	minTs  []int64
-	active atomic.Uint64
+	active atomic.Int64
 
 	mu sync.RWMutex
 }
 
 func New() *Shards {
 	s := &Shards{}
-	s.active.Store(^uint64(0))
+	s.active.Store(-1)
 	return s
 }
 
 func (s *Shards) Set(shards []uint32, ts []int64) {
 	if len(shards) == 0 {
-		s.active.Store(^uint64(0))
+		s.active.Store(-1)
 		return
 	}
 	s.mu.Lock()
 	s.shards = shards
 	s.minTs = ts
 	s.mu.Unlock()
-	s.active.Store(uint64(shards[len(shards)-1]))
+	s.active.Store(int64(shards[len(shards)-1]))
 }
 
 func (s *Shards) Add(shard uint64, ts int64) (changed bool) {
-	if s.active.Load() == shard {
+	if s.active.Load() == int64(shard) {
 		return false
 	}
-	s.active.Store(shard)
+	s.active.Store(int64(shard))
 	s.mu.Lock()
 	s.shards = append(s.shards, uint32(shard))
 	s.minTs = append(s.minTs, ts)

@@ -103,12 +103,9 @@ func (tx *Tx) ID(field uint64, value string) (id uint64, ok bool) {
 
 func (tx *Tx) Search(field uint64, prefix []byte, f func([]byte, uint64)) {
 	key := tx.get().TranslateKey(field, prefix)
-	it := tx.tx.NewIterator(badger.IteratorOptions{
-		Prefix: key,
-	})
-	defer it.Close()
+	it := tx.Iter()
 
-	for it.Rewind(); it.Valid(); it.Next() {
+	for it.Seek(key); it.ValidForPrefix(key); it.Next() {
 		k := it.Item().Key()[2:]
 		it.Item().Value(func(val []byte) error {
 			f(k, binary.BigEndian.Uint64(val))
