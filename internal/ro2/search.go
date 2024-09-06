@@ -7,11 +7,9 @@ import (
 	"slices"
 	"strings"
 	"sync"
-	"time"
 	"unicode/utf8"
 
 	"github.com/vinceanalytics/vince/internal/alicia"
-	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
@@ -26,39 +24,20 @@ func (d *Data) get(i alicia.Field) *roaring64.BSI {
 	return d[i]
 }
 
-type Match struct {
-	Dates []uint64
-	Data  []Data
-}
-
-func (m *Match) Reset(dates []uint64) {
-	m.Dates = slices.Grow(m.Dates, len(dates))[:len(dates)]
-	copy(m.Dates, dates)
-	m.Data = slices.Grow(m.Data, len(dates))[:len(dates)]
-	for i := range m.Data {
-		clear(m.Data[i][:])
-	}
-}
-
 func (o *Store) Select(
 	start, end int64,
 	domain string,
 	filter Filter,
 	f func(tx *Tx, shard uint64, match *roaring64.Bitmap) error) error {
 
-	dates := ro.DateRange(
-		time.UnixMilli(start).UTC(),
-		time.UnixMilli(end).UTC(),
-	)
-	if len(dates) == 0 {
-		return nil
-	}
-
 	if filter == nil {
 		filter = noop{}
 	}
 
 	shards := o.shards.Select(start, end)
+	if len(shards) == 0 {
+		return nil
+	}
 
 	dom := NewEq(uint64(alicia.DOMAIN), domain)
 	return o.View(func(tx *Tx) error {
@@ -81,7 +60,7 @@ func (o *Store) Select(
 				continue
 			}
 
-			// select timestamp
+			// select timestamp time range
 			ts := tx.Cmp(uint64(alicia.TIMESTAMP), shard, roaring64.RANGE, start, end)
 			b.And(ts)
 			if b.IsEmpty() {
