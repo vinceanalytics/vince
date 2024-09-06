@@ -16,6 +16,22 @@ import (
 // We know fields before hand
 type Data [alicia.SUB2_CODE]*roaring64.BSI
 
+var dataPool = &sync.Pool{
+	New: func() any {
+		var d Data
+		return &d
+	},
+}
+
+func NewData() *Data {
+	return dataPool.Get().(*Data)
+}
+
+func (d *Data) Release() {
+	clear(d[:])
+	dataPool.Put(d)
+}
+
 func (d *Data) get(i alicia.Field) *roaring64.BSI {
 	i--
 	if d[i] == nil {

@@ -22,7 +22,8 @@ type Result struct {
 }
 
 func (o *Store) Breakdown(start, end int64, domain string, filter Filter, metrics []string, field alicia.Field) (*Result, error) {
-	var m Data
+	m := NewData()
+	defer m.Release()
 	values := make(map[string]*roaring64.Bitmap)
 	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
 		tx.ExtractMutex(shard, uint64(field), match, func(row uint64, c *roaring.Container) {
@@ -57,7 +58,8 @@ func (o *Store) Breakdown(start, end int64, domain string, filter Filter, metric
 }
 
 func (o *Store) BreakdownExitPages(start, end int64, domain string, filter Filter) (*Result, error) {
-	var m Data
+	m := NewData()
+	defer m.Release()
 	values := make(map[string]*roaring64.Bitmap)
 	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
 		tx.ExtractMutex(shard, uint64(alicia.EXIT_PAGE), match, func(row uint64, c *roaring.Container) {
@@ -100,7 +102,8 @@ func (o *Store) BreakdownExitPages(start, end int64, domain string, filter Filte
 
 func (o *Store) BreakdownCity(start, end int64, domain string, filter Filter) (*Result, error) {
 	values := make(map[uint32]*roaring64.Bitmap)
-	var m Data
+	m := NewData()
+	defer m.Release()
 	err := o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
 		tx.ExtractBSI(shard, uint64(alicia.CITY), match, func(row uint64, c int64) {
 			code := uint32(c)
@@ -136,7 +139,8 @@ func (o *Store) BreakdownCity(start, end int64, domain string, filter Filter) (*
 
 func (o *Store) BreakdownVisitorsWithPercentage(start, end int64, domain string, filter Filter, field alicia.Field) (*Result, error) {
 	values := make(map[string]*roaring64.Bitmap)
-	var m Data
+	m := NewData()
+	defer m.Release()
 
 	err := o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
 		tx.ExtractMutex(shard, uint64(field), match, func(row uint64, c *roaring.Container) {
