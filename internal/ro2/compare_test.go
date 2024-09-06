@@ -44,3 +44,31 @@ func TestRange(t *testing.T) {
 	})
 	require.Equal(t, []uint64{1, 2}, subset.ToArray())
 }
+
+func BenchmarkRange(b *testing.B) {
+	db, err := newDB(b.TempDir())
+	require.NoError(b, err)
+	defer db.Close()
+
+	ts, _ := time.Parse(time.RFC822, time.RFC822)
+	r := roaring64.New()
+	ts = ts.UTC()
+	for i := range 5 {
+		ro.BSI(r, uint64(i), ts.Add(time.Duration(i)*time.Hour).UnixMilli())
+	}
+	err = db.Update(func(tx *Tx) error {
+		return tx.Add(0, 0, r)
+	})
+	require.NoError(b, err)
+	start := ts.UnixMilli()
+	end := ts.Add(5 * time.Hour).UnixMilli()
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for range b.N {
+		db.View(func(tx *Tx) error {
+			tx.Cmp(0, 0, roaring64.RANGE, start, end)
+			return nil
+		})
+	}
+}
