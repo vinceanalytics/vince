@@ -10,6 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/version"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -60,7 +61,7 @@ func Verify(key []byte) (*v1.License, error) {
 		return nil, errors.New("invalid license data")
 	}
 	// validate expiration
-	if time.Now().UTC().After(time.UnixMilli(int64(ls.Expiry)).UTC()) {
+	if version.Build().After(time.UnixMilli(int64(ls.Expiry)).UTC()) {
 		return nil, errors.New("expired license key")
 	}
 	return &ls, nil

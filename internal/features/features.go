@@ -38,19 +38,19 @@ func Apply(ls *v1.License) {
 }
 
 func Validate() (ok bool) {
-	ok = validate()
+	ok = IsValid(Email.Load().(string), Expires.Load())
 	valid.Store(ok)
 	return
 }
 
-func validate() bool {
-	best := time.UnixMilli(int64(Expires.Load())).UTC()
+func IsValid(email string, expiry uint64) bool {
+	best := time.UnixMilli(int64(expiry)).UTC()
 	build := version.Build()
 	if best.Before(build) {
 		// valid license but wrong build
 		return false
 	}
-	if config.C.Admin.Email != Email.Load().(string) {
+	if config.C.Admin.Email != email {
 		// valid licnese wrong user
 		return false
 	}

@@ -15,7 +15,7 @@ func License(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("license")
 	if err := db.Get().ApplyLicense([]byte(key)); err != nil {
 		db.SaveCsrf(w)
-		db.HTML(w, login, map[string]any{
+		db.HTML(w, license, map[string]any{
 			"error": err.Error(),
 		})
 		return

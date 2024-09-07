@@ -146,8 +146,8 @@ func (db *DB) ApplyLicense(licenseKey []byte) error {
 	if err != nil {
 		return err
 	}
-	features.Apply(ls)
-	if features.Validate() {
+	if features.IsValid(ls.Email, ls.Expiry) {
+		features.Apply(ls)
 		return db.Update(func(tx *Tx) error {
 			data, _ := proto.Marshal(ls)
 			return tx.tx.Set(
@@ -155,7 +155,7 @@ func (db *DB) ApplyLicense(licenseKey []byte) error {
 			)
 		})
 	}
-	return errors.New("invalid license key")
+	return errors.New("invalid license key email")
 }
 
 func (db *DB) LockSites(locked bool) error {
