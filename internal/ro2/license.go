@@ -24,6 +24,22 @@ func (db *DB) checkLicense(ctx context.Context) {
 	key := alicia.Get()
 	defer key.Release()
 
+	var loadedLicense *v1.License
+	if config.C.License != "" {
+		// first time user. First we try to seee if we have a valid license
+		// provided as a commmandline argument
+		data, err := licenseData(config.C.License)
+		if err != nil {
+			slog.Error("reading license key", "err", err)
+			os.Exit(1)
+		}
+		loadedLicense, err = license.Verify(data)
+		if err != nil {
+			slog.Error("failed validation", "err", err)
+			os.Exit(1)
+		}
+	}
+
 	// we use an update transaction to make sure we can update system for the
 	// first time
 	err := db.db.Update(func(txn *badger.Txn) error {
@@ -33,43 +49,36 @@ func (db *DB) checkLicense(ctx context.Context) {
 			if !errors.Is(err, badger.ErrKeyNotFound) {
 				return err
 			}
-
-			if config.C.License != "" {
-				// first time user. First we try to seee if we have a valid license
-				// provided as a commmandline argument
-				data, err := licenseData(config.C.License)
-				if err != nil {
-					slog.Error("reading license key", "err", err)
-					os.Exit(1)
-				}
-				ls, err := license.Verify(data)
-				if err != nil {
-					slog.Error("failed validation", "err", err)
-					os.Exit(1)
-				}
-				features.Expires.Store(ls.Expiry)
-				features.Email.Store(ls.Email)
-
+			if loadedLicense != nil {
+				features.Expires.Store(loadedLicense.Expiry)
+				features.Email.Store(loadedLicense.Email)
 			} else {
 				features.Expires.Store(uint64(time.Now().UTC().Add(30 * 24 * time.Hour).UnixMilli()))
 				features.Email.Store(config.C.Admin.Email)
 			}
-			ds, _ := proto.Marshal(&v1.License{
-				Expiry: features.Expires.Load(),
-				Email:  features.Email.Load().(string),
+		} else {
+			err = it.Value(func(val []byte) error {
+				var ls v1.License
+				err := proto.Unmarshal(val, &ls)
+				if err != nil {
+					return err
+				}
+				features.Expires.Store(ls.Expiry)
+				features.Email.Store(ls.Email)
+				return nil
 			})
-			return txn.Set(sys, ds)
 		}
-		return it.Value(func(val []byte) error {
-			var ls v1.License
-			err := proto.Unmarshal(val, &ls)
-			if err != nil {
-				return err
-			}
-			features.Expires.Store(ls.Expiry)
-			features.Email.Store(ls.Email)
-			return nil
+
+		if loadedLicense != nil && features.Expires.Load() < loadedLicense.Expiry {
+			// new license
+			features.Expires.Store(loadedLicense.Expiry)
+			features.Email.Store(loadedLicense.Email)
+		}
+		ds, _ := proto.Marshal(&v1.License{
+			Expiry: features.Expires.Load(),
+			Email:  features.Email.Load().(string),
 		})
+		return txn.Set(sys, ds)
 	})
 	if err != nil {
 		slog.Error("failed setup license", "err", err)
