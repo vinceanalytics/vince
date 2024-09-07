@@ -119,6 +119,72 @@ func TestTxCmp_range(t *testing.T) {
 	})
 	require.Equal(t, []uint64{2, 20, 22}, match)
 }
+func TestTxCmp_equal(t *testing.T) {
+	db, err := newDB(t.TempDir())
+	require.NoError(t, err)
+	defer db.Close()
+	s := []struct {
+		id    uint64
+		value int64
+	}{
+		{0, 12},
+		{1, 13},
+		{2, 14},
+		{20, 12},
+		{22, 16},
+		{23, 12},
+	}
+	o := roaring64.New()
+	for i := range s {
+		ro.BSI(o, s[i].id, s[i].value)
+	}
+	err = db.Update(func(tx *Tx) error {
+		return tx.Add(0, 0, o)
+	})
+	require.NoError(t, err)
+
+	var match []uint64
+	db.View(func(tx *Tx) error {
+		b := tx.Cmp(0, 0, roaring64.EQ, 12, 0)
+		match = b.ToArray()
+		return nil
+	})
+	require.Equal(t, []uint64{0, 20, 23}, match)
+}
+func BenchmarkEqual(b *testing.B) {
+	db, err := newDB(b.TempDir())
+	require.NoError(b, err)
+	defer db.Close()
+	s := []struct {
+		id    uint64
+		value int64
+	}{
+		{0, 12},
+		{1, 13},
+		{2, 14},
+		{20, 12},
+		{22, 16},
+		{23, 12},
+	}
+	o := roaring64.New()
+	for i := range s {
+		ro.BSI(o, s[i].id, s[i].value)
+	}
+	err = db.Update(func(tx *Tx) error {
+		return tx.Add(0, 0, o)
+	})
+	require.NoError(b, err)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for range b.N {
+		db.View(func(tx *Tx) error {
+			tx.Cmp(0, 0, roaring64.EQ, 12, 0)
+			return nil
+		})
+	}
+}
 
 func BenchmarkRow(b *testing.B) {
 	db, err := newDB(b.TempDir())
