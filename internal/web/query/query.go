@@ -3,13 +3,16 @@ package query
 import (
 	"encoding/json"
 	"net/url"
+	"time"
 
 	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
 type Query struct {
 	period Date
+	cmp    *Date
 	filter ro2.Filter
+	metric string
 }
 
 func New(db *ro2.Store, u url.Values) *Query {
@@ -28,13 +31,40 @@ func New(db *ro2.Store, u url.Values) *Query {
 	for i := range fs {
 		ls[i] = fs[i].To(db)
 	}
+	var cmp *Date
+	switch u.Get("period") {
+	case "all", "realtime":
+	default:
+		now := time.Now().UTC()
+		switch u.Get("comparison") {
+		case "previous_period":
+			diff := period.End.Sub(period.Start)
+			cmp = &Date{Start: period.Start.Add(-diff), End: period.End.Add(-diff)}
+		case "year_over_year":
+			start := period.Start.AddDate(-1, 0, 0)
+			end := earliest(period.End, now).AddDate(-1, 0, 0)
+			cmp = &Date{Start: start, End: end}
+		case "custom":
+		}
+	}
+
 	return &Query{
 		period: period,
 		filter: ls,
+		cmp:    cmp,
+		metric: u.Get("metric"),
 	}
+}
+
+func earliest(a, b time.Time) time.Time {
+	if a.Before(b) {
+		return a
+	}
+	return b
 }
 
 func (q *Query) Start() int64       { return q.period.Start.UnixMilli() }
 func (q *Query) End() int64         { return q.period.End.UnixMilli() }
 func (q *Query) Filter() ro2.Filter { return q.filter }
-func (q *Query) Metrics() []string  { return []string{} }
+func (q *Query) Metric() string     { return q.metric }
+func (q *Query) Compare() *Date     { return q.cmp }
