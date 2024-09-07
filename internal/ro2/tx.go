@@ -183,51 +183,6 @@ func mergeBits(bits *roaring64.Bitmap, mask uint64, out map[uint64]uint64) {
 	}
 }
 
-func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c *roaring.Container)) {
-	filter := make([]*roaring.Container, 1<<ro.ShardVsContainerExponent)
-	match.Each(func(key uint32, cKey uint16, value *roaring.Container) error {
-		if value.IsEmpty() {
-			return nil
-		}
-		idx := cKey % (1 << ro.ShardVsContainerExponent)
-		filter[idx] = value
-		return nil
-	})
-
-	prefix := tx.get().
-		NS(alicia.CONTAINER).
-		Shard(shard).
-		Field(field).
-		FieldPrefix()
-	itr := tx.Iter()
-	prevRow := ^uint64(0)
-	seenThisRow := false
-	var ac roaring.Container
-	for itr.Seek(prefix); itr.ValidForPrefix(prefix); itr.Next() {
-		item := itr.Item()
-		k := alicia.Container(item.Key())
-		row := uint64(k) >> ro.ShardVsContainerExponent
-		if row == prevRow {
-			if seenThisRow {
-				continue
-			}
-		} else {
-			seenThisRow = false
-			prevRow = row
-		}
-		idx := k % (1 << ro.ShardVsContainerExponent)
-		if filter[idx] == nil {
-			continue
-		}
-		item.Value(func(val []byte) error {
-			return ac.From(item.UserMeta(), val)
-		})
-		if ac.Intersects(filter[idx]) {
-			f(row, &ac)
-		}
-	}
-}
-
 func (tx *Tx) Row(shard, field uint64, rowID uint64) *roaring64.Bitmap {
 	o, from, to := tx.keyRange(shard, field, rowID)
 	prefix := from.KeyPrefix()

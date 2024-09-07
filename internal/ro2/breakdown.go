@@ -7,7 +7,6 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/location"
-	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
@@ -26,17 +25,14 @@ func (o *Store) Breakdown(start, end int64, domain string, filter Filter, metric
 	defer m.Release()
 	values := make(map[string]*roaring64.Bitmap)
 	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
-		tx.ExtractMutex(shard, uint64(field), match, func(row uint64, c *roaring.Container) {
-			value := tx.Find(uint64(field), row)
+		tx.ExtractBSI(shard, uint64(field), match, func(row uint64, c int64) {
+			value := tx.Find(uint64(field), uint64(c))
 			b, ok := values[value]
 			if !ok {
 				b = roaring64.New()
 				values[value] = b
 			}
-			c.Each(func(u uint16) bool {
-				b.Add(uint64(u))
-				return true
-			})
+			b.Add(row)
 		})
 		m.Read(tx, shard, match, metrics...)
 		return nil
@@ -62,17 +58,14 @@ func (o *Store) BreakdownExitPages(start, end int64, domain string, filter Filte
 	defer m.Release()
 	values := make(map[string]*roaring64.Bitmap)
 	o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
-		tx.ExtractMutex(shard, uint64(alicia.EXIT_PAGE), match, func(row uint64, c *roaring.Container) {
-			value := tx.Find(uint64(alicia.EXIT_PAGE), row)
+		tx.ExtractBSI(shard, uint64(alicia.EXIT_PAGE), match, func(row uint64, c int64) {
+			value := tx.Find(uint64(alicia.EXIT_PAGE), uint64(c))
 			b, ok := values[value]
 			if !ok {
 				b = roaring64.New()
 				values[value] = b
 			}
-			c.Each(func(u uint16) bool {
-				b.Add(uint64(u))
-				return false
-			})
+			b.Add(row)
 		})
 		m.Read(tx, shard, match, visitors, visits, pageviews)
 		return nil
@@ -143,17 +136,14 @@ func (o *Store) BreakdownVisitorsWithPercentage(start, end int64, domain string,
 	defer m.Release()
 
 	err := o.Select(start, end, domain, filter, func(tx *Tx, shard uint64, match *roaring64.Bitmap) error {
-		tx.ExtractMutex(shard, uint64(field), match, func(row uint64, c *roaring.Container) {
-			value := tx.Find(uint64(field), row)
+		tx.ExtractBSI(shard, uint64(field), match, func(row uint64, c int64) {
+			value := tx.Find(uint64(field), uint64(c))
 			b, ok := values[value]
 			if !ok {
 				b = roaring64.New()
 				values[value] = b
 			}
-			c.Each(func(u uint16) bool {
-				b.Add(uint64(u))
-				return true
-			})
+			b.Add(row)
 		})
 		m.Read(tx, shard, match, visitors)
 		return nil

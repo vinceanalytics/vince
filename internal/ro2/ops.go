@@ -176,10 +176,6 @@ func ID(id []byte) (o uuid.UUID) {
 	return
 }
 
-func compareSite(a, b *v1.Site) int {
-	return cmp.Compare(a.Domain, b.Domain)
-}
-
 func compareShare(a, b *v1.Share) int {
 	return cmp.Compare(a.Id, b.Id)
 }

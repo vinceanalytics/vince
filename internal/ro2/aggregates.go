@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/alicia"
-	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
@@ -19,19 +18,8 @@ func (d *Data) ReadFields(tx *Tx, shard uint64,
 	for i := range fields {
 		f := fields[i]
 		b := d.get(f)
-
-		if f <= alicia.CITY {
-			tx.ExtractBSI(shard, uint64(f), match, func(row uint64, c int64) {
-				b.SetValue(row, c)
-			})
-			continue
-		}
-		// string fields
-		tx.ExtractMutex(shard, uint64(f), match, func(row uint64, c *roaring.Container) {
-			c.Each(func(u uint16) bool {
-				b.SetValue(uint64(u), int64(row))
-				return true
-			})
+		tx.ExtractBSI(shard, uint64(f), match, func(row uint64, c int64) {
+			b.SetValue(row, c)
 		})
 	}
 }
