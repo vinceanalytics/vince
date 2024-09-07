@@ -221,6 +221,8 @@ const (
 	LE
 	// EQ equal
 	EQ
+	// NEQ not equal
+	NEQ
 	// GE greater than or equal
 	GE
 	// GT greater than

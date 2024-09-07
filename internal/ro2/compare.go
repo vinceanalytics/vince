@@ -27,6 +27,8 @@ func (tx *Tx) Cmp(field, shard uint64, op roaring64.Operation,
 		return tx.rangeGT(field, shard, bitDepth, start, true)
 	case roaring64.EQ:
 		return tx.rangeEQ(field, shard, bitDepth, start)
+	case roaring64.NEQ:
+		return tx.rangeNEQ(field, shard, bitDepth, start)
 	case roaring64.RANGE:
 		return tx.rangeBetween(field, shard, bitDepth, start, end)
 	default:

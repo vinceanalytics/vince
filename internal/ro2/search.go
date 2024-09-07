@@ -167,14 +167,17 @@ func (e *Regex) match(tx *Tx, shard uint64) *roaring64.Bitmap {
 	it := e.valid.Iterator()
 	for it.HasNext() {
 		union.Or(
-			tx.Row(shard, e.field, it.Next()),
+			tx.Cmp(e.field, shard, roaring64.EQ, int64(it.Next()), 0),
 		)
 	}
 	return union
 }
 
 type Nre struct {
-	eq *Regex
+	field uint64
+	value *regexp.Regexp
+	valid roaring64.Bitmap
+	once  sync.Once
 }
 
 func NewNre(field uint64, value string) Filter {
@@ -184,16 +187,47 @@ func NewNre(field uint64, value string) Filter {
 		return Reject{}
 	}
 	return &Nre{
-		eq: &Regex{
-			field: field,
-			value: r,
-		},
+		field: field,
+		value: r,
 	}
 }
 
 func (e *Nre) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	exists := tx.Row(shard, uint64(alicia.TIMESTAMP), 0)
-	match.And(roaring64.AndNot(exists, e.eq.match(tx, shard)))
+	match.And(e.match(tx, shard))
+}
+
+func (e *Nre) match(tx *Tx, shard uint64) *roaring64.Bitmap {
+	e.once.Do(func() {
+		source := e.value.String()
+		prefix, exact := searchPrefix([]byte(source))
+		if exact {
+			// fast path. We only perform a single Get call
+			key := tx.get().TranslateKey(e.field, prefix)
+			it, err := tx.tx.Get(key)
+			if err == nil {
+				it.Value(func(val []byte) error {
+					e.valid.Add(binary.BigEndian.Uint64(val))
+					return nil
+				})
+			}
+		} else {
+			tx.Search(e.field, prefix, func(b []byte, u uint64) {
+				e.valid.Add(u)
+			})
+		}
+	})
+	if e.valid.IsEmpty() {
+		return &e.valid
+	}
+	union := roaring64.New()
+
+	it := e.valid.Iterator()
+	for it.HasNext() {
+		union.Or(
+			tx.Cmp(e.field, shard, roaring64.NEQ, int64(it.Next()), 0),
+		)
+	}
+	return union
 }
 
 type Eq struct {
@@ -228,26 +262,42 @@ func (e *Eq) match(tx *Tx, shard uint64) *roaring64.Bitmap {
 	if e.id == 0 {
 		return roaring64.New()
 	}
-	return tx.Row(shard, e.field, e.id)
+	return tx.Cmp(e.field, shard, roaring64.EQ, int64(e.id), 0)
 }
 
 type Neq struct {
-	eq *Eq
+	field uint64
+	value string
+	id    uint64
+	once  sync.Once
 }
 
 func NewNeq(field uint64, value string) *Neq {
 	return &Neq{
-		eq: NewEq(field, value),
+		field: field,
+		value: value,
 	}
 }
 
 func (e *Neq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	// we know timestamp is always set, use its existence bitmap to weed of
-	//negated match for the current shard.
-	exists := tx.Row(shard, uint64(alicia.TIMESTAMP), 0)
-	match.And(
-		roaring64.AndNot(exists, e.eq.match(tx, shard)),
-	)
+	match.And(e.match(tx, shard))
+}
+
+func (e *Neq) match(tx *Tx, shard uint64) *roaring64.Bitmap {
+	e.once.Do(func() {
+		key := tx.get().TranslateKey(e.field, []byte(e.value))
+		it, err := tx.tx.Get(key)
+		if err == nil {
+			it.Value(func(val []byte) error {
+				e.id = binary.BigEndian.Uint64(val)
+				return nil
+			})
+		}
+	})
+	if e.id == 0 {
+		return roaring64.New()
+	}
+	return tx.Cmp(e.field, shard, roaring64.NEQ, int64(e.id), 0)
 }
 
 type EqInt struct {
