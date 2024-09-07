@@ -16,6 +16,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/features"
 	"github.com/vinceanalytics/vince/internal/license"
+	"github.com/vinceanalytics/vince/internal/version"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -53,11 +54,12 @@ func (db *DB) checkLicense(ctx context.Context) {
 				features.Expires.Store(loadedLicense.Expiry)
 				features.Email.Store(loadedLicense.Email)
 			} else {
-				features.Expires.Store(uint64(time.Now().UTC().Add(30 * 24 * time.Hour).UnixMilli()))
+				// Trials are for specific build
+				features.Expires.Store(uint64(version.Build().Add(time.Millisecond).UTC().UnixMilli()))
 				features.Email.Store(config.C.Admin.Email)
 			}
 		} else {
-			err = it.Value(func(val []byte) error {
+			err := it.Value(func(val []byte) error {
 				var ls v1.License
 				err := proto.Unmarshal(val, &ls)
 				if err != nil {
@@ -67,6 +69,9 @@ func (db *DB) checkLicense(ctx context.Context) {
 				features.Email.Store(ls.Email)
 				return nil
 			})
+			if err != nil {
+				return err
+			}
 		}
 
 		if loadedLicense != nil && features.Expires.Load() < loadedLicense.Expiry {

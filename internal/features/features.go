@@ -45,9 +45,6 @@ func Validate() (ok bool) {
 
 func validate() bool {
 	best := time.UnixMilli(int64(Expires.Load())).UTC()
-	if best.Before(time.Now().UTC()) {
-		return false
-	}
 	build := version.Build()
 	if best.Before(build) {
 		// valid license but wrong build
