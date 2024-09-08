@@ -7,11 +7,13 @@ import (
 )
 
 func Stats(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	if db.CurrentSite().Locked {
+	site := db.CurrentSite()
+	if site.Locked {
 		db.HTML(w, statsLocked, nil)
 		return
 	}
 	db.HTML(w, stats, map[string]any{
 		"load_dashboard_js": true,
+		"title":             "vince · " + site.Domain,
 	})
 }
