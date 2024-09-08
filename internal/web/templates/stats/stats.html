@@ -3,11 +3,16 @@
     data-site-domain="{{.site.domain}}">
   <div class="pt-6"></div>
 
-    <div id="stats-react-container" 
+    <div 
+    id="stats-react-container" 
+    style="overflow-anchor: none;"
     data-domain="{{.site.domain}}"
     data-revenue-goals="[]"
     data-flags="{}"
     data-funnels="[]"
+    {{if .current_user}}
+    data-logged-in="true"
+    {{end}}
     data-valid-intervals-by-period="{&quot;12mo&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;30d&quot;:[&quot;day&quot;,&quot;week&quot;],&quot;6mo&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;7d&quot;:[&quot;hour&quot;,&quot;day&quot;],&quot;all&quot;:[&quot;week&quot;,&quot;month&quot;],&quot;custom&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;day&quot;:[&quot;minute&quot;,&quot;hour&quot;],&quot;month&quot;:[&quot;day&quot;,&quot;week&quot;],&quot;realtime&quot;:[&quot;minute&quot;],&quot;year&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;]}"
     >
 
