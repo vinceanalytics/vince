@@ -39,6 +39,12 @@ func run() {
 		plug.Browser().Then(web.Home),
 	))
 
+	mux.HandleFunc("GET /{domain}", db.Wrap(
+		plug.Browser().
+			With(web.RequireSiteAccess).
+			Then(web.Stats),
+	))
+
 	mux.HandleFunc("GET /license", db.Wrap(
 		plug.Browser().
 			With(plug.RequireAccount).
@@ -295,12 +301,6 @@ func run() {
 	mux.HandleFunc("GET /api/stats/{domain}/suggestions/{filter_name}/", db.Wrap(
 		stats.
 			Then(web.UnimplementedStat),
-	))
-
-	mux.HandleFunc("GET /{domain}/dashboard", db.Wrap(
-		plug.Browser().
-			With(web.RequireSiteAccess).
-			Then(web.Stats),
 	))
 
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
