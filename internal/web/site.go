@@ -119,6 +119,19 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, to, http.StatusFound)
 }
 
+func SitesIndex(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	sites := make([]map[string]any, 0, 16)
+	db.Get().Domains(func(s *v1.Site) {
+		sites = append(sites, map[string]any{
+			"domain": s.Domain,
+			"public": s.Public,
+			"locked": s.Locked,
+		})
+	})
+	db.JSON(w, map[string]any{
+		"data": sites,
+	})
+}
 func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	sites := make([]map[string]any, 0, 16)
 	db.Get().Domains(func(s *v1.Site) {

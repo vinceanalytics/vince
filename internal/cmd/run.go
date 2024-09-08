@@ -91,6 +91,12 @@ func run() {
 			Then(web.Sites),
 	))
 
+	mux.HandleFunc("GET /api/sites", db.Wrap(
+		plug.Browser().
+			With(plug.RequireAccount).
+			Then(web.SitesIndex),
+	))
+
 	sites := plug.Browser().
 		With(plug.RequireAccount).
 		With(web.RequireSiteAccess)
