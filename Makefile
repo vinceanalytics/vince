@@ -1,6 +1,6 @@
 dev:
 	go build -o bin/vince
-	VINCE_ADMIN_NAME==acme \
+	VINCE_ADMIN_NAME=acme \
 	VINCE_ADMIN_EMAIL=trial@vinceanalytics.com \
 	VINCE_ADMIN_PASSWORD=1234 \
 	VINCE_DOMAINS=vinceanalytics.com \

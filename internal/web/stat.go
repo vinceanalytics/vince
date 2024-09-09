@@ -1,7 +1,9 @@
 package web
 
 import (
+	"math"
 	"net/http"
+	"time"
 
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/location"
@@ -14,19 +16,102 @@ import (
 func UnimplementedStat(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
+func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	db.JSON(w, map[string]any{
+		"labels": []any{},
+		"plot":   []any{},
+	})
+}
+
 func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	metrics := []string{"visitors", "visits", "pageviews", "views_per_visit", "bounce_rate", "visit_duration"}
 	site := db.CurrentSite()
 	params := query.New(db.Get(), r.URL.Query())
 	m := ro2.NewData()
 	defer m.Release()
-	db.Get().Select(
+	err := db.Get().Select(
 		params.Start(), params.End(), site.Domain, params.Filter(),
 		func(tx *ro2.Tx, shard uint64, match *roaring64.Bitmap) error {
 			m.Read(tx, shard, match, metrics...)
 			return nil
 		},
 	)
+	if err != nil {
+		db.Logger().Error("reading top stats", "err", err)
+	}
+
+	old := ro2.NewData()
+	defer old.Release()
+
+	if cmp := params.Compare(); cmp != nil {
+		err := db.Get().Select(
+			cmp.Start.UnixMilli(),
+			cmp.End.UnixMilli(),
+			site.Domain, params.Filter(),
+			func(tx *ro2.Tx, shard uint64, match *roaring64.Bitmap) error {
+				old.Read(tx, shard, match, metrics...)
+				return nil
+			},
+		)
+		if err != nil {
+			db.Logger().Error("reading top stats comparison", "err", err)
+		}
+	}
+	visitors := m.Visitors(nil)
+	visits := m.Visits(nil)
+	views := m.View(nil)
+	viewsPerVisit := per(views, visits)
+	bounceRate := math.Round(per(m.Bounce(nil), visits) * 100)
+	duration := time.Duration(m.Duration(nil)).Seconds()
+	db.JSON(w, map[string]any{
+		"from":     params.From(),
+		"to":       params.To(),
+		"interval": params.Interval().String(),
+		"top_stats": []any{
+			map[string]any{
+				"name":  "Unique visitors",
+				"value": visitors,
+			},
+			map[string]any{
+				"name":  "Total visits",
+				"value": views,
+			},
+			map[string]any{
+				"name":  "Total pageviews",
+				"value": views,
+			},
+			map[string]any{
+				"name":  "Views per visit",
+				"value": viewsPerVisit,
+			},
+			map[string]any{
+				"name":  "Bounce rate",
+				"value": bounceRate,
+			},
+			map[string]any{
+				"name":  "Visit duration",
+				"value": duration,
+			},
+		},
+	})
+}
+
+func per(a, b uint64) float64 {
+	if b == 0 {
+		return float64(a)
+	}
+	return float64(a) / float64(b)
+}
+
+func change(old, new float64) float64 {
+	switch {
+	case old == 0 && new > 0:
+		return 100
+	case old == 0 && new == 0:
+		return 0
+	default:
+		return math.Round((new - old) / old * 100)
+	}
 }
 
 func CurrentVisitors(db *db.Config, w http.ResponseWriter, r *http.Request) {

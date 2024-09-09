@@ -64,7 +64,10 @@ func earliest(a, b time.Time) time.Time {
 }
 
 func (q *Query) Start() int64       { return q.period.Start.UnixMilli() }
+func (q *Query) From() string       { return q.period.Start.Format(time.DateOnly) }
 func (q *Query) End() int64         { return q.period.End.UnixMilli() }
+func (q *Query) To() string         { return q.period.End.Format(time.DateOnly) }
+func (q *Query) Interval() Interval { return q.period.Interval }
 func (q *Query) Filter() ro2.Filter { return q.filter }
 func (q *Query) Metric() string     { return q.metric }
 func (q *Query) Compare() *Date     { return q.cmp }

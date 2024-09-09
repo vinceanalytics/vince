@@ -25,6 +25,23 @@ func (i Interval) Format() string {
 	}
 }
 
+func (i Interval) String() string {
+	switch i {
+	case Minute:
+		return "minute"
+	case Hour:
+		return "hour"
+	case Day:
+		return "day"
+	case Week:
+		return "week"
+	case Month:
+		return "month"
+	default:
+		return ""
+	}
+}
+
 func (i Interval) Reduce(ts int64) time.Time {
 	t := time.UnixMilli(ts).UTC()
 	switch i {
