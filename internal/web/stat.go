@@ -6,11 +6,27 @@ import (
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
 func UnimplementedStat(db *db.Config, w http.ResponseWriter, r *http.Request) {
+}
+
+func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	metrics := []string{"visitors", "visits", "pageviews", "views_per_visit", "bounce_rate", "visit_duration"}
+	site := db.CurrentSite()
+	params := query.New(db.Get(), r.URL.Query())
+	m := ro2.NewData()
+	defer m.Release()
+	db.Get().Select(
+		params.Start(), params.End(), site.Domain, params.Filter(),
+		func(tx *ro2.Tx, shard uint64, match *roaring64.Bitmap) error {
+			m.Read(tx, shard, match, metrics...)
+			return nil
+		},
+	)
 }
 
 func CurrentVisitors(db *db.Config, w http.ResponseWriter, r *http.Request) {

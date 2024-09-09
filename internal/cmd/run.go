@@ -195,7 +195,7 @@ func run() {
 
 	mux.HandleFunc("GET /api/stats/{domain}/top-stats/", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.TopStats),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/sources/", db.Wrap(
