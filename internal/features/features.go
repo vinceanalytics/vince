@@ -18,6 +18,7 @@
 package features
 
 import (
+	"errors"
 	"sync/atomic"
 	"time"
 
@@ -32,29 +33,37 @@ var (
 	Email   atomic.Value
 )
 
+var (
+	ErrExpired = errors.New("license expired")
+	ErrEmail   = errors.New("invalid admin email")
+)
+
 func Apply(ls *v1.License) {
 	Expires.Store(ls.Expiry)
 	Email.Store(ls.Email)
 }
 
-func Validate() (ok bool) {
-	ok = IsValid(Email.Load().(string), Expires.Load())
+func Validate() error {
+	return IsValid(Email.Load().(string), Expires.Load())
+}
+
+func Valid() (ok bool) {
+	ok = IsValid(Email.Load().(string), Expires.Load()) == nil
 	valid.Store(ok)
 	return
 }
 
-func IsValid(email string, expiry uint64) bool {
+func IsValid(email string, expiry uint64) error {
 	best := time.UnixMilli(int64(expiry)).UTC()
 	build := version.Build()
 	if best.Before(build) {
 		// valid license but wrong build
-		return false
+		return ErrExpired
 	}
 	if config.C.Admin.Email != email {
-		// valid licnese wrong user
-		return false
+		return ErrEmail
 	}
-	return true
+	return nil
 }
 
 func Context(m map[string]any) map[string]any {

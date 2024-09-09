@@ -72,6 +72,7 @@ func Cli() *cli.Command {
 				Value:       "",
 				Usage:       "path to lincense key file",
 				Sources:     cli.EnvVars("VINCE_LICENSE"),
+				Required:    true,
 				Destination: &config.C.License,
 			},
 			&cli.StringFlag{

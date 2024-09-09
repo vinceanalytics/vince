@@ -18,7 +18,7 @@ VUWBwvJXfkQk94f2jaTTSpArc1h2L3GKQQogfS3lwrS5en9u
 =htPY
 -----END LICENSE KEY-----`
 
-	ls, err := Verify([]byte(msg))
+	ls, err := Parse([]byte(msg))
 	require.NoError(t, err)
 	require.Equal(t, "test@example.com", ls.Email)
 }
