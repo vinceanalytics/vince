@@ -34,7 +34,7 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 	r := roaring64.New()
 	dom := NewEq(uint64(alicia.DOMAIN), domain)
-	shards := o.shards.All()
+	shards := o.shards()
 	err = o.View(func(tx *Tx) error {
 		for i := range shards {
 			shard := shards[i]

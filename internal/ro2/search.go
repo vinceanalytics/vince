@@ -50,7 +50,7 @@ func (o *Store) Select(
 		filter = noop{}
 	}
 
-	shards := o.shards.Select(start, end)
+	shards := o.shards()
 	if len(shards) == 0 {
 		return nil
 	}

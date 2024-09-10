@@ -1,22 +1,21 @@
 package ro2
 
 import (
+	"math"
 	"sync/atomic"
 
+	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
-	"github.com/vinceanalytics/vince/internal/shards"
 	"google.golang.org/protobuf/encoding/protowire"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 type Store struct {
 	*DB
-	seq    atomic.Uint64
-	shards *shards.Shards
+	seq atomic.Uint64
 }
 
 func Open(path string) (*Store, error) {
@@ -29,28 +28,26 @@ func open(path string) (*Store, error) {
 		return nil, err
 	}
 	o := &Store{
-		DB:     db,
-		shards: shards.New(),
+		DB: db,
 	}
 	err = o.View(func(tx *Tx) error {
-		var vs v1.Shards
-		// try loading shards / ts mapping
-		if it, err := tx.tx.Get(tx.get().Shards()); err == nil {
-			it.Value(func(val []byte) error {
-				return proto.Unmarshal(val, &vs)
-			})
-			o.shards.Set(vs.Shards, vs.Ts)
-		}
-
-		if len(vs.Shards) == 0 {
+		it := tx.tx.NewIterator(badger.IteratorOptions{
+			Reverse: true,
+		})
+		defer it.Close()
+		prefix := tx.get().
+			NS(alicia.CONTAINER).
+			Shard(math.MaxUint32).Field(uint64(alicia.TIMESTAMP)).ShardPrefix()
+		it.Seek(prefix)
+		if !it.Valid() {
 			return nil
 		}
+		shard := alicia.Shard(it.Item().Key())
 
 		// we choose the last shard to look for the last saved sequence ID. We
 		// already know that timestamp field is required for all events, since
 		// bsi fields store existence bitmap as row 0, we can safely derive tha
 		// last sequence ID as highest existence bit set.
-		shard := vs.Shards[len(vs.Shards)-1]
 		exists := tx.Row(uint64(shard), uint64(alicia.TIMESTAMP), 0)
 		if !exists.IsEmpty() {
 			o.seq.Store(exists.Maximum())
@@ -65,8 +62,7 @@ func open(path string) (*Store, error) {
 }
 
 var (
-	fields  = new(v1.Model).ProtoReflect().Descriptor().Fields()
-	tsField = fields.ByNumber(protowire.Number(alicia.TIMESTAMP))
+	fields = new(v1.Model).ProtoReflect().Descriptor().Fields()
 )
 
 func (o *Store) Name(number uint32) string {
@@ -86,17 +82,6 @@ func (o *Store) One(msg *v1.Model) error {
 		var err error
 		id := o.seq.Add(1)
 		shard := id / ro.ShardWidth
-		ts := re.Get(tsField)
-		if o.shards.Add(shard, ts.Int()) {
-			// change  in shards. Persist shard/ts state
-			vs := &v1.Shards{}
-			vs.Shards, vs.Ts = o.shards.Load()
-			data, _ := proto.Marshal(vs)
-			err := tx.tx.Set(tx.get().Shards(), data)
-			if err != nil {
-				return err
-			}
-		}
 		re.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 			b.Clear()
 			if fd.Kind() == protoreflect.StringKind {
@@ -109,4 +94,17 @@ func (o *Store) One(msg *v1.Model) error {
 		})
 		return err
 	})
+}
+
+func (o *Store) shards() (a []uint64) {
+	q := o.seq.Load()
+	if q == 0 {
+		return
+	}
+	e := q / ro.ShardWidth
+
+	for i := uint64(0); i <= e; i++ {
+		a = append(a, i)
+	}
+	return
 }
