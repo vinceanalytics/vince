@@ -45,8 +45,7 @@ func update(fromSession *v1.Model, event *v1.Model) {
 	}
 	event.Session = 0
 	event.ExitPage = event.Page
-	// Track duration since last visit.
-	event.Duration = time.UnixMilli(event.Timestamp).Sub(time.UnixMilli(fromSession.Timestamp)).Milliseconds()
+	event.Duration = int64(time.UnixMilli(event.Timestamp).Sub(time.UnixMilli(fromSession.Timestamp)))
 	fromSession.Timestamp = event.Timestamp
 }
 
