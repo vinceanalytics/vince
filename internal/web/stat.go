@@ -23,8 +23,11 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+var topFields = ro2.MetricsToProject(
+	[]string{"visitors", "visits", "pageviews", "views_per_visit", "bounce_rate", "visit_duration"},
+)
+
 func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	metrics := []string{"visitors", "visits", "pageviews", "views_per_visit", "bounce_rate", "visit_duration"}
 	site := db.CurrentSite()
 	params := query.New(db.Get(), r.URL.Query())
 	m := ro2.NewData()
@@ -32,7 +35,7 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	err := db.Get().Select(
 		params.Start(), params.End(), site.Domain, params.Filter(),
 		func(tx *ro2.Tx, shard uint64, match *roaring64.Bitmap) error {
-			m.Read(tx, shard, match, metrics...)
+			m.ReadFields(tx, shard, match, topFields...)
 			return nil
 		},
 	)
@@ -49,7 +52,7 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 			cmp.End.UnixMilli(),
 			site.Domain, params.Filter(),
 			func(tx *ro2.Tx, shard uint64, match *roaring64.Bitmap) error {
-				old.Read(tx, shard, match, metrics...)
+				old.ReadFields(tx, shard, match, topFields...)
 				return nil
 			},
 		)

@@ -10,7 +10,7 @@ import (
 
 func (d *Data) Read(tx *Tx, shard uint64,
 	match *roaring64.Bitmap, metrics ...string) {
-	d.ReadFields(tx, shard, match, metricsToProject(metrics)...)
+	d.ReadFields(tx, shard, match, MetricsToProject(metrics)...)
 }
 
 func (d *Data) ReadFields(tx *Tx, shard uint64,
@@ -109,7 +109,7 @@ func (a *Data) Bounce(foundSet *roaring64.Bitmap) uint64 {
 	return uint64(sum)
 }
 
-func metricsToProject(mets []string) []alicia.Field {
+func MetricsToProject(mets []string) []alicia.Field {
 	m := map[alicia.Field]struct{}{}
 	for _, v := range mets {
 		switch v {
