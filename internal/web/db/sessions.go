@@ -198,6 +198,7 @@ func (c *Config) clone(r *http.Request) *Config {
 		db:      c.db,
 		cache:   c.cache,
 		session: c.session.clone(),
+		buffer:  c.buffer,
 		logger:  c.logger.With(slog.String("path", r.URL.Path), "method", r.Method),
 	}
 }

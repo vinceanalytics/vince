@@ -20,6 +20,7 @@ type Config struct {
 	session *SessionContext
 	logger  *slog.Logger
 	cache   *lru.LRU[*v1.Model]
+	buffer  chan *v1.Model
 }
 
 func Open(path string) (*Config, error) {
@@ -40,6 +41,7 @@ func Open(path string) (*Config, error) {
 		db:     ops,
 		logger: slog.Default(),
 		cache:  lru.New[*v1.Model](16 << 10),
+		buffer: make(chan *v1.Model, 4<<10),
 		session: &SessionContext{
 			secret: secret,
 		},
@@ -56,6 +58,23 @@ func (db *Config) Logger() *slog.Logger {
 
 func (db *Config) Start(ctx context.Context) {
 	go db.db.Start(ctx)
+	go db.eventsLoop(ctx)
+}
+
+func (db *Config) eventsLoop(cts context.Context) {
+	db.logger.Info("starting event processing loop")
+	for {
+		select {
+		case <-cts.Done():
+			db.logger.Info("exiting event processing loop")
+			return
+		case e := <-db.buffer:
+			err := db.append(e)
+			if err != nil {
+				db.logger.Error("appening event", "err", err)
+			}
+		}
+	}
 }
 
 func (db *Config) Close() error {
