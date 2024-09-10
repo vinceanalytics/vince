@@ -54,7 +54,7 @@ var (
 
 	False = ptr(false)
 
-	ErrDrop = errors.New("dop")
+	ErrDrop = errors.New("event dropped")
 )
 
 func (db *Config) parse(r *http.Request) (*v1.Model, error) {
