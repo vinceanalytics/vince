@@ -18,10 +18,10 @@ func NewFromMap(m *roaring.Bitmap) *Bitmap {
 }
 
 func (b *Bitmap) Reset(m *roaring.Bitmap) {
+	b.Clear()
 	if m.IsEmpty() {
 		return
 	}
-	b.highlowcontainer.clear()
 	b.highlowcontainer.appendContainer(0, m, false)
 }
 
