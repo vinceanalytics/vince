@@ -53,7 +53,7 @@ type Date struct {
 func dateParse(date string) Date {
 	if date == "" {
 		now := time.Now().UTC()
-		return Date{Start: now, End: now}
+		return Date{Start: beginOfDay(now), End: now}
 	}
 	a, b, ok := strings.Cut(date, ",")
 	start, _ := time.Parse(time.DateOnly, a)
@@ -62,7 +62,12 @@ func dateParse(date string) Date {
 		end, _ := time.Parse(time.DateOnly, b)
 		return Date{Start: start, End: end}
 	}
-	return Date{Start: start, End: start}
+	return Date{Start: start, End: endOfDay(start)}
+}
+
+func beginOfDay(ts time.Time) time.Time {
+	yy, mm, dd := ts.Date()
+	return time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC)
 }
 
 func beginOfMonth(ts time.Time) time.Time {
@@ -73,6 +78,11 @@ func beginOfMonth(ts time.Time) time.Time {
 func beginOfYear(ts time.Time) time.Time {
 	yy, _, _ := ts.Date()
 	return time.Date(yy, time.January, 1, 0, 0, 0, 0, time.UTC)
+}
+
+func endOfDay(ts time.Time) time.Time {
+	y, m, d := ts.Date()
+	return time.Date(y, m, d, 23, 59, 59, int(time.Second-time.Nanosecond), ts.Location())
 }
 
 func endOfMonth(ts time.Time) time.Time {
