@@ -69,7 +69,7 @@ func Delete(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("deleting site", "domain", domain, "err", "err")
 	}
-	domains.Remove(domain)
+	domains.Reload(db.Get().Domains)
 	http.Redirect(w, r, "/sites", http.StatusFound)
 }
 
@@ -114,7 +114,7 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		db.Logger().Error("creating site", "err", err)
 		return
 	}
-	domains.Add(domain)
+	domains.Reload(db.Get().Domains)
 	to := fmt.Sprintf("/%s/snippet", url.PathEscape(domain))
 	http.Redirect(w, r, to, http.StatusFound)
 }

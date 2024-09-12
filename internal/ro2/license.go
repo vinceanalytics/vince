@@ -101,7 +101,7 @@ func (db *DB) checkLicense(ctx context.Context) {
 			os.Exit(1)
 		}
 	}
-	domains.Load(db.Domains)
+	domains.Reload(db.Domains)
 
 	slog.Info("starting license check loop")
 	for {

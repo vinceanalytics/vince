@@ -3,48 +3,30 @@ package domains
 import (
 	"sync"
 
+	"github.com/dgraph-io/badger/v4/y"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
-var domains = map[string]struct{}{}
+var domains = roaring.New()
+
 var mu sync.RWMutex
 
-type Loader func(func(*v1.Site))
-
-func Load(l Loader) {
-	mu.Lock()
-	l(load)
-	mu.Unlock()
-}
+type Loader func(f func(*v1.Site))
 
 func Reload(l Loader) {
+	keys := roaring.New()
+	l(func(s *v1.Site) {
+		keys.Add(y.Hash([]byte(s.Domain)))
+	})
 	mu.Lock()
-	clear(domains)
-	l(load)
+	domains = keys
 	mu.Unlock()
-}
-
-func load(s *v1.Site) {
-	if !s.Locked {
-		domains[s.Domain] = struct{}{}
-	}
 }
 
 func Allow(domain string) bool {
 	mu.RLock()
-	_, ok := domains[domain]
+	ok := domains.Contains(y.Hash([]byte(domain)))
 	mu.RUnlock()
 	return ok
-}
-
-func Add(domain string) {
-	mu.Lock()
-	domains[domain] = struct{}{}
-	mu.Unlock()
-}
-
-func Remove(domain string) {
-	mu.Lock()
-	delete(domains, domain)
-	mu.Unlock()
 }
