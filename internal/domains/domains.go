@@ -1,32 +1,30 @@
 package domains
 
 import (
-	"sync"
+	"sync/atomic"
 
 	"github.com/dgraph-io/badger/v4/y"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
-var domains = roaring.New()
+var domains = newDom()
 
-var mu sync.RWMutex
+func newDom() *atomic.Pointer[roaring.Bitmap] {
+	var d atomic.Pointer[roaring.Bitmap]
+	d.Store(roaring.New())
+	return &d
+}
 
-type Loader func(f func(*v1.Site))
-
-func Reload(l Loader) {
+func Reload(l func(f func(*v1.Site))) {
 	keys := roaring.New()
 	l(func(s *v1.Site) {
 		keys.Add(y.Hash([]byte(s.Domain)))
 	})
-	mu.Lock()
-	domains = keys
-	mu.Unlock()
+	domains.Store(keys)
 }
 
 func Allow(domain string) bool {
-	mu.RLock()
-	ok := domains.Contains(y.Hash([]byte(domain)))
-	mu.RUnlock()
-	return ok
+	return domains.Load().
+		Contains(y.Hash([]byte(domain)))
 }
