@@ -150,6 +150,10 @@ func (rq *Request) parseReferrer(m map[string]any) {
 }
 
 func (rq *Request) parseParams(m map[string]any) {
+	if ts, ok := m["ts"]; ok {
+		// Only used for random seed generation
+		rq.ts = time.UnixMilli(ts.(int64)).UTC().Truncate(time.Second)
+	}
 	n, ok := m["n"]
 	if !ok {
 		n, ok = m["name"]
