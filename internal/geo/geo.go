@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"compress/gzip"
 	_ "embed"
+	"fmt"
 	"io"
 	"net"
+	"slices"
 	"sync"
 
 	"github.com/oschwald/geoip2-golang"
+	"github.com/oschwald/maxminddb-golang"
 )
 
 //go:embed country.gz
@@ -62,4 +65,43 @@ func get() *geoip2.Reader {
 		}
 	})
 	return mmdb
+}
+
+func Rand(size int) []string {
+	r, err := gzip.NewReader(bytes.NewReader(country))
+	if err != nil {
+		panic("failed to read embedded mmdb data file gzip data expected " + err.Error())
+	}
+	b, err := io.ReadAll(r)
+	if err != nil {
+		panic(err.Error())
+	}
+	reader, err := maxminddb.FromBytes(b)
+	if err != nil {
+		panic(err.Error())
+
+	}
+	n := reader.Networks(maxminddb.SkipAliasedNetworks)
+	var a geoip2.City
+	m := map[string]struct{}{}
+	ips := map[string]struct{}{}
+	for n.Next() {
+		net, err := n.Network(&a)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		_, ok := m[a.Country.IsoCode]
+		if ok {
+			continue
+		}
+		m[a.Country.IsoCode] = struct{}{}
+		ips[net.IP.String()] = struct{}{}
+	}
+	o := make([]string, 0, size)
+	for k := range ips {
+		o = append(o, k)
+	}
+	slices.Sort(o)
+	return o
 }
