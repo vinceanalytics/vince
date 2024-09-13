@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"math/rand/v2"
 	"net/url"
 	"strings"
 
@@ -86,4 +87,10 @@ func clean(r string) (string, error) {
 		return u.Host, nil
 	}
 	return r, nil
+}
+
+// Rand returns a random referrer. used in generating seeds dvents.
+func Rand() string {
+	n := rand.IntN(len(all_referrals))
+	return all_referrals[n]
 }
