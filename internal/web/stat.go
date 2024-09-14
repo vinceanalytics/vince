@@ -63,9 +63,9 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	visitors := m.Visitors(nil)
 	visits := m.Visits(nil)
 	views := m.View(nil)
-	viewsPerVisit := per(views, visits)
-	bounceRate := math.Round(per(m.Bounce(nil), visits) * 100)
-	duration := time.Duration(m.Duration(nil)).Seconds()
+	viewsPerVisit := math.Floor(per(views, visits))
+	bounceRate := math.Floor(per(m.Bounce(nil), visits) * 100)
+	duration := time.Duration(m.Duration(nil)).Seconds() / float64(visits)
 	db.JSON(w, map[string]any{
 		"from":     params.From(),
 		"to":       params.To(),

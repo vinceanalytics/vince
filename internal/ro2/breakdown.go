@@ -166,7 +166,7 @@ func (o *Store) BreakdownVisitorsWithPercentage(start, end int64, domain string,
 		a.Results = append(a.Results, map[string]any{
 			property:     prop,
 			visitors:     vs,
-			"percentage": p,
+			"percentage": math.Floor(p),
 		})
 	}
 	sortMap(a.Results, visitors)
