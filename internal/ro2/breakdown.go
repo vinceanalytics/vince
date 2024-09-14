@@ -120,10 +120,10 @@ func (o *Store) BreakdownCity(start, end int64, domain string, filter Filter) (*
 		vs := m.Compute(visitors, b)
 		city := location.GetCity(code)
 		a.Results = append(a.Results, map[string]any{
-			visitors:       vs,
-			"code":         code,
-			"name":         city.Name,
-			"country_flag": city.Flag,
+			visitors: vs,
+			"code":   code,
+			"name":   city.Name,
+			"flag":   city.Flag,
 		})
 	}
 	sortMap(a.Results, visitors)

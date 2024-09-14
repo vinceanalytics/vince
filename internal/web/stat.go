@@ -366,7 +366,7 @@ func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		c := location.GetCountry(code)
 		m["code"] = code
 		m["name"] = c.Name
-		m["country_flag"] = c.Flag
+		m["flag"] = c.Flag
 	}
 	db.JSON(w, o)
 }
@@ -393,7 +393,7 @@ func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		reg := location.GetRegion(code)
 		m["code"] = code
 		m["name"] = reg.Name
-		m["country_flag"] = reg.Flag
+		m["flag"] = reg.Flag
 	}
 	db.JSON(w, o)
 }
