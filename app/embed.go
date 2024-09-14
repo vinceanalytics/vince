@@ -6,3 +6,6 @@ import (
 
 //go:embed public
 var Public embed.FS
+
+//go:embed images
+var Images embed.FS

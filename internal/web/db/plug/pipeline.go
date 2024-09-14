@@ -56,6 +56,7 @@ func FetchFlash(h Handler) Handler {
 }
 
 var file = http.FileServerFS(app.Public)
+var icons = http.FileServerFS(app.Images)
 
 func Static(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -67,6 +68,10 @@ func Static(h http.Handler) http.Handler {
 				w.Header().Set("cache-control", "public, max-age=86400, must-revalidate")
 			}
 			file.ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/images/") {
+			icons.ServeHTTP(w, r)
 			return
 		}
 		h.ServeHTTP(w, r)
