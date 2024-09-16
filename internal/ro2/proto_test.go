@@ -42,6 +42,56 @@ func TestStore_sequence(t *testing.T) {
 	require.Equal(t, "TZ", tr)
 	require.Equal(t, uint64(1), id)
 }
+func TestStore_quantum(t *testing.T) {
+	dir := t.TempDir()
+	db, err := Open(dir)
+	require.NoError(t, err)
+	ts, _ := time.Parse(time.RFC822, time.RFC822)
+	ts = ts.UTC()
+	err = db.One(&v1.Model{
+		Timestamp: ts.UnixMilli(),
+	})
+	require.NoError(t, err)
+	got := map[alicia.Field]map[int64][]uint64{
+		alicia.MINUTE: {},
+		alicia.HOUR:   {},
+		alicia.DAY:    {},
+		alicia.WEEK:   {},
+		alicia.MONTH:  {},
+	}
+
+	extract := func(tx *Tx, field alicia.Field) {
+		tx.ExtractBSI(0, uint64(field), nil, func(row uint64, c int64) {
+			got[field][c] = append(got[field][c], row)
+		})
+	}
+	db.View(func(tx *Tx) error {
+		extract(tx, alicia.MINUTE)
+		extract(tx, alicia.HOUR)
+		extract(tx, alicia.DAY)
+		extract(tx, alicia.WEEK)
+		extract(tx, alicia.MONTH)
+		return nil
+	})
+	want := map[alicia.Field]map[int64][]uint64{
+		alicia.MINUTE: {
+			minute(ts).UnixMilli(): []uint64{1},
+		},
+		alicia.HOUR: {
+			hour(ts).UnixMilli(): []uint64{1},
+		},
+		alicia.DAY: {
+			day(ts).UnixMilli(): []uint64{1},
+		},
+		alicia.WEEK: {
+			week(ts).UnixMilli(): []uint64{1},
+		},
+		alicia.MONTH: {
+			month(ts).UnixMilli(): []uint64{1},
+		},
+	}
+	require.Equal(t, want, got)
+}
 
 func BenchmarkAddOne(t *testing.B) {
 	dir := t.TempDir()

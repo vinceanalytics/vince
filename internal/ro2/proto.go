@@ -62,7 +62,8 @@ func open(path string) (*Store, error) {
 }
 
 var (
-	fields = new(v1.Model).ProtoReflect().Descriptor().Fields()
+	fields  = new(v1.Model).ProtoReflect().Descriptor().Fields()
+	tsField = fields.ByNumber(protowire.Number(alicia.TIMESTAMP))
 )
 
 func (o *Store) Name(number uint32) string {
@@ -92,7 +93,11 @@ func (o *Store) One(msg *v1.Model) error {
 			err = tx.Add(shard, uint64(fd.Number()), b)
 			return err == nil
 		})
-		return err
+		if err != nil {
+			return err
+		}
+		ts := re.Get(tsField).Int()
+		return tx.quatum(b, shard, id, ts)
 	})
 }
 

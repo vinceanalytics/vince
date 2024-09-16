@@ -56,6 +56,13 @@ const (
 	UTM_TERM
 	SUB1_CODE
 	SUB2_CODE
+
+	// these are timestamp views for timeseries
+	MINUTE
+	HOUR
+	DAY
+	WEEK
+	MONTH
 )
 
 const (
