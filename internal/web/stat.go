@@ -71,9 +71,10 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 	}
 	db.JSON(w, map[string]any{
-		"labels": labels,
-		"plot":   plot,
-		"metric": metric,
+		"labels":   labels,
+		"plot":     plot,
+		"metric":   metric,
+		"interval": params.Interval().String(),
 	})
 }
 

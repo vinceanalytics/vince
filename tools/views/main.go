@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/urfave/cli/v3"
@@ -41,10 +42,10 @@ func view() *cli.Command {
 		Action: func(ctx context.Context, c *cli.Command) error {
 			target := "http://localhost:8080/api/event"
 			today := date(time.Now().UTC())
-			start := today.AddDate(0, 0, -720)
+			days := generateDates(5, today)
 			client := &http.Client{}
-			for i := range 720 {
-				day := start.AddDate(0, 0, i)
+			for i := range days {
+				day := days[i]
 				for n := range 500 {
 					rq, err := request(target, day.Add(time.Duration(n)*time.Minute).UnixMilli())
 					if err != nil {
@@ -79,6 +80,7 @@ var (
 	}
 	ips         = geo.Rand(10)
 	agents      = []string{camera, app, desktop, mobile}
+	eventsName  = []string{"pageview", "Outbound Link: Click", "Purchase"}
 	utmCampaign = []string{"", "Referral", "Advertisement", "Email"}
 	utmSource   = []string{"", "Facebook", "Twitter", "DuckDuckGo", "Google"}
 	hostnames   = []string{"en.vinceanalytics.com", "es.vinceanalytics.com", "vinceanalytics.com"}
@@ -89,7 +91,7 @@ func request(target string, ts int64) (*http.Request, error) {
 	q.Set("utm_source", randomString(utmSource))
 	q.Set("utm_capmaign", randomString(utmCampaign))
 	event := map[string]any{
-		"name":     "pageview",
+		"name":     randomString(eventsName),
 		"ts":       ts,
 		"url":      "https://" + randomString(hostnames) + randomString(paths) + "?" + q.Encode(),
 		"domain":   "vinceanalytics.com",
@@ -108,4 +110,13 @@ func request(target string, ts int64) (*http.Request, error) {
 func randomString(ls []string) string {
 	i := rand.IntN(len(ls))
 	return ls[i]
+}
+
+func generateDates(days int, ts time.Time) []time.Time {
+	o := make([]time.Time, days)
+	for i := range o {
+		o[i] = ts.AddDate(0, 0, -i)
+	}
+	slices.Reverse(o)
+	return o
 }
