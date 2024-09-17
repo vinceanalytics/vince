@@ -32,11 +32,16 @@ func (d *Data) Release() {
 	dataPool.Put(d)
 }
 
-func (d *Data) get(i alicia.Field) *roaring64.BSI {
+func (d *Data) mustGet(i alicia.Field) *roaring64.BSI {
 	i--
 	if d[i] == nil {
 		d[i] = roaring64.NewDefaultBSI()
 	}
+	return d[i]
+}
+
+func (d *Data) get(i alicia.Field) *roaring64.BSI {
+	i--
 	return d[i]
 }
 

@@ -1,6 +1,7 @@
 package ro2
 
 import (
+	"math"
 	"slices"
 	"time"
 
@@ -17,11 +18,36 @@ func (d *Data) ReadFields(tx *Tx, shard uint64,
 	match *roaring64.Bitmap, fields ...alicia.Field) {
 	for i := range fields {
 		f := fields[i]
-		b := d.get(f)
+		b := d.mustGet(f)
 		tx.ExtractBSI(shard, uint64(f), match, func(row uint64, c int64) {
 			b.SetValue(row, c)
 		})
 	}
+}
+
+type Stats struct {
+	Visitors, Visits, PageViews, ViewsPerVisits, BounceRate, VisitDuration float64
+}
+
+func (a *Data) Stats(foundSet *roaring64.Bitmap) (o Stats) {
+	o.Visitors = float64(a.Visitors(foundSet))
+	o.Visits = float64(a.Visits(foundSet))
+	o.PageViews = float64(a.View(foundSet))
+	if o.Visits != 0 {
+		o.ViewsPerVisits = o.PageViews / o.Visits
+		o.ViewsPerVisits = math.Floor(o.ViewsPerVisits)
+	}
+	o.BounceRate = float64(a.Bounce(foundSet))
+	if o.Visits != 0 {
+		o.BounceRate /= o.Visits
+		o.BounceRate = math.Floor(o.BounceRate * 100)
+	}
+	o.VisitDuration = time.Duration(a.Duration(foundSet)).Seconds()
+	if o.Visits != 0 {
+		o.VisitDuration /= o.Visits
+		o.VisitDuration = math.Floor(o.VisitDuration)
+	}
+	return
 }
 
 func (a *Data) Compute(metric string, foundSet *roaring64.Bitmap) float64 {
@@ -64,6 +90,9 @@ func (a *Data) Compute(metric string, foundSet *roaring64.Bitmap) float64 {
 
 func (a *Data) Visitors(foundSet *roaring64.Bitmap) uint64 {
 	b := a.get(alicia.ID)
+	if b == nil {
+		return 0
+	}
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}
@@ -72,6 +101,9 @@ func (a *Data) Visitors(foundSet *roaring64.Bitmap) uint64 {
 
 func (a *Data) Visits(foundSet *roaring64.Bitmap) uint64 {
 	b := a.get(alicia.SESSION)
+	if b == nil {
+		return 0
+	}
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}
@@ -81,6 +113,9 @@ func (a *Data) Visits(foundSet *roaring64.Bitmap) uint64 {
 
 func (a *Data) View(foundSet *roaring64.Bitmap) uint64 {
 	b := a.get(alicia.VIEW)
+	if b == nil {
+		return 0
+	}
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}
@@ -90,6 +125,9 @@ func (a *Data) View(foundSet *roaring64.Bitmap) uint64 {
 
 func (a *Data) Duration(foundSet *roaring64.Bitmap) uint64 {
 	b := a.get(alicia.DURATION)
+	if b == nil {
+		return 0
+	}
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}
@@ -99,6 +137,9 @@ func (a *Data) Duration(foundSet *roaring64.Bitmap) uint64 {
 
 func (a *Data) Bounce(foundSet *roaring64.Bitmap) uint64 {
 	b := a.get(alicia.BOUNCE)
+	if b == nil {
+		return 0
+	}
 	if foundSet == nil {
 		foundSet = b.GetExistenceBitmap()
 	}

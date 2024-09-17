@@ -115,15 +115,7 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 			db.Logger().Error("reading top stats comparison", "err", err)
 		}
 	}
-	visitors := m.Visitors(nil)
-	visits := m.Visits(nil)
-	views := m.View(nil)
-	viewsPerVisit := math.Floor(per(views, visits))
-	bounceRate := math.Floor(per(m.Bounce(nil), visits) * 100)
-	duration := time.Duration(m.Duration(nil)).Seconds()
-	if visits != 0 {
-		duration = duration / float64(visits)
-	}
+	stats := m.Stats(nil)
 	db.JSON(w, map[string]any{
 		"from":     params.From(),
 		"to":       params.To(),
@@ -131,32 +123,32 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		"top_stats": []any{
 			map[string]any{
 				"name":         "Unique visitors",
-				"value":        visitors,
+				"value":        stats.Visitors,
 				"graph_metric": "visitors",
 			},
 			map[string]any{
 				"name":         "Total visits",
-				"value":        visits,
+				"value":        stats.Visits,
 				"graph_metric": "visits",
 			},
 			map[string]any{
 				"name":         "Total pageviews",
-				"value":        views,
+				"value":        stats.PageViews,
 				"graph_metric": "pageviews",
 			},
 			map[string]any{
 				"name":         "Views per visit",
-				"value":        viewsPerVisit,
+				"value":        stats.ViewsPerVisits,
 				"graph_metric": "views_per_visit",
 			},
 			map[string]any{
 				"name":         "Bounce rate",
-				"value":        bounceRate,
+				"value":        stats.BounceRate,
 				"graph_metric": "bounce_rate",
 			},
 			map[string]any{
 				"name":         "Visit duration",
-				"value":        duration,
+				"value":        stats.VisitDuration,
 				"graph_metric": "visit_duration",
 			},
 		},
