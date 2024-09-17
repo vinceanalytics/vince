@@ -1,7 +1,6 @@
 package web
 
 import (
-	"math"
 	"net/http"
 	"slices"
 	"time"
@@ -116,61 +115,29 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	stats := m.Stats(nil)
+	cmp := old.Stats(nil)
 	db.JSON(w, map[string]any{
 		"from":     params.From(),
 		"to":       params.To(),
 		"interval": params.Interval().String(),
 		"top_stats": []any{
-			map[string]any{
-				"name":         "Unique visitors",
-				"value":        stats.Visitors,
-				"graph_metric": "visitors",
-			},
-			map[string]any{
-				"name":         "Total visits",
-				"value":        stats.Visits,
-				"graph_metric": "visits",
-			},
-			map[string]any{
-				"name":         "Total pageviews",
-				"value":        stats.PageViews,
-				"graph_metric": "pageviews",
-			},
-			map[string]any{
-				"name":         "Views per visit",
-				"value":        stats.ViewsPerVisits,
-				"graph_metric": "views_per_visit",
-			},
-			map[string]any{
-				"name":         "Bounce rate",
-				"value":        stats.BounceRate,
-				"graph_metric": "bounce_rate",
-			},
-			map[string]any{
-				"name":         "Visit duration",
-				"value":        stats.VisitDuration,
-				"graph_metric": "visit_duration",
-			},
+			entry(stats.Visitors, cmp.Visitors, "Unique visitors", "visitors"),
+			entry(stats.Visits, cmp.Visits, "Total visits", "visits"),
+			entry(stats.PageViews, cmp.PageViews, "Total pageviews", "pageviews"),
+			entry(stats.ViewsPerVisits, cmp.ViewsPerVisits, "Views per visit", "views_per_visit"),
+			entry(stats.BounceRate, cmp.BounceRate, "Bounce rate", "bounce_rate"),
+			entry(stats.VisitDuration, cmp.VisitDuration, "Visit duration", "visit_duration"),
 		},
 	})
 }
 
-func per(a, b uint64) float64 {
-	if b == 0 {
-		return float64(a)
+func entry(curr, prev float64, name, key string) map[string]any {
+	m := map[string]any{
+		"name":         name,
+		"value":        curr,
+		"graph_metric": key,
 	}
-	return float64(a) / float64(b)
-}
-
-func change(old, new float64) float64 {
-	switch {
-	case old == 0 && new > 0:
-		return 100
-	case old == 0 && new == 0:
-		return 0
-	default:
-		return math.Round((new - old) / old * 100)
-	}
+	return m
 }
 
 func CurrentVisitors(db *db.Config, w http.ResponseWriter, r *http.Request) {
