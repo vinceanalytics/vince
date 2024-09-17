@@ -1,6 +1,7 @@
 package web
 
 import (
+	"math"
 	"net/http"
 	"slices"
 	"time"
@@ -137,6 +138,20 @@ func entry(curr, prev float64, name, key string) map[string]any {
 		"value":        curr,
 		"graph_metric": key,
 	}
+	var change float64
+	if key == "bounce_rate" {
+		change = curr - prev
+	} else {
+		switch {
+		case prev == 0 && curr > 0:
+			change = 100
+		case prev == 0 && curr == 0:
+		default:
+			change = math.Round((curr - prev) / prev * 100)
+		}
+	}
+	m["comparison_value"] = prev
+	m["change"] = change
 	return m
 }
 
