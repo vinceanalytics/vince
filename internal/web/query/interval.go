@@ -33,7 +33,7 @@ func (i Interval) String() string {
 	case Hour:
 		return "hour"
 	case Day:
-		return "day"
+		return "date"
 	case Week:
 		return "week"
 	case Month:
