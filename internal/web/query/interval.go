@@ -3,6 +3,7 @@ package query
 import (
 	"time"
 
+	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
@@ -42,6 +43,23 @@ func (i Interval) String() string {
 	}
 }
 
+func (i Interval) Field() alicia.Field {
+	switch i {
+	case Minute:
+		return alicia.MINUTE
+	case Hour:
+		return alicia.HOUR
+	case Day:
+		return alicia.DAY
+	case Week:
+		return alicia.WEEK
+	case Month:
+		return alicia.MONTH
+	default:
+		return alicia.Field(0)
+	}
+}
+
 func (i Interval) Reduce(ts int64) time.Time {
 	t := time.UnixMilli(ts).UTC()
 	switch i {
@@ -61,7 +79,6 @@ func (i Interval) Reduce(ts int64) time.Time {
 		yy, mm, _ := t.Date()
 		return time.Date(yy, mm, 1, 0, 0, 0, 0, t.Location())
 	}
-
 	return t
 }
 

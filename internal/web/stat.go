@@ -3,6 +3,7 @@ package web
 import (
 	"math"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/alicia"
@@ -17,9 +18,62 @@ func UnimplementedStat(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	site := db.CurrentSite()
+	params := query.New(db.Get(), r.URL.Query())
+	interval := params.Interval()
+	shards := db.Get().Shards()
+	slices.Sort(shards)
+	quantim := roaring64.NewDefaultBSI()
+	m := ro2.NewData()
+	defer m.Release()
+
+	err := db.Get().View(func(tx *ro2.Tx) error {
+		dom := ro2.NewEq(uint64(alicia.DOMAIN), site.Domain)
+		fields := ro2.MetricsToProject([]string{params.Metric()})
+		tsField := interval.Field()
+		start := params.Start()
+		end := params.End()
+		for _, shard := range shards {
+			b := dom.Match(tx, shard)
+			if b.IsEmpty() {
+				continue
+			}
+			ts := tx.Cmp(uint64(tsField), shard, roaring64.RANGE, start, end)
+			if ts.IsEmpty() {
+				continue
+			}
+			match := roaring64.And(b, ts)
+			if match.IsEmpty() {
+				continue
+			}
+			m.ReadFields(tx, shard, match, fields...)
+			tx.ExtractBSI(shard, uint64(tsField), match, quantim.SetValue)
+		}
+		return nil
+	})
+	if err != nil {
+		db.Logger().Error("reading main graph", "err", err)
+	}
+	ts := quantim.Transpose()
+	size := ts.GetCardinality()
+	labels := make([]string, 0, size)
+	plot := make([]float64, 0, size)
+
+	it := ts.Iterator()
+	format := interval.Format()
+	metric := params.Metric()
+	for it.HasNext() {
+		tsv := it.Next()
+		labels = append(labels,
+			time.UnixMilli(int64(tsv)).UTC().Format(format))
+		match := quantim.CompareValue(0, roaring64.EQ, int64(tsv), 0, nil)
+		plot = append(plot, m.Compute(metric, match))
+
+	}
 	db.JSON(w, map[string]any{
-		"labels": []any{},
-		"plot":   []any{},
+		"labels": labels,
+		"plot":   plot,
+		"metric": metric,
 	})
 }
 

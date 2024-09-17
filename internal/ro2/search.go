@@ -50,7 +50,7 @@ func (o *Store) Select(
 		filter = noop{}
 	}
 
-	shards := o.shards()
+	shards := o.Shards()
 	if len(shards) == 0 {
 		return nil
 	}
@@ -66,7 +66,7 @@ func (o *Store) Select(
 		for i := range shards {
 			shard := shards[i]
 
-			b := dom.match(tx, shard)
+			b := dom.Match(tx, shard)
 			if b.IsEmpty() {
 				continue
 			}
@@ -245,10 +245,10 @@ func NewEq(field uint64, value string) *Eq {
 }
 
 func (e *Eq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	match.And(e.match(tx, shard))
+	match.And(e.Match(tx, shard))
 }
 
-func (e *Eq) match(tx *Tx, shard uint64) *roaring64.Bitmap {
+func (e *Eq) Match(tx *Tx, shard uint64) *roaring64.Bitmap {
 	e.once.Do(func() {
 		key := tx.get().TranslateKey(e.field, []byte(e.value))
 		it, err := tx.tx.Get(key)

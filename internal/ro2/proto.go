@@ -101,7 +101,7 @@ func (o *Store) One(msg *v1.Model) error {
 	})
 }
 
-func (o *Store) shards() (a []uint64) {
+func (o *Store) Shards() (a []uint64) {
 	q := o.seq.Load()
 	if q == 0 {
 		return

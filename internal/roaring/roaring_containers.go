@@ -3,10 +3,19 @@ package roaring
 import (
 	"bytes"
 	"fmt"
+	"unsafe"
 )
 
 type Container struct {
 	container
+}
+
+func toInterval16(a []byte) []interval16 {
+	return (*[2048]interval16)(unsafe.Pointer(&a[0]))[: len(a)/4 : len(a)/4]
+}
+
+func fromInterval16(a []interval16) []byte {
+	return (*[8192]byte)(unsafe.Pointer(&a[0]))[: len(a)*4 : len(a)*4]
 }
 
 func (c *Container) Type() uint8 {
@@ -59,23 +68,6 @@ func (r *Bitmap) Each(f func(cKey uint16, v *Container) error) error {
 	return nil
 }
 
-type toBm interface {
-	toBitmapContainer() *bitmapContainer
-}
-
-func toBitmap(c container) *bitmapContainer {
-	switch e := c.(type) {
-	case *arrayContainer:
-		return e.toBitmapContainer()
-	case *runContainer16:
-		return e.toBitmapContainer()
-	case *bitmapContainer:
-		return e
-	default:
-		return nil
-	}
-}
-
 func (r *Bitmap) Save(ctx Context) error {
 	// NOTE: we are not expecting r.RunOptimized being called. So only array and
 	// bitmap containers are at play.
@@ -99,7 +91,7 @@ func (r *Bitmap) Save(ctx Context) error {
 		buf.Reset()
 		var skip bool
 		err := ctx.Value(k, func(u uint8, data []byte) error {
-			n := containerFromWire(u, data)
+			n := containerFromWireOwned(u, data)
 			// Incoming containers are smaller. We can avoid generating unneeded writes
 			// by checking if we need to update.
 			diff := c.andNot(n)
@@ -117,6 +109,11 @@ func (r *Bitmap) Save(ctx Context) error {
 			//
 			// There is no empty containers. So we are guaranteeing buf.Len() > 0. This
 			// is essential later to avoid serializing again a wrong container.
+			if kind == run16Contype {
+				// saves 2 bytes for bitmap runs
+				buf.Write(fromInterval16(n.(*runContainer16).iv))
+				return nil
+			}
 			_, err := n.writeTo(&buf)
 			return err
 		})
@@ -169,7 +166,28 @@ func containerFromWire(typ uint8, b []byte) container {
 		}
 	case run16Contype:
 		return &runContainer16{
-			iv: byteSliceAsInterval16Slice(b),
+			iv: toInterval16(b),
+		}
+	case bitmapContype:
+		o := &bitmapContainer{
+			bitmap: byteSliceAsUint64Slice(b),
+		}
+		o.computeCardinality()
+		return o
+	default:
+		panic(fmt.Sprintf("unknown container type %d", typ))
+	}
+}
+
+func containerFromWireOwned(typ uint8, b []byte) container {
+	switch contype(typ) {
+	case arrayContype:
+		return &arrayContainer{
+			byteSliceAsUint16Slice(b),
+		}
+	case run16Contype:
+		return &runContainer16{
+			iv: toInterval16(b),
 		}
 	case bitmapContype:
 		o := &bitmapContainer{
