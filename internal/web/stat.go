@@ -130,28 +130,34 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		"interval": params.Interval().String(),
 		"top_stats": []any{
 			map[string]any{
-				"name":  "Unique visitors",
-				"value": visitors,
+				"name":         "Unique visitors",
+				"value":        visitors,
+				"graph_metric": "visitors",
 			},
 			map[string]any{
-				"name":  "Total visits",
-				"value": views,
+				"name":         "Total visits",
+				"value":        visits,
+				"graph_metric": "visits",
 			},
 			map[string]any{
-				"name":  "Total pageviews",
-				"value": views,
+				"name":         "Total pageviews",
+				"value":        views,
+				"graph_metric": "pageviews",
 			},
 			map[string]any{
-				"name":  "Views per visit",
-				"value": viewsPerVisit,
+				"name":         "Views per visit",
+				"value":        viewsPerVisit,
+				"graph_metric": "views_per_visit",
 			},
 			map[string]any{
-				"name":  "Bounce rate",
-				"value": bounceRate,
+				"name":         "Bounce rate",
+				"value":        bounceRate,
+				"graph_metric": "bounce_rate",
 			},
 			map[string]any{
-				"name":  "Visit duration",
-				"value": duration,
+				"name":         "Visit duration",
+				"value":        duration,
+				"graph_metric": "visit_duration",
 			},
 		},
 	})
