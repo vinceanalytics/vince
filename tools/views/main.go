@@ -38,16 +38,23 @@ func view() *cli.Command {
 	return &cli.Command{
 		Name:  "view",
 		Usage: "sends pageview (only used for testing)",
-		Flags: []cli.Flag{},
+		Flags: []cli.Flag{
+			&cli.DurationFlag{
+				Name:  "duration,d",
+				Value: time.Hour,
+			},
+		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			target := "http://localhost:8080/api/event"
-			today := date(time.Now().UTC())
-			days := generateDates(5, today)
 			client := &http.Client{}
-			for i := range days {
-				day := days[i]
-				for n := range 500 {
-					rq, err := request(target, day.Add(time.Duration(n)*time.Minute).UnixMilli())
+			tick := time.NewTicker(10 * time.Millisecond)
+			done := time.NewTimer(c.Duration("duration"))
+			for {
+				select {
+				case <-done.C:
+					return nil
+				case ts := <-tick.C:
+					rq, err := request(target, ts.UTC().UnixMilli())
 					if err != nil {
 						return err
 					}
@@ -58,7 +65,7 @@ func view() *cli.Command {
 					rs.Body.Close()
 				}
 			}
-			return nil
+
 		},
 	}
 }
