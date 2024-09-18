@@ -20,7 +20,7 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(db.Get(), r.URL.Query())
 	interval := params.Interval()
-	quantim := roaring64.NewDefaultBSI()
+	quantum := roaring64.NewDefaultBSI()
 	m := ro2.NewData()
 	defer m.Release()
 
@@ -46,14 +46,14 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			m.ReadFields(tx, shard, match, fields...)
-			tx.ExtractBSI(shard, uint64(tsField), match, quantim.SetValue)
+			tx.ExtractBSI(shard, uint64(tsField), match, quantum.SetValue)
 		}
 		return nil
 	})
 	if err != nil {
 		db.Logger().Error("reading main graph", "err", err)
 	}
-	ts := quantim.Transpose()
+	ts := quantum.Transpose()
 	size := ts.GetCardinality()
 	labels := make([]string, 0, size)
 	plot := make([]float64, 0, size)
@@ -65,7 +65,7 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		tsv := it.Next()
 		labels = append(labels,
 			time.UnixMilli(int64(tsv)).UTC().Format(format))
-		match := quantim.CompareValue(0, roaring64.EQ, int64(tsv), 0, nil)
+		match := quantum.CompareValue(0, roaring64.EQ, int64(tsv), 0, nil)
 		plot = append(plot, m.Compute(metric, match))
 
 	}

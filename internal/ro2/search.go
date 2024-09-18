@@ -51,7 +51,7 @@ func (o *Store) Select(
 	f func(tx *Tx, shard uint64, match *roaring64.Bitmap) error) error {
 
 	if filter == nil {
-		filter = noop{}
+		filter = Noop{}
 	}
 
 	dom := NewEq(uint64(alicia.DOMAIN), domain)
@@ -103,9 +103,9 @@ func (ls List) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
 	}
 }
 
-type noop struct{}
+type Noop struct{}
 
-func (noop) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {}
+func (Noop) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {}
 
 type Reject struct{}
 
@@ -162,64 +162,7 @@ func (e *Regex) match(tx *Tx, shard uint64) *roaring64.Bitmap {
 	it := e.valid.Iterator()
 	for it.HasNext() {
 		union.Or(
-			tx.Cmp(e.field, shard, roaring64.EQ, int64(it.Next()), 0),
-		)
-	}
-	return union
-}
-
-type Nre struct {
-	field uint64
-	value *regexp.Regexp
-	valid roaring64.Bitmap
-	once  sync.Once
-}
-
-func NewNre(field uint64, value string) Filter {
-	r, err := regexp.Compile(cleanRe(value))
-	if err != nil {
-		slog.Error("invalid regex filter", "field", field, "value", value)
-		return Reject{}
-	}
-	return &Nre{
-		field: field,
-		value: r,
-	}
-}
-
-func (e *Nre) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	match.And(e.match(tx, shard))
-}
-
-func (e *Nre) match(tx *Tx, shard uint64) *roaring64.Bitmap {
-	e.once.Do(func() {
-		source := e.value.String()
-		prefix, exact := searchPrefix([]byte(source))
-		if exact {
-			// fast path. We only perform a single Get call
-			key := tx.get().TranslateKey(e.field, prefix)
-			it, err := tx.tx.Get(key)
-			if err == nil {
-				it.Value(func(val []byte) error {
-					e.valid.Add(binary.BigEndian.Uint64(val))
-					return nil
-				})
-			}
-		} else {
-			tx.Search(e.field, prefix, func(b []byte, u uint64) {
-				e.valid.Add(u)
-			})
-		}
-	})
-	if e.valid.IsEmpty() {
-		return &e.valid
-	}
-	union := roaring64.New()
-
-	it := e.valid.Iterator()
-	for it.HasNext() {
-		union.Or(
-			tx.Cmp(e.field, shard, roaring64.NEQ, int64(it.Next()), 0),
+			tx.Row(shard, e.field, it.Next()),
 		)
 	}
 	return union
@@ -257,42 +200,7 @@ func (e *Eq) Match(tx *Tx, shard uint64) *roaring64.Bitmap {
 	if e.id == 0 {
 		return roaring64.New()
 	}
-	return tx.Cmp(e.field, shard, roaring64.EQ, int64(e.id), 0)
-}
-
-type Neq struct {
-	field uint64
-	value string
-	id    uint64
-	once  sync.Once
-}
-
-func NewNeq(field uint64, value string) *Neq {
-	return &Neq{
-		field: field,
-		value: value,
-	}
-}
-
-func (e *Neq) apply(tx *Tx, shard uint64, match *roaring64.Bitmap) {
-	match.And(e.match(tx, shard))
-}
-
-func (e *Neq) match(tx *Tx, shard uint64) *roaring64.Bitmap {
-	e.once.Do(func() {
-		key := tx.get().TranslateKey(e.field, []byte(e.value))
-		it, err := tx.tx.Get(key)
-		if err == nil {
-			it.Value(func(val []byte) error {
-				e.id = binary.BigEndian.Uint64(val)
-				return nil
-			})
-		}
-	})
-	if e.id == 0 {
-		return roaring64.New()
-	}
-	return tx.Cmp(e.field, shard, roaring64.NEQ, int64(e.id), 0)
+	return tx.Row(shard, e.field, e.id)
 }
 
 type EqInt struct {

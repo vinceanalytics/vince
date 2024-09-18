@@ -50,6 +50,7 @@ func (o *Store) Breakdown(start, end int64, domain string, filter Filter, metric
 		}
 		a.Results = append(a.Results, x)
 	}
+	sortMap(a.Results, visitors)
 	return a, nil
 }
 

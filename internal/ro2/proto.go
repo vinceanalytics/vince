@@ -56,7 +56,7 @@ func (o *Store) One(msg *v1.Model) error {
 		re.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 			b.Clear()
 			if fd.Kind() == protoreflect.StringKind {
-				ro.BSI(b, id, int64(tx.Tr(shard, uint64(fd.Number()), v.String())))
+				ro.Mutex(b, id, tx.Tr(shard, uint64(fd.Number()), v.String()))
 			} else {
 				ro.BSI(b, id, v.Int())
 			}

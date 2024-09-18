@@ -143,7 +143,7 @@ func (t *txWrite) Write(key uint32, cKey uint16, typ uint8, value []byte) error 
 	return t.tx.tx.SetEntry(badger.NewEntry(xk, value).WithMeta(typ))
 }
 
-func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, value int64)) {
+func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, value *roaring.Bitmap)) {
 	filter := make([]*roaring.Container, 1<<ro.ShardVsContainerExponent)
 	match.Each(func(key uint32, cKey uint16, value *roaring.Container) error {
 		if value.IsEmpty() {
@@ -182,10 +182,7 @@ func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(
 			return ac.From(item.UserMeta(), val)
 		})
 		if ac.Intersects(filter[idx]) {
-			ac.Each(func(u uint16) bool {
-				f(row, int64(u))
-				return true
-			})
+			f(row, ac.Bitmap())
 		}
 	}
 }
