@@ -143,6 +143,53 @@ func (t *txWrite) Write(key uint32, cKey uint16, typ uint8, value []byte) error 
 	return t.tx.tx.SetEntry(badger.NewEntry(xk, value).WithMeta(typ))
 }
 
+func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, value int64)) {
+	filter := make([]*roaring.Container, 1<<ro.ShardVsContainerExponent)
+	match.Each(func(key uint32, cKey uint16, value *roaring.Container) error {
+		if value.IsEmpty() {
+			return nil
+		}
+		idx := cKey % (1 << ro.ShardVsContainerExponent)
+		filter[idx] = value
+		return nil
+	})
+	prefix := tx.get().
+		NS(alicia.CONTAINER).
+		Shard(shard).
+		Field(field).
+		FieldPrefix()
+	itr := tx.Iter()
+	prevRow := ^uint64(0)
+	seenThisRow := false
+	var ac roaring.Container
+	for itr.Seek(prefix); itr.ValidForPrefix(prefix); itr.Next() {
+		item := itr.Item()
+		k := alicia.Container(item.Key())
+		row := uint64(k) >> ro.ShardVsContainerExponent
+		if row == prevRow {
+			if seenThisRow {
+				continue
+			}
+		} else {
+			seenThisRow = false
+			prevRow = row
+		}
+		idx := k % (1 << ro.ShardVsContainerExponent)
+		if filter[idx] == nil {
+			continue
+		}
+		item.Value(func(val []byte) error {
+			return ac.From(item.UserMeta(), val)
+		})
+		if ac.Intersects(filter[idx]) {
+			ac.Each(func(u uint16) bool {
+				f(row, int64(u))
+				return true
+			})
+		}
+	}
+}
+
 func (tx *Tx) ExtractBSI(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
 	exists := tx.Row(shard, field, 0)
 	if match != nil {
