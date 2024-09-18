@@ -14,13 +14,13 @@ func TestStore_sequence(t *testing.T) {
 	db, err := Open(dir)
 	require.NoError(t, err)
 	// zero sequence at the beginning
-	require.Equal(t, uint64(0), db.seq.Load())
+	require.Equal(t, uint64(0), db.Seq())
 	err = db.One(&v1.Model{
 		Timestamp: 1,
 		Country:   "TZ",
 	})
 	require.NoError(t, err)
-	require.Equal(t, uint64(1), db.seq.Load())
+	require.Equal(t, uint64(1), db.Seq())
 	db.Close()
 
 	db, err = Open(dir)
@@ -37,7 +37,7 @@ func TestStore_sequence(t *testing.T) {
 		tr = tx.Find(uint64(alicia.COUNTRY), 1)
 		return nil
 	})
-	require.Equal(t, uint64(1), db.seq.Load())
+	require.Equal(t, uint64(1), db.Seq())
 	require.Equal(t, "TZ", country)
 	require.Equal(t, "TZ", tr)
 	require.Equal(t, uint64(1), id)
@@ -98,7 +98,6 @@ func BenchmarkAddOne(t *testing.B) {
 	db, err := Open(dir)
 	require.NoError(t, err)
 	// zero sequence at the beginning
-	require.Equal(t, uint64(0), db.seq.Load())
 	m := &v1.Model{
 		Timestamp: time.Now().UnixMilli(),
 		Country:   "TZ",

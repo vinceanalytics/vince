@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"log/slog"
 	"regexp"
-	"slices"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -55,18 +54,9 @@ func (o *Store) Select(
 		filter = noop{}
 	}
 
-	shards := o.Shards()
-	if len(shards) == 0 {
-		return nil
-	}
-
 	dom := NewEq(uint64(alicia.DOMAIN), domain)
 	return o.View(func(tx *Tx) error {
-
-		// We iterate on shards in reverse. We are always interested in latest data.
-		// This way we can have early exit when the caller is done but we have more
-		// shards left.
-		slices.Reverse(shards)
+		shards := o.Shards(tx)
 
 		for i := range shards {
 			shard := shards[i]

@@ -14,12 +14,12 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 	end = end.Add(time.Minute)
 	start := end.Add(-5 * time.Minute)
 
-	shard := o.seq.Load() / ro.ShardWidth
-
 	dom := NewEq(uint64(alicia.DOMAIN), domain)
 	r := roaring64.New()
 
 	err = o.View(func(tx *Tx) error {
+		shard := tx.Seq() / ro.ShardWidth
+
 		b := dom.Match(tx, shard)
 		if b.IsEmpty() {
 			return nil
@@ -46,8 +46,9 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 	r := roaring64.New()
 	dom := NewEq(uint64(alicia.DOMAIN), domain)
-	shards := o.Shards()
 	err = o.View(func(tx *Tx) error {
+		shards := o.Shards(tx)
+
 		for i := range shards {
 			shard := shards[i]
 			b := dom.Match(tx, shard)

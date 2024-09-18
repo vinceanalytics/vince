@@ -3,7 +3,6 @@ package web
 import (
 	"math"
 	"net/http"
-	"slices"
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/alicia"
@@ -21,8 +20,6 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(db.Get(), r.URL.Query())
 	interval := params.Interval()
-	shards := db.Get().Shards()
-	slices.Sort(shards)
 	quantim := roaring64.NewDefaultBSI()
 	m := ro2.NewData()
 	defer m.Release()
@@ -33,6 +30,8 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		tsField := interval.Field()
 		start := params.Start()
 		end := params.End()
+		shards := db.Get().Shards(tx)
+
 		for _, shard := range shards {
 			b := dom.Match(tx, shard)
 			if b.IsEmpty() {

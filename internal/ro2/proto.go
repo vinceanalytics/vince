@@ -1,10 +1,6 @@
 package ro2
 
 import (
-	"math"
-	"sync/atomic"
-
-	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/ro"
@@ -15,7 +11,6 @@ import (
 
 type Store struct {
 	*DB
-	seq atomic.Uint64
 }
 
 func Open(path string) (*Store, error) {
@@ -29,34 +24,6 @@ func open(path string) (*Store, error) {
 	}
 	o := &Store{
 		DB: db,
-	}
-	err = o.View(func(tx *Tx) error {
-		it := tx.tx.NewIterator(badger.IteratorOptions{
-			Reverse: true,
-		})
-		defer it.Close()
-		prefix := tx.get().
-			NS(alicia.CONTAINER).
-			Shard(math.MaxUint32).Field(uint64(alicia.TIMESTAMP)).ShardPrefix()
-		it.Seek(prefix)
-		if !it.Valid() {
-			return nil
-		}
-		shard := alicia.Shard(it.Item().Key())
-
-		// we choose the last shard to look for the last saved sequence ID. We
-		// already know that timestamp field is required for all events, since
-		// bsi fields store existence bitmap as row 0, we can safely derive tha
-		// last sequence ID as highest existence bit set.
-		exists := tx.Row(uint64(shard), uint64(alicia.TIMESTAMP), 0)
-		if !exists.IsEmpty() {
-			o.seq.Store(exists.Maximum())
-		}
-		return nil
-	})
-	if err != nil {
-		db.Close()
-		return nil, err
 	}
 	return o, nil
 }
@@ -81,7 +48,10 @@ func (o *Store) One(msg *v1.Model) error {
 		re := msg.ProtoReflect()
 		b := roaring64.New()
 		var err error
-		id := o.seq.Add(1)
+		id, err := tx.next()
+		if err != nil {
+			return err
+		}
 		shard := id / ro.ShardWidth
 		re.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 			b.Clear()
@@ -101,8 +71,16 @@ func (o *Store) One(msg *v1.Model) error {
 	})
 }
 
-func (o *Store) Shards() (a []uint64) {
-	q := o.seq.Load()
+func (o *Store) Seq() (id uint64) {
+	o.View(func(tx *Tx) error {
+		id = tx.Seq()
+		return nil
+	})
+	return
+}
+
+func (o *Store) Shards(tx *Tx) (a []uint64) {
+	q := tx.Seq()
 	if q == 0 {
 		return
 	}

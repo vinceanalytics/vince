@@ -22,6 +22,7 @@ const (
 	SITE
 	SYSTEM
 	SHARDS
+	SEQ
 )
 
 type Field byte
@@ -151,5 +152,10 @@ func (k *Key) System() []byte {
 
 func (k *Key) Shards() []byte {
 	k.NS(SHARDS)
+	return k[:fieldOffset]
+}
+
+func (k *Key) Seq() []byte {
+	k.NS(SEQ)
 	return k[:fieldOffset]
 }
