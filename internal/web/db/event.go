@@ -39,16 +39,29 @@ func hit(e *v1.Model) {
 	}
 }
 
-func update(fromSession *v1.Model, event *v1.Model) {
-	if fromSession.Bounce == 1 {
-		fromSession.Bounce, event.Bounce = -1, -1
+func update(session *v1.Model, event *v1.Model) {
+	if session.Bounce == 1 {
+		session.Bounce, event.Bounce = -1, -1
 	} else {
-		fromSession.Bounce, event.Bounce = 0, 0
+		session.Bounce, event.Bounce = 0, 0
 	}
 	event.Session = 0
-	event.ExitPage = event.Page
-	event.Duration = int64(time.UnixMilli(event.Timestamp).Sub(time.UnixMilli(fromSession.Timestamp)))
-	fromSession.Timestamp = event.Timestamp
+	if session.EntryPage == "" && event.Event == pageView {
+		event.EntryPage = event.Page
+	} else {
+		event.EntryPage = session.EntryPage
+	}
+	if event.Event == pageView && session.Host == "" {
+	} else {
+		event.Host = session.Host
+	}
+	if event.Event == pageView {
+		event.ExitPage = event.Page
+	} else {
+		event.ExitPage = session.ExitPage
+	}
+	event.Duration = int64(time.UnixMilli(event.Timestamp).Sub(time.UnixMilli(session.Timestamp)))
+	session.Timestamp = event.Timestamp
 }
 
 var (
