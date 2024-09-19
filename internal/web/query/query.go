@@ -20,10 +20,16 @@ func New(db *ro2.Store, u url.Values) *Query {
 	json.Unmarshal([]byte(u.Get("filters")), &fs)
 	period := period(u.Get("period"), u.Get("date"))
 	if i := u.Get("interval"); i != "" {
-		if i == "week" {
+		switch i {
+		case "minute":
+			period.Interval = Minute
+		case "hour":
+			period.Interval = Hour
+		case "date":
+			period.Interval = Day
+		case "week":
 			period.Interval = Week
-		}
-		if i == "month" {
+		case "month":
 			period.Interval = Month
 		}
 	}
