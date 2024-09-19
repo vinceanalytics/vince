@@ -2,17 +2,12 @@ package ro2
 
 import (
 	"context"
-	"flag"
 	"log/slog"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/dustin/go-humanize"
-)
-
-var (
-	gc = flag.Duration("db.gc", time.Minute, "Interval for running GC checks on value log")
 )
 
 type DB struct {
@@ -64,8 +59,8 @@ func (db *DB) View(f func(tx *Tx) error) error {
 }
 
 func (db *DB) runVlogGC(ctx context.Context) {
-	slog.Info("starting gc check loop", "interval", gc.String())
-	ticker := time.NewTicker(*gc)
+	slog.Info("starting gc check loop", "interval", time.Minute)
+	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 
 	abs := func(a, b int64) int64 {
