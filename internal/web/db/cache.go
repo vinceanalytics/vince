@@ -17,6 +17,7 @@ func (db *Config) append(e *v1.Model) error {
 		releaseEvent(e)
 		return err
 	}
+	newSessionEvent(e)
 	err := db.db.One(e)
 	if err != nil {
 		return err

@@ -39,6 +39,15 @@ func hit(e *v1.Model) {
 	}
 }
 
+func newSessionEvent(e *v1.Model) {
+	if e.Event == pageView {
+		e.EntryPage = e.Page
+		e.ExitPage = e.Page
+	} else {
+		e.Host = ""
+	}
+}
+
 func update(session *v1.Model, event *v1.Model) {
 	if session.Bounce == 1 {
 		session.Bounce, event.Bounce = -1, -1
