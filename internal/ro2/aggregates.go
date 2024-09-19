@@ -19,9 +19,7 @@ func (d *Data) ReadFields(tx *Tx, shard uint64,
 	for i := range fields {
 		f := fields[i]
 		b := d.mustGet(f)
-		tx.ExtractBSI(shard, uint64(f), match, func(row uint64, c int64) {
-			b.SetValue(row, c)
-		})
+		tx.ExtractBSI(shard, uint64(f), match, b.SetValue)
 	}
 }
 
