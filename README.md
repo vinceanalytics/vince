@@ -8,3 +8,5 @@
 ## vince
 
 *under active deleopment: we are pivoting away from distributed, in-memory model*
+
+![Vince Analytics](desktop.png)
