@@ -5,64 +5,64 @@ import (
 	"time"
 )
 
-func period(str, date string) Date {
+func period(str, date string) Period {
 	base := dateParse(date)
 	last := base.Start
 	switch str {
 	case "realtime":
 		end := time.Now().UTC()
-		return Date{Start: end.Add(-15 * time.Minute), End: end, Interval: Minute}
+		return Period{Start: end.Add(-15 * time.Minute), End: end, Interval: Minute}
 	case "day":
 		base.Interval = Hour
 		return base
 	case "7d":
 		first := last.AddDate(0, 0, -6)
-		return Date{Start: first, End: last, Interval: Day}
+		return Period{Start: first, End: last, Interval: Date}
 	case "30d":
 		first := last.AddDate(0, 0, -30)
-		return Date{Start: first, End: last, Interval: Day}
+		return Period{Start: first, End: last, Interval: Date}
 	case "month":
 		last = endOfMonth(last)
 		first := beginOfMonth(last)
-		return Date{Start: first, End: last, Interval: Day}
+		return Period{Start: first, End: last, Interval: Date}
 	case "6mo":
 		last = endOfMonth(last)
 		first := beginOfMonth(last.AddDate(0, -5, 0))
-		return Date{Start: first, End: last, Interval: Month}
+		return Period{Start: first, End: last, Interval: Month}
 	case "12mo":
 		last = endOfMonth(last)
 		first := beginOfMonth(last.AddDate(0, -11, 0))
-		return Date{Start: first, End: last, Interval: Month}
+		return Period{Start: first, End: last, Interval: Month}
 	case "year":
 		last = endOfYear(last)
 		first := beginOfYear(last)
-		return Date{Start: first, End: last, Interval: Month}
+		return Period{Start: first, End: last, Interval: Month}
 	case "all":
-		return Date{End: last, Interval: Day}
+		return Period{End: last, Interval: Date}
 	default:
-		base.Interval = Day
+		base.Interval = Date
 		return base
 	}
 }
 
-type Date struct {
+type Period struct {
 	Start, End time.Time
 	Interval   Interval
 }
 
-func dateParse(date string) Date {
+func dateParse(date string) Period {
 	if date == "" {
 		now := time.Now().UTC()
-		return Date{Start: beginOfDay(now), End: now}
+		return Period{Start: beginOfDay(now), End: now}
 	}
 	a, b, ok := strings.Cut(date, ",")
 	start, _ := time.Parse(time.DateOnly, a)
 
 	if ok {
 		end, _ := time.Parse(time.DateOnly, b)
-		return Date{Start: start, End: end}
+		return Period{Start: start, End: end}
 	}
-	return Date{Start: start, End: endOfDay(start)}
+	return Period{Start: start, End: endOfDay(start)}
 }
 
 func beginOfDay(ts time.Time) time.Time {

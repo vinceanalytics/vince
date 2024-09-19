@@ -9,8 +9,8 @@ import (
 )
 
 type Query struct {
-	period Date
-	cmp    *Date
+	period Period
+	cmp    *Period
 	filter ro2.Filter
 	metric string
 }
@@ -26,7 +26,7 @@ func New(db *ro2.Store, u url.Values) *Query {
 		case "hour":
 			period.Interval = Hour
 		case "date":
-			period.Interval = Day
+			period.Interval = Date
 		case "week":
 			period.Interval = Week
 		case "month":
@@ -37,7 +37,7 @@ func New(db *ro2.Store, u url.Values) *Query {
 	for i := range fs {
 		ls[i] = fs[i].To(db)
 	}
-	var cmp *Date
+	var cmp *Period
 	switch u.Get("period") {
 	case "all", "realtime":
 	default:
@@ -45,11 +45,11 @@ func New(db *ro2.Store, u url.Values) *Query {
 		switch u.Get("comparison") {
 		case "previous_period":
 			diff := period.End.Sub(period.Start)
-			cmp = &Date{Start: period.Start.Add(-diff), End: period.End.Add(-diff)}
+			cmp = &Period{Start: period.Start.Add(-diff), End: period.End.Add(-diff)}
 		case "year_over_year":
 			start := period.Start.AddDate(-1, 0, 0)
 			end := earliest(period.End, now).AddDate(-1, 0, 0)
-			cmp = &Date{Start: start, End: end}
+			cmp = &Period{Start: start, End: end}
 		case "custom":
 		}
 	}
@@ -76,4 +76,4 @@ func (q *Query) To() string         { return q.period.End.Format(time.DateOnly) 
 func (q *Query) Interval() Interval { return q.period.Interval }
 func (q *Query) Filter() ro2.Filter { return q.filter }
 func (q *Query) Metric() string     { return q.metric }
-func (q *Query) Compare() *Date     { return q.cmp }
+func (q *Query) Compare() *Period   { return q.cmp }
