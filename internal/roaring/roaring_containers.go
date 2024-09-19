@@ -49,6 +49,10 @@ func (c *Container) From(typ uint8, data []byte) error {
 	return nil
 }
 
+func MaxOwned(typ uint8, data []byte) uint16 {
+	return containerFromWireOwned(typ, data).maximum()
+}
+
 func (c *Container) Intersects(o *Container) bool {
 	if c == nil || o == nil {
 		return false

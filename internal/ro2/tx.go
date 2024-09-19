@@ -18,7 +18,7 @@ import (
 type Tx struct {
 	tx *badger.Txn
 	it *badger.Iterator
-	// we need to retain keys untill the tranaction is commited
+	// we need to retain keys until the transaction is commited
 	keys []*alicia.Key
 }
 
@@ -64,6 +64,10 @@ func (tx *Tx) Release() {
 }
 
 func (tx *Tx) Depth(shard, field uint64) uint64 {
+	switch alicia.Field(field) {
+	case alicia.BOUNCE, alicia.SESSION, alicia.VIEW:
+		return 1
+	}
 	mx, ok := tx.max(shard, field)
 	if !ok {
 		return 0
@@ -91,9 +95,7 @@ func (tx *Tx) max(shard, field uint64) (uint64, bool) {
 	key := alicia.Container(item.Key())
 	var mx uint16
 	item.Value(func(val []byte) error {
-		var c roaring.Container
-		c.From(item.UserMeta(), val)
-		mx = c.Max()
+		mx = roaring.MaxOwned(item.UserMeta(), val)
 		return nil
 	})
 	return (uint64(key) << 16) | uint64(mx), true
