@@ -19,7 +19,12 @@ func (d *Data) ReadFields(tx *Tx, shard uint64,
 	for i := range fields {
 		f := fields[i]
 		b := d.mustGet(f)
-		tx.ExtractBSI(shard, uint64(f), match, b.SetValue)
+		switch f {
+		case alicia.VIEW, alicia.SESSION:
+			tx.ExtractBool(shard, uint64(f), match, b.SetValue)
+		default:
+			tx.ExtractBSI(shard, uint64(f), match, b.SetValue)
+		}
 	}
 }
 

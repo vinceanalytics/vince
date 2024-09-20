@@ -64,8 +64,7 @@ func (tx *Tx) Release() {
 }
 
 func (tx *Tx) Depth(shard, field uint64) uint64 {
-	switch alicia.Field(field) {
-	case alicia.BOUNCE, alicia.SESSION, alicia.VIEW:
+	if field == uint64(alicia.BOUNCE) {
 		return 1
 	}
 	mx, ok := tx.max(shard, field)
@@ -186,6 +185,18 @@ func (tx *Tx) ExtractMutex(shard, field uint64, match *roaring64.Bitmap, f func(
 		if ac.Intersects(filter[idx]) {
 			f(row, ac.Bitmap())
 		}
+	}
+}
+
+func (tx *Tx) ExtractBool(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
+	exists := tx.Row(shard, field, 0)
+	exists.And(match)
+	if exists.IsEmpty() {
+		return
+	}
+	it := exists.Iterator()
+	for it.HasNext() {
+		f(it.Next(), 1)
 	}
 }
 

@@ -30,17 +30,16 @@ func (db *Config) ProcessEvent(r *http.Request) error {
 }
 
 func hit(e *v1.Model) {
-	e.EntryPage = e.Page
 	e.Bounce = 1
-	e.Session = 1
+	e.Session = true
 	if e.Event == pageView {
 		e.Event = ""
-		e.View = 1
+		e.View = true
 	}
 }
 
 func newSessionEvent(e *v1.Model) {
-	if e.Event == pageView {
+	if e.View {
 		e.EntryPage = e.Page
 		e.ExitPage = e.Page
 	} else {
@@ -54,17 +53,17 @@ func update(session *v1.Model, event *v1.Model) {
 	} else {
 		session.Bounce, event.Bounce = 0, 0
 	}
-	event.Session = 0
-	if session.EntryPage == "" && event.Event == pageView {
+	event.Session = false
+	if session.EntryPage == "" && event.View {
 		event.EntryPage = event.Page
 	} else {
 		event.EntryPage = session.EntryPage
 	}
-	if event.Event == pageView && session.Host == "" {
+	if event.View && session.Host == "" {
 	} else {
 		event.Host = session.Host
 	}
-	if event.Event == pageView {
+	if event.View {
 		event.ExitPage = event.Page
 	} else {
 		event.ExitPage = session.ExitPage
@@ -124,7 +123,7 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	}
 	userID := uniqueID(req.remoteIp, req.userAgent, domain, host)
 	e := newEevent()
-	e.Id = int64(userID)
+	e.Id = userID
 	e.Event = req.eventName
 	e.Page = path
 	e.Host = host
@@ -143,7 +142,7 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	e.Country = city.CountryCode
 	e.Subdivision1Code = city.SubDivision1Code
 	e.Subdivision2Code = city.SubDivision2Code
-	e.City = int64(city.CityGeonameID)
+	e.City = city.CityGeonameID
 	e.Device = agent.GetDevice()
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil

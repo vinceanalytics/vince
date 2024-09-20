@@ -55,10 +55,16 @@ func (o *Store) One(msg *v1.Model) error {
 		shard := id / ro.ShardWidth
 		re.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 			b.Clear()
-			if fd.Kind() == protoreflect.StringKind {
+			switch fd.Kind() {
+			case protoreflect.StringKind:
 				ro.Mutex(b, id, tx.Tr(shard, uint64(fd.Number()), v.String()))
-			} else {
+			case protoreflect.BoolKind:
+				ro.Bool(b, id)
+			case protoreflect.Int32Kind, protoreflect.Int64Kind:
 				ro.BSI(b, id, v.Int())
+			case protoreflect.Uint64Kind, protoreflect.Uint32Kind:
+				ro.BSI(b, id, int64(v.Uint()))
+			default:
 			}
 			err = tx.Add(shard, uint64(fd.Number()), b)
 			return err == nil

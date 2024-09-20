@@ -4,12 +4,12 @@ package v1;
 
 message Model {
   int64 timestamp = 1;
-  int64 id = 2;
-  int64 bounce = 3;
-  int64 session = 4;
-  int64 view = 5;
+  uint64 id = 2;
+  int32 bounce = 3;
+  bool session = 4;
+  bool view = 5;
   int64 duration = 6;
-  int64 city = 7;
+  uint32 city = 7;
 
   string browser = 8;
   string browser_version = 9;
