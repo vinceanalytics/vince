@@ -200,6 +200,30 @@ func (tx *Tx) ExtractBool(shard, field uint64, match *roaring64.Bitmap, f func(r
 	}
 }
 
+func (tx *Tx) ExtractBounce(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
+	yes := tx.Row(shard, field, 0)
+	no := tx.Row(shard, field, 1)
+	if match != nil {
+		yes.And(match)
+		no.And(match)
+	}
+	if yes.IsEmpty() && no.IsEmpty() {
+		return
+	}
+	{
+		it := yes.Iterator()
+		for it.HasNext() {
+			f(it.Next(), 1)
+		}
+	}
+	{
+		it := no.Iterator()
+		for it.HasNext() {
+			f(it.Next(), -1)
+		}
+	}
+}
+
 func (tx *Tx) ExtractBSI(shard, field uint64, match *roaring64.Bitmap, f func(row uint64, c int64)) {
 	exists := tx.Row(shard, field, 0)
 	if match != nil {

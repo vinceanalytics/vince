@@ -22,6 +22,8 @@ func (d *Data) ReadFields(tx *Tx, shard uint64,
 		switch f {
 		case alicia.VIEW, alicia.SESSION:
 			tx.ExtractBool(shard, uint64(f), match, b.SetValue)
+		case alicia.BOUNCE:
+			tx.ExtractBounce(shard, uint64(f), match, b.SetValue)
 		default:
 			tx.ExtractBSI(shard, uint64(f), match, b.SetValue)
 		}

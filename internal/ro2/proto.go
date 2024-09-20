@@ -1,6 +1,7 @@
 package ro2
 
 import (
+	"github.com/dgraph-io/badger/v4/y"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/ro"
@@ -59,8 +60,19 @@ func (o *Store) One(msg *v1.Model) error {
 			case protoreflect.StringKind:
 				ro.Mutex(b, id, tx.Tr(shard, uint64(fd.Number()), v.String()))
 			case protoreflect.BoolKind:
-				ro.Bool(b, id)
-			case protoreflect.Int32Kind, protoreflect.Int64Kind:
+				ro.True(b, id)
+			case protoreflect.Int32Kind:
+				// we only expect -1 or 1 for bounce. Take advantage of boolean fields
+				// to store the value for true and negative for false
+				switch v.Int() {
+				case 1:
+					ro.True(b, id)
+				case -1:
+					ro.False(b, id)
+				default:
+					y.AssertTruef(false, "unexpected int32 value %v", v.Int())
+				}
+			case protoreflect.Int64Kind:
 				ro.BSI(b, id, v.Int())
 			case protoreflect.Uint64Kind, protoreflect.Uint32Kind:
 				ro.BSI(b, id, int64(v.Uint()))

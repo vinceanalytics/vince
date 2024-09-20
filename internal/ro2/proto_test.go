@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/alicia"
+	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
 func TestStore_sequence(t *testing.T) {
@@ -42,6 +43,35 @@ func TestStore_sequence(t *testing.T) {
 	require.Equal(t, "TZ", tr)
 	require.Equal(t, uint64(1), id)
 }
+
+func TestStore_Bounce(t *testing.T) {
+	dir := t.TempDir()
+	db, err := Open(dir)
+	require.NoError(t, err)
+	sample := []int32{1, 1, -1, 1, -1, -1}
+	for _, k := range sample {
+		db.One(&v1.Model{
+			Bounce: k,
+		})
+	}
+	var yes, no *roaring64.Bitmap
+	all := roaring64.NewDefaultBSI()
+	db.View(func(tx *Tx) error {
+		yes = tx.Row(0, uint64(alicia.BOUNCE), 0)
+		no = tx.Row(0, uint64(alicia.BOUNCE), 1)
+		tx.ExtractBounce(0, uint64(alicia.BOUNCE), nil, all.SetValue)
+		return nil
+	})
+	require.Equal(t, []uint64{1, 2, 4}, yes.ToArray())
+	require.Equal(t, []uint64{3, 5, 6}, no.ToArray())
+	var got []int32
+	for _, v := range all.GetExistenceBitmap().ToArray() {
+		n, _ := all.GetValue(v)
+		got = append(got, int32(n))
+	}
+	require.Equal(t, sample, got)
+}
+
 func TestStore_quantum(t *testing.T) {
 	dir := t.TempDir()
 	db, err := Open(dir)
