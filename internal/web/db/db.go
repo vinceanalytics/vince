@@ -47,7 +47,7 @@ func Open(path string) (*Config, error) {
 		return nil, err
 	}
 	// setup session
-	secret, err := newSession(path)
+	secret, err := ops.Web()
 	if err != nil {
 		ops.Close()
 		return nil, err

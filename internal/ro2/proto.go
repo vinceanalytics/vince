@@ -1,6 +1,10 @@
 package ro2
 
 import (
+	"errors"
+
+	"filippo.io/age"
+	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/y"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/alicia"
@@ -33,6 +37,28 @@ var (
 	fields  = new(v1.Model).ProtoReflect().Descriptor().Fields()
 	tsField = fields.ByNumber(protowire.Number(alicia.TIMESTAMP))
 )
+
+func (o *Store) Web() (secret *age.X25519Identity, err error) {
+	err = o.Update(func(tx *Tx) error {
+		key := tx.get().WebSession()
+		it, err := tx.tx.Get(key)
+		if err != nil {
+			if !errors.Is(err, badger.ErrKeyNotFound) {
+				return err
+			}
+			secret, err = age.GenerateX25519Identity()
+			if err != nil {
+				return err
+			}
+			return tx.tx.Set(key, []byte(secret.String()))
+		}
+		return it.Value(func(val []byte) error {
+			secret, err = age.ParseX25519Identity(string(val))
+			return err
+		})
+	})
+	return
+}
 
 func (o *Store) Name(number uint32) string {
 	f := fields.ByNumber(protowire.Number(number))

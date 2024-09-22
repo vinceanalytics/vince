@@ -12,8 +12,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -26,22 +24,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/features"
 )
-
-func newSession(path string) (*age.X25519Identity, error) {
-	file := filepath.Join(path, "session")
-	data, err := os.ReadFile(file)
-	if err != nil {
-		if os.IsNotExist(err) {
-			secret, err := age.GenerateX25519Identity()
-			if err != nil {
-				return nil, err
-			}
-			return secret, os.WriteFile(file, []byte(secret.String()), 0600)
-		}
-		return nil, err
-	}
-	return age.ParseX25519Identity(string(data))
-}
 
 const MaxAge = 60 * 60 * 24 * 365 * 5
 

@@ -23,6 +23,7 @@ const (
 	SYSTEM
 	SHARDS
 	SEQ
+	WEB_SESSION
 )
 
 type Field byte
@@ -157,5 +158,10 @@ func (k *Key) Shards() []byte {
 
 func (k *Key) Seq() []byte {
 	k.NS(SEQ)
+	return k[:fieldOffset]
+}
+
+func (k *Key) WebSession() []byte {
+	k.NS(WEB_SESSION)
 	return k[:fieldOffset]
 }
