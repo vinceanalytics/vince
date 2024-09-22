@@ -17,6 +17,7 @@ type DB struct {
 func newDB(path string) (*DB, error) {
 	db, err := badger.Open(badger.
 		DefaultOptions(path).
+		WithInMemory(path == "").
 		WithCompression(options.ZSTD).
 		WithCompactL0OnClose(true).
 		WithLogger(nil))

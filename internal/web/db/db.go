@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/dgraph-io/ristretto"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -24,9 +23,10 @@ type Config struct {
 }
 
 func Open(path string) (*Config, error) {
-	ts := filepath.Join(path, "db")
-	os.MkdirAll(ts, 0755)
-	ops, err := ro2.Open(ts)
+	if path != "" {
+		os.MkdirAll(path, 0755)
+	}
+	ops, err := ro2.Open(path)
 	if err != nil {
 		return nil, err
 	}
