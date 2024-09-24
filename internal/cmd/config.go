@@ -24,6 +24,7 @@ func Cli() *cli.Command {
 			&cli.StringFlag{
 				Name:        "data",
 				Usage:       "directory to store data",
+				Value:       ".data",
 				Sources:     cli.EnvVars("VINCE_DATA"),
 				Destination: &config.C.DataPath,
 			},
