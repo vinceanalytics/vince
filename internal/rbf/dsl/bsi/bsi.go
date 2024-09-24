@@ -40,7 +40,7 @@ func Add(m *roaring.Bitmap, id uint64, svalue int64) {
 
 // Extract finds all values set in exists columns and calls f with the
 // found column and value.
-func Extract(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(column uint64, value int64) error) error {
+func Extract(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(column uint64, value int64)) error {
 	exists, err := cursor.Row(c, shard, bsiExistsBit)
 	if err != nil {
 		return err
@@ -71,10 +71,7 @@ func Extract(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(column uint6
 	for columnID, val := range data {
 		// Convert to two's complement and add base back to value.
 		val = uint64((2*(int64(val)>>63) + 1) * int64(val&^(1<<63)))
-		err := f(columnID, int64(val))
-		if err != nil {
-			return err
-		}
+		f(columnID, int64(val))
 	}
 	return nil
 }
