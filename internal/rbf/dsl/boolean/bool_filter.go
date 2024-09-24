@@ -5,7 +5,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/query"
-	"github.com/vinceanalytics/vince/internal/rbf/dsl/tx"
 )
 
 type Match struct {
@@ -19,17 +18,17 @@ func Filter(field string, value bool) *Match {
 
 var _ query.Filter = (*Match)(nil)
 
-func (m *Match) Apply(tx *tx.Tx, columns *rows.Row) (*rows.Row, error) {
-	c, err := tx.Get(m.field)
+func (m *Match) Apply(rtx *rbf.Tx, shard uint64, columns *rows.Row) (*rows.Row, error) {
+	c, err := rtx.Cursor(m.field)
 	if err != nil {
 		return nil, err
 	}
 	defer c.Close()
 	var r *rows.Row
 	if m.value {
-		r, err = cursor.Row(c, tx.Shard(), trueRowID)
+		r, err = cursor.Row(c, shard, trueRowID)
 	} else {
-		r, err = cursor.Row(c, tx.Shard(), falseRowID)
+		r, err = cursor.Row(c, shard, falseRowID)
 	}
 	if err != nil {
 		return nil, err
@@ -38,26 +37,4 @@ func (m *Match) Apply(tx *tx.Tx, columns *rows.Row) (*rows.Row, error) {
 		r = r.Intersect(columns)
 	}
 	return r, nil
-}
-
-func Count(txn *tx.Tx, field string, isTrue bool, columns *rows.Row) (count int64, err error) {
-	err = txn.Cursor(field, func(c *rbf.Cursor, tx *tx.Tx) error {
-		var r *rows.Row
-		var err error
-		if isTrue {
-			r, err = cursor.Row(c, tx.Shard(), trueRowID)
-
-		} else {
-			r, err = cursor.Row(c, tx.Shard(), falseRowID)
-		}
-		if err != nil {
-			return err
-		}
-		if columns != nil {
-			r = r.Intersect(columns)
-		}
-		count = int64(r.Count())
-		return nil
-	})
-	return
 }

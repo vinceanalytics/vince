@@ -2,8 +2,8 @@ package bsi
 
 import (
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/query"
-	"github.com/vinceanalytics/vince/internal/rbf/dsl/tx"
 )
 
 type Match struct {
@@ -24,11 +24,11 @@ func Filter(field string, op Operation, valueOrStart int64, end int64) *Match {
 
 var _ query.Filter = (*Match)(nil)
 
-func (m *Match) Apply(tx *tx.Tx, columns *rows.Row) (*rows.Row, error) {
-	c, err := tx.Get(m.field)
+func (m *Match) Apply(rtx *rbf.Tx, shard uint64, columns *rows.Row) (*rows.Row, error) {
+	c, err := rtx.Cursor(m.field)
 	if err != nil {
 		return nil, err
 	}
 	defer c.Close()
-	return Compare(c, tx.Shard(), m.op, m.valueOrStart, m.end, columns)
+	return Compare(c, shard, m.op, m.valueOrStart, m.end, columns)
 }
