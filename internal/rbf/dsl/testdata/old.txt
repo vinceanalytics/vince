@@ -1,0 +1,12 @@
+goos: darwin
+goarch: amd64
+pkg: github.com/gernest/rbf/dsl
+cpu: Intel(R) Core(TM) i7-7820HQ CPU @ 2.90GHz
+BenchmarkSave-8   	      34	  34331160 ns/op	  652407 B/op	    1747 allocs/op
+BenchmarkSave-8   	      33	  32824035 ns/op	  648970 B/op	    1745 allocs/op
+BenchmarkSave-8   	      34	  33652630 ns/op	  649500 B/op	    1747 allocs/op
+BenchmarkSave-8   	      34	  33433321 ns/op	  649609 B/op	    1747 allocs/op
+BenchmarkSave-8   	      33	  34800182 ns/op	  649164 B/op	    1745 allocs/op
+BenchmarkSave-8   	      34	  34626123 ns/op	  649658 B/op	    1747 allocs/op
+PASS
+ok  	github.com/gernest/rbf/dsl	21.192s
