@@ -8,6 +8,8 @@ import (
 	"github.com/dgraph-io/badger/v4/y"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/alicia"
+	"github.com/vinceanalytics/vince/internal/model"
+	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 	"google.golang.org/protobuf/encoding/protowire"
@@ -70,12 +72,33 @@ func (o *Store) Number(name string) uint32 {
 	return uint32(f.Number())
 }
 
+func (o *Store) ApplyBatch(b model.Batch) error {
+	if len(b) == 0 {
+		return nil
+	}
+	for shard, views := range b {
+		err := o.shards.Update(shard, func(rtx *rbf.Tx) error {
+			for k, v := range views {
+				_, err := rtx.AddRoaring(k, v)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (o *Store) One(msg *v1.Model) error {
 	return o.Update(func(tx *Tx) error {
 		re := msg.ProtoReflect()
 		b := roaring64.New()
 		var err error
-		id, err := tx.next()
+		id, err := tx.NextID()
 		if err != nil {
 			return err
 		}

@@ -22,18 +22,14 @@ func NewField() *Field {
 	return f
 }
 
-func (f *Field) Views(name string, fn func(view string) error) error {
+func (f *Field) Views(name string, fn func(view string)) {
 	f.full = append(f.full[:0], []byte(name)...)
 	f.full = append(f.full, '_')
 	n := len(f.full)
 	for i := range f.ts {
 		f.full = append(f.full[:n], f.ts[i]...)
-		err := fn(string(f.full))
-		if err != nil {
-			return err
-		}
+		fn(string(f.full))
 	}
-	return nil
 }
 
 func (f *Field) Reset() {

@@ -7,7 +7,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 )
 
-func (tx *Tx) next() (id uint64, err error) {
+func (tx *Tx) NextID() (id uint64, err error) {
 	key := tx.get().Seq()
 	it, err := tx.tx.Get(key)
 	if err != nil {

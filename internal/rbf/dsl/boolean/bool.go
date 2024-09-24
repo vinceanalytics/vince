@@ -1,7 +1,6 @@
 package boolean
 
 import (
-	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
 	"github.com/vinceanalytics/vince/internal/rbf"
@@ -17,13 +16,12 @@ const (
 	trueRowOffset  = 1 * shardwidth.ShardWidth // fragment row 1
 )
 
-func Add(m *roaring.Bitmap, id uint64, value bool) {
+func Add(id uint64, value bool) uint64 {
 	fragmentColumn := id % shardwidth.ShardWidth
 	if value {
-		m.DirectAdd(trueRowOffset + fragmentColumn)
-	} else {
-		m.DirectAdd(falseRowOffset + fragmentColumn)
+		return trueRowOffset + fragmentColumn
 	}
+	return falseRowOffset + fragmentColumn
 }
 
 func Extract(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(column uint64, value bool) error) error {

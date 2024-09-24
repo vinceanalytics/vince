@@ -8,9 +8,11 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/dgraph-io/ristretto"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/model"
 	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
@@ -78,13 +80,22 @@ func (db *Config) Start(ctx context.Context) {
 
 func (db *Config) eventsLoop(cts context.Context) {
 	db.logger.Info("starting event processing loop")
+	ts := time.NewTicker(time.Second)
+	defer ts.Stop()
+	batch := make(model.Batch)
 	for {
 		select {
 		case <-cts.Done():
 			db.logger.Info("exiting event processing loop")
 			return
+		case <-ts.C:
+			err := db.Get().ApplyBatch(batch)
+			if err != nil {
+				db.logger.Error("applying events batch", "err", err)
+			}
+			clear(batch)
 		case e := <-db.buffer:
-			err := db.append(e)
+			err := db.append(e, batch)
 			if err != nil {
 				db.logger.Error("appening event", "err", err)
 			}

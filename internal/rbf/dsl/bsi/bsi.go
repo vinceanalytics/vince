@@ -3,11 +3,11 @@ package bsi
 import (
 	"math/bits"
 
-	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
+	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
 const (
@@ -17,9 +17,9 @@ const (
 	bsiOffsetBit = 2
 )
 
-func Add(m *roaring.Bitmap, id uint64, svalue int64) {
+func Add(m *roaring64.Bitmap, id uint64, svalue int64) {
 	fragmentColumn := id % shardwidth.ShardWidth
-	m.DirectAdd(fragmentColumn)
+	m.Add(fragmentColumn)
 	negative := svalue < 0
 	var value uint64
 	if negative {
@@ -32,7 +32,7 @@ func Add(m *roaring.Bitmap, id uint64, svalue int64) {
 	row := uint64(2)
 	for mask := uint64(0x1); mask <= 1<<(64-lz) && mask != 0; mask = mask << 1 {
 		if value&mask > 0 {
-			m.DirectAdd(row*shardwidth.ShardWidth + fragmentColumn)
+			m.Add(row*shardwidth.ShardWidth + fragmentColumn)
 		}
 		row++
 	}
