@@ -24,6 +24,7 @@ func (v Views) Get(key string) *roaring.Bitmap {
 	if ok {
 		return b
 	}
+	b = roaring.NewBitmap()
 	v[key] = b
 	return b
 }

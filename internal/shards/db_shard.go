@@ -22,6 +22,7 @@ func New(path string) *DB {
 	os.MkdirAll(path, 0755)
 	return &DB{
 		shards: make(map[uint64]*rbf.DB),
+		path:   path,
 	}
 }
 
