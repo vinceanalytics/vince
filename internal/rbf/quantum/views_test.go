@@ -13,10 +13,9 @@ func TestViews(t *testing.T) {
 	ts := time.Date(2000, time.January, 2, 3, 4, 5, 6, time.UTC)
 	f.ViewsByTimeInto(ts)
 	var got []string
-	require.NoError(t, f.Views("F", func(view string) error {
+	f.Views("F", func(view string) {
 		got = append(got, view)
-		return nil
-	}))
+	})
 	require.Equal(t, []string{"F_200001", "F_20000152", "F_2000015202", "F_200001520203", "F_20000152020304"}, got)
 }
 
@@ -36,8 +35,6 @@ func BenchmarkField_Views(b *testing.B) {
 	f.ViewsByTimeInto(ts)
 
 	for range b.N {
-		f.Views("F", func(view string) error {
-			return nil
-		})
+		f.Views("F", func(view string) {})
 	}
 }
