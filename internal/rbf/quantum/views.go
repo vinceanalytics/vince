@@ -50,8 +50,6 @@ func (f *Field) Release() {
 	fieldPool.Put(f)
 }
 
-const defaultQuantum = "YMDH"
-
 var lengths = []int{
 	6,  //month
 	8,  //week
