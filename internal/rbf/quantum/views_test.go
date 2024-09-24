@@ -17,7 +17,7 @@ func TestViews(t *testing.T) {
 		got = append(got, view)
 		return nil
 	}))
-	require.Equal(t, []string{"F_2000", "F_200001", "F_20000102", "F_2000010203"}, got)
+	require.Equal(t, []string{"F_2000", "F_200001", "F_20000102", "F_2000010203", "F_200001020304"}, got)
 }
 
 func BenchmarkField_ViewsByTimeInto(b *testing.B) {

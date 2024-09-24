@@ -8,8 +8,8 @@ import (
 )
 
 type Field struct {
-	buffer [10]byte
-	ts     [4][]byte
+	buffer [12]byte
+	ts     [5][]byte
 	full   []byte
 }
 
@@ -54,10 +54,10 @@ const defaultQuantum = "YMDH"
 
 func (f *Field) ViewsByTimeInto(t time.Time) {
 	fullBuf := f.buffer
-	l := len(fullBuf) - 10
-	date := fullBuf[l : l+10]
+	date := fullBuf[:]
 	y, m, d := t.Date()
 	h := t.Hour()
+	mn := t.Minute()
 	// Did you know that Sprintf, Printf, and other things like that all
 	// do allocations, and that doing allocations in a tight loop like this
 	// is stunningly expensive? viewsByTime was 25% of an ingest test's
@@ -80,9 +80,12 @@ func (f *Field) ViewsByTimeInto(t time.Time) {
 	date[7] = '0' + byte(d%10)
 	date[8] = '0' + byte(h/10)
 	date[9] = '0' + byte(h%10)
+	date[10] = '0' + byte(mn/10)
+	date[11] = '0' + byte(mn%10)
 	for i, unit := range defaultQuantum {
 		if int(unit) < len(lengthsByQuantum) && lengthsByQuantum[unit] != 0 {
-			f.ts[i] = append(f.ts[i][:0], fullBuf[:l+lengthsByQuantum[unit]]...)
+			f.ts[i] = append(f.ts[i][:0], fullBuf[:lengthsByQuantum[unit]]...)
 		}
 	}
+	f.ts[4] = append(f.ts[4][:0], fullBuf[:]...)
 }
