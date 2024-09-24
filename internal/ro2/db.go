@@ -2,29 +2,35 @@ package ro2
 
 import (
 	"context"
+	"errors"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/dustin/go-humanize"
+	"github.com/vinceanalytics/vince/internal/shards"
 )
 
 type DB struct {
-	db *badger.DB
+	db     *badger.DB
+	shards *shards.DB
 }
 
 func newDB(path string) (*DB, error) {
+	dbPath := filepath.Join(path, "db")
+	os.MkdirAll(dbPath, 0755)
 	db, err := badger.Open(badger.
-		DefaultOptions(path).
-		WithInMemory(path == "").
+		DefaultOptions(dbPath).
 		WithCompression(options.ZSTD).
 		WithCompactL0OnClose(true).
 		WithLogger(nil))
 	if err != nil {
 		return nil, err
 	}
-	o := &DB{db: db}
+	o := &DB{db: db, shards: shards.New(path)}
 	return o, nil
 }
 
@@ -34,7 +40,9 @@ func (db *DB) Start(ctx context.Context) {
 }
 
 func (db *DB) Close() error {
-	return db.db.Close()
+	return errors.Join(
+		db.db.Close(), db.shards.Close(),
+	)
 }
 
 func (db *DB) Update(f func(tx *Tx) error) error {
