@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gernest/rbf"
 	"github.com/gernest/roaring"
 	"github.com/stretchr/testify/assert"
+	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
 func TestCursor_FirstNext(t *testing.T) {

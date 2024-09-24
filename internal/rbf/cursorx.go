@@ -9,9 +9,9 @@ import (
 	"math"
 	"os"
 
-	"github.com/gernest/rbf/vprint"
 	"github.com/gernest/roaring"
 	"github.com/pkg/errors"
+	"github.com/vinceanalytics/vince/internal/rbf/vprint"
 )
 
 func (c *Cursor) Iterator() roaring.ContainerIterator {

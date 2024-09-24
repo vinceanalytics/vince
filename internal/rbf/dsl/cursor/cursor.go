@@ -1,10 +1,10 @@
 package cursor
 
 import (
-	"github.com/gernest/rbf"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
 func Rows(c *rbf.Cursor, start uint64, cb func(row uint64) error, filters ...roaring.BitmapFilter) error {

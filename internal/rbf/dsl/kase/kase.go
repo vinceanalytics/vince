@@ -1,10 +1,10 @@
 package kase
 
 import (
-	"github.com/gernest/rbf"
 	"github.com/gernest/roaring"
 	"github.com/gernest/rows"
 	"github.com/stretchr/testify/suite"
+	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
 //go:generate protoc -I=. --go_out=. --go_opt=paths=source_relative msg.proto

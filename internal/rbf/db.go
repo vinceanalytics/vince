@@ -16,8 +16,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/benbjohnson/immutable"
-	rbfcfg "github.com/gernest/rbf/cfg"
-	"github.com/gernest/rbf/syswrap"
+	rbfcfg "github.com/vinceanalytics/vince/internal/rbf/cfg"
+	"github.com/vinceanalytics/vince/internal/rbf/syswrap"
 )
 
 var ErrClosed = errors.New("rbf: database closed")

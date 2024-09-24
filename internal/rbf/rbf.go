@@ -16,9 +16,9 @@ import (
 	"unsafe"
 
 	"github.com/benbjohnson/immutable"
-	"github.com/gernest/rbf/vprint"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
+	"github.com/vinceanalytics/vince/internal/rbf/vprint"
 )
 
 //go:generate protoc -I=./proto --go_out=./proto --go_opt=paths=source_relative ./proto/ql.proto

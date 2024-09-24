@@ -2,10 +2,10 @@ package bsi
 
 import (
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/rbf"
-	"github.com/gernest/rbf/dsl/tx"
 	"github.com/gernest/roaring"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/tx"
 )
 
 func SumCount(txn *tx.Tx, field string, o *roaring64.Bitmap, filters *rows.Row) (count int32, sum int64, err error) {

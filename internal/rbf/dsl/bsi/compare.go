@@ -3,9 +3,9 @@ package bsi
 import (
 	"math/bits"
 
-	"github.com/gernest/rbf"
-	"github.com/gernest/rbf/dsl/cursor"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
 )
 
 // Operation identifier

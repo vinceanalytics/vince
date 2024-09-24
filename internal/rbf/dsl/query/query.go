@@ -1,8 +1,8 @@
 package query
 
 import (
-	"github.com/gernest/rbf/dsl/tx"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/tx"
 )
 
 // Filter  selects rows to read in a shard/view context.

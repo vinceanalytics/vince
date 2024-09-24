@@ -13,11 +13,11 @@ import (
 
 	//"time"
 
-	"github.com/gernest/rbf/cfg"
 	"github.com/gernest/roaring"
+	"github.com/vinceanalytics/vince/internal/rbf/cfg"
 
-	txkey "github.com/gernest/rbf/short_txkey"
-	. "github.com/gernest/rbf/vprint" // nolint:staticcheck
+	txkey "github.com/vinceanalytics/vince/internal/rbf/short_txkey"
+	. "github.com/vinceanalytics/vince/internal/rbf/vprint" // nolint:staticcheck
 )
 
 func rbfName(index, field, view string, shard uint64) string {

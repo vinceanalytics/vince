@@ -4,9 +4,9 @@ import (
 	"math"
 	"testing"
 
-	"github.com/gernest/rbf/dsl/kase"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/stretchr/testify/suite"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/kase"
 )
 
 const (

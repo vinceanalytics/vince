@@ -3,8 +3,8 @@ package boolean
 import (
 	"testing"
 
-	"github.com/gernest/rbf/dsl/kase"
 	"github.com/stretchr/testify/suite"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/kase"
 )
 
 func TestBoolean_extract(t *testing.T) {

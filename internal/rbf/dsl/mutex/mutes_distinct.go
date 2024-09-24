@@ -2,10 +2,10 @@ package mutex
 
 import (
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/gernest/rbf"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
 const (

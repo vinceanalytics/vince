@@ -1,11 +1,11 @@
 package boolean
 
 import (
-	"github.com/gernest/rbf"
-	"github.com/gernest/rbf/dsl/cursor"
-	"github.com/gernest/rbf/dsl/query"
-	"github.com/gernest/rbf/dsl/tx"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/query"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/tx"
 )
 
 type Match struct {

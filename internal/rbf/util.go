@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	txkey "github.com/gernest/rbf/short_txkey"
-	"github.com/gernest/rbf/vprint"
+	txkey "github.com/vinceanalytics/vince/internal/rbf/short_txkey"
+	"github.com/vinceanalytics/vince/internal/rbf/vprint"
 )
 
 // we don't currently use dumpAllPages but it's tricky enough to get right

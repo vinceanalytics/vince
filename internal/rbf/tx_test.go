@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gernest/rbf"
 	"github.com/gernest/roaring"
 	"github.com/stretchr/testify/assert"
+	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
 func TestTx_CommitRollback(t *testing.T) {

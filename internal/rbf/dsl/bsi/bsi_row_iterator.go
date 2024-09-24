@@ -5,11 +5,11 @@ import (
 	"slices"
 	"sort"
 
-	"github.com/gernest/rbf"
-	"github.com/gernest/rbf/dsl/cursor"
-	"github.com/gernest/rbf/dsl/query"
 	"github.com/gernest/roaring"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/query"
 )
 
 type RowIterator struct {

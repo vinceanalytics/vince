@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/gernest/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf"
 )
 
 type DB struct {

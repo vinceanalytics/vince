@@ -1,11 +1,11 @@
 package mutex
 
 import (
-	"github.com/gernest/rbf"
-	"github.com/gernest/rbf/dsl/cursor"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
 )
 
 func Add(m *roaring.Bitmap, id uint64, value uint64) {

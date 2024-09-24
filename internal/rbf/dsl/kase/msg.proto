@@ -1,7 +1,7 @@
 syntax = "proto3";
 package kase;
 
-option go_package = "github.com/gernest/rbf/dsl/kase";
+option go_package = "github.com/vinceanalytics/vince/internal/rbf/dsl/kase";
 
 message Model {
   Enum enum
