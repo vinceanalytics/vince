@@ -1,0 +1,1 @@
+go test -bench=. -count=6 >testdata/new.txt

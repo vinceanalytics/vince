@@ -1,7 +1,6 @@
 package mutex
 
 import (
-	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
@@ -20,7 +19,7 @@ const (
 	shardVsContainerExponent = shardwidth.Exponent - 16
 )
 
-func Distinct(c *rbf.Cursor, o *roaring64.Bitmap, filters *rows.Row) error {
+func Distinct(c *rbf.Cursor, filters *rows.Row, f func(row uint64, columns *roaring.Container) error) error {
 	fragData := c.Iterator()
 
 	var filterBitmap *roaring.Bitmap
@@ -59,11 +58,16 @@ func Distinct(c *rbf.Cursor, o *roaring64.Bitmap, filters *rows.Row) error {
 		}
 		if filterBitmap != nil {
 			if roaring.IntersectionAny(c, filter[k%(1<<shardVsContainerExponent)]) {
-				o.Add(row)
-				seenThisRow = true
+				err := f(row, roaring.Intersect(c, filter[k%(1<<shardVsContainerExponent)]))
+				if err != nil {
+					return err
+				}
 			}
 		} else if c.N() != 0 {
-			o.Add(row)
+			err := f(row, c)
+			if err != nil {
+				return err
+			}
 			seenThisRow = true
 		}
 	}
