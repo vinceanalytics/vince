@@ -87,7 +87,7 @@ func NewDB(path string, cfg *rbfcfg.Config) *DB {
 	}
 	if db.logger == nil {
 		// default to writing to stdout if not told otherwise
-		db.logger = slog.Default()
+		db.logger = slog.Default().With(slog.String("path", path))
 	}
 	db.haltCond = sync.NewCond(&db.mu)
 
