@@ -62,42 +62,50 @@ func (f *Field) fmt(n int) []byte {
 	return f.full
 }
 
-func (f *Field) Month(name string, start, end time.Time, fn func([]byte)) {
-	f.timeRange(name, start, end, f.month, fn)
+func (f *Field) Month(name string, start, end time.Time, fn func([]byte) error) error {
+	return f.timeRange(name, start, end, f.month, fn)
 }
 
-func (f *Field) Week(name string, start, end time.Time, fn func([]byte)) {
-	f.timeRange(name, start, end, f.week, fn)
+func (f *Field) Week(name string, start, end time.Time, fn func([]byte) error) error {
+	return f.timeRange(name, start, end, f.week, fn)
 }
 
-func (f *Field) Day(name string, start, end time.Time, fn func([]byte)) {
-	f.timeRange(name, start, end, f.day, fn)
+func (f *Field) Day(name string, start, end time.Time, fn func([]byte) error) error {
+	return f.timeRange(name, start, end, f.day, fn)
 }
 
-func (f *Field) Hour(name string, start, end time.Time, fn func([]byte)) {
-	f.timeRange(name, start, end, f.hour, fn)
+func (f *Field) Hour(name string, start, end time.Time, fn func([]byte) error) error {
+	return f.timeRange(name, start, end, f.hour, fn)
 }
 
-func (f *Field) Minute(name string, start, end time.Time, fn func([]byte)) {
-	f.timeRange(name, start, end, f.minute, fn)
+func (f *Field) Minute(name string, start, end time.Time, fn func([]byte) error) error {
+	return f.timeRange(name, start, end, f.minute, fn)
 }
 
-func (f *Field) month(start, end time.Time, fn func(time.Time, int)) {
+func (f *Field) month(start, end time.Time, fn func(time.Time, int) error) error {
 	t := beginOfMonth(start)
 	end = endOfMonth(end)
 	for t.Before(end) {
-		fn(t, 6)
+		err := fn(t, 6)
+		if err != nil {
+			return err
+		}
 		t = addMonth(t)
 	}
+	return nil
 }
 
-func (f *Field) week(start, end time.Time, fn func(time.Time, int)) {
+func (f *Field) week(start, end time.Time, fn func(time.Time, int) error) error {
 	t := beginOfWeek(start)
 	end = endOfWeek(end)
 	for t.Before(end) {
-		fn(t, 8)
+		err := fn(t, 8)
+		if err != nil {
+			return err
+		}
 		t = t.AddDate(0, 0, 7)
 	}
+	return nil
 }
 
 func beginOfWeek(ts time.Time) time.Time {
@@ -108,13 +116,17 @@ func endOfWeek(ts time.Time) time.Time {
 	return beginOfWeek(ts).AddDate(0, 0, 7).Add(-time.Nanosecond)
 }
 
-func (f *Field) day(start, end time.Time, fn func(time.Time, int)) {
+func (f *Field) day(start, end time.Time, fn func(time.Time, int) error) error {
 	t := beginOfDay(start)
 	end = endOfDay(end)
 	for t.Before(end) {
-		fn(t, 10)
+		err := fn(t, 10)
+		if err != nil {
+			return err
+		}
 		t = t.AddDate(0, 0, 1)
 	}
+	return nil
 }
 
 func beginOfMonth(ts time.Time) time.Time {
@@ -126,13 +138,17 @@ func endOfMonth(ts time.Time) time.Time {
 	return beginOfMonth(ts).AddDate(0, 1, 0).Add(-time.Nanosecond)
 }
 
-func (f *Field) hour(start, end time.Time, fn func(time.Time, int)) {
+func (f *Field) hour(start, end time.Time, fn func(time.Time, int) error) error {
 	t := beginOfHour(start)
 	end = endOfHour(end)
 	for t.Before(end) {
-		fn(t, 12)
+		err := fn(t, 12)
+		if err != nil {
+			return err
+		}
 		t = t.Add(time.Hour)
 	}
+	return nil
 }
 
 func beginOfDay(ts time.Time) time.Time {
@@ -145,13 +161,17 @@ func endOfDay(ts time.Time) time.Time {
 	return time.Date(y, m, d, 23, 59, 59, int(time.Second-time.Nanosecond), ts.Location())
 }
 
-func (f *Field) minute(start, end time.Time, fn func(time.Time, int)) {
+func (f *Field) minute(start, end time.Time, fn func(time.Time, int) error) error {
 	t := start.Truncate(time.Minute)
 	end = end.Truncate(time.Minute).Add(time.Minute - time.Nanosecond)
 	for t.Before(end) {
-		fn(t, 14)
+		err := fn(t, 14)
+		if err != nil {
+			return err
+		}
 		t = t.Add(time.Minute)
 	}
+	return nil
 }
 
 func beginOfHour(ts time.Time) time.Time {
@@ -217,10 +237,10 @@ func (f *Field) into(t time.Time) []byte {
 	return date
 }
 
-func (f *Field) timeRange(name string, start, end time.Time, gen func(start, end time.Time, fn func(time.Time, int)), cb func([]byte)) {
+func (f *Field) timeRange(name string, start, end time.Time, gen func(start, end time.Time, fn func(time.Time, int) error) error, cb func([]byte) error) error {
 	f.name(name)
-	gen(start, end, func(t time.Time, size int) {
+	return gen(start, end, func(t time.Time, size int) error {
 		f.into(t)
-		cb(f.fmt(size))
+		return cb(f.fmt(size))
 	})
 }

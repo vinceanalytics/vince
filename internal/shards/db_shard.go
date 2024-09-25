@@ -26,7 +26,7 @@ func New(path string) *DB {
 	}
 }
 
-func (db *DB) View(shard uint64, f func(tx *rbf.Tx) error) error {
+func (db *DB) View(shard uint64, f func(rtx *rbf.Tx) error) error {
 	o := db.get(shard)
 	tx, err := o.Begin(false)
 	if err != nil {

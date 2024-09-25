@@ -30,36 +30,41 @@ func TestFieldTimeRange(t *testing.T) {
 			end = addMonth(end)
 		}
 		var got []string
-		f.Month("F", ts, end, func(b []byte) {
+		f.Month("F", ts, end, func(b []byte) error {
 			got = append(got, string(b))
+			return nil
 		})
 		require.Equal(t, []string{"F_200001", "F_200002", "F_200003"}, got)
 	})
 	t.Run("weeks", func(t *testing.T) {
 		var got []string
-		f.Week("F", ts, addMonth(ts), func(b []byte) {
+		f.Week("F", ts, addMonth(ts), func(b []byte) error {
 			got = append(got, string(b))
+			return nil
 		})
 		require.Equal(t, []string{"F_20000152", "F_20000101", "F_20000102", "F_20000103", "F_20000104"}, got)
 	})
 	t.Run("days", func(t *testing.T) {
 		var got []string
-		f.Day("F", ts, ts.AddDate(0, 0, 3), func(b []byte) {
+		f.Day("F", ts, ts.AddDate(0, 0, 3), func(b []byte) error {
 			got = append(got, string(b))
+			return nil
 		})
 		require.Equal(t, []string{"F_2000015202", "F_2000010103", "F_2000010104", "F_2000010105"}, got)
 	})
 	t.Run("hours", func(t *testing.T) {
 		var got []string
-		f.Hour("F", ts, ts.Add(3*time.Hour), func(b []byte) {
+		f.Hour("F", ts, ts.Add(3*time.Hour), func(b []byte) error {
 			got = append(got, string(b))
+			return nil
 		})
 		require.Equal(t, []string{"F_200001520203", "F_200001520204", "F_200001520205", "F_200001520206"}, got)
 	})
 	t.Run("minute", func(t *testing.T) {
 		var got []string
-		f.Minute("F", ts, ts.Add(3*time.Minute), func(b []byte) {
+		f.Minute("F", ts, ts.Add(3*time.Minute), func(b []byte) error {
 			got = append(got, string(b))
+			return nil
 		})
 		require.Equal(t, []string{"F_20000152020304", "F_20000152020305", "F_20000152020306", "F_20000152020307"}, got)
 	})

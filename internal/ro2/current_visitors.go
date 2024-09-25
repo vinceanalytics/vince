@@ -1,64 +1,102 @@
 package ro2
 
 import (
+	"errors"
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/alicia"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/bsi"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
+	"github.com/vinceanalytics/vince/internal/rbf/quantum"
 	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
+const (
+	domainField = "domain"
+	idField     = "id"
+)
+
 func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 	end := time.Now().UTC().Truncate(time.Minute)
-	// we want the currenttime to be included in the search
-	end = end.Add(time.Minute)
 	start := end.Add(-5 * time.Minute)
 
-	dom := NewEq(uint64(alicia.DOMAIN), domain)
 	r := roaring64.New()
 
 	err = o.View(func(tx *Tx) error {
+		domainId, ok := tx.ID(uint64(alicia.DOMAIN), domain)
+		if !ok {
+			return nil
+		}
 		shard := tx.Seq() / ro.ShardWidth
 
-		b := dom.Match(tx, shard)
-		if b.IsEmpty() {
-			return nil
-		}
-		ts := tx.Cmp(uint64(alicia.MINUTE), shard, roaring64.RANGE,
-			start.UnixMilli(), end.UnixMilli(),
-		)
-		if ts.IsEmpty() {
-			return nil
-		}
-		b.And(ts)
-		if b.IsEmpty() {
-			return nil
-		}
-		tx.ExtractBSI(shard, uint64(alicia.ID), b, func(row uint64, c int64) {
-			r.Add(uint64(c))
+		// only search through the current shard for current visitors
+		return o.shards.View(shard, func(rtx *rbf.Tx) error {
+			f := quantum.NewField()
+			defer f.Release()
+			return f.Minute("domain", start, end, func(b []byte) error {
+				return viewCu(rtx, string(b), func(rCu *rbf.Cursor) error {
+					dRow, err := cursor.Row(rCu, shard, domainId)
+					if err != nil {
+						return err
+					}
+					if dRow.IsEmpty() {
+						return nil
+					}
+					return viewCu(rtx, "id"+string(b[len(domainField):]), func(rCu *rbf.Cursor) error {
+						return bsi.Extract(rCu, shard, dRow, func(column uint64, value int64) {
+							r.Add(uint64(value))
+						})
+					})
+				})
+			})
 		})
-		return nil
 	})
 	visitors = r.GetCardinality()
 	return
 }
 
+func viewCu(rtx *rbf.Tx, name string, f func(rCu *rbf.Cursor) error) error {
+	cu, err := rtx.Cursor(name)
+	if err != nil {
+		if errors.Is(err, rbf.ErrBitmapNotFound) {
+			return nil
+		}
+		return err
+	}
+	defer cu.Close()
+	return f(cu)
+}
+
 func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 	r := roaring64.New()
-	dom := NewEq(uint64(alicia.DOMAIN), domain)
 	err = o.View(func(tx *Tx) error {
+		domainId, ok := tx.ID(uint64(alicia.DOMAIN), domain)
+		if !ok {
+			return nil
+		}
 		shards := o.Shards(tx)
 
 		for i := range shards {
 			shard := shards[i]
-			b := dom.Match(tx, shard)
-			if b.IsEmpty() {
-				continue
-			}
-			tx.ExtractBSI(shard, uint64(alicia.ID), b, func(row uint64, c int64) {
-				// we don't care about row we just neeed to find unique users
-				r.Add(uint64(c))
+			o.shards.View(shard, func(rtx *rbf.Tx) error {
+				return viewCu(rtx, domainField, func(rCu *rbf.Cursor) error {
+					dRow, err := cursor.Row(rCu, shard, domainId)
+					if err != nil {
+						return err
+					}
+					if dRow.IsEmpty() {
+						return nil
+					}
+					return viewCu(rtx, idField, func(rCu *rbf.Cursor) error {
+						return bsi.Extract(rCu, shard, dRow, func(column uint64, value int64) {
+							r.Add(uint64(value))
+						})
+					})
+				})
 			})
+
 		}
 		return nil
 	})
