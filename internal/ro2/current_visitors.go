@@ -80,7 +80,7 @@ func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 
 		for i := range shards {
 			shard := shards[i]
-			o.shards.View(shard, func(rtx *rbf.Tx) error {
+			err := o.shards.View(shard, func(rtx *rbf.Tx) error {
 				return viewCu(rtx, domainField, func(rCu *rbf.Cursor) error {
 					dRow, err := cursor.Row(rCu, shard, domainId)
 					if err != nil {
@@ -96,7 +96,9 @@ func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 					})
 				})
 			})
-
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
