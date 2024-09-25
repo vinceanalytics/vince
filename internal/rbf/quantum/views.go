@@ -9,8 +9,8 @@ import (
 
 type Field struct {
 	buffer [14]byte
-	ts     [5][]byte
 	full   []byte
+	prefix int
 }
 
 var fieldPool = sync.Pool{New: func() any {
@@ -23,20 +23,13 @@ func NewField() *Field {
 }
 
 func (f *Field) Views(name string, fn func(view string)) {
-	f.full = append(f.full[:0], []byte(name)...)
-	f.full = append(f.full, '_')
-	n := len(f.full)
-	for i := range f.ts {
-		f.full = append(f.full[:n], f.ts[i]...)
-		fn(string(f.full))
+	f.name(name)
+	for _, unit := range lengths {
+		fn(string(f.fmt(unit)))
 	}
 }
 
 func (f *Field) Reset() {
-	clear(f.buffer[:])
-	for i := range f.ts {
-		clear(f.ts[i])
-	}
 	clear(f.full)
 	f.full = f.full[:0]
 }
@@ -55,8 +48,133 @@ var lengths = []int{
 }
 
 func (f *Field) ViewsByTimeInto(t time.Time) {
-	fullBuf := f.buffer
-	date := fullBuf[:]
+	f.into(t)
+}
+
+func (f *Field) name(name string) {
+	f.full = append(f.full[:0], []byte(name)...)
+	f.full = append(f.full, '_')
+	f.prefix = len(f.full)
+}
+
+func (f *Field) fmt(n int) []byte {
+	f.full = append(f.full[:f.prefix], f.buffer[:n]...)
+	return f.full
+}
+
+func (f *Field) Month(name string, start, end time.Time, fn func([]byte)) {
+	f.timeRange(name, start, end, f.month, fn)
+}
+
+func (f *Field) Week(name string, start, end time.Time, fn func([]byte)) {
+	f.timeRange(name, start, end, f.week, fn)
+}
+
+func (f *Field) Day(name string, start, end time.Time, fn func([]byte)) {
+	f.timeRange(name, start, end, f.day, fn)
+}
+
+func (f *Field) Hour(name string, start, end time.Time, fn func([]byte)) {
+	f.timeRange(name, start, end, f.hour, fn)
+}
+
+func (f *Field) Minute(name string, start, end time.Time, fn func([]byte)) {
+	f.timeRange(name, start, end, f.minute, fn)
+}
+
+func (f *Field) month(start, end time.Time, fn func(time.Time, int)) {
+	t := beginOfMonth(start)
+	end = endOfMonth(end)
+	for t.Before(end) {
+		fn(t, 6)
+		t = addMonth(t)
+	}
+}
+
+func (f *Field) week(start, end time.Time, fn func(time.Time, int)) {
+	t := beginOfWeek(start)
+	end = endOfWeek(end)
+	for t.Before(end) {
+		fn(t, 8)
+		t = t.AddDate(0, 0, 7)
+	}
+}
+
+func beginOfWeek(ts time.Time) time.Time {
+	return beginOfDay(ts).AddDate(0, 0, -int(ts.Weekday()))
+}
+
+func endOfWeek(ts time.Time) time.Time {
+	return beginOfWeek(ts).AddDate(0, 0, 7).Add(-time.Nanosecond)
+}
+
+func (f *Field) day(start, end time.Time, fn func(time.Time, int)) {
+	t := beginOfDay(start)
+	end = endOfDay(end)
+	for t.Before(end) {
+		fn(t, 10)
+		t = t.AddDate(0, 0, 1)
+	}
+}
+
+func beginOfMonth(ts time.Time) time.Time {
+	y, m, _ := ts.Date()
+	return time.Date(y, m, 1, 0, 0, 0, 0, ts.Location())
+}
+
+func endOfMonth(ts time.Time) time.Time {
+	return beginOfMonth(ts).AddDate(0, 1, 0).Add(-time.Nanosecond)
+}
+
+func (f *Field) hour(start, end time.Time, fn func(time.Time, int)) {
+	t := beginOfHour(start)
+	end = endOfHour(end)
+	for t.Before(end) {
+		fn(t, 12)
+		t = t.Add(time.Hour)
+	}
+}
+
+func beginOfDay(ts time.Time) time.Time {
+	y, m, d := ts.Date()
+	return time.Date(y, m, d, 0, 0, 0, 0, ts.Location())
+}
+
+func endOfDay(ts time.Time) time.Time {
+	y, m, d := ts.Date()
+	return time.Date(y, m, d, 23, 59, 59, int(time.Second-time.Nanosecond), ts.Location())
+}
+
+func (f *Field) minute(start, end time.Time, fn func(time.Time, int)) {
+	t := start.Truncate(time.Minute)
+	end = end.Truncate(time.Minute).Add(time.Minute - time.Nanosecond)
+	for t.Before(end) {
+		fn(t, 14)
+		t = t.Add(time.Minute)
+	}
+}
+
+func beginOfHour(ts time.Time) time.Time {
+	y, m, d := ts.Date()
+	return time.Date(y, m, d, ts.Hour(), 0, 0, 0, ts.Location())
+}
+
+func endOfHour(ts time.Time) time.Time {
+	return beginOfHour(ts).Add(time.Hour - time.Nanosecond)
+}
+
+func nextHourGTE(t time.Time, end time.Time) bool {
+	next := t.Add(time.Hour)
+	y1, m1, d1 := next.Date()
+	y2, m2, d2 := end.Date()
+	if (y1 == y2) && (m1 == m2) && (d1 == d2) {
+		return true
+	}
+	return end.After(next)
+}
+
+func (f *Field) into(t time.Time) []byte {
+	date := f.buffer[:]
 	y, m, d := t.Date()
 	h := t.Hour()
 	mn := t.Minute()
@@ -96,7 +214,13 @@ func (f *Field) ViewsByTimeInto(t time.Time) {
 	//minute
 	date[12] = '0' + byte(mn/10)
 	date[13] = '0' + byte(mn%10)
-	for i, unit := range lengths {
-		f.ts[i] = append(f.ts[i][:0], fullBuf[:unit]...)
-	}
+	return date
+}
+
+func (f *Field) timeRange(name string, start, end time.Time, gen func(start, end time.Time, fn func(time.Time, int)), cb func([]byte)) {
+	f.name(name)
+	gen(start, end, func(t time.Time, size int) {
+		f.into(t)
+		cb(f.fmt(size))
+	})
 }
