@@ -86,7 +86,7 @@ func BounceCount(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(value in
 		falseRow = falseRow.Intersect(columns)
 		trueRow = trueRow.Intersect(columns)
 	}
-	return f(int64(trueRow.Count()) + -(int64(falseRow.Count())))
+	return f(int64(trueRow.Count()) - (int64(falseRow.Count())))
 }
 
 func True(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(column uint64, value int64)) error {

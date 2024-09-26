@@ -65,13 +65,18 @@ type Stats struct {
 
 func (s *Stats) Compute() {
 	s.Visitors = float64(s.uid.GetCardinality())
-	if s.Visits != 0 {
-		s.ViewsPerVisits /= s.Visits
-		s.BounceRate /= s.Visits
-	}
 	if s.VisitDuration != 0 {
 		s.VisitDuration = time.Duration(s.VisitDuration).Seconds()
 	}
+	if s.Visits != 0 {
+		s.ViewsPerVisits /= s.Visits
+		s.ViewsPerVisits = math.Floor(s.ViewsPerVisits)
+		s.BounceRate /= s.Visits
+		s.BounceRate = math.Floor(s.BounceRate * 100)
+		s.VisitDuration /= s.Visits
+		s.VisitDuration = math.Floor(s.VisitDuration)
+	}
+
 }
 
 func (d *Stats) ReadFields(

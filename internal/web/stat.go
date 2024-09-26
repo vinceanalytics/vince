@@ -81,7 +81,7 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
 	}
-
+	stats.Compute()
 	cmp := new(ro2.Stats)
 
 	if x := params.Compare(); x != nil {
@@ -90,6 +90,7 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 			db.Logger().Error("reading top stats comparison", "err", err)
 		}
 	}
+	cmp.Compute()
 	db.JSON(w, map[string]any{
 		"from":     params.From(),
 		"to":       params.To(),
