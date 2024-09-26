@@ -7,7 +7,8 @@ import (
 )
 
 type Match struct {
-	field        string
+	field        []byte
+	prefix       int
 	op           Operation
 	valueOrStart int64
 	end          int64
@@ -15,7 +16,8 @@ type Match struct {
 
 func Filter(field string, op Operation, valueOrStart int64, end int64) *Match {
 	return &Match{
-		field:        field,
+		field:        []byte(field),
+		prefix:       len(field),
 		op:           op,
 		valueOrStart: valueOrStart,
 		end:          end,
@@ -24,8 +26,8 @@ func Filter(field string, op Operation, valueOrStart int64, end int64) *Match {
 
 var _ query.Filter = (*Match)(nil)
 
-func (m *Match) Apply(rtx *rbf.Tx, shard uint64, columns *rows.Row) (*rows.Row, error) {
-	c, err := rtx.Cursor(m.field)
+func (m *Match) Apply(rtx *rbf.Tx, shard uint64, view []byte, columns *rows.Row) (*rows.Row, error) {
+	c, err := rtx.Cursor(string(append(m.field[:m.prefix], view...)))
 	if err != nil {
 		return nil, err
 	}

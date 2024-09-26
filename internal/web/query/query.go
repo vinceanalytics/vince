@@ -4,20 +4,20 @@ import (
 	"encoding/json"
 	"net/url"
 	"time"
-
-	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
 type Query struct {
 	period Period
 	cmp    *Period
-	filter ro2.Filter
+	filter Filters
 	metric string
+	all    bool
 }
 
-func New(db *ro2.Store, u url.Values) *Query {
-	var fs []Filter
+func New(u url.Values) *Query {
+	var fs Filters
 	json.Unmarshal([]byte(u.Get("filters")), &fs)
+
 	period := period(u.Get("period"), u.Get("date"))
 	if i := u.Get("interval"); i != "" {
 		switch i {
@@ -33,10 +33,7 @@ func New(db *ro2.Store, u url.Values) *Query {
 			period.Interval = Month
 		}
 	}
-	ls := make(ro2.List, len(fs))
-	for i := range fs {
-		ls[i] = fs[i].To(db)
-	}
+
 	var cmp *Period
 	switch u.Get("period") {
 	case "all", "realtime":
@@ -56,11 +53,13 @@ func New(db *ro2.Store, u url.Values) *Query {
 
 	return &Query{
 		period: period,
-		filter: ls,
 		cmp:    cmp,
 		metric: u.Get("metric"),
+		all:    u.Get("period") == "all",
 	}
 }
+
+func (q *Query) All() bool { return q.all }
 
 func earliest(a, b time.Time) time.Time {
 	if a.Before(b) {
@@ -69,11 +68,11 @@ func earliest(a, b time.Time) time.Time {
 	return b
 }
 
-func (q *Query) Start() int64       { return q.period.Start.UnixMilli() }
+func (q *Query) Start() time.Time   { return q.period.Start }
 func (q *Query) From() string       { return q.period.Start.Format(time.DateOnly) }
-func (q *Query) End() int64         { return q.period.End.UnixMilli() }
+func (q *Query) End() time.Time     { return q.period.End }
 func (q *Query) To() string         { return q.period.End.Format(time.DateOnly) }
 func (q *Query) Interval() Interval { return q.period.Interval }
-func (q *Query) Filter() ro2.Filter { return q.filter }
+func (q *Query) Filter() Filters    { return q.filter }
 func (q *Query) Metric() string     { return q.metric }
 func (q *Query) Compare() *Period   { return q.cmp }

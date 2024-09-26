@@ -5,33 +5,123 @@ import (
 	"slices"
 	"time"
 
+	"github.com/gernest/rows"
 	"github.com/vinceanalytics/vince/internal/alicia"
+	"github.com/vinceanalytics/vince/internal/rbf"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/boolean"
+	"github.com/vinceanalytics/vince/internal/rbf/dsl/bsi"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
-func (d *Data) Read(tx *Tx, shard uint64,
-	match *roaring64.Bitmap, metrics ...string) {
-	d.ReadFields(tx, shard, match, MetricsToProject(metrics)...)
+func (d *Data) Read(
+	rtx *rbf.Tx,
+	view string,
+	shard uint64,
+	match *rows.Row, metrics ...string) {
+	d.ReadFields(rtx, view, shard, match, MetricsToProject(metrics)...)
 }
 
-func (d *Data) ReadFields(tx *Tx, shard uint64,
-	match *roaring64.Bitmap, fields ...alicia.Field) {
+func (d *Data) ReadFields(
+	rtx *rbf.Tx,
+	view string,
+	shard uint64,
+	match *rows.Row, fields ...alicia.Field) (err error) {
 	for i := range fields {
 		f := fields[i]
 		b := d.mustGet(f)
 		switch f {
-		case alicia.VIEW, alicia.SESSION:
-			tx.ExtractBool(shard, uint64(f), match, b.SetValue)
+		case alicia.VIEW:
+			err = viewCu(rtx, "view"+view, func(rCu *rbf.Cursor) error {
+				return boolean.True(rCu, shard, match, b.SetValue)
+			})
+		case alicia.SESSION:
+			err = viewCu(rtx, "session"+view, func(rCu *rbf.Cursor) error {
+				return boolean.True(rCu, shard, match, b.SetValue)
+			})
 		case alicia.BOUNCE:
-			tx.ExtractBounce(shard, uint64(f), match, b.SetValue)
-		default:
-			tx.ExtractBSI(shard, uint64(f), match, b.SetValue)
+			err = viewCu(rtx, "session"+view, func(rCu *rbf.Cursor) error {
+				return boolean.Bounce(rCu, shard, match, b.SetValue)
+			})
+		case alicia.DURATION:
+			err = viewCu(rtx, "duration"+view, func(rCu *rbf.Cursor) error {
+				return bsi.Extract(rCu, shard, match, b.SetValue)
+			})
+		case alicia.CITY:
+			err = viewCu(rtx, "city"+view, func(rCu *rbf.Cursor) error {
+				return bsi.Extract(rCu, shard, match, b.SetValue)
+			})
+		}
+		if err != nil {
+			return
 		}
 	}
+	return
 }
 
 type Stats struct {
 	Visitors, Visits, PageViews, ViewsPerVisits, BounceRate, VisitDuration float64
+	uid                                                                    roaring64.Bitmap
+}
+
+func (s *Stats) Compute() {
+	s.Visitors = float64(s.uid.GetCardinality())
+	if s.Visits != 0 {
+		s.ViewsPerVisits /= s.Visits
+		s.BounceRate /= s.Visits
+	}
+	if s.VisitDuration != 0 {
+		s.VisitDuration = time.Duration(s.VisitDuration).Seconds()
+	}
+}
+
+func (d *Stats) ReadFields(
+	rtx *rbf.Tx,
+	view string,
+	shard uint64,
+	match *rows.Row, fields ...alicia.Field) (err error) {
+	for i := range fields {
+		f := fields[i]
+		switch f {
+		case alicia.VIEW:
+			err = viewCu(rtx, "view"+view, func(rCu *rbf.Cursor) error {
+				return boolean.Count(rCu, shard, match, func(value int64) error {
+					d.PageViews += float64(value)
+					return nil
+				})
+			})
+		case alicia.SESSION:
+			err = viewCu(rtx, "session"+view, func(rCu *rbf.Cursor) error {
+				return boolean.Count(rCu, shard, match, func(value int64) error {
+					d.Visits += float64(value)
+					return nil
+				})
+			})
+		case alicia.BOUNCE:
+			err = viewCu(rtx, "bounce"+view, func(rCu *rbf.Cursor) error {
+				return boolean.BounceCount(rCu, shard, match, func(value int64) error {
+					d.BounceRate += float64(value)
+					return nil
+				})
+			})
+		case alicia.DURATION:
+			err = viewCu(rtx, "duration"+view, func(rCu *rbf.Cursor) error {
+				return bsi.Sum(rCu, match, func(count int32, sum int64) error {
+					d.VisitDuration += float64(sum)
+					return nil
+				})
+			})
+		case alicia.ID:
+			err = viewCu(rtx, "id"+view, func(rCu *rbf.Cursor) error {
+				return bsi.Extract(rCu, shard, match, func(column uint64, value int64) {
+					d.uid.Add(uint64(value))
+				})
+			})
+		}
+		if err != nil {
+			return
+		}
+	}
+	return
 }
 
 func (a *Data) Stats(foundSet *roaring64.Bitmap) (o Stats) {

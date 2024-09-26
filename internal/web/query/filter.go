@@ -2,11 +2,21 @@ package query
 
 import (
 	"encoding/json"
-	"strconv"
 	"strings"
-
-	"github.com/vinceanalytics/vince/internal/ro2"
 )
+
+type Filters []*Filter
+
+func (f Filters) Translate() Filters {
+	o := make(Filters, 0, len(f))
+	for i := range f {
+		n := f[i].To()
+		if n != nil {
+			o = append(o, n)
+		}
+	}
+	return o
+}
 
 type Filter struct {
 	Op    string
@@ -47,20 +57,20 @@ func (c *Filter) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *Filter) To(db *ro2.Store) ro2.Filter {
+func (c *Filter) To() *Filter {
 	if len(c.Value) == 0 {
-		return ro2.Reject{}
+		return nil
 	}
 	if strings.HasPrefix(c.Key, "event:props:") {
-		return ro2.Reject{}
+		return nil
 	}
 	if strings.HasPrefix(c.Key, "event:") {
 		key := strings.TrimPrefix(c.Key, "event:")
 		switch key {
 		case "name", "page", "hostname":
-			return build(db, c.Op, key, c.Value)
+			return &Filter{Op: c.Op, Key: key, Value: c.Value}
 		default:
-			return ro2.Reject{}
+			return nil
 		}
 	}
 	if strings.HasPrefix(c.Key, "visit:") {
@@ -84,38 +94,11 @@ func (c *Filter) To(db *ro2.Store) ro2.Filter {
 			"entry_page",
 			"exit_page",
 			"entry_page_hostname",
-			"exit_page_hostname":
-			return build(db, c.Op, key, c.Value)
-		case "city":
-			code, err := strconv.Atoi(c.Value[0])
-			if err != nil {
-				return ro2.Reject{}
-			}
-			return &ro2.EqInt{
-				Field: uint64(db.Number(key)),
-				Value: int64(code),
-			}
+			"exit_page_hostname", "city":
+			return &Filter{Op: c.Op, Key: key, Value: c.Value}
 		default:
-			return ro2.Reject{}
+			return nil
 		}
 	}
-	return ro2.Reject{}
-}
-
-func build(db *ro2.Store, op string, field string, value []string) ro2.Filter {
-	f := uint64(db.Number(field))
-	switch op {
-	case "is":
-		return ro2.NewEq(f, value[0])
-	case "is_not":
-		return ro2.Noop{}
-	case "matches":
-		return ro2.NewRe(f, value[0])
-	case "does_not_match", "does_not_contain":
-		return ro2.Noop{}
-	case "contains":
-		return ro2.NewRe(f, strings.Join(value, "|"))
-	default:
-		return ro2.Reject{}
-	}
+	return nil
 }

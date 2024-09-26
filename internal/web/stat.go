@@ -3,12 +3,11 @@ package web
 import (
 	"math"
 	"net/http"
-	"time"
+	"slices"
 
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/ro2"
-	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -18,56 +17,48 @@ func UnimplementedStat(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	interval := params.Interval()
-	quantum := roaring64.NewDefaultBSI()
-	m := ro2.NewData()
-	defer m.Release()
+	params := query.New(r.URL.Query())
+	metric := params.Metric()
 
-	err := db.Get().View(func(tx *ro2.Tx) error {
-		dom := ro2.NewEq(uint64(alicia.DOMAIN), site.Domain)
-		fields := ro2.MetricsToProject([]string{params.Metric()})
-		tsField := interval.Field()
-		start := params.Start()
-		end := params.End()
-		shards := db.Get().Shards(tx)
-
-		for _, shard := range shards {
-			b := dom.Match(tx, shard)
-			if b.IsEmpty() {
-				continue
-			}
-			ts := tx.Cmp(uint64(tsField), shard, roaring64.RANGE, start, end)
-			if ts.IsEmpty() {
-				continue
-			}
-			match := roaring64.And(b, ts)
-			if match.IsEmpty() {
-				continue
-			}
-			m.ReadFields(tx, shard, match, fields...)
-			tx.ExtractBSI(shard, uint64(tsField), match, quantum.SetValue)
-		}
-		return nil
-	})
+	result, err := db.Get().Timeseries(site.Domain, params, []string{metric})
 	if err != nil {
 		db.Logger().Error("reading main graph", "err", err)
+		db.JSON(w, map[string]any{
+			"labels":   []string{},
+			"plot":     []float64{},
+			"metric":   metric,
+			"interval": params.Interval().String(),
+		})
+		return
 	}
-	ts := quantum.Transpose()
-	size := ts.GetCardinality()
+	size := len(result)
 	labels := make([]string, 0, size)
+	for k := range result {
+		labels = append(labels, k)
+	}
+	slices.Sort(labels)
 	plot := make([]float64, 0, size)
-
-	it := ts.Iterator()
-	format := interval.Format()
-	metric := params.Metric()
-	for it.HasNext() {
-		tsv := it.Next()
-		labels = append(labels,
-			time.UnixMilli(int64(tsv)).UTC().Format(format))
-		match := quantum.CompareValue(0, roaring64.EQ, int64(tsv), 0, nil)
-		plot = append(plot, m.Compute(metric, match))
-
+	var reduce func(r *ro2.Stats) float64
+	switch metric {
+	case "visitors":
+		reduce = func(r *ro2.Stats) float64 { return r.Visitors }
+	case "visits":
+		reduce = func(r *ro2.Stats) float64 { return r.Visits }
+	case "pageview":
+		reduce = func(r *ro2.Stats) float64 { return r.PageViews }
+	case "views_perVisit":
+		reduce = func(r *ro2.Stats) float64 { return r.ViewsPerVisits }
+	case "bounce_rate":
+		reduce = func(r *ro2.Stats) float64 { return r.BounceRate }
+	case "visit_duration":
+		reduce = func(r *ro2.Stats) float64 { return r.VisitDuration }
+	default:
+		reduce = func(_ *ro2.Stats) float64 { return 0 }
+	}
+	for i := range labels {
+		stat := result[labels[i]]
+		stat.Compute()
+		plot = append(plot, reduce(stat))
 	}
 	db.JSON(w, map[string]any{
 		"labels":   labels,
@@ -83,39 +74,22 @@ var topFields = ro2.MetricsToProject(
 
 func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	m := ro2.NewData()
-	defer m.Release()
-	err := db.Get().Select(
-		params.Start(), params.End(), site.Domain, params.Filter(),
-		func(tx *ro2.Tx, shard uint64, match *roaring64.Bitmap) error {
-			m.ReadFields(tx, shard, match, topFields...)
-			return nil
-		},
-	)
+	params := query.New(r.URL.Query())
+
+	metrics := []string{"visitors", "visits", "pageviews", "views_per_visit", "bounce_rate", "visit_duration"}
+	stats, err := db.Get().Stats(site.Domain, params.Start(), params.End(), params.Interval(), params.Filter(), metrics)
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
 	}
 
-	old := ro2.NewData()
-	defer old.Release()
+	cmp := new(ro2.Stats)
 
-	if cmp := params.Compare(); cmp != nil {
-		err := db.Get().Select(
-			cmp.Start.UnixMilli(),
-			cmp.End.UnixMilli(),
-			site.Domain, params.Filter(),
-			func(tx *ro2.Tx, shard uint64, match *roaring64.Bitmap) error {
-				old.ReadFields(tx, shard, match, topFields...)
-				return nil
-			},
-		)
+	if x := params.Compare(); x != nil {
+		cmp, err = db.Get().Stats(site.Domain, x.Start, x.End, params.Interval(), params.Filter(), metrics)
 		if err != nil {
 			db.Logger().Error("reading top stats comparison", "err", err)
 		}
 	}
-	stats := m.Stats(nil)
-	cmp := old.Stats(nil)
 	db.JSON(w, map[string]any{
 		"from":     params.From(),
 		"to":       params.To(),
@@ -165,14 +139,12 @@ func CurrentVisitors(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
+	params := query.New(r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(),
-		metrics, alicia.SOURCE)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.SOURCE)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -187,14 +159,12 @@ func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmMediums(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
+	params := query.New(r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(),
-		metrics, alicia.UTM_MEDIUM)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_MEDIUM)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -209,14 +179,12 @@ func UtmMediums(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmCampaigns(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
+	params := query.New(r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(),
-		metrics, alicia.UTM_CAMPAIGN)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_CAMPAIGN)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -231,14 +199,12 @@ func UtmCampaigns(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmContents(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
+	params := query.New(r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(),
-		metrics, alicia.UTM_CONTENT)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_CONTENT)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -253,14 +219,12 @@ func UtmContents(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmTerms(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
+	params := query.New(r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(),
-		metrics, alicia.UTM_TERM)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_TERM)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -275,14 +239,12 @@ func UtmTerms(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func UtmSources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
+	params := query.New(r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(),
-		metrics, alicia.UTM_SOURCE)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_SOURCE)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -297,7 +259,7 @@ func UtmSources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
+	params := query.New(r.URL.Query())
 	referrer := r.PathValue("referrer")
 
 	metrics := []string{"visitors"}
@@ -305,10 +267,7 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
 	_ = referrer
-	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		append(ro2.List{params.Filter()},
-			ro2.NewEq(uint64(alicia.REFERRER), referrer)),
-		metrics, alicia.PAGE)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.REFERRER)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -323,14 +282,12 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
+	params := query.New(r.URL.Query())
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "pageviews", "bounce_rate")
 	}
-	o, err := db.Get().Breakdown(params.Start(), params.End(), site.Domain,
-		params.Filter(),
-		metrics, alicia.PAGE)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.PAGE)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -345,12 +302,10 @@ func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
+	params := query.New(r.URL.Query())
 	o, err := db.Get().Breakdown(
-		params.Start(),
-		params.End(),
 		site.Domain,
-		params.Filter(),
+		params,
 		[]string{"visitors", "visits", "visit_duration"},
 		alicia.ENTRY_PAGE,
 	)
@@ -368,13 +323,8 @@ func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func ExitPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	o, err := db.Get().BreakdownExitPages(
-		params.Start(),
-		params.End(),
-		site.Domain,
-		params.Filter(),
-	)
+	params := query.New(r.URL.Query())
+	o, err := db.Get().BreakdownExitPages(site.Domain, params)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -384,15 +334,8 @@ func ExitPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	o, err := db.Get().Breakdown(
-		params.Start(),
-		params.End(),
-		site.Domain,
-		params.Filter(),
-		[]string{"visitors"},
-		alicia.COUNTRY,
-	)
+	params := query.New(r.URL.Query())
+	o, err := db.Get().Breakdown(site.Domain, params, []string{"visitors"}, alicia.COUNTRY)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -410,15 +353,8 @@ func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	o, err := db.Get().Breakdown(
-		params.Start(),
-		params.End(),
-		site.Domain,
-		params.Filter(),
-		[]string{"visitors"},
-		alicia.SUB1_CODE,
-	)
+	params := query.New(r.URL.Query())
+	o, err := db.Get().Breakdown(site.Domain, params, []string{"visitors"}, alicia.SUB1_CODE)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -437,13 +373,8 @@ func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	o, err := db.Get().BreakdownCity(
-		params.Start(),
-		params.End(),
-		site.Domain,
-		params.Filter(),
-	)
+	params := query.New(r.URL.Query())
+	o, err := db.Get().BreakdownCity(site.Domain, params)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -453,14 +384,8 @@ func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(
-		params.Start(),
-		params.End(),
-		site.Domain,
-		params.Filter(),
-		alicia.BROWSER,
-	)
+	params := query.New(r.URL.Query())
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.BROWSER)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -475,14 +400,8 @@ func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(
-		params.Start(),
-		params.End(),
-		site.Domain,
-		params.Filter(),
-		alicia.BROWSER_VESRION,
-	)
+	params := query.New(r.URL.Query())
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.BROWSER_VESRION)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -497,14 +416,8 @@ func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(
-		params.Start(),
-		params.End(),
-		site.Domain,
-		params.Filter(),
-		alicia.OS,
-	)
+	params := query.New(r.URL.Query())
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.OS)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -519,14 +432,8 @@ func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(
-		params.Start(),
-		params.End(),
-		site.Domain,
-		params.Filter(),
-		alicia.OS_VERSION,
-	)
+	params := query.New(r.URL.Query())
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.OS_VERSION)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -541,14 +448,8 @@ func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func ScreenSize(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
-	params := query.New(db.Get(), r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(
-		params.Start(),
-		params.End(),
-		site.Domain,
-		params.Filter(),
-		alicia.DEVICE,
-	)
+	params := query.New(r.URL.Query())
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.DEVICE)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}

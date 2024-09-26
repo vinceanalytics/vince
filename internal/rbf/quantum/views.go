@@ -1,6 +1,7 @@
 package quantum
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 	"sync"
@@ -8,7 +9,8 @@ import (
 )
 
 type Field struct {
-	buffer [14]byte
+	buffer [12]byte
+	iso    [9]byte
 	full   []byte
 	prefix int
 }
@@ -27,6 +29,8 @@ func (f *Field) Views(name string, fn func(view string)) {
 	for _, unit := range lengths {
 		fn(string(f.fmt(unit)))
 	}
+	f.full = append(f.full[:f.prefix], f.iso[:]...)
+	fn(string(f.full))
 }
 
 func (f *Field) Reset() {
@@ -41,10 +45,68 @@ func (f *Field) Release() {
 
 var lengths = []int{
 	6,  //month
-	8,  //week
-	10, // day
-	12, //hour
-	14, //minute
+	8,  //day
+	10, // hour
+	12, // minute
+}
+
+var bufferPool = &sync.Pool{New: func() any { return new(bytes.Buffer) }}
+
+func Parse(view []byte) string {
+	b := bufferPool.Get().(*bytes.Buffer)
+	defer func() {
+		b.Reset()
+		bufferPool.Put(b)
+	}()
+	switch len(view) {
+	case 6:
+		b.Write(view[:4])
+		b.WriteByte('-')
+		b.Write(view[4:])
+		b.WriteString("-01")
+		return b.String()
+	case 8:
+		b.Write(view[:4])
+		b.WriteByte('-')
+		b.Write(view[4:6])
+		b.WriteByte('-')
+		b.Write(view[6:8])
+		return b.String()
+	case 9:
+		// iso week
+		wd := view[3:]
+		year, _ := strconv.Atoi(string(wd[:4]))
+		week, _ := strconv.Atoi(string(wd[4:]))
+		t := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+		offset := (t.Weekday() + 7) % 7
+		t = t.Add(time.Duration(offset*24) * time.Hour)
+		t = t.Add(time.Duration((week-1)*7*24) * time.Hour)
+		return t.Format(time.DateOnly)
+	case 10:
+		b.Write(view[:4])
+		b.WriteByte('-')
+		b.Write(view[4:6])
+		b.WriteByte('-')
+		b.Write(view[6:8])
+		b.WriteByte(' ')
+		b.Write(view[8:10])
+		b.WriteString(":00:00")
+		return b.String()
+	case 12:
+		b.Write(view[:4])
+		b.WriteByte('-')
+		b.Write(view[4:6])
+		b.WriteByte('-')
+		b.Write(view[6:8])
+		b.WriteByte(' ')
+		b.Write(view[8:10])
+		b.WriteByte(':')
+		b.Write(view[10:12])
+		b.WriteString(":00")
+		return b.String()
+	default:
+		return ""
+	}
 }
 
 func (f *Field) ViewsByTimeInto(t time.Time) {
@@ -67,7 +129,17 @@ func (f *Field) Month(name string, start, end time.Time, fn func([]byte) error) 
 }
 
 func (f *Field) Week(name string, start, end time.Time, fn func([]byte) error) error {
-	return f.timeRange(name, start, end, f.week, fn)
+	f.name(name)
+	t := start
+	for t.Before(end) {
+		f.full = append(f.full[:f.prefix], f.intoIsoWeek(t)...)
+		err := fn(f.full)
+		if err != nil {
+			return err
+		}
+		t = t.AddDate(0, 0, 7)
+	}
+	return nil
 }
 
 func (f *Field) Day(name string, start, end time.Time, fn func([]byte) error) error {
@@ -83,8 +155,7 @@ func (f *Field) Minute(name string, start, end time.Time, fn func([]byte) error)
 }
 
 func (f *Field) month(start, end time.Time, fn func(time.Time, int) error) error {
-	t := beginOfMonth(start)
-	end = endOfMonth(end)
+	t := start
 	for t.Before(end) {
 		err := fn(t, 6)
 		if err != nil {
@@ -95,32 +166,10 @@ func (f *Field) month(start, end time.Time, fn func(time.Time, int) error) error
 	return nil
 }
 
-func (f *Field) week(start, end time.Time, fn func(time.Time, int) error) error {
-	t := beginOfWeek(start)
-	end = endOfWeek(end)
+func (f *Field) day(start, end time.Time, fn func(time.Time, int) error) error {
+	t := start
 	for t.Before(end) {
 		err := fn(t, 8)
-		if err != nil {
-			return err
-		}
-		t = t.AddDate(0, 0, 7)
-	}
-	return nil
-}
-
-func beginOfWeek(ts time.Time) time.Time {
-	return beginOfDay(ts).AddDate(0, 0, -int(ts.Weekday()))
-}
-
-func endOfWeek(ts time.Time) time.Time {
-	return beginOfWeek(ts).AddDate(0, 0, 7).Add(-time.Nanosecond)
-}
-
-func (f *Field) day(start, end time.Time, fn func(time.Time, int) error) error {
-	t := beginOfDay(start)
-	end = endOfDay(end)
-	for t.Before(end) {
-		err := fn(t, 10)
 		if err != nil {
 			return err
 		}
@@ -129,20 +178,10 @@ func (f *Field) day(start, end time.Time, fn func(time.Time, int) error) error {
 	return nil
 }
 
-func beginOfMonth(ts time.Time) time.Time {
-	y, m, _ := ts.Date()
-	return time.Date(y, m, 1, 0, 0, 0, 0, ts.Location())
-}
-
-func endOfMonth(ts time.Time) time.Time {
-	return beginOfMonth(ts).AddDate(0, 1, 0).Add(-time.Nanosecond)
-}
-
 func (f *Field) hour(start, end time.Time, fn func(time.Time, int) error) error {
-	t := beginOfHour(start)
-	end = endOfHour(end)
+	t := start
 	for t.Before(end) {
-		err := fn(t, 12)
+		err := fn(t, 10)
 		if err != nil {
 			return err
 		}
@@ -151,36 +190,16 @@ func (f *Field) hour(start, end time.Time, fn func(time.Time, int) error) error 
 	return nil
 }
 
-func beginOfDay(ts time.Time) time.Time {
-	y, m, d := ts.Date()
-	return time.Date(y, m, d, 0, 0, 0, 0, ts.Location())
-}
-
-func endOfDay(ts time.Time) time.Time {
-	y, m, d := ts.Date()
-	return time.Date(y, m, d, 23, 59, 59, int(time.Second-time.Nanosecond), ts.Location())
-}
-
 func (f *Field) minute(start, end time.Time, fn func(time.Time, int) error) error {
-	t := start.Truncate(time.Minute)
-	end = end.Truncate(time.Minute).Add(time.Minute - time.Nanosecond)
+	t := start
 	for t.Before(end) {
-		err := fn(t, 14)
+		err := fn(t, 12)
 		if err != nil {
 			return err
 		}
 		t = t.Add(time.Minute)
 	}
 	return nil
-}
-
-func beginOfHour(ts time.Time) time.Time {
-	y, m, d := ts.Date()
-	return time.Date(y, m, d, ts.Hour(), 0, 0, 0, ts.Location())
-}
-
-func endOfHour(ts time.Time) time.Time {
-	return beginOfHour(ts).Add(time.Hour - time.Nanosecond)
 }
 
 func nextHourGTE(t time.Time, end time.Time) bool {
@@ -198,7 +217,6 @@ func (f *Field) into(t time.Time) []byte {
 	y, m, d := t.Date()
 	h := t.Hour()
 	mn := t.Minute()
-	_, w := t.ISOWeek()
 	// Did you know that Sprintf, Printf, and other things like that all
 	// do allocations, and that doing allocations in a tight loop like this
 	// is stunningly expensive? viewsByTime was 25% of an ingest test's
@@ -215,26 +233,59 @@ func (f *Field) into(t time.Time) []byte {
 	} else {
 		strconv.AppendInt(date[:0], int64(y), 10)
 	}
-	//month
 	date[4] = '0' + byte(m/10)
 	date[5] = '0' + byte(m%10)
-
-	//week
-	date[6] = '0' + byte(w/10)
-	date[7] = '0' + byte(w%10)
-
-	//day
-	date[8] = '0' + byte(d/10)
-	date[9] = '0' + byte(d%10)
-
-	//hour
-	date[10] = '0' + byte(h/10)
-	date[11] = '0' + byte(h%10)
-
-	//minute
-	date[12] = '0' + byte(mn/10)
-	date[13] = '0' + byte(mn%10)
+	date[6] = '0' + byte(d/10)
+	date[7] = '0' + byte(d%10)
+	date[8] = '0' + byte(h/10)
+	date[9] = '0' + byte(h%10)
+	date[10] = '0' + byte(mn/10)
+	date[11] = '0' + byte(mn%10)
+	{
+		// setup iso week
+		f.iso[0] = 'i'
+		f.iso[1] = 's'
+		f.iso[2] = 'o'
+		d := f.iso[3:]
+		y, m := t.ISOWeek()
+		if y < 1000 {
+			ys := fmt.Sprintf("%04d", y)
+			copy(d[0:4], []byte(ys))
+		} else if y >= 10000 {
+			// This is probably a bad answer but there isn't really a
+			// good answer.
+			ys := fmt.Sprintf("%04d", y%1000)
+			copy(d[0:4], []byte(ys))
+		} else {
+			strconv.AppendInt(d[:0], int64(y), 10)
+		}
+		d[4] = '0' + byte(m/10)
+		d[5] = '0' + byte(m%10)
+	}
 	return date
+}
+
+func (f *Field) intoIsoWeek(t time.Time) []byte {
+	// setup iso week
+	f.iso[0] = 'i'
+	f.iso[1] = 's'
+	f.iso[2] = 'o'
+	d := f.iso[3:]
+	y, m := t.ISOWeek()
+	if y < 1000 {
+		ys := fmt.Sprintf("%04d", y)
+		copy(d[0:4], []byte(ys))
+	} else if y >= 10000 {
+		// This is probably a bad answer but there isn't really a
+		// good answer.
+		ys := fmt.Sprintf("%04d", y%1000)
+		copy(d[0:4], []byte(ys))
+	} else {
+		strconv.AppendInt(d[:0], int64(y), 10)
+	}
+	d[4] = '0' + byte(m/10)
+	d[5] = '0' + byte(m%10)
+	return f.iso[:]
 }
 
 func (f *Field) timeRange(name string, start, end time.Time, gen func(start, end time.Time, fn func(time.Time, int) error) error, cb func([]byte) error) error {
