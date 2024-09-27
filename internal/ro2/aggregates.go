@@ -24,7 +24,7 @@ func StatToValue(metric string) func(s *Stats) float64 {
 		return func(s *Stats) float64 { return s.Visitors }
 	case "visits":
 		return func(s *Stats) float64 { return s.Visits }
-	case "pageview":
+	case "pageviews":
 		return func(s *Stats) float64 { return s.PageViews }
 	case "bounce_rate":
 		return func(s *Stats) float64 { return s.BounceRate }

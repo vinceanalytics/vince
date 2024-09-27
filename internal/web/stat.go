@@ -38,23 +38,7 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	slices.Sort(labels)
 	plot := make([]float64, 0, size)
-	var reduce func(r *ro2.Stats) float64
-	switch metric {
-	case "visitors":
-		reduce = func(r *ro2.Stats) float64 { return r.Visitors }
-	case "visits":
-		reduce = func(r *ro2.Stats) float64 { return r.Visits }
-	case "pageview":
-		reduce = func(r *ro2.Stats) float64 { return r.PageViews }
-	case "views_perVisit":
-		reduce = func(r *ro2.Stats) float64 { return r.ViewsPerVisits }
-	case "bounce_rate":
-		reduce = func(r *ro2.Stats) float64 { return r.BounceRate }
-	case "visit_duration":
-		reduce = func(r *ro2.Stats) float64 { return r.VisitDuration }
-	default:
-		reduce = func(_ *ro2.Stats) float64 { return 0 }
-	}
+	reduce := ro2.StatToValue(metric)
 	for i := range labels {
 		stat := result[labels[i]]
 		stat.Compute()

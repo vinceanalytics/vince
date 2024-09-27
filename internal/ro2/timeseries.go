@@ -56,13 +56,14 @@ func (o *Store) Timeseries(domain string, params *query.Query, metrics []string)
 						if dRow.IsEmpty() {
 							return nil
 						}
-						timestamp := quantum.Parse(b[len(domainField):])
+
+						timestamp := quantum.Parse(view[1:])
 						m, ok := values[timestamp]
 						if !ok {
 							m = new(Stats)
 							values[timestamp] = m
 						}
-						return m.ReadFields(rtx, string(b[len(domainField):]), shard, dRow, fields...)
+						return m.ReadFields(rtx, string(view), shard, dRow, fields...)
 					})
 				})
 			})
