@@ -247,7 +247,8 @@ func (o *Store) breakdown(domain string, params *query.Query, metrics []string,
 						if dRow.IsEmpty() {
 							return nil
 						}
-						return viewCu(rtx, string(property)+string(view), func(rCu *rbf.Cursor) error {
+						bitmap := string(property) + string(view)
+						return viewCu(rtx, bitmap, func(rCu *rbf.Cursor) error {
 							return mutex.Distinct(rCu, dRow, func(row uint64, columns *rows.Row) error {
 								key := tx.Find(uint64(field), row)
 								sx, ok := values[key]
