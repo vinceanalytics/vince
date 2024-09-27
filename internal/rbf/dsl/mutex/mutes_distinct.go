@@ -62,7 +62,7 @@ func Distinct(c *rbf.Cursor, filters *rows.Row, f func(row uint64, columns *rows
 		if filterBitmap != nil {
 			if roaring.IntersectionAny(c, filter[k%(1<<shardVsContainerExponent)]) {
 				co := roaring.Intersect(c, filter[k%(1<<shardVsContainerExponent)])
-				values = slices.Grow(values[:], int(co.N()))
+				values = slices.Grow(values[:0], int(co.N()))
 				roaring.ContainerCallback(co, func(u uint16) {
 					values = append(values, uint64(u))
 				})
@@ -72,7 +72,7 @@ func Distinct(c *rbf.Cursor, filters *rows.Row, f func(row uint64, columns *rows
 				}
 			}
 		} else if c.N() != 0 {
-			values = slices.Grow(values[:], int(c.N()))
+			values = slices.Grow(values[:0], int(c.N()))
 			roaring.ContainerCallback(c, func(u uint16) {
 				values = append(values, uint64(u))
 			})
