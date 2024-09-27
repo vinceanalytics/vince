@@ -50,7 +50,7 @@ func (s *Stats) Compute() {
 		s.VisitDuration /= s.Visits
 		s.VisitDuration = math.Floor(s.VisitDuration)
 	}
-
+	s.BounceRate = min(s.BounceRate, 100)
 }
 
 func (d *Stats) ReadFields(
