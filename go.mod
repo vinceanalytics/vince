@@ -4,9 +4,9 @@ go 1.23
 
 require (
 	filippo.io/age v1.2.0
+	github.com/RoaringBitmap/roaring/v2 v2.3.5
 	github.com/VictoriaMetrics/fastcache v1.12.2
 	github.com/benbjohnson/immutable v0.4.3
-	github.com/bits-and-blooms/bitset v1.12.0
 	github.com/blevesearch/vellum v1.0.10
 	github.com/dchest/captcha v1.0.0
 	github.com/dgraph-io/badger/v4 v4.3.0
@@ -19,7 +19,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/lestrrat-go/dataurl v0.0.0-20220721131304-b60017625013
 	github.com/matoous/go-nanoid/v2 v2.1.0
-	github.com/mschoch/smat v0.2.0
 	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/oschwald/maxminddb-golang v1.13.1
 	github.com/pkg/errors v0.9.1
@@ -33,7 +32,7 @@ require (
 )
 
 require (
-	github.com/RoaringBitmap/roaring/v2 v2.3.5 // indirect
+	github.com/bits-and-blooms/bitset v1.12.0 // indirect
 	github.com/blevesearch/mmap-go v1.0.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -48,6 +47,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/molecula/apophenia v0.0.0-20190827192002-68b7a14a478b // indirect
+	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.24.0 // indirect

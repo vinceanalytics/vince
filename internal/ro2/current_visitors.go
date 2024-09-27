@@ -45,8 +45,9 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 						return nil
 					}
 					return viewCu(rtx, "id"+string(b[len(domainField):]), func(rCu *rbf.Cursor) error {
-						return bsi.Extract(rCu, shard, dRow, func(column uint64, value int64) {
+						return bsi.Extract(rCu, shard, dRow, func(column uint64, value int64) error {
 							r.Add(uint64(value))
+							return nil
 						})
 					})
 				})
@@ -90,8 +91,9 @@ func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 						return nil
 					}
 					return viewCu(rtx, idField, func(rCu *rbf.Cursor) error {
-						return bsi.Extract(rCu, shard, dRow, func(column uint64, value int64) {
+						return bsi.Extract(rCu, shard, dRow, func(column uint64, value int64) error {
 							r.Add(uint64(value))
+							return nil
 						})
 					})
 				})

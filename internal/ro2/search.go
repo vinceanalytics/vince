@@ -2,44 +2,8 @@ package ro2
 
 import (
 	"strings"
-	"sync"
 	"unicode/utf8"
-
-	"github.com/RoaringBitmap/roaring/v2/roaring64"
-	"github.com/vinceanalytics/vince/internal/alicia"
 )
-
-// We know fields before hand
-type Data [alicia.SUB2_CODE]*roaring64.BSI
-
-var dataPool = &sync.Pool{
-	New: func() any {
-		var d Data
-		return &d
-	},
-}
-
-func NewData() *Data {
-	return dataPool.Get().(*Data)
-}
-
-func (d *Data) Release() {
-	clear(d[:])
-	dataPool.Put(d)
-}
-
-func (d *Data) mustGet(i alicia.Field) *roaring64.BSI {
-	i--
-	if d[i] == nil {
-		d[i] = roaring64.NewDefaultBSI()
-	}
-	return d[i]
-}
-
-func (d *Data) get(i alicia.Field) *roaring64.BSI {
-	i--
-	return d[i]
-}
 
 func cleanRe(re string) string {
 	re = strings.TrimPrefix(re, "~")

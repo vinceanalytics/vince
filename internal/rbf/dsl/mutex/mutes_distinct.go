@@ -1,6 +1,8 @@
 package mutex
 
 import (
+	"slices"
+
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
@@ -19,7 +21,7 @@ const (
 	shardVsContainerExponent = shardwidth.Exponent - 16
 )
 
-func Distinct(c *rbf.Cursor, filters *rows.Row, f func(row uint64, columns *roaring.Container) error) error {
+func Distinct(c *rbf.Cursor, filters *rows.Row, f func(row uint64, columns *rows.Row) error) error {
 	fragData := c.Iterator()
 
 	var filterBitmap *roaring.Bitmap
@@ -45,6 +47,7 @@ func Distinct(c *rbf.Cursor, filters *rows.Row, f func(row uint64, columns *roar
 	}
 	prevRow := ^uint64(0)
 	seenThisRow := false
+	var values []uint64
 	for fragData.Next() {
 		k, c := fragData.Value()
 		row := k >> shardVsContainerExponent
@@ -58,13 +61,22 @@ func Distinct(c *rbf.Cursor, filters *rows.Row, f func(row uint64, columns *roar
 		}
 		if filterBitmap != nil {
 			if roaring.IntersectionAny(c, filter[k%(1<<shardVsContainerExponent)]) {
-				err := f(row, roaring.Intersect(c, filter[k%(1<<shardVsContainerExponent)]))
+				co := roaring.Intersect(c, filter[k%(1<<shardVsContainerExponent)])
+				values = slices.Grow(values[:], int(co.N()))
+				roaring.ContainerCallback(co, func(u uint16) {
+					values = append(values, uint64(u))
+				})
+				err := f(row, rows.NewRow(values...))
 				if err != nil {
 					return err
 				}
 			}
 		} else if c.N() != 0 {
-			err := f(row, c)
+			values = slices.Grow(values[:], int(c.N()))
+			roaring.ContainerCallback(c, func(u uint16) {
+				values = append(values, uint64(u))
+			})
+			err := f(row, rows.NewRow(values...))
 			if err != nil {
 				return err
 			}

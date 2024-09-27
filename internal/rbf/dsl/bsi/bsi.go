@@ -40,7 +40,7 @@ func Add(m *roaring64.Bitmap, id uint64, svalue int64) {
 
 // Extract finds all values set in exists columns and calls f with the
 // found column and value.
-func Extract(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(column uint64, value int64)) error {
+func Extract(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(column uint64, value int64) error) error {
 	exists, err := cursor.Row(c, shard, bsiExistsBit)
 	if err != nil {
 		return err
@@ -71,7 +71,53 @@ func Extract(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(column uint6
 	for columnID, val := range data {
 		// Convert to two's complement and add base back to value.
 		val = uint64((2*(int64(val)>>63) + 1) * int64(val&^(1<<63)))
-		f(columnID, int64(val))
+		err := f(columnID, int64(val))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func Distinct(c *rbf.Cursor, shard uint64, columns *rows.Row, f func(value uint64, columns *rows.Row) error) error {
+	exists, err := cursor.Row(c, shard, bsiExistsBit)
+	if err != nil {
+		return err
+	}
+	exists = exists.Intersect(columns)
+
+	data := make(map[uint64]uint64)
+	mergeBits(exists, 0, data)
+	bitDepth, err := depth(c)
+	if err != nil {
+		return err
+	}
+	sign, err := cursor.Row(c, shard, bsiSignBit)
+	if err != nil {
+		return err
+	}
+	sign = sign.Intersect(exists)
+	mergeBits(sign, 1<<63, data)
+
+	for i := uint64(0); i < bitDepth; i++ {
+		bits, err := cursor.Row(c, shard, bsiOffsetBit+uint64(i))
+		if err != nil {
+			return err
+		}
+		bits = bits.Intersect(exists)
+		mergeBits(bits, 1<<i, data)
+	}
+	o := map[uint64][]uint64{}
+	for columnID, val := range data {
+		// Convert to two's complement and add base back to value.
+		val = uint64((2*(int64(val)>>63) + 1) * int64(val&^(1<<63)))
+		o[val] = append(o[val], columnID)
+	}
+	for k, v := range o {
+		err := f(k, rows.NewRow(v...))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
