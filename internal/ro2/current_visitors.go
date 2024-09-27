@@ -4,12 +4,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/gernest/roaring/shardwidth"
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/bsi"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
 	"github.com/vinceanalytics/vince/internal/rbf/quantum"
-	"github.com/vinceanalytics/vince/internal/ro"
 	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
@@ -29,7 +29,7 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 		if !ok {
 			return nil
 		}
-		shard := tx.Seq() / ro.ShardWidth
+		shard := tx.Seq() / shardwidth.ShardWidth
 
 		// only search through the current shard for current visitors
 		return o.shards.View(shard, func(rtx *rbf.Tx) error {
