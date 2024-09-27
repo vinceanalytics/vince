@@ -12,7 +12,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/bsi"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
-	"github.com/vinceanalytics/vince/internal/rbf/dsl/mutex"
 	"github.com/vinceanalytics/vince/internal/rbf/quantum"
 	"github.com/vinceanalytics/vince/internal/web/query"
 	"google.golang.org/protobuf/encoding/protowire"
@@ -231,34 +230,24 @@ func (o *Store) breakdown(domain string, params *query.Query, metrics []string,
 					}
 				}
 				return fn(domainField, params.Start(), params.End(), func(b []byte) error {
-					return viewCu(rtx, string(b), func(rCu *rbf.Cursor) error {
-						dRow, err := cursor.Row(rCu, shard, domainId)
-						if err != nil {
-							return err
+					r, err := domainTx(rtx, b, shard, domainId, match)
+					if err != nil {
+						return err
+					}
+					if r.IsEmpty() {
+						return nil
+					}
+					view := b[len(domainField):]
+					bitmap := string(property) + string(view)
+
+					return propertyTx(rtx, bitmap, r, func(row uint64, columns *rows.Row) error {
+						key := tx.Find(uint64(field), row)
+						sx, ok := values[key]
+						if !ok {
+							sx = new(Stats)
+							values[key] = sx
 						}
-						if dRow.IsEmpty() {
-							return nil
-						}
-						view := b[len(domainField):]
-						dRow, err = match.Apply(rtx, shard, view, dRow)
-						if err != nil {
-							return err
-						}
-						if dRow.IsEmpty() {
-							return nil
-						}
-						bitmap := string(property) + string(view)
-						return viewCu(rtx, bitmap, func(rCu *rbf.Cursor) error {
-							return mutex.Distinct(rCu, dRow, func(row uint64, columns *rows.Row) error {
-								key := tx.Find(uint64(field), row)
-								sx, ok := values[key]
-								if !ok {
-									sx = new(Stats)
-									values[key] = sx
-								}
-								return sx.ReadFields(rtx, string(view), shard, columns, fields...)
-							})
-						})
+						return sx.ReadFields(rtx, string(view), shard, columns, fields...)
 					})
 				})
 			})
