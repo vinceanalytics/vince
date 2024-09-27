@@ -5,12 +5,12 @@ import (
 	"slices"
 	"time"
 
+	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/gernest/rows"
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/boolean"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/bsi"
-	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
 func (d *Data) Read(

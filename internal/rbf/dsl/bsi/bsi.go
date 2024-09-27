@@ -3,11 +3,11 @@ package bsi
 import (
 	"math/bits"
 
+	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/gernest/rows"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
-	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
 const (

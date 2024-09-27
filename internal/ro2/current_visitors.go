@@ -4,13 +4,13 @@ import (
 	"errors"
 	"time"
 
+	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/gernest/roaring/shardwidth"
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/rbf"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/bsi"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
 	"github.com/vinceanalytics/vince/internal/rbf/quantum"
-	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
 const (

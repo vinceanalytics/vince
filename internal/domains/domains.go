@@ -3,9 +3,9 @@ package domains
 import (
 	"sync/atomic"
 
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/dgraph-io/badger/v4/y"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
 var domains = newDom()

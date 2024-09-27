@@ -6,6 +6,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	groar "github.com/gernest/roaring"
 	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/location"
@@ -14,7 +15,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/cursor"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/mutex"
 	"github.com/vinceanalytics/vince/internal/rbf/quantum"
-	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 	"github.com/vinceanalytics/vince/internal/web/query"
 	"google.golang.org/protobuf/encoding/protowire"
 )

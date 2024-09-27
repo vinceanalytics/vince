@@ -33,6 +33,7 @@ require (
 )
 
 require (
+	github.com/RoaringBitmap/roaring/v2 v2.3.5 // indirect
 	github.com/blevesearch/mmap-go v1.0.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

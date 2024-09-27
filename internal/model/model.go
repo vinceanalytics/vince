@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -11,7 +12,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/bsi"
 	"github.com/vinceanalytics/vince/internal/rbf/dsl/mutex"
 	"github.com/vinceanalytics/vince/internal/rbf/quantum"
-	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 

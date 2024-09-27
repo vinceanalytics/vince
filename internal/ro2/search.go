@@ -5,8 +5,8 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/vinceanalytics/vince/internal/alicia"
-	"github.com/vinceanalytics/vince/internal/roaring/roaring64"
 )
 
 // We know fields before hand
