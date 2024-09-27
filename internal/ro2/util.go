@@ -2,7 +2,6 @@ package ro2
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/gernest/rows"
 	"github.com/vinceanalytics/vince/internal/rbf"
@@ -40,6 +39,5 @@ func propertyTx(rtx *rbf.Tx, view string, r *rows.Row, f func(row uint64, column
 		return err
 	}
 	defer rCu.Close()
-	fmt.Println(view)
 	return mutex.Distinct(rCu, r, f)
 }
