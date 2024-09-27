@@ -10,9 +10,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/ristretto"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/model"
+	"github.com/vinceanalytics/vince/internal/batch"
 	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
@@ -82,18 +83,19 @@ func (db *Config) eventsLoop(cts context.Context) {
 	db.logger.Info("starting event processing loop")
 	ts := time.NewTicker(time.Second)
 	defer ts.Stop()
-	batch := make(model.Batch)
+	batch := batch.NewBatch()
 	for {
 		select {
 		case <-cts.Done():
 			db.logger.Info("exiting event processing loop")
 			return
 		case <-ts.C:
-			err := db.Get().ApplyBatch(batch)
+			err := db.Get().Badger().Update(func(txn *badger.Txn) error {
+				return batch.Save(txn)
+			})
 			if err != nil {
 				db.logger.Error("applying events batch", "err", err)
 			}
-			clear(batch)
 		case e := <-db.buffer:
 			err := db.append(e, batch)
 			if err != nil {

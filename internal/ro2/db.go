@@ -45,6 +45,8 @@ func (db *DB) Close() error {
 	)
 }
 
+func (db *DB) Badger() *badger.DB { return db.db }
+
 func (db *DB) Update(f func(tx *Tx) error) error {
 	tx := newTx(nil)
 	defer tx.Release()
