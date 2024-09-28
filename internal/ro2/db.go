@@ -2,7 +2,6 @@ package ro2
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -11,12 +10,10 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/dustin/go-humanize"
-	"github.com/vinceanalytics/vince/internal/shards"
 )
 
 type DB struct {
-	db     *badger.DB
-	shards *shards.DB
+	db *badger.DB
 }
 
 func newDB(path string) (*DB, error) {
@@ -30,7 +27,7 @@ func newDB(path string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	o := &DB{db: db, shards: shards.New(path)}
+	o := &DB{db: db}
 	return o, nil
 }
 
@@ -40,9 +37,7 @@ func (db *DB) Start(ctx context.Context) {
 }
 
 func (db *DB) Close() error {
-	return errors.Join(
-		db.db.Close(), db.shards.Close(),
-	)
+	return db.db.Close()
 }
 
 func (db *DB) Badger() *badger.DB { return db.db }
