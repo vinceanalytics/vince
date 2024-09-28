@@ -27,11 +27,14 @@ func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 		if !ok {
 			return nil
 		}
-		bs, err := tx.Bitmap(0, 0, v1.Field_domain)
+
+		// use global shard bitmap  to avoid calling comparison. bs is existence
+		// bitmap contains all columns  for the shard globally.
+		bs, err := tx.Bitmap(shard, 0, v1.Field_domain)
 		if err != nil {
 			return err
 		}
-		match := bs.CompareValue(0, roaring64.EQ, int64(shard), 0, bs.GetExistenceBitmap())
+		match := bs.GetExistenceBitmap()
 		if match.IsEmpty() {
 			return nil
 		}

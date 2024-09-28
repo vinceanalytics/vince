@@ -59,11 +59,11 @@ func (tx *Tx) Select(domain string, start,
 	m := tx.compile(filters)
 	return intrerval.Range(start, end, func(t time.Time) error {
 		view := uint64(t.UnixMilli())
-		bs, err := tx.Bitmap(0, view, v1.Field_domain)
+		bs, err := tx.Bitmap(shard, view, v1.Field_domain)
 		if err != nil {
 			return err
 		}
-		match := bs.CompareValue(0, roaring64.EQ, int64(shard), 0, bs.GetExistenceBitmap())
+		match := bs.GetExistenceBitmap()
 		columns := m.Apply(tx, shard, view, match)
 		if columns.IsEmpty() {
 			return nil

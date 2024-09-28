@@ -89,7 +89,9 @@ func (b *Batch) saveTs(tx *badger.Txn, key encoding.Key, value *roaring64.BSI) e
 	value.RunOptimize()
 	ts := time.UnixMilli(int64(key.Time)).UTC()
 	return errors.Join(
-		b.saveKey(tx, key, value), // minute
+		b.saveKey(tx, encoding.Key{Field: key.Field}, value),                   // global
+		b.saveKey(tx, encoding.Key{Field: key.Field, Shard: key.Shard}, value), // global by shard
+		b.saveKey(tx, key, value),                                              // minute
 		b.saveKey(tx, encoding.Key{Time: hour(ts), Shard: key.Shard, Field: key.Field}, value),
 		b.saveKey(tx, encoding.Key{Time: day(ts), Shard: key.Shard, Field: key.Field}, value),
 		b.saveKey(tx, encoding.Key{Time: week(ts), Shard: key.Shard, Field: key.Field}, value),
