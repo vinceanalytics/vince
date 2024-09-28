@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
@@ -17,10 +16,12 @@ type DB struct {
 }
 
 func newDB(path string) (*DB, error) {
-	dbPath := filepath.Join(path, "db")
-	os.MkdirAll(dbPath, 0755)
+	if path != "" {
+		os.MkdirAll(path, 0755)
+	}
 	db, err := badger.Open(badger.
-		DefaultOptions(dbPath).
+		DefaultOptions(path).
+		WithInMemory(path == "").
 		WithCompression(options.ZSTD).
 		WithCompactL0OnClose(true).
 		WithLogger(nil))
