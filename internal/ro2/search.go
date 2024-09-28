@@ -1,15 +1,8 @@
 package ro2
 
 import (
-	"strings"
 	"unicode/utf8"
 )
-
-func cleanRe(re string) string {
-	re = strings.TrimPrefix(re, "~")
-	re = strings.TrimSuffix(re, "$")
-	return re
-}
 
 func searchPrefix(source []byte) (prefix []byte, exact bool) {
 	for i := range source {

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/vinceanalytics/vince/internal/alicia"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/web/db"
@@ -129,7 +129,7 @@ func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.SOURCE)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, v1.Field_source)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -149,7 +149,7 @@ func UtmMediums(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_MEDIUM)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, v1.Field_utm_medium)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -169,7 +169,7 @@ func UtmCampaigns(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_CAMPAIGN)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, v1.Field_utm_campaign)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -189,7 +189,7 @@ func UtmContents(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_CONTENT)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, v1.Field_utm_content)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -209,7 +209,7 @@ func UtmTerms(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_TERM)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, v1.Field_utm_term)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -229,7 +229,7 @@ func UtmSources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.UTM_SOURCE)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, v1.Field_utm_source)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -252,7 +252,7 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
 	_ = referrer
-	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.REFERRER)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, v1.Field_referrer)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -272,7 +272,7 @@ func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "pageviews", "bounce_rate")
 	}
-	o, err := db.Get().Breakdown(site.Domain, params, metrics, alicia.PAGE)
+	o, err := db.Get().Breakdown(site.Domain, params, metrics, v1.Field_page)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -292,7 +292,7 @@ func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		site.Domain,
 		params,
 		[]string{"visitors", "visits", "visit_duration"},
-		alicia.ENTRY_PAGE,
+		v1.Field_entry_page,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -320,7 +320,7 @@ func ExitPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Get().Breakdown(site.Domain, params, []string{"visitors"}, alicia.COUNTRY)
+	o, err := db.Get().Breakdown(site.Domain, params, []string{"visitors"}, v1.Field_country)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -339,7 +339,7 @@ func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Get().Breakdown(site.Domain, params, []string{"visitors"}, alicia.SUB1_CODE)
+	o, err := db.Get().Breakdown(site.Domain, params, []string{"visitors"}, v1.Field_subdivision1_code)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -370,7 +370,7 @@ func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.BROWSER)
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, v1.Field_browser)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -386,7 +386,7 @@ func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.BROWSER_VESRION)
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, v1.Field_browser_version)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -402,7 +402,7 @@ func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.OS)
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, v1.Field_os)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -418,7 +418,7 @@ func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.OS_VERSION)
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, v1.Field_os_version)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}
@@ -434,7 +434,7 @@ func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func ScreenSize(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, alicia.DEVICE)
+	o, err := db.Get().BreakdownVisitorsWithPercentage(site.Domain, params, v1.Field_device)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}

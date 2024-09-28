@@ -3,7 +3,7 @@ package query
 import (
 	"time"
 
-	"github.com/vinceanalytics/vince/internal/alicia"
+	"github.com/vinceanalytics/vince/internal/compute"
 )
 
 type Interval byte
@@ -42,19 +42,19 @@ func (i Interval) String() string {
 	}
 }
 
-func (i Interval) Field() alicia.Field {
+func (i Interval) Range(start, end time.Time, f func(time.Time) error) error {
 	switch i {
 	case Minute:
-		return alicia.MINUTE
+		return compute.ByMinute(start, end, f)
 	case Hour:
-		return alicia.HOUR
+		return compute.ByHour(start, end, f)
 	case Date:
-		return alicia.DAY
+		return compute.ByDate(start, end, f)
 	case Week:
-		return alicia.WEEK
+		return compute.ByWeek(start, end, f)
 	case Month:
-		return alicia.MONTH
+		return compute.ByMonth(start, end, f)
 	default:
-		return alicia.Field(0)
+		return compute.ByDate(start, end, f)
 	}
 }

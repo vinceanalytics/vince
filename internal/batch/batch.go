@@ -10,6 +10,7 @@ import (
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -97,24 +98,19 @@ func (b *Batch) saveTs(tx *badger.Txn, key encoding.Key, value *roaring64.BSI) e
 }
 
 func hour(ts time.Time) uint64 {
-	return uint64(ts.Truncate(time.Hour).UnixMilli())
+	return uint64(compute.Hour(ts).UnixMilli())
 }
 
 func day(ts time.Time) uint64 {
-	yy, mm, dd := ts.Date()
-	return uint64(time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC).UnixMilli())
+	return uint64(compute.Date(ts).UnixMilli())
 }
 
 func week(ts time.Time) uint64 {
-	yy, mm, dd := ts.Date()
-	t := time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC)
-	t = t.AddDate(0, 0, -int(t.Weekday()))
-	return uint64(t.UnixMilli())
+	return uint64(compute.Week(ts).UnixMilli())
 }
 
 func month(ts time.Time) uint64 {
-	yy, mm, _ := ts.Date()
-	return uint64(time.Date(yy, mm, 1, 0, 0, 0, 0, time.UTC).UnixMilli())
+	return uint64(compute.Month(ts).UnixMilli())
 }
 
 func (b *Batch) saveKey(tx *badger.Txn, key encoding.Key, value *roaring64.BSI) error {

@@ -11,18 +11,15 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/alicia"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/features"
+	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/license"
 	"google.golang.org/protobuf/proto"
 )
 
 func (db *DB) checkLicense(ctx context.Context) {
-
-	key := alicia.Get()
-	defer key.Release()
 
 	var loadedLicense *v1.License
 	data, err := licenseData(config.C.License)
@@ -40,7 +37,7 @@ func (db *DB) checkLicense(ctx context.Context) {
 
 	// handle license updated on the web UI
 	err = db.db.Update(func(txn *badger.Txn) error {
-		sys := key.System()
+		sys := keys.OpsPrefix
 		it, err := txn.Get(sys)
 		if err != nil {
 			if !errors.Is(err, badger.ErrKeyNotFound) {
@@ -82,7 +79,7 @@ func (db *DB) checkLicense(ctx context.Context) {
 	if len(config.C.Domains) > 0 {
 		err = db.Update(func(tx *Tx) error {
 			for _, n := range config.C.Domains {
-				k := tx.get().Site(n)
+				k := keys.Site([]byte(n))
 				if _, err := tx.tx.Get(k); errors.Is(err, badger.ErrKeyNotFound) {
 					data, _ := proto.Marshal(&v1.Site{
 						Domain: n,
@@ -136,7 +133,7 @@ func (db *DB) ApplyLicense(licenseKey []byte) error {
 	return db.Update(func(tx *Tx) error {
 		data, _ := proto.Marshal(ls)
 		return tx.tx.Set(
-			tx.get().System(), data,
+			keys.OpsPrefix, data,
 		)
 	})
 }
@@ -144,7 +141,7 @@ func (db *DB) ApplyLicense(licenseKey []byte) error {
 func (db *DB) LockSites(locked bool) error {
 	return db.Update(func(tx *Tx) error {
 		it := tx.tx.NewIterator(badger.IteratorOptions{
-			Prefix: tx.get().Site(""),
+			Prefix: keys.SitePrefix,
 		})
 		defer it.Close()
 		var ls v1.Site
@@ -158,7 +155,7 @@ func (db *DB) LockSites(locked bool) error {
 			ls.Locked = locked
 			data, _ := proto.Marshal(&ls)
 			err = tx.tx.Set(
-				tx.get().Site(ls.Domain),
+				keys.Site([]byte(ls.Domain)),
 				data,
 			)
 			if err != nil {

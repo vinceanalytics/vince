@@ -6,16 +6,11 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
-	"github.com/gernest/rows"
-	"github.com/vinceanalytics/vince/internal/alicia"
-	"github.com/vinceanalytics/vince/internal/rbf"
-	"github.com/vinceanalytics/vince/internal/rbf/dsl/boolean"
-	"github.com/vinceanalytics/vince/internal/rbf/dsl/bsi"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
 type Stats struct {
 	Visitors, Visits, PageViews, ViewsPerVisits, BounceRate, VisitDuration float64
-	uid                                                                    roaring64.Bitmap
 }
 
 func StatToValue(metric string) func(s *Stats) float64 {
@@ -38,7 +33,6 @@ func StatToValue(metric string) func(s *Stats) float64 {
 }
 
 func (s *Stats) Compute() {
-	s.Visitors = float64(s.uid.GetCardinality())
 	if s.VisitDuration != 0 {
 		s.VisitDuration = time.Duration(s.VisitDuration).Seconds()
 	}
@@ -54,80 +48,72 @@ func (s *Stats) Compute() {
 }
 
 func (d *Stats) ReadFields(
-	rtx *rbf.Tx,
-	view string,
+	tx *Tx,
 	shard uint64,
-	match *rows.Row, fields ...alicia.Field) (err error) {
+	view uint64,
+	match *roaring64.Bitmap, fields ...v1.Field) (err error) {
 	for i := range fields {
 		f := fields[i]
 		switch f {
-		case alicia.VIEW:
-			err = viewCu(rtx, "view"+view, func(rCu *rbf.Cursor) error {
-				return boolean.Count(rCu, shard, match, func(value int64) error {
-					d.PageViews += float64(value)
-					return nil
-				})
-			})
-		case alicia.SESSION:
-			err = viewCu(rtx, "session"+view, func(rCu *rbf.Cursor) error {
-				return boolean.Count(rCu, shard, match, func(value int64) error {
-					d.Visits += float64(value)
-					return nil
-				})
-			})
-		case alicia.BOUNCE:
-			err = viewCu(rtx, "bounce"+view, func(rCu *rbf.Cursor) error {
-				return boolean.BounceCount(rCu, shard, match, func(value int64) error {
-					d.BounceRate += float64(value)
-					return nil
-				})
-			})
-		case alicia.DURATION:
-			err = viewCu(rtx, "duration"+view, func(rCu *rbf.Cursor) error {
-				return bsi.Sum(rCu, match, func(count int32, sum int64) error {
-					d.VisitDuration += float64(sum)
-					return nil
-				})
-			})
-		case alicia.ID:
-			err = viewCu(rtx, "id"+view, func(rCu *rbf.Cursor) error {
-				return bsi.Extract(rCu, shard, match, func(column uint64, value int64) error {
-					d.uid.Add(uint64(value))
-					return nil
-				})
-			})
-		}
-		if err != nil {
-			return
+		case v1.Field_view:
+			count, err := tx.Count(shard, view, f, match)
+			if err != nil {
+				return err
+			}
+			d.PageViews += float64(count)
+
+		case v1.Field_session:
+			count, err := tx.Count(shard, view, f, match)
+			if err != nil {
+				return err
+			}
+			d.Visits += float64(count)
+
+		case v1.Field_bounce:
+			sum, err := tx.Sum(shard, view, f, match)
+			if err != nil {
+				return err
+			}
+			d.BounceRate += float64(sum)
+		case v1.Field_duration:
+			sum, err := tx.Sum(shard, view, f, match)
+			if err != nil {
+				return err
+			}
+			d.VisitDuration += float64(sum)
+		case v1.Field_id:
+			uniq, err := tx.Unique(shard, view, f, match)
+			if err != nil {
+				return err
+			}
+			d.Visitors += float64(uniq)
 		}
 	}
 	return
 }
 
-func MetricsToProject(mets []string) []alicia.Field {
-	m := map[alicia.Field]struct{}{}
+func MetricsToProject(mets []string) []v1.Field {
+	m := map[v1.Field]struct{}{}
 	for _, v := range mets {
 		switch v {
 		case "visitors":
-			m[alicia.ID] = struct{}{}
+			m[v1.Field_id] = struct{}{}
 		case "visits":
-			m[alicia.SESSION] = struct{}{}
+			m[v1.Field_session] = struct{}{}
 		case "pageviews":
-			m[alicia.VIEW] = struct{}{}
+			m[v1.Field_view] = struct{}{}
 		case "views_per_visit":
-			m[alicia.VIEW] = struct{}{}
-			m[alicia.SESSION] = struct{}{}
+			m[v1.Field_view] = struct{}{}
+			m[v1.Field_session] = struct{}{}
 		case "bounce_rate":
-			m[alicia.BOUNCE] = struct{}{}
-			m[alicia.SESSION] = struct{}{}
+			m[v1.Field_bounce] = struct{}{}
+			m[v1.Field_session] = struct{}{}
 		case "visit_duration":
-			m[alicia.DURATION] = struct{}{}
-			m[alicia.SESSION] = struct{}{}
-		case "events":
-			m[alicia.SESSION] = struct{}{}
+			m[v1.Field_duration] = struct{}{}
+			m[v1.Field_session] = struct{}{}
 		}
 	}
-	o := make([]alicia.Field, 0, len(m))
+	o := make([]v1.Field, 0, len(m))
 	for k := range m {
 		o = append(o, k)
 	}
