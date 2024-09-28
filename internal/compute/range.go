@@ -4,6 +4,7 @@ import "time"
 
 func ByMinute(start, end time.Time, f func(time.Time) error) error {
 	t := start.Truncate(time.Minute)
+	end = end.Add(time.Minute)
 	for t.Before(end) {
 		err := f(t)
 		if err != nil {
@@ -16,6 +17,7 @@ func ByMinute(start, end time.Time, f func(time.Time) error) error {
 
 func ByHour(start, end time.Time, f func(time.Time) error) error {
 	t := start.Truncate(time.Hour)
+	end = end.Add(time.Hour)
 	for t.Before(end) {
 		err := f(t)
 		if err != nil {
@@ -28,6 +30,7 @@ func ByHour(start, end time.Time, f func(time.Time) error) error {
 
 func ByDate(start, end time.Time, f func(time.Time) error) error {
 	t := Date(start)
+	end = end.AddDate(0, 0, 1)
 	for t.Before(end) {
 		err := f(t)
 		if err != nil {
@@ -40,6 +43,7 @@ func ByDate(start, end time.Time, f func(time.Time) error) error {
 
 func ByWeek(start, end time.Time, f func(time.Time) error) error {
 	t := Week(start)
+	end = end.AddDate(0, 0, 7)
 	for t.Before(end) {
 		err := f(t)
 		if err != nil {
@@ -52,6 +56,7 @@ func ByWeek(start, end time.Time, f func(time.Time) error) error {
 
 func ByMonth(start, end time.Time, f func(time.Time) error) error {
 	t := Month(start)
+	end = end.AddDate(0, 1, 0)
 	for t.Before(end) {
 		err := f(t)
 		if err != nil {
