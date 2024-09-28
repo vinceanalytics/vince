@@ -136,7 +136,6 @@ func month(ts time.Time) uint64 {
 }
 
 func (b *Batch) saveKey(tx *badger.Txn, key encoding.Key, value *roaring64.BSI) error {
-	fmt.Println(key)
 	return b.save(
 		tx,
 		encoding.EncodeKey(key),
