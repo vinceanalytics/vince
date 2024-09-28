@@ -11,6 +11,7 @@ import (
 
 type Stats struct {
 	Visitors, Visits, PageViews, ViewsPerVisits, BounceRate, VisitDuration float64
+	uid                                                                    roaring64.Bitmap
 }
 
 func StatToValue(metric string) func(s *Stats) float64 {
@@ -33,6 +34,7 @@ func StatToValue(metric string) func(s *Stats) float64 {
 }
 
 func (s *Stats) Compute() {
+	s.Visitors = float64(s.uid.GetCardinality())
 	if s.VisitDuration != 0 {
 		s.VisitDuration = time.Duration(s.VisitDuration).Seconds()
 	}
@@ -82,11 +84,11 @@ func (d *Stats) ReadFields(
 			}
 			d.VisitDuration += float64(sum)
 		case v1.Field_id:
-			uniq, err := tx.Unique(shard, view, f, match)
+			uniq, err := tx.Transpose(shard, view, f, match)
 			if err != nil {
 				return err
 			}
-			d.Visitors += float64(uniq)
+			d.uid.Or(uniq)
 		}
 	}
 	return

@@ -9,15 +9,33 @@ import (
 )
 
 func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
-	end := time.Now().UTC().Truncate(time.Minute)
+	end := time.Now().UTC()
 	start := end.Add(-5 * time.Minute)
-	m := new(Stats)
+	r := roaring64.New()
 	err = o.View(func(tx *Tx) error {
-		return tx.Select(domain, start, end, query.Minute, query.Filters{}, func(shard, view uint64, columns *roaring64.Bitmap) error {
-			return m.ReadFields(tx, shard, view, columns, v1.Field_id)
+		shard, ok := tx.ID(v1.Field_domain, domain)
+		if !ok {
+			return nil
+		}
+		return query.Minute.Range(start, end, func(t time.Time) error {
+			view := uint64(t.UnixMilli())
+			bs, err := tx.Bitmap(shard, view, v1.Field_domain)
+			if err != nil {
+				return err
+			}
+			match := bs.GetExistenceBitmap()
+			if match.IsEmpty() {
+				return nil
+			}
+			uniq, err := tx.Transpose(shard, view, v1.Field_id, match)
+			if err != nil {
+				return err
+			}
+			r.Or(uniq)
+			return nil
 		})
 	})
-	visitors = uint64(m.Visitors)
+	visitors = r.GetCardinality()
 	return
 }
 

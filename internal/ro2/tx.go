@@ -81,11 +81,19 @@ func (tx *Tx) Sum(shard, view uint64, field v1.Field, match *roaring64.Bitmap) (
 }
 
 func (tx *Tx) Unique(shard, view uint64, field v1.Field, match *roaring64.Bitmap) (uint64, error) {
-	bs, err := tx.Bitmap(shard, view, field)
+	bs, err := tx.Transpose(shard, view, field, match)
 	if err != nil {
 		return 0, err
 	}
-	return bs.IntersectAndTranspose(0, match).GetCardinality(), nil
+	return bs.GetCardinality(), nil
+}
+
+func (tx *Tx) Transpose(shard, view uint64, field v1.Field, match *roaring64.Bitmap) (*roaring64.Bitmap, error) {
+	bs, err := tx.Bitmap(shard, view, field)
+	if err != nil {
+		return nil, err
+	}
+	return bs.IntersectAndTranspose(0, match), nil
 }
 
 func (tx *Tx) Count(shard, view uint64, field v1.Field, match *roaring64.Bitmap) (uint64, error) {
