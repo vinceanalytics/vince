@@ -10,7 +10,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/ristretto"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/batch"
@@ -90,9 +89,7 @@ func (db *Config) eventsLoop(cts context.Context) {
 			db.logger.Info("exiting event processing loop")
 			return
 		case <-ts.C:
-			err := db.Get().Badger().Update(func(txn *badger.Txn) error {
-				return batch.Save(txn)
-			})
+			err := batch.Save(db.db.Badger())
 			if err != nil {
 				db.logger.Error("applying events batch", "err", err)
 			}

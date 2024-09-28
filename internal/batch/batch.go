@@ -72,13 +72,31 @@ func (b *Batch) Add(tx KV, m *v1.Model) error {
 	return nil
 }
 
-func (b *Batch) Save(tx *badger.Txn) error {
+func (b *Batch) Save(db *badger.DB) (err error) {
+	tx := db.NewTransaction(true)
 	defer func() {
+		if err != nil {
+			tx.Discard()
+		} else {
+			err = tx.Commit()
+		}
 		clear(b.data)
 	}()
 	for k, v := range b.data {
-		err := b.saveTs(tx, k, v)
+		err = b.saveTs(tx, k, v)
 		if err != nil {
+			if errors.Is(err, badger.ErrTxnTooBig) {
+				err = tx.Commit()
+				if err != nil {
+					return
+				}
+				tx = db.NewTransaction(true)
+				err = b.saveTs(tx, k, v)
+				if err != nil {
+					return
+				}
+				continue
+			}
 			return err
 		}
 	}
