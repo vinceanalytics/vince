@@ -14,6 +14,7 @@ import (
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/config"
+	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
@@ -22,7 +23,7 @@ import (
 func (db *DB) Domains(f func(*v1.Site)) {
 	err := db.View(func(tx *Tx) error {
 		it := tx.Iter()
-		prefix := keys.Site([]byte{})
+		prefix := keys.SitePrefix
 		var s v1.Site
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			it.Item().Value(func(val []byte) error {
@@ -40,7 +41,7 @@ func (db *DB) Domains(f func(*v1.Site)) {
 
 func (db *DB) Site(domain string) (u *v1.Site) {
 	err := db.View(func(tx *Tx) error {
-		it, err := tx.tx.Get(keys.Site([]byte(domain)))
+		it, err := tx.tx.Get(encoding.EncodeSite([]byte(domain)))
 		if err != nil {
 			return err
 		}
@@ -79,7 +80,7 @@ func (db *DB) CreateSite(domain string, public bool) (err error) {
 func (db *DB) Delete(domain string) (err error) {
 	return db.Update(func(tx *Tx) error {
 		return tx.tx.Delete(
-			keys.Site([]byte(domain)),
+			encoding.EncodeSite([]byte(domain)),
 		)
 	})
 }
@@ -130,7 +131,7 @@ func (db *DB) Save(u *v1.Site) error {
 		return err
 	}
 	return db.Update(func(tx *Tx) error {
-		err = tx.tx.Set(keys.Site([]byte(u.Domain)), data)
+		err = tx.tx.Set(encoding.EncodeSite([]byte(u.Domain)), data)
 		if err != nil {
 			return err
 		}

@@ -10,7 +10,6 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/encoding"
-	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -99,11 +98,11 @@ func (tx *Tx) Count(shard, view uint64, field v1.Field, match *roaring64.Bitmap)
 }
 
 func (tx *Tx) Bitmap(shard, view uint64, field v1.Field) (*roaring64.BSI, error) {
-	key := keys.Data(encoding.EncodeKey(encoding.Key{
+	key := encoding.EncodeKey(encoding.Key{
 		Time:  view,
 		Shard: uint32(shard),
 		Field: field,
-	}))
+	})
 	it, err := tx.tx.Get(key)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {

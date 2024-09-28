@@ -13,6 +13,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/domains"
+	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/features"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/license"
@@ -79,7 +80,7 @@ func (db *DB) checkLicense(ctx context.Context) {
 	if len(config.C.Domains) > 0 {
 		err = db.Update(func(tx *Tx) error {
 			for _, n := range config.C.Domains {
-				k := keys.Site([]byte(n))
+				k := encoding.EncodeSite([]byte(n))
 				if _, err := tx.tx.Get(k); errors.Is(err, badger.ErrKeyNotFound) {
 					data, _ := proto.Marshal(&v1.Site{
 						Domain: n,
@@ -155,7 +156,7 @@ func (db *DB) LockSites(locked bool) error {
 			ls.Locked = locked
 			data, _ := proto.Marshal(&ls)
 			err = tx.tx.Set(
-				keys.Site([]byte(ls.Domain)),
+				encoding.EncodeSite([]byte(ls.Domain)),
 				data,
 			)
 			if err != nil {

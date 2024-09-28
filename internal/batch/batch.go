@@ -12,7 +12,6 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
-	"github.com/vinceanalytics/vince/internal/keys"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -37,7 +36,7 @@ func (b *Batch) Add(tx KV, m *v1.Model) error {
 	id := tx.RecordID()
 	shard, ok := b.domains[m.Domain]
 	if !ok {
-		shard = tx.Translate(v1.Field_domain, m.Device)
+		shard = tx.Translate(v1.Field_domain, m.Domain)
 		b.domains[m.Domain] = shard
 	}
 	ts := uint64(time.UnixMilli(m.Timestamp).Truncate(time.Minute).UnixMilli())
@@ -73,6 +72,9 @@ func (b *Batch) Add(tx KV, m *v1.Model) error {
 }
 
 func (b *Batch) Save(db *badger.DB) (err error) {
+	if len(b.data) == 0 {
+		return
+	}
 	tx := db.NewTransaction(true)
 	defer func() {
 		if err != nil {
@@ -134,9 +136,10 @@ func month(ts time.Time) uint64 {
 }
 
 func (b *Batch) saveKey(tx *badger.Txn, key encoding.Key, value *roaring64.BSI) error {
+	fmt.Println(key)
 	return b.save(
 		tx,
-		keys.Data(encoding.EncodeKey(key)),
+		encoding.EncodeKey(key),
 		value,
 	)
 }

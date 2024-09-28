@@ -9,7 +9,6 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/encoding"
-	"github.com/vinceanalytics/vince/internal/keys"
 )
 
 func (tx *Tx) RecordID() uint64 {
@@ -17,7 +16,7 @@ func (tx *Tx) RecordID() uint64 {
 }
 
 func (tx *Tx) Translate(field v1.Field, value string) (id uint64) {
-	key := keys.TranslateKey(encoding.EncodeTranslateKey(field, value))
+	key := encoding.EncodeTranslateKey(field, value)
 	it, err := tx.tx.Get(key)
 	if err == nil {
 		it.Value(func(val []byte) error {
@@ -32,7 +31,7 @@ func (tx *Tx) Translate(field v1.Field, value string) (id uint64) {
 		os.Exit(1)
 	}
 	id = tx.nextSeq(field)
-	idKey := keys.TranslateID(encoding.EncodeTranslateID(field, id))
+	idKey := encoding.EncodeTranslateID(field, id)
 	err = tx.tx.Set(idKey, []byte(value))
 	if err != nil {
 		slog.Error("reading translation id", "err", err)
@@ -50,7 +49,7 @@ func (tx *Tx) Translate(field v1.Field, value string) (id uint64) {
 }
 
 func (tx *Tx) nextSeq(field v1.Field) uint64 {
-	key := keys.TranslateSeq(encoding.EncodeTranslateSeq(field))
+	key := encoding.EncodeTranslateSeq(field)
 	var id uint64
 	it, err := tx.tx.Get(key)
 	if err != nil {
@@ -76,7 +75,7 @@ func (tx *Tx) nextSeq(field v1.Field) uint64 {
 }
 
 func (tx *Tx) Find(field v1.Field, id uint64) (o string) {
-	key := keys.TranslateID(encoding.EncodeTranslateID(field, id))
+	key := encoding.EncodeTranslateID(field, id)
 	it, err := tx.tx.Get(key)
 	if err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
@@ -114,7 +113,7 @@ func (tx *Tx) ids(field v1.Field, value []string) []int64 {
 }
 
 func (tx *Tx) ID(field v1.Field, value string) (id uint64, ok bool) {
-	key := keys.TranslateKey(encoding.EncodeTranslateKey(field, value))
+	key := encoding.EncodeTranslateKey(field, value)
 	it, err := tx.tx.Get(key)
 	if err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
@@ -131,7 +130,7 @@ func (tx *Tx) ID(field v1.Field, value string) (id uint64, ok bool) {
 }
 
 func (tx *Tx) Search(field v1.Field, prefix []byte, f func([]byte, uint64)) {
-	key := keys.TranslateKey(encoding.EncodeTranslateKey(field, ""))
+	key := encoding.EncodeTranslateKey(field, "")
 	offset := len(key)
 	key = append(key, prefix...)
 	it := tx.Iter()
