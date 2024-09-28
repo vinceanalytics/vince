@@ -2,6 +2,7 @@ package encoding
 
 import (
 	"encoding/binary"
+	"fmt"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
@@ -10,6 +11,10 @@ type Key struct {
 	Time  uint64
 	Shard uint32
 	Field v1.Field
+}
+
+func (k *Key) String() string {
+	return fmt.Sprintf("%d/%d/%s", k.Time, k.Shard, k.Field)
 }
 
 func EncodeKey(key Key) []byte {
