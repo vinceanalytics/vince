@@ -7,11 +7,12 @@ import (
 )
 
 type Query struct {
-	period Period
-	cmp    *Period
-	filter Filters
-	metric string
-	all    bool
+	period   Period
+	cmp      *Period
+	filter   Filters
+	metric   string
+	all      bool
+	realtime bool
 }
 
 func New(u url.Values) *Query {
@@ -52,14 +53,16 @@ func New(u url.Values) *Query {
 	}
 
 	return &Query{
-		period: period,
-		cmp:    cmp,
-		metric: u.Get("metric"),
-		all:    u.Get("period") == "all",
+		period:   period,
+		cmp:      cmp,
+		metric:   u.Get("metric"),
+		all:      u.Get("period") == "all",
+		realtime: u.Get("period") == "realtime",
 	}
 }
 
-func (q *Query) All() bool { return q.all }
+func (q *Query) All() bool      { return q.all }
+func (q *Query) Realtime() bool { return q.realtime }
 
 func earliest(a, b time.Time) time.Time {
 	if a.Before(b) {

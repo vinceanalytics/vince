@@ -68,33 +68,37 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	stats.Compute()
 	cmp := new(ro2.Stats)
 
-	if x := params.Compare(); x != nil {
+	if x := params.Compare(); x != nil && !params.Realtime() {
 		cmp, err = db.Get().Stats(site.Domain, x.Start, x.End, params.Interval(), params.Filter(), metrics)
 		if err != nil {
 			db.Logger().Error("reading top stats comparison", "err", err)
 		}
 	}
 	cmp.Compute()
+	realtime := params.Realtime()
 	db.JSON(w, map[string]any{
 		"from":     params.From(),
 		"to":       params.To(),
 		"interval": params.Interval().String(),
 		"top_stats": []any{
-			entry(stats.Visitors, cmp.Visitors, "Unique visitors", "visitors"),
-			entry(stats.Visits, cmp.Visits, "Total visits", "visits"),
-			entry(stats.PageViews, cmp.PageViews, "Total pageviews", "pageviews"),
-			entry(stats.ViewsPerVisits, cmp.ViewsPerVisits, "Views per visit", "views_per_visit"),
-			entry(stats.BounceRate, cmp.BounceRate, "Bounce rate", "bounce_rate"),
-			entry(stats.VisitDuration, cmp.VisitDuration, "Visit duration", "visit_duration"),
+			entry(realtime, stats.Visitors, cmp.Visitors, "Unique visitors", "visitors"),
+			entry(realtime, stats.Visits, cmp.Visits, "Total visits", "visits"),
+			entry(realtime, stats.PageViews, cmp.PageViews, "Total pageviews", "pageviews"),
+			entry(realtime, stats.ViewsPerVisits, cmp.ViewsPerVisits, "Views per visit", "views_per_visit"),
+			entry(realtime, stats.BounceRate, cmp.BounceRate, "Bounce rate", "bounce_rate"),
+			entry(realtime, stats.VisitDuration, cmp.VisitDuration, "Visit duration", "visit_duration"),
 		},
 	})
 }
 
-func entry(curr, prev float64, name, key string) map[string]any {
+func entry(realtime bool, curr, prev float64, name, key string) map[string]any {
 	m := map[string]any{
 		"name":         name,
 		"value":        curr,
 		"graph_metric": key,
+	}
+	if realtime {
+		return m
 	}
 	var change float64
 	if key == "bounce_rate" {
