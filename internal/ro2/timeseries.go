@@ -4,12 +4,13 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
+	"github.com/vinceanalytics/vince/internal/fieldset"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
 func (o *Store) Timeseries(domain string, params *query.Query, metrics []string) (map[string]*Stats, error) {
 	values := make(map[string]*Stats)
-	fields := MetricsToProject(metrics)
+	fields := fieldset.From(metrics...)
 
 	err := o.View(func(tx *Tx) error {
 		format := params.Interval().Format()
@@ -20,7 +21,7 @@ func (o *Store) Timeseries(domain string, params *query.Query, metrics []string)
 				m = new(Stats)
 				values[timestamp] = m
 			}
-			return m.ReadFields(tx, shard, view, columns, fields...)
+			return m.ReadFields(tx, shard, view, columns, fields)
 		})
 	})
 	if err != nil {

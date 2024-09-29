@@ -2,11 +2,11 @@ package ro2
 
 import (
 	"math"
-	"slices"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/fieldset"
 )
 
 type Stats struct {
@@ -49,13 +49,8 @@ func (s *Stats) Compute() {
 	}
 }
 
-func (d *Stats) ReadFields(
-	tx *Tx,
-	shard uint64,
-	view uint64,
-	match *roaring64.Bitmap, fields ...v1.Field) (err error) {
-	for i := range fields {
-		f := fields[i]
+func (d *Stats) ReadFields(tx *Tx, shard, view uint64, match *roaring64.Bitmap, fields fieldset.Set) error {
+	return fields.Each(func(f v1.Field) (err error) {
 		switch f {
 		case v1.Field_view:
 			count, err := tx.Count(shard, view, f, match)
@@ -63,7 +58,6 @@ func (d *Stats) ReadFields(
 				return err
 			}
 			d.PageViews += float64(count)
-
 		case v1.Field_session:
 			count, err := tx.Count(shard, view, f, match)
 			if err != nil {
@@ -90,35 +84,6 @@ func (d *Stats) ReadFields(
 			}
 			d.uid.Or(uniq)
 		}
-	}
-	return
-}
-
-func MetricsToProject(mets []string) []v1.Field {
-	m := map[v1.Field]struct{}{}
-	for _, v := range mets {
-		switch v {
-		case "visitors":
-			m[v1.Field_id] = struct{}{}
-		case "visits":
-			m[v1.Field_session] = struct{}{}
-		case "pageviews":
-			m[v1.Field_view] = struct{}{}
-		case "views_per_visit":
-			m[v1.Field_view] = struct{}{}
-			m[v1.Field_session] = struct{}{}
-		case "bounce_rate":
-			m[v1.Field_bounce] = struct{}{}
-			m[v1.Field_session] = struct{}{}
-		case "visit_duration":
-			m[v1.Field_duration] = struct{}{}
-			m[v1.Field_session] = struct{}{}
-		}
-	}
-	o := make([]v1.Field, 0, len(m))
-	for k := range m {
-		o = append(o, k)
-	}
-	slices.Sort(o)
-	return o
+		return
+	})
 }

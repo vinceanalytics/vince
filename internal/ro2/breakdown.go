@@ -7,6 +7,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/fieldset"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -145,7 +146,7 @@ func findCity(_ *Tx, id uint64) uint32 {
 func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain string, params *query.Query, metrics []string, field v1.Field,
 	fn func(property string, values map[T]*Stats) *Result) (*Result, error) {
 	values := make(map[T]*Stats)
-	fields := MetricsToProject(metrics)
+	fields := fieldset.From(metrics...)
 
 	err := o.View(func(tx *Tx) error {
 		return tx.Select(domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring64.Bitmap) error {
@@ -166,10 +167,7 @@ func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain str
 					sx = new(Stats)
 					values[key] = sx
 				}
-				err := sx.ReadFields(tx, shard, view,
-					bs.CompareValue(0, roaring64.EQ, int64(id), 0, columns),
-					fields...,
-				)
+				err := sx.ReadFields(tx, shard, view, bs.CompareValue(0, roaring64.EQ, int64(id), 0, columns), fields)
 				if err != nil {
 					return err
 				}
