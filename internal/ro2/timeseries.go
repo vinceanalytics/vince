@@ -21,7 +21,7 @@ func (o *Store) Timeseries(domain string, params *query.Query, metrics []string)
 				m = new(Stats)
 				values[timestamp] = m
 			}
-			return m.ReadFields(tx, shard, view, columns, fields)
+			return m.Read(tx, shard, view, columns, fields)
 		})
 	})
 	if err != nil {

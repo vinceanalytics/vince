@@ -167,7 +167,7 @@ func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain str
 					sx = new(Stats)
 					values[key] = sx
 				}
-				err := sx.ReadFields(tx, shard, view, bs.CompareValue(0, roaring64.EQ, int64(id), 0, columns), fields)
+				err := sx.Read(tx, shard, view, bs.CompareValue(0, roaring64.EQ, int64(id), 0, columns), fields)
 				if err != nil {
 					return err
 				}

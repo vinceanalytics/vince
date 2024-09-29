@@ -49,7 +49,7 @@ func (s *Stats) Compute() {
 	}
 }
 
-func (d *Stats) ReadFields(tx *Tx, shard, view uint64, match *roaring64.Bitmap, fields fieldset.Set) error {
+func (d *Stats) Read(tx *Tx, shard, view uint64, match *roaring64.Bitmap, fields fieldset.Set) error {
 	return fields.Each(func(f v1.Field) (err error) {
 		switch f {
 		case v1.Field_view:

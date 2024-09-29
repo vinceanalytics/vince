@@ -13,7 +13,7 @@ func (o *Store) Stats(domain string, start, end time.Time, interval query.Interv
 	fields := fieldset.From(metrics...)
 	err := o.View(func(tx *Tx) error {
 		return tx.Select(domain, start, end, interval, filters, func(shard, view uint64, columns *roaring64.Bitmap) error {
-			return m.ReadFields(tx, shard, view, columns, fields)
+			return m.Read(tx, shard, view, columns, fields)
 		})
 	})
 	if err != nil {
