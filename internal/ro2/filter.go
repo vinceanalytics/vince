@@ -119,13 +119,9 @@ func (a And) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring64.Bitmap
 	if len(a) == 1 {
 		return a[0].Apply(rtx, shard, view, columns)
 	}
-	ls := make([]*roaring64.Bitmap, len(a))
-	for i := range a {
-		ls[i] = a[i].Apply(rtx, shard, view, columns)
-	}
-	m := ls[0]
-	for _, n := range ls[1:] {
-		m.And(n)
+	m := a[0].Apply(rtx, shard, view, columns)
+	for _, h := range a[1:] {
+		m.And(h.Apply(rtx, shard, view, columns))
 	}
 	return m
 }
@@ -151,12 +147,16 @@ func (m *Match) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring64.Bit
 
 func (m *Match) apply(bs *roaring64.BSI, columns *roaring64.Bitmap) *roaring64.Bitmap {
 	if len(m.Values) == 1 {
-		return bs.CompareValue(0, m.Op, m.Values[0], 0, columns)
+		m := bs.CompareValue(0, m.Op, m.Values[0], 0, bs.GetExistenceBitmap())
+		return roaring64.And(m, columns)
 	}
 	o := make([]*roaring64.Bitmap, len(m.Values))
 
 	for i := range m.Values {
-		o[i] = bs.CompareValue(0, m.Op, m.Values[0], 0, columns)
+		o[i] = roaring64.And(
+			bs.CompareValue(0, m.Op, m.Values[0], 0, bs.GetExistenceBitmap()),
+			columns,
+		)
 	}
 	b := o[0]
 	for _, n := range o[1:] {

@@ -63,11 +63,14 @@ func (tx *Tx) Select(domain string, start,
 			return err
 		}
 		match := bs.GetExistenceBitmap()
+		if match.IsEmpty() {
+			return nil
+		}
 		columns := m.Apply(tx, shard, view, match)
 		if columns.IsEmpty() {
 			return nil
 		}
-		return cb(shard, view, match)
+		return cb(shard, view, columns)
 	})
 }
 
