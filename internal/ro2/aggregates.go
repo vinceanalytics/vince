@@ -38,9 +38,10 @@ func (s *Stats) Compute() {
 	if s.VisitDuration != 0 {
 		s.VisitDuration = time.Duration(s.VisitDuration).Seconds()
 	}
+	s.ViewsPerVisits = s.PageViews
 	if s.Visits != 0 {
 		s.ViewsPerVisits /= s.Visits
-		s.ViewsPerVisits = math.Floor(s.ViewsPerVisits)
+		s.ViewsPerVisits = math.Round(s.ViewsPerVisits)
 		s.BounceRate /= s.Visits
 		s.BounceRate = math.Floor(s.BounceRate * 100)
 		s.VisitDuration /= s.Visits
