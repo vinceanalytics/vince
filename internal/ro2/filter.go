@@ -114,7 +114,7 @@ type And []Filter
 
 func (a And) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring64.Bitmap) *roaring64.Bitmap {
 	if len(a) == 0 {
-		return roaring64.New()
+		return columns
 	}
 	if len(a) == 1 {
 		return a[0].Apply(rtx, shard, view, columns)
