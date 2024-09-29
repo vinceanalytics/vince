@@ -9,6 +9,6 @@
 
 ## vince
 
-*under active deleopment: we are pivoting away from distributed, in-memory model*
+**Vince** is a privacy friendly web analytics server focused on painless self hosting.
 
 ![Vince Analytics](desktop.png)
