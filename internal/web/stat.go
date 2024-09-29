@@ -52,10 +52,6 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-var topFields = ro2.MetricsToProject(
-	[]string{"visitors", "visits", "pageviews", "views_per_visit", "bounce_rate", "visit_duration"},
-)
-
 func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
@@ -64,6 +60,7 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	stats, err := db.Get().Stats(site.Domain, params.Start(), params.End(), params.Interval(), params.Filter(), metrics)
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
+		stats = &ro2.Stats{}
 	}
 	stats.Compute()
 	cmp := new(ro2.Stats)
@@ -72,6 +69,7 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		cmp, err = db.Get().Stats(site.Domain, x.Start, x.End, params.Interval(), params.Filter(), metrics)
 		if err != nil {
 			db.Logger().Error("reading top stats comparison", "err", err)
+			cmp = &ro2.Stats{}
 		}
 	}
 	cmp.Compute()
@@ -250,13 +248,24 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
 	referrer := r.PathValue("referrer")
+	if referrer == "Google" {
+		db.JSONCode(http.StatusUnprocessableEntity, w, map[string]any{
+			"error":    "The site is not connected to Google Search Keywords",
+			"is_admin": db.CurrentUser() != nil,
+		})
+		return
+	}
 
 	metrics := []string{"visitors"}
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
 	_ = referrer
-	o, err := db.Get().Breakdown(site.Domain, params, metrics, v1.Field_referrer)
+	o, err := db.Get().Breakdown(site.Domain, params.With(&query.Filter{
+		Op:    "is",
+		Key:   v1.Field_source.String(),
+		Value: []string{referrer},
+	}), metrics, v1.Field_referrer)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}

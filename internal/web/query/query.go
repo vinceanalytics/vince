@@ -55,10 +55,16 @@ func New(u url.Values) *Query {
 	return &Query{
 		period:   period,
 		cmp:      cmp,
+		filter:   fs.Translate(),
 		metric:   u.Get("metric"),
 		all:      u.Get("period") == "all",
 		realtime: u.Get("period") == "realtime",
 	}
+}
+
+func (q *Query) With(fs ...*Filter) *Query {
+	q.filter = append(q.filter, fs...)
+	return q
 }
 
 func (q *Query) All() bool      { return q.all }
