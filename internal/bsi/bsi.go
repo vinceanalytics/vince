@@ -542,174 +542,34 @@ func (b *BSI) minOrMax(op Operation, batch []uint64, resultsChan chan int64, wg 
 // 	resultsChan <- results
 // }
 
-// // ParOr is intended primarily to be a concatenation function to be used during bulk load operations.
-// // Care should be taken to make sure that columnIDs do not overlap (unless overlapping values are
-// // identical).
-// func (b *BSI) ParOr(parallelism int, bsis ...*BSI) {
+// We only perform Or on a and b. we don't want to modify a or b
+// because there is a posibility a is read from buffer which may corrupt the backing slice..
+func Or(a, b *BSI) *BSI {
+	if a == nil {
+		return b
+	}
+	bits := max(a.BitCount(), b.BitCount())
+	ba := make([]*sroar.Bitmap, bits)
 
-// 	// Consolidate sets
-// 	bits := len(b.bA)
-// 	for i := 0; i < len(bsis); i++ {
-// 		if len(bsis[i].bA) > bits {
-// 			bits = bsis[i].BitCount()
-// 		}
-// 	}
+	ax := a.BitCount()
+	bx := b.BitCount()
+	for i := 0; i < bits; i++ {
+		if ax < i {
+			ba[i] = b.bA[i]
+			continue
+		}
+		if bx < i {
+			ba[i] = a.bA[i]
+			continue
+		}
+		ba[i] = sroar.FastOr(a.bA[i], b.bA[i])
+	}
 
-// 	// Make sure we have enough bit slices
-// 	for bits > b.BitCount() {
-// 		bm := Bitmap{}
-// 		bm.RunOptimize()
-// 		b.bA = append(b.bA, bm)
-// 	}
-
-// 	a := make([][]*Bitmap, bits)
-// 	for i := range a {
-// 		a[i] = make([]*Bitmap, 0)
-// 		for _, x := range bsis {
-// 			if len(x.bA) > i {
-// 				a[i] = append(a[i], &x.bA[i])
-// 			} else {
-// 				if b.runOptimized {
-// 					a[i][0].RunOptimize()
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	// Consolidate existence bit maps
-// 	ebms := make([]*Bitmap, len(bsis))
-// 	for i := range ebms {
-// 		ebms[i] = &bsis[i].eBM
-// 	}
-
-// 	// First merge all the bit slices from all bsi maps that exist in target
-// 	var wg sync.WaitGroup
-// 	for i := 0; i < bits; i++ {
-// 		wg.Add(1)
-// 		go func(j int) {
-// 			defer wg.Done()
-// 			x := []*Bitmap{&b.bA[j]}
-// 			x = append(x, a[j]...)
-// 			b.bA[j] = *ParOr(parallelism, x...)
-// 		}(i)
-// 	}
-// 	wg.Wait()
-
-// 	// merge all the EBM maps
-// 	x := []*Bitmap{&b.eBM}
-// 	x = append(x, ebms...)
-// 	b.eBM = *ParOr(parallelism, x...)
-// }
-
-// // UnmarshalBinary de-serialize a BSI.  The value at bitData[0] is the EBM.  Other indices are in least to most
-// // significance order starting at bitData[1] (bit position 0).
-// func (b *BSI) UnmarshalBinary(bitData [][]byte) error {
-
-// 	for i := 1; i < len(bitData); i++ {
-// 		if bitData == nil || len(bitData[i]) == 0 {
-// 			continue
-// 		}
-// 		if b.BitCount() < i {
-// 			newBm := Bitmap{}
-// 			if b.runOptimized {
-// 				newBm.RunOptimize()
-// 			}
-// 			b.bA = append(b.bA, newBm)
-// 		}
-// 		if err := b.bA[i-1].UnmarshalBinary(bitData[i]); err != nil {
-// 			return err
-// 		}
-// 		if b.runOptimized {
-// 			b.bA[i-1].RunOptimize()
-// 		}
-
-// 	}
-// 	// First element of bitData is the EBM
-// 	if bitData[0] == nil {
-// 		b.eBM = Bitmap{}
-// 		if b.runOptimized {
-// 			b.eBM.RunOptimize()
-// 		}
-// 		return nil
-// 	}
-// 	if err := b.eBM.UnmarshalBinary(bitData[0]); err != nil {
-// 		return err
-// 	}
-// 	if b.runOptimized {
-// 		b.eBM.RunOptimize()
-// 	}
-// 	return nil
-// }
-
-// // ReadFrom reads a serialized version of this BSI from stream.
-// func (b *BSI) ReadFrom(stream io.Reader) (p int64, err error) {
-// 	bm, n, err := readBSIContainerFromStream(stream)
-// 	p += n
-// 	if err != nil {
-// 		err = fmt.Errorf("reading existence bitmap: %w", err)
-// 		return
-// 	}
-// 	b.eBM = bm
-// 	b.bA = b.bA[:0]
-// 	for {
-// 		// This forces a new memory location to be allocated and if we're lucky it only escapes if
-// 		// there's no error.
-// 		var bm Bitmap
-// 		bm, n, err = readBSIContainerFromStream(stream)
-// 		p += n
-// 		if err == io.EOF {
-// 			err = nil
-// 			return
-// 		}
-// 		if err != nil {
-// 			err = fmt.Errorf("reading bit slice index %v: %w", len(b.bA), err)
-// 			return
-// 		}
-// 		b.bA = append(b.bA, bm)
-// 	}
-// }
-
-// func readBSIContainerFromStream(r io.Reader) (bm Bitmap, p int64, err error) {
-// 	p, err = bm.ReadFrom(r)
-// 	return
-// }
-
-// // MarshalBinary serializes a BSI
-// func (b *BSI) MarshalBinary() ([][]byte, error) {
-
-// 	var err error
-// 	data := make([][]byte, b.BitCount()+1)
-// 	// Add extra element for EBM (BitCount() + 1)
-// 	for i := 1; i < b.BitCount()+1; i++ {
-// 		data[i], err = b.bA[i-1].MarshalBinary()
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	}
-// 	// Marshal EBM
-// 	data[0], err = b.eBM.MarshalBinary()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return data, nil
-// }
-
-// // WriteTo writes a serialized version of this BSI to stream.
-// func (b *BSI) WriteTo(w io.Writer) (n int64, err error) {
-// 	n1, err := b.eBM.WriteTo(w)
-// 	n += n1
-// 	if err != nil {
-// 		return
-// 	}
-// 	for _, bm := range b.bA {
-// 		n1, err = bm.WriteTo(w)
-// 		n += n1
-// 		if err != nil {
-// 			return
-// 		}
-// 	}
-// 	return
-// }
+	return &BSI{
+		bA:  ba,
+		eBM: sroar.FastOr(a.eBM, b.eBM),
+	}
+}
 
 func FromBuffer(data []byte) *BSI {
 	off, data := chunkLast(data, 2)
