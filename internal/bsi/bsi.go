@@ -628,96 +628,6 @@ func toUint32Slice(b []byte) (result []uint32) {
 	return u32s
 }
 
-// // BatchEqual returns a bitmap containing the column IDs where the values are contained within the list of values provided.
-// func (b *BSI) BatchEqual(parallelism int, values []int64) *Bitmap {
-
-// 	valMap := make(map[int64]struct{}, len(values))
-// 	for i := 0; i < len(values); i++ {
-// 		valMap[values[i]] = struct{}{}
-// 	}
-// 	comp := &task{bsi: b, values: valMap}
-// 	return parallelExecutor(parallelism, comp, batchEqual, &b.eBM)
-// }
-
-// func batchEqual(e *task, batch []uint64, resultsChan chan *Bitmap,
-// 	wg *sync.WaitGroup) {
-
-// 	defer wg.Done()
-
-// 	results := NewBitmap()
-// 	if e.bsi.runOptimized {
-// 		results.RunOptimize()
-// 	}
-
-// 	for i := 0; i < len(batch); i++ {
-// 		cID := batch[i]
-// 		if value, ok := e.bsi.GetValue(uint64(cID)); ok {
-// 			if _, yes := e.values[int64(value)]; yes {
-// 				results.Add(cID)
-// 			}
-// 		}
-// 	}
-// 	resultsChan <- results
-// }
-
-// // ClearBits cleared the bits that exist in the target if they are also in the found set.
-// func ClearBits(foundSet, target *Bitmap) {
-// 	iter := foundSet.Iterator()
-// 	for iter.HasNext() {
-// 		cID := iter.Next()
-// 		target.Remove(cID)
-// 	}
-// }
-
-// // ClearValues removes the values found in foundSet
-// func (b *BSI) ClearValues(foundSet *Bitmap) {
-
-// 	var wg sync.WaitGroup
-// 	wg.Add(1)
-// 	go func() {
-// 		defer wg.Done()
-// 		ClearBits(foundSet, &b.eBM)
-// 	}()
-// 	for i := 0; i < b.BitCount(); i++ {
-// 		wg.Add(1)
-// 		go func(j int) {
-// 			defer wg.Done()
-// 			ClearBits(foundSet, &b.bA[j])
-// 		}(i)
-// 	}
-// 	wg.Wait()
-// }
-
-// // NewBSIRetainSet - Construct a new BSI from a clone of existing BSI, retain only values contained in foundSet
-// func (b *BSI) NewBSIRetainSet(foundSet *Bitmap) *BSI {
-
-// 	newBSI := NewBSI(b.MaxValue, b.MinValue)
-// 	newBSI.bA = make([]Bitmap, b.BitCount())
-// 	var wg sync.WaitGroup
-// 	wg.Add(1)
-// 	go func() {
-// 		defer wg.Done()
-// 		newBSI.eBM = *b.eBM.Clone()
-// 		newBSI.eBM.And(foundSet)
-// 	}()
-// 	for i := 0; i < b.BitCount(); i++ {
-// 		wg.Add(1)
-// 		go func(j int) {
-// 			defer wg.Done()
-// 			newBSI.bA[j] = *b.bA[j].Clone()
-// 			newBSI.bA[j].And(foundSet)
-// 		}(i)
-// 	}
-// 	wg.Wait()
-// 	return newBSI
-// }
-
-// // Clone performs a deep copy of BSI contents.
-// func (b *BSI) Clone() *BSI {
-// 	return b.NewBSIRetainSet(&b.eBM)
-// }
-
-// // Add - In-place sum the contents of another BSI with this BSI, column wise.
 // func (b *BSI) Add(other *BSI) {
 
 // 	b.eBM.Or(&other.eBM)
@@ -732,6 +642,8 @@ func toUint32Slice(b []byte) (result []uint32) {
 // 		b.bA = append(b.bA, Bitmap{})
 // 	}
 // 	carry := And(&b.bA[i], foundSet)
+// 	x := roaring64.New()
+// 	x.Xor()
 // 	b.bA[i].Xor(foundSet)
 // 	if !carry.IsEmpty() {
 // 		if i+1 >= len(b.bA) {
