@@ -1,0 +1,65 @@
+goos: linux
+goarch: amd64
+pkg: sroar
+BenchmarkRealDataFastOr/census-income_srt-32         	    3237	    396483 ns/op	   72296 B/op	      30 allocs/op
+BenchmarkRealDataFastOr/census-income_srt-32         	    2907	    424007 ns/op	   72296 B/op	      30 allocs/op
+BenchmarkRealDataFastOr/census-income_srt-32         	    3489	    393445 ns/op	   72297 B/op	      30 allocs/op
+BenchmarkRealDataFastOr/census-income_srt-32         	    3208	    404606 ns/op	   72296 B/op	      30 allocs/op
+BenchmarkRealDataFastOr/census-income_srt-32         	    3058	    404708 ns/op	   72296 B/op	      30 allocs/op
+BenchmarkRealDataFastOr/census-income-32             	    1561	    810697 ns/op	   42504 B/op	      24 allocs/op
+BenchmarkRealDataFastOr/census-income-32             	    1629	    788560 ns/op	   42504 B/op	      24 allocs/op
+BenchmarkRealDataFastOr/census-income-32             	    1513	    800652 ns/op	   42504 B/op	      24 allocs/op
+BenchmarkRealDataFastOr/census-income-32             	    1557	    797843 ns/op	   42504 B/op	      24 allocs/op
+BenchmarkRealDataFastOr/census-income-32             	    1586	    792257 ns/op	   42504 B/op	      24 allocs/op
+BenchmarkRealDataFastOr/census1881_srt-32            	     691	   1706054 ns/op	  822197 B/op	     390 allocs/op
+BenchmarkRealDataFastOr/census1881_srt-32            	     710	   1705790 ns/op	  822198 B/op	     390 allocs/op
+BenchmarkRealDataFastOr/census1881_srt-32            	     676	   1695293 ns/op	  822198 B/op	     390 allocs/op
+BenchmarkRealDataFastOr/census1881_srt-32            	     686	   1659075 ns/op	  822197 B/op	     390 allocs/op
+BenchmarkRealDataFastOr/census1881_srt-32            	     734	   1697356 ns/op	  822203 B/op	     390 allocs/op
+BenchmarkRealDataFastOr/census1881-32                	     543	   2118383 ns/op	  602417 B/op	     286 allocs/op
+BenchmarkRealDataFastOr/census1881-32                	     585	   2062387 ns/op	  602418 B/op	     286 allocs/op
+BenchmarkRealDataFastOr/census1881-32                	     556	   2033598 ns/op	  602419 B/op	     286 allocs/op
+BenchmarkRealDataFastOr/census1881-32                	     555	   2040620 ns/op	  602417 B/op	     286 allocs/op
+BenchmarkRealDataFastOr/census1881-32                	     538	   2074632 ns/op	  602417 B/op	     286 allocs/op
+BenchmarkRealDataFastOr/dimension_003-32             	     584	   2037353 ns/op	  500936 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/dimension_003-32             	     602	   2099409 ns/op	  500936 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/dimension_003-32             	     604	   2113940 ns/op	  500936 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/dimension_003-32             	     592	   2104249 ns/op	  500934 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/dimension_003-32             	     620	   2069069 ns/op	  500935 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/dimension_008-32             	    1005	   1206154 ns/op	  456252 B/op	     339 allocs/op
+BenchmarkRealDataFastOr/dimension_008-32             	    1018	   1174863 ns/op	  456251 B/op	     339 allocs/op
+BenchmarkRealDataFastOr/dimension_008-32             	    1017	   1191431 ns/op	  456251 B/op	     339 allocs/op
+BenchmarkRealDataFastOr/dimension_008-32             	    1006	   1185149 ns/op	  456252 B/op	     339 allocs/op
+BenchmarkRealDataFastOr/dimension_008-32             	    1004	   1169217 ns/op	  456251 B/op	     339 allocs/op
+BenchmarkRealDataFastOr/dimension_033-32             	    1022	   1182652 ns/op	  877751 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/dimension_033-32             	     981	   1222996 ns/op	  877749 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/dimension_033-32             	     996	   1214407 ns/op	  877751 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/dimension_033-32             	     981	   1211939 ns/op	  877750 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/dimension_033-32             	    1009	   1252861 ns/op	  877752 B/op	     377 allocs/op
+BenchmarkRealDataFastOr/uscensus2000-32              	     262	   4635955 ns/op	 3923291 B/op	    2989 allocs/op
+BenchmarkRealDataFastOr/uscensus2000-32              	     255	   4810886 ns/op	 3923287 B/op	    2989 allocs/op
+BenchmarkRealDataFastOr/uscensus2000-32              	     249	   4722452 ns/op	 3923290 B/op	    2989 allocs/op
+BenchmarkRealDataFastOr/uscensus2000-32              	     253	   4582865 ns/op	 3923298 B/op	    2989 allocs/op
+BenchmarkRealDataFastOr/uscensus2000-32              	     268	   4659114 ns/op	 3923294 B/op	    2989 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85_srt-32       	    3187	    490599 ns/op	  248066 B/op	     105 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85_srt-32       	    2988	    495712 ns/op	  248066 B/op	     105 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85_srt-32       	    3049	    472503 ns/op	  248067 B/op	     105 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85_srt-32       	    3000	    463048 ns/op	  248066 B/op	     105 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85_srt-32       	    3218	    481629 ns/op	  248066 B/op	     105 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85-32           	     346	   3839449 ns/op	  141064 B/op	      75 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85-32           	     318	   3701353 ns/op	  141064 B/op	      75 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85-32           	     327	   3774119 ns/op	  141064 B/op	      75 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85-32           	     324	   3621583 ns/op	  141064 B/op	      75 allocs/op
+BenchmarkRealDataFastOr/weather_sept_85-32           	     314	   3644309 ns/op	  141064 B/op	      75 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes_srt-32    	    3172	    343294 ns/op	  211392 B/op	     106 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes_srt-32    	    3439	    330383 ns/op	  211392 B/op	     106 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes_srt-32    	    3422	    333312 ns/op	  211392 B/op	     106 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes_srt-32    	    3289	    345704 ns/op	  211392 B/op	     106 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes_srt-32    	    3462	    343257 ns/op	  211392 B/op	     106 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes-32        	    2470	    503213 ns/op	  195057 B/op	     100 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes-32        	    2641	    483767 ns/op	  195057 B/op	     100 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes-32        	    2362	    501118 ns/op	  195056 B/op	     100 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes-32        	    2376	    487647 ns/op	  195056 B/op	     100 allocs/op
+BenchmarkRealDataFastOr/wikileaks-noquotes-32        	    2187	    486348 ns/op	  195056 B/op	     100 allocs/op
+PASS
+ok  	sroar   228.238s
