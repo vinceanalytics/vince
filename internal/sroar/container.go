@@ -228,6 +228,23 @@ func (c array) andArray(other array) []uint16 {
 	return out
 }
 
+func (c array) andCardinalityArray(other array) int {
+	setc := c.all()
+	seto := other.all()
+	return intersection2by2Cardinality(setc, seto)
+}
+
+func (c array) andCardinalityBitmap(other bitmap) int {
+	card := getCardinality(c)
+	value2 := c.all()
+	pos := 0
+	for k := 0; k < card; k++ {
+		v := value2[k]
+		pos += int(other.bitValue(v))
+	}
+	return pos
+}
+
 // TODO: We can do this operation in-place on the src array.
 func (c array) andNotArray(other array, buf []uint16) []uint16 {
 	max := getCardinality(c)
@@ -461,6 +478,13 @@ func (b bitmap) rank(x uint16) int {
 	return rank - 1
 }
 
+func (b bitmap) andBitmapCardinality(other bitmap) (num int) {
+	for i := int(startIdx); i < len(b); i++ {
+		num += bits.OnesCount16(b[i] & other[i])
+	}
+	return
+}
+
 // TODO: This can perhaps be using SIMD instructions.
 func (b bitmap) andBitmap(other bitmap) []uint16 {
 	out := make([]uint16, maxContainerSize)
@@ -585,7 +609,7 @@ func (b bitmap) all() []uint16 {
 	return res
 }
 
-//TODO: It can be optimized.
+// TODO: It can be optimized.
 func (b bitmap) selectAt(idx int) uint16 {
 	data := b[startIdx:]
 	n := uint16(len(data))
@@ -732,6 +756,34 @@ func containerAnd(ac, bc []uint16) []uint16 {
 		left := bitmap(ac)
 		right := bitmap(bc)
 		return left.andBitmap(right)
+	}
+	panic("containerAnd: We should not reach here")
+}
+
+func containerAndCardinality(ac, bc []uint16) int {
+	at := ac[indexType]
+	bt := bc[indexType]
+
+	if at == typeArray && bt == typeArray {
+		left := array(ac)
+		right := array(bc)
+		return left.andCardinalityArray(right)
+	}
+	if at == typeArray && bt == typeBitmap {
+		left := array(ac)
+		right := bitmap(bc)
+		return left.andCardinalityBitmap(right)
+	}
+	if at == typeBitmap && bt == typeArray {
+		left := bitmap(ac)
+		right := array(bc)
+		out := right.andCardinalityBitmap(left)
+		return out
+	}
+	if at == typeBitmap && bt == typeBitmap {
+		left := bitmap(ac)
+		right := bitmap(bc)
+		return left.andBitmapCardinality(right)
 	}
 	panic("containerAnd: We should not reach here")
 }

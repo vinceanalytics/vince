@@ -491,23 +491,18 @@ func (b *BSI) minOrMax(op Operation, batch []uint64, resultsChan chan int64, wg 
 	resultsChan <- value
 }
 
-// // Sum all values contained within the foundSet.   As a convenience, the cardinality of the foundSet
-// // is also returned (for calculating the average).
-// func (b *BSI) Sum(foundSet *sroar.Bitmap) (sum int64, count uint64) {
-// 	count = uint64(foundSet.GetCardinality())
-// 	var wg sync.WaitGroup
-// 	for i := 0; i < b.BitCount(); i++ {
-// 		wg.Add(1)
-// 		go func(j int) {
-// 			defer wg.Done()
-// 			atomic.AddInt64(&sum, int64(foundSet.AndCardinality(&b.bA[j])<<uint(j)))
-// 		}(i)
-// 	}
-// 	wg.Wait()
-// 	x := roaring64.New()
-// 	x.AndCardinality()
-// 	return
-// }
+// Sum all values contained within the foundSet.   As a convenience, the cardinality of the foundSet
+// is also returned (for calculating the average).
+
+// Sum all values contained within the foundSet.   As a convenience, the cardinality of the foundSet
+// is also returned (for calculating the average).
+func (b *BSI) Sum(foundSet *sroar.Bitmap) (sum int64, count uint64) {
+	count = uint64(foundSet.GetCardinality())
+	for i := 0; i < b.BitCount(); i++ {
+		sum += int64(foundSet.AndCardinality(b.bA[i]) << uint(i))
+	}
+	return
+}
 
 // // Transpose calls b.IntersectAndTranspose(0, b.eBM)
 // func (b *BSI) Transpose() *Bitmap {
@@ -633,23 +628,6 @@ func toUint32Slice(b []byte) (result []uint32) {
 // 	b.eBM.Or(&other.eBM)
 // 	for i := 0; i < len(other.bA); i++ {
 // 		b.addDigit(&other.bA[i], i)
-// 	}
-// }
-
-// func (b *BSI) addDigit(foundSet *Bitmap, i int) {
-
-// 	if i >= len(b.bA) {
-// 		b.bA = append(b.bA, Bitmap{})
-// 	}
-// 	carry := And(&b.bA[i], foundSet)
-// 	x := roaring64.New()
-// 	x.Xor()
-// 	b.bA[i].Xor(foundSet)
-// 	if !carry.IsEmpty() {
-// 		if i+1 >= len(b.bA) {
-// 			b.bA = append(b.bA, Bitmap{})
-// 		}
-// 		b.addDigit(carry, i+1)
 // 	}
 // }
 

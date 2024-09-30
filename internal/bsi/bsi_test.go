@@ -222,3 +222,21 @@ func BenchmarkFromBuffer(b *testing.B) {
 		FromBuffer(data)
 	}
 }
+
+func TestSum(t *testing.T) {
+
+	bsi := setup()
+	set := bsi.CompareValue(0, RANGE, 45, 55, nil)
+
+	sum, count := bsi.Sum(set)
+	assert.Equal(t, uint64(11), count)
+	assert.Equal(t, int64(550), sum)
+}
+
+func TestSumWithNegative(t *testing.T) {
+	bsi := setupNegativeBoundary()
+	assert.Equal(t, uint64(11), bsi.GetCardinality())
+	sum, cnt := bsi.Sum(bsi.GetExistenceBitmap())
+	assert.Equal(t, uint64(11), cnt)
+	assert.Equal(t, int64(0), sum)
+}
