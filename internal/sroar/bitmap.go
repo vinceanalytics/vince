@@ -130,7 +130,7 @@ func (ra *Bitmap) initSpaceForKeys(N int) {
 	ra.scootRight(curSize, bySize)
 	ra.keys = toUint64Slice(ra.data[:curSize+bySize])
 	ra.keys.setNodeSize(int(curSize + bySize))
-	assert(1 == ra.keys.numKeys()) // This initialization assumes that the number of keys are 1.
+	assert(ra.keys.numKeys() == 1) // This initialization assumes that the number of keys are 1.
 
 	// The containers have moved to the right bySize. So, update their offsets.
 	// Currently, there's only one container.
