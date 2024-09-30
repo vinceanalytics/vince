@@ -34,11 +34,6 @@ type Bitmap struct {
 	data []uint16
 	keys node
 
-	// This _ptr is only used when we start with a []byte instead of a
-	// []uint16. Because we do an unsafe conversion to []uint16 data, and hence,
-	// do NOT own a valid pointer to the underlying array.
-	_ptr []byte
-
 	// memMoved keeps track of how many uint16 moves we had to do. The smaller
 	// this number, the more efficient we have been.
 	memMoved int
@@ -55,7 +50,6 @@ func FromBuffer(data []byte) *Bitmap {
 	x := toUint64Slice(du[:4])[indexNodeSize]
 	return &Bitmap{
 		data: du,
-		_ptr: data, // Keep a hold of data, otherwise GC would do its thing.
 		keys: toUint64Slice(du[:x]),
 	}
 }
@@ -197,7 +191,6 @@ func (ra *Bitmap) fastExpand(bySize uint64) {
 	out := make([]uint16, cap(ra.data)+growBy)
 	copy(out, ra.data)
 	ra.data = out[:toSize]
-	ra._ptr = nil // Allow Go to GC whatever this was pointing to.
 	// Re-reference ra.keys correctly because underlying array has changed.
 	ra.keys = toUint64Slice(ra.data[:prev])
 }
