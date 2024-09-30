@@ -1,10 +1,13 @@
 package bsi
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math/bits"
+	"reflect"
 	"runtime"
 	"sync"
+	"unsafe"
 
 	"github.com/vinceanalytics/vince/internal/sroar"
 )
@@ -708,6 +711,63 @@ func (b *BSI) minOrMax(op Operation, batch []uint64, resultsChan chan int64, wg 
 // 	return
 // }
 
+func FromBuffer(data []byte) *BSI {
+	off, data := chunkLast(data, 2)
+	offIdx := binary.BigEndian.Uint16(off)
+	offsetsData, data := chunkLast(data, int(offIdx))
+	offsets := toUint32Slice(offsetsData)
+	start := offsets[0]
+	ba := make([]*sroar.Bitmap, 0, len(offsets)-1)
+	for _, end := range offsets[1:] {
+		ba = append(ba, sroar.FromBuffer(data[start:end]))
+		start = end
+	}
+	return &BSI{
+		bA:  ba,
+		eBM: sroar.FromBuffer(data[:offsets[0]]),
+	}
+}
+
+func chunkLast(data []byte, n int) (chunk, left []byte) {
+	return data[len(data)-n:], data[:len(data)-n]
+}
+
+func (b *BSI) ToBuffer() []byte {
+	if b.eBM.IsEmpty() {
+		return []byte{}
+	}
+	offsets := make([]uint32, 0, 1+b.BitCount())
+	data := make([]byte, 0, b.GetSizeInBytes())
+	data = append(data, b.eBM.ToBuffer()...)
+	offsets = append(offsets, uint32(len(data)))
+	for i := range b.bA {
+		data = append(data, b.bA[i].ToBuffer()...)
+		offsets = append(offsets, uint32(len(data)))
+	}
+	offsetData := toBytes(offsets)
+	data = append(data, offsetData...)
+	data = binary.BigEndian.AppendUint16(data, uint16(len(offsetData)))
+	return data
+}
+
+func toBytes(b []uint32) []byte {
+	var bs []byte
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&bs))
+	hdr.Len = len(b) * 4
+	hdr.Cap = hdr.Len
+	hdr.Data = uintptr(unsafe.Pointer(&b[0]))
+	return bs
+}
+
+func toUint32Slice(b []byte) (result []uint32) {
+	var u32s []uint32
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&u32s))
+	hdr.Len = len(b) / 4
+	hdr.Cap = hdr.Len
+	hdr.Data = uintptr(unsafe.Pointer(&b[0]))
+	return u32s
+}
+
 // // BatchEqual returns a bitmap containing the column IDs where the values are contained within the list of values provided.
 // func (b *BSI) BatchEqual(parallelism int, values []int64) *Bitmap {
 
@@ -888,11 +948,19 @@ func (b *BSI) minOrMax(op Operation, batch []uint64, resultsChan chan int64, wg 
 // 	return true
 // }
 
-// // GetSizeInBytes - the size in bytes of the data structure
-// func (b *BSI) GetSizeInBytes() int {
-// 	size := b.eBM.GetSizeInBytes()
-// 	for _, bm := range b.bA {
-// 		size += bm.GetSizeInBytes()
-// 	}
-// 	return int(size)
-// }
+// GetSizeInBytes - the size in bytes of the data structure
+func (b *BSI) GetSizeInBytes() int {
+	if b.eBM.IsEmpty() {
+		return 0
+	}
+	// at maximum we have 64 bits pul existence we get 65. This means maximum size
+	// for offsets array is 260 (65 * 4) bytes. a uint16 is enough to represet this value.
+	size := 2 + // size of offset as uint16
+		((1 + // esistence bitmap offset
+			b.BitCount()) * 4)
+	size += b.eBM.GetSizeInBytes()
+	for _, bm := range b.bA {
+		size += bm.GetSizeInBytes()
+	}
+	return size
+}

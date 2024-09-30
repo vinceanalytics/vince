@@ -78,6 +78,10 @@ func FromBufferWithCopy(src []byte) *Bitmap {
 	}
 }
 
+func (ra *Bitmap) GetSizeInBytes() int {
+	return len(ra.data) * 2
+}
+
 func (ra *Bitmap) ToBuffer() []byte {
 	if ra.IsEmpty() {
 		return nil
@@ -659,6 +663,32 @@ func (ra *Bitmap) ToArray() []uint64 {
 		}
 	}
 	return res
+}
+
+func (ra *Bitmap) Each(f func(value uint64)) {
+	if ra == nil {
+		return
+	}
+	N := ra.keys.numKeys()
+	for i := 0; i < N; i++ {
+		key := ra.keys.key(i)
+		off := ra.keys.val(i)
+		c := ra.getContainer(off)
+
+		switch c[indexType] {
+		case typeArray:
+			a := array(c)
+			for _, lo := range a.all() {
+				f(key | uint64(lo))
+			}
+		case typeBitmap:
+			b := bitmap(c)
+			out := b.all()
+			for _, x := range out {
+				f(key | uint64(x))
+			}
+		}
+	}
 }
 
 func (ra *Bitmap) String() string {

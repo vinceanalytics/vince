@@ -189,3 +189,36 @@ func TestMinMaxWithRandom(t *testing.T) {
 	assert.Equal(t, bsi.MinValue, bsi.MinMax(0, MIN, bsi.GetExistenceBitmap()))
 	assert.Equal(t, bsi.MaxValue, bsi.MinMax(0, MAX, bsi.GetExistenceBitmap()))
 }
+
+func TestUint32(t *testing.T) {
+	want := []uint32{1, 2, 3}
+	require.Equal(t, want, toUint32Slice(toBytes(want)))
+}
+
+func TestBSI_ToBuffer(t *testing.T) {
+	t.Run("empty BSI is 0 bytes", func(t *testing.T) {
+		b := NewDefaultBSI()
+		require.Equal(t, 0, b.GetSizeInBytes())
+		require.Equal(t, []byte{}, b.ToBuffer())
+	})
+	t.Run("rind trip", func(t *testing.T) {
+		bsi := setupRandom()
+
+		data := bsi.ToBuffer()
+		bsi2 := FromBuffer(data)
+
+		assert.Equal(t, bsi.MinValue, bsi2.MinMax(0, MIN, bsi2.GetExistenceBitmap()))
+		assert.Equal(t, bsi.MaxValue, bsi2.MinMax(0, MAX, bsi2.GetExistenceBitmap()))
+	})
+}
+
+func BenchmarkFromBuffer(b *testing.B) {
+	bsi := setup()
+	data := bsi.ToBuffer()
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for range b.N {
+		FromBuffer(data)
+	}
+}
