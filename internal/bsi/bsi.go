@@ -148,56 +148,6 @@ func parallelExecutor(parallelism int, t *task, e action, foundSet *sroar.Bitmap
 	return sroar.FastOr(ba...)
 }
 
-// type bsiAction func(input *BSI, filterSet *sroar.Bitmap, batch []uint64, resultsChan chan *BSI, wg *sync.WaitGroup)
-
-// func parallelExecutorBSIResults(parallelism int, input *BSI, e bsiAction, foundSet, filterSet *sroar.Bitmap, sumResults bool) *BSI {
-
-// 	var n int = parallelism
-// 	if n == 0 {
-// 		n = runtime.NumCPU()
-// 	}
-
-// 	resultsChan := make(chan *BSI, n)
-
-// 	card := uint64(foundSet.GetCardinality())
-// 	x := card / uint64(n)
-
-// 	remainder := card - (x * uint64(n))
-// 	var batch []uint64
-// 	var wg sync.WaitGroup
-// 	iter := foundSet.ManyIterator()
-// 	for i := 0; i < n; i++ {
-// 		if i == n-1 {
-// 			batch = make([]uint64, x+remainder)
-// 		} else {
-// 			batch = make([]uint64, x)
-// 		}
-// 		iter.NextMany(batch)
-// 		wg.Add(1)
-// 		go e(input, filterSet, batch, resultsChan, &wg)
-// 	}
-
-// 	wg.Wait()
-
-// 	close(resultsChan)
-
-// 	ba := make([]*BSI, 0)
-// 	for bm := range resultsChan {
-// 		ba = append(ba, bm)
-// 	}
-
-// 	results := NewDefaultBSI()
-// 	if sumResults {
-// 		for _, v := range ba {
-// 			results.Add(v)
-// 		}
-// 	} else {
-// 		results.ParOr(0, ba...)
-// 	}
-// 	return results
-
-// }
-
 // Operation identifier
 type Operation int
 
@@ -225,8 +175,6 @@ type task struct {
 	op           Operation
 	valueOrStart int64
 	end          int64
-	values       map[int64]struct{}
-	bits         *sroar.Bitmap
 }
 
 // CompareValue compares value.
@@ -504,39 +452,6 @@ func (b *BSI) Sum(foundSet *sroar.Bitmap) (sum int64, count uint64) {
 	return
 }
 
-// // Transpose calls b.IntersectAndTranspose(0, b.eBM)
-// func (b *BSI) Transpose() *Bitmap {
-// 	return b.IntersectAndTranspose(0, &b.eBM)
-// }
-
-// // IntersectAndTranspose is a matrix transpose function.  Return a bitmap such that the values are represented as column IDs
-// // in the returned bitmap. This is accomplished by iterating over the foundSet and only including
-// // the column IDs in the source (foundSet) as compared with this BSI.  This can be useful for
-// // vectoring one set of integers to another.
-// //
-// // TODO: This implementation is functional but not performant, needs to be re-written perhaps using SIMD SSE2 instructions.
-// func (b *BSI) IntersectAndTranspose(parallelism int, foundSet *Bitmap) *Bitmap {
-
-// 	trans := &task{bsi: b}
-// 	return parallelExecutor(parallelism, trans, transpose, foundSet)
-// }
-
-// func transpose(e *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.WaitGroup) {
-
-// 	defer wg.Done()
-
-// 	results := NewBitmap()
-// 	if e.bsi.runOptimized {
-// 		results.RunOptimize()
-// 	}
-// 	for _, cID := range batch {
-// 		if value, ok := e.bsi.GetValue(uint64(cID)); ok {
-// 			results.Add(uint64(value))
-// 		}
-// 	}
-// 	resultsChan <- results
-// }
-
 // We only perform Or on a and b. we don't want to modify a or b
 // because there is a posibility a is read from buffer which may corrupt the backing slice..
 func Or(a, b *BSI) *BSI {
@@ -622,81 +537,6 @@ func toUint32Slice(b []byte) (result []uint32) {
 	hdr.Data = uintptr(unsafe.Pointer(&b[0]))
 	return u32s
 }
-
-// func (b *BSI) Add(other *BSI) {
-
-// 	b.eBM.Or(&other.eBM)
-// 	for i := 0; i < len(other.bA); i++ {
-// 		b.addDigit(&other.bA[i], i)
-// 	}
-// }
-
-// // TransposeWithCounts is a matrix transpose function that returns a BSI that has a columnID system defined by the values
-// // contained within the input BSI.   Given that for BSIs, different columnIDs can have the same value.  TransposeWithCounts
-// // is useful for situations where there is a one-to-many relationship between the vectored integer sets.  The resulting BSI
-// // contains the number of times a particular value appeared in the input BSI.
-// func (b *BSI) TransposeWithCounts(parallelism int, foundSet, filterSet *Bitmap) *BSI {
-
-// 	return parallelExecutorBSIResults(parallelism, b, transposeWithCounts, foundSet, filterSet, true)
-// }
-
-// func transposeWithCounts(input *BSI, filterSet *Bitmap, batch []uint64, resultsChan chan *BSI, wg *sync.WaitGroup) {
-
-// 	defer wg.Done()
-
-// 	results := NewDefaultBSI()
-// 	if input.runOptimized {
-// 		results.RunOptimize()
-// 	}
-// 	for _, cID := range batch {
-// 		if value, ok := input.GetValue(uint64(cID)); ok {
-// 			if !filterSet.Contains(uint64(value)) {
-// 				continue
-// 			}
-// 			if val, ok2 := results.GetValue(uint64(value)); !ok2 {
-// 				results.SetValue(uint64(value), 1)
-// 			} else {
-// 				val++
-// 				results.SetValue(uint64(value), val)
-// 			}
-// 		}
-// 	}
-// 	resultsChan <- results
-// }
-
-// // Increment - In-place increment of values in a BSI.  Found set select columns for incrementing.
-// func (b *BSI) Increment(foundSet *Bitmap) {
-// 	b.addDigit(foundSet, 0)
-// 	b.eBM.Or(foundSet)
-// }
-
-// // IncrementAll - In-place increment of all values in a BSI.
-// func (b *BSI) IncrementAll() {
-// 	b.Increment(b.GetExistenceBitmap())
-// }
-
-// // Equals - Check for semantic equality of two BSIs.
-// func (b *BSI) Equals(other *BSI) bool {
-// 	if !b.eBM.Equals(&other.eBM) {
-// 		return false
-// 	}
-// 	for i := 0; i < len(b.bA) || i < len(other.bA); i++ {
-// 		if i >= len(b.bA) {
-// 			if !other.bA[i].IsEmpty() {
-// 				return false
-// 			}
-// 		} else if i >= len(other.bA) {
-// 			if !b.bA[i].IsEmpty() {
-// 				return false
-// 			}
-// 		} else {
-// 			if !b.bA[i].Equals(&other.bA[i]) {
-// 				return false
-// 			}
-// 		}
-// 	}
-// 	return true
-// }
 
 // GetSizeInBytes - the size in bytes of the data structure
 func (b *BSI) GetSizeInBytes() int {
