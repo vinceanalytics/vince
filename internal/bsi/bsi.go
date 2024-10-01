@@ -1,12 +1,14 @@
 package bsi
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"math/bits"
 	"reflect"
 	"runtime"
 	"sync"
+	"text/tabwriter"
 	"unsafe"
 
 	"github.com/vinceanalytics/vince/internal/sroar"
@@ -553,4 +555,33 @@ func (b *BSI) GetSizeInBytes() int {
 		size += bm.GetSizeInBytes()
 	}
 	return size
+}
+
+func (b *BSI) String() string {
+	k := b.GetExistenceBitmap().ToArray()
+	var o bytes.Buffer
+	w := tabwriter.NewWriter(&o, 0, 0, 1, ' ', tabwriter.AlignRight)
+	var tmp bytes.Buffer
+	for i := range k {
+		if i != 0 {
+			tmp.WriteByte('\t')
+		}
+		fmt.Fprint(&tmp, k[i])
+	}
+	tmp.WriteByte('\t')
+	tmp.WriteByte('\n')
+	w.Write(tmp.Bytes())
+	tmp.Reset()
+	for i := range k {
+		if i != 0 {
+			tmp.WriteByte('\t')
+		}
+		v, _ := b.GetValue(k[i])
+		fmt.Fprint(&tmp, v)
+	}
+	tmp.WriteByte('\t')
+	tmp.WriteByte('\n')
+	w.Write(tmp.Bytes())
+	w.Flush()
+	return o.String()
 }
