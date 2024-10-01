@@ -456,9 +456,6 @@ func (b *BSI) Sum(foundSet *Bitmap) (sum int64, count uint64) {
 func (b *BSI) Extract(foundSet *Bitmap) map[uint64]int64 {
 	match := And(b.eBM, foundSet)
 	result := make(map[uint64]int64, match.GetCardinality())
-	match.Each(func(value uint64) {
-		result[value] = int64(value)
-	})
 	for i := 0; i < b.BitCount(); i++ {
 		exists := And(b.bA[i], match)
 		exists.Each(func(value uint64) {
