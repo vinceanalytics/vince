@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/roaring"
 	wq "github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -23,7 +23,7 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				}
 				return &Match{
 					Field:  v1.Field_city,
-					Op:     roaring64.EQ,
+					Op:     roaring.EQ,
 					Values: []int64{int64(code)},
 				}
 			}
@@ -42,7 +42,7 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				a = append(a, &Match{
 					Field:  fd,
 					Negate: f.Op == "is_not",
-					Op:     roaring64.EQ,
+					Op:     roaring.EQ,
 					Values: values,
 				})
 			case "matches", "does_not_match":
@@ -72,7 +72,7 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				a = append(a, &Match{
 					Field:  fd,
 					Negate: f.Op == "does_not_match",
-					Op:     roaring64.EQ,
+					Op:     roaring.EQ,
 					Values: values,
 				})
 			case "contains", "does_not_contain":
@@ -89,7 +89,7 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				a = append(a, &Match{
 					Field:  fd,
 					Negate: f.Op == "does_not_contain",
-					Op:     roaring64.EQ,
+					Op:     roaring.EQ,
 					Values: values,
 				})
 			default:
@@ -102,17 +102,17 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 
 type Reject struct{}
 
-func (Reject) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring64.Bitmap) *roaring64.Bitmap {
-	return roaring64.New()
+func (Reject) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) *roaring.Bitmap {
+	return nil
 }
 
 type Filter interface {
-	Apply(rtx *Tx, shard uint64, view uint64, columns *roaring64.Bitmap) *roaring64.Bitmap
+	Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) *roaring.Bitmap
 }
 
 type And []Filter
 
-func (a And) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring64.Bitmap) *roaring64.Bitmap {
+func (a And) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) *roaring.Bitmap {
 	if len(a) == 0 {
 		return columns
 	}
@@ -130,30 +130,31 @@ type Match struct {
 	Field  v1.Field
 	Values []int64
 	Negate bool
-	Op     roaring64.Operation
+	Op     roaring.Operation
 }
 
-func (m *Match) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring64.Bitmap) *roaring64.Bitmap {
-	bs, err := rtx.Bitmap(shard, view, m.Field)
-	if err != nil {
-		return roaring64.New()
-	}
-	b := m.apply(bs, columns)
-	if m.Negate {
-		return roaring64.AndNot(bs.GetExistenceBitmap(), b)
-	}
+func (m *Match) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) (b *roaring.Bitmap) {
+	rtx.Bitmap(shard, view, m.Field, func(bs *roaring.BSI) {
+		b = m.apply(bs, columns)
+		if m.Negate {
+			b = bs.GetExistenceBitmap().Clone()
+			b.AndNot(m.apply(bs, columns))
+		} else {
+			b = m.apply(bs, columns)
+		}
+	})
 	return b
 }
 
-func (m *Match) apply(bs *roaring64.BSI, columns *roaring64.Bitmap) *roaring64.Bitmap {
+func (m *Match) apply(bs *roaring.BSI, columns *roaring.Bitmap) *roaring.Bitmap {
 	if len(m.Values) == 1 {
 		m := bs.CompareValue(0, m.Op, m.Values[0], 0, bs.GetExistenceBitmap())
-		return roaring64.And(m, columns)
+		return roaring.And(m, columns)
 	}
-	o := make([]*roaring64.Bitmap, len(m.Values))
+	o := make([]*roaring.Bitmap, len(m.Values))
 
 	for i := range m.Values {
-		o[i] = roaring64.And(
+		o[i] = roaring.And(
 			bs.CompareValue(0, m.Op, m.Values[0], 0, bs.GetExistenceBitmap()),
 			columns,
 		)

@@ -5,10 +5,10 @@ import (
 	"math"
 	"slices"
 
-	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/fieldset"
 	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -149,25 +149,22 @@ func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain str
 	fields := fieldset.From(metrics...)
 
 	err := o.View(func(tx *Tx) error {
-		return tx.Select(domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring64.Bitmap) error {
-			bs, err := tx.Bitmap(shard, view, field)
+		return tx.Select(domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring.Bitmap) error {
+			all, err := tx.TransposeSet(shard, view, field, columns)
 			if err != nil {
 				return err
 			}
-			all := bs.IntersectAndTranspose(0, columns)
-			if all.IsEmpty() {
-				return nil
-			}
-			it := all.Iterator()
-			for it.HasNext() {
-				id := it.Next()
-				key := tr(tx, id)
+			m := roaring.NewBitmap()
+			for id, v := range all {
+				key := tr(tx, uint64(id))
 				sx, ok := values[key]
 				if !ok {
-					sx = new(Stats)
+					sx = NewStats(fields)
 					values[key] = sx
 				}
-				err := sx.Read(tx, shard, view, bs.CompareValue(0, roaring64.EQ, int64(id), 0, columns), fields)
+				m.Reset()
+				m.SetMany(v)
+				err := sx.Read(tx, shard, view, m, fields)
 				if err != nil {
 					return err
 				}

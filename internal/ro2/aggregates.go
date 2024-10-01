@@ -4,14 +4,22 @@ import (
 	"math"
 	"time"
 
-	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/fieldset"
+	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
 type Stats struct {
 	Visitors, Visits, PageViews, ViewsPerVisits, BounceRate, VisitDuration float64
-	uid                                                                    roaring64.Bitmap
+	uid                                                                    *roaring.Bitmap
+}
+
+func NewStats(fs fieldset.Set) *Stats {
+	var s Stats
+	if fs.Has(v1.Field_id) {
+		s.uid = roaring.NewBitmap()
+	}
+	return &s
 }
 
 func StatToValue(metric string) func(s *Stats) float64 {
@@ -34,7 +42,9 @@ func StatToValue(metric string) func(s *Stats) float64 {
 }
 
 func (s *Stats) Compute() {
-	s.Visitors = float64(s.uid.GetCardinality())
+	if s.uid != nil {
+		s.Visitors = float64(s.uid.GetCardinality())
+	}
 	if s.VisitDuration != 0 {
 		s.VisitDuration = time.Duration(s.VisitDuration).Seconds()
 	}
@@ -49,7 +59,7 @@ func (s *Stats) Compute() {
 	}
 }
 
-func (d *Stats) Read(tx *Tx, shard, view uint64, match *roaring64.Bitmap, fields fieldset.Set) error {
+func (d *Stats) Read(tx *Tx, shard, view uint64, match *roaring.Bitmap, fields fieldset.Set) error {
 	return fields.Each(func(f v1.Field) (err error) {
 		switch f {
 		case v1.Field_view:

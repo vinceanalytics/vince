@@ -3,8 +3,8 @@ package ro2
 import (
 	"time"
 
-	"github.com/RoaringBitmap/roaring/v2/roaring64"
 	"github.com/vinceanalytics/vince/internal/fieldset"
+	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -14,7 +14,7 @@ func (o *Store) Timeseries(domain string, params *query.Query, metrics []string)
 
 	err := o.View(func(tx *Tx) error {
 		format := params.Interval().Format()
-		return tx.Select(domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring64.Bitmap) error {
+		return tx.Select(domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring.Bitmap) error {
 			timestamp := time.UnixMilli(int64(view)).UTC().Format(format)
 			m, ok := values[timestamp]
 			if !ok {
