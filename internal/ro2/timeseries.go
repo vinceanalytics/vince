@@ -18,7 +18,7 @@ func (o *Store) Timeseries(domain string, params *query.Query, metrics []string)
 			timestamp := time.UnixMilli(int64(view)).UTC().Format(format)
 			m, ok := values[timestamp]
 			if !ok {
-				m = new(Stats)
+				m = NewStats(fields)
 				values[timestamp] = m
 			}
 			return m.Read(tx, shard, view, columns, fields)
