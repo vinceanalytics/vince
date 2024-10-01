@@ -239,3 +239,22 @@ func TestSumWithNegative(t *testing.T) {
 	require.Equal(t, uint64(11), cnt)
 	require.Equal(t, int64(0), sum)
 }
+
+func TestExtract(t *testing.T) {
+	bsi := setup()
+	set := bsi.CompareValue(0, RANGE, 45, 55, nil)
+	want := map[uint64]int64{}
+	set.Each(func(value uint64) {
+		want[value] = int64(value)
+	})
+	require.Equal(t, want, bsi.Extract(set))
+}
+
+func BenchmarkBSIExtract(b *testing.B) {
+	bsi := setup()
+	set := bsi.CompareValue(0, RANGE, 45, 55, nil)
+
+	for range b.N {
+		bsi.Extract(set)
+	}
+}

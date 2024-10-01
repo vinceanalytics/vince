@@ -452,6 +452,21 @@ func (b *BSI) Sum(foundSet *Bitmap) (sum int64, count uint64) {
 	return
 }
 
+func (b *BSI) Extract(foundSet *Bitmap) map[uint64]int64 {
+	match := And(b.eBM, foundSet)
+	result := make(map[uint64]int64, match.GetCardinality())
+	match.Each(func(value uint64) {
+		result[value] = int64(value)
+	})
+	for i := 0; i < b.BitCount(); i++ {
+		exists := And(b.bA[i], match)
+		exists.Each(func(value uint64) {
+			result[value] |= 1 << i
+		})
+	}
+	return result
+}
+
 // We only perform Or on a and b. we don't want to modify a or b
 // because there is a posibility a is read from buffer which may corrupt the backing slice..
 func (a *BSI) Or(b *BSI) *BSI {
