@@ -3,7 +3,7 @@
 // Full version of the license is here:
 // https://github.com/RoaringBitmap/roaring/blob/master/LICENSE
 
-package sroar
+package roaring
 
 // TODO: Add license from roaring bitmap library.
 

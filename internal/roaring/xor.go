@@ -1,4 +1,4 @@
-package sroar
+package roaring
 
 func (b *Bitmap) AndCardinality(a *Bitmap) (answer uint64) {
 	return AndCardinality(b, a)

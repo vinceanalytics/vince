@@ -1,6 +1,7 @@
+//go:build real
 // +build real
 
-package sroar
+package roaring
 
 import (
 	"archive/zip"

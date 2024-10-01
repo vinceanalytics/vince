@@ -1,4 +1,4 @@
-package sroar
+package roaring
 
 import (
 	"fmt"

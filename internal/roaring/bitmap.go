@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package sroar
+package roaring
 
 import (
 	"fmt"

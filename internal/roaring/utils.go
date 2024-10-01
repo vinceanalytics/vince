@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package sroar
+package roaring
 
 import (
 	"log"
@@ -74,7 +74,7 @@ func toByteSlice(b []uint16) []byte {
 // they are pointer-based (unsafe). The caller is responsible to
 // ensure that the input slice does not get garbage collected, deleted
 // or modified while you hold the returned slince.
-////
+// //
 func toUint16Slice(b []byte) (result []uint16) {
 	var u16s []uint16
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&u16s))
