@@ -1,4 +1,4 @@
-package bsi
+package sroar
 
 import (
 	"bytes"
@@ -10,8 +10,6 @@ import (
 	"sync"
 	"text/tabwriter"
 	"unsafe"
-
-	"github.com/vinceanalytics/vince/internal/sroar"
 )
 
 const (
@@ -30,8 +28,8 @@ const (
 // It depends upon the bitmap libraries.  It is not thread safe, so
 // upstream concurrency guards must be provided.
 type BSI struct {
-	bA       []*sroar.Bitmap
-	eBM      *sroar.Bitmap // Existence BitMap
+	bA       []*Bitmap
+	eBM      *Bitmap // Existence BitMap
 	MaxValue int64
 	MinValue int64
 }
@@ -44,11 +42,11 @@ func NewBSI(maxValue int64, minValue int64) *BSI {
 	if bits.Len64(uint64(maxValue)) > bitsz {
 		bitsz = bits.Len64(uint64(maxValue))
 	}
-	ba := make([]*sroar.Bitmap, bitsz)
+	ba := make([]*Bitmap, bitsz)
 	for i := range ba {
-		ba[i] = sroar.NewBitmap()
+		ba[i] = NewBitmap()
 	}
-	return &BSI{bA: ba, MaxValue: maxValue, MinValue: minValue, eBM: sroar.NewBitmap()}
+	return &BSI{bA: ba, MaxValue: maxValue, MinValue: minValue, eBM: NewBitmap()}
 }
 
 // NewDefaultBSI constructs an auto-sized BSI
@@ -57,7 +55,7 @@ func NewDefaultBSI() *BSI {
 }
 
 // GetExistenceBitmap returns a pointer to the underlying existence bitmap of the BSI
-func (b *BSI) GetExistenceBitmap() *sroar.Bitmap {
+func (b *BSI) GetExistenceBitmap() *Bitmap {
 	return b.eBM
 }
 
@@ -82,7 +80,7 @@ func (b *BSI) SetValue(columnID uint64, value int64) {
 	if b.MaxValue == 0 && b.MinValue == 0 {
 		minBits := bits.Len64(uint64(value))
 		for len(b.bA) < minBits {
-			b.bA = append(b.bA, sroar.NewBitmap())
+			b.bA = append(b.bA, NewBitmap())
 		}
 	}
 
@@ -110,16 +108,16 @@ func (b *BSI) GetValue(columnID uint64) (value int64, exists bool) {
 	return
 }
 
-type action func(t *task, batch []uint64, resultsChan chan *sroar.Bitmap, wg *sync.WaitGroup)
+type action func(t *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.WaitGroup)
 
-func parallelExecutor(parallelism int, t *task, e action, foundSet *sroar.Bitmap) *sroar.Bitmap {
+func parallelExecutor(parallelism int, t *task, e action, foundSet *Bitmap) *Bitmap {
 
 	var n int = parallelism
 	if n == 0 {
 		n = runtime.NumCPU()
 	}
 
-	resultsChan := make(chan *sroar.Bitmap, n)
+	resultsChan := make(chan *Bitmap, n)
 
 	card := uint64(foundSet.GetCardinality())
 	x := card / uint64(n)
@@ -143,11 +141,11 @@ func parallelExecutor(parallelism int, t *task, e action, foundSet *sroar.Bitmap
 
 	close(resultsChan)
 
-	ba := make([]*sroar.Bitmap, 0)
+	ba := make([]*Bitmap, 0)
 	for bm := range resultsChan {
 		ba = append(ba, bm)
 	}
-	return sroar.FastOr(ba...)
+	return FastOr(ba...)
 }
 
 // Operation identifier
@@ -187,7 +185,7 @@ type task struct {
 // The parallelism parameter indicates the number of CPU threads to be applied for processing.  A value
 // of zero indicates that all available CPU resources will be potentially utilized.
 func (b *BSI) CompareValue(parallelism int, op Operation, valueOrStart, end int64,
-	foundSet *sroar.Bitmap) *sroar.Bitmap {
+	foundSet *Bitmap) *Bitmap {
 
 	comp := &task{bsi: b, op: op, valueOrStart: valueOrStart, end: end}
 	if foundSet == nil {
@@ -196,11 +194,11 @@ func (b *BSI) CompareValue(parallelism int, op Operation, valueOrStart, end int6
 	return parallelExecutor(parallelism, comp, compareValue, foundSet)
 }
 
-func compareValue(e *task, batch []uint64, resultsChan chan *sroar.Bitmap, wg *sync.WaitGroup) {
+func compareValue(e *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.WaitGroup) {
 
 	defer wg.Done()
 
-	results := sroar.NewBitmap()
+	results := NewBitmap()
 
 	x := e.bsi.BitCount()
 	startIsNegative := x == 64 && uint64(e.valueOrStart)&(1<<uint64(x-1)) > 0
@@ -325,7 +323,7 @@ func compareValue(e *task, batch []uint64, resultsChan chan *sroar.Bitmap, wg *s
 }
 
 // MinMax - Find minimum or maximum value.
-func (b *BSI) MinMax(parallelism int, op Operation, foundSet *sroar.Bitmap) int64 {
+func (b *BSI) MinMax(parallelism int, op Operation, foundSet *Bitmap) int64 {
 
 	var n int = parallelism
 	if n == 0 {
@@ -446,7 +444,7 @@ func (b *BSI) minOrMax(op Operation, batch []uint64, resultsChan chan int64, wg 
 
 // Sum all values contained within the foundSet.   As a convenience, the cardinality of the foundSet
 // is also returned (for calculating the average).
-func (b *BSI) Sum(foundSet *sroar.Bitmap) (sum int64, count uint64) {
+func (b *BSI) Sum(foundSet *Bitmap) (sum int64, count uint64) {
 	count = uint64(foundSet.GetCardinality())
 	for i := 0; i < b.BitCount(); i++ {
 		sum += int64(foundSet.AndCardinality(b.bA[i]) << uint(i))
@@ -456,12 +454,9 @@ func (b *BSI) Sum(foundSet *sroar.Bitmap) (sum int64, count uint64) {
 
 // We only perform Or on a and b. we don't want to modify a or b
 // because there is a posibility a is read from buffer which may corrupt the backing slice..
-func Or(a, b *BSI) *BSI {
-	if a == nil {
-		return b
-	}
+func (a *BSI) Or(b *BSI) *BSI {
 	bits := max(a.BitCount(), b.BitCount())
-	ba := make([]*sroar.Bitmap, bits)
+	ba := make([]*Bitmap, bits)
 
 	ax := a.BitCount()
 	bx := b.BitCount()
@@ -474,29 +469,29 @@ func Or(a, b *BSI) *BSI {
 			ba[i] = a.bA[i]
 			continue
 		}
-		ba[i] = sroar.FastOr(a.bA[i], b.bA[i])
+		ba[i] = FastOr(a.bA[i], b.bA[i])
 	}
 
 	return &BSI{
 		bA:  ba,
-		eBM: sroar.FastOr(a.eBM, b.eBM),
+		eBM: FastOr(a.eBM, b.eBM),
 	}
 }
 
-func FromBuffer(data []byte) *BSI {
+func NewBSIFromBuffer(data []byte) *BSI {
 	off, data := chunkLast(data, 2)
 	offIdx := binary.BigEndian.Uint16(off)
 	offsetsData, data := chunkLast(data, int(offIdx))
 	offsets := toUint32Slice(offsetsData)
 	start := offsets[0]
-	ba := make([]*sroar.Bitmap, 0, len(offsets)-1)
+	ba := make([]*Bitmap, 0, len(offsets)-1)
 	for _, end := range offsets[1:] {
-		ba = append(ba, sroar.FromBuffer(data[start:end]))
+		ba = append(ba, FromBuffer(data[start:end]))
 		start = end
 	}
 	return &BSI{
 		bA:  ba,
-		eBM: sroar.FromBuffer(data[:offsets[0]]),
+		eBM: FromBuffer(data[:offsets[0]]),
 	}
 }
 
