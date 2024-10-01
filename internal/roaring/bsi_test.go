@@ -2,6 +2,7 @@ package roaring
 
 import (
 	"math/rand"
+	"os"
 	"slices"
 	"testing"
 	"time"
@@ -248,6 +249,16 @@ func TestExtract(t *testing.T) {
 		want[value] = int64(value)
 	})
 	require.Equal(t, want, bsi.Extract(set))
+}
+
+func TestBSIOr(t *testing.T) {
+	a := NewDefaultBSI()
+	a.SetValue(1, 100)
+	b := NewDefaultBSI()
+	b.SetValue(3, 1999)
+	c := a.Or(b)
+	want, _ := os.ReadFile("testdata/bsi_or.txt")
+	require.Equal(t, string(want), c.String())
 }
 
 func BenchmarkBSIExtract(b *testing.B) {

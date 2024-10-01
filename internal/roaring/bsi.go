@@ -476,17 +476,19 @@ func (a *BSI) Or(b *BSI) *BSI {
 	ax := a.BitCount()
 	bx := b.BitCount()
 	for i := 0; i < bits; i++ {
-		if ax < i {
-			ba[i] = b.bA[i]
+		if ax > i && bx > i {
+			ba[i] = FastOr(a.bA[i], b.bA[i])
 			continue
 		}
-		if bx < i {
+		if ax > i {
 			ba[i] = a.bA[i]
 			continue
 		}
-		ba[i] = FastOr(a.bA[i], b.bA[i])
+		if bx > i {
+			ba[i] = b.bA[i]
+			continue
+		}
 	}
-
 	return &BSI{
 		bA:  ba,
 		eBM: FastOr(a.eBM, b.eBM),
