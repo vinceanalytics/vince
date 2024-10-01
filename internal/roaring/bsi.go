@@ -7,6 +7,7 @@ import (
 	"math/bits"
 	"reflect"
 	"runtime"
+	"slices"
 	"sync"
 	"text/tabwriter"
 	"unsafe"
@@ -517,11 +518,16 @@ func chunkLast(data []byte, n int) (chunk, left []byte) {
 }
 
 func (b *BSI) ToBuffer() []byte {
+	_, data := b.ToBufferWith(nil, nil)
+	return data
+}
+
+func (b *BSI) ToBufferWith(offsets []uint32, data []byte) ([]uint32, []byte) {
 	if b.eBM.IsEmpty() {
-		return []byte{}
+		return []uint32{}, []byte{}
 	}
-	offsets := make([]uint32, 0, 1+b.BitCount())
-	data := make([]byte, 0, b.GetSizeInBytes())
+	offsets = slices.Grow(offsets[:0], 1+b.BitCount())
+	data = slices.Grow(data[:0], b.GetSizeInBytes())
 	data = append(data, b.eBM.ToBuffer()...)
 	offsets = append(offsets, uint32(len(data)))
 	for i := range b.bA {
@@ -531,7 +537,7 @@ func (b *BSI) ToBuffer() []byte {
 	offsetData := toBytes(offsets)
 	data = append(data, offsetData...)
 	data = binary.BigEndian.AppendUint16(data, uint16(len(offsetData)))
-	return data
+	return offsets, data
 }
 
 func toBytes(b []uint32) []byte {

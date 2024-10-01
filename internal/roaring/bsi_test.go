@@ -219,8 +219,26 @@ func BenchmarkFromBuffer(b *testing.B) {
 	b.ReportAllocs()
 
 	for range b.N {
-		FromBuffer(data)
+		NewBSIFromBuffer(data)
 	}
+}
+func BenchmarkBSI(b *testing.B) {
+	bsi := setup()
+
+	b.Run("ToBuffer", func(b *testing.B) {
+
+		for range b.N {
+			bsi.ToBuffer()
+		}
+	})
+	b.Run("ToBufferWith", func(b *testing.B) {
+		off := make([]uint32, 0, 1+bsi.BitCount())
+		data := make([]byte, 0, bsi.GetSizeInBytes())
+		for range b.N {
+			bsi.ToBufferWith(off, data)
+		}
+	})
+
 }
 
 func TestSum(t *testing.T) {
