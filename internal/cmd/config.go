@@ -11,7 +11,8 @@ import (
 func Cli() *cli.Command {
 	return &cli.Command{
 		Name:        "vince",
-		Description: "Simple web analytics",
+		Usage:       "The cloud native web analytics server",
+		Description: `Self hosted web analytics server that respects user privacy`,
 		Version:     version.VERSION,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
