@@ -18,6 +18,8 @@ var faviconData embed.FS
 
 var Favicon, _ = fs.Sub(faviconData, "favicon")
 
+//go:generate go run gen/main.go
+
 //go:embed refs.fst
 var data []byte
 

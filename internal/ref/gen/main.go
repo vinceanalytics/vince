@@ -2,16 +2,18 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"go/format"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
 	"sort"
+
+	"log"
 
 	"github.com/blevesearch/vellum"
 	"gopkg.in/yaml.v2"
@@ -114,7 +116,9 @@ func main() {
 	sort.Slice(all, func(i, j int) bool {
 		return bytes.Compare(all[i].Name, all[j].Name) == -1
 	})
+	domains := make([]string, 0, len(all))
 	for _, v := range all {
+		domains = append(domains, string(v.Name))
 		err = fs.Insert(v.Name, v.Index)
 		if err != nil {
 			log.Fatal(err)
@@ -125,7 +129,13 @@ func main() {
 		log.Fatal(err)
 	}
 	os.WriteFile("refs.fst", o.Bytes(), 0600)
+	slices.Sort(domains)
 
+	ds, _ := json.Marshal(domains)
+	err = os.WriteFile("../../tools/views/domains.json", ds, 0600)
+	if err != nil {
+		log.Fatal(err)
+	}
 	os.Mkdir("favicon", 0755)
 	seen := map[uint64]struct{}{}
 	for _, d := range all {
