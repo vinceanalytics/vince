@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/dgraph-io/badger/v4/y"
 	"github.com/google/uuid"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -115,12 +116,12 @@ func (db *DB) FindOrCreateCreateSharedLink(domain string, name, password string)
 	share = &v1.Share{Id: id, Name: name}
 	if password != "" {
 		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		assert(err == nil, "generating shared password", "err", err)
+		y.Check(err)
 		share.Password = b
 	}
 	site.Shares = append(site.Shares, share)
 	err := db.Save(site)
-	assert(err == nil, "saving user after adding shared link", "err", err)
+	y.Check(err)
 	return
 }
 

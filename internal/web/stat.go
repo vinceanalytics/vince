@@ -260,7 +260,6 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	_ = referrer
 	o, err := db.Get().Breakdown(site.Domain, params.With(&query.Filter{
 		Op:    "is",
 		Key:   v1.Field_source.String(),
