@@ -13,7 +13,6 @@ func Stats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db.HTML(w, stats, map[string]any{
-		"load_dashboard_js": true,
-		"title":             "vince · " + site.Domain,
+		"title": "vince · " + site.Domain,
 	})
 }
