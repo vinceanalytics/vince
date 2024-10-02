@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"log"
 	"math/rand/v2"
@@ -10,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/urfave/cli/v3"
@@ -23,6 +25,14 @@ const (
 	desktop = "Mozilla/5.0 (X11; Arch Linux i686; rv:2.0) Gecko/20110321 Firefox/4.0"
 	mobile  = "Pulse/4.0.5 (iPhone; iOS 7.0.6; Scale/2.00)"
 )
+
+//go:embed domains.json
+var referrerData []byte
+var refs []string
+
+func init() {
+	json.Unmarshal(referrerData, &refs)
+}
 
 func main() {
 	err := view().Run(
@@ -49,6 +59,7 @@ func view() *cli.Command {
 			client := &http.Client{}
 			tick := time.NewTicker(10 * time.Millisecond)
 			done := time.NewTimer(c.Duration("duration"))
+			setupReferral()
 			for {
 				select {
 				case <-done.C:
@@ -91,18 +102,53 @@ var (
 	utmCampaign = []string{"", "Referral", "Advertisement", "Email"}
 	utmSource   = []string{"", "Facebook", "Twitter", "DuckDuckGo", "Google"}
 	hostnames   = []string{"en.vinceanalytics.com", "es.vinceanalytics.com", "vinceanalytics.com"}
+	referrals   map[string][]string
 )
+
+func setupReferral() {
+
+	// add  random sources
+	m := map[string]struct{}{}
+	core := map[string]struct{}{}
+	for _, v := range utmSource[:1] {
+		m[v] = struct{}{}
+		core[v] = struct{}{}
+	}
+	for range 4 {
+		m[ref.Rand()] = struct{}{}
+	}
+	for k := range m {
+		_, ok := core[k]
+		if !ok {
+			utmSource = append(utmSource, k)
+		}
+	}
+	src := make([]string, 0, len(utmSource)-1)
+	for _, v := range utmSource[1:] {
+		src = append(src, strings.ToLower(v))
+	}
+	referrals = make(map[string][]string)
+
+	for i := range refs {
+		for j := range src {
+			if strings.Contains(refs[i], src[j]) {
+				referrals[src[j]] = append(referrals[src[j]], refs[i])
+			}
+		}
+	}
+}
 
 func request(target string, ts int64) (*http.Request, error) {
 	q := make(url.Values)
-	q.Set("utm_source", randomString(utmSource))
+	src := randomString(utmSource)
+	q.Set("utm_source", src)
 	q.Set("utm_capmaign", randomString(utmCampaign))
 	event := map[string]any{
 		"name":     randomString(eventsName),
 		"ts":       ts,
 		"url":      "https://" + randomString(hostnames) + randomString(paths) + "?" + q.Encode(),
 		"domain":   "vinceanalytics.com",
-		"referrer": ref.Rand(),
+		"referrer": randomString(referrals[strings.ToLower(src)]),
 	}
 	data, _ := json.Marshal(event)
 	req, err := http.NewRequest(http.MethodPost, target, bytes.NewReader(data))
@@ -115,6 +161,9 @@ func request(target string, ts int64) (*http.Request, error) {
 }
 
 func randomString(ls []string) string {
+	if len(ls) == 0 {
+		return ""
+	}
 	i := rand.IntN(len(ls))
 	return ls[i]
 }
