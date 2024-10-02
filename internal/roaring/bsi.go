@@ -55,6 +55,14 @@ func NewDefaultBSI() *BSI {
 	return NewBSI(int64(0), int64(0))
 }
 
+func (b *BSI) Reset() {
+	clear(b.bA)
+	b.bA = b.bA[:0]
+	b.eBM.Reset()
+	b.MaxValue = 0
+	b.MinValue = 0
+}
+
 // GetExistenceBitmap returns a pointer to the underlying existence bitmap of the BSI
 func (b *BSI) GetExistenceBitmap() *Bitmap {
 	return b.eBM
