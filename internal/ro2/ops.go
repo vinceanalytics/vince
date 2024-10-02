@@ -11,7 +11,6 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/y"
-	"github.com/google/uuid"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/config"
@@ -172,11 +171,6 @@ func CleanupDOmain(domain string) string {
 	domain = strings.TrimSuffix(domain, "/")
 	domain = strings.ToLower(domain)
 	return domain
-}
-
-func ID(id []byte) (o uuid.UUID) {
-	copy(o[:], id)
-	return
 }
 
 func compareShare(a, b *v1.Share) int {
