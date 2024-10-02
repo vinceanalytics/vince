@@ -51,7 +51,7 @@ func view() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.DurationFlag{
 				Name:  "duration,d",
-				Value: time.Hour,
+				Value: 24 * time.Hour,
 			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
