@@ -14,6 +14,14 @@ func Cli() *cli.Command {
 		Usage:       "The cloud native web analytics server",
 		Description: `Self hosted web analytics server that respects user privacy`,
 		Version:     version.VERSION,
+		Commands:    []*cli.Command{serve(), crack()},
+	}
+}
+
+func serve() *cli.Command {
+	return &cli.Command{
+		Name:  "serve",
+		Usage: "starts vince serve",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "listen",
@@ -72,7 +80,6 @@ func Cli() *cli.Command {
 				Value:       "",
 				Usage:       "path to lincense key file",
 				Sources:     cli.EnvVars("VINCE_LICENSE"),
-				Required:    true,
 				Destination: &config.C.License,
 			},
 			&cli.StringFlag{

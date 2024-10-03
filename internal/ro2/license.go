@@ -21,25 +21,23 @@ import (
 )
 
 func (db *DB) checkLicense(ctx context.Context) {
-
 	var loadedLicense *v1.License
-	data, err := licenseData(config.C.License)
-	if err != nil {
-		slog.Error("reading license key", "err", err)
-		os.Exit(1)
+	if config.C.License != "" {
+		data, err := licenseData(config.C.License)
+		if err != nil {
+			slog.Error("reading license key", "err", err)
+			os.Exit(1)
+		}
+		loadedLicense, err = license.Parse(data)
+		if err != nil {
+			slog.Error("parsing license key", "err", err)
+			os.Exit(1)
+		}
 	}
-	loadedLicense, err = license.Parse(data)
-	if err != nil {
-		slog.Error("parsing license key", "err", err)
-		os.Exit(1)
-	}
-	features.Expires.Store(loadedLicense.Expiry)
-	features.Email.Store(loadedLicense.Email)
 
 	// handle license updated on the web UI
-	err = db.db.Update(func(txn *badger.Txn) error {
-		sys := keys.OpsPrefix
-		it, err := txn.Get(sys)
+	err := db.db.Update(func(txn *badger.Txn) error {
+		it, err := txn.Get(keys.OpsPrefix)
 		if err != nil {
 			if !errors.Is(err, badger.ErrKeyNotFound) {
 				return err
@@ -55,21 +53,30 @@ func (db *DB) checkLicense(ctx context.Context) {
 			}
 			// we have saved a license in the database. Only apply if it is  more
 			// recent than the one initialized with vince
-			if ls.Expiry > features.Expires.Load() {
-				features.Expires.Store(ls.Expiry)
-				features.Email.Store(ls.Email)
+			if loadedLicense.GetExpiry() < ls.Expiry {
+				loadedLicense = &ls
 			}
 			return nil
 		})
 
 	})
+
 	if err != nil {
 		slog.Error("failed setup license", "err", err)
 		os.Exit(1)
 	}
+
+	if loadedLicense == nil {
+		slog.Error("missing a valid license key")
+		os.Exit(1)
+	}
+
+	features.Expires.Store(loadedLicense.GetExpiry())
+	features.Email.Store(loadedLicense.GetEmail())
+
 	if err := features.Validate(); err != nil && !errors.Is(err, features.ErrExpired) {
 		// It is allowed to start vince with expired license
-		slog.Error("validation", "err", err)
+		slog.Error("license validation", "err", err)
 		os.Exit(1)
 	}
 
@@ -133,6 +140,15 @@ func (db *DB) ApplyLicense(licenseKey []byte) error {
 	features.Apply(ls)
 	return db.Update(func(tx *Tx) error {
 		data, _ := proto.Marshal(ls)
+		return tx.tx.Set(
+			keys.OpsPrefix, data,
+		)
+	})
+}
+
+func (db *DB) PatchLicense(key *v1.License) error {
+	return db.Update(func(tx *Tx) error {
+		data, _ := proto.Marshal(key)
 		return tx.tx.Set(
 			keys.OpsPrefix, data,
 		)
