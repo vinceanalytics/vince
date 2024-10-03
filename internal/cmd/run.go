@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 
 	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/location"
@@ -322,7 +321,7 @@ func run() {
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(config.C.AcmeDomain),
 			Email:      config.C.AcmeEmail,
-			Cache:      autocert.DirCache(filepath.Join(config.C.DataPath, "certs")),
+			Cache:      db.Get(),
 		}
 		svr.TLSConfig = m.TLSConfig()
 	}

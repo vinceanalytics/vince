@@ -65,7 +65,7 @@ func Settings(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Delete(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := db.CurrentSite().Domain
-	err := db.Get().Delete(domain)
+	err := db.Get().DeleteDomain(domain)
 	if err != nil {
 		slog.Error("deleting site", "domain", domain, "err", "err")
 	}

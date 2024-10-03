@@ -77,7 +77,7 @@ func (db *DB) CreateSite(domain string, public bool) (err error) {
 	})
 }
 
-func (db *DB) Delete(domain string) (err error) {
+func (db *DB) DeleteDomain(domain string) (err error) {
 	return db.Update(func(tx *Tx) error {
 		return tx.tx.Delete(
 			encoding.EncodeSite([]byte(domain)),

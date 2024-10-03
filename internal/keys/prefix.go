@@ -5,6 +5,7 @@ var (
 	OpsPrefix          = []byte{0x01}
 	Cookie             = []byte{0x01, 0x00}
 	SitePrefix         = []byte{0x01, 0x01}
+	AcmePrefix         = []byte{0x01, 0x02}
 	TranslateKeyPrefix = []byte{0x02, 0x00}
 	TranslateIDPrefix  = []byte{0x02, 0x01}
 	TranslateSeqPrefix = []byte{0x02, 0x02}
