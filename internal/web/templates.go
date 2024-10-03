@@ -50,7 +50,7 @@ func pathEscape(value string) string {
 }
 
 func renderSnippet(domain string) string {
-	tracker := fmt.Sprintf("%s/assets/js/vince.js", config.C.Url)
+	tracker := fmt.Sprintf("%s/js/script.js", config.C.Url)
 	return fmt.Sprintf(`<script defer data-domain=%q src=%q></script>`, domain, tracker)
 }
 

@@ -57,17 +57,20 @@ func FetchFlash(h Handler) Handler {
 
 var file = http.FileServerFS(app.Public)
 var icons = http.FileServerFS(app.Images)
+var scripts = http.FileServerFS(app.Scripts)
 
 func Static(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/public/") {
-			if strings.HasPrefix(r.URL.Path, "/public/js/vince") {
-				w.Header().Set("x-content-type-options", "nosniff")
-				w.Header().Set("cross-origin-resource-policy", "cross-origin")
-				w.Header().Set("access-control-allow-origin", "*")
-				w.Header().Set("cache-control", "public, max-age=86400, must-revalidate")
-			}
 			file.ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/js/") {
+			w.Header().Set("x-content-type-options", "nosniff")
+			w.Header().Set("cross-origin-resource-policy", "cross-origin")
+			w.Header().Set("access-control-allow-origin", "*")
+			w.Header().Set("cache-control", "public, max-age=86400, must-revalidate")
+			scripts.ServeHTTP(w, r)
 			return
 		}
 		if strings.HasPrefix(r.URL.Path, "/images/") {

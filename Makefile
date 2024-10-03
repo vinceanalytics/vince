@@ -10,6 +10,9 @@ dev:
 css:
 	cd assets && npm run css && cd -
 
+scripts:
+	cd tracker && npm run deploy && cd -
+
 major:
 	go run ./internal/version/bump/main.go major
 minor:
