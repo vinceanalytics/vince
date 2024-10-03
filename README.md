@@ -98,3 +98,7 @@ After running the command, start vince with f `--adminEmail=crack@vinceanalytics
 You can omit the `--license` flag.
 
 *This only works when running vince with persistence storage*
+
+# Credit
+
+[Plausible Analytics](https://github.com/plausible/analytics) : `vince` started as a Go port of plausible with a focus on self hosting.
