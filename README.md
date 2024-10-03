@@ -14,6 +14,30 @@
 ![Vince Analytics](desktop.png)
 
 
+# Features
+
+- **Drop in replacement for plausible** you can use existing plausible  scripts and just point them to the vince instance (note that vince is lean and only covers features for a single entity self hosting, so it is not our goal to be feature parity with plausible).
+- **Outbounds links tracking**
+- **File download tracking**
+- **404 page tracking**
+- **Custom event tracking**
+- **Time period comparison**
+- **Public dashboards** allow access to the dashoard to anyone(by default all dashboards are private).
+- **unique shared access** generate unique links to dahboards that can be password protected.
+- **Extremely fast** we use bit sliced index or roaring bitmaps.We base our implementation on [seralized roaring bitmaps](https://github.com/dgraph-io/sroar), there is no decoding while reading, data is loaded directly. Git it a try and enjoy snappy dashoards.
+
+- **Zero Dependency**: Ships a single binary with everything in it. No runtime dependency.
+
+- **High events ingestion rate** : We buffer and use LSM based underlying [key value store](https://github.com/dgraph-io/badger) that is optimized for writes.
+
+
+- **Easy to operate**: One line commandline flags with env variables is all you need.
+
+- **Unlimited sites**: There is no limit on how many sites you can manage.
+- **Unlimited events**: scale according to availbale resources.
+
+- **Privacy friendly**: No cookies and fully compliant with GDPR, CCPA and PECR.
+
 
 # Installation
 
@@ -98,6 +122,28 @@ Then start vince with flag `--adminEmail=crack@vinceanalytics.com`.
 You can omit the `--license` flag.
 
 *This only works when running vince with persistence storage*
+
+## Where is the REST API ?
+Initially we were api only, we had to pivot to the dashboard version due to lack
+of interests. There is no plan to bring it back anytime soon.
+
+## Why all this license key stuff?
+I am s solo dev, my last employment ended 2021. I am struggling finding remote work 
+because remote now seems to imply Remote US or Remote EU. I implemented the license
+stuff to avoid feeling depressed.
+
+vinceanalytics is not a company and I am not selling license keys. Just send me an email if
+you want a lifetime license. 
+
+I am ashamed to admit I fumbled the bag, by quitting my last job without a contigency
+plan( I had good reason to quit after a burn out). So my linkedin profile showing
+I have been working at vince analytics is half true.
+
+It has been three years without work, it is dreadful seeing my career coming to an end.
+
+So, be gentle. I accept discussions, but I am in no position to fix issues. I welcome
+pull requests.
+
 
 # Credit
 
