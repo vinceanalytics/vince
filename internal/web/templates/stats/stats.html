@@ -1,4 +1,5 @@
 {{define "main"}}
+{{if .seen_first_stats}}
 <div class="{{if .embedded}}max-w-screen-xl mx-auto px-6{{else}}container print:max-w-full{{end}}"
     data-site-domain="{{.site.domain}}">
   <div class="pt-6"></div>
@@ -21,4 +22,66 @@
     <div id="modal_root"></div>
 </div>
 <script type="text/javascript" src="/public/js/dashboard.js"></script>
+{{else}}
+<script>
+  function updateStatus() {
+    fetch("/api/{{.site.domain|path_escape}}/status")
+    .then(function(res) { return res.json() })
+      .then(function(status) {
+        if (status === "READY") {
+          window.location.reload()
+        }
+      })
+  }
+
+  setInterval(updateStatus, 5000)
+</script>
+<div
+  class="bg-white dark:bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4 mt-16 relative text-center"
+>
+  <h2 class="text-xl font-bold dark:text-gray-100">Waiting for first pageview</h2>
+  <h2 class="text-xl font-bold dark:text-gray-100">on {{.site.domain}}</h2>
+  <div class="my-44">
+    <div class="block pulsating-circle top-1/2 left-1/2"></div>
+    <p class="text-gray-600 dark:text-gray-400 text-xs absolute left-0 bottom-0 mb-6 w-full text-center leading-normal">
+      Need to see the snippet again?
+      <a href="/{{.site.domain|path_escape}}/snippet" 
+      class="inline-flex items-center gap-x-0.5 text-rose-600 hover:text-rose-700 dark:text-rose-500 dark:hover:text-rose-600"
+      target="_blank"
+      >
+      Click here
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+      </svg>
+    </a>
+      <!-- <.styled_link href={"/#{URI.encode_www_form(@site.domain)}/snippet?flow=#{@conn.params[~s|flow|]}"}>
+        Click here
+      </.styled_link>
+
+      <br /> Not working?
+      <.styled_link
+        new_tab
+        href="https://plausible.io/docs/troubleshoot-integration#check-for-the-plausible-snippet-in-your-source-code"
+      >
+        Troubleshoot the integration
+      </.styled_link>
+
+      <br />
+      <span :if={ee?()}>
+        Check the
+        <.styled_link href={Routes.site_path(@conn, :settings_general, @site.domain)}>
+          site settings
+        </.styled_link>
+        to invite team members, <br /> import historical stats and more.
+      </span>
+      <span :if={ce?()}>
+        Still not working? Ask on our
+        <.styled_link new_tab href="https://github.com/plausible/analytics/discussions">
+          community-supported forum
+        </.styled_link>
+      </span> -->
+    </p>
+  </div>
+</div>
+{{end}}
 {{end}}

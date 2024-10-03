@@ -15,6 +15,14 @@ import (
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
 
+func Status(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	body := "WAITING"
+	if db.Get().SeenFirstStats(db.CurrentSite().Domain) {
+		body = "READY"
+	}
+	db.JSON(w, body)
+}
+
 func EditSharedLinksForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	db.HTML(w, edit, map[string]any{"slug": slug})

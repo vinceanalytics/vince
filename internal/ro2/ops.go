@@ -85,6 +85,14 @@ func (db *DB) DeleteDomain(domain string) (err error) {
 	})
 }
 
+func (db *DB) SeenFirstStats(domain string) (ok bool) {
+	db.View(func(tx *Tx) error {
+		_, ok = tx.ID(v1.Field_domain, domain)
+		return nil
+	})
+	return
+}
+
 func (db *DB) EditSharedLink(site *v1.Site, slug, name string) error {
 	i, ok := slices.BinarySearchFunc(site.Shares, &v1.Share{Id: slug}, compareShare)
 	if !ok {

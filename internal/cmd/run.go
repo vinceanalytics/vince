@@ -168,6 +168,11 @@ func run() {
 			Then(web.AddSnippet),
 	))
 
+	mux.HandleFunc("GET /api/{domain}/status", db.Wrap(
+		sites.
+			Then(web.Status),
+	))
+
 	mux.HandleFunc("GET /{domain}/settings", db.Wrap(
 		sites.
 			With(plug.CSRF).
