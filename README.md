@@ -23,7 +23,7 @@
 - **Custom event tracking**
 - **Time period comparison**
 - **Public dashboards** allow access to the dashoard to anyone(by default all dashboards are private).
-- **unique shared access** generate unique links to dahboards that can be password protected.
+- **Unique shared access** generate unique links to dahboards that can be password protected.
 - **Extremely fast** we use bit sliced index of roaring bitmaps.We base our implementation on [serialized roaring bitmaps](https://github.com/dgraph-io/sroar), there is no decoding while reading, data is loaded directly.
 - **Zero Dependency**: Ships a single binary with everything in it. No runtime dependency.
 - **High events ingestion rate** : We buffer and use LSM based underlying [key value store](https://github.com/dgraph-io/badger) that is optimized for writes.
