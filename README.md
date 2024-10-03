@@ -45,5 +45,7 @@ Assuming your data directory is `vince-data`
 VINCE_ADMIN_EMAIL        Expires                              
 crack@vinceanalytics.com 2024-10-04 06:52:01.123432 +0000 UTC 
 ```
-After running the command, start vince with the output of `VINCE_ADMIN_EMAIL` and 
-`--data=vince-data`
+After running the command, start vince with f `--adminEmail=crack@vinceanalytics.com`.
+You can omit the `--license` flag.
+
+*This only works when running vince with prersistence storage*
