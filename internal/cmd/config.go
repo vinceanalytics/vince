@@ -37,9 +37,9 @@ func serve() *cli.Command {
 				Destination: &config.C.DataPath,
 			},
 			&cli.BoolFlag{
-				Name:        "acme",
+				Name:        "autoTLS",
 				Usage:       "enables automatic tls",
-				Sources:     cli.EnvVars("VINCE_ACME"),
+				Sources:     cli.EnvVars("VINCE_AUTO_TLS"),
 				Destination: &config.C.Acme,
 			},
 			&cli.StringFlag{
