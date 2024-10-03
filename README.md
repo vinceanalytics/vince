@@ -37,7 +37,9 @@ OPTIONS:
    --help, -h       show help (default: false)
 ```
 
-**example**
+**example:**
+Assuming your data directory is `vince-data`
+
 ```
 ❯ vince crack vince-data
 VINCE_ADMIN_EMAIL        Expires                              
