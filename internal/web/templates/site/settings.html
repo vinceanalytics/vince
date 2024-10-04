@@ -1,38 +1,38 @@
 {{define "main"}}
-<div class="containter pt-1">
-    <a href="/{{.site.domain|path_escape}}" class="text-sm text-rose-600 font-bold">
-        ← Back to Stats
-    </a>
-    <div class="pb-5 border-b border-gray-200">
-        <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:leading-9 sm:truncate">
+<div class="container pt-6">
+    <a href="/{{.site.domain|path_escape}}" class="text-sm text-rose-600 font-bold">← Back to stats</a>
+    <div class="pb-5 border-b border-gray-200 dark:border-gray-500">
+        <h2 class="text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:text-3xl sm:leading-9 sm:truncate">
             Settings for {{.site.domain}}
         </h2>
     </div>
-    <div class="lg:mt-4">
-        <div class="px-4 py-6 bg-white shadow dark:bg-gray-800 sm:rounded-md sm:overflow-hidden sm:p-6">
-            <header class="relative" id="visibility">
-                <h2 class="text-lg font-medium text-gray-900 leading-6 dark:text-gray-100">
-                    Public dashboard
-                </h2>
-                <p class="mt-1 text-sm text-gray-500 leading-5 dark:text-gray-200">
-                    Share your stats publicly or keep them private
-                </p>
-            </header>
-            {{if .site.public}}
-            <a href="/{{.site.domain|path_escape}}/make-private"
-                class=" bg-rose-600 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring">
-                <span
-                    class="inline-block w-5 h-5 bg-white rounded-full shadow translate-x-5 dark:bg-gray-800 transform transition ease-in-out duration-200">
-                </span>
-            </a>
-            {{else}}
-            <a href="/{{.site.domain|path_escape}}/make-public"
-                class="bg-gray-200 dark:bg-gray-700 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring">
-                <span
-                    class="inline-block w-5 h-5 bg-white rounded-full shadow translate-x-0 dark:bg-gray-800 transform transition ease-in-out duration-200">
-                </span>
-            </a>
-            {{end}}
+    <div class="lg:grid lg:grid-cols-12 lg:gap-x-5 lg:mt-4">
+        <div class="space-y-6 lg:col-span-9 lg:mt-4">
+            <div class="px-4 py-6 bg-white shadow dark:bg-gray-800 sm:rounded-md sm:overflow-hidden sm:p-6">
+                <header class="relative" id="visibility">
+                    <h2 class="text-lg font-medium text-gray-900 leading-6 dark:text-gray-100">
+                        Public dashboard
+                    </h2>
+                    <p class="mt-1 text-sm text-gray-500 leading-5 dark:text-gray-200">
+                        Share your stats publicly or keep them private
+                    </p>
+                </header>
+                {{if .site.public}}
+                <a href="/{{.site.domain|path_escape}}/make-private"
+                    class=" bg-rose-600 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring">
+                    <span
+                        class="inline-block w-5 h-5 bg-white rounded-full shadow translate-x-5 dark:bg-gray-800 transform transition ease-in-out duration-200">
+                    </span>
+                </a>
+                {{else}}
+                <a href="/{{.site.domain|path_escape}}/make-public"
+                    class="bg-gray-200 dark:bg-gray-700 relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring">
+                    <span
+                        class="inline-block w-5 h-5 bg-white rounded-full shadow translate-x-0 dark:bg-gray-800 transform transition ease-in-out duration-200">
+                    </span>
+                </a>
+                {{end}}
+            </div>
             <div class="px-4 py-6 bg-white shadow dark:bg-gray-800 sm:rounded-md sm:overflow-hidden sm:p-6">
                 <header class="relative">
                     <h2 class="text-lg font-medium text-gray-900 leading-6 dark:text-gray-100">Shared Links</h2>
@@ -95,21 +95,12 @@
                             </a>
                             <a href="/shared-links/{{$domain|path_escape}}/delete/{{$share.slug}}"
                                 class="px-4 py-2 inline-flex items-center text-rose-800 bg-gray-200 border-r border-gray-300 rounded-none dark:bg-gray-850 dark:text-rose-500 dark:border-gray-500 hover:bg-gray-300 dark:hover:bg-gray-825">
-                                <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                >
-                                </path>
-                              </svg>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                    </path>
+                                </svg>
                             </a>
 
                         </div>
@@ -120,10 +111,6 @@
                     </a>
                 </div>
             </div>
-        </div>
-
-
-        <div class="space-y-6 lg:mt-4">
             <div class="sm:rounded-md sm:overflow-hidden shadow">
                 <div class="bg-white dark:bg-gray-800 py-6 px-4 space-y-6 sm:p-6">
                     <div>
@@ -149,7 +136,5 @@
                 </div>
             </div>
         </div>
-
     </div>
-</div>
-{{end}}
+    {{end}}
