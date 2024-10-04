@@ -87,6 +87,33 @@ func run() {
 			Then(web.Login),
 	))
 
+	mux.HandleFunc("GET /settings", db.Wrap(
+		plug.Browser().
+			With(plug.CSRF).
+			With(plug.RequireAccount).
+			Then(web.UserSetting),
+	))
+
+	mux.HandleFunc("GET /settings/api-keys/new", db.Wrap(
+		plug.Browser().
+			With(plug.CSRF).
+			With(plug.RequireAccount).
+			Then(web.NewApiKey),
+	))
+
+	mux.HandleFunc("POST /settings/api-keys", db.Wrap(
+		plug.Browser().
+			With(plug.VerifyCSRF).
+			With(plug.RequireAccount).
+			Then(web.CreateAPiKey),
+	))
+
+	mux.HandleFunc("GET /settings/api-keys/{name}", db.Wrap(
+		plug.Browser().
+			With(plug.RequireAccount).
+			Then(web.DeleteAPiKey),
+	))
+
 	mux.HandleFunc("GET /logout", db.Wrap(
 		plug.Browser().
 			Then(web.Logout),

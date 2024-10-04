@@ -28,3 +28,17 @@ func EncodeSite(key []byte) []byte {
 	copy(o[2:], key)
 	return o
 }
+
+func EncodeApiKeyName(key []byte) []byte {
+	o := make([]byte, 2+len(key))
+	copy(o, keys.APIKeyNamePrefix)
+	copy(o[2:], key)
+	return o
+}
+
+func EncodeApiKeyHash(hash []byte) []byte {
+	o := make([]byte, 2+len(hash))
+	copy(o, keys.APIKeyHashPrefix)
+	copy(o[2:], hash)
+	return o
+}

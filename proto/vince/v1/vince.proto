@@ -75,3 +75,9 @@ message Agent {
   string os_version = 5;
   string device = 6;
 }
+
+message APIKey {
+  string name = 1;
+  string prefix = 2;
+  bytes hash = 3;
+}

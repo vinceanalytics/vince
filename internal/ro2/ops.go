@@ -2,8 +2,10 @@ package ro2
 
 import (
 	"cmp"
+	"crypto/sha512"
 	"crypto/subtle"
 	"errors"
+	"fmt"
 	"log/slog"
 	"regexp"
 	"slices"
@@ -19,6 +21,73 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
 )
+
+func (db *DB) CreateAPIKey(name string, key string) error {
+	prefix := key[:6]
+	hash := sha512.Sum512([]byte(key))
+	data, _ := proto.Marshal(&v1.APIKey{
+		Name:   name,
+		Prefix: prefix,
+		Hash:   hash[:],
+	})
+	return db.db.Update(func(txn *badger.Txn) error {
+		return errors.Join(
+			txn.Set(encoding.EncodeApiKeyName([]byte(name)), data),
+			txn.Set(encoding.EncodeApiKeyHash(hash[:]), []byte{}),
+		)
+	})
+}
+
+func (db *DB) ValidAPIKkey(key string) bool {
+	hash := sha512.Sum512([]byte(key))
+	err := db.db.View(func(txn *badger.Txn) error {
+		_, err := txn.Get(encoding.EncodeApiKeyHash(hash[:]))
+		return err
+	})
+	return err == nil
+}
+
+func (db *DB) DeleteAPIKey(name string) error {
+	return db.db.Update(func(txn *badger.Txn) error {
+		nameKey := encoding.EncodeApiKeyName([]byte(name))
+		it, err := txn.Get(nameKey)
+		if err != nil {
+			return err
+		}
+		var a v1.APIKey
+		err = it.Value(func(val []byte) error {
+			return proto.Unmarshal(val, &a)
+		})
+		if err != nil {
+			return err
+		}
+		return errors.Join(
+			txn.Delete(nameKey),
+			txn.Delete(encoding.EncodeApiKeyHash(a.Hash)),
+		)
+	})
+
+}
+
+func (db *DB) APIKeys() (ls []*v1.APIKey, err error) {
+	err = db.db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.IteratorOptions{})
+		defer it.Close()
+
+		for it.Seek(keys.APIKeyNamePrefix); it.ValidForPrefix(keys.APIKeyNamePrefix); it.Next() {
+			var a v1.APIKey
+			err := it.Item().Value(func(val []byte) error {
+				return proto.Unmarshal(val, &a)
+			})
+			if err != nil {
+				return fmt.Errorf("decoding api key message%w", err)
+			}
+			ls = append(ls, &a)
+		}
+		return nil
+	})
+	return
+}
 
 func (db *DB) Domains(f func(*v1.Site)) {
 	err := db.View(func(tx *Tx) error {

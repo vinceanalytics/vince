@@ -269,6 +269,10 @@ func (c *Config) SaveSuccessRegister(w http.ResponseWriter, uid uuid.UUID) {
 	c.SaveSession(w)
 }
 
+func (c *Config) Success(msg string) {
+	c.session.SuccessFlash(msg)
+}
+
 func (c *Config) SaveSession(w http.ResponseWriter) {
 	err := c.session.save(w)
 	if err != nil {

@@ -26,7 +26,9 @@ var (
 	shared        = template.Must(look("focus").ParseFS(templateData, "templates/site/new_shared_link.html"))
 	edit          = template.Must(look("focus").ParseFS(templateData, "templates/site/edit_shared_link.html"))
 	sitesIndex    = template.Must(look("app").ParseFS(templateData, "templates/site/index.html"))
-	settings      = template.Must(look("app").ParseFS(templateData, "templates/site/settings.html"))
+	siteSettings  = template.Must(look("app").ParseFS(templateData, "templates/site/settings.html"))
+	userSettings  = template.Must(look("app").ParseFS(templateData, "templates/auth/settings.html"))
+	newAPIKey     = template.Must(look("focus").ParseFS(templateData, "templates/auth/new_api_key.html"))
 	addSnippet    = template.Must(look("focus").ParseFS(templateData, "templates/site/snippet.html"))
 
 	e404 = template.Must(look("focus").ParseFS(templateData, "templates/error/404.html"))

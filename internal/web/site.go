@@ -68,7 +68,7 @@ func CreateSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func Settings(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	db.HTML(w, settings, nil)
+	db.HTML(w, siteSettings, nil)
 }
 
 func Delete(db *db.Config, w http.ResponseWriter, r *http.Request) {
