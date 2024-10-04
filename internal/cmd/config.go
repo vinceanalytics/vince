@@ -95,6 +95,12 @@ func serve() *cli.Command {
 				Sources:     cli.EnvVars("VINCE_DOMAINS"),
 				Destination: &config.C.Domains,
 			},
+			&cli.BoolFlag{
+				Name:        "profile",
+				Usage:       "registrer http profiles on /debug/ path",
+				Sources:     cli.EnvVars("VINCE_PROFILE"),
+				Destination: &config.C.Profile,
+			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			run()

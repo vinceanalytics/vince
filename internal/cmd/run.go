@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 
@@ -34,6 +35,21 @@ func run() {
 	mux.HandleFunc("/favicon/sources/placeholder", web.Placeholder)
 	mux.HandleFunc("/favicon/sources/{source...}", web.Favicon)
 
+	if config.C.Profile {
+		mux.HandleFunc("GET /debug/pprof/{name}", func(w http.ResponseWriter, r *http.Request) {
+			name := r.PathValue("name")
+			switch name {
+			case "profile":
+				pprof.Profile(w, r)
+			case "symbol":
+				pprof.Symbol(w, r)
+			case "trace":
+				pprof.Trace(w, r)
+			default:
+				pprof.Index(w, r)
+			}
+		})
+	}
 	mux.HandleFunc("/{$}", db.Wrap(
 		plug.Browser().Then(web.Home),
 	))

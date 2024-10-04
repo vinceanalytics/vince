@@ -12,6 +12,7 @@ message Config {
   string license = 7;
   string url = 8;
   repeated string domains = 9;
+  bool profile = 10;
 }
 
 message Site {
