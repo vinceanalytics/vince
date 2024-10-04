@@ -16,7 +16,7 @@
 
 # Features
 
-- **Automatic TLS** native support for let's encrypt.
+- [**Automatic TLS**](https://www.vinceanalytics.com/guides/config/auto-tls/) native support for let's encrypt.
 - **Drop in replacement for plausible** you can use existing plausible  scripts and just point them to the vince instance (note that vince is lean and only covers features for a single entity self hosting, so it is not our goal to be feature parity with plausible).
 - **Outbounds links tracking**
 - **File download tracking**
