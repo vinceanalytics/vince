@@ -116,27 +116,6 @@ You can omit the `--license` flag.
 
 *This only works when running vince with persistence storage*
 
-## Where is the REST API ?
-Initially we were api only, we had to pivot to the dashboard version due to lack
-of interests. There is no plan to bring it back anytime soon.
-
-## Why all this license key stuff?
-I am s solo dev, my last employment ended 2021. I am struggling finding remote work 
-because remote now seems to imply Remote US or Remote EU. I implemented the license
-stuff to avoid feeling depressed.
-
-vinceanalytics is not a company and I am not selling license keys. Just send me an email if
-you want a lifetime license. 
-
-I am ashamed to admit I fumbled the bag, by quitting my last job without a contigency
-plan( I had good reason to quit after a burn out). So my linkedin profile showing
-I have been working at vince analytics is half true.
-
-It has been three years without work, it is dreadful seeing my career coming to an end.
-
-So, be gentle. I accept discussions, but I am in no position to fix issues. I welcome
-pull requests.
-
 
 # Credit
 
