@@ -103,7 +103,7 @@ func iso02() {
 	}
 	_iso_2 = o.V
 	slices.SortFunc(_iso_2, func(a, b *Region) int {
-		return strings.Compare(a.Name, b.Name)
+		return strings.Compare(a.Code, b.Code)
 	})
 }
 
