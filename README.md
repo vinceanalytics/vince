@@ -74,7 +74,6 @@ vince --version
 vince  --adminName=acme \
   --adminPassword=1234\
   --adminEmail=acme@example.com \
-  --domains=example.com
 ```
 
 This command will start vince on `localhost:8080`.
