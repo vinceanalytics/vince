@@ -17,7 +17,6 @@ var (
 		templateData, "templates/layout/*",
 	)).Funcs(funcMap())
 	home          = template.Must(look("focus").ParseFS(templateData, "templates/page/index.html"))
-	license       = template.Must(look("focus").ParseFS(templateData, "templates/page/license.html"))
 	login         = template.Must(look("focus").ParseFS(templateData, "templates/auth/login.html"))
 	statsLocked   = template.Must(look("focus").ParseFS(templateData, "templates/stats/site_locked.html"))
 	sharePassword = template.Must(look("focus").ParseFS(templateData, "templates/stats/shared_link_password.html"))

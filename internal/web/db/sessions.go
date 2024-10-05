@@ -22,7 +22,6 @@ import (
 	"github.com/lestrrat-go/dataurl"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/features"
 )
 
 const MaxAge = 60 * 60 * 24 * 365 * 5
@@ -165,7 +164,7 @@ func (c *Config) Context(base map[string]any) map[string]any {
 	if f := s.Data.Flash; f != nil {
 		base["flash"] = f
 	}
-	return features.Context(base)
+	return base
 }
 
 func (c *Config) load(r *http.Request) {

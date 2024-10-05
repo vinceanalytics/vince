@@ -5,7 +5,7 @@ dev:
 	VINCE_ADMIN_PASSWORD=1234 \
 	VINCE_DOMAINS=vinceanalytics.com \
 	VINCE_PROFILE=true \
-	VINCE_LICENSE=trial_license_key  ./bin/vince serve
+	  ./bin/vince
 
 
 css:

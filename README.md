@@ -71,51 +71,13 @@ vince --version
 ## Start vince
 
 ```shell
-vince serve --adminName=acme \
+vince  --adminName=acme \
   --adminPassword=1234\
-  --adminEmail=trial@vinceanalytics.com \
-  --domains=vinceanalytics.com \
-  --license=path/to/license_key
+  --adminEmail=acme@example.com \
+  --domains=example.com
 ```
 
 This command will start vince on `localhost:8080`.
-
-# FAQ
-
-## How do I bypass license key?
-
-use `vince crack` command to patch license key, you can choose how long you want 
-the cracked key to be valid with `--expires`  flag.
-
-```
-NAME:
-   vince crack - Cracks vince license key
-
-USAGE:
-   vince crack [command [command options]] 
-
-DESCRIPTION:
-   Allows users to use vince without a valid license key.
-       # vince crack /path/to/vince/data
-
-OPTIONS:
-   --expires value  Duration of the patched license (default: 24h0m0s)
-   --help, -h       show help (default: false)
-```
-
-**example:**
-Assuming your data directory is `vince-data`
-
-```
-❯ vince crack vince-data
-VINCE_ADMIN_EMAIL        Expires                              
-crack@vinceanalytics.com 2024-10-04 06:52:01.123432 +0000 UTC 
-```
-Then start vince with flag `--adminEmail=crack@vinceanalytics.com`.
-You can omit the `--license` flag.
-
-*This only works when running vince with persistence storage*
-
 
 # Credit
 

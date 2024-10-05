@@ -60,20 +60,6 @@ func run() {
 			Then(web.Stats),
 	))
 
-	mux.HandleFunc("GET /license", db.Wrap(
-		plug.Browser().
-			With(plug.RequireAccount).
-			With(plug.CSRF).
-			Then(web.LicenseForm),
-	))
-
-	mux.HandleFunc("POST /license", db.Wrap(
-		plug.Browser().
-			With(plug.RequireAccount).
-			With(plug.VerifyCSRF).
-			Then(web.License),
-	))
-
 	mux.HandleFunc("GET /login", db.Wrap(
 		plug.Browser().
 			With(plug.CSRF).
