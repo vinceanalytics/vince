@@ -360,7 +360,7 @@ func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		m := o.Results[i]
 		code := m[v1.Field_subdivision1_code.String()].(string)
 		delete(m, v1.Field_subdivision1_code.String())
-		reg := location.GetRegion(code)
+		reg := location.GetRegion([]byte(code))
 		m["code"] = code
 		m["name"] = reg.Name
 		m["flag"] = reg.Flag

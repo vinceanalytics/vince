@@ -156,13 +156,13 @@ func New(data []byte) *Location {
 	return &g
 }
 
-func (g *Location) Translate(region string) string {
+func (g *Location) Translate(region string) []byte {
 	i, ok := g.tr.Search([]byte(region))
 	if !ok {
-		return ""
+		return nil
 	}
 	idx, _ := g.translate.GetValue(uint64(i))
-	return string(g.RegionCode.Get(int(idx)))
+	return g.RegionCode.Get(int(idx))
 }
 
 func (g *Str) Get(i int) []byte {

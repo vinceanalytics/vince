@@ -3,7 +3,6 @@ package location
 import (
 	"bytes"
 	_ "embed"
-	"strings"
 
 	"github.com/vinceanalytics/vince/fb"
 )
@@ -21,7 +20,7 @@ type City struct {
 	Flag string `json:"country_flag"`
 }
 
-func GetRegionCode(region string) string {
+func GetRegionCode(region string) []byte {
 	return root.Translate(region)
 }
 
@@ -71,15 +70,17 @@ type Region struct {
 	Flag string `json:"flag"`
 }
 
-func GetRegion(code string) Region {
-	i, ok := root.RegionCode.Search([]byte(code))
+var codeSep = []byte("-")
+
+func GetRegion(code []byte) Region {
+	i, ok := root.RegionCode.Search(code)
 	if !ok {
-		return Region{Name: code}
+		return Region{Name: string(code)}
 	}
 	name := root.RegionName.Get(i)
 	var flag string
-	a, _, _ := strings.Cut(code, "-")
-	if n, ok := root.CountryCode.Search([]byte(a)); ok {
+	a, _, _ := bytes.Cut(code, codeSep)
+	if n, ok := root.CountryCode.Search(a); ok {
 		flag = string(root.CountryFlag.Get(n))
 	}
 	return Region{Name: string(name), Flag: flag}

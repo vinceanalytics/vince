@@ -43,8 +43,8 @@ func Get(ip net.IP) (Info, error) {
 
 type Info struct {
 	CountryCode      string
-	SubDivision1Code string
-	SubDivision2Code string
+	SubDivision1Code []byte
+	SubDivision2Code []byte
 	CityGeonameID    uint32
 }
 
