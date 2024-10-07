@@ -50,7 +50,7 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				for _, source := range f.Value {
 					prefix, exact := searchPrefix([]byte(source))
 					if exact {
-						id, ok := tx.ID(fd, source)
+						id, ok := tx.ID(fd, []byte(source))
 						if ok {
 							values = append(values, int64(id))
 						}

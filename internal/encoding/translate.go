@@ -7,11 +7,11 @@ import (
 	"github.com/vinceanalytics/vince/internal/keys"
 )
 
-func EncodeTranslateKey(field v1.Field, value string) []byte {
+func EncodeTranslateKey(field v1.Field, value []byte) []byte {
 	o := make([]byte, 6+len(value))
 	copy(o, keys.TranslateKeyPrefix)
 	binary.BigEndian.PutUint32(o[2:], uint32(field))
-	copy(o[6:], []byte(value))
+	copy(o[6:], value)
 	return o
 }
 

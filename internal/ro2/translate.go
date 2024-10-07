@@ -15,7 +15,7 @@ func (tx *Tx) RecordID() uint64 {
 	return tx.nextSeq(v1.Field_unknown)
 }
 
-func (tx *Tx) Translate(field v1.Field, value string) (id uint64) {
+func (tx *Tx) Translate(field v1.Field, value []byte) (id uint64) {
 	key := encoding.EncodeTranslateKey(field, value)
 	it, err := tx.tx.Get(key)
 	if err == nil {
@@ -95,7 +95,7 @@ func (tx *Tx) ids(field v1.Field, value []string) []int64 {
 		return []int64{}
 	}
 	if len(value) == 1 {
-		id, ok := tx.ID(field, value[0])
+		id, ok := tx.ID(field, []byte(value[0]))
 		if !ok {
 			return []int64{}
 		}
@@ -103,7 +103,7 @@ func (tx *Tx) ids(field v1.Field, value []string) []int64 {
 	}
 	o := make([]int64, 0, len(value))
 	for i := range value {
-		id, ok := tx.ID(field, value[i])
+		id, ok := tx.ID(field, []byte(value[i]))
 		if !ok {
 			continue
 		}
@@ -112,7 +112,7 @@ func (tx *Tx) ids(field v1.Field, value []string) []int64 {
 	return o
 }
 
-func (tx *Tx) ID(field v1.Field, value string) (id uint64, ok bool) {
+func (tx *Tx) ID(field v1.Field, value []byte) (id uint64, ok bool) {
 	key := encoding.EncodeTranslateKey(field, value)
 	it, err := tx.tx.Get(key)
 	if err != nil {
@@ -130,7 +130,7 @@ func (tx *Tx) ID(field v1.Field, value string) (id uint64, ok bool) {
 }
 
 func (tx *Tx) Search(field v1.Field, prefix []byte, f func([]byte, uint64)) {
-	key := encoding.EncodeTranslateKey(field, "")
+	key := encoding.EncodeTranslateKey(field, nil)
 	offset := len(key)
 	key = append(key, prefix...)
 	it := tx.Iter()

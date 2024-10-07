@@ -3,7 +3,8 @@ package batch
 import (
 	"bytes"
 	"errors"
-	"fmt"
+	"hash"
+	"hash/crc32"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
@@ -11,65 +12,102 @@ import (
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/roaring"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 type KV interface {
 	RecordID() uint64
-	Translate(field v1.Field, value string) uint64
+	Translate(field v1.Field, value []byte) uint64
 }
 
 type Batch struct {
 	data    map[encoding.Key]*roaring.BSI
-	domains map[string]uint64
+	domains map[uint32]uint64
 	offsets []uint32
 	buffer  []byte
+	hash    hash.Hash32
+	key     encoding.Key
 }
 
 func NewBatch() *Batch {
 	return &Batch{
 		data:    make(map[encoding.Key]*roaring.BSI),
-		domains: make(map[string]uint64),
+		domains: make(map[uint32]uint64),
+		hash:    crc32.NewIEEE(),
 	}
 }
 
 func (b *Batch) Add(tx KV, m *v1.Model) error {
 	id := tx.RecordID()
-	shard, ok := b.domains[m.Domain]
+	domainHash := b.sum(m.Domain)
+	shard, ok := b.domains[domainHash]
 	if !ok {
 		shard = tx.Translate(v1.Field_domain, m.Domain)
-		b.domains[m.Domain] = shard
+		b.domains[domainHash] = shard
 	}
 	ts := uint64(time.UnixMilli(m.Timestamp).Truncate(time.Minute).UnixMilli())
+	b.key.Time = ts
+	b.key.Shard = uint32(shard)
+	if m.Timestamp != 0 {
+		b.get(v1.Field_timestamp).SetValue(id, m.Timestamp)
+	}
+	if m.Id != 0 {
+		b.get(v1.Field_id).SetValue(id, int64(m.Id))
+	}
+	if m.Bounce != 0 {
+		b.get(v1.Field_bounce).SetValue(id, int64(m.Bounce))
+	}
+	if m.Session {
+		b.get(v1.Field_session).SetValue(id, 1)
+	}
+	if m.View {
+		b.get(v1.Field_view).SetValue(id, 1)
+	}
+	if m.Duration != 0 {
+		b.get(v1.Field_duration).SetValue(id, m.Duration)
+	}
+	if m.Duration != 0 {
+		b.get(v1.Field_city).SetValue(id, int64(m.City))
+	}
+	b.set(tx, v1.Field_browser, id, m.Browser)
+	b.set(tx, v1.Field_browser_version, id, m.BrowserVersion)
+	b.set(tx, v1.Field_country, id, m.Country)
+	b.set(tx, v1.Field_device, id, m.Device)
+	b.set(tx, v1.Field_domain, id, m.Domain)
+	b.set(tx, v1.Field_entry_page, id, m.EntryPage)
+	b.set(tx, v1.Field_event, id, m.Event)
+	b.set(tx, v1.Field_exit_page, id, m.ExitPage)
+	b.set(tx, v1.Field_host, id, m.Host)
+	b.set(tx, v1.Field_os, id, m.Os)
+	b.set(tx, v1.Field_os_version, id, m.OsVersion)
+	b.set(tx, v1.Field_page, id, m.Page)
+	b.set(tx, v1.Field_referrer, id, m.Referrer)
+	b.set(tx, v1.Field_source, id, m.Source)
+	b.set(tx, v1.Field_utm_campaign, id, m.UtmCampaign)
+	b.set(tx, v1.Field_utm_content, id, m.UtmContent)
+	b.set(tx, v1.Field_utm_medium, id, m.UtmMedium)
+	b.set(tx, v1.Field_utm_source, id, m.UtmSource)
+	b.set(tx, v1.Field_utm_term, id, m.UtmTerm)
+	b.set(tx, v1.Field_subdivision1_code, id, m.Subdivision1Code)
+	b.set(tx, v1.Field_subdivision2_code, id, m.Subdivision2Code)
 
-	m.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
-		key := encoding.Key{
-			Time:  ts,
-			Shard: uint32(shard),
-			Field: v1.Field(fd.Number()),
-		}
-		bs, ok := b.data[key]
-		if !ok {
-			bs = roaring.NewDefaultBSI()
-			b.data[key] = bs
-		}
-		var value int64
-		switch fd.Kind() {
-		case protoreflect.StringKind:
-			value = int64(tx.Translate(key.Field, v.String()))
-		case protoreflect.BoolKind:
-			value = 1
-		case protoreflect.Int32Kind, protoreflect.Int64Kind:
-			value = v.Int()
-		case protoreflect.Uint64Kind, protoreflect.Uint32Kind:
-			value = int64(v.Uint())
-		default:
-			panic(fmt.Sprintf("unexpected model field kind%v", fd.Kind()))
-		}
-		bs.SetValue(id, value)
-		return true
-	})
 	return nil
+}
+
+func (b *Batch) set(kv KV, field v1.Field, id uint64, value []byte) {
+	if len(value) == 0 {
+		return
+	}
+	b.get(field).SetValue(id, int64(kv.Translate(field, value)))
+}
+
+func (b *Batch) get(field v1.Field) *roaring.BSI {
+	b.key.Field = field
+	bs, ok := b.data[b.key]
+	if !ok {
+		bs = roaring.NewDefaultBSI()
+		b.data[b.key] = bs
+	}
+	return bs
 }
 
 func (b *Batch) Save(db *badger.DB) (err error) {
@@ -165,4 +203,10 @@ func (b *Batch) save(tx *badger.Txn, key []byte, value *roaring.BSI) error {
 		}
 	}
 	return tx.Set(key, bytes.Clone(b.buffer))
+}
+
+func (b *Batch) sum(h []byte) uint32 {
+	b.hash.Reset()
+	b.hash.Write(h)
+	return b.hash.Sum32()
 }

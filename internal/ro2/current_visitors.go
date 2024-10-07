@@ -13,7 +13,7 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 	start := end.Add(-5 * time.Minute)
 	r := roaring.NewBitmap()
 	err = o.View(func(tx *Tx) error {
-		shard, ok := tx.ID(v1.Field_domain, domain)
+		shard, ok := tx.ID(v1.Field_domain, []byte(domain))
 		if !ok {
 			return nil
 		}
@@ -43,7 +43,7 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 
 func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 	err = o.View(func(tx *Tx) error {
-		shard, ok := tx.ID(v1.Field_domain, domain)
+		shard, ok := tx.ID(v1.Field_domain, []byte(domain))
 		if !ok {
 			return nil
 		}

@@ -11,27 +11,27 @@ message Model {
   int64 duration = 6;
   uint32 city = 7;
 
-  string browser = 8;
-  string browser_version = 9;
-  string country = 10;
-  string device = 11;
-  string domain = 12;
-  string entry_page = 13;
-  string event = 14;
-  string exit_page = 15;
-  string host = 16;
-  string os = 17;
-  string os_version = 18;
-  string page = 19;
-  string referrer = 20;
-  string source = 21;
-  string utm_campaign = 22;
-  string utm_content = 23;
-  string utm_medium = 24;
-  string utm_source = 25;
-  string utm_term = 26;
-  string subdivision1_code = 27;
-  string subdivision2_code = 28;
+  bytes browser = 8;
+  bytes browser_version = 9;
+  bytes country = 10;
+  bytes device = 11;
+  bytes domain = 12;
+  bytes entry_page = 13;
+  bytes event = 14;
+  bytes exit_page = 15;
+  bytes host = 16;
+  bytes os = 17;
+  bytes os_version = 18;
+  bytes page = 19;
+  bytes referrer = 20;
+  bytes source = 21;
+  bytes utm_campaign = 22;
+  bytes utm_content = 23;
+  bytes utm_medium = 24;
+  bytes utm_source = 25;
+  bytes utm_term = 26;
+  bytes subdivision1_code = 27;
+  bytes subdivision2_code = 28;
 }
 
 enum Field {

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"hash/crc32"
@@ -17,7 +18,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/ua"
 )
 
-const pageView = "pageview"
+var pageView = []byte("pageview")
 
 func (db *Config) ProcessEvent(r *http.Request) error {
 	m, err := db.parse(r)
@@ -31,8 +32,8 @@ func (db *Config) ProcessEvent(r *http.Request) error {
 func hit(e *v1.Model) {
 	e.Bounce = 1
 	e.Session = true
-	if e.Event == pageView {
-		e.Event = ""
+	if bytes.Equal(e.Event, pageView) {
+		e.Event = nil
 		e.View = true
 	}
 }
@@ -42,7 +43,7 @@ func newSessionEvent(e *v1.Model) {
 		e.EntryPage = e.Page
 		e.ExitPage = e.Page
 	} else {
-		e.Host = ""
+		e.Host = nil
 	}
 }
 
@@ -53,12 +54,12 @@ func update(session *v1.Model, event *v1.Model) {
 		session.Bounce, event.Bounce = 0, 0
 	}
 	event.Session = false
-	if session.EntryPage == "" && event.View {
+	if len(session.EntryPage) == 0 && event.View {
 		event.EntryPage = event.Page
 	} else {
 		event.EntryPage = session.EntryPage
 	}
-	if event.View && session.Host == "" {
+	if event.View && len(session.Host) == 0 {
 	} else {
 		event.Host = session.Host
 	}
@@ -120,26 +121,26 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	userID := uniqueID(req.remoteIp, req.userAgent, domain, host)
 	e := newEevent()
 	e.Id = userID
-	e.Event = req.eventName
-	e.Page = path
-	e.Host = host
-	e.Domain = domain
-	e.UtmMedium = query.Get("utm_medium")
-	e.UtmSource = query.Get("utm_source")
-	e.UtmCampaign = query.Get("utm_campaign")
-	e.UtmContent = query.Get("utm_content")
-	e.UtmTerm = query.Get("utm_term")
-	e.Os = agent.GetOs()
-	e.OsVersion = agent.GetOsVersion()
-	e.Browser = agent.GetBrowser()
-	e.BrowserVersion = agent.GetBrowserVersion()
-	e.Source = src
-	e.Referrer = ref
-	e.Country = city.CountryCode
-	e.Subdivision1Code = city.SubDivision1Code
-	e.Subdivision2Code = city.SubDivision2Code
+	e.Event = []byte(req.eventName)
+	e.Page = []byte(path)
+	e.Host = []byte(host)
+	e.Domain = []byte(domain)
+	e.UtmMedium = []byte(query.Get("utm_medium"))
+	e.UtmSource = []byte(query.Get("utm_source"))
+	e.UtmCampaign = []byte(query.Get("utm_campaign"))
+	e.UtmContent = []byte(query.Get("utm_content"))
+	e.UtmTerm = []byte(query.Get("utm_term"))
+	e.Os = []byte(agent.GetOs())
+	e.OsVersion = []byte(agent.GetOsVersion())
+	e.Browser = []byte(agent.GetBrowser())
+	e.BrowserVersion = []byte(agent.GetBrowserVersion())
+	e.Source = []byte(src)
+	e.Referrer = []byte(ref)
+	e.Country = []byte(city.CountryCode)
+	e.Subdivision1Code = []byte(city.SubDivision1Code)
+	e.Subdivision2Code = []byte(city.SubDivision2Code)
 	e.City = city.CityGeonameID
-	e.Device = agent.GetDevice()
+	e.Device = []byte(agent.GetDevice())
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil
 }

@@ -50,7 +50,7 @@ func (tx *Tx) Release() {
 
 func (tx *Tx) Select(domain string, start,
 	end time.Time, intrerval query.Interval, filters query.Filters, cb func(shard, view uint64, columns *roaring.Bitmap) error) error {
-	shard, ok := tx.ID(v1.Field_domain, domain)
+	shard, ok := tx.ID(v1.Field_domain, []byte(domain))
 	if !ok {
 		return nil
 	}
