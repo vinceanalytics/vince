@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/dgraph-io/badger/v4/options"
 	"github.com/dustin/go-humanize"
 )
 
@@ -22,7 +21,6 @@ func newDB(path string) (*DB, error) {
 	db, err := badger.Open(badger.
 		DefaultOptions(path).
 		WithInMemory(path == "").
-		WithCompression(options.ZSTD).
 		WithCompactL0OnClose(true).
 		WithLogger(nil))
 	if err != nil {
