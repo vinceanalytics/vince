@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/geo"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ref"
 	"github.com/vinceanalytics/vince/internal/ua"
 )
@@ -29,7 +29,7 @@ func (db *Config) ProcessEvent(r *http.Request) error {
 	return nil
 }
 
-func hit(e *v1.Model) {
+func hit(e *models.Model) {
 	e.Bounce = 1
 	e.Session = true
 	if bytes.Equal(e.Event, pageView) {
@@ -38,7 +38,7 @@ func hit(e *v1.Model) {
 	}
 }
 
-func newSessionEvent(e *v1.Model) {
+func newSessionEvent(e *models.Model) {
 	if e.View {
 		e.EntryPage = e.Page
 		e.ExitPage = e.Page
@@ -47,7 +47,7 @@ func newSessionEvent(e *v1.Model) {
 	}
 }
 
-func update(session *v1.Model, event *v1.Model) {
+func update(session *models.Model, event *models.Model) {
 	if session.Bounce == 1 {
 		session.Bounce, event.Bounce = -1, -1
 	} else {
@@ -80,15 +80,15 @@ var (
 	ErrDrop = errors.New("event dropped")
 )
 
-func newEevent() *v1.Model {
-	return new(v1.Model)
+func newEevent() *models.Model {
+	return new(models.Model)
 }
 
-func releaseEvent(e *v1.Model) {
-	e.Reset()
+func releaseEvent(e *models.Model) {
+	*e = models.Model{}
 }
 
-func (db *Config) parse(r *http.Request) (*v1.Model, error) {
+func (db *Config) parse(r *http.Request) (*models.Model, error) {
 	req := newRequest()
 	defer req.Release()
 

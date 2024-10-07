@@ -11,6 +11,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
@@ -36,7 +37,7 @@ func NewBatch() *Batch {
 	}
 }
 
-func (b *Batch) Add(tx KV, m *v1.Model) error {
+func (b *Batch) Add(tx KV, m *models.Model) error {
 	id := tx.RecordID()
 	domainHash := b.sum(m.Domain)
 	shard, ok := b.domains[domainHash]

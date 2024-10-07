@@ -8,8 +8,8 @@ import (
 	"sync"
 
 	"github.com/oschwald/maxminddb-golang"
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/internal/models"
 )
 
 //go:embed city.mmdb
@@ -35,7 +35,7 @@ type City struct {
 	} `maxminddb:"subdivisions"`
 }
 
-func UpdateCity(ip net.IP, m *v1.Model) error {
+func UpdateCity(ip net.IP, m *models.Model) error {
 	x := cityPool.Get().(*City)
 	err := reader.Lookup(ip, x)
 	if err != nil {

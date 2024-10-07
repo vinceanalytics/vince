@@ -2,38 +2,6 @@ syntax = "proto3";
 
 package v1;
 
-message Model {
-  int64 timestamp = 1;
-  uint64 id = 2;
-  int32 bounce = 3;
-  bool session = 4;
-  bool view = 5;
-  int64 duration = 6;
-  uint32 city = 7;
-
-  bytes browser = 8;
-  bytes browser_version = 9;
-  bytes country = 10;
-  bytes device = 11;
-  bytes domain = 12;
-  bytes entry_page = 13;
-  bytes event = 14;
-  bytes exit_page = 15;
-  bytes host = 16;
-  bytes os = 17;
-  bytes os_version = 18;
-  bytes page = 19;
-  bytes referrer = 20;
-  bytes source = 21;
-  bytes utm_campaign = 22;
-  bytes utm_content = 23;
-  bytes utm_medium = 24;
-  bytes utm_source = 25;
-  bytes utm_term = 26;
-  bytes subdivision1_code = 27;
-  bytes subdivision2_code = 28;
-}
-
 enum Field {
   unknown = 0;
   timestamp = 1;

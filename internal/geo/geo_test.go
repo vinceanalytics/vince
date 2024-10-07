@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/internal/models"
 )
 
 func TestGet(t *testing.T) {
-	m := new(v1.Model)
+	m := new(models.Model)
 	require.NoError(t, UpdateCity(net.ParseIP("1.0.16.0"), m))
 	require.Equal(t, location.City{Name: "Chiyoda", Flag: "🇯🇵"}, location.GetCity(m.City))
 	require.Equal(t, location.Country{Code: "JP", Name: "Japan", Flag: "🇯🇵"}, location.GetCountry(string(m.Country)))
@@ -19,7 +19,7 @@ func TestGet(t *testing.T) {
 
 func BenchmarkGet(b *testing.B) {
 	ip := net.ParseIP("1.0.16.0")
-	m := new(v1.Model)
+	m := new(models.Model)
 
 	for range b.N {
 		UpdateCity(ip, m)

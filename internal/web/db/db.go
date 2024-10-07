@@ -15,6 +15,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/batch"
 	"github.com/vinceanalytics/vince/internal/domains"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
@@ -23,8 +24,8 @@ type Config struct {
 	db      *ro2.Store
 	session *SessionContext
 	logger  *slog.Logger
-	cache   *ristretto.Cache[uint64, *v1.Model]
-	buffer  chan *v1.Model
+	cache   *ristretto.Cache[uint64, *models.Model]
+	buffer  chan *models.Model
 }
 
 func Open(config *v1.Config) (*Config, error) {
@@ -35,15 +36,15 @@ func Open(config *v1.Config) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	cache, err := ristretto.NewCache(&ristretto.Config[uint64, *v1.Model]{
-		NumCounters: 1e7,       // number of keys to track frequency of (10M).
-		MaxCost:     256 << 20, // maximum cost of cache (256MB).
-		BufferItems: 64,        // number of keys per Get buffer.
-		OnEvict: func(item *ristretto.Item[*v1.Model]) {
+	cache, err := ristretto.NewCache(&ristretto.Config[uint64, *models.Model]{
+		NumCounters: 1e7,     // number of keys to track frequency of (10M).
+		MaxCost:     1 << 20, // 1 million active sessions.
+		BufferItems: 64,      // number of keys per Get buffer.
+		OnEvict: func(item *ristretto.Item[*models.Model]) {
 			releaseEvent(item.Value)
 			item.Value = nil
 		},
-		OnReject: func(item *ristretto.Item[*v1.Model]) {
+		OnReject: func(item *ristretto.Item[*models.Model]) {
 			releaseEvent(item.Value)
 			item.Value = nil
 		},
@@ -62,7 +63,7 @@ func Open(config *v1.Config) (*Config, error) {
 		db:     ops,
 		logger: slog.Default(),
 		cache:  cache,
-		buffer: make(chan *v1.Model, 4<<10),
+		buffer: make(chan *models.Model, 4<<10),
 		session: &SessionContext{
 			secret: secret,
 		},
