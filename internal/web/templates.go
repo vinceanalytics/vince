@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
-
-	"github.com/vinceanalytics/vince/internal/config"
 )
 
 //go:embed templates
@@ -40,19 +38,13 @@ func look(name string) *template.Template {
 
 func funcMap() template.FuncMap {
 	return template.FuncMap{
-		"map":            mapStruct,
-		"render_snippet": renderSnippet,
-		"path_escape":    pathEscape,
+		"map":         mapStruct,
+		"path_escape": pathEscape,
 	}
 }
 
 func pathEscape(value string) string {
 	return url.PathEscape(value)
-}
-
-func renderSnippet(domain string) string {
-	tracker := fmt.Sprintf("%s/js/script.js", config.C.Url)
-	return fmt.Sprintf(`<script defer data-domain=%q src=%q></script>`, domain, tracker)
 }
 
 func mapStruct(values ...any) (o map[string]any) {

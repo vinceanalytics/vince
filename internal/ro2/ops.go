@@ -3,7 +3,6 @@ package ro2
 import (
 	"cmp"
 	"crypto/sha512"
-	"crypto/subtle"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -15,7 +14,6 @@ import (
 	"github.com/dgraph-io/badger/v4/y"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/config"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"golang.org/x/crypto/bcrypt"
@@ -89,6 +87,22 @@ func (db *DB) APIKeys() (ls []*v1.APIKey, err error) {
 	return
 }
 
+func (db *DB) SetupDomains(domains []string) {
+	db.db.Update(func(txn *badger.Txn) error {
+		for _, n := range domains {
+			key := encoding.EncodeSite([]byte(n))
+			_, err := txn.Get(key)
+			if errors.Is(err, badger.ErrKeyNotFound) {
+				data, _ := proto.Marshal(&v1.Site{Domain: n})
+				err := txn.Set(key, data)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+}
 func (db *DB) Domains(f func(*v1.Site)) {
 	err := db.View(func(tx *Tx) error {
 		it := tx.Iter()
@@ -127,13 +141,6 @@ func (db *DB) Site(domain string) (u *v1.Site) {
 		return nil
 	}
 	return
-}
-
-func PasswordMatch(pwd string) bool {
-	return subtle.ConstantTimeCompare(
-		[]byte(config.C.GetAdmin().GetPassword()),
-		[]byte(pwd),
-	) == 1
 }
 
 func (db *DB) CreateSite(domain string, public bool) (err error) {

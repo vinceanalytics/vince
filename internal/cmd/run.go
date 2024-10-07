@@ -10,7 +10,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/vinceanalytics/vince/internal/config"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/db"
@@ -18,8 +18,8 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-func run() {
-	db, err := db.Open(config.C.DataPath)
+func run(config *v1.Config) {
+	db, err := db.Open(config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func run() {
 	mux.HandleFunc("/favicon/sources/placeholder", web.Placeholder)
 	mux.HandleFunc("/favicon/sources/{source...}", web.Favicon)
 
-	if config.C.Profile {
+	if config.Profile {
 		mux.HandleFunc("GET /debug/pprof/{name}", func(w http.ResponseWriter, r *http.Request) {
 			name := r.PathValue("name")
 			switch name {
@@ -343,18 +343,18 @@ func run() {
 		location.GetCity(0)
 	}()
 	svr := &http.Server{
-		Addr:        config.C.Listen,
+		Addr:        config.Listen,
 		BaseContext: func(l net.Listener) context.Context { return ctx },
 		Handler: plug.Compress(
 			plug.Static(mux),
 		),
 	}
-	if config.C.Acme {
-		slog.Info("Auto tls enabled, configuring tls", "email", config.C.AcmeEmail, "domain", config.C.AcmeDomain)
+	if config.Acme {
+		slog.Info("Auto tls enabled, configuring tls", "email", config.AcmeEmail, "domain", config.AcmeDomain)
 		m := &autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(config.C.AcmeDomain),
-			Email:      config.C.AcmeEmail,
+			HostPolicy: autocert.HostWhitelist(config.AcmeDomain),
+			Email:      config.AcmeEmail,
 			Cache:      db.Get(),
 		}
 		svr.TLSConfig = m.TLSConfig()
@@ -363,7 +363,7 @@ func run() {
 	slog.Info("starting server", "addr", svr.Addr)
 	go func() {
 		defer cancel()
-		if config.C.Acme {
+		if config.Acme {
 			svr.ListenAndServeTLS("", "")
 		} else {
 			svr.ListenAndServe()

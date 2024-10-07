@@ -21,7 +21,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/dataurl"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/config"
 )
 
 const MaxAge = 60 * 60 * 24 * 365 * 5
@@ -86,11 +85,11 @@ func (c *Config) Wrap(f func(db *Config, w http.ResponseWriter, r *http.Request)
 func (c *Config) Load(w http.ResponseWriter, r *http.Request) {
 	c.load(r)
 	if c.session.Data.CurrentUserID != "" {
-		if config.C.Admin.Email != c.session.Data.CurrentUserID {
+		if c.config.Admin.Email != c.session.Data.CurrentUserID {
 			c.session = c.session.clone()
 			c.SaveSession(w)
 		} else {
-			c.session.user = config.C.Admin
+			c.session.user = c.config.Admin
 		}
 	}
 }
@@ -137,7 +136,7 @@ func (c *Config) Context(base map[string]any) map[string]any {
 			"locked": s.Locked,
 		}
 		share := make([]map[string]any, 0, len(s.Shares))
-		u := config.C.Url
+		u := c.config.Url
 		p := u + fmt.Sprintf("/v1/share/%s?auth=", url.PathEscape(s.Domain))
 
 		for _, r := range s.Shares {
@@ -176,6 +175,7 @@ func (c *Config) load(r *http.Request) {
 
 func (c *Config) clone(r *http.Request) *Config {
 	return &Config{
+		config:  c.config,
 		db:      c.db,
 		cache:   c.cache,
 		session: c.session.clone(),
@@ -251,7 +251,7 @@ func (c *Config) CurrentSite() *v1.Site {
 }
 
 func (c *Config) Login(w http.ResponseWriter) string {
-	c.session.Data.CurrentUserID = config.C.Admin.Email
+	c.session.Data.CurrentUserID = c.config.Admin.Email
 	c.session.Data.LoggedIn = true
 	dest := c.session.Data.LoginDest
 	c.session.Data.LoginDest = ""

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"html/template"
@@ -13,10 +14,12 @@ import (
 	"github.com/dgraph-io/ristretto"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/batch"
+	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
 type Config struct {
+	config  *v1.Config
 	db      *ro2.Store
 	session *SessionContext
 	logger  *slog.Logger
@@ -24,11 +27,11 @@ type Config struct {
 	buffer  chan *v1.Model
 }
 
-func Open(path string) (*Config, error) {
-	if path != "" {
-		os.MkdirAll(path, 0755)
+func Open(config *v1.Config) (*Config, error) {
+	if config.DataPath != "" {
+		os.MkdirAll(config.DataPath, 0755)
 	}
-	ops, err := ro2.Open(path)
+	ops, err := ro2.Open(config.DataPath)
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +58,7 @@ func Open(path string) (*Config, error) {
 		return nil, err
 	}
 	return &Config{
+		config: config,
 		db:     ops,
 		logger: slog.Default(),
 		cache:  cache,
@@ -65,8 +69,22 @@ func Open(path string) (*Config, error) {
 	}, nil
 }
 
+func (db *Config) PasswordMatch(email, pwd string) bool {
+	if db.config.Admin.Email != email {
+		return *False
+	}
+	return subtle.ConstantTimeCompare(
+		[]byte(db.config.GetAdmin().GetPassword()),
+		[]byte(pwd),
+	) == 1
+}
+
 func (db *Config) Get() *ro2.Store {
 	return db.db
+}
+
+func (db *Config) GetConfig() *v1.Config {
+	return db.config
 }
 
 func (db *Config) Logger() *slog.Logger {
@@ -74,6 +92,8 @@ func (db *Config) Logger() *slog.Logger {
 }
 
 func (db *Config) Start(ctx context.Context) {
+	db.Get().SetupDomains(db.config.Domains)
+	domains.Reload(db.Get().Domains)
 	go db.db.Start(ctx)
 	go db.eventsLoop(ctx)
 }

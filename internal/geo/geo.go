@@ -68,7 +68,6 @@ func Rand(size int) []string {
 		if ok {
 			continue
 		}
-		fmt.Println(a.Subdivisions)
 		m[a.Country.IsoCode] = struct{}{}
 		ips[net.IP.String()] = struct{}{}
 	}

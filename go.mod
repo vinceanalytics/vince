@@ -12,6 +12,7 @@ require (
 	github.com/dgraph-io/ristretto v0.1.2-0.20240116140435-c67e07994f91
 	github.com/dlclark/regexp2 v1.11.4
 	github.com/dustin/go-humanize v1.0.1
+	github.com/google/flatbuffers v24.3.25+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/lestrrat-go/dataurl v0.0.0-20220721131304-b60017625013
 	github.com/matoous/go-nanoid/v2 v2.1.0
@@ -35,7 +36,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/flatbuffers v24.3.25+incompatible // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/kr/pretty v0.3.1 // indirect

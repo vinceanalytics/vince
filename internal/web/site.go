@@ -3,6 +3,7 @@ package web
 import (
 	"cmp"
 	"fmt"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -169,7 +170,12 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func AddSnippet(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	db.HTML(w, addSnippet, nil)
+	tracker := fmt.Sprintf("%s/js/script.js", db.GetConfig().GetUrl())
+	snippet := fmt.Sprintf(`<script defer data-domain=%q src=%q></script>`, db.CurrentSite().Domain, tracker)
+
+	db.HTML(w, addSnippet, map[string]any{
+		"snippet": template.HTML(snippet),
+	})
 }
 
 func Unimplemented(db *db.Config, w http.ResponseWriter, r *http.Request) {

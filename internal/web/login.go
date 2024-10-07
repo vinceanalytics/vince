@@ -3,8 +3,6 @@ package web
 import (
 	"net/http"
 
-	"github.com/vinceanalytics/vince/internal/config"
-	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/web/db"
 )
 
@@ -16,7 +14,7 @@ func Login(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
-	if config.C.Admin.Email != email || !ro2.PasswordMatch(password) {
+	if !db.PasswordMatch(email, password) {
 		db.SaveCsrf(w)
 		db.SaveCaptcha(w)
 		valid := map[string]any{

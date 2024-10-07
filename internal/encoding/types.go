@@ -22,10 +22,10 @@ func EncodeKey(key Key) []byte {
 	return b
 }
 
-func EncodeSite(key []byte) []byte {
-	o := make([]byte, 2+len(key))
+func EncodeSite(domain []byte) []byte {
+	o := make([]byte, 2+len(domain))
 	copy(o, keys.SitePrefix)
-	copy(o[2:], key)
+	copy(o[2:], domain)
 	return o
 }
 

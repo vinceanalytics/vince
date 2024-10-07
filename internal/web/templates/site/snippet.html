@@ -9,7 +9,7 @@
             <textarea
                 class="transition overflow-hidden bg-gray-100 dark:bg-gray-900 appearance-none border border-transparent rounded w-full p-2 pr-6 text-gray-700 dark:text-gray-300 leading-normal appearance-none focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-gray-400 dark:focus:border-gray-500 text-xs mt-4 resize-none"
                 id="snippet_code" readonly rows="3">
-                {{- .site.domain|render_snippet -}}
+                {{- .snippet -}}
             </textarea>
             <a onclick="var textarea = document.getElementById('snippet_code'); textarea.focus(); textarea.select(); document.execCommand('copy');"
                 href="javascript:void(0)" class="no-underline text-indigo-500 text-sm hover:underline">
