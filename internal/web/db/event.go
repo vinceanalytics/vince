@@ -110,16 +110,16 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	}
 	path := req.pathname
 	agent := ua.Get(req.userAgent)
-	var city geo.Info
-	if req.remoteIp != "" {
-		ip := net.ParseIP(req.remoteIp)
-		city, err = geo.Get(ip)
-		if err != nil {
-			return nil, err
-		}
-	}
+
 	userID := uniqueID(req.remoteIp, req.userAgent, domain, host)
 	e := newEevent()
+	if req.remoteIp != "" {
+		ip := net.ParseIP(req.remoteIp)
+		err := geo.UpdateCity(ip, e)
+		if err != nil {
+			db.logger.Error("updating geo data", "err", err)
+		}
+	}
 	e.Id = userID
 	e.Event = []byte(req.eventName)
 	e.Page = []byte(path)
@@ -136,10 +136,6 @@ func (db *Config) parse(r *http.Request) (*v1.Model, error) {
 	e.BrowserVersion = []byte(agent.GetBrowserVersion())
 	e.Source = []byte(src)
 	e.Referrer = []byte(ref)
-	e.Country = []byte(city.CountryCode)
-	e.Subdivision1Code = []byte(city.SubDivision1Code)
-	e.Subdivision2Code = []byte(city.SubDivision2Code)
-	e.City = city.CityGeonameID
 	e.Device = []byte(agent.GetDevice())
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil

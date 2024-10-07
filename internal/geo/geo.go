@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"net"
 	"slices"
+	"sync"
 
-	"github.com/oschwald/geoip2-golang"
 	"github.com/oschwald/maxminddb-golang"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/location"
 )
 
@@ -15,47 +16,49 @@ import (
 var city []byte
 
 var (
-	mmdb, _ = geoip2.FromBytes(city)
+	reader, _ = maxminddb.FromBytes(city)
 )
 
 //go:generate go run gen/main.go
 
-func Get(ip net.IP) (Info, error) {
-	x, err := mmdb.City(ip)
-	if err != nil {
-		return Info{}, err
-	}
-	o := Info{
-		CountryCode:   x.Country.IsoCode,
-		CityGeonameID: uint32(x.City.GeoNameID),
-	}
-	if o.CountryCode != "" && len(x.City.Names) > 0 && x.City.Names["en"] != "" {
-		o.CityGeonameID = location.GetCityCode(o.CountryCode, x.City.Names["en"])
-	}
-	if o.CountryCode != "" && len(x.Subdivisions) > 0 {
-		o.SubDivision1Code = location.GetRegionCode(x.Subdivisions[0].Names["en"])
-	}
-	if o.CountryCode != "" && len(x.Subdivisions) > 1 {
-		o.SubDivision2Code = location.GetRegionCode(x.Subdivisions[1].Names["en"])
-	}
-	return o, nil
+var cityPool = &sync.Pool{New: func() any { return new(City) }}
+
+type City struct {
+	City struct {
+		Names map[string]string `maxminddb:"names"`
+	} `maxminddb:"city"`
+	Country struct {
+		IsoCode string `maxminddb:"iso_code"`
+	} `maxminddb:"country"`
+	Subdivisions []struct {
+		Names map[string]string `maxminddb:"names"`
+	} `maxminddb:"subdivisions"`
 }
 
-type Info struct {
-	CountryCode      string
-	SubDivision1Code []byte
-	SubDivision2Code []byte
-	CityGeonameID    uint32
+func UpdateCity(ip net.IP, m *v1.Model) error {
+	x := cityPool.Get().(*City)
+	err := reader.Lookup(ip, x)
+	if err != nil {
+		return err
+	}
+	if x.Country.IsoCode == "" {
+		return nil
+	}
+	m.Country = []byte(x.Country.IsoCode)
+	if len(x.City.Names) > 0 && x.City.Names["en"] != "" {
+		m.City = location.GetCityCode(x.Country.IsoCode, x.City.Names["en"])
+	}
+	if len(x.Subdivisions) > 0 {
+		m.Subdivision1Code = location.GetRegionCode(x.Subdivisions[0].Names["en"])
+	}
+	*x = City{}
+	cityPool.Put(x)
+	return nil
 }
 
 func Rand(size int) []string {
-	reader, err := maxminddb.FromBytes(city)
-	if err != nil {
-		panic(err.Error())
-
-	}
 	n := reader.Networks(maxminddb.SkipAliasedNetworks)
-	var a geoip2.City
+	var a City
 	m := map[string]struct{}{}
 	ips := map[string]struct{}{}
 	for n.Next() && len(ips) < size {
