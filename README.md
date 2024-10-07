@@ -51,12 +51,6 @@ curl -fsSL https://vinceanalytics.com/install.sh | bash
 docker pull ghcr.io/vinceanalytics/vince
 ```
 
-### From source
-
-```
-go install github.com/vinceanalytics/vince@latest
-```
-
 ### Download 
 
 [see release page](https://github.com/vinceanalytics/vince/releases)
