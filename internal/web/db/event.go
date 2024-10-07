@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -80,15 +79,12 @@ var (
 	ErrDrop = errors.New("event dropped")
 )
 
-var eventsPool = &sync.Pool{New: func() any { return new(v1.Model) }}
-
 func newEevent() *v1.Model {
-	return eventsPool.Get().(*v1.Model)
+	return new(v1.Model)
 }
 
 func releaseEvent(e *v1.Model) {
 	e.Reset()
-	eventsPool.Put(e)
 }
 
 func (db *Config) parse(r *http.Request) (*v1.Model, error) {

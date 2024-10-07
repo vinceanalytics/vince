@@ -5,7 +5,7 @@ dev:
 	VINCE_ADMIN_PASSWORD=1234 \
 	VINCE_DOMAINS=vinceanalytics.com \
 	VINCE_PROFILE=true \
-	  ./bin/vince
+	VINCE_DATA=.data  ./bin/vince
 
 
 css:
