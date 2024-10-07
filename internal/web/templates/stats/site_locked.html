@@ -1,0 +1,34 @@
+{{define "main"}}
+<div class="w-full max-w-lg mx-auto mt-8">
+  <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+    <div class="px-4 py-5 sm:px-8 sm:py-6">
+      <div class="mx-auto flex items-center justify-center rounded-full bg-green-100 h-12 w-12">
+        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd"
+            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+            clip-rule="evenodd">
+          </path>
+        </svg>
+      </div>
+      <h3 class="mt-6 text-center text-2xl leading-6 font-medium text-gray-900 dark:text-gray-200">
+        Dashboard locked
+      </h3>
+      {{if .current_user}}
+      <div class="mt-3 text-gray-600 dark:text-gray-300 text-center">
+        <p>
+          This dashboard is locked because you don't have a valid license.
+          Please purchase a license with the link below to access the stats again.
+        </p>
+        <div class="mt-6 w-full text-center">
+          <a href="https://vinceanalytics.com/#pricing" target="_blank"
+            class="inline-flex items-center justify-center gap-x-2 rounded-md px-3.5 py-2.5 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-rose-600 text-white hover:bg-rose-700 focus-visible:outline-rose-600">
+            Choose a license
+          </a>
+        </div>
+      </div>
+      {{else}}
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}}

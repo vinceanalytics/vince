@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package v1;
+
+message Config {
+  string listen = 1;
+  string data_path = 2;
+  bool acme = 3;
+  string acme_email = 4;
+  string acme_domain = 5;
+  User admin = 6;
+  string license = 7;
+  string url = 8;
+  repeated string domains = 9;
+  bool profile = 10;
+}
+
+message Site {
+  bytes id = 1;
+  string domain = 2;
+  bool public = 3;
+  repeated Share shares = 4;
+  bool locked = 5;
+}
+
+message Share {
+  string id = 1;
+  string name = 2;
+  bytes password = 3;
+}
+
+message User {
+  string name = 2;
+  string email = 3;
+  string password = 4;
+}
+
+message System {
+  uint64 expiry = 1;
+  string email = 2;
+}

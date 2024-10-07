@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package v1;
+
+message Model {
+  int64 timestamp = 1;
+  uint64 id = 2;
+  int32 bounce = 3;
+  bool session = 4;
+  bool view = 5;
+  int64 duration = 6;
+  uint32 city = 7;
+
+  string browser = 8;
+  string browser_version = 9;
+  string country = 10;
+  string device = 11;
+  string domain = 12;
+  string entry_page = 13;
+  string event = 14;
+  string exit_page = 15;
+  string host = 16;
+  string os = 17;
+  string os_version = 18;
+  string page = 19;
+  string referrer = 20;
+  string source = 21;
+  string utm_campaign = 22;
+  string utm_content = 23;
+  string utm_medium = 24;
+  string utm_source = 25;
+  string utm_term = 26;
+  string subdivision1_code = 27;
+  string subdivision2_code = 28;
+}
+
+enum Field {
+  unknown = 0;
+  timestamp = 1;
+  id = 2;
+  bounce = 3;
+  session = 4;
+  view = 5;
+  duration = 6;
+  city = 7;
+
+  browser = 8;
+  browser_version = 9;
+  country = 10;
+  device = 11;
+  domain = 12;
+  entry_page = 13;
+  event = 14;
+  exit_page = 15;
+  host = 16;
+  os = 17;
+  os_version = 18;
+  page = 19;
+  referrer = 20;
+  source = 21;
+  utm_campaign = 22;
+  utm_content = 23;
+  utm_medium = 24;
+  utm_source = 25;
+  utm_term = 26;
+  subdivision1_code = 27;
+  subdivision2_code = 28;
+}
+
+message Agent {
+  bool bot = 1;
+  string browser = 2;
+  string browser_version = 3;
+  string os = 4;
+  string os_version = 5;
+  string device = 6;
+}
+
+message APIKey {
+  string name = 1;
+  string prefix = 2;
+  bytes hash = 3;
+}

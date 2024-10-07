@@ -1,0 +1,28 @@
+namespace geo;
+
+
+table Location{
+    geo:Geo;
+    country:Country;
+    region:Region;
+    city:[ubyte];
+    city_code:[ubyte];
+    translate:[ubyte];
+}
+
+table Geo{
+    names:[string];
+}
+
+table Country{
+    code:[string];
+    flag:[string];
+    name:[string];
+}
+
+table Region{
+    code:[string];
+    name:[string];
+}
+
+root_type Location;

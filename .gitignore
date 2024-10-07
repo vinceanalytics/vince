@@ -1,0 +1,4 @@
+.data
+bin
+*.out
+*.test

@@ -1,0 +1,120 @@
+project_name: vince
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    id: vince
+    main: main.go
+    binary: vince
+archives:
+  - builds:
+      - vince
+    id: vince
+    name_template: >-
+      {{ .Binary }}_
+      {{-  .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    files:
+      - LICENSE
+checksum:
+  name_template: "checksums.txt"
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^chore"
+      - "^release"
+      - "merge conflict"
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+      - go mod tidy
+      - cleanup
+  groups:
+    - title: Dependency updates
+      regexp: '^.*?(feat|fix)\(deps\)!?:.+$'
+      order: 300
+    - title: "New Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 100
+    - title: "Security updates"
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 150
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 200
+    - title: "Kubernetes Controller"
+      regexp: '^.*?k8s(\([[:word:]]+\))??!?:.+$'
+      order: 200
+    - title: "SQL Engine"
+      regexp: '^.*?sql(\([[:word:]]+\))??!?:.+$'
+      order: 250
+    - title: "Documentation updates"
+      regexp: ^.*?docs(\([[:word:]]+\))??!?:.+$
+      order: 400
+    - title: "Build process updates"
+      regexp: ^.*?build(\([[:word:]]+\))??!?:.+$
+      order: 400
+    - title: "Other work"
+      order: 9999
+dockers:
+  - id: vince-amd64
+    ids:
+      - vince
+    image_templates:
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
+    goos: linux
+    goarch: amd64
+    dockerfile: "vince.Dockerfile"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
+      - "--platform=linux/amd64"
+  - id: vince-arm64
+    ids:
+      - vince
+    image_templates:
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
+    goos: linux
+    goarch: arm64
+    dockerfile: "vince.Dockerfile"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
+      - "--platform=linux/arm64"
+docker_manifests:
+  - id: vince
+    name_template: "ghcr.io/vinceanalytics/vince:{{.Tag}}"
+    image_templates:
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
+  - id: vince-latest
+    name_template: "ghcr.io/vinceanalytics/vince:latest"
+    image_templates:
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-amd64"
+      - "ghcr.io/vinceanalytics/vince:{{.Tag}}-arm64"
+release:
+  github:
+    owner: vinceanalytics
+    name: vince
+  extra_files:
+    - glob: ./install.sh
+# The lines beneath this are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
