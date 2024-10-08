@@ -3,11 +3,10 @@ package batch
 import (
 	"bytes"
 	"errors"
-	"hash"
-	"hash/crc32"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/dgraph-io/badger/v4/y"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
@@ -25,7 +24,6 @@ type Batch struct {
 	domains map[uint32]uint64
 	offsets []uint32
 	buffer  []byte
-	hash    hash.Hash32
 	key     encoding.Key
 }
 
@@ -33,13 +31,12 @@ func NewBatch() *Batch {
 	return &Batch{
 		data:    make(map[encoding.Key]*roaring.BSI),
 		domains: make(map[uint32]uint64),
-		hash:    crc32.NewIEEE(),
 	}
 }
 
 func (b *Batch) Add(tx KV, m *models.Model) error {
 	id := tx.RecordID()
-	domainHash := b.sum(m.Domain)
+	domainHash := y.Hash(m.Domain)
 	shard, ok := b.domains[domainHash]
 	if !ok {
 		shard = tx.Translate(v1.Field_domain, m.Domain)
@@ -204,10 +201,4 @@ func (b *Batch) save(tx *badger.Txn, key []byte, value *roaring.BSI) error {
 		}
 	}
 	return tx.Set(key, bytes.Clone(b.buffer))
-}
-
-func (b *Batch) sum(h []byte) uint32 {
-	b.hash.Reset()
-	b.hash.Write(h)
-	return b.hash.Sum32()
 }
