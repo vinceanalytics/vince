@@ -8,6 +8,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
+//go:generate go run gen/main.go device-detector/regexes/
 func Parse(s string) (a *v1.Agent) {
 	if ua := parseUA(s); ua != nil {
 		a = &v1.Agent{}
