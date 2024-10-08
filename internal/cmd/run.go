@@ -336,6 +336,13 @@ func run(config *v1.Config) {
 			Then(web.UnimplementedStat),
 	))
 
+	statsAPI := plug.API().With(web.AuthorizeAPI)
+
+	mux.HandleFunc("GET /api/v1/stats/realtime/visitors", db.Wrap(
+		statsAPI.
+			Then(web.CurrentVisitorsAPI),
+	))
+
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
 	go func() {

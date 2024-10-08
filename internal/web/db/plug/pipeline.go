@@ -35,6 +35,12 @@ func Browser() Pipeline {
 	}
 }
 
+func API() Pipeline {
+	return Pipeline{
+		AcceptJSON,
+	}
+}
+
 func InternalStats() Pipeline {
 	return Pipeline{
 		FetchSession,
