@@ -1,10 +1,4 @@
 
-<p align="center">
-    <img src="./logo.svg" alt="Vince Logo" />
-    <br>
-</p>
-
-
 ## vince
 
 **Vince** is a privacy friendly web analytics server focused on painless self hosting.
