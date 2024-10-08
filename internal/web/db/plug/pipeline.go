@@ -36,9 +36,7 @@ func Browser() Pipeline {
 }
 
 func API() Pipeline {
-	return Pipeline{
-		AcceptJSON,
-	}
+	return Pipeline{}
 }
 
 func InternalStats() Pipeline {
