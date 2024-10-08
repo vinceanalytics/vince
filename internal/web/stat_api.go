@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
+	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
 func CurrentVisitorsAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
@@ -15,6 +17,19 @@ func CurrentVisitorsAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		db.Logger().Error("retrieving current visitors", "domain", domain, "err", err)
 	}
 	db.JSON(w, visitors)
+}
+
+func AgggregatesAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("site_id")
+	params := query.New(r.URL.Query())
+
+	stats, err := db.Get().Stats(domain, params.Start(), params.End(), params.Interval(), params.Filter(), params.Metrics())
+	if err != nil {
+		db.Logger().Error("reading top stats", "err", err)
+		stats = &ro2.Stats{}
+	}
+	stats.Compute()
+	db.JSON(w, stats)
 }
 
 func AuthorizeAPI(h plug.Handler) plug.Handler {

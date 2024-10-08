@@ -3,6 +3,7 @@ package query
 import (
 	"encoding/json"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type Query struct {
 	cmp      *Period
 	filter   Filters
 	metric   string
+	metrics  []string
 	all      bool
 	realtime bool
 }
@@ -51,12 +53,16 @@ func New(u url.Values) *Query {
 		case "custom":
 		}
 	}
-
+	mets := []string{"visitors"}
+	if ms := u.Get("metrics"); ms != "" {
+		mets = strings.Split(ms, ",")
+	}
 	return &Query{
 		period:   period,
 		cmp:      cmp,
 		filter:   fs.Translate(),
 		metric:   u.Get("metric"),
+		metrics:  mets,
 		all:      u.Get("period") == "all",
 		realtime: u.Get("period") == "realtime",
 	}
@@ -84,4 +90,5 @@ func (q *Query) To() string         { return q.period.End.Format(time.DateOnly) 
 func (q *Query) Interval() Interval { return q.period.Interval }
 func (q *Query) Filter() Filters    { return q.filter }
 func (q *Query) Metric() string     { return q.metric }
+func (q *Query) Metrics() []string  { return q.metrics }
 func (q *Query) Compare() *Period   { return q.cmp }

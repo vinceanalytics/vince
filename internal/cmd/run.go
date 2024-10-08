@@ -343,6 +343,11 @@ func run(config *v1.Config) {
 			Then(web.CurrentVisitorsAPI),
 	))
 
+	mux.HandleFunc("GET /api/v1/stats/aggregate", db.Wrap(
+		statsAPI.
+			Then(web.AgggregatesAPI),
+	))
+
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
 	go func() {
