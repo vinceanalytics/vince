@@ -30,7 +30,9 @@ func AgggregatesAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		stats = &ro2.Stats{}
 	}
 	stats.Compute()
-	db.JSON(w, stats)
+	result := map[string]any{}
+	ro2.Reduce(params.Metrics())(stats, result)
+	db.JSON(w, result)
 }
 
 func BreakdownAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
