@@ -354,6 +354,11 @@ func run(config *v1.Config) {
 			Then(api.Breakdown),
 	))
 
+	mux.HandleFunc("GET /api/v1/stats/timeseries", db.Wrap(
+		statsAPI.
+			Then(api.Timeseries),
+	))
+
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
 	go func() {

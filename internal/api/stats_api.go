@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"slices"
 	"strings"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -33,6 +34,36 @@ func Agggregates(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	result := map[string]any{}
 	ro2.Reduce(params.Metrics())(stats, result)
 	db.JSON(w, result)
+}
+
+func Timeseries(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("site_id")
+	params := query.New(r.URL.Query())
+
+	result, err := db.Get().Timeseries(domain, params, params.Metrics())
+	if err != nil {
+		db.Logger().Error("reading top stats", "err", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	size := len(result)
+	labels := make([]string, 0, size)
+	for k := range result {
+		labels = append(labels, k)
+	}
+	slices.Sort(labels)
+	plot := make([]map[string]any, 0, size)
+	reduce := ro2.Reduce(params.Metrics())
+	for i := range labels {
+		stat := result[labels[i]]
+		stat.Compute()
+		value := map[string]any{
+			"timetsmap": labels[i],
+		}
+		reduce(stat, value)
+		plot = append(plot, value)
+	}
+	db.JSON(w, ro2.Result{Results: plot})
 }
 
 func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
