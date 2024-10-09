@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
 type Query struct {
@@ -15,6 +17,7 @@ type Query struct {
 	metrics  []string
 	all      bool
 	realtime bool
+	property v1.Field
 }
 
 func New(u url.Values) *Query {
@@ -62,6 +65,7 @@ func New(u url.Values) *Query {
 		cmp:      cmp,
 		filter:   fs.Translate(),
 		metric:   u.Get("metric"),
+		property: property[u.Get("property")],
 		metrics:  mets,
 		all:      u.Get("period") == "all",
 		realtime: u.Get("period") == "realtime",
@@ -92,3 +96,4 @@ func (q *Query) Filter() Filters    { return q.filter }
 func (q *Query) Metric() string     { return q.metric }
 func (q *Query) Metrics() []string  { return q.metrics }
 func (q *Query) Compare() *Period   { return q.cmp }
+func (q *Query) Property() v1.Field { return q.property }

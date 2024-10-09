@@ -371,7 +371,7 @@ func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := db.Get().BreakdownCity(site.Domain, params)
+	o, err := db.Get().BreakdownCity(site.Domain, params, []string{"visitors"})
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &ro2.Result{}

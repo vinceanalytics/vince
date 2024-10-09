@@ -348,6 +348,11 @@ func run(config *v1.Config) {
 			Then(web.AgggregatesAPI),
 	))
 
+	mux.HandleFunc("GET /api/v1/stats/breakdown", db.Wrap(
+		statsAPI.
+			Then(web.BreakdownAPI),
+	))
+
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))
 
 	go func() {

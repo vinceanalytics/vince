@@ -81,22 +81,24 @@ func (o *Store) BreakdownExitPages(domain string, params *query.Query) (*Result,
 
 }
 
-func (o *Store) BreakdownCity(domain string, params *query.Query) (*Result, error) {
+func (o *Store) BreakdownCity(domain string, params *query.Query, metrics []string) (*Result, error) {
 	return breakdown(o,
 		findCity,
-		domain, params, []string{visitors}, v1.Field_city, func(property string, values map[uint32]*Stats) *Result {
+		domain, params, metrics, v1.Field_city, func(property string, values map[uint32]*Stats) *Result {
 			a := &Result{
 				Results: make([]map[string]any, 0, len(values)),
 			}
+			reduce := Reduce(metrics)
 			for code, b := range values {
 				b.Compute()
 				city := location.GetCity(code)
-				a.Results = append(a.Results, map[string]any{
-					visitors: b.Visitors,
-					"code":   code,
-					"name":   city.Name,
-					"flag":   city.Flag,
-				})
+				value := map[string]any{
+					"code": code,
+					"name": city.Name,
+					"flag": city.Flag,
+				}
+				reduce(b, value)
+				a.Results = append(a.Results, value)
 			}
 			return a
 		})

@@ -27,6 +27,37 @@ func NewStats(fs fieldset.Set) *Stats {
 	return &s
 }
 
+func Reduce(metrics []string) func(*Stats, map[string]any) {
+	ls := make([]func(*Stats, map[string]any), len(metrics))
+	for i := range metrics {
+		ls[i] = reduce(metrics[i])
+	}
+	return func(s *Stats, m map[string]any) {
+		for i := range ls {
+			ls[i](s, m)
+		}
+	}
+}
+
+func reduce(metric string) func(s *Stats, o map[string]any) {
+	switch metric {
+	case "visitors":
+		return func(s *Stats, o map[string]any) { o[metric] = s.Visitors }
+	case "visits":
+		return func(s *Stats, o map[string]any) { o[metric] = s.Visits }
+	case "pageviews":
+		return func(s *Stats, o map[string]any) { o[metric] = s.PageViews }
+	case "bounce_rate":
+		return func(s *Stats, o map[string]any) { o[metric] = s.BounceRate }
+	case "views_per_visit":
+		return func(s *Stats, o map[string]any) { o[metric] = s.ViewsPerVisits }
+	case "visit_duration":
+		return func(s *Stats, o map[string]any) { o[metric] = s.VisitDuration }
+	default:
+		return func(s *Stats, o map[string]any) {}
+	}
+}
+
 func StatToValue(metric string) func(s *Stats) float64 {
 	switch metric {
 	case "visitors":
@@ -62,6 +93,9 @@ func (s *Stats) Compute() {
 		s.VisitDuration /= s.Visits
 		s.VisitDuration = math.Floor(s.VisitDuration)
 	}
+
+	//avoid negative bounce rates
+	s.BounceRate = max(s.BounceRate, 0)
 }
 
 func (d *Stats) Read(tx *Tx, shard, view uint64, match *roaring.Bitmap, fields fieldset.Set) error {
