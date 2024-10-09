@@ -11,6 +11,7 @@ import (
 	"os/signal"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/db"
@@ -336,21 +337,21 @@ func run(config *v1.Config) {
 			Then(web.UnimplementedStat),
 	))
 
-	statsAPI := plug.API().With(web.AuthorizeAPI)
+	statsAPI := plug.API().With(api.Authorize)
 
 	mux.HandleFunc("GET /api/v1/stats/realtime/visitors", db.Wrap(
 		statsAPI.
-			Then(web.CurrentVisitorsAPI),
+			Then(api.CurrentVisitors),
 	))
 
 	mux.HandleFunc("GET /api/v1/stats/aggregate", db.Wrap(
 		statsAPI.
-			Then(web.AgggregatesAPI),
+			Then(api.Agggregates),
 	))
 
 	mux.HandleFunc("GET /api/v1/stats/breakdown", db.Wrap(
 		statsAPI.
-			Then(web.BreakdownAPI),
+			Then(api.Breakdown),
 	))
 
 	mux.HandleFunc("/api/event", db.Wrap(web.Event))

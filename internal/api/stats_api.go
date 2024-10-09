@@ -1,4 +1,4 @@
-package web
+package api
 
 import (
 	"net/http"
@@ -11,7 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
-func CurrentVisitorsAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
+func CurrentVisitors(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("site_id")
 	visitors, err := db.Get().CurrentVisitors(domain)
 	if err != nil {
@@ -20,7 +20,7 @@ func CurrentVisitorsAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.JSON(w, visitors)
 }
 
-func AgggregatesAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
+func Agggregates(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
 
@@ -35,7 +35,7 @@ func AgggregatesAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.JSON(w, result)
 }
 
-func BreakdownAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
+func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
 	if params.Property() == v1.Field_unknown {
@@ -65,7 +65,7 @@ func BreakdownAPI(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.JSON(w, rs)
 }
 
-func AuthorizeAPI(h plug.Handler) plug.Handler {
+func Authorize(h plug.Handler) plug.Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("authorization")
 		token := strings.TrimPrefix(auth, "Bearer ")
