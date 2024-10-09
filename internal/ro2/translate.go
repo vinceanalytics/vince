@@ -8,7 +8,6 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/encoding"
 )
 
 func (tx *Tx) RecordID() uint64 {
@@ -16,7 +15,7 @@ func (tx *Tx) RecordID() uint64 {
 }
 
 func (tx *Tx) Translate(field v1.Field, value []byte) (id uint64) {
-	key := encoding.EncodeTranslateKey(field, value)
+	key := tx.enc.TranslateKey(field, value)
 	it, err := tx.tx.Get(key)
 	if err == nil {
 		it.Value(func(val []byte) error {
@@ -31,7 +30,7 @@ func (tx *Tx) Translate(field v1.Field, value []byte) (id uint64) {
 		os.Exit(1)
 	}
 	id = tx.nextSeq(field)
-	idKey := encoding.EncodeTranslateID(field, id)
+	idKey := tx.enc.TranslateID(field, id)
 	err = tx.tx.Set(idKey, []byte(value))
 	if err != nil {
 		slog.Error("reading translation id", "err", err)
@@ -49,7 +48,7 @@ func (tx *Tx) Translate(field v1.Field, value []byte) (id uint64) {
 }
 
 func (tx *Tx) nextSeq(field v1.Field) uint64 {
-	key := encoding.EncodeTranslateSeq(field)
+	key := tx.enc.TranslateSeq(field)
 	var id uint64
 	it, err := tx.tx.Get(key)
 	if err != nil {
@@ -75,7 +74,7 @@ func (tx *Tx) nextSeq(field v1.Field) uint64 {
 }
 
 func (tx *Tx) Find(field v1.Field, id uint64) (o string) {
-	key := encoding.EncodeTranslateID(field, id)
+	key := tx.enc.TranslateID(field, id)
 	it, err := tx.tx.Get(key)
 	if err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
@@ -113,7 +112,7 @@ func (tx *Tx) ids(field v1.Field, value []string) []int64 {
 }
 
 func (tx *Tx) ID(field v1.Field, value []byte) (id uint64, ok bool) {
-	key := encoding.EncodeTranslateKey(field, value)
+	key := tx.enc.TranslateKey(field, value)
 	it, err := tx.tx.Get(key)
 	if err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
@@ -130,7 +129,7 @@ func (tx *Tx) ID(field v1.Field, value []byte) (id uint64, ok bool) {
 }
 
 func (tx *Tx) Search(field v1.Field, prefix []byte, f func([]byte, uint64)) {
-	key := encoding.EncodeTranslateKey(field, nil)
+	key := tx.enc.TranslateKey(field, nil)
 	offset := len(key)
 	key = append(key, prefix...)
 	it := tx.Iter()

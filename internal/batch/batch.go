@@ -25,6 +25,7 @@ type Batch struct {
 	offsets []uint32
 	buffer  []byte
 	key     encoding.Key
+	enc     encoding.Encoding
 }
 
 func NewBatch() *Batch {
@@ -124,6 +125,7 @@ func (b *Batch) Save(db *badger.DB) (err error) {
 		clear(b.buffer)
 		b.offsets = b.offsets[:0]
 		b.buffer = b.buffer[:0]
+		b.enc.Reset()
 	}()
 	for k, v := range b.data {
 		err = b.saveTs(tx, k, v)
@@ -178,7 +180,7 @@ func month(ts time.Time) uint64 {
 func (b *Batch) saveKey(tx *badger.Txn, key encoding.Key, value *roaring.BSI) error {
 	return b.save(
 		tx,
-		encoding.EncodeKey(key),
+		b.enc.Key(key),
 		value,
 	)
 }

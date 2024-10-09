@@ -14,7 +14,6 @@ import (
 	"github.com/dgraph-io/badger/v4/y"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
@@ -28,27 +27,27 @@ func (db *DB) CreateAPIKey(name string, key string) error {
 		Prefix: prefix,
 		Hash:   hash[:],
 	})
-	return db.db.Update(func(txn *badger.Txn) error {
+	return db.Update(func(tx *Tx) error {
 		return errors.Join(
-			txn.Set(encoding.EncodeApiKeyName([]byte(name)), data),
-			txn.Set(encoding.EncodeApiKeyHash(hash[:]), []byte{}),
+			tx.tx.Set(tx.enc.APIKeyName([]byte(name)), data),
+			tx.tx.Set(tx.enc.APIKeyHash(hash[:]), []byte{}),
 		)
 	})
 }
 
 func (db *DB) ValidAPIKkey(key string) bool {
 	hash := sha512.Sum512([]byte(key))
-	err := db.db.View(func(txn *badger.Txn) error {
-		_, err := txn.Get(encoding.EncodeApiKeyHash(hash[:]))
+	err := db.View(func(tx *Tx) error {
+		_, err := tx.tx.Get(tx.enc.APIKeyHash(hash[:]))
 		return err
 	})
 	return err == nil
 }
 
 func (db *DB) DeleteAPIKey(name string) error {
-	return db.db.Update(func(txn *badger.Txn) error {
-		nameKey := encoding.EncodeApiKeyName([]byte(name))
-		it, err := txn.Get(nameKey)
+	return db.Update(func(tx *Tx) error {
+		nameKey := tx.enc.APIKeyName([]byte(name))
+		it, err := tx.tx.Get(nameKey)
 		if err != nil {
 			return err
 		}
@@ -60,8 +59,8 @@ func (db *DB) DeleteAPIKey(name string) error {
 			return err
 		}
 		return errors.Join(
-			txn.Delete(nameKey),
-			txn.Delete(encoding.EncodeApiKeyHash(a.Hash)),
+			tx.tx.Delete(nameKey),
+			tx.tx.Delete(tx.enc.APIKeyHash(a.Hash)),
 		)
 	})
 
@@ -88,13 +87,13 @@ func (db *DB) APIKeys() (ls []*v1.APIKey, err error) {
 }
 
 func (db *DB) SetupDomains(domains []string) {
-	db.db.Update(func(txn *badger.Txn) error {
+	db.Update(func(tx *Tx) error {
 		for _, n := range domains {
-			key := encoding.EncodeSite([]byte(n))
-			_, err := txn.Get(key)
+			key := tx.enc.Site([]byte(n))
+			_, err := tx.tx.Get(key)
 			if errors.Is(err, badger.ErrKeyNotFound) {
 				data, _ := proto.Marshal(&v1.Site{Domain: n})
-				err := txn.Set(key, data)
+				err := tx.tx.Set(key, data)
 				if err != nil {
 					return err
 				}
@@ -124,7 +123,7 @@ func (db *DB) Domains(f func(*v1.Site)) {
 
 func (db *DB) Site(domain string) (u *v1.Site) {
 	err := db.View(func(tx *Tx) error {
-		it, err := tx.tx.Get(encoding.EncodeSite([]byte(domain)))
+		it, err := tx.tx.Get(tx.enc.Site([]byte(domain)))
 		if err != nil {
 			return err
 		}
@@ -156,7 +155,7 @@ func (db *DB) CreateSite(domain string, public bool) (err error) {
 func (db *DB) DeleteDomain(domain string) (err error) {
 	return db.Update(func(tx *Tx) error {
 		return tx.tx.Delete(
-			encoding.EncodeSite([]byte(domain)),
+			tx.enc.Site([]byte(domain)),
 		)
 	})
 }
@@ -215,7 +214,7 @@ func (db *DB) Save(u *v1.Site) error {
 		return err
 	}
 	return db.Update(func(tx *Tx) error {
-		err = tx.tx.Set(encoding.EncodeSite([]byte(u.Domain)), data)
+		err = tx.tx.Set(tx.enc.Site([]byte(u.Domain)), data)
 		if err != nil {
 			return err
 		}
