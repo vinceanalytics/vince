@@ -339,9 +339,11 @@ func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	for i := range o.Results {
 		m := o.Results[i]
-		code := m["country"].(string)
+		code := m[v1.Field_country.String()].(string)
+		delete(m, v1.Field_country.String())
 		c := location.GetCountry(code)
 		m["code"] = code
+		m["alpha_3"] = c.Alpha
 		m["name"] = c.Name
 		m["flag"] = c.Flag
 	}

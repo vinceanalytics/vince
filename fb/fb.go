@@ -12,13 +12,14 @@ import (
 
 //go:generate flatc --go geo.fbs
 
-func Serialize(geonames []string, country [3][]string, region [2][]string, city, cityCode []byte) []byte {
+func Serialize(geonames []string, country [4][]string, region [2][]string, city, cityCode []byte) []byte {
 	b := flatbuffers.NewBuilder(30 << 20)
 
 	off, names := buildStrings(b, nil, geonames, geo.GeoStartNamesVector)
-	off, countryCode := buildStrings(b, off, country[0], geo.CountryStartCodeVector)
-	off, countryFlag := buildStrings(b, off, country[1], geo.CountryStartFlagVector)
-	off, countryName := buildStrings(b, off, country[2], geo.CountryStartNameVector)
+	off, countryAlpha := buildStrings(b, off, country[0], geo.CountryStartAlphaVector)
+	off, countryCode := buildStrings(b, off, country[1], geo.CountryStartCodeVector)
+	off, countryFlag := buildStrings(b, off, country[2], geo.CountryStartFlagVector)
+	off, countryName := buildStrings(b, off, country[3], geo.CountryStartNameVector)
 
 	off, regionCode := buildStrings(b, off, region[0], geo.RegionStartCodeVector)
 	_, regionName := buildStrings(b, off, region[1], geo.RegionStartNameVector)
@@ -33,6 +34,7 @@ func Serialize(geonames []string, country [3][]string, region [2][]string, city,
 	geoFull := geo.GeoEnd(b)
 
 	geo.CountryStart(b)
+	geo.CountryAddAlpha(b, countryAlpha)
 	geo.CountryAddCode(b, countryCode)
 	geo.CountryAddFlag(b, countryFlag)
 	geo.CountryAddName(b, countryName)
@@ -111,12 +113,12 @@ func buildBytes(b *flatbuffers.Builder, names []byte, start func(builder *flatbu
 }
 
 type Location struct {
-	root                                  *geo.Location
-	Geo                                   *Str
-	CountryCode, CountryFlag, CountryName *Str
-	RegionName, RegionCode                *Str
-	City, CityCode, translate             *roaring.BSI
-	tr                                    *Str
+	root                                                   *geo.Location
+	Geo                                                    *Str
+	CountryAddAlpha, CountryCode, CountryFlag, CountryName *Str
+	RegionName, RegionCode                                 *Str
+	City, CityCode, translate                              *roaring.BSI
+	tr                                                     *Str
 }
 
 type Str struct {
@@ -133,6 +135,7 @@ func New(data []byte) *Location {
 	region := root.Region(nil)
 	g.Geo = &Str{get: geo.Names, size: geo.NamesLength()}
 
+	g.CountryAddAlpha = &Str{get: country.Alpha, size: country.AlphaLength()}
 	g.CountryCode = &Str{get: country.Code, size: country.CodeLength()}
 	g.CountryFlag = &Str{get: country.Flag, size: country.FlagLength()}
 	g.CountryName = &Str{get: country.Name, size: country.NameLength()}

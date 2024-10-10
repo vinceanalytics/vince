@@ -48,9 +48,10 @@ func GetCity(code uint32) City {
 }
 
 type Country struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
-	Flag string `json:"flag"`
+	Alpha string `json:"alpha_3"`
+	Code  string `json:"code"`
+	Name  string `json:"name"`
+	Flag  string `json:"flag"`
 }
 
 func GetCountry(code string) Country {
@@ -59,9 +60,10 @@ func GetCountry(code string) Country {
 		return Country{Code: code}
 	}
 	return Country{
-		Code: code,
-		Name: string(root.CountryName.Get(i)),
-		Flag: string(root.CountryFlag.Get(i)),
+		Code:  code,
+		Name:  string(root.CountryName.Get(i)),
+		Flag:  string(root.CountryFlag.Get(i)),
+		Alpha: string(root.CountryAddAlpha.Get(i)),
 	}
 }
 

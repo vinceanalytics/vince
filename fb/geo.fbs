@@ -16,6 +16,7 @@ table Geo{
 
 table Country{
     code:[string];
+    alpha:[string];
     flag:[string];
     name:[string];
 }

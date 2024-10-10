@@ -24,27 +24,29 @@ func main() {
 }
 
 var (
-	xxCountry [3][]string
+	xxCountry [4][]string
 	xxRegion  [2][]string
 )
 
 func writeIso() {
 	s := make([]string, len(_iso_1))
+
 	for i := range _iso_1 {
-		s[i] = _iso_1[i].A
-	}
-	for i := range _iso_1 {
-		s[i] = _iso_1[i].A
+		s[i] = _iso_1[i].A3
 	}
 	xxCountry[0] = slices.Clone(s)
 	for i := range _iso_1 {
-		s[i] = _iso_1[i].Flag
+		s[i] = _iso_1[i].A
 	}
 	xxCountry[1] = slices.Clone(s)
 	for i := range _iso_1 {
-		s[i] = _iso_1[i].Name
+		s[i] = _iso_1[i].Flag
 	}
 	xxCountry[2] = slices.Clone(s)
+	for i := range _iso_1 {
+		s[i] = _iso_1[i].Name
+	}
+	xxCountry[3] = slices.Clone(s)
 
 	s = s[:0]
 	for i := range _iso_2 {
@@ -60,6 +62,7 @@ func writeIso() {
 
 type Country struct {
 	A    string `json:"alpha_2"`
+	A3   string `json:"alpha_3"`
 	Flag string `json:"flag"`
 	Name string `json:"name"`
 }

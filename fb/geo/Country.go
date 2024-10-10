@@ -58,8 +58,25 @@ func (rcv *Country) CodeLength() int {
 	return 0
 }
 
-func (rcv *Country) Flag(j int) []byte {
+func (rcv *Country) Alpha(j int) []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.ByteVector(a + flatbuffers.UOffsetT(j*4))
+	}
+	return nil
+}
+
+func (rcv *Country) AlphaLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *Country) Flag(j int) []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.ByteVector(a + flatbuffers.UOffsetT(j*4))
@@ -68,7 +85,7 @@ func (rcv *Country) Flag(j int) []byte {
 }
 
 func (rcv *Country) FlagLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -76,7 +93,7 @@ func (rcv *Country) FlagLength() int {
 }
 
 func (rcv *Country) Name(j int) []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.ByteVector(a + flatbuffers.UOffsetT(j*4))
@@ -85,7 +102,7 @@ func (rcv *Country) Name(j int) []byte {
 }
 
 func (rcv *Country) NameLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -93,7 +110,7 @@ func (rcv *Country) NameLength() int {
 }
 
 func CountryStart(builder *flatbuffers.Builder) {
-	builder.StartObject(3)
+	builder.StartObject(4)
 }
 func CountryAddCode(builder *flatbuffers.Builder, code flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(code), 0)
@@ -101,14 +118,20 @@ func CountryAddCode(builder *flatbuffers.Builder, code flatbuffers.UOffsetT) {
 func CountryStartCodeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
+func CountryAddAlpha(builder *flatbuffers.Builder, alpha flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(alpha), 0)
+}
+func CountryStartAlphaVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
 func CountryAddFlag(builder *flatbuffers.Builder, flag flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(flag), 0)
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(flag), 0)
 }
 func CountryStartFlagVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func CountryAddName(builder *flatbuffers.Builder, name flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(name), 0)
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(name), 0)
 }
 func CountryStartNameVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
