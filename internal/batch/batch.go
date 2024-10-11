@@ -1,7 +1,6 @@
 package batch
 
 import (
-	"bytes"
 	"errors"
 	"time"
 
@@ -23,16 +22,20 @@ type Batch struct {
 	data    map[encoding.Key]*roaring.BSI
 	domains map[uint32]uint64
 	offsets []uint32
-	buffer  []byte
 	key     encoding.Key
 	enc     encoding.Encoding
 }
 
 func NewBatch() *Batch {
-	return &Batch{
+	b := &Batch{
 		data:    make(map[encoding.Key]*roaring.BSI),
 		domains: make(map[uint32]uint64),
+		offsets: make([]uint32, 0, 65),
 	}
+	// a lot of small allocations happens during batching. We pre allocate enough
+	// buffer of 32MB to cover majority of the cases.
+	b.enc.Grow(32 << 20)
+	return b
 }
 
 func (b *Batch) Add(tx KV, m *models.Model) error {
@@ -121,10 +124,7 @@ func (b *Batch) Save(db *badger.DB) (err error) {
 			err = tx.Commit()
 		}
 		clear(b.data)
-		clear(b.offsets)
-		clear(b.buffer)
 		b.offsets = b.offsets[:0]
-		b.buffer = b.buffer[:0]
 		b.enc.Reset()
 	}()
 	for k, v := range b.data {
@@ -187,20 +187,21 @@ func (b *Batch) saveKey(tx *badger.Txn, key encoding.Key, value *roaring.BSI) er
 
 func (b *Batch) save(tx *badger.Txn, key []byte, value *roaring.BSI) error {
 	it, err := tx.Get(key)
+	var data []byte
 	if err != nil {
 		if !errors.Is(err, badger.ErrKeyNotFound) {
 			return err
 		}
-		b.offsets, b.buffer = value.ToBufferWith(b.offsets, b.buffer)
+		b.offsets, data = value.Append(b.offsets[:0], b.enc.Allocate(value.GetSizeInBytes())[:0])
 	} else {
 		err = it.Value(func(val []byte) error {
-			bs := roaring.NewBSIFromBuffer(val)
-			b.offsets, b.buffer = bs.Or(value).ToBufferWith(b.offsets, b.buffer)
+			bs := roaring.NewBSIFromBuffer(val).Or(value)
+			b.offsets, data = bs.Append(b.offsets[:0], b.enc.Allocate(bs.GetSizeInBytes())[:0])
 			return err
 		})
 		if err != nil {
 			return err
 		}
 	}
-	return tx.Set(key, bytes.Clone(b.buffer))
+	return tx.Set(key, data)
 }

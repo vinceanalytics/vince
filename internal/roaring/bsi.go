@@ -533,6 +533,13 @@ func (b *BSI) ToBufferWith(offsets []uint32, data []byte) ([]uint32, []byte) {
 	}
 	offsets = slices.Grow(offsets[:0], 1+b.BitCount())
 	data = slices.Grow(data[:0], b.GetSizeInBytes())
+	return b.Append(offsets, data)
+}
+
+func (b *BSI) Append(offsets []uint32, data []byte) ([]uint32, []byte) {
+	if b.eBM.IsEmpty() {
+		return []uint32{}, []byte{}
+	}
 	data = append(data, b.eBM.ToBuffer()...)
 	offsets = append(offsets, uint32(len(data)))
 	for i := range b.bA {
