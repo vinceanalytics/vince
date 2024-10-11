@@ -74,6 +74,8 @@ func (b *Batch) Add(tx KV, m *models.Model) error {
 	b.set(tx, v1.Field_browser_version, id, m.BrowserVersion)
 	b.set(tx, v1.Field_country, id, m.Country)
 	b.set(tx, v1.Field_device, id, m.Device)
+	// only store bitmap for domain. Use bsi existence field.
+	b.get(v1.Field_domain).GetExistenceBitmap().Set(id)
 	b.set(tx, v1.Field_domain, id, m.Domain)
 	b.set(tx, v1.Field_entry_page, id, m.EntryPage)
 	b.set(tx, v1.Field_event, id, m.Event)
@@ -178,6 +180,13 @@ func month(ts time.Time) uint64 {
 }
 
 func (b *Batch) saveKey(tx *badger.Txn, key encoding.Key, value *roaring.BSI) error {
+	if key.Field == v1.Field_domain {
+		return b.saveBitmap(
+			tx,
+			b.enc.Key(key),
+			value,
+		)
+	}
 	return b.save(
 		tx,
 		b.enc.Key(key),
@@ -197,6 +206,28 @@ func (b *Batch) save(tx *badger.Txn, key []byte, value *roaring.BSI) error {
 		err = it.Value(func(val []byte) error {
 			bs := roaring.NewBSIFromBuffer(val).Or(value)
 			b.offsets, data = bs.Append(b.offsets[:0], b.enc.Allocate(bs.GetSizeInBytes())[:0])
+			return err
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Set(key, data)
+}
+
+func (b *Batch) saveBitmap(tx *badger.Txn, key []byte, value *roaring.BSI) error {
+	it, err := tx.Get(key)
+	var data []byte
+	if err != nil {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
+			return err
+		}
+
+		data = value.GetExistenceBitmap().ToBuffer()
+	} else {
+		err = it.Value(func(val []byte) error {
+			bs := roaring.Or(roaring.FromBuffer(val), value.GetExistenceBitmap())
+			data = bs.ToBuffer()
 			return err
 		})
 		if err != nil {

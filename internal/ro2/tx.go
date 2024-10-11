@@ -59,10 +59,7 @@ func (tx *Tx) Select(domain string, start,
 	m := tx.compile(filters)
 	return intrerval.Range(start, end, func(t time.Time) error {
 		view := uint64(t.UnixMilli())
-		var match *roaring.Bitmap
-		err := tx.Bitmap(shard, view, v1.Field_domain, func(bs *roaring.BSI) {
-			match = bs.GetExistenceBitmap().Clone()
-		})
+		match, err := tx.Domain(shard, view)
 		if err != nil {
 			return err
 		}
@@ -142,4 +139,25 @@ func (tx *Tx) Bitmap(shard, view uint64, field v1.Field, f func(bs *roaring.BSI)
 		f(roaring.NewBSIFromBuffer(val))
 		return nil
 	})
+}
+
+func (tx *Tx) Domain(shard, view uint64) (*roaring.Bitmap, error) {
+	key := tx.enc.Key(encoding.Key{
+		Time:  view,
+		Shard: uint32(shard),
+		Field: v1.Field_domain,
+	})
+	it, err := tx.tx.Get(key)
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			return roaring.NewBitmap(), nil
+		}
+		return nil, err
+	}
+
+	value, err := it.ValueCopy(nil)
+	if err != nil {
+		return nil, err
+	}
+	return roaring.FromBuffer(value), nil
 }

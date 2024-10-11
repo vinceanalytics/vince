@@ -19,10 +19,7 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 		}
 		return query.Minute.Range(start, end, func(t time.Time) error {
 			view := uint64(t.UnixMilli())
-			var match *roaring.Bitmap
-			err := tx.Bitmap(shard, view, v1.Field_domain, func(bs *roaring.BSI) {
-				match = bs.GetExistenceBitmap().Clone()
-			})
+			match, err := tx.Domain(shard, view)
 			if err != nil {
 				return err
 			}
@@ -50,10 +47,7 @@ func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 
 		// use global shard bitmap  to avoid calling comparison. bs is existence
 		// bitmap contains all columns  for the shard globally.
-		var match *roaring.Bitmap
-		err := tx.Bitmap(shard, 0, v1.Field_domain, func(bs *roaring.BSI) {
-			match = bs.GetExistenceBitmap().Clone()
-		})
+		match, err := tx.Domain(shard, 0)
 		if err != nil {
 			return err
 		}
