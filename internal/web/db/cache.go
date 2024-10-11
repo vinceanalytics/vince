@@ -8,7 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/ro2"
 )
 
-const sessionLifetime = 15 * time.Minute
+const sessionLifetime = 30 * time.Minute
 
 func (db *Config) append(e *models.Model, b *batch.Batch) error {
 	hit(e)
