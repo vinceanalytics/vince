@@ -26,7 +26,7 @@ type Model struct {
 	Duration         int64
 	Id               uint64
 	City             uint32
-	Bounce           int32
+	Bounce           int8
 	View             bool
 	Session          bool
 }
