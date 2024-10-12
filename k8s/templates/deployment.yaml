@@ -5,9 +5,6 @@ metadata:
   labels:
     {{- include "vince.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "vince.selectorLabels" . | nindent 6 }}
@@ -36,9 +33,51 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- if .Values.baseURL }}
+            - name: VINCE_URL
+              value: {{ .Values.baseURL | toString | quote }}
+            {{end}}
+            {{- if .Values.dataPath }}
+            - name: VINCE_DATA
+              value: {{ .Values.dataPath | toString | quote }}
+            {{- end}}
+            {{- if .Values.acme.enabled }}
+            - name: VINCE_AUTO_TLS
+              value: "true"
+            - name: VINCE_ACME_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  key: VINCE_ACME_EMAIL
+                  name: {{ include "vince.secretName" . }}
+            - name: VINCE_ACME_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  key: VINCE_ACME_DOMAIN
+                  name: {{ include "vince.secretName" . }}
+            {{- end}}
+            - name: VINCE_ADMIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: VINCE_ADMIN_NAME
+                  name: {{ include "vince.secretName" . }}
+            - name: VINCE_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  key: VINCE_ADMIN_EMAIL
+                  name: {{ include "vince.secretName" . }}
+            - name: VINCE_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: VINCE_ADMIN_PASSWORD
+                  name: {{ include "vince.secretName" . }}
+            - name: VINCE_DOMAINS
+              value: {{ .Values.domains | join "," | toString | quote }}
+            - name: VINCE_PROFILE
+              value: {{ .Values.profile | toString | quote }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: 8080
               protocol: TCP
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
