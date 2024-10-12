@@ -15,7 +15,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ref"
-	"github.com/vinceanalytics/vince/internal/ua"
+	"github.com/vinceanalytics/vince/internal/ua2"
 )
 
 var pageView = []byte("pageview")
@@ -109,7 +109,6 @@ func (db *Config) parse(r *http.Request) (*models.Model, error) {
 		return nil, fmt.Errorf("parsing referer %w", err)
 	}
 	path := req.pathname
-	agent := ua.Get(req.userAgent)
 
 	userID := uniqueID(req.remoteIp, req.userAgent, domain, host)
 	e := newEevent()
@@ -130,13 +129,9 @@ func (db *Config) parse(r *http.Request) (*models.Model, error) {
 	e.UtmCampaign = []byte(query.Get("utm_campaign"))
 	e.UtmContent = []byte(query.Get("utm_content"))
 	e.UtmTerm = []byte(query.Get("utm_term"))
-	e.Os = []byte(agent.GetOs())
-	e.OsVersion = []byte(agent.GetOsVersion())
-	e.Browser = []byte(agent.GetBrowser())
-	e.BrowserVersion = []byte(agent.GetBrowserVersion())
+	ua2.Parse(req.userAgent, e)
 	e.Source = []byte(src)
 	e.Referrer = []byte(ref)
-	e.Device = []byte(agent.GetDevice())
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil
 }

@@ -24,86 +24,6 @@ func main() {
 	makeClient(root)
 	makeDevice(root)
 	makeOs(root)
-	makeVendor(root)
-}
-
-func makeVendor(root string) {
-	var b bytes.Buffer
-	fmt.Fprintln(&b, "// DO NOT EDIT Code generateVendord by ua/os/make_os.go")
-	fmt.Fprintln(&b, " package ua2")
-	generateVendor(&b, root, "vendorfragments.yml")
-	r, err := format.Source(b.Bytes())
-	if err != nil {
-		fail("failed formatting go source ", err.Error())
-	}
-	os.WriteFile("ua_vendor.go", r, 0600)
-}
-
-type Vendor struct {
-	name string
-	re   []string
-}
-
-type VSLice []*Vendor
-
-func (x VSLice) Len() int           { return len(x) }
-func (x VSLice) Less(i, j int) bool { return x[i].name < x[j].name }
-func (x VSLice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
-
-func generateVendor(b *bytes.Buffer, root, path string) {
-	var m map[string][]string
-
-	readUA(root, path, &m)
-
-	var items []*Vendor
-	for k, v := range m {
-		items = append(items, &Vendor{
-			name: k, re: v,
-		})
-	}
-	sort.Sort(VSLice(items))
-
-	var s bytes.Buffer
-	var started bool
-	for i, d := range items {
-		if started {
-			s.WriteByte('|')
-		} else {
-			started = true
-		}
-		if i != 0 {
-			s.WriteByte('|')
-		}
-		for _, r := range d.re {
-			s.WriteString(r)
-		}
-	}
-	if IsStdRe(s.String()) {
-		fmt.Fprintf(b, " var vendorAllRe= MatchRe(`%s`)\n", Clean(s.String()))
-	} else {
-		fmt.Fprintf(b, " var vendorAllRe= MatchRe2(`%s`)\n", Clean(s.String()))
-	}
-	fmt.Fprintf(b, "var vendorAll=[]*vendorRe{\n")
-	var buf bytes.Buffer
-	for _, d := range items {
-		buf.Reset()
-		s.Reset()
-		for k, v := range d.re {
-			if k != 0 {
-				s.WriteByte('|')
-			}
-			s.WriteString(v)
-		}
-		r := Clean(s.String())
-		if IsStdRe(s.String()) {
-			fmt.Fprintf(&buf, "re:MatchRe(`%s`)", r)
-		} else {
-			fmt.Fprintf(&buf, "re: MatchRe2(`%s`)", r)
-		}
-		fmt.Fprintf(b, "{%s,name:%q", &buf, d.name)
-		fmt.Fprintf(b, "},\n")
-	}
-	fmt.Fprintln(b, "}")
 }
 
 var allOs = map[string]struct{}{}
@@ -278,47 +198,12 @@ func genericDevice(b *bytes.Buffer, name string, root, path string) {
 		}
 		s.WriteString(d.Regex)
 	}
-	var buf bytes.Buffer
 
 	if IsStdRe(s.String()) {
 		fmt.Fprintf(b, " var device%sAllRe= MatchRe(`%s`)\n", name, Clean(s.String()))
 	} else {
 		fmt.Fprintf(b, " var device%sAllRe= MatchRe2(`%s`)\n", name, Clean(s.String()))
 	}
-	fmt.Fprintf(b, "var device%sAll=[]*deviceRe{\n", name)
-	for _, d := range items {
-		buf.Reset()
-		r := Clean(d.Regex)
-		if IsStdRe(d.Regex) {
-			fmt.Fprintf(&buf, "re:MatchRe(`%s`)", r)
-		} else {
-			fmt.Fprintf(&buf, "re: MatchRe2(`%s`)", r)
-		}
-		fmt.Fprintf(b, "{%s,company:%q,device:%q, ", &buf, d.Manufacturer, d.Device)
-		if d.Model != "" {
-			fmt.Fprintf(b, "model:%q},\n", d.Model)
-		} else {
-			if len(d.Models) > 0 {
-				fmt.Fprintf(b, "models:[]*deviceModel{")
-				for _, m := range d.Models {
-
-					fmt.Fprintf(b, "{model:%q,", m.Model)
-					buf.Reset()
-					r = Clean(m.Regex)
-					if IsStdRe(m.Regex) {
-						fmt.Fprintf(&buf, "re:MatchRe(`%s`)", r)
-					} else {
-						fmt.Fprintf(&buf, "re: MatchRe2(`%s`)", r)
-					}
-					fmt.Fprintf(b, "%s},\n", &buf)
-				}
-				fmt.Fprintf(b, "},")
-			}
-			fmt.Fprintf(b, "},\n")
-		}
-
-	}
-	fmt.Fprintln(b, "}")
 }
 
 func loadDevice(root, path string) []*DeviceReg {
@@ -449,31 +334,6 @@ func generic(b *bytes.Buffer, name string, root string, path string) {
 		if d.Version != "" {
 			fmt.Fprintf(b, ",version:%q", d.Version)
 		}
-		if d.Type != "" {
-			fmt.Fprintf(b, ",kind:%q", d.Type)
-		}
-		if d.Url != "" {
-			fmt.Fprintf(b, ",url:%q", d.Url)
-		}
-		if d.Engine != nil {
-			fmt.Fprintf(b, ",engine:&clientEngine{")
-			if d.Engine.Default != "" {
-				fmt.Fprintf(b, "def:%q,", d.Engine.Default)
-			}
-			if d.Engine.Versions != nil {
-				var ls []string
-				for k := range d.Engine.Versions {
-					ls = append(ls, k)
-				}
-				sort.Strings(ls)
-				fmt.Fprintf(b, "versions:map[string]string{")
-				for _, k := range ls {
-					fmt.Fprintf(b, "%q:%q,\n", k, d.Engine.Versions[k])
-				}
-				fmt.Fprint(b, "},")
-			}
-			fmt.Fprint(b, "},")
-		}
 		fmt.Fprintf(b, "},\n")
 	}
 	fmt.Fprintln(b, "}")
@@ -513,19 +373,6 @@ func makeBot(root string) {
 	} else {
 		fmt.Fprintf(&buf, " var allBotsReStandardMatch= MustCompile2(`%s`)\n", Clean(s.String()))
 	}
-	fmt.Fprintln(&buf, "var botsReList=[]*botRe{")
-	for _, m := range r {
-		s.Reset()
-		if IsStdRe(m.Regex) {
-			fmt.Fprintf(&s, "re:MatchRe(`%s`)", Clean(m.Regex))
-		} else {
-			fmt.Fprintf(&s, "re:MatchRe2(`%s`)", Clean(m.Regex))
-		}
-		fmt.Fprintf(&buf, "{%s, name:%q,category:%q,url:%q,producerName:%q,producerURL:%q, },\n",
-			&s, m.Name, m.Category, m.Url, m.Producer.Name, m.Producer.Url,
-		)
-	}
-	fmt.Fprintln(&buf, "}")
 	f, err := format.Source(buf.Bytes())
 	if err != nil {
 		fail("failed to format go source ", err.Error())

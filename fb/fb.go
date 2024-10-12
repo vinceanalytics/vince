@@ -7,10 +7,35 @@ import (
 
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/vinceanalytics/vince/fb/geo"
+	"github.com/vinceanalytics/vince/fb/ua"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
-//go:generate flatc --go geo.fbs
+//go:generate flatc --go geo.fbs ua.fbs
+
+func SerializeAgent(device, os, osVersion, browser, browserVersion []byte) []byte {
+	size := len(device) + len(os) + len(osVersion) + len(browser) + len(browserVersion)
+	if size == 0 {
+		b := flatbuffers.NewBuilder(0)
+		ua.AgentStart(b)
+		b.Finish(ua.AgentEnd(b))
+		return b.FinishedBytes()
+	}
+	b := flatbuffers.NewBuilder(size)
+	deviceData := buildBytes(b, device, ua.AgentStartDeviceVector)
+	osData := buildBytes(b, os, ua.AgentStartOsVector)
+	osVerData := buildBytes(b, osVersion, ua.AgentStartOsVersionVector)
+	broData := buildBytes(b, browser, ua.AgentStartBrowserVector)
+	broVerData := buildBytes(b, browserVersion, ua.AgentStartBrowserVersionVector)
+	ua.AgentStart(b)
+	ua.AgentAddDevice(b, deviceData)
+	ua.AgentAddOs(b, osData)
+	ua.AgentAddOsVersion(b, osVerData)
+	ua.AgentAddBrowser(b, broData)
+	ua.AgentAddBrowserVersion(b, broVerData)
+	b.Finish(ua.AgentEnd(b))
+	return b.FinishedBytes()
+}
 
 func Serialize(geonames []string, country [4][]string, region [2][]string, city, cityCode []byte) []byte {
 	b := flatbuffers.NewBuilder(30 << 20)

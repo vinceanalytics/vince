@@ -3,74 +3,63 @@ package ua2
 import (
 	"regexp"
 	"strings"
+	"sync"
 
+	"github.com/VictoriaMetrics/fastcache"
 	re2 "github.com/dlclark/regexp2"
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	flatbuffers "github.com/google/flatbuffers/go"
+	"github.com/vinceanalytics/vince/fb"
+	"github.com/vinceanalytics/vince/fb/ua"
+	"github.com/vinceanalytics/vince/internal/models"
 )
 
 //go:generate go run gen/main.go device-detector/regexes/
-func Parse(s string) (a *v1.Agent) {
-	if ua := parseUA(s); ua != nil {
-		a = &v1.Agent{}
-		a.Bot = ua.bot != nil
-		if ua.os != nil {
-			a.Os = ua.os.name
-			a.OsVersion = ua.os.version
-		}
-		if ua.client != nil {
-			a.Browser = ua.client.name
-			a.BrowserVersion = ua.client.version
-		}
-		if ua.device != nil {
-			a.Device = ua.device.device
-		}
+
+var (
+	cache = fastcache.New(32 << 20)
+)
+
+var agentPool = &sync.Pool{New: func() any {
+	return new(ua.Agent)
+}}
+
+func Parse(s string, m *models.Model) {
+	if buf := cache.Get(nil, []byte(s)); len(buf) > 0 {
+		a := agentPool.Get().(*ua.Agent)
+		a.Init(buf, flatbuffers.GetUOffsetT(buf))
+		m.Device = a.DeviceBytes()
+		m.Os = a.OsBytes()
+		m.OsVersion = a.OsVersionBytes()
+		m.Browser = a.BrowserBytes()
+		m.BrowserVersion = a.BrowserVersionBytes()
+		*a = ua.Agent{}
+		agentPool.Put(a)
+		return
 	}
+	parseUA(s, m)
+	a := fb.SerializeAgent(m.Device, m.Os, m.OsVersion, m.Browser, m.BrowserVersion)
+	cache.Set([]byte(s), a)
+}
+
+func parseUA(s string, m *models.Model) bool {
+	if !containsLetter(s) {
+		return false
+	}
+	if parseBotUA(s) {
+		return true
+	}
+	parseDeviceUA(s, m)
+	parseOsUA(s, m)
+	parseClientUA(s, m)
+	return false
+}
+
+func parseBotUA(ua string) (ok bool) {
+	ok, _ = allBotsReStandardMatch().MatchString(ua)
 	return
 }
 
-func parseUA(s string) *deviceInfo {
-	if !containsLetter(s) {
-		return nil
-	}
-	return &deviceInfo{
-		ua:     s,
-		device: parseDeviceUA(s),
-		client: parseClientUA(s),
-		os:     parseOsUA(s),
-		bot:    parseBotUA(s),
-	}
-}
-
-func parseBotUA(ua string) *botResult {
-	if ok, _ := allBotsReStandardMatch().MatchString(ua); ok {
-		for _, m := range botsReList {
-			if m.re.MatchString(ua) {
-				return &botResult{
-					name:         m.name,
-					category:     m.category,
-					url:          m.url,
-					producerName: m.producerName,
-					producerURL:  m.producerURL,
-				}
-			}
-		}
-		return nil
-	}
-	return nil
-}
-
-func parseVendorUA(s string) string {
-	if vendorAllRe.MatchString(s) {
-		for _, r := range vendorAll {
-			if r.re.MatchString(s) {
-				return r.name
-			}
-		}
-	}
-	return ""
-}
-
-func parseOsUA(s string) *osResult {
+func parseOsUA(s string, m *models.Model) {
 	if osAllRe.MatchString(s) {
 		for _, e := range osAll {
 			if e.re.MatchString(s) {
@@ -81,227 +70,149 @@ func parseOsUA(s string) *osResult {
 						version = e.re.FirstSubmatch(s)
 					}
 				}
-				return &osResult{
-					name:    e.name,
-					version: version,
-				}
+				m.Os = []byte(e.name)
+				m.OsVersion = []byte(version)
+				return
 			}
 		}
 	}
-	return nil
 }
 
-func parseDeviceUA(s string) *deviceResult {
+var (
+	devices = [][]byte{
+		[]byte("Mobile"),
+		[]byte("Tablet"),
+		[]byte("Desktop"),
+	}
+)
+
+func parseDeviceUA(s string, m *models.Model) {
 	{
 		// find cameras
 		if deviceCameraAllRe.MatchString(s) {
-			return parseDeviceBase("Mobile", s, deviceCameraAll)
+			m.Device = devices[0]
+			return
 		}
 	}
 	{
 		// find car browsers
 		if deviceCarAllRe.MatchString(s) {
-			return parseDeviceBase("Tablet", s, deviceCarAll)
+			m.Device = devices[1]
+			return
 		}
 	}
 	{
 		// find consoles
 		if deviceConsoleAllRe.MatchString(s) {
-			return parseDeviceBase("Desktop", s, deviceConsoleAll)
+			m.Device = devices[2]
+			return
 		}
 	}
 	{
 		// find mobiles
 		if deviceMobileAllRe.MatchString(s) {
-			return parseDeviceBase("Mobile", s, deviceMobileAll)
+			m.Device = devices[0]
+			return
 		}
 	}
 	{
 		// find notebooks
 		if deviceNotebookAllRe.MatchString(s) {
-			return parseDeviceBase("Tablet", s, deviceNotebookAll)
+			m.Device = devices[1]
+			return
 		}
 	}
 	{
 		// find portable media player
 		if devicePortableMediaPlayerAllRe.MatchString(s) {
-			return parseDeviceBase("Mobile", s, devicePortableMediaPlayerAll)
+			m.Device = devices[0]
+			return
 		}
 	}
 	{
 		// find shell tv
 		if deviceIsShellTV().MatchString(s) {
-			return parseDeviceBase("Desktop", s, deviceShellAll)
+			m.Device = devices[2]
+			return
 		}
 	}
 	{
 		// find tv
 		if deviceIsTVRe().MatchString(s) {
-			return parseDeviceBase("Desktop", s, deviceTVAll)
+			m.Device = devices[2]
+			return
 		}
 	}
-	return nil
 }
 
-func parseDeviceBase(kind, s string, ls []*deviceRe) *deviceResult {
-	for _, e := range ls {
-		if e.re.MatchString(s) {
-			d := &deviceResult{
-				model:   e.model,
-				company: e.company,
-				device:  kind,
-			}
-			if len(e.models) > 0 {
-				for _, m := range e.models {
-					if m.re.MatchString(s) {
-						d.model = m.model
-						d.model = strings.Replace(d.model, "$1", m.re.FirstSubmatch(s), -1)
-					}
-				}
-			}
-			return d
-		}
-	}
-	return nil
-}
-
-func parseClientUA(s string) *clientResult {
+func parseClientUA(s string, m *models.Model) {
 	{
 		// find browsers
 		if clientBrowserAllRe.MatchString(s) {
-			return parseClientBase(s, clientBrowserAll)
+			parseClientBase(s, m, clientBrowserAll)
+			return
 		}
 	}
 	{
 		// find feed readers
 		if clientFeedReaderAllRe.MatchString(s) {
-			return parseClientBase(s, clientFeedReaderAll)
+			parseClientBase(s, m, clientFeedReaderAll)
+			return
 		}
 	}
 	{
 		// find libraries
 		if clientLibraryAllRe.MatchString(s) {
-			return parseClientBase(s, clientLibraryAll)
+			parseClientBase(s, m, clientLibraryAll)
+			return
 		}
 	}
 	{
 		// find media players
 		if clientMediaPlayerAllRe.MatchString(s) {
-			return parseClientBase(s, clientMediaPlayerAll)
+			parseClientBase(s, m, clientMediaPlayerAll)
+			return
 		}
 	}
 	{
 		// find mobile apps
 		if clientMobileAppAllRe.MatchString(s) {
-			return parseClientBase(s, clientMobileAppAll)
+			parseClientBase(s, m, clientMobileAppAll)
+			return
 		}
 	}
 	{
 		if clientPimAllRe.MatchString(s) {
-			return parseClientBase(s, clientPimAll)
+			parseClientBase(s, m, clientPimAll)
+			return
 		}
 	}
-	return nil
 }
 
-func parseClientBase(s string, ls []*clientRe) *clientResult {
+func parseClientBase(s string, m *models.Model, ls []*clientRe) {
 	for _, e := range ls {
 		if e.re.MatchString(s) {
-			d := &clientResult{
-				kind:    e.kind,
-				name:    e.name,
-				version: e.version,
+			m.Browser = []byte(e.name)
+			if e.version == "$1" {
+				m.BrowserVersion = []byte(e.re.FirstSubmatch(s))
+			} else {
+				m.Browser = []byte(e.name)
 			}
-			if strings.Contains(d.version, "$1") {
-				d.version = strings.Replace(d.version, "$1", e.re.FirstSubmatch(s), -1)
-			}
-			return d
+			return
 		}
 	}
-	return nil
-}
-
-type botRe struct {
-	re           *ReMatch
-	name         string
-	category     string
-	url          string
-	producerName string
-	producerURL  string
-}
-
-type botResult struct {
-	name         string
-	category     string
-	url          string
-	producerName string
-	producerURL  string
 }
 
 type clientRe struct {
 	re      *ReMatch
 	name    string
 	version string
-	kind    string
-	url     string
-	engine  *clientEngine
-}
-
-type clientEngine struct {
-	def      string
-	versions map[string]string
-}
-
-type clientResult struct {
-	kind    string
-	name    string
-	version string
-}
-
-type deviceRe struct {
-	re      *ReMatch
-	model   string
-	device  string
-	company string
-	models  []*deviceModel
-}
-
-type deviceModel struct {
-	re    *ReMatch
-	model string
-}
-
-type deviceResult struct {
-	model   string
-	device  string
-	company string
 }
 
 type osRe struct {
 	re      *ReMatch
 	name    string
 	version string
-}
-type osResult struct {
-	name    string
-	version string
-}
-
-type vendorRe struct {
-	re   *ReMatch
-	name string
-}
-
-type vendorResult struct {
-	name string
-}
-
-type deviceInfo struct {
-	ua     string
-	device *deviceResult
-	client *clientResult
-	os     *osResult
-	bot    *botResult
 }
 
 func containsLetter(ua string) bool {
