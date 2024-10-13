@@ -20,7 +20,6 @@ import (
 func main() {
 	flag.Parse()
 	root := flag.Arg(0)
-	makeBot(root)
 	makeClient(root)
 	makeDevice(root)
 	makeOs(root)

@@ -41,22 +41,13 @@ func Parse(s string, m *models.Model) {
 	cache.Set([]byte(s), a)
 }
 
-func parseUA(s string, m *models.Model) bool {
+func parseUA(s string, m *models.Model) {
 	if !containsLetter(s) {
-		return false
-	}
-	if parseBotUA(s) {
-		return true
+		return
 	}
 	parseDeviceUA(s, m)
 	parseOsUA(s, m)
 	parseClientUA(s, m)
-	return false
-}
-
-func parseBotUA(ua string) (ok bool) {
-	ok, _ = allBotsReStandardMatch().MatchString(ua)
-	return
 }
 
 func parseOsUA(s string, m *models.Model) {
