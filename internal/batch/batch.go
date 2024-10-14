@@ -13,6 +13,8 @@ import (
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
+const ShardWidth = 1 << 20
+
 type KV interface {
 	Translate(field models.Field, value []byte) uint64
 }
@@ -24,6 +26,7 @@ type Batch struct {
 	key     encoding.Key
 	enc     encoding.Encoding
 	id      uint64
+	shard   uint64
 }
 
 func NewBatch(db *badger.DB) *Batch {
@@ -46,10 +49,16 @@ func NewBatch(db *badger.DB) *Batch {
 			return nil
 		})
 	})
+	b.shard = b.id / ShardWidth
 	return b
 }
 
 func (b *Batch) Add(tx KV, m *models.Model) error {
+	shard := (b.id + 1) / ShardWidth
+	if shard != b.shard {
+		// we havs changed shards. Persist the current batch before continuing
+		b.shard = shard
+	}
 	b.id++
 	id := b.id
 	domainHash := y.Hash(m.Domain)
