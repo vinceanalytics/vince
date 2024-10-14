@@ -103,7 +103,7 @@ func (db *Config) eventsLoop(cts context.Context) {
 	db.logger.Info("starting event processing loop")
 	ts := time.NewTicker(time.Second)
 	defer ts.Stop()
-	batch := batch.NewBatch()
+	batch := batch.NewBatch(db.db.Badger())
 	for {
 		select {
 		case <-cts.Done():

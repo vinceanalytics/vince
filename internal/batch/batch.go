@@ -1,6 +1,7 @@
 package batch
 
 import (
+	"encoding/binary"
 	"errors"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 )
 
 type KV interface {
-	RecordID() uint64
 	Translate(field models.Field, value []byte) uint64
 }
 
@@ -23,9 +23,10 @@ type Batch struct {
 	offsets []uint32
 	key     encoding.Key
 	enc     encoding.Encoding
+	id      uint64
 }
 
-func NewBatch() *Batch {
+func NewBatch(db *badger.DB) *Batch {
 	b := &Batch{
 		data:    make(map[encoding.Key]*roaring.BSI),
 		domains: make(map[uint32]uint64),
@@ -34,11 +35,23 @@ func NewBatch() *Batch {
 	// a lot of small allocations happens during batching. We pre allocate enough
 	// buffer of 32MB to cover majority of the cases.
 	b.enc.Grow(32 << 20)
+	db.View(func(txn *badger.Txn) error {
+		key := b.enc.TranslateSeq(models.Field_unknown)
+		it, err := txn.Get(key)
+		if err != nil {
+			return err
+		}
+		return it.Value(func(val []byte) error {
+			b.id = binary.BigEndian.Uint64(val)
+			return nil
+		})
+	})
 	return b
 }
 
 func (b *Batch) Add(tx KV, m *models.Model) error {
-	id := tx.RecordID()
+	b.id++
+	id := b.id
 	domainHash := y.Hash(m.Domain)
 	shard, ok := b.domains[domainHash]
 	if !ok {
@@ -128,6 +141,17 @@ func (b *Batch) Save(db *badger.DB) (err error) {
 		b.offsets = b.offsets[:0]
 		b.enc.Reset()
 	}()
+
+	// start by saving the current record id, even if some ops failed we will not
+	//  mess up search
+	seq := b.enc.Allocate(8)
+	binary.BigEndian.PutUint64(seq, b.id)
+
+	err = tx.Set(b.enc.TranslateSeq(models.Field_unknown), seq)
+	if err != nil {
+		return err
+	}
+
 	for k, v := range b.data {
 		err = b.saveTs(tx, k, v)
 		if err != nil {

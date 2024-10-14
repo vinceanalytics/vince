@@ -10,10 +10,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 )
 
-func (tx *Tx) RecordID() uint64 {
-	return tx.nextSeq(models.Field_unknown)
-}
-
 func (tx *Tx) Translate(field models.Field, value []byte) (id uint64) {
 	key := tx.enc.TranslateKey(field, value)
 	it, err := tx.tx.Get(key)
