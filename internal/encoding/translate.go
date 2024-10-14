@@ -3,11 +3,11 @@ package encoding
 import (
 	"encoding/binary"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/keys"
+	"github.com/vinceanalytics/vince/internal/models"
 )
 
-func (e *Encoding) TranslateKey(field v1.Field, value []byte) []byte {
+func (e *Encoding) TranslateKey(field models.Field, value []byte) []byte {
 	o := e.Allocate(6 + len(value))
 	copy(o, keys.TranslateKeyPrefix)
 	binary.BigEndian.PutUint32(o[2:], uint32(field))
@@ -15,7 +15,7 @@ func (e *Encoding) TranslateKey(field v1.Field, value []byte) []byte {
 	return o
 }
 
-func (e *Encoding) TranslateID(field v1.Field, id uint64) []byte {
+func (e *Encoding) TranslateID(field models.Field, id uint64) []byte {
 	o := e.Allocate(14)
 	copy(o, keys.TranslateIDPrefix)
 	binary.BigEndian.PutUint32(o[2:], uint32(field))
@@ -23,7 +23,7 @@ func (e *Encoding) TranslateID(field v1.Field, id uint64) []byte {
 	return o
 }
 
-func (e *Encoding) TranslateSeq(field v1.Field) []byte {
+func (e *Encoding) TranslateSeq(field models.Field) []byte {
 	o := e.Allocate(6)
 	copy(o, keys.TranslateSeqPrefix)
 	binary.BigEndian.PutUint32(o[2:], uint32(field))

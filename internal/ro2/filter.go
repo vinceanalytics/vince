@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	wq "github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -22,13 +22,13 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 					return Reject{}
 				}
 				return &Match{
-					Field:  v1.Field_city,
+					Field:  models.Field_city,
 					Op:     roaring.EQ,
 					Values: []int64{int64(code)},
 				}
 			}
 		default:
-			fd := v1.Field(v1.Field_value[f.Key])
+			fd := models.Field(models.Field_value[f.Key])
 			if fd == 0 {
 				return Reject{}
 			}
@@ -127,7 +127,7 @@ func (a And) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) 
 }
 
 type Match struct {
-	Field  v1.Field
+	Field  models.Field
 	Values []int64
 	Negate bool
 	Op     roaring.Operation

@@ -6,7 +6,6 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/y"
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
@@ -15,7 +14,7 @@ import (
 
 type KV interface {
 	RecordID() uint64
-	Translate(field v1.Field, value []byte) uint64
+	Translate(field models.Field, value []byte) uint64
 }
 
 type Batch struct {
@@ -43,68 +42,68 @@ func (b *Batch) Add(tx KV, m *models.Model) error {
 	domainHash := y.Hash(m.Domain)
 	shard, ok := b.domains[domainHash]
 	if !ok {
-		shard = tx.Translate(v1.Field_domain, m.Domain)
+		shard = tx.Translate(models.Field_domain, m.Domain)
 		b.domains[domainHash] = shard
 	}
 	ts := uint64(time.UnixMilli(m.Timestamp).Truncate(time.Minute).UnixMilli())
 	b.key.Time = ts
 	b.key.Shard = uint32(shard)
 	if m.Timestamp != 0 {
-		b.get(v1.Field_timestamp).SetValue(id, m.Timestamp)
+		b.get(models.Field_timestamp).SetValue(id, m.Timestamp)
 	}
 	if m.Id != 0 {
-		b.get(v1.Field_id).SetValue(id, int64(m.Id))
+		b.get(models.Field_id).SetValue(id, int64(m.Id))
 	}
 	if m.Bounce != 0 {
-		b.get(v1.Field_bounce).SetValue(id, int64(m.Bounce))
+		b.get(models.Field_bounce).SetValue(id, int64(m.Bounce))
 	}
 	if m.Session {
-		b.get(v1.Field_session).SetValue(id, 1)
+		b.get(models.Field_session).SetValue(id, 1)
 	}
 	if m.View {
-		b.get(v1.Field_view).SetValue(id, 1)
+		b.get(models.Field_view).SetValue(id, 1)
 	}
 	if m.Duration != 0 {
-		b.get(v1.Field_duration).SetValue(id, m.Duration)
+		b.get(models.Field_duration).SetValue(id, m.Duration)
 	}
 	if m.Duration != 0 {
-		b.get(v1.Field_city).SetValue(id, int64(m.City))
+		b.get(models.Field_city).SetValue(id, int64(m.City))
 	}
-	b.set(tx, v1.Field_browser, id, m.Browser)
-	b.set(tx, v1.Field_browser_version, id, m.BrowserVersion)
-	b.set(tx, v1.Field_country, id, m.Country)
-	b.set(tx, v1.Field_device, id, m.Device)
+	b.set(tx, models.Field_browser, id, m.Browser)
+	b.set(tx, models.Field_browser_version, id, m.BrowserVersion)
+	b.set(tx, models.Field_country, id, m.Country)
+	b.set(tx, models.Field_device, id, m.Device)
 	// only store bitmap for domain. Use bsi existence field.
-	b.get(v1.Field_domain).GetExistenceBitmap().Set(id)
-	b.set(tx, v1.Field_domain, id, m.Domain)
-	b.set(tx, v1.Field_entry_page, id, m.EntryPage)
-	b.set(tx, v1.Field_event, id, m.Event)
-	b.set(tx, v1.Field_exit_page, id, m.ExitPage)
-	b.set(tx, v1.Field_host, id, m.Host)
-	b.set(tx, v1.Field_os, id, m.Os)
-	b.set(tx, v1.Field_os_version, id, m.OsVersion)
-	b.set(tx, v1.Field_page, id, m.Page)
-	b.set(tx, v1.Field_referrer, id, m.Referrer)
-	b.set(tx, v1.Field_source, id, m.Source)
-	b.set(tx, v1.Field_utm_campaign, id, m.UtmCampaign)
-	b.set(tx, v1.Field_utm_content, id, m.UtmContent)
-	b.set(tx, v1.Field_utm_medium, id, m.UtmMedium)
-	b.set(tx, v1.Field_utm_source, id, m.UtmSource)
-	b.set(tx, v1.Field_utm_term, id, m.UtmTerm)
-	b.set(tx, v1.Field_subdivision1_code, id, m.Subdivision1Code)
-	b.set(tx, v1.Field_subdivision2_code, id, m.Subdivision2Code)
+	b.get(models.Field_domain).GetExistenceBitmap().Set(id)
+	b.set(tx, models.Field_domain, id, m.Domain)
+	b.set(tx, models.Field_entry_page, id, m.EntryPage)
+	b.set(tx, models.Field_event, id, m.Event)
+	b.set(tx, models.Field_exit_page, id, m.ExitPage)
+	b.set(tx, models.Field_host, id, m.Host)
+	b.set(tx, models.Field_os, id, m.Os)
+	b.set(tx, models.Field_os_version, id, m.OsVersion)
+	b.set(tx, models.Field_page, id, m.Page)
+	b.set(tx, models.Field_referrer, id, m.Referrer)
+	b.set(tx, models.Field_source, id, m.Source)
+	b.set(tx, models.Field_utm_campaign, id, m.UtmCampaign)
+	b.set(tx, models.Field_utm_content, id, m.UtmContent)
+	b.set(tx, models.Field_utm_medium, id, m.UtmMedium)
+	b.set(tx, models.Field_utm_source, id, m.UtmSource)
+	b.set(tx, models.Field_utm_term, id, m.UtmTerm)
+	b.set(tx, models.Field_subdivision1_code, id, m.Subdivision1Code)
+	b.set(tx, models.Field_subdivision2_code, id, m.Subdivision2Code)
 
 	return nil
 }
 
-func (b *Batch) set(kv KV, field v1.Field, id uint64, value []byte) {
+func (b *Batch) set(kv KV, field models.Field, id uint64, value []byte) {
 	if len(value) == 0 {
 		return
 	}
 	b.get(field).SetValue(id, int64(kv.Translate(field, value)))
 }
 
-func (b *Batch) get(field v1.Field) *roaring.BSI {
+func (b *Batch) get(field models.Field) *roaring.BSI {
 	b.key.Field = field
 	bs, ok := b.data[b.key]
 	if !ok {
@@ -180,7 +179,7 @@ func month(ts time.Time) uint64 {
 }
 
 func (b *Batch) saveKey(tx *badger.Txn, key encoding.Key, value *roaring.BSI) error {
-	if key.Field == v1.Field_domain {
+	if key.Field == models.Field_domain {
 		return b.saveBitmap(
 			tx,
 			b.enc.Key(key),

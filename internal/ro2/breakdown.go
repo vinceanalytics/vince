@@ -5,9 +5,9 @@ import (
 	"math"
 	"slices"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/fieldset"
 	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -22,7 +22,7 @@ type Result struct {
 	Results []map[string]any `json:"results"`
 }
 
-func (o *Store) Breakdown(domain string, params *query.Query, metrics []string, field v1.Field) (*Result, error) {
+func (o *Store) Breakdown(domain string, params *query.Query, metrics []string, field models.Field) (*Result, error) {
 	return breakdown(
 		o,
 		findString(field),
@@ -51,8 +51,8 @@ func (o *Store) Breakdown(domain string, params *query.Query, metrics []string, 
 func (o *Store) BreakdownExitPages(domain string, params *query.Query) (*Result, error) {
 	return breakdown(
 		o,
-		findString(v1.Field_exit_page),
-		domain, params, []string{visitors, visits, pageviews}, v1.Field_exit_page, func(property string, values map[string]*Stats) *Result {
+		findString(models.Field_exit_page),
+		domain, params, []string{visitors, visits, pageviews}, models.Field_exit_page, func(property string, values map[string]*Stats) *Result {
 			a := &Result{
 				Results: make([]map[string]any, 0, len(values)),
 			}
@@ -84,7 +84,7 @@ func (o *Store) BreakdownExitPages(domain string, params *query.Query) (*Result,
 func (o *Store) BreakdownCity(domain string, params *query.Query, metrics []string) (*Result, error) {
 	return breakdown(o,
 		findCity,
-		domain, params, metrics, v1.Field_city, func(property string, values map[uint32]*Stats) *Result {
+		domain, params, metrics, models.Field_city, func(property string, values map[uint32]*Stats) *Result {
 			a := &Result{
 				Results: make([]map[string]any, 0, len(values)),
 			}
@@ -105,7 +105,7 @@ func (o *Store) BreakdownCity(domain string, params *query.Query, metrics []stri
 
 }
 
-func (o *Store) BreakdownVisitorsWithPercentage(domain string, params *query.Query, field v1.Field) (*Result, error) {
+func (o *Store) BreakdownVisitorsWithPercentage(domain string, params *query.Query, field models.Field) (*Result, error) {
 	return breakdown(o,
 		findString(field),
 		domain, params, []string{visitors}, field, func(property string, values map[string]*Stats) *Result {
@@ -135,7 +135,7 @@ func (o *Store) BreakdownVisitorsWithPercentage(domain string, params *query.Que
 
 }
 
-func findString(field v1.Field) func(*Tx, uint64) string {
+func findString(field models.Field) func(*Tx, uint64) string {
 	return func(tx *Tx, u uint64) string {
 		return tx.Find(field, u)
 	}
@@ -145,7 +145,7 @@ func findCity(_ *Tx, id uint64) uint32 {
 	return uint32(id)
 }
 
-func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain string, params *query.Query, metrics []string, field v1.Field,
+func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain string, params *query.Query, metrics []string, field models.Field,
 	fn func(property string, values map[T]*Stats) *Result) (*Result, error) {
 	values := make(map[T]*Stats)
 	fields := fieldset.From(metrics...)

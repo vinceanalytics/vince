@@ -4,14 +4,14 @@ import (
 	"encoding/binary"
 	"slices"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/keys"
+	"github.com/vinceanalytics/vince/internal/models"
 )
 
 type Key struct {
 	Time  uint64
 	Shard uint32
-	Field v1.Field
+	Field models.Field
 }
 
 type Encoding struct {

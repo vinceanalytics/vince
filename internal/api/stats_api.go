@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
@@ -69,7 +69,7 @@ func Timeseries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
-	if params.Property() == v1.Field_unknown {
+	if params.Property() == models.Field_unknown {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -77,15 +77,15 @@ func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		rs  *ro2.Result
 		err error
 	)
-	if params.Property() == v1.Field_city {
+	if params.Property() == models.Field_city {
 		rs, err = db.Get().BreakdownCity(domain, params, params.Metrics())
 	} else {
 		rs, err = db.Get().Breakdown(domain, params, params.Metrics(), params.Property())
-		if err == nil && params.Property() == v1.Field_subdivision1_code {
+		if err == nil && params.Property() == models.Field_subdivision1_code {
 			for i := range rs.Results {
 				m := rs.Results[i]
-				m["region"] = m[v1.Field_subdivision1_code.String()]
-				delete(m, v1.Field_subdivision1_code.String())
+				m["region"] = m[models.Field_subdivision1_code.String()]
+				delete(m, models.Field_subdivision1_code.String())
 			}
 		}
 	}

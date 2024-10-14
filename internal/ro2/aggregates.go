@@ -4,8 +4,8 @@ import (
 	"math"
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/fieldset"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
@@ -21,7 +21,7 @@ type Stats struct {
 
 func NewStats(fs fieldset.Set) *Stats {
 	var s Stats
-	if fs.Has(v1.Field_id) {
+	if fs.Has(models.Field_id) {
 		s.uid = roaring.NewBitmap()
 	}
 	return &s
@@ -99,34 +99,34 @@ func (s *Stats) Compute() {
 }
 
 func (d *Stats) Read(tx *Tx, shard, view uint64, match *roaring.Bitmap, fields fieldset.Set) error {
-	return fields.Each(func(f v1.Field) (err error) {
+	return fields.Each(func(f models.Field) (err error) {
 		switch f {
-		case v1.Field_view:
+		case models.Field_view:
 			count, err := tx.Count(shard, view, f, match)
 			if err != nil {
 				return err
 			}
 			d.PageViews += float64(count)
-		case v1.Field_session:
+		case models.Field_session:
 			count, err := tx.Count(shard, view, f, match)
 			if err != nil {
 				return err
 			}
 			d.Visits += float64(count)
 
-		case v1.Field_bounce:
+		case models.Field_bounce:
 			sum, err := tx.Sum(shard, view, f, match)
 			if err != nil {
 				return err
 			}
 			d.BounceRate += float64(sum)
-		case v1.Field_duration:
+		case models.Field_duration:
 			sum, err := tx.Sum(shard, view, f, match)
 			if err != nil {
 				return err
 			}
 			d.VisitDuration += float64(sum)
-		case v1.Field_id:
+		case models.Field_id:
 			uniq, err := tx.Transpose(shard, view, f, match)
 			if err != nil {
 				return err

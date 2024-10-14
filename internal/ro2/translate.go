@@ -7,14 +7,14 @@ import (
 	"os"
 
 	"github.com/dgraph-io/badger/v4"
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/models"
 )
 
 func (tx *Tx) RecordID() uint64 {
-	return tx.nextSeq(v1.Field_unknown)
+	return tx.nextSeq(models.Field_unknown)
 }
 
-func (tx *Tx) Translate(field v1.Field, value []byte) (id uint64) {
+func (tx *Tx) Translate(field models.Field, value []byte) (id uint64) {
 	key := tx.enc.TranslateKey(field, value)
 	it, err := tx.tx.Get(key)
 	if err == nil {
@@ -47,7 +47,7 @@ func (tx *Tx) Translate(field v1.Field, value []byte) (id uint64) {
 	return
 }
 
-func (tx *Tx) nextSeq(field v1.Field) uint64 {
+func (tx *Tx) nextSeq(field models.Field) uint64 {
 	key := tx.enc.TranslateSeq(field)
 	var id uint64
 	it, err := tx.tx.Get(key)
@@ -73,7 +73,7 @@ func (tx *Tx) nextSeq(field v1.Field) uint64 {
 	return id
 }
 
-func (tx *Tx) Find(field v1.Field, id uint64) (o string) {
+func (tx *Tx) Find(field models.Field, id uint64) (o string) {
 	key := tx.enc.TranslateID(field, id)
 	it, err := tx.tx.Get(key)
 	if err != nil {
@@ -89,7 +89,7 @@ func (tx *Tx) Find(field v1.Field, id uint64) (o string) {
 	return
 }
 
-func (tx *Tx) ids(field v1.Field, value []string) []int64 {
+func (tx *Tx) ids(field models.Field, value []string) []int64 {
 	if len(value) == 0 {
 		return []int64{}
 	}
@@ -111,7 +111,7 @@ func (tx *Tx) ids(field v1.Field, value []string) []int64 {
 	return o
 }
 
-func (tx *Tx) ID(field v1.Field, value []byte) (id uint64, ok bool) {
+func (tx *Tx) ID(field models.Field, value []byte) (id uint64, ok bool) {
 	key := tx.enc.TranslateKey(field, value)
 	it, err := tx.tx.Get(key)
 	if err != nil {
@@ -128,7 +128,7 @@ func (tx *Tx) ID(field v1.Field, value []byte) (id uint64, ok bool) {
 	return
 }
 
-func (tx *Tx) Search(field v1.Field, prefix []byte, f func([]byte, uint64)) {
+func (tx *Tx) Search(field models.Field, prefix []byte, f func([]byte, uint64)) {
 	key := tx.enc.TranslateKey(field, nil)
 	offset := len(key)
 	key = append(key, prefix...)

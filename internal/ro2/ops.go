@@ -15,6 +15,7 @@ import (
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/keys"
+	"github.com/vinceanalytics/vince/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
 )
@@ -162,7 +163,7 @@ func (db *DB) DeleteDomain(domain string) (err error) {
 
 func (db *DB) SeenFirstStats(domain string) (ok bool) {
 	db.View(func(tx *Tx) error {
-		_, ok = tx.ID(v1.Field_domain, []byte(domain))
+		_, ok = tx.ID(models.Field_domain, []byte(domain))
 		return nil
 	})
 	return

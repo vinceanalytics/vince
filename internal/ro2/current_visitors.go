@@ -3,7 +3,7 @@ package ro2
 import (
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -13,7 +13,7 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 	start := end.Add(-5 * time.Minute)
 	r := roaring.NewBitmap()
 	err = o.View(func(tx *Tx) error {
-		shard, ok := tx.ID(v1.Field_domain, []byte(domain))
+		shard, ok := tx.ID(models.Field_domain, []byte(domain))
 		if !ok {
 			return nil
 		}
@@ -26,7 +26,7 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 			if match.IsEmpty() {
 				return nil
 			}
-			uniq, err := tx.Transpose(shard, view, v1.Field_id, match)
+			uniq, err := tx.Transpose(shard, view, models.Field_id, match)
 			if err != nil {
 				return err
 			}
@@ -40,7 +40,7 @@ func (o *Store) CurrentVisitors(domain string) (visitors uint64, err error) {
 
 func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 	err = o.View(func(tx *Tx) error {
-		shard, ok := tx.ID(v1.Field_domain, []byte(domain))
+		shard, ok := tx.ID(models.Field_domain, []byte(domain))
 		if !ok {
 			return nil
 		}
@@ -54,7 +54,7 @@ func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 		if match.IsEmpty() {
 			return nil
 		}
-		uniq, err := tx.Unique(0, 0, v1.Field_id, match)
+		uniq, err := tx.Unique(0, 0, models.Field_id, match)
 		if err != nil {
 			return err
 		}

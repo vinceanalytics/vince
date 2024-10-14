@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/models"
 )
 
 type Query struct {
@@ -17,7 +17,7 @@ type Query struct {
 	metrics  []string
 	all      bool
 	realtime bool
-	property v1.Field
+	property models.Field
 }
 
 func New(u url.Values) *Query {
@@ -87,13 +87,13 @@ func earliest(a, b time.Time) time.Time {
 	return b
 }
 
-func (q *Query) Start() time.Time   { return q.period.Start }
-func (q *Query) From() string       { return q.period.Start.Format(time.DateOnly) }
-func (q *Query) End() time.Time     { return q.period.End }
-func (q *Query) To() string         { return q.period.End.Format(time.DateOnly) }
-func (q *Query) Interval() Interval { return q.period.Interval }
-func (q *Query) Filter() Filters    { return q.filter }
-func (q *Query) Metric() string     { return q.metric }
-func (q *Query) Metrics() []string  { return q.metrics }
-func (q *Query) Compare() *Period   { return q.cmp }
-func (q *Query) Property() v1.Field { return q.property }
+func (q *Query) Start() time.Time       { return q.period.Start }
+func (q *Query) From() string           { return q.period.Start.Format(time.DateOnly) }
+func (q *Query) End() time.Time         { return q.period.End }
+func (q *Query) To() string             { return q.period.End.Format(time.DateOnly) }
+func (q *Query) Interval() Interval     { return q.period.Interval }
+func (q *Query) Filter() Filters        { return q.filter }
+func (q *Query) Metric() string         { return q.metric }
+func (q *Query) Metrics() []string      { return q.metrics }
+func (q *Query) Compare() *Period       { return q.cmp }
+func (q *Query) Property() models.Field { return q.property }
