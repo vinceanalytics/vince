@@ -27,6 +27,7 @@ var (
 	userSettings  = template.Must(look("app").ParseFS(templateData, "templates/auth/settings.html"))
 	newAPIKey     = template.Must(look("focus").ParseFS(templateData, "templates/auth/new_api_key.html"))
 	addSnippet    = template.Must(look("focus").ParseFS(templateData, "templates/site/snippet.html"))
+	newGoal       = template.Must(look("focus").ParseFS(templateData, "templates/site/new_goal.html"))
 
 	e404 = template.Must(look("focus").ParseFS(templateData, "templates/error/404.html"))
 	e500 = template.Must(look("focus").ParseFS(templateData, "templates/error/500.html"))

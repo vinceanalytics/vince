@@ -183,6 +183,12 @@ func run(config *v1.Config) {
 			Then(web.CreateSharedLink),
 	))
 
+	mux.HandleFunc("GET /{domain}/goals/new", db.Wrap(
+		sites.
+			With(plug.CSRF).
+			Then(web.NewGoalForm),
+	))
+
 	mux.HandleFunc("/{domain}/make-public", db.Wrap(
 		sites.
 			Then(web.MakePublic),

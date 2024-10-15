@@ -16,6 +16,10 @@ import (
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
 
+func NewGoalForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	db.HTML(w, newGoal, nil)
+}
+
 func Status(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	body := "WAITING"
 	if db.Get().SeenFirstStats(db.CurrentSite().Domain) {
