@@ -21,6 +21,12 @@ message Site {
   bool public = 3;
   repeated Share shares = 4;
   bool locked = 5;
+  repeated Goal goals = 6;
+}
+
+message Goal {
+  string name = 1;
+  string path = 2;
 }
 
 message Share {
