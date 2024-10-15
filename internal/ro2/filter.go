@@ -5,8 +5,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/vinceanalytics/vince/internal/bsi"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
+	"github.com/vinceanalytics/vince/internal/util/hash"
 	wq "github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -23,7 +25,7 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				}
 				return &Match{
 					Field:  models.Field_city,
-					Op:     roaring.EQ,
+					Op:     bsi.EQ,
 					Values: []int64{int64(code)},
 				}
 			}
@@ -35,14 +37,14 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 
 			switch f.Op {
 			case "is", "is_not":
-				values := tx.ids(fd, f.Value)
-				if len(values) == 0 {
-					return Reject{}
+				values := make([]int64, len(f.Value))
+				for i := range f.Value {
+					values[i] = int64(hash.Sum32([]byte(f.Value[i])))
 				}
 				a = append(a, &Match{
 					Field:  fd,
 					Negate: f.Op == "is_not",
-					Op:     roaring.EQ,
+					Op:     bsi.EQ,
 					Values: values,
 				})
 			case "matches", "does_not_match":
@@ -50,18 +52,15 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				for _, source := range f.Value {
 					prefix, exact := searchPrefix([]byte(source))
 					if exact {
-						id, ok := tx.ID(fd, []byte(source))
-						if ok {
-							values = append(values, int64(id))
-						}
+						values = append(values, int64(hash.Sum32([]byte(source))))
 					} else {
 						re, err := regexp.Compile(source)
 						if err != nil {
 							return Reject{}
 						}
-						tx.Search(fd, prefix, func(b []byte, u uint64) {
+						tx.Search(fd, prefix, func(b []byte) {
 							if re.Match(b) {
-								values = append(values, int64(u))
+								values = append(values, int64(hash.Sum32(b)))
 							}
 						})
 					}
@@ -72,7 +71,7 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				a = append(a, &Match{
 					Field:  fd,
 					Negate: f.Op == "does_not_match",
-					Op:     roaring.EQ,
+					Op:     bsi.EQ,
 					Values: values,
 				})
 			case "contains", "does_not_contain":
@@ -81,15 +80,15 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				if err != nil {
 					return Reject{}
 				}
-				tx.Search(fd, []byte{}, func(b []byte, u uint64) {
+				tx.Search(fd, []byte{}, func(b []byte) {
 					if re.Match(b) {
-						values = append(values, int64(u))
+						values = append(values, int64(hash.Sum32(b)))
 					}
 				})
 				a = append(a, &Match{
 					Field:  fd,
 					Negate: f.Op == "does_not_contain",
-					Op:     roaring.EQ,
+					Op:     bsi.EQ,
 					Values: values,
 				})
 			default:
@@ -130,23 +129,20 @@ type Match struct {
 	Field  models.Field
 	Values []int64
 	Negate bool
-	Op     roaring.Operation
+	Op     bsi.Operation
 }
 
 func (m *Match) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) (b *roaring.Bitmap) {
-	rtx.Bitmap(shard, view, m.Field, func(bs *roaring.BSI) {
-		b = m.apply(bs, columns)
-		if m.Negate {
-			b = bs.GetExistenceBitmap().Clone()
-			b.AndNot(m.apply(bs, columns))
-		} else {
-			b = m.apply(bs, columns)
-		}
-	})
-	return b
+	bs := rtx.Bitmap(shard, view, m.Field)
+	if m.Negate {
+		b = bs.GetExistenceBitmap().Clone()
+		b.AndNot(m.apply(bs, columns))
+		return b
+	}
+	return m.apply(bs, columns)
 }
 
-func (m *Match) apply(bs *roaring.BSI, columns *roaring.Bitmap) *roaring.Bitmap {
+func (m *Match) apply(bs *bsi.BSI, columns *roaring.Bitmap) *roaring.Bitmap {
 	if len(m.Values) == 1 {
 		m := bs.CompareValue(0, m.Op, m.Values[0], 0, bs.GetExistenceBitmap())
 		return roaring.And(m, columns)

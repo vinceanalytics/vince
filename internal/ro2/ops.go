@@ -163,7 +163,9 @@ func (db *DB) DeleteDomain(domain string) (err error) {
 
 func (db *DB) SeenFirstStats(domain string) (ok bool) {
 	db.View(func(tx *Tx) error {
-		_, ok = tx.ID(models.Field_domain, []byte(domain))
+		key := tx.enc.TranslateKey(models.Field_domain, []byte(domain))
+		_, err := tx.tx.Get(key)
+		ok = err == nil
 		return nil
 	})
 	return

@@ -118,7 +118,9 @@ func (b *BSI) GetValue(columnID uint64) (value int64, exists bool) {
 type action func(t *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.WaitGroup)
 
 func parallelExecutor(parallelism int, t *task, e action, foundSet *Bitmap) *Bitmap {
-
+	if foundSet == nil {
+		return roaring.NewBitmap()
+	}
 	var n int = parallelism
 	if n == 0 {
 		n = runtime.NumCPU()
@@ -347,7 +349,11 @@ func (b *BSI) Sum(foundSet *Bitmap) (sum int64, count uint64) {
 }
 
 func (b *BSI) Extract(foundSet *Bitmap) map[uint64]int64 {
-	match := roaring.And(b.ex(), foundSet)
+	ex := b.ex()
+	if ex == nil {
+		return map[uint64]int64{}
+	}
+	match := roaring.And(ex, foundSet)
 	result := make(map[uint64]int64, match.GetCardinality())
 	for i := 0; i < 64; i++ {
 		e := b.get(i)

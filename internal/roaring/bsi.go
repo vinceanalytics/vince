@@ -55,6 +55,20 @@ func NewDefaultBSI() *BSI {
 	return NewBSI(int64(0), int64(0))
 }
 
+func (b *BSI) Each(f func(idx byte, bs *Bitmap) error) error {
+	err := f(0, b.eBM)
+	if err != nil {
+		return err
+	}
+	for i := range b.bA {
+		err := f(byte(i)+1, b.bA[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (b *BSI) Reset() {
 	clear(b.bA)
 	b.bA = b.bA[:0]

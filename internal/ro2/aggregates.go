@@ -102,35 +102,19 @@ func (d *Stats) Read(tx *Tx, shard, view uint64, match *roaring.Bitmap, fields f
 	return fields.Each(func(f models.Field) (err error) {
 		switch f {
 		case models.Field_view:
-			count, err := tx.Count(shard, view, f, match)
-			if err != nil {
-				return err
-			}
+			count := tx.Count(shard, view, f, match)
 			d.PageViews += float64(count)
 		case models.Field_session:
-			count, err := tx.Count(shard, view, f, match)
-			if err != nil {
-				return err
-			}
+			count := tx.Count(shard, view, f, match)
 			d.Visits += float64(count)
-
 		case models.Field_bounce:
-			sum, err := tx.Sum(shard, view, f, match)
-			if err != nil {
-				return err
-			}
+			sum := tx.Sum(shard, view, f, match)
 			d.BounceRate += float64(sum)
 		case models.Field_duration:
-			sum, err := tx.Sum(shard, view, f, match)
-			if err != nil {
-				return err
-			}
+			sum := tx.Sum(shard, view, f, match)
 			d.VisitDuration += float64(sum)
 		case models.Field_id:
-			uniq, err := tx.Transpose(shard, view, f, match)
-			if err != nil {
-				return err
-			}
+			uniq := tx.Transpose(shard, view, f, match)
 			d.uid.Or(uniq)
 		}
 		return

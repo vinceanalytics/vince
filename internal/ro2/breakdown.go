@@ -152,10 +152,7 @@ func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain str
 
 	err := o.View(func(tx *Tx) error {
 		return tx.Select(domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring.Bitmap) error {
-			all, err := tx.TransposeSet(shard, view, field, columns)
-			if err != nil {
-				return err
-			}
+			all := tx.TransposeSet(shard, view, field, columns)
 			m := roaring.NewBitmap()
 			for id, v := range all {
 				key := tr(tx, uint64(id))

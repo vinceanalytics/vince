@@ -100,6 +100,14 @@ var (
 	}
 )
 
+func (f Field) TextIndex() byte {
+	return byte(f - Field_browser)
+}
+
+func TextIndex(i int) Field {
+	return Field(i) + Field_browser
+}
+
 func (f Field) String() string {
 	return Field_name[uint8(f)]
 }

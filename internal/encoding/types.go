@@ -10,7 +10,12 @@ import (
 
 type Key struct {
 	Time  uint64
-	Shard uint32
+	Field models.Field
+}
+
+type ShardKey struct {
+	Time  uint64
+	Shard uint64
 	Field models.Field
 }
 
@@ -23,12 +28,23 @@ func (e *Encoding) Reset() {
 	e.data = e.data[:0]
 }
 
-func (e *Encoding) Key(key Key) []byte {
-	b := e.Allocate(17)
+const BitmapKeySize = 1 + //prefix
+	8 + //shard
+	8 + // timestamp
+	1 + // field
+	1 // index
+
+func (e *Encoding) Bitmap(ts, shard uint64, field models.Field, index byte) []byte {
+	return Bitmap(ts, shard, field, index, e.Allocate(BitmapKeySize))
+}
+
+func Bitmap(ts, shard uint64, field models.Field, index byte, buf []byte) []byte {
+	b := buf
 	copy(b, keys.DataPrefix)
-	binary.BigEndian.PutUint64(b[1:], key.Time)
-	binary.BigEndian.PutUint32(b[9:], key.Shard)
-	binary.BigEndian.PutUint32(b[13:], uint32(key.Field))
+	binary.BigEndian.PutUint64(b[1:], shard)
+	binary.BigEndian.PutUint64(b[1+8:], ts)
+	b[1+8+8] = byte(field)
+	b[1+8+8+1] = index
 	return b
 }
 
