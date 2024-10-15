@@ -129,7 +129,7 @@ func (tx *Tx) Bitmap(shard, view uint64, field models.Field) *bsi.BSI {
 	if b, ok := tx.bsi[key]; ok {
 		return b
 	}
-	b := bsi.NewKV(tx.tx, view, shard, field)
+	b := NewKV(tx, view, shard, field)
 	tx.bsi[key] = b
 	return b
 }

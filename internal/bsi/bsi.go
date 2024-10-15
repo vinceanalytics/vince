@@ -33,7 +33,7 @@ func NewBitmap() *Bitmap {
 // It depends upon the bitmap libraries.  It is not thread safe, so
 // upstream concurrency guards must be provided.
 type BSI struct {
-	source Source
+	Source Source
 }
 
 // NewBSI constructs a new BSI. Note that it is your responsibility to ensure that
@@ -48,7 +48,7 @@ func NewBSI(maxValue int64, minValue int64) *BSI {
 	for i := range bitsz + 1 {
 		src.GetOrCreate(i)
 	}
-	return &BSI{source: src}
+	return &BSI{Source: src}
 }
 
 // NewDefaultBSI constructs an auto-sized BSI
@@ -57,7 +57,7 @@ func NewDefaultBSI() *BSI {
 }
 
 func (b *BSI) Reset() {
-	if s, ok := b.source.(Reset); ok {
+	if s, ok := b.Source.(Reset); ok {
 		s.Reset()
 	}
 }
@@ -424,17 +424,17 @@ func (b *BSI) String() string {
 }
 
 func (b *BSI) muex() *roaring.Bitmap {
-	return b.source.GetOrCreate(0)
+	return b.Source.GetOrCreate(0)
 }
 
 func (b *BSI) ex() *roaring.Bitmap {
-	return b.source.Get(0)
+	return b.Source.Get(0)
 }
 
 func (b *BSI) must(i int) *roaring.Bitmap {
-	return b.source.GetOrCreate(i + 1)
+	return b.Source.GetOrCreate(i + 1)
 }
 
 func (b *BSI) get(i int) *roaring.Bitmap {
-	return b.source.Get(i + 1)
+	return b.Source.Get(i + 1)
 }
