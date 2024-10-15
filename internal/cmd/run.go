@@ -368,9 +368,7 @@ func run(config *v1.Config) {
 	svr := &http.Server{
 		Addr:        config.Listen,
 		BaseContext: func(l net.Listener) context.Context { return ctx },
-		Handler: plug.Compress(
-			plug.Static(mux),
-		),
+		Handler:     plug.Static(mux),
 	}
 	if config.Acme {
 		slog.Info("Auto tls enabled, configuring tls", "email", config.AcmeEmail, "domain", config.AcmeDomain)
