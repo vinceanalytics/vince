@@ -201,7 +201,7 @@ func (b *Batch) Save(db *badger.DB) (err error) {
 		f := models.TextIndex(idx)
 		for i := range v {
 			sum := hash.Sum32(v[i])
-			id := b.enc.TranslateID(f, uint64(sum))
+			id := b.enc.TranslateID(f, sum)
 			err := set(b.enc.TranslateKey(f, v[i]), nil)
 			if err != nil {
 				return fmt.Errorf("saving translation key %w", err)

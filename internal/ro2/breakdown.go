@@ -137,7 +137,7 @@ func (o *Store) BreakdownVisitorsWithPercentage(domain string, params *query.Que
 
 func findString(field models.Field) func(*Tx, uint64) string {
 	return func(tx *Tx, u uint64) string {
-		return tx.Find(field, u)
+		return tx.Find(field, uint32(u))
 	}
 }
 

@@ -8,24 +8,24 @@ import (
 )
 
 func (e *Encoding) TranslateKey(field models.Field, value []byte) []byte {
-	o := e.Allocate(6 + len(value))
+	o := e.Allocate(2 + 1 + len(value))
 	copy(o, keys.TranslateKeyPrefix)
-	binary.BigEndian.PutUint32(o[2:], uint32(field))
-	copy(o[6:], value)
+	o[2] = byte(field)
+	copy(o[3:], value)
 	return o
 }
 
-func (e *Encoding) TranslateID(field models.Field, id uint64) []byte {
-	o := e.Allocate(14)
+func (e *Encoding) TranslateID(field models.Field, id uint32) []byte {
+	o := e.Allocate(2 + 1 + 4)
 	copy(o, keys.TranslateIDPrefix)
-	binary.BigEndian.PutUint32(o[2:], uint32(field))
-	binary.BigEndian.PutUint64(o[6:], id)
+	o[2] = byte(field)
+	binary.BigEndian.PutUint32(o[3:], id)
 	return o
 }
 
 func (e *Encoding) TranslateSeq(field models.Field) []byte {
-	o := e.Allocate(6)
+	o := e.Allocate(3)
 	copy(o, keys.TranslateSeqPrefix)
-	binary.BigEndian.PutUint32(o[2:], uint32(field))
+	o[2] = byte(field)
 	return o
 }

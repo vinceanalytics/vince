@@ -8,7 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 )
 
-func (tx *Tx) Find(field models.Field, id uint64) (o string) {
+func (tx *Tx) Find(field models.Field, id uint32) (o string) {
 	key := tx.enc.TranslateID(field, id)
 	it, err := tx.tx.Get(key)
 	if err != nil {
