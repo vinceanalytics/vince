@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strconv"
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -18,6 +19,42 @@ import (
 
 func NewGoalForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, newGoal, nil)
+}
+
+func CreateGoal(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	g := &v1.Goal{
+		Name: r.FormValue("event_name"),
+		Path: r.FormValue("page_path"),
+	}
+	if g.Name == "" && g.Path == "" {
+		db.SaveCsrf(w)
+		msg := "event_name or page_path must be set"
+		db.HTML(w, newGoal, map[string]any{
+			"error_event_name": msg,
+			"error_page_path":  msg,
+		})
+		return
+	}
+	site := db.CurrentSite()
+	site.Goals = append(site.Goals, g)
+	db.Get().Save(site)
+	db.Success("Goal was successfully created")
+	db.SaveSession(w)
+	to := fmt.Sprintf("/%s/settings#goals", url.PathEscape(site.Domain))
+	http.Redirect(w, r, to, http.StatusFound)
+}
+
+func DeleteGoal(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	site := db.CurrentSite()
+	idx, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err == nil {
+		site.Goals = slices.Delete(site.Goals, idx, idx+1)
+	}
+	db.Get().Save(site)
+	db.Success("Goal was successfully deleted")
+	db.SaveSession(w)
+	to := fmt.Sprintf("/%s/settings#goals", url.PathEscape(site.Domain))
+	http.Redirect(w, r, to, http.StatusFound)
 }
 
 func Status(db *db.Config, w http.ResponseWriter, r *http.Request) {

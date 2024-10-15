@@ -183,6 +183,17 @@ func run(config *v1.Config) {
 			Then(web.CreateSharedLink),
 	))
 
+	mux.HandleFunc("GET /{domain}/goals/delete", db.Wrap(
+		sites.
+			Then(web.DeleteGoal),
+	))
+
+	mux.HandleFunc("POST /{domain}/goals", db.Wrap(
+		sites.
+			With(plug.VerifyCSRF).
+			Then(web.CreateGoal),
+	))
+
 	mux.HandleFunc("GET /{domain}/goals/new", db.Wrap(
 		sites.
 			With(plug.CSRF).

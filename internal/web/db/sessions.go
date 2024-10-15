@@ -151,6 +151,17 @@ func (c *Config) Context(base map[string]any) map[string]any {
 		if len(share) > 0 {
 			site["share"] = share
 		}
+		goals := make([]string, 0, len(s.Goals))
+		for _, g := range s.Goals {
+			if g.Path != "" {
+				goals = append(goals, "Visit "+g.Path)
+			} else {
+				goals = append(goals, g.Name)
+			}
+		}
+		if len(goals) > 0 {
+			site["goals"] = goals
+		}
 		base["site"] = site
 	}
 
