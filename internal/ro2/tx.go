@@ -22,6 +22,8 @@ type Tx struct {
 	enc     encoding.Encoding
 	bsi     map[uint32]*bsi.BSI
 	bitmaps []*roaring.Bitmap
+	kv      [31]bsi.BSI
+	pos     int
 }
 
 var txPool = &sync.Pool{New: func() any {
@@ -60,6 +62,8 @@ func (tx *Tx) Release() {
 	clear(tx.bsi)
 	clear(tx.bitmaps)
 	tx.bitmaps = tx.bitmaps[:0]
+	clear(tx.kv[:])
+	tx.pos = 0
 }
 
 func (tx *Tx) Select(domain string, start,
@@ -139,7 +143,7 @@ func (tx *Tx) Bitmap(shard, view uint64, field models.Field) *bsi.BSI {
 	if b, ok := tx.bsi[kh]; ok {
 		return b
 	}
-	b := NewKV(tx, key)
+	b := tx.newKv(key)
 	tx.bsi[kh] = b
 	return b
 }

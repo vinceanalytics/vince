@@ -7,7 +7,7 @@ import (
 
 type KV []*roaring.Bitmap
 
-func NewKV(tx *Tx, key []byte) *bsi.BSI {
+func (tx *Tx) newKv(key []byte) *bsi.BSI {
 	pos := len(tx.bitmaps)
 	prefix := key[:len(key)-1]
 	it := tx.Iter()
@@ -22,6 +22,12 @@ func NewKV(tx *Tx, key []byte) *bsi.BSI {
 		})
 	}
 	kv := tx.bitmaps[pos:len(tx.bitmaps)]
+	if tx.pos < len(tx.kv) {
+		b := &tx.kv[tx.pos]
+		tx.pos++
+		b.Source = KV(kv)
+		return b
+	}
 	return &bsi.BSI{Source: KV(kv)}
 }
 
