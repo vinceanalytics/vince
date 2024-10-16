@@ -7,10 +7,13 @@ import (
 )
 
 func TestRe(t *testing.T) {
-	re, err := New()
+	got, err := Search("mail.126.com")
 	require.NoError(t, err)
+	require.Equal(t, "126 Mail", string(got))
+}
 
-	got, err := re.Search("mail.126.com")
-	require.NoError(t, err)
-	require.Equal(t, "126 Mail", got)
+func BenchmarkNew(b *testing.B) {
+	for range b.N {
+		New()
+	}
 }

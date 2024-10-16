@@ -7,11 +7,23 @@ import (
 
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/vinceanalytics/vince/fb/geo"
+	"github.com/vinceanalytics/vince/fb/ref"
 	"github.com/vinceanalytics/vince/fb/ua"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
-//go:generate flatc --go geo.fbs ua.fbs
+//go:generate flatc --go geo.fbs ua.fbs ref.fbs
+
+func SerializeRef(refs []string, bsi []byte) []byte {
+	b := flatbuffers.NewBuilder(4 << 10)
+	_, refData := buildStrings(b, nil, refs, ref.RefStartRefVector)
+	bsiData := buildBytes(b, bsi, ref.RefStartBsiVector)
+	ref.RefStart(b)
+	ref.RefAddRef(b, refData)
+	ref.RefAddBsi(b, bsiData)
+	b.Finish(ref.RefEnd(b))
+	return b.FinishedBytes()
+}
 
 func SerializeAgent(device, os, osVersion, browser, browserVersion []byte) []byte {
 	size := len(device) + len(os) + len(osVersion) + len(browser) + len(browserVersion)

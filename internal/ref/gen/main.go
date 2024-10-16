@@ -2,20 +2,17 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"flag"
-	"fmt"
-	"go/format"
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"slices"
-	"sort"
 
 	"log"
 
-	"github.com/blevesearch/vellum"
+	"github.com/dgraph-io/badger/v4/y"
+	"github.com/vinceanalytics/vince/fb"
+	"github.com/vinceanalytics/vince/internal/roaring"
 	"gopkg.in/yaml.v2"
 )
 
@@ -96,77 +93,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var o bytes.Buffer
 	ls, all := data.Ref()
-	fmt.Fprintf(&o, `
-	package ref
-	var all_referrals =%#v
-	`, ls)
+	bsi := roaring.NewDefaultBSI()
 
-	result, err := format.Source(o.Bytes())
-	if err != nil {
-		log.Fatal(err)
-	}
-	os.WriteFile("generated.go", result, 0600)
-	o.Reset()
-	fs, err := vellum.New(&o, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	sort.Slice(all, func(i, j int) bool {
-		return bytes.Compare(all[i].Name, all[j].Name) == -1
-	})
 	domains := make([]string, 0, len(all))
 	for _, v := range all {
-		domains = append(domains, string(v.Name))
-		err = fs.Insert(v.Name, v.Index)
-		if err != nil {
-			log.Fatal(err)
-		}
+		bsi.SetValue(
+			uint64(y.Hash(v.Name)), int64(v.Index),
+		)
+
 	}
-	err = fs.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-	os.WriteFile("refs.fst", o.Bytes(), 0600)
+	out := fb.SerializeRef(ls, bsi.ToBuffer())
+	os.WriteFile("refs.fbs.bin", out, 0600)
 	slices.Sort(domains)
-
-	ds, _ := json.Marshal(domains)
-	err = os.WriteFile("../../tools/views/domains.json", ds, 0600)
-	if err != nil {
-		log.Fatal(err)
-	}
-	os.Mkdir("favicon", 0755)
-	seen := map[uint64]struct{}{}
-	for _, d := range all {
-		if _, ok := seen[d.Index]; ok {
-			continue
-		}
-		data := get(string(d.Name))
-		if len(data) == 0 {
-			continue
-		}
-		seen[d.Index] = struct{}{}
-		os.WriteFile(filepath.Join("favicon", ls[d.Index]), data, 0600)
-	}
-}
-
-var klient = &http.Client{}
-
-func get(domain string) []byte {
-	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain), nil)
-	res, err := klient.Do(req)
-	if err != nil {
-		return []byte{}
-	}
-	defer res.Body.Close()
-	if res.StatusCode == http.StatusOK {
-		var b bytes.Buffer
-		io.Copy(&b, res.Body)
-		if !bytes.Contains(b.Bytes(), []byte{137, 80, 78, 71, 13, 10, 26, 10}) {
-			return b.Bytes()
-		}
-	}
-	fmt.Println(">", domain)
-	return []byte{}
 }

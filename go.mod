@@ -6,7 +6,6 @@ require (
 	filippo.io/age v1.2.0
 	github.com/RoaringBitmap/roaring/v2 v2.3.5
 	github.com/VictoriaMetrics/fastcache v1.12.2
-	github.com/blevesearch/vellum v1.0.10
 	github.com/dchest/captcha v1.0.0
 	github.com/dgraph-io/badger/v4 v4.3.1
 	github.com/dgraph-io/ristretto v1.0.0
@@ -28,7 +27,6 @@ require (
 
 require (
 	github.com/bits-and-blooms/bitset v1.12.0 // indirect
-	github.com/blevesearch/mmap-go v1.0.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

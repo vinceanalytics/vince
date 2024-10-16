@@ -7,10 +7,11 @@ import (
 	"math/rand/v2"
 	"net/url"
 	"strings"
+	"sync"
 
-	"github.com/VictoriaMetrics/fastcache"
-	"github.com/blevesearch/vellum"
-	"github.com/blevesearch/vellum/levenshtein"
+	"github.com/dgraph-io/badger/v4/y"
+	"github.com/vinceanalytics/vince/fb/ref"
+	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
 //go:embed favicon
@@ -20,64 +21,55 @@ var Favicon, _ = fs.Sub(faviconData, "favicon")
 
 //go:generate go run gen/main.go
 
-//go:embed refs.fst
+//go:embed refs.fbs.bin
 var data []byte
 
 type Re struct {
-	cache *fastcache.Cache
-	fst   *vellum.FST
-	build *levenshtein.LevenshteinAutomatonBuilder
+	root  *ref.Ref
+	bsi   *roaring.BSI
+	mu    sync.RWMutex
+	cache map[uint32][]byte
 }
 
-var base = must()
+var base = New()
 
-func Search(uri string) (string, error) {
+func Search(uri string) ([]byte, error) {
 	return base.Search(uri)
 }
 
-func must() *Re {
-	re, err := New()
-	if err != nil {
-		panic(err)
-	}
-	return re
-}
+func New() *Re {
+	root := ref.GetRootAsRef(data, 0)
+	bsi := roaring.NewBSIFromBuffer(root.BsiBytes())
 
-func New() (*Re, error) {
-	fst, err := vellum.Load(data)
-	if err != nil {
-		return nil, err
-	}
-	lb, err := levenshtein.NewLevenshteinAutomatonBuilder(2, false)
-	if err != nil {
-		return nil, err
-	}
 	return &Re{
-		fst:   fst,
-		build: lb,
-		cache: fastcache.New(16 << 20),
-	}, nil
+		root:  root,
+		bsi:   bsi,
+		cache: make(map[uint32][]byte),
+	}
 }
 
-func (r *Re) Search(uri string) (string, error) {
+func (r *Re) Search(uri string) ([]byte, error) {
 	base, err := clean(uri)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if re := r.cache.Get(nil, []byte(base)); len(re) > 0 {
-		return string(re), nil
+	key := []byte(base)
+	hash := y.Hash(key)
+	r.mu.RLock()
+	cached, ok := r.cache[hash]
+	r.mu.RUnlock()
+	if ok {
+		return cached, nil
 	}
-	dfa, err := r.build.BuildDfa(base, 2)
-	if err != nil {
-		return "", fmt.Errorf("building dfa%w", err)
+	idx, ok := r.bsi.GetValue(uint64(hash))
+	if !ok {
+		return key, nil
 	}
-	it, err := r.fst.Search(dfa, nil, nil)
-	if err != nil {
-		return "", fmt.Errorf("searching dfa%w", err)
-	}
-	_, idx := it.Current()
-	r.cache.Set([]byte(base), []byte(all_referrals[idx]))
-	return all_referrals[idx], nil
+	value := r.root.Ref(int(idx))
+	r.mu.Lock()
+	r.cache[hash] = value
+	r.mu.Unlock()
+	return value, nil
 }
 
 func clean(r string) (string, error) {
@@ -93,6 +85,6 @@ func clean(r string) (string, error) {
 
 // Rand returns a random referrer. used in generating seeds dvents.
 func Rand() string {
-	n := rand.IntN(len(all_referrals))
-	return all_referrals[n]
+	n := rand.IntN(base.root.RefLength())
+	return string(base.root.Ref(n))
 }

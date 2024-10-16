@@ -1,0 +1,11 @@
+namespace ref;
+
+table Ref{
+    ref:[string];
+    bsi:[ubyte];
+}
+
+
+root_type Ref;
+
+

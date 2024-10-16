@@ -130,7 +130,7 @@ func (db *Config) parse(r *http.Request) (*models.Model, error) {
 	e.UtmContent = []byte(query.Get("utm_content"))
 	e.UtmTerm = []byte(query.Get("utm_term"))
 	ua2.Parse(req.userAgent, e)
-	e.Source = []byte(src)
+	e.Source = src
 	e.Referrer = []byte(ref)
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil
@@ -144,25 +144,25 @@ func sanitizeHost(s string) string {
 	return strings.TrimPrefix(strings.TrimSpace(s), "www.")
 }
 
-func refSource(q url.Values, u string) (xref, source string, err error) {
+func refSource(q url.Values, u string) (xref string, source []byte, err error) {
 	if !strings.HasPrefix(u, "http") {
 		u = "https://" + u
 	}
 	r, err := url.Parse(u)
 	if err != nil {
-		return "", "", err
+		return "", nil, err
 	}
 	r.Host = sanitizeHost(r.Host)
 	r.Path = strings.TrimSuffix(r.Path, "/")
 	xref = r.String()
-	source = q.Get("utm_source")
-	if source == "" {
-		source = q.Get("source")
+	source = []byte(q.Get("utm_source"))
+	if len(source) == 0 {
+		source = []byte(q.Get("source"))
 	}
-	if source == "" {
-		source = q.Get("ref")
+	if len(source) == 0 {
+		source = []byte(q.Get("ref"))
 	}
-	if source != "" {
+	if len(source) != 0 {
 		return
 	}
 	source, err = ref.Search(r.Host)
