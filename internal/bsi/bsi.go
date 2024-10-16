@@ -155,6 +155,9 @@ func (b *BSI) CompareValue(parallelism int, op Operation, valueOrStart, end int6
 	if foundSet == nil {
 		foundSet = b.ex()
 	}
+	if foundSet == nil {
+		return nil
+	}
 	// protect result against race conditions
 	var mu sync.Mutex
 	result := make([]*roaring.Bitmap, 0, runtime.NumCPU())

@@ -6,6 +6,9 @@ import (
 )
 
 func (ra *Bitmap) Batch() Batch {
+	if ra == nil {
+		return Batch{}
+	}
 	N := ra.keys.numKeys()
 	P := runtime.NumCPU()
 
