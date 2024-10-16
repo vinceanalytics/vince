@@ -126,10 +126,10 @@ func (a And) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) 
 }
 
 type Match struct {
-	Field  models.Field
 	Values []int64
-	Negate bool
 	Op     bsi.Operation
+	Field  models.Field
+	Negate bool
 }
 
 func (m *Match) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) (b *roaring.Bitmap) {

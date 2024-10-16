@@ -10,13 +10,13 @@ import (
 )
 
 type Stats struct {
-	Visitors,
-	Visits,
-	PageViews,
-	ViewsPerVisits,
-	BounceRate,
-	VisitDuration float64
-	uid *roaring.Bitmap
+	uid            *roaring.Bitmap
+	Visitors       float64
+	Visits         float64
+	PageViews      float64
+	ViewsPerVisits float64
+	BounceRate     float64
+	VisitDuration  float64
 }
 
 func NewStats(fs fieldset.Set) *Stats {
