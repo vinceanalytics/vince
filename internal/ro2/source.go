@@ -5,8 +5,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
-type KV []*roaring.Bitmap
-
 func (tx *Tx) newKv(key []byte) *bsi.BSI {
 	pos := len(tx.bitmaps)
 	prefix := key[:len(key)-1]
@@ -25,19 +23,8 @@ func (tx *Tx) newKv(key []byte) *bsi.BSI {
 	if tx.pos < len(tx.kv) {
 		b := &tx.kv[tx.pos]
 		tx.pos++
-		b.Source = KV(kv)
+		b.Source = bsi.KV(kv)
 		return b
 	}
-	return &bsi.BSI{Source: KV(kv)}
-}
-
-var _ bsi.Source = (*KV)(nil)
-
-func (kv KV) GetOrCreate(i int) *roaring.Bitmap { return nil }
-
-func (kv KV) Get(i int) *roaring.Bitmap {
-	if i < len(kv) {
-		return kv[i]
-	}
-	return nil
+	return &bsi.BSI{Source: bsi.KV(kv)}
 }

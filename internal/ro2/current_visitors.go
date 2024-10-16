@@ -41,7 +41,7 @@ func (o *Store) Visitors(domain string) (visitors uint64, err error) {
 			if match.IsEmpty() {
 				continue
 			}
-			uniq := tx.Transpose(0, 0, models.Field_id, match)
+			uniq := tx.Transpose(shard, 0, models.Field_id, match)
 			b.Or(uniq)
 		}
 		visitors = uint64(b.GetCardinality())

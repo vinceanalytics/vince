@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
+	"github.com/vinceanalytics/vince/internal/batch"
 	"github.com/vinceanalytics/vince/internal/bsi"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
@@ -98,7 +99,8 @@ func (tx *Tx) Shards() (n uint64) {
 			return nil
 		})
 	}
-	return n + 1
+	n = (n / batch.ShardWidth) + 1
+	return
 }
 
 func (tx *Tx) Sum(shard, view uint64, field models.Field, match *roaring.Bitmap) (sum int64) {
@@ -109,12 +111,7 @@ func (tx *Tx) Sum(shard, view uint64, field models.Field, match *roaring.Bitmap)
 
 func (tx *Tx) Transpose(shard, view uint64, field models.Field, match *roaring.Bitmap) (result *roaring.Bitmap) {
 	bs := tx.Bitmap(shard, view, field)
-	tr := bs.Extract(match)
-	result = roaring.NewBitmap()
-	for _, v := range tr {
-		result.Set(uint64(v))
-	}
-	return
+	return bs.Transpose(match)
 }
 
 func (tx *Tx) TransposeSet(shard, view uint64, field models.Field, match *roaring.Bitmap) (result map[int64][]uint64) {

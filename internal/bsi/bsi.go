@@ -79,7 +79,7 @@ func (b *BSI) GetCardinality() uint64 {
 
 // BitCount returns the number of bits needed to represent values.
 func (b *BSI) BitCount() int {
-	return 64
+	return b.Source.BitCount()
 }
 
 // SetValue sets a value for a given columnID.
@@ -102,7 +102,7 @@ func (b *BSI) GetValue(columnID uint64) (value int64, exists bool) {
 	if !exists {
 		return
 	}
-	for i := 0; i < 64; i++ {
+	for i := 0; i < b.BitCount(); i++ {
 		e := b.get(i)
 		if e == nil {
 			break
@@ -292,134 +292,6 @@ func (b *BSI) CompareValue(parallelism int, op Operation, valueOrStart, end int6
 	return roaring.FastOr(result...)
 }
 
-func (b *BSI) compareValue(op Operation, valueOrStart, end int64, batch []uint64, resultsChan chan *Bitmap, wg *sync.WaitGroup) {
-
-	defer wg.Done()
-
-	results := NewBitmap()
-
-	x := b.BitCount()
-	startIsNegative := x == 64 && uint64(valueOrStart)&(1<<uint64(x-1)) > 0
-	endIsNegative := x == 64 && uint64(end)&(1<<uint64(x-1)) > 0
-
-	for i := 0; i < len(batch); i++ {
-		cID := batch[i]
-		eq1, eq2 := true, true
-		lt1, lt2, gt1 := false, false, false
-		j := b.BitCount() - 1
-		isNegative := false
-		if x == 64 {
-			isNegative = b.get(j).Contains(cID)
-			j--
-		}
-		compStartValue := valueOrStart
-		compEndValue := end
-		if isNegative != startIsNegative {
-			compStartValue = ^valueOrStart + 1
-		}
-		if isNegative != endIsNegative {
-			compEndValue = ^end + 1
-		}
-		for ; j >= 0; j-- {
-			sliceContainsBit := b.get(j).Contains(cID)
-
-			if uint64(compStartValue)&(1<<uint64(j)) > 0 {
-				// BIT in value is SET
-				if !sliceContainsBit {
-					if eq1 {
-						if (op == GT || op == GE || op == RANGE) && startIsNegative && !isNegative {
-							gt1 = true
-						}
-						if op == LT || op == LE {
-							if !startIsNegative || (startIsNegative == isNegative) {
-								lt1 = true
-							}
-						}
-						eq1 = false
-						break
-					}
-				}
-			} else {
-				// BIT in value is CLEAR
-				if sliceContainsBit {
-					if eq1 {
-						if (op == LT || op == LE) && isNegative && !startIsNegative {
-							lt1 = true
-						}
-						if op == GT || op == GE || op == RANGE {
-							if startIsNegative || (startIsNegative == isNegative) {
-								gt1 = true
-							}
-						}
-						eq1 = false
-						if op != RANGE {
-							break
-						}
-					}
-				}
-			}
-
-			if op == RANGE && uint64(compEndValue)&(1<<uint64(j)) > 0 {
-				// BIT in value is SET
-				if !sliceContainsBit {
-					if eq2 {
-						if !endIsNegative || (endIsNegative == isNegative) {
-							lt2 = true
-						}
-						eq2 = false
-						if startIsNegative && !endIsNegative {
-							break
-						}
-					}
-				}
-			} else if op == RANGE {
-				// BIT in value is CLEAR
-				if sliceContainsBit {
-					if eq2 {
-						if isNegative && !endIsNegative {
-							lt2 = true
-						}
-						eq2 = false
-						break
-					}
-				}
-			}
-
-		}
-
-		switch op {
-		case LT:
-			if lt1 {
-				results.Set(cID)
-			}
-		case LE:
-			if lt1 || (eq1 && (!startIsNegative || (startIsNegative && isNegative))) {
-				results.Set(cID)
-			}
-		case EQ:
-			if eq1 {
-				results.Set(cID)
-			}
-		case GE:
-			if gt1 || (eq1 && (startIsNegative || (!startIsNegative && !isNegative))) {
-				results.Set(cID)
-			}
-		case GT:
-			if gt1 {
-				results.Set(cID)
-			}
-		case RANGE:
-			if (eq1 || gt1) && (eq2 || lt2) {
-				results.Set(cID)
-			}
-		default:
-			panic(fmt.Sprintf("Operation [%v] not supported here", op))
-		}
-	}
-
-	resultsChan <- results
-}
-
 // Sum all values contained within the foundSet.   As a convenience, the cardinality of the foundSet
 // is also returned (for calculating the average).
 
@@ -427,7 +299,7 @@ func (b *BSI) compareValue(op Operation, valueOrStart, end int64, batch []uint64
 // is also returned (for calculating the average).
 func (b *BSI) Sum(foundSet *Bitmap) (sum int64, count uint64) {
 	count = uint64(foundSet.GetCardinality())
-	for i := 0; i < 64; i++ {
+	for i := 0; i < b.BitCount(); i++ {
 		e := b.get(i)
 		if e == nil {
 			break
@@ -444,7 +316,7 @@ func (b *BSI) Extract(foundSet *Bitmap) map[uint64]int64 {
 	}
 	match := roaring.And(ex, foundSet)
 	result := make(map[uint64]int64, match.GetCardinality())
-	for i := 0; i < 64; i++ {
+	for i := 0; i < b.BitCount(); i++ {
 		e := b.get(i)
 		if e == nil {
 			break
@@ -457,11 +329,44 @@ func (b *BSI) Extract(foundSet *Bitmap) map[uint64]int64 {
 	return result
 }
 
+func (b *BSI) Transpose(foundSet *Bitmap) *Bitmap {
+	ex := b.ex()
+	if ex == nil {
+		return roaring.NewBitmap()
+	}
+	match := roaring.And(ex, foundSet)
+	if match.IsEmpty() {
+		return match
+	}
+	batch := match.Batch()
+	src := b.Source.(KV)
+	size := src.BitCount()
+	bits := src[1:]
+	var mu sync.Mutex
+	result := make([]*Bitmap, 0, runtime.NumCPU())
+	batch.Run(match, func(idx int, next roaring.Next) {
+		r := NewBitmap()
+		for col, ok := next(); ok; col, ok = next() {
+			value := int64(0)
+			for i := range size {
+				if bits[i].Contains(col) {
+					value |= 1 << i
+				}
+			}
+			r.Set(uint64(value))
+		}
+		mu.Lock()
+		result = append(result, r)
+		mu.Unlock()
+	})
+	return roaring.FastOr(result...)
+}
+
 // We only perform Or on a and b. we don't want to modify a or b
 // because there is a posibility a is read from buffer which may corrupt the backing slice..
 func (a *BSI) Or(b *BSI) *BSI {
 	o := NewDefaultBSI()
-	for i := 0; i < 64; i++ {
+	for i := 0; i < a.BitCount(); i++ {
 		na := a.get(i)
 		nb := b.get(i)
 		if na == nil && nb == nil {
