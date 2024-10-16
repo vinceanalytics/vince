@@ -13,18 +13,21 @@ type Key struct {
 	Field models.Field
 }
 
-type ShardKey struct {
-	Time  uint64
-	Shard uint64
-	Field models.Field
-}
-
 type Encoding struct {
 	data []byte
 }
 
 func (e *Encoding) Reset() {
 	clear(e.data)
+	e.data = e.data[:0]
+}
+
+// Like Reset but releases excess pacapity if any
+func (e *Encoding) Clip(sz int) {
+	clear(e.data)
+	if len(e.data) > sz {
+		e.data = e.data[:sz:sz]
+	}
 	e.data = e.data[:0]
 }
 

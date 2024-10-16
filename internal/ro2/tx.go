@@ -20,12 +20,12 @@ type Tx struct {
 	tx      *badger.Txn
 	it      *badger.Iterator
 	enc     encoding.Encoding
-	bsi     map[encoding.ShardKey]*bsi.BSI
+	bsi     map[uint32]*bsi.BSI
 	bitmaps []*roaring.Bitmap
 }
 
 var txPool = &sync.Pool{New: func() any {
-	return &Tx{bsi: make(map[encoding.ShardKey]*bsi.BSI)}
+	return &Tx{bsi: make(map[uint32]*bsi.BSI)}
 }}
 
 func newTx(txn *badger.Txn) *Tx {
@@ -36,7 +36,10 @@ func newTx(txn *badger.Txn) *Tx {
 
 func (tx *Tx) Iter() *badger.Iterator {
 	if tx.it == nil {
-		tx.it = tx.tx.NewIterator(badger.IteratorOptions{})
+		tx.it = tx.tx.NewIterator(badger.IteratorOptions{
+			PrefetchSize:   32,
+			PrefetchValues: true,
+		})
 	}
 	return tx.it
 }
@@ -51,7 +54,9 @@ func (tx *Tx) Close() {
 func (tx *Tx) Release() {
 	tx.Close()
 	tx.tx = nil
-	tx.enc.Reset()
+	// avoid retaining large amout of data. Keep around 4kb per transaction. We
+	// also use this to copy bitmaps
+	tx.enc.Clip(4 << 10)
 	clear(tx.bsi)
 	clear(tx.bitmaps)
 	tx.bitmaps = tx.bitmaps[:0]
@@ -128,12 +133,14 @@ func (tx *Tx) Count(shard, view uint64, field models.Field, match *roaring.Bitma
 }
 
 func (tx *Tx) Bitmap(shard, view uint64, field models.Field) *bsi.BSI {
-	key := encoding.ShardKey{Shard: shard, Time: view, Field: field}
-	if b, ok := tx.bsi[key]; ok {
+	key := encoding.Bitmap(view, shard, field, 0, tx.enc.Allocate(encoding.BitmapKeySize))
+	prefix := key[:len(key)-1]
+	kh := hash.Sum32(prefix)
+	if b, ok := tx.bsi[kh]; ok {
 		return b
 	}
-	b := NewKV(tx, view, shard, field)
-	tx.bsi[key] = b
+	b := NewKV(tx, key)
+	tx.bsi[kh] = b
 	return b
 }
 

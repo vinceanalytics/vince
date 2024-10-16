@@ -2,22 +2,24 @@ package ro2
 
 import (
 	"github.com/vinceanalytics/vince/internal/bsi"
-	"github.com/vinceanalytics/vince/internal/encoding"
-	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
 type KV []*roaring.Bitmap
 
-func NewKV(tx *Tx, ts, shard uint64, field models.Field) *bsi.BSI {
-	key := encoding.Bitmap(ts, shard, field, 0, tx.enc.Allocate(encoding.BitmapKeySize))
+func NewKV(tx *Tx, key []byte) *bsi.BSI {
 	pos := len(tx.bitmaps)
 	prefix := key[:len(key)-1]
 	it := tx.Iter()
 	for it.Seek(key); it.ValidForPrefix(prefix); it.Next() {
-		value, _ := it.Item().ValueCopy(nil)
-		b := roaring.FromBuffer(value)
-		tx.bitmaps = append(tx.bitmaps, b)
+		item := it.Item()
+		item.Value(func(val []byte) error {
+			dst := tx.enc.Allocate(len(val))
+			copy(dst, val)
+			b := roaring.FromBuffer(dst)
+			tx.bitmaps = append(tx.bitmaps, b)
+			return nil
+		})
 	}
 	kv := tx.bitmaps[pos:len(tx.bitmaps)]
 	return &bsi.BSI{Source: KV(kv)}
