@@ -86,7 +86,6 @@ func (b *BSI) BitCount() int {
 func (b *BSI) SetValue(columnID uint64, value int64) {
 	// If max/min values are set to zero then automatically determine bit array size
 	minBits := bits.Len64(uint64(value))
-	fmt.Println(minBits)
 	for i := range minBits {
 		if uint64(value)&(1<<uint64(i)) > 0 {
 			b.must(i).Set(columnID)
@@ -113,48 +112,6 @@ func (b *BSI) GetValue(columnID uint64) (value int64, exists bool) {
 		}
 	}
 	return
-}
-
-type action func(t *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.WaitGroup)
-
-func parallelExecutor(parallelism int, t *task, e action, foundSet *Bitmap) *Bitmap {
-	if foundSet == nil {
-		return roaring.NewBitmap()
-	}
-	var n int = parallelism
-	if n == 0 {
-		n = runtime.NumCPU()
-	}
-
-	resultsChan := make(chan *Bitmap, n)
-
-	card := uint64(foundSet.GetCardinality())
-	x := card / uint64(n)
-
-	remainder := card - (x * uint64(n))
-	var batch []uint64
-	var wg sync.WaitGroup
-	iter := foundSet.ManyIterator()
-	for i := 0; i < n; i++ {
-		if i == n-1 {
-			batch = make([]uint64, x+remainder)
-		} else {
-			batch = make([]uint64, x)
-		}
-		iter.NextMany(batch)
-		wg.Add(1)
-		go e(t, batch, resultsChan, &wg)
-	}
-
-	wg.Wait()
-
-	close(resultsChan)
-
-	ba := make([]*Bitmap, 0)
-	for bm := range resultsChan {
-		ba = append(ba, bm)
-	}
-	return roaring.FastOr(ba...)
 }
 
 // Operation identifier
@@ -195,53 +152,84 @@ type task struct {
 // of zero indicates that all available CPU resources will be potentially utilized.
 func (b *BSI) CompareValue(parallelism int, op Operation, valueOrStart, end int64,
 	foundSet *Bitmap) *Bitmap {
-
-	comp := &task{bsi: b, op: op, valueOrStart: valueOrStart, end: end}
 	if foundSet == nil {
-		return parallelExecutor(parallelism, comp, compareValue, b.ex())
+		foundSet = b.ex()
 	}
-	return parallelExecutor(parallelism, comp, compareValue, foundSet)
+	var n int = parallelism
+	if n == 0 {
+		n = runtime.NumCPU()
+	}
+
+	resultsChan := make(chan *Bitmap, n)
+
+	card := uint64(foundSet.GetCardinality())
+	x := card / uint64(n)
+
+	remainder := card - (x * uint64(n))
+	var batch []uint64
+	var wg sync.WaitGroup
+	iter := foundSet.ManyIterator()
+	for i := 0; i < n; i++ {
+		if i == n-1 {
+			batch = make([]uint64, x+remainder)
+		} else {
+			batch = make([]uint64, x)
+		}
+		iter.NextMany(batch)
+		wg.Add(1)
+		go b.compareValue(op, valueOrStart, end, batch, resultsChan, &wg)
+	}
+
+	wg.Wait()
+
+	close(resultsChan)
+
+	ba := make([]*Bitmap, 0)
+	for bm := range resultsChan {
+		ba = append(ba, bm)
+	}
+	return roaring.FastOr(ba...)
 }
 
-func compareValue(e *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.WaitGroup) {
+func (b *BSI) compareValue(op Operation, valueOrStart, end int64, batch []uint64, resultsChan chan *Bitmap, wg *sync.WaitGroup) {
 
 	defer wg.Done()
 
 	results := NewBitmap()
 
-	x := e.bsi.BitCount()
-	startIsNegative := x == 64 && uint64(e.valueOrStart)&(1<<uint64(x-1)) > 0
-	endIsNegative := x == 64 && uint64(e.end)&(1<<uint64(x-1)) > 0
+	x := b.BitCount()
+	startIsNegative := x == 64 && uint64(valueOrStart)&(1<<uint64(x-1)) > 0
+	endIsNegative := x == 64 && uint64(end)&(1<<uint64(x-1)) > 0
 
 	for i := 0; i < len(batch); i++ {
 		cID := batch[i]
 		eq1, eq2 := true, true
 		lt1, lt2, gt1 := false, false, false
-		j := e.bsi.BitCount() - 1
+		j := b.BitCount() - 1
 		isNegative := false
 		if x == 64 {
-			isNegative = e.bsi.get(j).Contains(cID)
+			isNegative = b.get(j).Contains(cID)
 			j--
 		}
-		compStartValue := e.valueOrStart
-		compEndValue := e.end
+		compStartValue := valueOrStart
+		compEndValue := end
 		if isNegative != startIsNegative {
-			compStartValue = ^e.valueOrStart + 1
+			compStartValue = ^valueOrStart + 1
 		}
 		if isNegative != endIsNegative {
-			compEndValue = ^e.end + 1
+			compEndValue = ^end + 1
 		}
 		for ; j >= 0; j-- {
-			sliceContainsBit := e.bsi.get(j).Contains(cID)
+			sliceContainsBit := b.get(j).Contains(cID)
 
 			if uint64(compStartValue)&(1<<uint64(j)) > 0 {
 				// BIT in value is SET
 				if !sliceContainsBit {
 					if eq1 {
-						if (e.op == GT || e.op == GE || e.op == RANGE) && startIsNegative && !isNegative {
+						if (op == GT || op == GE || op == RANGE) && startIsNegative && !isNegative {
 							gt1 = true
 						}
-						if e.op == LT || e.op == LE {
+						if op == LT || op == LE {
 							if !startIsNegative || (startIsNegative == isNegative) {
 								lt1 = true
 							}
@@ -254,23 +242,23 @@ func compareValue(e *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.Wa
 				// BIT in value is CLEAR
 				if sliceContainsBit {
 					if eq1 {
-						if (e.op == LT || e.op == LE) && isNegative && !startIsNegative {
+						if (op == LT || op == LE) && isNegative && !startIsNegative {
 							lt1 = true
 						}
-						if e.op == GT || e.op == GE || e.op == RANGE {
+						if op == GT || op == GE || op == RANGE {
 							if startIsNegative || (startIsNegative == isNegative) {
 								gt1 = true
 							}
 						}
 						eq1 = false
-						if e.op != RANGE {
+						if op != RANGE {
 							break
 						}
 					}
 				}
 			}
 
-			if e.op == RANGE && uint64(compEndValue)&(1<<uint64(j)) > 0 {
+			if op == RANGE && uint64(compEndValue)&(1<<uint64(j)) > 0 {
 				// BIT in value is SET
 				if !sliceContainsBit {
 					if eq2 {
@@ -283,7 +271,7 @@ func compareValue(e *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.Wa
 						}
 					}
 				}
-			} else if e.op == RANGE {
+			} else if op == RANGE {
 				// BIT in value is CLEAR
 				if sliceContainsBit {
 					if eq2 {
@@ -298,7 +286,7 @@ func compareValue(e *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.Wa
 
 		}
 
-		switch e.op {
+		switch op {
 		case LT:
 			if lt1 {
 				results.Set(cID)
@@ -324,7 +312,7 @@ func compareValue(e *task, batch []uint64, resultsChan chan *Bitmap, wg *sync.Wa
 				results.Set(cID)
 			}
 		default:
-			panic(fmt.Sprintf("Operation [%v] not supported here", e.op))
+			panic(fmt.Sprintf("Operation [%v] not supported here", op))
 		}
 	}
 

@@ -228,3 +228,16 @@ func BenchmarkBSIExtract(b *testing.B) {
 		bsi.Extract(set)
 	}
 }
+func BenchmarkCOmpareValues(b *testing.B) {
+	bsi := setup()
+	for range b.N {
+		bsi.CompareValue(0, RANGE, 45, 55, nil)
+	}
+}
+
+func BenchmarkCOmpareValueEQ(b *testing.B) {
+	bsi := setupNegativeBoundary()
+	for range b.N {
+		bsi.CompareValue(0, EQ, -1, 0, nil)
+	}
+}
