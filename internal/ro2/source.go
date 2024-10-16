@@ -10,17 +10,17 @@ import (
 type KV []*roaring.Bitmap
 
 func NewKV(tx *Tx, ts, shard uint64, field models.Field) *bsi.BSI {
-	key := encoding.Bitmap(ts, shard, field, 0,
-		make([]byte, encoding.BitmapKeySize))
-	kv := make(KV, 0, 64)
+	key := encoding.Bitmap(ts, shard, field, 0, tx.enc.Allocate(encoding.BitmapKeySize))
+	pos := len(tx.bitmaps)
 	prefix := key[:len(key)-1]
 	it := tx.Iter()
 	for it.Seek(key); it.ValidForPrefix(prefix); it.Next() {
 		value, _ := it.Item().ValueCopy(nil)
 		b := roaring.FromBuffer(value)
-		kv = append(kv, b)
+		tx.bitmaps = append(tx.bitmaps, b)
 	}
-	return &bsi.BSI{Source: kv}
+	kv := tx.bitmaps[pos:len(tx.bitmaps)]
+	return &bsi.BSI{Source: KV(kv)}
 }
 
 var _ bsi.Source = (*KV)(nil)

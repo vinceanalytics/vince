@@ -17,10 +17,11 @@ import (
 //go:generate protoc  --go_out=. --go_opt=paths=source_relative pages.proto
 
 type Tx struct {
-	tx  *badger.Txn
-	it  *badger.Iterator
-	enc encoding.Encoding
-	bsi map[encoding.ShardKey]*bsi.BSI
+	tx      *badger.Txn
+	it      *badger.Iterator
+	enc     encoding.Encoding
+	bsi     map[encoding.ShardKey]*bsi.BSI
+	bitmaps []*roaring.Bitmap
 }
 
 var txPool = &sync.Pool{New: func() any {
@@ -52,6 +53,8 @@ func (tx *Tx) Release() {
 	tx.tx = nil
 	tx.enc.Reset()
 	clear(tx.bsi)
+	clear(tx.bitmaps)
+	tx.bitmaps = tx.bitmaps[:0]
 }
 
 func (tx *Tx) Select(domain string, start,
