@@ -5,6 +5,7 @@ import (
 	"math"
 	"slices"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/fieldset"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/models"
@@ -20,6 +21,52 @@ const (
 
 type Result struct {
 	Results []map[string]any `json:"results"`
+}
+
+func (o *Store) BreakdownGoals(site *v1.Site, params *query.Query, metrics []string) (*Result, error) {
+	var (
+		pageGoals []string
+	)
+	efs := query.Filter{
+		Op:  "is",
+		Key: "name",
+	}
+	for _, g := range site.Goals {
+		if g.Name != "" {
+			efs.Value = append(efs.Value, g.Name)
+		} else {
+			pageGoals = append(pageGoals, g.Path)
+		}
+	}
+	events := new(Result)
+	var err error
+	if len(efs.Value) > 0 {
+		events, err = o.Breakdown(site.Domain, params.With(&efs), metrics, models.Field_event)
+		if err != nil {
+			return nil, err
+		}
+	}
+	pages := new(Result)
+	if len(pageGoals) > 0 {
+		efs := query.Filter{
+			Op:    "is",
+			Key:   "page",
+			Value: pageGoals,
+		}
+		pages, err = o.Breakdown(site.Domain, params.With(&efs), metrics, models.Field_page)
+		if err != nil {
+			return nil, err
+		}
+		for i := range pages.Results {
+			m := pages.Results[i]
+			m["name"] = m[models.Field_page.String()]
+			delete(m, models.Field_page.String())
+		}
+	}
+	result := events
+	result.Results = append(result.Results, pages.Results...)
+	sortMap(result.Results, "visitors")
+	return result, nil
 }
 
 func (o *Store) Breakdown(domain string, params *query.Query, metrics []string, field models.Field) (*Result, error) {
@@ -149,7 +196,6 @@ func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain str
 	fn func(property string, values map[T]*Stats) *Result) (*Result, error) {
 	values := make(map[T]*Stats)
 	fields := fieldset.From(metrics...)
-
 	err := o.View(func(tx *Tx) error {
 		return tx.Select(domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring.Bitmap) error {
 			all := tx.TransposeSet(shard, view, field, columns)

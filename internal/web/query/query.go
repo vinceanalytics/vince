@@ -73,8 +73,9 @@ func New(u url.Values) *Query {
 }
 
 func (q *Query) With(fs ...*Filter) *Query {
-	q.filter = append(q.filter, fs...)
-	return q
+	n := *q
+	n.filter = append(n.filter, fs...)
+	return &n
 }
 
 func (q *Query) All() bool      { return q.all }

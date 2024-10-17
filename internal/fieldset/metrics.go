@@ -39,6 +39,9 @@ func (s Set) Each(fn func(field models.Field) error) error {
 			}
 		}
 	}
+	if s.Has(models.Field_event) {
+		return fn(models.Field_event)
+	}
 	return nil
 }
 
