@@ -17,6 +17,7 @@ type Stats struct {
 	ViewsPerVisits float64
 	BounceRate     float64
 	VisitDuration  float64
+	Events         float64
 }
 
 func NewStats(fs fieldset.Set) *Stats {
@@ -53,6 +54,8 @@ func reduce(metric string) func(s *Stats, o map[string]any) {
 		return func(s *Stats, o map[string]any) { o[metric] = s.ViewsPerVisits }
 	case "visit_duration":
 		return func(s *Stats, o map[string]any) { o[metric] = s.VisitDuration }
+	case "events":
+		return func(s *Stats, o map[string]any) { o[metric] = s.Events }
 	default:
 		return func(s *Stats, o map[string]any) {}
 	}
@@ -72,6 +75,8 @@ func StatToValue(metric string) func(s *Stats) float64 {
 		return func(s *Stats) float64 { return s.ViewsPerVisits }
 	case "visit_duration":
 		return func(s *Stats) float64 { return s.VisitDuration }
+	case "events":
+		return func(s *Stats) float64 { return s.Events }
 	default:
 		return func(s *Stats) float64 { return 0 }
 	}
@@ -116,6 +121,8 @@ func (d *Stats) Read(tx *Tx, shard, view uint64, match *roaring.Bitmap, fields f
 		case models.Field_id:
 			uniq := tx.Transpose(shard, view, f, match)
 			d.uid.Or(uniq)
+		case models.Field_event:
+			d.Events += float64(match.GetCardinality())
 		}
 		return
 	})

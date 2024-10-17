@@ -226,6 +226,11 @@ func run(config *v1.Config) {
 			Then(web.Settings),
 	))
 
+	mux.HandleFunc("GET /{domain}/settings/goals", db.Wrap(
+		sites.
+			Then(web.GoalSettings),
+	))
+
 	mux.HandleFunc("/{domain}/delete", db.Wrap(
 		sites.
 			Then(web.Delete),
@@ -341,7 +346,7 @@ func run(config *v1.Config) {
 
 	mux.HandleFunc("GET /api/stats/{domain}/conversions/", db.Wrap(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(web.Conversion),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/custom-prop-values/{prop_key}/", db.Wrap(

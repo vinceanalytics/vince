@@ -69,6 +69,13 @@ func (c *Filter) To() *Filter {
 		switch key {
 		case "name", "page", "hostname":
 			return &Filter{Op: c.Op, Key: key, Value: c.Value}
+		case "goal":
+			if strings.HasPrefix(c.Value[0], "Visit ") {
+				return &Filter{Op: c.Op, Key: "page", Value: []string{
+					strings.TrimPrefix(c.Value[0], "Visit "),
+				}}
+			}
+			return &Filter{Op: c.Op, Key: "name", Value: c.Value}
 		default:
 			return nil
 		}

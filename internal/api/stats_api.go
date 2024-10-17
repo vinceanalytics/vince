@@ -25,7 +25,7 @@ func Agggregates(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
 
-	stats, err := db.Get().Stats(domain, params.Start(), params.End(), params.Interval(), params.Filter(), params.Metrics())
+	stats, err := db.Get().Aggregates(domain, params.Start(), params.End(), params.Interval(), params.Filter(), params.Metrics())
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
 		stats = &ro2.Stats{}

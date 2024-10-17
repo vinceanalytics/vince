@@ -21,6 +21,12 @@ func NewGoalForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, newGoal, nil)
 }
 
+func GoalSettings(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	site := db.CurrentSite()
+	to := fmt.Sprintf("/%s/settings#goals", url.PathEscape(site.Domain))
+	http.Redirect(w, r, to, http.StatusFound)
+}
+
 func CreateGoal(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	g := &v1.Goal{
 		Name: r.FormValue("event_name"),

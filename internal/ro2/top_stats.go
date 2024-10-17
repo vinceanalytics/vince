@@ -8,7 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
-func (o *Store) Stats(domain string, start, end time.Time, interval query.Interval, filters query.Filters, metrics []string) (*Stats, error) {
+func (o *Store) Aggregates(domain string, start, end time.Time, interval query.Interval, filters query.Filters, metrics []string) (*Stats, error) {
 	fields := fieldset.From(metrics...)
 	m := NewStats(fields)
 	err := o.View(func(tx *Tx) error {

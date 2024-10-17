@@ -23,6 +23,8 @@ func From(m ...string) Set {
 		case "visit_duration":
 			s.Set(models.Field_duration)
 			s.Set(models.Field_session)
+		case "events":
+			s.Set(models.Field_event)
 		}
 	}
 	return s

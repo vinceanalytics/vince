@@ -10,10 +10,14 @@
     data-domain="{{.site.domain}}"
     data-offset="0"
     data-revenue-goals="[]"
+    data-has-goals="{{if .site.goals}}true{{else}}false{{end}}"
+    data-conversions-opted-out="false"
+    data-conversions-available="true"
     data-flags="{}"
     data-funnels="[]"
     {{if .current_user}}
     data-logged-in="true"
+    data-current-user-role="owner"
     {{end}}
     data-valid-intervals-by-period="{&quot;12mo&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;30d&quot;:[&quot;day&quot;,&quot;week&quot;],&quot;6mo&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;7d&quot;:[&quot;hour&quot;,&quot;day&quot;],&quot;all&quot;:[&quot;week&quot;,&quot;month&quot;],&quot;custom&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;day&quot;:[&quot;minute&quot;,&quot;hour&quot;],&quot;month&quot;:[&quot;day&quot;,&quot;week&quot;],&quot;realtime&quot;:[&quot;minute&quot;],&quot;year&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;]}"
     >
