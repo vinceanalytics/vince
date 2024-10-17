@@ -93,8 +93,11 @@ func (db *Config) Logger() *slog.Logger {
 }
 
 func (db *Config) Start(ctx context.Context) {
-	db.Get().SetupDomains(db.config.Domains)
 	domains.Reload(db.Get().Domains)
+	db.Get().SetupDomains(db.config.Domains)
+	if len(db.config.Domains) > 0 {
+		domains.Reload(db.Get().Domains)
+	}
 	go db.db.Start(ctx)
 	go db.eventsLoop(ctx)
 }

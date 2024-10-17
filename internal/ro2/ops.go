@@ -14,6 +14,8 @@ import (
 	"github.com/dgraph-io/badger/v4/y"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/domains"
+	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 	"golang.org/x/crypto/bcrypt"
@@ -87,13 +89,17 @@ func (db *DB) APIKeys() (ls []*v1.APIKey, err error) {
 	return
 }
 
-func (db *DB) SetupDomains(domains []string) {
+func (db *DB) SetupDomains(names []string) {
+
 	db.Update(func(tx *Tx) error {
-		for _, n := range domains {
+		for _, n := range names {
 			key := tx.enc.Site([]byte(n))
 			_, err := tx.tx.Get(key)
 			if errors.Is(err, badger.ErrKeyNotFound) {
-				data, _ := proto.Marshal(&v1.Site{Domain: n})
+				data, _ := proto.Marshal(&v1.Site{
+					Id:     domains.Count() + 1,
+					Domain: n,
+				})
 				err := tx.tx.Set(key, data)
 				if err != nil {
 					return err
@@ -148,6 +154,7 @@ func (db *DB) CreateSite(domain string, public bool) (err error) {
 		return nil
 	}
 	return db.Save(&v1.Site{
+		Id:     domains.Count() + 1, // make sure we don't have site with id of 0
 		Domain: domain,
 		Public: public,
 	})
@@ -163,9 +170,15 @@ func (db *DB) DeleteDomain(domain string) (err error) {
 
 func (db *DB) SeenFirstStats(domain string) (ok bool) {
 	db.View(func(tx *Tx) error {
-		key := tx.enc.TranslateKey(models.Field_domain, []byte(domain))
-		_, err := tx.tx.Get(key)
-		ok = err == nil
+		for shard := range tx.Shards() {
+			key := encoding.Bitmap(0, shard, models.Field_domain, 0, tx.enc.Allocate(encoding.BitmapKeySize))
+			_, err := tx.tx.Get(key)
+			if err == nil {
+				ok = true
+				return nil
+			}
+
+		}
 		return nil
 	})
 	return

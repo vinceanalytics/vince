@@ -16,7 +16,7 @@ message Config {
 }
 
 message Site {
-  bytes id = 1;
+  uint64 id = 1;
   string domain = 2;
   bool public = 3;
   repeated Share shares = 4;

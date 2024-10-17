@@ -8,6 +8,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/batch"
 	"github.com/vinceanalytics/vince/internal/bsi"
+	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
@@ -70,11 +71,11 @@ func (tx *Tx) Release() {
 func (tx *Tx) Select(domain string, start,
 	end time.Time, intrerval query.Interval, filters query.Filters, cb func(shard, view uint64, columns *roaring.Bitmap) error) error {
 	m := tx.compile(filters)
-	name := []byte(domain)
+	did := domains.ID(domain)
 	return intrerval.Range(start, end, func(t time.Time) error {
 		view := uint64(t.UnixMilli())
 		for shard := range tx.Shards() {
-			match := tx.Domain(shard, view, name)
+			match := tx.Domain(shard, view, did)
 			if match.IsEmpty() {
 				return nil
 			}
@@ -145,9 +146,9 @@ func (tx *Tx) Bitmap(shard, view uint64, field models.Field) *bsi.BSI {
 	return b
 }
 
-func (tx *Tx) Domain(shard, view uint64, name []byte) *roaring.Bitmap {
+func (tx *Tx) Domain(shard, view uint64, id uint64) *roaring.Bitmap {
 	return tx.Compare(
-		shard, view, models.Field_domain, bsi.EQ, int64(hash.Sum32(name)), 0, nil,
+		shard, view, models.Field_domain, bsi.EQ, int64(id), 0, nil,
 	)
 }
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/compute"
+	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
@@ -22,7 +23,6 @@ type Batch struct {
 	data      map[encoding.Key]*roaring.BSI
 	translate [textSize][][]byte
 	cache     [textSize]map[uint32]struct{}
-	domains   map[uint32]uint64
 	key       encoding.Key
 	enc       encoding.Encoding
 	id        uint64
@@ -32,8 +32,7 @@ type Batch struct {
 
 func NewBatch(db *badger.DB) *Batch {
 	b := &Batch{
-		data:    make(map[encoding.Key]*roaring.BSI),
-		domains: make(map[uint32]uint64),
+		data: make(map[encoding.Key]*roaring.BSI),
 	}
 	// a lot of small allocations happens during batching. We pre allocate enough
 	// buffer of 32MB to cover majority of the cases.
@@ -88,8 +87,21 @@ func (b *Batch) Add(m *models.Model) error {
 	b.set(models.Field_browser_version, id, m.BrowserVersion)
 	b.set(models.Field_country, id, m.Country)
 	b.set(models.Field_device, id, m.Device)
-	b.set(models.Field_domain, id, m.Domain)
-	b.set(models.Field_domain, id, m.Domain)
+	{
+		// we special case handle domains. Normal hash32 translation requires
+		// loading 32 bitmaps at worst case. We know domains cardinality is small
+		// to speedup queries and reduce excess allocations. Domains translation
+		// is done by domains.ID call.
+		//
+		// We never expose domain field to the end user so there is no need to care for
+		// filter handles.
+		//
+		// By using site ID we ensure that for small views we will always only load
+		// a single existence bitmap.A vince instance with 255 domains registerd
+		/// will only need 9 bitmaps at worst case.
+		did := domains.ID(string(m.Domain))
+		b.get(models.Field_domain).SetValue(id, int64(did))
+	}
 	b.set(models.Field_entry_page, id, m.EntryPage)
 	b.set(models.Field_event, id, m.Event)
 	b.set(models.Field_exit_page, id, m.ExitPage)
