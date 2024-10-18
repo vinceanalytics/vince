@@ -162,6 +162,60 @@ func (f FilterKey) MatchOneUntilSameOffset() FilterResult {
 	return f.MatchOneUntilOffset(uint64(f) & keyMask)
 }
 
+func (ra *Bitmap) ExtractMutex(match *Bitmap, f func(row uint64, columns []uint64)) {
+	filter := make([][]uint16, 1<<shardVsContainerExponent)
+	{
+		iter := match.newCoIter()
+		for iter.next() {
+			k, c := iter.value()
+			if getCardinality(c) == 0 {
+				continue
+			}
+			filter[k%(1<<shardVsContainerExponent)] = c
+		}
+	}
+	data := ra.newCoIter()
+	prevRow := ^uint64(0)
+	seenThisRow := false
+	for data.next() {
+		k, c := data.value()
+		row := k >> shardVsContainerExponent
+		if row == prevRow {
+			if seenThisRow {
+				continue
+			}
+		} else {
+			seenThisRow = false
+			prevRow = row
+		}
+
+		idx := k % (1 << shardVsContainerExponent)
+		if len(filter[idx]) == 0 {
+			continue
+		}
+		if containerAndAny(c, filter[idx]) {
+			ex := containerAnd(c, filter[idx])
+			switch ex[indexType] {
+			case typeArray:
+				f(row, toRows(k, array(ex).all()))
+			case typeBitmap:
+				f(row, toRows(k, bitmap(ex).all()))
+			}
+			seenThisRow = true
+		}
+	}
+}
+
+func highbits(v uint64) uint64 { return v >> 16 }
+
+func toRows(key uint64, columns []uint16) []uint64 {
+	resutlt := make([]uint64, len(columns))
+	for i := range columns {
+		resutlt[i] = uint64(columns[i])
+	}
+	return resutlt
+}
+
 func (ra *Bitmap) Mutex(id uint64, value uint64) {
 	ra.Set(value*shardWidth + (id % shardWidth))
 }

@@ -234,6 +234,12 @@ func (c array) andCardinalityArray(other array) int {
 	return intersection2by2Cardinality(setc, seto)
 }
 
+func (c array) andAny(other array) bool {
+	setc := c.all()
+	seto := other.all()
+	return intersects2by2(setc, seto)
+}
+
 func (c array) andCardinalityBitmap(other bitmap) int {
 	card := getCardinality(c)
 	value2 := c.all()
@@ -243,6 +249,18 @@ func (c array) andCardinalityBitmap(other bitmap) int {
 		pos += int(other.bitValue(v))
 	}
 	return pos
+}
+
+func (c array) andAnyBitmap(other bitmap) bool {
+	card := getCardinality(c)
+	value2 := c.all()
+	for k := 0; k < card; k++ {
+		v := value2[k]
+		if other.bitValue(v) == 1 {
+			return true
+		}
+	}
+	return false
 }
 
 // TODO: We can do this operation in-place on the src array.
@@ -483,6 +501,15 @@ func (b bitmap) andBitmapCardinality(other bitmap) (num int) {
 		num += bits.OnesCount16(b[i] & other[i])
 	}
 	return
+}
+
+func (b bitmap) andBitmapAny(other bitmap) bool {
+	for i := int(startIdx); i < len(b); i++ {
+		if bits.OnesCount16(b[i]&other[i]) > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // TODO: This can perhaps be using SIMD instructions.
@@ -784,6 +811,37 @@ func containerAndCardinality(ac, bc []uint16) int {
 		left := bitmap(ac)
 		right := bitmap(bc)
 		return left.andBitmapCardinality(right)
+	}
+	panic("containerAnd: We should not reach here")
+}
+
+func containerAndAny(ac, bc []uint16) bool {
+	if len(ac) == 0 || len(bc) == 0 {
+		return false
+	}
+	at := ac[indexType]
+	bt := bc[indexType]
+
+	if at == typeArray && bt == typeArray {
+		left := array(ac)
+		right := array(bc)
+		return left.andAny(right)
+	}
+	if at == typeArray && bt == typeBitmap {
+		left := array(ac)
+		right := bitmap(bc)
+		return left.andAnyBitmap(right)
+	}
+	if at == typeBitmap && bt == typeArray {
+		left := bitmap(ac)
+		right := array(bc)
+		out := right.andAnyBitmap(left)
+		return out
+	}
+	if at == typeBitmap && bt == typeBitmap {
+		left := bitmap(ac)
+		right := bitmap(bc)
+		return left.andBitmapAny(right)
 	}
 	panic("containerAnd: We should not reach here")
 }

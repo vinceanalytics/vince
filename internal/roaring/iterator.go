@@ -146,7 +146,7 @@ type containerIterator struct {
 }
 
 func (ra *Bitmap) newCoIter() *containerIterator {
-	return &containerIterator{ra: ra}
+	return &containerIterator{ra: ra, pos: -1}
 }
 
 func (x *containerIterator) next() bool {
@@ -158,7 +158,7 @@ func (x *containerIterator) next() bool {
 }
 
 func (x *containerIterator) value() (key uint64, co []uint16) {
-	key = x.ra.keys.key(x.pos)
+	key = highbits(x.ra.keys.key(x.pos))
 	off := x.ra.keys.val(x.pos)
 	co = x.ra.getContainer(off)
 	return
