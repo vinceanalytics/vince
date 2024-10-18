@@ -32,18 +32,18 @@ func TestTrie(t *testing.T) {
 	trie := NewTrie()
 	defer trie.Release()
 
-	trie.Put("trie", 1)
-	trie.Put("tree", 2)
-	trie.Put("bird", 3)
-	trie.Put("birds", 4)
-	trie.Put("t", 5)
+	trie.Put([]byte("trie"), 1)
+	trie.Put([]byte("tree"), 2)
+	trie.Put([]byte("bird"), 3)
+	trie.Put([]byte("birds"), 4)
+	trie.Put([]byte("t"), 5)
 
-	require.Equal(t, uint64(0), trie.Get(""))
-	require.Equal(t, uint64(1), trie.Get("trie"))
-	require.Equal(t, uint64(2), trie.Get("tree"))
-	require.Equal(t, uint64(3), trie.Get("bird"))
-	require.Equal(t, uint64(4), trie.Get("birds"))
-	require.Equal(t, uint64(5), trie.Get("t"))
+	require.Equal(t, uint64(0), trie.Get([]byte{}))
+	require.Equal(t, uint64(1), trie.Get([]byte("trie")))
+	require.Equal(t, uint64(2), trie.Get([]byte("tree")))
+	require.Equal(t, uint64(3), trie.Get([]byte("bird")))
+	require.Equal(t, uint64(4), trie.Get([]byte("birds")))
+	require.Equal(t, uint64(5), trie.Get([]byte("t")))
 	t.Logf("Size of node: %d\n", nodeSz)
 	t.Logf("Size used by allocator: %d\n", trie.Size())
 }
@@ -55,11 +55,11 @@ func TestTrieIterate(t *testing.T) {
 
 	i := uint64(1)
 	for ; i <= 1000; i++ {
-		trie.Put(fmt.Sprintf("%05d", i), i)
+		trie.Put([]byte(fmt.Sprintf("%05d", i)), i)
 	}
 
-	err := trie.Iterate(func(key string, uid uint64) error {
-		keys = append(keys, key)
+	err := trie.Iterate(func(key []byte, uid uint64) error {
+		keys = append(keys, string(key))
 		uids = append(uids, uid)
 		return nil
 	})
@@ -88,8 +88,7 @@ func BenchmarkWordsTrie(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		rand.Read(buf)
 		uid++
-		word := string(buf)
-		trie.Put(word, uid)
+		trie.Put(buf, uid)
 	}
 	b.Logf("Words: %d. Allocator: %s. Per word: %d\n", uid,
 		humanize.IBytes(uint64(trie.Size())),

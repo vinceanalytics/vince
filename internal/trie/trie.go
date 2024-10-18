@@ -52,12 +52,12 @@ func (t *Trie) getNode(offset uint32) *node {
 }
 
 // Get would return the UID for the key. If the key is not found, it would return 0.
-func (t *Trie) Get(key string) uint64 {
+func (t *Trie) Get(key []byte) uint64 {
 	return t.get(t.root, key)
 }
 
 // Put would store the UID for the key.
-func (t *Trie) Put(key string, uid uint64) {
+func (t *Trie) Put(key []byte, uid uint64) {
 	t.put(t.root, key, uid)
 }
 
@@ -66,10 +66,10 @@ func (t *Trie) Size() uint32 {
 	return uint32(t.buf.LenNoPadding())
 }
 
-type iterFn func(key string, uid uint64) error
+type iterFn func(key []byte, uid uint64) error
 
 func (t *Trie) Iterate(fn iterFn) error {
-	return t.iterate(t.root, "", fn)
+	return t.iterate(t.root, make([]byte, 0, 1<<10), fn)
 }
 
 // Release would release the resources used by the Arena.
@@ -91,7 +91,7 @@ type node struct {
 
 var nodeSz = int(unsafe.Sizeof(node{}))
 
-func (t *Trie) get(offset uint32, key string) uint64 {
+func (t *Trie) get(offset uint32, key []byte) uint64 {
 	if len(key) == 0 {
 		return 0
 	}
@@ -113,7 +113,7 @@ func (t *Trie) get(offset uint32, key string) uint64 {
 	return 0
 }
 
-func (t *Trie) put(offset uint32, key string, uid uint64) uint32 {
+func (t *Trie) put(offset uint32, key []byte, uid uint64) uint32 {
 	n := t.getNode(offset)
 	r := key[0]
 	if n == nil {
@@ -138,7 +138,7 @@ func (t *Trie) put(offset uint32, key string, uid uint64) uint32 {
 	return offset
 }
 
-func (t *Trie) iterate(offset uint32, prefix string, fn iterFn) error {
+func (t *Trie) iterate(offset uint32, prefix []byte, fn iterFn) error {
 	if offset == 0 {
 		return nil
 	}
@@ -153,11 +153,11 @@ func (t *Trie) iterate(offset uint32, prefix string, fn iterFn) error {
 	}
 
 	if n.uid != 0 {
-		if err := fn(prefix+string(n.r), n.uid); err != nil {
+		if err := fn(append(prefix, n.r), n.uid); err != nil {
 			return err
 		}
 	}
-	if err := t.iterate(n.mid, prefix+string(n.r), fn); err != nil {
+	if err := t.iterate(n.mid, append(prefix, n.r), fn); err != nil {
 		return err
 	}
 
