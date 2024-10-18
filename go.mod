@@ -9,6 +9,7 @@ require (
 	github.com/dchest/captcha v1.0.0
 	github.com/dgraph-io/badger/v4 v4.3.1
 	github.com/dgraph-io/ristretto v1.0.0
+	github.com/dgryski/go-farm v0.0.0-20240924180020-3414d57e47da
 	github.com/dlclark/regexp2 v1.11.4
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/flatbuffers v24.3.25+incompatible

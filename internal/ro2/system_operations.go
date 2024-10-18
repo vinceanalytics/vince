@@ -14,15 +14,13 @@ import (
 	"github.com/dgraph-io/badger/v4/y"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/domains"
-	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
 )
 
-func (db *DB) CreateAPIKey(name string, key string) error {
+func (db *Store) CreateAPIKey(name string, key string) error {
 	prefix := key[:6]
 	hash := sha512.Sum512([]byte(key))
 	data, _ := proto.Marshal(&v1.APIKey{
@@ -38,7 +36,7 @@ func (db *DB) CreateAPIKey(name string, key string) error {
 	})
 }
 
-func (db *DB) ValidAPIKkey(key string) bool {
+func (db *Store) ValidAPIKkey(key string) bool {
 	hash := sha512.Sum512([]byte(key))
 	err := db.View(func(tx *Tx) error {
 		_, err := tx.tx.Get(tx.enc.APIKeyHash(hash[:]))
@@ -47,7 +45,7 @@ func (db *DB) ValidAPIKkey(key string) bool {
 	return err == nil
 }
 
-func (db *DB) DeleteAPIKey(name string) error {
+func (db *Store) DeleteAPIKey(name string) error {
 	return db.Update(func(tx *Tx) error {
 		nameKey := tx.enc.APIKeyName([]byte(name))
 		it, err := tx.tx.Get(nameKey)
@@ -69,7 +67,7 @@ func (db *DB) DeleteAPIKey(name string) error {
 
 }
 
-func (db *DB) APIKeys() (ls []*v1.APIKey, err error) {
+func (db *Store) APIKeys() (ls []*v1.APIKey, err error) {
 	err = db.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.IteratorOptions{})
 		defer it.Close()
@@ -89,7 +87,7 @@ func (db *DB) APIKeys() (ls []*v1.APIKey, err error) {
 	return
 }
 
-func (db *DB) SetupDomains(names []string) {
+func (db *Store) SetupDomains(names []string) {
 
 	db.Update(func(tx *Tx) error {
 		for _, n := range names {
@@ -97,7 +95,6 @@ func (db *DB) SetupDomains(names []string) {
 			_, err := tx.tx.Get(key)
 			if errors.Is(err, badger.ErrKeyNotFound) {
 				data, _ := proto.Marshal(&v1.Site{
-					Id:     domains.Count() + 1,
 					Domain: n,
 				})
 				err := tx.tx.Set(key, data)
@@ -109,7 +106,7 @@ func (db *DB) SetupDomains(names []string) {
 		return nil
 	})
 }
-func (db *DB) Domains(f func(*v1.Site)) {
+func (db *Store) Domains(f func(*v1.Site)) {
 	err := db.View(func(tx *Tx) error {
 		it := tx.Iter()
 		prefix := keys.SitePrefix
@@ -128,7 +125,7 @@ func (db *DB) Domains(f func(*v1.Site)) {
 	}
 }
 
-func (db *DB) Site(domain string) (u *v1.Site) {
+func (db *Store) Site(domain string) (u *v1.Site) {
 	err := db.View(func(tx *Tx) error {
 		it, err := tx.tx.Get(tx.enc.Site([]byte(domain)))
 		if err != nil {
@@ -149,18 +146,17 @@ func (db *DB) Site(domain string) (u *v1.Site) {
 	return
 }
 
-func (db *DB) CreateSite(domain string, public bool) (err error) {
+func (db *Store) CreateSite(domain string, public bool) (err error) {
 	if s := db.Site(domain); s != nil {
 		return nil
 	}
 	return db.Save(&v1.Site{
-		Id:     domains.Count() + 1, // make sure we don't have site with id of 0
 		Domain: domain,
 		Public: public,
 	})
 }
 
-func (db *DB) DeleteDomain(domain string) (err error) {
+func (db *Store) DeleteDomain(domain string) (err error) {
 	return db.Update(func(tx *Tx) error {
 		return tx.tx.Delete(
 			tx.enc.Site([]byte(domain)),
@@ -168,23 +164,15 @@ func (db *DB) DeleteDomain(domain string) (err error) {
 	})
 }
 
-func (db *DB) SeenFirstStats(domain string) (ok bool) {
+func (db *Store) SeenFirstStats(domain string) (ok bool) {
 	db.View(func(tx *Tx) error {
-		for shard := range tx.Shards() {
-			key := encoding.Bitmap(0, shard, models.Field_domain, 0, tx.enc.Allocate(encoding.BitmapKeySize))
-			_, err := tx.tx.Get(key)
-			if err == nil {
-				ok = true
-				return nil
-			}
-
-		}
+		ok = db.ID(models.Field_domain, []byte(domain)) != 0
 		return nil
 	})
 	return
 }
 
-func (db *DB) EditSharedLink(site *v1.Site, slug, name string) error {
+func (db *Store) EditSharedLink(site *v1.Site, slug, name string) error {
 	i, ok := slices.BinarySearchFunc(site.Shares, &v1.Share{Id: slug}, compareShare)
 	if !ok {
 		return nil
@@ -193,14 +181,14 @@ func (db *DB) EditSharedLink(site *v1.Site, slug, name string) error {
 	return db.Save(site)
 }
 
-func (db *DB) DeleteSharedLink(site *v1.Site, slug string) error {
+func (db *Store) DeleteSharedLink(site *v1.Site, slug string) error {
 	site.Shares = slices.DeleteFunc(site.Shares, func(s *v1.Share) bool {
 		return s.Id == slug
 	})
 	return db.Save(site)
 }
 
-func (db *DB) FindOrCreateCreateSharedLink(domain string, name, password string) (share *v1.Share) {
+func (db *Store) FindOrCreateCreateSharedLink(domain string, name, password string) (share *v1.Share) {
 
 	site := db.Site(domain)
 
@@ -223,7 +211,7 @@ func (db *DB) FindOrCreateCreateSharedLink(domain string, name, password string)
 	return
 }
 
-func (db *DB) Save(u *v1.Site) error {
+func (db *Store) Save(u *v1.Site) error {
 	slices.SortFunc(u.Shares, compareShare)
 	data, err := proto.Marshal(u)
 	if err != nil {
@@ -240,7 +228,7 @@ func (db *DB) Save(u *v1.Site) error {
 
 var domainRe = regexp.MustCompile(`(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`)
 
-func (db *DB) ValidateSiteDomain(domain string) (good, bad string) {
+func (db *Store) ValidateSiteDomain(domain string) (good, bad string) {
 	good = CleanupDOmain(domain)
 	if good == "" {
 		bad = "is required"

@@ -1,58 +1,20 @@
-package batch
+package ro2
 
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/compute"
-	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
-	"github.com/vinceanalytics/vince/internal/util/hash"
 )
 
 const ShardWidth = 1 << 20
 
-const textSize = models.Field_subdivision2_code - models.Field_browser
-
-type Batch struct {
-	data      map[encoding.Key]*roaring.BSI
-	translate [textSize][][]byte
-	cache     [textSize]map[uint32]struct{}
-	key       encoding.Key
-	enc       encoding.Encoding
-	id        uint64
-	shard     uint64
-	txnCount  int
-}
-
-func NewBatch(db *badger.DB) *Batch {
-	b := &Batch{
-		data: make(map[encoding.Key]*roaring.BSI),
-	}
-	// a lot of small allocations happens during batching. We pre allocate enough
-	// buffer of 32MB to cover majority of the cases.
-	b.enc.Grow(32 << 20)
-	db.View(func(txn *badger.Txn) error {
-		key := b.enc.TranslateSeq(models.Field_unknown)
-		it, err := txn.Get(key)
-		if err != nil {
-			return err
-		}
-		return it.Value(func(val []byte) error {
-			b.id = binary.BigEndian.Uint64(val)
-			return nil
-		})
-	})
-	b.shard = b.id / ShardWidth
-	return b
-}
-
-func (b *Batch) Add(m *models.Model) error {
+func (b *Store) Add(m *models.Model) error {
 	shard := (b.id + 1) / ShardWidth
 	if shard != b.shard {
 		// we havs changed shards. Persist the current batch before continuing
@@ -87,21 +49,7 @@ func (b *Batch) Add(m *models.Model) error {
 	b.set(models.Field_browser_version, id, m.BrowserVersion)
 	b.set(models.Field_country, id, m.Country)
 	b.set(models.Field_device, id, m.Device)
-	{
-		// we special case handle domains. Normal hash32 translation requires
-		// loading 32 bitmaps at worst case. We know domains cardinality is small
-		// to speedup queries and reduce excess allocations. Domains translation
-		// is done by domains.ID call.
-		//
-		// We never expose domain field to the end user so there is no need to care for
-		// filter handles.
-		//
-		// By using site ID we ensure that for small views we will always only load
-		// a single existence bitmap.A vince instance with 255 domains registerd
-		/// will only need 9 bitmaps at worst case.
-		did := domains.ID(string(m.Domain))
-		b.get(models.Field_domain).SetValue(id, int64(did))
-	}
+	b.set(models.Field_domain, id, m.Domain)
 	b.set(models.Field_entry_page, id, m.EntryPage)
 	b.set(models.Field_event, id, m.Event)
 	b.set(models.Field_exit_page, id, m.ExitPage)
@@ -122,14 +70,14 @@ func (b *Batch) Add(m *models.Model) error {
 	return nil
 }
 
-func (b *Batch) set(field models.Field, id uint64, value []byte) {
+func (b *Store) set(field models.Field, id uint64, value []byte) {
 	if len(value) == 0 {
 		return
 	}
 	b.get(field).SetValue(id, b.tr(field, value))
 }
 
-func (b *Batch) get(field models.Field) *roaring.BSI {
+func (b *Store) get(field models.Field) *roaring.BSI {
 	b.key.Field = field
 	bs, ok := b.data[b.key]
 	if !ok {
@@ -139,64 +87,32 @@ func (b *Batch) get(field models.Field) *roaring.BSI {
 	return bs
 }
 
-func (b *Batch) tr(field models.Field, value []byte) int64 {
-	sum := hash.Sum32(value)
-	idx := field.TextIndex()
-	c := b.cache[idx]
-	ok := c != nil
-	if c == nil {
-		c = make(map[uint32]struct{})
-		b.cache[idx] = c
-	}
-	if ok {
-		if _, has := c[sum]; has {
-			return int64(sum)
-		}
-	}
-	c[sum] = struct{}{}
-	b.translate[idx] = append(b.translate[idx], value)
-	return int64(sum)
+func (b *Store) tr(field models.Field, value []byte) int64 {
+	return int64(b.AssignUid(field, value))
 }
 
-func (b *Batch) Save(db *badger.DB) (err error) {
+func (b *Store) SaveBatch() (err error) {
 	if len(b.data) == 0 {
 		return
 	}
-	tx := db.NewTransaction(true)
+	defer func() {
+		clear(b.data)
+		b.enc.Reset()
+	}()
+
+	err = b.Flush()
+	if err != nil {
+		return
+	}
+
+	tx := b.db.NewTransaction(true)
 	defer func() {
 		if err != nil {
 			tx.Discard()
 		} else {
 			err = tx.Commit()
 		}
-		clear(b.data)
-		for f, v := range b.translate {
-			clear(v)
-			b.translate[f] = v[:0]
-		}
-		b.enc.Reset()
 	}()
-
-	set := func(key, value []byte) error {
-		err := tx.Set(key, value)
-		if err != nil {
-			if errors.Is(err, badger.ErrTxnTooBig) {
-				err = tx.Commit()
-				if err != nil {
-					return err
-				}
-				tx = db.NewTransaction(true)
-				b.txnCount++
-				err = tx.Set(key, value)
-				if err != nil {
-					return err
-				}
-				return nil
-			}
-			return err
-		}
-		return nil
-	}
 
 	// start by saving the current record id, even if some ops failed we will not
 	//  mess up search
@@ -208,23 +124,6 @@ func (b *Batch) Save(db *badger.DB) (err error) {
 		return err
 	}
 
-	// save translations
-	for idx, v := range b.translate {
-		f := models.TextIndex(idx)
-		for i := range v {
-			sum := hash.Sum32(v[i])
-			id := b.enc.TranslateID(f, sum)
-			err := set(b.enc.TranslateKey(f, v[i]), nil)
-			if err != nil {
-				return fmt.Errorf("saving translation key %w", err)
-			}
-			err = set(id, v[i])
-			if err != nil {
-				return fmt.Errorf("saving translation value %w", err)
-			}
-		}
-	}
-
 	for k, v := range b.data {
 		err = b.saveTs(tx, k, v)
 		if err != nil {
@@ -233,7 +132,7 @@ func (b *Batch) Save(db *badger.DB) (err error) {
 				if err != nil {
 					return
 				}
-				tx = db.NewTransaction(true)
+				tx = b.db.NewTransaction(true)
 				b.txnCount++
 				err = b.saveTs(tx, k, v)
 				if err != nil {
@@ -247,7 +146,7 @@ func (b *Batch) Save(db *badger.DB) (err error) {
 	return nil
 }
 
-func (b *Batch) saveTs(tx *badger.Txn, key encoding.Key, value *roaring.BSI) error {
+func (b *Store) saveTs(tx *badger.Txn, key encoding.Key, value *roaring.BSI) error {
 	ts := time.UnixMilli(int64(key.Time)).UTC()
 	return value.Each(func(idx byte, bs *roaring.Bitmap) error {
 		return errors.Join(
@@ -277,7 +176,7 @@ func month(ts time.Time) uint64 {
 	return uint64(compute.Month(ts).UnixMilli())
 }
 
-func (b *Batch) save(tx *badger.Txn, key []byte, value *roaring.Bitmap) error {
+func (b *Store) save(tx *badger.Txn, key []byte, value *roaring.Bitmap) error {
 	it, err := tx.Get(key)
 	var data []byte
 	if err != nil {

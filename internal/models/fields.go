@@ -1,5 +1,9 @@
 package models
 
+const (
+	TranslatedFieldsSize = Field_subdivision2_code - Field_browser
+)
+
 type Field uint8
 
 const (
@@ -100,11 +104,11 @@ var (
 	}
 )
 
-func (f Field) TextIndex() byte {
+func (f Field) TranslateIndex() byte {
 	return byte(f - Field_browser)
 }
 
-func TextIndex(i int) Field {
+func TranslateIndex(i int) Field {
 	return Field(i) + Field_browser
 }
 

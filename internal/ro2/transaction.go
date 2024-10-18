@@ -2,17 +2,17 @@ package ro2
 
 import (
 	"encoding/binary"
+	"errors"
+	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/vinceanalytics/vince/internal/batch"
+	"github.com/dgraph-io/badger/v4/y"
 	"github.com/vinceanalytics/vince/internal/bsi"
-	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
-	"github.com/vinceanalytics/vince/internal/util/hash"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -26,15 +26,17 @@ type Tx struct {
 	bitmaps []*roaring.Bitmap
 	kv      [31]bsi.BSI
 	pos     int
+	tr      func(models.Field, []byte) uint64
 }
 
 var txPool = &sync.Pool{New: func() any {
 	return &Tx{bsi: make(map[uint32]*bsi.BSI)}
 }}
 
-func newTx(txn *badger.Txn) *Tx {
+func newTx(txn *badger.Txn, tr func(models.Field, []byte) uint64) *Tx {
 	tx := txPool.Get().(*Tx)
 	tx.tx = txn
+	tx.tr = tr
 	return tx
 }
 
@@ -53,6 +55,7 @@ func (tx *Tx) Close() {
 		tx.it.Close()
 	}
 	tx.it = nil
+	tx.tr = nil
 }
 
 func (tx *Tx) Release() {
@@ -71,7 +74,7 @@ func (tx *Tx) Release() {
 func (tx *Tx) Select(domain string, start,
 	end time.Time, intrerval query.Interval, filters query.Filters, cb func(shard, view uint64, columns *roaring.Bitmap) error) error {
 	m := tx.compile(filters)
-	did := domains.ID(domain)
+	did := []byte(domain)
 	return intrerval.Range(start, end, func(t time.Time) error {
 		view := uint64(t.UnixMilli())
 		for shard := range tx.Shards() {
@@ -100,7 +103,7 @@ func (tx *Tx) Shards() (n uint64) {
 			return nil
 		})
 	}
-	n = (n / batch.ShardWidth) + 1
+	n = (n / ShardWidth) + 1
 	return
 }
 
@@ -137,7 +140,7 @@ func (tx *Tx) Count(shard, view uint64, field models.Field, match *roaring.Bitma
 func (tx *Tx) Bitmap(shard, view uint64, field models.Field) *bsi.BSI {
 	key := encoding.Bitmap(view, shard, field, 0, tx.enc.Allocate(encoding.BitmapKeySize))
 	prefix := key[:len(key)-1]
-	kh := hash.Sum32(prefix)
+	kh := y.Hash(prefix)
 	if b, ok := tx.bsi[kh]; ok {
 		return b
 	}
@@ -146,9 +149,9 @@ func (tx *Tx) Bitmap(shard, view uint64, field models.Field) *bsi.BSI {
 	return b
 }
 
-func (tx *Tx) Domain(shard, view uint64, id uint64) *roaring.Bitmap {
+func (tx *Tx) Domain(shard, view uint64, name []byte) *roaring.Bitmap {
 	return tx.Compare(
-		shard, view, models.Field_domain, bsi.EQ, int64(id), 0, nil,
+		shard, view, models.Field_domain, bsi.EQ, int64(tx.tr(models.Field_domain, name)), 0, nil,
 	)
 }
 
@@ -156,4 +159,34 @@ func (tx *Tx) Compare(shard, view uint64, field models.Field,
 	op bsi.Operation, valueOrStart, end int64, foundSet *roaring.Bitmap) *roaring.Bitmap {
 	bs := tx.Bitmap(shard, view, field)
 	return bs.CompareValue(0, op, valueOrStart, end, foundSet)
+}
+
+func (tx *Tx) Find(field models.Field, id uint64) (o string) {
+	key := tx.enc.TranslateID(field, id)
+	it, err := tx.tx.Get(key)
+	if err != nil {
+		if !errors.Is(err, badger.ErrKeyNotFound) {
+			slog.Error("reading translation key", "key", err, "err", err)
+		}
+		return
+	}
+	it.Value(func(val []byte) error {
+		o = string(val)
+		return nil
+	})
+	return
+}
+
+func (tx *Tx) Search(field models.Field, prefix []byte, f func([]byte, uint64)) {
+	key := tx.enc.TranslateKey(field, nil)
+	offset := len(key)
+	key = append(key, prefix...)
+	it := tx.Iter()
+	for it.Seek(key); it.ValidForPrefix(key); it.Next() {
+		k := it.Item().Key()[offset:]
+		it.Item().Value(func(val []byte) error {
+			f(k, binary.BigEndian.Uint64(val))
+			return nil
+		})
+	}
 }

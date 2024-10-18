@@ -8,7 +8,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/bsi"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
-	"github.com/vinceanalytics/vince/internal/util/hash"
 	wq "github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -39,7 +38,7 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 			case "is", "is_not":
 				values := make([]int64, len(f.Value))
 				for i := range f.Value {
-					values[i] = int64(hash.Sum32([]byte(f.Value[i])))
+					values[i] = int64(tx.tr(fd, []byte(f.Value[i])))
 				}
 				a = append(a, &Match{
 					Field:  fd,
@@ -52,15 +51,15 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				for _, source := range f.Value {
 					prefix, exact := searchPrefix([]byte(source))
 					if exact {
-						values = append(values, int64(hash.Sum32([]byte(source))))
+						values = append(values, int64(tx.tr(fd, []byte(source))))
 					} else {
 						re, err := regexp.Compile(source)
 						if err != nil {
 							return Reject{}
 						}
-						tx.Search(fd, prefix, func(b []byte) {
+						tx.Search(fd, prefix, func(b []byte, val uint64) {
 							if re.Match(b) {
-								values = append(values, int64(hash.Sum32(b)))
+								values = append(values, int64(val))
 							}
 						})
 					}
@@ -80,9 +79,9 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				if err != nil {
 					return Reject{}
 				}
-				tx.Search(fd, []byte{}, func(b []byte) {
+				tx.Search(fd, []byte{}, func(b []byte, val uint64) {
 					if re.Match(b) {
-						values = append(values, int64(hash.Sum32(b)))
+						values = append(values, int64(val))
 					}
 				})
 				a = append(a, &Match{

@@ -2,14 +2,34 @@ package ro2
 
 import (
 	"errors"
+	"sync"
 
 	"filippo.io/age"
 	"github.com/dgraph-io/badger/v4"
+	"github.com/dgraph-io/ristretto/z"
+	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
+	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
 type Store struct {
-	*DB
+	db *badger.DB
+
+	ranges [models.TranslatedFieldsSize]*badger.Sequence
+	mu     sync.RWMutex
+	tree   *z.Tree
+	keys   [models.TranslatedFieldsSize][][]byte
+	values [models.TranslatedFieldsSize][]uint64
+
+	// below fields are used for batching which only occurs in a single goroutine.
+	// They are not thread safe.
+	data     map[encoding.Key]*roaring.BSI
+	key      encoding.Key
+	enc      encoding.Encoding
+	id       uint64
+	shard    uint64
+	txnCount int
 }
 
 func Open(path string) (*Store, error) {
@@ -17,14 +37,7 @@ func Open(path string) (*Store, error) {
 }
 
 func open(path string) (*Store, error) {
-	db, err := newDB(path)
-	if err != nil {
-		return nil, err
-	}
-	o := &Store{
-		DB: db,
-	}
-	return o, nil
+	return newDB(path)
 }
 
 func (o *Store) Web() (secret *age.X25519Identity, err error) {

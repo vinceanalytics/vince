@@ -3,22 +3,21 @@ package db
 import (
 	"time"
 
-	"github.com/vinceanalytics/vince/internal/batch"
 	"github.com/vinceanalytics/vince/internal/models"
 )
 
 const sessionLifetime = 30 * time.Minute
 
-func (db *Config) append(e *models.Model, b *batch.Batch) error {
+func (db *Config) append(e *models.Model) error {
 	hit(e)
 	if cached, ok := db.cache.Get(uint64(e.Id)); ok {
 		update(cached, e)
-		err := b.Add(e)
+		err := db.db.Add(e)
 		releaseEvent(e)
 		return err
 	}
 	newSessionEvent(e)
-	err := b.Add(e)
+	err := db.db.Add(e)
 	if err != nil {
 		return err
 	}

@@ -7,14 +7,14 @@ import (
 )
 
 var (
-	domains = map[string]uint64{}
+	domains = map[string]struct{}{}
 	mu      sync.RWMutex
 )
 
 func Reload(l func(f func(*v1.Site))) {
-	keys := make(map[string]uint64)
+	keys := make(map[string]struct{})
 	l(func(s *v1.Site) {
-		keys[s.Domain] = s.Id
+		keys[s.Domain] = struct{}{}
 	})
 	mu.Lock()
 	domains = keys
@@ -24,20 +24,6 @@ func Reload(l func(f func(*v1.Site))) {
 func Allow(domain string) (ok bool) {
 	mu.RLock()
 	_, ok = domains[domain]
-	mu.RUnlock()
-	return
-}
-
-func Count() (n uint64) {
-	mu.RLock()
-	n = uint64(len(domains))
-	mu.RUnlock()
-	return
-}
-
-func ID(domain string) (n uint64) {
-	mu.RLock()
-	n = domains[domain]
 	mu.RUnlock()
 	return
 }
