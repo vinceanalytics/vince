@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package translate
+package trie
 
 import (
 	"log/slog"
