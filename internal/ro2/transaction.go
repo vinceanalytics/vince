@@ -26,17 +26,17 @@ type Tx struct {
 	bitmaps []*roaring.Bitmap
 	kv      [31]bsi.BSI
 	pos     int
-	tr      func(models.Field, []byte) uint64
+	store   *Store
 }
 
 var txPool = &sync.Pool{New: func() any {
 	return &Tx{bsi: make(map[uint32]*bsi.BSI)}
 }}
 
-func newTx(txn *badger.Txn, tr func(models.Field, []byte) uint64) *Tx {
+func (o *Store) newTx(txn *badger.Txn) *Tx {
 	tx := txPool.Get().(*Tx)
 	tx.tx = txn
-	tx.tr = tr
+	tx.store = o
 	return tx
 }
 
@@ -55,7 +55,7 @@ func (tx *Tx) Close() {
 		tx.it.Close()
 	}
 	tx.it = nil
-	tx.tr = nil
+	tx.store = nil
 }
 
 func (tx *Tx) Release() {
@@ -150,8 +150,9 @@ func (tx *Tx) Bitmap(shard, view uint64, field models.Field) *bsi.BSI {
 }
 
 func (tx *Tx) Domain(shard, view uint64, name []byte) *roaring.Bitmap {
+	id := tx.store.ID(models.Field_domain, name)
 	return tx.Compare(
-		shard, view, models.Field_domain, bsi.EQ, int64(tx.tr(models.Field_domain, name)), 0, nil,
+		shard, view, models.Field_domain, bsi.EQ, int64(id), 0, nil,
 	)
 }
 
@@ -175,18 +176,4 @@ func (tx *Tx) Find(field models.Field, id uint64) (o string) {
 		return nil
 	})
 	return
-}
-
-func (tx *Tx) Search(field models.Field, prefix []byte, f func([]byte, uint64)) {
-	key := tx.enc.TranslateKey(field, nil)
-	offset := len(key)
-	key = append(key, prefix...)
-	it := tx.Iter()
-	for it.Seek(key); it.ValidForPrefix(key); it.Next() {
-		k := it.Item().Key()[offset:]
-		it.Item().Value(func(val []byte) error {
-			f(k, binary.BigEndian.Uint64(val))
-			return nil
-		})
-	}
 }

@@ -11,19 +11,22 @@ import (
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
+	"github.com/vinceanalytics/vince/internal/trie"
 )
 
 type Store struct {
 	db *badger.DB
 
-	ranges [models.TranslatedFieldsSize]*badger.Sequence
-	mu     sync.RWMutex
-	tree   *z.Tree
-	keys   [models.TranslatedFieldsSize][][]byte
-	values [models.TranslatedFieldsSize][]uint64
+	// saves db lookups when querying
+	mu   sync.RWMutex
+	trie *trie.Trie
 
 	// below fields are used for batching which only occurs in a single goroutine.
 	// They are not thread safe.
+	ranges   [models.TranslatedFieldsSize]*badger.Sequence
+	keys     [models.TranslatedFieldsSize][][]byte
+	values   [models.TranslatedFieldsSize][]uint64
+	tree     *z.Tree
 	data     map[encoding.Key]*roaring.BSI
 	key      encoding.Key
 	enc      encoding.Encoding

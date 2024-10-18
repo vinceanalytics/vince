@@ -66,10 +66,14 @@ func (t *Trie) Size() uint32 {
 	return uint32(t.buf.LenNoPadding())
 }
 
-type iterFn func(key []byte, uid uint64) error
+type IterFn func(key []byte, uid uint64) error
 
-func (t *Trie) Iterate(fn iterFn) error {
+func (t *Trie) Iterate(fn IterFn) error {
 	return t.iterate(t.root, make([]byte, 0, 1<<10), fn)
+}
+
+func (t *Trie) IterateWIthPrefix(prefix []byte, fn IterFn) error {
+	return t.iterate(t.root, prefix, fn)
 }
 
 // Release would release the resources used by the Arena.
@@ -138,7 +142,7 @@ func (t *Trie) put(offset uint32, key []byte, uid uint64) uint32 {
 	return offset
 }
 
-func (t *Trie) iterate(offset uint32, prefix []byte, fn iterFn) error {
+func (t *Trie) iterate(offset uint32, prefix []byte, fn IterFn) error {
 	if offset == 0 {
 		return nil
 	}

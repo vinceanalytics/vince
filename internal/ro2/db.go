@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
@@ -17,10 +18,12 @@ import (
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
+	"github.com/vinceanalytics/vince/internal/trie"
 )
 
 func newDB(path string) (*Store, error) {
 	if path != "" {
+		path = filepath.Join(path, "db")
 		os.MkdirAll(path, 0755)
 	}
 	db, err := badger.Open(badger.
@@ -33,11 +36,12 @@ func newDB(path string) (*Store, error) {
 	}
 	store := &Store{
 		db: db, tree: z.NewTree("translate"),
+		trie: trie.NewTrie(),
 		data: make(map[encoding.Key]*roaring.BSI),
 	}
 	for i := range store.ranges {
 		f := models.TranslateIndex(i)
-		seq, err := db.GetSequence(encoding.TranslateSeq(f, make([]byte, 3)), MaxLeaseSize)
+		seq, err := db.GetSequence(encoding.TranslateSeq(f, make([]byte, 3)), maxTranslationKeyLeaseSize)
 		y.Check(err)
 		store.ranges[i] = seq
 	}
@@ -71,6 +75,7 @@ func newDB(path string) (*Store, error) {
 			err := it.Item().Value(func(val []byte) error {
 				id := binary.BigEndian.Uint64(val)
 				store.tree.Set(farm.Fingerprint64(key), id)
+				store.trie.Put(key, id)
 				return nil
 			})
 			if err != nil {
@@ -94,6 +99,7 @@ func (db *Store) Start(ctx context.Context) {
 }
 
 func (db *Store) Close() error {
+	db.trie.Release()
 	var errs []error
 	errs = append(errs, db.Flush())
 	for i := range db.ranges {
@@ -106,7 +112,7 @@ func (db *Store) Close() error {
 func (db *Store) Badger() *badger.DB { return db.db }
 
 func (db *Store) Update(f func(tx *Tx) error) error {
-	tx := newTx(nil, db.ID)
+	tx := db.newTx(nil)
 	defer tx.Release()
 
 	return db.db.Update(func(txn *badger.Txn) error {
@@ -120,7 +126,7 @@ func (db *Store) Update(f func(tx *Tx) error) error {
 func (db *Store) View(f func(tx *Tx) error) error {
 	return db.db.View(func(txn *badger.Txn) error {
 
-		tx := newTx(txn, db.ID)
+		tx := db.newTx(txn)
 		defer tx.Release()
 
 		return f(tx)
