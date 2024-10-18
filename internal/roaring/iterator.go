@@ -139,3 +139,27 @@ func (itr *ManyItr) NextMany(buf []uint64) int {
 	}
 	return count
 }
+
+type containerIterator struct {
+	ra  *Bitmap
+	pos int
+}
+
+func (ra *Bitmap) newCoIter() *containerIterator {
+	return &containerIterator{ra: ra}
+}
+
+func (x *containerIterator) next() bool {
+	if x.pos+1 < x.ra.keys.numKeys() {
+		x.pos++
+		return true
+	}
+	return false
+}
+
+func (x *containerIterator) value() (key uint64, co []uint16) {
+	key = x.ra.keys.key(x.pos)
+	off := x.ra.keys.val(x.pos)
+	co = x.ra.getContainer(off)
+	return
+}
