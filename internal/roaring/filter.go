@@ -162,7 +162,7 @@ func (f FilterKey) MatchOneUntilSameOffset() FilterResult {
 	return f.MatchOneUntilOffset(uint64(f) & keyMask)
 }
 
-func (ra *Bitmap) ExtractMutex(match *Bitmap, f func(row uint64, columns []uint64)) {
+func (ra *Bitmap) ExtractMutex(match *Bitmap, f func(row uint64, columns *Bitmap)) {
 	filter := make([][]uint16, 1<<shardVsContainerExponent)
 	{
 		iter := match.newCoIter()
@@ -195,12 +195,7 @@ func (ra *Bitmap) ExtractMutex(match *Bitmap, f func(row uint64, columns []uint6
 		}
 		if containerAndAny(c, filter[idx]) {
 			ex := containerAnd(c, filter[idx])
-			switch ex[indexType] {
-			case typeArray:
-				f(row, toRows(k, array(ex).all()))
-			case typeBitmap:
-				f(row, toRows(k, bitmap(ex).all()))
-			}
+			f(row, toRows(ex))
 			seenThisRow = true
 		}
 	}
@@ -208,12 +203,12 @@ func (ra *Bitmap) ExtractMutex(match *Bitmap, f func(row uint64, columns []uint6
 
 func highbits(v uint64) uint64 { return v >> 16 }
 
-func toRows(key uint64, columns []uint16) []uint64 {
-	resutlt := make([]uint64, len(columns))
-	for i := range columns {
-		resutlt[i] = uint64(columns[i])
-	}
-	return resutlt
+func toRows(ac []uint16) *Bitmap {
+	res := NewBitmap()
+	offs := res.newContainer(uint16(len(ac)))
+	copy(res.getContainer(offs), ac)
+	res.setKey(0, offs)
+	return res
 }
 
 func (ra *Bitmap) Mutex(id uint64, value uint64) {

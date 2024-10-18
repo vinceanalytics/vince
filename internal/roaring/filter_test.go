@@ -27,8 +27,8 @@ func TestExtractMutex(t *testing.T) {
 		4: {1, 4},
 	}
 	got := map[uint64][]uint64{}
-	b.ExtractMutex(m, func(row uint64, columns []uint64) {
-		got[row] = columns
+	b.ExtractMutex(m, func(row uint64, columns *Bitmap) {
+		got[row] = columns.ToArray()
 	})
 	require.Equal(t, want, got)
 }

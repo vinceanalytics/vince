@@ -639,7 +639,6 @@ func (ra *Bitmap) ToArray() []uint64 {
 	N := ra.keys.numKeys()
 	for i := 0; i < N; i++ {
 		key := ra.keys.key(i)
-		fmt.Println(i, key)
 		off := ra.keys.val(i)
 		c := ra.getContainer(off)
 
