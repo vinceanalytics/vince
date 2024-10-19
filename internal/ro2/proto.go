@@ -28,7 +28,7 @@ type Store struct {
 	values   [models.TranslatedFieldsSize][]uint64
 	tree     *z.Tree
 	mutex    [models.TranslatedFieldsSize]map[uint64]*roaring.Bitmap
-	bsi      [models.BSIFieldsSize]map[uint64]*roaring.BSI
+	bsi      [models.BSIFieldsSize]map[uint64]*roaring.Bitmap
 	enc      encoding.Encoding
 	id       uint64
 	time     uint64

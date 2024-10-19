@@ -1,10 +1,10 @@
 unknown           
 timestamp         
 id                
+bounce            
 duration          
 city              
 view              
-bounce            
 session           
 browser           
 browser_version   

@@ -33,3 +33,32 @@ func TestExtractMutex(t *testing.T) {
 	})
 	require.Equal(t, want, got)
 }
+
+func TestSumBSI(t *testing.T) {
+
+	sample := []struct {
+		ids    []uint64
+		values []int64
+		total  int64
+	}{
+		{
+			[]uint64{1, 2, 3},
+			[]int64{1, 2, 3},
+			6,
+		},
+		{
+			[]uint64{1, 2, 3},
+			[]int64{1, -1, -1},
+			-1,
+		},
+	}
+	for _, s := range sample {
+		b := NewBitmap()
+		m := NewBitmap()
+		for i := range s.ids {
+			b.BSI(s.ids[i], s.values[i])
+			m.Set(s.ids[i])
+		}
+		require.Equal(t, s.total, b.BSISum(0, m))
+	}
+}

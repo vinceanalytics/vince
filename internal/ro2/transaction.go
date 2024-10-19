@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/dgraph-io/badger/v4/y"
-	"github.com/vinceanalytics/vince/internal/bsi"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
@@ -19,18 +17,15 @@ import (
 //go:generate protoc  --go_out=. --go_opt=paths=source_relative pages.proto
 
 type Tx struct {
-	tx      *badger.Txn
-	it      *badger.Iterator
-	enc     encoding.Encoding
-	bsi     map[uint32]*bsi.BSI
-	bitmaps []*roaring.Bitmap
-	kv      [31]bsi.BSI
-	pos     int
-	store   *Store
+	tx    *badger.Txn
+	it    *badger.Iterator
+	enc   encoding.Encoding
+	pos   int
+	store *Store
 }
 
 var txPool = &sync.Pool{New: func() any {
-	return &Tx{bsi: make(map[uint32]*bsi.BSI)}
+	return &Tx{}
 }}
 
 func (o *Store) newTx(txn *badger.Txn) *Tx {
@@ -64,10 +59,6 @@ func (tx *Tx) Release() {
 	// avoid retaining large amout of data. Keep around 4kb per transaction. We
 	// also use this to copy bitmaps
 	tx.enc.Clip(4 << 10)
-	clear(tx.bsi)
-	clear(tx.bitmaps)
-	tx.bitmaps = tx.bitmaps[:0]
-	clear(tx.kv[:])
 	tx.pos = 0
 }
 
@@ -107,29 +98,6 @@ func (tx *Tx) Shards() (n uint64) {
 	return
 }
 
-func (tx *Tx) Sum(shard, view uint64, field models.Field, match *roaring.Bitmap) (sum int64) {
-	bs := tx.NewBSI(shard, view, field)
-	sum, _ = bs.Sum(match)
-	return
-}
-
-func (tx *Tx) Transpose(shard, view uint64, field models.Field, match *roaring.Bitmap) (result *roaring.Bitmap) {
-	bs := tx.NewBSI(shard, view, field)
-	return bs.Transpose(match)
-}
-
-func (tx *Tx) True(shard, view uint64, field models.Field, match *roaring.Bitmap) *roaring.Bitmap {
-	bs := tx.NewBitmap(shard, view, field)
-	return bs.True(shard, match)
-}
-
-func (tx *Tx) Bounce(shard, view uint64, match *roaring.Bitmap) (count int) {
-	bs := tx.NewBitmap(shard, view, models.Field_bounce)
-	yes := bs.True(shard, match).GetCardinality()
-	no := bs.False(shard, match).GetCardinality()
-	return yes - no
-}
-
 func (tx *Tx) NewBitmap(shard, view uint64, field models.Field) (b *roaring.Bitmap) {
 	key := encoding.Bitmap(view, shard, field, 0, tx.enc.Allocate(encoding.BitmapKeySize))
 	it, err := tx.tx.Get(key)
@@ -141,18 +109,6 @@ func (tx *Tx) NewBitmap(shard, view uint64, field models.Field) (b *roaring.Bitm
 			return nil
 		})
 	}
-	return b
-}
-
-func (tx *Tx) NewBSI(shard, view uint64, field models.Field) *bsi.BSI {
-	key := encoding.Bitmap(view, shard, field, 0, tx.enc.Allocate(encoding.BitmapKeySize))
-	prefix := key[:len(key)-1]
-	kh := y.Hash(prefix)
-	if b, ok := tx.bsi[kh]; ok {
-		return b
-	}
-	b := tx.newKv(key)
-	tx.bsi[kh] = b
 	return b
 }
 

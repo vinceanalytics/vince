@@ -107,20 +107,26 @@ func (d *Stats) Read(tx *Tx, shard, view uint64, match *roaring.Bitmap, fields f
 	return fields.Each(func(f models.Field) (err error) {
 		switch f {
 		case models.Field_view:
-			count := tx.True(shard, view, f, match).GetCardinality()
+			count := tx.NewBitmap(shard, view, f).
+				True(shard, match).GetCardinality()
 			d.PageViews += float64(count)
 		case models.Field_session:
-			count := tx.True(shard, view, f, match).GetCardinality()
+			count := tx.NewBitmap(shard, view, f).
+				True(shard, match).GetCardinality()
 			d.Visits += float64(count)
 		case models.Field_bounce:
-			sum := tx.Bounce(shard, view, match)
+			sum := tx.NewBitmap(shard, view, models.Field_bounce).
+				BSISum(shard, match)
 			d.BounceRate += float64(sum)
 		case models.Field_duration:
-			sum := tx.Sum(shard, view, f, match)
+			sum := tx.NewBitmap(shard, view, f).
+				BSISum(shard, match)
 			d.VisitDuration += float64(sum)
 		case models.Field_id:
-			uniq := tx.Transpose(shard, view, f, match)
-			d.uid.Or(uniq)
+			tx.NewBitmap(shard, view, f).
+				ExtractBSI(shard, match, func(_ uint64, value int64) {
+					d.uid.Set(uint64(value))
+				})
 		case models.Field_event:
 			d.Events += float64(match.GetCardinality())
 		}

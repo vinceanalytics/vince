@@ -25,13 +25,13 @@ func (b *Store) Add(m *models.Model) error {
 	ts := uint64(time.UnixMilli(m.Timestamp).Truncate(time.Minute).UnixMilli())
 	b.time = ts
 	if m.Timestamp > 0 {
-		b.getBSI(models.Field_timestamp).SetValue(id, m.Timestamp)
+		b.getBSI(models.Field_timestamp).BSI(id, m.Timestamp)
 	}
 	if m.Id != 0 {
-		b.getBSI(models.Field_id).SetValue(id, int64(m.Id))
+		b.getBSI(models.Field_id).BSI(id, int64(m.Id))
 	}
 	if m.Bounce != 0 {
-		b.getMutex(models.Field_bounce).Bool(id, m.Bounce == 1)
+		b.getBSI(models.Field_bounce).BSI(id, int64(m.Bounce))
 	}
 	if m.Session {
 		b.getMutex(models.Field_session).Bool(id, true)
@@ -40,7 +40,7 @@ func (b *Store) Add(m *models.Model) error {
 		b.getMutex(models.Field_view).Bool(id, true)
 	}
 	if m.Duration > 0 {
-		b.getBSI(models.Field_duration).SetValue(id, m.Duration)
+		b.getBSI(models.Field_duration).BSI(id, m.Duration)
 	}
 	if m.City != 0 {
 		b.getMutex(models.Field_city).Mutex(id, uint64(m.City))
@@ -77,11 +77,11 @@ func (b *Store) set(field models.Field, id uint64, value []byte) {
 	b.getMutex(field).Mutex(id, b.tr(field, value))
 }
 
-func (b *Store) getBSI(field models.Field) *roaring.BSI {
+func (b *Store) getBSI(field models.Field) *roaring.Bitmap {
 	idx := field.BSI()
 	bs, ok := b.bsi[idx][b.time]
 	if !ok {
-		bs = roaring.NewDefaultBSI()
+		bs = roaring.NewBitmap()
 		b.bsi[idx][b.time] = bs
 	}
 	return bs
@@ -173,29 +173,13 @@ func (b *Store) SaveBatch() (err error) {
 	for i := range b.bsi {
 		f := models.BSI(i)
 		for k, v := range b.bsi[i] {
-			err = save(b.saveBSI(k, f, v))
+			err = save(b.saveBitmap(k, f, v))
 			if err != nil {
 				return
 			}
 		}
 	}
 	return nil
-}
-
-func (b *Store) saveBSI(timestamp uint64, field models.Field, value *roaring.BSI) func(tx *badger.Txn) error {
-	ts := time.UnixMilli(int64(timestamp)).UTC()
-	return func(tx *badger.Txn) error {
-		return value.Each(func(idx byte, bs *roaring.Bitmap) error {
-			return errors.Join(
-				b.save(tx, b.enc.Bitmap(0, b.shard, field, byte(idx)), bs),         // global
-				b.save(tx, b.enc.Bitmap(timestamp, b.shard, field, byte(idx)), bs), //minute
-				b.save(tx, b.enc.Bitmap(hour(ts), b.shard, field, byte(idx)), bs),
-				b.save(tx, b.enc.Bitmap(day(ts), b.shard, field, byte(idx)), bs),
-				b.save(tx, b.enc.Bitmap(week(ts), b.shard, field, byte(idx)), bs),
-				b.save(tx, b.enc.Bitmap(month(ts), b.shard, field, byte(idx)), bs),
-			)
-		})
-	}
 }
 
 func (b *Store) saveBitmap(timestamp uint64, field models.Field, bs *roaring.Bitmap) func(tx *badger.Txn) error {

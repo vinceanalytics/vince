@@ -7,10 +7,10 @@ const (
 	Field_unknown Field = iota
 	Field_timestamp
 	Field_id
+	Field_bounce
 	Field_duration
 	Field_city
 	Field_view
-	Field_bounce
 	Field_session
 	Field_browser
 	Field_browser_version
@@ -40,10 +40,10 @@ var (
 		Field_unknown:           "unknown",
 		Field_timestamp:         "timestamp",
 		Field_id:                "id",
+		Field_bounce:            "bounce",
 		Field_duration:          "duration",
 		Field_city:              "city",
 		Field_view:              "view",
-		Field_bounce:            "bounce",
 		Field_session:           "session",
 		Field_browser:           "browser",
 		Field_browser_version:   "browser_version",
@@ -71,10 +71,10 @@ var (
 		"unknown":           Field_unknown,
 		"timestamp":         Field_timestamp,
 		"id":                Field_id,
+		"bounce":            Field_bounce,
 		"duration":          Field_duration,
 		"city":              Field_city,
 		"view":              Field_view,
-		"bounce":            Field_bounce,
 		"session":           Field_session,
 		"browser":           Field_browser,
 		"browser_version":   Field_browser_version,

@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vinceanalytics/vince/internal/bsi"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	wq "github.com/vinceanalytics/vince/internal/web/query"
@@ -24,7 +23,6 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				}
 				return &Match{
 					Field:  models.Field_city,
-					Op:     bsi.EQ,
 					Values: []int64{int64(code)},
 				}
 			}
@@ -43,7 +41,6 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				a = append(a, &Match{
 					Field:  fd,
 					Negate: f.Op == "is_not",
-					Op:     bsi.EQ,
 					Values: values,
 				})
 			case "matches", "does_not_match":
@@ -71,7 +68,6 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				a = append(a, &Match{
 					Field:  fd,
 					Negate: f.Op == "does_not_match",
-					Op:     bsi.EQ,
 					Values: values,
 				})
 			case "contains", "does_not_contain":
@@ -88,7 +84,6 @@ func (tx *Tx) compile(fs wq.Filters) Filter {
 				a = append(a, &Match{
 					Field:  fd,
 					Negate: f.Op == "does_not_contain",
-					Op:     bsi.EQ,
 					Values: values,
 				})
 			default:
@@ -127,7 +122,6 @@ func (a And) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) 
 
 type Match struct {
 	Values []int64
-	Op     bsi.Operation
 	Field  models.Field
 	Negate bool
 }

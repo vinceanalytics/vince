@@ -42,7 +42,7 @@ func newDB(path string) (*Store, error) {
 		store.mutex[i] = make(map[uint64]*roaring.Bitmap)
 	}
 	for i := range store.bsi {
-		store.bsi[i] = make(map[uint64]*roaring.BSI)
+		store.bsi[i] = make(map[uint64]*roaring.Bitmap)
 	}
 	for i := range store.ranges {
 		f := models.Mutex(i)
