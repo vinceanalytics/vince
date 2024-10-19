@@ -24,7 +24,7 @@ func (b *Store) Add(m *models.Model) error {
 	id := b.id
 	ts := uint64(time.UnixMilli(m.Timestamp).Truncate(time.Minute).UnixMilli())
 	b.time = ts
-	if m.Timestamp != 0 {
+	if m.Timestamp > 0 {
 		b.getBSI(models.Field_timestamp).SetValue(id, m.Timestamp)
 	}
 	if m.Id != 0 {
@@ -39,11 +39,11 @@ func (b *Store) Add(m *models.Model) error {
 	if m.View {
 		b.getMutex(models.Field_view).Bool(id, true)
 	}
-	if m.Duration != 0 {
+	if m.Duration > 0 {
 		b.getBSI(models.Field_duration).SetValue(id, m.Duration)
 	}
 	if m.City != 0 {
-		b.getBSI(models.Field_city).SetValue(id, int64(m.City))
+		b.getMutex(models.Field_city).Mutex(id, uint64(m.City))
 	}
 	b.set(models.Field_browser, id, m.Browser)
 	b.set(models.Field_browser_version, id, m.BrowserVersion)

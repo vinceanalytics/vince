@@ -2,6 +2,7 @@ package query
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 )
 
@@ -47,10 +48,14 @@ func (c *Filter) UnmarshalJSON(data []byte) error {
 	if !ok {
 		return nil
 	}
-	c.Value = make([]string, len(v))
+	c.Value = make([]string, 0, len(v))
 	for i := range v {
-		c.Value[i], ok = v[i].(string)
-		if !ok {
+		switch e := v[i].(type) {
+		case string:
+			c.Value = append(c.Value, e)
+		case float64:
+			c.Value = append(c.Value, strconv.Itoa(int(e)))
+		default:
 			return nil
 		}
 	}

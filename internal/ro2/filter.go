@@ -136,11 +136,7 @@ func (m *Match) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitma
 	if m.Negate {
 		return roaring.NewBitmap()
 	}
-	if m.Field == models.Field_city {
-		return m.applyBSI(rtx.NewBSI(shard, view, m.Field), columns)
-	}
 	bs := rtx.NewBitmap(shard, view, m.Field)
-
 	return m.apply(bs, shard, columns)
 }
 
@@ -156,18 +152,6 @@ func (m *Match) apply(bs *roaring.Bitmap, shard uint64, columns *roaring.Bitmap)
 		row := bs.Row(shard, uint64(m.Values[i]))
 		row.And(columns)
 		o[i] = row
-	}
-	return roaring.FastOr(o...)
-}
-
-func (m *Match) applyBSI(bs *bsi.BSI, columns *roaring.Bitmap) *roaring.Bitmap {
-	if len(m.Values) == 1 {
-		return bs.CompareValue(0, m.Op, m.Values[0], 0, columns)
-	}
-	o := make([]*roaring.Bitmap, len(m.Values))
-
-	for i := range m.Values {
-		o[i] = bs.CompareValue(0, m.Op, m.Values[i], 0, columns)
 	}
 	return roaring.FastOr(o...)
 }
