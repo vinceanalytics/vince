@@ -1,5 +1,6 @@
 package models
 
+//go:generate go run gen/main.go
 type Model struct {
 	ExitPage         []byte
 	UtmTerm          []byte

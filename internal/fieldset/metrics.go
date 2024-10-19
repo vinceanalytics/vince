@@ -1,8 +1,13 @@
 package fieldset
 
-import "github.com/vinceanalytics/vince/internal/models"
+import (
+	"github.com/bits-and-blooms/bitset"
+	"github.com/vinceanalytics/vince/internal/models"
+)
 
-type Set uint8
+type Set struct {
+	bitset.BitSet
+}
 
 func From(m ...string) Set {
 	var s Set
@@ -31,26 +36,21 @@ func From(m ...string) Set {
 }
 
 func (s Set) Each(fn func(field models.Field) error) error {
-	for f := models.Field_id; f <= models.Field_duration; f++ {
-		if s.Has(f) {
-			err := fn(f)
-			if err != nil {
-				return err
-			}
+	var b [8]uint
+	_, buf := s.NextSetMany(0, b[:])
+	for i := range buf {
+		err := fn(models.Field(buf[i]))
+		if err != nil {
+			return err
 		}
-	}
-	if s.Has(models.Field_event) {
-		return fn(models.Field_event)
 	}
 	return nil
 }
 
 func (s *Set) Set(f models.Field) {
-	if !s.Has(f) {
-		*s |= Set(f)
-	}
+	s.BitSet.Set(uint(f))
 }
 
 func (s *Set) Has(f models.Field) bool {
-	return *s&Set(f) != 0
+	return s.Test(uint(f))
 }

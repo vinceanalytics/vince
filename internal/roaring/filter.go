@@ -9,7 +9,7 @@ const (
 	shardVsContainerExponent = 4
 )
 
-func (ra *Bitmap) ExtractMutex(match *Bitmap, f func(row uint64, columns *Bitmap)) {
+func (ra *Bitmap) ExtractMutex(match *Bitmap, f func(row uint64, columns *Bitmap) error) error {
 	filter := make([][]uint16, 1<<shardVsContainerExponent)
 	{
 		iter := match.newCoIter()
@@ -42,10 +42,14 @@ func (ra *Bitmap) ExtractMutex(match *Bitmap, f func(row uint64, columns *Bitmap
 		}
 		if containerAndAny(c, filter[idx]) {
 			ex := containerAnd(c, filter[idx])
-			f(row, toRows(ex))
+			err := f(row, toRows(ex))
+			if err != nil {
+				return err
+			}
 			seenThisRow = true
 		}
 	}
+	return nil
 }
 
 func highbits(v uint64) uint64 { return v >> 16 }
@@ -58,11 +62,44 @@ func toRows(ac []uint16) *Bitmap {
 	return res
 }
 
+const (
+	// Row ids used for boolean fields.
+	falseRowID = uint64(0)
+	trueRowID  = uint64(1)
+
+	falseRowOffset = 0 * shardWidth // fragment row 0
+	trueRowOffset  = 1 * shardWidth // fragment row 1
+)
+
+func (ra *Bitmap) Bool(id uint64, value bool) {
+	fragmentColumn := id % shardWidth
+	if value {
+		ra.Set(trueRowOffset + fragmentColumn)
+	} else {
+		ra.Set(falseRowOffset + fragmentColumn)
+	}
+}
+
+func (ra *Bitmap) True(shard uint64, match *Bitmap) *Bitmap {
+	m := ra.Row(shard, trueRowID)
+	m.And(match)
+	return m
+}
+
+func (ra *Bitmap) False(shard uint64, match *Bitmap) *Bitmap {
+	m := ra.Row(shard, falseRowID)
+	m.And(match)
+	return m
+}
+
 func (ra *Bitmap) Mutex(id uint64, value uint64) {
 	ra.Set(value*shardWidth + (id % shardWidth))
 }
 
 func (ra *Bitmap) Row(shard, rowID uint64) *Bitmap {
+	if ra == nil {
+		return NewBitmap()
+	}
 	return ra.OffsetRange(
 		shard*shardWidth,
 		rowID*shardWidth,

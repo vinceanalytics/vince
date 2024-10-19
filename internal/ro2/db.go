@@ -37,10 +37,15 @@ func newDB(path string) (*Store, error) {
 	store := &Store{
 		db: db, tree: z.NewTree("translate"),
 		trie: trie.NewTrie(),
-		data: make(map[encoding.Key]*roaring.BSI),
+	}
+	for i := range store.mutex {
+		store.mutex[i] = make(map[uint64]*roaring.Bitmap)
+	}
+	for i := range store.bsi {
+		store.bsi[i] = make(map[uint64]*roaring.BSI)
 	}
 	for i := range store.ranges {
-		f := models.TranslateIndex(i)
+		f := models.Mutex(i)
 		seq, err := db.GetSequence(encoding.TranslateSeq(f, make([]byte, 3)), maxTranslationKeyLeaseSize)
 		y.Check(err)
 		store.ranges[i] = seq

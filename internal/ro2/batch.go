@@ -7,7 +7,6 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/vinceanalytics/vince/internal/compute"
-	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
@@ -15,6 +14,7 @@ import (
 const ShardWidth = 1 << 20
 
 func (b *Store) Add(m *models.Model) error {
+	b.events++
 	shard := (b.id + 1) / ShardWidth
 	if shard != b.shard {
 		// we havs changed shards. Persist the current batch before continuing
@@ -23,27 +23,27 @@ func (b *Store) Add(m *models.Model) error {
 	b.id++
 	id := b.id
 	ts := uint64(time.UnixMilli(m.Timestamp).Truncate(time.Minute).UnixMilli())
-	b.key.Time = ts
+	b.time = ts
 	if m.Timestamp != 0 {
-		b.get(models.Field_timestamp).SetValue(id, m.Timestamp)
+		b.getBSI(models.Field_timestamp).SetValue(id, m.Timestamp)
 	}
 	if m.Id != 0 {
-		b.get(models.Field_id).SetValue(id, int64(m.Id))
+		b.getBSI(models.Field_id).SetValue(id, int64(m.Id))
 	}
 	if m.Bounce != 0 {
-		b.get(models.Field_bounce).SetValue(id, int64(m.Bounce))
+		b.getMutex(models.Field_bounce).Bool(id, m.Bounce == 1)
 	}
 	if m.Session {
-		b.get(models.Field_session).SetValue(id, 1)
+		b.getMutex(models.Field_session).Bool(id, true)
 	}
 	if m.View {
-		b.get(models.Field_view).SetValue(id, 1)
+		b.getMutex(models.Field_view).Bool(id, true)
 	}
 	if m.Duration != 0 {
-		b.get(models.Field_duration).SetValue(id, m.Duration)
+		b.getBSI(models.Field_duration).SetValue(id, m.Duration)
 	}
-	if m.Duration != 0 {
-		b.get(models.Field_city).SetValue(id, int64(m.City))
+	if m.City != 0 {
+		b.getBSI(models.Field_city).SetValue(id, int64(m.City))
 	}
 	b.set(models.Field_browser, id, m.Browser)
 	b.set(models.Field_browser_version, id, m.BrowserVersion)
@@ -74,30 +74,46 @@ func (b *Store) set(field models.Field, id uint64, value []byte) {
 	if len(value) == 0 {
 		return
 	}
-	b.get(field).SetValue(id, b.tr(field, value))
+	b.getMutex(field).Mutex(id, b.tr(field, value))
 }
 
-func (b *Store) get(field models.Field) *roaring.BSI {
-	b.key.Field = field
-	bs, ok := b.data[b.key]
+func (b *Store) getBSI(field models.Field) *roaring.BSI {
+	idx := field.BSI()
+	bs, ok := b.bsi[idx][b.time]
 	if !ok {
 		bs = roaring.NewDefaultBSI()
-		b.data[b.key] = bs
+		b.bsi[idx][b.time] = bs
 	}
 	return bs
 }
 
-func (b *Store) tr(field models.Field, value []byte) int64 {
-	return int64(b.AssignUid(field, value))
+func (b *Store) getMutex(field models.Field) *roaring.Bitmap {
+	idx := field.Mutex()
+	bs, ok := b.mutex[idx][b.time]
+	if !ok {
+		bs = roaring.NewBitmap()
+		b.mutex[idx][b.time] = bs
+	}
+	return bs
+}
+
+func (b *Store) tr(field models.Field, value []byte) uint64 {
+	return b.AssignUid(field, value)
 }
 
 func (b *Store) SaveBatch() (err error) {
-	if len(b.data) == 0 {
+	if b.events == 0 {
 		return
 	}
 	defer func() {
-		clear(b.data)
+		b.events = 0
 		b.enc.Reset()
+		for i := range b.mutex {
+			clear(b.mutex[i])
+		}
+		for i := range b.bsi {
+			clear(b.bsi[i])
+		}
 	}()
 
 	err = b.Flush()
@@ -124,40 +140,76 @@ func (b *Store) SaveBatch() (err error) {
 		return err
 	}
 
-	for k, v := range b.data {
-		err = b.saveTs(tx, k, v)
+	save := func(f func(*badger.Txn) error) error {
+		err := f(tx)
 		if err != nil {
 			if errors.Is(err, badger.ErrTxnTooBig) {
 				err = tx.Commit()
 				if err != nil {
-					return
+					return err
 				}
 				tx = b.db.NewTransaction(true)
 				b.txnCount++
-				err = b.saveTs(tx, k, v)
+				err = f(tx)
 				if err != nil {
-					return
+					return err
 				}
-				continue
+				return nil
 			}
 			return err
+		}
+		return nil
+	}
+
+	for i := range b.mutex {
+		f := models.Mutex(i)
+		for k, v := range b.mutex[i] {
+			err = save(b.saveBitmap(k, f, v))
+			if err != nil {
+				return
+			}
+		}
+	}
+	for i := range b.bsi {
+		f := models.BSI(i)
+		for k, v := range b.bsi[i] {
+			err = save(b.saveBSI(k, f, v))
+			if err != nil {
+				return
+			}
 		}
 	}
 	return nil
 }
 
-func (b *Store) saveTs(tx *badger.Txn, key encoding.Key, value *roaring.BSI) error {
-	ts := time.UnixMilli(int64(key.Time)).UTC()
-	return value.Each(func(idx byte, bs *roaring.Bitmap) error {
+func (b *Store) saveBSI(timestamp uint64, field models.Field, value *roaring.BSI) func(tx *badger.Txn) error {
+	ts := time.UnixMilli(int64(timestamp)).UTC()
+	return func(tx *badger.Txn) error {
+		return value.Each(func(idx byte, bs *roaring.Bitmap) error {
+			return errors.Join(
+				b.save(tx, b.enc.Bitmap(0, b.shard, field, byte(idx)), bs),         // global
+				b.save(tx, b.enc.Bitmap(timestamp, b.shard, field, byte(idx)), bs), //minute
+				b.save(tx, b.enc.Bitmap(hour(ts), b.shard, field, byte(idx)), bs),
+				b.save(tx, b.enc.Bitmap(day(ts), b.shard, field, byte(idx)), bs),
+				b.save(tx, b.enc.Bitmap(week(ts), b.shard, field, byte(idx)), bs),
+				b.save(tx, b.enc.Bitmap(month(ts), b.shard, field, byte(idx)), bs),
+			)
+		})
+	}
+}
+
+func (b *Store) saveBitmap(timestamp uint64, field models.Field, bs *roaring.Bitmap) func(tx *badger.Txn) error {
+	ts := time.UnixMilli(int64(timestamp)).UTC()
+	return func(tx *badger.Txn) error {
 		return errors.Join(
-			b.save(tx, b.enc.Bitmap(0, b.shard, key.Field, byte(idx)), bs),        // global
-			b.save(tx, b.enc.Bitmap(key.Time, b.shard, key.Field, byte(idx)), bs), //minute
-			b.save(tx, b.enc.Bitmap(hour(ts), b.shard, key.Field, byte(idx)), bs),
-			b.save(tx, b.enc.Bitmap(day(ts), b.shard, key.Field, byte(idx)), bs),
-			b.save(tx, b.enc.Bitmap(week(ts), b.shard, key.Field, byte(idx)), bs),
-			b.save(tx, b.enc.Bitmap(month(ts), b.shard, key.Field, byte(idx)), bs),
+			b.save(tx, b.enc.Bitmap(0, b.shard, field, 0), bs),         // global
+			b.save(tx, b.enc.Bitmap(timestamp, b.shard, field, 0), bs), //minute
+			b.save(tx, b.enc.Bitmap(hour(ts), b.shard, field, 0), bs),
+			b.save(tx, b.enc.Bitmap(day(ts), b.shard, field, 0), bs),
+			b.save(tx, b.enc.Bitmap(week(ts), b.shard, field, 0), bs),
+			b.save(tx, b.enc.Bitmap(month(ts), b.shard, field, 0), bs),
 		)
-	})
+	}
 }
 
 func hour(ts time.Time) uint64 {

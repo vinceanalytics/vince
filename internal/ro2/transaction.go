@@ -108,36 +108,43 @@ func (tx *Tx) Shards() (n uint64) {
 }
 
 func (tx *Tx) Sum(shard, view uint64, field models.Field, match *roaring.Bitmap) (sum int64) {
-	bs := tx.Bitmap(shard, view, field)
+	bs := tx.NewBSI(shard, view, field)
 	sum, _ = bs.Sum(match)
 	return
 }
 
 func (tx *Tx) Transpose(shard, view uint64, field models.Field, match *roaring.Bitmap) (result *roaring.Bitmap) {
-	bs := tx.Bitmap(shard, view, field)
+	bs := tx.NewBSI(shard, view, field)
 	return bs.Transpose(match)
 }
 
-func (tx *Tx) TransposeSet(shard, view uint64, field models.Field, match *roaring.Bitmap) (result map[int64][]uint64) {
-	bs := tx.Bitmap(shard, view, field)
-	tr := bs.Extract(match)
-	result = make(map[int64][]uint64)
-	for k, v := range tr {
-		result[v] = append(result[v], k)
-	}
-	return
+func (tx *Tx) True(shard, view uint64, field models.Field, match *roaring.Bitmap) *roaring.Bitmap {
+	bs := tx.NewBitmap(shard, view, field)
+	return bs.True(shard, match)
 }
 
-func (tx *Tx) Count(shard, view uint64, field models.Field, match *roaring.Bitmap) (count uint64) {
-	bs := tx.Bitmap(shard, view, field)
-	ex := bs.GetExistenceBitmap()
-	if ex != nil {
-		count = ex.AndCardinality(match)
-	}
-	return
+func (tx *Tx) Bounce(shard, view uint64, match *roaring.Bitmap) (count int) {
+	bs := tx.NewBitmap(shard, view, models.Field_bounce)
+	yes := bs.True(shard, match).GetCardinality()
+	no := bs.False(shard, match).GetCardinality()
+	return yes - no
 }
 
-func (tx *Tx) Bitmap(shard, view uint64, field models.Field) *bsi.BSI {
+func (tx *Tx) NewBitmap(shard, view uint64, field models.Field) (b *roaring.Bitmap) {
+	key := encoding.Bitmap(view, shard, field, 0, tx.enc.Allocate(encoding.BitmapKeySize))
+	it, err := tx.tx.Get(key)
+	if err == nil {
+		it.Value(func(val []byte) error {
+			dst := tx.enc.Allocate(len(val))
+			copy(dst, val)
+			b = roaring.FromBuffer(dst)
+			return nil
+		})
+	}
+	return b
+}
+
+func (tx *Tx) NewBSI(shard, view uint64, field models.Field) *bsi.BSI {
 	key := encoding.Bitmap(view, shard, field, 0, tx.enc.Allocate(encoding.BitmapKeySize))
 	prefix := key[:len(key)-1]
 	kh := y.Hash(prefix)
@@ -151,15 +158,9 @@ func (tx *Tx) Bitmap(shard, view uint64, field models.Field) *bsi.BSI {
 
 func (tx *Tx) Domain(shard, view uint64, name []byte) *roaring.Bitmap {
 	id := tx.store.ID(models.Field_domain, name)
-	return tx.Compare(
-		shard, view, models.Field_domain, bsi.EQ, int64(id), 0, nil,
-	)
-}
-
-func (tx *Tx) Compare(shard, view uint64, field models.Field,
-	op bsi.Operation, valueOrStart, end int64, foundSet *roaring.Bitmap) *roaring.Bitmap {
-	bs := tx.Bitmap(shard, view, field)
-	return bs.CompareValue(0, op, valueOrStart, end, foundSet)
+	bs := tx.NewBitmap(shard, view, models.Field_domain)
+	m := bs.Row(shard, id)
+	return m
 }
 
 func (tx *Tx) Find(field models.Field, id uint64) (o string) {

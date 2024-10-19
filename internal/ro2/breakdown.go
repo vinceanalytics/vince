@@ -198,23 +198,17 @@ func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain str
 	fields := fieldset.From(metrics...)
 	err := o.View(func(tx *Tx) error {
 		return tx.Select(domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring.Bitmap) error {
-			all := tx.TransposeSet(shard, view, field, columns)
-			m := roaring.NewBitmap()
-			for id, v := range all {
-				key := tr(tx, uint64(id))
+			all := tx.NewBitmap(shard, view, field)
+			return all.ExtractMutex(columns, func(row uint64, m *roaring.Bitmap) error {
+				key := tr(tx, row)
 				sx, ok := values[key]
 				if !ok {
 					sx = NewStats(fields)
 					values[key] = sx
 				}
-				m.Reset()
-				m.SetMany(v)
-				err := sx.Read(tx, shard, view, m, fields)
-				if err != nil {
-					return err
-				}
-			}
-			return nil
+				return sx.Read(tx, shard, view, m, fields)
+			})
+
 		})
 	})
 

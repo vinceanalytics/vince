@@ -55,7 +55,7 @@ func (m *Store) AssignUid(field models.Field, xid []byte) uint64 {
 		return uid
 	}
 
-	idx := field.TranslateIndex()
+	idx := field.Mutex()
 	newUID, err := m.ranges[idx].Next()
 	y.Check(err)
 	if newUID == 0 {
@@ -88,7 +88,7 @@ func (m *Store) Flush() error {
 	}()
 
 	for i := range m.keys {
-		f := models.TranslateIndex(i)
+		f := models.Mutex(i)
 
 		for j := range m.keys[i] {
 			value := e.Allocate(8)

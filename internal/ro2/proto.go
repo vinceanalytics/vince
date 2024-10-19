@@ -27,11 +27,13 @@ type Store struct {
 	keys     [models.TranslatedFieldsSize][][]byte
 	values   [models.TranslatedFieldsSize][]uint64
 	tree     *z.Tree
-	data     map[encoding.Key]*roaring.BSI
-	key      encoding.Key
+	mutex    [models.TranslatedFieldsSize]map[uint64]*roaring.Bitmap
+	bsi      [models.BSIFieldsSize]map[uint64]*roaring.BSI
 	enc      encoding.Encoding
 	id       uint64
+	time     uint64
 	shard    uint64
+	events   uint64
 	txnCount int
 }
 

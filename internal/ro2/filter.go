@@ -133,31 +133,41 @@ type Match struct {
 }
 
 func (m *Match) Apply(rtx *Tx, shard uint64, view uint64, columns *roaring.Bitmap) (b *roaring.Bitmap) {
-	bs := rtx.Bitmap(shard, view, m.Field)
 	if m.Negate {
-		b = bs.GetExistenceBitmap().Clone()
-		b.AndNot(m.apply(bs, columns))
-		return b
+		return roaring.NewBitmap()
 	}
-	return m.apply(bs, columns)
+	if m.Field == models.Field_city {
+		return m.applyBSI(rtx.NewBSI(shard, view, m.Field), columns)
+	}
+	bs := rtx.NewBitmap(shard, view, m.Field)
+
+	return m.apply(bs, shard, columns)
 }
 
-func (m *Match) apply(bs *bsi.BSI, columns *roaring.Bitmap) *roaring.Bitmap {
+func (m *Match) apply(bs *roaring.Bitmap, shard uint64, columns *roaring.Bitmap) *roaring.Bitmap {
 	if len(m.Values) == 1 {
-		m := bs.CompareValue(0, m.Op, m.Values[0], 0, bs.GetExistenceBitmap())
-		return roaring.And(m, columns)
+		row := bs.Row(shard, uint64(m.Values[0]))
+		row.And(columns)
+		return row
 	}
 	o := make([]*roaring.Bitmap, len(m.Values))
 
 	for i := range m.Values {
-		o[i] = roaring.And(
-			bs.CompareValue(0, m.Op, m.Values[0], 0, bs.GetExistenceBitmap()),
-			columns,
-		)
+		row := bs.Row(shard, uint64(m.Values[i]))
+		row.And(columns)
+		o[i] = row
 	}
-	b := o[0]
-	for _, n := range o[1:] {
-		b.Or(n)
+	return roaring.FastOr(o...)
+}
+
+func (m *Match) applyBSI(bs *bsi.BSI, columns *roaring.Bitmap) *roaring.Bitmap {
+	if len(m.Values) == 1 {
+		return bs.CompareValue(0, m.Op, m.Values[0], 0, columns)
 	}
-	return b
+	o := make([]*roaring.Bitmap, len(m.Values))
+
+	for i := range m.Values {
+		o[i] = bs.CompareValue(0, m.Op, m.Values[i], 0, columns)
+	}
+	return roaring.FastOr(o...)
 }
