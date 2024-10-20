@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"runtime/trace"
 	"strconv"
 	"strings"
 	"time"
@@ -76,9 +77,13 @@ func (c *Config) VerifyCaptchaSolution(r *http.Request) bool {
 	return subtle.ConstantTimeCompare([]byte(digits), []byte(c.session.Data.Captcha)) == 1
 }
 
-func (c *Config) Wrap(f func(db *Config, w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		f(c.clone(r), w, r)
+func (c *Config) Wrap(kind string) func(f func(db *Config, w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+	return func(f func(db *Config, w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			ctx, task := trace.NewTask(r.Context(), kind)
+			defer task.End()
+			f(c.clone(r), w, r.WithContext(ctx))
+		}
 	}
 }
 
