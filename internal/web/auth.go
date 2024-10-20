@@ -9,7 +9,7 @@ import (
 )
 
 func UserSetting(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	keys, err := db.Get().APIKeys()
+	keys, err := db.Ops().APIKeys()
 	if err != nil {
 		db.Logger().Error("reading api keys", "err", err)
 		db.HTML(w, e500, nil)
@@ -31,7 +31,7 @@ func NewApiKey(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func DeleteAPiKey(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
-	err := db.Get().DeleteAPIKey(name)
+	err := db.Ops().DeleteAPIKey(name)
 	if err != nil {
 		db.Logger().Error("deleting api key", "name", name, "err", err)
 		db.HTML(w, e500, nil)
@@ -56,7 +56,7 @@ func CreateAPiKey(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if key != "" && len(key) < 64 {
 		valid["error_key"] = "invalid key"
 	}
-	err := db.Get().CreateAPIKey(name, key)
+	err := db.Ops().CreateAPIKey(name, key)
 	if err != nil {
 		db.Logger().Error("creating new key", "err", err)
 		db.HTML(w, e500, nil)

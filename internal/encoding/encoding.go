@@ -34,25 +34,30 @@ func (e *Encoding) Clip(sz int) {
 const BitmapKeySize = 1 + //prefix
 	8 + //shard
 	8 + // timestamp
-	1 + // field
-	1 // index
+	1 // field
 
-func (e *Encoding) Bitmap(ts, shard uint64, field models.Field, index byte) []byte {
-	return Bitmap(ts, shard, field, index, e.Allocate(BitmapKeySize))
+func (e *Encoding) Bitmap(shard, view uint64, field models.Field) []byte {
+	return Bitmap(shard, view, field, e.Allocate(BitmapKeySize))
 }
 
-func Bitmap(ts, shard uint64, field models.Field, index byte, buf []byte) []byte {
+func Bitmap(shard, view uint64, field models.Field, buf []byte) []byte {
 	b := buf
 	copy(b, keys.DataPrefix)
 	binary.BigEndian.PutUint64(b[1:], shard)
-	binary.BigEndian.PutUint64(b[1+8:], ts)
+	binary.BigEndian.PutUint64(b[1+8:], view)
 	b[1+8+8] = byte(field)
-	b[1+8+8+1] = index
 	return b
 }
 
 func (e *Encoding) Site(domain []byte) []byte {
 	o := e.Allocate(2 + len(domain))
+	copy(o, keys.SitePrefix)
+	copy(o[2:], domain)
+	return o
+}
+
+func Site(domain []byte) []byte {
+	o := make([]byte, 2+len(domain))
 	copy(o, keys.SitePrefix)
 	copy(o[2:], domain)
 	return o
@@ -65,10 +70,31 @@ func (e *Encoding) APIKeyName(key []byte) []byte {
 	return o
 }
 
+func APIKeyName(key []byte) []byte {
+	o := make([]byte, 2+len(key))
+	copy(o, keys.APIKeyNamePrefix)
+	copy(o[2:], key)
+	return o
+}
+
 func (e *Encoding) APIKeyHash(hash []byte) []byte {
 	o := e.Allocate(2 + len(hash))
 	copy(o, keys.APIKeyHashPrefix)
 	copy(o[2:], hash)
+	return o
+}
+
+func APIKeyHash(hash []byte) []byte {
+	o := make([]byte, 2+len(hash))
+	copy(o, keys.APIKeyHashPrefix)
+	copy(o[2:], hash)
+	return o
+}
+
+func ACME(key []byte) []byte {
+	o := make([]byte, 2+len(key))
+	copy(o, keys.APIKeyHashPrefix)
+	copy(o[2:], key)
 	return o
 }
 

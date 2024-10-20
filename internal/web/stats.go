@@ -12,7 +12,7 @@ func Stats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		db.HTML(w, statsLocked, nil)
 		return
 	}
-	hasStats := db.Get().SeenFirstStats(site.Domain)
+	hasStats := db.Ops().SeenFirstStats(site.Domain)
 	db.HTML(w, stats, map[string]any{
 		"seen_first_stats": hasStats,
 		"title":            "vince · " + site.Domain,

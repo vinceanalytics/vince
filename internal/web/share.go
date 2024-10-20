@@ -26,7 +26,7 @@ func ShareAuth(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	domain := r.PathValue("domain")
 	password := r.FormValue("password")
-	site := db.Get().Site(domain)
+	site := db.Ops().Site(domain)
 	if site == nil {
 		db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
 		return

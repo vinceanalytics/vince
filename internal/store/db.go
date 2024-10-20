@@ -142,7 +142,6 @@ func (db *Store) runVlogGC(ctx context.Context) {
 	slog.Info("starting gc check loop", "interval", time.Minute)
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
-
 	abs := func(a, b int64) int64 {
 		if a > b {
 			return a - b

@@ -186,12 +186,12 @@ func (b *Store) saveBitmap(timestamp uint64, field models.Field, bs *roaring.Bit
 	ts := time.UnixMilli(int64(timestamp)).UTC()
 	return func(tx *badger.Txn) error {
 		return errors.Join(
-			b.save(tx, b.enc.Bitmap(0, b.shard, field, 0), bs),         // global
-			b.save(tx, b.enc.Bitmap(timestamp, b.shard, field, 0), bs), //minute
-			b.save(tx, b.enc.Bitmap(hour(ts), b.shard, field, 0), bs),
-			b.save(tx, b.enc.Bitmap(day(ts), b.shard, field, 0), bs),
-			b.save(tx, b.enc.Bitmap(week(ts), b.shard, field, 0), bs),
-			b.save(tx, b.enc.Bitmap(month(ts), b.shard, field, 0), bs),
+			b.save(tx, b.enc.Bitmap(0, b.shard, field), bs),         // global
+			b.save(tx, b.enc.Bitmap(timestamp, b.shard, field), bs), //minute
+			b.save(tx, b.enc.Bitmap(hour(ts), b.shard, field), bs),
+			b.save(tx, b.enc.Bitmap(day(ts), b.shard, field), bs),
+			b.save(tx, b.enc.Bitmap(week(ts), b.shard, field), bs),
+			b.save(tx, b.enc.Bitmap(month(ts), b.shard, field), bs),
 		)
 	}
 }

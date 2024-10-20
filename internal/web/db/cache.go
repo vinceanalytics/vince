@@ -12,12 +12,12 @@ func (db *Config) append(e *models.Model) error {
 	hit(e)
 	if cached, ok := db.cache.Get(uint64(e.Id)); ok {
 		update(cached, e)
-		err := db.db.Add(e)
+		err := db.ts.Add(e)
 		releaseEvent(e)
 		return err
 	}
 	newSessionEvent(e)
-	err := db.db.Add(e)
+	err := db.ts.Add(e)
 	if err != nil {
 		return err
 	}

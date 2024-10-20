@@ -13,7 +13,9 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/internal/util/acme"
 	"github.com/vinceanalytics/vince/internal/web"
+	"github.com/vinceanalytics/vince/internal/web/conversions"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 	"golang.org/x/crypto/acme/autocert"
@@ -346,7 +348,7 @@ func run(config *v1.Config) {
 
 	mux.HandleFunc("GET /api/stats/{domain}/conversions/", db.Wrap("api.Conversion")(
 		stats.
-			Then(web.Conversion),
+			Then(conversions.Conversion),
 	))
 
 	mux.HandleFunc("GET /api/stats/{domain}/custom-prop-values/{prop_key}/", db.Wrap("api.Props")(
@@ -398,7 +400,7 @@ func run(config *v1.Config) {
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(config.AcmeDomain),
 			Email:      config.AcmeEmail,
-			Cache:      db.Get(),
+			Cache:      acme.New(db.Pebble()),
 		}
 		svr.TLSConfig = m.TLSConfig()
 	}

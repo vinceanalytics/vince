@@ -12,6 +12,7 @@ import (
 	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/api/visitors"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
@@ -43,7 +44,7 @@ func CreateGoal(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	site := db.CurrentSite()
 	site.Goals = append(site.Goals, g)
-	db.Get().Save(site)
+	db.Ops().Save(site)
 	db.Success("Goal was successfully created")
 	db.SaveSession(w)
 	to := fmt.Sprintf("/%s/settings#goals", url.PathEscape(site.Domain))
@@ -56,7 +57,7 @@ func DeleteGoal(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		site.Goals = slices.Delete(site.Goals, idx, idx+1)
 	}
-	db.Get().Save(site)
+	db.Ops().Save(site)
 	db.Success("Goal was successfully deleted")
 	db.SaveSession(w)
 	to := fmt.Sprintf("/%s/settings#goals", url.PathEscape(site.Domain))
@@ -65,7 +66,7 @@ func DeleteGoal(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Status(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	body := "WAITING"
-	if db.Get().SeenFirstStats(db.CurrentSite().Domain) {
+	if db.Ops().SeenFirstStats(db.CurrentSite().Domain) {
 		body = "READY"
 	}
 	db.JSON(w, body)
@@ -83,7 +84,7 @@ func SharedLinksForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func DeleteSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	slug := r.PathValue("slug")
-	err := db.Get().DeleteSharedLink(site, slug)
+	err := db.Ops().DeleteSharedLink(site, slug)
 	if err != nil {
 		slog.Error("deleting shared link", "slug", slug, "domain", db.CurrentSite().Domain, "err", "err")
 	}
@@ -95,7 +96,7 @@ func EditSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	name := r.Form.Get("name")
 	site := db.CurrentSite()
 	slug := r.PathValue("slug")
-	err := db.Get().EditSharedLink(site, slug, name)
+	err := db.Ops().EditSharedLink(site, slug, name)
 	if err != nil {
 		slog.Error("updating shared link", "slug", slug, "domain", db.CurrentSite().Domain, "err", "err")
 	}
@@ -108,7 +109,7 @@ func CreateSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 	site := db.CurrentSite()
 	site.Public = true
-	err := db.Get().FindOrCreateCreateSharedLink(site.Domain, name, password)
+	err := db.Ops().FindOrCreateCreateSharedLink(site.Domain, name, password)
 	if err == nil {
 		db.Logger().Error("failed creating shared link", "domain", db.CurrentSite().Domain)
 	}
@@ -121,18 +122,18 @@ func Settings(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Delete(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := db.CurrentSite().Domain
-	err := db.Get().DeleteDomain(domain)
+	err := db.Ops().DeleteDomain(domain)
 	if err != nil {
 		slog.Error("deleting site", "domain", domain, "err", "err")
 	}
-	domains.Reload(db.Get().Domains)
+	domains.Reload(db.Ops().Domains)
 	http.Redirect(w, r, "/sites", http.StatusFound)
 }
 
 func MakePublic(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	site.Public = true
-	err := db.Get().Save(site)
+	err := db.Ops().Save(site)
 	if err != nil {
 		db.Logger().Error("making site  public", "domain", db.CurrentSite().Domain, "err", err)
 	}
@@ -142,7 +143,7 @@ func MakePublic(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func MakePrivate(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	site.Public = false
-	err := db.Get().Save(site)
+	err := db.Ops().Save(site)
 	if err != nil {
 		db.Logger().Error("making site  private", "domain", db.CurrentSite().Domain, "err", err)
 	}
@@ -156,7 +157,7 @@ func CreateSiteForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	domain := r.Form.Get("domain")
-	domain, bad := db.Get().ValidateSiteDomain(domain)
+	domain, bad := db.Ops().ValidateSiteDomain(domain)
 	if bad != "" {
 		db.SaveCsrf(w)
 		createSite.Execute(w, db.Context(map[string]any{
@@ -164,20 +165,20 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		}))
 		return
 	}
-	err := db.Get().CreateSite(domain, false)
+	err := db.Ops().CreateSite(domain, false)
 	if err != nil {
 		db.HTMLCode(http.StatusInternalServerError, w, e500, nil)
 		db.Logger().Error("creating site", "err", err)
 		return
 	}
-	domains.Reload(db.Get().Domains)
+	domains.Reload(db.Ops().Domains)
 	to := fmt.Sprintf("/%s/snippet", url.PathEscape(domain))
 	http.Redirect(w, r, to, http.StatusFound)
 }
 
 func SitesIndex(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	sites := make([]map[string]any, 0, 16)
-	db.Get().Domains(func(s *v1.Site) {
+	db.Ops().Domains(func(s *v1.Site) {
 		sites = append(sites, map[string]any{
 			"domain": s.Domain,
 			"public": s.Public,
@@ -190,7 +191,7 @@ func SitesIndex(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	sites := make([]map[string]any, 0, 16)
-	db.Get().Domains(func(s *v1.Site) {
+	db.Ops().Domains(func(s *v1.Site) {
 		sites = append(sites, map[string]any{
 			"domain": s.Domain,
 			"public": s.Public,
@@ -201,7 +202,7 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	for i := range sites {
 		// compute visitors
 		dom := sites[i]["domain"].(string)
-		vs, err := db.Get().Visitors(dom)
+		vs, err := visitors.Visitors(r.Context(), db.TimeSeries(), dom)
 		if err != nil {
 			db.Logger().Error("computing visitors", "domain", dom, "err", err)
 		}
@@ -231,7 +232,7 @@ func Unimplemented(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func RequireSiteAccess(h plug.Handler) plug.Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		domain := r.PathValue("domain")
-		site := db.Get().Site(domain)
+		site := db.Ops().Site(domain)
 		if site == nil {
 			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
 			return

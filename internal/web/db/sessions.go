@@ -193,6 +193,8 @@ func (c *Config) clone(r *http.Request) *Config {
 	return &Config{
 		config:  c.config,
 		db:      c.db,
+		ts:      c.ts,
+		ops:     c.ops,
 		cache:   c.cache,
 		session: c.session.clone(),
 		buffer:  c.buffer,

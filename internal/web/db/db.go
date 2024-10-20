@@ -11,16 +11,21 @@ import (
 	"os"
 	"time"
 
+	"github.com/cockroachdb/pebble"
 	"github.com/dgraph-io/ristretto"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/store"
+	"github.com/vinceanalytics/vince/internal/ops"
+	"github.com/vinceanalytics/vince/internal/timeseries"
+	"github.com/vinceanalytics/vince/internal/util/data"
 )
 
 type Config struct {
 	config  *v1.Config
-	db      *store.Store
+	db      *pebble.DB
+	ts      *timeseries.Timeseries
+	ops     *ops.Ops
 	session *SessionContext
 	logger  *slog.Logger
 	cache   *ristretto.Cache[uint64, *models.Model]
@@ -31,7 +36,7 @@ func Open(config *v1.Config) (*Config, error) {
 	if config.DataPath != "" {
 		os.MkdirAll(config.DataPath, 0755)
 	}
-	ops, err := store.Open(config.DataPath)
+	db, err := data.Open(config.DataPath, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -51,15 +56,19 @@ func Open(config *v1.Config) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	ts := timeseries.New(db)
+	ops := ops.New(db, ts)
 	// setup session
 	secret, err := ops.Web()
 	if err != nil {
-		ops.Close()
+		db.Close()
 		return nil, err
 	}
 	return &Config{
 		config: config,
-		db:     ops,
+		db:     db,
+		ts:     ts,
+		ops:    ops,
 		logger: slog.Default(),
 		cache:  cache,
 		buffer: make(chan *models.Model, 4<<10),
@@ -79,7 +88,15 @@ func (db *Config) PasswordMatch(email, pwd string) bool {
 	) == 1
 }
 
-func (db *Config) Get() *store.Store {
+func (db *Config) TimeSeries() *timeseries.Timeseries {
+	return db.ts
+}
+
+func (db *Config) Ops() *ops.Ops {
+	return db.ops
+}
+
+func (db *Config) Pebble() *pebble.DB {
 	return db.db
 }
 
@@ -92,12 +109,8 @@ func (db *Config) Logger() *slog.Logger {
 }
 
 func (db *Config) Start(ctx context.Context) {
-	domains.Reload(db.Get().Domains)
-	db.Get().SetupDomains(db.config.Domains)
-	if len(db.config.Domains) > 0 {
-		domains.Reload(db.Get().Domains)
-	}
-	go db.db.Start(ctx)
+	db.Ops().SetupDomains(db.config.Domains)
+	domains.Reload(db.Ops().Domains)
 	go db.eventsLoop(ctx)
 }
 
@@ -111,7 +124,7 @@ func (db *Config) eventsLoop(cts context.Context) {
 			db.logger.Info("exiting event processing loop")
 			return
 		case <-ts.C:
-			err := db.db.SaveBatch()
+			err := db.ts.Save()
 			if err != nil {
 				db.logger.Error("applying events batch", "err", err)
 			}
@@ -127,6 +140,7 @@ func (db *Config) eventsLoop(cts context.Context) {
 func (db *Config) Close() error {
 	db.cache.Close()
 	return errors.Join(
+		db.ts.Close(),
 		db.db.Close(),
 	)
 }

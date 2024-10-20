@@ -5,6 +5,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/vinceanalytics/vince/internal/api/aggregates"
+	"github.com/vinceanalytics/vince/internal/api/breakdown"
+	"github.com/vinceanalytics/vince/internal/api/timeseries"
+	"github.com/vinceanalytics/vince/internal/api/visitors"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/store"
 	"github.com/vinceanalytics/vince/internal/web/db"
@@ -14,7 +18,7 @@ import (
 
 func CurrentVisitors(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("site_id")
-	visitors, err := db.Get().CurrentVisitors(domain)
+	visitors, err := visitors.Current(r.Context(), db.TimeSeries(), domain)
 	if err != nil {
 		db.Logger().Error("retrieving current visitors", "domain", domain, "err", err)
 	}
@@ -25,14 +29,16 @@ func Agggregates(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
 
-	stats, err := db.Get().Aggregates(domain, params.Start(), params.End(), params.Interval(), params.Filter(), params.Metrics())
+	stats, err := aggregates.Aggregates(
+		r.Context(), db.TimeSeries(),
+		domain, params.Start(), params.End(), params.Interval(), params.Filter(), params.Metrics())
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
-		stats = &store.Stats{}
+		stats = &aggregates.Stats{}
 	}
 	stats.Compute()
 	result := map[string]any{}
-	store.Reduce(params.Metrics())(stats, result)
+	aggregates.Reduce(params.Metrics())(stats, result)
 	db.JSON(w, result)
 }
 
@@ -40,7 +46,9 @@ func Timeseries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
 
-	result, err := db.Get().Timeseries(domain, params, params.Metrics())
+	result, err := timeseries.Timeseries(
+		r.Context(), db.TimeSeries(),
+		domain, params, params.Metrics())
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -53,7 +61,7 @@ func Timeseries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	slices.Sort(labels)
 	plot := make([]map[string]any, 0, size)
-	reduce := store.Reduce(params.Metrics())
+	reduce := aggregates.Reduce(params.Metrics())
 	for i := range labels {
 		stat := result[labels[i]]
 		stat.Compute()
@@ -75,13 +83,13 @@ func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var (
-		rs  *store.Result
+		rs  *breakdown.Result
 		err error
 	)
 	if params.Property() == models.Field_city {
-		rs, err = db.Get().BreakdownCity(ctx, domain, params, params.Metrics())
+		rs, err = breakdown.BreakdownCity(ctx, db.TimeSeries(), domain, params, params.Metrics())
 	} else {
-		rs, err = db.Get().Breakdown(ctx, domain, params, params.Metrics(), params.Property())
+		rs, err = breakdown.Breakdown(ctx, db.TimeSeries(), domain, params, params.Metrics(), params.Property())
 		if err == nil && params.Property() == models.Field_subdivision1_code {
 			for i := range rs.Results {
 				m := rs.Results[i]
@@ -92,7 +100,7 @@ func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
-		rs = &store.Result{}
+		rs = &breakdown.Result{}
 	}
 	db.JSON(w, rs)
 }
@@ -110,7 +118,7 @@ func Authorize(h plug.Handler) plug.Handler {
 			return
 		}
 
-		if !db.Get().ValidAPIKkey(token) {
+		if !db.Ops().ValidAPIKkey(token) {
 			http.Error(w,
 				"Invalid API key or site ID. Please make sure you're using a valid API key with access to the site you've requested.",
 				http.StatusUnauthorized,

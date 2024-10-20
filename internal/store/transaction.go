@@ -99,7 +99,7 @@ func (tx *Tx) Shards() (n uint64) {
 }
 
 func (tx *Tx) NewBitmap(shard, view uint64, field models.Field) (b *roaring.Bitmap) {
-	key := encoding.Bitmap(view, shard, field, 0, tx.enc.Allocate(encoding.BitmapKeySize))
+	key := encoding.Bitmap(view, shard, field, tx.enc.Allocate(encoding.BitmapKeySize))
 	it, err := tx.tx.Get(key)
 	if err == nil {
 		it.Value(func(val []byte) error {
