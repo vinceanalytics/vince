@@ -171,6 +171,9 @@ func (db *Ops) Web() (secret *age.X25519Identity, err error) {
 	})
 	if errors.Is(err, pebble.ErrNotFound) {
 		secret, err = age.GenerateX25519Identity()
+		if err == nil {
+			err = db.db.Set(keys.Cookie, []byte(secret.String()), nil)
+		}
 	}
 	return
 }
