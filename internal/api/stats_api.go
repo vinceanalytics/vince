@@ -67,6 +67,7 @@ func Timeseries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
 	if params.Property() == models.Field_unknown {
@@ -78,9 +79,9 @@ func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		err error
 	)
 	if params.Property() == models.Field_city {
-		rs, err = db.Get().BreakdownCity(domain, params, params.Metrics())
+		rs, err = db.Get().BreakdownCity(ctx, domain, params, params.Metrics())
 	} else {
-		rs, err = db.Get().Breakdown(domain, params, params.Metrics(), params.Property())
+		rs, err = db.Get().Breakdown(ctx, domain, params, params.Metrics(), params.Property())
 		if err == nil && params.Property() == models.Field_subdivision1_code {
 			for i := range rs.Results {
 				m := rs.Results[i]

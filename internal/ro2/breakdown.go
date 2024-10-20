@@ -2,7 +2,9 @@ package ro2
 
 import (
 	"cmp"
+	"context"
 	"math"
+	"runtime/trace"
 	"slices"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -23,7 +25,9 @@ type Result struct {
 	Results []map[string]any `json:"results"`
 }
 
-func (o *Store) BreakdownGoals(site *v1.Site, params *query.Query, metrics []string) (*Result, error) {
+func (o *Store) BreakdownGoals(ctx context.Context, site *v1.Site, params *query.Query, metrics []string) (*Result, error) {
+	ctx, task := trace.NewTask(ctx, "store.BreakdownGoals")
+	defer task.End()
 	var (
 		pageGoals []string
 	)
@@ -41,7 +45,7 @@ func (o *Store) BreakdownGoals(site *v1.Site, params *query.Query, metrics []str
 	events := new(Result)
 	var err error
 	if len(efs.Value) > 0 {
-		events, err = o.Breakdown(site.Domain, params.With(&efs), metrics, models.Field_event)
+		events, err = o.Breakdown(ctx, site.Domain, params.With(&efs), metrics, models.Field_event)
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +57,7 @@ func (o *Store) BreakdownGoals(site *v1.Site, params *query.Query, metrics []str
 			Key:   "page",
 			Value: pageGoals,
 		}
-		pages, err = o.Breakdown(site.Domain, params.With(&efs), metrics, models.Field_page)
+		pages, err = o.Breakdown(ctx, site.Domain, params.With(&efs), metrics, models.Field_page)
 		if err != nil {
 			return nil, err
 		}
@@ -69,8 +73,11 @@ func (o *Store) BreakdownGoals(site *v1.Site, params *query.Query, metrics []str
 	return result, nil
 }
 
-func (o *Store) Breakdown(domain string, params *query.Query, metrics []string, field models.Field) (*Result, error) {
+func (o *Store) Breakdown(ctx context.Context, domain string, params *query.Query, metrics []string, field models.Field) (*Result, error) {
+	ctx, task := trace.NewTask(ctx, "store.Breakdown")
+	defer task.End()
 	return breakdown(
+		ctx,
 		o,
 		findString(field),
 		domain, params, metrics, field, func(property string, values map[string]*Stats) *Result {
@@ -95,8 +102,11 @@ func (o *Store) Breakdown(domain string, params *query.Query, metrics []string, 
 		})
 }
 
-func (o *Store) BreakdownExitPages(domain string, params *query.Query) (*Result, error) {
+func (o *Store) BreakdownExitPages(ctx context.Context, domain string, params *query.Query) (*Result, error) {
+	ctx, task := trace.NewTask(ctx, "store.BreakdownExitPages")
+	defer task.End()
 	return breakdown(
+		ctx,
 		o,
 		findString(models.Field_exit_page),
 		domain, params, []string{visitors, visits, pageviews}, models.Field_exit_page, func(property string, values map[string]*Stats) *Result {
@@ -128,8 +138,10 @@ func (o *Store) BreakdownExitPages(domain string, params *query.Query) (*Result,
 
 }
 
-func (o *Store) BreakdownCity(domain string, params *query.Query, metrics []string) (*Result, error) {
-	return breakdown(o,
+func (o *Store) BreakdownCity(ctx context.Context, domain string, params *query.Query, metrics []string) (*Result, error) {
+	ctx, task := trace.NewTask(ctx, "store.BreakdownCity")
+	defer task.End()
+	return breakdown(ctx, o,
 		findCity,
 		domain, params, metrics, models.Field_city, func(property string, values map[uint32]*Stats) *Result {
 			a := &Result{
@@ -152,8 +164,10 @@ func (o *Store) BreakdownCity(domain string, params *query.Query, metrics []stri
 
 }
 
-func (o *Store) BreakdownVisitorsWithPercentage(domain string, params *query.Query, field models.Field) (*Result, error) {
-	return breakdown(o,
+func (o *Store) BreakdownVisitorsWithPercentage(ctx context.Context, domain string, params *query.Query, field models.Field) (*Result, error) {
+	ctx, task := trace.NewTask(ctx, "store.BreakdownVisitorsWithPercentage")
+	defer task.End()
+	return breakdown(ctx, o,
 		findString(field),
 		domain, params, []string{visitors}, field, func(property string, values map[string]*Stats) *Result {
 			a := &Result{
@@ -192,7 +206,7 @@ func findCity(_ *Tx, id uint64) uint32 {
 	return uint32(id)
 }
 
-func breakdown[T cmp.Ordered](o *Store, tr func(tx *Tx, id uint64) T, domain string, params *query.Query, metrics []string, field models.Field,
+func breakdown[T cmp.Ordered](ctx context.Context, o *Store, tr func(tx *Tx, id uint64) T, domain string, params *query.Query, metrics []string, field models.Field,
 	fn func(property string, values map[T]*Stats) *Result) (*Result, error) {
 	values := make(map[T]*Stats)
 	fields := fieldset.From(metrics...)

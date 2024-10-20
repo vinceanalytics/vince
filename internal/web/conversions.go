@@ -10,6 +10,7 @@ import (
 )
 
 func Conversion(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
 	sx, err := db.Get().Aggregates(site.Domain, params.Start(), params.End(), params.Interval(), params.Filter(), []string{"visitors"})
@@ -19,7 +20,7 @@ func Conversion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	sx.Compute()
 	totalVisitors := sx.Visitors
-	rs, err := db.Get().BreakdownGoals(site, params, []string{"visitors", "events"})
+	rs, err := db.Get().BreakdownGoals(ctx, site, params, []string{"visitors", "events"})
 	if err != nil {
 		db.Logger().Error("breakdown goals", "err", err)
 		rs = new(ro2.Result)
