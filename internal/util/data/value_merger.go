@@ -15,12 +15,12 @@ type ValueMerger struct {
 var _ pebble.ValueMerger = (*ValueMerger)(nil)
 
 func (va *ValueMerger) MergeNewer(value []byte) error {
-	va.ra = roaring.Or(va.ra, roaring.FromBuffer(value))
+	va.ra.Or(roaring.FromBuffer(value))
 	return nil
 }
 
 func (va *ValueMerger) MergeOlder(value []byte) error {
-	va.ra = roaring.Or(va.ra, roaring.FromBuffer(value))
+	va.ra.Or(roaring.FromBuffer(value))
 	return nil
 }
 
