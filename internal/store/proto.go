@@ -11,7 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
-	"github.com/vinceanalytics/vince/internal/trie"
+	"github.com/vinceanalytics/vince/internal/util/trie"
 )
 
 type Store struct {
