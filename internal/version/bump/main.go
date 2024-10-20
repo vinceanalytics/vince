@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -22,6 +24,17 @@ func main() {
 		v.patch++
 	}
 	os.WriteFile("internal/version/VERSION", []byte(v.String()), 0600)
+
+	path := "k8s/Chart.yaml"
+	data, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	data = bytes.ReplaceAll(data, []byte(version.VERSION), []byte(v.String()))
+	err = os.WriteFile(path, data, 0600)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 type Version struct {
