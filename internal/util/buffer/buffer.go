@@ -389,6 +389,7 @@ func (b *Buffer) Write(p []byte) (n int, err error) {
 
 // Reset would reset the buffer to be reused.
 func (b *Buffer) Reset() {
+	clear(b.buf)
 	b.offset = uint64(b.StartOffset())
 }
 
