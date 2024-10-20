@@ -29,7 +29,7 @@ func New(db *pebble.DB) *Timeseries {
 		ts.trie.Put(key, uid)
 		ts.mu.Unlock()
 	}
-	ts.ba = newbatch(tr)
+	ts.ba = newbatch(db, tr)
 	return ts
 }
 
@@ -50,16 +50,16 @@ func (ts *Timeseries) Close() error {
 }
 
 func (ts *Timeseries) Save() error {
-	return ts.ba.save(ts.db)
+	return ts.ba.save()
 }
 
 func (ts *Timeseries) Add(m *models.Model) error {
-	return ts.ba.Add(m)
+	return ts.ba.add(m)
 }
 
 func (ts *Timeseries) NewBitmap(ctx context.Context, shard uint64, view uint64, field models.Field) (b *roaring.Bitmap) {
 	buf := make([]byte, encoding.BitmapKeySize)
-	data.Get(ts.db, encoding.Bitmap(view, shard, field, buf), func(val []byte) error {
+	data.Get(ts.db, encoding.Bitmap(shard, view, field, buf), func(val []byte) error {
 		b = roaring.FromBufferWithCopy(val)
 		return nil
 	})

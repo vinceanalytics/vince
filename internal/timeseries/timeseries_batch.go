@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 const ShardWidth = 1 << 20
 
 type batch struct {
+	db        *pebble.DB
 	translate *translation
 	mutex     [models.TranslatedFieldsSize]map[uint64]*roaring.Bitmap
 	bsi       [models.BSIFieldsSize]map[uint64]*roaring.Bitmap
@@ -22,7 +24,7 @@ type batch struct {
 	time      uint64
 }
 
-func newbatch(tr *translation) *batch {
+func newbatch(db *pebble.DB, tr *translation) *batch {
 	b := &batch{translate: tr}
 	for i := range b.mutex {
 		b.mutex[i] = make(map[uint64]*roaring.Bitmap)
@@ -31,11 +33,15 @@ func newbatch(tr *translation) *batch {
 		b.bsi[i] = make(map[uint64]*roaring.Bitmap)
 	}
 	b.id = tr.id
+	b.shard = b.id / ShardWidth
+	b.db = db
 	return b
 }
 
-func (b *batch) save(db *pebble.DB) error {
-
+func (b *batch) save() error {
+	if b.events == 0 {
+		return nil
+	}
 	defer func() {
 		b.translate.reset()
 		for i := range b.mutex {
@@ -46,27 +52,42 @@ func (b *batch) save(db *pebble.DB) error {
 		}
 		b.events = 0
 	}()
-	ba := db.NewBatch()
-	defer ba.Close()
+	ba := b.db.NewIndexedBatch()
 
 	err := b.translate.flush(ba.Set)
 	if err != nil {
+		ba.Close()
 		return err
 	}
-	err = b.flush(ba.Merge)
+	err = b.flush(ba)
 	if err != nil {
+		ba.Close()
 		return err
 	}
+	fmt.Println("saved ", b.events)
 	return ba.Commit(pebble.Sync)
 }
 
-func (b *batch) flush(fn func(key, value []byte, _ *pebble.WriteOptions) error) error {
+func (b *batch) flush(ba *pebble.Batch) error {
 	key := make([]byte, encoding.BitmapKeySize)
+	sv := func(bm *roaring.Bitmap) error {
+		v, done, err := ba.Get(key)
+		if err != nil {
+			if errors.Is(err, pebble.ErrNotFound) {
+				return ba.Set(key, bm.ToBuffer(), nil)
+			}
+			return err
+		}
+		bm.Or(roaring.FromBuffer(v))
+		err = ba.Set(key, bm.ToBuffer(), nil)
+		done.Close()
+		return err
+	}
 	for i := range b.mutex {
 		f := models.Mutex(i)
 		for view, bm := range b.mutex[i] {
 			encoding.Bitmap(b.shard, view, f, key)
-			err := fn(key, bm.ToBuffer(), nil)
+			err := sv(bm)
 			if err != nil {
 				return fmt.Errorf("saving events bitmap %w", err)
 			}
@@ -76,7 +97,7 @@ func (b *batch) flush(fn func(key, value []byte, _ *pebble.WriteOptions) error) 
 		f := models.BSI(i)
 		for view, bm := range b.bsi[i] {
 			encoding.Bitmap(b.shard, view, f, key)
-			err := fn(key, bm.ToBuffer(), nil)
+			err := sv(bm)
 			if err != nil {
 				return fmt.Errorf("saving events bitmap %w", err)
 			}
@@ -85,11 +106,14 @@ func (b *batch) flush(fn func(key, value []byte, _ *pebble.WriteOptions) error) 
 	return nil
 }
 
-func (b *batch) Add(m *models.Model) error {
+func (b *batch) add(m *models.Model) error {
 	b.events++
 	shard := (b.id + 1) / ShardWidth
 	if shard != b.shard {
-		// we havs changed shards. Persist the current batch before continuing
+		err := b.save()
+		if err != nil {
+			return err
+		}
 		b.shard = shard
 	}
 	b.id = b.translate.Next()

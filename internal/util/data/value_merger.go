@@ -1,6 +1,7 @@
 package data
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/cockroachdb/pebble"
@@ -14,22 +15,22 @@ type ValueMerger struct {
 var _ pebble.ValueMerger = (*ValueMerger)(nil)
 
 func (va *ValueMerger) MergeNewer(value []byte) error {
-	va.ra.Or(roaring.FromBuffer(value))
+	va.ra = roaring.Or(va.ra, roaring.FromBuffer(value))
 	return nil
 }
 
 func (va *ValueMerger) MergeOlder(value []byte) error {
-	va.ra.Or(roaring.FromBuffer(value))
+	va.ra = roaring.Or(va.ra, roaring.FromBuffer(value))
 	return nil
 }
 
 func (va *ValueMerger) Finish(includesBase bool) ([]byte, io.Closer, error) {
-	return va.ra.ToBuffer(), io.NopCloser(nil), nil
+	return va.ra.ToBuffer(), nil, nil
 }
 
 var BitmapMarger = &pebble.Merger{
 	Merge: func(key, value []byte) (pebble.ValueMerger, error) {
-		ra := roaring.FromBuffer(value)
+		ra := roaring.FromBuffer(bytes.Clone(value))
 		return &ValueMerger{ra: ra}, nil
 	},
 	Name: "vince.BitmapMerger",
