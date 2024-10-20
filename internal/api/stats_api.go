@@ -10,7 +10,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/api/timeseries"
 	"github.com/vinceanalytics/vince/internal/api/visitors"
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/store"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 	"github.com/vinceanalytics/vince/internal/web/query"
@@ -71,7 +70,7 @@ func Timeseries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		reduce(stat, value)
 		plot = append(plot, value)
 	}
-	db.JSON(w, store.Result{Results: plot})
+	db.JSON(w, breakdown.Result{Results: plot})
 }
 
 func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
