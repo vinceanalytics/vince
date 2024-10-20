@@ -7,7 +7,7 @@ import (
 
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/store"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -38,7 +38,7 @@ func MainGraph(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	slices.Sort(labels)
 	plot := make([]float64, 0, size)
-	reduce := ro2.StatToValue(metric)
+	reduce := store.StatToValue(metric)
 	for i := range labels {
 		stat := result[labels[i]]
 		stat.Compute()
@@ -60,16 +60,16 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	stats, err := db.Get().Aggregates(site.Domain, params.Start(), params.End(), params.Interval(), params.Filter(), metrics)
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
-		stats = &ro2.Stats{}
+		stats = &store.Stats{}
 	}
 	stats.Compute()
-	cmp := new(ro2.Stats)
+	cmp := new(store.Stats)
 
 	if x := params.Compare(); x != nil && !params.Realtime() {
 		cmp, err = db.Get().Aggregates(site.Domain, x.Start, x.End, params.Interval(), params.Filter(), metrics)
 		if err != nil {
 			db.Logger().Error("reading top stats comparison", "err", err)
-			cmp = &ro2.Stats{}
+			cmp = &store.Stats{}
 		}
 	}
 	cmp.Compute()
@@ -135,7 +135,7 @@ func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().Breakdown(ctx, site.Domain, params, metrics, models.Field_source)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -156,7 +156,7 @@ func UtmMediums(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().Breakdown(ctx, site.Domain, params, metrics, models.Field_utm_medium)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -177,7 +177,7 @@ func UtmCampaigns(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().Breakdown(ctx, site.Domain, params, metrics, models.Field_utm_campaign)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -198,7 +198,7 @@ func UtmContents(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().Breakdown(ctx, site.Domain, params, metrics, models.Field_utm_content)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -219,7 +219,7 @@ func UtmTerms(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().Breakdown(ctx, site.Domain, params, metrics, models.Field_utm_term)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -240,7 +240,7 @@ func UtmSources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().Breakdown(ctx, site.Domain, params, metrics, models.Field_utm_source)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -274,7 +274,7 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}), metrics, models.Field_referrer)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -295,7 +295,7 @@ func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().Breakdown(ctx, site.Domain, params, metrics, models.Field_page)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -317,7 +317,7 @@ func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -334,7 +334,7 @@ func ExitPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().BreakdownExitPages(ctx, site.Domain, params)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	db.JSON(w, o)
 }
@@ -346,7 +346,7 @@ func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().Breakdown(ctx, site.Domain, params, []string{"visitors"}, models.Field_country)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -368,7 +368,7 @@ func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().Breakdown(ctx, site.Domain, params, []string{"visitors"}, models.Field_subdivision1_code)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -389,7 +389,7 @@ func Cities(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().BreakdownCity(ctx, site.Domain, params, []string{"visitors"})
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	db.JSON(w, o)
 }
@@ -401,7 +401,7 @@ func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().BreakdownVisitorsWithPercentage(ctx, site.Domain, params, models.Field_browser)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -418,7 +418,7 @@ func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().BreakdownVisitorsWithPercentage(ctx, site.Domain, params, models.Field_browser_version)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -435,7 +435,7 @@ func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().BreakdownVisitorsWithPercentage(ctx, site.Domain, params, models.Field_os)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -452,7 +452,7 @@ func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().BreakdownVisitorsWithPercentage(ctx, site.Domain, params, models.Field_os_version)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
@@ -469,7 +469,7 @@ func ScreenSize(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	o, err := db.Get().BreakdownVisitorsWithPercentage(ctx, site.Domain, params, models.Field_device)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
-		o = &ro2.Result{}
+		o = &store.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]

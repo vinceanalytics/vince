@@ -15,12 +15,12 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/store"
 )
 
 type Config struct {
 	config  *v1.Config
-	db      *ro2.Store
+	db      *store.Store
 	session *SessionContext
 	logger  *slog.Logger
 	cache   *ristretto.Cache[uint64, *models.Model]
@@ -31,7 +31,7 @@ func Open(config *v1.Config) (*Config, error) {
 	if config.DataPath != "" {
 		os.MkdirAll(config.DataPath, 0755)
 	}
-	ops, err := ro2.Open(config.DataPath)
+	ops, err := store.Open(config.DataPath)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (db *Config) PasswordMatch(email, pwd string) bool {
 	) == 1
 }
 
-func (db *Config) Get() *ro2.Store {
+func (db *Config) Get() *store.Store {
 	return db.db
 }
 

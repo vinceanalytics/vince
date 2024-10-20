@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/store"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 	"github.com/vinceanalytics/vince/internal/web/query"
@@ -28,11 +28,11 @@ func Agggregates(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	stats, err := db.Get().Aggregates(domain, params.Start(), params.End(), params.Interval(), params.Filter(), params.Metrics())
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
-		stats = &ro2.Stats{}
+		stats = &store.Stats{}
 	}
 	stats.Compute()
 	result := map[string]any{}
-	ro2.Reduce(params.Metrics())(stats, result)
+	store.Reduce(params.Metrics())(stats, result)
 	db.JSON(w, result)
 }
 
@@ -53,7 +53,7 @@ func Timeseries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	slices.Sort(labels)
 	plot := make([]map[string]any, 0, size)
-	reduce := ro2.Reduce(params.Metrics())
+	reduce := store.Reduce(params.Metrics())
 	for i := range labels {
 		stat := result[labels[i]]
 		stat.Compute()
@@ -63,7 +63,7 @@ func Timeseries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		reduce(stat, value)
 		plot = append(plot, value)
 	}
-	db.JSON(w, ro2.Result{Results: plot})
+	db.JSON(w, store.Result{Results: plot})
 }
 
 func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
@@ -75,7 +75,7 @@ func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var (
-		rs  *ro2.Result
+		rs  *store.Result
 		err error
 	)
 	if params.Property() == models.Field_city {
@@ -92,7 +92,7 @@ func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		db.Logger().Error("reading top stats", "err", err)
-		rs = &ro2.Result{}
+		rs = &store.Result{}
 	}
 	db.JSON(w, rs)
 }

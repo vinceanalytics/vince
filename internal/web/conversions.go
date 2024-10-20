@@ -4,7 +4,7 @@ import (
 	"math"
 	"net/http"
 
-	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/store"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -16,14 +16,14 @@ func Conversion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	sx, err := db.Get().Aggregates(site.Domain, params.Start(), params.End(), params.Interval(), params.Filter(), []string{"visitors"})
 	if err != nil {
 		db.Logger().Error("reading aggregates", "err", err)
-		sx = new(ro2.Stats)
+		sx = new(store.Stats)
 	}
 	sx.Compute()
 	totalVisitors := sx.Visitors
 	rs, err := db.Get().BreakdownGoals(ctx, site, params, []string{"visitors", "events"})
 	if err != nil {
 		db.Logger().Error("breakdown goals", "err", err)
-		rs = new(ro2.Result)
+		rs = new(store.Result)
 	}
 	for i := range rs.Results {
 		m := rs.Results[i]

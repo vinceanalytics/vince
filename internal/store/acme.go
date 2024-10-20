@@ -1,4 +1,4 @@
-package ro2
+package store
 
 import (
 	"context"
