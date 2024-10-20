@@ -10,12 +10,12 @@ import (
 
 	"filippo.io/age"
 	"github.com/cockroachdb/pebble"
-	"github.com/dgraph-io/badger/v4/y"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/util/assert"
 	"github.com/vinceanalytics/vince/internal/util/data"
 	"github.com/vinceanalytics/vince/internal/util/translation"
 	"golang.org/x/crypto/bcrypt"
@@ -155,12 +155,12 @@ func (db *Ops) FindOrCreateCreateSharedLink(domain string, name, password string
 	share = &v1.Share{Id: id, Name: name}
 	if password != "" {
 		b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		y.Check(err)
+		assert.Nil(err, "hashing password with bcrypt")
 		share.Password = b
 	}
 	site.Shares = append(site.Shares, share)
 	err := db.Save(site)
-	y.Check(err)
+	assert.Nil(err, "saving site")
 	return
 }
 

@@ -18,7 +18,6 @@
 - **Public dashboards** allow access to the dashoard to anyone(by default all dashboards are private).
 - **Unique shared access** generate unique links to dahboards that can be password protected.
 - **Zero Dependency**: Ships a single binary with everything in it. No runtime dependency.
-- **High events ingestion rate** : We buffer and use LSM based underlying [key value store](https://github.com/dgraph-io/badger) that is optimized for writes.
 - **Easy to operate**: One line commandline flags with env variables is all you need.
 - **Unlimited sites**: There is no limit on how many sites you can manage.
 - **Unlimited events**: scale according to availbale resources.

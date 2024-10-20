@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/dgraph-io/badger/v4/y"
+	"github.com/cespare/xxhash/v2"
 	"github.com/vinceanalytics/vince/fb/ref"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
@@ -28,7 +28,7 @@ type Re struct {
 	root  *ref.Ref
 	bsi   *roaring.BSI
 	mu    sync.RWMutex
-	cache map[uint32][]byte
+	cache map[uint64][]byte
 }
 
 var base = New()
@@ -44,7 +44,7 @@ func New() *Re {
 	return &Re{
 		root:  root,
 		bsi:   bsi,
-		cache: make(map[uint32][]byte),
+		cache: make(map[uint64][]byte),
 	}
 }
 
@@ -53,17 +53,16 @@ func (r *Re) Search(uri string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	key := []byte(base)
-	hash := y.Hash(key)
+	hash := xxhash.Sum64([]byte(base))
 	r.mu.RLock()
 	cached, ok := r.cache[hash]
 	r.mu.RUnlock()
 	if ok {
 		return cached, nil
 	}
-	idx, ok := r.bsi.GetValue(uint64(hash))
+	idx, ok := r.bsi.GetValue(hash)
 	if !ok {
-		return key, nil
+		return []byte(base), nil
 	}
 	value := r.root.Ref(int(idx))
 	r.mu.Lock()

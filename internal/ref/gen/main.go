@@ -10,7 +10,7 @@ import (
 
 	"log"
 
-	"github.com/dgraph-io/badger/v4/y"
+	"github.com/cespare/xxhash/v2"
 	"github.com/vinceanalytics/vince/fb"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"gopkg.in/yaml.v2"
@@ -97,9 +97,10 @@ func main() {
 	bsi := roaring.NewDefaultBSI()
 
 	domains := make([]string, 0, len(all))
+
 	for _, v := range all {
 		bsi.SetValue(
-			uint64(y.Hash(v.Name)), int64(v.Index),
+			xxhash.Sum64(v.Name), int64(v.Index),
 		)
 
 	}
