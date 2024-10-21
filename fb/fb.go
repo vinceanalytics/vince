@@ -8,11 +8,10 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/vinceanalytics/vince/fb/geo"
 	"github.com/vinceanalytics/vince/fb/ref"
-	"github.com/vinceanalytics/vince/fb/ua"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
-//go:generate flatc --go geo.fbs ua.fbs ref.fbs
+//go:generate flatc --go geo.fbs ref.fbs
 
 func SerializeRef(refs []string, bsi []byte) []byte {
 	b := flatbuffers.NewBuilder(4 << 10)
@@ -22,30 +21,6 @@ func SerializeRef(refs []string, bsi []byte) []byte {
 	ref.RefAddRef(b, refData)
 	ref.RefAddBsi(b, bsiData)
 	b.Finish(ref.RefEnd(b))
-	return b.FinishedBytes()
-}
-
-func SerializeAgent(device, os, osVersion, browser, browserVersion []byte) []byte {
-	size := len(device) + len(os) + len(osVersion) + len(browser) + len(browserVersion)
-	if size == 0 {
-		b := flatbuffers.NewBuilder(0)
-		ua.AgentStart(b)
-		b.Finish(ua.AgentEnd(b))
-		return b.FinishedBytes()
-	}
-	b := flatbuffers.NewBuilder(size)
-	deviceData := buildBytes(b, device, ua.AgentStartDeviceVector)
-	osData := buildBytes(b, os, ua.AgentStartOsVector)
-	osVerData := buildBytes(b, osVersion, ua.AgentStartOsVersionVector)
-	broData := buildBytes(b, browser, ua.AgentStartBrowserVector)
-	broVerData := buildBytes(b, browserVersion, ua.AgentStartBrowserVersionVector)
-	ua.AgentStart(b)
-	ua.AgentAddDevice(b, deviceData)
-	ua.AgentAddOs(b, osData)
-	ua.AgentAddOsVersion(b, osVerData)
-	ua.AgentAddBrowser(b, broData)
-	ua.AgentAddBrowserVersion(b, broVerData)
-	b.Finish(ua.AgentEnd(b))
 	return b.FinishedBytes()
 }
 

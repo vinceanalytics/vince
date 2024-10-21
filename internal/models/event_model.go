@@ -85,3 +85,7 @@ func (m *Model) Update(session *Cached) *Cached {
 	session.Timestamp = m.Timestamp
 	return nil
 }
+
+type Agent struct {
+	Device, Os, OsVersion, Browser, BrowserVersion []byte
+}

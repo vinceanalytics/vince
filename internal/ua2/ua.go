@@ -1,44 +1,45 @@
 package ua2
 
 import (
+	"hash/maphash"
 	"regexp"
 	"strings"
 	"sync"
 
-	"github.com/VictoriaMetrics/fastcache"
 	re2 "github.com/dlclark/regexp2"
-	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/vinceanalytics/vince/fb"
-	"github.com/vinceanalytics/vince/fb/ua"
 	"github.com/vinceanalytics/vince/internal/models"
 )
 
 //go:generate go run gen/main.go device-detector/regexes/
 
 var (
-	cache = fastcache.New(32 << 20)
+	// There is bounded number of user agents out there. It is a lot of work to
+	// parse, it is safe to keep them in memory forever once parsed
+	cache = map[uint64]*models.Agent{}
+
+	seed = maphash.MakeSeed()
+	mu   sync.RWMutex
 )
 
-var agentPool = &sync.Pool{New: func() any {
-	return new(ua.Agent)
-}}
-
 func Parse(s string, m *models.Model) {
-	if buf := cache.Get(nil, []byte(s)); len(buf) > 0 {
-		a := agentPool.Get().(*ua.Agent)
-		a.Init(buf, flatbuffers.GetUOffsetT(buf))
-		m.Device = a.DeviceBytes()
-		m.Os = a.OsBytes()
-		m.OsVersion = a.OsVersionBytes()
-		m.Browser = a.BrowserBytes()
-		m.BrowserVersion = a.BrowserVersionBytes()
-		*a = ua.Agent{}
-		agentPool.Put(a)
+	hash := maphash.String(seed, s)
+	mu.RLock()
+	a, ok := cache[hash]
+	mu.RUnlock()
+	if ok {
+		m.Device = a.Device
+		m.Os = a.Os
+		m.OsVersion = a.OsVersion
+		m.Browser = a.Browser
+		m.BrowserVersion = a.BrowserVersion
 		return
 	}
 	parseUA(s, m)
-	a := fb.SerializeAgent(m.Device, m.Os, m.OsVersion, m.Browser, m.BrowserVersion)
-	cache.Set([]byte(s), a)
+	a = new(models.Agent)
+	a.Device, a.Os, a.OsVersion, a.Browser, a.BrowserVersion = m.Device, m.Os, m.OsVersion, m.Browser, m.BrowserVersion
+	mu.Lock()
+	cache[hash] = a
+	mu.Unlock()
 }
 
 func parseUA(s string, m *models.Model) {
@@ -195,12 +196,6 @@ func parseClientBase(s string, m *models.Model, ls []*clientRe) {
 }
 
 type clientRe struct {
-	re      *ReMatch
-	name    string
-	version string
-}
-
-type osRe struct {
 	re      *ReMatch
 	name    string
 	version string

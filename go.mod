@@ -5,7 +5,6 @@ go 1.23
 require (
 	filippo.io/age v1.2.0
 	github.com/RoaringBitmap/roaring/v2 v2.3.5
-	github.com/VictoriaMetrics/fastcache v1.12.2
 	github.com/bits-and-blooms/bitset v1.12.0
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/cockroachdb/pebble v1.1.2
