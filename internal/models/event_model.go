@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 //go:generate go run gen/main.go
 type Model struct {
 	ExitPage         []byte
@@ -30,4 +32,56 @@ type Model struct {
 	Bounce           int8
 	View             bool
 	Session          bool
+}
+
+type Cached struct {
+	Start     int64
+	EntryPage []byte
+	Host      []byte
+	ExitPage  []byte
+	Timestamp int64
+	Bounce    int8
+}
+
+func (m *Model) Cached() *Cached {
+	return &Cached{
+		EntryPage: m.EntryPage,
+		ExitPage:  m.ExitPage,
+		Timestamp: m.Timestamp,
+		Start:     m.Timestamp,
+		Bounce:    m.Bounce,
+	}
+}
+
+var maxSession = (15 * time.Minute).Milliseconds()
+
+func (m *Model) Update(session *Cached) *Cached {
+	// check if the session has already expied
+	if m.Timestamp-session.Start >= maxSession {
+		//drop existing session and create a new on
+		return m.Cached()
+	}
+	if session.Bounce == 1 {
+		session.Bounce, m.Bounce = -1, -1
+	} else {
+		session.Bounce, m.Bounce = 0, 0
+	}
+	m.Session = false
+	if len(session.EntryPage) == 0 && m.View {
+		m.EntryPage = m.Page
+	} else {
+		m.EntryPage = session.EntryPage
+	}
+	if m.View && len(session.Host) == 0 {
+	} else {
+		m.Host = session.Host
+	}
+	if m.View {
+		m.ExitPage = m.Page
+	} else {
+		m.ExitPage = session.ExitPage
+	}
+	m.Duration = int64(time.UnixMilli(m.Timestamp).Sub(time.UnixMilli(session.Timestamp)))
+	session.Timestamp = m.Timestamp
+	return nil
 }

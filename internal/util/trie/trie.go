@@ -21,20 +21,20 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/dgraph-io/ristretto/z"
+	"github.com/vinceanalytics/vince/internal/util/buffer"
 )
 
 // Trie is an implementation of Ternary Search Tries to store XID to UID map. It uses Arena to
 // allocate nodes in the trie. It is not thread-safe.
 type Trie struct {
 	root uint32
-	buf  *z.Buffer
+	buf  *buffer.Buffer
 }
 
 // NewTrie would return back a Trie backed by the provided Arena. Trie would assume ownership of the
 // Arena. Release must be called at the end to release Arena's resources.
 func NewTrie() *Trie {
-	buf := z.NewBuffer(32<<20, "Trie").WithMaxSize(math.MaxInt32)
+	buf := buffer.NewBuffer(32 << 20).WithMaxSize(math.MaxInt32)
 	// Add additional 8 bytes at the start, because offset=0 is used for checking non-existing node.
 	// Therefore we can't keep root at 0 offset.
 	ro := buf.AllocateOffset(nodeSz + 8)

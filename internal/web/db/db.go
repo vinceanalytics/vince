@@ -12,13 +12,13 @@ import (
 	"time"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/dgraph-io/ristretto"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ops"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/internal/util/data"
+	"github.com/vinceanalytics/vince/internal/util/lru"
 )
 
 type Config struct {
@@ -28,7 +28,7 @@ type Config struct {
 	ops     *ops.Ops
 	session *SessionContext
 	logger  *slog.Logger
-	cache   *ristretto.Cache[uint64, *models.Model]
+	cache   *lru.Cache
 	buffer  chan *models.Model
 }
 
@@ -40,22 +40,7 @@ func Open(config *v1.Config) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	cache, err := ristretto.NewCache(&ristretto.Config[uint64, *models.Model]{
-		NumCounters: 1e7,     // number of keys to track frequency of (10M).
-		MaxCost:     1 << 20, // 1 million active sessions.
-		BufferItems: 64,      // number of keys per Get buffer.
-		OnEvict: func(item *ristretto.Item[*models.Model]) {
-			releaseEvent(item.Value)
-			item.Value = nil
-		},
-		OnReject: func(item *ristretto.Item[*models.Model]) {
-			releaseEvent(item.Value)
-			item.Value = nil
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
+
 	ts := timeseries.New(db)
 	ops := ops.New(db, ts)
 	// setup session
@@ -70,7 +55,7 @@ func Open(config *v1.Config) (*Config, error) {
 		ts:     ts,
 		ops:    ops,
 		logger: slog.Default(),
-		cache:  cache,
+		cache:  lru.New(30 * time.Minute),
 		buffer: make(chan *models.Model, 4<<10),
 		session: &SessionContext{
 			secret: secret,
@@ -80,7 +65,7 @@ func Open(config *v1.Config) (*Config, error) {
 
 func (db *Config) PasswordMatch(email, pwd string) bool {
 	if db.config.Admin.Email != email {
-		return *False
+		return false
 	}
 	return subtle.ConstantTimeCompare(
 		[]byte(db.config.GetAdmin().GetPassword()),
@@ -138,7 +123,6 @@ func (db *Config) eventsLoop(cts context.Context) {
 }
 
 func (db *Config) Close() error {
-	db.cache.Close()
 	return errors.Join(
 		db.ts.Close(),
 		db.db.Close(),

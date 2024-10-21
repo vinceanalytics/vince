@@ -1,17 +1,15 @@
 package db
 
 import (
-	"time"
-
 	"github.com/vinceanalytics/vince/internal/models"
 )
 
-const sessionLifetime = 30 * time.Minute
-
 func (db *Config) append(e *models.Model) error {
 	hit(e)
-	if cached, ok := db.cache.Get(uint64(e.Id)); ok {
-		update(cached, e)
+	if cached, ok := db.cache.Get(e.Id); ok {
+		if m := e.Update(cached); m != nil {
+			db.cache.Set(e.Id, m)
+		}
 		err := db.ts.Add(e)
 		releaseEvent(e)
 		return err
@@ -21,6 +19,6 @@ func (db *Config) append(e *models.Model) error {
 	if err != nil {
 		return err
 	}
-	db.cache.SetWithTTL(uint64(e.Id), e, 1, sessionLifetime)
+	db.cache.Set(e.Id, e.Cached())
 	return nil
 }

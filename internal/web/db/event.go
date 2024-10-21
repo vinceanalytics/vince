@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/geo"
@@ -47,36 +46,7 @@ func newSessionEvent(e *models.Model) {
 	}
 }
 
-func update(session *models.Model, event *models.Model) {
-	if session.Bounce == 1 {
-		session.Bounce, event.Bounce = -1, -1
-	} else {
-		session.Bounce, event.Bounce = 0, 0
-	}
-	event.Session = false
-	if len(session.EntryPage) == 0 && event.View {
-		event.EntryPage = event.Page
-	} else {
-		event.EntryPage = session.EntryPage
-	}
-	if event.View && len(session.Host) == 0 {
-	} else {
-		event.Host = session.Host
-	}
-	if event.View {
-		event.ExitPage = event.Page
-	} else {
-		event.ExitPage = session.ExitPage
-	}
-	event.Duration = int64(time.UnixMilli(event.Timestamp).Sub(time.UnixMilli(session.Timestamp)))
-	session.Timestamp = event.Timestamp
-}
-
 var (
-	True = ptr(true)
-
-	False = ptr(false)
-
 	ErrDrop = errors.New("event dropped")
 )
 
@@ -134,10 +104,6 @@ func (db *Config) parse(r *http.Request) (*models.Model, error) {
 	e.Referrer = []byte(ref)
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil
-}
-
-func ptr[T any](a T) *T {
-	return &a
 }
 
 func sanitizeHost(s string) string {
