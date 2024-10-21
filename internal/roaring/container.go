@@ -367,8 +367,8 @@ func (c array) toBitmapContainer(buf []uint16) []uint16 {
 	if len(buf) == 0 {
 		buf = make([]uint16, maxContainerSize)
 	} else {
-		assert(len(buf) == maxContainerSize)
-		assert(len(buf) == copy(buf, empty))
+		_ = buf[maxContainerSize-1]
+		clear(buf)
 	}
 
 	b := bitmap(buf)

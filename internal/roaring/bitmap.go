@@ -26,8 +26,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var empty = make([]uint16, 16<<20)
-
 const mask = uint64(0xFFFFFFFFFFFF0000)
 
 type Bitmap struct {
