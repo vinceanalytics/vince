@@ -1,1 +1,0 @@
-go test -benchmem -run=^$ -bench ^BenchmarkRange$ -memprofile memprofile.out -cpuprofile profile.out -count 6 github.com/vinceanalytics/vince/internal/store
