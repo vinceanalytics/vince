@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	data = bytes.ReplaceAll(data, []byte(version.VERSION), []byte(v.String()))
+	data = bytes.ReplaceAll(data, []byte(version.VERSION)[1:], []byte(v.String())[1:])
 	err = os.WriteFile(path, data, 0600)
 	if err != nil {
 		log.Fatal(err)
