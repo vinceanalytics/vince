@@ -8,7 +8,7 @@ func (db *Config) append(e *models.Model) error {
 	hit(e)
 	if cached, ok := db.cache.Get(e.Id); ok {
 		if m := e.Update(cached); m != nil {
-			db.cache.Set(e.Id, m)
+			db.cache.Add(e.Id, m)
 		}
 		err := db.ts.Add(e)
 		releaseEvent(e)
@@ -19,6 +19,6 @@ func (db *Config) append(e *models.Model) error {
 	if err != nil {
 		return err
 	}
-	db.cache.Set(e.Id, e.Cached())
+	db.cache.Add(e.Id, e.Cached())
 	return nil
 }

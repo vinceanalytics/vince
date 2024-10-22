@@ -28,7 +28,7 @@ type Config struct {
 	ops     *ops.Ops
 	session *SessionContext
 	logger  *slog.Logger
-	cache   *lru.Cache
+	cache   *lru.Cache[uint64, *models.Cached]
 	buffer  chan *models.Model
 }
 
@@ -55,7 +55,7 @@ func Open(config *v1.Config) (*Config, error) {
 		ts:     ts,
 		ops:    ops,
 		logger: slog.Default(),
-		cache:  lru.New(30 * time.Minute),
+		cache:  lru.New[uint64, *models.Cached](1 << 20),
 		buffer: make(chan *models.Model, 4<<10),
 		session: &SessionContext{
 			secret: secret,

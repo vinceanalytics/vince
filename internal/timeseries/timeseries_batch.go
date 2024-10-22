@@ -24,10 +24,11 @@ type batch struct {
 	id        uint64
 	shard     uint64
 	time      uint64
+	keys      *roaring.Bitmap
 }
 
 func newbatch(db *pebble.DB, tr *translation) *batch {
-	b := &batch{translate: tr}
+	b := &batch{translate: tr, keys: roaring.NewBitmap()}
 	for i := range b.mutex {
 		b.mutex[i] = make(map[uint64]*roaring.Bitmap)
 	}
@@ -77,12 +78,12 @@ func (b *batch) flush(ba *pebble.Batch) error {
 		ts := time.UnixMilli(int64(view)).UTC()
 		value := bm.ToBuffer()
 		return errors.Join(
-			ba.Merge(encoding.Bitmap(b.shard, 0, f, key), value, nil),
-			ba.Merge(encoding.Bitmap(b.shard, view, f, key), value, nil),
-			ba.Merge(encoding.Bitmap(b.shard, hour(ts), f, key), value, nil),
-			ba.Merge(encoding.Bitmap(b.shard, day(ts), f, key), value, nil),
-			ba.Merge(encoding.Bitmap(b.shard, week(ts), f, key), value, nil),
-			ba.Merge(encoding.Bitmap(b.shard, month(ts), f, key), value, nil),
+			ba.Merge(b.encode(0, f, key), value, nil),
+			ba.Merge(b.encode(view, f, key), value, nil),
+			ba.Merge(b.encode(hour(ts), f, key), value, nil),
+			ba.Merge(b.encode(day(ts), f, key), value, nil),
+			ba.Merge(b.encode(week(ts), f, key), value, nil),
+			ba.Merge(b.encode(month(ts), f, key), value, nil),
 		)
 	}
 	for i := range b.mutex {
@@ -104,6 +105,12 @@ func (b *batch) flush(ba *pebble.Batch) error {
 		}
 	}
 	return nil
+}
+
+func (b *batch) encode(view uint64, field models.Field, buf []byte) []byte {
+	encoding.Bitmap(b.shard, view, field, buf)
+	b.keys.Set(hash(buf))
+	return buf
 }
 
 func (b *batch) add(m *models.Model) error {
