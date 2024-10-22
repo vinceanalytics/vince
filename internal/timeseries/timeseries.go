@@ -18,8 +18,10 @@ type Timeseries struct {
 	db *pebble.DB
 	ba *batch
 
-	mu   sync.RWMutex
-	trie *trie.Trie
+	trie struct {
+		mu sync.RWMutex
+		tr *trie.Trie
+	}
 
 	// Bitmaps are organized that  similar queries depending on interval will always
 	// fetch similar bitmaps.
@@ -35,12 +37,13 @@ type Timeseries struct {
 }
 
 func New(db *pebble.DB) *Timeseries {
-	ts := &Timeseries{db: db, trie: trie.NewTrie()}
-	tr := newTranslation(db, ts.trie.Put)
+	ts := &Timeseries{db: db}
+	ts.trie.tr = trie.NewTrie()
+	tr := newTranslation(db, ts.trie.tr.Put)
 	tr.onAssign = func(key []byte, uid uint64) {
-		ts.mu.Lock()
-		ts.trie.Put(key, uid)
-		ts.mu.Unlock()
+		ts.trie.mu.Lock()
+		ts.trie.tr.Put(key, uid)
+		ts.trie.mu.Unlock()
 	}
 	ts.ba = newbatch(db, tr)
 	ts.cache.lru = lru.New[uint64, *roaring.Bitmap](8 << 10)
@@ -51,9 +54,9 @@ func New(db *pebble.DB) *Timeseries {
 var _ xt.Translator = (*Timeseries)(nil)
 
 func (ts *Timeseries) Translate(field models.Field, value []byte) uint64 {
-	ts.mu.RLock()
-	defer ts.mu.RUnlock()
-	return ts.trie.Get(encoding.TranslateKey(field, value))
+	ts.trie.mu.RLock()
+	defer ts.trie.mu.RUnlock()
+	return ts.trie.tr.Get(encoding.TranslateKey(field, value))
 }
 
 func (ts *Timeseries) Get() *pebble.DB {
