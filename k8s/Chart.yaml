@@ -3,4 +3,4 @@ name: vince
 description: Cloud-Native web analytics for everyone
 type: application
 version: 0.1.0
-appVersion: "v1.5.1"
+appVersion: "v1.5.2"
