@@ -49,11 +49,8 @@ type Buffer struct {
 }
 
 func NewBuffer(capacity int) *Buffer {
-	if capacity < defaultCapacity {
-		capacity = defaultCapacity
-	}
 	return &Buffer{
-		buf:     make([]byte, capacity),
+		buf:     make([]byte, max(defaultCapacity, capacity)),
 		curSz:   capacity,
 		offset:  8,
 		padding: 8,
