@@ -10,6 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
+	"github.com/vinceanalytics/vince/internal/util/oracle"
 )
 
 const ShardWidth = 1 << 20
@@ -36,6 +37,7 @@ func newbatch(db *pebble.DB, tr *translation) *batch {
 	b.id = tr.id
 	b.shard = b.id / ShardWidth
 	b.db = db
+	oracle.Records.Store(b.id)
 	return b
 }
 
@@ -52,6 +54,7 @@ func (b *batch) save() error {
 			clear(b.bsi[i])
 		}
 		b.events = 0
+		oracle.Records.Store(b.id)
 	}()
 	ba := b.db.NewIndexedBatch()
 

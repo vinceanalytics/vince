@@ -2,13 +2,13 @@ package timeseries
 
 import (
 	"context"
-	"encoding/binary"
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/util/data"
+	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -17,7 +17,7 @@ func (ts *Timeseries) Select(ctx context.Context, domain string, start,
 	m := ts.compile(filters)
 	return intrerval.Range(start, end, func(t time.Time) error {
 		view := uint64(t.UnixMilli())
-		for shard := range ts.Shards(ctx) {
+		for shard := range oracle.Shards() {
 			match := ts.Domain(ctx, shard, view, domain)
 			if match.IsEmpty() {
 				return nil
@@ -45,14 +45,5 @@ func (ts *Timeseries) Find(ctx context.Context, field models.Field, id uint64) (
 		value = string(val)
 		return nil
 	})
-	return
-}
-
-func (ts *Timeseries) Shards(ctx context.Context) (v uint64) {
-	data.Get(ts.db, encoding.TranslateSeq(models.Field_unknown, make([]byte, 3)), func(val []byte) error {
-		v = binary.BigEndian.Uint64(val)
-		return nil
-	})
-	v = (v / ShardWidth) + 1
 	return
 }

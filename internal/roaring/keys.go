@@ -194,7 +194,7 @@ func (n node) iterate(fn func(node, int)) {
 	}
 }
 
-func (n node) print(parentID uint64) {
+func (n node) print(_ uint64) {
 	var keys []string
 	n.iterate(func(n node, i int) {
 		keys = append(keys, fmt.Sprintf("%d", n.key(i)))

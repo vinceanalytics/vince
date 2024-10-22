@@ -7,6 +7,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/timeseries"
+	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -16,7 +17,7 @@ func Current(ctx context.Context, ts *timeseries.Timeseries, domain string) (vis
 	r := roaring.NewBitmap()
 	err = query.Minute.Range(start, end, func(t time.Time) error {
 		view := uint64(t.UnixMilli())
-		for shard := range ts.Shards(ctx) {
+		for shard := range oracle.Shards() {
 			match := ts.Domain(ctx, shard, view, domain)
 			if match.IsEmpty() {
 				continue
@@ -34,7 +35,7 @@ func Current(ctx context.Context, ts *timeseries.Timeseries, domain string) (vis
 
 func Visitors(ctx context.Context, ts *timeseries.Timeseries, domain string) (visitors uint64, err error) {
 	b := roaring.NewBitmap()
-	for shard := range ts.Shards(ctx) {
+	for shard := range oracle.Shards() {
 		match := ts.Domain(ctx, shard, 0, domain)
 		if match.IsEmpty() {
 			continue
