@@ -1,7 +1,6 @@
 package data
 
 import (
-	"bytes"
 	"io"
 
 	"github.com/cockroachdb/pebble"
@@ -30,7 +29,7 @@ func (va *ValueMerger) Finish(includesBase bool) ([]byte, io.Closer, error) {
 
 var BitmapMarger = &pebble.Merger{
 	Merge: func(key, value []byte) (pebble.ValueMerger, error) {
-		ra := roaring.FromBuffer(bytes.Clone(value))
+		ra := roaring.FromBufferWithCopy(value)
 		return &ValueMerger{ra: ra}, nil
 	},
 	Name: "vince.BitmapMerger",
