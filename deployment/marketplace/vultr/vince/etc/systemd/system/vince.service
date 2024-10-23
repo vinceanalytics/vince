@@ -1,0 +1,28 @@
+[Unit]
+Description=Vince is a cost-effective alternative to Google Analytics
+# https://vinceanalytics.com/guides
+After=network.target
+
+[Service]
+Type=simple
+User=vince
+Group=vince
+WorkingDirectory=/var/lib/vince-data
+StartLimitBurst=5
+StartLimitInterval=0
+Restart=on-failure
+RestartSec=5
+EnvironmentFile=-/etc/vince/vince.conf
+ExecStart=/usr/bin/vince $ARGS
+ExecStop=/bin/kill -s SIGTERM $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID
+ProtectSystem=full
+LimitNOFILE=1048576
+LimitNPROC=1048576
+LimitCORE=infinity
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=vince
+
+[Install]
+WantedBy=multi-user.target
