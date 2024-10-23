@@ -6,12 +6,24 @@ import (
 	"sort"
 
 	flatbuffers "github.com/google/flatbuffers/go"
+	"github.com/vinceanalytics/vince/fb/admin"
 	"github.com/vinceanalytics/vince/fb/geo"
 	"github.com/vinceanalytics/vince/fb/ref"
 	"github.com/vinceanalytics/vince/internal/roaring"
 )
 
-//go:generate flatc --go geo.fbs ref.fbs
+//go:generate flatc --go geo.fbs ref.fbs admin.fbs
+
+func SerializeAdmin(name, password []byte) []byte {
+	b := flatbuffers.NewBuilder(1 << 10)
+	nameData := buildBytes(b, name, admin.AdminStartNameVector)
+	passData := buildBytes(b, password, admin.AdminStartPasswordVector)
+	admin.AdminStart(b)
+	admin.AdminAddName(b, nameData)
+	admin.AdminAddPassword(b, passData)
+	b.Finish(admin.AdminEnd(b))
+	return b.FinishedBytes()
+}
 
 func SerializeRef(refs []string, bsi []byte) []byte {
 	b := flatbuffers.NewBuilder(4 << 10)

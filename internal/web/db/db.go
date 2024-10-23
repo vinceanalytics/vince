@@ -2,27 +2,24 @@ package db
 
 import (
 	"context"
-	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"html/template"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/cockroachdb/pebble"
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ops"
 	"github.com/vinceanalytics/vince/internal/timeseries"
 	"github.com/vinceanalytics/vince/internal/util/data"
 	"github.com/vinceanalytics/vince/internal/util/lru"
+	"github.com/vinceanalytics/vince/internal/util/oracle"
 )
 
 type Config struct {
-	config  *v1.Config
 	db      *pebble.DB
 	ts      *timeseries.Timeseries
 	ops     *ops.Ops
@@ -32,17 +29,18 @@ type Config struct {
 	buffer  chan *models.Model
 }
 
-func Open(config *v1.Config) (*Config, error) {
-	if config.DataPath != "" {
-		os.MkdirAll(config.DataPath, 0755)
-	}
-	db, err := data.Open(config.DataPath, nil)
+func Open(startDomains []string) (*Config, error) {
+
+	db, err := data.Open(oracle.DataPath, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	ts := timeseries.New(db)
 	ops := ops.New(db, ts)
+	ops.SetupDomains(startDomains)
+	domains.Reload(ops.Domains)
+
 	// setup session
 	secret, err := ops.Web()
 	if err != nil {
@@ -50,7 +48,6 @@ func Open(config *v1.Config) (*Config, error) {
 		return nil, err
 	}
 	return &Config{
-		config: config,
 		db:     db,
 		ts:     ts,
 		ops:    ops,
@@ -63,14 +60,8 @@ func Open(config *v1.Config) (*Config, error) {
 	}, nil
 }
 
-func (db *Config) PasswordMatch(email, pwd string) bool {
-	if db.config.Admin.Email != email {
-		return false
-	}
-	return subtle.ConstantTimeCompare(
-		[]byte(db.config.GetAdmin().GetPassword()),
-		[]byte(pwd),
-	) == 1
+func (db *Config) PasswordMatch(pwd string) bool {
+	return db.ops.VerifyPassword(pwd)
 }
 
 func (db *Config) TimeSeries() *timeseries.Timeseries {
@@ -85,17 +76,11 @@ func (db *Config) Pebble() *pebble.DB {
 	return db.db
 }
 
-func (db *Config) GetConfig() *v1.Config {
-	return db.config
-}
-
 func (db *Config) Logger() *slog.Logger {
 	return db.logger
 }
 
 func (db *Config) Start(ctx context.Context) {
-	db.Ops().SetupDomains(db.config.Domains)
-	domains.Reload(db.Ops().Domains)
 	go db.eventsLoop(ctx)
 }
 

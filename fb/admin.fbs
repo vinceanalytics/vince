@@ -1,0 +1,9 @@
+namespace admin;
+
+table Admin{
+    name:[ubyte];
+    password:[ubyte];
+}
+
+
+root_type Admin;

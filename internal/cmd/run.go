@@ -10,10 +10,11 @@ import (
 	"os"
 	"os/signal"
 
-	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/util/acme"
+	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/conversions"
 	"github.com/vinceanalytics/vince/internal/web/db"
@@ -21,8 +22,69 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-func run(config *v1.Config) {
-	db, err := db.Open(config)
+var serve = &cli.Command{
+	Name:  "serve",
+	Usage: "Starts vince web server",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:        "listen",
+			Usage:       "host:port to dind the servser",
+			Value:       ":8080",
+			Sources:     cli.EnvVars("VINCE_LISTEN"),
+			Destination: &oracle.Listen,
+		},
+		&cli.StringFlag{
+			Name:        "data",
+			Usage:       "directory to store data",
+			Sources:     cli.EnvVars("VINCE_DATA"),
+			Value:       "vince-data",
+			Destination: &oracle.DataPath,
+		},
+		&cli.BoolFlag{
+			Name:        "autoTLS",
+			Usage:       "enables automatic tls",
+			Sources:     cli.EnvVars("VINCE_AUTO_TLS"),
+			Destination: &oracle.Acme.Enabled,
+		},
+		&cli.StringFlag{
+			Name:        "acmeEmail",
+			Usage:       "email address for atomatic tls",
+			Sources:     cli.EnvVars("VINCE_ACME_EMAIL"),
+			Destination: &oracle.Acme.Email,
+		},
+		&cli.StringFlag{
+			Name:        "acmeDomain",
+			Usage:       "domain for atomatic tls",
+			Sources:     cli.EnvVars("VINCE_ACME_DOMAIN"),
+			Destination: &oracle.Acme.Domain,
+		},
+		&cli.StringFlag{
+			Name:        "url",
+			Value:       "http://localhost:8080",
+			Usage:       "url resolving to this vince instance",
+			Sources:     cli.EnvVars("VINCE_URL"),
+			Destination: &oracle.Endpoint,
+		},
+		&cli.StringSliceFlag{
+			Name:    "domains",
+			Usage:   "list of domains to create on startup",
+			Sources: cli.EnvVars("VINCE_DOMAINS"),
+		},
+		&cli.BoolFlag{
+			Name:        "profile",
+			Usage:       "registrer http profiles on /debug/ path",
+			Sources:     cli.EnvVars("VINCE_PROFILE"),
+			Destination: &oracle.Profile,
+		},
+	},
+	Action: func(ctx context.Context, c *cli.Command) error {
+		run(c.StringSlice("domains"))
+		return nil
+	},
+}
+
+func run(domains []string) {
+	db, err := db.Open(domains)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,7 +100,7 @@ func run(config *v1.Config) {
 	mux.HandleFunc("/favicon/sources/placeholder", web.Placeholder)
 	mux.HandleFunc("/favicon/sources/{source...}", web.Favicon)
 
-	if config.Profile {
+	if oracle.Profile {
 		mux.HandleFunc("GET /debug/pprof/{name}", func(w http.ResponseWriter, r *http.Request) {
 			name := r.PathValue("name")
 			switch name {
@@ -390,16 +452,16 @@ func run(config *v1.Config) {
 		location.GetCity(0)
 	}()
 	svr := &http.Server{
-		Addr:        config.Listen,
+		Addr:        oracle.Listen,
 		BaseContext: func(l net.Listener) context.Context { return ctx },
 		Handler:     plug.Static(mux),
 	}
-	if config.Acme {
-		slog.Info("Auto tls enabled, configuring tls", "email", config.AcmeEmail, "domain", config.AcmeDomain)
+	if oracle.Acme.Enabled {
+		slog.Info("Auto tls enabled, configuring tls", "email", oracle.Acme.Email, "domain", oracle.Acme.Domain)
 		m := &autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(config.AcmeDomain),
-			Email:      config.AcmeEmail,
+			HostPolicy: autocert.HostWhitelist(oracle.Acme.Domain),
+			Email:      oracle.Acme.Email,
 			Cache:      acme.New(db.Pebble()),
 		}
 		svr.TLSConfig = m.TLSConfig()
@@ -408,7 +470,7 @@ func run(config *v1.Config) {
 	slog.Info("starting server", "addr", svr.Addr)
 	go func() {
 		defer cancel()
-		if config.Acme {
+		if oracle.Acme.Enabled {
 			svr.ListenAndServeTLS("", "")
 		} else {
 			svr.ListenAndServe()

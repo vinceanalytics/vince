@@ -14,14 +14,12 @@ import (
 	"net/url"
 	"runtime/trace"
 	"strconv"
-	"strings"
 	"time"
 
 	"filippo.io/age"
-	"github.com/dchest/captcha"
 	"github.com/google/uuid"
-	"github.com/lestrrat-go/dataurl"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
+	"github.com/vinceanalytics/vince/internal/util/oracle"
 )
 
 const MaxAge = 60 * 60 * 24 * 365 * 5
@@ -29,11 +27,10 @@ const MaxAge = 60 * 60 * 24 * 365 * 5
 const cookie = "_vince"
 
 type SessionContext struct {
-	Data    Data
-	captcha string
-	user    *v1.User
-	site    *v1.Site
-	secret  *age.X25519Identity
+	Data   Data
+	user   string
+	site   *v1.Site
+	secret *age.X25519Identity
 }
 
 func (s *SessionContext) clone() *SessionContext {
@@ -45,7 +42,6 @@ type Data struct {
 	CurrentUserID string    `json:",omitempty"`
 	LastSeen      time.Time `json:",omitempty"`
 	LoggedIn      bool      `json:",omitempty"`
-	Captcha       string    `json:",omitempty"`
 	Csrf          string    `json:",omitempty"`
 	LoginDest     string    `json:",omitempty"`
 	Flash         Flash     `json:",omitempty"`
@@ -67,16 +63,6 @@ func (s *SessionContext) FailFlash(m string) *SessionContext {
 	return s
 }
 
-func (c *Config) VerifyCaptchaSolution(r *http.Request) bool {
-	r.ParseForm()
-	digits := r.Form.Get("_captcha")
-	digits = strings.TrimSpace(digits)
-	if digits == "" {
-		return false
-	}
-	return subtle.ConstantTimeCompare([]byte(digits), []byte(c.session.Data.Captcha)) == 1
-}
-
 func (c *Config) Wrap(kind string) func(f func(db *Config, w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
 	return func(f func(db *Config, w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -90,11 +76,11 @@ func (c *Config) Wrap(kind string) func(f func(db *Config, w http.ResponseWriter
 func (c *Config) Load(w http.ResponseWriter, r *http.Request) {
 	c.load(r)
 	if c.session.Data.CurrentUserID != "" {
-		if c.config.Admin.Email != c.session.Data.CurrentUserID {
+		if c.ops.Admin() != c.session.Data.CurrentUserID {
 			c.session = c.session.clone()
 			c.SaveSession(w)
 		} else {
-			c.session.user = c.config.Admin
+			c.session.user = c.session.Data.CurrentUserID
 		}
 	}
 }
@@ -127,10 +113,10 @@ func (c *Config) Context(base map[string]any) map[string]any {
 		base = make(map[string]any)
 	}
 	s := c.session
-	if u := s.user; u != nil {
+	if u := s.user; u != "" {
 		base["current_user"] = map[string]any{
-			"name":  u.Name,
-			"email": u.Email,
+			"name":  u,
+			"email": u,
 			"admin": true,
 		}
 	}
@@ -141,7 +127,7 @@ func (c *Config) Context(base map[string]any) map[string]any {
 			"locked": s.Locked,
 		}
 		share := make([]map[string]any, 0, len(s.Shares))
-		u := c.config.Url
+		u := oracle.Endpoint
 		p := u + fmt.Sprintf("/v1/share/%s?auth=", url.PathEscape(s.Domain))
 
 		for _, r := range s.Shares {
@@ -170,9 +156,6 @@ func (c *Config) Context(base map[string]any) map[string]any {
 		base["site"] = site
 	}
 
-	if s.captcha != "" {
-		base["captcha"] = template.HTMLAttr(fmt.Sprintf("src=%q", s.captcha))
-	}
 	if s.Data.Csrf != "" {
 		base["csrf"] = template.HTML(s.Data.Csrf)
 	}
@@ -191,7 +174,6 @@ func (c *Config) load(r *http.Request) {
 
 func (c *Config) clone(r *http.Request) *Config {
 	return &Config{
-		config:  c.config,
 		db:      c.db,
 		ts:      c.ts,
 		ops:     c.ops,
@@ -234,7 +216,7 @@ func (s *SessionContext) getSession(value string) ([]byte, error) {
 }
 
 func (c *Config) Authorize(w http.ResponseWriter, r *http.Request) bool {
-	if c.session.user == nil {
+	if c.session.user == "" {
 		c.session.Data.LoginDest = r.URL.Path
 		c.SaveSession(w)
 		return false
@@ -243,7 +225,7 @@ func (c *Config) Authorize(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func (c *Config) IsLoggedOut(w http.ResponseWriter) bool {
-	if c.session.user != nil {
+	if c.session.user != "" {
 		c.session.Data.LoggedIn = true
 		c.SaveSession(w)
 		return false
@@ -256,7 +238,7 @@ func (c *Config) Logout(w http.ResponseWriter) {
 	c.SaveSession(w)
 }
 
-func (c *Config) CurrentUser() *v1.User {
+func (c *Config) CurrentUser() string {
 	return c.session.user
 }
 
@@ -269,7 +251,7 @@ func (c *Config) CurrentSite() *v1.Site {
 }
 
 func (c *Config) Login(w http.ResponseWriter) string {
-	c.session.Data.CurrentUserID = c.config.Admin.Email
+	c.session.Data.CurrentUserID = c.ops.Admin()
 	c.session.Data.LoggedIn = true
 	dest := c.session.Data.LoginDest
 	c.session.Data.LoginDest = ""
@@ -363,28 +345,6 @@ func (s *SessionContext) create(b []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
 
-func (c *Config) SaveCaptcha(w http.ResponseWriter) {
-	err := c.session.saveCaptcha(w)
-	if err != nil {
-		c.logger.Error("saving captcha", "err", err)
-	}
-}
-
-func (s *SessionContext) saveCaptcha(w http.ResponseWriter) error {
-	solution := captcha.RandomDigits(captcha.DefaultLen)
-	img := captcha.NewImage("", solution, captcha.StdWidth, captcha.StdHeight)
-	var b bytes.Buffer
-	img.WriteTo(&b)
-	data, err := dataurl.Encode(b.Bytes(), dataurl.WithBase64Encoding(true), dataurl.WithMediaType("image/png"))
-	if err != nil {
-		return err
-	}
-	s.Data.Captcha = formatCaptchaSolution(solution)
-	s.save(w)
-	s.captcha = string(data)
-	return nil
-}
-
 func (c *Config) SaveCsrf(w http.ResponseWriter) {
 	err := c.session.saveCsrf(w)
 	if err != nil {
@@ -404,13 +364,4 @@ func (c *Config) IsValidCsrf(r *http.Request) bool {
 	r.ParseForm()
 	value := r.Form.Get("_csrf")
 	return subtle.ConstantTimeCompare([]byte(value), []byte(c.session.Data.Csrf)) == 1
-}
-
-func formatCaptchaSolution(sol []byte) string {
-	var s strings.Builder
-	s.Grow(len(sol))
-	for _, b := range sol {
-		s.WriteString(strconv.FormatInt(int64(b), 10))
-	}
-	return s.String()
 }

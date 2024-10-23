@@ -8,7 +8,7 @@ import (
 )
 
 func Home(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	if db.CurrentUser() != nil {
+	if db.CurrentUser() != "" {
 		http.Redirect(w, r, "/sites", http.StatusFound)
 		return
 	}

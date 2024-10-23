@@ -104,13 +104,6 @@ func SecureHeaders(h Handler) Handler {
 	}
 }
 
-func Captcha(h Handler) Handler {
-	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
-		db.SaveCaptcha(w)
-		h(db, w, r)
-	}
-}
-
 func CSRF(h Handler) Handler {
 	return func(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		db.SaveCsrf(w)

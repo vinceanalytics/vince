@@ -267,7 +267,7 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if referrer == "Google" {
 		db.JSONCode(http.StatusUnprocessableEntity, w, map[string]any{
 			"error":    "The site is not connected to Google Search Keywords",
-			"is_admin": db.CurrentUser() != nil,
+			"is_admin": db.CurrentUser() != "",
 		})
 		return
 	}

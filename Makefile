@@ -1,11 +1,8 @@
 dev:
 	go build -o bin/vince
-	VINCE_ADMIN_NAME=acme \
-	VINCE_ADMIN_EMAIL=trial@vinceanalytics.com \
-	VINCE_ADMIN_PASSWORD=1234 \
-	VINCE_DOMAINS=vinceanalytics.com \
-	VINCE_PROFILE=true \
-	VINCE_DATA=.data  ./bin/vince
+	./bin/vince admin --name acme --password 1234
+	./bin/vince serve --domains vinceanalytics.com --profile
+
 
 
 css:

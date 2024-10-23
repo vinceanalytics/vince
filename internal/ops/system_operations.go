@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"crypto/sha512"
 	"errors"
+	"fmt"
 	"regexp"
 	"slices"
 	"strings"
@@ -11,6 +12,8 @@ import (
 	"filippo.io/age"
 	"github.com/cockroachdb/pebble"
 	gonanoid "github.com/matoous/go-nanoid/v2"
+	"github.com/vinceanalytics/vince/fb"
+	"github.com/vinceanalytics/vince/fb/admin"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
@@ -142,7 +145,6 @@ func (db *Ops) DeleteSharedLink(site *v1.Site, slug string) error {
 }
 
 func (db *Ops) FindOrCreateCreateSharedLink(domain string, name, password string) (share *v1.Share) {
-
 	site := db.Site(domain)
 
 	for _, s := range site.Shares {
@@ -175,6 +177,38 @@ func (db *Ops) Web() (secret *age.X25519Identity, err error) {
 			err = db.db.Set(keys.Cookie, []byte(secret.String()), nil)
 		}
 	}
+	return
+}
+
+func (db *Ops) CreateAdmin(name string, password string) error {
+	// Hash Password
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("hashing admin password %w", err)
+	}
+	err = db.db.Set(keys.AdminPrefix, fb.SerializeAdmin([]byte(name), hashed), nil)
+	if err != nil {
+		return fmt.Errorf("saving admin %w", err)
+	}
+	return nil
+}
+
+func (db *Ops) VerifyPassword(password string) (match bool) {
+	data.Get(db.db, keys.AdminPrefix, func(val []byte) error {
+		usr := admin.GetRootAsAdmin(val, 0)
+		err := bcrypt.CompareHashAndPassword(usr.PasswordBytes(), []byte(password))
+		match = err == nil
+		return err
+	})
+	return
+}
+
+func (db *Ops) Admin() (name string) {
+	data.Get(db.db, keys.AdminPrefix, func(val []byte) error {
+		usr := admin.GetRootAsAdmin(val, 0)
+		name = string(usr.NameBytes())
+		return nil
+	})
 	return
 }
 

@@ -8,13 +8,11 @@ require (
 	github.com/bits-and-blooms/bitset v1.12.0
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/cockroachdb/pebble v1.1.2
-	github.com/dchest/captcha v1.0.0
 	github.com/dgryski/go-farm v0.0.0-20240924180020-3414d57e47da
 	github.com/dlclark/regexp2 v1.11.4
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/flatbuffers v24.3.25+incompatible
 	github.com/google/uuid v1.6.0
-	github.com/lestrrat-go/dataurl v0.0.0-20220721131304-b60017625013
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/oschwald/maxminddb-golang v1.13.1
 	github.com/pkg/errors v0.9.1
@@ -43,7 +41,6 @@ require (
 	github.com/klauspost/compress v1.17.10 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

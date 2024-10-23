@@ -14,6 +14,7 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/api/visitors"
 	"github.com/vinceanalytics/vince/internal/domains"
+	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
@@ -218,7 +219,7 @@ func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 }
 
 func AddSnippet(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	tracker := fmt.Sprintf("%s/js/script.js", db.GetConfig().GetUrl())
+	tracker := fmt.Sprintf("%s/js/script.js", oracle.Endpoint)
 	snippet := fmt.Sprintf(`<script defer data-domain=%q src=%q></script>`, db.CurrentSite().Domain, tracker)
 
 	db.HTML(w, addSnippet, map[string]any{
@@ -237,7 +238,7 @@ func RequireSiteAccess(h plug.Handler) plug.Handler {
 			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
 			return
 		}
-		if db.CurrentUser() != nil {
+		if db.CurrentUser() != "" {
 			db.SetSite(site)
 			h(db, w, r)
 			return

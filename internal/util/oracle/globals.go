@@ -7,6 +7,19 @@ var (
 	//Records tracks total records stored in the database. This only accounts for
 	// records already in the database and excludes records in the batch ingester.
 	Records atomic.Uint64
+
+	Listen string
+
+	DataPath string
+
+	Acme struct {
+		Enabled       bool
+		Email, Domain string
+	}
+
+	Endpoint string
+
+	Profile bool
 )
 
 // Shards returns the current number of shards observed in the database. This value
