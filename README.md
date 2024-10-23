@@ -56,11 +56,18 @@ vince --version
 
 ## Start vince
 
-```shell
-vince  --adminName=acme --adminPassword=1234 --adminEmail=acme@example.com 
+*create admin*
+```
+❯ vince admin --name acme --password 1234
 ```
 
-This command will start vince on `localhost:8080`.
+*start server*
+```
+❯ vince serve                            
+2024/10/23 15:32:08 [JOB 1] WAL file vince-data/pebble/000002.log with log number 000002 stopped reading at offset: 124; replayed 1 keys in 1 batches
+2024/10/23 15:32:08 INFO starting event processing loop
+2024/10/23 15:32:08 INFO starting server addr=:8080
+```
 
 # Credit
 
