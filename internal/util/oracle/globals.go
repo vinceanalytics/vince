@@ -18,6 +18,7 @@ var (
 	}
 
 	Endpoint string
+	Demo     string
 
 	Profile bool
 )

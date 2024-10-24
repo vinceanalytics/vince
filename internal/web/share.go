@@ -13,6 +13,19 @@ import (
 )
 
 func Share(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	site := db.CurrentSite()
+	if site.Locked {
+		db.HTML(w, statsLocked, nil)
+		return
+	}
+	hasStats := db.Ops().SeenFirstStats(site.Domain)
+	w.Header().Set("x-robots-tag", "noindex, nofollow")
+	auth := r.URL.Query().Get("auth")
+	db.HTML(w, stats, map[string]any{
+		"seen_first_stats": hasStats,
+		"title":            "vince · " + site.Domain,
+		"auth":             auth,
+	})
 }
 
 func ShareAuthForm(db *db.Config, w http.ResponseWriter, r *http.Request) {

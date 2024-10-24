@@ -189,6 +189,9 @@ func (s *SessionContext) Load(r *http.Request) error {
 	if err != nil {
 		return err
 	}
+	if len(g) == 0 {
+		return nil
+	}
 	return json.Unmarshal(g, &s.Data)
 }
 

@@ -65,6 +65,13 @@ var serve = &cli.Command{
 			Sources:     cli.EnvVars("VINCE_URL"),
 			Destination: &oracle.Endpoint,
 		},
+		&cli.StringFlag{
+			Name:        "demo",
+			Value:       "vinceanalytics.com",
+			Usage:       "Website to use as a demo",
+			Sources:     cli.EnvVars("VINCE_DEMO_URL"),
+			Destination: &oracle.Demo,
+		},
 		&cli.StringSliceFlag{
 			Name:    "domains",
 			Usage:   "list of domains to create on startup",

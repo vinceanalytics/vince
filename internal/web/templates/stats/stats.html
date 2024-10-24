@@ -19,11 +19,44 @@
     data-logged-in="true"
     data-current-user-role="owner"
     {{end}}
+    {{with .auth}}
+    data-shared-link-auth="{{.}}"
+    {{end}}
     data-valid-intervals-by-period="{&quot;12mo&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;30d&quot;:[&quot;day&quot;,&quot;week&quot;],&quot;6mo&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;7d&quot;:[&quot;hour&quot;,&quot;day&quot;],&quot;all&quot;:[&quot;week&quot;,&quot;month&quot;],&quot;custom&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;],&quot;day&quot;:[&quot;minute&quot;,&quot;hour&quot;],&quot;month&quot;:[&quot;day&quot;,&quot;week&quot;],&quot;realtime&quot;:[&quot;minute&quot;],&quot;year&quot;:[&quot;day&quot;,&quot;week&quot;,&quot;month&quot;]}"
     >
 
     </div>
     <div id="modal_root"></div>
+    {{if not .current_user}}
+    {{if .demo}}
+    <div class="bg-gray-50">
+      <div class="py-12 lg:py-16 lg:flex lg:items-center lg:justify-between">
+        <h2 class="text-3xl font-extrabold tracking-tight text-gray-900 leading-9 sm:text-4xl sm:leading-10">
+          Want these stats for your website? <br />
+          <span class="text-rose-600">Deploy vince under minutes.</span>
+        </h2>
+        <div class="flex mt-8 lg:flex-shrink-0 lg:mt-0">
+          <div class="inline-flex shadow rounded-md">
+            <a
+              href="https://www.vinceanalytics.com/guides/deployment/local/"
+              class="inline-flex items-center justify-center px-5 py-3 text-base font-medium  bg-rose-300 border border-transparent leading-6 rounded-md hover:bg-rose-400 focus:outline-none focus:ring transition duration-150 ease-in-out"
+            >
+              Get started
+            </a>
+          </div>
+          <div class="inline-flex ml-3 shadow rounded-md">
+            <a
+              href="https://vinceanalytics.com"
+              class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-rose-600 bg-white border border-transparent leading-6 rounded-md   hover:text-rose-500  focus:outline-none focus:ring transition duration-150 ease-in-out"
+            >
+              Learn more
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{end}}
+    {{end}}
 </div>
 <script type="text/javascript" src="/public/js/dashboard.js"></script>
 {{else}}
