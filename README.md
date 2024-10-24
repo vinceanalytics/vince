@@ -108,8 +108,22 @@ Please load test with your workload and tell me your findings.
 
 | feature |  vince | plausible |
 |---------|--------| -----------|
+| Entrerprise features | :x:(main focus is thw web analytics dashboard)    | :white_check_mark:|
+| Hosted offering | :x:    | :white_check_mark:|
+| Multi tenant | :x:    | :white_check_mark:(designed for only one admin)|
 | Funnels | :x:    | :white_check_mark:|
 | Goals Conversion |  :white_check_mark:  | :white_check_mark:|
+| Self Hosted |  :white_check_mark:  | :white_check_mark:|
+| <1KB script |  :white_check_mark:  | :white_check_mark:|
+| No Cookies(GDPR, PECR compliant) |  :white_check_mark:  | :white_check_mark:|
+| 100% data ownershiip |  :white_check_mark:  | :white_check_mark:|
+| Unique shared access to stats|  :white_check_mark:  | :white_check_mark:|
+| Outbound links tracking |  :white_check_mark:  | :white_check_mark:|
+| File download tracking |  :white_check_mark:  | :white_check_mark:|
+| Time period comparisons |  :white_check_mark:  | :white_check_mark:|
+| Unlimited sites |  :white_check_mark:  | :x:|
+| Unlimited events |  :white_check_mark:  | :x:|
+| Zero dependency |  :white_check_mark:  | :x: (needs elixir, clickhoust, postgresql ...etc)|
 
 
 # Credit
