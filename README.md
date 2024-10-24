@@ -104,6 +104,14 @@ and GC  works like a charm.
 
 Please load test with your workload and tell me your findings.
 
+# Comparizon with plausible
+
+| feature |  vince | plausible |
+|---------|--------| -----------|
+| Funnels | :x:    | :white_check_mark:|
+| Goals Conversion |  :white_check_mark:  | :white_check_mark:|
+
+
 # Credit
 
 [Plausible Analytics](https://github.com/plausible/analytics) : `vince` started as a Go port of plausible with a focus on self hosting.
