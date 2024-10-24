@@ -12,9 +12,9 @@ func TestBS(t *testing.T) {
 		"pageviews", "views_per_visit", "bounce_rate", "visit_duration", "events")
 	want := []models.Field{
 		models.Field_id,
+		models.Field_bounce,
 		models.Field_duration,
 		models.Field_view,
-		models.Field_bounce,
 		models.Field_session,
 		models.Field_event,
 	}
