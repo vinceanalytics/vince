@@ -104,7 +104,7 @@ and GC  works like a charm.
 
 Please load test with your workload and tell me your findings.
 
-# Comparison with plausible
+# Comparison with Plausible Analytics
 
 | feature |  vince | plausible |
 |---------|--------| -----------|
