@@ -43,6 +43,12 @@ curl -fsSL https://vinceanalytics.com/install.sh | bash
 docker pull ghcr.io/vinceanalytics/vince
 ```
 
+### Helm
+```
+❯ helm repo add vince http://vinceanalytics.com/charts
+❯ helm install vince vince/vince
+```
+
 ### Download 
 
 [see release page](https://github.com/vinceanalytics/vince/releases)
