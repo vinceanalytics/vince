@@ -108,9 +108,9 @@ Please load test with your workload and tell me your findings.
 
 | feature |  vince | plausible |
 |---------|--------| -----------|
-| Entrerprise features | :x:(main focus is thw web analytics dashboard)    | :white_check_mark:|
+| Entrerprise features | :x:    | :white_check_mark:|
 | Hosted offering | :x:    | :white_check_mark:|
-| Multi tenant | :x:    | :white_check_mark:(designed for only one admin)|
+| Multi tenant | :x:    | :white_check_mark:|
 | Funnels | :x:    | :white_check_mark:|
 | Goals Conversion |  :white_check_mark:  | :white_check_mark:|
 | Self Hosted |  :white_check_mark:  | :white_check_mark:|
@@ -123,7 +123,8 @@ Please load test with your workload and tell me your findings.
 | Time period comparisons |  :white_check_mark:  | :white_check_mark:|
 | Unlimited sites |  :white_check_mark:  | :x:|
 | Unlimited events |  :white_check_mark:  | :x:|
-| Zero dependency |  :white_check_mark:  | :x: (needs elixir, clickhoust, postgresql ...etc)|
+| Zero dependency |  :white_check_mark:  | :x: (needs elixir, clickhouse, postgresql ...etc)|
+| Automatic TLS |  :white_check_mark:  | :x:|
 
 
 # Credit
