@@ -15,7 +15,6 @@ import (
 )
 
 type translation struct {
-	enc      encoding.Encoding
 	id       uint64
 	tree     *tree.Tree
 	ranges   [models.TranslatedFieldsSize]uint64
@@ -68,7 +67,7 @@ func (tr *translation) Next() uint64 {
 }
 
 func (tr *translation) Assign(field models.Field, value []byte) uint64 {
-	key := tr.enc.TranslateKey(field, value)
+	key := encoding.TranslateKey(field, value)
 	hash := farm.Fingerprint64(key)
 	uid := tr.tree.Get(hash)
 	if uid > 0 {
@@ -88,7 +87,6 @@ func (tr *translation) Assign(field models.Field, value []byte) uint64 {
 }
 
 func (tr *translation) reset() {
-	tr.enc.Clip(4 << 10)
 	for i := range tr.keys {
 		clear(tr.keys[i])
 		tr.keys[i] = tr.keys[i][:0]

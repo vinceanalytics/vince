@@ -93,8 +93,7 @@ func (ts *Timeseries) Add(m *models.Model) error {
 }
 
 func (ts *Timeseries) NewBitmap(ctx context.Context, shard uint64, view uint64, field models.Field) (b *roaring.Bitmap) {
-	buf := make([]byte, encoding.BitmapKeySize)
-	key := encoding.Bitmap(shard, view, field, buf)
+	key := encoding.Bitmap(shard, view, field)
 	keyHash := hash(key)
 
 	// load from cache first

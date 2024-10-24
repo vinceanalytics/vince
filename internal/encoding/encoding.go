@@ -2,58 +2,38 @@ package encoding
 
 import (
 	"encoding/binary"
-	"slices"
 
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 )
 
-type Key struct {
-	Time  uint64
-	Field models.Field
-}
-
-type Encoding struct {
-	data []byte
-}
-
-func (e *Encoding) Reset() {
-	clear(e.data)
-	e.data = e.data[:0]
-}
-
-// Like Reset but releases excess pacapity if any
-func (e *Encoding) Clip(sz int) {
-	clear(e.data)
-	if len(e.data) > sz {
-		e.data = e.data[:sz:sz]
-	}
-	e.data = e.data[:0]
-}
-
-const BitmapKeySize = 1 + //prefix
+const bitmapKeySize = 1 + //prefix
 	8 + //shard
-	8 + // timestamp
+	8 + // view
 	1 // field
 
-func (e *Encoding) Bitmap(shard, view uint64, field models.Field) []byte {
-	return Bitmap(shard, view, field, e.Allocate(BitmapKeySize))
+func Bitmap(shard, view uint64, field models.Field) []byte {
+	// we take advantage of protobuf variable length encoding to create compact
+	// key space
+	//
+	// This ensures we have unlimited shards and view encoding to allow scalling
+	// to billions of events.
+	b := make([]byte, 0, bitmapKeySize)
+	b = BitmapBuf(shard, view, field, b)
+	return b[:len(b):len(b)] // avoid passing around excess unused memory
 }
 
-func Bitmap(shard, view uint64, field models.Field, buf []byte) []byte {
-	b := buf
-	copy(b, keys.DataPrefix)
-	binary.BigEndian.PutUint64(b[1:], shard)
-	binary.BigEndian.PutUint64(b[1+8:], view)
-	b[1+8+8] = byte(field)
+func BitmapBuf(shard, view uint64, field models.Field, b []byte) []byte {
+	// we take advantage of protobuf variable length encoding to create compact
+	// key space
+	//
+	// This ensures we have unlimited shards and view encoding to allow scalling
+	// to billions of events.
+	b = append(b, keys.DataPrefix...)
+	b = num(b, shard)
+	b = num(b, view)
+	b = num(b, uint64(field))
 	return b
-}
-
-func (e *Encoding) Site(domain []byte) []byte {
-	o := e.Allocate(2 + len(domain))
-	copy(o, keys.SitePrefix)
-	copy(o[2:], domain)
-	return o
 }
 
 func Site(domain []byte) []byte {
@@ -63,24 +43,10 @@ func Site(domain []byte) []byte {
 	return o
 }
 
-func (e *Encoding) APIKeyName(key []byte) []byte {
-	o := e.Allocate(2 + len(key))
-	copy(o, keys.APIKeyNamePrefix)
-	copy(o[2:], key)
-	return o
-}
-
 func APIKeyName(key []byte) []byte {
 	o := make([]byte, 2+len(key))
 	copy(o, keys.APIKeyNamePrefix)
 	copy(o[2:], key)
-	return o
-}
-
-func (e *Encoding) APIKeyHash(hash []byte) []byte {
-	o := e.Allocate(2 + len(hash))
-	copy(o, keys.APIKeyHashPrefix)
-	copy(o[2:], hash)
 	return o
 }
 
@@ -98,27 +64,12 @@ func ACME(key []byte) []byte {
 	return o
 }
 
-func (e *Encoding) Allocate(n int) []byte {
-	e.Grow(n)
-	off := len(e.data)
-	e.data = e.data[:off+n]
-	return e.data[off : off+n]
+func num(b []byte, v uint64) []byte {
+	b = appendVarint(b, v)
+	return b // add separator
 }
 
-func (e *Encoding) Grow(n int) {
-	if len(e.data)+n < cap(e.data) {
-		return
-	}
-	// Calculate new capacity.
-	growBy := len(e.data) + n
-
-	// Don't allocate more than 1GB at a time.
-	if growBy > 1<<30 {
-		growBy = 1 << 30
-	}
-	// Allocate at least n, even if it exceeds the 1GB limit above.
-	if n > growBy {
-		growBy = n
-	}
-	e.data = slices.Grow(e.data, growBy)
+// AppendVarint appends v to b as a varint-encoded uint64.
+func appendVarint(b []byte, v uint64) []byte {
+	return binary.AppendUvarint(b, v)
 }
