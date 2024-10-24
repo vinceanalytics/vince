@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"log"
 	"log/slog"
 	"net"
 	"net/http"
@@ -83,20 +82,33 @@ var serve = &cli.Command{
 			Sources:     cli.EnvVars("VINCE_PROFILE"),
 			Destination: &oracle.Profile,
 		},
+		&cli.BoolFlag{
+			Name:    "createAdmin",
+			Usage:   "Creates admin if VINCE_ADMIN_NAME and VINCE_ADMIN_PASSWORD are present",
+			Sources: cli.EnvVars("VINCE_CREATE_ADMIN"),
+		},
 	},
-	Action: func(ctx context.Context, c *cli.Command) error {
-		run(c.StringSlice("domains"))
-		return nil
-	},
+	Action: run,
 }
 
-func run(domains []string) {
-	db, err := db.Open(domains)
+func run(ctx context.Context, c *cli.Command) error {
+
+	db, err := db.Open(c.StringSlice("domains"))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer db.Close()
 
+	if c.Bool("createAdmin") {
+		name := os.Getenv(c.String("VINCE_ADMIN_NAME"))
+		pass := os.Getenv(c.String("VINCE_ADMIN_PASSWORD"))
+		if name != "" && pass != "" {
+			err := db.Ops().CreateAdmin(name, pass)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
@@ -486,4 +498,5 @@ func run(domains []string) {
 	<-ctx.Done()
 	svr.Close()
 	slog.Info("Shutting down")
+	return nil
 }

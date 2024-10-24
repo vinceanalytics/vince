@@ -31,8 +31,6 @@ secret:
   existingSecret: ""
   # VINCE_ADMIN_NAME
   adminName: "acme" 
-  # VINCE_ADMIN_EMAIL
-  adminEmail: "trial@vinceanalytics.com"
   # VINCE_ADMIN_PASSWORD
   adminPassword: "1234"
 

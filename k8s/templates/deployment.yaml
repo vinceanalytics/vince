@@ -33,6 +33,8 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - serve
           env:
             {{- if .Values.baseURL }}
             - name: VINCE_URL
@@ -61,11 +63,6 @@ spec:
                 secretKeyRef:
                   key: VINCE_ADMIN_NAME
                   name: {{ include "vince.secretName" . }}
-            - name: VINCE_ADMIN_EMAIL
-              valueFrom:
-                secretKeyRef:
-                  key: VINCE_ADMIN_EMAIL
-                  name: {{ include "vince.secretName" . }}
             - name: VINCE_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -75,6 +72,8 @@ spec:
               value: {{ .Values.domains | join "," | toString | quote }}
             - name: VINCE_PROFILE
               value: {{ .Values.profile | toString | quote }}
+            - name: VINCE_CREATE_ADMIN
+              value: "true"
           ports:
             - name: http
               containerPort: 8080
