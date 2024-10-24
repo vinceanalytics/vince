@@ -95,7 +95,7 @@ The reason you can breakdown by city/region is because we derive city/region geo
 embedded geoid data, something that would have been impossible because geoid is missing from the 
 free mmdb downloads.
 
-We use a number of techiques to shrink the embedded assets and avoud excessive memory
+We use a number of techiques to shrink the embedded assets and avoid excessive memory
 allocations.
 
 - ***flatbuffers***: we organize location data using flatbuffers in such a way that we never
