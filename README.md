@@ -71,7 +71,7 @@ vince --version
 
 # FAQ
 
-## Why the binary is big ?
+## Does the binary size affect performance ?
 
 | compressed | uncompressed|
 |------------|-------------|
@@ -99,7 +99,7 @@ allocations.
 Like flatbuffers, there is no decoding, we use the embedded slice memory directly.
 
 Stay calm and don't worry. The fat binary wont eat your ram or hijack your cpu. Under 
-heavy local load testing I havent peaked at `200MB` of ram yet, data is well organized
+heavy local load testing I havent peaked at `70MB` of ram yet, data is well organized
 and GC  works like a charm.
 
 Please load test with your workload and tell me your findings.
