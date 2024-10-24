@@ -126,6 +126,7 @@ Please load test with your workload and tell me your findings.
 | Unique shared access to stats|  :white_check_mark:  | :white_check_mark:|
 | Outbound links tracking |  :white_check_mark:  | :white_check_mark:|
 | File download tracking |  :white_check_mark:  | :white_check_mark:|
+| 404 page tracking |  :white_check_mark:  | :white_check_mark:|
 | Time period comparisons |  :white_check_mark:  | :white_check_mark:|
 | Unlimited sites |  :white_check_mark:  | :x:|
 | Unlimited events |  :white_check_mark:  | :x:|
