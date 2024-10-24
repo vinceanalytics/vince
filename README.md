@@ -56,12 +56,12 @@ vince --version
 
 ## Start vince
 
-*create admin*
+***create admin***
 ```
 ❯ vince admin --name acme --password 1234
 ```
 
-*start server*
+***start server***
 ```
 ❯ vince serve                            
 2024/10/23 15:32:08 [JOB 1] WAL file vince-data/pebble/000002.log with log number 000002 stopped reading at offset: 124; replayed 1 keys in 1 batches
