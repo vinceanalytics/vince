@@ -113,6 +113,12 @@ Please load test with your workload and tell me your findings.
 | Multi tenant | :x:    | :white_check_mark:|
 | Funnels | :x:    | :white_check_mark:|
 | Goals Conversion |  :white_check_mark:  | :white_check_mark:|
+| Unique visitors |  :white_check_mark:  | :white_check_mark:|
+| Total visits |  :white_check_mark:  | :white_check_mark:|
+| Page views |  :white_check_mark:  | :white_check_mark:|
+| Views per visit |  :white_check_mark:  | :white_check_mark:|
+| Visit duration |  :white_check_mark:  | :white_check_mark:|
+| Breakdown by **Cities**, **Sources**, **Pages** and **Devices**   |  :white_check_mark:  | :white_check_mark:|
 | Self Hosted |  :white_check_mark:  | :white_check_mark:|
 | <1KB script |  :white_check_mark:  | :white_check_mark:|
 | No Cookies(GDPR, PECR compliant) |  :white_check_mark:  | :white_check_mark:|
