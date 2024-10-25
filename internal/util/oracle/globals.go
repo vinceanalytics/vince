@@ -22,15 +22,3 @@ var (
 
 	Profile bool
 )
-
-// Shards returns the current number of shards observed in the database. This value
-// starts from 1 however we store shards starting from 0. To get correct
-// shard iterations it is advised to range over returned value
-//
-//	for shard:=range Shards()
-//	...
-func Shards() (v uint64) {
-	v = Records.Load()
-	v = (v / (1 << 20)) + 1
-	return
-}

@@ -9,12 +9,12 @@ import (
 	"net/url"
 	"slices"
 	"strconv"
-	"time"
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/api/visitors"
 	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
+	"github.com/vinceanalytics/vince/internal/util/xtime"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 )
@@ -259,7 +259,7 @@ func RequireSiteAccess(h plug.Handler) plug.Handler {
 					// verify shared link
 					name := "shared-link-" + auth
 					expires := db.LoadSharedLinkSession(r, name)
-					if expires.Before(time.Now().UTC()) {
+					if expires.Before(xtime.Now()) {
 						dest := fmt.Sprintf("/v1/share/%s/authenticate/%s",
 							url.PathEscape(site.Domain), auth)
 						http.Redirect(w, r, dest, http.StatusFound)

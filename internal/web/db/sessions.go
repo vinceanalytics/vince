@@ -20,6 +20,7 @@ import (
 	"github.com/google/uuid"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
+	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 const MaxAge = 60 * 60 * 24 * 365 * 5
@@ -97,7 +98,7 @@ func (c *Config) Flash(w http.ResponseWriter) {
 }
 
 func (c *Config) SessionTimeout(w http.ResponseWriter) {
-	now := time.Now().UTC()
+	now := xtime.Now().UTC()
 	switch {
 	case c.session.Data.CurrentUserID != "" && !c.session.Data.TimeoutAt.IsZero() && now.After(c.session.Data.TimeoutAt):
 		c.session.Data = Data{}
@@ -292,7 +293,7 @@ func (s *SessionContext) save(w http.ResponseWriter) error {
 		Path:    "/",
 		Name:    cookie,
 		Value:   value,
-		Expires: time.Now().UTC().Add(time.Duration(MaxAge) * time.Second),
+		Expires: xtime.Now().UTC().Add(time.Duration(MaxAge) * time.Second),
 	}
 	http.SetCookie(w, cookie)
 	return nil
@@ -312,11 +313,11 @@ func (db *Config) LoadSharedLinkSession(r *http.Request, name string) time.Time 
 		return time.Time{}
 	}
 	ts, _ := strconv.ParseInt(string(data), 10, 64)
-	return time.UnixMilli(ts).UTC()
+	return xtime.UnixMilli(ts).UTC()
 }
 
 func (s *SessionContext) SaveSharedLink(w http.ResponseWriter, name string) error {
-	vs := strconv.FormatInt(time.Now().Add(24*time.Hour).UTC().UnixMilli(), 10)
+	vs := strconv.FormatInt(xtime.Now().Add(24*time.Hour).UTC().UnixMilli(), 10)
 	value, err := s.create([]byte(vs))
 	if err != nil {
 		return err
@@ -325,7 +326,7 @@ func (s *SessionContext) SaveSharedLink(w http.ResponseWriter, name string) erro
 		Path:    "/",
 		Name:    name,
 		Value:   value,
-		Expires: time.Now().UTC().Add(time.Duration(60*60*24) * time.Second),
+		Expires: xtime.Now().UTC().Add(time.Duration(60*60*24) * time.Second),
 	}
 	http.SetCookie(w, cookie)
 	return nil

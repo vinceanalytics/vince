@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 type Query struct {
@@ -44,7 +45,7 @@ func New(u url.Values) *Query {
 	switch u.Get("period") {
 	case "all", "realtime":
 	default:
-		now := time.Now().UTC()
+		now := xtime.Now().Truncate(time.Minute)
 		switch u.Get("comparison") {
 		case "previous_period":
 			diff := period.End.Sub(period.Start)

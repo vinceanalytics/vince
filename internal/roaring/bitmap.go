@@ -661,6 +661,16 @@ func (ra *Bitmap) Each(f func(value uint64)) {
 	if ra == nil {
 		return
 	}
+	ra.EachOk(func(value uint64) bool {
+		f(value)
+		return true
+	})
+}
+
+func (ra *Bitmap) EachOk(f func(value uint64) bool) (ok bool) {
+	if ra == nil {
+		return
+	}
 	N := ra.keys.numKeys()
 	for i := 0; i < N; i++ {
 		key := ra.keys.key(i)
@@ -671,16 +681,21 @@ func (ra *Bitmap) Each(f func(value uint64)) {
 		case typeArray:
 			a := array(c)
 			for _, lo := range a.all() {
-				f(key | uint64(lo))
+				if !f(key | uint64(lo)) {
+					return
+				}
 			}
 		case typeBitmap:
 			b := bitmap(c)
 			out := b.all()
 			for _, x := range out {
-				f(key | uint64(x))
+				if !f(key | uint64(x)) {
+					return
+				}
 			}
 		}
 	}
+	return true
 }
 
 func (ra *Bitmap) String() string {

@@ -9,13 +9,15 @@ import (
 	"net/http/httputil"
 	"os"
 	"time"
+
+	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 const dateFormat = "2006-01-02T15:04:05-0700"
 const urlFmt = "https://download.db-ip.com/free/dbip-city-lite-%s.mmdb.gz"
 
 func main() {
-	now := time.Now()
+	now := xtime.Now()
 	thisMoth := now.Format(dateFormat)[0:7]
 	lastMonth := time.Date(
 		now.Year(), now.Month()-1,

@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/vinceanalytics/vince/internal/util/xtime"
+)
 
 //go:generate go run gen/main.go
 type Model struct {
@@ -81,7 +85,7 @@ func (m *Model) Update(session *Cached) *Cached {
 	} else {
 		m.ExitPage = session.ExitPage
 	}
-	m.Duration = int64(time.UnixMilli(m.Timestamp).Sub(time.UnixMilli(session.Timestamp)))
+	m.Duration = int64(xtime.UnixMilli(m.Timestamp).Sub(xtime.UnixMilli(session.Timestamp)))
 	session.Timestamp = m.Timestamp
 	return nil
 }

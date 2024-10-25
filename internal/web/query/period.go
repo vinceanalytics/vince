@@ -3,6 +3,8 @@ package query
 import (
 	"strings"
 	"time"
+
+	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 func period(str, date string) Period {
@@ -10,7 +12,7 @@ func period(str, date string) Period {
 	last := base.Start
 	switch str {
 	case "realtime":
-		end := time.Now().UTC()
+		end := xtime.Now().Truncate(time.Minute)
 		return Period{Start: end.Add(-15 * time.Minute), End: end, Interval: Minute}
 	case "day":
 		base.Interval = Hour
@@ -52,8 +54,8 @@ type Period struct {
 
 func dateParse(date string) Period {
 	if date == "" {
-		now := time.Now().UTC()
-		return Period{Start: beginOfDay(now), End: now}
+		now := xtime.Now()
+		return Period{Start: beginOfDay(now), End: endOfDay(now)}
 	}
 	a, b, ok := strings.Cut(date, ",")
 	start, _ := time.Parse(time.DateOnly, a)

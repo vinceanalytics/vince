@@ -64,6 +64,13 @@ func ACME(key []byte) []byte {
 	return o
 }
 
+func Shard(shard uint64) []byte {
+	o := make([]byte, 0, 4)
+	o = append(o, keys.ShardsPrefix...)
+	o = num(o, shard)
+	return o[:len(o):len(o)]
+}
+
 func num(b []byte, v uint64) []byte {
 	b = appendVarint(b, v)
 	return b // add separator

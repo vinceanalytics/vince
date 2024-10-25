@@ -8,31 +8,27 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/util/data"
-	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
 func (ts *Timeseries) Select(ctx context.Context, domain string, start,
 	end time.Time, intrerval query.Interval, filters query.Filters, cb func(shard, view uint64, columns *roaring.Bitmap) error) error {
 	m := ts.compile(filters)
-	return intrerval.Range(start, end, func(t time.Time) error {
-		view := uint64(t.UnixMilli())
-		for shard := range oracle.Shards() {
-			match := ts.Domain(ctx, shard, view, domain)
-			if match.IsEmpty() {
-				return nil
-			}
-			columns := m.Apply(ctx, ts, shard, view, match)
-			if columns.IsEmpty() {
-				return nil
-			}
-			err := cb(shard, view, columns)
-			if err != nil {
-				return err
-			}
+	for shard, view := range ts.Shards(intrerval.Range(start, end)) {
+		match := ts.Domain(ctx, shard, view, domain)
+		if match.IsEmpty() {
+			return nil
 		}
-		return nil
-	})
+		columns := m.Apply(ctx, ts, shard, view, match)
+		if columns.IsEmpty() {
+			return nil
+		}
+		err := cb(shard, view, columns)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (ts *Timeseries) Domain(ctx context.Context, shard, view uint64, name string) *roaring.Bitmap {

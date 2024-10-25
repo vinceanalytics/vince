@@ -11,6 +11,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
+	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 const ShardWidth = 1 << 20
@@ -25,11 +26,12 @@ type batch struct {
 	shard     uint64
 	time      uint64
 	keys      *roaring.Bitmap
+	views     *roaring.Bitmap
 	bitmap    []byte
 }
 
 func newbatch(db *pebble.DB, tr *translation) *batch {
-	b := &batch{translate: tr, keys: roaring.NewBitmap()}
+	b := &batch{translate: tr, keys: roaring.NewBitmap(), views: roaring.NewBitmap()}
 	for i := range b.mutex {
 		b.mutex[i] = make(map[uint64]*roaring.Bitmap)
 	}
@@ -75,7 +77,7 @@ func (b *batch) save() error {
 
 func (b *batch) flush(ba *pebble.Batch) error {
 	sv := func(f models.Field, view uint64, bm *roaring.Bitmap) error {
-		ts := time.UnixMilli(int64(view)).UTC()
+		ts := xtime.UnixMilli(int64(view))
 		value := bm.ToBuffer()
 		return errors.Join(
 			ba.Merge(b.encode(0, f), value, nil),
@@ -104,12 +106,14 @@ func (b *batch) flush(ba *pebble.Batch) error {
 			}
 		}
 	}
-	return nil
+	// update views
+	return ba.Merge(encoding.Shard(b.shard), b.views.ToBuffer(), nil)
 }
 
 func (b *batch) encode(view uint64, field models.Field) []byte {
 	b.bitmap = encoding.BitmapBuf(b.shard, view, field, b.bitmap[:0])
 	b.keys.Set(hash(b.bitmap))
+	b.views.Set(view)
 	return b.bitmap
 }
 
@@ -122,10 +126,11 @@ func (b *batch) add(m *models.Model) error {
 			return err
 		}
 		b.shard = shard
+		b.views.Reset()
 	}
 	b.id = b.translate.Next()
 	id := b.id
-	ts := uint64(time.UnixMilli(m.Timestamp).Truncate(time.Minute).UnixMilli())
+	ts := uint64(xtime.UnixMilli(m.Timestamp).Truncate(time.Minute).UnixMilli())
 	b.time = ts
 	if m.Timestamp > 0 {
 		b.getBSI(models.Field_timestamp).BSI(id, m.Timestamp)

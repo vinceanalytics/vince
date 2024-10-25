@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 var requestPool = &sync.Pool{New: func() any { return new(Request) }}
@@ -43,7 +45,7 @@ func (rq *Request) Parse(r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	rq.ts = time.Now().UTC().Truncate(time.Second)
+	rq.ts = xtime.Now().UTC().Truncate(time.Second)
 	rq.remoteIp = remoteIP(r)
 	err = rq.parseUri(body)
 	if err != nil {
@@ -152,7 +154,7 @@ func (rq *Request) parseReferrer(m map[string]any) {
 func (rq *Request) parseParams(m map[string]any) {
 	if ts, ok := m["ts"]; ok {
 		// Only used for random seed generation
-		rq.ts = time.UnixMilli(int64(ts.(float64))).UTC().Truncate(time.Second)
+		rq.ts = xtime.UnixMilli(int64(ts.(float64))).UTC().Truncate(time.Second)
 	}
 	n, ok := m["n"]
 	if !ok {

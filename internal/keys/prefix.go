@@ -11,4 +11,5 @@ var (
 	TranslateKeyPrefix = []byte{0x02, 0x00}
 	TranslateIDPrefix  = []byte{0x02, 0x01}
 	TranslateSeqPrefix = []byte{0x02, 0x02}
+	ShardsPrefix       = []byte{0x03}
 )
