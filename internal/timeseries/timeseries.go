@@ -12,6 +12,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/util/data"
+	"github.com/vinceanalytics/vince/internal/util/hash"
 	"github.com/vinceanalytics/vince/internal/util/lru"
 	xt "github.com/vinceanalytics/vince/internal/util/translation"
 	"github.com/vinceanalytics/vince/internal/util/trie"
@@ -103,7 +104,7 @@ func (ts *Timeseries) Add(m *models.Model) error {
 
 func (ts *Timeseries) NewBitmap(ctx context.Context, shard uint64, view uint64, field models.Field) (b *roaring.Bitmap) {
 	key := encoding.Bitmap(shard, view, field)
-	keyHash := hash(key)
+	keyHash := hash.Bytes(key)
 
 	// load from cache first
 	ts.cache.mu.RLock()

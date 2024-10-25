@@ -1,13 +1,13 @@
 package ua2
 
 import (
-	"hash/maphash"
 	"regexp"
 	"strings"
 	"sync"
 
 	re2 "github.com/dlclark/regexp2"
 	"github.com/vinceanalytics/vince/internal/models"
+	"github.com/vinceanalytics/vince/internal/util/hash"
 )
 
 //go:generate go run gen/main.go device-detector/regexes/
@@ -17,12 +17,11 @@ var (
 	// parse, it is safe to keep them in memory forever once parsed
 	cache = map[uint64]*models.Agent{}
 
-	seed = maphash.MakeSeed()
-	mu   sync.RWMutex
+	mu sync.RWMutex
 )
 
 func Parse(s string, m *models.Model) {
-	hash := maphash.String(seed, s)
+	hash := hash.String(s)
 	mu.RLock()
 	a, ok := cache[hash]
 	mu.RUnlock()

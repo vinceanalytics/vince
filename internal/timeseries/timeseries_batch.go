@@ -10,6 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
+	"github.com/vinceanalytics/vince/internal/util/hash"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
@@ -112,7 +113,7 @@ func (b *batch) flush(ba *pebble.Batch) error {
 
 func (b *batch) encode(view uint64, field models.Field) []byte {
 	b.bitmap = encoding.BitmapBuf(b.shard, view, field, b.bitmap[:0])
-	b.keys.Set(hash(b.bitmap))
+	b.keys.Set(hash.Bytes(b.bitmap))
 	b.views.Set(view)
 	return b.bitmap
 }
