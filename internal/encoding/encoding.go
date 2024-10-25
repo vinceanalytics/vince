@@ -13,22 +13,12 @@ const bitmapKeySize = 1 + //prefix
 	1 // field
 
 func Bitmap(shard, view uint64, field models.Field) []byte {
-	// we take advantage of protobuf variable length encoding to create compact
-	// key space
-	//
-	// This ensures we have unlimited shards and view encoding to allow scalling
-	// to billions of events.
 	b := make([]byte, 0, bitmapKeySize)
 	b = BitmapBuf(shard, view, field, b)
 	return b[:len(b):len(b)] // avoid passing around excess unused memory
 }
 
 func BitmapBuf(shard, view uint64, field models.Field, b []byte) []byte {
-	// we take advantage of protobuf variable length encoding to create compact
-	// key space
-	//
-	// This ensures we have unlimited shards and view encoding to allow scalling
-	// to billions of events.
 	b = append(b, keys.DataPrefix...)
 	b = num(b, shard)
 	b = num(b, view)

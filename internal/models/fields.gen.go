@@ -4,35 +4,35 @@ package models
 type Field byte
 
 const (
-	Field_unknown Field = iota
-	Field_timestamp
-	Field_id
-	Field_bounce
-	Field_duration
-	Field_city
-	Field_view
-	Field_session
-	Field_browser
-	Field_browser_version
-	Field_country
-	Field_device
-	Field_domain
-	Field_entry_page
-	Field_event
-	Field_exit_page
-	Field_host
-	Field_os
-	Field_os_version
-	Field_page
-	Field_referrer
-	Field_source
-	Field_utm_campaign
-	Field_utm_content
-	Field_utm_medium
-	Field_utm_source
-	Field_utm_term
-	Field_subdivision1_code
-	Field_subdivision2_code
+	Field_unknown           Field = 0
+	Field_timestamp         Field = 1
+	Field_id                Field = 2
+	Field_bounce            Field = 3
+	Field_duration          Field = 4
+	Field_city              Field = 5
+	Field_view              Field = 6
+	Field_session           Field = 7
+	Field_browser           Field = 8
+	Field_browser_version   Field = 9
+	Field_country           Field = 10
+	Field_device            Field = 11
+	Field_domain            Field = 12
+	Field_entry_page        Field = 13
+	Field_event             Field = 14
+	Field_exit_page         Field = 15
+	Field_host              Field = 16
+	Field_os                Field = 17
+	Field_os_version        Field = 18
+	Field_page              Field = 19
+	Field_referrer          Field = 20
+	Field_source            Field = 21
+	Field_utm_campaign      Field = 22
+	Field_utm_content       Field = 23
+	Field_utm_medium        Field = 24
+	Field_utm_source        Field = 25
+	Field_utm_term          Field = 26
+	Field_subdivision1_code Field = 27
+	Field_subdivision2_code Field = 28
 )
 
 var (

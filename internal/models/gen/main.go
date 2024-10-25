@@ -26,9 +26,8 @@ func main() {
 	fmt.Fprintln(b, "package models")
 	fmt.Fprintln(b, "type Field byte")
 	fmt.Fprintln(b, "const(")
-	fmt.Fprintf(b, "Field_%s Field=iota\n", all[0])
-	for _, f := range all[1:] {
-		fmt.Fprintf(b, "Field_%s\n", f)
+	for i, f := range all {
+		fmt.Fprintf(b, "Field_%s Field=%d\n", f, i)
 	}
 	fmt.Fprintln(b, ")")
 	fmt.Fprintln(b, "var(")
