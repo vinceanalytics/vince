@@ -3,20 +3,16 @@ package db
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ops"
 	"github.com/vinceanalytics/vince/internal/timeseries"
-	"github.com/vinceanalytics/vince/internal/util/data"
 	"github.com/vinceanalytics/vince/internal/util/lru"
-	"github.com/vinceanalytics/vince/internal/util/oracle"
 )
 
 type Config struct {
@@ -29,17 +25,10 @@ type Config struct {
 	buffer  chan *models.Model
 }
 
-func Open(startDomains []string) (*Config, error) {
-
-	db, err := data.Open(oracle.DataPath, nil)
-	if err != nil {
-		return nil, err
-	}
+func Open(db *pebble.DB, startDomains []string) (*Config, error) {
 
 	ts := timeseries.New(db)
-	ops := ops.New(db, ts)
-	ops.SetupDomains(startDomains)
-	domains.Reload(ops.Domains)
+	ops := ops.New(db, ts, startDomains...)
 
 	// setup session
 	secret, err := ops.Web()
@@ -108,10 +97,7 @@ func (db *Config) eventsLoop(cts context.Context) {
 }
 
 func (db *Config) Close() error {
-	return errors.Join(
-		db.ts.Close(),
-		db.db.Close(),
-	)
+	return db.ts.Close()
 }
 
 func (db *Config) HTML(w http.ResponseWriter, t *template.Template, data map[string]any) {

@@ -37,7 +37,6 @@ var admin = &cli.Command{
 			return err
 		}
 		defer db.Close()
-		o := ops.New(db, nil)
-		return o.CreateAdmin(c.String("name"), c.String("password"))
+		return ops.CreateAdmin(db, c.String("name"), c.String("password"))
 	},
 }

@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ref"
@@ -67,7 +66,7 @@ func (db *Config) parse(r *http.Request) (*models.Model, error) {
 		return nil, err
 	}
 	domain := req.domains[0]
-	if !domains.Allow(domain) {
+	if !db.ops.HasSite(domain) {
 		return nil, ErrDrop
 	}
 
