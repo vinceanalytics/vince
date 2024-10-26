@@ -1,6 +1,7 @@
 package ops
 
 import (
+	"bytes"
 	"cmp"
 	"crypto/sha512"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync"
 
 	"filippo.io/age"
 	"github.com/cockroachdb/pebble"
@@ -20,18 +22,39 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/util/assert"
 	"github.com/vinceanalytics/vince/internal/util/data"
+	"github.com/vinceanalytics/vince/internal/util/hash"
 	"github.com/vinceanalytics/vince/internal/util/translation"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
 )
 
 type Ops struct {
-	db *pebble.DB
-	tr translation.Translator
+	db    *pebble.DB
+	tr    translation.Translator
+	admin struct {
+		name     string
+		password []byte
+	}
+	sites struct {
+		mu      sync.RWMutex
+		domains map[uint64]*v1.Site
+	}
 }
 
-func New(db *pebble.DB, tr translation.Translator) *Ops {
-	return &Ops{db: db, tr: tr}
+func New(db *pebble.DB, tr translation.Translator, sites ...string) *Ops {
+	o := &Ops{db: db, tr: tr}
+	name, passwd, err := loadAdmin(db)
+	assert.Nil(err, "checking admin")
+	o.admin.name = name
+	o.admin.password = passwd
+	o.sites.domains = make(map[uint64]*v1.Site)
+	domains(db, func(s *v1.Site) {
+		o.sites.domains[hash.String(s.Domain)] = s
+	})
+	for i := range sites {
+		o.CreateSite(sites[i], false)
+	}
+	return o
 }
 
 func (db *Ops) CreateAPIKey(name string, key string) error {
@@ -83,15 +106,9 @@ func (db *Ops) APIKeys() (ls []*v1.APIKey, err error) {
 	return
 }
 
-func (db *Ops) SetupDomains(names []string) {
-	for i := range names {
-		db.CreateSite(names[i], false)
-	}
-}
-
-func (db *Ops) Domains(f func(*v1.Site)) {
-	var s v1.Site
-	data.Prefix(db.db, keys.SitePrefix, func(key, value []byte) error {
+func domains(db *pebble.DB, f func(*v1.Site)) {
+	err := data.Prefix(db, keys.SitePrefix, func(key, value []byte) error {
+		var s v1.Site
 		err := proto.Unmarshal(value, &s)
 		if err != nil {
 			return err
@@ -99,28 +116,50 @@ func (db *Ops) Domains(f func(*v1.Site)) {
 		f(&s)
 		return nil
 	})
+	assert.Nil(err, "loading domains")
 }
 
-func (db *Ops) Site(domain string) (u *v1.Site) {
-	data.Get(db.db, encoding.Site([]byte(domain)), func(val []byte) error {
-		u = new(v1.Site)
-		return proto.Unmarshal(val, u)
-	})
+func (db *Ops) HasSite(domain string) (ok bool) {
+	db.sites.mu.RLock()
+	_, ok = db.sites.domains[hash.String(domain)]
+	db.sites.mu.RUnlock()
 	return
 }
 
-func (db *Ops) CreateSite(domain string, public bool) (err error) {
-	if s := db.Site(domain); s != nil {
-		return nil
+func (db *Ops) Site(domain string) (u *v1.Site) {
+	db.sites.mu.RLock()
+	sx := db.sites.domains[hash.String(domain)]
+	if sx != nil {
+		u = proto.Clone(sx).(*v1.Site)
 	}
-	return db.Save(&v1.Site{
+	db.sites.mu.RUnlock()
+	return
+}
+
+func (db *Ops) Domains(f func(*v1.Site)) {
+	db.sites.mu.RLock()
+	for _, s := range db.sites.domains {
+		f(s)
+	}
+	db.sites.mu.RUnlock()
+}
+
+func (db *Ops) CreateSite(domain string, public bool) {
+	if db.HasSite(domain) {
+		return
+	}
+	db.Save(&v1.Site{
 		Domain: domain,
 		Public: public,
 	})
 }
 
-func (db *Ops) DeleteDomain(domain string) (err error) {
-	return db.db.Delete(encoding.Site([]byte(domain)), nil)
+func (db *Ops) DeleteDomain(domain string) {
+	err := db.db.Delete(encoding.Site([]byte(domain)), nil)
+	assert.Nil(err, "deleting domain")
+	db.sites.mu.Lock()
+	delete(db.sites.domains, hash.String(domain))
+	db.sites.mu.Unlock()
 }
 
 func (db *Ops) SeenFirstStats(domain string) (ok bool) {
@@ -128,20 +167,20 @@ func (db *Ops) SeenFirstStats(domain string) (ok bool) {
 	return data.Has(db.db, key)
 }
 
-func (db *Ops) EditSharedLink(site *v1.Site, slug, name string) error {
+func (db *Ops) EditSharedLink(site *v1.Site, slug, name string) {
 	i, ok := slices.BinarySearchFunc(site.Shares, &v1.Share{Id: slug}, compareShare)
 	if !ok {
-		return nil
+		return
 	}
 	site.Shares[i].Name = name
-	return db.Save(site)
+	db.Save(site)
 }
 
-func (db *Ops) DeleteSharedLink(site *v1.Site, slug string) error {
+func (db *Ops) DeleteSharedLink(site *v1.Site, slug string) {
 	site.Shares = slices.DeleteFunc(site.Shares, func(s *v1.Share) bool {
 		return s.Id == slug
 	})
-	return db.Save(site)
+	db.Save(site)
 }
 
 func (db *Ops) FindOrCreateCreateSharedLink(domain string, name, password string) (share *v1.Share) {
@@ -161,8 +200,7 @@ func (db *Ops) FindOrCreateCreateSharedLink(domain string, name, password string
 		share.Password = b
 	}
 	site.Shares = append(site.Shares, share)
-	err := db.Save(site)
-	assert.Nil(err, "saving site")
+	db.Save(site)
 	return
 }
 
@@ -180,13 +218,13 @@ func (db *Ops) Web() (secret *age.X25519Identity, err error) {
 	return
 }
 
-func (db *Ops) CreateAdmin(name string, password string) error {
+func CreateAdmin(db *pebble.DB, name string, password string) error {
 	// Hash Password
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("hashing admin password %w", err)
 	}
-	err = db.db.Set(keys.AdminPrefix, fb.SerializeAdmin([]byte(name), hashed), nil)
+	err = db.Set(keys.AdminPrefix, fb.SerializeAdmin([]byte(name), hashed), nil)
 	if err != nil {
 		return fmt.Errorf("saving admin %w", err)
 	}
@@ -194,31 +232,36 @@ func (db *Ops) CreateAdmin(name string, password string) error {
 }
 
 func (db *Ops) VerifyPassword(password string) (match bool) {
-	data.Get(db.db, keys.AdminPrefix, func(val []byte) error {
-		usr := admin.GetRootAsAdmin(val, 0)
-		err := bcrypt.CompareHashAndPassword(usr.PasswordBytes(), []byte(password))
-		match = err == nil
-		return err
-	})
-	return
+	err := bcrypt.CompareHashAndPassword(db.admin.password, []byte(password))
+	return err == nil
 }
 
 func (db *Ops) Admin() (name string) {
-	data.Get(db.db, keys.AdminPrefix, func(val []byte) error {
+	return db.admin.name
+}
+
+func loadAdmin(db *pebble.DB) (name string, password []byte, err error) {
+	err = data.Get(db, keys.AdminPrefix, func(val []byte) error {
 		usr := admin.GetRootAsAdmin(val, 0)
 		name = string(usr.NameBytes())
+		password = bytes.Clone(usr.PasswordBytes())
 		return nil
 	})
+	if errors.Is(err, pebble.ErrNotFound) {
+		err = errors.New("admin account not found")
+	}
 	return
 }
 
-func (db *Ops) Save(u *v1.Site) error {
+func (db *Ops) Save(u *v1.Site) {
 	slices.SortFunc(u.Shares, compareShare)
 	sd, err := proto.Marshal(u)
-	if err != nil {
-		return err
-	}
-	return db.db.Set(encoding.Site([]byte(u.Domain)), sd, nil)
+	assert.Nil(err, "marshal site")
+	err = db.db.Set(encoding.Site([]byte(u.Domain)), sd, nil)
+	assert.Nil(err, "saving site")
+	db.sites.mu.Lock()
+	db.sites.domains[hash.String(u.Domain)] = u
+	db.sites.mu.Unlock()
 }
 
 var domainRe = regexp.MustCompile(`(?P<domain>(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)+[a-z]{2,})`)

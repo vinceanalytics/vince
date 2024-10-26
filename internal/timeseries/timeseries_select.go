@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/bits-and-blooms/bitset"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
@@ -11,29 +12,28 @@ import (
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
-func (ts *Timeseries) Select(ctx context.Context, domain string, start,
-	end time.Time, intrerval query.Interval, filters query.Filters, cb func(shard, view uint64, columns *roaring.Bitmap) error) error {
+func (ts *Timeseries) Select(
+	ctx context.Context,
+	values *bitset.BitSet,
+	domain string, start,
+	end time.Time,
+	intrerval query.Interval,
+	filters query.Filters,
+	cb func(shard, view uint64, columns *roaring.Bitmap, data FieldsData)) {
 	m := ts.compile(filters)
-	for shard, view := range ts.Shards(intrerval.Range(start, end)) {
-		match := ts.Domain(ctx, shard, view, domain)
-		if match.IsEmpty() {
-			return nil
+	m.Set(true, models.Field_domain, ts.Translate(models.Field_domain, []byte(domain)))
+	views := ts.Shards(intrerval.Range(start, end))
+	data := ts.Scan(views, m, values)
+	for shard := range data {
+		sx := &data[shard]
+		if len(sx.Views) == 0 {
+			continue
 		}
-		columns := m.Apply(ctx, ts, shard, view, match)
-		if columns.IsEmpty() {
-			return nil
-		}
-		err := cb(shard, view, columns)
-		if err != nil {
-			return err
+		for view, data := range sx.Views {
+			cb(uint64(shard), view, sx.Columns, *data)
 		}
 	}
-	return nil
-}
-
-func (ts *Timeseries) Domain(ctx context.Context, shard, view uint64, name string) *roaring.Bitmap {
-	bs := ts.NewBitmap(ctx, shard, view, models.Field_domain)
-	return bs.Row(shard, ts.Translate(models.Field_domain, []byte(name)))
+	return
 }
 
 func (ts *Timeseries) Find(ctx context.Context, field models.Field, id uint64) (value string) {

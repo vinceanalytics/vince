@@ -26,6 +26,12 @@ func BitmapBuf(shard, view uint64, field models.Field, b []byte) []byte {
 	return b
 }
 
+func Component(key []byte) (shard, view uint64) {
+	shard = binary.BigEndian.Uint64(key[1:])
+	view = binary.BigEndian.Uint64(key[1+8:])
+	return
+}
+
 func Site(domain []byte) []byte {
 	o := make([]byte, 2+len(domain))
 	copy(o, keys.SitePrefix)
@@ -54,19 +60,14 @@ func ACME(key []byte) []byte {
 	return o
 }
 
+// Shard encodes key that stores bitmap of all views observed in shard. Uses
+// keys.ShardsPrefix as prefix key and encodes shard in big endian notation.
 func Shard(shard uint64) []byte {
-	o := make([]byte, 0, 4)
-	o = append(o, keys.ShardsPrefix...)
-	o = num(o, shard)
-	return o[:len(o):len(o)]
+	b := make([]byte, 0, 9)
+	b = append(b, keys.ShardsPrefix...)
+	return binary.BigEndian.AppendUint64(b, shard)
 }
 
 func num(b []byte, v uint64) []byte {
-	b = appendVarint(b, v)
-	return b // add separator
-}
-
-// AppendVarint appends v to b as a varint-encoded uint64.
-func appendVarint(b []byte, v uint64) []byte {
-	return binary.AppendUvarint(b, v)
+	return binary.BigEndian.AppendUint64(b, v)
 }

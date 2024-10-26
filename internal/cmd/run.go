@@ -12,7 +12,9 @@ import (
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/internal/api"
 	"github.com/vinceanalytics/vince/internal/location"
+	"github.com/vinceanalytics/vince/internal/ops"
 	"github.com/vinceanalytics/vince/internal/util/acme"
+	"github.com/vinceanalytics/vince/internal/util/data"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/web"
 	"github.com/vinceanalytics/vince/internal/web/conversions"
@@ -92,23 +94,29 @@ var serve = &cli.Command{
 }
 
 func run(ctx context.Context, c *cli.Command) error {
-
-	db, err := db.Open(c.StringSlice("domains"))
+	bdb, err := data.Open(oracle.DataPath, nil)
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer bdb.Close()
 
 	if c.Bool("createAdmin") {
 		name := os.Getenv(c.String("VINCE_ADMIN_NAME"))
 		pass := os.Getenv(c.String("VINCE_ADMIN_PASSWORD"))
 		if name != "" && pass != "" {
-			err := db.Ops().CreateAdmin(name, pass)
+			err := ops.CreateAdmin(bdb, name, pass)
 			if err != nil {
 				return err
 			}
 		}
 	}
+
+	db, err := db.Open(bdb, c.StringSlice("domains"))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 

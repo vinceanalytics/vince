@@ -14,6 +14,9 @@ const (
 )
 
 func (ra *Bitmap) ExtractMutex(match *Bitmap, f func(row uint64, columns *Bitmap) error) error {
+	if ra == nil {
+		return nil
+	}
 	filter := make([][]uint16, 1<<shardVsContainerExponent)
 	{
 		iter := match.newCoIter()

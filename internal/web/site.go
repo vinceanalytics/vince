@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"fmt"
 	"html/template"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"slices"
@@ -12,7 +11,6 @@ import (
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/api/visitors"
-	"github.com/vinceanalytics/vince/internal/domains"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/util/xtime"
 	"github.com/vinceanalytics/vince/internal/web/db"
@@ -85,10 +83,7 @@ func SharedLinksForm(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func DeleteSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	slug := r.PathValue("slug")
-	err := db.Ops().DeleteSharedLink(site, slug)
-	if err != nil {
-		slog.Error("deleting shared link", "slug", slug, "domain", db.CurrentSite().Domain, "err", "err")
-	}
+	db.Ops().DeleteSharedLink(site, slug)
 	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
 }
 
@@ -97,10 +92,7 @@ func EditSharedLink(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	name := r.Form.Get("name")
 	site := db.CurrentSite()
 	slug := r.PathValue("slug")
-	err := db.Ops().EditSharedLink(site, slug, name)
-	if err != nil {
-		slog.Error("updating shared link", "slug", slug, "domain", db.CurrentSite().Domain, "err", "err")
-	}
+	db.Ops().EditSharedLink(site, slug, name)
 	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
 }
 
@@ -123,31 +115,21 @@ func Settings(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func Delete(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := db.CurrentSite().Domain
-	err := db.Ops().DeleteDomain(domain)
-	if err != nil {
-		slog.Error("deleting site", "domain", domain, "err", "err")
-	}
-	domains.Reload(db.Ops().Domains)
+	db.Ops().DeleteDomain(domain)
 	http.Redirect(w, r, "/sites", http.StatusFound)
 }
 
 func MakePublic(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	site.Public = true
-	err := db.Ops().Save(site)
-	if err != nil {
-		db.Logger().Error("making site  public", "domain", db.CurrentSite().Domain, "err", err)
-	}
+	db.Ops().Save(site)
 	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
 }
 
 func MakePrivate(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	site := db.CurrentSite()
 	site.Public = false
-	err := db.Ops().Save(site)
-	if err != nil {
-		db.Logger().Error("making site  private", "domain", db.CurrentSite().Domain, "err", err)
-	}
+	db.Ops().Save(site)
 	http.Redirect(w, r, fmt.Sprintf("/%s/settings#visibility", url.PathEscape(site.Domain)), http.StatusFound)
 }
 
@@ -166,13 +148,7 @@ func CreateSite(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		}))
 		return
 	}
-	err := db.Ops().CreateSite(domain, false)
-	if err != nil {
-		db.HTMLCode(http.StatusInternalServerError, w, e500, nil)
-		db.Logger().Error("creating site", "err", err)
-		return
-	}
-	domains.Reload(db.Ops().Domains)
+	db.Ops().CreateSite(domain, false)
 	to := fmt.Sprintf("/%s/snippet", url.PathEscape(domain))
 	http.Redirect(w, r, to, http.StatusFound)
 }

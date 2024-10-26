@@ -62,24 +62,17 @@ func TopStats(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	params := query.New(r.URL.Query())
 
 	metrics := []string{"visitors", "visits", "pageviews", "views_per_visit", "bounce_rate", "visit_duration"}
-	stats, err := aggregates.Aggregates(
+	stats := aggregates.Aggregates(
 		ctx, db.TimeSeries(),
 		site.Domain, params.Start(), params.End(), params.Interval(), params.Filter(), metrics)
-	if err != nil {
-		db.Logger().Error("reading top stats", "err", err)
-		stats = &aggregates.Stats{}
-	}
+
 	stats.Compute()
 	cmp := new(aggregates.Stats)
 
 	if x := params.Compare(); x != nil && !params.Realtime() {
-		cmp, err = aggregates.Aggregates(
+		cmp = aggregates.Aggregates(
 			ctx, db.TimeSeries(),
 			site.Domain, x.Start, x.End, params.Interval(), params.Filter(), metrics)
-		if err != nil {
-			db.Logger().Error("reading top stats comparison", "err", err)
-			cmp = &aggregates.Stats{}
-		}
 	}
 	cmp.Compute()
 	realtime := params.Realtime()

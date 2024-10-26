@@ -9,7 +9,6 @@ import (
 
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/api/aggregates"
-	"github.com/vinceanalytics/vince/internal/fieldset"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
@@ -213,24 +212,23 @@ func findCity(_ context.Context, _ *timeseries.Timeseries, id uint64) uint32 {
 func breakdown[T cmp.Ordered](ctx context.Context, ts *timeseries.Timeseries, tr func(ctx context.Context, tx *timeseries.Timeseries, id uint64) T, domain string, params *query.Query, metrics []string, field models.Field,
 	fn func(property string, values map[T]*Stats) *Result) (*Result, error) {
 	values := make(map[T]*Stats)
-	fields := fieldset.From(metrics...)
-	err := ts.Select(ctx, domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring.Bitmap) error {
-		all := ts.NewBitmap(ctx, shard, view, field)
-		return all.ExtractMutex(columns, func(row uint64, m *roaring.Bitmap) error {
+	fields := models.DataForMetrics(metrics...)
+	valuesToScan := fields.Clone()
+	valuesToScan.Set(uint(field))
+	ts.Select(ctx, valuesToScan, domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring.Bitmap, data timeseries.FieldsData) {
+		all := data[field]
+		all.ExtractMutex(columns, func(row uint64, m *roaring.Bitmap) error {
 			key := tr(ctx, ts, row)
 			sx, ok := values[key]
 			if !ok {
-				sx = aggregates.NewStats(fields)
+				sx = new(aggregates.Stats)
 				values[key] = sx
 			}
-			return sx.Read(ctx, ts, shard, view, m, fields)
+			sx.Read(ctx, ts, fields, shard, view, m, data)
+			return nil
 		})
 
 	})
-
-	if err != nil {
-		return nil, err
-	}
 	a := fn(field.String(), values)
 	sortMap(a.Results, visitors)
 	return a, nil

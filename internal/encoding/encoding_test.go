@@ -1,20 +1,25 @@
 package encoding
 
 import (
+	"bytes"
+	"cmp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/vinceanalytics/vince/internal/models"
 )
 
-func TestBitmap(t *testing.T) {
-	rs := Bitmap(0, 0, models.Field_domain)
-	require.Equal(t, []byte{0, 0, 0, 12}, rs)
-	require.Equal(t, 4, cap(rs))
-}
+func TestCompare(t *testing.T) {
+	a := Bitmap(0, 1730023200000, models.Field_domain)
+	b := Bitmap(0, 1730026800000, models.Field_domain)
+	require.Equal(t, -1, cmp.Compare(1730023200000, 1730026800000))
+	require.Equal(t, -1, bytes.Compare(a, b))
 
-func TestShard(t *testing.T) {
-	rs := Shard(0)
-	require.Equal(t, []byte{3, 0}, rs)
-	require.Equal(t, 2, cap(rs))
+	sa, va := Component(a)
+	require.Equal(t, uint64(0), sa)
+	require.Equal(t, uint64(1730023200000), va)
+
+	sb, vb := Component(b)
+	require.Equal(t, uint64(0), sb)
+	require.Equal(t, uint64(1730026800000), vb)
 }

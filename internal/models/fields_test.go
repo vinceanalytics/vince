@@ -7,7 +7,7 @@ import (
 )
 
 func TestTranslate(t *testing.T) {
-	for n := range int(TranslatedFieldsSize) {
+	for n := range int(MutexFieldSize) {
 		require.Equal(t, n, int(Mutex(n).Mutex()))
 	}
 	for n := range int(BSIFieldsSize) {

@@ -48,7 +48,7 @@ func FromBuffer(data []byte) *Bitmap {
 	x := toUint64Slice(du[:4])[indexNodeSize]
 	return &Bitmap{
 		data: du,
-		_ptr: data,
+		// _ptr: data,
 		keys: toUint64Slice(du[:x]),
 	}
 }
