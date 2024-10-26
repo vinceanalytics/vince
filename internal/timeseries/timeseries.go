@@ -27,9 +27,6 @@ type Timeseries struct {
 		tr *trie.Trie
 	}
 
-	// Bitmaps are organized that  similar queries depending on interval will always
-	// fetch similar bitmaps.
-	//
 	// we need to have an up to date state of the cache to avoid missing new data.
 	// so, cache.ra enumerate all cached bitmpas that we *And after each batch to
 	// detect what keys to invalidate
