@@ -110,5 +110,21 @@ field: we assign unique number to each property.
 shard and timestamp compoenents are encodded as binary.AppendUvarint. This scheme
 ensures efficient time range queries. We can effficiently iterate on co located
 data most of the times.
+
+# Values
+
+All values are stored as serialized roaring bitmaps.this ensures that we only decode
+once at pebble level, values are loaded directly without decoding.
+
+We use different schemes depending on datatype. All string fields are stored in a mutex
+encoding and the rest are stored as bit sliced index.
+
+Bitmap values contains both rwo / column values.  Details on how row and column are
+combined to derive positions in the bitmap are documented in respective (*Bitmap)Mutex
+and (*Bitmap)BSI methods
+
+When saving key/value pairs we use (*pebble.Batch)Merge. And a custome value merger that only
+performs (*Bitmap)Or that is inlined. With this design we ensures that  batch flushes are
+very fast and very efficient.
 */
 package timeseries
