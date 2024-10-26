@@ -77,7 +77,7 @@ func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
-	if params.Property() == models.Field_unknown {
+	if params.Property() == models.Field_domain {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}

@@ -1,12 +1,13 @@
 package models
 
 const (
-	TranslatedFieldsSize = Field_subdivision2_code - Field_city + 1
+	MutexFieldSize       = Field_session + 1
+	TranslatedFieldsSize = Field_subdivision2_code + 1
 	BSIFieldsSize        = Field_duration - Field_timestamp + 1
 )
 
 func (f Field) Mutex() byte {
-	return byte(f - Field_city)
+	return byte(f)
 }
 
 func (f Field) BSI() byte {
@@ -18,5 +19,5 @@ func BSI(i int) Field {
 }
 
 func Mutex(i int) Field {
-	return Field(i) + Field_city
+	return Field(i)
 }

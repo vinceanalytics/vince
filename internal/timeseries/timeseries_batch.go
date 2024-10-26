@@ -20,7 +20,7 @@ const ShardWidth = 1 << 20
 type batch struct {
 	db        *pebble.DB
 	translate *translation
-	mutex     [models.TranslatedFieldsSize]map[uint64]*roaring.Bitmap
+	mutex     [models.MutexFieldSize]map[uint64]*roaring.Bitmap
 	bsi       [models.BSIFieldsSize]map[uint64]*roaring.Bitmap
 	events    uint64
 	id        uint64

@@ -35,13 +35,15 @@ func newTranslation(db *pebble.DB, onAssign func(key []byte, uid uint64)) *trans
 			if !bytes.HasPrefix(key, keys.TranslateSeqPrefix) {
 				break
 			}
-			f := models.Field(key[2])
-			if f == models.Field_unknown {
+			val := binary.BigEndian.Uint64(iter.Value())
+
+			if len(key) == 2 {
 				// global sequence records id
-				tr.id = binary.BigEndian.Uint64(iter.Value())
+				tr.id = val
 				continue
 			}
-			tr.ranges[f.Mutex()] = binary.BigEndian.Uint64(iter.Value())
+			f := models.Field(key[2])
+			tr.ranges[f.Mutex()] = val
 		}
 		// load translation
 		for iter.SeekGE(keys.TranslateKeyPrefix); iter.Valid(); iter.Next() {
@@ -102,7 +104,7 @@ func (tr *translation) flush(f func(key, value []byte, _ *pebble.WriteOptions) e
 	key = key[:3]
 	copy(key, keys.TranslateSeqPrefix)
 	binary.BigEndian.PutUint64(b[:], tr.id)
-	err := f(key, b[:], nil)
+	err := f(keys.TranslateSeqPrefix, b[:], nil)
 	if err != nil {
 		return fmt.Errorf("writing translation sequence key %w", err)
 	}
