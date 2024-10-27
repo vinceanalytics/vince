@@ -1,7 +1,6 @@
 dev:
 	go build -o bin/vince
-	./bin/vince admin --name acme --password 1234
-	./bin/vince serve --domains vinceanalytics.com --profile
+	./bin/vince serve  --adminName acme --adminPassword 1234 --domains vinceanalytics.com --profile
 
 
 

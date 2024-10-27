@@ -72,8 +72,6 @@ spec:
               value: {{ .Values.domains | join "," | toString | quote }}
             - name: VINCE_PROFILE
               value: {{ .Values.profile | toString | quote }}
-            - name: VINCE_CREATE_ADMIN
-              value: "true"
           ports:
             - name: http
               containerPort: 8080

@@ -84,10 +84,15 @@ var serve = &cli.Command{
 			Sources:     cli.EnvVars("VINCE_PROFILE"),
 			Destination: &oracle.Profile,
 		},
-		&cli.BoolFlag{
-			Name:    "createAdmin",
-			Usage:   "Creates admin if VINCE_ADMIN_NAME and VINCE_ADMIN_PASSWORD are present",
-			Sources: cli.EnvVars("VINCE_CREATE_ADMIN"),
+		&cli.StringFlag{
+			Name:    "adminName",
+			Usage:   "administrator name",
+			Sources: cli.EnvVars("VINCE_ADMIN_NAME"),
+		},
+		&cli.StringFlag{
+			Name:    "adminPassword",
+			Usage:   "administrator password",
+			Sources: cli.EnvVars("VINCE_ADMIN_PASSWORD"),
 		},
 	},
 	Action: run,
@@ -100,17 +105,12 @@ func run(ctx context.Context, c *cli.Command) error {
 	}
 	defer bdb.Close()
 
-	if c.Bool("createAdmin") {
-		name := os.Getenv(c.String("VINCE_ADMIN_NAME"))
-		pass := os.Getenv(c.String("VINCE_ADMIN_PASSWORD"))
-		if name != "" && pass != "" {
-			err := ops.CreateAdmin(bdb, name, pass)
-			if err != nil {
-				return err
-			}
+	if name, pass := c.String("adminName"), c.String("adminPassword"); name != "" && pass != "" {
+		err := ops.CreateAdmin(bdb, name, pass)
+		if err != nil {
+			return err
 		}
 	}
-
 	db, err := db.Open(bdb, c.StringSlice("domains"))
 	if err != nil {
 		return err

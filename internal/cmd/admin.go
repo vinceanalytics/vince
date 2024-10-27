@@ -20,13 +20,13 @@ var admin = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:     "name",
-			Usage:    "admin email address",
+			Usage:    "administrator name",
 			Sources:  cli.EnvVars("VINCE_ADMIN_NAME"),
 			Required: true,
 		},
 		&cli.StringFlag{
 			Name:     "password",
-			Usage:    "admin password",
+			Usage:    "administrator password",
 			Sources:  cli.EnvVars("VINCE_ADMIN_PASSWORD"),
 			Required: true,
 		},
