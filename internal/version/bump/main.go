@@ -18,8 +18,10 @@ func main() {
 	switch flag.Arg(0) {
 	case "major":
 		v.major++
+		v.minor = 0
 	case "minor":
 		v.minor++
+		v.patch = 0
 	case "patch":
 		v.patch++
 	}
