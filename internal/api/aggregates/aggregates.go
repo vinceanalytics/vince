@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/vinceanalytics/vince/internal/fieldset"
+	"github.com/bits-and-blooms/bitset"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/timeseries"
@@ -21,14 +21,6 @@ type Stats struct {
 	BounceRate     float64
 	VisitDuration  float64
 	Events         float64
-}
-
-func NewStats(fs fieldset.Set) *Stats {
-	var s Stats
-	if fs.Has(models.Field_id) {
-		s.uid = roaring.NewBitmap()
-	}
-	return &s
 }
 
 func Reduce(metrics []string) func(*Stats, map[string]any) {
@@ -106,30 +98,28 @@ func (s *Stats) Compute() {
 	s.BounceRate = max(s.BounceRate, 0)
 }
 
-func (d *Stats) Read(ctx context.Context, ts *timeseries.Timeseries, shard, view uint64, match *roaring.Bitmap, fields fieldset.Set) error {
-	return fields.Each(func(f models.Field) (err error) {
+func (d *Stats) Read(ctx context.Context, ts *timeseries.Timeseries, fields *bitset.BitSet, shard, view uint64, match *roaring.Bitmap, data timeseries.FieldsData) {
+	models.EachField(fields, func(f models.Field) {
 		switch f {
 		case models.Field_view:
-			count := ts.NewBitmap(ctx, shard, view, f).
-				True(shard, match).GetCardinality()
+			count := data[f].True(shard, match).GetCardinality()
 			d.PageViews += float64(count)
 		case models.Field_session:
-			count := ts.NewBitmap(ctx, shard, view, f).
-				True(shard, match).GetCardinality()
+			count := data[f].True(shard, match).GetCardinality()
 			d.Visits += float64(count)
 		case models.Field_bounce:
-			sum := ts.NewBitmap(ctx, shard, view, models.Field_bounce).
-				BSISum(shard, match)
+			sum := data[f].BSISum(shard, match)
 			d.BounceRate += float64(sum)
 		case models.Field_duration:
-			sum := ts.NewBitmap(ctx, shard, view, f).
-				BSISum(shard, match)
+			sum := data[f].BSISum(shard, match)
 			d.VisitDuration += float64(sum)
 		case models.Field_id:
-			ts.NewBitmap(ctx, shard, view, f).
-				ExtractBSI(shard, match, func(_ uint64, value int64) {
-					d.uid.Set(uint64(value))
-				})
+			if d.uid == nil {
+				d.uid = roaring.NewBitmap()
+			}
+			data[f].ExtractBSI(shard, match, func(id uint64, value int64) {
+				d.uid.Set(uint64(value))
+			})
 		case models.Field_event:
 			d.Events += float64(match.GetCardinality())
 		}
@@ -137,14 +127,11 @@ func (d *Stats) Read(ctx context.Context, ts *timeseries.Timeseries, shard, view
 	})
 }
 
-func Aggregates(ctx context.Context, ts *timeseries.Timeseries, domain string, start, end time.Time, interval query.Interval, filters query.Filters, metrics []string) (*Stats, error) {
-	fields := fieldset.From(metrics...)
-	m := NewStats(fields)
-	err := ts.Select(ctx, domain, start, end, interval, filters, func(shard, view uint64, columns *roaring.Bitmap) error {
-		return m.Read(ctx, ts, shard, view, columns, fields)
+func Aggregates(ctx context.Context, ts *timeseries.Timeseries, domain string, start, end time.Time, interval query.Interval, filters query.Filters, metrics []string) *Stats {
+	fields := models.DataForMetrics(metrics...)
+	r := new(Stats)
+	ts.Select(ctx, fields, domain, start, end, interval, filters, func(shard, view uint64, columns *roaring.Bitmap, data timeseries.FieldsData) {
+		r.Read(ctx, ts, fields, shard, view, columns, data)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return m, nil
+	return r
 }

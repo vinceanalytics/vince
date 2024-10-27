@@ -1,13 +1,13 @@
 package timeseries
 
 import (
-	"context"
 	"encoding/binary"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/bits-and-blooms/bitset"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
@@ -15,144 +15,148 @@ import (
 	wq "github.com/vinceanalytics/vince/internal/web/query"
 )
 
-func (ts *Timeseries) compile(fs wq.Filters) Filter {
-	a := make(And, 0, len(fs))
+type Cond struct {
+	Yes []uint64
+	No  []uint64
+}
+
+func (f *Cond) IsEmpty() bool {
+	return len(f.Yes) == 0 && len(f.No) == 0
+}
+
+func (f *Cond) Apply(shard uint64, ra *roaring.Bitmap) *roaring.Bitmap {
+	if ra.IsEmpty() {
+		return ra
+	}
+	yes := apply(shard, ra, f.Yes)
+	no := apply(shard, ra, f.No)
+	if yes == nil {
+		return no
+	}
+	if no == nil {
+		return yes
+	}
+	yes.Or(no)
+	return yes
+
+}
+
+func apply(shard uint64, ra *roaring.Bitmap, values []uint64) *roaring.Bitmap {
+	if len(values) == 0 {
+		return nil
+	}
+	if len(values) == 1 {
+		return ra.Row(shard, values[0])
+	}
+	a := ra.Row(shard, values[0])
+	for _, v := range values[1:] {
+		a.Or(ra.Row(shard, v))
+	}
+	return a
+}
+
+type FilterSet [models.SearchFieldSize]Cond
+
+type FilterData [models.SearchFieldSize]*roaring.Bitmap
+
+// ScanFields returns a set of all fields to scan for this filter.
+func (fs *FilterSet) ScanFields() *bitset.BitSet {
+	set := new(bitset.BitSet)
+	fs.idx(func(i int) {
+		set.Set(uint(i))
+	})
+	return set
+}
+
+func (fs *FilterSet) idx(f func(int)) {
+	for i := range fs {
+		if fs[i].IsEmpty() {
+			continue
+		}
+		f(i)
+	}
+}
+
+func (fs *FilterSet) Set(yes bool, f models.Field, values ...uint64) {
+	co := &fs[f]
+	if yes {
+		co.Yes = append(co.Yes, values...)
+		return
+	}
+	co.No = append(co.No, values...)
+}
+
+func (ts *Timeseries) compile(fs wq.Filters) FilterSet {
+	var a FilterSet
 	for _, f := range fs {
 		switch f.Key {
 		case "city":
 			switch f.Op {
-			case "is":
+			case "is", "is_not":
 				code, _ := strconv.Atoi(f.Value[0])
 				if code == 0 {
-					return Reject{}
+					return FilterSet{}
 				}
-				return &Match{
-					Field:  models.Field_city,
-					Values: []int64{int64(code)},
-				}
+				a.Set(f.Op == "is", models.Field_city, uint64(code))
 			}
 		default:
 			fd := models.Field(models.Field_value[f.Key])
 			if fd == 0 {
-				return Reject{}
+				return FilterSet{}
 			}
 
 			switch f.Op {
 			case "is", "is_not":
-				values := make([]int64, len(f.Value))
+				values := make([]uint64, len(f.Value))
 				for i := range f.Value {
-					values[i] = int64(ts.Translate(fd, []byte(f.Value[i])))
+					values[i] = ts.Translate(fd, []byte(f.Value[i]))
 				}
-				a = append(a, &Match{
-					Field:  fd,
-					Negate: f.Op == "is_not",
-					Values: values,
-				})
+				a.Set(f.Op == "is", fd, values...)
 			case "matches", "does_not_match":
-				var values []int64
+				var values []uint64
 				for _, source := range f.Value {
 					prefix, exact := searchPrefix([]byte(source))
 					if exact {
-						values = append(values, int64(ts.Translate(fd, []byte(source))))
+						values = append(values, ts.Translate(fd, []byte(source)))
 					} else {
 						re, err := regexp.Compile(source)
 						if err != nil {
-							return Reject{}
+							return FilterSet{}
 						}
 
 						ts.Search(fd, prefix, func(key []byte, val uint64) {
 							if re.Match(key) {
-								values = append(values, int64(val))
+								values = append(values, val)
 							}
 						})
 					}
 				}
 				if len(values) == 0 {
-					return Reject{}
+					return FilterSet{}
 				}
-				a = append(a, &Match{
-					Field:  fd,
-					Negate: f.Op == "does_not_match",
-					Values: values,
-				})
+
+				a.Set(f.Op == "matches", fd, values...)
+
 			case "contains", "does_not_contain":
-				var values []int64
+				var values []uint64
 				re, err := regexp.Compile(strings.Join(f.Value, "|"))
 				if err != nil {
-					return Reject{}
+					return FilterSet{}
 				}
 				ts.Search(fd, []byte{}, func(b []byte, val uint64) {
 					if re.Match(b) {
-						values = append(values, int64(val))
+						values = append(values, val)
 					}
 				})
-				a = append(a, &Match{
-					Field:  fd,
-					Negate: f.Op == "does_not_contain",
-					Values: values,
-				})
+
+				a.Set(f.Op == "contains", fd, values...)
+
 			default:
-				return Reject{}
+				return FilterSet{}
 			}
 		}
 	}
 	return a
-}
-
-type Reject struct{}
-
-func (Reject) Apply(ctx context.Context, rtx *Timeseries, shard uint64, view uint64, columns *roaring.Bitmap) *roaring.Bitmap {
-	return nil
-}
-
-type Filter interface {
-	Apply(ctx context.Context, rtx *Timeseries, shard uint64, view uint64, columns *roaring.Bitmap) *roaring.Bitmap
-}
-
-type And []Filter
-
-func (a And) Apply(ctx context.Context, rtx *Timeseries, shard uint64, view uint64, columns *roaring.Bitmap) *roaring.Bitmap {
-	if len(a) == 0 {
-		return columns
-	}
-	if len(a) == 1 {
-		return a[0].Apply(ctx, rtx, shard, view, columns)
-	}
-	m := a[0].Apply(ctx, rtx, shard, view, columns)
-	for _, h := range a[1:] {
-		m.And(h.Apply(ctx, rtx, shard, view, columns))
-	}
-	return m
-}
-
-type Match struct {
-	Values []int64
-	Field  models.Field
-	Negate bool
-}
-
-func (m *Match) Apply(ctx context.Context, rtx *Timeseries, shard uint64, view uint64, columns *roaring.Bitmap) (b *roaring.Bitmap) {
-	if m.Negate {
-		return roaring.NewBitmap()
-	}
-	bs := rtx.NewBitmap(ctx, shard, view, m.Field)
-	return m.apply(bs, shard, columns)
-}
-
-func (m *Match) apply(bs *roaring.Bitmap, shard uint64, columns *roaring.Bitmap) *roaring.Bitmap {
-	if len(m.Values) == 1 {
-		row := bs.Row(shard, uint64(m.Values[0]))
-		row.And(columns)
-		return row
-	}
-	o := make([]*roaring.Bitmap, len(m.Values))
-
-	for i := range m.Values {
-		row := bs.Row(shard, uint64(m.Values[i]))
-		row.And(columns)
-		o[i] = row
-	}
-	return roaring.FastOr(o...)
 }
 
 func (ts *Timeseries) Search(field models.Field, prefix []byte, f func(key []byte, value uint64)) {

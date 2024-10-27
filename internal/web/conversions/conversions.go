@@ -14,14 +14,11 @@ func Conversion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	sx, err := aggregates.
+	sx := aggregates.
 		Aggregates(
 			ctx, db.TimeSeries(),
 			site.Domain, params.Start(), params.End(), params.Interval(), params.Filter(), []string{"visitors"})
-	if err != nil {
-		db.Logger().Error("reading aggregates", "err", err)
-		sx = new(aggregates.Stats)
-	}
+
 	sx.Compute()
 	totalVisitors := sx.Visitors
 	rs, err := breakdown.BreakdownGoals(ctx, db.TimeSeries(), site, params, []string{"visitors", "events"})

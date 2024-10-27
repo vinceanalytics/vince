@@ -10,7 +10,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
-	"github.com/vinceanalytics/vince/internal/util/hash"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
@@ -26,13 +25,12 @@ type batch struct {
 	id        uint64
 	shard     uint64
 	time      uint64
-	keys      *roaring.Bitmap
 	views     *roaring.Bitmap
 	bitmap    []byte
 }
 
 func newbatch(db *pebble.DB, tr *translation) *batch {
-	b := &batch{translate: tr, keys: roaring.NewBitmap(), views: roaring.NewBitmap()}
+	b := &batch{translate: tr, views: roaring.NewBitmap()}
 	for i := range b.mutex {
 		b.mutex[i] = make(map[uint64]*roaring.Bitmap)
 	}
@@ -113,7 +111,6 @@ func (b *batch) flush(ba *pebble.Batch) error {
 
 func (b *batch) encode(view uint64, field models.Field) []byte {
 	b.bitmap = encoding.BitmapBuf(b.shard, view, field, b.bitmap[:0])
-	b.keys.Set(hash.Bytes(b.bitmap))
 	b.views.Set(view)
 	return b.bitmap
 }

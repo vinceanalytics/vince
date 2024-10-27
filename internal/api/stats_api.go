@@ -28,13 +28,10 @@ func Agggregates(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
 
-	stats, err := aggregates.Aggregates(
+	stats := aggregates.Aggregates(
 		r.Context(), db.TimeSeries(),
 		domain, params.Start(), params.End(), params.Interval(), params.Filter(), params.Metrics())
-	if err != nil {
-		db.Logger().Error("reading top stats", "err", err)
-		stats = &aggregates.Stats{}
-	}
+
 	stats.Compute()
 	result := map[string]any{}
 	aggregates.Reduce(params.Metrics())(stats, result)
