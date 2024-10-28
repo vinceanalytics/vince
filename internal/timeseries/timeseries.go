@@ -3,6 +3,8 @@ package timeseries
 import (
 	"errors"
 	"iter"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -74,6 +76,8 @@ func (ts *Timeseries) Close() error {
 		ts.Save(),
 		ts.ba.translate.Release(),
 		ts.trie.tr.Release(),
+		// remove buffer files
+		os.RemoveAll(filepath.Join(oracle.DataPath, "buffers")),
 	)
 }
 
