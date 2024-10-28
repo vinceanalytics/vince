@@ -20,6 +20,7 @@ require (
 	github.com/urfave/cli/v3 v3.0.0-alpha9
 	golang.org/x/crypto v0.27.0
 	golang.org/x/mod v0.17.0
+	golang.org/x/sys v0.25.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -52,7 +53,6 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/net v0.29.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

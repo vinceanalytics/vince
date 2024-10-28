@@ -29,7 +29,7 @@ func TestTrie(t *testing.T) {
 	require.Equal(t, uint32(24), uint32(nodeSz),
 		"Size of Trie node should be 24. Got: %d\n", nodeSz)
 
-	trie := NewTrie()
+	trie := NewTrie(t.TempDir())
 	defer trie.Release()
 
 	trie.Put([]byte("trie"), 1)
@@ -51,7 +51,7 @@ func TestTrie(t *testing.T) {
 func TestTrieIterate(t *testing.T) {
 	keys := make([]string, 0)
 	uids := make([]uint64, 0)
-	trie := NewTrie()
+	trie := NewTrie(t.TempDir())
 
 	i := uint64(1)
 	for ; i <= 1000; i++ {
@@ -79,7 +79,7 @@ func TestTrieIterate(t *testing.T) {
 func BenchmarkWordsTrie(b *testing.B) {
 	buf := make([]byte, 32)
 
-	trie := NewTrie()
+	trie := NewTrie(b.TempDir())
 	defer trie.Release()
 
 	var uid uint64

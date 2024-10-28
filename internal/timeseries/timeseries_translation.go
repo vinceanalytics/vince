@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log/slog"
+	"time"
 
 	"github.com/cockroachdb/pebble"
 	"github.com/dgryski/go-farm"
@@ -11,6 +13,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/util/assert"
+	"github.com/vinceanalytics/vince/internal/util/oracle"
 	"github.com/vinceanalytics/vince/internal/util/tree"
 )
 
@@ -23,8 +26,12 @@ type translation struct {
 	onAssign func(key []byte, uid uint64)
 }
 
+func (tr *translation) Release() error {
+	return tr.tree.Close()
+}
+
 func newTranslation(db *pebble.DB, onAssign func(key []byte, uid uint64)) *translation {
-	tr := translation{tree: tree.NewTree(), onAssign: onAssign}
+	tr := translation{tree: tree.NewTree(oracle.DataPath), onAssign: onAssign}
 	iter, err := db.NewIter(&pebble.IterOptions{})
 	assert.Nil(err, "openin iterator for translations")
 	defer iter.Close()
@@ -45,12 +52,16 @@ func newTranslation(db *pebble.DB, onAssign func(key []byte, uid uint64)) *trans
 			f := models.Field(key[2])
 			tr.ranges[f.Mutex()] = val
 		}
+		start := time.Now()
+		slog.Info("loading translation data")
+		var count uint64
 		// load translation
 		for iter.SeekGE(keys.TranslateKeyPrefix); iter.Valid(); iter.Next() {
 			key := iter.Key()
 			if !bytes.HasPrefix(key, keys.TranslateKeyPrefix) {
 				break
 			}
+			count++
 			hash := farm.Fingerprint64(key)
 			value := binary.BigEndian.Uint64(iter.Value())
 			tr.tree.Set(hash, value)
@@ -58,6 +69,8 @@ func newTranslation(db *pebble.DB, onAssign func(key []byte, uid uint64)) *trans
 				onAssign(key, value)
 			}
 		}
+		slog.Info("complete loading translation",
+			"elapsed", time.Since(start), "keys", count)
 
 	}
 	return &tr

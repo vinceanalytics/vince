@@ -17,12 +17,17 @@
 package trie
 
 import (
-	"log/slog"
 	"math"
+	"os"
+	"path/filepath"
 	"unsafe"
 
+	"github.com/vinceanalytics/vince/internal/util/assert"
 	"github.com/vinceanalytics/vince/internal/util/buffer"
+	"github.com/vinceanalytics/vince/internal/util/mmap"
 )
+
+const minSize = 32 << 20
 
 // Trie is an implementation of Ternary Search Tries to store XID to UID map. It uses Arena to
 // allocate nodes in the trie. It is not thread-safe.
@@ -33,8 +38,13 @@ type Trie struct {
 
 // NewTrie would return back a Trie backed by the provided Arena. Trie would assume ownership of the
 // Arena. Release must be called at the end to release Arena's resources.
-func NewTrie() *Trie {
-	buf := buffer.NewBuffer(1 << 20).WithMaxSize(math.MaxInt32)
+func NewTrie(path string) *Trie {
+	base := filepath.Join(path, "buffers")
+	os.MkdirAll(base, 0755)
+	file := filepath.Join(base, "TRIE")
+	src, err := mmap.NewSource(file, minSize)
+	assert.Nil(err, "creating btree mmap source")
+	buf := buffer.NewBuffer(src, minSize).WithMaxSize(math.MaxInt32)
 	// Add additional 8 bytes at the start, because offset=0 is used for checking non-existing node.
 	// Therefore we can't keep root at 0 offset.
 	ro := buf.AllocateOffset(nodeSz + 8)
@@ -43,6 +53,7 @@ func NewTrie() *Trie {
 		buf:  buf,
 	}
 }
+
 func (t *Trie) getNode(offset uint32) *node {
 	if offset == 0 {
 		return nil
@@ -77,10 +88,8 @@ func (t *Trie) IterateWIthPrefix(prefix []byte, fn IterFn) error {
 }
 
 // Release would release the resources used by the Arena.
-func (t *Trie) Release() {
-	if err := t.buf.Release(); err != nil {
-		slog.Error("releasing trie buffer", "err", err)
-	}
+func (t *Trie) Release() error {
+	return t.buf.Release()
 }
 
 // node uses 4-byte offsets to save the cost of storing 8-byte pointers. Also, offsets allow us to

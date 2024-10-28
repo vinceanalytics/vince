@@ -35,7 +35,7 @@ func setPageSize(sz int) {
 }
 
 func TestTree(t *testing.T) {
-	bt := NewTree()
+	bt := NewTree(t.TempDir())
 	defer func() { require.NoError(t, bt.Close()) }()
 
 	N := uint64(256 * 256)
@@ -57,7 +57,7 @@ func TestTree(t *testing.T) {
 
 func TestTreeBasic(t *testing.T) {
 	setAndGet := func() {
-		bt := NewTree()
+		bt := NewTree(t.TempDir())
 		defer func() { require.NoError(t, bt.Close()) }()
 
 		N := uint64(1 << 20)
@@ -81,7 +81,7 @@ func TestTreeBasic(t *testing.T) {
 }
 
 func TestTreeReset(t *testing.T) {
-	bt := NewTree()
+	bt := NewTree(t.TempDir())
 	defer func() { require.NoError(t, bt.Close()) }()
 
 	N := 1 << 10
@@ -114,7 +114,7 @@ func TestTreeReset(t *testing.T) {
 }
 
 func TestTreeCycle(t *testing.T) {
-	bt := NewTree()
+	bt := NewTree(t.TempDir())
 	defer func() { require.NoError(t, bt.Close()) }()
 
 	val := uint64(0)
@@ -137,7 +137,7 @@ func TestTreeCycle(t *testing.T) {
 }
 
 func TestTreeIterateKV(t *testing.T) {
-	bt := NewTree()
+	bt := NewTree(t.TempDir())
 	defer func() { require.NoError(t, bt.Close()) }()
 
 	// Set entries: (i, i*10)
@@ -172,7 +172,7 @@ func TestOccupancyRatio(t *testing.T) {
 	defer setPageSize(os.Getpagesize())
 	require.Equal(t, 4, maxKeys)
 
-	bt := NewTree()
+	bt := NewTree(t.TempDir())
 	defer func() { require.NoError(t, bt.Close()) }()
 
 	expectedRatio := float64(1) * 100 / float64(2*maxKeys) // 2 because we'll have 2 pages.
@@ -280,7 +280,7 @@ func BenchmarkPurge(b *testing.B) {
 
 	b.Run("btree", func(b *testing.B) {
 		start := time.Now()
-		bt := NewTree()
+		bt := NewTree(b.TempDir())
 		defer func() { require.NoError(b, bt.Close()) }()
 		for i := 0; i < N; i++ {
 			bt.Set(rand.Uint64(), uint64(i))
@@ -304,7 +304,7 @@ func BenchmarkWrite(b *testing.B) {
 		}
 	})
 	b.Run("btree", func(b *testing.B) {
-		bt := NewTree()
+		bt := NewTree(b.TempDir())
 		defer func() { require.NoError(b, bt.Close()) }()
 		b.ResetTimer()
 		for n := 0; n < b.N; n++ {
@@ -338,7 +338,7 @@ func BenchmarkRead(b *testing.B) {
 		}
 	})
 
-	bt := NewTree()
+	bt := NewTree(b.TempDir())
 	defer func() { require.NoError(b, bt.Close()) }()
 	for i := 0; i < N; i++ {
 		k := uint64(rand.Intn(2*N)) + 1

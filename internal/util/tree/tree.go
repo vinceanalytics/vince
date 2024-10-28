@@ -20,12 +20,14 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"unsafe"
 
 	"github.com/vinceanalytics/vince/internal/util/assert"
 	"github.com/vinceanalytics/vince/internal/util/buffer"
+	"github.com/vinceanalytics/vince/internal/util/mmap"
 )
 
 var (
@@ -37,7 +39,7 @@ var (
 
 const (
 	absoluteMax = uint64(math.MaxUint64 - 1)
-	minSize     = 1 << 20
+	minSize     = 32 << 20
 )
 
 // Tree represents the structure for custom mmaped B+ tree.
@@ -58,8 +60,13 @@ func (t *Tree) initRootNode() {
 }
 
 // NewTree returns an in-memory B+ tree.
-func NewTree() *Tree {
-	t := &Tree{buffer: buffer.NewBuffer(minSize)}
+func NewTree(path string) *Tree {
+	base := filepath.Join(path, "buffers")
+	os.MkdirAll(base, 0755)
+	file := filepath.Join(base, "TREE")
+	src, err := mmap.NewSource(file, minSize)
+	assert.Nil(err, "creating btree mmap source")
+	t := &Tree{buffer: buffer.NewBuffer(src, minSize)}
 	t.Reset()
 	return t
 }

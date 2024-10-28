@@ -1,6 +1,7 @@
 package timeseries
 
 import (
+	"errors"
 	"iter"
 	"sync"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/util/data"
+	"github.com/vinceanalytics/vince/internal/util/oracle"
 	xt "github.com/vinceanalytics/vince/internal/util/translation"
 	"github.com/vinceanalytics/vince/internal/util/trie"
 )
@@ -36,7 +38,7 @@ type Timeseries struct {
 
 func New(db *pebble.DB) *Timeseries {
 	ts := &Timeseries{db: db}
-	ts.trie.tr = trie.NewTrie()
+	ts.trie.tr = trie.NewTrie(oracle.DataPath)
 	tr := newTranslation(db, ts.trie.tr.Put)
 	tr.onAssign = func(key []byte, uid uint64) {
 		ts.trie.mu.Lock()
@@ -68,7 +70,11 @@ func (ts *Timeseries) Get() *pebble.DB {
 }
 
 func (ts *Timeseries) Close() error {
-	return ts.Save()
+	return errors.Join(
+		ts.Save(),
+		ts.ba.translate.Release(),
+		ts.trie.tr.Release(),
+	)
 }
 
 func (ts *Timeseries) Save() error {
