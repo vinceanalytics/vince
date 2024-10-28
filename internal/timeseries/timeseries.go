@@ -71,9 +71,9 @@ func (ts *Timeseries) Get() *pebble.DB {
 	return ts.db
 }
 
+// Close releases resources and removes buffers used.
 func (ts *Timeseries) Close() error {
 	return errors.Join(
-		ts.Save(),
 		ts.ba.translate.Release(),
 		ts.trie.tr.Release(),
 		// remove buffer files
@@ -81,6 +81,12 @@ func (ts *Timeseries) Close() error {
 	)
 }
 
+// Save persist all buffered events into pebble key value store. This method is
+// not safe for cocunrrent use. It is intended to be called in the same goroutine
+// that calls (*Timeseries)Add.
+//
+// The goal is to ensure almost lock free ingestion path ( with exception of
+// translation with uses RWMutex)
 func (ts *Timeseries) Save() error {
 	err := ts.ba.save()
 	if err != nil {
@@ -90,6 +96,15 @@ func (ts *Timeseries) Save() error {
 	return nil
 }
 
+// Add process m and batches it. It must be called in the same goroutine as
+// (*Timeseries)Save
+//
+// When we reach a shard boundary, existing batch will be saved before adding m.
+// m []byte fields must not be modified because we use reference during  translation
+// A safe usage is to release m imediately after calling this method and reset it
+// by calling
+//
+//	*m = models.Model{}
 func (ts *Timeseries) Add(m *models.Model) error {
 	return ts.ba.add(m)
 }

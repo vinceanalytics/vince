@@ -17,17 +17,17 @@ import (
 var requestPool = &sync.Pool{New: func() any { return new(Request) }}
 
 type Request struct {
-	remoteIp  string
+	ts        time.Time
 	uri       *url.URL
+	props     map[string]string
+	remoteIp  string
 	userAgent string
 	hostname  string
 	referrer  string
-	domains   []string
 	eventName string
-	hashMode  int64
 	pathname  string
-	props     map[string]string
-	ts        time.Time
+	domains   []string
+	hashMode  int64
 }
 
 func newRequest() *Request {

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 
 	"github.com/vinceanalytics/vince/internal/geo"
 	"github.com/vinceanalytics/vince/internal/models"
@@ -48,13 +49,15 @@ func newSessionEvent(e *models.Model) {
 var (
 	ErrDrop = errors.New("event dropped")
 )
+var eventsPool = &sync.Pool{New: func() any { return new(models.Model) }}
 
 func newEevent() *models.Model {
-	return new(models.Model)
+	return eventsPool.Get().(*models.Model)
 }
 
 func releaseEvent(e *models.Model) {
 	*e = models.Model{}
+	eventsPool.Put(e)
 }
 
 func (db *Config) parse(r *http.Request) (*models.Model, error) {

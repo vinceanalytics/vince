@@ -76,7 +76,15 @@ func (db *Config) Start(ctx context.Context) {
 func (db *Config) eventsLoop(cts context.Context) {
 	db.logger.Info("starting event processing loop")
 	ts := time.NewTicker(time.Second)
-	defer ts.Stop()
+	defer func() {
+		ts.Stop()
+
+		err := db.ts.Save()
+		if err != nil {
+			db.logger.Error("applying events batch before exiting", "err", err)
+		}
+	}()
+
 	for {
 		select {
 		case <-cts.Done():

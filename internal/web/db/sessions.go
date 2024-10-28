@@ -28,10 +28,10 @@ const MaxAge = 60 * 60 * 24 * 365 * 5
 const cookie = "_vince"
 
 type SessionContext struct {
-	Data   Data
-	user   string
 	site   *v1.Site
 	secret *age.X25519Identity
+	user   string
+	Data   Data
 }
 
 func (s *SessionContext) clone() *SessionContext {
@@ -40,12 +40,12 @@ func (s *SessionContext) clone() *SessionContext {
 
 type Data struct {
 	TimeoutAt     time.Time `json:",omitempty"`
-	CurrentUserID string    `json:",omitempty"`
 	LastSeen      time.Time `json:",omitempty"`
-	LoggedIn      bool      `json:",omitempty"`
+	Flash         Flash     `json:",omitempty"`
+	CurrentUserID string    `json:",omitempty"`
 	Csrf          string    `json:",omitempty"`
 	LoginDest     string    `json:",omitempty"`
-	Flash         Flash     `json:",omitempty"`
+	LoggedIn      bool      `json:",omitempty"`
 }
 
 func (s *SessionContext) SuccessFlash(m string) *SessionContext {
