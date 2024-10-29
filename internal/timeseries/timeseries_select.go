@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/bits-and-blooms/bitset"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
@@ -14,25 +13,16 @@ import (
 
 func (ts *Timeseries) Select(
 	ctx context.Context,
-	values *bitset.BitSet,
+	values models.BitSet,
 	domain string, start,
 	end time.Time,
 	intrerval query.Interval,
 	filters query.Filters,
-	cb func(shard, view uint64, columns *roaring.Bitmap, data FieldsData)) {
+	cb func(field models.Field, view, shard uint64, columns, ra *roaring.Bitmap) bool) {
 	m := ts.compile(filters)
 	m.Set(true, models.Field_domain, ts.Translate(models.Field_domain, []byte(domain)))
-	views := ts.Shards(intrerval.Range(start, end))
-	data := ts.Scan(views, m, values)
-	for shard := range data {
-		sx := &data[shard]
-		if len(sx.Views) == 0 {
-			continue
-		}
-		for view, data := range sx.Views {
-			cb(uint64(shard), view, sx.Columns, *data)
-		}
-	}
+	ts.Scan(encoding.Resolution(intrerval), start,
+		end, m, values, cb)
 	return
 }
 

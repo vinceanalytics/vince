@@ -16,14 +16,15 @@ func Timeseries(ctx context.Context, ts *timeseries.Timeseries, domain string, p
 	fields := models.DataForMetrics(metrics...)
 
 	format := params.Interval().Format()
-	ts.Select(ctx, fields, domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring.Bitmap, data timeseries.FieldsData) {
+	ts.Select(ctx, fields, domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(dataField models.Field, view, shard uint64, columns, ra *roaring.Bitmap) bool {
 		timestamp := xtime.UnixMilli(int64(view)).Format(format)
 		m, ok := values[timestamp]
 		if !ok {
 			m = new(aggregates.Stats)
 			values[timestamp] = m
 		}
-		m.Read(ctx, ts, fields, shard, view, columns, data)
+		m.Read(dataField, view, shard, columns, ra)
+		return true
 	})
 	return values, nil
 }

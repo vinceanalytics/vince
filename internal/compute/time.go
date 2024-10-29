@@ -2,6 +2,10 @@ package compute
 
 import "time"
 
+func Minute(ts time.Time) time.Time {
+	return ts.Truncate(time.Minute)
+}
+
 func Hour(ts time.Time) time.Time {
 	return ts.Truncate(time.Hour)
 }

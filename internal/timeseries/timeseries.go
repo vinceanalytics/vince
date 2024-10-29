@@ -2,18 +2,13 @@ package timeseries
 
 import (
 	"errors"
-	"iter"
 	"os"
 	"path/filepath"
 	"sync"
-	"time"
 
 	"github.com/cockroachdb/pebble"
 	"github.com/vinceanalytics/vince/internal/encoding"
-	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
-	"github.com/vinceanalytics/vince/internal/roaring"
-	"github.com/vinceanalytics/vince/internal/util/data"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
 	xt "github.com/vinceanalytics/vince/internal/util/translation"
 	"github.com/vinceanalytics/vince/internal/util/trie"
@@ -27,15 +22,6 @@ type Timeseries struct {
 		mu sync.RWMutex
 		tr *trie.Trie
 	}
-
-	// To avoid blindly iterating on all shards to find views. We keep a mapping
-	// of observed views in a shard.
-	//
-	// We use a slice because shards starts from 0 and there is no gaps.
-	views struct {
-		mu sync.RWMutex
-		ra []*roaring.Bitmap
-	}
 }
 
 func New(db *pebble.DB) *Timeseries {
@@ -48,14 +34,6 @@ func New(db *pebble.DB) *Timeseries {
 		ts.trie.mu.Unlock()
 	}
 	ts.ba = newbatch(db, tr)
-
-	// load all views into memory. We append to  ts.views.ra because shards are always
-	// sorted and starts with 0.
-	data.Prefix(db, keys.ShardsPrefix, func(key, value []byte) error {
-		ra := roaring.FromBufferWithCopy(value)
-		ts.views.ra = append(ts.views.ra, ra)
-		return nil
-	})
 	return ts
 }
 
@@ -88,12 +66,7 @@ func (ts *Timeseries) Close() error {
 // The goal is to ensure almost lock free ingestion path ( with exception of
 // translation with uses RWMutex)
 func (ts *Timeseries) Save() error {
-	err := ts.ba.save()
-	if err != nil {
-		return err
-	}
-	ts.updateViews()
-	return nil
+	return ts.ba.save()
 }
 
 // Add process m and batches it. It must be called in the same goroutine as
@@ -107,31 +80,4 @@ func (ts *Timeseries) Save() error {
 //	*m = models.Model{}
 func (ts *Timeseries) Add(m *models.Model) error {
 	return ts.ba.add(m)
-}
-
-func (ts *Timeseries) Shards(views iter.Seq[time.Time]) []*roaring.Bitmap {
-	ra := roaring.NewBitmap()
-	for v := range views {
-		ra.Set(uint64(v.UnixMilli()))
-	}
-	rs := make([]*roaring.Bitmap, len(ts.views.ra))
-	for i := range rs {
-		rs[i] = ra.Clone()
-	}
-	ts.views.mu.RLock()
-	for i := range rs {
-		rs[i].And(ts.views.ra[i])
-	}
-	ts.views.mu.RUnlock()
-	return rs
-}
-
-func (ts *Timeseries) updateViews() {
-	ts.views.mu.Lock()
-	defer ts.views.mu.Unlock()
-	if ts.ba.shard < uint64(len(ts.views.ra)) {
-		ts.views.ra[ts.ba.shard].Or(ts.ba.views)
-	} else {
-		ts.views.ra = append(ts.views.ra, ts.ba.views.Clone())
-	}
 }

@@ -7,7 +7,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/bits-and-blooms/bitset"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
@@ -60,10 +59,9 @@ type FilterSet [models.SearchFieldSize]Cond
 type FilterData [models.SearchFieldSize]*roaring.Bitmap
 
 // ScanFields returns a set of all fields to scan for this filter.
-func (fs *FilterSet) ScanFields() *bitset.BitSet {
-	set := new(bitset.BitSet)
+func (fs *FilterSet) ScanFields() (set models.BitSet) {
 	fs.idx(func(i int) {
-		set.Set(uint(i))
+		set.Set(models.Field(i))
 	})
 	return set
 }

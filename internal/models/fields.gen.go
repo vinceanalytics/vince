@@ -4,38 +4,40 @@ package models
 type Field byte
 
 const (
-	Field_domain            Field = 0
-	Field_browser           Field = 1
-	Field_browser_version   Field = 2
-	Field_country           Field = 3
-	Field_device            Field = 4
-	Field_entry_page        Field = 5
-	Field_event             Field = 6
-	Field_exit_page         Field = 7
-	Field_host              Field = 8
-	Field_os                Field = 9
-	Field_os_version        Field = 10
-	Field_page              Field = 11
-	Field_referrer          Field = 12
-	Field_source            Field = 13
-	Field_utm_campaign      Field = 14
-	Field_utm_content       Field = 15
-	Field_utm_medium        Field = 16
-	Field_utm_source        Field = 17
-	Field_utm_term          Field = 18
-	Field_subdivision1_code Field = 19
-	Field_subdivision2_code Field = 20
-	Field_city              Field = 21
-	Field_view              Field = 22
-	Field_session           Field = 23
-	Field_timestamp         Field = 24
-	Field_id                Field = 25
-	Field_bounce            Field = 26
-	Field_duration          Field = 27
+	Field_unknown           Field = 0
+	Field_domain            Field = 1
+	Field_browser           Field = 2
+	Field_browser_version   Field = 3
+	Field_country           Field = 4
+	Field_device            Field = 5
+	Field_entry_page        Field = 6
+	Field_event             Field = 7
+	Field_exit_page         Field = 8
+	Field_host              Field = 9
+	Field_os                Field = 10
+	Field_os_version        Field = 11
+	Field_page              Field = 12
+	Field_referrer          Field = 13
+	Field_source            Field = 14
+	Field_utm_campaign      Field = 15
+	Field_utm_content       Field = 16
+	Field_utm_medium        Field = 17
+	Field_utm_source        Field = 18
+	Field_utm_term          Field = 19
+	Field_subdivision1_code Field = 20
+	Field_subdivision2_code Field = 21
+	Field_city              Field = 22
+	Field_view              Field = 23
+	Field_session           Field = 24
+	Field_timestamp         Field = 25
+	Field_id                Field = 26
+	Field_bounce            Field = 27
+	Field_duration          Field = 28
 )
 
 var (
 	Field_name = map[Field]string{
+		Field_unknown:           "unknown",
 		Field_domain:            "domain",
 		Field_browser:           "browser",
 		Field_browser_version:   "browser_version",
@@ -66,6 +68,7 @@ var (
 		Field_duration:          "duration",
 	}
 	Field_value = map[string]Field{
+		"unknown":           Field_unknown,
 		"domain":            Field_domain,
 		"browser":           Field_browser,
 		"browser_version":   Field_browser_version,

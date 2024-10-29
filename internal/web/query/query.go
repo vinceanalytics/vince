@@ -40,7 +40,6 @@ func New(u url.Values) *Query {
 			period.Interval = Month
 		}
 	}
-
 	var cmp *Period
 	switch u.Get("period") {
 	case "all", "realtime":

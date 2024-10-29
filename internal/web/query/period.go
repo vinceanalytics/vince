@@ -9,14 +9,14 @@ import (
 
 func period(str, date string) Period {
 	base := dateParse(date)
-	last := base.Start
+	last := base.End
 	switch str {
 	case "realtime":
 		end := xtime.Now().Truncate(time.Minute)
 		return Period{Start: end.Add(-15 * time.Minute), End: end, Interval: Minute}
 	case "day":
 		base.Interval = Hour
-		return base
+		return Period{Start: beginOfDay(base.Start), End: last, Interval: Hour}
 	case "7d":
 		first := last.AddDate(0, 0, -6)
 		return Period{Start: first, End: last, Interval: Date}
@@ -42,8 +42,8 @@ func period(str, date string) Period {
 	case "all":
 		return Period{End: last, Interval: Date}
 	default:
-		base.Interval = Date
-		return base
+		base.Interval = Hour
+		return Period{Start: beginOfDay(base.Start), End: last, Interval: Hour}
 	}
 }
 
@@ -55,7 +55,7 @@ type Period struct {
 func dateParse(date string) Period {
 	if date == "" {
 		now := xtime.Now()
-		return Period{Start: beginOfDay(now), End: endOfDay(now)}
+		return Period{Start: now, End: now}
 	}
 	a, b, ok := strings.Cut(date, ",")
 	start, _ := time.Parse(time.DateOnly, a)

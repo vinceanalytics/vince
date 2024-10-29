@@ -5,7 +5,6 @@ go 1.23.2
 require (
 	filippo.io/age v1.2.0
 	github.com/RoaringBitmap/roaring/v2 v2.3.5
-	github.com/bits-and-blooms/bitset v1.12.0
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/cockroachdb/pebble v1.1.2
 	github.com/dgryski/go-farm v0.0.0-20240924180020-3414d57e47da
@@ -28,6 +27,7 @@ require (
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/bits-and-blooms/bitset v1.12.0 // indirect
 	github.com/cockroachdb/errors v1.11.3 // indirect
 	github.com/cockroachdb/fifo v0.0.0-20240606204812-0bbfbd93a7ce // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect

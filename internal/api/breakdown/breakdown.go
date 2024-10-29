@@ -211,27 +211,70 @@ func findCity(_ context.Context, _ *timeseries.Timeseries, id uint64) uint32 {
 
 func breakdown[T cmp.Ordered](ctx context.Context, ts *timeseries.Timeseries, tr func(ctx context.Context, tx *timeseries.Timeseries, id uint64) T, domain string, params *query.Query, metrics []string, field models.Field,
 	fn func(property string, values map[T]*Stats) *Result) (*Result, error) {
-	values := make(map[T]*Stats)
 	fields := models.DataForMetrics(metrics...)
-	valuesToScan := fields.Clone()
-	valuesToScan.Set(uint(field))
-	ts.Select(ctx, valuesToScan, domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(shard, view uint64, columns *roaring.Bitmap, data timeseries.FieldsData) {
-		all := data[field]
-		all.ExtractMutex(columns, func(row uint64, m *roaring.Bitmap) error {
-			key := tr(ctx, ts, row)
-			sx, ok := values[key]
+	valuesToScan := fields
+	valuesToScan.Set(field)
+
+	breadMatch := make(breakSet[T])
+	result := make(map[T]*Stats)
+	ts.Select(ctx, valuesToScan, domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(dataField models.Field, view, shard uint64, columns, ra *roaring.Bitmap) bool {
+		// We know that data fields will awlays be last to be scanned. We can
+		//  safely process the bradkwoan sequence in order.
+		if dataField == field {
+			f := breadMatch.Add(view, shard)
+			ra.ExtractMutex(columns, func(row uint64, columns *roaring.Bitmap) error {
+				value := tr(ctx, ts, row)
+				f(value, columns)
+				return nil
+			})
+			return true
+		}
+
+		// data field
+		for key, value := range breadMatch.Match(view, shard) {
+			sx, ok := result[key]
 			if !ok {
 				sx = new(aggregates.Stats)
-				values[key] = sx
+				result[key] = sx
 			}
-			sx.Read(ctx, ts, fields, shard, view, m, data)
-			return nil
-		})
-
+			sx.Read(dataField, view, shard, value, ra)
+		}
+		return true
 	})
-	a := fn(field.String(), values)
+	a := fn(field.String(), result)
 	sortMap(a.Results, visitors)
 	return a, nil
+}
+
+type breakSet[T cmp.Ordered] map[uint64]map[uint64]map[T]*roaring.Bitmap
+
+func (b breakSet[T]) Match(view, shard uint64) map[T]*roaring.Bitmap {
+	vs, ok := b[view]
+	if !ok {
+		return nil
+	}
+	return vs[shard]
+}
+
+func (b breakSet[T]) Add(view, shard uint64) func(value T, match *roaring.Bitmap) {
+	vs, ok := b[view]
+	if !ok {
+		vs = make(map[uint64]map[T]*roaring.Bitmap)
+		b[view] = vs
+	}
+	ss, ok := vs[shard]
+	if !ok {
+		ss = make(map[T]*roaring.Bitmap)
+		vs[shard] = ss
+	}
+	return func(value T, match *roaring.Bitmap) {
+		m, ok := ss[value]
+		if !ok {
+			ss[value] = match
+			return
+		}
+		m.Or(match)
+	}
 }
 
 func sortMap(ls []map[string]any, key string) {

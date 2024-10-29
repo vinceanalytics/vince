@@ -5,7 +5,6 @@ import (
 	"math"
 	"time"
 
-	"github.com/bits-and-blooms/bitset"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/roaring"
 	"github.com/vinceanalytics/vince/internal/timeseries"
@@ -98,40 +97,36 @@ func (s *Stats) Compute() {
 	s.BounceRate = max(s.BounceRate, 0)
 }
 
-func (d *Stats) Read(ctx context.Context, ts *timeseries.Timeseries, fields *bitset.BitSet, shard, view uint64, match *roaring.Bitmap, data timeseries.FieldsData) {
-	models.EachField(fields, func(f models.Field) {
-		switch f {
-		case models.Field_view:
-			count := data[f].True(shard, match).GetCardinality()
-			d.PageViews += float64(count)
-		case models.Field_session:
-			count := data[f].True(shard, match).GetCardinality()
-			d.Visits += float64(count)
-		case models.Field_bounce:
-			sum := data[f].BSISum(shard, match)
-			d.BounceRate += float64(sum)
-		case models.Field_duration:
-			sum := data[f].BSISum(shard, match)
-			d.VisitDuration += float64(sum)
-		case models.Field_id:
-			if d.uid == nil {
-				d.uid = roaring.NewBitmap()
-			}
-			data[f].ExtractBSI(shard, match, func(id uint64, value int64) {
-				d.uid.Set(uint64(value))
-			})
-		case models.Field_event:
-			d.Events += float64(match.GetCardinality())
+func (d *Stats) Read(f models.Field, view, shard uint64, match, ra *roaring.Bitmap) bool {
+	switch f {
+	case models.Field_view:
+		count := ra.True(shard, match).GetCardinality()
+		d.PageViews += float64(count)
+	case models.Field_session:
+		count := ra.True(shard, match).GetCardinality()
+		d.Visits += float64(count)
+	case models.Field_bounce:
+		sum := ra.BSISum(shard, match)
+		d.BounceRate += float64(sum)
+	case models.Field_duration:
+		sum := ra.BSISum(shard, match)
+		d.VisitDuration += float64(sum)
+	case models.Field_id:
+		if d.uid == nil {
+			d.uid = roaring.NewBitmap()
 		}
-		return
-	})
+		ra.ExtractBSI(shard, match, func(id uint64, value int64) {
+			d.uid.Set(uint64(value))
+		})
+	case models.Field_event:
+		d.Events += float64(match.GetCardinality())
+	}
+	return true
 }
 
 func Aggregates(ctx context.Context, ts *timeseries.Timeseries, domain string, start, end time.Time, interval query.Interval, filters query.Filters, metrics []string) *Stats {
 	fields := models.DataForMetrics(metrics...)
 	r := new(Stats)
-	ts.Select(ctx, fields, domain, start, end, interval, filters, func(shard, view uint64, columns *roaring.Bitmap, data timeseries.FieldsData) {
-		r.Read(ctx, ts, fields, shard, view, columns, data)
-	})
+	ts.Select(ctx, fields, domain, start, end, interval, filters, r.Read)
 	return r
 }

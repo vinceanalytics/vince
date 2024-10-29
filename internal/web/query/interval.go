@@ -1,10 +1,7 @@
 package query
 
 import (
-	"iter"
 	"time"
-
-	"github.com/vinceanalytics/vince/internal/compute"
 )
 
 type Interval byte
@@ -40,22 +37,5 @@ func (i Interval) String() string {
 		return "month"
 	default:
 		return ""
-	}
-}
-
-func (i Interval) Range(start, end time.Time) iter.Seq[time.Time] {
-	switch i {
-	case Minute:
-		return compute.ByMinute(start, end)
-	case Hour:
-		return compute.ByHour(start, end)
-	case Date:
-		return compute.ByDate(start, end)
-	case Week:
-		return compute.ByWeek(start, end)
-	case Month:
-		return compute.ByMonth(start, end)
-	default:
-		return compute.ByDate(start, end)
 	}
 }

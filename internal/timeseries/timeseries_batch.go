@@ -25,12 +25,11 @@ type batch struct {
 	id        uint64
 	shard     uint64
 	time      uint64
-	views     *roaring.Bitmap
 	bitmap    []byte
 }
 
 func newbatch(db *pebble.DB, tr *translation) *batch {
-	b := &batch{translate: tr, views: roaring.NewBitmap()}
+	b := &batch{translate: tr}
 	for i := range b.mutex {
 		b.mutex[i] = make(map[uint64]*roaring.Bitmap)
 	}
@@ -76,15 +75,15 @@ func (b *batch) save() error {
 
 func (b *batch) flush(ba *pebble.Batch) error {
 	sv := func(f models.Field, view uint64, bm *roaring.Bitmap) error {
-		ts := xtime.UnixMilli(int64(view))
+		ts := view
 		value := bm.ToBuffer()
 		return errors.Join(
-			ba.Merge(b.encode(0, f), value, nil),
-			ba.Merge(b.encode(view, f), value, nil),
-			ba.Merge(b.encode(hour(ts), f), value, nil),
-			ba.Merge(b.encode(day(ts), f), value, nil),
-			ba.Merge(b.encode(week(ts), f), value, nil),
-			ba.Merge(b.encode(month(ts), f), value, nil),
+			ba.Merge(b.encode(f, encoding.Global, ts), value, nil),
+			ba.Merge(b.encode(f, encoding.Minute, ts), value, nil),
+			ba.Merge(b.encode(f, encoding.Hour, ts), value, nil),
+			ba.Merge(b.encode(f, encoding.Day, ts), value, nil),
+			ba.Merge(b.encode(f, encoding.Week, ts), value, nil),
+			ba.Merge(b.encode(f, encoding.Month, ts), value, nil),
 		)
 	}
 	for i := range b.mutex {
@@ -105,13 +104,29 @@ func (b *batch) flush(ba *pebble.Batch) error {
 			}
 		}
 	}
-	// update views
-	return ba.Merge(encoding.Shard(b.shard), b.views.ToBuffer(), nil)
+	return nil
 }
 
-func (b *batch) encode(view uint64, field models.Field) []byte {
-	b.bitmap = encoding.BitmapBuf(b.shard, view, field, b.bitmap[:0])
-	b.views.Set(view)
+type trunc func(uint64) uint64
+
+var views = map[encoding.Resolution]trunc{
+	encoding.Global: func(u uint64) uint64 { return 0 },
+	encoding.Minute: func(u uint64) uint64 { return u },
+	encoding.Hour:   cmp(compute.Hour),
+	encoding.Day:    cmp(compute.Date),
+	encoding.Week:   cmp(compute.Week),
+	encoding.Month:  cmp(compute.Month),
+}
+
+func cmp(o func(time.Time) time.Time) trunc {
+	return func(u uint64) uint64 {
+		r := o(xtime.UnixMilli(int64(u)))
+		return uint64(r.UnixMilli())
+	}
+}
+
+func (b *batch) encode(field models.Field, res encoding.Resolution, ts uint64) []byte {
+	b.bitmap = encoding.BitmapBuf(field, res, views[res](ts), b.shard, b.bitmap[:0])
 	return b.bitmap
 }
 
@@ -124,7 +139,6 @@ func (b *batch) add(m *models.Model) error {
 			return err
 		}
 		b.shard = shard
-		b.views.Reset()
 	}
 	b.id = b.translate.Next()
 	id := b.id
@@ -204,20 +218,4 @@ func (b *batch) getMutex(field models.Field) *roaring.Bitmap {
 
 func (b *batch) tr(field models.Field, value []byte) uint64 {
 	return b.translate.Assign(field, value)
-}
-
-func hour(ts time.Time) uint64 {
-	return uint64(compute.Hour(ts).UnixMilli())
-}
-
-func day(ts time.Time) uint64 {
-	return uint64(compute.Date(ts).UnixMilli())
-}
-
-func week(ts time.Time) uint64 {
-	return uint64(compute.Week(ts).UnixMilli())
-}
-
-func month(ts time.Time) uint64 {
-	return uint64(compute.Month(ts).UnixMilli())
 }
