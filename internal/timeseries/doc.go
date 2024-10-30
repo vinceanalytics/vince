@@ -64,11 +64,14 @@ Keys section.
 
 # A key is broken into the following components
 
-[ byte(prefix) ][ uint64(shard) ][ uint64(timestamp) ][ byte(field) ]
+[ byte(prefix) ][ byte(resolution) ][ uint64(timestamp) ][ byte(field) ][ uint64(shard) ]
 
 prefix: encodes a unique global prefix assigned for timeseries data. This value
 is subject to change, however it is the sole indicator that the key  holds time
 series data.
+
+resoulution: ensures we only process blocks relevant to queries. All queries must
+present their resolution eg, by minute, hour ,dat ..etc.
 
 shard: We store in 1 Million events partitions. Each event gets assigned a unique ID
 that is auto incement of uint64 value. To get the assigned shard.
@@ -107,10 +110,6 @@ field: we assign unique number to each property.
 	Field_subdivision1_code Field = 27
 	Field_subdivision2_code Field = 28
 
-shard and timestamp compoenents are encodded as binary.AppendUvarint. This scheme
-ensures efficient time range queries. We can effficiently iterate on co located
-data most of the times.
-
 # Values
 
 All values are stored as serialized roaring bitmaps.this ensures that we only decode
@@ -119,11 +118,11 @@ once at pebble level, values are loaded directly without decoding.
 We use different schemes depending on datatype. All string fields are stored in a mutex
 encoding and the rest are stored as bit sliced index.
 
-Bitmap values contains both rwo / column values.  Details on how row and column are
+Bitmap values contains both row / column values.  Details on how row and column are
 combined to derive positions in the bitmap are documented in respective (*Bitmap)Mutex
 and (*Bitmap)BSI methods
 
-When saving key/value pairs we use (*pebble.Batch)Merge. And a custome value merger that only
+When saving key/value pairs we use (*pebble.Batch)Merge. And a custom value merger that only
 performs (*Bitmap)Or that is inlined. With this design we ensures that  batch flushes are
 very fast and very efficient.
 */
