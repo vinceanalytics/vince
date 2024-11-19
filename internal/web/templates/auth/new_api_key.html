@@ -1,0 +1,40 @@
+{{define "main"}}
+<form action="/settings/api-keys" method="post"
+    class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 shadow-md rounded px-8 py-6 mt-8">
+    {{with .csrf}}<input type="hidden" name="_csrf" value="{{.}}">{{end}}
+
+    <h1 class="text-xl font-black dark:text-gray-100">Create new API Key</h1>
+    <div class="my-4">
+        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+        <input required type="text" name="name" id="name" placeholder="Developemnt" requred
+            class="dark:bg-gray-900 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 dark:text-gray-300 dark:focus:bg-gray-800 focus:border-gray-300 dark:focus:border-gray-500 rounded-md">
+        {{with .error_name}}
+        <div class="text-red-500 text-xs italic mt-4">{{.}}</div>
+        {{end}}
+    </div>
+    <div class="my-4">
+        <label for="key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Key</label>
+        <div class="relative mt-1">
+            <input type="text" name="key" id="key-input" readonly
+            value="{{.key}}"
+                class="dark:text-gray-300 shadow-sm bg-gray-50 dark:bg-gray-850 focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-500 rounded-md pr-16">
+            <a onclick="var textarea = document.getElementById('key-input'); textarea.focus(); textarea.select(); document.execCommand('copy');"
+                href="javascript:void(0)"
+                class="absolute flex items-center text-xs font-medium text-indigo-600 no-underline hover:underline"
+                style="top: 12px; right: 12px;">
+                <svg class="pr-1 text-indigo-600 dark:text-indigo-500" xmlns="http://www.w3.org/2000/svg" width="16"
+                    height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>COPY
+            </a>
+        </div>
+        {{with .error_key}}
+        <div class="text-red-500 text-xs italic mt-4">{{.}}</div>
+        {{end}}
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-200">Make sure to store the key in a secure place. Once created, we will not be able to show it again.</p>
+    </div>
+    <input type="submit" value="Continue →" class="button mt-4 w-full">
+</form>
+{{end}}

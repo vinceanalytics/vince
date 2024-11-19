@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package v1;
+
+message APIKey {
+  string name = 1;
+  string prefix = 2;
+  bytes hash = 3;
+}

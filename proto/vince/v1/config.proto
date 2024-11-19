@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package v1;
+
+
+
+message Site {
+  uint64 id = 1;
+  string domain = 2;
+  bool public = 3;
+  repeated Share shares = 4;
+  bool locked = 5;
+  repeated Goal goals = 6;
+}
+
+message Goal {
+  string name = 1;
+  string path = 2;
+}
+
+message Share {
+  string id = 1;
+  string name = 2;
+  bytes password = 3;
+}
+
+
+message System {
+  uint64 expiry = 1;
+  string email = 2;
+}

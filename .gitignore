@@ -1,0 +1,7 @@
+.data
+bin
+*.out
+*.test
+.env
+vince-data
+*.mmdb

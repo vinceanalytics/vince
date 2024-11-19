@@ -1,0 +1,16 @@
+namespace lo;
+
+table Country{
+    alpha2:string;
+    alpha3:string;
+    flag:string;
+    name:string;
+}
+
+table Region{
+    code:string;
+    name:string;
+}
+
+root_type Country;
+root_type Region;
