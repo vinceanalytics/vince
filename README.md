@@ -6,7 +6,6 @@
 
 *vince is pre alpha software and is still under active development*
 
-> **Please don't clone** : We are using free version of git LFS for embeddded assets. Cloning eats our git lfs bandwidth budget ( I am bloke mate, please be gentle), waiting 13 days for resets sucks.
 
 ![Vince Analytics](desktop.png)
 
@@ -80,41 +79,6 @@ vince --version
 2024/10/23 15:32:08 INFO starting server addr=:8080
 ```
 
-# FAQ
-
-
-## Does the binary size affect performance ?
-
-| compressed | uncompressed|
-|------------|-------------|
-| 122MB      | 310 MB      |
-
-To ensure smooth deployments we embed a couple of things
-
-| asset   | size | notes|
-|---------|------|------|
-| mmdb    | 108MB | City Geolocation  Database from https://db-ip.com under  Creative Commons Attribution 4.0 International License.|
-| geoid database| 384MB | All cities, countries and regions data|
-
-
-The reason you can breakdown by city/region is because we derive city/region geoid from city/region names from our
-embedded geoid data, something that would have been impossible because geoid is missing from the 
-free mmdb downloads.
-
-We use a number of techiques to shrink the embedded assets and avoid excessive memory
-allocations.
-
-- ***flatbuffers***: we organize location data using flatbuffers in such a way that we never
- decode and values from embedded memory are passed around to avoid any allocation. An 
- idle vince instance consumes around `14MB` and `0.0%` of cpu.
-- ***Bit sliced seralized roaring bitmaps***: all mapping with embedded data is encoded as BSI.
-Like flatbuffers, there is no decoding, we use the embedded slice memory directly.
-
-Stay calm and don't worry. The fat binary wont eat your ram or hijack your cpu. Under 
-heavy local load testing I havent peaked at `70MB` of ram yet, data is well organized
-and GC  works like a charm.
-
-Please load test with your workload and tell me your findings.
 
 # Comparison with Plausible Analytics
 
