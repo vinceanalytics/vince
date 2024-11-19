@@ -88,7 +88,6 @@ func (db *DB) Iter(re encoding.Resolution, start, end time.Time, f func(it *pebb
 		from = append(from, a)
 		to = append(to, b)
 	}
-	fmt.Println(">", from)
 	if len(from) == 0 {
 		return nil
 	}

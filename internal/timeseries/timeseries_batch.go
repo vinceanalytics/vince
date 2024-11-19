@@ -173,7 +173,7 @@ func (b *batch) add(m *models.Model) error {
 	ro2.WriteBSI(b.getBSI(models.Field_timestamp), id, m.Timestamp)
 	ro2.WriteBSI(b.getBSI(models.Field_id), id, int64(m.Id))
 	if m.Bounce != 0 {
-		ro2.WriteBSI(b.getBSI(models.Field_bounce), id, int64(m.Bounce))
+		ro2.WriteBool(b.getBSI(models.Field_bounce), id, m.Bounce == 1)
 	}
 	if m.Session {
 		ro2.WriteBool(b.getMutex(models.Field_session), id, true)

@@ -106,8 +106,9 @@ func (d *Stats) Read(cu *timeseries.Cursor, f models.Field, view, shard uint64, 
 		count := ro2.ReadTrue(cu, shard, match).Count()
 		d.Visits += float64(count)
 	case models.Field_bounce:
-		_, sum := ro2.ReadSum(cu, match)
-		d.BounceRate += float64(sum)
+		yes := ro2.ReadTrue(cu, shard, match).Count()
+		no := ro2.ReadFalse(cu, shard, match).Count()
+		d.BounceRate += (float64(yes) - float64(no))
 	case models.Field_duration:
 		_, sum := ro2.ReadSum(cu, match)
 		d.VisitDuration += float64(sum)
