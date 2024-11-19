@@ -148,6 +148,10 @@ func ReadDistinctBSI(ra Reader, shard uint64, filterBitmap *Bitmap) *roaring.Bit
 	return posBitmap.Union(negBitmap)
 }
 
-func Row(ra Reader, shard, rowID uint64) *Bitmap {
+type OffsetRanger interface {
+	OffsetRange(offset, start, end uint64) *Bitmap
+}
+
+func Row(ra OffsetRanger, shard, rowID uint64) *Bitmap {
 	return ra.OffsetRange(shardWidth*shard, shardWidth*rowID, shardWidth*(rowID+1))
 }
