@@ -57,16 +57,14 @@ func (ts *Timeseries) Scan(
 		if !m.Any() {
 			return nil
 		}
+		cu.Reset(models.Field_source)
 
 		var fs *ro2.Bitmap
 		for _, field := range filters {
 			if !cu.Reset(field) {
 				return nil
 			}
-			b, err := filterSet[field].Apply(shard, cu)
-			if err != nil {
-				return err
-			}
+			b := filterSet[field].Apply(shard, cu)
 			if !b.Any() {
 				return nil
 			}

@@ -21,7 +21,6 @@ import (
 // fields.
 type Cond struct {
 	Yes []uint64
-	fs  *ro2.BitmapRowsUnion
 }
 
 // IsEmpty return true if there is no row in yes or no conditions.
@@ -31,19 +30,18 @@ func (f *Cond) IsEmpty() bool {
 
 // Apply searches for columns matching conditions in f for ra bitmap. ra must be
 // mutex encoded.
-func (f *Cond) Apply(shard uint64, cu *Cursor) (*ro2.Bitmap, error) {
-	if f.IsEmpty() || len(f.Yes) == 0 {
-		return ro2.NewBitmap(), nil
+func (f *Cond) Apply(shard uint64, cu *Cursor) *ro2.Bitmap {
+	if f.IsEmpty() {
+		return ro2.NewBitmap()
 	}
-	if f.fs == nil {
-		f.fs = ro2.NewBitmapRowsUnion(f.Yes)
+	if len(f.Yes) == 1 {
+		return ro2.Row(cu, shard, f.Yes[0])
 	}
-	defer f.fs.Reset()
-	err := cu.ApplyFilter(0, f.fs)
-	if err != nil {
-		return nil, err
+	b := ro2.Row(cu, shard, f.Yes[0])
+	for _, v := range f.Yes[1:] {
+		b = b.Union(ro2.Row(cu, shard, v))
 	}
-	return f.fs.Results(shard), nil
+	return b
 }
 
 type FilterSet [models.SearchFieldSize]Cond
