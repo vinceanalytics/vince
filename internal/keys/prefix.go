@@ -2,7 +2,6 @@ package keys
 
 const (
 	base byte = 16 + iota
-	views
 	data
 	ops
 	tr
@@ -16,7 +15,6 @@ const (
 )
 
 var (
-	ViewsPrefix        = []byte{views}
 	DataPrefix         = []byte{data}
 	Cookie             = []byte{ops, 0x00}
 	SitePrefix         = []byte{ops, 0x01}

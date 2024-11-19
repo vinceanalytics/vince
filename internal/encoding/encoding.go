@@ -22,9 +22,7 @@ const (
 
 const (
 	bmPrefix      = 0
-	bmResolution  = bmPrefix + 1
-	bmView        = bmResolution + 1
-	bmField       = bmView + 8
+	bmField       = bmPrefix + 1
 	bmContainer   = bmField + 1
 	BitmapKeySize = bmContainer + 8
 )
@@ -43,18 +41,14 @@ func From(a []byte) *Key {
 	return (*Key)(unsafe.Pointer(&a[0]))
 }
 
-func (k *Key) Write(field models.Field, re Resolution, view, co uint64) {
+func (k *Key) Write(field models.Field, co uint64) {
 	k[0] = keys.DataPrefix[0]
-	k[bmResolution] = byte(re)
 	k[bmField] = byte(field)
-	binary.BigEndian.PutUint64(k[bmView:], view)
 	binary.BigEndian.PutUint64(k[bmContainer:], co)
 }
 
-func (k *Key) Component() (field models.Field, re Resolution, view, co uint64) {
+func (k *Key) Component() (field models.Field, co uint64) {
 	field = models.Field(k[bmField])
-	re = Resolution(k[bmResolution])
-	view = binary.BigEndian.Uint64(k[bmView:])
 	co = binary.BigEndian.Uint64(k[bmContainer:])
 	return
 }

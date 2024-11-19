@@ -26,11 +26,11 @@ func (cu *Cursor) SetIter(it *pebble.Iterator) {
 	cu.it = it
 }
 
-func (cu *Cursor) Reset(field models.Field, res encoding.Resolution, view uint64) bool {
+func (cu *Cursor) Reset(field models.Field) bool {
 	cu.lo.Reset()
 	cu.hi.Reset()
-	cu.lo.Write(field, res, view, 0)
-	cu.hi.Write(field, res, view, math.MaxUint64)
+	cu.lo.Write(field, 0)
+	cu.hi.Write(field, math.MaxUint64)
 	return cu.it.SeekGE(cu.lo[:]) && cu.Valid()
 }
 
@@ -46,6 +46,10 @@ func (cu *Cursor) Next() bool {
 func (cu *Cursor) Value() (uint64, *roaring.Container) {
 	key := cu.it.Key()
 	return binary.BigEndian.Uint64(key[len(key)-8:]), ro2.DecodeContainer(cu.it.Value())
+}
+
+func (cu *Cursor) BitLen() uint64 {
+	return cu.Max() / ShardWidth
 }
 
 func (cu *Cursor) Max() uint64 {

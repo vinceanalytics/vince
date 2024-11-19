@@ -45,7 +45,7 @@ func (rq *Request) Parse(r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	rq.ts = xtime.Now().UTC().Truncate(time.Second)
+	rq.ts = xtime.Now().UTC()
 	rq.remoteIp = remoteIP(r)
 	err = rq.parseUri(body)
 	if err != nil {

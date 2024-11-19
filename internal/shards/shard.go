@@ -1,7 +1,6 @@
 package shards
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -12,8 +11,8 @@ import (
 	"time"
 
 	"github.com/cockroachdb/pebble"
+	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
-	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/util/assert"
 	"github.com/vinceanalytics/vince/internal/util/data"
@@ -77,25 +76,42 @@ func (db *DB) Get() *pebble.DB {
 	return db.ops
 }
 
-func (db *DB) Iter(re encoding.Resolution, start, end time.Time, f func(db *pebble.DB, shard uint64, views *ro2.Bitmap) error) error {
+func (db *DB) Iter(re encoding.Resolution, start, end time.Time, f func(it *pebble.Iterator, shard uint64, from, to int64) error) error {
 	db.shards.RLock()
 	defer db.shards.RUnlock()
-	a := uint64(start.UnixMilli())
-	b := uint64(end.UnixMilli())
+
+	from := make([]int64, 0, 16)
+	to := make([]int64, 0, 16)
+
+	// pre compute ranges so we avoid doing it per shard
+	for a, b := range compute.Range(re, start, end) {
+		from = append(from, a)
+		to = append(to, b)
+	}
+	fmt.Println(">", from)
+	if len(from) == 0 {
+		return nil
+	}
 	for i := uint64(0); i <= db.shards.max; i++ {
 		sh := db.shards.data[i]
 		if sh == nil {
 			continue
 		}
+		it, err := sh.DB.NewIter(nil)
+		if err != nil {
+			return err
+		}
 
-		o := sh.ComputeViews(re, a, b)
-
-		if o.Any() {
-			err := f(sh.DB, sh.ID, o)
+		for i := range from {
+			err := f(it, sh.ID, from[i], to[i])
 			if err != nil {
+				it.Close()
 				return err
 			}
 		}
+
+		it.Close()
+
 	}
 	return nil
 }
@@ -130,12 +146,8 @@ func (db *DB) Close() error {
 }
 
 type Shard struct {
-	ID    uint64
-	DB    *pebble.DB
-	views struct {
-		sync.RWMutex
-		data Views
-	}
+	ID uint64
+	DB *pebble.DB
 }
 
 func NewShard(base string, shard uint64) *Shard {
@@ -145,51 +157,7 @@ func NewShard(base string, shard uint64) *Shard {
 	})
 	assert.Nil(err, fmt.Sprintf("opening database shard path=%q", path))
 	s := &Shard{ID: shard, DB: db}
-	s.views.data.Init()
-	err = data.Prefix(db, keys.ViewsPrefix, func(key, value []byte) error {
-		r := key[len(key)-1]
-		return s.views.data[r].UnmarshalBinary(value)
-	})
-	assert.Nil(err, "loading views")
 	return s
-}
-
-func (sh *Shard) UpdateViews(vs *Views, ba *pebble.Batch) error {
-	sh.views.Lock()
-	for i := range vs {
-		sh.views.data[i].UnionInPlace(vs[i])
-	}
-	sh.views.Unlock()
-
-	var b bytes.Buffer
-	sh.views.RLock()
-	defer sh.views.RUnlock()
-	key := make([]byte, 2)
-	copy(key, keys.ViewsPrefix)
-	for i := range sh.views.data {
-		b.Reset()
-		_, err := sh.views.data[i].WriteTo(&b)
-		if err != nil {
-			return fmt.Errorf("marshal views bitmap %w", err)
-		}
-		key[len(key)-1] = byte(i)
-		err = ba.Set(key, b.Bytes(), nil)
-		if err != nil {
-			return fmt.Errorf("saving view bitmap %w", err)
-		}
-	}
-	return nil
-}
-
-func (sh *Shard) ComputeViews(re encoding.Resolution, start, end uint64) *ro2.Bitmap {
-	if re == encoding.Global {
-		o := ro2.NewBitmap()
-		o.Add(0)
-		return o
-	}
-	sh.views.RLock()
-	defer sh.views.RUnlock()
-	return rangeBits(sh.views.data[re], start, end)
 }
 
 func rangeBits(b *ro2.Bitmap, start, end uint64) *ro2.Bitmap {

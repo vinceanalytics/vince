@@ -1,7 +1,6 @@
 package timeseries
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -83,29 +82,16 @@ func (b *batch) save() error {
 		ba.Close()
 		return err
 	}
-	err = sh.UpdateViews(&b.views, ba)
-	if err != nil {
-		ba.Close()
-		return err
-	}
 	return ba.Commit(pebble.Sync)
 }
 
 func (b *batch) flush(ba *pebble.Batch) error {
-	sv := func(f models.Field, view uint64, bm *ro2.Bitmap) error {
-		ts := view
+	sv := func(f models.Field, bm *ro2.Bitmap) error {
 		ci, _ := bm.Containers.Iterator(0)
 		for ci.Next() {
 			key, co := ci.Value()
 			value := ro2.EncodeContainer(co)
-			err := errors.Join(
-				ba.Merge(b.encode(f, encoding.Global, ts, key), value, nil),
-				ba.Merge(b.encode(f, encoding.Minute, ts, key), value, nil),
-				ba.Merge(b.encode(f, encoding.Hour, ts, key), value, nil),
-				ba.Merge(b.encode(f, encoding.Day, ts, key), value, nil),
-				ba.Merge(b.encode(f, encoding.Week, ts, key), value, nil),
-				ba.Merge(b.encode(f, encoding.Month, ts, key), value, nil),
-			)
+			err := ba.Merge(b.encode(f, key), value, nil)
 			if err != nil {
 				return err
 			}
@@ -118,7 +104,7 @@ func (b *batch) flush(ba *pebble.Batch) error {
 		if !bm.Any() {
 			continue
 		}
-		err := sv(f, b.time, bm)
+		err := sv(f, bm)
 		if err != nil {
 			return fmt.Errorf("saving events bitmap %w", err)
 		}
@@ -129,7 +115,7 @@ func (b *batch) flush(ba *pebble.Batch) error {
 		if !bm.Any() {
 			continue
 		}
-		err := sv(f, b.time, bm)
+		err := sv(f, bm)
 		if err != nil {
 			return fmt.Errorf("saving events bitmap %w", err)
 		}
@@ -155,15 +141,9 @@ func cmp(o func(time.Time) time.Time) trunc {
 	}
 }
 
-func (b *batch) encode(field models.Field, res encoding.Resolution, ts, co uint64) []byte {
-	b.key.Write(field, res, b.updateView(res, ts), co)
+func (b *batch) encode(field models.Field, co uint64) []byte {
+	b.key.Write(field, co)
 	return b.key.Bytes()
-}
-
-func (b *batch) updateView(res encoding.Resolution, ts uint64) uint64 {
-	v := views[res](ts)
-	b.views[res].Add(v)
-	return v
 }
 
 func (b *batch) add(m *models.Model) error {

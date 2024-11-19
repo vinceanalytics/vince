@@ -155,3 +155,7 @@ type OffsetRanger interface {
 func Row(ra OffsetRanger, shard, rowID uint64) *Bitmap {
 	return ra.OffsetRange(shardWidth*shard, shardWidth*rowID, shardWidth*(rowID+1))
 }
+
+func Existence(tx OffsetRanger, shard uint64) *Bitmap {
+	return Row(tx, shard, bsiExistsBit)
+}
