@@ -3,7 +3,6 @@ package timeseries
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/cockroachdb/pebble"
 	"github.com/vinceanalytics/vince/internal/encoding"
@@ -11,7 +10,6 @@ import (
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/shards"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
-	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 const ShardWidth = 1 << 20
@@ -26,7 +24,6 @@ type batch struct {
 	events         uint64
 	id             uint64
 	shard          uint64
-	time           uint64
 	key            encoding.Key
 }
 
@@ -154,14 +151,6 @@ func (b *batch) add(m *models.Model) error {
 		// Skip events without timestamp, id
 		return nil
 	}
-	ts := uint64(xtime.UnixMilli(m.Timestamp).Truncate(time.Minute).UnixMilli())
-	if ts != b.time {
-		err := b.save()
-		if err != nil {
-			return err
-		}
-		b.time = ts
-	}
 	shard := (b.id + 1) / ShardWidth
 	if shard != b.shard {
 		err := b.save()
@@ -173,10 +162,10 @@ func (b *batch) add(m *models.Model) error {
 	b.events++
 	b.id = b.translate.Next()
 	id := b.id
-	ro2.WriteBSI(b.getBSI(models.Field_timestamp), id, m.Timestamp)
-	ro2.WriteBSI(b.getBSI(models.Field_id), id, int64(m.Id))
+	ro2.WriteBSI(b.bsi[models.Field_timestamp.BSI()], id, m.Timestamp)
+	ro2.WriteBSI(b.bsi[models.Field_id.BSI()], id, int64(m.Id))
 	if m.Bounce != 0 {
-		ro2.WriteBool(b.getBSI(models.Field_bounce), id, m.Bounce == 1)
+		ro2.WriteBool(b.bsi[models.Field_bounce.BSI()], id, m.Bounce == 1)
 	}
 	if m.Session {
 		ro2.WriteBool(b.mutex[models.Field_session.Mutex()], id, true)
@@ -185,7 +174,7 @@ func (b *batch) add(m *models.Model) error {
 		ro2.WriteBool(b.mutex[models.Field_view.Mutex()], id, true)
 	}
 	if m.Duration > 0 {
-		ro2.WriteBSI(b.getBSI(models.Field_duration), id, m.Duration)
+		ro2.WriteBSI(b.bsi[models.Field_duration.BSI()], id, m.Duration)
 	}
 	if m.City != 0 {
 		ro2.WriteMutex(b.mutex[models.Field_city.Mutex()], id, uint64(m.City))
@@ -221,16 +210,6 @@ func (b *batch) set(field models.Field, id uint64, value []byte) {
 	idx := field.Mutex()
 	ro2.WriteMutex(b.mutex[idx], id, b.tr(field, value))
 	b.mutexExistence[idx].DirectAdd(id % ShardWidth)
-}
-
-func (b *batch) getBSI(field models.Field) *ro2.Bitmap {
-	idx := field.BSI()
-	bs := b.bsi[idx]
-	if bs != nil {
-		return bs
-	}
-	b.bsi[idx] = ro2.NewBitmap()
-	return b.bsi[idx]
 }
 
 func (b *batch) tr(field models.Field, value []byte) uint64 {
