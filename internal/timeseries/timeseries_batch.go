@@ -1,11 +1,11 @@
 package timeseries
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
@@ -17,16 +17,17 @@ import (
 const ShardWidth = 1 << 20
 
 type batch struct {
-	db        *shards.DB
-	translate *translation
-	mutex     [models.MutexFieldSize]*ro2.Bitmap
-	bsi       [models.BSIFieldsSize]*ro2.Bitmap
-	views     shards.Views
-	events    uint64
-	id        uint64
-	shard     uint64
-	time      uint64
-	key       encoding.Key
+	db             *shards.DB
+	translate      *translation
+	mutex          [models.MutexFieldSize]*ro2.Bitmap
+	mutexExistence [models.MutexFieldSize]*ro2.Bitmap
+	bsi            [models.BSIFieldsSize]*ro2.Bitmap
+	views          shards.Views
+	events         uint64
+	id             uint64
+	shard          uint64
+	time           uint64
+	key            encoding.Key
 }
 
 func newbatch(db *shards.DB, tr *translation) *batch {
@@ -39,6 +40,7 @@ func newbatch(db *shards.DB, tr *translation) *batch {
 	}
 	for i := range b.mutex {
 		b.mutex[i] = ro2.NewBitmap()
+		b.mutexExistence[i] = ro2.NewBitmap()
 	}
 	for i := range b.bsi {
 		b.bsi[i] = ro2.NewBitmap()
@@ -56,6 +58,7 @@ func (b *batch) save() error {
 		b.translate.reset()
 		for i := range b.mutex {
 			b.mutex[i].Containers.Reset()
+			b.mutexExistence[i].Containers.Reset()
 		}
 		for i := range b.bsi {
 			b.bsi[i].Containers.Reset()
@@ -86,25 +89,17 @@ func (b *batch) save() error {
 }
 
 func (b *batch) flush(ba *pebble.Batch) error {
-	sv := func(f models.Field, bm *ro2.Bitmap) error {
-		ci, _ := bm.Containers.Iterator(0)
-		for ci.Next() {
-			key, co := ci.Value()
-			value := ro2.EncodeContainer(co)
-			err := ba.Merge(b.encode(f, key), value, nil)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
+
 	for i := range b.mutex {
 		f := models.Mutex(i)
 		bm := b.mutex[i]
 		if !bm.Any() {
 			continue
 		}
-		err := sv(f, bm)
+		err := errors.Join(
+			b.mergeData(ba, f, bm),
+			b.mergeExists(ba, f, b.mutexExistence[i]),
+		)
 		if err != nil {
 			return fmt.Errorf("saving events bitmap %w", err)
 		}
@@ -115,7 +110,7 @@ func (b *batch) flush(ba *pebble.Batch) error {
 		if !bm.Any() {
 			continue
 		}
-		err := sv(f, bm)
+		err := b.mergeData(ba, f, bm)
 		if err != nil {
 			return fmt.Errorf("saving events bitmap %w", err)
 		}
@@ -123,26 +118,34 @@ func (b *batch) flush(ba *pebble.Batch) error {
 	return nil
 }
 
-type trunc func(uint64) uint64
-
-var views = map[encoding.Resolution]trunc{
-	encoding.Global: func(u uint64) uint64 { return 0 },
-	encoding.Minute: func(u uint64) uint64 { return u },
-	encoding.Hour:   cmp(compute.Hour),
-	encoding.Day:    cmp(compute.Date),
-	encoding.Week:   cmp(compute.Week),
-	encoding.Month:  cmp(compute.Month),
+func (b *batch) mergeData(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap) error {
+	return b.merge(ba, field, bm, b.data)
 }
 
-func cmp(o func(time.Time) time.Time) trunc {
-	return func(u uint64) uint64 {
-		r := o(xtime.UnixMilli(int64(u)))
-		return uint64(r.UnixMilli())
+func (b *batch) mergeExists(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap) error {
+	return b.merge(ba, field, bm, b.data)
+}
+
+func (b *batch) merge(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap, enc func(field models.Field, co uint64) []byte) error {
+	ci, _ := bm.Containers.Iterator(0)
+	for ci.Next() {
+		key, co := ci.Value()
+		value := ro2.EncodeContainer(co)
+		err := ba.Merge(enc(field, key), value, nil)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (b *batch) encode(field models.Field, co uint64) []byte {
-	b.key.Write(field, co)
+func (b *batch) data(field models.Field, co uint64) []byte {
+	b.key.WriteData(field, co)
+	return b.key.Bytes()
+}
+
+func (b *batch) exists(field models.Field, co uint64) []byte {
+	b.key.WriteExistence(field, co)
 	return b.key.Bytes()
 }
 
@@ -176,16 +179,16 @@ func (b *batch) add(m *models.Model) error {
 		ro2.WriteBool(b.getBSI(models.Field_bounce), id, m.Bounce == 1)
 	}
 	if m.Session {
-		ro2.WriteBool(b.getMutex(models.Field_session), id, true)
+		ro2.WriteBool(b.mutex[models.Field_session.Mutex()], id, true)
 	}
 	if m.View {
-		ro2.WriteBool(b.getMutex(models.Field_view), id, true)
+		ro2.WriteBool(b.mutex[models.Field_view.Mutex()], id, true)
 	}
 	if m.Duration > 0 {
 		ro2.WriteBSI(b.getBSI(models.Field_duration), id, m.Duration)
 	}
 	if m.City != 0 {
-		ro2.WriteMutex(b.getMutex(models.Field_city), id, uint64(m.City))
+		ro2.WriteMutex(b.mutex[models.Field_city.Mutex()], id, uint64(m.City))
 	}
 	b.set(models.Field_browser, id, m.Browser)
 	b.set(models.Field_browser_version, id, m.BrowserVersion)
@@ -215,7 +218,9 @@ func (b *batch) set(field models.Field, id uint64, value []byte) {
 	if len(value) == 0 {
 		return
 	}
-	ro2.WriteMutex(b.getMutex(field), id, b.tr(field, value))
+	idx := field.Mutex()
+	ro2.WriteMutex(b.mutex[idx], id, b.tr(field, value))
+	b.mutexExistence[idx].DirectAdd(id % ShardWidth)
 }
 
 func (b *batch) getBSI(field models.Field) *ro2.Bitmap {
@@ -226,16 +231,6 @@ func (b *batch) getBSI(field models.Field) *ro2.Bitmap {
 	}
 	b.bsi[idx] = ro2.NewBitmap()
 	return b.bsi[idx]
-}
-
-func (b *batch) getMutex(field models.Field) *ro2.Bitmap {
-	idx := field.Mutex()
-	bs := b.mutex[idx]
-	if bs != nil {
-		return bs
-	}
-	b.mutex[idx] = ro2.NewBitmap()
-	return b.mutex[idx]
 }
 
 func (b *batch) tr(field models.Field, value []byte) uint64 {

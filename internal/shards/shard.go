@@ -13,7 +13,9 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
+	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/timeseries/cursor"
 	"github.com/vinceanalytics/vince/internal/util/assert"
 	"github.com/vinceanalytics/vince/internal/util/data"
 )
@@ -76,7 +78,10 @@ func (db *DB) Get() *pebble.DB {
 	return db.ops
 }
 
-func (db *DB) Iter(re encoding.Resolution, start, end time.Time, f func(it *pebble.Iterator, shard uint64, from, to int64) error) error {
+func (db *DB) Iter(re encoding.Resolution,
+	start, end time.Time,
+	filters []models.Field,
+	f func(cu *cursor.Cursor, shard uint64, from, to int64, match *ro2.Bitmap, exists map[models.Field]*ro2.Bitmap) error) error {
 	db.shards.RLock()
 	defer db.shards.RUnlock()
 
@@ -91,6 +96,10 @@ func (db *DB) Iter(re encoding.Resolution, start, end time.Time, f func(it *pebb
 	if len(from) == 0 {
 		return nil
 	}
+
+	cu := new(cursor.Cursor)
+	defer cu.Release()
+
 	for i := uint64(0); i <= db.shards.max; i++ {
 		sh := db.shards.data[i]
 		if sh == nil {
@@ -100,19 +109,43 @@ func (db *DB) Iter(re encoding.Resolution, start, end time.Time, f func(it *pebb
 		if err != nil {
 			return err
 		}
+		cu.SetIter(it)
+
+		// Preload existence bitmaps. This will only be populated when we have negative
+		// conditions in filter chains.
+		exists := make(map[models.Field]*ro2.Bitmap)
+
+		if len(filters) > 0 {
+			for _, f := range filters {
+				cu.ResetExistence(f)
+				exists[f] = ro2.Existence(cu, sh.ID)
+			}
+		}
 
 		for i := range from {
-			err := f(it, sh.ID, from[i], to[i])
+			ma := matchTimestamp(cu, sh.ID, from[i], to[i])
+			if !ma.Any() {
+				continue
+			}
+			err := f(cu, sh.ID, from[i], to[i], ma, exists)
 			if err != nil {
 				it.Close()
 				return err
 			}
 		}
-
 		it.Close()
 
 	}
 	return nil
+}
+
+func matchTimestamp(cu *cursor.Cursor, shard uint64, from, to int64) *ro2.Bitmap {
+	cu.ResetData(models.Field_timestamp)
+	if from == 0 && to == 0 {
+		// special global resolution
+		return ro2.Existence(cu, shard)
+	}
+	return ro2.Range(cu, ro2.BETWEEN, shard, cu.BitLen(), from, to)
 }
 
 func (db *DB) Shard(shard uint64) *Shard {

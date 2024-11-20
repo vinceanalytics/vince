@@ -10,7 +10,7 @@ import (
 func TestKey(t *testing.T) {
 
 	var k Key
-	k.Write(models.Field_domain, 1)
+	k.WriteData(models.Field_domain, 1)
 
 	f, co := k.Component()
 	require.Equal(t, models.Field_domain, f)

@@ -7,11 +7,12 @@ import (
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/timeseries/cursor"
 	"github.com/vinceanalytics/vince/internal/util/data"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
-type ScanCall func(cu *Cursor, field models.Field, view, shard uint64, columns *ro2.Bitmap) error
+type ScanCall func(cu *cursor.Cursor, field models.Field, view, shard uint64, columns *ro2.Bitmap) error
 
 func (ts *Timeseries) Select(
 	ctx context.Context,

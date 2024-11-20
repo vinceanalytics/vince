@@ -10,6 +10,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/timeseries/cursor"
 	"github.com/vinceanalytics/vince/internal/util/data"
 	wq "github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -21,27 +22,30 @@ import (
 // fields.
 type Cond struct {
 	Yes []uint64
+	No  []uint64
 }
 
 // IsEmpty return true if there is no row in yes or no conditions.
 func (f *Cond) IsEmpty() bool {
-	return len(f.Yes) == 0
+	return len(f.Yes) == 0 && len(f.No) == 0
 }
 
 // Apply searches for columns matching conditions in f for ra bitmap. ra must be
 // mutex encoded.
-func (f *Cond) Apply(shard uint64, cu *Cursor) *ro2.Bitmap {
+func (f *Cond) Apply(shard uint64, cu *cursor.Cursor, exists *ro2.Bitmap) *ro2.Bitmap {
 	if f.IsEmpty() {
 		return ro2.NewBitmap()
 	}
-	if len(f.Yes) == 1 {
-		return ro2.Row(cu, shard, f.Yes[0])
+	all := make([]*ro2.Bitmap, 0, len(f.Yes)+len(f.No))
+
+	for _, v := range f.Yes {
+		all = append(all, ro2.Row(cu, shard, v))
 	}
-	b := ro2.Row(cu, shard, f.Yes[0])
-	for _, v := range f.Yes[1:] {
-		b = b.Union(ro2.Row(cu, shard, v))
+	for _, v := range f.No {
+		all = append(all, exists.Difference(ro2.Row(cu, shard, v)))
 	}
-	return b
+	b := all[0]
+	return b.Union(all[1:]...)
 }
 
 type FilterSet [models.SearchFieldSize]Cond
@@ -69,6 +73,7 @@ func (fs *FilterSet) Set(yes bool, f models.Field, values ...uint64) {
 		co.Yes = append(co.Yes, values...)
 		return
 	}
+	co.No = append(co.No, values...)
 }
 
 func (ts *Timeseries) compile(fs wq.Filters) FilterSet {

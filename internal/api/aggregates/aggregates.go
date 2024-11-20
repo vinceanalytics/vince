@@ -8,6 +8,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/timeseries"
+	"github.com/vinceanalytics/vince/internal/timeseries/cursor"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
 
@@ -97,7 +98,7 @@ func (s *Stats) Compute() {
 	s.BounceRate = max(s.BounceRate, 0)
 }
 
-func (d *Stats) Read(cu *timeseries.Cursor, f models.Field, view, shard uint64, match *ro2.Bitmap) error {
+func (d *Stats) Read(cu *cursor.Cursor, f models.Field, view, shard uint64, match *ro2.Bitmap) error {
 	switch f {
 	case models.Field_view:
 		count := ro2.ReadTrue(cu, shard, match).Count()

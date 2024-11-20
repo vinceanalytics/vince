@@ -1,4 +1,4 @@
-package timeseries
+package cursor
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/cockroachdb/pebble"
 	"github.com/gernest/roaring"
+	"github.com/gernest/roaring/shardwidth"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
@@ -26,11 +27,22 @@ func (cu *Cursor) SetIter(it *pebble.Iterator) {
 	cu.it = it
 }
 
-func (cu *Cursor) Reset(field models.Field) bool {
+func (cu *Cursor) Reset() {
 	cu.lo.Reset()
 	cu.hi.Reset()
-	cu.lo.Write(field, 0)
-	cu.hi.Write(field, math.MaxUint64)
+}
+
+func (cu *Cursor) ResetData(field models.Field) bool {
+	cu.Reset()
+	cu.lo.WriteData(field, 0)
+	cu.hi.WriteData(field, math.MaxUint64)
+	return cu.it.SeekGE(cu.lo[:]) && cu.Valid()
+}
+
+func (cu *Cursor) ResetExistence(field models.Field) bool {
+	cu.Reset()
+	cu.lo.WriteExistence(field, 0)
+	cu.hi.WriteExistence(field, math.MaxUint64)
 	return cu.it.SeekGE(cu.lo[:]) && cu.Valid()
 }
 
@@ -49,7 +61,7 @@ func (cu *Cursor) Value() (uint64, *roaring.Container) {
 }
 
 func (cu *Cursor) BitLen() uint64 {
-	return cu.Max() / ShardWidth
+	return cu.Max() / shardwidth.ShardWidth
 }
 
 func (cu *Cursor) Max() uint64 {

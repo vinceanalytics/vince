@@ -3,6 +3,7 @@ package keys
 const (
 	base byte = 16 + iota
 	data
+	exists
 	ops
 	tr
 
@@ -16,6 +17,7 @@ const (
 
 var (
 	DataPrefix         = []byte{data}
+	DataExistsPrefix   = []byte{exists}
 	Cookie             = []byte{ops, 0x00}
 	SitePrefix         = []byte{ops, 0x01}
 	AcmePrefix         = []byte{ops, 0x02}

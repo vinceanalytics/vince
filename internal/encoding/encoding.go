@@ -41,8 +41,14 @@ func From(a []byte) *Key {
 	return (*Key)(unsafe.Pointer(&a[0]))
 }
 
-func (k *Key) Write(field models.Field, co uint64) {
+func (k *Key) WriteData(field models.Field, co uint64) {
 	k[0] = keys.DataPrefix[0]
+	k[bmField] = byte(field)
+	binary.BigEndian.PutUint64(k[bmContainer:], co)
+}
+
+func (k *Key) WriteExistence(field models.Field, co uint64) {
+	k[0] = keys.DataExistsPrefix[0]
 	k[bmField] = byte(field)
 	binary.BigEndian.PutUint64(k[bmContainer:], co)
 }
