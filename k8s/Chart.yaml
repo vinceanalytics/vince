@@ -2,5 +2,5 @@ apiVersion: v2
 name: vince
 description: Cloud-Native web analytics for everyone
 type: application
-version: 1.8.1
-appVersion: "v1.8.1"
+version: 1.8.2
+appVersion: "v1.8.2"
