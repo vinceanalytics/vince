@@ -34,7 +34,7 @@ nfpms:
     scripts:
       preinstall: vince.pre.sh
       postinstall: vince.post.sh
-      preremove: vvince.remove.sh
+      preremove: vince.remove.sh
     id: vince 
     builds:
       - vince 
