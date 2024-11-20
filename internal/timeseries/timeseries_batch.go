@@ -5,14 +5,13 @@ import (
 	"fmt"
 
 	"github.com/cockroachdb/pebble"
+	"github.com/gernest/roaring/shardwidth"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/shards"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
 )
-
-const ShardWidth = 1 << 20
 
 type batch struct {
 	db             *shards.DB
@@ -32,7 +31,7 @@ func newbatch(db *shards.DB, tr *translation) *batch {
 	b := &batch{
 		translate: tr,
 		id:        tr.id,
-		shard:     tr.id / ShardWidth,
+		shard:     tr.id / shardwidth.ShardWidth,
 		db:        db,
 	}
 	for i := range b.mutex {
@@ -151,7 +150,7 @@ func (b *batch) add(m *models.Model) error {
 		// Skip events without timestamp, id
 		return nil
 	}
-	shard := (b.id + 1) / ShardWidth
+	shard := (b.id + 1) / shardwidth.ShardWidth
 	if shard != b.shard {
 		err := b.save()
 		if err != nil {
@@ -209,7 +208,7 @@ func (b *batch) set(field models.Field, id uint64, value []byte) {
 	}
 	idx := field.Mutex()
 	ro2.WriteMutex(b.mutex[idx], id, b.tr(field, value))
-	b.mutexExistence[idx].DirectAdd(id % ShardWidth)
+	b.mutexExistence[idx].DirectAdd(id % shardwidth.ShardWidth)
 }
 
 func (b *batch) tr(field models.Field, value []byte) uint64 {
