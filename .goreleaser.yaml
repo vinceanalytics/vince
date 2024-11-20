@@ -31,6 +31,12 @@ nfpms:
         src: vince.service
       - dst: /etc/vince/vince.conf
         src: vince.conf
+      - dst: /var/lib/vince-data
+        type: dir
+        file_info:
+          mode: 0755
+          owner: vince
+          group: vince
     scripts:
       preinstall: vince.pre.sh
       postinstall: vince.post.sh
