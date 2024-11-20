@@ -1,29 +1,50 @@
 package timeseries
 
 import (
-	"errors"
-	"fmt"
+	"encoding/binary"
 
 	"github.com/cockroachdb/pebble"
+	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
+	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
+	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/shards"
 	"github.com/vinceanalytics/vince/internal/util/oracle"
+	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
+type Key struct {
+	View       uint64
+	Resolution encoding.Resolution
+	Field      models.Field
+	Existence  bool
+}
+
+func (k *Key) Encode(co uint64, b []byte) []byte {
+	if k.Existence {
+		b = append(b[:0], keys.DataExistsPrefix...)
+	} else {
+		b = append(b[:0], keys.DataPrefix...)
+	}
+	b = append(b, byte(k.Resolution))
+	b = binary.BigEndian.AppendUint64(b, k.View)
+	b = append(b, byte(k.Field))
+	b = binary.BigEndian.AppendUint64(b, co)
+	return b
+}
+
 type batch struct {
-	db             *shards.DB
-	translate      *translation
-	mutex          [models.MutexFieldSize]*ro2.Bitmap
-	mutexExistence [models.MutexFieldSize]*ro2.Bitmap
-	bsi            [models.BSIFieldsSize]*ro2.Bitmap
-	views          shards.Views
-	events         uint64
-	id             uint64
-	shard          uint64
-	key            encoding.Key
+	db        *shards.DB
+	translate *translation
+	all       map[Key]*ro2.Bitmap
+	key       []byte
+	views     [encoding.Month + 1]uint64
+	events    uint64
+	id        uint64
+	shard     uint64
 }
 
 func newbatch(db *shards.DB, tr *translation) *batch {
@@ -33,16 +54,17 @@ func newbatch(db *shards.DB, tr *translation) *batch {
 		id:        tr.id,
 		shard:     tr.id / shardwidth.ShardWidth,
 		db:        db,
+		all:       make(map[Key]*roaring.Bitmap),
 	}
-	for i := range b.mutex {
-		b.mutex[i] = ro2.NewBitmap()
-		b.mutexExistence[i] = ro2.NewBitmap()
-	}
-	for i := range b.bsi {
-		b.bsi[i] = ro2.NewBitmap()
-	}
-	b.views.Init()
 	return b
+}
+
+func (b *batch) setTs(timestamp int64) {
+	ts := xtime.UnixMilli(timestamp)
+	b.views[encoding.Minute] = uint64(compute.Minute(ts).UnixMilli())
+	b.views[encoding.Hour] = uint64(compute.Hour(ts).UnixMilli())
+	b.views[encoding.Week] = uint64(compute.Week(ts).UnixMilli())
+	b.views[encoding.Day] = uint64(compute.Date(ts).UnixMilli())
 }
 
 // saves only current timestamp.
@@ -52,16 +74,9 @@ func (b *batch) save() error {
 	}
 	defer func() {
 		b.translate.reset()
-		for i := range b.mutex {
-			b.mutex[i].Containers.Reset()
-			b.mutexExistence[i].Containers.Reset()
-		}
-		for i := range b.bsi {
-			b.bsi[i].Containers.Reset()
-		}
+		clear(b.all)
 		b.events = 0
 		oracle.Records.Store(b.id)
-		b.views.Reset()
 	}()
 	oba := b.db.Get().NewBatch()
 
@@ -85,49 +100,8 @@ func (b *batch) save() error {
 }
 
 func (b *batch) flush(ba *pebble.Batch) error {
-
-	for i := range b.mutex {
-		f := models.Mutex(i)
-		bm := b.mutex[i]
-		if !bm.Any() {
-			continue
-		}
-		err := errors.Join(
-			b.mergeData(ba, f, bm),
-			b.mergeExists(ba, f, b.mutexExistence[i]),
-		)
-		if err != nil {
-			return fmt.Errorf("saving events bitmap %w", err)
-		}
-	}
-	for i := range b.bsi {
-		f := models.BSI(i)
-		bm := b.bsi[i]
-		if !bm.Any() {
-			continue
-		}
-		err := b.mergeData(ba, f, bm)
-		if err != nil {
-			return fmt.Errorf("saving events bitmap %w", err)
-		}
-	}
-	return nil
-}
-
-func (b *batch) mergeData(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap) error {
-	return b.merge(ba, field, bm, b.data)
-}
-
-func (b *batch) mergeExists(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap) error {
-	return b.merge(ba, field, bm, b.exists)
-}
-
-func (b *batch) merge(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap, enc func(field models.Field, co uint64) []byte) error {
-	ci, _ := bm.Containers.Iterator(0)
-	for ci.Next() {
-		key, co := ci.Value()
-		value := ro2.EncodeContainer(co)
-		err := ba.Merge(enc(field, key), value, nil)
+	for k, bm := range b.all {
+		err := b.merge(ba, k, bm)
 		if err != nil {
 			return err
 		}
@@ -135,14 +109,18 @@ func (b *batch) merge(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap, enc 
 	return nil
 }
 
-func (b *batch) data(field models.Field, co uint64) []byte {
-	b.key.WriteData(field, co)
-	return b.key.Bytes()
-}
-
-func (b *batch) exists(field models.Field, co uint64) []byte {
-	b.key.WriteExistence(field, co)
-	return b.key.Bytes()
+func (b *batch) merge(ba *pebble.Batch, ke Key, bm *ro2.Bitmap) error {
+	ci, _ := bm.Containers.Iterator(0)
+	for ci.Next() {
+		key, co := ci.Value()
+		value := ro2.EncodeContainer(co)
+		b.key = ke.Encode(key, b.key)
+		err := ba.Merge(b.key, value, nil)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (b *batch) add(m *models.Model) error {
@@ -159,24 +137,25 @@ func (b *batch) add(m *models.Model) error {
 		b.shard = shard
 	}
 	b.events++
+
 	b.id = b.translate.Next()
 	id := b.id
-	ro2.WriteBSI(b.bsi[models.Field_timestamp.BSI()], id, m.Timestamp)
-	ro2.WriteBSI(b.bsi[models.Field_id.BSI()], id, int64(m.Id))
+	b.setTs(m.Timestamp)
+	b.bs(models.Field_id, id, int64(m.Id))
 	if m.Bounce != 0 {
-		ro2.WriteBool(b.bsi[models.Field_bounce.BSI()], id, m.Bounce == 1)
+		b.boolean(models.Field_bounce, id, m.Bounce == 1)
 	}
 	if m.Session {
-		ro2.WriteBool(b.mutex[models.Field_session.Mutex()], id, true)
+		b.boolean(models.Field_session, id, true)
 	}
 	if m.View {
-		ro2.WriteBool(b.mutex[models.Field_view.Mutex()], id, true)
+		b.boolean(models.Field_view, id, true)
 	}
 	if m.Duration > 0 {
-		ro2.WriteBSI(b.bsi[models.Field_duration.BSI()], id, m.Duration)
+		b.bs(models.Field_duration, id, m.Duration)
 	}
 	if m.City != 0 {
-		ro2.WriteMutex(b.mutex[models.Field_city.Mutex()], id, uint64(m.City))
+		b.mx(models.Field_city, id, uint64(m.City))
 	}
 	b.set(models.Field_browser, id, m.Browser)
 	b.set(models.Field_browser_version, id, m.BrowserVersion)
@@ -202,13 +181,57 @@ func (b *batch) add(m *models.Model) error {
 	return nil
 }
 
+func (b *batch) bs(field models.Field, id uint64, value int64) {
+	for i := range b.views {
+		ro2.WriteBSI(b.ra(Key{
+			Resolution: encoding.Resolution(i),
+			Field:      field,
+			View:       b.views[i],
+		}), id, value)
+	}
+}
+
+func (b *batch) boolean(field models.Field, id uint64, value bool) {
+	for i := range b.views {
+		ro2.WriteBool(b.ra(Key{
+			Resolution: encoding.Resolution(i),
+			Field:      field,
+			View:       b.views[i],
+		}), id, value)
+	}
+}
+
 func (b *batch) set(field models.Field, id uint64, value []byte) {
 	if len(value) == 0 {
 		return
 	}
-	idx := field.Mutex()
-	ro2.WriteMutex(b.mutex[idx], id, b.tr(field, value))
-	b.mutexExistence[idx].DirectAdd(id % shardwidth.ShardWidth)
+	b.mx(field, id, b.tr(field, value))
+
+}
+func (b *batch) mx(field models.Field, id uint64, value uint64) {
+
+	for i := range b.views {
+		ro2.WriteMutex(b.ra(Key{
+			Resolution: encoding.Resolution(i),
+			Field:      field,
+			View:       b.views[i],
+		}), id, value)
+		b.ra(Key{
+			Resolution: encoding.Resolution(i),
+			Field:      field,
+			View:       b.views[i],
+			Existence:  true,
+		}).DirectAdd(id % shardwidth.ShardWidth)
+	}
+}
+
+func (b *batch) ra(key Key) *ro2.Bitmap {
+	if a, ok := b.all[key]; ok {
+		return a
+	}
+	a := ro2.NewBitmap()
+	b.all[key] = a
+	return a
 }
 
 func (b *batch) tr(field models.Field, value []byte) uint64 {

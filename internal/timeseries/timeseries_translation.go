@@ -18,12 +18,12 @@ import (
 )
 
 type translation struct {
-	id       uint64
 	tree     *tree.Tree
-	ranges   [models.TranslatedFieldsSize]uint64
+	onAssign func(key []byte, uid uint64)
 	keys     [models.TranslatedFieldsSize][][]byte
 	values   [models.TranslatedFieldsSize][]uint64
-	onAssign func(key []byte, uid uint64)
+	ranges   [models.TranslatedFieldsSize]uint64
+	id       uint64
 }
 
 func (tr *translation) Release() error {

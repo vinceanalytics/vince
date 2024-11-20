@@ -14,11 +14,11 @@ const realtimeResolution = encoding.Minute
 // Realtime computes total visitors in the last 5 minutes.
 func (ts *Timeseries) Visitors(start, end time.Time, resolution encoding.Resolution, domain string) (visitors uint64) {
 	var m FilterSet
-	m.Set(true, models.Field_domain, ts.Translate(models.Field_domain, []byte(domain)))
 	values := models.BitSet(0)
 	values.Set(models.Field_id)
 	r := ro2.NewBitmap()
-	ts.Scan(resolution, start, end, m, values, func(cu *cursor.Cursor, field models.Field, view, shard uint64, columns *ro2.Bitmap) error {
+	domainId := ts.Translate(models.Field_domain, []byte(domain))
+	ts.Scan(domainId, resolution, start, end, m, values, func(cu *cursor.Cursor, field models.Field, view, shard uint64, columns *ro2.Bitmap) error {
 		uniq := ro2.ReadDistinctBSI(cu, shard, columns)
 		r.UnionInPlace(uniq)
 		return nil
@@ -28,12 +28,16 @@ func (ts *Timeseries) Visitors(start, end time.Time, resolution encoding.Resolut
 }
 
 func (ts *Timeseries) Scan(
+	domainId uint64,
 	res encoding.Resolution,
 	start, end time.Time,
 	filterSet FilterSet,
 	valueSet models.BitSet,
 	cb ScanCall,
 ) error {
+	if domainId == 0 {
+		return nil
+	}
 	scan := config(filterSet, valueSet)
 
 	filters := scan.Filter.Set.All()
@@ -47,12 +51,14 @@ func (ts *Timeseries) Scan(
 		}
 	}
 
-	return ts.db.Iter(res, start, end, noFilters,
-		func(cu *cursor.Cursor, shard uint64, from, to int64, m *ro2.Bitmap, exists map[models.Field]*ro2.Bitmap) error {
+	return ts.db.Iter(
+		domainId,
+		res, start, end, noFilters,
+		func(cu *cursor.Cursor, shard, view uint64, m *ro2.Bitmap, exists map[models.Field]*ro2.Bitmap) error {
 
 			var fs *ro2.Bitmap
 			for _, field := range filters {
-				if !cu.ResetData(field) {
+				if !cu.ResetData(res, field, view) {
 					return nil
 				}
 				ex := exists[field]
@@ -72,15 +78,17 @@ func (ts *Timeseries) Scan(
 					return nil
 				}
 			}
-			m = m.Intersect(fs)
+			if fs != nil {
+				m = m.Intersect(fs)
+			}
 			if !m.Any() {
 				return nil
 			}
 			for _, field := range dataFields {
-				if !cu.ResetData(field) {
+				if !cu.ResetData(res, field, view) {
 					continue
 				}
-				err := cb(cu, field, uint64(from), shard, m)
+				err := cb(cu, field, view, shard, m)
 				if err != nil {
 					return err
 				}

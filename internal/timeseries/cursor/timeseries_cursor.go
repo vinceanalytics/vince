@@ -32,17 +32,17 @@ func (cu *Cursor) Reset() {
 	cu.hi.Reset()
 }
 
-func (cu *Cursor) ResetData(field models.Field) bool {
+func (cu *Cursor) ResetData(res encoding.Resolution, field models.Field, view uint64) bool {
 	cu.Reset()
-	cu.lo.WriteData(field, 0)
-	cu.hi.WriteData(field, math.MaxUint64)
+	cu.lo.WriteData(res, field, view, 0)
+	cu.hi.WriteData(res, field, view, math.MaxUint64)
 	return cu.it.SeekGE(cu.lo[:]) && cu.Valid()
 }
 
-func (cu *Cursor) ResetExistence(field models.Field) bool {
+func (cu *Cursor) ResetExistence(res encoding.Resolution, field models.Field, view uint64) bool {
 	cu.Reset()
-	cu.lo.WriteExistence(field, 0)
-	cu.hi.WriteExistence(field, math.MaxUint64)
+	cu.lo.WriteExistence(res, field, view, 0)
+	cu.hi.WriteExistence(res, field, view, math.MaxUint64)
 	return cu.it.SeekGE(cu.lo[:]) && cu.Valid()
 }
 

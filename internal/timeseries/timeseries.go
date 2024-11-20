@@ -19,8 +19,8 @@ type Timeseries struct {
 	ba *batch
 
 	trie struct {
-		sync.RWMutex
 		tr *trie.Trie
+		sync.RWMutex
 	}
 }
 

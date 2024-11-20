@@ -2,35 +2,24 @@ package compute
 
 import (
 	"iter"
-	"slices"
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/encoding"
 )
 
-func Range(re encoding.Resolution, start, end time.Time) iter.Seq2[int64, int64] {
+func Range(re encoding.Resolution, start, end time.Time) iter.Seq[uint64] {
 	if re == encoding.Global {
-		return func(yield func(int64, int64) bool) {
-			yield(0, 0)
+		return func(yield func(uint64) bool) {
+			yield(0)
 		}
 	}
-	return func(yield func(int64, int64) bool) {
-		var from time.Time
-		all := slices.Collect(tr(re, start, end))
-
-		// we iterate in revers because tr generates descending sequence
-		for _, to := range slices.Backward(all) {
-			if from.IsZero() {
-				from = to
-				continue
-			}
-			if !yield(from.UnixMilli(), to.UnixMilli()) {
+	return func(yield func(uint64) bool) {
+		for ts := range tr(re, start, end) {
+			if !yield(uint64(ts.UnixMilli())) {
 				return
 			}
-			from = to
 		}
 	}
-
 }
 
 func tr(e encoding.Resolution, start, end time.Time) iter.Seq[time.Time] {

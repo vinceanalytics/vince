@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/pebble"
+	"github.com/gernest/roaring"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
@@ -78,22 +79,17 @@ func (db *DB) Get() *pebble.DB {
 	return db.ops
 }
 
-func (db *DB) Iter(re encoding.Resolution,
+func (db *DB) Iter(
+	domainId uint64,
+	re encoding.Resolution,
 	start, end time.Time,
 	filters []models.Field,
-	f func(cu *cursor.Cursor, shard uint64, from, to int64, match *ro2.Bitmap, exists map[models.Field]*ro2.Bitmap) error) error {
+	f func(cu *cursor.Cursor, shard, view uint64, match *ro2.Bitmap, exists map[models.Field]*ro2.Bitmap) error) error {
 	db.shards.RLock()
 	defer db.shards.RUnlock()
 
-	from := make([]int64, 0, 16)
-	to := make([]int64, 0, 16)
-
-	// pre compute ranges so we avoid doing it per shard
-	for a, b := range compute.Range(re, start, end) {
-		from = append(from, a)
-		to = append(to, b)
-	}
-	if len(from) == 0 {
+	views := slices.Collect(compute.Range(re, start, end))
+	if len(views) == 0 {
 		return nil
 	}
 
@@ -111,41 +107,35 @@ func (db *DB) Iter(re encoding.Resolution,
 		}
 		cu.SetIter(it)
 
-		// Preload existence bitmaps. This will only be populated when we have negative
-		// conditions in filter chains.
-		exists := make(map[models.Field]*ro2.Bitmap)
-
-		if len(filters) > 0 {
-			for _, f := range filters {
-				cu.ResetExistence(f)
-				exists[f] = ro2.Existence(cu, sh.ID)
-			}
-		}
-
-		for i := range from {
-			ma := matchTimestamp(cu, sh.ID, from[i], to[i])
-			if !ma.Any() {
+		for _, view := range views {
+			if !cu.ResetData(re, models.Field_domain, view) {
 				continue
 			}
-			err := f(cu, sh.ID, from[i], to[i], ma, exists)
+			m := ro2.Row(cu, sh.ID, domainId)
+			if !m.Any() {
+				continue
+			}
+			exists := readExistence(cu, re, filters, sh.ID, view)
+			err := f(cu, sh.ID, view, m, exists)
 			if err != nil {
 				it.Close()
 				return err
 			}
 		}
 		it.Close()
-
 	}
 	return nil
 }
 
-func matchTimestamp(cu *cursor.Cursor, shard uint64, from, to int64) *ro2.Bitmap {
-	cu.ResetData(models.Field_timestamp)
-	if from == 0 && to == 0 {
-		// special global resolution
-		return ro2.Existence(cu, shard)
+func readExistence(cu *cursor.Cursor, re encoding.Resolution, fields []models.Field, shard, view uint64) (m map[models.Field]*ro2.Bitmap) {
+	m = make(map[models.Field]*roaring.Bitmap)
+	for _, f := range fields {
+		if !cu.ResetExistence(re, f, view) {
+			continue
+		}
+		m[f] = ro2.Existence(cu, shard)
 	}
-	return ro2.Range(cu, ro2.BETWEEN, shard, cu.BitLen(), from, to)
+	return
 }
 
 func (db *DB) Shard(shard uint64) *Shard {

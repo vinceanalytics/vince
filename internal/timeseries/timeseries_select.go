@@ -23,8 +23,8 @@ func (ts *Timeseries) Select(
 	filters query.Filters,
 	cb ScanCall) error {
 	m := ts.compile(filters)
-	m.Set(true, models.Field_domain, ts.Translate(models.Field_domain, []byte(domain)))
-	return ts.Scan(encoding.Resolution(intrerval), start,
+	domainId := ts.Translate(models.Field_domain, []byte(domain))
+	return ts.Scan(domainId, encoding.Resolution(intrerval), start,
 		end, m, values, cb)
 }
 
