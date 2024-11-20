@@ -123,7 +123,7 @@ func (b *batch) mergeData(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap) 
 }
 
 func (b *batch) mergeExists(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap) error {
-	return b.merge(ba, field, bm, b.data)
+	return b.merge(ba, field, bm, b.exists)
 }
 
 func (b *batch) merge(ba *pebble.Batch, field models.Field, bm *ro2.Bitmap, enc func(field models.Field, co uint64) []byte) error {
