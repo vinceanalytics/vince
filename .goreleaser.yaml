@@ -24,6 +24,25 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}
     files:
       - LICENSE
+nfpms:
+  - package_name: vince 
+    contents:
+      - dst: /lib/systemd/system/vince.service
+        src: vince.service
+      - dst: /etc/vince/vince.conf
+        src: vince.conf
+    scripts:
+      preinstall: vince.pre.sh
+      postinstall: vince.post.sh
+      preremove: vvince.remove.sh
+    id: vince 
+    builds:
+      - vince 
+    formats:
+      - deb
+    maintainer: Geofrey Ernest
+    description: Vince - self hosted alternative to google analytics
+    license: AGPL 3.0
 checksum:
   name_template: "checksums.txt"
 changelog:

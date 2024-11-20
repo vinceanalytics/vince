@@ -1,5 +1,5 @@
 [Unit]
-Description=Vince is a cost-effective alternative to Google Analytics
+Description=Vince is a self hosted alternative to Google Analytics
 # https://vinceanalytics.com/guides
 After=network.target
 
