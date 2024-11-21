@@ -37,6 +37,24 @@ func Prefix(db *pebble.DB, prefix []byte, f func(key, value []byte) error) error
 	return nil
 }
 
+func PrefixKeys(db *pebble.DB, prefix []byte, f func(key []byte) error) error {
+	iter, err := db.NewIter(nil)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+	for iter.SeekGE(prefix); iter.Valid(); iter.Next() {
+		if !bytes.HasPrefix(iter.Key(), prefix) {
+			break
+		}
+		err := f(iter.Key())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func Has(db *pebble.DB, key []byte) bool {
 	return Get(db, key, func(val []byte) error { return nil }) == nil
 }

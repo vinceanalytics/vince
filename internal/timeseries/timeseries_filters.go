@@ -157,6 +157,13 @@ func (ts *Timeseries) Search(field models.Field, prefix []byte, f func(key []byt
 	})
 }
 
+func (ts *Timeseries) SearchKeys(field models.Field, prefix []byte, f func(key []byte) error) error {
+	sk := encoding.TranslateKey(field, prefix)
+	return data.PrefixKeys(ts.db.Get(), sk, func(key []byte) error {
+		return f(key[3:])
+	})
+}
+
 func searchPrefix(source []byte) (prefix []byte, exact bool) {
 	for i := range source {
 		if special(source[i]) {

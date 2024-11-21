@@ -19,6 +19,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/web/conversions"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
+	"github.com/vinceanalytics/vince/internal/web/suggestions"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -446,7 +447,7 @@ func run(ctx context.Context, c *cli.Command) error {
 
 	mux.HandleFunc("GET /api/stats/{domain}/suggestions/{filter_name}/", db.Wrap("api.Suggestions")(
 		stats.
-			Then(web.UnimplementedStat),
+			Then(suggestions.Suggest),
 	))
 
 	statsAPI := plug.API().With(api.Authorize)

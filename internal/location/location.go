@@ -103,6 +103,14 @@ func (l *Location) GetCountry(code string) (co Country) {
 	return
 }
 
+func (l *Location) GetCountryName(code string) (name string) {
+	data.Get(l.db, append(keys.CountryCodePrefix, []byte(code)...), func(val []byte) error {
+		name = string(lo.GetRootAsCountry(val, 0).Name())
+		return nil
+	})
+	return
+}
+
 type Region struct {
 	Name string `json:"name"`
 	Flag string `json:"flag"`
@@ -121,6 +129,13 @@ func (l *Location) GetRegion(code []byte) (r Region) {
 	country, _, _ := bytes.Cut(code, []byte("-"))
 	data.Get(l.db, append(keys.CountryCodePrefix, []byte(country)...), func(val []byte) error {
 		r.Flag = string(lo.GetRootAsCountry(val, 0).Flag())
+		return nil
+	})
+	return
+}
+func (l *Location) GetRegionName(code []byte) (name string) {
+	data.Get(l.db, append(keys.RegionCodePrefix, code...), func(val []byte) error {
+		name = string(val)
 		return nil
 	})
 	return
