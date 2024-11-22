@@ -5,33 +5,61 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/dgryski/go-farm"
+	"github.com/cockroachdb/swiss"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/util/assert"
-	"github.com/vinceanalytics/vince/internal/util/oracle"
-	"github.com/vinceanalytics/vince/internal/util/tree"
+	"github.com/vinceanalytics/vince/internal/util/hash"
 )
 
+type treeLocked struct {
+	mu   sync.RWMutex
+	tree *swiss.Map[uint64, uint64]
+}
+
+func newTree() *treeLocked {
+	return &treeLocked{
+		tree: swiss.New[uint64, uint64](1 << 19),
+	}
+}
+
+func (t *treeLocked) Set(key []byte, value uint64) {
+	hash := hash.Bytes(key)
+	t.mu.Lock()
+	t.tree.Put(hash, value)
+	t.mu.Unlock()
+}
+
+func (t *treeLocked) Get(key []byte) (value uint64) {
+	hash := hash.Bytes(key)
+	t.mu.RLock()
+	value, _ = t.tree.Get(hash)
+	t.mu.RUnlock()
+	return
+}
+
+func (c *treeLocked) Release() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.tree.Clear()
+	return nil
+}
+
 type translation struct {
-	tree     *tree.Tree
-	onAssign func(key []byte, uid uint64)
-	keys     [models.TranslatedFieldsSize][][]byte
-	values   [models.TranslatedFieldsSize][]uint64
-	ranges   [models.TranslatedFieldsSize]uint64
-	id       uint64
+	tree   *treeLocked
+	keys   [models.TranslatedFieldsSize][][]byte
+	values [models.TranslatedFieldsSize][]uint64
+	ranges [models.TranslatedFieldsSize]uint64
+	id     uint64
 }
 
-func (tr *translation) Release() error {
-	return tr.tree.Close()
-}
-
-func newTranslation(db *pebble.DB, onAssign func(key []byte, uid uint64)) *translation {
-	tr := translation{tree: tree.NewTree(oracle.DataPath), onAssign: onAssign}
+func newTranslation(db *pebble.DB, tree *treeLocked) *translation {
+	tr := translation{tree: tree}
 	iter, err := db.NewIter(&pebble.IterOptions{})
 	assert.Nil(err, "openin iterator for translations")
 	defer iter.Close()
@@ -62,12 +90,10 @@ func newTranslation(db *pebble.DB, onAssign func(key []byte, uid uint64)) *trans
 				break
 			}
 			count++
-			hash := farm.Fingerprint64(key)
 			value := binary.BigEndian.Uint64(iter.Value())
-			tr.tree.Set(hash, value)
-			if onAssign != nil {
-				onAssign(key, value)
-			}
+
+			//  no need for locks for faster initialization
+			tree.tree.Put(hash.Bytes(key), value)
 		}
 		slog.Info("complete loading translation",
 			"elapsed", time.Since(start), "keys", count)
@@ -83,8 +109,7 @@ func (tr *translation) Next() uint64 {
 
 func (tr *translation) Assign(field models.Field, value []byte) uint64 {
 	key := encoding.TranslateKey(field, value)
-	hash := farm.Fingerprint64(key)
-	uid := tr.tree.Get(hash)
+	uid := tr.tree.Get(key)
 	if uid > 0 {
 		return uid
 	}
@@ -92,12 +117,9 @@ func (tr *translation) Assign(field models.Field, value []byte) uint64 {
 	tr.ranges[idx]++
 	uid = tr.ranges[idx]
 
-	tr.tree.Set(hash, uid)
+	tr.tree.Set(key, uid)
 	tr.keys[idx] = append(tr.keys[idx], value)
 	tr.values[idx] = append(tr.values[idx], uid)
-	if tr.onAssign != nil {
-		tr.onAssign(key, uid)
-	}
 	return uid
 }
 

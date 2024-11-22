@@ -5,9 +5,8 @@ go 1.23.2
 require (
 	filippo.io/age v1.2.0
 	github.com/cockroachdb/pebble v0.0.0-20241105214940-2da617a0a886
-	github.com/dgryski/go-farm v0.0.0-20240924180020-3414d57e47da
+	github.com/cockroachdb/swiss v0.0.0-20240612210725-f4de07ae6964
 	github.com/dlclark/regexp2 v1.11.4
-	github.com/dustin/go-humanize v1.0.1
 	github.com/gernest/roaring v0.23.0
 	github.com/google/flatbuffers v24.3.25+incompatible
 	github.com/google/uuid v1.6.0
@@ -31,7 +30,6 @@ require (
 	github.com/cockroachdb/fifo v0.0.0-20240606204812-0bbfbd93a7ce // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
-	github.com/cockroachdb/swiss v0.0.0-20240612210725-f4de07ae6964 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/getsentry/sentry-go v0.27.0 // indirect

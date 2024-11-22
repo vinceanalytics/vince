@@ -2,15 +2,12 @@ package timeseries
 
 import (
 	"errors"
-	"sync"
 
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/shards"
-	"github.com/vinceanalytics/vince/internal/util/oracle"
 	xt "github.com/vinceanalytics/vince/internal/util/translation"
-	"github.com/vinceanalytics/vince/internal/util/trie"
 )
 
 type Timeseries struct {
@@ -18,21 +15,12 @@ type Timeseries struct {
 	lo *location.Location
 	ba *batch
 
-	trie struct {
-		tr *trie.Trie
-		sync.RWMutex
-	}
+	tree *treeLocked
 }
 
 func New(db *shards.DB, lo *location.Location) *Timeseries {
-	ts := &Timeseries{db: db, lo: lo}
-	ts.trie.tr = trie.NewTrie(oracle.DataPath)
-	tr := newTranslation(db.Get(), ts.trie.tr.Put)
-	tr.onAssign = func(key []byte, uid uint64) {
-		ts.trie.Lock()
-		ts.trie.tr.Put(key, uid)
-		ts.trie.Unlock()
-	}
+	ts := &Timeseries{db: db, lo: lo, tree: newTree()}
+	tr := newTranslation(db.Get(), ts.tree)
 	ts.ba = newbatch(db, tr)
 	return ts
 }
@@ -40,9 +28,7 @@ func New(db *shards.DB, lo *location.Location) *Timeseries {
 var _ xt.Translator = (*Timeseries)(nil)
 
 func (ts *Timeseries) Translate(field models.Field, value []byte) uint64 {
-	ts.trie.RLock()
-	defer ts.trie.RUnlock()
-	return ts.trie.tr.Get(encoding.TranslateKey(field, value))
+	return ts.tree.Get(encoding.TranslateKey(field, value))
 }
 
 func (ts *Timeseries) Get() *shards.DB {
@@ -56,8 +42,7 @@ func (ts *Timeseries) Location() *location.Location {
 // Close releases resources and removes buffers used.
 func (ts *Timeseries) Close() error {
 	return errors.Join(
-		ts.ba.translate.Release(),
-		ts.trie.tr.Release(),
+		ts.tree.Release(),
 	)
 }
 
