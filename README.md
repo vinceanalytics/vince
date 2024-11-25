@@ -1,6 +1,6 @@
 
 <p align="center">
-  <picture width="640" height="250">
+  <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./app/images/logo-darkmode.svg">
     <source media="(prefers-color-scheme: light)" srcset="./app/images/mark.svg">
     <img alt="esbuild: An extremely fast JavaScript bundler" src="./app/images/mark.svg">
