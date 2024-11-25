@@ -20,6 +20,7 @@ func Share(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	hasStats := db.Ops().SeenFirstStats(site.Domain)
 	w.Header().Set("x-robots-tag", "noindex, nofollow")
+	w.Header().Del("x-frame-options")
 	auth := r.URL.Query().Get("auth")
 	db.HTML(w, stats, map[string]any{
 		"seen_first_stats": hasStats,
