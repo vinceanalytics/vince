@@ -1,13 +1,18 @@
 
-## vince
+<p align="center">
+  <picture width="640" height="250">
+    <source media="(prefers-color-scheme: dark)" srcset="./app/images/logo-darkmode.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./app/images/mark.svg">
+    <img alt="esbuild: An extremely fast JavaScript bundler" src="./app/images/mark.svg">
+  </picture>
+  <br>
+  <a href="https://vinceanalytics.com/">Website</a> |
+  <a href="https://vinceanalytics.com/blog/deploy-local/">Getting started</a> |
+  <a href="https://vinceanalytics.com/tags/api/">API</a>  |
+  <a href="https://vinceanalytics.com/demo">Demo</a> 
+</p>
 
-**Vince** is a privacy friendly web analytics server focused on painless self hosting.
-
-
-*vince is pre alpha software and is still under active development*
-
-
-![Vince Analytics](desktop.png)
+**Vince** is a self hosted alternative to Google Analytics.
 
 
 # Features

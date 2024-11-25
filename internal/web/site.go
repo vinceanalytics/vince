@@ -214,44 +214,37 @@ func RequireSiteAccess(h plug.Handler) plug.Handler {
 			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
 			return
 		}
-		if db.CurrentUser() != "" {
+		if db.CurrentUser() != "" || site.Public {
 			db.SetSite(site)
 			h(db, w, r)
 			return
 		}
-		if !site.Public {
-			auth := r.URL.Query().Get("auth")
-			if auth != "" {
-				i, ok := slices.BinarySearchFunc(site.Shares, &v1.Share{Id: auth}, func(a, b *v1.Share) int {
-					return cmp.Compare(a.Id, b.Id)
-				})
-				if !ok {
-					db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
-					return
-				}
-				share := site.Shares[i]
 
-				if share.Password != nil {
-					// verify shared link
-					name := "shared-link-" + auth
-					expires := db.LoadSharedLinkSession(r, name)
-					if expires.Before(xtime.Now()) {
-						dest := fmt.Sprintf("/v1/share/%s/authenticate/%s",
-							url.PathEscape(site.Domain), auth)
-						http.Redirect(w, r, dest, http.StatusFound)
-						return
-					}
-					db.SetSite(site)
-					h(db, w, r)
+		if auth := r.URL.Query().Get("auth"); auth != "" {
+			i, ok := slices.BinarySearchFunc(site.Shares, &v1.Share{Id: auth}, func(a, b *v1.Share) int {
+				return cmp.Compare(a.Id, b.Id)
+			})
+			if !ok {
+				db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+				return
+			}
+			share := site.Shares[i]
+
+			if share.Password != nil {
+				// verify shared link
+				name := "shared-link-" + auth
+				expires := db.LoadSharedLinkSession(r, name)
+				if expires.After(xtime.Now()) {
+					dest := fmt.Sprintf("/v1/share/%s/authenticate/%s",
+						url.PathEscape(site.Domain), auth)
+					http.Redirect(w, r, dest, http.StatusFound)
 					return
 				}
 			}
-
-			db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
+			db.SetSite(site)
+			h(db, w, r)
 			return
 		}
-
-		db.SetSite(site)
-		h(db, w, r)
+		db.HTMLCode(http.StatusNotFound, w, e404, map[string]any{})
 	}
 }

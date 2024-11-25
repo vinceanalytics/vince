@@ -26,6 +26,7 @@ func Share(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		"seen_first_stats": hasStats,
 		"title":            "vince · " + site.Domain,
 		"auth":             auth,
+		"demo":             r.URL.Query().Get("demo") == "true",
 	})
 }
 
