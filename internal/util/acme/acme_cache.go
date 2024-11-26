@@ -3,6 +3,7 @@ package acme
 import (
 	"bytes"
 	"context"
+	"errors"
 
 	"github.com/cockroachdb/pebble"
 	"github.com/vinceanalytics/vince/internal/encoding"
@@ -25,6 +26,9 @@ func (a *Cache) Get(_ context.Context, key string) (rs []byte, err error) {
 		rs = bytes.Clone(val)
 		return nil
 	})
+	if errors.Is(err, pebble.ErrNotFound) {
+		return nil, autocert.ErrCacheMiss
+	}
 	return
 }
 
