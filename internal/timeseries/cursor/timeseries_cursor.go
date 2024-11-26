@@ -15,16 +15,18 @@ import (
 )
 
 type Cursor struct {
-	it     *pebble.Iterator
-	lo, hi encoding.Key
+	it       *pebble.Iterator
+	lo, hi   encoding.Key
+	domainId uint64
 }
 
 func (cu *Cursor) Release() {
 	*cu = Cursor{}
 }
 
-func (cu *Cursor) SetIter(it *pebble.Iterator) {
+func (cu *Cursor) SetIter(it *pebble.Iterator, domainId uint64) {
 	cu.it = it
+	cu.domainId = domainId
 }
 
 func (cu *Cursor) Reset() {
@@ -34,16 +36,34 @@ func (cu *Cursor) Reset() {
 
 func (cu *Cursor) ResetData(res encoding.Resolution, field models.Field, view uint64) bool {
 	cu.Reset()
-	cu.lo.WriteData(res, field, view, 0)
-	cu.hi.WriteData(res, field, view, math.MaxUint64)
+	cu.lo.WriteData(res, field, view, cu.domainId, 0)
+	cu.hi.WriteData(res, field, view, cu.domainId, math.MaxUint64)
 	return cu.it.SeekGE(cu.lo[:]) && cu.Valid()
 }
 
 func (cu *Cursor) ResetExistence(res encoding.Resolution, field models.Field, view uint64) bool {
 	cu.Reset()
-	cu.lo.WriteExistence(res, field, view, 0)
-	cu.hi.WriteExistence(res, field, view, math.MaxUint64)
+	cu.lo.WriteExistence(res, field, view, cu.domainId, 0)
+	cu.hi.WriteExistence(res, field, view, cu.domainId, math.MaxUint64)
 	return cu.it.SeekGE(cu.lo[:]) && cu.Valid()
+}
+
+func (cu *Cursor) SeekToDomainShard(res encoding.Resolution, lo, hi uint64) bool {
+	cu.Reset()
+	cu.lo.WriteExistence(res, models.Field_domain, lo, cu.domainId, 0)
+	cu.hi.WriteExistence(res, models.Field_domain, hi, cu.domainId, math.MaxUint64)
+	return cu.it.SeekGE(cu.lo[:]) && cu.Valid()
+}
+
+func (cu *Cursor) DomainExistence(res encoding.Resolution, shard, view uint64) *ro2.Bitmap {
+	cu.Reset()
+	cu.lo.WriteExistence(res, models.Field_domain, view, cu.domainId, 0)
+	cu.hi.WriteExistence(res, models.Field_domain, view, cu.domainId, math.MaxUint64)
+	ok := cu.it.SeekGE(cu.lo[:]) && cu.Valid()
+	if !ok {
+		return ro2.NewBitmap()
+	}
+	return ro2.Existence(cu, shard)
 }
 
 func (cu *Cursor) Valid() bool {

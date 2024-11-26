@@ -18,6 +18,7 @@ import (
 
 type Key struct {
 	View       uint64
+	Domain     uint64
 	Resolution encoding.Resolution
 	Field      models.Field
 	Existence  bool
@@ -31,6 +32,7 @@ func (k *Key) Encode(co uint64, b []byte) []byte {
 	}
 	b = append(b, byte(k.Resolution))
 	b = binary.BigEndian.AppendUint64(b, k.View)
+	b = binary.BigEndian.AppendUint64(b, k.Domain)
 	b = append(b, byte(k.Field))
 	b = binary.BigEndian.AppendUint64(b, co)
 	return b
@@ -45,6 +47,8 @@ type batch struct {
 	events    uint64
 	id        uint64
 	shard     uint64
+
+	domainId uint64
 }
 
 func newbatch(db *shards.DB, tr *translation) *batch {
@@ -65,6 +69,10 @@ func (b *batch) setTs(timestamp int64) {
 	b.views[encoding.Hour] = uint64(compute.Hour(ts).UnixMilli())
 	b.views[encoding.Week] = uint64(compute.Week(ts).UnixMilli())
 	b.views[encoding.Day] = uint64(compute.Date(ts).UnixMilli())
+}
+
+func (b *batch) setDomain(m *models.Model) {
+
 }
 
 // saves only current timestamp.
@@ -161,7 +169,11 @@ func (b *batch) add(m *models.Model) error {
 	b.set(models.Field_browser_version, id, m.BrowserVersion)
 	b.set(models.Field_country, id, m.Country)
 	b.set(models.Field_device, id, m.Device)
-	b.set(models.Field_domain, id, m.Domain)
+
+	// domain is stored as part of the key, we only save existence bit
+	b.domainId = b.tr(models.Field_domain, m.Domain)
+	b.mxExixtenceOnly(models.Field_domain, id)
+
 	b.set(models.Field_entry_page, id, m.EntryPage)
 	b.set(models.Field_event, id, m.Event)
 	b.set(models.Field_exit_page, id, m.ExitPage)
@@ -187,6 +199,7 @@ func (b *batch) bs(field models.Field, id uint64, value int64) {
 			Resolution: encoding.Resolution(i),
 			Field:      field,
 			View:       b.views[i],
+			Domain:     b.domainId,
 		}), id, value)
 	}
 }
@@ -197,6 +210,7 @@ func (b *batch) boolean(field models.Field, id uint64, value bool) {
 			Resolution: encoding.Resolution(i),
 			Field:      field,
 			View:       b.views[i],
+			Domain:     b.domainId,
 		}), id, value)
 	}
 }
@@ -208,6 +222,7 @@ func (b *batch) set(field models.Field, id uint64, value []byte) {
 	b.mx(field, id, b.tr(field, value))
 
 }
+
 func (b *batch) mx(field models.Field, id uint64, value uint64) {
 
 	for i := range b.views {
@@ -215,11 +230,25 @@ func (b *batch) mx(field models.Field, id uint64, value uint64) {
 			Resolution: encoding.Resolution(i),
 			Field:      field,
 			View:       b.views[i],
+			Domain:     b.domainId,
 		}), id, value)
 		b.ra(Key{
 			Resolution: encoding.Resolution(i),
 			Field:      field,
 			View:       b.views[i],
+			Domain:     b.domainId,
+			Existence:  true,
+		}).DirectAdd(id % shardwidth.ShardWidth)
+	}
+}
+
+func (b *batch) mxExixtenceOnly(field models.Field, id uint64) {
+	for i := range b.views {
+		b.ra(Key{
+			Resolution: encoding.Resolution(i),
+			Field:      field,
+			View:       b.views[i],
+			Domain:     b.domainId,
 			Existence:  true,
 		}).DirectAdd(id % shardwidth.ShardWidth)
 	}

@@ -18,8 +18,8 @@ import (
 )
 
 type treeLocked struct {
-	mu   sync.RWMutex
 	tree *swiss.Map[uint64, uint64]
+	mu   sync.RWMutex
 }
 
 func newTree() *treeLocked {

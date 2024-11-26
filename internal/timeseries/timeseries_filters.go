@@ -15,69 +15,82 @@ import (
 	wq "github.com/vinceanalytics/vince/internal/web/query"
 )
 
-// Cond defines exact matches rows and non exact match rows. Applies a union of
-// all columns satsfying the conditions.
-//
-// This assumes Cond is for a mutex field. vince only support filter on mutex
-// fields.
-type Cond struct {
-	Yes []uint64
-	No  []uint64
+type Filter interface {
+	Apply(cu *cursor.Cursor, re encoding.Resolution, shard, view uint64) *ro2.Bitmap
 }
 
-// IsEmpty return true if there is no row in yes or no conditions.
-func (f *Cond) IsEmpty() bool {
-	return len(f.Yes) == 0 && len(f.No) == 0
+type And struct {
+	Left, Right Filter
+}
+
+func (a And) Apply(cu *cursor.Cursor, re encoding.Resolution, shard, view uint64) *ro2.Bitmap {
+	if a.Left == nil {
+		return a.Right.Apply(cu, re, shard, view)
+	}
+	left := a.Left.Apply(cu, re, shard, view)
+	if !left.Any() {
+		return left
+	}
+	return left.Intersect(a.Right.Apply(cu, re, shard, view))
+}
+
+type Or struct {
+	Left, Right Filter
+}
+
+func (o Or) Apply(cu *cursor.Cursor, re encoding.Resolution, shard, view uint64) *ro2.Bitmap {
+	left := o.Left.Apply(cu, re, shard, view)
+	return left.Union(o.Right.Apply(cu, re, shard, view))
+}
+
+type Yes struct {
+	Field  models.Field
+	Values []uint64
+}
+
+type No struct {
+	Field  models.Field
+	Values []uint64
 }
 
 // Apply searches for columns matching conditions in f for ra bitmap. ra must be
 // mutex encoded.
-func (f *Cond) Apply(shard uint64, cu *cursor.Cursor, exists *ro2.Bitmap) *ro2.Bitmap {
-	if f.IsEmpty() {
+func (f *Yes) Apply(cu *cursor.Cursor, re encoding.Resolution, shard, view uint64) *ro2.Bitmap {
+	if len(f.Values) == 0 {
 		return ro2.NewBitmap()
 	}
-	all := make([]*ro2.Bitmap, 0, len(f.Yes)+len(f.No))
-
-	for _, v := range f.Yes {
-		all = append(all, ro2.Row(cu, shard, v))
+	if !cu.ResetData(re, f.Field, view) {
+		return ro2.NewBitmap()
 	}
-	for _, v := range f.No {
-		all = append(all, exists.Difference(ro2.Row(cu, shard, v)))
+	all := make([]*ro2.Bitmap, 0, len(f.Values))
+	for _, v := range f.Values {
+		all = append(all, ro2.Row(cu, shard, v))
 	}
 	b := all[0]
 	return b.Union(all[1:]...)
 }
 
-type FilterSet [models.SearchFieldSize]Cond
-
-// ScanFields returns a set of all fields to scan for this filter.
-func (fs *FilterSet) ScanFields() (set models.BitSet) {
-	fs.idx(func(i int) {
-		set.Set(models.Field(i))
-	})
-	return set
-}
-
-func (fs *FilterSet) idx(f func(int)) {
-	for i := range fs {
-		if fs[i].IsEmpty() {
-			continue
-		}
-		f(i)
+func (f *No) Apply(cu *cursor.Cursor, re encoding.Resolution, shard, view uint64) *ro2.Bitmap {
+	if len(f.Values) == 0 {
+		return ro2.NewBitmap()
 	}
-}
-
-func (fs *FilterSet) Set(yes bool, f models.Field, values ...uint64) {
-	co := &fs[f]
-	if yes {
-		co.Yes = append(co.Yes, values...)
-		return
+	if !cu.ResetExistence(re, f.Field, view) {
+		return ro2.NewBitmap()
 	}
-	co.No = append(co.No, values...)
+	ex := ro2.Existence(cu, shard)
+	if !cu.ResetData(re, f.Field, view) {
+		return ro2.NewBitmap()
+	}
+	all := make([]*ro2.Bitmap, 0, len(f.Values))
+	for _, v := range f.Values {
+		all = append(all, ex.Difference(ro2.Row(cu, shard, v)))
+	}
+	b := all[0]
+	return b.Union(all[1:]...)
 }
 
-func (ts *Timeseries) compile(fs wq.Filters) FilterSet {
-	var a FilterSet
+func (ts *Timeseries) compile(fs wq.Filters) Filter {
+	var a Filter
 	for _, f := range fs {
 		switch f.Key {
 		case "city":
@@ -85,14 +98,31 @@ func (ts *Timeseries) compile(fs wq.Filters) FilterSet {
 			case "is", "is_not":
 				code, _ := strconv.Atoi(f.Value[0])
 				if code == 0 {
-					return FilterSet{}
+					return nil
 				}
-				a.Set(f.Op == "is", models.Field_city, uint64(code))
+				value := []uint64{uint64(code)}
+				if f.Op == "is" {
+					a = And{
+						Left: a,
+						Right: &Yes{
+							Field:  models.Field_city,
+							Values: value,
+						},
+					}
+				} else {
+					a = And{
+						Left: a,
+						Right: &No{
+							Field:  models.Field_city,
+							Values: value,
+						},
+					}
+				}
 			}
 		default:
 			fd := models.Field(models.Field_value[f.Key])
 			if fd == 0 {
-				return FilterSet{}
+				return nil
 			}
 
 			switch f.Op {
@@ -101,7 +131,23 @@ func (ts *Timeseries) compile(fs wq.Filters) FilterSet {
 				for i := range f.Value {
 					values[i] = ts.Translate(fd, []byte(f.Value[i]))
 				}
-				a.Set(f.Op == "is", fd, values...)
+				if f.Op == "is" {
+					a = And{
+						Left: a,
+						Right: &Yes{
+							Field:  fd,
+							Values: values,
+						},
+					}
+				} else {
+					a = And{
+						Left: a,
+						Right: &No{
+							Field:  fd,
+							Values: values,
+						},
+					}
+				}
 			case "matches", "does_not_match":
 				var values []uint64
 				for _, source := range f.Value {
@@ -111,7 +157,7 @@ func (ts *Timeseries) compile(fs wq.Filters) FilterSet {
 					} else {
 						re, err := regexp.Compile(source)
 						if err != nil {
-							return FilterSet{}
+							return nil
 						}
 
 						ts.Search(fd, prefix, func(key []byte, val uint64) {
@@ -122,16 +168,31 @@ func (ts *Timeseries) compile(fs wq.Filters) FilterSet {
 					}
 				}
 				if len(values) == 0 {
-					return FilterSet{}
+					return nil
 				}
 
-				a.Set(f.Op == "matches", fd, values...)
-
+				if f.Op == "matches" {
+					a = And{
+						Left: a,
+						Right: &Yes{
+							Field:  fd,
+							Values: values,
+						},
+					}
+				} else {
+					a = And{
+						Left: a,
+						Right: &No{
+							Field:  fd,
+							Values: values,
+						},
+					}
+				}
 			case "contains", "does_not_contain":
 				var values []uint64
 				re, err := regexp.Compile(strings.Join(f.Value, "|"))
 				if err != nil {
-					return FilterSet{}
+					return nil
 				}
 				ts.Search(fd, []byte{}, func(b []byte, val uint64) {
 					if re.Match(b) {
@@ -139,10 +200,25 @@ func (ts *Timeseries) compile(fs wq.Filters) FilterSet {
 					}
 				})
 
-				a.Set(f.Op == "contains", fd, values...)
-
+				if f.Op == "contains" {
+					a = And{
+						Left: a,
+						Right: &Yes{
+							Field:  fd,
+							Values: values,
+						},
+					}
+				} else {
+					a = And{
+						Left: a,
+						Right: &No{
+							Field:  fd,
+							Values: values,
+						},
+					}
+				}
 			default:
-				return FilterSet{}
+				return nil
 			}
 		}
 	}

@@ -11,10 +11,8 @@ import (
 	"time"
 
 	"github.com/cockroachdb/pebble"
-	"github.com/gernest/roaring"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
-	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/timeseries/cursor"
 	"github.com/vinceanalytics/vince/internal/util/assert"
@@ -83,8 +81,7 @@ func (db *DB) Iter(
 	domainId uint64,
 	re encoding.Resolution,
 	start, end time.Time,
-	filters []models.Field,
-	f func(cu *cursor.Cursor, shard, view uint64, match *ro2.Bitmap, exists map[models.Field]*ro2.Bitmap) error) error {
+	f func(cu *cursor.Cursor, shard, view uint64, match *ro2.Bitmap) error) error {
 	db.shards.RLock()
 	defer db.shards.RUnlock()
 
@@ -92,31 +89,32 @@ func (db *DB) Iter(
 	if len(views) == 0 {
 		return nil
 	}
+	slices.Reverse(views)
 
 	cu := new(cursor.Cursor)
 	defer cu.Release()
-
 	for i := uint64(0); i <= db.shards.max; i++ {
 		sh := db.shards.data[i]
 		if sh == nil {
 			continue
 		}
+
 		it, err := sh.DB.NewIter(nil)
 		if err != nil {
 			return err
 		}
-		cu.SetIter(it)
-
+		cu.SetIter(it, domainId)
+		if !cu.SeekToDomainShard(re, views[0], views[len(views)-1]) {
+			// No data for the given domainId were observed for this shard.
+			// It is safe to skip the entire shard.
+			continue
+		}
 		for _, view := range views {
-			if !cu.ResetData(re, models.Field_domain, view) {
+			match := cu.DomainExistence(re, sh.ID, view)
+			if !match.Any() {
 				continue
 			}
-			m := ro2.Row(cu, sh.ID, domainId)
-			if !m.Any() {
-				continue
-			}
-			exists := readExistence(cu, re, filters, sh.ID, view)
-			err := f(cu, sh.ID, view, m, exists)
+			err := f(cu, sh.ID, view, match)
 			if err != nil {
 				it.Close()
 				return err
@@ -125,17 +123,6 @@ func (db *DB) Iter(
 		it.Close()
 	}
 	return nil
-}
-
-func readExistence(cu *cursor.Cursor, re encoding.Resolution, fields []models.Field, shard, view uint64) (m map[models.Field]*ro2.Bitmap) {
-	m = make(map[models.Field]*roaring.Bitmap)
-	for _, f := range fields {
-		if !cu.ResetExistence(re, f, view) {
-			continue
-		}
-		m[f] = ro2.Existence(cu, shard)
-	}
-	return
 }
 
 func (db *DB) Shard(shard uint64) *Shard {
