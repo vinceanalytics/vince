@@ -22,10 +22,3 @@ func TranslateID(field models.Field, id uint64) []byte {
 	binary.BigEndian.PutUint64(o[3:], id)
 	return o
 }
-
-func TranslateSeq(field models.Field, o []byte) []byte {
-	_ = o[2]
-	copy(o, keys.TranslateSeqPrefix)
-	o[2] = byte(field)
-	return o
-}

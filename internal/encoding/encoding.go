@@ -99,7 +99,7 @@ func APIKeyHash(hash []byte) []byte {
 
 func ACME(key []byte) []byte {
 	o := make([]byte, 2+len(key))
-	copy(o, keys.APIKeyHashPrefix)
+	copy(o, keys.AcmePrefix)
 	copy(o[2:], key)
 	return o
 }
