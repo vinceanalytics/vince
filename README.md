@@ -9,7 +9,7 @@
   <a href="https://vinceanalytics.com/">Website</a> |
   <a href="https://vinceanalytics.com/blog/deploy-local/">Getting started</a> |
   <a href="https://vinceanalytics.com/tags/api/">API</a>  |
-  <a href="https://demo.vinceanalytics.com/v1/share/vinceanalytics.com?auth=Ls9tV4pzqOn7BJ7-">Demo</a> 
+  <a href="https://demo.vinceanalytics.com/v1/share/vinceanalytics.com?auth=Ls9tV4pzqOn7BJ7-&demo=true">Demo</a> 
 </p>
 
 **Vince** is a self hosted alternative to Google Analytics.
