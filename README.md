@@ -89,7 +89,7 @@ vince --version
 
 | feature |  vince | plausible |
 |---------|--------| -----------|
-| Entrerprise features | :x:    | :white_check_mark:|
+| Enterprise features | :x:    | :white_check_mark:|
 | Hosted offering | :x:    | :white_check_mark:|
 | Multi tenant | :x:    | :white_check_mark:|
 | Funnels | :x:    | :white_check_mark:|
