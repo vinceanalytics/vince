@@ -118,3 +118,11 @@ vince --version
 # Credit
 
 [Plausible Analytics](https://github.com/plausible/analytics) : `vince` started as a Go port of plausible with a focus on self hosting.
+
+# Note from Author
+
+My naame is [Geofrey Ernest](https://github.com/gernest), a senior software engineer based in Arusha, Tanzania.
+
+`vince` is a result of 3 years of research on how to apply Compressed Roaring Bitmap Indexes on web analytics events to achieve storage efficiency and supreme query speeds.
+
+I am currently looking for fulltime remote work, and I'm struggling because Remote now seems to mean Remote US and Remote EU and I'm stuck here in Tanzania. If you are a hiring manager please **give** me a shot, I promise you won't reget it.
