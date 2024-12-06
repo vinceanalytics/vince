@@ -29,3 +29,9 @@ message System {
   uint64 expiry = 1;
   string email = 2;
 }
+
+
+message Admin {
+  string name = 1;
+  bytes hashed_password = 2;
+}

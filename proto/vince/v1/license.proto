@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package v1;
-
-message License {
-  uint64 expiry = 4;
-  string email = 5;
-}

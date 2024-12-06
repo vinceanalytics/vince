@@ -1,7 +1,6 @@
 package ops
 
 import (
-	"bytes"
 	"cmp"
 	"crypto/sha512"
 	"errors"
@@ -46,10 +45,10 @@ type Ops struct {
 
 func New(db *pebble.DB, tr translation.Translator, sites ...string) *Ops {
 	o := &Ops{db: db, tr: tr}
-	name, passwd, err := loadAdmin(db)
+	admin, err := LoadAdmin(db)
 	assert.Nil(err, "checking admin")
-	o.admin.name = name
-	o.admin.password = passwd
+	o.admin.name = admin.Name
+	o.admin.password = admin.HashedPassword
 	o.sites.domains = make(map[string]*v1.Site)
 	err = data.Prefix(db, keys.SitePrefix, func(key, value []byte) error {
 		var s v1.Site
@@ -221,7 +220,9 @@ func CreateAdmin(db *pebble.DB, name string, password string) error {
 	if err != nil {
 		return fmt.Errorf("hashing admin password %w", err)
 	}
-	err = db.Set(keys.AdminPrefix, hashed, nil)
+	admin := &v1.Admin{Name: name, HashedPassword: hashed}
+	data, _ := proto.Marshal(admin)
+	err = db.Set(keys.AdminPrefix, data, nil)
 	if err != nil {
 		return fmt.Errorf("saving admin %w", err)
 	}
@@ -237,14 +238,16 @@ func (db *Ops) Admin() (name string) {
 	return db.admin.name
 }
 
-func loadAdmin(db *pebble.DB) (name string, password []byte, err error) {
+func LoadAdmin(db *pebble.DB) (a *v1.Admin, err error) {
+	a = &v1.Admin{}
 	err = data.Get(db, keys.AdminPrefix, func(val []byte) error {
-		name = "acme"
-		password = bytes.Clone(val)
-		return nil
+		return proto.Unmarshal(val, a)
 	})
-	if errors.Is(err, pebble.ErrNotFound) {
-		err = errors.New("admin account not found")
+	if err != nil {
+		if errors.Is(err, pebble.ErrNotFound) {
+			err = errors.New("admin account not found")
+		}
+		return
 	}
 	return
 }

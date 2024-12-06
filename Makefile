@@ -1,6 +1,6 @@
 dev:
 	go build -o bin/vince
-	./bin/vince serve  --adminName acme --adminPassword 1234 --domains vinceanalytics.com --profile
+	./bin/vince serve  --adminName yolo --adminPassword 1234 --domains vinceanalytics.com --profile
 
 docker:
 	docker run --rm  -p 8080:8080 -v ./vince-data:/vince-data ghcr.io/vinceanalytics/vince:v1.7.1 serve  --adminName acme --adminPassword 1234 --domains vinceanalytics.com --profile

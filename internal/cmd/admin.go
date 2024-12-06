@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/urfave/cli/v3"
 	"github.com/vinceanalytics/vince/internal/ops"
-	"github.com/vinceanalytics/vince/internal/util/data"
+	"github.com/vinceanalytics/vince/internal/shards"
 )
 
 var admin = &cli.Command{
@@ -32,11 +33,22 @@ var admin = &cli.Command{
 		},
 	},
 	Action: func(ctx context.Context, c *cli.Command) error {
-		db, err := data.Open(c.String("data"), nil)
+		dataPath := c.String("data")
+		db, err := shards.New(dataPath)
 		if err != nil {
 			return err
 		}
 		defer db.Close()
-		return ops.CreateAdmin(db, c.String("name"), c.String("password"))
+
+		err = ops.CreateAdmin(db.Get(), c.String("name"), c.String("password"))
+		if err != nil {
+			return err
+		}
+		a, err := ops.LoadAdmin(db.Get())
+		if err != nil {
+			return err
+		}
+		slog.Info("successfully created admin account", "name", a.Name)
+		return nil
 	},
 }
