@@ -84,6 +84,31 @@ vince --version
 2024/10/23 15:32:08 INFO starting server addr=:8080
 ```
 
+## Start with docker and docker compose
+
+You can start vince with docker and docker compose.
+
+To start with docker,
+
+```
+docker run -it -p 8080:8080 -v ./vince:/data ghcr.io/vinceanalytics/vince serve --data=/data --adminName acme --adminPassword 1234
+```
+
+Here is a sample docker-compose.yml file,
+
+```yml
+name: <your project name>
+services:
+    vince:
+        stdin_open: true
+        tty: true
+        ports:
+            - 8080:8080
+        volumes:
+            - ./vince:/data
+        image: ghcr.io/vinceanalytics/vince
+        command: serve --data=/data --adminName acme --adminPassword 1234
+```
 
 # Comparison with Plausible Analytics
 
