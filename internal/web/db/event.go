@@ -127,7 +127,7 @@ func parseQueryAdvertisements(q url.Values) url.Values {
 	}
 
 	// if there are utm parameters, do not overwrite them
-	if q.Get("utm_medium") != "" || q.Get("utm_source") != "" || q.Get("utm_campaign") != "" {
+	if q.Get("utm_medium") != "" || q.Get("utm_source") != "" {
 		return q
 	}
 
@@ -159,7 +159,7 @@ func parseQueryAdvertisements(q url.Values) url.Values {
 
 	if q.Get("ScCid") != "" || q.Get("sccid") != "" || q.Get("SCCID") != "" {
 		q.Set("utm_medium", "cpc")
-		q.Set("utm_source", "snaps")
+		q.Set("utm_source", "snapchat")
 	}
 
 	// Put bing and google as last, in case someone shares the gclid or msclkid on other socials, that takes precedence
