@@ -74,7 +74,7 @@ func (db *Config) parse(r *http.Request) (*models.Model, error) {
 	}
 
 	host := req.hostname
-	query := req.uri.Query()
+	query := parseQueryAdvertisements(req.uri.Query())
 
 	ref, src, err := refSource(db.lo, query, req.referrer)
 	if err != nil {
@@ -109,6 +109,71 @@ func (db *Config) parse(r *http.Request) (*models.Model, error) {
 	e.Referrer = []byte(ref)
 	e.Timestamp = req.ts.UnixMilli()
 	return e, nil
+}
+
+func parseQueryAdvertisements(q url.Values) url.Values {
+	// First handle affiliates before other advertisement channels
+	affiliate := ""
+	if q.Get("ref") != "" {
+		affiliate = q.Get("ref")
+	} else if q.Get("affiliate") != "" {
+		affiliate = q.Get("affiliate")
+	}
+	affiliate = strings.TrimSpace(affiliate)
+	if affiliate != "" {
+		q.Set("utm_medium", "affiliate")
+		q.Set("utm_source", strings.ToLower(affiliate))
+		return q
+	}
+
+	// if there are utm parameters, do not overwrite them
+	if q.Get("utm_medium") != "" || q.Get("utm_source") != "" || q.Get("utm_campaign") != "" {
+		return q
+	}
+
+	// Handle other advertisement channels
+	if q.Get("fbclid") != "" || q.Get("FBCLID") != "" {
+		q.Set("utm_medium", "cpc")
+		q.Set("utm_source", "facebook")
+	}
+
+	if q.Get("twclid") != "" || q.Get("TWCLID") != "" {
+		q.Set("utm_medium", "cpc")
+		q.Set("utm_source", "twitter")
+	}
+
+	if q.Get("rdt_cid") != "" || q.Get("RDT_CID") != "" {
+		q.Set("utm_medium", "cpc")
+		q.Set("utm_source", "reddit")
+	}
+
+	if q.Get("li_fat_id") != "" || q.Get("LI_FAT_ID") != "" {
+		q.Set("utm_medium", "cpc")
+		q.Set("utm_source", "linkedin")
+	}
+
+	if q.Get("ttclid") != "" || q.Get("TTCLID") != "" {
+		q.Set("utm_medium", "cpc")
+		q.Set("utm_source", "tiktok")
+	}
+
+	if q.Get("ScCid") != "" || q.Get("sccid") != "" || q.Get("SCCID") != "" {
+		q.Set("utm_medium", "cpc")
+		q.Set("utm_source", "snaps")
+	}
+
+	// Put bing and google as last, in case someone shares the gclid or msclkid on other socials, that takes precedence
+	if q.Get("msclkid") != "" || q.Get("MSCLKID") != "" {
+		q.Set("utm_medium", "cpc")
+		q.Set("utm_source", "bing")
+	}
+
+	if q.Get("gclid") != "" || q.Get("GCLID") != "" {
+		q.Set("utm_medium", "cpc")
+		q.Set("utm_source", "google")
+	}
+
+	return q
 }
 
 func sanitizeHost(s string) string {
