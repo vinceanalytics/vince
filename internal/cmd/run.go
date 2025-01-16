@@ -29,7 +29,7 @@ var serve = &cli.Command{
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:        "listen",
-			Usage:       "host:port to dind the servser",
+			Usage:       "host:port to bind the server",
 			Value:       ":8080",
 			Sources:     cli.EnvVars("VINCE_LISTEN"),
 			Destination: &oracle.Listen,
