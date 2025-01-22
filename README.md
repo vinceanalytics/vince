@@ -1,4 +1,3 @@
-
 <p align="center">
   <picture width="640" height="250">
     <source media="(prefers-color-scheme: dark)" srcset="./app/images/logo-darkmode.svg">
@@ -17,19 +16,19 @@
 
 # Features
 
-- **Automatic TLS** native support for let's encrypt.
-- **Drop in replacement for plausible** you can use existing plausible  scripts and just point them to the vince instance (note that vince is lean and only covers features for a single entity self hosting, so it is not our goal to be feature parity with plausible).
-- **Outbounds links tracking**
+- **Automatic TLS** native support for Let's Encrypt.
+- **Drop in replacement for Plausible Analytics** you can use existing Plausible scripts and just point them to the vince instance (note that vince is lean and only covers features for a single entity self hosting, so it is not our goal to be feature parity with Plausible).
+- **Outbound links tracking**
 - **File download tracking**
 - **404 page tracking**
 - **Custom event tracking**
 - **Time period comparison**
-- **Public dashboards** allow access to the dashoard to anyone(by default all dashboards are private).
-- **Unique shared access** generate unique links to dahboards that can be password protected.
+- **Public dashboards** allow access to the dashboard to anyone (by default all dashboards are private).
+- **Unique shared access** generate unique links to dashboards that can be password protected.
 - **Zero Dependency**: Ships a single binary with everything in it. No runtime dependency.
-- **Easy to operate**: One line commandline flags with env variables is all you need.
+- **Easy to operate**: One line command line flags with env variables is all you need.
 - **Unlimited sites**: There is no limit on how many sites you can manage.
-- **Unlimited events**: scale according to availbale resources.
+- **Unlimited events**: scale according to available resources.
 - **Privacy friendly**: No cookies and fully compliant with GDPR, CCPA and PECR.
 
 
@@ -87,7 +86,7 @@ vince --version
 
 # Comparison with Plausible Analytics
 
-| feature |  vince | plausible |
+| feature |  vince | Plausible |
 |---------|--------| -----------|
 | Entrerprise features | :x:    | :white_check_mark:|
 | Hosted offering | :x:    | :white_check_mark:|
@@ -117,7 +116,7 @@ vince --version
 
 # Credit
 
-[Plausible Analytics](https://github.com/plausible/analytics) : `vince` started as a Go port of plausible with a focus on self hosting.
+[Plausible Analytics](https://github.com/Plausible/analytics) : `vince` started as a Go port of Plausible with a focus on self hosting.
 
 # Note from Author
 
