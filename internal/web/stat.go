@@ -4,6 +4,7 @@ import (
 	"math"
 	"net/http"
 	"slices"
+	"strings"
 
 	"github.com/vinceanalytics/vince/internal/api/aggregates"
 	"github.com/vinceanalytics/vince/internal/api/breakdown"
@@ -279,7 +280,10 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	for i := range o.Results {
 		m := o.Results[i]
-		m["name"] = m["referrer"]
+		name, _ := m["referrer"].(string)
+		name = strings.TrimPrefix(name, "https://")
+		name = strings.TrimPrefix(name, "http://")
+		m["name"] = name
 		delete(m, "referrer")
 	}
 	db.JSON(w, o)
