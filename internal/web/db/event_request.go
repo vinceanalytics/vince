@@ -190,7 +190,7 @@ func (rq *Request) parseUri(m map[string]any) error {
 
 var remoteIPHeaders = []string{
 	"x-vince-ip", "cf-connecting-ip", "b-forwarded-for",
-	"X-Real-IP", "X-Forwarded-For", "X-Client-IP",
+	"X-Real-IP", "X-Forwarded-For", "X-Client-IP", "Fly-Client-IP",
 }
 
 func remoteIP(r *http.Request) string {
