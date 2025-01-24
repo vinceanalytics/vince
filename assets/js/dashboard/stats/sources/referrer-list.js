@@ -28,7 +28,7 @@ export default function Referrers({ source }) {
 
   function externalLinkDest(referrer) {
     if (referrer.name === 'Direct / None') { return null }
-    return `https://${referrer.name}`
+    return referrer.name
   }
 
   function getFilterFor(referrer) {
