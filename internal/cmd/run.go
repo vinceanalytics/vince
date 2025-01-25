@@ -146,7 +146,7 @@ func run(ctx context.Context, c *cli.Command) error {
 		plug.Browser().Then(web.Home),
 	))
 
-	mux.HandleFunc("GET /{domain}", db.Wrap("query.Stats")(
+	mux.Handle("GET /{domain}/{$}", db.Wrap("query.Stats")(
 		plug.Browser().
 			With(web.RequireSiteAccess).
 			Then(web.Stats),
