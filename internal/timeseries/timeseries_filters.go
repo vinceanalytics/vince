@@ -7,6 +7,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
@@ -105,7 +106,7 @@ func (ts *Timeseries) compile(fs wq.Filters) Filter {
 					a = And{
 						Left: a,
 						Right: &Yes{
-							Field:  models.Field_city,
+							Field:  v1.Field_city,
 							Values: value,
 						},
 					}
@@ -113,14 +114,14 @@ func (ts *Timeseries) compile(fs wq.Filters) Filter {
 					a = And{
 						Left: a,
 						Right: &No{
-							Field:  models.Field_city,
+							Field:  v1.Field_city,
 							Values: value,
 						},
 					}
 				}
 			}
 		default:
-			fd := models.Field(models.Field_value[f.Key])
+			fd := models.Field(v1.Field_value[f.Key])
 			if fd == 0 {
 				return nil
 			}

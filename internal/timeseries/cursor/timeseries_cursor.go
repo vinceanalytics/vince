@@ -8,6 +8,7 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
@@ -50,15 +51,15 @@ func (cu *Cursor) ResetExistence(res encoding.Resolution, field models.Field, vi
 
 func (cu *Cursor) SeekToDomainShard(res encoding.Resolution, lo, hi uint64) bool {
 	cu.Reset()
-	cu.lo.WriteExistence(res, models.Field_domain, lo, cu.domainId, 0)
-	cu.hi.WriteExistence(res, models.Field_domain, hi, cu.domainId, math.MaxUint64)
+	cu.lo.WriteExistence(res, v1.Field_domain, lo, cu.domainId, 0)
+	cu.hi.WriteExistence(res, v1.Field_domain, hi, cu.domainId, math.MaxUint64)
 	return cu.it.SeekGE(cu.lo[:]) && cu.Valid()
 }
 
 func (cu *Cursor) DomainExistence(res encoding.Resolution, shard, view uint64) *ro2.Bitmap {
 	cu.Reset()
-	cu.lo.WriteExistence(res, models.Field_domain, view, cu.domainId, 0)
-	cu.hi.WriteExistence(res, models.Field_domain, view, cu.domainId, math.MaxUint64)
+	cu.lo.WriteExistence(res, v1.Field_domain, view, cu.domainId, 0)
+	cu.hi.WriteExistence(res, v1.Field_domain, view, cu.domainId, math.MaxUint64)
 	ok := cu.it.SeekGE(cu.lo[:]) && cu.Valid()
 	if !ok {
 		return ro2.NewBitmap()

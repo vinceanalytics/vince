@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/keys"
-	"github.com/vinceanalytics/vince/internal/models"
 )
 
 func TestPrefix(t *testing.T) {
@@ -22,7 +22,7 @@ func TestPrefix(t *testing.T) {
 			keys.DataPrefix,
 			func() []byte {
 				var k Key
-				k.WriteData(Global, models.Field_domain, 0, 0, 0)
+				k.WriteData(Global, v1.Field_domain, 0, 0, 0)
 				return k.Bytes()
 			},
 		},
@@ -31,7 +31,7 @@ func TestPrefix(t *testing.T) {
 			keys.DataExistsPrefix,
 			func() []byte {
 				var k Key
-				k.WriteExistence(Global, models.Field_domain, 0, 0, 0)
+				k.WriteExistence(Global, v1.Field_domain, 0, 0, 0)
 				return k.Bytes()
 			},
 		},
@@ -67,14 +67,14 @@ func TestPrefix(t *testing.T) {
 			"translate Key",
 			keys.TranslateKeyPrefix,
 			func() []byte {
-				return TranslateKey(models.Field_domain, []byte("test"))
+				return TranslateKey(v1.Field_domain, []byte("test"))
 			},
 		},
 		{
 			"translate id",
 			keys.TranslateIDPrefix,
 			func() []byte {
-				return TranslateID(models.Field_domain, 0)
+				return TranslateID(v1.Field_domain, 0)
 			},
 		},
 	}

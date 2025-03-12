@@ -1,11 +1,11 @@
 module github.com/vinceanalytics/vince
 
-go 1.23.2
+go 1.24
 
 require (
 	filippo.io/age v1.2.1
-	github.com/cockroachdb/pebble v0.0.0-20241105214940-2da617a0a886
-	github.com/cockroachdb/swiss v0.0.0-20240612210725-f4de07ae6964
+	github.com/cockroachdb/pebble v0.0.0-20250312144945-aabf6395a20e
+	github.com/cockroachdb/swiss v0.0.0-20250304010804-34a2c6a59016
 	github.com/dlclark/regexp2 v1.11.4
 	github.com/gernest/roaring v0.23.0
 	github.com/google/flatbuffers v24.3.25+incompatible
@@ -24,9 +24,8 @@ require (
 	github.com/DataDog/zstd v1.5.6-0.20230824185856-869dae002e5e // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cockroachdb/crlib v0.0.0-20241030175859-ddcdee82a927 // indirect
+	github.com/cockroachdb/crlib v0.0.0-20241112164430-1264a2edc35b // indirect
 	github.com/cockroachdb/errors v1.11.3 // indirect
-	github.com/cockroachdb/fifo v0.0.0-20240606204812-0bbfbd93a7ce // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect

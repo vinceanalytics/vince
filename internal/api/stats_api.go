@@ -5,11 +5,11 @@ import (
 	"slices"
 	"strings"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/api/aggregates"
 	"github.com/vinceanalytics/vince/internal/api/breakdown"
 	"github.com/vinceanalytics/vince/internal/api/timeseries"
 	"github.com/vinceanalytics/vince/internal/api/visitors"
-	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/db/plug"
 	"github.com/vinceanalytics/vince/internal/web/query"
@@ -74,7 +74,7 @@ func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	domain := r.URL.Query().Get("site_id")
 	params := query.New(r.URL.Query())
-	if params.Property() == models.Field_domain {
+	if params.Property() == v1.Field_domain {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -82,15 +82,15 @@ func Breakdown(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		rs  *breakdown.Result
 		err error
 	)
-	if params.Property() == models.Field_city {
+	if params.Property() == v1.Field_city {
 		rs, err = breakdown.BreakdownCity(ctx, db.TimeSeries(), domain, params, params.Metrics())
 	} else {
 		rs, err = breakdown.Breakdown(ctx, db.TimeSeries(), domain, params, params.Metrics(), params.Property())
-		if err == nil && params.Property() == models.Field_subdivision1_code {
+		if err == nil && params.Property() == v1.Field_subdivision1_code {
 			for i := range rs.Results {
 				m := rs.Results[i]
-				m["region"] = m[models.Field_subdivision1_code.String()]
-				delete(m, models.Field_subdivision1_code.String())
+				m["region"] = m[v1.Field_subdivision1_code.String()]
+				delete(m, v1.Field_subdivision1_code.String())
 			}
 		}
 	}

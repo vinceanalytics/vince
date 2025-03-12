@@ -16,7 +16,6 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
-	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/util/assert"
 	"github.com/vinceanalytics/vince/internal/util/data"
 	"github.com/vinceanalytics/vince/internal/util/translation"
@@ -159,7 +158,7 @@ func (db *Ops) DeleteDomain(domain string) {
 }
 
 func (db *Ops) SeenFirstStats(domain string) (ok bool) {
-	key := encoding.TranslateID(models.Field_domain, db.tr.Translate(models.Field_domain, []byte(domain)))
+	key := encoding.TranslateID(v1.Field_domain, db.tr.Translate(v1.Field_domain, []byte(domain)))
 	return data.Has(db.db, key)
 }
 

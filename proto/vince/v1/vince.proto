@@ -7,3 +7,64 @@ message APIKey {
   string prefix = 2;
   bytes hash = 3;
 }
+
+enum Resolution {
+  Global = 0;
+  Minute = 1;
+  Hour = 2;
+  Day = 3;
+  Week = 4;
+  Month = 5;
+}
+
+enum Prefix {
+  Data = 0;
+  DataExists = 1;
+  Cookie = 2;
+  SITE = 3;
+  Acme = 4;
+  APIKeyName = 5;
+  APIKeyHash = 6;
+  TranslateKey = 7;
+  TranslateID = 8;
+  TranslateSeq = 9;
+  CountryCode = 10;
+  RegionCode = 11;
+  RegionName = 12;
+  CityName = 13;
+  CityCode = 14;
+  Referral = 15;
+  ADMIN = 16;
+}
+
+enum Field {
+  unknown = 0;
+  domain = 1;
+  browser = 2;
+  browser_version = 3;
+  country = 4;
+  device = 5;
+  entry_page = 6;
+  event = 7;
+  exit_page = 8;
+  host = 9;
+  os = 10;
+  os_version = 11;
+  page = 12;
+  referrer = 13;
+  source = 14;
+  utm_campaign = 15;
+  utm_content = 16;
+  utm_medium = 17;
+  utm_source = 18;
+  utm_term = 19;
+  subdivision1_code = 20;
+  subdivision2_code = 21;
+  city = 22;
+  view = 23;
+  session = 24;
+  timestamp = 25;
+  id = 26;
+  bounce = 27;
+  duration = 28;
+}
