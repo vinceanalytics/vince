@@ -1,37 +1,23 @@
 package keys
 
-const (
-	base byte = 16 + iota
-	data
-	exists
-	ops
-	tr
-
-	countryCode
-	regionCode
-	regionName
-	cityName
-	cityCode
-	referral
-)
+import v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 
 var (
-	DataPrefix         = []byte{data}
-	DataExistsPrefix   = []byte{exists}
-	Cookie             = []byte{ops, 0x00}
-	SitePrefix         = []byte{ops, 0x01}
-	AcmePrefix         = []byte{ops, 0x02}
-	APIKeyNamePrefix   = []byte{ops, 0x03}
-	APIKeyHashPrefix   = []byte{ops, 0x04}
-	AdminPrefix        = []byte{ops, 0x05}
-	TranslateKeyPrefix = []byte{tr, 0x00}
-	TranslateIDPrefix  = []byte{tr, 0x01}
-	TranslateSeqPrefix = []byte{tr, 0x02}
-
-	CountryCodePrefix = []byte{countryCode}
-	RegionCodePrefix  = []byte{regionCode}
-	RegionNamePrefix  = []byte{regionName}
-	CityNamePrefix    = []byte{cityName}
-	CityCodePrefix    = []byte{cityCode}
-	ReferralPrefix    = []byte{referral}
+	DataPrefix         = []byte{byte(v1.Prefix_Data)}
+	DataExistsPrefix   = []byte{byte(v1.Prefix_DataExists)}
+	Cookie             = []byte{byte(v1.Prefix_Cookie)}
+	SitePrefix         = []byte{byte(v1.Prefix_SITE)}
+	AcmePrefix         = []byte{byte(v1.Prefix_Acme)}
+	APIKeyNamePrefix   = []byte{byte(v1.Prefix_APIKeyName)}
+	APIKeyHashPrefix   = []byte{byte(v1.Prefix_APIKeyHash)}
+	AdminPrefix        = []byte{byte(v1.Prefix_ADMIN)}
+	TranslateKeyPrefix = []byte{byte(v1.Prefix_TranslateKey)}
+	TranslateIDPrefix  = []byte{byte(v1.Prefix_TranslateID)}
+	TranslateSeqPrefix = []byte{byte(v1.Prefix_TranslateSeq)}
+	CountryCodePrefix  = []byte{byte(v1.Prefix_CountryCode)}
+	RegionCodePrefix   = []byte{byte(v1.Prefix_RegionCode)}
+	RegionNamePrefix   = []byte{byte(v1.Prefix_RegionName)}
+	CityNamePrefix     = []byte{byte(v1.Prefix_CityName)}
+	CityCodePrefix     = []byte{byte(v1.Prefix_CityCode)}
+	ReferralPrefix     = []byte{byte(v1.Prefix_Referral)}
 )

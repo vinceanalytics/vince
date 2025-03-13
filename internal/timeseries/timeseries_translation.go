@@ -78,7 +78,7 @@ func newTranslation(db *pebble.DB, tree *treeLocked) *translation {
 				continue
 			}
 			f := models.Field(key[2])
-			tr.ranges[f.Mutex()] = val
+			tr.ranges[models.AsMutex(f)] = val
 		}
 		start := time.Now()
 		slog.Info("loading translation data")
@@ -113,7 +113,7 @@ func (tr *translation) Assign(field models.Field, value []byte) uint64 {
 	if uid > 0 {
 		return uid
 	}
-	idx := field.Mutex()
+	idx := models.AsMutex(field)
 	tr.ranges[idx]++
 	uid = tr.ranges[idx]
 

@@ -2,6 +2,8 @@ package models
 
 import (
 	"math/bits"
+
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 )
 
 type BitSet uint64
@@ -28,7 +30,7 @@ func (v BitSet) Len() int {
 
 func (v BitSet) All() (o []Field) {
 	o = make([]Field, 0, v.Len())
-	for i := Field_domain; i <= Field_duration; i++ {
+	for i := v1.Field_domain; i <= v1.Field_duration; i++ {
 		if v.Test(i) {
 			o = append(o, i)
 		}
