@@ -95,7 +95,3 @@ func ACME(key []byte) []byte {
 	copy(o[2:], key)
 	return o
 }
-
-func num(b []byte, v uint64) []byte {
-	return binary.BigEndian.AppendUint64(b, v)
-}

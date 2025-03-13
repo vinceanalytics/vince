@@ -29,5 +29,6 @@ func TestTranslate(t *testing.T) {
 		ts := New()
 		require.Equal(t, uint8(0), models.AsMutex(v1.Field_domain))
 		require.Equal(t, uint8(len(ts.mapping)-1), models.AsMutex(v1.Field_subdivision2_code))
+		_ = ts
 	})
 }
