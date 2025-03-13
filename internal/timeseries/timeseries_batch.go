@@ -72,10 +72,6 @@ func (b *batch) setTs(timestamp int64) {
 	b.views[encoding.Day] = uint64(compute.Date(ts).UnixMilli())
 }
 
-func (b *batch) setDomain(m *models.Model) {
-
-}
-
 // saves only current timestamp.
 func (b *batch) save() error {
 	if b.events == 0 {
