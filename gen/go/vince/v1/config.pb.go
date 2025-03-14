@@ -22,14 +22,14 @@ const (
 
 type Site struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Domain        string                 `protobuf:"bytes,2,opt,name=domain,proto3" json:"domain,omitempty"`
+	Public        bool                   `protobuf:"varint,3,opt,name=public,proto3" json:"public,omitempty"`
 	Shares        []*Share               `protobuf:"bytes,4,rep,name=shares,proto3" json:"shares,omitempty"`
+	Locked        bool                   `protobuf:"varint,5,opt,name=locked,proto3" json:"locked,omitempty"`
 	Goals         []*Goal                `protobuf:"bytes,6,rep,name=goals,proto3" json:"goals,omitempty"`
 	unknownFields protoimpl.UnknownFields
-	Id            uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	sizeCache     protoimpl.SizeCache
-	Public        bool `protobuf:"varint,3,opt,name=public,proto3" json:"public,omitempty"`
-	Locked        bool `protobuf:"varint,5,opt,name=locked,proto3" json:"locked,omitempty"`
 }
 
 func (x *Site) Reset() {
@@ -218,9 +218,9 @@ func (x *Share) GetPassword() []byte {
 
 type System struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Expiry        uint64                 `protobuf:"varint,1,opt,name=expiry,proto3" json:"expiry,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	unknownFields protoimpl.UnknownFields
-	Expiry        uint64 `protobuf:"varint,1,opt,name=expiry,proto3" json:"expiry,omitempty"`
 	sizeCache     protoimpl.SizeCache
 }
 
