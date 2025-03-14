@@ -24,21 +24,15 @@ import (
 )
 
 type Ops struct {
-	db    *pebble.DB
 	tr    translation.Translator
+	db    *pebble.DB
 	admin struct {
 		name     string
 		password []byte
 	}
 	sites struct {
-		sync.RWMutex
-		// We expect a reasonable number of sites to be managed by a single instance
-		// we keep this in memory because we ask for sites a lot when a user access
-		// dashboard. It will bring a lot of stress on pebble for those excessive
-		// lookups.
-		//
-		// Values must never be modified. Use cloneProto for safe copies.
 		domains map[string]*v1.Site
+		sync.RWMutex
 	}
 }
 

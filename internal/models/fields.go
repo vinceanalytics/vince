@@ -4,22 +4,13 @@ import v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 
 const (
 	MutexFieldSize       = v1.Field_session + 1
-	TranslatedFieldsSize = v1.Field_subdivision2_code + 1
-	SearchFieldSize      = v1.Field_city + 1
+	TranslatedFieldsSize = v1.Field_subdivision2_code
 	BSIFieldsSize        = v1.Field_duration - v1.Field_timestamp + 1
 	AllFields            = v1.Field_duration + 1
 )
 
 func AsMutex(f Field) byte {
-	return byte(f)
-}
-
-func AsBSI(f Field) byte {
-	return byte(f - v1.Field_timestamp)
-}
-
-func BSI(i int) Field {
-	return Field(i) + v1.Field_timestamp
+	return byte(f - v1.Field_domain)
 }
 
 func Mutex(i int) Field {

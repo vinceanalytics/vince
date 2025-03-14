@@ -256,17 +256,17 @@ func makeClient(root string) {
 }
 
 type ClientReg struct {
+	Engine  *Engine `yaml:"engine" json:"engine"`
 	Regex   string  `yaml:"regex" json:"regex"`
 	Name    string  `yaml:"name" json:"name"`
 	Version string  `yaml:"version" json:"version"`
 	Url     string  `yaml:"url" json:"url"`
 	Type    string  `yaml:"type" json:"type"`
-	Engine  *Engine `yaml:"engine" json:"engine"`
 }
 
 type Engine struct {
-	Default  string            `yaml:"default" json:"default"`
 	Versions map[string]string `yaml:"versions" json:"versions"`
+	Default  string            `yaml:"default" json:"default"`
 }
 
 func genBrowserEngine(b *bytes.Buffer, root string) {
