@@ -24,15 +24,15 @@ import (
 )
 
 type Ops struct {
-	sites struct {
-		domains map[string]*v1.Site
-		sync.RWMutex
-	}
 	tr    translation.Translator
 	db    *pebble.DB
 	admin struct {
 		name     string
 		password []byte
+	}
+	sites struct {
+		domains map[string]*v1.Site
+		sync.RWMutex
 	}
 }
 
