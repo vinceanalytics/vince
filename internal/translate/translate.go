@@ -26,8 +26,8 @@ func (t *Transtate) Get(field models.Field, value []byte) (uint64, bool) {
 var seed = maphash.MakeSeed()
 
 type mapping struct {
-	mu sync.RWMutex
 	ma map[uint64]uint64
+	mu sync.RWMutex
 }
 
 func (m *mapping) Get(value []byte) (id uint64, found bool) {

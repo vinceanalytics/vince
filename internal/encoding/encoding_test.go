@@ -11,69 +11,69 @@ import (
 
 func TestPrefix(t *testing.T) {
 	type T struct {
+		key    func() []byte
 		name   string
 		prefix []byte
-		key    func() []byte
 	}
 
 	samples := []T{
 		{
-			"bitmap data",
-			keys.DataPrefix,
-			func() []byte {
+			name:   "bitmap data",
+			prefix: keys.DataPrefix,
+			key: func() []byte {
 				var k Key
 				k.WriteData(Global, v1.Field_domain, 0, 0, 0)
 				return k.Bytes()
 			},
 		},
 		{
-			"bitmap existence",
-			keys.DataExistsPrefix,
-			func() []byte {
+			name:   "bitmap existence",
+			prefix: keys.DataExistsPrefix,
+			key: func() []byte {
 				var k Key
 				k.WriteExistence(Global, v1.Field_domain, 0, 0, 0)
 				return k.Bytes()
 			},
 		},
 		{
-			"site",
-			keys.SitePrefix,
-			func() []byte {
+			name:   "site",
+			prefix: keys.SitePrefix,
+			key: func() []byte {
 				return Site([]byte("test"))
 			},
 		},
 		{
-			"api key name",
-			keys.APIKeyNamePrefix,
-			func() []byte {
+			name:   "api key name",
+			prefix: keys.APIKeyNamePrefix,
+			key: func() []byte {
 				return APIKeyName([]byte("test"))
 			},
 		},
 		{
-			"api key hash",
-			keys.APIKeyHashPrefix,
-			func() []byte {
+			name:   "api key hash",
+			prefix: keys.APIKeyHashPrefix,
+			key: func() []byte {
 				return APIKeyHash([]byte("test"))
 			},
 		},
 		{
-			"acme",
-			keys.AcmePrefix,
-			func() []byte {
+			name:   "acme",
+			prefix: keys.AcmePrefix,
+			key: func() []byte {
 				return ACME([]byte("test"))
 			},
 		},
 		{
-			"translate Key",
-			keys.TranslateKeyPrefix,
-			func() []byte {
+			name:   "translate Key",
+			prefix: keys.TranslateKeyPrefix,
+			key: func() []byte {
 				return TranslateKey(v1.Field_domain, []byte("test"))
 			},
 		},
 		{
-			"translate id",
-			keys.TranslateIDPrefix,
-			func() []byte {
+			name:   "translate id",
+			prefix: keys.TranslateIDPrefix,
+			key: func() []byte {
 				return TranslateID(v1.Field_domain, 0)
 			},
 		},

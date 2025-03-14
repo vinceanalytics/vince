@@ -45,13 +45,13 @@ func (o Or) Apply(cu *cursor.Cursor, re encoding.Resolution, shard, view uint64)
 }
 
 type Yes struct {
-	Field  models.Field
 	Values []uint64
+	Field  models.Field
 }
 
 type No struct {
-	Field  models.Field
 	Values []uint64
+	Field  models.Field
 }
 
 // Apply searches for columns matching conditions in f for ra bitmap. ra must be

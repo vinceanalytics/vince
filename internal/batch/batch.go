@@ -17,13 +17,13 @@ import (
 )
 
 type Batch struct {
-	keys   [models.MutexFieldSize][][]byte
 	tr     *translate.Transtate
+	data   map[key]*roaring.Bitmap
+	keys   [models.MutexFieldSize][][]byte
 	views  [encoding.Month + 1]uint64
 	domain uint64
 	id     uint64
 	shard  uint64
-	data   map[key]*roaring.Bitmap
 }
 
 func New(tr *translate.Transtate, startID uint64) *Batch {

@@ -47,9 +47,9 @@ type DB struct {
 	ops    *pebble.DB
 	base   string
 	shards struct {
-		sync.RWMutex
 		data [1 << 10]*Shard
 		max  uint64
+		sync.RWMutex
 	}
 }
 
@@ -155,8 +155,8 @@ func (db *DB) Close() error {
 }
 
 type Shard struct {
-	ID uint64
 	DB *pebble.DB
+	ID uint64
 }
 
 func NewShard(base string, shard uint64) *Shard {
