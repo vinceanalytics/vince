@@ -25,14 +25,8 @@ import (
 
 type Ops struct {
 	sites struct {
+		domains map[string]*v1.Site
 		sync.RWMutex
-		domains map[ // We expect a reasonable number of sites to be managed by a single instance
-		// we keep this in memory because we ask for sites a lot when a user access
-		// dashboard. It will bring a lot of stress on pebble for those excessive
-		// lookups.
-		//
-		// Values must never be modified. Use cloneProto for safe copies.
-		string]*v1.Site
 	}
 	tr    translation.Translator
 	db    *pebble.DB
