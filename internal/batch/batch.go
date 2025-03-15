@@ -91,8 +91,9 @@ func (b *Batch) Next(ts time.Time, domain []byte) {
 	b.shard = b.id / shardwidth.ShardWidth
 	b.Int64(v1.Field_minute, compute.Minute(ts).UnixMilli())
 	b.Int64(v1.Field_hour, compute.Hour(ts).UnixMilli())
-	b.Int64(v1.Field_week, compute.Week(ts).UnixMilli())
 	b.Int64(v1.Field_day, compute.Date(ts).UnixMilli())
+	b.Int64(v1.Field_week, compute.Week(ts).UnixMilli())
+	b.Int64(v1.Field_month, compute.Month(ts).UnixMilli())
 }
 
 func (b *Batch) Add(m *models.Model) {
