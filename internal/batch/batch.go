@@ -17,13 +17,12 @@ import (
 )
 
 type Batch struct {
-	tr     *translate.Transtate
-	data   map[key]*roaring.Bitmap
-	keys   [models.MutexFieldSize][][]byte
-	views  [encoding.Month + 1]uint64
-	domain uint64
-	id     uint64
-	shard  uint64
+	tr    *translate.Transtate
+	data  map[key]*roaring.Bitmap
+	keys  [models.MutexFieldSize][][]byte
+	views [encoding.Month + 1]uint64
+	id    uint64
+	shard uint64
 }
 
 func New(tr *translate.Transtate, startID uint64) *Batch {
@@ -38,7 +37,6 @@ type key struct {
 	field      models.Field
 	shard      uint64
 	view       uint64
-	domain     uint64
 	exists     bool
 	resolution encoding.Resolution
 }
@@ -101,7 +99,6 @@ func (b *Batch) Next(ts time.Time, domain []byte) {
 	b.views[encoding.Hour] = uint64(compute.Hour(ts).UnixMilli())
 	b.views[encoding.Week] = uint64(compute.Week(ts).UnixMilli())
 	b.views[encoding.Day] = uint64(compute.Date(ts).UnixMilli())
-	b.domain = b.translate(v1.Field_domain, domain)
 	b.id++
 	b.shard = b.id / shardwidth.ShardWidth
 }
@@ -185,7 +182,6 @@ func (b *Batch) ra(field models.Field, exists bool, f func(ra *roaring.Bitmap)) 
 			field:      field,
 			shard:      b.shard,
 			view:       b.views[i],
-			domain:     b.domain,
 			resolution: encoding.Resolution(i),
 			exists:     exists,
 		}
