@@ -64,7 +64,7 @@ func (b *Batch) IterKeys() iter.Seq2[models.Field, []byte] {
 	}
 }
 
-type Conainer struct {
+type Container struct {
 	Field      v1.Field
 	Shard      uint64
 	View       uint64
@@ -73,15 +73,15 @@ type Conainer struct {
 	Key        uint64
 }
 
-func (b *Batch) IterContainers() iter.Seq2[Conainer, *roaring.Container] {
-	return func(yield func(Conainer, *roaring.Container) bool) {
+func (b *Batch) IterContainers() iter.Seq2[Container, *roaring.Container] {
+	return func(yield func(Container, *roaring.Container) bool) {
 		for k, v := range b.data {
 
 			it, _ := v.Containers.Iterator(0)
 			for it.Next() {
 				key, co := it.Value()
 
-				if !yield(Conainer{
+				if !yield(Container{
 					Field:      k.field,
 					Shard:      k.shard,
 					View:       k.view,
