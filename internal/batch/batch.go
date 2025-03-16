@@ -2,10 +2,11 @@ package batch
 
 import (
 	"bytes"
-	"iter"
+	"encoding/binary"
 	"sync/atomic"
 	"time"
 
+	"github.com/cockroachdb/pebble"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
@@ -22,6 +23,7 @@ type Batch struct {
 	data  map[key]*roaring.Bitmap
 	seq   *atomic.Uint64
 	keys  [models.MutexFieldSize][][]byte
+	ids   [models.MutexFieldSize][]uint64
 	id    uint64
 	shard uint64
 }
@@ -46,40 +48,6 @@ func (b *Batch) Reset() {
 		b.keys[i] = b.keys[i][:0]
 	}
 	clear(b.data)
-}
-
-func (b *Batch) IterKeys() iter.Seq2[models.Field, []byte] {
-	return func(yield func(models.Field, []byte) bool) {
-		for i := range b.keys {
-			f := models.Mutex(i)
-			for j := range b.keys[i] {
-				if !yield(f, b.keys[i][j]) {
-					return
-				}
-			}
-		}
-	}
-}
-
-func (b *Batch) IterContainers() iter.Seq2[fields.Data, *roaring.Container] {
-	return func(yield func(fields.Data, *roaring.Container) bool) {
-		for k, v := range b.data {
-
-			it, _ := v.Containers.Iterator(0)
-			for it.Next() {
-				key, co := it.Value()
-
-				if !yield(fields.Data{
-					Field:     k.field,
-					Shard:     k.shard,
-					DataType:  k.kind,
-					Container: key,
-				}, co) {
-					return
-				}
-			}
-		}
-	}
 }
 
 func (b *Batch) Next(ts time.Time, domain []byte) {
@@ -165,6 +133,52 @@ func (b *Batch) Mutex(f models.Field, row uint64) {
 	})
 }
 
+func (b *Batch) Apply(wba *pebble.Batch) error {
+	trKey := fields.MakeTranslationKey(0, nil)
+	trID := fields.MakeTranslationID(0, 0)
+
+	for i := range b.keys {
+		f := models.Mutex(i)
+
+		for j := range b.keys[i] {
+			key := b.keys[i][j]
+			id := b.ids[i][j]
+			trKey[fields.FieldOffset] = byte(f)
+			trKey = append(trKey[:fields.TranslationKeyOffset], key...)
+			trID[fields.FieldOffset] = byte(f)
+			binary.BigEndian.PutUint64(trID[fields.TranslationIDOffset:], id)
+
+			err := wba.Set(trKey, trID[fields.TranslationIDOffset:], nil)
+			if err != nil {
+				return err
+			}
+			err = wba.Set(trID, trKey[fields.TranslationKeyOffset:], nil)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	var data fields.DataKey
+
+	for k, v := range b.data {
+
+		it, _ := v.Containers.Iterator(0)
+		for it.Next() {
+			key, co := it.Value()
+
+			data.Make(k.field, k.kind, k.shard, key)
+			err := wba.Merge(data[:], co.Encode(), nil)
+			if err != nil {
+				return err
+			}
+
+		}
+	}
+
+	return nil
+}
+
 func (b *Batch) ra(field models.Field, kind v1.DataType, f func(ra *roaring.Bitmap)) {
 	k := key{
 		field: field,
@@ -185,6 +199,7 @@ func (b *Batch) translate(f models.Field, data []byte) uint64 {
 	if !ok {
 		idx := models.AsMutex(f)
 		b.keys[idx] = append(b.keys[idx], bytes.Clone(data))
+		b.ids[idx] = append(b.ids[idx], id)
 	}
 	return id
 }
