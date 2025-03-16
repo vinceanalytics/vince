@@ -45,6 +45,7 @@ type key struct {
 func (b *Batch) Reset() {
 	for i := range b.keys {
 		clear(b.keys[i])
+		clear(b.ids[i])
 		b.keys[i] = b.keys[i][:0]
 	}
 	clear(b.data)
@@ -134,6 +135,8 @@ func (b *Batch) Mutex(f models.Field, row uint64) {
 }
 
 func (b *Batch) Apply(wba *pebble.Batch) error {
+	defer b.Reset()
+
 	trKey := fields.MakeTranslationKey(0, nil)
 	trID := fields.MakeTranslationID(0, 0)
 
