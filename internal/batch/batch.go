@@ -3,6 +3,7 @@ package batch
 import (
 	"bytes"
 	"iter"
+	"sync/atomic"
 	"time"
 
 	"github.com/gernest/roaring"
@@ -20,14 +21,15 @@ type Batch struct {
 	data  map[key]*roaring.Bitmap
 	keys  [models.MutexFieldSize][][]byte
 	id    uint64
+	seq   *atomic.Uint64
 	shard uint64
 }
 
-func New(tr *translate.Transtate, startID uint64) *Batch {
+func New(tr *translate.Transtate, seq *atomic.Uint64) *Batch {
 	return &Batch{
 		tr:   tr,
 		data: make(map[key]*roaring.Bitmap),
-		id:   startID,
+		seq:  seq,
 	}
 }
 
@@ -87,7 +89,7 @@ func (b *Batch) IterContainers() iter.Seq2[Container, *roaring.Container] {
 }
 
 func (b *Batch) Next(ts time.Time, domain []byte) {
-	b.id++
+	b.id = b.seq.Add(1)
 	b.shard = b.id / shardwidth.ShardWidth
 	b.Int64(v1.Field_minute, compute.Minute(ts).UnixMilli())
 	b.Int64(v1.Field_hour, compute.Hour(ts).UnixMilli())
