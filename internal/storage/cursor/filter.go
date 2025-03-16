@@ -12,6 +12,26 @@ type Batcher interface {
 	Delete(key []byte, _ *pebble.WriteOptions) error
 }
 
+func (cu *Cursor) ClearRecords(ba Batcher, columns *roaring.Bitmap) error {
+	rewriteExisting := roaring.NewBitmapBitmapTrimmer(columns, func(key roaring.FilterKey, data *roaring.Container, filter *roaring.Container, writeback roaring.ContainerWriteback) error {
+		if filter.N() == 0 {
+			return nil
+		}
+		existing := data.N()
+		// nothing to delete. this can't happen normally, but the rewriter calls
+		// us with an empty data container when it's done.
+		if existing == 0 {
+			return nil
+		}
+		data = data.DifferenceInPlace(filter)
+		if data.N() != existing {
+			return writeback(key, data)
+		}
+		return nil
+	})
+	return cu.ApplyRewriter(ba, rewriteExisting)
+}
+
 func (cu *Cursor) ApplyRewriter(ba Batcher, rewriter roaring.BitmapRewriter) error {
 	var (
 		minKey roaring.FilterKey
