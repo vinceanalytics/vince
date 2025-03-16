@@ -66,5 +66,10 @@ enum Field {
   timestamp = 25;
   id = 26;
   bounce = 27;
-  duration = 28;
+  minute = 28;
+  hour = 29;
+  day = 30;
+  week = 31;
+  month = 32;
+  duration = 33;
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/gernest/roaring/shardwidth"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/compute"
-	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/translate"
@@ -20,7 +19,6 @@ type Batch struct {
 	tr    *translate.Transtate
 	data  map[key]*roaring.Bitmap
 	keys  [models.MutexFieldSize][][]byte
-	views [encoding.Month + 1]uint64
 	id    uint64
 	shard uint64
 }
@@ -34,11 +32,9 @@ func New(tr *translate.Transtate, startID uint64) *Batch {
 }
 
 type key struct {
-	field      models.Field
-	shard      uint64
-	view       uint64
-	exists     bool
-	resolution encoding.Resolution
+	field  models.Field
+	shard  uint64
+	exists bool
 }
 
 func (b *Batch) Reset() {
@@ -63,12 +59,10 @@ func (b *Batch) IterKeys() iter.Seq2[models.Field, []byte] {
 }
 
 type Container struct {
-	Field      v1.Field
-	Shard      uint64
-	View       uint64
-	Existence  bool
-	Resolution encoding.Resolution
-	Key        uint64
+	Field     v1.Field
+	Shard     uint64
+	Existence bool
+	Key       uint64
 }
 
 func (b *Batch) IterContainers() iter.Seq2[Container, *roaring.Container] {
@@ -80,12 +74,10 @@ func (b *Batch) IterContainers() iter.Seq2[Container, *roaring.Container] {
 				key, co := it.Value()
 
 				if !yield(Container{
-					Field:      k.field,
-					Shard:      k.shard,
-					View:       k.view,
-					Existence:  k.exists,
-					Resolution: k.resolution,
-					Key:        key,
+					Field:     k.field,
+					Shard:     k.shard,
+					Existence: k.exists,
+					Key:       key,
 				}, co) {
 					return
 				}
@@ -95,12 +87,13 @@ func (b *Batch) IterContainers() iter.Seq2[Container, *roaring.Container] {
 }
 
 func (b *Batch) Next(ts time.Time, domain []byte) {
-	b.views[encoding.Minute] = uint64(compute.Minute(ts).UnixMilli())
-	b.views[encoding.Hour] = uint64(compute.Hour(ts).UnixMilli())
-	b.views[encoding.Week] = uint64(compute.Week(ts).UnixMilli())
-	b.views[encoding.Day] = uint64(compute.Date(ts).UnixMilli())
 	b.id++
 	b.shard = b.id / shardwidth.ShardWidth
+	b.Int64(v1.Field_minute, compute.Minute(ts).UnixMilli())
+	b.Int64(v1.Field_hour, compute.Hour(ts).UnixMilli())
+	b.Int64(v1.Field_day, compute.Date(ts).UnixMilli())
+	b.Int64(v1.Field_week, compute.Week(ts).UnixMilli())
+	b.Int64(v1.Field_month, compute.Month(ts).UnixMilli())
 }
 
 func (b *Batch) Add(m *models.Model) {
@@ -177,21 +170,17 @@ func (b *Batch) Mutex(f models.Field, row uint64) {
 }
 
 func (b *Batch) ra(field models.Field, exists bool, f func(ra *roaring.Bitmap)) {
-	for i := range b.views {
-		k := key{
-			field:      field,
-			shard:      b.shard,
-			view:       b.views[i],
-			resolution: encoding.Resolution(i),
-			exists:     exists,
-		}
-		r := b.data[k]
-		if r == nil {
-			r = roaring.NewBitmap()
-			b.data[k] = r
-		}
-		f(r)
+	k := key{
+		field:  field,
+		shard:  b.shard,
+		exists: exists,
 	}
+	r := b.data[k]
+	if r == nil {
+		r = roaring.NewBitmap()
+		b.data[k] = r
+	}
+	f(r)
 
 }
 
