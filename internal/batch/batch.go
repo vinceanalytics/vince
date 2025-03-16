@@ -12,6 +12,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/storage/fields"
 	"github.com/vinceanalytics/vince/internal/translate"
 	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
@@ -34,9 +35,9 @@ func New(tr *translate.Transtate, seq *atomic.Uint64) *Batch {
 }
 
 type key struct {
-	field  models.Field
-	shard  uint64
-	exists bool
+	field models.Field
+	shard uint64
+	kind  v1.DataType
 }
 
 func (b *Batch) Reset() {
@@ -60,26 +61,19 @@ func (b *Batch) IterKeys() iter.Seq2[models.Field, []byte] {
 	}
 }
 
-type Container struct {
-	Field     v1.Field
-	Shard     uint64
-	Existence bool
-	Key       uint64
-}
-
-func (b *Batch) IterContainers() iter.Seq2[Container, *roaring.Container] {
-	return func(yield func(Container, *roaring.Container) bool) {
+func (b *Batch) IterContainers() iter.Seq2[fields.Data, *roaring.Container] {
+	return func(yield func(fields.Data, *roaring.Container) bool) {
 		for k, v := range b.data {
 
 			it, _ := v.Containers.Iterator(0)
 			for it.Next() {
 				key, co := it.Value()
 
-				if !yield(Container{
+				if !yield(fields.Data{
 					Field:     k.field,
 					Shard:     k.shard,
-					Existence: k.exists,
-					Key:       key,
+					DataType:  k.kind,
+					Container: key,
 				}, co) {
 					return
 				}
@@ -140,13 +134,13 @@ func (b *Batch) Int64(f models.Field, value int64) {
 	if value == 0 {
 		return
 	}
-	b.ra(f, false, func(ra *roaring.Bitmap) {
+	b.ra(f, v1.DataType_bsi, func(ra *roaring.Bitmap) {
 		ro2.WriteBSI(ra, b.id, value)
 	})
 }
 
 func (b *Batch) Bool(f models.Field, value bool) {
-	b.ra(f, false, func(ra *roaring.Bitmap) {
+	b.ra(f, v1.DataType_bool, func(ra *roaring.Bitmap) {
 		ro2.WriteBool(ra, b.id, value)
 	})
 }
@@ -163,19 +157,19 @@ func (b *Batch) Mutex(f models.Field, row uint64) {
 	if row == 0 {
 		return
 	}
-	b.ra(f, false, func(ra *roaring.Bitmap) {
+	b.ra(f, v1.DataType_mutex, func(ra *roaring.Bitmap) {
 		ro2.WriteMutex(ra, b.id, row)
 	})
-	b.ra(f, true, func(ra *roaring.Bitmap) {
+	b.ra(f, v1.DataType_exists, func(ra *roaring.Bitmap) {
 		ra.DirectAdd(b.id % shardwidth.ShardWidth)
 	})
 }
 
-func (b *Batch) ra(field models.Field, exists bool, f func(ra *roaring.Bitmap)) {
+func (b *Batch) ra(field models.Field, kind v1.DataType, f func(ra *roaring.Bitmap)) {
 	k := key{
-		field:  field,
-		shard:  b.shard,
-		exists: exists,
+		field: field,
+		shard: b.shard,
+		kind:  kind,
 	}
 	r := b.data[k]
 	if r == nil {
