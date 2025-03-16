@@ -1,0 +1,5 @@
+package fields
+
+func MakeDataKey() {
+
+}
