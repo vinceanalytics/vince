@@ -12,6 +12,34 @@ type Batcher interface {
 	Delete(key []byte, _ *pebble.WriteOptions) error
 }
 
+func (cu *Cursor) ApplyFilter(key uint64, filter roaring.BitmapFilter) error {
+	var minKey roaring.FilterKey
+	for cu.Seek(key); cu.Valid(); cu.Next() {
+		key := roaring.FilterKey(cu.Key())
+		if key < minKey {
+			continue
+		}
+		co := cu.Container()
+		res := filter.ConsiderKey(key, int32(co.N()))
+		if res.Err != nil {
+			return res.Err
+		}
+		if res.YesKey <= key && res.NoKey <= key {
+			res = filter.ConsiderData(key, co)
+			if res.Err != nil {
+				return res.Err
+			}
+		}
+		minKey = res.NoKey
+		if minKey > key+1 {
+			if !cu.Seek(uint64(minKey)) {
+				break
+			}
+		}
+	}
+	return nil
+}
+
 func (cu *Cursor) ClearRecords(ba Batcher, columns *roaring.Bitmap) error {
 	rewriteExisting := roaring.NewBitmapBitmapTrimmer(columns, func(key roaring.FilterKey, data *roaring.Container, filter *roaring.Container, writeback roaring.ContainerWriteback) error {
 		if filter.N() == 0 {
@@ -62,7 +90,7 @@ func (cu *Cursor) ApplyRewriter(ba Batcher, rewriter roaring.BitmapRewriter) err
 		return err
 	}
 
-	for cu.Next() {
+	for cu.First(); cu.Valid(); cu.Next() {
 		key := roaring.FilterKey(cu.Key())
 		if key < minKey {
 			continue
