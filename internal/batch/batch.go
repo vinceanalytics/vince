@@ -20,9 +20,9 @@ import (
 type Batch struct {
 	tr    *translate.Transtate
 	data  map[key]*roaring.Bitmap
+	seq   *atomic.Uint64
 	keys  [models.MutexFieldSize][][]byte
 	id    uint64
-	seq   *atomic.Uint64
 	shard uint64
 }
 
@@ -35,8 +35,8 @@ func New(tr *translate.Transtate, seq *atomic.Uint64) *Batch {
 }
 
 type key struct {
-	field models.Field
 	shard uint64
+	field models.Field
 	kind  v1.DataType
 }
 
