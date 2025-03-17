@@ -48,22 +48,71 @@ func Minute(v uint64) time.Time {
 	return time.Unix(int64(v*minute), 0).UTC()
 }
 
+func FromMinute(ts time.Time, add bool) uint64 {
+	if add {
+		ts = ts.Add(time.Minute)
+	}
+	return uint64(ts.Unix()) / minute
+}
+
 func Hour(v uint64) time.Time {
 	return time.Unix(int64(v*hour), 0).UTC()
+}
+
+func FromHour(ts time.Time, add bool) uint64 {
+	if add {
+		ts = ts.Add(time.Hour)
+	}
+	return uint64(ts.Unix()) / hour
 }
 
 func Day(v uint64) time.Time {
 	return time.Unix(int64(v*day), 0).UTC()
 }
 
+func FromDay(ts time.Time, add bool) uint64 {
+	if add {
+		ts = ts.AddDate(0, 0, 1)
+	}
+	return uint64(ts.Unix()) / day
+}
+
 func Week(v uint64) time.Time {
 	return Day(v)
+}
+
+func FromWeek(ts time.Time, add bool) uint64 {
+	if add {
+		ts = ts.AddDate(0, 0, 7)
+	}
+	yy, mm, dd := ts.Date()
+	t := time.Date(yy, mm, dd, 0, 0, 0, 0, time.UTC)
+	t = t.AddDate(0, 0, -int(t.Weekday()))
+	return uint64(t.Unix()) / day
 }
 
 func Month(v uint64) time.Time {
 	return Day(v)
 }
 
+func FromMonth(ts time.Time, add bool) uint64 {
+	if add {
+		ts = ts.AddDate(0, 1, 0)
+	}
+	yy, mm, _ := ts.Date()
+	t := time.Date(yy, mm, 1, 0, 0, 0, 0, time.UTC)
+	return uint64(t.Unix()) / day
+}
+
 func Year(v uint64) time.Time {
 	return Day(v)
+}
+
+func FromYear(ts time.Time, add bool) uint64 {
+	if add {
+		ts = ts.AddDate(1, 0, 0)
+	}
+	yy, _, _ := ts.Date()
+	t := time.Date(yy, time.January, 1, 0, 0, 0, 0, time.UTC)
+	return uint64(t.Unix()) / day
 }
