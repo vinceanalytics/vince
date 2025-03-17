@@ -55,12 +55,13 @@ func (b *Batch) Reset() {
 func (b *Batch) Next(ts time.Time, domain []byte) {
 	b.id = b.seq.Add(1)
 	b.shard = b.id / shardwidth.ShardWidth
-	mins, hrs, dy, wk, mo, _ := date.Resolve(ts.UTC())
+	mins, hrs, dy, wk, mo, yy := date.Resolve(ts.UTC())
 	b.Mutex(v1.Field_minute, mins)
 	b.Mutex(v1.Field_hour, hrs)
 	b.Mutex(v1.Field_day, dy)
 	b.Mutex(v1.Field_week, wk)
 	b.Mutex(v1.Field_month, mo)
+	b.Mutex(v1.Field_year, yy)
 }
 
 func (b *Batch) Add(m *models.Model) {
