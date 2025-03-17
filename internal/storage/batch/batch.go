@@ -10,9 +10,9 @@ import (
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
+	"github.com/vinceanalytics/vince/internal/storage/date"
 	"github.com/vinceanalytics/vince/internal/storage/fields"
 	"github.com/vinceanalytics/vince/internal/storage/translate"
 	"github.com/vinceanalytics/vince/internal/util/xtime"
@@ -55,11 +55,12 @@ func (b *Batch) Reset() {
 func (b *Batch) Next(ts time.Time, domain []byte) {
 	b.id = b.seq.Add(1)
 	b.shard = b.id / shardwidth.ShardWidth
-	b.Int64(v1.Field_minute, compute.Minute(ts).UnixMilli())
-	b.Int64(v1.Field_hour, compute.Hour(ts).UnixMilli())
-	b.Int64(v1.Field_day, compute.Date(ts).UnixMilli())
-	b.Int64(v1.Field_week, compute.Week(ts).UnixMilli())
-	b.Int64(v1.Field_month, compute.Month(ts).UnixMilli())
+	mins, hrs, dy, wk, mo, _ := date.Resolve(ts.UTC())
+	b.Mutex(v1.Field_minute, mins)
+	b.Mutex(v1.Field_hour, hrs)
+	b.Mutex(v1.Field_day, dy)
+	b.Mutex(v1.Field_week, wk)
+	b.Mutex(v1.Field_month, mo)
 }
 
 func (b *Batch) Add(m *models.Model) {
