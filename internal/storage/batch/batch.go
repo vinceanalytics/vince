@@ -14,7 +14,7 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/storage/fields"
-	"github.com/vinceanalytics/vince/internal/translate"
+	"github.com/vinceanalytics/vince/internal/storage/translate"
 	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
