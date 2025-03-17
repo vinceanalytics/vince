@@ -16,9 +16,10 @@ const (
 )
 
 const (
-	TranslationKeyOffset = FieldOffset + 1
-	TranslationIDOffset  = FieldOffset + 1
-	TranslationIDKeySize = TranslationIDOffset + 8
+	TranslationShardOffset = FieldOffset + 1
+	TranslationKeyOffset   = TranslationShardOffset + 8
+	TranslationIDOffset    = TranslationShardOffset + 8
+	TranslationIDKeySize   = TranslationIDOffset + 8
 )
 
 type Data struct {
@@ -52,18 +53,20 @@ func (d *DataKey) Make(field v1.Field, kind v1.DataType, shard, key uint64) {
 	binary.BigEndian.PutUint64(d[ContainerOffset:], key)
 }
 
-func MakeTranslationKey(field v1.Field, value []byte) []byte {
-	o := make([]byte, 1+1+len(value))
+func MakeTranslationKey(field v1.Field, shard uint64, value []byte) []byte {
+	o := make([]byte, TranslationKeyOffset+len(value))
 	o[PrefixOffset] = byte(v1.Prefix_TranslateKey)
 	o[FieldOffset] = byte(field)
+	binary.BigEndian.PutUint64(o[TranslationShardOffset:], shard)
 	copy(o[TranslationKeyOffset:], value)
 	return o
 }
 
-func MakeTranslationID(field v1.Field, id uint64) []byte {
+func MakeTranslationID(field v1.Field, shard uint64, id uint64) []byte {
 	o := make([]byte, TranslationIDKeySize)
 	o[PrefixOffset] = byte(v1.Prefix_TranslateID)
 	o[FieldOffset] = byte(field)
+	binary.BigEndian.PutUint64(o[TranslationShardOffset:], shard)
 	binary.BigEndian.PutUint64(o[TranslationKeyOffset:], id)
 	return o
 }

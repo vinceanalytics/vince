@@ -7,20 +7,23 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 )
 
+// Transtate global cache of translation per shard. We setmax shards to 256
 type Transtate struct {
-	mapping [models.TranslatedFieldsSize]*mapping
+	shards [256][models.TranslatedFieldsSize]*mapping
 }
 
 func New() *Transtate {
 	t := new(Transtate)
-	for i := range t.mapping {
-		t.mapping[i] = &mapping{ma: make(map[uint64]uint64)}
+	for i := range t.shards {
+		for j := range models.TranslatedFieldsSize {
+			t.shards[i][j] = &mapping{ma: make(map[uint64]uint64)}
+		}
 	}
 	return t
 }
 
-func (t *Transtate) Get(field models.Field, value []byte) (uint64, bool) {
-	return t.mapping[models.AsMutex(field)].Get(value)
+func (t *Transtate) Get(field models.Field, shard uint64, value []byte) (uint64, bool) {
+	return t.shards[shard][models.AsMutex(field)].Get(value)
 }
 
 var seed = maphash.MakeSeed()

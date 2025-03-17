@@ -19,13 +19,14 @@ import (
 )
 
 type Batch struct {
-	tr    *translate.Transtate
-	data  map[key]*roaring.Bitmap
-	seq   *atomic.Uint64
-	keys  [models.MutexFieldSize][][]byte
-	ids   [models.MutexFieldSize][]uint64
-	id    uint64
-	shard uint64
+	tr     *translate.Transtate
+	data   map[key]*roaring.Bitmap
+	seq    *atomic.Uint64
+	keys   [models.MutexFieldSize][][]byte
+	ids    [models.MutexFieldSize][]uint64
+	shards [models.MutexFieldSize][]uint64
+	id     uint64
+	shard  uint64
 }
 
 func New(tr *translate.Transtate, seq *atomic.Uint64) *Batch {
@@ -137,8 +138,8 @@ func (b *Batch) Mutex(f models.Field, row uint64) {
 func (b *Batch) Apply(wba *pebble.Batch) error {
 	defer b.Reset()
 
-	trKey := fields.MakeTranslationKey(0, nil)
-	trID := fields.MakeTranslationID(0, 0)
+	trKey := fields.MakeTranslationKey(0, 0, nil)
+	trID := fields.MakeTranslationID(0, 0, 0)
 
 	for i := range b.keys {
 		f := models.Mutex(i)
@@ -146,9 +147,12 @@ func (b *Batch) Apply(wba *pebble.Batch) error {
 		for j := range b.keys[i] {
 			key := b.keys[i][j]
 			id := b.ids[i][j]
+			shard := b.shards[i][j]
 			trKey[fields.FieldOffset] = byte(f)
+			binary.BigEndian.PutUint64(trKey[fields.TranslationShardOffset:], shard)
 			trKey = append(trKey[:fields.TranslationKeyOffset], key...)
 			trID[fields.FieldOffset] = byte(f)
+			binary.BigEndian.PutUint64(trID[fields.TranslationShardOffset:], shard)
 			binary.BigEndian.PutUint64(trID[fields.TranslationIDOffset:], id)
 
 			err := wba.Set(trKey, trID[fields.TranslationIDOffset:], nil)
@@ -198,11 +202,12 @@ func (b *Batch) ra(field models.Field, kind v1.DataType, f func(ra *roaring.Bitm
 }
 
 func (b *Batch) translate(f models.Field, data []byte) uint64 {
-	id, ok := b.tr.Get(f, data)
+	id, ok := b.tr.Get(f, b.shard, data)
 	if !ok {
 		idx := models.AsMutex(f)
 		b.keys[idx] = append(b.keys[idx], bytes.Clone(data))
 		b.ids[idx] = append(b.ids[idx], id)
+		b.shards[idx] = append(b.shards[idx], b.shard)
 	}
 	return id
 }
