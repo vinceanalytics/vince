@@ -8,19 +8,21 @@ import (
 )
 
 type Batcher interface {
-	Merge(key []byte, value []byte, _ *pebble.WriteOptions) error
+	Set(key, value []byte, _ *pebble.WriteOptions) error
 	Delete(key []byte, _ *pebble.WriteOptions) error
 }
 
 func (cu *Cursor) ApplyFilter(key uint64, filter roaring.BitmapFilter) error {
 	var minKey roaring.FilterKey
-	for cu.Seek(key); cu.Valid(); cu.Next() {
+	cu.Seek(key)
+	for cu.Valid() {
 		key := roaring.FilterKey(cu.Key())
 		if key < minKey {
+			cu.Next()
 			continue
 		}
 		co := cu.Container()
-		res := filter.ConsiderKey(key, int32(co.N()))
+		res := filter.ConsiderKey(key, co.N())
 		if res.Err != nil {
 			return res.Err
 		}
@@ -32,16 +34,16 @@ func (cu *Cursor) ApplyFilter(key uint64, filter roaring.BitmapFilter) error {
 		}
 		minKey = res.NoKey
 		if minKey > key+1 {
-			if !cu.Seek(uint64(minKey)) {
-				break
-			}
+			cu.Seek(uint64(minKey))
+		} else {
+			cu.Next()
 		}
 	}
 	return nil
 }
 
 func (cu *Cursor) ClearRecords(ba Batcher, columns *roaring.Bitmap) error {
-	rewriteExisting := roaring.NewBitmapBitmapTrimmer(columns, func(key roaring.FilterKey, data *roaring.Container, filter *roaring.Container, writeback roaring.ContainerWriteback) error {
+	rewriteExisting := roaring.NewBitmapBitmapTrimmer(columns, func(key roaring.FilterKey, data, filter *roaring.Container, writeback roaring.ContainerWriteback) error {
 		if filter.N() == 0 {
 			return nil
 		}
@@ -51,20 +53,36 @@ func (cu *Cursor) ClearRecords(ba Batcher, columns *roaring.Bitmap) error {
 		if existing == 0 {
 			return nil
 		}
-		data = data.DifferenceInPlace(filter)
-		if data.N() != existing {
-			return writeback(key, data)
+		diff := data.Difference(filter)
+		if changed(diff, data) {
+			return writeback(key, diff)
 		}
 		return nil
 	})
 	return cu.ApplyRewriter(ba, rewriteExisting)
 }
 
+func changed(diff, orig *roaring.Container) bool {
+	if diff.N() == 0 {
+		return true
+	}
+	if diff.N() != orig.N() {
+		return true
+	}
+	a := diff.Slice()
+	b := orig.Slice()
+	for i := range a {
+		if a[i] != b[i] {
+			return true
+		}
+	}
+	return false
+}
+
 func (cu *Cursor) ApplyRewriter(ba Batcher, rewriter roaring.BitmapRewriter) error {
 	var (
 		minKey roaring.FilterKey
 		dirty  bool
-		key    roaring.FilterKey
 	)
 	if rewriter == nil {
 		return nil
@@ -72,31 +90,30 @@ func (cu *Cursor) ApplyRewriter(ba Batcher, rewriter roaring.BitmapRewriter) err
 	var writeback roaring.ContainerWriteback = func(updateKey roaring.FilterKey, data *roaring.Container) (err error) {
 		dirty = true
 		var exact bool
-		if updateKey != key {
-			exact = cu.seek(uint64(updateKey))
-		} else {
+		if cu.Key() == uint64(updateKey) {
+			dirty = false
 			exact = true
+		} else {
+			exact = cu.seek(uint64(updateKey))
 		}
 		if data.N() == 0 {
 			if exact {
 				err = ba.Delete(cu.lo[:], nil)
-				key = ^roaring.FilterKey(0)
 			}
 			// if we don't delete, we aren't changing our situation at all
 		} else {
-			err = ba.Merge(cu.lo[:], data.Encode(), nil)
-			key = ^roaring.FilterKey(0)
+			err = ba.Set(cu.lo[:], data.Encode(), nil)
 		}
 		return err
 	}
-
-	for cu.First(); cu.Valid(); cu.Next() {
+	cu.First()
+	for cu.Valid() {
 		key := roaring.FilterKey(cu.Key())
 		if key < minKey {
 			continue
 		}
 		co := cu.Container()
-		res := rewriter.ConsiderKey(key, int32(co.N()))
+		res := rewriter.ConsiderKey(key, co.N())
 		if res.Err != nil {
 			return res.Err
 		}
@@ -116,6 +133,8 @@ func (cu *Cursor) ApplyRewriter(ba Batcher, rewriter roaring.BitmapRewriter) err
 			if cu.Seek(uint64(minKey)) {
 				break
 			}
+		} else {
+			cu.Next()
 		}
 	}
 	res := rewriter.RewriteData(^roaring.FilterKey(0), nil, writeback)
