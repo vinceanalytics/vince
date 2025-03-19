@@ -37,7 +37,6 @@ func (t *Transtate) Load(db *pebble.DB) error {
 	}
 	lo := fields.MakeTranslationID(0, 0, 0)
 	hi := fields.MakeTranslationID(0, 0, 0)
-	var seenShard bool
 
 	for shard := range t.shards {
 		binary.BigEndian.PutUint64(lo[fields.ShardOffset:], uint64(shard))
@@ -50,7 +49,7 @@ func (t *Transtate) Load(db *pebble.DB) error {
 			hi[fields.FieldOffset] = byte(field)
 			fx := ma[field]
 			binary.BigEndian.PutUint64(hi[fields.TranslationIDOffset:], math.MaxUint64)
-			for it.SeekGE(lo); bytes.Compare(it.Key(), hi) == -1; it.Next() {
+			for it.SeekGE(lo); it.Valid() && bytes.Compare(it.Key(), hi) == -1; it.Next() {
 				if !hasData {
 					hasData = true
 				}
@@ -59,12 +58,9 @@ func (t *Transtate) Load(db *pebble.DB) error {
 				fx.ma[hash] = id
 			}
 		}
-		if seenShard && !hasData {
-			// avoid excess scan because we know shards are contiguous. We don't
-			// have gaps between shards
+		if !it.Valid() {
 			break
 		}
-		seenShard = hasData
 	}
 
 	seqKey := fields.MakeSeqKey()
