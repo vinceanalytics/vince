@@ -99,7 +99,7 @@ func (cu *Cursor) Resolve(resolution v1.Resolution, shard uint64, from, to time.
 			r.Columns = append(r.Columns, b)
 			ra = b
 			prev = row
-			hi0 = highbits(shardwidth.ShardWidth * row)
+			hi0 = ckey
 		}
 		ra.Containers.Put(off+(ckey-hi0), roaring.DecodeContainer(cu.it.Value()).Clone())
 	}
