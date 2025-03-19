@@ -1,10 +1,7 @@
 package translate
 
 import (
-	"bytes"
-	"encoding/binary"
 	"hash/maphash"
-	"math"
 	"sync"
 	"sync/atomic"
 
@@ -31,41 +28,17 @@ func New(db *pebble.DB) (*Transtate, error) {
 
 // Load populates translation mapping.
 func (t *Transtate) Load(db *pebble.DB) error {
-	it, err := db.NewIter(&pebble.IterOptions{})
+	lo, hi := fields.MakeTranseIDRange()
+	it, err := db.NewIter(&pebble.IterOptions{
+		LowerBound: lo, UpperBound: hi,
+	})
 	if err != nil {
 		return err
 	}
-	lo := fields.MakeTranslationID(0, 0, 0)
-	hi := fields.MakeTranslationID(0, 0, 0)
-
-	for shard := range t.shards {
-		binary.BigEndian.PutUint64(lo[fields.ShardOffset:], uint64(shard))
-		binary.BigEndian.PutUint64(hi[fields.ShardOffset:], uint64(shard))
-		ma := t.shards[shard]
-		var hasData bool
-		for f := range models.TranslatedFieldsSize {
-			field := models.Mutex(int(f))
-			lo[fields.FieldOffset] = byte(field)
-			hi[fields.FieldOffset] = byte(field)
-			fx := ma[field]
-			binary.BigEndian.PutUint64(hi[fields.TranslationIDOffset:], math.MaxUint64)
-			for it.SeekGE(lo); it.Valid() && bytes.Compare(it.Key(), hi) == -1; it.Next() {
-				if !hasData {
-					hasData = true
-				}
-				id := binary.BigEndian.Uint64(it.Key()[fields.TranslationIDOffset:])
-				hash := maphash.Bytes(seed, it.Value())
-				fx.ma[hash] = id
-			}
-		}
-		if !it.Valid() {
-			break
-		}
-	}
-
-	seqKey := fields.MakeSeqKey()
-	if it.SeekGE(seqKey) && bytes.Equal(it.Key(), seqKey) {
-		t.Seq.Store(binary.BigEndian.Uint64(it.Value()))
+	for it.First(); it.Valid(); it.Next() {
+		field, shard, id := fields.BreakTranslationID(it.Key())
+		ha := maphash.Bytes(seed, it.Value())
+		t.shards[shard][models.AsMutex(field)].ma[ha] = id
 	}
 	return nil
 }

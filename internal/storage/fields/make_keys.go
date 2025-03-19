@@ -71,6 +71,19 @@ func MakeTranslationID(field v1.Field, shard uint64, id uint64) []byte {
 	return o
 }
 
+func BreakTranslationID(key []byte) (field v1.Field, shard, id uint64) {
+	field = v1.Field(key[FieldOffset])
+	shard = binary.BigEndian.Uint64(key[ShardOffset:])
+	id = binary.BigEndian.Uint64(key[TranslationIDOffset:])
+	return
+}
+
+func MakeTranseIDRange() (lo, hi []byte) {
+	lo = []byte{byte(v1.Prefix_TranslateID)}
+	hi = []byte{byte(v1.Prefix_TranslateID) + 1}
+	return
+}
+
 func MakeSeqKey() []byte {
 	return []byte{byte(v1.Prefix_SEQ)}
 }
