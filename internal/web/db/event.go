@@ -1,7 +1,6 @@
 package db
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"hash/crc32"
@@ -26,24 +25,6 @@ func (db *Config) ProcessEvent(r *http.Request) error {
 	}
 	db.buffer <- m
 	return nil
-}
-
-func hit(e *models.Model) {
-	e.Bounce = 1
-	e.Session = true
-	if bytes.Equal(e.Event, pageView) {
-		e.Event = nil
-		e.View = true
-	}
-}
-
-func newSessionEvent(e *models.Model) {
-	if e.View {
-		e.EntryPage = e.Page
-		e.ExitPage = e.Page
-	} else {
-		e.Host = nil
-	}
 }
 
 var (

@@ -5,7 +5,7 @@ import (
 )
 
 func (db *Config) append(e *models.Model) error {
-	hit(e)
+	e.Hit()
 	if cached, ok := db.cache.Get(e.Id); ok {
 		if m := e.Update(cached); m != nil {
 			db.cache.Add(e.Id, m)
@@ -14,7 +14,7 @@ func (db *Config) append(e *models.Model) error {
 		releaseEvent(e)
 		return err
 	}
-	newSessionEvent(e)
+	e.NewSession()
 	err := db.ts.Add(e)
 	if err != nil {
 		return err
