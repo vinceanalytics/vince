@@ -11,7 +11,7 @@ func (db *Config) append(e *models.Model) error {
 			db.cache.Add(e.Id, m)
 		}
 		err := db.ts.Add(e)
-		releaseEvent(e)
+		e.Release()
 		return err
 	}
 	e.NewSession()

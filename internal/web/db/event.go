@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 
 	"github.com/vinceanalytics/vince/internal/location"
 	"github.com/vinceanalytics/vince/internal/models"
@@ -30,16 +29,6 @@ func (db *Config) ProcessEvent(r *http.Request) error {
 var (
 	ErrDrop = errors.New("event dropped")
 )
-var eventsPool = &sync.Pool{New: func() any { return new(models.Model) }}
-
-func newEevent() *models.Model {
-	return eventsPool.Get().(*models.Model)
-}
-
-func releaseEvent(e *models.Model) {
-	*e = models.Model{}
-	eventsPool.Put(e)
-}
 
 func (db *Config) parse(r *http.Request) (*models.Model, error) {
 	req := newRequest()
@@ -64,7 +53,7 @@ func (db *Config) parse(r *http.Request) (*models.Model, error) {
 	path := req.pathname
 
 	userID := uniqueID(req.remoteIp, req.userAgent, domain, host)
-	e := newEevent()
+	e := models.Get()
 	if req.remoteIp != "" {
 		ip := net.ParseIP(req.remoteIp)
 		err := db.geo.UpdateCity(ip, e)

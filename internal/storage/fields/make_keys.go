@@ -70,3 +70,7 @@ func MakeTranslationID(field v1.Field, shard uint64, id uint64) []byte {
 	binary.BigEndian.PutUint64(o[TranslationKeyOffset:], id)
 	return o
 }
+
+func MakeSeqKey() []byte {
+	return []byte{byte(v1.Prefix_SEQ)}
+}

@@ -29,11 +29,11 @@ type Batch struct {
 	shard  uint64
 }
 
-func New(tr *translate.Transtate, seq *atomic.Uint64) *Batch {
+func New(tr *translate.Transtate) *Batch {
 	return &Batch{
 		tr:   tr,
 		data: make(map[key]*roaring.Bitmap),
-		seq:  seq,
+		seq:  &tr.Seq,
 	}
 }
 
