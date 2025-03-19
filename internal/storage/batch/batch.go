@@ -48,6 +48,7 @@ func (b *Batch) Reset() {
 		clear(b.keys[i])
 		clear(b.ids[i])
 		b.keys[i] = b.keys[i][:0]
+		b.ids[i] = b.ids[i][:0]
 	}
 	clear(b.data)
 }
