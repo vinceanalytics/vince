@@ -1,12 +1,23 @@
 package models
 
 import (
+	"bytes"
+	"sync"
 	"time"
 
 	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
+var pageView = []byte("pageview")
+
 //go:generate go run gen/main.go
+
+var eventsPool = &sync.Pool{New: func() any { return new(Model) }}
+
+func Get() *Model {
+	return eventsPool.Get().(*Model)
+}
+
 type Model struct {
 	ExitPage         []byte
 	UtmTerm          []byte
@@ -36,6 +47,29 @@ type Model struct {
 	Bounce           int8
 	View             bool
 	Session          bool
+}
+
+func (m *Model) Release() {
+	*m = Model{}
+	eventsPool.Put(m)
+}
+
+func (m *Model) Hit() {
+	m.Bounce = 1
+	m.Session = true
+	if bytes.Equal(m.Event, pageView) {
+		m.Event = nil
+		m.View = true
+	}
+}
+
+func (m *Model) NewSession() {
+	if m.View {
+		m.EntryPage = m.Page
+		m.ExitPage = m.Page
+	} else {
+		m.Host = nil
+	}
 }
 
 type Cached struct {

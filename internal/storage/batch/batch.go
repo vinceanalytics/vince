@@ -2,98 +2,67 @@ package batch
 
 import (
 	"bytes"
-	"iter"
+	"encoding/binary"
+	"sync/atomic"
 	"time"
 
+	"github.com/cockroachdb/pebble"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
-	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
-	"github.com/vinceanalytics/vince/internal/translate"
+	"github.com/vinceanalytics/vince/internal/storage/date"
+	"github.com/vinceanalytics/vince/internal/storage/fields"
+	"github.com/vinceanalytics/vince/internal/storage/translate"
 	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 type Batch struct {
-	tr    *translate.Transtate
-	data  map[key]*roaring.Bitmap
-	keys  [models.MutexFieldSize][][]byte
-	id    uint64
-	shard uint64
+	tr     *translate.Transtate
+	data   map[key]*roaring.Bitmap
+	seq    *atomic.Uint64
+	keys   [models.MutexFieldSize][][]byte
+	ids    [models.MutexFieldSize][]uint64
+	shards [models.MutexFieldSize][]uint64
+	id     uint64
+	shard  uint64
 }
 
-func New(tr *translate.Transtate, startID uint64) *Batch {
+func New(tr *translate.Transtate) *Batch {
 	return &Batch{
 		tr:   tr,
 		data: make(map[key]*roaring.Bitmap),
-		id:   startID,
+		seq:  &tr.Seq,
 	}
 }
 
 type key struct {
-	field  models.Field
-	shard  uint64
-	exists bool
+	shard uint64
+	field models.Field
+	kind  v1.DataType
 }
 
 func (b *Batch) Reset() {
 	for i := range b.keys {
 		clear(b.keys[i])
+		clear(b.ids[i])
 		b.keys[i] = b.keys[i][:0]
+		b.ids[i] = b.ids[i][:0]
 	}
 	clear(b.data)
 }
 
-func (b *Batch) IterKeys() iter.Seq2[models.Field, []byte] {
-	return func(yield func(models.Field, []byte) bool) {
-		for i := range b.keys {
-			f := models.Mutex(i)
-			for j := range b.keys[i] {
-				if !yield(f, b.keys[i][j]) {
-					return
-				}
-			}
-		}
-	}
-}
-
-type Container struct {
-	Field     v1.Field
-	Shard     uint64
-	Existence bool
-	Key       uint64
-}
-
-func (b *Batch) IterContainers() iter.Seq2[Container, *roaring.Container] {
-	return func(yield func(Container, *roaring.Container) bool) {
-		for k, v := range b.data {
-
-			it, _ := v.Containers.Iterator(0)
-			for it.Next() {
-				key, co := it.Value()
-
-				if !yield(Container{
-					Field:     k.field,
-					Shard:     k.shard,
-					Existence: k.exists,
-					Key:       key,
-				}, co) {
-					return
-				}
-			}
-		}
-	}
-}
-
 func (b *Batch) Next(ts time.Time, domain []byte) {
-	b.id++
+	b.id = b.seq.Add(1)
 	b.shard = b.id / shardwidth.ShardWidth
-	b.Int64(v1.Field_minute, compute.Minute(ts).UnixMilli())
-	b.Int64(v1.Field_hour, compute.Hour(ts).UnixMilli())
-	b.Int64(v1.Field_day, compute.Date(ts).UnixMilli())
-	b.Int64(v1.Field_week, compute.Week(ts).UnixMilli())
-	b.Int64(v1.Field_month, compute.Month(ts).UnixMilli())
+	mins, hrs, dy, wk, mo, yy := date.Resolve(ts.UTC())
+	b.Mutex(v1.Field_minute, mins)
+	b.Mutex(v1.Field_hour, hrs)
+	b.Mutex(v1.Field_day, dy)
+	b.Mutex(v1.Field_week, wk)
+	b.Mutex(v1.Field_month, mo)
+	b.Mutex(v1.Field_year, yy)
 }
 
 func (b *Batch) Add(m *models.Model) {
@@ -138,13 +107,13 @@ func (b *Batch) Int64(f models.Field, value int64) {
 	if value == 0 {
 		return
 	}
-	b.ra(f, false, func(ra *roaring.Bitmap) {
+	b.ra(f, v1.DataType_bsi, func(ra *roaring.Bitmap) {
 		ro2.WriteBSI(ra, b.id, value)
 	})
 }
 
 func (b *Batch) Bool(f models.Field, value bool) {
-	b.ra(f, false, func(ra *roaring.Bitmap) {
+	b.ra(f, v1.DataType_bool, func(ra *roaring.Bitmap) {
 		ro2.WriteBool(ra, b.id, value)
 	})
 }
@@ -161,19 +130,70 @@ func (b *Batch) Mutex(f models.Field, row uint64) {
 	if row == 0 {
 		return
 	}
-	b.ra(f, false, func(ra *roaring.Bitmap) {
+	b.ra(f, v1.DataType_mutex, func(ra *roaring.Bitmap) {
 		ro2.WriteMutex(ra, b.id, row)
 	})
-	b.ra(f, true, func(ra *roaring.Bitmap) {
+	b.ra(f, v1.DataType_exists, func(ra *roaring.Bitmap) {
 		ra.DirectAdd(b.id % shardwidth.ShardWidth)
 	})
 }
 
-func (b *Batch) ra(field models.Field, exists bool, f func(ra *roaring.Bitmap)) {
+func (b *Batch) Apply(wba *pebble.Batch) error {
+	defer b.Reset()
+
+	trKey := fields.MakeTranslationKey(0, 0, nil)
+	trID := fields.MakeTranslationID(0, 0, 0)
+
+	for i := range b.keys {
+		f := models.Mutex(i)
+
+		for j := range b.keys[i] {
+			key := b.keys[i][j]
+			id := b.ids[i][j]
+			shard := b.shards[i][j]
+			trKey[fields.FieldOffset] = byte(f)
+			binary.BigEndian.PutUint64(trKey[fields.TranslationShardOffset:], shard)
+			trKey = append(trKey[:fields.TranslationKeyOffset], key...)
+			trID[fields.FieldOffset] = byte(f)
+			binary.BigEndian.PutUint64(trID[fields.TranslationShardOffset:], shard)
+			binary.BigEndian.PutUint64(trID[fields.TranslationIDOffset:], id)
+
+			err := wba.Set(trKey, trID[fields.TranslationIDOffset:], nil)
+			if err != nil {
+				return err
+			}
+			err = wba.Set(trID, trKey[fields.TranslationKeyOffset:], nil)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	var data fields.DataKey
+
+	for k, v := range b.data {
+
+		it, _ := v.Containers.Iterator(0)
+		for it.Next() {
+			key, co := it.Value()
+
+			data.Make(k.field, k.kind, k.shard, key)
+			err := wba.Merge(data[:], co.Encode(), nil)
+			if err != nil {
+				return err
+			}
+
+		}
+	}
+
+	return nil
+}
+
+func (b *Batch) ra(field models.Field, kind v1.DataType, f func(ra *roaring.Bitmap)) {
 	k := key{
-		field:  field,
-		shard:  b.shard,
-		exists: exists,
+		field: field,
+		shard: b.shard,
+		kind:  kind,
 	}
 	r := b.data[k]
 	if r == nil {
@@ -185,10 +205,12 @@ func (b *Batch) ra(field models.Field, exists bool, f func(ra *roaring.Bitmap)) 
 }
 
 func (b *Batch) translate(f models.Field, data []byte) uint64 {
-	id, ok := b.tr.Get(f, data)
+	id, ok := b.tr.Get(f, b.shard, data)
 	if !ok {
 		idx := models.AsMutex(f)
 		b.keys[idx] = append(b.keys[idx], bytes.Clone(data))
+		b.ids[idx] = append(b.ids[idx], id)
+		b.shards[idx] = append(b.shards[idx], b.shard)
 	}
 	return id
 }

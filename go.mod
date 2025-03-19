@@ -7,7 +7,7 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20250312144945-aabf6395a20e
 	github.com/cockroachdb/swiss v0.0.0-20250304010804-34a2c6a59016
 	github.com/dlclark/regexp2 v1.11.4
-	github.com/gernest/roaring v0.23.0
+	github.com/gernest/roaring v0.26.0
 	github.com/google/flatbuffers v24.3.25+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/matoous/go-nanoid/v2 v2.1.0
