@@ -35,6 +35,7 @@ enum Prefix {
   CityCode = 14;
   Referral = 15;
   ADMIN = 16;
+  SEQ = 17;
 }
 
 enum Field {
@@ -71,5 +72,13 @@ enum Field {
   day = 30;
   week = 31;
   month = 32;
-  duration = 33;
+  year = 33;
+  duration = 34;
+}
+
+enum DataType {
+  bsi = 0;
+  bool = 1;
+  mutex = 2;
+  exists = 3;
 }

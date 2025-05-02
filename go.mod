@@ -7,7 +7,8 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20250312144945-aabf6395a20e
 	github.com/cockroachdb/swiss v0.0.0-20250304010804-34a2c6a59016
 	github.com/dlclark/regexp2 v1.11.4
-	github.com/gernest/roaring v0.23.0
+	github.com/dustin/go-humanize v1.0.1
+	github.com/gernest/roaring v0.26.0
 	github.com/google/flatbuffers v24.3.25+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/matoous/go-nanoid/v2 v2.1.0
@@ -16,6 +17,7 @@ require (
 	github.com/urfave/cli/v3 v3.0.0-alpha9
 	golang.org/x/crypto v0.36.0
 	golang.org/x/mod v0.17.0
+	golang.org/x/sys v0.31.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -50,7 +52,6 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/net v0.37.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
