@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -8,12 +10,12 @@ import (
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/storage/batch"
 	"github.com/vinceanalytics/vince/internal/storage/cache"
-	"github.com/vinceanalytics/vince/internal/storage/translate"
+	"github.com/vinceanalytics/vince/internal/storage/translate/mapping"
 	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 type Handle struct {
-	translate *translate.Transtate
+	translate *mapping.Mapping
 	batch     struct {
 		mu       sync.RWMutex
 		ba       *batch.Batch
@@ -24,8 +26,10 @@ type Handle struct {
 	db    *pebble.DB
 }
 
-func New(db *pebble.DB) (*Handle, error) {
-	tr, err := translate.New(db)
+func New(db *pebble.DB, path string) (*Handle, error) {
+	translatePath := filepath.Join(path, "translation")
+	os.MkdirAll(translatePath, 0755)
+	tr, err := mapping.New(translatePath)
 	if err != nil {
 		return nil, err
 	}

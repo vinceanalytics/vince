@@ -3,7 +3,6 @@ package batch
 import (
 	"bytes"
 	"encoding/binary"
-	"sync/atomic"
 	"time"
 
 	"github.com/cockroachdb/pebble"
@@ -14,14 +13,13 @@ import (
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/storage/date"
 	"github.com/vinceanalytics/vince/internal/storage/fields"
-	"github.com/vinceanalytics/vince/internal/storage/translate"
+	"github.com/vinceanalytics/vince/internal/storage/translate/mapping"
 	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 type Batch struct {
-	tr     *translate.Transtate
+	tr     *mapping.Mapping
 	data   map[key]*roaring.Bitmap
-	seq    *atomic.Uint64
 	keys   [models.MutexFieldSize][][]byte
 	ids    [models.MutexFieldSize][]uint64
 	shards [models.MutexFieldSize][]uint64
@@ -29,11 +27,10 @@ type Batch struct {
 	shard  uint64
 }
 
-func New(tr *translate.Transtate) *Batch {
+func New(tr *mapping.Mapping) *Batch {
 	return &Batch{
 		tr:   tr,
 		data: make(map[key]*roaring.Bitmap),
-		seq:  &tr.Seq,
 	}
 }
 
@@ -54,7 +51,7 @@ func (b *Batch) Reset() {
 }
 
 func (b *Batch) Next(ts time.Time, domain []byte) {
-	b.id = b.seq.Add(1)
+	b.id = b.tr.Next()
 	b.shard = b.id / shardwidth.ShardWidth
 	mins, hrs, dy, wk, mo, yy := date.Resolve(ts.UTC())
 	b.Mutex(v1.Field_minute, mins)
@@ -185,7 +182,6 @@ func (b *Batch) Apply(wba *pebble.Batch) error {
 
 		}
 	}
-
 	return nil
 }
 
@@ -205,7 +201,7 @@ func (b *Batch) ra(field models.Field, kind v1.DataType, f func(ra *roaring.Bitm
 }
 
 func (b *Batch) translate(f models.Field, data []byte) uint64 {
-	id, ok := b.tr.Get(f, b.shard, data)
+	id, ok := b.tr.GetOrCreate(f, data)
 	if !ok {
 		idx := models.AsMutex(f)
 		b.keys[idx] = append(b.keys[idx], bytes.Clone(data))
