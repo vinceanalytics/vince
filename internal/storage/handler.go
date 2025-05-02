@@ -3,79 +3,54 @@ package storage
 import (
 	"os"
 	"path/filepath"
-	"sync"
-	"time"
 
 	"github.com/cockroachdb/pebble"
+	"github.com/gernest/roaring/shardwidth"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/storage/batch"
 	"github.com/vinceanalytics/vince/internal/storage/cache"
 	"github.com/vinceanalytics/vince/internal/storage/translate/mapping"
-	"github.com/vinceanalytics/vince/internal/util/xtime"
 )
 
 type Handle struct {
-	translate *mapping.Mapping
-	batch     struct {
-		mu       sync.RWMutex
-		ba       *batch.Batch
-		nxt      int64
-		duration time.Duration
-	}
-	cache *cache.Cache
-	db    *pebble.DB
+	mapping *mapping.Mapping
+	cache   *cache.Cache
+	db      *pebble.DB
 }
 
 func New(db *pebble.DB, path string) (*Handle, error) {
 	translatePath := filepath.Join(path, "translation")
-	os.MkdirAll(translatePath, 0755)
+	_ = os.MkdirAll(translatePath, 0755)
 	tr, err := mapping.New(translatePath)
 	if err != nil {
 		return nil, err
 	}
-	h := &Handle{translate: tr, db: db, cache: cache.New()}
-	h.batch.ba = batch.New(tr)
-	h.batch.duration = time.Second
-	return h, err
+	return &Handle{mapping: tr, db: db, cache: cache.New()}, nil
 }
 
-func (h *Handle) Add(m *models.Model) error {
-	h.cache.Update(m)
+func (h *Handle) Add(m ...*models.Model) error {
+	for i := range m {
+		h.cache.Update(m[i])
+	}
 
-	h.batch.mu.Lock()
-	defer func() {
-		h.batch.mu.Unlock()
-		m.Release()
-	}()
+	ba := batch.New(h.mapping, h.db.NewBatch())
+	defer ba.Close()
 
-	h.batch.ba.Add(m)
-
-	if h.batch.nxt < m.Timestamp {
-		// Take advantageof timestamp field to trigger flush
-		err := h.unsafeFlush()
+	for i := range m {
+		err := ba.Add(m[i])
 		if err != nil {
 			return err
 		}
-		h.batch.nxt = xtime.UnixMilli(m.Timestamp).Add(h.batch.duration).Unix()
-	}
-	return nil
-}
-
-func (h *Handle) Close() error {
-	h.batch.mu.Lock()
-	defer h.batch.mu.Unlock()
-	return h.unsafeFlush()
-}
-
-func (h *Handle) unsafeFlush() error {
-	ba := h.db.NewBatch()
-	defer ba.Close()
-
-	err := h.batch.ba.Apply(ba)
-	if err != nil {
-		return err
 	}
 
-	return ba.Commit(nil)
+	return ba.Commit()
+}
 
+func (b *Handle) Translate(field v1.Field, value []byte) uint64 {
+	return b.mapping.Get(field, value)
+}
+
+func (b *Handle) Shards() uint64 {
+	return (b.mapping.Load() / shardwidth.ShardWidth) + 1
 }
