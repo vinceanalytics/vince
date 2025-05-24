@@ -234,7 +234,7 @@ func RequireSiteAccess(h plug.Handler) plug.Handler {
 				// verify shared link
 				name := "shared-link-" + auth
 				expires := db.LoadSharedLinkSession(r, name)
-				if expires.After(xtime.Now()) {
+				if expires.Before(xtime.Now()) {
 					dest := fmt.Sprintf("/v1/share/%s/authenticate/%s",
 						url.PathEscape(site.Domain), auth)
 					http.Redirect(w, r, dest, http.StatusFound)
