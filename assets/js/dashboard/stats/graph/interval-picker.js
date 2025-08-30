@@ -35,9 +35,9 @@ function getDefaultInterval(query, validIntervals) {
   const defaultByPeriod = {
     'day': 'hour',
     '7d': 'date',
-    '6mo': 'month',
-    '12mo': 'month',
-    'year': 'month'
+    '6mo': 'week',
+    '12mo': 'week',
+    'year': 'week'
   }
 
   if (query.period === 'custom') {
