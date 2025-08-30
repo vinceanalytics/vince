@@ -2,22 +2,22 @@ package encoding
 
 import (
 	"encoding/binary"
-	"time"
 	"unsafe"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/keys"
 	"github.com/vinceanalytics/vince/internal/models"
 )
 
-type Resolution byte
+type Resolution = v1.Resolution
 
 const (
-	Global Resolution = iota
-	Minute
-	Hour
-	Day
-	Week
-	Month
+	Global = v1.Resolution_Global
+	Minute = v1.Resolution_Minute
+	Hour   = v1.Resolution_Hour
+	Day    = v1.Resolution_Day
+	Week   = v1.Resolution_Week
+	Month  = v1.Resolution_Month
 )
 
 const (
@@ -68,14 +68,6 @@ func (k *Key) Component() (field models.Field, co uint64) {
 	return
 }
 
-type viewFn func(time.Time) uint64
-
-func toView(cmp func(time.Time) time.Time) viewFn {
-	return func(t time.Time) uint64 {
-		return uint64(cmp(t).UnixMilli())
-	}
-}
-
 func Site(domain []byte) []byte {
 	o := make([]byte, 2+len(domain))
 	copy(o, keys.SitePrefix)
@@ -102,8 +94,4 @@ func ACME(key []byte) []byte {
 	copy(o, keys.AcmePrefix)
 	copy(o[2:], key)
 	return o
-}
-
-func num(b []byte, v uint64) []byte {
-	return binary.BigEndian.AppendUint64(b, v)
 }

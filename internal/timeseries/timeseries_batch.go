@@ -6,6 +6,7 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/gernest/roaring"
 	"github.com/gernest/roaring/shardwidth"
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/compute"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
@@ -69,10 +70,6 @@ func (b *batch) setTs(timestamp int64) {
 	b.views[encoding.Hour] = uint64(compute.Hour(ts).UnixMilli())
 	b.views[encoding.Week] = uint64(compute.Week(ts).UnixMilli())
 	b.views[encoding.Day] = uint64(compute.Date(ts).UnixMilli())
-}
-
-func (b *batch) setDomain(m *models.Model) {
-
 }
 
 // saves only current timestamp.
@@ -149,47 +146,47 @@ func (b *batch) add(m *models.Model) error {
 	b.id = b.translate.Next()
 	id := b.id
 	b.setTs(m.Timestamp)
-	b.bs(models.Field_id, id, int64(m.Id))
+	b.bs(v1.Field_id, id, int64(m.Id))
 	if m.Bounce != 0 {
-		b.boolean(models.Field_bounce, id, m.Bounce == 1)
+		b.boolean(v1.Field_bounce, id, m.Bounce == 1)
 	}
 	if m.Session {
-		b.boolean(models.Field_session, id, true)
+		b.boolean(v1.Field_session, id, true)
 	}
 	if m.View {
-		b.boolean(models.Field_view, id, true)
+		b.boolean(v1.Field_view, id, true)
 	}
 	if m.Duration > 0 {
-		b.bs(models.Field_duration, id, m.Duration)
+		b.bs(v1.Field_duration, id, m.Duration)
 	}
 	if m.City != 0 {
-		b.mx(models.Field_city, id, uint64(m.City))
+		b.mx(v1.Field_city, id, uint64(m.City))
 	}
-	b.set(models.Field_browser, id, m.Browser)
-	b.set(models.Field_browser_version, id, m.BrowserVersion)
-	b.set(models.Field_country, id, m.Country)
-	b.set(models.Field_device, id, m.Device)
+	b.set(v1.Field_browser, id, m.Browser)
+	b.set(v1.Field_browser_version, id, m.BrowserVersion)
+	b.set(v1.Field_country, id, m.Country)
+	b.set(v1.Field_device, id, m.Device)
 
 	// domain is stored as part of the key, we only save existence bit
-	b.domainId = b.tr(models.Field_domain, m.Domain)
-	b.mxExixtenceOnly(models.Field_domain, id)
+	b.domainId = b.tr(v1.Field_domain, m.Domain)
+	b.mxExixtenceOnly(v1.Field_domain, id)
 
-	b.set(models.Field_entry_page, id, m.EntryPage)
-	b.set(models.Field_event, id, m.Event)
-	b.set(models.Field_exit_page, id, m.ExitPage)
-	b.set(models.Field_host, id, m.Host)
-	b.set(models.Field_os, id, m.Os)
-	b.set(models.Field_os_version, id, m.OsVersion)
-	b.set(models.Field_page, id, m.Page)
-	b.set(models.Field_referrer, id, m.Referrer)
-	b.set(models.Field_source, id, m.Source)
-	b.set(models.Field_utm_campaign, id, m.UtmCampaign)
-	b.set(models.Field_utm_content, id, m.UtmContent)
-	b.set(models.Field_utm_medium, id, m.UtmMedium)
-	b.set(models.Field_utm_source, id, m.UtmSource)
-	b.set(models.Field_utm_term, id, m.UtmTerm)
-	b.set(models.Field_subdivision1_code, id, m.Subdivision1Code)
-	b.set(models.Field_subdivision2_code, id, m.Subdivision2Code)
+	b.set(v1.Field_entry_page, id, m.EntryPage)
+	b.set(v1.Field_event, id, m.Event)
+	b.set(v1.Field_exit_page, id, m.ExitPage)
+	b.set(v1.Field_host, id, m.Host)
+	b.set(v1.Field_os, id, m.Os)
+	b.set(v1.Field_os_version, id, m.OsVersion)
+	b.set(v1.Field_page, id, m.Page)
+	b.set(v1.Field_referrer, id, m.Referrer)
+	b.set(v1.Field_source, id, m.Source)
+	b.set(v1.Field_utm_campaign, id, m.UtmCampaign)
+	b.set(v1.Field_utm_content, id, m.UtmContent)
+	b.set(v1.Field_utm_medium, id, m.UtmMedium)
+	b.set(v1.Field_utm_source, id, m.UtmSource)
+	b.set(v1.Field_utm_term, id, m.UtmTerm)
+	b.set(v1.Field_subdivision1_code, id, m.Subdivision1Code)
+	b.set(v1.Field_subdivision2_code, id, m.Subdivision2Code)
 	return nil
 }
 

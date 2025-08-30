@@ -5,6 +5,7 @@ import (
 	"math"
 	"time"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
 	"github.com/vinceanalytics/vince/internal/timeseries"
@@ -100,20 +101,20 @@ func (s *Stats) Compute() {
 
 func (d *Stats) Read(cu *cursor.Cursor, f models.Field, view, shard uint64, match *ro2.Bitmap) error {
 	switch f {
-	case models.Field_view:
+	case v1.Field_view:
 		count := ro2.ReadTrue(cu, shard, match).Count()
 		d.PageViews += float64(count)
-	case models.Field_session:
+	case v1.Field_session:
 		count := ro2.ReadTrue(cu, shard, match).Count()
 		d.Visits += float64(count)
-	case models.Field_bounce:
+	case v1.Field_bounce:
 		yes := ro2.ReadTrue(cu, shard, match).Count()
 		no := ro2.ReadFalse(cu, shard, match).Count()
 		d.BounceRate += (float64(yes) - float64(no))
-	case models.Field_duration:
+	case v1.Field_duration:
 		_, sum := ro2.ReadSum(cu, match)
 		d.VisitDuration += float64(sum)
-	case models.Field_id:
+	case v1.Field_id:
 		uniq := ro2.ReadDistinctBSI(cu, shard, match)
 		if d.uid == nil {
 			d.uid = uniq
@@ -121,7 +122,7 @@ func (d *Stats) Read(cu *cursor.Cursor, f models.Field, view, shard uint64, matc
 			d.uid.UnionInPlace(uniq)
 		}
 
-	case models.Field_event:
+	case v1.Field_event:
 		d.Events += float64(match.Count())
 	}
 	return nil
