@@ -92,5 +92,5 @@ func endOfMonth(ts time.Time) time.Time {
 }
 
 func endOfYear(ts time.Time) time.Time {
-	return beginOfMonth(ts).AddDate(1, 0, 0).Add(-time.Nanosecond)
+	return beginOfYear(ts).AddDate(1, 0, 0).Add(-time.Nanosecond)
 }
