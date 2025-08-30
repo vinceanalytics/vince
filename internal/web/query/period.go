@@ -40,7 +40,7 @@ func period(str, date string) Period {
 		first := beginOfYear(last)
 		return Period{Start: first, End: last, Interval: Date}
 	case "all":
-		return Period{End: last, Interval: Date}
+		return Period{Start: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), End: last, Interval: Date}
 	default:
 		base.Interval = Hour
 		return Period{Start: beginOfDay(base.Start), End: last, Interval: Hour}
