@@ -30,15 +30,15 @@ func period(str, date string) Period {
 	case "6mo":
 		last = endOfMonth(last)
 		first := beginOfMonth(last.AddDate(0, -5, 0))
-		return Period{Start: first, End: last, Interval: Month}
+		return Period{Start: first, End: last, Interval: Date}
 	case "12mo":
 		last = endOfMonth(last)
 		first := beginOfMonth(last.AddDate(0, -11, 0))
-		return Period{Start: first, End: last, Interval: Month}
+		return Period{Start: first, End: last, Interval: Date}
 	case "year":
 		last = endOfYear(last)
 		first := beginOfYear(last)
-		return Period{Start: first, End: last, Interval: Month}
+		return Period{Start: first, End: last, Interval: Date}
 	case "all":
 		return Period{End: last, Interval: Date}
 	default:
