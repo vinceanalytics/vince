@@ -18,6 +18,7 @@ func Current(ctx context.Context, ts *timeseries.Timeseries, domain string) (vis
 
 func Visitors(ctx context.Context, ts *timeseries.Timeseries, domain string) (visitors uint64, err error) {
 	end := xtime.Now()
-	visitors = ts.Visitors(time.Time{}, end, encoding.Global, domain)
+	start := end.Add(-24 * time.Hour)
+	visitors = ts.Visitors(start, end, encoding.Hour, domain)
 	return
 }
