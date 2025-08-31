@@ -5,7 +5,7 @@ go 1.23.2
 require (
 	filippo.io/age v1.2.0
 	github.com/cockroachdb/pebble v0.0.0-20241105214940-2da617a0a886
-	github.com/cockroachdb/swiss v0.0.0-20240612210725-f4de07ae6964
+	github.com/cockroachdb/swiss v0.0.0-20250624142022-d6e517c1d961
 	github.com/dlclark/regexp2 v1.11.4
 	github.com/gernest/roaring v0.23.0
 	github.com/google/flatbuffers v24.3.25+incompatible

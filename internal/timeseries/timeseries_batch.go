@@ -67,8 +67,9 @@ func (b *batch) setTs(timestamp int64) {
 	ts := xtime.UnixMilli(timestamp)
 	b.views[encoding.Minute] = uint64(compute.Minute(ts).UnixMilli())
 	b.views[encoding.Hour] = uint64(compute.Hour(ts).UnixMilli())
-	b.views[encoding.Week] = uint64(compute.Week(ts).UnixMilli())
 	b.views[encoding.Day] = uint64(compute.Date(ts).UnixMilli())
+	b.views[encoding.Week] = uint64(compute.Week(ts).UnixMilli())
+	b.views[encoding.Month] = uint64(compute.Month(ts).UnixMilli())
 }
 
 func (b *batch) setDomain(m *models.Model) {
