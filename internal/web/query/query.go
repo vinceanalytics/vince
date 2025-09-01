@@ -25,7 +25,18 @@ func New(u url.Values) *Query {
 	var fs Filters
 	json.Unmarshal([]byte(u.Get("filters")), &fs)
 
-	period := period(u.Get("period"), u.Get("date"))
+	// normalize date range format
+	var dateParam string
+	if u.Get("period") == "custom" {
+		from := u.Get("from")
+		to := u.Get("to")
+		if from != "" && to != "" {
+			dateParam = from + "," + to
+		}
+	} else {
+		dateParam = u.Get("date")
+	}
+	period := period(u.Get("period"), dateParam)
 	if i := u.Get("interval"); i != "" {
 		switch i {
 		case "minute":
