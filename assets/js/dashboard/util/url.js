@@ -24,6 +24,10 @@ export function isValidHttpUrl(string) {
 
 
 export function trimURL(url, maxLength) {
+  if (url === null || url === undefined) {
+      console.warn("url to trim is null or undefined")
+      return url;
+  }
   if (url.length <= maxLength) {
     return url;
   }

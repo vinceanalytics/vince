@@ -69,6 +69,7 @@ function ExternalLink({ item, externalLinkDest }) {
  *    `renderLabel`, and `renderValue` fields. Optionally, a Metric object can contain
  *    the keys `meta.plot` and `meta.hiddenOnMobile` to represent additional behavior
  *    for this metric in the ListReport.
+ * @param {number} colMinWidth - Minimum width of each column in pixels.
  * @param {Function} getFilterFor - A function that takes a list item and returns [prefix, filter, labels]
  *    that should be applied when the list item is clicked. All existing filters matching prefix
  *    are removed. If a list item is not supposed to be clickable, this function should
@@ -238,7 +239,7 @@ export default function ListReport({ keyLabel, metrics, colMinWidth = COL_MIN_WI
               {maybeRenderIconFor(listItem)}
 
               <span className="w-full md:truncate">
-                {trimURL(listItem.name, colMinWidth)}
+                {trimURL(listItem.name || listItem.event, colMinWidth)}
               </span>
             </FilterLink>
             <ExternalLink item={listItem} externalLinkDest={externalLinkDest} />
