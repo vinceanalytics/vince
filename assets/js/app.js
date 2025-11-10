@@ -120,3 +120,63 @@ if (embedButton) {
     }
   })
 }
+
+// Dark mode toggle functionality
+function initDarkMode() {
+  const html = document.documentElement
+  const darkModeToggle = document.getElementById('dark-mode-toggle')
+
+  // Get saved preference or default to light mode
+  const savedTheme = localStorage.getItem('theme')
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+
+  // Apply initial theme
+  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+    html.classList.add('dark')
+  } else {
+    html.classList.remove('dark')
+  }
+
+  // Update toggle button icon
+  updateDarkModeIcon()
+
+  // Add click handler if toggle button exists
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('click', toggleDarkMode)
+  }
+}
+
+function toggleDarkMode() {
+  const html = document.documentElement
+  const isDark = html.classList.contains('dark')
+
+  if (isDark) {
+    html.classList.remove('dark')
+    localStorage.setItem('theme', 'light')
+  } else {
+    html.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
+  }
+
+  updateDarkModeIcon()
+}
+
+function updateDarkModeIcon() {
+  const html = document.documentElement
+  const isDark = html.classList.contains('dark')
+  const sunIcon = document.getElementById('sun-icon')
+  const moonIcon = document.getElementById('moon-icon')
+
+  if (sunIcon && moonIcon) {
+    if (isDark) {
+      sunIcon.classList.remove('hidden')
+      moonIcon.classList.add('hidden')
+    } else {
+      sunIcon.classList.add('hidden')
+      moonIcon.classList.remove('hidden')
+    }
+  }
+}
+
+// Initialize dark mode on page load
+initDarkMode()

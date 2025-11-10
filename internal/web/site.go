@@ -113,6 +113,17 @@ func Settings(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	db.HTML(w, siteSettings, nil)
 }
 
+func UpdateLabel(db *db.Config, w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	label := r.Form.Get("label")
+	site := db.CurrentSite()
+	site.Label = label
+	db.Ops().Save(site)
+	db.Success("Site display name updated")
+	db.SaveSession(w)
+	http.Redirect(w, r, fmt.Sprintf("/%s/settings#general", url.PathEscape(site.Domain)), http.StatusFound)
+}
+
 func Delete(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	domain := db.CurrentSite().Domain
 	db.Ops().DeleteDomain(domain)
@@ -169,10 +180,15 @@ func SitesIndex(db *db.Config, w http.ResponseWriter, r *http.Request) {
 func Sites(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	sites := make([]map[string]any, 0, 16)
 	db.Ops().Domains(func(s *v1.Site) {
+		label := s.Label
+		if label == "" {
+			label = s.Domain
+		}
 		sites = append(sites, map[string]any{
 			"domain": s.Domain,
 			"public": s.Public,
 			"locked": s.Locked,
+			"label":  label,
 		})
 	})
 

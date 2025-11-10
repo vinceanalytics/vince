@@ -31,6 +31,7 @@ type Site struct {
 	Shares []*Share `protobuf:"bytes,4,rep,name=shares,proto3" json:"shares,omitempty"`
 	Locked bool     `protobuf:"varint,5,opt,name=locked,proto3" json:"locked,omitempty"`
 	Goals  []*Goal  `protobuf:"bytes,6,rep,name=goals,proto3" json:"goals,omitempty"`
+	Label  string   `protobuf:"bytes,7,opt,name=label,proto3" json:"label,omitempty"`
 }
 
 func (x *Site) Reset() {
@@ -103,6 +104,13 @@ func (x *Site) GetGoals() []*Goal {
 		return x.Goals
 	}
 	return nil
+}
+
+func (x *Site) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
 }
 
 type Goal struct {

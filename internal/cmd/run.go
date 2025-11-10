@@ -317,6 +317,11 @@ func run(ctx context.Context, c *cli.Command) error {
 			Then(web.Settings),
 	))
 
+	mux.HandleFunc("POST /{domain}/settings/label", db.Wrap("site.UpdateLabel")(
+		sites.
+			Then(web.UpdateLabel),
+	))
+
 	mux.HandleFunc("GET /{domain}/settings/goals", db.Wrap("site.GoalSettings")(
 		sites.
 			Then(web.GoalSettings),

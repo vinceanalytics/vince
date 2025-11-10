@@ -11,6 +11,7 @@ message Site {
   repeated Share shares = 4;
   bool locked = 5;
   repeated Goal goals = 6;
+  string label = 7;
 }
 
 message Goal {

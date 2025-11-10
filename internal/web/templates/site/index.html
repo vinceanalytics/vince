@@ -19,8 +19,13 @@
                             <div class="relative">
                                 <h3 class="text-gray-900 font-medium text-lg truncate dark:text-gray-100"
                                     style="width: calc(100% - 4rem)">
-                                    {{.domain}}
+                                    {{.label}}
                                 </h3>
+                                {{if ne .label .domain}}
+                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5" style="width: calc(100% - 4rem)">
+                                    {{.domain}}
+                                </p>
+                                {{end}}
                                 <a href="{{.domain|path_escape}}/settings"
                                     class="absolute top-0 right-0 h-10 w-10 rounded-md hover:cursor-pointer text-gray-400  hover:text-black ">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

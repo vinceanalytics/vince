@@ -9,6 +9,34 @@
     <div class="lg:grid lg:grid-cols-12 lg:gap-x-5 lg:mt-4">
         <div class="space-y-6 lg:col-span-9 lg:mt-4">
             <div class="px-4 py-6 bg-white shadow dark:bg-gray-800 sm:rounded-md sm:overflow-hidden sm:p-6">
+                <header class="relative" id="general">
+                    <h2 class="text-lg font-medium text-gray-900 leading-6 dark:text-gray-100">
+                        Site Display Name
+                    </h2>
+                    <p class="mt-1 text-sm text-gray-500 leading-5 dark:text-gray-200">
+                        Customize how this site appears in your dashboard
+                    </p>
+                </header>
+                <form method="POST" action="/{{.site.domain|path_escape}}/settings/label" class="mt-4">
+                    <input type="hidden" name="csrf_token" value="{{.csrf_token}}" />
+                    <div>
+                        <label for="label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Display Name (optional)
+                        </label>
+                        <input type="text" name="label" id="label"
+                            placeholder="{{.site.domain}}"
+                            value="{{.site.label}}"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-rose-500 focus:border-rose-500 sm:text-sm dark:bg-gray-900 dark:text-gray-100" />
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            Leave blank to use the domain name. This helps you identify sites with friendly names instead of URLs.
+                        </p>
+                    </div>
+                    <button type="submit" class="button mt-4">
+                        Save Display Name
+                    </button>
+                </form>
+            </div>
+            <div class="px-4 py-6 bg-white shadow dark:bg-gray-800 sm:rounded-md sm:overflow-hidden sm:p-6">
                 <header class="relative" id="visibility">
                     <h2 class="text-lg font-medium text-gray-900 leading-6 dark:text-gray-100">
                         Public dashboard
