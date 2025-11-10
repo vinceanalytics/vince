@@ -48,7 +48,7 @@ func BreakdownGoals(ctx context.Context, ts *timeseries.Timeseries, site *v1.Sit
 	events := new(Result)
 	var err error
 	if len(efs.Value) > 0 {
-		events, err = Breakdown(ctx, ts, site.Domain, params.With(&efs), metrics, models.Field_event)
+		events, err = Breakdown(ctx, ts, site.Domain, params.With(&efs), metrics, v1.Field_event)
 		if err != nil {
 			return nil, err
 		}
@@ -60,14 +60,14 @@ func BreakdownGoals(ctx context.Context, ts *timeseries.Timeseries, site *v1.Sit
 			Key:   "page",
 			Value: pageGoals,
 		}
-		pages, err = Breakdown(ctx, ts, site.Domain, params.With(&efs), metrics, models.Field_page)
+		pages, err = Breakdown(ctx, ts, site.Domain, params.With(&efs), metrics, v1.Field_page)
 		if err != nil {
 			return nil, err
 		}
 		for i := range pages.Results {
 			m := pages.Results[i]
-			m["name"] = m[models.Field_page.String()]
-			delete(m, models.Field_page.String())
+			m["name"] = m[v1.Field_page.String()]
+			delete(m, v1.Field_page.String())
 		}
 	}
 	result := events
@@ -111,8 +111,8 @@ func BreakdownExitPages(ctx context.Context, ts *timeseries.Timeseries, domain s
 	return breakdown(
 		ctx,
 		ts,
-		findString(models.Field_exit_page),
-		domain, params, []string{visitors, visits, pageviews}, models.Field_exit_page, func(property string, values map[string]*Stats) *Result {
+		findString(v1.Field_exit_page),
+		domain, params, []string{visitors, visits, pageviews}, v1.Field_exit_page, func(property string, values map[string]*Stats) *Result {
 			a := &Result{
 				Results: make([]map[string]any, 0, len(values)),
 			}
@@ -146,7 +146,7 @@ func BreakdownCity(ctx context.Context, ts *timeseries.Timeseries, domain string
 	defer task.End()
 	return breakdown(ctx, ts,
 		findCity,
-		domain, params, metrics, models.Field_city, func(property string, values map[uint32]*Stats) *Result {
+		domain, params, metrics, v1.Field_city, func(property string, values map[uint32]*Stats) *Result {
 			a := &Result{
 				Results: make([]map[string]any, 0, len(values)),
 			}

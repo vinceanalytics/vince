@@ -16,7 +16,6 @@ import (
 	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/keys"
-	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/util/assert"
 	"github.com/vinceanalytics/vince/internal/util/data"
 	"github.com/vinceanalytics/vince/internal/util/translation"
@@ -25,21 +24,15 @@ import (
 )
 
 type Ops struct {
-	db    *pebble.DB
 	tr    translation.Translator
+	db    *pebble.DB
 	admin struct {
 		name     string
 		password []byte
 	}
 	sites struct {
-		sync.RWMutex
-		// We expect a reasonable number of sites to be managed by a single instance
-		// we keep this in memory because we ask for sites a lot when a user access
-		// dashboard. It will bring a lot of stress on pebble for those excessive
-		// lookups.
-		//
-		// Values must never be modified. Use cloneProto for safe copies.
 		domains map[string]*v1.Site
+		sync.RWMutex
 	}
 }
 
@@ -159,7 +152,7 @@ func (db *Ops) DeleteDomain(domain string) {
 }
 
 func (db *Ops) SeenFirstStats(domain string) (ok bool) {
-	key := encoding.TranslateID(models.Field_domain, db.tr.Translate(models.Field_domain, []byte(domain)))
+	key := encoding.TranslateID(v1.Field_domain, db.tr.Translate(v1.Field_domain, []byte(domain)))
 	return data.Has(db.db, key)
 }
 

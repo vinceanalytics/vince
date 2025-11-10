@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/encoding"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/ro2"
@@ -23,7 +24,7 @@ func (ts *Timeseries) Select(
 	filters query.Filters,
 	cb ScanCall) error {
 	m := ts.compile(filters)
-	domainId := ts.Translate(models.Field_domain, []byte(domain))
+	domainId := ts.Translate(v1.Field_domain, []byte(domain))
 	return ts.Scan(domainId, encoding.Resolution(intrerval), start,
 		end, m, values, cb)
 }

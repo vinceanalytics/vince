@@ -13,8 +13,9 @@ var (
 	DataPath string
 
 	Acme struct {
-		Enabled       bool
-		Email, Domain string
+		Email   string
+		Domain  string
+		Enabled bool
 	}
 
 	Endpoint string

@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package v1;
 
-
-
 message Site {
   uint64 id = 1;
   string domain = 2;
@@ -24,12 +22,10 @@ message Share {
   bytes password = 3;
 }
 
-
 message System {
   uint64 expiry = 1;
   string email = 2;
 }
-
 
 message Admin {
   string name = 1;

@@ -3,34 +3,35 @@ package suggestions
 import (
 	"net/http"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/web/db"
 )
 
 func Suggest(db *db.Config, w http.ResponseWriter, r *http.Request) {
-	property := models.Field_value[adjustProps(r.PathValue("filter_name"))]
+	property := v1.Field(v1.Field_value[adjustProps(r.PathValue("filter_name"))])
 	result := []Result{}
 	switch property {
-	case models.Field_page,
-		models.Field_entry_page,
-		models.Field_source,
-		models.Field_os,
-		models.Field_os_version,
-		models.Field_device,
-		models.Field_exit_page,
-		models.Field_utm_source,
-		models.Field_utm_medium,
-		models.Field_utm_campaign,
-		models.Field_utm_content,
-		models.Field_utm_term,
-		models.Field_referrer,
-		models.Field_browser,
-		models.Field_browser_version,
-		models.Field_host:
+	case v1.Field_page,
+		v1.Field_entry_page,
+		v1.Field_source,
+		v1.Field_os,
+		v1.Field_os_version,
+		v1.Field_device,
+		v1.Field_exit_page,
+		v1.Field_utm_source,
+		v1.Field_utm_medium,
+		v1.Field_utm_campaign,
+		v1.Field_utm_content,
+		v1.Field_utm_term,
+		v1.Field_referrer,
+		v1.Field_browser,
+		v1.Field_browser_version,
+		v1.Field_host:
 		result = base(db, property, "")
-	case models.Field_country:
+	case v1.Field_country:
 		result = country(db, "")
-	case models.Field_subdivision1_code:
+	case v1.Field_subdivision1_code:
 		result = region(db, "")
 	}
 	db.JSON(w, result)
@@ -38,7 +39,7 @@ func Suggest(db *db.Config, w http.ResponseWriter, r *http.Request) {
 
 func country(db *db.Config, prefix string) (o []Result) {
 	lo := db.Location()
-	db.TimeSeries().SearchKeys(models.Field_country, []byte(prefix), func(key []byte) error {
+	db.TimeSeries().SearchKeys(v1.Field_country, []byte(prefix), func(key []byte) error {
 		code := string(key)
 		name := lo.GetCountryName(code)
 		o = append(o, Result{
@@ -52,7 +53,7 @@ func country(db *db.Config, prefix string) (o []Result) {
 
 func region(db *db.Config, prefix string) (o []Result) {
 	lo := db.Location()
-	db.TimeSeries().SearchKeys(models.Field_subdivision1_code, []byte(prefix), func(key []byte) error {
+	db.TimeSeries().SearchKeys(v1.Field_subdivision1_code, []byte(prefix), func(key []byte) error {
 		code := string(key)
 		name := lo.GetRegionName(key)
 		o = append(o, Result{

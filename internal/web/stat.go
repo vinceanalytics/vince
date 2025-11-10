@@ -6,11 +6,11 @@ import (
 	"slices"
 	"strings"
 
+	v1 "github.com/vinceanalytics/vince/gen/go/vince/v1"
 	"github.com/vinceanalytics/vince/internal/api/aggregates"
 	"github.com/vinceanalytics/vince/internal/api/breakdown"
 	"github.com/vinceanalytics/vince/internal/api/timeseries"
 	"github.com/vinceanalytics/vince/internal/api/visitors"
-	"github.com/vinceanalytics/vince/internal/models"
 	"github.com/vinceanalytics/vince/internal/web/db"
 	"github.com/vinceanalytics/vince/internal/web/query"
 )
@@ -134,7 +134,7 @@ func Sources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, models.Field_source)
+	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, v1.Field_source)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -155,7 +155,7 @@ func UtmMediums(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, models.Field_utm_medium)
+	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, v1.Field_utm_medium)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -176,7 +176,7 @@ func UtmCampaigns(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, models.Field_utm_campaign)
+	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, v1.Field_utm_campaign)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -197,7 +197,7 @@ func UtmContents(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, models.Field_utm_content)
+	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, v1.Field_utm_content)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -218,7 +218,7 @@ func UtmTerms(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, models.Field_utm_term)
+	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, v1.Field_utm_term)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -239,7 +239,7 @@ func UtmSources(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "bounce_rate", "visit_duration")
 	}
-	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, models.Field_utm_source)
+	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, v1.Field_utm_source)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -271,9 +271,9 @@ func Referrer(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	}
 	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params.With(&query.Filter{
 		Op:    "is",
-		Key:   models.Field_source.String(),
+		Key:   v1.Field_source.String(),
 		Value: []string{referrer},
-	}), metrics, models.Field_referrer)
+	}), metrics, v1.Field_referrer)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -297,7 +297,7 @@ func Pages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("detailed") != "" {
 		metrics = append(metrics, "pageviews", "bounce_rate")
 	}
-	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, models.Field_page)
+	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, metrics, v1.Field_page)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -318,7 +318,7 @@ func EntryPages(db *db.Config, w http.ResponseWriter, r *http.Request) {
 		site.Domain,
 		params,
 		[]string{"visitors", "visits", "visit_duration"},
-		models.Field_entry_page,
+		v1.Field_entry_page,
 	)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
@@ -348,15 +348,15 @@ func Countries(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, []string{"visitors"}, models.Field_country)
+	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, []string{"visitors"}, v1.Field_country)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
-		code := m[models.Field_country.String()].(string)
-		delete(m, models.Field_country.String())
+		code := m[v1.Field_country.String()].(string)
+		delete(m, v1.Field_country.String())
 		c := db.Location().GetCountry(code)
 		m["code"] = code
 		m["alpha_3"] = c.Alpha
@@ -370,15 +370,15 @@ func Regions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, []string{"visitors"}, models.Field_subdivision1_code)
+	o, err := breakdown.Breakdown(ctx, db.TimeSeries(), site.Domain, params, []string{"visitors"}, v1.Field_subdivision1_code)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
 	}
 	for i := range o.Results {
 		m := o.Results[i]
-		code := m[models.Field_subdivision1_code.String()].(string)
-		delete(m, models.Field_subdivision1_code.String())
+		code := m[v1.Field_subdivision1_code.String()].(string)
+		delete(m, v1.Field_subdivision1_code.String())
 		reg := db.Location().GetRegion([]byte(code))
 		m["code"] = code
 		m["name"] = reg.Name
@@ -403,7 +403,7 @@ func Browsers(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, models.Field_browser)
+	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, v1.Field_browser)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -420,7 +420,7 @@ func BrowserVersions(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, models.Field_browser_version)
+	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, v1.Field_browser_version)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -437,7 +437,7 @@ func Os(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, models.Field_os)
+	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, v1.Field_os)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -454,7 +454,7 @@ func OsVersion(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, models.Field_os_version)
+	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, v1.Field_os_version)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}
@@ -471,7 +471,7 @@ func ScreenSize(db *db.Config, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site := db.CurrentSite()
 	params := query.New(r.URL.Query())
-	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, models.Field_device)
+	o, err := breakdown.BreakdownVisitorsWithPercentage(ctx, db.TimeSeries(), site.Domain, params, v1.Field_device)
 	if err != nil {
 		db.Logger().Error("breaking down", "err", err)
 		o = &breakdown.Result{}

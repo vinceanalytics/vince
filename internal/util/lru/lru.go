@@ -21,11 +21,9 @@ import "container/list"
 
 // Cache is an LRU cache. It is not safe for concurrent access.
 type Cache[Key comparable, Value any] struct {
-	// MaxEntries is the maximum number of cache entries before
-	// an item is evicted. Zero means no limit.
-	MaxEntries int
 	ll         *list.List
 	cache      map[Key]*list.Element
+	MaxEntries int
 }
 
 type entry[Key, Value any] struct {

@@ -39,10 +39,10 @@ type Model struct {
 }
 
 type Cached struct {
-	Start     int64
 	EntryPage []byte
 	Host      []byte
 	ExitPage  []byte
+	Start     int64
 	Timestamp int64
 	Bounce    int8
 }
