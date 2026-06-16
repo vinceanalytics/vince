@@ -44,25 +44,16 @@ func ReadMutex(ra Reader, shard uint64, filterBitmap *Bitmap, match func(row uin
 		filter[k%(1<<shardVsContainerExponent)] = c
 	}
 
-	prevRow := ^uint64(0)
-	seenThisRow := false
-	resultContainerKey := shard * rowWidth
+	resultContainerBase := shard * rowWidth
 	for ra.Seek(0); ra.Valid(); ra.Next() {
 		k, c := ra.Value()
 		row := k >> shardVsContainerExponent
-		if row == prevRow {
-			if seenThisRow {
-				continue
-			}
-		} else {
-			seenThisRow = false
-			prevRow = row
-		}
-		if roaring.IntersectionAny(c, filter[k%(1<<shardVsContainerExponent)]) {
+		containerOffset := k & keyMask
+		filterContainer := filter[containerOffset]
+		if roaring.IntersectionAny(c, filterContainer) {
 			ro := NewBitmap()
-			ro.Containers.Put(resultContainerKey, roaring.Intersect(c, filter[k%(1<<shardVsContainerExponent)]))
+			ro.Containers.Put(resultContainerBase+containerOffset, roaring.Intersect(c, filterContainer))
 			match(row, ro)
-			seenThisRow = true
 		}
 	}
 }
