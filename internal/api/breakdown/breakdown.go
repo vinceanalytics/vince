@@ -218,8 +218,8 @@ func breakdown[T cmp.Ordered](ctx context.Context, ts *timeseries.Timeseries, tr
 	breadMatch := make(breakSet[T])
 	result := make(map[T]*Stats)
 	ts.Select(ctx, valuesToScan, domain, params.Start(), params.End(), params.Interval(), params.Filter(), func(ra *cursor.Cursor, dataField models.Field, view, shard uint64, columns *ro2.Bitmap) error {
-		// We know that data fields will awlays be last to be scanned. We can
-		//  safely process the bradkwoan sequence in order.
+		// We know that data fields will always be last to be scanned. We can
+		//  safely process the breakdown sequence in order.
 		if dataField == field {
 			f := breadMatch.Add(view, shard)
 			ro2.ReadMutex(ra, shard, columns, func(row uint64, rm *ro2.Bitmap) {
