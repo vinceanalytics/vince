@@ -34,7 +34,7 @@ type Ops struct {
 	sites struct {
 		sync.RWMutex
 		// We expect a reasonable number of sites to be managed by a single instance
-		// we keep this in memory because we ask for sites a lot when a user access
+		// we keep this in memory because we ask for sites a lot when a user accesses
 		// dashboard. It will bring a lot of stress on pebble for those excessive
 		// lookups.
 		//
